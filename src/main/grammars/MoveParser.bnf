@@ -59,7 +59,7 @@ struct_decl ::= resource? struct IDENTIFIER '{' struct_field_decl? (',' struct_f
 }
 struct_field_decl ::= IDENTIFIER ':' type_decl_group
 
-private type_decl_group ::= name_expr | ref_expr
+private type_decl_group ::= name_expr | borrow_name_expr
 private statement_group ::= if_statement | let_statement | loop_statement
                     | break_statement | continue_statement | abort_statement | return_statement
                     | assignment_statement
@@ -90,7 +90,9 @@ expr ::= logical_or_group
         | bit_and_expr
         | add_group
         | mul_group
+        | as_expr
         | unary_group
+        | borrow_expr
         | primary_group
 
 private mul_group ::= div_expr | mul_expr | mod_expr
@@ -98,8 +100,8 @@ private add_group ::= plus_expr | minus_expr
 private logical_or_group ::= or_expr
 private logical_and_group ::= and_expr
 private logical_eq_group ::= equals_expr | not_equals_expr | less_expr | less_equals_expr | greater_expr | greater_equals_expr
-private unary_group ::= bang_expr
-private primary_group ::= call_expr | ref_expr | name_expr | literal_expr | paren_expr
+private unary_group ::= deref_expr | bang_expr
+private primary_group ::= call_expr |  name_expr | literal_expr | paren_expr
 
 or_expr ::= expr '||' expr
 and_expr ::= expr '&&' expr
@@ -114,6 +116,8 @@ bit_or_expr ::= expr '|' expr
 bit_and_expr ::= expr '&' expr
 bit_xor_expr ::= expr '^' expr
 
+as_expr ::= expr as type_decl_group
+
 div_expr ::= expr '/' expr
 mul_expr ::= expr '*' expr
 mod_expr ::= expr '%' expr
@@ -122,10 +126,13 @@ plus_expr ::= expr '+' expr
 minus_expr ::= expr '-' expr
 
 bang_expr ::= '!' expr
+deref_expr ::= '*' expr
 
 paren_expr ::= '(' expr ')'
 literal_expr ::= 'true' | 'false' | NUMBER
 
 call_expr ::= name_expr '(' (expr ','?)* ')'
-ref_expr ::= '&' (LIBRA_ADDRESS '::')? (IDENTIFIER '::')? IDENTIFIER
+borrow_expr ::= '&' mut? expr
+
 name_expr ::= (LIBRA_ADDRESS '::')? (IDENTIFIER '::')? IDENTIFIER
+borrow_name_expr ::= '&' mut? (LIBRA_ADDRESS '::')? (IDENTIFIER '::')? IDENTIFIER

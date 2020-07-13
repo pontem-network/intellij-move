@@ -75,7 +75,6 @@ allprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         dependsOn(generateRustLexer, generateRustParser)
     }
-
 }
 
 //group 'org.move'

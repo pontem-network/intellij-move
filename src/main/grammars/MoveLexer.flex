@@ -52,6 +52,7 @@ LIBRA_ADDRESS=0x[1-9a-f]{1,32}
   "break"              { return BREAK; }
   "return"             { return RETURN; }
   "abort"              { return ABORT; }
+  "as"                 { return AS; }
 
   {WHITESPACE}         { return WHITESPACE; }
   {NUMBER}             { return NUMBER; }

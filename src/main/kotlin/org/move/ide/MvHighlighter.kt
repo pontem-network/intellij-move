@@ -15,6 +15,7 @@ class MvHighlighter : SyntaxHighlighterBase() {
     override fun getTokenHighlights(tokenType: IElementType?): Array<TextAttributesKey> {
         val color = when (tokenType) {
             MoveTypes.NUMBER, MoveTypes.ADDRESS -> Default.NUMBER
+            MoveTypes.BOOL_FALSE, MoveTypes.BOOL_TRUE -> Default.KEYWORD
             in MV_KEYWORDS -> Default.KEYWORD
             else -> null
         }

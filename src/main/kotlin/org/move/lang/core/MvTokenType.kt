@@ -10,7 +10,7 @@ class MvTokenType(debugName: String) : IElementType(debugName, MoveLanguage)
 fun tokenSetOf(vararg tokens: IElementType) = TokenSet.create(*tokens)
 
 val MV_KEYWORDS = tokenSetOf(
-    LET, MUT, ABORT, BREAK, CONTINUE, IF, ELSE, LOOP, RETURN,
+    LET, MUT, ABORT, BREAK, CONTINUE, IF, ELSE, LOOP, RETURN, AS,
     SCRIPT, ADDRESS, MODULE, PUBLIC, FUN, STRUCT,
     BOOL_TRUE, BOOL_FALSE
 )
