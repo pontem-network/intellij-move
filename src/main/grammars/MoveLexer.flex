@@ -1,5 +1,6 @@
 package org.move.lang;
 
+import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
@@ -8,9 +9,15 @@ import static org.move.lang.MoveTypes.*;
 
 %%
 
+%{
+  public _MoveLexer() {
+    this((java.io.Reader)null);
+  }
+%}
+
 %public
 %class _MoveLexer
-%implements com.intellij.lexer.FlexLexer
+%implements FlexLexer
 %function advance
 %type IElementType
 %unicode
@@ -18,7 +25,10 @@ import static org.move.lang.MoveTypes.*;
 EOL=\R
 WHITE_SPACE=\s+
 
+WHITESPACE=[ \n\t\r\f]
 NUMBER=0|[1-9][0-9]*
+BOOL_TRUE=true
+BOOL_FALSE=false
 IDENTIFIER=[a-zA-Z][a-zA-Z0-9]*
 LIBRA_ADDRESS=0x[1-9a-f]{1,32}
 
@@ -43,7 +53,10 @@ LIBRA_ADDRESS=0x[1-9a-f]{1,32}
   "return"             { return RETURN; }
   "abort"              { return ABORT; }
 
+  {WHITESPACE}         { return WHITESPACE; }
   {NUMBER}             { return NUMBER; }
+  {BOOL_TRUE}          { return BOOL_TRUE; }
+  {BOOL_FALSE}         { return BOOL_FALSE; }
   {IDENTIFIER}         { return IDENTIFIER; }
   {LIBRA_ADDRESS}      { return LIBRA_ADDRESS; }
 

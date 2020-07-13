@@ -10,7 +10,7 @@ version = pluginVersion
 
 plugins {
     id("java")
-//    id("org.jetbrains.kotlin.jvm") version "1.3.72"
+    id("org.jetbrains.kotlin.jvm") version "1.3.72"
     id("org.jetbrains.intellij") version "0.4.21"
     id("org.jetbrains.grammarkit") version "2020.2.1"
 }
@@ -21,7 +21,7 @@ dependencies {
 
 allprojects {
     apply {
-//        plugin("kotlin")
+        plugin("kotlin")
         plugin("org.jetbrains.grammarkit")
 //        plugin("org.jetbrains.intellij")
     }
@@ -43,8 +43,8 @@ allprojects {
 
     sourceSets {
         main {
-            java.srcDirs("src/main/gen", "src/main/java")
-//            kotlin.srcDirs("src/$platformVersion/main/kotlin")
+            java.srcDirs("src/main/gen")
+//            kotlin.srcDirs("src/main/kotlin")
 //            resources.srcDirs("src/$platformVersion/main/resources")
         }
 //        test {
@@ -69,6 +69,10 @@ allprojects {
     }
 
     tasks.withType<JavaCompile> {
+        dependsOn(generateRustLexer, generateRustParser)
+    }
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         dependsOn(generateRustLexer, generateRustParser)
     }
 

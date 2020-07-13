@@ -1,7 +1,7 @@
 package org.move.lang;
 
 import com.intellij.psi.tree.IElementType;
-import org.move.lang.psi.MoveTypes;
+import org.move.lang.core.MoveTypes;
 
 %%
 

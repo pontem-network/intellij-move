@@ -8,13 +8,15 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <fileType name="Move"
+                  language="Move"
+                  extensions="move"
+                  implementationClass="org.move.lang.MoveFileType"
+                  fieldName="INSTANCE"/>
         <lang.parserDefinition language="Move"
-                               implementationClass="org.move.lang.psi.MoveParserDefinition"/>
-        <fileType name="Move" implementationClass="org.move.MoveFileType"
-                  fieldName="INSTANCE" language="Move"
-                  extensions="move"/>
-        <lang.syntaxHighlighterFactory language="Move"
-                                       implementationClass="org.move.MoveSyntaxHighlighterFactory"/>
+                               implementationClass="org.move.lang.core.MoveParserDefinition"/>
+        <lang.syntaxHighlighter language="Move"
+                                implementationClass="org.move.ide.MvHighlighter"/>
     </extensions>
 
     <actions>
