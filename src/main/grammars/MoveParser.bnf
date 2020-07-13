@@ -1,0 +1,129 @@
+{
+    parserClass="org.move.lang.MoveParser"
+    psiClassPrefix="Mv"
+//
+//  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+//
+//  psiImplClassSuffix="Impl"
+
+    psiPackage="org.move.lang.psi"
+    psiImplPackage="org.move.lang.psi.impl"
+
+    elementTypeHolderClass="org.move.lang.MoveTypes"
+    elementTypeClass="org.move.lang.psi.MvElementType"
+    tokenTypeClass="org.move.lang.psi.MvTokenType"
+    extends(".*expr")=expr
+    tokens = [
+        WHITESPACE='regexp:[ \n\t\r\f]'
+        NUMBER='regexp:0|[1-9][0-9]*'
+        IDENTIFIER='regexp:[a-zA-Z][a-zA-Z0-9]*'
+        LIBRA_ADDRESS='regexp:0x[1-9a-f]{1,32}'
+//        LOOP_KW='loop'
+//        BREAK_KW='break'
+//        CONTINUE_KW='continue'
+//        LET_KW='let'
+//        MUT_KW='mut'
+//        IF_KW='if'
+//        ELSE_KW='else'
+    ]
+}
+
+moveFile ::= script_decl | address_decl*
+
+script_decl ::= script '{' function_decl '}' {
+    pin = "script"
+}
+address_decl ::= address LIBRA_ADDRESS '{' module_decl* '}' {
+    pin = "address"
+}
+module_decl ::= module IDENTIFIER '{' module_items_group* '}' {
+    pin = "module"
+}
+
+private module_items_group ::= function_decl | struct_decl
+
+function_decl ::= public? fun IDENTIFIER '(' function_args_decl ')' (':' return_type_decl)?
+                    '{' statement_group* expr? '}'
+{
+    pin = "fun"
+    name = "function declaration"
+}
+function_args_decl ::= function_arg_decl? (',' function_arg_decl)*
+function_arg_decl ::= IDENTIFIER ':' type_decl_group
+return_type_decl ::= type_decl_group | ('(' type_decl_group (',' type_decl_group)+ ')')
+
+struct_decl ::= resource? struct IDENTIFIER '{' struct_field_decl? (',' struct_field_decl)* '}' {
+    pin = "struct"
+}
+struct_field_decl ::= IDENTIFIER ':' type_decl_group
+
+private type_decl_group ::= name_expr | ref_expr
+private statement_group ::= if_statement | let_statement | loop_statement
+                    | break_statement | continue_statement | abort_statement | return_statement
+                    | assignment_statement
+
+loop_statement ::= loop if_block ';' {
+    pin = "loop"
+}
+if_statement ::= if '(' expr ')' if_block (else if_block)? ';' {
+    pin = "if"
+}
+if_block ::= '{'? statement_group* expr? '}'?
+
+let_statement ::= let mut? name_expr '=' expr ';' {
+    pin = "let"
+}
+continue_statement ::= continue
+break_statement ::= break
+return_statement ::= return expr { pin = "return" }
+abort_statement ::= abort expr ';' { pin = "abort" }
+assignment_statement ::= name_expr '=' expr ';'
+
+// from lowest to highest
+expr ::= logical_or_group
+        | logical_and_group
+        | logical_eq_group
+        | bit_or_expr
+        | bit_xor_expr
+        | bit_and_expr
+        | add_group
+        | mul_group
+        | unary_group
+        | primary_group
+
+private mul_group ::= div_expr | mul_expr | mod_expr
+private add_group ::= plus_expr | minus_expr
+private logical_or_group ::= or_expr
+private logical_and_group ::= and_expr
+private logical_eq_group ::= equals_expr | not_equals_expr | less_expr | less_equals_expr | greater_expr | greater_equals_expr
+private unary_group ::= bang_expr
+private primary_group ::= call_expr | ref_expr | name_expr | literal_expr | paren_expr
+
+or_expr ::= expr '||' expr
+and_expr ::= expr '&&' expr
+equals_expr ::= expr '==' expr
+not_equals_expr ::= expr '!=' expr
+less_expr ::= expr '<' expr
+greater_expr ::= expr '>' expr
+less_equals_expr ::= expr '<=' expr
+greater_equals_expr ::= expr '>=' expr
+
+bit_or_expr ::= expr '|' expr
+bit_and_expr ::= expr '&' expr
+bit_xor_expr ::= expr '^' expr
+
+div_expr ::= expr '/' expr
+mul_expr ::= expr '*' expr
+mod_expr ::= expr '%' expr
+
+plus_expr ::= expr '+' expr
+minus_expr ::= expr '-' expr
+
+bang_expr ::= '!' expr
+
+paren_expr ::= '(' expr ')'
+literal_expr ::= NUMBER
+
+call_expr ::= name_expr '(' (expr ','?)* ')'
+ref_expr ::= '&' (LIBRA_ADDRESS '::')? (IDENTIFIER '::')? IDENTIFIER
+name_expr ::= (LIBRA_ADDRESS '::')? (IDENTIFIER '::')? IDENTIFIER

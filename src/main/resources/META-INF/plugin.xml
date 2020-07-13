@@ -1,0 +1,23 @@
+<idea-plugin>
+    <id>org.example.intellij-move</id>
+    <name>Intellij Move</name>
+    <vendor email="maxim.kurnikov@gmail.com">Maksim Kurnikov</vendor>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <lang.parserDefinition language="Move"
+                               implementationClass="org.move.lang.psi.MoveParserDefinition"/>
+        <fileType name="Move" implementationClass="org.move.MoveFileType"
+                  fieldName="INSTANCE" language="Move"
+                  extensions="move"/>
+        <lang.syntaxHighlighterFactory language="Move"
+                                       implementationClass="org.move.MoveSyntaxHighlighterFactory"/>
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>
