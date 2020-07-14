@@ -23,18 +23,21 @@ allprojects {
     apply {
         plugin("kotlin")
         plugin("org.jetbrains.grammarkit")
-//        plugin("org.jetbrains.intellij")
+        plugin("org.jetbrains.intellij")
     }
 
     repositories {
         mavenCentral()
 //        maven("https://oss.sonatype.org/content/repositories/snapshots/")
         maven("https://jetbrains.bintray.com/intellij-third-party-dependencies")
+//        maven("http://dl.bintray.com/jetbrains/intellij-plugin-service")
     }
 
-//    intellij {
-//        version = pluginVersion
-//    }
+    intellij {
+        pluginName = "intellij-move"
+//        version = "2020.1"
+//        type = "CL"
+    }
 
     configure<JavaPluginConvention> {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -66,10 +69,6 @@ allprojects {
         pathToParser = "/org/move/lang/MoveParser.java"
         pathToPsiRoot = "/org/move/lang/psi"
         purgeOldFiles = true
-    }
-
-    tasks.withType<JavaCompile> {
-        dependsOn(generateRustLexer, generateRustParser)
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

@@ -18,7 +18,7 @@
         WHITESPACE='regexp:[ \n\t\r\f]'
         LINE_COMMENT='regexp:(//.*\n)|(//.*\Z)'
         BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
-        LIBRA_ADDRESS='regexp:0x[0-9a-f]{1,40}'
+        LIBRA_ADDRESS='regexp:0x[0-9a-fA-F]{1,40}'
         BOOL_TRUE='regexp:true'
         BOOL_FALSE='regexp:false'
         IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
@@ -42,7 +42,7 @@
 //   * macro rules are snake_cased: list_item
 //   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
 
-File ::= ScriptBlock | AddressBlock*
+File ::= ScriptBlock | (AddressBlock | ModuleDef)*
 
 ScriptBlock ::= script '{' (Import | FunctionDef)* '}' {
     pin = "script"

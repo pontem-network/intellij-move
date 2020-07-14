@@ -26,11 +26,11 @@ class MoveParserDefinition : ParserDefinition {
     }
 
     override fun getCommentTokens(): TokenSet {
-        return TokenSet.EMPTY
+        return tokenSetOf(MoveElementTypes.LINE_COMMENT, MoveElementTypes.BLOCK_COMMENT)
     }
 
     override fun getStringLiteralElements(): TokenSet {
-        return TokenSet.EMPTY
+        return tokenSetOf(MoveElementTypes.BYTESTRING)
     }
 
     override fun createElement(node: ASTNode): PsiElement {
