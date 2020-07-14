@@ -34,7 +34,7 @@ INT_LITERAL = 0 | [1-9][0-9]*
 //<YYINITIAL> "let"           { return MoveTypes.LET_KEYWORD; }
 <YYINITIAL> {
 //        {Identifier}        { return MoveTypes.IDENTIFIER; }
-        {INT_LITERAL}    { return MoveTypes.INT_LITERAL; }
+        {INT_LITERAL}    { return MoveElementTypes.INT_LITERAL; }
 
 //        "+"                 { return new MoveTokenType("OPERATOR_PLUS"); }
 //        "-"                 { return new MoveTokenType("OPERATOR_MINUS"); }

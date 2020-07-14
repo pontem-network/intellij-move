@@ -14,7 +14,7 @@ import org.move.lang.*
 
 class MoveParserDefinition : ParserDefinition {
     override fun createLexer(project: Project): Lexer {
-        return MoveFlexAdapter()
+        return MvLexer()
     }
 
     override fun createParser(project: Project): PsiParser {
@@ -34,7 +34,7 @@ class MoveParserDefinition : ParserDefinition {
     }
 
     override fun createElement(node: ASTNode): PsiElement {
-        return MoveTypes.Factory.createElement(node)
+        return MoveElementTypes.Factory.createElement(node)
     }
 
     override fun createFile(viewProvider: FileViewProvider): PsiFile {

@@ -1,15 +1,16 @@
 {
     parserClass="org.move.lang.MoveParser"
     psiClassPrefix="Mv"
+    psiImplClassSuffix="Impl"
 //
 //  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 //
-//  psiImplClassSuffix="Impl"
 
-    psiPackage="org.move.lang.psi"
-    psiImplPackage="org.move.lang.psi.impl"
+    psiPackage="org.move.lang.core.psi"
+    psiImplPackage="org.move.lang.core.psi.impl"
 
-    elementTypeHolderClass="org.move.lang.MoveTypes"
+    elementTypeHolderClass="org.move.lang.MoveElementTypes"
+
     elementTypeClass="org.move.lang.core.MvElementType"
     tokenTypeClass="org.move.lang.core.MvTokenType"
     extends(".*expr")=expr

@@ -5,17 +5,17 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
 import org.move.lang.core.MV_KEYWORDS
-import org.move.lang.MoveFlexAdapter
-import org.move.lang.MoveTypes
+import org.move.lang.MvLexer
+import org.move.lang.MoveElementTypes
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors as Default
 
 class MvHighlighter : SyntaxHighlighterBase() {
-    override fun getHighlightingLexer(): Lexer = MoveFlexAdapter()
+    override fun getHighlightingLexer(): Lexer = MvLexer()
 
     override fun getTokenHighlights(tokenType: IElementType?): Array<TextAttributesKey> {
         val color = when (tokenType) {
-            MoveTypes.NUMBER, MoveTypes.ADDRESS -> Default.NUMBER
-            MoveTypes.BOOL_FALSE, MoveTypes.BOOL_TRUE -> Default.KEYWORD
+            MoveElementTypes.NUMBER, MoveElementTypes.ADDRESS -> Default.NUMBER
+            MoveElementTypes.BOOL_FALSE, MoveElementTypes.BOOL_TRUE -> Default.KEYWORD
             in MV_KEYWORDS -> Default.KEYWORD
             else -> null
         }
