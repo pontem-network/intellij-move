@@ -1,16 +1,22 @@
-package org.move.lang.core
+package org.move.lang
 
 import com.intellij.lang.ASTNode
 import com.intellij.lang.ParserDefinition
+import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiParser
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.project.Project
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
-import org.move.lang.*
+import org.move.lang.core.tokenSetOf
+
+class EmptyTreeParser : PsiParser {
+    override fun parse(root: IElementType, builder: PsiBuilder): ASTNode = builder.treeBuilt
+}
 
 class MoveParserDefinition : ParserDefinition {
     override fun createLexer(project: Project): Lexer {
@@ -19,6 +25,7 @@ class MoveParserDefinition : ParserDefinition {
 
     override fun createParser(project: Project): PsiParser {
         return MoveParser()
+//        return EmptyTreeParser()
     }
 
     override fun getFileNodeType(): IFileElementType {
@@ -30,7 +37,8 @@ class MoveParserDefinition : ParserDefinition {
     }
 
     override fun getStringLiteralElements(): TokenSet {
-        return tokenSetOf(MoveElementTypes.BYTESTRING)
+        // hex string is not included, as it's basically vector<u8> and not string
+        return tokenSetOf(MoveElementTypes.BYTE_STRING_LITERAL)
     }
 
     override fun createElement(node: ASTNode): PsiElement {

@@ -18,13 +18,14 @@
         WHITESPACE='regexp:[ \n\t\r\f]'
         LINE_COMMENT='regexp:(//.*\n)|(//.*\Z)'
         BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
-        LIBRA_ADDRESS='regexp:0x[0-9a-fA-F]{1,40}'
-        BOOL_TRUE='regexp:true'
-        BOOL_FALSE='regexp:false'
+
+        ADDRESS_LITERAL='regexp:0x[0-9a-fA-F]{1,40}'
+        BOOL_LITERAL='regexp:(true)|(false)'
+        INTEGER_LITERAL='regexp:0|[1-9][0-9]*'
+        HEX_STRING_LITERAL='regexp:x"([A-F0-9a-f]+)"'
+        BYTE_STRING_LITERAL='regexp:b"(.*)"'
+
         IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
-        NUMBER='regexp:0|[1-9][0-9]*'
-        HEXSTRING='regexp:x"([A-F0-9a-f]+)"'
-        BYTESTRING='regexp:b"(.*)"'
 //        LOOP_KW='loop'
 //        BREAK_KW='break'
 //        CONTINUE_KW='continue'
@@ -47,7 +48,7 @@ File ::= ScriptBlock | (AddressBlock | ModuleDef)*
 ScriptBlock ::= script '{' (Import | FunctionDef)* '}' {
     pin = "script"
 }
-AddressBlock ::= address LIBRA_ADDRESS '{' ModuleDef* '}' {
+AddressBlock ::= address ADDRESS_LITERAL '{' ModuleDef* '}' {
     pin = "address"
 }
 ModuleDef ::= module IDENTIFIER '{' ModuleItem* '}' {
@@ -58,7 +59,7 @@ private ModuleItem ::= Import | StructDef | FunctionDef
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-FunctionDef ::= public? fun IDENTIFIER
+FunctionDef ::= public? fun IDENTIFIER TypeParameterList?
                     FunctionParams
                     ReturnType?
                     AcquiresType?
@@ -76,42 +77,54 @@ FunctionParam ::= IDENTIFIER TypeAscription
 
 // u8 | (u8,) | (u8, u8) | (u8, u8,)
 // tuples only allowed as a return types
-ReturnType ::= ':' '('? (TypeReference ','?)* ')'? {
+ReturnType ::= ':' (TypeReference | TupleType) {
     pin = 1
 }
+TupleType ::= '(' (TypeReference ','?)* ','? ')' { pin = 1 }
 // acquires T, Record
-AcquiresType ::= acquires NameExpr (',' NameExpr)* ','? { pin = 1 }
+AcquiresType ::= acquires PathExpr (',' PathExpr)* ','? { pin = 1 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-StructDef ::= resource? struct IDENTIFIER '{' StructFieldDef? (',' StructFieldDef)* '}' {
+StructDef ::= resource? struct IDENTIFIER TypeParameterList?
+                '{'
+                StructFieldDef? (',' StructFieldDef)*
+                '}'
+{
     pin = "struct"
 }
+
 StructFieldDef ::= IDENTIFIER TypeAscription
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Imports
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // 'use 0x0::Transaction as MyTransaction'
-Import ::= use LIBRA_ADDRESS '::' IDENTIFIER ('::' IDENTIFIER)? ImportAlias? ';' {
+Import ::= use ADDRESS_LITERAL '::' IDENTIFIER ('::' IDENTIFIER)? ImportAlias? ';' {
     pin = "use"
 }
 ImportAlias ::= as IDENTIFIER { pin = 1 }
 
 // Types
+LetTypeAscription ::= ':' (TypeReference | TupleType) { pin = 1 }
 TypeAscription ::= ':' TypeReference { pin = 1 }
 
-TypeReference ::= NameExpr | BorrowNameExpr {
+TypeReference ::= ('&' mut?)? PathExpr {
     name = "type"
 }
+TypeParameterList ::= '<' TypeParameter? (',' TypeParameter)* ','? '>'
+TypeParameter ::= IDENTIFIER TypeParamBound?
+TypeParamBound ::= ':' (copyable | resource)
+
+TypeArguments ::= '<' PathExpr (',' PathExpr)*  '>'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Statements
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 private StatementItem ::= if_statement | LetDecl | loop_statement
                     | break_statement | continue_statement | abort_statement | return_statement
-                    | assignment_statement
+                    | assignment_statement | expr_statement
 
 loop_statement ::= loop Block ';' {
     pin = "loop"
@@ -123,11 +136,15 @@ ElseBlock ::= else Block { pin = 1 }
 
 Block ::= '{'? StatementItem* Expr? '}'?
 
-Pattern ::= PatternStruct | NameExpr
-PatternStruct ::= IDENTIFIER '{' PatternStructField+ '}' { pin = 2 }
-PatternStructField ::= IDENTIFIER (':' IDENTIFIER)?
+Pattern ::= TuplePattern | StructPattern | IDENTIFIER
 
-LetDecl ::= let mut? Pattern TypeAscription? LetInitValue? ';' {
+TuplePattern ::= '(' (Pattern ','?)* ')' { pin = 1 }
+
+StructPattern ::= PathExpr '{' (StructPatternField ','?)* '}' { pin = 2 }
+StructPatternField ::= IDENTIFIER StructPatternFieldBinding?
+StructPatternFieldBinding ::= ':' (StructPattern | IDENTIFIER) { pin = 1 }
+
+LetDecl ::= let mut? Pattern LetTypeAscription? LetInitValue? ';' {
     pin = 1
 }
 LetInitValue ::= '=' Expr { pin = 1 }
@@ -137,6 +154,7 @@ break_statement ::= break
 return_statement ::= return Expr { pin = 1 }
 abort_statement ::= abort Expr ';' { pin = 1 }
 assignment_statement ::= Pattern '=' Expr ';' { pin = 2 }
+expr_statement ::= Expr ';'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Expressions
@@ -151,17 +169,23 @@ Expr ::= logical_or_group
         | add_group
         | mul_group
         | CastExpr
-        | unary_group
+        | UnaryExpr
         | BorrowExpr
-        | primary_group
+        | AtomExpr
 
 private mul_group ::= DivExpr | MulExpr | ModExpr
 private add_group ::= PlusExpr | MinusExpr
 private logical_or_group ::= OrExpr
 private logical_and_group ::= AndExpr
 private logical_eq_group ::= EqualsExpr | NotEqualsExpr | LessExpr | LessEqualsExpr | GreaterExpr | GreaterEqualsExpr
-private unary_group ::= DerefExpr | BangExpr
-private primary_group ::= CallExpr |  NameExpr | LiteralExpr | ParensExpr
+
+private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
+private AtomExpr ::= StructLiteralExpr
+                    | CallExpr
+                    | PathExpr
+                    | TupleLiteralExpr
+                    | LiteralExpr
+                    | ParensExpr
 
 OrExpr ::= Expr '||' Expr
 AndExpr ::= Expr '&&' Expr
@@ -187,12 +211,21 @@ MinusExpr ::= Expr '-' Expr
 
 BangExpr ::= '!' Expr
 DerefExpr ::= '*' Expr
+CopyExpr ::= copy Expr { pin = 1 }
+MoveExpr ::= move Expr { pin = 1 }
 
+StructLiteralExpr ::= PathExpr '{' (StructLiteralExprField ','?)* '}'
+StructLiteralExprField ::= IDENTIFIER ':' Expr
 ParensExpr ::= '(' Expr ')'
-LiteralExpr ::= 'true' | 'false' | NUMBER | HEXSTRING | BYTESTRING
+TupleLiteralExpr ::= ('(' ')') | ('(' Expr ',' (Expr ','?)* ')')
+LiteralExpr ::= BOOL_LITERAL
+                | INTEGER_LITERAL
+                | HEX_STRING_LITERAL
+                | BYTE_STRING_LITERAL
+                | ADDRESS_LITERAL
 
-CallExpr ::= NameExpr '(' (Expr ','?)* ')'
+CallExpr ::= '::'? PathExpr CallArguments
+CallArguments ::= '(' (Expr ','?)* ')' { pin = 1 }
+
 BorrowExpr ::= '&' mut? Expr
-
-NameExpr ::= (LIBRA_ADDRESS '::')? (IDENTIFIER '::')? IDENTIFIER
-BorrowNameExpr ::= '&' mut? (LIBRA_ADDRESS '::')? (IDENTIFIER '::')? IDENTIFIER
+PathExpr ::= (ADDRESS_LITERAL '::')? (IDENTIFIER '::')? IDENTIFIER TypeArguments?

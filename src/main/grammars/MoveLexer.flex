@@ -28,48 +28,49 @@ WHITE_SPACE=\s+
 WHITESPACE=[ \n\t\r\f]
 LINE_COMMENT=("//".*\n)|("//".*\Z)
 BLOCK_COMMENT="/"\*(.|[ \t\n\x0B\f\r])*\*"/"
-LIBRA_ADDRESS=0x[0-9a-fA-F]{1,40}
-BOOL_TRUE=true
-BOOL_FALSE=false
+ADDRESS_LITERAL=0x[0-9a-fA-F]{1,40}
+BOOL_LITERAL=(true)|(false)
+INTEGER_LITERAL=0|[1-9][0-9]*
+HEX_STRING_LITERAL=x\"([A-F0-9a-f]+)\"
+BYTE_STRING_LITERAL=b\"(.*)\"
 IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
-NUMBER=0|[1-9][0-9]*
-HEXSTRING=x\"([A-F0-9a-f]+)\"
-BYTESTRING=b\"(.*)\"
 
 %%
 <YYINITIAL> {
-  {WHITE_SPACE}        { return WHITE_SPACE; }
+  {WHITE_SPACE}              { return WHITE_SPACE; }
 
-  "script"             { return SCRIPT; }
-  "address"            { return ADDRESS; }
-  "module"             { return MODULE; }
-  "public"             { return PUBLIC; }
-  "fun"                { return FUN; }
-  "acquires"           { return ACQUIRES; }
-  "resource"           { return RESOURCE; }
-  "struct"             { return STRUCT; }
-  "use"                { return USE; }
-  "as"                 { return AS; }
-  "loop"               { return LOOP; }
-  "if"                 { return IF; }
-  "else"               { return ELSE; }
-  "let"                { return LET; }
-  "mut"                { return MUT; }
-  "continue"           { return CONTINUE; }
-  "break"              { return BREAK; }
-  "return"             { return RETURN; }
-  "abort"              { return ABORT; }
+  "script"                   { return SCRIPT; }
+  "address"                  { return ADDRESS; }
+  "module"                   { return MODULE; }
+  "public"                   { return PUBLIC; }
+  "fun"                      { return FUN; }
+  "acquires"                 { return ACQUIRES; }
+  "resource"                 { return RESOURCE; }
+  "struct"                   { return STRUCT; }
+  "use"                      { return USE; }
+  "as"                       { return AS; }
+  "mut"                      { return MUT; }
+  "copyable"                 { return COPYABLE; }
+  "loop"                     { return LOOP; }
+  "if"                       { return IF; }
+  "else"                     { return ELSE; }
+  "let"                      { return LET; }
+  "continue"                 { return CONTINUE; }
+  "break"                    { return BREAK; }
+  "return"                   { return RETURN; }
+  "abort"                    { return ABORT; }
+  "copy"                     { return COPY; }
+  "move"                     { return MOVE; }
 
-  {WHITESPACE}         { return WHITESPACE; }
-  {LINE_COMMENT}       { return LINE_COMMENT; }
-  {BLOCK_COMMENT}      { return BLOCK_COMMENT; }
-  {LIBRA_ADDRESS}      { return LIBRA_ADDRESS; }
-  {BOOL_TRUE}          { return BOOL_TRUE; }
-  {BOOL_FALSE}         { return BOOL_FALSE; }
-  {IDENTIFIER}         { return IDENTIFIER; }
-  {NUMBER}             { return NUMBER; }
-  {HEXSTRING}          { return HEXSTRING; }
-  {BYTESTRING}         { return BYTESTRING; }
+  {WHITESPACE}               { return WHITESPACE; }
+  {LINE_COMMENT}             { return LINE_COMMENT; }
+  {BLOCK_COMMENT}            { return BLOCK_COMMENT; }
+  {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
+  {BOOL_LITERAL}             { return BOOL_LITERAL; }
+  {INTEGER_LITERAL}          { return INTEGER_LITERAL; }
+  {HEX_STRING_LITERAL}       { return HEX_STRING_LITERAL; }
+  {BYTE_STRING_LITERAL}      { return BYTE_STRING_LITERAL; }
+  {IDENTIFIER}               { return IDENTIFIER; }
 
 }
 

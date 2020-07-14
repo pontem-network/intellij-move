@@ -16,9 +16,9 @@ class MvHighlighter : SyntaxHighlighterBase() {
         val color = when (tokenType) {
             MoveElementTypes.BLOCK_COMMENT -> Default.BLOCK_COMMENT
             MoveElementTypes.LINE_COMMENT -> Default.LINE_COMMENT
-            MoveElementTypes.HEXSTRING, MoveElementTypes.BYTESTRING -> Default.STRING
-            MoveElementTypes.NUMBER, MoveElementTypes.LIBRA_ADDRESS -> Default.NUMBER
-            MoveElementTypes.BOOL_FALSE, MoveElementTypes.BOOL_TRUE -> Default.KEYWORD
+            MoveElementTypes.HEX_STRING_LITERAL, MoveElementTypes.BYTE_STRING_LITERAL -> Default.STRING
+            MoveElementTypes.INTEGER_LITERAL, MoveElementTypes.ADDRESS_LITERAL -> Default.NUMBER
+            MoveElementTypes.BOOL_LITERAL -> Default.KEYWORD
             in MV_KEYWORDS -> Default.KEYWORD
             else -> null
         }
