@@ -13,14 +13,18 @@
 
     elementTypeClass="org.move.lang.core.MvElementType"
     tokenTypeClass="org.move.lang.core.MvTokenType"
-    extends(".*expr")=expr
+    extends(".*Expr")=Expr
     tokens = [
         WHITESPACE='regexp:[ \n\t\r\f]'
-        NUMBER='regexp:0|[1-9][0-9]*'
+        LINE_COMMENT='regexp:(//.*\n)|(//.*\Z)'
+        BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
+        LIBRA_ADDRESS='regexp:0x[0-9a-f]{1,40}'
         BOOL_TRUE='regexp:true'
         BOOL_FALSE='regexp:false'
-        IDENTIFIER='regexp:[a-zA-Z][a-zA-Z0-9]*'
-        LIBRA_ADDRESS='regexp:0x[1-9a-f]{1,32}'
+        IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
+        NUMBER='regexp:0|[1-9][0-9]*'
+        HEXSTRING='regexp:x"([A-F0-9a-f]+)"'
+        BYTESTRING='regexp:b"(.*)"'
 //        LOOP_KW='loop'
 //        BREAK_KW='break'
 //        CONTINUE_KW='continue'
@@ -31,109 +35,164 @@
     ]
 }
 
-moveFile ::= script_decl | address_decl*
+// Naming convention:
+//
+//   * tokens are lowercase: for, if, identifier
+//   * rules are PascalCase: StructItem, EnumVariant
+//   * macro rules are snake_cased: list_item
+//   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
 
-script_decl ::= script '{' function_decl '}' {
+File ::= ScriptBlock | AddressBlock*
+
+ScriptBlock ::= script '{' (Import | FunctionDef)* '}' {
     pin = "script"
 }
-address_decl ::= address LIBRA_ADDRESS '{' module_decl* '}' {
+AddressBlock ::= address LIBRA_ADDRESS '{' ModuleDef* '}' {
     pin = "address"
 }
-module_decl ::= module IDENTIFIER '{' module_items_group* '}' {
+ModuleDef ::= module IDENTIFIER '{' ModuleItem* '}' {
     pin = "module"
 }
+private ModuleItem ::= Import | StructDef | FunctionDef
 
-private module_items_group ::= function_decl | struct_decl
-
-function_decl ::= public? fun IDENTIFIER '(' function_args_decl ')' (':' return_type_decl)?
-                    '{' statement_group* expr? '}'
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Functions
+///////////////////////////////////////////////////////////////////////////////////////////////////
+FunctionDef ::= public? fun IDENTIFIER
+                    FunctionParams
+                    ReturnType?
+                    AcquiresType?
+                    '{' StatementItem* Expr? '}'
 {
     pin = "fun"
     name = "function declaration"
 }
-function_args_decl ::= function_arg_decl? (',' function_arg_decl)*
-function_arg_decl ::= IDENTIFIER ':' type_decl_group
-return_type_decl ::= type_decl_group | ('(' type_decl_group (',' type_decl_group)+ ')')
 
-struct_decl ::= resource? struct IDENTIFIER '{' struct_field_decl? (',' struct_field_decl)* '}' {
+// trailing comma is allowed
+FunctionParams ::= '(' (FunctionParam ','?)* ')' {
+    pin = 1
+}
+FunctionParam ::= IDENTIFIER TypeAscription
+
+// u8 | (u8,) | (u8, u8) | (u8, u8,)
+// tuples only allowed as a return types
+ReturnType ::= ':' '('? (TypeReference ','?)* ')'? {
+    pin = 1
+}
+// acquires T, Record
+AcquiresType ::= acquires NameExpr (',' NameExpr)* ','? { pin = 1 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Structs
+///////////////////////////////////////////////////////////////////////////////////////////////////
+StructDef ::= resource? struct IDENTIFIER '{' StructFieldDef? (',' StructFieldDef)* '}' {
     pin = "struct"
 }
-struct_field_decl ::= IDENTIFIER ':' type_decl_group
+StructFieldDef ::= IDENTIFIER TypeAscription
 
-private type_decl_group ::= name_expr | borrow_name_expr
-private statement_group ::= if_statement | let_statement | loop_statement
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Imports
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// 'use 0x0::Transaction as MyTransaction'
+Import ::= use LIBRA_ADDRESS '::' IDENTIFIER ('::' IDENTIFIER)? ImportAlias? ';' {
+    pin = "use"
+}
+ImportAlias ::= as IDENTIFIER { pin = 1 }
+
+// Types
+TypeAscription ::= ':' TypeReference { pin = 1 }
+
+TypeReference ::= NameExpr | BorrowNameExpr {
+    name = "type"
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Statements
+///////////////////////////////////////////////////////////////////////////////////////////////////
+private StatementItem ::= if_statement | LetDecl | loop_statement
                     | break_statement | continue_statement | abort_statement | return_statement
                     | assignment_statement
 
-loop_statement ::= loop if_block ';' {
+loop_statement ::= loop Block ';' {
     pin = "loop"
 }
-if_statement ::= if '(' expr ')' if_block (else if_block)? ';' {
+if_statement ::= if '(' Expr ')' Block ElseBlock? ';' {
     pin = "if"
 }
-if_block ::= '{'? statement_group* expr? '}'?
+ElseBlock ::= else Block { pin = 1 }
 
-let_statement ::= let mut? name_expr '=' expr ';' {
-    pin = "let"
+Block ::= '{'? StatementItem* Expr? '}'?
+
+Pattern ::= PatternStruct | NameExpr
+PatternStruct ::= IDENTIFIER '{' PatternStructField+ '}' { pin = 2 }
+PatternStructField ::= IDENTIFIER (':' IDENTIFIER)?
+
+LetDecl ::= let mut? Pattern TypeAscription? LetInitValue? ';' {
+    pin = 1
 }
+LetInitValue ::= '=' Expr { pin = 1 }
+
 continue_statement ::= continue
 break_statement ::= break
-return_statement ::= return expr { pin = "return" }
-abort_statement ::= abort expr ';' { pin = "abort" }
-assignment_statement ::= name_expr '=' expr ';'
+return_statement ::= return Expr { pin = 1 }
+abort_statement ::= abort Expr ';' { pin = 1 }
+assignment_statement ::= Pattern '=' Expr ';' { pin = 2 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Expressions
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // from lowest to highest
-expr ::= logical_or_group
+Expr ::= logical_or_group
         | logical_and_group
         | logical_eq_group
-        | bit_or_expr
-        | bit_xor_expr
-        | bit_and_expr
+        | BitOrExpr
+        | BitXorExpr
+        | BitAndExpr
         | add_group
         | mul_group
-        | as_expr
+        | CastExpr
         | unary_group
-        | borrow_expr
+        | BorrowExpr
         | primary_group
 
-private mul_group ::= div_expr | mul_expr | mod_expr
-private add_group ::= plus_expr | minus_expr
-private logical_or_group ::= or_expr
-private logical_and_group ::= and_expr
-private logical_eq_group ::= equals_expr | not_equals_expr | less_expr | less_equals_expr | greater_expr | greater_equals_expr
-private unary_group ::= deref_expr | bang_expr
-private primary_group ::= call_expr |  name_expr | literal_expr | paren_expr
+private mul_group ::= DivExpr | MulExpr | ModExpr
+private add_group ::= PlusExpr | MinusExpr
+private logical_or_group ::= OrExpr
+private logical_and_group ::= AndExpr
+private logical_eq_group ::= EqualsExpr | NotEqualsExpr | LessExpr | LessEqualsExpr | GreaterExpr | GreaterEqualsExpr
+private unary_group ::= DerefExpr | BangExpr
+private primary_group ::= CallExpr |  NameExpr | LiteralExpr | ParensExpr
 
-or_expr ::= expr '||' expr
-and_expr ::= expr '&&' expr
-equals_expr ::= expr '==' expr
-not_equals_expr ::= expr '!=' expr
-less_expr ::= expr '<' expr
-greater_expr ::= expr '>' expr
-less_equals_expr ::= expr '<=' expr
-greater_equals_expr ::= expr '>=' expr
+OrExpr ::= Expr '||' Expr
+AndExpr ::= Expr '&&' Expr
+EqualsExpr ::= Expr '==' Expr
+NotEqualsExpr ::= Expr '!=' Expr
+LessExpr ::= Expr '<' Expr
+GreaterExpr ::= Expr '>' Expr
+LessEqualsExpr ::= Expr '<=' Expr
+GreaterEqualsExpr ::= Expr '>=' Expr
 
-bit_or_expr ::= expr '|' expr
-bit_and_expr ::= expr '&' expr
-bit_xor_expr ::= expr '^' expr
+BitOrExpr ::= Expr '|' Expr
+BitAndExpr ::= Expr '&' Expr
+BitXorExpr ::= Expr '^' Expr
 
-as_expr ::= expr as type_decl_group
+CastExpr ::= Expr as TypeReference
 
-div_expr ::= expr '/' expr
-mul_expr ::= expr '*' expr
-mod_expr ::= expr '%' expr
+DivExpr ::= Expr '/' Expr
+MulExpr ::= Expr '*' Expr
+ModExpr ::= Expr '%' Expr
 
-plus_expr ::= expr '+' expr
-minus_expr ::= expr '-' expr
+PlusExpr ::= Expr '+' Expr
+MinusExpr ::= Expr '-' Expr
 
-bang_expr ::= '!' expr
-deref_expr ::= '*' expr
+BangExpr ::= '!' Expr
+DerefExpr ::= '*' Expr
 
-paren_expr ::= '(' expr ')'
-literal_expr ::= 'true' | 'false' | NUMBER
+ParensExpr ::= '(' Expr ')'
+LiteralExpr ::= 'true' | 'false' | NUMBER | HEXSTRING | BYTESTRING
 
-call_expr ::= name_expr '(' (expr ','?)* ')'
-borrow_expr ::= '&' mut? expr
+CallExpr ::= NameExpr '(' (Expr ','?)* ')'
+BorrowExpr ::= '&' mut? Expr
 
-name_expr ::= (LIBRA_ADDRESS '::')? (IDENTIFIER '::')? IDENTIFIER
-borrow_name_expr ::= '&' mut? (LIBRA_ADDRESS '::')? (IDENTIFIER '::')? IDENTIFIER
+NameExpr ::= (LIBRA_ADDRESS '::')? (IDENTIFIER '::')? IDENTIFIER
+BorrowNameExpr ::= '&' mut? (LIBRA_ADDRESS '::')? (IDENTIFIER '::')? IDENTIFIER

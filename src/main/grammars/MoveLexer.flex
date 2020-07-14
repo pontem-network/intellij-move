@@ -26,11 +26,15 @@ EOL=\R
 WHITE_SPACE=\s+
 
 WHITESPACE=[ \n\t\r\f]
-NUMBER=0|[1-9][0-9]*
+LINE_COMMENT=("//".*\n)|("//".*\Z)
+BLOCK_COMMENT="/"\*(.|[ \t\n\x0B\f\r])*\*"/"
+LIBRA_ADDRESS=0x[0-9a-f]{1,40}
 BOOL_TRUE=true
 BOOL_FALSE=false
-IDENTIFIER=[a-zA-Z][a-zA-Z0-9]*
-LIBRA_ADDRESS=0x[1-9a-f]{1,32}
+IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
+NUMBER=0|[1-9][0-9]*
+HEXSTRING=x\"([A-F0-9a-f]+)\"
+BYTESTRING=b\"(.*)\"
 
 %%
 <YYINITIAL> {
@@ -41,8 +45,11 @@ LIBRA_ADDRESS=0x[1-9a-f]{1,32}
   "module"             { return MODULE; }
   "public"             { return PUBLIC; }
   "fun"                { return FUN; }
+  "acquires"           { return ACQUIRES; }
   "resource"           { return RESOURCE; }
   "struct"             { return STRUCT; }
+  "use"                { return USE; }
+  "as"                 { return AS; }
   "loop"               { return LOOP; }
   "if"                 { return IF; }
   "else"               { return ELSE; }
@@ -52,14 +59,17 @@ LIBRA_ADDRESS=0x[1-9a-f]{1,32}
   "break"              { return BREAK; }
   "return"             { return RETURN; }
   "abort"              { return ABORT; }
-  "as"                 { return AS; }
 
   {WHITESPACE}         { return WHITESPACE; }
-  {NUMBER}             { return NUMBER; }
+  {LINE_COMMENT}       { return LINE_COMMENT; }
+  {BLOCK_COMMENT}      { return BLOCK_COMMENT; }
+  {LIBRA_ADDRESS}      { return LIBRA_ADDRESS; }
   {BOOL_TRUE}          { return BOOL_TRUE; }
   {BOOL_FALSE}         { return BOOL_FALSE; }
   {IDENTIFIER}         { return IDENTIFIER; }
-  {LIBRA_ADDRESS}      { return LIBRA_ADDRESS; }
+  {NUMBER}             { return NUMBER; }
+  {HEXSTRING}          { return HEXSTRING; }
+  {BYTESTRING}         { return BYTESTRING; }
 
 }
 
