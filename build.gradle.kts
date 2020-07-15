@@ -35,8 +35,8 @@ allprojects {
 
     intellij {
         pluginName = "intellij-move"
-//        version = "2020.1"
-//        type = "CL"
+        version = "2020.1"
+        type = "CL"
     }
 
     configure<JavaPluginConvention> {

@@ -14,10 +14,6 @@ import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.lang.core.tokenSetOf
 
-class EmptyTreeParser : PsiParser {
-    override fun parse(root: IElementType, builder: PsiBuilder): ASTNode = builder.treeBuilt
-}
-
 class MoveParserDefinition : ParserDefinition {
     override fun createLexer(project: Project): Lexer {
         return MvLexer()
@@ -25,7 +21,6 @@ class MoveParserDefinition : ParserDefinition {
 
     override fun createParser(project: Project): PsiParser {
         return MoveParser()
-//        return EmptyTreeParser()
     }
 
     override fun getFileNodeType(): IFileElementType {

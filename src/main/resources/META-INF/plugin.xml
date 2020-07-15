@@ -1,6 +1,8 @@
 <idea-plugin>
     <id>org.example.intellij-move</id>
     <name>Intellij Move</name>
+    <description>Intellij Move is a language plugin for the Move,
+        smart contract language for the Libra blockchain.</description>
     <vendor email="maxim.kurnikov@gmail.com">Maksim Kurnikov</vendor>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
