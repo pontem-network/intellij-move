@@ -22,6 +22,8 @@
                                 implementationClass="org.move.ide.MvHighlighter"/>
         <lang.commenter language="Move"
                         implementationClass="org.move.ide.MvCommenter"/>
+        <completion.contributor language="Move"
+                                implementationClass="org.move.lang.core.completion.MvKeywordCompletionContributor"/>
     </extensions>
 
     <actions>

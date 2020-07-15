@@ -30,7 +30,7 @@ LINE_COMMENT=("//".*\n)|("//".*\Z)
 BLOCK_COMMENT="/"\*(.|[ \t\n\x0B\f\r])*\*"/"
 ADDRESS_LITERAL=0x[0-9a-fA-F]{1,40}
 BOOL_LITERAL=(true)|(false)
-INTEGER_LITERAL=0|[1-9][0-9]*
+INTEGER_LITERAL=0|[1-9][0-9]*((u8)|(u64)|(u128))?
 HEX_STRING_LITERAL=x\"([A-F0-9a-f]+)\"
 BYTE_STRING_LITERAL=b\"(.*)\"
 IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
@@ -51,16 +51,16 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "as"                       { return AS; }
   "mut"                      { return MUT; }
   "copyable"                 { return COPYABLE; }
-  "loop"                     { return LOOP; }
-  "if"                       { return IF; }
-  "else"                     { return ELSE; }
   "let"                      { return LET; }
-  "continue"                 { return CONTINUE; }
-  "break"                    { return BREAK; }
-  "return"                   { return RETURN; }
-  "abort"                    { return ABORT; }
   "copy"                     { return COPY; }
   "move"                     { return MOVE; }
+  "return"                   { return RETURN; }
+  "abort"                    { return ABORT; }
+  "break"                    { return BREAK; }
+  "continue"                 { return CONTINUE; }
+  "if"                       { return IF; }
+  "else"                     { return ELSE; }
+  "loop"                     { return LOOP; }
 
   {WHITESPACE}               { return WHITESPACE; }
   {LINE_COMMENT}             { return LINE_COMMENT; }
