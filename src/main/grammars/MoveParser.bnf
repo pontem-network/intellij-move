@@ -85,10 +85,17 @@ FunctionDef ::= public? fun IDENTIFIER TypeParameterList?
 }
 
 // trailing comma is allowed
-FunctionParams ::= '(' (FunctionParam ','?)* ')' {
-    pin = 1
+FunctionParams ::= '(' FunctionParamsBody ')' { pin = 1 }
+private FunctionParamsBody ::= (FunctionParam ','?)* {
+    recoverWhile = "FunctionParamsBody_recover"
 }
-FunctionParam ::= IDENTIFIER TypeAscription
+private FunctionParamsBody_recover ::= !')'
+
+FunctionParam ::= IDENTIFIER TypeAscription {
+    pin = 1
+    recoverWhile = "FunctionParams_recover"
+}
+private FunctionParams_recover ::= !(','|')')
 
 // u8 | (u8,) | (u8, u8) | (u8, u8,)
 // tuples only allowed as a return types
@@ -156,7 +163,11 @@ private StatementItem ::= IfStatement | LoopStatement | WhileStatement
 IfStatement ::= IfExpr ';'
 LoopStatement ::= LoopExpr ';'
 WhileStatement ::= WhileExpr ';'
-LetStatement ::= LetExpr ';'
+
+LetStatement ::= LetStatementInner ';'
+private LetStatementInner ::= LetExpr { recoverWhile = "LetStatementInner_recover"}
+private LetStatementInner_recover ::= !';'
+
 AssignmentStatement ::= AssignmentExpr ';'
 ExprStatement ::= Expr ';'
 

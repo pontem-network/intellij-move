@@ -7,6 +7,7 @@ module M {
             loop {
                 let my_local = 0;
                 if (my_local >= 0) { break; };
+
             };
             x = 1
         };
