@@ -39,19 +39,21 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 <YYINITIAL> {
   {WHITE_SPACE}              { return WHITE_SPACE; }
 
-  "{"                        { return LBRACE; }
-  "}"                        { return RBRACE; }
-  "["                        { return LBRACK; }
-  "]"                        { return RBRACK; }
-  "("                        { return LPAREN; }
-  ")"                        { return RPAREN; }
-  "::"                       { return COLONCOLON; }
+  "{"                        { return L_BRACE; }
+  "}"                        { return R_BRACE; }
+  "["                        { return L_BRACK; }
+  "]"                        { return R_BRACK; }
+  "("                        { return L_PAREN; }
+  ")"                        { return R_PAREN; }
+  "::"                       { return COLON_COLON; }
   ":"                        { return COLON; }
-  "<="                       { return LESSEQUAL; }
+  "<="                       { return LESS_EQUAL; }
+  "<<"                       { return LESS_LESS; }
   "<"                        { return LESS; }
-  ">="                       { return GREATEREQUAL; }
+  ">="                       { return GREATER_EQUAL; }
+  ">>"                       { return GREATER_GREATER; }
   ">"                        { return GREATER; }
-  "=="                       { return EQUALEQUAL; }
+  "=="                       { return EQUAL_EQUAL; }
   "="                        { return EQUAL; }
   "script"                   { return SCRIPT; }
   "address"                  { return ADDRESS; }
