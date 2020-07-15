@@ -34,6 +34,12 @@ INTEGER_LITERAL=0|[1-9][0-9]*((u8)|(u64)|(u128))?
 HEX_STRING_LITERAL=x\"([A-F0-9a-f]+)\"
 BYTE_STRING_LITERAL=b\"(.*)\"
 IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
+LESSEQUAL=<=
+LESS=<
+GREATEREQUAL=>=
+GREATER=>
+EQUALEQUAL===
+EQUAL==
 
 %%
 <YYINITIAL> {
@@ -51,7 +57,6 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "as"                       { return AS; }
   "mut"                      { return MUT; }
   "copyable"                 { return COPYABLE; }
-  "let"                      { return LET; }
   "copy"                     { return COPY; }
   "move"                     { return MOVE; }
   "return"                   { return RETURN; }
@@ -61,6 +66,8 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "if"                       { return IF; }
   "else"                     { return ELSE; }
   "loop"                     { return LOOP; }
+  "while"                    { return WHILE; }
+  "let"                      { return LET; }
 
   {WHITESPACE}               { return WHITESPACE; }
   {LINE_COMMENT}             { return LINE_COMMENT; }
@@ -71,6 +78,12 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   {HEX_STRING_LITERAL}       { return HEX_STRING_LITERAL; }
   {BYTE_STRING_LITERAL}      { return BYTE_STRING_LITERAL; }
   {IDENTIFIER}               { return IDENTIFIER; }
+  {LESSEQUAL}                { return LESSEQUAL; }
+  {LESS}                     { return LESS; }
+  {GREATEREQUAL}             { return GREATEREQUAL; }
+  {GREATER}                  { return GREATER; }
+  {EQUALEQUAL}               { return EQUALEQUAL; }
+  {EQUAL}                    { return EQUAL; }
 
 }
 
