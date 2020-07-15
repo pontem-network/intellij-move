@@ -4,7 +4,6 @@ import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.openapi.project.DumbAware
 import com.intellij.patterns.PlatformPatterns
-import org.move.lang.MoveElementTypes
 
 class MvKeywordCompletionContributor : CompletionContributor(), DumbAware {
     init {
@@ -21,13 +20,21 @@ class MvKeywordCompletionContributor : CompletionContributor(), DumbAware {
                 "abort",
                 "return",
                 "copy",
-                "move"
+                "move",
+                "break",
+                "continue",
+                "as"
             )
         )
         extend(
             CompletionType.BASIC,
             PlatformPatterns.psiElement(),
             MvKeywordCompletionProvider("address", "module", "script")
+        )
+        extend(
+            CompletionType.BASIC,
+            PlatformPatterns.psiElement(),
+            MvKeywordCompletionProvider("public", "native", "fun", "resource", "struct", "const")
         )
     }
 

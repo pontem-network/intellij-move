@@ -56,6 +56,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "script"                   { return SCRIPT; }
   "address"                  { return ADDRESS; }
   "module"                   { return MODULE; }
+  "const"                    { return CONST; }
   "public"                   { return PUBLIC; }
   "fun"                      { return FUN; }
   "acquires"                 { return ACQUIRES; }

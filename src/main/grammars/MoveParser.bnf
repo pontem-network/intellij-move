@@ -60,7 +60,7 @@
 
 File ::= (ScriptBlock)+ | (AddressBlock | ModuleDef)*
 
-ScriptBlock ::= script '{' (Import | FunctionDef)* '}' {
+ScriptBlock ::= script '{' (ImportDef | FunctionDef)* '}' {
     pin = "script"
 }
 AddressBlock ::= address ADDRESS_LITERAL '{' ModuleDef* '}' {
@@ -69,7 +69,13 @@ AddressBlock ::= address ADDRESS_LITERAL '{' ModuleDef* '}' {
 ModuleDef ::= module IDENTIFIER '{' ModuleItem* '}' {
     pin = "module"
 }
-private ModuleItem ::= Import | StructDef | FunctionDef
+private ModuleItem ::= ImportDef | StructDef | FunctionDef | ConstDef
+
+ConstDef ::= const ConstDefInner ';' { pin = 1 }
+private ConstDefInner ::= IDENTIFIER TypeAscription '=' Expr {
+    recoverWhile = "ConstDefInner_recover"
+}
+private ConstDefInner_recover ::= !';'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions
@@ -121,13 +127,12 @@ StructFieldDef ::= IDENTIFIER TypeAscription
 // Imports
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // 'use 0x0::Transaction as MyTransaction'
-Import ::= use ADDRESS_LITERAL '::' IDENTIFIER ('::' IDENTIFIER)? ImportAlias? ';' {
+ImportDef ::= use ADDRESS_LITERAL '::' IDENTIFIER ('::' IDENTIFIER)? ImportAlias? ';' {
     pin = "use"
 }
 ImportAlias ::= as IDENTIFIER { pin = 1 }
 
 // Types
-LetTypeAscription ::= ':' Type { pin = 1 }
 TypeAscription ::= ':' Type { pin = 1 }
 
 Type ::= TupleType | TypeReference
@@ -301,7 +306,7 @@ ElseBlock ::= else AnyBlockItem { pin = 1 }
 LoopExpr ::= loop AnyBlockItem { pin = 1 }
 WhileExpr ::= while IfCondition AnyBlockItem { pin = 1 }
 AssignmentExpr ::= Pattern Initializer { pin = 2 }
-LetExpr ::= let mut? Pattern LetTypeAscription? Initializer? {
+LetExpr ::= let mut? Pattern TypeAscription? Initializer? {
     pin = 1
 }
 
