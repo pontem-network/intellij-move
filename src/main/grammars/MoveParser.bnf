@@ -27,12 +27,20 @@
 
         IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
 
-        LESSEQUAL='regexp:<='
-        LESS='regexp:<'
-        GREATEREQUAL='regexp:>='
-        GREATER='regexp:>'
-        EQUALEQUAL='regexp:=='
-        EQUAL='regexp:='
+        LBRACE      =  '{'
+        RBRACE      =  '}'
+        LBRACK      =  '['
+        RBRACK      =  ']'
+        LPAREN      =  '('
+        RPAREN      =  ')'
+        COLONCOLON  =  '::'
+        COLON       =  ':'
+        LESSEQUAL   =  '<='
+        LESS        =  '<'
+        GREATEREQUAL=  '>='
+        GREATER     =  '>'
+        EQUALEQUAL  =  '=='
+        EQUAL       =  '='
 //        LOOP_KW='loop'
 //        BREAK_KW='break'
 //        CONTINUE_KW='continue'
@@ -95,12 +103,11 @@ AcquiresType ::= acquires PathExpr (',' PathExpr)* ','? { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 StructDef ::= resource? struct IDENTIFIER TypeParameterList?
                 '{'
-                StructFieldDef? (',' StructFieldDef)*
+                StructFieldDef? (',' StructFieldDef)* ','?
                 '}'
 {
     pin = "struct"
 }
-
 StructFieldDef ::= IDENTIFIER TypeAscription
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -178,7 +185,7 @@ Expr ::= logical_or_group
         | BitAndExpr
         | AddExprItem
         | MulExprItem
-        | (CastExpr | AnnotatedExpr)
+        | CastExpr
         | UnaryExpr
         | BorrowExpr
         | AtomExpr
@@ -199,11 +206,12 @@ private AtomExpr ::= IfExpr
                     | WhileExpr
                     | LetExpr
                     | AssignmentExpr
+                    | TupleLiteralExpr
+                    | AnnotatedExpr
                     | StructLiteralExpr
                     | DotExpr
                     | CallExpr
                     | PathExpr
-                    | TupleLiteralExpr
                     | LiteralExpr
                     | ParensExpr
                     | BlockExpr
@@ -241,8 +249,21 @@ AbortExpr ::= abort Expr
 BreakExpr ::= break
 ContinueExpr ::= continue
 
-StructLiteralExpr ::= PathExpr '{' (StructLiteralExprField ','?)* '}'
-StructLiteralExprField ::= IDENTIFIER ':' Expr
+StructLiteralExpr ::= PathExpr '{' StructLiteralExprBody '}'
+{
+    pin = 2
+}
+private StructLiteralExprBody ::= (StructLiteralExprField ','?)*
+{
+    recoverWhile = "StructLiteralExprBody_recover"
+}
+private StructLiteralExprBody_recover ::= !'}'
+
+StructLiteralExprField ::= IDENTIFIER (':' Expr)? {
+    pin = 1
+    recoverWhile = StructLiteralExprField_recover
+}
+private StructLiteralExprField_recover ::= !(','|'}')
 
 ParensExpr ::= '(' Expr ')'
 //private ParensExpr_recovery ::= !':'
