@@ -2,7 +2,8 @@
     <id>org.example.intellij-move</id>
     <name>Intellij Move</name>
     <description>Intellij Move is a language plugin for the Move,
-        smart contract language for the Libra blockchain.</description>
+        smart contract language for the Libra blockchain.
+    </description>
     <vendor email="maxim.kurnikov@gmail.com">Maksim Kurnikov</vendor>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
@@ -19,6 +20,8 @@
                                implementationClass="org.move.lang.MoveParserDefinition"/>
         <lang.syntaxHighlighter language="Move"
                                 implementationClass="org.move.ide.MvHighlighter"/>
+        <lang.commenter language="Move"
+                        implementationClass="org.move.ide.MvCommenter"/>
     </extensions>
 
     <actions>

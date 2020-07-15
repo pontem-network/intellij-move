@@ -63,7 +63,7 @@ FunctionDef ::= public? fun IDENTIFIER TypeParameterList?
                     FunctionParams
                     ReturnType?
                     AcquiresType?
-                    '{' StatementItem* Expr? '}'
+                    FunctionBodyBlock
 {
     pin = "fun"
     name = "function declaration"
@@ -84,6 +84,7 @@ TupleType ::= '(' (TypeReference ','?)* ','? ')' { pin = 1 }
 // acquires T, Record
 AcquiresType ::= acquires PathExpr (',' PathExpr)* ','? { pin = 1 }
 
+FunctionBodyBlock ::= '{' BlockBody '}' { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -134,7 +135,8 @@ if_statement ::= if '(' Expr ')' Block ElseBlock? ';' {
 }
 ElseBlock ::= else Block { pin = 1 }
 
-Block ::= '{'? StatementItem* Expr? '}'?
+Block ::= '{'? BlockBody '}'?
+private BlockBody ::= StatementItem* Expr?
 
 Pattern ::= TuplePattern | StructPattern | IDENTIFIER
 
