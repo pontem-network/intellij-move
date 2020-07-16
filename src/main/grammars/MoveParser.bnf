@@ -58,7 +58,7 @@
 
 File ::= (ScriptBlock)+ | (AddressBlock | ModuleDef)*
 
-ScriptBlock ::= script '{' (ImportDef | FunctionDef)* '}' {
+ScriptBlock ::= script '{' (ImportStatement | FunctionDef)* '}' {
     pin = 1
 }
 AddressBlock ::= address ADDRESS_LITERAL '{' ModuleDef* '}' {
@@ -67,7 +67,7 @@ AddressBlock ::= address ADDRESS_LITERAL '{' ModuleDef* '}' {
 ModuleDef ::= module IDENTIFIER '{' ModuleItem* '}' {
     pin = 1
 }
-private ModuleItem ::= ImportDef | StructDef | FunctionDef | NativeFunctionDef | ConstDef
+private ModuleItem ::= ImportStatement | StructDef | FunctionDef | NativeFunctionDef | ConstDef
 
 ConstDef ::= const ConstDefInner ';' { pin = 1 }
 private ConstDefInner ::= IDENTIFIER TypeAscription '=' Expr {
@@ -130,19 +130,23 @@ StructFieldDef ::= IDENTIFIER TypeAscription
 // Imports
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // 'use 0x0::Transaction as MyTransaction;'
-ImportDef ::= use ImportDefBody ';' {
-    pin = 1
-}
-private ImportDefBody ::= ADDRESS_LITERAL '::' IDENTIFIER ('::' IDENTIFIER)? ImportAlias? {
-    recoverWhile = "ImportDefBody_recover"
-}
-private ImportDefBody_recover ::= !(';' | ModuleTopLevelKeywords_recover)
-//noinspection BnfUnusedRule
-private ModuleTopLevelKeywords_recover ::= 'use' | 'public' | 'native' | 'fun' | 'resource' | 'struct'
+ImportStatement ::= use ADDRESS_LITERAL '::' (ModuleMemberImport | ModuleImport) ';' { pin = 1 }
 
+ModuleImport ::= Import
+ModuleMemberImport ::= IDENTIFIER '::' (Import | MultipleImport) { pin = 2 }
+
+private MultipleImport ::= '{' Import MultipleImportSeq ','? '}' { pin = 1 }
+private MultipleImportSeq ::= (',' Import)* {
+    recoverWhile = "MultipleImportSeq_recover"
+}
+private MultipleImportSeq_recover ::= !((','? '}') | ';')
+
+Import ::= IDENTIFIER ImportAlias? { pin = 1 }
 ImportAlias ::= as IDENTIFIER { pin = 1 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // Types
+///////////////////////////////////////////////////////////////////////////////////////////////////
 TypeAscription ::= ':' Type { pin = 1 }
 
 Type ::= TupleType | TypeReference
