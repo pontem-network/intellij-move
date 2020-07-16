@@ -67,7 +67,7 @@ AddressBlock ::= address ADDRESS_LITERAL '{' ModuleDef* '}' {
 ModuleDef ::= module IDENTIFIER '{' ModuleItem* '}' {
     pin = 1
 }
-private ModuleItem ::= ImportDef | StructDef | FunctionDef | ConstDef
+private ModuleItem ::= ImportDef | StructDef | FunctionDef | NativeFunctionDef | ConstDef
 
 ConstDef ::= const ConstDefInner ';' { pin = 1 }
 private ConstDefInner ::= IDENTIFIER TypeAscription '=' Expr {
@@ -78,6 +78,11 @@ private ConstDefInner_recover ::= !';'
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+NativeFunctionDef ::= native public? fun IDENTIFIER TypeParameterList?
+                     FunctionParams
+                     ReturnType?
+                     AcquiresType? ';' { pin = 1 }
+
 FunctionDef ::= public? fun IDENTIFIER TypeParameterList?
                     FunctionParams
                     ReturnType?
@@ -124,10 +129,17 @@ StructFieldDef ::= IDENTIFIER TypeAscription
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Imports
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// 'use 0x0::Transaction as MyTransaction'
-ImportDef ::= use ADDRESS_LITERAL '::' IDENTIFIER ('::' IDENTIFIER)? ImportAlias? ';' {
-    pin = "use"
+// 'use 0x0::Transaction as MyTransaction;'
+ImportDef ::= use ImportDefBody ';' {
+    pin = 1
 }
+private ImportDefBody ::= ADDRESS_LITERAL '::' IDENTIFIER ('::' IDENTIFIER)? ImportAlias? {
+    recoverWhile = "ImportDefBody_recover"
+}
+private ImportDefBody_recover ::= !(';' | ModuleTopLevelKeywords_recover)
+//noinspection BnfUnusedRule
+private ModuleTopLevelKeywords_recover ::= 'use' | 'public' | 'native' | 'fun' | 'resource' | 'struct'
+
 ImportAlias ::= as IDENTIFIER { pin = 1 }
 
 // Types

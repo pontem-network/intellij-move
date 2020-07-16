@@ -12,5 +12,5 @@ fun tokenSetOf(vararg tokens: IElementType) = TokenSet.create(*tokens)
 val MV_KEYWORDS = tokenSetOf(
     LET, MUT, ABORT, BREAK, CONTINUE, IF, ELSE, LOOP, RETURN, AS, WHILE,
     SCRIPT, ADDRESS, MODULE, PUBLIC, FUN, STRUCT, ACQUIRES, USE, RESOURCE, COPYABLE,
-    COPY, MOVE, CONST
+    COPY, MOVE, CONST, NATIVE
 )

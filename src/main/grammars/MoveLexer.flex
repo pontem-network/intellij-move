@@ -63,6 +63,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "address"                  { return ADDRESS; }
   "module"                   { return MODULE; }
   "const"                    { return CONST; }
+  "native"                   { return NATIVE; }
   "public"                   { return PUBLIC; }
   "fun"                      { return FUN; }
   "acquires"                 { return ACQUIRES; }
