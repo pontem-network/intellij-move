@@ -1,15 +1,12 @@
 {
-    parserClass="org.move.lang.MoveParser"
+    parserClass="org.move.lang.MvParser"
     psiClassPrefix="Mv"
     psiImplClassSuffix="Impl"
-//
-//  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
-//
 
     psiPackage="org.move.lang.core.psi"
     psiImplPackage="org.move.lang.core.psi.impl"
 
-    elementTypeHolderClass="org.move.lang.MoveElementTypes"
+    elementTypeHolderClass="org.move.lang.MvElementTypes"
 
     elementTypeClass="org.move.lang.core.MvElementType"
     tokenTypeClass="org.move.lang.core.MvTokenType"
@@ -43,13 +40,6 @@
         GREATER         =  '>'
         EQUAL_EQUAL      =  '=='
         EQUAL           =  '='
-//        LOOP_KW='loop'
-//        BREAK_KW='break'
-//        CONTINUE_KW='continue'
-//        LET_KW='let'
-//        MUT_KW='mut'
-//        IF_KW='if'
-//        ELSE_KW='else'
     ]
 }
 
@@ -57,7 +47,6 @@
 //
 //   * tokens are lowercase: for, if, identifier
 //   * rules are PascalCase: StructItem, EnumVariant
-//   * macro rules are snake_cased: list_item
 //   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
 
 File ::= (ScriptBlock)+ | (AddressBlock | ModuleDef)*
@@ -201,6 +190,7 @@ Expr ::= logical_or_group
         | BitOrExpr
         | BitXorExpr
         | BitAndExpr
+        | (LeftShiftExpr | RightShiftExpr)
         | AddExprItem
         | MulExprItem
         | CastExpr
@@ -256,6 +246,9 @@ ModExpr ::= Expr '%' Expr
 
 PlusExpr ::= Expr '+' Expr
 MinusExpr ::= Expr '-' Expr
+
+LeftShiftExpr ::= Expr '<<' Expr
+RightShiftExpr ::= Expr '>>' Expr
 
 BangExpr ::= '!' Expr
 DerefExpr ::= '*' Expr

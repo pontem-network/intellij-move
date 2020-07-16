@@ -3,7 +3,7 @@ package org.move.lang.core
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.lang.MoveLanguage
-import org.move.lang.MoveElementTypes.*
+import org.move.lang.MvElementTypes.*
 
 class MvTokenType(debugName: String) : IElementType(debugName, MoveLanguage)
 
