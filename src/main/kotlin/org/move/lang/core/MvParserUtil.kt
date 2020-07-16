@@ -44,5 +44,4 @@ object MvParserUtil : GeneratedParserUtilBase() {
         marker.collapse(tokenType)
         return true
     }
-
 }

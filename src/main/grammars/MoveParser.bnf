@@ -59,13 +59,13 @@
 File ::= (ScriptBlock)+ | (AddressBlock | ModuleDef)*
 
 ScriptBlock ::= script '{' (ImportDef | FunctionDef)* '}' {
-    pin = "script"
+    pin = 1
 }
 AddressBlock ::= address ADDRESS_LITERAL '{' ModuleDef* '}' {
-    pin = "address"
+    pin = 1
 }
 ModuleDef ::= module IDENTIFIER '{' ModuleItem* '}' {
-    pin = "module"
+    pin = 1
 }
 private ModuleItem ::= ImportDef | StructDef | FunctionDef | ConstDef
 
@@ -134,7 +134,7 @@ ImportAlias ::= as IDENTIFIER { pin = 1 }
 TypeAscription ::= ':' Type { pin = 1 }
 
 Type ::= TupleType | TypeReference
-TypeReference ::= ('&' mut?)? PathExpr {
+TypeReference ::= ('&' mut?)? (address | PathExpr) {
     name = "type"
 }
 TupleType ::= '(' (Type ','?)* ','? ')' { pin = 1 }
