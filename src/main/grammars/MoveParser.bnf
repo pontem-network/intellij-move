@@ -159,20 +159,27 @@ StructPatternFieldBinding ::= ':' (StructPattern | IDENTIFIER) { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Statements
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-private StatementItem ::= IfStatement | LoopStatement | WhileStatement
-                            | LetStatement | AssignmentStatement
-                            | ExprStatement
+//private Statement ::= IfStatement | LoopStatement | WhileStatement
+//                            | LetStatement | AssignmentStatement
+//                            | ExprStatement
+Statement ::= StatementExpr ';'
+private StatementExpr ::= IfExpr | LoopExpr | WhileExpr | LetExpr | AssignmentExpr | Expr {
+    recoverWhile = "StatementExpr_recover"
+}
+private StatementExpr_recover ::= '!;'
 
-IfStatement ::= IfExpr ';'
-LoopStatement ::= LoopExpr ';'
-WhileStatement ::= WhileExpr ';'
+//IfStatement ::= IfExpr ';'
+//LoopStatement ::= LoopExpr ';'
+//WhileStatement ::= WhileExpr ';'
 
-LetStatement ::= LetStatementInner ';'
-private LetStatementInner ::= LetExpr { recoverWhile = "LetStatementInner_recover"}
-private LetStatementInner_recover ::= !';'
+//private StatementBody ::= IfExpr
 
-AssignmentStatement ::= AssignmentExpr ';'
-ExprStatement ::= Expr ';'
+//LetStatement ::= LetStatementInner ';'
+//private LetStatementInner ::= LetExpr { recoverWhile = "LetStatementInner_recover"}
+//private LetStatementInner_recover ::= !';'
+
+//AssignmentStatement ::= AssignmentExpr ';'
+//ExprStatement ::= Expr ';'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
@@ -191,9 +198,9 @@ Block ::= '{' BlockBody '}' {
 // Expressions
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // from lowest to highest
-Expr ::= logical_or_group
-        | logical_and_group
-        | logical_eq_group
+Expr ::= OrExpr
+        | AndExpr
+        | LogicalEqExprItem
         | BitOrExpr
         | BitXorExpr
         | BitAndExpr
@@ -210,9 +217,7 @@ Expr ::= logical_or_group
 
 private MulExprItem ::= DivExpr | MulExpr | ModExpr
 private AddExprItem ::= PlusExpr | MinusExpr
-private logical_or_group ::= OrExpr
-private logical_and_group ::= AndExpr
-private logical_eq_group ::= EqualsExpr | NotEqualsExpr | LessExpr | LessEqualsExpr | GreaterExpr | GreaterEqualsExpr
+private LogicalEqExprItem ::= EqualsExpr | NotEqualsExpr | LessExpr | LessEqualsExpr | GreaterExpr | GreaterEqualsExpr
 
 private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
                       | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
@@ -221,8 +226,8 @@ private AtomExpr ::= IfExpr
                     | WhileExpr
                     | LetExpr
                     | AssignmentExpr
-                    | TupleLiteralExpr
                     | AnnotatedExpr
+                    | TupleLiteralExpr
                     | StructLiteralExpr
                     | DotExpr
                     | CallExpr
@@ -247,7 +252,9 @@ BitAndExpr ::= Expr (!andand '&') Expr
 BitXorExpr ::= Expr '^' Expr
 
 CastExpr ::= Expr as Type
-AnnotatedExpr ::= '(' Expr TypeAscription ')' { pin = 3 }
+
+private AnnotatedExpPrefix ::= '(' Expr ':'
+AnnotatedExpr ::= AnnotatedExpPrefix Type ')' { pin = 1 }
 
 DivExpr ::= Expr '/' Expr
 MulExpr ::= Expr '*' Expr
@@ -285,8 +292,9 @@ StructLiteralExprField ::= IDENTIFIER (':' Expr)? {
 }
 private StructLiteralExprField_recover ::= !(','|'}')
 
-ParensExpr ::= '(' Expr ')'
-//private ParensExpr_recovery ::= !':'
+ParensExpr ::= '(' Expr !':' ')'
+//private ParensExprBody ::= Expr { recoverWhile = "ParensExprBody_recover"}
+//private ParensExprBody_recover ::= !(':'|')')
 
 TupleLiteralExpr ::= EmptyTupleExpr | ('(' Expr ',' (Expr ','?)* ')')
 EmptyTupleExpr ::= '(' ')'
@@ -296,7 +304,7 @@ LiteralExpr ::= BOOL_LITERAL
                 | BYTE_STRING_LITERAL
                 | ADDRESS_LITERAL
 BlockExpr ::= '{' BlockBody '}' { pin = 1 }
-private BlockBody ::= (StatementItem)* Expr? { recoverWhile = "BlockBody_recover" }
+private BlockBody ::= (Statement)* Expr? { recoverWhile = "BlockBody_recover" }
 private BlockBody_recover ::= !'}'
 
 CallExpr ::= PathExpr CallArguments { pin = 1 }
@@ -304,6 +312,8 @@ CallExpr ::= PathExpr CallArguments { pin = 1 }
 CallArguments ::= '(' Expr? (',' Expr)? ')' { pin = 1 }
 
 IfExpr ::= if IfCondition AnyBlockItem ElseBlock? { pin = 1 }
+//private IfExprBody ::= AnyBlockItem
+//private IfExprBody_recover ::=
 IfCondition ::= '(' Expr ')' { pin = 1 }
 ElseBlock ::= else AnyBlockItem { pin = 1 }
 
