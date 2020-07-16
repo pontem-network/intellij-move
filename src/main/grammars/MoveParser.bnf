@@ -5,6 +5,7 @@
 
     psiPackage="org.move.lang.core.psi"
     psiImplPackage="org.move.lang.core.psi.impl"
+    parserUtilClass="org.move.lang.core.MvParserUtil"
 
     elementTypeHolderClass="org.move.lang.MvElementTypes"
 
@@ -13,7 +14,7 @@
     extends(".*Expr")=Expr
     tokens = [
         WHITESPACE='regexp:[ \n\t\r\f]'
-        LINE_COMMENT='regexp:(//.*\n)|(//.*\Z)'
+        LINE_COMMENT='regexp:(//.*\n)|(//.*\R)'
         BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
 
         ADDRESS_LITERAL='regexp:0x[0-9a-fA-F]{1,40}'
@@ -32,14 +33,20 @@
         R_PAREN          =  ')'
         COLON_COLON      =  '::'
         COLON           =  ':'
-        LESS_EQUAL       =  '<='
-        LESS_LESS        =  '<<'
-        LESS            =  '<'
-        GREATER_EQUAL    =  '>='
-        GREATER_GREATER  =  '>>'
-        GREATER         =  '>'
-        EQUAL_EQUAL      =  '=='
-        EQUAL           =  '='
+        LT            =  '<'
+        GT         =  '>'
+        AND = '&'
+        OR = '|'
+        EQ_EQ = '=='
+        EQ = '='
+
+        // Contextual tokens
+        LT_EQ           = '<='
+        LT_LT           = '<<'
+        GT_EQ           = '>='
+        GT_GT           = '>>'
+        OR_OR           = '||'
+        AND_AND         = '&&'
     ]
 }
 
@@ -224,17 +231,19 @@ private AtomExpr ::= IfExpr
                     | ParensExpr
                     | BlockExpr
 
-OrExpr ::= Expr '||' Expr
-AndExpr ::= Expr '&&' Expr
 EqualsExpr ::= Expr '==' Expr
 NotEqualsExpr ::= Expr '!=' Expr
-LessExpr ::= Expr '<' Expr
-GreaterExpr ::= Expr '>' Expr
-LessEqualsExpr ::= Expr '<=' Expr
-GreaterEqualsExpr ::= Expr '>=' Expr
 
-BitOrExpr ::= Expr '|' Expr
-BitAndExpr ::= Expr '&' Expr
+OrExpr ::= Expr oror Expr
+AndExpr ::= Expr andand Expr
+
+LessExpr ::= Expr (!ltlt '<') Expr
+GreaterExpr ::= Expr (!gtgt '>') Expr
+LessEqualsExpr ::= Expr lteq Expr
+GreaterEqualsExpr ::= Expr gteq Expr
+
+BitOrExpr ::= Expr (!oror '|') Expr
+BitAndExpr ::= Expr (!andand '&') Expr
 BitXorExpr ::= Expr '^' Expr
 
 CastExpr ::= Expr as Type
@@ -247,8 +256,8 @@ ModExpr ::= Expr '%' Expr
 PlusExpr ::= Expr '+' Expr
 MinusExpr ::= Expr '-' Expr
 
-LeftShiftExpr ::= Expr '<<' Expr
-RightShiftExpr ::= Expr '>>' Expr
+LeftShiftExpr ::= Expr ltlt Expr
+RightShiftExpr ::= Expr gtgt Expr
 
 BangExpr ::= '!' Expr
 DerefExpr ::= '*' Expr
@@ -311,4 +320,11 @@ DotExpr ::= Expr '.' IDENTIFIER TypeArguments? CallArguments? { pin = 2 }
 PathExpr ::= (ADDRESS_LITERAL '::')? (IDENTIFIER '::')? IDENTIFIER TypeArguments?
 
 Initializer ::= '=' Expr { pin = 1 }
+
+private gtgt   ::= <<gtgtImpl>>
+private gteq   ::= <<gteqImpl>>
+private ltlt   ::= <<ltltImpl>>
+private lteq   ::= <<lteqImpl>>
+private oror   ::= <<ororImpl>>
+private andand ::= <<andandImpl>>
 

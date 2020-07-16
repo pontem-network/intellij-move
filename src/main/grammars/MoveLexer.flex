@@ -1,5 +1,6 @@
 package org.move.lang;
 
+import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
@@ -9,13 +10,13 @@ import static org.move.lang.MvElementTypes.*;
 %%
 
 %{
-  public _MoveLexer() {
+  public _MvLexer() {
     this((java.io.Reader)null);
   }
 %}
 
 %public
-%class _MoveLexer
+%class _MvLexer
 %implements FlexLexer
 %function advance
 %type IElementType
@@ -25,7 +26,7 @@ EOL=\R
 WHITE_SPACE=\s+
 
 WHITESPACE=[ \n\t\r\f]
-LINE_COMMENT=("//".*\n)|("//".*\Z)
+LINE_COMMENT=("//".*\n)|("//".*\R)
 BLOCK_COMMENT="/"\*(.|[ \t\n\x0B\f\r])*\*"/"
 ADDRESS_LITERAL=0x[0-9a-fA-F]{1,40}
 BOOL_LITERAL=(true)|(false)
@@ -46,14 +47,18 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   ")"                        { return R_PAREN; }
   "::"                       { return COLON_COLON; }
   ":"                        { return COLON; }
-  "<="                       { return LESS_EQUAL; }
-  "<<"                       { return LESS_LESS; }
-  "<"                        { return LESS; }
-  ">="                       { return GREATER_EQUAL; }
-  ">>"                       { return GREATER_GREATER; }
-  ">"                        { return GREATER; }
-  "=="                       { return EQUAL_EQUAL; }
-  "="                        { return EQUAL; }
+  "<"                        { return LT; }
+  ">"                        { return GT; }
+  "&"                        { return AND; }
+  "|"                        { return OR; }
+  "=="                       { return EQ_EQ; }
+  "="                        { return EQ; }
+//  "<="                       { return LT_EQ; }
+//  "<<"                       { return LT_LT; }
+//  ">="                       { return GT_EQ; }
+//  ">>"                       { return GT_GT; }
+//  "||"                       { return OR_OR; }
+//  "&&"                       { return AND_AND; }
   "script"                   { return SCRIPT; }
   "address"                  { return ADDRESS; }
   "module"                   { return MODULE; }
