@@ -47,12 +47,15 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   ")"                        { return R_PAREN; }
   "::"                       { return COLON_COLON; }
   ":"                        { return COLON; }
+  ";"                        { return SEMICOLON; }
+  ","                        { return COMMA; }
   "<"                        { return LT; }
   ">"                        { return GT; }
   "&"                        { return AND; }
   "|"                        { return OR; }
   "=="                       { return EQ_EQ; }
   "="                        { return EQ; }
+  "."                        { return DOT; }
 //  "<="                       { return LT_EQ; }
 //  "<<"                       { return LT_LT; }
 //  ">="                       { return GT_EQ; }

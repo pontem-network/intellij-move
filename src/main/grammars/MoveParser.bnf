@@ -33,12 +33,15 @@
         R_PAREN          =  ')'
         COLON_COLON      =  '::'
         COLON           =  ':'
+        SEMICOLON   =  ';'
+        COMMA       =  ','
         LT            =  '<'
         GT         =  '>'
         AND = '&'
         OR = '|'
         EQ_EQ = '=='
         EQ = '='
+        DOT         =  '.'
 
         // Contextual tokens
         LT_EQ           = '<='
@@ -56,17 +59,20 @@
 //   * rules are PascalCase: StructItem, EnumVariant
 //   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
 
-File ::= (ScriptBlock)+ | (AddressBlock | ModuleDef)*
+File ::= (ScriptDef)+ | (AddressDef | ModuleDef)*
 
-ScriptBlock ::= script '{' (ImportStatement | FunctionDef)* '}' {
+ScriptDef ::= script '{' (ImportStatement | FunctionDef)* '}' {
     pin = 1
 }
-AddressBlock ::= address ADDRESS_LITERAL '{' ModuleDef* '}' {
+AddressDef ::= address ADDRESS_LITERAL '{' ModuleDef* '}' {
     pin = 1
 }
-ModuleDef ::= module IDENTIFIER '{' ModuleItem* '}' {
+ModuleDef ::= module IDENTIFIER '{' ModuleItemSeq '}' {
     pin = 1
 }
+private ModuleItemSeq ::= ModuleItem* { recoverWhile = "ModuleItemSeq_recover" }
+private ModuleItemSeq_recover ::= !'}'
+
 private ModuleItem ::= ImportStatement | StructDef | FunctionDef | NativeFunctionDef | ConstDef
 
 ConstDef ::= const ConstDefInner ';' { pin = 1 }
