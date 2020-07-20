@@ -91,6 +91,8 @@ FunctionDef ::= public? fun IDENTIFIER TypeParameterList?
 {
     pin = "fun"
     name = "function declaration"
+    implements = [ "org.move.lang.core.psi.ext.MvNamedElement" ]
+    mixin = "org.move.lang.core.psi.ext.MvFunctionDefImplMixin"
 }
 
 // trailing comma is allowed
