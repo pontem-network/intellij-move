@@ -26,6 +26,8 @@
                                 implementationClass="org.move.lang.core.completion.MvKeywordCompletionContributor"/>
         <psi.referenceContributor language="Move"
                                   implementation="org.move.lang.core.completion.MvReferenceContributor"/>
+        <annotator language="Move"
+                   implementationClass="org.move.ide.annotator.MvErrorAnnotator"/>
     </extensions>
 
     <actions>

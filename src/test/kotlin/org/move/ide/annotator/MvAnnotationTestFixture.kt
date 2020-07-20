@@ -1,0 +1,39 @@
+/*
+ * Use of this source code is governed by the MIT license that can be
+ * found in the LICENSE file.
+ */
+
+package org.move.ide.annotator
+
+import com.intellij.testFramework.InspectionTestUtil
+import com.intellij.testFramework.fixtures.CodeInsightTestFixture
+import com.intellij.testFramework.fixtures.impl.BaseFixture
+import kotlin.reflect.KClass
+
+class MvAnnotationTestFixture(
+    private val codeInsightFixture: CodeInsightTestFixture,
+    private val annotatorClasses: List<KClass<out AnnotatorBase>> = emptyList()
+) : BaseFixture() {
+
+    override fun setUp() {
+        super.setUp()
+        annotatorClasses.forEach { AnnotatorBase.enableAnnotator(it.java, testRootDisposable) }
+    }
+
+    private fun replaceCaretMarker(text: String) = text.replace("/*caret*/", "<caret>")
+
+    private fun configureByText(text: String) {
+        codeInsightFixture.configureByText("main.move", replaceCaretMarker(text.trimIndent()))
+    }
+
+    fun check(
+        text: String,
+        checkWarn: Boolean = true,
+        checkInfo: Boolean = false,
+        checkWeakWarn: Boolean = false,
+        ignoreExtraHighlighting: Boolean = false
+    ) {
+        configureByText(text)
+        codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn, ignoreExtraHighlighting)
+    }
+}
