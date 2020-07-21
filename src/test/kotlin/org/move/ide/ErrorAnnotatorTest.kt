@@ -30,4 +30,11 @@ class ErrorAnnotatorTest : AnnotatorTestCase(ErrorAnnotator::class) {
         }
     """.trimIndent()
     )
+
+    fun `test duplicate module definition at the toplevel`() = checkError(
+        """
+        module <error descr="Duplicate definitions with name `MyModule`">MyModule</error> {}
+        module <error descr="Duplicate definitions with name `MyModule`">MyModule</error> {}
+    """.trimIndent()
+    )
 }
