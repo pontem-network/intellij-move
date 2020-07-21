@@ -138,13 +138,21 @@ AcquiresType ::= acquires PathExpr (',' PathExpr)* ','? { pin = 1 }
 // Structs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 StructDef ::= resource? struct identifier TypeParameterList?
-                '{'
-                StructFieldDef? (',' StructFieldDef)* ','?
-                '}'
+                '{' StructDef_body '}'
 {
     pin = "struct"
 }
-StructFieldDef ::= identifier TypeAscription
+private StructDef_body ::= (StructFieldDef (',' StructFieldDef)* ','?)?
+{
+    recoverWhile = "StructDef_body_recover"
+}
+private StructDef_body_recover ::= !'}'
+
+StructFieldDef ::= identifier StructFieldDef_type { pin = 1 }
+private StructFieldDef_type ::= TypeAscription {
+    recoverWhile = "StructFieldDef_type_recover"
+}
+private StructFieldDef_type_recover ::= !(','|'}')
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Imports
