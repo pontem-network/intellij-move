@@ -347,11 +347,11 @@ CallExpr ::= PathExpr CallArguments { pin = 1 }
 
 CallArguments ::= '(' Expr? (',' Expr)? ')' { pin = 1 }
 
-IfExpr ::= if Condition IfExprBody ElseBlock? { pin = 1 }
-private IfExprBody ::= AnyBlock {
-    recoverWhile = "IfExprBody_recover"
-}
-private IfExprBody_recover ::= !';'
+IfExpr ::= if Condition AnyBlock ElseBlock? { pin = 1 }
+//private IfExprBody ::= AnyBlock {
+//    recoverWhile = "IfExprBody_recover"
+//}
+//private IfExprBody_recover ::= !';'
 
 Condition ::= '(' ConditionBody ')' { pin = 1 }
 private ConditionBody ::= Expr { recoverWhile = "ConditionBody_recover" }
