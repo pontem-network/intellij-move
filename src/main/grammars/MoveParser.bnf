@@ -19,7 +19,7 @@
 
         ADDRESS_LITERAL='regexp:0x[0-9a-fA-F]{1,40}'
         BOOL_LITERAL='regexp:(true)|(false)'
-        INTEGER_LITERAL='regexp:0|[1-9][0-9]*((u8)|(u64)|(u128))?'
+        INTEGER_LITERAL='regexp:0*(0|[1-9][0-9]*((u8)|(u64)|(u128))?)'
         HEX_STRING_LITERAL='regexp:x"([A-F0-9a-f]+)"'
         BYTE_STRING_LITERAL='regexp:b"(.*)"'
 
@@ -228,11 +228,16 @@ private StatementExpr_recover ::= '!;'
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-private AnyBlock ::= Block | InlineBlock
 InlineBlock ::= Expr
-Block ::= '{' BlockBody '}' {
+Block ::= '{' Block_body '}' {
     pin = 1
 }
+private AnyBlock ::= Block | InlineBlock
+
+BlockExpr ::= '{' Block_body '}' { pin = 1 }
+private Block_body ::= (Statement)* Expr? { recoverWhile = "Block_body_recover" }
+private Block_body_recover ::= !'}'
+
 //Block ::= '{' (StatementItem ';')* Expr? '}' {
 //    pin = 1
 //    name = "block"
@@ -269,15 +274,15 @@ private AtomExpr ::= IfExpr
                     | LoopExpr
                     | WhileExpr
                     | LetExpr
-                    | AssignmentExpr
                     | AnnotatedExpr
                     | TupleLiteralExpr
+                    | ParensExpr
+                    | AssignmentExpr
                     | StructLiteralExpr
                     | DotExpr
                     | CallExpr
                     | PathExpr
                     | LiteralExpr
-                    | ParensExpr
                     | BlockExpr
 
 EqualsExpr ::= Expr '==' Expr
@@ -336,20 +341,25 @@ StructLiteralExprField ::= identifier (':' Expr)? {
 }
 private StructLiteralExprField_recover ::= !(','|'}')
 
-ParensExpr ::= '(' Expr !':' ')'
+ParensExpr ::= '(' Expr ')'
+//private ParensExpr_body ::= Expr { recoverWhile = "ParensExpr_body_recover" }
+//private ParensExpr_body_recover ::= !(':'|')'|',')
 //private ParensExprBody ::= Expr { recoverWhile = "ParensExprBody_recover"}
 //private ParensExprBody_recover ::= !(':'|')')
 
-TupleLiteralExpr ::= EmptyTupleExpr | ('(' Expr ',' (Expr ','?)* ')')
-EmptyTupleExpr ::= '(' ')'
+//TupleLiteralExpr ::= '('
+//TupleLiteralExpr ::= '(' TupleLiteralExpr? ')' { pin = 2 }
+//private TupleLiteralExpr_body ::= (Expr ',' (Expr ','?)*)?
+
+TupleLiteralExpr ::= EmptyTupleExpr | TupleExpr
+private EmptyTupleExpr ::= '(' ')'
+private TupleExpr ::= '(' Expr ',' (Expr ','?)* ')' { pin = 3 }
+
 LiteralExpr ::= BOOL_LITERAL
                 | INTEGER_LITERAL
                 | HEX_STRING_LITERAL
                 | BYTE_STRING_LITERAL
                 | ADDRESS_LITERAL
-BlockExpr ::= '{' BlockBody '}' { pin = 1 }
-private BlockBody ::= (Statement)* Expr? { recoverWhile = "BlockBody_recover" }
-private BlockBody_recover ::= !'}'
 
 CallExpr ::= PathExpr CallArguments { pin = 1 }
 
@@ -369,17 +379,23 @@ ElseBlock ::= else AnyBlock { pin = 1 }
 
 LoopExpr ::= loop AnyBlock { pin = 1 }
 WhileExpr ::= while Condition AnyBlock { pin = 1 }
+
 AssignmentExpr ::= Pattern Initializer { pin = 2 }
 LetExpr ::= let mut? Pattern TypeAscription? Initializer? {
     pin = 1
 }
+private Initializer ::= '=' Expr {
+    pin = 1
+//    recoverWhile = "Initializer_recover"
+}
+//private Initializer_recover ::= !(';'|'}'|')')
 
 BorrowExpr ::= '&' mut? Expr { pin = 1 }
-DotExpr ::= Expr '.' identifier TypeArguments? CallArguments? { pin = 2 }
+DotExpr ::= Expr '.' identifier TypeArguments? CallArguments? { pin = '.' }
 
 PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArguments?
 
-Initializer ::= '=' Expr { pin = 1 }
+//Initializer ::= '=' Expr { pin = 1 }
 
 private gtgt   ::= <<gtgtImpl>>
 private gteq   ::= <<gteqImpl>>
