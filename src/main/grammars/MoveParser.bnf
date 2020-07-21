@@ -67,8 +67,12 @@ ScriptDef ::= script '{' (ImportStatement | FunctionDef)* '}' {
 AddressDef ::= address ADDRESS_LITERAL '{' ModuleDef* '}' {
     pin = 1
 }
+
 ModuleDef ::= module identifier '{' ModuleItemSeq '}' {
     pin = 1
+    name = "module declaration"
+    implements = [ "org.move.lang.core.psi.ext.MvNameIdentifierOwner" ]
+    mixin = "org.move.lang.core.psi.ext.MvModuleDefImplMixin"
 }
 private ModuleItemSeq ::= ModuleItem* { recoverWhile = "ModuleItemSeq_recover" }
 private ModuleItemSeq_recover ::= !'}'
@@ -87,7 +91,10 @@ private ConstDefInner_recover ::= !';'
 NativeFunctionDef ::= native public? fun identifier TypeParameterList?
                      FunctionParams
                      ReturnType?
-                     AcquiresType? ';' { pin = 1 }
+                     AcquiresType? ';'
+{
+    pin = 1
+}
 
 FunctionDef ::= public? fun identifier TypeParameterList?
                     FunctionParams
@@ -97,7 +104,7 @@ FunctionDef ::= public? fun identifier TypeParameterList?
 {
     pin = "fun"
     name = "function declaration"
-    implements = [ "org.move.lang.core.psi.ext.MvNamedElement" ]
+    implements = [ "org.move.lang.core.psi.ext.MvNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.ext.MvFunctionDefImplMixin"
 }
 

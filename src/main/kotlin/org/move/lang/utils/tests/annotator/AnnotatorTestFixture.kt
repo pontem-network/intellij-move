@@ -10,7 +10,7 @@ import com.intellij.testFramework.fixtures.impl.BaseFixture
 import org.move.ide.annotator.AnnotatorBase
 import kotlin.reflect.KClass
 
-class MvAnnotationTestFixture(
+class AnnotatorTestFixture(
     private val codeInsightFixture: CodeInsightTestFixture,
     private val annotatorClasses: List<KClass<out AnnotatorBase>> = emptyList()
 ) : BaseFixture() {

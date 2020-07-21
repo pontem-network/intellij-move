@@ -27,7 +27,7 @@
         <psi.referenceContributor language="Move"
                                   implementation="org.move.lang.MvReferenceContributor"/>
         <annotator language="Move"
-                   implementationClass="org.move.ide.annotator.MvErrorAnnotator"/>
+                   implementationClass="org.move.ide.annotator.ErrorAnnotator"/>
     </extensions>
 
     <actions>
