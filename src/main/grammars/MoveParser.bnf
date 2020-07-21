@@ -67,7 +67,7 @@ ScriptDef ::= script '{' (ImportStatement | FunctionDef)* '}' {
 AddressDef ::= address ADDRESS_LITERAL '{' ModuleDef* '}' {
     pin = 1
 }
-ModuleDef ::= module IDENTIFIER '{' ModuleItemSeq '}' {
+ModuleDef ::= module identifier '{' ModuleItemSeq '}' {
     pin = 1
 }
 private ModuleItemSeq ::= ModuleItem* { recoverWhile = "ModuleItemSeq_recover" }
@@ -76,7 +76,7 @@ private ModuleItemSeq_recover ::= !'}'
 private ModuleItem ::= ImportStatement | StructDef | FunctionDef | NativeFunctionDef | ConstDef
 
 ConstDef ::= const ConstDefInner ';' { pin = 1 }
-private ConstDefInner ::= IDENTIFIER TypeAscription '=' Expr {
+private ConstDefInner ::= identifier TypeAscription '=' Expr {
     recoverWhile = "ConstDefInner_recover"
 }
 private ConstDefInner_recover ::= !';'
@@ -84,12 +84,12 @@ private ConstDefInner_recover ::= !';'
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-NativeFunctionDef ::= native public? fun IDENTIFIER TypeParameterList?
+NativeFunctionDef ::= native public? fun identifier TypeParameterList?
                      FunctionParams
                      ReturnType?
                      AcquiresType? ';' { pin = 1 }
 
-FunctionDef ::= public? fun IDENTIFIER TypeParameterList?
+FunctionDef ::= public? fun identifier TypeParameterList?
                     FunctionParams
                     ReturnType?
                     AcquiresType?
@@ -108,7 +108,7 @@ private FunctionParamsBody ::= (FunctionParam ','?)* {
 }
 private FunctionParamsBody_recover ::= !')'
 
-FunctionParam ::= IDENTIFIER TypeAscription {
+FunctionParam ::= identifier TypeAscription {
     pin = 1
     recoverWhile = "FunctionParams_recover"
 }
@@ -125,14 +125,14 @@ AcquiresType ::= acquires PathExpr (',' PathExpr)* ','? { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-StructDef ::= resource? struct IDENTIFIER TypeParameterList?
+StructDef ::= resource? struct identifier TypeParameterList?
                 '{'
                 StructFieldDef? (',' StructFieldDef)* ','?
                 '}'
 {
     pin = "struct"
 }
-StructFieldDef ::= IDENTIFIER TypeAscription
+StructFieldDef ::= identifier TypeAscription
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Imports
@@ -141,7 +141,7 @@ StructFieldDef ::= IDENTIFIER TypeAscription
 ImportStatement ::= use ADDRESS_LITERAL '::' (ModuleMemberImport | ModuleImport) ';' { pin = 1 }
 
 ModuleImport ::= Import
-ModuleMemberImport ::= IDENTIFIER '::' (Import | MultipleImport) { pin = 2 }
+ModuleMemberImport ::= identifier '::' (Import | MultipleImport) { pin = 2 }
 
 private MultipleImport ::= '{' Import MultipleImportSeq ','? '}' { pin = 1 }
 private MultipleImportSeq ::= (',' Import)* {
@@ -149,8 +149,8 @@ private MultipleImportSeq ::= (',' Import)* {
 }
 private MultipleImportSeq_recover ::= !((','? '}') | ';')
 
-Import ::= IDENTIFIER ImportAlias? { pin = 1 }
-ImportAlias ::= as IDENTIFIER { pin = 1 }
+Import ::= identifier ImportAlias? { pin = 1 }
+ImportAlias ::= as identifier { pin = 1 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Types
@@ -164,21 +164,21 @@ TypeReference ::= ('&' mut?)? (address | PathExpr) {
 TupleType ::= '(' (Type ','?)* ','? ')' { pin = 1 }
 
 TypeParameterList ::= '<' TypeParameter? (',' TypeParameter)* ','? '>'
-TypeParameter ::= IDENTIFIER TypeParamBound?
+TypeParameter ::= identifier TypeParamBound?
 TypeParamBound ::= ':' (copyable | resource)
 
-TypeArguments ::= '<' PathExpr? (',' PathExpr)* ','? '>' { pin = 1 }
+TypeArguments ::= '<' PathExpr? (',' PathExpr)* ','? '>'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Patterns (destructuring)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Pattern ::= DerefExpr | TuplePattern | StructPattern | IDENTIFIER
+Pattern ::= DerefExpr | TuplePattern | StructPattern | identifier
 
 TuplePattern ::= '(' (Pattern ','?)* ')' { pin = 1 }
 
 StructPattern ::= PathExpr '{' (StructPatternField ','?)* '}' { pin = 2 }
-StructPatternField ::= IDENTIFIER StructPatternFieldBinding?
-StructPatternFieldBinding ::= ':' (StructPattern | IDENTIFIER) { pin = 1 }
+StructPatternField ::= identifier StructPatternFieldBinding?
+StructPatternFieldBinding ::= ':' (StructPattern | identifier) { pin = 1 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Statements
@@ -208,7 +208,7 @@ private StatementExpr_recover ::= '!;'
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-private AnyBlockItem ::= Block | InlineBlock
+private AnyBlock ::= Block | InlineBlock
 InlineBlock ::= Expr
 Block ::= '{' BlockBody '}' {
     pin = 1
@@ -310,7 +310,7 @@ private StructLiteralExprBody ::= (StructLiteralExprField ','?)*
 }
 private StructLiteralExprBody_recover ::= !'}'
 
-StructLiteralExprField ::= IDENTIFIER (':' Expr)? {
+StructLiteralExprField ::= identifier (':' Expr)? {
     pin = 1
     recoverWhile = StructLiteralExprField_recover
 }
@@ -335,23 +335,26 @@ CallExpr ::= PathExpr CallArguments { pin = 1 }
 
 CallArguments ::= '(' Expr? (',' Expr)? ')' { pin = 1 }
 
-IfExpr ::= if IfCondition AnyBlockItem ElseBlock? { pin = 1 }
+IfExpr ::= if Condition AnyBlock ElseBlock? { pin = 1 }
 //private IfExprBody ::= AnyBlockItem
 //private IfExprBody_recover ::=
-IfCondition ::= '(' Expr ')' { pin = 1 }
-ElseBlock ::= else AnyBlockItem { pin = 1 }
+Condition ::= '(' ConditionBody ')' { pin = 1 }
+private ConditionBody ::= Expr { recoverWhile = "ConditionBody_recover" }
+private ConditionBody_recover ::= !')'
 
-LoopExpr ::= loop AnyBlockItem { pin = 1 }
-WhileExpr ::= while IfCondition AnyBlockItem { pin = 1 }
+ElseBlock ::= else AnyBlock { pin = 1 }
+
+LoopExpr ::= loop AnyBlock { pin = 1 }
+WhileExpr ::= while Condition AnyBlock { pin = 1 }
 AssignmentExpr ::= Pattern Initializer { pin = 2 }
 LetExpr ::= let mut? Pattern TypeAscription? Initializer? {
     pin = 1
 }
 
 BorrowExpr ::= '&' mut? Expr { pin = 1 }
-DotExpr ::= Expr '.' IDENTIFIER TypeArguments? CallArguments? { pin = 2 }
+DotExpr ::= Expr '.' identifier TypeArguments? CallArguments? { pin = 2 }
 
-PathExpr ::= (ADDRESS_LITERAL '::')? (IDENTIFIER '::')? IDENTIFIER TypeArguments?
+PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArguments?
 
 Initializer ::= '=' Expr { pin = 1 }
 

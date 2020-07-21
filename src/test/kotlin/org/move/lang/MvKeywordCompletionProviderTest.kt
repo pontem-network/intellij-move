@@ -1,4 +1,4 @@
-package org.move.lang.core.completion
+package org.move.lang
 
 class MvKeywordCompletionProviderTest {
 }

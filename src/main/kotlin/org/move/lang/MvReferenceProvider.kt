@@ -1,4 +1,4 @@
-package org.move.lang.core.completion
+package org.move.lang
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference

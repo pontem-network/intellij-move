@@ -23,9 +23,9 @@
         <lang.commenter language="Move"
                         implementationClass="org.move.ide.MvCommenter"/>
         <completion.contributor language="Move"
-                                implementationClass="org.move.lang.core.completion.MvKeywordCompletionContributor"/>
+                                implementationClass="org.move.lang.MvKeywordCompletionContributor"/>
         <psi.referenceContributor language="Move"
-                                  implementation="org.move.lang.core.completion.MvReferenceContributor"/>
+                                  implementation="org.move.lang.MvReferenceContributor"/>
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.MvErrorAnnotator"/>
     </extensions>

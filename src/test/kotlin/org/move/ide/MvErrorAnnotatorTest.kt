@@ -1,4 +1,7 @@
-package org.move.ide.annotator
+package org.move.ide
+
+import org.move.ide.annotator.MvErrorAnnotator
+import org.move.lang.utils.tests.annotator.MvAnnotatorTestBase
 
 class MvErrorAnnotatorTest : MvAnnotatorTestBase(MvErrorAnnotator::class) {
     fun `test duplicate function definition in script`() = checkError(

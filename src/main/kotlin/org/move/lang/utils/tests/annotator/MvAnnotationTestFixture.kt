@@ -3,11 +3,11 @@
  * found in the LICENSE file.
  */
 
-package org.move.ide.annotator
+package org.move.lang.utils.tests.annotator
 
-import com.intellij.testFramework.InspectionTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
+import org.move.ide.annotator.AnnotatorBase
 import kotlin.reflect.KClass
 
 class MvAnnotationTestFixture(
@@ -17,7 +17,12 @@ class MvAnnotationTestFixture(
 
     override fun setUp() {
         super.setUp()
-        annotatorClasses.forEach { AnnotatorBase.enableAnnotator(it.java, testRootDisposable) }
+        annotatorClasses.forEach {
+            AnnotatorBase.enableAnnotator(
+                it.java,
+                testRootDisposable
+            )
+        }
     }
 
     private fun replaceCaretMarker(text: String) = text.replace("/*caret*/", "<caret>")

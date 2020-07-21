@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-package org.move.ide.annotator
+package org.move.lang.utils.tests.annotator
 
 import com.intellij.codeInsight.daemon.impl.HighlightInfoType
 import com.intellij.codeInsight.daemon.impl.SeveritiesProvider
@@ -16,7 +16,8 @@ class TestSeverityProvider(private val severities: List<HighlightSeverity>) : Se
 }
 
 private class TestHighlightingInfoType(private val severity: HighlightSeverity) : HighlightInfoType {
-    override fun getAttributesKey(): TextAttributesKey = DEFAULT_TEXT_ATTRIBUTES
+    override fun getAttributesKey(): TextAttributesKey =
+        DEFAULT_TEXT_ATTRIBUTES
     override fun getSeverity(psiElement: PsiElement?): HighlightSeverity = severity
 
     companion object {

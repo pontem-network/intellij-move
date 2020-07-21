@@ -1,4 +1,4 @@
-package org.move.lang.core.completion
+package org.move.lang
 
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder

@@ -1,4 +1,4 @@
-package org.move.lang.core.completion
+package org.move.lang
 
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionType
@@ -43,7 +43,15 @@ class MvKeywordCompletionContributor : CompletionContributor(), DumbAware {
         extend(
             CompletionType.BASIC,
             moduleDeclarationPattern(),
-            MvKeywordCompletionProvider("public", "native", "fun", "resource", "struct", "const", "use")
+            MvKeywordCompletionProvider(
+                "public",
+                "native",
+                "fun",
+                "resource",
+                "struct",
+                "const",
+                "use"
+            )
         )
         extend(
             CompletionType.BASIC,
