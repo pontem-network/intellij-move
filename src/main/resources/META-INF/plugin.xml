@@ -22,6 +22,8 @@
                                 implementationClass="org.move.ide.MvHighlighter"/>
         <lang.commenter language="Move"
                         implementationClass="org.move.ide.MvCommenter"/>
+        <lang.braceMatcher language="Move"
+                           implementationClass="org.move.ide.MvBraceMatcher"/>
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.MvKeywordCompletionContributor"/>
         <psi.referenceContributor language="Move"
