@@ -12,16 +12,6 @@ import com.intellij.util.containers.ContainerUtil
 import org.jetbrains.annotations.TestOnly
 
 abstract class AnnotatorBase : Annotator {
-
-//    final override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-//        annotateInternal(element, holder)
-////        if (!isUnitTestMode || javaClass in enabledAnnotators) {
-////
-////        }
-//    }
-
-//    protected abstract fun annotateInternal(element: PsiElement, holder: AnnotationHolder)
-
     companion object {
         private val enabledAnnotators: MutableSet<Class<out AnnotatorBase>> = ContainerUtil.newConcurrentSet()
 
