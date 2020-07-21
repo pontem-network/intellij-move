@@ -79,7 +79,9 @@ private ModuleItemSeq_recover ::= !'}'
 
 private ModuleItem ::= ImportStatement | StructDef | FunctionDef | NativeFunctionDef | ConstDef
 
-ConstDef ::= const ConstDefInner ';' { pin = 1 }
+ConstDef ::= const ConstDefInner ';' {
+    pin = 1
+}
 private ConstDefInner ::= identifier TypeAscription '=' Expr {
     recoverWhile = "ConstDefInner_recover"
 }
@@ -94,6 +96,9 @@ NativeFunctionDef ::= native public? fun identifier TypeParameterList?
                      AcquiresType? ';'
 {
     pin = 1
+    name = "native function"
+    implements = [ "org.move.lang.core.psi.ext.MvNameIdentifierOwner" ]
+    mixin = "org.move.lang.core.psi.ext.MvNativeFunctionDefImplMixin"
 }
 
 FunctionDef ::= public? fun identifier TypeParameterList?
@@ -103,7 +108,7 @@ FunctionDef ::= public? fun identifier TypeParameterList?
                     Block
 {
     pin = "fun"
-    name = "function declaration"
+    name = "function"
     implements = [ "org.move.lang.core.psi.ext.MvNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.ext.MvFunctionDefImplMixin"
 }

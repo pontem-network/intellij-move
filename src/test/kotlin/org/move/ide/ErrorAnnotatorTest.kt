@@ -13,11 +13,12 @@ class ErrorAnnotatorTest : AnnotatorTestCase(ErrorAnnotator::class) {
     """.trimIndent()
     )
 
-    fun `test duplicate function definition in module`() = checkError(
+    fun `test duplicate function definitions in module`() = checkError(
         """
         module M {
             fun <error descr="Duplicate definitions with name `main`">main</error>() {}
             fun <error descr="Duplicate definitions with name `main`">main</error>() {}
+            native fun <error descr="Duplicate definitions with name `main`">main</error>();
         }
     """.trimIndent()
     )
