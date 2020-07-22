@@ -1,0 +1,9 @@
+package org.move.lang.parser
+
+import org.move.lang.utils.tests.MvParsingTestCase
+
+class CompleteParsingTest : MvParsingTestCase("complete") {
+    fun `test while loop inline assignment`() = doTest(true)
+    fun `test contextual token operators`() = doTest(true)
+    fun `test generics`() = doTest(true)
+}

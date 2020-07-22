@@ -1,0 +1,51 @@
+FILE
+  MvScriptDefImpl(SCRIPT_DEF)
+    PsiElement(script)('script')
+    PsiWhiteSpace(' ')
+    PsiElement({)('{')
+    PsiWhiteSpace('\n    ')
+    MvFunctionDefImpl(FUNCTION_DEF)
+      PsiElement(fun)('fun')
+      PsiErrorElement:identifier expected, got '}'
+        <empty list>
+    PsiWhiteSpace('\n')
+    PsiElement(})('}')
+  PsiWhiteSpace('\n\n')
+  MvScriptDefImpl(SCRIPT_DEF)
+    PsiElement(script)('script')
+    PsiWhiteSpace(' ')
+    PsiElement({)('{')
+    PsiWhiteSpace('\n    ')
+    MvFunctionDefImpl(FUNCTION_DEF)
+      PsiElement(fun)('fun')
+      PsiWhiteSpace(' ')
+      PsiElement(identifier)('main')
+      MvFunctionParamsImpl(FUNCTION_PARAMS)
+        PsiElement(()('(')
+        PsiElement())(')')
+      PsiErrorElement:':', acquires or '{' expected, got ';'
+        <empty list>
+    PsiElement(;)(';')
+    PsiWhiteSpace('\n')
+    PsiElement(})('}')
+  PsiWhiteSpace('\n\n')
+  MvScriptDefImpl(SCRIPT_DEF)
+    PsiElement(script)('script')
+    PsiWhiteSpace(' ')
+    PsiElement({)('{')
+    PsiWhiteSpace('\n    ')
+    MvFunctionDefImpl(FUNCTION_DEF)
+      PsiElement(fun)('fun')
+      PsiWhiteSpace(' ')
+      PsiElement(identifier)('main')
+      PsiErrorElement:'(' or < expected, got 'fun'
+        <empty list>
+    PsiWhiteSpace('\n    ')
+    MvFunctionDefImpl(FUNCTION_DEF)
+      PsiElement(fun)('fun')
+      PsiWhiteSpace(' ')
+      PsiElement(identifier)('main')
+      PsiErrorElement:'(' or < expected, got '}'
+        <empty list>
+    PsiWhiteSpace('\n')
+    PsiElement(})('}')

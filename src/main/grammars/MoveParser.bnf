@@ -61,9 +61,14 @@
 
 File ::= (ScriptDef)+ | (AddressDef | ModuleDef)*
 
-ScriptDef ::= script '{' (ImportStatement | FunctionDef)* '}' {
+ScriptDef ::= script '{' ScriptDef_body '}' {
     pin = 1
 }
+private ScriptDef_body ::= (ImportStatement | FunctionDef)* {
+    recoverWhile = "ScriptDef_body_recover"
+}
+private ScriptDef_body_recover ::= !'}'
+
 AddressDef ::= address ADDRESS_LITERAL '{' ModuleDef* '}' {
     pin = 1
 }
@@ -175,7 +180,7 @@ ImportAlias ::= as identifier { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Types
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-TypeAscription ::= ':' Type { pin = 1 }
+private TypeAscription ::= ':' Type { pin = 1 }
 
 Type ::= TupleType | TypeReference
 TypeReference ::= ('&' mut?)? (address | PathExpr) {
@@ -183,11 +188,11 @@ TypeReference ::= ('&' mut?)? (address | PathExpr) {
 }
 TupleType ::= '(' (Type ','?)* ','? ')' { pin = 1 }
 
-TypeParameterList ::= '<' TypeParameter? (',' TypeParameter)* ','? '>'
+TypeParameterList ::= '<' (TypeParameter (',' TypeParameter)* ','?)? '>'
 TypeParameter ::= identifier TypeParamBound?
 TypeParamBound ::= ':' (copyable | resource)
 
-TypeArguments ::= '<' PathExpr? (',' PathExpr)* ','? '>'
+TypeArguments ::= '<' (PathExpr (',' PathExpr)* ','?)? '>'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Patterns (destructuring)
@@ -266,7 +271,7 @@ Expr ::= OrExpr
 
 private MulExprItem ::= DivExpr | MulExpr | ModExpr
 private AddExprItem ::= PlusExpr | MinusExpr
-private LogicalEqExprItem ::= EqualsExpr | NotEqualsExpr | LessExpr | LessEqualsExpr | GreaterExpr | GreaterEqualsExpr
+private LogicalEqExprItem ::= EqualsExpr | NotEqualsExpr | LessEqualsExpr | LessExpr | GreaterEqualsExpr | GreaterExpr
 
 private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
                       | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
@@ -325,15 +330,15 @@ AbortExpr ::= abort Expr
 BreakExpr ::= break
 ContinueExpr ::= continue
 
-StructLiteralExpr ::= PathExpr '{' StructLiteralExprBody '}'
+StructLiteralExpr ::= PathExpr '{' StructLiteralExpr_body '}'
 {
     pin = 2
 }
-private StructLiteralExprBody ::= (StructLiteralExprField ','?)*
+private StructLiteralExpr_body ::= (StructLiteralExprField ','?)*
 {
-    recoverWhile = "StructLiteralExprBody_recover"
+    recoverWhile = "StructLiteralExpr_body_recover"
 }
-private StructLiteralExprBody_recover ::= !'}'
+private StructLiteralExpr_body_recover ::= !'}'
 
 StructLiteralExprField ::= identifier (':' Expr)? {
     pin = 1
@@ -391,7 +396,7 @@ private Initializer ::= '=' Expr {
 //private Initializer_recover ::= !(';'|'}'|')')
 
 BorrowExpr ::= '&' mut? Expr { pin = 1 }
-DotExpr ::= Expr '.' identifier TypeArguments? CallArguments? { pin = '.' }
+DotExpr ::= Expr '.' identifier
 
 PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArguments?
 
