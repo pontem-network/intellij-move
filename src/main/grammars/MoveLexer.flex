@@ -31,7 +31,7 @@ BLOCK_COMMENT="/"\*(.|[ \t\n\x0B\f\r])*\*"/"
 ADDRESS_LITERAL=0x[0-9a-fA-F]{1,40}
 BOOL_LITERAL=(true)|(false)
 INTEGER_LITERAL=0*(0|[1-9][0-9]*((u8)|(u64)|(u128))?)
-HEX_STRING_LITERAL=x\"([A-F0-9a-f]+)\"
+HEX_STRING_LITERAL=x\"([A-F0-9a-f]*)\"
 BYTE_STRING_LITERAL=b\"(.*)\"
 IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 

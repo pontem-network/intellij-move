@@ -12,6 +12,7 @@
     elementTypeClass="org.move.lang.core.MvElementType"
     tokenTypeClass="org.move.lang.core.MvTokenType"
     extends(".*Expr")=Expr
+    extends(".*Pattern")=Pattern
     tokens = [
         WHITESPACE='regexp:[ \n\t\r\f]'
         LINE_COMMENT='regexp:(//.*\n)|(//.*\R)'
@@ -20,7 +21,7 @@
         ADDRESS_LITERAL='regexp:0x[0-9a-fA-F]{1,40}'
         BOOL_LITERAL='regexp:(true)|(false)'
         INTEGER_LITERAL='regexp:0*(0|[1-9][0-9]*((u8)|(u64)|(u128))?)'
-        HEX_STRING_LITERAL='regexp:x"([A-F0-9a-f]+)"'
+        HEX_STRING_LITERAL='regexp:x"([A-F0-9a-f]*)"'
         BYTE_STRING_LITERAL='regexp:b"(.*)"'
 
         IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
@@ -192,14 +193,23 @@ TypeParameterList ::= '<' (TypeParameter (',' TypeParameter)* ','?)? '>'
 TypeParameter ::= identifier TypeParamBound?
 TypeParamBound ::= ':' (copyable | resource)
 
-TypeArguments ::= '<' (PathExpr (',' PathExpr)* ','?)? '>'
+TypeArguments ::= '<' (TypeReference (',' TypeReference)* ','?)? '>'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Patterns (destructuring)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Pattern ::= DerefExpr | TuplePattern | StructPattern | identifier
+Pattern ::= DerefPattern | BorrowPattern
+            | TuplePattern | StructPattern | DotPattern | identifier
 
-TuplePattern ::= '(' (Pattern ','?)* ')' { pin = 1 }
+DerefPattern ::= '*' Pattern
+BorrowPattern ::= '&' Pattern
+DotPattern ::= identifier '.' identifier { pin = 2 }
+
+TuplePattern ::= '(' TuplePattern_body ')'
+private TuplePattern_body ::= (Pattern (',' Pattern)*)? {
+    recoverWhile = "TuplePattern_body_recover"
+}
+private TuplePattern_body_recover ::= !(')'|'=')
 
 StructPattern ::= PathExpr '{' (StructPatternField ','?)* '}' { pin = 2 }
 StructPatternField ::= identifier StructPatternFieldBinding?
@@ -212,7 +222,8 @@ StructPatternFieldBinding ::= ':' (StructPattern | identifier) { pin = 1 }
 //                            | LetStatement | AssignmentStatement
 //                            | ExprStatement
 Statement ::= StatementExpr ';'
-private StatementExpr ::= IfExpr | LoopExpr | WhileExpr | LetExpr | AssignmentExpr | Expr {
+private StatementExpr ::= IfExpr | LoopExpr | WhileExpr
+                        | LetExpr | AssignmentExpr | Expr {
     recoverWhile = "StatementExpr_recover"
 }
 private StatementExpr_recover ::= '!;'
@@ -252,7 +263,8 @@ private Block_body_recover ::= !'}'
 // Expressions
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // from lowest to highest
-Expr ::= OrExpr
+Expr ::= AssignmentExprItem
+        | OrExpr
         | AndExpr
         | LogicalEqExprItem
         | BitOrExpr
@@ -261,6 +273,7 @@ Expr ::= OrExpr
         | (LeftShiftExpr | RightShiftExpr)
         | AddExprItem
         | MulExprItem
+        | ControlFlowExpr
         | CastExpr
         | UnaryExpr
         | BorrowExpr
@@ -273,16 +286,19 @@ private MulExprItem ::= DivExpr | MulExpr | ModExpr
 private AddExprItem ::= PlusExpr | MinusExpr
 private LogicalEqExprItem ::= EqualsExpr | NotEqualsExpr | LessEqualsExpr | LessExpr | GreaterEqualsExpr | GreaterExpr
 
+private AssignmentExprItem ::= AssignmentExpr | LetExpr
+private ControlFlowExpr ::= IfExpr | LoopExpr | WhileExpr
 private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
                       | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
-private AtomExpr ::= IfExpr
-                    | LoopExpr
-                    | WhileExpr
-                    | LetExpr
-                    | AnnotatedExpr
+private AtomExpr ::=
+//IfExpr
+//                    | LoopExpr
+//                    | WhileExpr
+//                    | LetExpr
+                    AnnotatedExpr
                     | TupleLiteralExpr
                     | ParensExpr
-                    | AssignmentExpr
+//                    | AssignmentExpr
                     | StructLiteralExpr
                     | DotExpr
                     | CallExpr
@@ -385,7 +401,7 @@ ElseBlock ::= else AnyBlock { pin = 1 }
 LoopExpr ::= loop AnyBlock { pin = 1 }
 WhileExpr ::= while Condition AnyBlock { pin = 1 }
 
-AssignmentExpr ::= Pattern Initializer { pin = 2 }
+AssignmentExpr ::= Pattern '=' Expr
 LetExpr ::= let mut? Pattern TypeAscription? Initializer? {
     pin = 1
 }
@@ -397,7 +413,6 @@ private Initializer ::= '=' Expr {
 
 BorrowExpr ::= '&' mut? Expr { pin = 1 }
 DotExpr ::= Expr '.' identifier
-
 PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArguments?
 
 //Initializer ::= '=' Expr { pin = 1 }

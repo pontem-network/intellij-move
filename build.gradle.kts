@@ -3,7 +3,7 @@ import org.jetbrains.grammarkit.tasks.GenerateLexer;
 
 val pluginName = "intellij-move"
 val pluginGroup = "org.move"
-val pluginVersion = "0.1.0"
+val pluginVersion = "0.2.0"
 
 group = pluginGroup
 version = pluginVersion

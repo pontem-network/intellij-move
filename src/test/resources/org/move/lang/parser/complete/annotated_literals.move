@@ -8,5 +8,6 @@ script {
         (false: bool);
         b"(false: bool);";
         x"0101";
+        x"";
     }
 }

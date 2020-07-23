@@ -4,4 +4,5 @@ import org.move.lang.utils.tests.MvParsingTestCase
 
 class PartialParsingTest: MvParsingTestCase("partial") {
     fun `test empty script`() = doTest(true)
+    fun `test assignments`() = doTest(true)
 }
