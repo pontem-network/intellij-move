@@ -9,4 +9,5 @@ class CompleteParsingTest : MvParsingTestCase("complete") {
     fun `test annotated literals`() = doTest(true)
     fun `test struct fields`() = doTest(true)
     fun `test assignment lhs`() = doTest(true)
+    fun `test function calls`() = doTest(true)
 }

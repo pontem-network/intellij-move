@@ -193,7 +193,11 @@ TypeParameterList ::= '<' (TypeParameter (',' TypeParameter)* ','?)? '>'
 TypeParameter ::= identifier TypeParamBound?
 TypeParamBound ::= ':' (copyable | resource)
 
-TypeArguments ::= '<' (TypeReference (',' TypeReference)* ','?)? '>'
+TypeArguments ::= '<' (TypeArgument (',' TypeArgument)* ','?)? '>'
+private TypeArgument ::= TypeReference {
+    recoverWhile = "TypeArgument_recover"
+}
+private TypeArgument_recover ::= !(','|'>')
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Patterns (destructuring)
@@ -382,9 +386,13 @@ LiteralExpr ::= BOOL_LITERAL
                 | BYTE_STRING_LITERAL
                 | ADDRESS_LITERAL
 
-CallExpr ::= PathExpr CallArguments { pin = 1 }
+CallExpr ::= PathExpr CallArguments
 
-CallArguments ::= '(' Expr? (',' Expr)? ')' { pin = 1 }
+CallArguments ::= '(' (CallArgument (',' CallArgument)* ','?)? ')' { pin = 1 }
+private CallArgument ::= Expr {
+    recoverWhile = "CallArgument_recover"
+}
+private CallArgument_recover ::= !(','|')')
 
 IfExpr ::= if Condition AnyBlock ElseBlock? { pin = 1 }
 //private IfExprBody ::= AnyBlock {
