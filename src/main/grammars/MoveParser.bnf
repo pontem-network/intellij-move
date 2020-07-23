@@ -20,7 +20,7 @@
 
         ADDRESS_LITERAL='regexp:0x[0-9a-fA-F]{1,40}'
         BOOL_LITERAL='regexp:(true)|(false)'
-        INTEGER_LITERAL='regexp:0*(0|[1-9][0-9]*((u8)|(u64)|(u128))?)'
+        INTEGER_LITERAL='regexp:0*((0|[1-9][0-9]*)((u8)|(u64)|(u128))?)'
         HEX_STRING_LITERAL='regexp:x"([A-F0-9a-f]*)"'
         BYTE_STRING_LITERAL='regexp:b"(.*)"'
 

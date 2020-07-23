@@ -3,6 +3,7 @@ script {
         call();
         call(1, 2);
         call(1, 2,);
+        call(0, 0u8, 0u64, 1u8, 1u64,);
 
         call<u8>();
         call<u8,>();
