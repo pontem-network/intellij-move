@@ -1,4 +1,4 @@
-package org.move.lang.utils
+package org.move.utils
 
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.psi.PsiElement

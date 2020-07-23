@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-package org.move.lang.utils.tests.annotator
+package org.move.utils.tests.annotator
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.move.ide.annotator.AnnotatorBase

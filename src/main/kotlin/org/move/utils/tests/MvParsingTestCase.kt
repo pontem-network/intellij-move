@@ -1,4 +1,4 @@
-package org.move.lang.utils.tests
+package org.move.utils.tests
 
 import com.intellij.testFramework.ParsingTestCase
 import org.jetbrains.annotations.NonNls

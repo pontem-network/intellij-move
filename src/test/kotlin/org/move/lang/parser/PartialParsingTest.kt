@@ -1,6 +1,6 @@
 package org.move.lang.parser
 
-import org.move.lang.utils.tests.MvParsingTestCase
+import org.move.utils.tests.MvParsingTestCase
 
 class PartialParsingTest: MvParsingTestCase("partial") {
     fun `test empty script`() = doTest(true)

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-package org.move.lang.utils.tests
+package org.move.utils.tests
 
 import java.nio.file.Path
 import java.nio.file.Paths
