@@ -1,8 +1,9 @@
-package org.move.utils.tests
+package org.move.utils.tests.parser
 
 import com.intellij.testFramework.ParsingTestCase
 import org.jetbrains.annotations.NonNls
 import org.move.lang.MoveParserDefinition
+import org.move.utils.tests.camelOrWordsToSnake
 
 abstract class MvParsingTestCase(@NonNls dataPath: String) : ParsingTestCase(
     "org/move/lang/parser/$dataPath",

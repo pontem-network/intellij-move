@@ -22,10 +22,19 @@ import static org.move.lang.MvElementTypes.*;
 %type IElementType
 %unicode
 
-EOL=\R
-WHITE_SPACE=\s+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Whitespaces
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
-WHITESPACE=[ \n\t\r\f]
+EOL_WS           = \n | \r | \r\n
+LINE_WS          = [\ \t]
+WHITE_SPACE_CHAR = {EOL_WS} | {LINE_WS}
+WHITE_SPACE      = {WHITE_SPACE_CHAR}+
+
+//EOL=\R
+//WHITE_SPACE=\s+
+
+//WHITESPACE=[ \n\t\r\f]
 LINE_COMMENT=("//".*\n)|("//".*\R)
 BLOCK_COMMENT="/"\*(.|[ \t\n\x0B\f\r])*\*"/"
 ADDRESS_LITERAL=0x[0-9a-fA-F]{1,40}
@@ -49,13 +58,20 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   ":"                        { return COLON; }
   ";"                        { return SEMICOLON; }
   ","                        { return COMMA; }
+  "."                        { return DOT; }
+  "="                        { return EQ; }
+  "=="                       { return EQ_EQ; }
+
+  "!"                             { return EXCL; }
+  "+"                             { return PLUS; }
+  "-"                             { return MINUS; }
+  "*"                             { return MUL; }
+  "/"                             { return DIV; }
+
   "<"                        { return LT; }
   ">"                        { return GT; }
   "&"                        { return AND; }
   "|"                        { return OR; }
-  "=="                       { return EQ_EQ; }
-  "="                        { return EQ; }
-  "."                        { return DOT; }
 //  "<="                       { return LT_EQ; }
 //  "<<"                       { return LT_LT; }
 //  ">="                       { return GT_EQ; }
@@ -88,7 +104,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "while"                    { return WHILE; }
   "let"                      { return LET; }
 
-  {WHITESPACE}               { return WHITESPACE; }
+//  {WHITESPACE}               { return WHITESPACE; }
   {LINE_COMMENT}             { return LINE_COMMENT; }
   {BLOCK_COMMENT}            { return BLOCK_COMMENT; }
   {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }

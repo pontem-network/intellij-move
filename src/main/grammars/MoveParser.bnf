@@ -44,6 +44,26 @@
         EQ = '='
         DOT         =  '.'
 
+        EXCL        =  '!'
+//        PLUSEQ      =  '+='
+        PLUS        =  '+'
+//        MINUSEQ     =  '-='
+        MINUS       =  '-'
+//        OREQ        =  '|='
+//        ANDAND      =  '&&'
+//        ANDEQ       =  '&='
+//        AND         =  '&'
+//        OR          =  '|'
+//        LT          =  '<'
+//        XOREQ       =  '^='
+        XOR         =  '^'
+//        MULEQ       =  '*='
+        MUL         =  '*'
+//        DIVEQ       =  '/='
+        DIV         =  '/'
+//        REMEQ       =  '%='
+        MODULO         =  '%'
+
         // Contextual tokens
         LT_EQ           = '<='
         LT_LT           = '<<'
@@ -60,27 +80,27 @@
 //   * rules are PascalCase: StructItem, EnumVariant
 //   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
 
-File ::= (ScriptDef)+ | (AddressDef | ModuleDef)*
+File ::= (ScriptDef | AddressDef | ModuleDef)*
 
-ScriptDef ::= script '{' ScriptDef_body '}' {
+ScriptDef ::= script '{' ScriptDefBlock '}' {
     pin = 1
 }
-private ScriptDef_body ::= (ImportStatement | FunctionDef)* {
-    recoverWhile = "ScriptDef_body_recover"
-}
-private ScriptDef_body_recover ::= !'}'
+ScriptDefBlock ::= (ImportStatement | FunctionDef)* { recoverWhile = "ScriptDefBlock_recover" }
+private ScriptDefBlock_recover ::= !'}'
 
-AddressDef ::= address ADDRESS_LITERAL '{' ModuleDef* '}' {
+AddressDef ::= address ADDRESS_LITERAL '{' AddressDefBlock '}' {
     pin = 1
 }
+AddressDefBlock ::= ModuleDef* { recoverWhile = AddressDefBlock_recover }
+private AddressDefBlock_recover ::= !'}'
 
-ModuleDef ::= module identifier '{' ModuleItemSeq '}' {
+ModuleDef ::= module identifier '{' ModuleDefBlock '}' {
     pin = 1
     name = "module declaration"
     implements = [ "org.move.lang.core.psi.ext.MvNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.ext.MvModuleDefImplMixin"
 }
-private ModuleItemSeq ::= ModuleItem* { recoverWhile = "ModuleItemSeq_recover" }
+ModuleDefBlock ::= ModuleItem* { recoverWhile = "ModuleItemSeq_recover" }
 private ModuleItemSeq_recover ::= !'}'
 
 private ModuleItem ::= ImportStatement | StructDef | FunctionDef | NativeFunctionDef | ConstDef
@@ -255,6 +275,7 @@ Block ::= '{' Block_body '}' {
 private AnyBlock ::= Block | InlineBlock
 
 BlockExpr ::= '{' Block_body '}' { pin = 1 }
+
 private Block_body ::= (Statement)* Expr? { recoverWhile = "Block_body_recover" }
 private Block_body_recover ::= !'}'
 

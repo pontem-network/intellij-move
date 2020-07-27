@@ -12,8 +12,15 @@ import com.intellij.util.ProcessingContext
 import org.move.lang.MvElementTypes.*
 import org.move.lang.core.psi.ext.leftLeaves
 
-object MvPsiPattern {
+object MovePatterns {
     private val STATEMENT_BOUNDARIES = TokenSet.create(SEMICOLON, L_BRACE, R_BRACE)
+
+    val whitespace: PsiElementPattern.Capture<PsiElement> = PlatformPatterns.psiElement().whitespace()
+
+    val error: PsiElementPattern.Capture<PsiErrorElement> = psiElement<PsiErrorElement>()
+
+    val onStatementBeginning: PsiElementPattern.Capture<PsiElement> =
+        PlatformPatterns.psiElement().with(OnStatementBeginning())
 
     fun onStatementBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement().with(OnStatementBeginning(*startWords))
@@ -25,19 +32,29 @@ object MvPsiPattern {
             val prev = t.prevVisibleOrNewLine
             return if (myStartWords.isEmpty())
                 prev == null || prev is PsiWhiteSpace || prev.node.elementType in STATEMENT_BOUNDARIES
-            else
+            else {
                 prev != null && prev.node.text in myStartWords
+            }
         }
     }
 }
 
 private val PsiElement.prevVisibleOrNewLine: PsiElement?
-    get() = leftLeaves
-        .filterNot { it is PsiComment || it is PsiErrorElement }
-        .filter { it !is PsiWhiteSpace || it.textContains('\n') }
-        .firstOrNull()
+    get() {
+        return leftLeaves
+            .filterNot { it is PsiComment || it is PsiErrorElement }
+            .filter { it !is PsiWhiteSpace || it.textContains('\n') }
+            .firstOrNull()
+
+    }
 
 inline fun <reified I : PsiElement> psiElement(): PsiElementPattern.Capture<I> {
     return PlatformPatterns.psiElement(I::class.java)
 }
+
+//
+//inline fun <reified I : PsiElement> psiElementOrError(): PsiElementPattern.Capture<I> {
+//    return PlatformPatterns.psiElement(I::class.java)
+//        .andOr(PlatformPatterns.psiElement().withParent(MovePatterns.error))
+//}
 

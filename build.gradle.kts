@@ -72,6 +72,9 @@ allprojects {
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         dependsOn(generateRustLexer, generateRustParser)
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
     }
 }
 

@@ -14,7 +14,7 @@ import org.move.lang.core.tokenSetOf
 
 class MoveParserDefinition : ParserDefinition {
     override fun createLexer(project: Project): Lexer {
-        return MvLexer()
+        return MoveLexer()
     }
 
     override fun createParser(project: Project): PsiParser {
@@ -39,7 +39,7 @@ class MoveParserDefinition : ParserDefinition {
     }
 
     override fun createFile(viewProvider: FileViewProvider): PsiFile {
-        return MoveFile(viewProvider)
+        return MvFile(viewProvider)
     }
 
     companion object {

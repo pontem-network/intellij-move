@@ -8,7 +8,7 @@ import org.move.lang.core.psi.MvBlock
 import org.move.lang.core.psi.MvBlockExpr
 import org.move.lang.core.psi.MvModuleDef
 
-class MvReferenceProvider: PsiReferenceProvider() {
+class ReferenceProvider: PsiReferenceProvider() {
     override fun getReferencesByElement(
         element: PsiElement,
         context: ProcessingContext

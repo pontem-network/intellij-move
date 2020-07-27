@@ -1,6 +1,6 @@
 package org.move.lang.parser
 
-import org.move.utils.tests.MvParsingTestCase
+import org.move.utils.tests.parser.MvParsingTestCase
 
 class CompleteParsingTest : MvParsingTestCase("complete") {
     fun `test while loop inline assignment`() = doTest(true)

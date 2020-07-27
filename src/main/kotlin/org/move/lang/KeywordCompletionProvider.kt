@@ -10,7 +10,7 @@ fun InsertionContext.addSuffix(suffix: String) {
     EditorModificationUtil.moveCaretRelatively(editor, suffix.length)
 }
 
-class MvKeywordCompletionProvider(private vararg val keywords: String) :
+class KeywordCompletionProvider(private vararg val keywords: String) :
     CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
         parameters: CompletionParameters,
