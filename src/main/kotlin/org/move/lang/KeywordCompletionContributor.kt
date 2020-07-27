@@ -10,7 +10,9 @@ import com.intellij.psi.PsiErrorElement
 import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.MovePatterns
 import org.move.lang.core.psi.MvAddressDefBlock
+import org.move.lang.core.psi.MvCodeBlock
 import org.move.lang.core.psi.MvModuleDefBlock
+import org.move.lang.core.psi.MvScriptDefBlock
 import org.move.lang.core.psiElement
 
 class KeywordCompletionContributor : CompletionContributor() {
@@ -38,30 +40,32 @@ class KeywordCompletionContributor : CompletionContributor() {
                 "use"
             )
         )
-//        extend(
-//            CompletionType.BASIC,
-//            scriptBodyPattern(),
-//            MvKeywordCompletionProvider("public", "fun", "const", "use")
-//        )
-//        extend(
-//            CompletionType.BASIC,
-//            functionBodyPattern(),
-//            MvKeywordCompletionProvider(
-//                "let",
-//                "mut",
-//                "loop",
-//                "if",
-//                "else",
-//                "while",
-//                "abort",
-//                "return",
-//                "copy",
-//                "move",
-//                "break",
-//                "continue",
-//                "as"
-//            )
-//        )
+        extend(
+            CompletionType.BASIC,
+            scriptBlockDefinition().and(onStatementBeginning()),
+            KeywordCompletionProvider("public", "fun", "const", "use")
+        )
+        extend(
+            CompletionType.BASIC,
+            baseCodeStatement().and(onStatementBeginning()),
+            KeywordCompletionProvider(
+                "let",
+                "loop",
+                "if",
+                "while",
+                "abort",
+                "return",
+                "copy",
+                "move"
+            )
+        )
+        extend(
+            CompletionType.BASIC,
+            baseCodeStatement().and(onStatementBeginning("let")),
+            KeywordCompletionProvider(
+                "mut"
+            )
+        )
     }
 
     private fun onStatementBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
@@ -75,6 +79,18 @@ class KeywordCompletionContributor : CompletionContributor() {
 
     private fun moduleBlockDefinition(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvModuleDefBlock>()
+
+    private fun scriptBlockDefinition(): PsiElementPattern.Capture<PsiElement> =
+        psiElementWithParent<MvScriptDefBlock>()
+
+    private fun baseCodeStatement(): PsiElementPattern.Capture<PsiElement> =
+        psiElement().inside(psiElement<MvCodeBlock>())
+
+//    private fun newCodeStatement(): PsiElementPattern.Capture<PsiElement> =
+//        psiElement().inside(psiElement<MvCodeBlock>())
+
+//    private fun letStatement(): PsiElementPattern.Capture<PsiElement> =
+//        baseCodeStatement().and(onStatementBeginning("let"))
 
     private inline fun <reified I : PsiElement> psiElementWithParent() = psiElement().withParent(
         or(

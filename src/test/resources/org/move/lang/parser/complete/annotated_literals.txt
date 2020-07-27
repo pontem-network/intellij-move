@@ -13,7 +13,7 @@ FILE
           PsiElement(()('(')
           PsiElement())(')')
         PsiWhiteSpace(' ')
-        MvBlockImpl(BLOCK)
+        MvCodeBlockImpl(CODE_BLOCK)
           PsiElement({)('{')
           PsiWhiteSpace('\n        ')
           MvStatementImpl(STATEMENT)

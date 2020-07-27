@@ -40,4 +40,29 @@ class KeywordCompletionProviderTest : CompletionTestCase() {
     fun `test no completion in address literal`() = completionFixture.checkNoCompletion(
         " address /*caret*/ {} "
     )
+
+    fun `test script fun keyword`() = completionFixture.checkContainsCompletion(
+        "script { /*caret*/ } ",
+        "fun"
+    )
+
+    fun `test script function completion`() = completionFixture.checkContainsCompletion(
+        "script { fun main() { /*caret*/ }} ",
+        "let"
+    )
+
+    fun `test module function completion`() = completionFixture.checkContainsCompletion(
+        "module M { fun myfunction() { /*caret*/ }} ",
+        "let"
+    )
+
+    fun `test let statement mut keyword`() = completionFixture.checkContainsCompletion(
+        "script { fun main () { let /*caret*/ } } ",
+        "mut"
+    )
+
+//    fun `test continue break in loop`() = completionFixture.checkContainsCompletion(
+//        "script { fun main() { loop { /*caret*/ } } } ",
+//        listOf("continue", "break")
+//    )
 }

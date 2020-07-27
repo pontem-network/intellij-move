@@ -131,7 +131,7 @@ FunctionDef ::= public? fun identifier TypeParameterList?
                     FunctionParams
                     ReturnType?
                     AcquiresType?
-                    Block
+                    CodeBlock
 {
     pin = "fun"
     name = "function"
@@ -269,10 +269,10 @@ private StatementExpr_recover ::= '!;'
 // Blocks
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 InlineBlock ::= Expr
-Block ::= '{' Block_body '}' {
+CodeBlock ::= '{' Block_body '}' {
     pin = 1
 }
-private AnyBlock ::= Block | InlineBlock
+private AnyBlock ::= CodeBlock | InlineBlock
 
 BlockExpr ::= '{' Block_body '}' { pin = 1 }
 
