@@ -12,6 +12,7 @@ import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import org.intellij.lang.annotations.Language
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -39,6 +40,11 @@ fun TestCase.pathToGoldTestFile(): Path =
 
 
 abstract class MoveTestCase : BasePlatformTestCase() {
+    @Suppress("TestFunctionName")
+    protected fun InlineFile(@Language("Move") code: String, name: String = "main.move"): InlineFile {
+        return InlineFile(myFixture, code, name)
+    }
+
     protected inline fun <reified T : PsiElement> findElementInEditor(marker: String = "^"): T =
         findElementInEditor(T::class.java, marker)
 
@@ -46,6 +52,12 @@ abstract class MoveTestCase : BasePlatformTestCase() {
         val (element, data) = findElementWithDataAndOffsetInEditor(psiClass, marker)
         check(data.isEmpty()) { "Did not expect marker data" }
         return element
+    }
+
+    protected inline fun <reified T : PsiElement> findElementWithDataAndOffsetInEditor(
+        marker: String = "^"
+    ): Triple<T, String, Int> {
+        return findElementWithDataAndOffsetInEditor(T::class.java, marker)
     }
 
     protected fun <T : PsiElement> findElementWithDataAndOffsetInEditor(

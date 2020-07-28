@@ -230,7 +230,11 @@ WildPat ::= '_'
 DerefPat ::= '*' Pat
 BorrowPat ::= '&' Pat
 DotPat ::= identifier '.' identifier { pin = 2 }
-BindingPat ::= identifier
+
+BindingPat ::= identifier {
+    implements = [ "org.move.lang.core.psi.ext.MvNameIdentifierOwner" ]
+    mixin = "org.move.lang.core.psi.ext.MvBindingPatImplMixin"
+}
 
 TuplePat ::= '(' TuplePat_body ')'
 private TuplePat_body ::= (Pat (',' Pat)*)? {
@@ -445,7 +449,13 @@ private Initializer ::= '=' Expr {
 
 BorrowExpr ::= '&' mut? Expr { pin = 1 }
 DotExpr ::= Expr '.' identifier
+
 PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArguments?
+
+//PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArguments? {
+//    implements = ["org.move.lang.core.psi.ext.MoveReferenceElement"]
+//    mixin = "org.move.lang.core.psi.ext.MvPathExprImplMixin"
+//}
 
 //Initializer ::= '=' Expr { pin = 1 }
 

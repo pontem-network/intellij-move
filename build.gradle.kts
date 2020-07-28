@@ -74,6 +74,7 @@ allprojects {
         dependsOn(generateRustLexer, generateRustParser)
         kotlinOptions {
             jvmTarget = "1.8"
+            freeCompilerArgs = listOf("-Xjvm-default=compatibility")
         }
     }
 }
