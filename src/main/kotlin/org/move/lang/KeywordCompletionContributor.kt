@@ -59,13 +59,13 @@ class KeywordCompletionContributor : CompletionContributor() {
                 "move"
             )
         )
-        extend(
-            CompletionType.BASIC,
-            baseCodeStatement().and(onStatementBeginning("let")),
-            KeywordCompletionProvider(
-                "mut"
-            )
-        )
+//        extend(
+//            CompletionType.BASIC,
+//            baseCodeStatement().and(onStatementBeginning("let")),
+//            KeywordCompletionProvider(
+//                "mut"
+//            )
+//        )
     }
 
     private fun onStatementBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =

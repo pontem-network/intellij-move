@@ -11,4 +11,5 @@ class CompleteParsingTest : MvParsingTestCase("complete") {
     fun `test assignment lhs`() = doTest(true)
     fun `test function calls`() = doTest(true)
     fun `test expressions`() = doTest(true)
+    fun `test let`() = doTest(true)
 }

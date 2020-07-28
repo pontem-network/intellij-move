@@ -56,10 +56,10 @@ class KeywordCompletionProviderTest : CompletionTestCase() {
         "let"
     )
 
-    fun `test let statement mut keyword`() = completionFixture.checkContainsCompletion(
-        "script { fun main () { let /*caret*/ } } ",
-        "mut"
-    )
+//    fun `test let statement mut keyword`() = completionFixture.checkContainsCompletion(
+//        "script { fun main () { let /*caret*/ } } ",
+//        "mut"
+//    )
 
 //    fun `test continue break in loop`() = completionFixture.checkContainsCompletion(
 //        "script { fun main() { loop { /*caret*/ } } } ",

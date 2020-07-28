@@ -12,7 +12,7 @@
     elementTypeClass="org.move.lang.core.MvElementType"
     tokenTypeClass="org.move.lang.core.MvTokenType"
     extends(".*Expr")=Expr
-    extends(".*Pattern")=Pattern
+    extends(".*Pat")=Pat
     tokens = [
         WHITESPACE='regexp:[ \n\t\r\f]'
         LINE_COMMENT='regexp:(//.*\n)|(//.*\R)'
@@ -222,22 +222,25 @@ private TypeArgument_recover ::= !(','|'>')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Patterns (destructuring)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Pattern ::= DerefPattern | BorrowPattern
-            | TuplePattern | StructPattern | DotPattern | identifier
+Pat ::= DerefPat | BorrowPat
+        | TuplePat | StructPat | DotPat
+        | WildPat | BindingPat
 
-DerefPattern ::= '*' Pattern
-BorrowPattern ::= '&' Pattern
-DotPattern ::= identifier '.' identifier { pin = 2 }
+WildPat ::= '_'
+DerefPat ::= '*' Pat
+BorrowPat ::= '&' Pat
+DotPat ::= identifier '.' identifier { pin = 2 }
+BindingPat ::= identifier
 
-TuplePattern ::= '(' TuplePattern_body ')'
-private TuplePattern_body ::= (Pattern (',' Pattern)*)? {
-    recoverWhile = "TuplePattern_body_recover"
+TuplePat ::= '(' TuplePat_body ')'
+private TuplePat_body ::= (Pat (',' Pat)*)? {
+    recoverWhile = "TuplePat_body_recover"
 }
-private TuplePattern_body_recover ::= !(')'|'=')
+private TuplePat_body_recover ::= !(')'|'=')
 
-StructPattern ::= PathExpr '{' (StructPatternField ','?)* '}' { pin = 2 }
-StructPatternField ::= identifier StructPatternFieldBinding?
-StructPatternFieldBinding ::= ':' (StructPattern | identifier) { pin = 1 }
+StructPat ::= PathExpr '{' (StructPatField ','?)* '}' { pin = 2 }
+StructPatField ::= identifier StructPatFieldBinding?
+StructPatFieldBinding ::= ':' (StructPat | BindingPat) { pin = 1 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Statements
@@ -430,8 +433,8 @@ ElseBlock ::= else AnyBlock { pin = 1 }
 LoopExpr ::= loop AnyBlock { pin = 1 }
 WhileExpr ::= while Condition AnyBlock { pin = 1 }
 
-AssignmentExpr ::= Pattern '=' Expr
-LetExpr ::= let mut? Pattern TypeAscription? Initializer? {
+AssignmentExpr ::= Pat '=' Expr
+LetExpr ::= let Pat TypeAscription? Initializer? {
     pin = 1
 }
 private Initializer ::= '=' Expr {
