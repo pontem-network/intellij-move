@@ -30,6 +30,8 @@
                                   implementation="org.move.lang.ReferenceContributor"/>
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.ErrorAnnotator"/>
+        <configurationType implementation="org.move.move_tools.CompilerCheckConfigurationType"/>
+
     </extensions>
 
     <actions>

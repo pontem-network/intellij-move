@@ -1,5 +1,5 @@
-import org.jetbrains.grammarkit.tasks.GenerateParser;
-import org.jetbrains.grammarkit.tasks.GenerateLexer;
+import org.jetbrains.grammarkit.tasks.GenerateLexer
+import org.jetbrains.grammarkit.tasks.GenerateParser
 
 val pluginName = "intellij-move"
 val pluginGroup = "org.move"
@@ -70,41 +70,16 @@ allprojects {
         purgeOldFiles = true
     }
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        dependsOn(generateRustLexer, generateRustParser)
-        kotlinOptions {
-            jvmTarget = "1.8"
-            freeCompilerArgs = listOf("-Xjvm-default=compatibility")
+    tasks {
+        withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+            dependsOn(generateRustLexer, generateRustParser)
+            kotlinOptions {
+                jvmTarget = "1.8"
+                freeCompilerArgs = listOf("-Xjvm-default=compatibility")
+            }
+        }
+        withType<org.jetbrains.intellij.tasks.RunIdeTask> {
+            jbrVersion("8u252b1649.2")
         }
     }
 }
-
-//group 'org.move'
-//version '0.1.0'
-//
-//repositories {
-//    mavenCentral()
-//    maven { url = "https://jetbrains.bintray.com/intellij-third-party-dependencies" }
-//}
-//
-//sourceSets {
-//    main {
-//        java.srcDirs 'src/main/gen'
-//    }
-//}
-//
-//intellij {
-//    version '2020.1'
-//}
-//
-//dependencies {
-//    implementation 'org.jetbrains:annotations:19.0.0'
-//}
-////
-//// See https://github.com/JetBrains/gradle-intellij-plugin/
-//
-//patchPluginXml {
-//    changeNotes """
-//      Add change notes here.<br>
-//      <em>most HTML tags may be used</em>"""
-//}
