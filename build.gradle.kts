@@ -1,7 +1,9 @@
 import org.jetbrains.grammarkit.tasks.GenerateLexer
 import org.jetbrains.grammarkit.tasks.GenerateParser
 
-val pluginName = "intellij-move"
+val intellijVersion = prop("intellijVersion")
+
+val pluginJarName = "intellij-move-$intellijVersion"
 val pluginGroup = "org.move"
 val pluginVersion = "0.4.0"
 
@@ -34,8 +36,8 @@ allprojects {
     }
 
     intellij {
-        pluginName = "intellij-move"
-        version = "2020.1"
+        pluginName = pluginJarName
+        version = intellijVersion
     }
 
     configure<JavaPluginConvention> {
@@ -83,3 +85,9 @@ allprojects {
         }
     }
 }
+
+fun hasProp(name: String): Boolean = extra.has(name)
+
+fun prop(name: String): String =
+    extra.properties[name] as? String
+        ?: error("Property `$name` is not defined in gradle.properties")

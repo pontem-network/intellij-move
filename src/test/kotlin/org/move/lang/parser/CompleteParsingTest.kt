@@ -12,4 +12,5 @@ class CompleteParsingTest : MvParsingTestCase("complete") {
     fun `test function calls`() = doTest(true)
     fun `test expressions`() = doTest(true)
     fun `test let`() = doTest(true)
+    fun `test comments`() = doTest(true)
 }

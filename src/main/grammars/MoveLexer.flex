@@ -22,6 +22,8 @@ import static org.move.lang.MvElementTypes.*;
 %type IElementType
 %unicode
 
+%s IN_BLOCK_COMMENT
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Whitespaces
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +38,7 @@ WHITE_SPACE      = {WHITE_SPACE_CHAR}+
 
 //WHITESPACE=[ \n\t\r\f]
 LINE_COMMENT=("//".*\n)|("//".*\R)
-BLOCK_COMMENT="/"\*(.|[ \t\n\x0B\f\r])*\*"/"
+//BLOCK_COMMENT="/"\*(.|[ \t\n\x0B\f\r])*\*"/"
 ADDRESS_LITERAL=0x[0-9a-fA-F]{1,40}
 BOOL_LITERAL=(true)|(false)
 INTEGER_LITERAL=[0-9]+((u8)|(u64)|(u128))?
@@ -106,9 +108,12 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "while"                    { return WHILE; }
   "let"                      { return LET; }
 
+  "/*"                      { yybegin(IN_BLOCK_COMMENT); yypushback(2); }
+
 //  {WHITESPACE}               { return WHITESPACE; }
   {LINE_COMMENT}             { return LINE_COMMENT; }
-  {BLOCK_COMMENT}            { return BLOCK_COMMENT; }
+
+//  {BLOCK_COMMENT}            { return BLOCK_COMMENT; }
   {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
   {BOOL_LITERAL}             { return BOOL_LITERAL; }
   {INTEGER_LITERAL}          { return INTEGER_LITERAL; }
@@ -116,6 +121,12 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   {BYTE_STRING_LITERAL}      { return BYTE_STRING_LITERAL; }
   {IDENTIFIER}               { return IDENTIFIER; }
 
+}
+
+<IN_BLOCK_COMMENT> {
+  "*/"    { yybegin(YYINITIAL); return BLOCK_COMMENT; }
+  <<EOF>> { yybegin(YYINITIAL); return BLOCK_COMMENT; }
+  [^]     { }
 }
 
 [^] { return BAD_CHARACTER; }
