@@ -1,0 +1,42 @@
+name: check
+
+jobs:
+    tests:
+        strategy:
+            matrix:
+                os: [ ubuntu-latest, windows-latest ]
+                platform-version: [ 2020.1, 2020.2 ]
+
+        runs-on: ${{ matrix.os }}
+        env:
+            ORG_GRADLE_PROJECT_intellijVersion: ${{ matrix.platform-version }}
+
+        steps:
+            -   uses: actions/checkout@v2
+
+            -   name: Set up JDK 1.8
+                uses: actions/setup-java@v1
+                with:
+                    java-version: 1.8
+
+            -   name: Download
+                uses: eskatos/gradle-command-action@v1
+                with:
+                    arguments: ":resolveDependencies -Pkotlin.incremental=false --no-daemon"
+
+            -   name: Build
+                uses: eskatos/gradle-command-action@v1
+                with:
+                    arguments: "assemble testClasses -Pkotlin.incremental=false --no-daemon"
+
+            -   name: Check
+                uses: eskatos/gradle-command-action@v1
+                with:
+                    arguments: "check -Pkotlin.incremental=false --no-daemon"
+
+            -   name: Verify plugin
+                uses: eskatos/gradle-command-action@v1
+                with:
+                    arguments: ":plugin:verifyPlugin"
+
+
