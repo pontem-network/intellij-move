@@ -433,4 +433,4 @@ FILE
           PsiWhiteSpace('\n    ')
           PsiElement(})('}')
     PsiWhiteSpace('\n')
-    PsiElement(})('}')tell
+    PsiElement(})('}')
