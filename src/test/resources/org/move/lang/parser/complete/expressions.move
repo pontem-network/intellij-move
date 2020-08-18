@@ -2,6 +2,8 @@ script {
     fun main() {
         (1 + 1) * (1 + 1);
         (!!true + !!true) * !!false;
+        1 % 2;
+        1 ^ 2;
 
         let a = 1 + 1;
         let b = let a = 1;

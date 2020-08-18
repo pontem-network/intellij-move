@@ -67,6 +67,8 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "-"                             { return MINUS; }
   "*"                             { return MUL; }
   "/"                             { return DIV; }
+  "%"                             { return MODULO; }
+  "^"                             { return XOR; }
 
   "<"                        { return LT; }
   ">"                        { return GT; }
