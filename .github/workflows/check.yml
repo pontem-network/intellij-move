@@ -25,11 +25,6 @@ jobs:
                 with:
                     java-version: 1.8
 
-            -   name: Download
-                uses: eskatos/gradle-command-action@v1
-                with:
-                    arguments: ":resolveDependencies -Pkotlin.incremental=false --no-daemon"
-
             -   name: Build
                 uses: eskatos/gradle-command-action@v1
                 with:
@@ -43,6 +38,6 @@ jobs:
             -   name: Verify plugin
                 uses: eskatos/gradle-command-action@v1
                 with:
-                    arguments: ":plugin:verifyPlugin"
+                    arguments: ":verifyPlugin"
 
 
