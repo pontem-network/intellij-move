@@ -5,6 +5,14 @@
         smart contract language for the Libra blockchain.
     </description>
     <vendor email="maxim.kurnikov@gmail.com">Maksim Kurnikov</vendor>
+    <change-notes>
+        <![CDATA[
+            <p>0.5.0</p>
+            <ul>
+                <li>Bug: fix block comments</li>
+            </ul>
+        ]]>
+    </change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
