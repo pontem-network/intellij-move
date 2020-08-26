@@ -105,4 +105,13 @@ abstract class MoveTestCase : BasePlatformTestCase() {
         return triples
     }
 
+    protected fun checkByText(
+        @Language("Move") before: String,
+        @Language("Move") after: String,
+        action: () -> Unit
+    ) {
+        InlineFile(before)
+        action()
+        myFixture.checkResult(replaceCaretMarker(after))
+    }
 }

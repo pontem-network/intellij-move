@@ -10,6 +10,7 @@
             <p>0.6.0</p>
             <ul>
                 <li>Feature: highlight primitive types as keywords</li>
+                <li>Feature: add auto-indentation for blocks</li>
             </ul>
             <p>0.5.0</p>
             <ul>
@@ -36,6 +37,9 @@
                         implementationClass="org.move.ide.MvCommenter"/>
         <lang.braceMatcher language="Move"
                            implementationClass="org.move.ide.MvBraceMatcher"/>
+        <lang.formatter language="Move"
+                        implementationClass="org.move.ide.formatter.MvFormattingModelBuilder"/>
+
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.KeywordCompletionContributor"/>
         <psi.referenceContributor language="Move"

@@ -84,26 +84,29 @@
 
 File ::= (ScriptDef | AddressDef | ModuleDef)*
 
-ScriptDef ::= script '{' ScriptDefBlock '}' {
+ScriptDef ::= script ScriptBlock {
     pin = 1
 }
-ScriptDefBlock ::= (ImportStatement | FunctionDef)* { recoverWhile = "ScriptDefBlock_recover" }
-private ScriptDefBlock_recover ::= !'}'
+ScriptBlock ::= '{' ScriptBlockItems '}' { pin = 1 }
+private ScriptBlockItems ::= (ImportStatement | FunctionDef)* { recoverWhile = "ScriptBlockItems_recover" }
+private ScriptBlockItems_recover ::= !'}'
 
-AddressDef ::= address ADDRESS_LITERAL '{' AddressDefBlock '}' {
+AddressDef ::= address ADDRESS_LITERAL AddressBlock {
     pin = 1
 }
-AddressDefBlock ::= ModuleDef* { recoverWhile = AddressDefBlock_recover }
-private AddressDefBlock_recover ::= !'}'
+AddressBlock ::= '{' AddressBlockItems '}' { pin = 1}
+private AddressBlockItems ::= ModuleDef* { recoverWhile = AddressBlockItems_recover }
+private AddressBlockItems_recover ::= !'}'
 
-ModuleDef ::= module identifier '{' ModuleDefBlock '}' {
+ModuleDef ::= module identifier ModuleBlock {
     pin = 1
     name = "module declaration"
     implements = [ "org.move.lang.core.psi.ext.MvNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.ext.MvModuleDefImplMixin"
 }
-ModuleDefBlock ::= ModuleItem* { recoverWhile = "ModuleItemSeq_recover" }
-private ModuleItemSeq_recover ::= !'}'
+ModuleBlock ::= '{' ModuleBlockItems '}' { pin = 1 }
+private ModuleBlockItems ::= ModuleItem* { recoverWhile = "ModuleBlockItems_recover" }
+private ModuleBlockItems_recover ::= !'}'
 
 private ModuleItem ::= ImportStatement | StructDef | FunctionDef | NativeFunctionDef | ConstDef
 

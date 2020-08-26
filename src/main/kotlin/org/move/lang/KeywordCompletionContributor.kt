@@ -9,10 +9,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.MovePatterns
-import org.move.lang.core.psi.MvAddressDefBlock
+import org.move.lang.core.psi.MvAddressBlock
 import org.move.lang.core.psi.MvCodeBlock
-import org.move.lang.core.psi.MvModuleDefBlock
-import org.move.lang.core.psi.MvScriptDefBlock
+import org.move.lang.core.psi.MvModuleBlock
+import org.move.lang.core.psi.MvScriptBlock
 import org.move.lang.core.psiElement
 
 class KeywordCompletionContributor : CompletionContributor() {
@@ -75,13 +75,13 @@ class KeywordCompletionContributor : CompletionContributor() {
         psiElementWithParent<MvFile>()
 
     private fun addressBlockDefinition(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvAddressDefBlock>()
+        psiElementWithParent<MvAddressBlock>()
 
     private fun moduleBlockDefinition(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvModuleDefBlock>()
+        psiElementWithParent<MvModuleBlock>()
 
     private fun scriptBlockDefinition(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvScriptDefBlock>()
+        psiElementWithParent<MvScriptBlock>()
 
     private fun baseCodeStatement(): PsiElementPattern.Capture<PsiElement> =
         psiElement().inside(psiElement<MvCodeBlock>())
