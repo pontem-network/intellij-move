@@ -5,6 +5,8 @@
 
 package org.move.utils.tests.annotator
 
+import com.intellij.codeInsight.daemon.impl.SeveritiesProvider
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
 import org.move.ide.annotator.AnnotatorBase
@@ -40,5 +42,12 @@ class AnnotatorTestFixture(
     ) {
         configureByText(text)
         codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn, ignoreExtraHighlighting)
+    }
+
+    fun registerSeverities(severities: List<HighlightSeverity>) {
+        val testSeverityProvider = TestSeverityProvider(severities)
+        // BACKCOMPAT: 2020.1
+        @Suppress("DEPRECATION")
+        SeveritiesProvider.EP_NAME.getPoint(null).registerExtension(testSeverityProvider, testRootDisposable)
     }
 }

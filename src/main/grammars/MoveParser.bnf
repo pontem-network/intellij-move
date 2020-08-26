@@ -3,6 +3,8 @@
     psiClassPrefix="Mv"
     psiImplClassSuffix="Impl"
 
+    implements="org.move.lang.core.psi.ext.MvElement"
+
     psiPackage="org.move.lang.core.psi"
     psiImplPackage="org.move.lang.core.psi.impl"
     parserUtilClass="org.move.lang.core.MvParserUtil"

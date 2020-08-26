@@ -7,6 +7,10 @@
     <vendor email="maxim.kurnikov@gmail.com">Maksim Kurnikov</vendor>
     <change-notes>
         <![CDATA[
+            <p>0.6.0</p>
+            <ul>
+                <li>Feature: highlight primitive types as keywords</li>
+            </ul>
             <p>0.5.0</p>
             <ul>
                 <li>Bug: fix block comments</li>
@@ -38,7 +42,11 @@
                                   implementation="org.move.lang.ReferenceContributor"/>
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.ErrorAnnotator"/>
+        <annotator language="Move"
+                   implementationClass="org.move.ide.annotator.BuiltinTypesHighlightingAnnotator"/>
         <configurationType implementation="org.move.move_tools.CompilerCheckConfigurationType"/>
+
+        <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>
 
     </extensions>
 
