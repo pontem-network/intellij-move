@@ -10,6 +10,7 @@
             <p>0.6.0</p>
             <ul>
                 <li>Feature: highlight primitive types as keywords</li>
+                <li>Feature: create new Move file action</li>
                 <li>Feature: add auto-indentation for blocks</li>
             </ul>
             <p>0.5.0</p>
@@ -29,6 +30,7 @@
                   extensions="move"
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
+
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
         <lang.syntaxHighlighter language="Move"
@@ -55,6 +57,11 @@
     </extensions>
 
     <actions>
-        <!-- Add your actions here -->
+        <action id="Move.NewMoveFile"
+                class="org.move.ide.actions.CreateMoveFileAction"
+                text="Move File"
+                description="Create new Move file">
+<!--            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>-->
+        </action>
     </actions>
 </idea-plugin>
