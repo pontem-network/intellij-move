@@ -114,4 +114,19 @@ abstract class MoveTestCase : BasePlatformTestCase() {
         action()
         myFixture.checkResult(replaceCaretMarker(after))
     }
+
+    protected fun checkByFile(ignoreTrailingWhitespace: Boolean = true, action: () -> Unit) {
+        val (before, after) = (fileName to fileName.replace(".move", "_after.move"))
+        myFixture.configureByFile(before)
+        action()
+        myFixture.checkResultByFile(after, ignoreTrailingWhitespace)
+    }
+
+    protected val fileName: String
+        get() = "${getTestName(true)}.move"
+
+    override fun getTestName(lowercaseFirstLetter: Boolean): String {
+        val camelCase = super.getTestName(lowercaseFirstLetter)
+        return camelOrWordsToSnake(camelCase)
+    }
 }

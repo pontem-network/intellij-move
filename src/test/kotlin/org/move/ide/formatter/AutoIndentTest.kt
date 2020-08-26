@@ -2,17 +2,9 @@ package org.move.ide.formatter
 
 import org.intellij.lang.annotations.Language
 import org.move.utils.tests.MoveTestCase
+import org.move.utils.tests.MoveTypingTestCase
 
-class AutoIndentTest : MoveTestCase() {
-    private fun doTestByText(
-        @Language("Move") before: String,
-        @Language("Move") after: String,
-        c: Char = '\n'
-    ) =
-        checkByText(before.trimIndent(), after.trimIndent()) {
-            myFixture.type(c)
-        }
-
+class AutoIndentTest : MoveTypingTestCase() {
     fun `test script`() = doTestByText("""
         script {/*caret*/}
     """, """
