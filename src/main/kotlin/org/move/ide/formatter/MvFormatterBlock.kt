@@ -3,6 +3,7 @@ package org.move.ide.formatter
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
 import com.intellij.psi.formatter.common.AbstractBlock
+import org.move.ide.formatter.impl.getIndentIfNotDelim
 import org.move.ide.formatter.impl.isDelimitedBlock
 import org.move.ide.formatter.impl.isWhitespaceOrEmpty
 
@@ -33,6 +34,7 @@ class MvFormatterBlock(
     override fun getChildAttributes(newChildIndex: Int): ChildAttributes {
         val indent = when {
             node.isDelimitedBlock -> Indent.getNormalIndent()
+            // Otherwise we don't want any indentation (null means continuation indent)
             else -> Indent.getNoneIndent()
         }
         return ChildAttributes(indent, null)
@@ -44,6 +46,7 @@ class MvFormatterBlock(
         val childType = child.elementType
         val childPsi = child.psi
         return when {
+            node.isDelimitedBlock -> getIndentIfNotDelim(child, node)
             else -> Indent.getNoneIndent()
         }
     }
