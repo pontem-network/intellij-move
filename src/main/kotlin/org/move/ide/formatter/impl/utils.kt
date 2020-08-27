@@ -3,19 +3,25 @@ package org.move.ide.formatter.impl
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType
-import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet.orSet
 import org.move.lang.MvElementTypes.*
+import org.move.lang.MvFile
+import org.move.lang.core.psi.*
 import com.intellij.psi.tree.TokenSet.create as ts
 
 
 val UNARY_OPS = ts(MINUS, MUL, EXCL, AND)
-val BINARY_OPS = ts(PLUS, MINUS, MUL, DIV, MODULO,
-                    OR, AND, OR_OR, AND_AND,
-                    EQ, EQ_EQ)
+val BINARY_OPS = ts(
+    PLUS, MINUS, MUL, DIV, MODULO,
+    OR, AND, OR_OR, AND_AND,
+    EQ, EQ_EQ
+)
+val ONE_LINE_ITEMS = ts(IMPORT_STATEMENT, CONST_DEF)
 
-val PAREN_DELIMITED_BLOCKS = ts(PARENS_EXPR, TUPLE_PAT, TUPLE_TYPE, TUPLE_LITERAL_EXPR,
-                                FUNCTION_PARAMS, CALL_ARGUMENTS)
+val PAREN_DELIMITED_BLOCKS = ts(
+    PARENS_EXPR, TUPLE_PAT, TUPLE_TYPE, TUPLE_LITERAL_EXPR,
+    FUNCTION_PARAMS, CALL_ARGUMENTS
+)
 val ANGLE_DELIMITED_BLOCKS = ts(TYPE_PARAMETER_LIST, TYPE_ARGUMENT_LIST)
 
 val BLOCK_LIKE = ts(SCRIPT_BLOCK, ADDRESS_BLOCK, MODULE_BLOCK, CODE_BLOCK, STRUCT_FIELDS)
@@ -23,6 +29,19 @@ val BLOCK_LIKE = ts(SCRIPT_BLOCK, ADDRESS_BLOCK, MODULE_BLOCK, CODE_BLOCK, STRUC
 val DELIMITED_BLOCKS = orSet(PAREN_DELIMITED_BLOCKS, ANGLE_DELIMITED_BLOCKS, BLOCK_LIKE)
 
 fun ASTNode?.isWhitespaceOrEmpty() = this == null || textLength == 0 || elementType == TokenType.WHITE_SPACE
+
+val PsiElement.isTopLevelItem: Boolean
+    get() = (this is MvModuleDef || this is MvAddressDef || this is MvScriptDef) && parent is MvFile
+
+val PsiElement.isDeclarationItem: Boolean
+    get() = (this is MvModuleDef && parent is MvAddressBlock)
+            || (this is MvFunctionDef || this is MvConstDef || this is MvStructDef || this is MvImport)
+
+val PsiElement.isStatement: Boolean
+    get() = this is MvStatement && parent is MvCodeBlock
+
+val PsiElement.isStatementOrExpr: Boolean
+    get() = this is MvStatement || this is MvExpr && parent is MvCodeBlock
 
 val ASTNode.isDelimitedBlock: Boolean
     get() = elementType in DELIMITED_BLOCKS

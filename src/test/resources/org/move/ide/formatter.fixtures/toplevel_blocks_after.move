@@ -9,6 +9,7 @@ module M {
 address 0x0 {
     module M {
         struct MyStruct {}
+
         fun main() {}
     }
 }

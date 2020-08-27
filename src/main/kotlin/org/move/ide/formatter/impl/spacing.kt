@@ -27,9 +27,12 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .before(COLON).spaceIf(false)
 
         //== empty parens
+        .between(L_BRACE, R_BRACE).spacing(0, 0, 0, false, 0)
         .between(L_PAREN, R_PAREN).spacing(0, 0, 0, false, 0)
 
         //== paren delimited lists
+        .afterInside(L_BRACE, BLOCK_LIKE).spacing(0, 0, 0, true, 0)
+        .beforeInside(R_BRACE, BLOCK_LIKE).spacing(0, 0, 0, true, 0)
         .afterInside(L_PAREN, PAREN_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)
         .beforeInside(R_PAREN, PAREN_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)
         .afterInside(LT, ANGLE_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)
@@ -51,7 +54,29 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
 }
 
 fun Block.computeSpacing(child1: Block?, child2: Block, ctx: MvFmtContext): Spacing? {
-//    if (child1 is ASTBlock && child2 is ASTBlock) SpacingContext.create(child1, child2)
+    if (child1 is ASTBlock && child2 is ASTBlock) SpacingContext.create(child1, child2)?.apply {
+        when {
+            ncPsi1.isStatement && ncPsi2.isStatementOrExpr
+            -> return lineBreak(
+                keepLineBreaks = ctx.commonSettings.KEEP_LINE_BREAKS,
+                keepBlankLines = ctx.commonSettings.KEEP_BLANK_LINES_IN_CODE
+            )
+            ncPsi1.isTopLevelItem && ncPsi2.isTopLevelItem
+            -> return lineBreak(
+                minLineFeeds = if (!needsBlankLineBetweenItems()) 0 else 1,
+                keepLineBreaks = ctx.commonSettings.KEEP_LINE_BREAKS,
+                keepBlankLines = ctx.commonSettings.KEEP_BLANK_LINES_IN_DECLARATIONS
+            )
+
+            ncPsi1.isDeclarationItem && ncPsi2.isDeclarationItem
+            -> return lineBreak(
+                minLineFeeds = 1 + if (!needsBlankLineBetweenItems()) 0 else 1,
+                keepLineBreaks = ctx.commonSettings.KEEP_LINE_BREAKS,
+                keepBlankLines = ctx.commonSettings.KEEP_BLANK_LINES_IN_DECLARATIONS
+            )
+
+        }
+    }
     return ctx.spacingBuilder.getSpacing(this, child1, child2)
 }
 
@@ -116,6 +141,13 @@ private inline fun SpacingBuilder.applyForEach(
     return self
 }
 
+private fun lineBreak(
+    minLineFeeds: Int = 1,
+    keepLineBreaks: Boolean = true,
+    keepBlankLines: Int = 1
+): Spacing =
+    Spacing.createSpacing(0, Int.MAX_VALUE, minLineFeeds, keepLineBreaks, keepBlankLines)
+
 private fun ASTNode.hasLineBreakAfterInSameParent(): Boolean =
     treeNext != null && TreeUtil.findFirstLeaf(treeNext).isWhiteSpaceWithLineBreak()
 
@@ -124,4 +156,15 @@ private fun ASTNode.hasLineBreakBeforeInSameParent(): Boolean =
 
 private fun ASTNode?.isWhiteSpaceWithLineBreak(): Boolean =
     this != null && elementType == TokenType.WHITE_SPACE && textContains('\n')
+
+private fun SpacingContext.needsBlankLineBetweenItems(): Boolean {
+//    if (elementType1 in MV_COMMENTS || elementType2 in MV_COMMENTS)
+//        return false
+
+    // Allow to keep consecutive runs of `use`, `const` or other "one line" items without blank lines
+    if (elementType1 == elementType2 && elementType1 in ONE_LINE_ITEMS)
+        return false
+
+    return true
+}
 
