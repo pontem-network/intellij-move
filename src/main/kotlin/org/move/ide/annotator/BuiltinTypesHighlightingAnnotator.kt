@@ -7,7 +7,7 @@ import com.intellij.psi.util.elementType
 import org.move.ide.colors.MoveColor
 import org.move.lang.MoveElementTypes.IDENTIFIER
 import org.move.lang.core.psi.MovePathExpr
-import org.move.lang.core.psi.ext.MoveElement
+import org.move.lang.core.psi.MoveElement
 
 val PRIMITIVE_TYPE_IDENTIFIERS = setOf("signer", "u8", "u64", "u128", "address")
 

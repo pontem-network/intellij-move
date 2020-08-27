@@ -3,7 +3,8 @@
     psiClassPrefix="Move"
     psiImplClassSuffix="Impl"
 
-    implements="org.move.lang.core.psi.ext.MoveElement"
+    implements="org.move.lang.core.psi.MoveElement"
+    extends="org.move.lang.core.psi.impl.MoveElementImpl"
 
     psiPackage="org.move.lang.core.psi"
     psiImplPackage="org.move.lang.core.psi.impl"
@@ -102,7 +103,7 @@ ModuleDef ::= module identifier ModuleBlock {
     pin = 1
     name = "module declaration"
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.ext.MoveModuleDefImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveModuleDefImplMixin"
 }
 ModuleBlock ::= '{' ModuleBlockItems '}' { pin = 1 }
 private ModuleBlockItems ::= ModuleItem* { recoverWhile = "ModuleBlockItems_recover" }
@@ -129,7 +130,7 @@ NativeFunctionDef ::= native public? fun identifier TypeParameterList?
     pin = 1
     name = "native function"
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.ext.MoveNativeFunctionDefImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveNativeFunctionDefImplMixin"
 }
 
 FunctionDef ::= public? fun identifier TypeParameterList?
@@ -141,7 +142,7 @@ FunctionDef ::= public? fun identifier TypeParameterList?
     pin = "fun"
     name = "function"
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.ext.MoveFunctionDefImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveFunctionDefImplMixin"
 }
 
 // trailing comma is allowed
@@ -240,7 +241,7 @@ DotPat ::= identifier '.' identifier { pin = 2 }
 
 BindingPat ::= identifier {
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.ext.MoveBindingPatImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveBindingPatImplMixin"
 }
 
 TuplePat ::= '(' TuplePat_body ')'
@@ -460,8 +461,8 @@ DotExpr ::= Expr '.' identifier
 PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArgumentList?
 
 //PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArguments? {
-//    implements = ["org.move.lang.core.psi.ext.MoveReferenceElement"]
-//    mixin = "org.move.lang.core.psi.ext.MovePathExprImplMixin"
+//    implements = ["org.move.lang.core.psi.mixins.MoveReferenceElement"]
+//    mixin = "org.move.lang.core.psi.mixins.MovePathExprImplMixin"
 //}
 
 //Initializer ::= '=' Expr { pin = 1 }
