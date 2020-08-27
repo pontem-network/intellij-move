@@ -9,9 +9,10 @@
         <![CDATA[
             <p>0.6.0</p>
             <ul>
-                <li>Feature: highlight primitive types as keywords</li>
+                <li>Feature: initial "Reformat Code" support</li>
                 <li>Feature: create new Move file action</li>
                 <li>Feature: add auto-indentation for blocks</li>
+                <li>Feature: highlight primitive types as keywords</li>
             </ul>
             <p>0.5.0</p>
             <ul>
