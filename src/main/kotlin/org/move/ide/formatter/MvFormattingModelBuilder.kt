@@ -9,7 +9,8 @@ import com.intellij.psi.codeStyle.CodeStyleSettings
 
 class MvFormattingModelBuilder : FormattingModelBuilder {
     override fun createModel(element: PsiElement, settings: CodeStyleSettings): FormattingModel {
-        val block = MvFormatterBlock(element.node, null, null, Indent.getNoneIndent())
+        val ctx = MvFmtContext.create(settings)
+        val block = MvFormatterBlock(element.node, null, null, Indent.getNoneIndent(), ctx)
         return FormattingModelProvider.createFormattingModelForPsiFile(
             element.containingFile,
             block,

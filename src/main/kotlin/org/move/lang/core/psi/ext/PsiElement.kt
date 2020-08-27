@@ -68,3 +68,11 @@ val PsiElement.rangeWithSurroundingLineBreaks: TextRange
         val newLineAfter = text.indexOf('\n', endOffset).takeIf { it >= 0 }?.let { it + 1 } ?: endOffset
         return TextRange(newLineBefore, newLineAfter)
     }
+
+/** Finds first sibling that is neither comment, nor whitespace before given element */
+fun PsiElement?.getPrevNonCommentSibling(): PsiElement? =
+    PsiTreeUtil.skipWhitespacesAndCommentsBackward(this)
+
+/** Finds first sibling that is neither comment, nor whitespace after given element */
+fun PsiElement?.getNextNonCommentSibling(): PsiElement? =
+    PsiTreeUtil.skipWhitespacesAndCommentsForward(this)

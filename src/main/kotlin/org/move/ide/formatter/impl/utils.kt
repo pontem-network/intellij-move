@@ -5,6 +5,11 @@ import com.intellij.psi.TokenType
 import org.move.lang.MvElementTypes.*
 import com.intellij.psi.tree.TokenSet.create as ts
 
+val UNARY_OPS = ts(MINUS, MUL, EXCL, AND)
+val BINARY_OPS = ts(PLUS, MINUS, MUL, DIV, MODULO,
+                    OR, AND, OR_OR, AND_AND,
+                    EQ, EQ_EQ)
+
 val BLOCK_LIKE = ts(SCRIPT_BLOCK, ADDRESS_BLOCK, MODULE_BLOCK, CODE_BLOCK, STRUCT_FIELDS)
 
 fun ASTNode?.isWhitespaceOrEmpty() = this == null || textLength == 0 || elementType == TokenType.WHITE_SPACE

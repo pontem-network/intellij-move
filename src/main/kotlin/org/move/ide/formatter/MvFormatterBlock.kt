@@ -3,6 +3,7 @@ package org.move.ide.formatter
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
 import com.intellij.psi.formatter.common.AbstractBlock
+import org.move.ide.formatter.impl.computeSpacing
 import org.move.ide.formatter.impl.getIndentIfNotDelim
 import org.move.ide.formatter.impl.isDelimitedBlock
 import org.move.ide.formatter.impl.isWhitespaceOrEmpty
@@ -11,12 +12,13 @@ class MvFormatterBlock(
     node: ASTNode,
     wrap: Wrap?,
     alignment: Alignment?,
-    private val indent: Indent?
+    private val indent: Indent?,
+    val ctx: MvFmtContext
 ) : AbstractBlock(node, wrap, alignment) {
-    override fun getSpacing(child1: Block?, child2: Block): Spacing? = null
     override fun isLeaf(): Boolean = node.firstChildNode == null
-
     override fun getIndent(): Indent? = indent
+
+    override fun getSpacing(child1: Block?, child2: Block): Spacing? = computeSpacing(child1, child2, ctx)
 
     override fun buildChildren(): List<Block> {
         return node.getChildren(null)
@@ -26,7 +28,8 @@ class MvFormatterBlock(
                     node = childNode,
                     alignment = null,
                     indent = computeIndent(childNode),
-                    wrap = null
+                    wrap = null,
+                    ctx = ctx
                 )
             }
     }
