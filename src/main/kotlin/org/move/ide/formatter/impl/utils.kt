@@ -4,8 +4,8 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet.orSet
-import org.move.lang.MvElementTypes.*
-import org.move.lang.MvFile
+import org.move.lang.MoveElementTypes.*
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import com.intellij.psi.tree.TokenSet.create as ts
 
@@ -31,17 +31,17 @@ val DELIMITED_BLOCKS = orSet(PAREN_DELIMITED_BLOCKS, ANGLE_DELIMITED_BLOCKS, BLO
 fun ASTNode?.isWhitespaceOrEmpty() = this == null || textLength == 0 || elementType == TokenType.WHITE_SPACE
 
 val PsiElement.isTopLevelItem: Boolean
-    get() = (this is MvModuleDef || this is MvAddressDef || this is MvScriptDef) && parent is MvFile
+    get() = (this is MoveModuleDef || this is MoveAddressDef || this is MoveScriptDef) && parent is MoveFile
 
 val PsiElement.isDeclarationItem: Boolean
-    get() = (this is MvModuleDef && parent is MvAddressBlock)
-            || (this is MvFunctionDef || this is MvConstDef || this is MvStructDef || this is MvImport)
+    get() = (this is MoveModuleDef && parent is MoveAddressBlock)
+            || (this is MoveFunctionDef || this is MoveConstDef || this is MoveStructDef || this is MoveImport)
 
 val PsiElement.isStatement: Boolean
-    get() = this is MvStatement && parent is MvCodeBlock
+    get() = this is MoveStatement && parent is MoveCodeBlock
 
 val PsiElement.isStatementOrExpr: Boolean
-    get() = this is MvStatement || this is MvExpr && parent is MvCodeBlock
+    get() = this is MoveStatement || this is MoveExpr && parent is MoveCodeBlock
 
 val ASTNode.isDelimitedBlock: Boolean
     get() = elementType in DELIMITED_BLOCKS

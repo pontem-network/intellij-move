@@ -1,9 +1,9 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.MvBindingPat
+import org.move.lang.core.psi.MoveBindingPat
+import org.move.lang.core.psi.impl.MoveNamedElementImpl
 
-abstract class MvBindingPatImplMixin(node: ASTNode): MvNamedElementImpl(node), MvBindingPat {
+abstract class MoveBindingPatImplMixin(node: ASTNode): MoveNamedElementImpl(node), MoveBindingPat {
 
 }

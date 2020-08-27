@@ -18,7 +18,7 @@ class MoveParserDefinition : ParserDefinition {
     }
 
     override fun createParser(project: Project): PsiParser {
-        return MvParser()
+        return MoveParser()
     }
 
     override fun getFileNodeType(): IFileElementType {
@@ -26,20 +26,20 @@ class MoveParserDefinition : ParserDefinition {
     }
 
     override fun getCommentTokens(): TokenSet {
-        return tokenSetOf(MvElementTypes.LINE_COMMENT, MvElementTypes.BLOCK_COMMENT)
+        return tokenSetOf(MoveElementTypes.LINE_COMMENT, MoveElementTypes.BLOCK_COMMENT)
     }
 
     override fun getStringLiteralElements(): TokenSet {
         // hex string is not included, as it's basically vector<u8> and not string
-        return tokenSetOf(MvElementTypes.BYTE_STRING_LITERAL)
+        return tokenSetOf(MoveElementTypes.BYTE_STRING_LITERAL)
     }
 
     override fun createElement(node: ASTNode): PsiElement {
-        return MvElementTypes.Factory.createElement(node)
+        return MoveElementTypes.Factory.createElement(node)
     }
 
     override fun createFile(viewProvider: FileViewProvider): PsiFile {
-        return MvFile(viewProvider)
+        return MoveFile(viewProvider)
     }
 
     companion object {

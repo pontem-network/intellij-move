@@ -5,7 +5,7 @@ import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.options.colors.AttributesDescriptor
 
-enum class MvColor(humanName: String, default: TextAttributesKey? = null) {
+enum class MoveColor(humanName: String, default: TextAttributesKey? = null) {
     IDENTIFIER("Variables//Default", DefaultLanguageHighlighterColors.IDENTIFIER),
     KEYWORD("Keywords//Keyword", DefaultLanguageHighlighterColors.KEYWORD),
     PRIMITIVE_TYPE("Types//Primitive", DefaultLanguageHighlighterColors.KEYWORD);

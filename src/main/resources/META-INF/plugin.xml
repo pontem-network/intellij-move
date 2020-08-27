@@ -35,13 +35,13 @@
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
         <lang.syntaxHighlighter language="Move"
-                                implementationClass="org.move.ide.MvHighlighter"/>
+                                implementationClass="org.move.ide.MoveHighlighter"/>
         <lang.commenter language="Move"
-                        implementationClass="org.move.ide.MvCommenter"/>
+                        implementationClass="org.move.ide.MoveCommenter"/>
         <lang.braceMatcher language="Move"
-                           implementationClass="org.move.ide.MvBraceMatcher"/>
+                           implementationClass="org.move.ide.MoveBraceMatcher"/>
         <lang.formatter language="Move"
-                        implementationClass="org.move.ide.formatter.MvFormattingModelBuilder"/>
+                        implementationClass="org.move.ide.formatter.MoveFormattingModelBuilder"/>
 
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.KeywordCompletionContributor"/>
@@ -53,7 +53,7 @@
                    implementationClass="org.move.ide.annotator.BuiltinTypesHighlightingAnnotator"/>
         <configurationType implementation="org.move.move_tools.CompilerCheckConfigurationType"/>
 
-        <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>
+        <colorSettingsPage implementation="org.move.ide.colors.MoveColorSettingsPage"/>
 
     </extensions>
 

@@ -1,18 +1,18 @@
 {
-    parserClass="org.move.lang.MvParser"
-    psiClassPrefix="Mv"
+    parserClass="org.move.lang.MoveParser"
+    psiClassPrefix="Move"
     psiImplClassSuffix="Impl"
 
-    implements="org.move.lang.core.psi.ext.MvElement"
+    implements="org.move.lang.core.psi.ext.MoveElement"
 
     psiPackage="org.move.lang.core.psi"
     psiImplPackage="org.move.lang.core.psi.impl"
-    parserUtilClass="org.move.lang.core.MvParserUtil"
+    parserUtilClass="org.move.lang.core.MoveParserUtil"
 
-    elementTypeHolderClass="org.move.lang.MvElementTypes"
+    elementTypeHolderClass="org.move.lang.MoveElementTypes"
 
-    elementTypeClass="org.move.lang.core.MvElementType"
-    tokenTypeClass="org.move.lang.core.MvTokenType"
+    elementTypeClass="org.move.lang.core.MoveElementType"
+    tokenTypeClass="org.move.lang.core.MoveTokenType"
     extends(".*Expr")=Expr
     extends(".*Pat")=Pat
     tokens = [
@@ -79,7 +79,7 @@
 // Naming convention:
 //
 //   * tokens are lowercase: for, if, identifier
-//   * rules are PascalCase: StructItem, EnumVariant
+//   * rules are PascalCase: StructItem, EnuMoveariant
 //   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
 
 File ::= (ScriptDef | AddressDef | ModuleDef)*
@@ -101,8 +101,8 @@ private AddressBlockItems_recover ::= !'}'
 ModuleDef ::= module identifier ModuleBlock {
     pin = 1
     name = "module declaration"
-    implements = [ "org.move.lang.core.psi.ext.MvNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.ext.MvModuleDefImplMixin"
+    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
+    mixin = "org.move.lang.core.psi.ext.MoveModuleDefImplMixin"
 }
 ModuleBlock ::= '{' ModuleBlockItems '}' { pin = 1 }
 private ModuleBlockItems ::= ModuleItem* { recoverWhile = "ModuleBlockItems_recover" }
@@ -128,8 +128,8 @@ NativeFunctionDef ::= native public? fun identifier TypeParameterList?
 {
     pin = 1
     name = "native function"
-    implements = [ "org.move.lang.core.psi.ext.MvNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.ext.MvNativeFunctionDefImplMixin"
+    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
+    mixin = "org.move.lang.core.psi.ext.MoveNativeFunctionDefImplMixin"
 }
 
 FunctionDef ::= public? fun identifier TypeParameterList?
@@ -140,8 +140,8 @@ FunctionDef ::= public? fun identifier TypeParameterList?
 {
     pin = "fun"
     name = "function"
-    implements = [ "org.move.lang.core.psi.ext.MvNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.ext.MvFunctionDefImplMixin"
+    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
+    mixin = "org.move.lang.core.psi.ext.MoveFunctionDefImplMixin"
 }
 
 // trailing comma is allowed
@@ -239,8 +239,8 @@ BorrowPat ::= '&' Pat
 DotPat ::= identifier '.' identifier { pin = 2 }
 
 BindingPat ::= identifier {
-    implements = [ "org.move.lang.core.psi.ext.MvNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.ext.MvBindingPatImplMixin"
+    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
+    mixin = "org.move.lang.core.psi.ext.MoveBindingPatImplMixin"
 }
 
 TuplePat ::= '(' TuplePat_body ')'
@@ -461,7 +461,7 @@ PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArgumentL
 
 //PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArguments? {
 //    implements = ["org.move.lang.core.psi.ext.MoveReferenceElement"]
-//    mixin = "org.move.lang.core.psi.ext.MvPathExprImplMixin"
+//    mixin = "org.move.lang.core.psi.ext.MovePathExprImplMixin"
 //}
 
 //Initializer ::= '=' Expr { pin = 1 }

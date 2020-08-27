@@ -4,22 +4,22 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 import com.intellij.psi.PsiReferenceBase
-import org.move.lang.core.psi.MvPathExpr
+import org.move.lang.core.psi.MovePathExpr
 
-interface MvPathExprReference : PsiReference
+interface MovePathExprReference : PsiReference
 
-class MvPathExprReferenceImpl(element: MvPathExpr) : PsiReferenceBase<MvPathExpr>(element),
-    MvPathExprReference {
+class MovePathExprReferenceImpl(element: MovePathExpr) : PsiReferenceBase<MovePathExpr>(element),
+    MovePathExprReference {
     override fun resolve(): PsiElement? {
         return null
     }
 }
 
-abstract class MvPathExprImplMixin(node: ASTNode) : MoveElementImpl(node), MoveReferenceElement, MvPathExpr {
+abstract class MovePathExprImplMixin(node: ASTNode) : MoveElementImpl(node), MoveReferenceElement, MovePathExpr {
     override val referenceNameElement: PsiElement?
         get() = null
 
-    override fun getReference(): MvPathExprReference? {
-        return MvPathExprReferenceImpl(this)
+    override fun getReference(): MovePathExprReference? {
+        return MovePathExprReferenceImpl(this)
     }
 }

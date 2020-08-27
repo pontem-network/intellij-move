@@ -1,13 +1,13 @@
 package org.move.ide
 
 import org.move.ide.annotator.BuiltinTypesHighlightingAnnotator
-import org.move.ide.colors.MvColor
+import org.move.ide.colors.MoveColor
 import org.move.utils.tests.annotator.AnnotatorTestCase
 
 class BuiltinTypesHighlightingAnnotatorTest : AnnotatorTestCase(BuiltinTypesHighlightingAnnotator::class) {
     override fun setUp() {
         super.setUp()
-        createAnnotatorFixture().registerSeverities(MvColor.values().map(MvColor::testSeverity))
+        createAnnotatorFixture().registerSeverities(MoveColor.values().map(MoveColor::testSeverity))
     }
 
     fun `test builtin types highlighted as keywords`() = checkHighlighting(

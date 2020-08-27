@@ -5,18 +5,18 @@ import com.intellij.psi.tree.IElementType;
 
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
-import static org.move.lang.MvElementTypes.*;
+import static org.move.lang.MoveElementTypes.*;
 
 %%
 
 %{
-  public _MvLexer() {
+  public _MoveLexer() {
     this((java.io.Reader)null);
   }
 %}
 
 %public
-%class _MvLexer
+%class _MoveLexer
 %implements FlexLexer
 %function advance
 %type IElementType

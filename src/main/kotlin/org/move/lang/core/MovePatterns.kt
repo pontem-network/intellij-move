@@ -9,7 +9,7 @@ import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.ProcessingContext
-import org.move.lang.MvElementTypes.*
+import org.move.lang.MoveElementTypes.*
 import org.move.lang.core.psi.ext.leftLeaves
 
 object MovePatterns {

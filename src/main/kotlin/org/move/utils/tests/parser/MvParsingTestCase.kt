@@ -6,7 +6,7 @@ import org.move.lang.MoveParserDefinition
 import org.move.utils.tests.MoveTestCase
 import org.move.utils.tests.camelOrWordsToSnake
 
-abstract class MvParsingTestCase(@NonNls dataPath: String) : ParsingTestCase(
+abstract class MoveParsingTestCase(@NonNls dataPath: String) : ParsingTestCase(
     "org/move/lang/parser/$dataPath",
     "move",
     true,

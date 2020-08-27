@@ -6,7 +6,7 @@ import com.intellij.psi.PsiReference
 /**
  * Provides basic methods for reference implementation. This interface should not be used in any analysis.
  */
-//interface MvReferenceElementBase : PsiElement {
+//interface MoveReferenceElementBase : PsiElement {
 //    val referenceNameElement: PsiElement?
 //
 //    @JvmDefault
@@ -26,7 +26,7 @@ interface MoveReferenceElement : PsiElement {
     override fun getReference(): PsiReference?
 }
 
-//interface MvPathReferenceElement : MvReferenceElement {
+//interface MovePathReferenceElement : MoveReferenceElement {
 //    override fun getReference(): Nv?
 //
 //    override val referenceNameElement: PsiElement

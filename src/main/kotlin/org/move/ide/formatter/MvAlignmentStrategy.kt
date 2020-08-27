@@ -10,32 +10,32 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 
-interface MvAlignmentStrategy {
+interface MoveAlignmentStrategy {
     /**
      * Requests current strategy for alignment to use for given child.
      */
-    fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MvFmtContext): Alignment?
+    fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MoveFmtContext): Alignment?
 
     /**
      * Always returns `null`.
      */
-    object NullStrategy : MvAlignmentStrategy {
-        override fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MvFmtContext): Alignment? = null
+    object NullStrategy : MoveAlignmentStrategy {
+        override fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MoveFmtContext): Alignment? = null
     }
 
     /**
      * Apply this strategy only when child element is in [tt].
      */
-    fun alignIf(vararg tt: IElementType): MvAlignmentStrategy = alignIf(TokenSet.create(*tt))
+    fun alignIf(vararg tt: IElementType): MoveAlignmentStrategy = alignIf(TokenSet.create(*tt))
 
     /**
      * Apply this strategy only when child element type matches [filterSet].
      */
-    fun alignIf(filterSet: TokenSet): MvAlignmentStrategy =
-        object : MvAlignmentStrategy {
-            override fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MvFmtContext): Alignment? =
+    fun alignIf(filterSet: TokenSet): MoveAlignmentStrategy =
+        object : MoveAlignmentStrategy {
+            override fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MoveFmtContext): Alignment? =
                 if (child.elementType in filterSet) {
-                    this@MvAlignmentStrategy.getAlignment(child, parent, childCtx)
+                    this@MoveAlignmentStrategy.getAlignment(child, parent, childCtx)
                 } else {
                     null
                 }
@@ -44,11 +44,11 @@ interface MvAlignmentStrategy {
     /**
      * Apply this strategy only when [predicate] passes.
      */
-    fun alignIf(predicate: (child: ASTNode, parent: ASTNode?, ctx: MvFmtContext) -> Boolean): MvAlignmentStrategy =
-        object : MvAlignmentStrategy {
-            override fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MvFmtContext): Alignment? =
+    fun alignIf(predicate: (child: ASTNode, parent: ASTNode?, ctx: MoveFmtContext) -> Boolean): MoveAlignmentStrategy =
+        object : MoveAlignmentStrategy {
+            override fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MoveFmtContext): Alignment? =
                 if (predicate(child, parent, childCtx)) {
-                    this@MvAlignmentStrategy.getAlignment(child, parent, childCtx)
+                    this@MoveAlignmentStrategy.getAlignment(child, parent, childCtx)
                 } else {
                     null
                 }
@@ -57,7 +57,7 @@ interface MvAlignmentStrategy {
     /**
      * Returns [NullStrategy] if [condition] is `false`. Useful for making strategies configurable.
      */
-    fun alignIf(condition: Boolean): MvAlignmentStrategy =
+    fun alignIf(condition: Boolean): MoveAlignmentStrategy =
         if (condition) {
             this
         } else {
@@ -68,18 +68,18 @@ interface MvAlignmentStrategy {
         /**
          * Always returns [alignment].
          */
-        fun wrap(alignment: Alignment = Alignment.createAlignment()): MvAlignmentStrategy =
-            object : MvAlignmentStrategy {
-                override fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MvFmtContext): Alignment? =
+        fun wrap(alignment: Alignment = Alignment.createAlignment()): MoveAlignmentStrategy =
+            object : MoveAlignmentStrategy {
+                override fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MoveFmtContext): Alignment? =
                     alignment
             }
 
         /**
-         * Always returns [MvFmtContext.sharedAlignment]
+         * Always returns [MoveFmtContext.sharedAlignment]
          */
-        fun shared(): MvAlignmentStrategy =
-            object : MvAlignmentStrategy {
-                override fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MvFmtContext): Alignment? =
+        fun shared(): MoveAlignmentStrategy =
+            object : MoveAlignmentStrategy {
+                override fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MoveFmtContext): Alignment? =
                     childCtx.sharedAlignment
             }
     }

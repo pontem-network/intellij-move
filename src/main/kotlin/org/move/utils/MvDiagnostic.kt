@@ -3,7 +3,7 @@ package org.move.utils
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.psi.PsiElement
 
-sealed class MvDiagnostic(
+sealed class MoveDiagnostic(
     val element: PsiElement,
     val endElement: PsiElement? = null
 ) {
@@ -29,7 +29,7 @@ class PreparedAnnotation(
     val description: String = ""
 )
 
-//fun MvDiagnostic.addToHolder(holder: ProblemsHolder) {
+//fun MoveDiagnostic.addToHolder(holder: ProblemsHolder) {
 //    val prepared = prepare()
 //    val descriptor = holder.manager.createProblemDescriptor(
 //        element,

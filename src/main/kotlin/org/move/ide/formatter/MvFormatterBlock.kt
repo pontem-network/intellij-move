@@ -4,15 +4,15 @@ import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
 import com.intellij.psi.formatter.common.AbstractBlock
 import org.move.ide.formatter.impl.*
-import org.move.lang.MvElementTypes.FUNCTION_PARAM
-import org.move.lang.MvElementTypes.FUNCTION_PARAMS
+import org.move.lang.MoveElementTypes.FUNCTION_PARAM
+import org.move.lang.MoveElementTypes.FUNCTION_PARAMS
 
-class MvFormatterBlock(
+class MoveFormatterBlock(
     node: ASTNode,
     wrap: Wrap?,
     alignment: Alignment?,
     private val indent: Indent?,
-    val ctx: MvFmtContext
+    val ctx: MoveFmtContext
 ) : AbstractBlock(node, wrap, alignment) {
     override fun isLeaf(): Boolean = node.firstChildNode == null
     override fun getIndent(): Indent? = indent
@@ -34,7 +34,7 @@ class MvFormatterBlock(
             .filter { !it.isWhitespaceOrEmpty() }
             .map { childNode: ASTNode ->
                 val childCtx = ctx.copy(sharedAlignment = sharedAlignment)
-                MvFormatterBlock(
+                MoveFormatterBlock(
                     node = childNode,
                     alignment = alignment.getAlignment(childNode, node, childCtx),
                     indent = computeIndent(childNode),

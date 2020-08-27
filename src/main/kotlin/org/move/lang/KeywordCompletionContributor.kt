@@ -7,12 +7,12 @@ import com.intellij.patterns.PsiElementPattern
 import com.intellij.patterns.StandardPatterns.or
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
-import org.move.lang.MvElementTypes.IDENTIFIER
+import org.move.lang.MoveElementTypes.IDENTIFIER
 import org.move.lang.core.MovePatterns
-import org.move.lang.core.psi.MvAddressBlock
-import org.move.lang.core.psi.MvCodeBlock
-import org.move.lang.core.psi.MvModuleBlock
-import org.move.lang.core.psi.MvScriptBlock
+import org.move.lang.core.psi.MoveAddressBlock
+import org.move.lang.core.psi.MoveCodeBlock
+import org.move.lang.core.psi.MoveModuleBlock
+import org.move.lang.core.psi.MoveScriptBlock
 import org.move.lang.core.psiElement
 
 class KeywordCompletionContributor : CompletionContributor() {
@@ -72,22 +72,22 @@ class KeywordCompletionContributor : CompletionContributor() {
         psiElement(IDENTIFIER).and(MovePatterns.onStatementBeginning(*startWords))
 
     private fun rootDefinition(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvFile>()
+        psiElementWithParent<MoveFile>()
 
     private fun addressBlockDefinition(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvAddressBlock>()
+        psiElementWithParent<MoveAddressBlock>()
 
     private fun moduleBlockDefinition(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvModuleBlock>()
+        psiElementWithParent<MoveModuleBlock>()
 
     private fun scriptBlockDefinition(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvScriptBlock>()
+        psiElementWithParent<MoveScriptBlock>()
 
     private fun baseCodeStatement(): PsiElementPattern.Capture<PsiElement> =
-        psiElement().inside(psiElement<MvCodeBlock>())
+        psiElement().inside(psiElement<MoveCodeBlock>())
 
 //    private fun newCodeStatement(): PsiElementPattern.Capture<PsiElement> =
-//        psiElement().inside(psiElement<MvCodeBlock>())
+//        psiElement().inside(psiElement<MoveCodeBlock>())
 
 //    private fun letStatement(): PsiElementPattern.Capture<PsiElement> =
 //        baseCodeStatement().and(onStatementBeginning("let"))
@@ -102,12 +102,12 @@ class KeywordCompletionContributor : CompletionContributor() {
 //
 //    private fun scriptBodyPattern(): PsiElementPattern.Capture<PsiElement> =
 //        psiElement()
-//            .withSuperParent(2, psiElement<MvScriptDefBlock>())
+//            .withSuperParent(2, psiElement<MoveScriptDefBlock>())
 //
 //    private fun functionBodyPattern(): PsiElementPattern.Capture<PsiElement> =
 //        psiElement()
-//            .withSuperParent(2, psiElement<MvBlock>())
-//            .and(psiElement().withSuperParent(3, psiElement<MvFunctionDef>()))
+//            .withSuperParent(2, psiElement<MoveBlock>())
+//            .and(psiElement().withSuperParent(3, psiElement<MoveFunctionDef>()))
 
 //    private fun statementBeginningPattern(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
 //        PlatformPatterns.psiElement(IDENTIFIER)
@@ -115,21 +115,21 @@ class KeywordCompletionContributor : CompletionContributor() {
 //
 //    private fun functionDeclarationPattern(): PsiElementPattern.Capture<PsiElement> =
 //        PlatformPatterns.psiElement()
-//            .withParent(psiElement<MvBlock>())
+//            .withParent(psiElement<MoveBlock>())
 //
 //    private fun moduleDeclarationPattern(): PsiElementPattern.Capture<PsiElement> =
 //        PlatformPatterns.psiElement()
-//            .inside(psiElement<MvModuleDef>())
+//            .inside(psiElement<MoveModuleDef>())
 //            .andNot(functionDeclarationPattern())
 //
 //    private fun scriptDeclarationPattern(): PsiElementPattern.Capture<PsiElement> =
 //        PlatformPatterns.psiElement()
-//            .inside(psiElement<MvScriptDef>())
+//            .inside(psiElement<MoveScriptDef>())
 //            .andNot(functionDeclarationPattern())
 //
 //    private fun addressDeclarationPattern(): PsiElementPattern.Capture<PsiElement> =
 //        PlatformPatterns.psiElement()
-//            .inside(psiElement<MvAddressDef>())
+//            .inside(psiElement<MoveAddressDef>())
 //            .andNot(moduleDeclarationPattern())
 //            .andNot(scriptDeclarationPattern())
 //            .andNot(functionDeclarationPattern())

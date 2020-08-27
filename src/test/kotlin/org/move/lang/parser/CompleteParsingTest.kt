@@ -1,8 +1,8 @@
 package org.move.lang.parser
 
-import org.move.utils.tests.parser.MvParsingTestCase
+import org.move.utils.tests.parser.MoveParsingTestCase
 
-class CompleteParsingTest : MvParsingTestCase("complete") {
+class CompleteParsingTest : MoveParsingTestCase("complete") {
     fun `test while loop inline assignment`() = doTest(true)
     fun `test contextual token operators`() = doTest(true)
     fun `test generics`() = doTest(true)

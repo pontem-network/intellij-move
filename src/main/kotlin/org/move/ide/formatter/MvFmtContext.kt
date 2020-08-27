@@ -7,15 +7,15 @@ import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import org.move.ide.formatter.impl.createSpacingBuilder
 import org.move.lang.MoveLanguage
 
-data class MvFmtContext private constructor(
+data class MoveFmtContext private constructor(
     val commonSettings: CommonCodeStyleSettings,
     val spacingBuilder: SpacingBuilder,
     val sharedAlignment: Alignment? = null
 ) {
     companion object {
-        fun create(settings: CodeStyleSettings): MvFmtContext {
+        fun create(settings: CodeStyleSettings): MoveFmtContext {
             val commonSettings = settings.getCommonSettings(MoveLanguage)
-            return MvFmtContext(commonSettings, createSpacingBuilder(commonSettings))
+            return MoveFmtContext(commonSettings, createSpacingBuilder(commonSettings))
         }
     }
 

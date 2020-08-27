@@ -3,9 +3,9 @@ package org.move.lang.core
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.lang.MoveLanguage
-import org.move.lang.MvElementTypes.*
+import org.move.lang.MoveElementTypes.*
 
-class MvTokenType(debugName: String) : IElementType(debugName, MoveLanguage)
+class MoveTokenType(debugName: String) : IElementType(debugName, MoveLanguage)
 
 fun tokenSetOf(vararg tokens: IElementType) = TokenSet.create(*tokens)
 

@@ -12,8 +12,8 @@ import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.impl.source.tree.TreeUtil
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
-import org.move.ide.formatter.MvFmtContext
-import org.move.lang.MvElementTypes.*
+import org.move.ide.formatter.MoveFmtContext
+import org.move.lang.MoveElementTypes.*
 import org.move.lang.core.MV_KEYWORDS
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
@@ -53,7 +53,7 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .applyForEach(BLOCK_LIKE) { before(it).spaces(1) }
 }
 
-fun Block.computeSpacing(child1: Block?, child2: Block, ctx: MvFmtContext): Spacing? {
+fun Block.computeSpacing(child1: Block?, child2: Block, ctx: MoveFmtContext): Spacing? {
     if (child1 is ASTBlock && child2 is ASTBlock) SpacingContext.create(child1, child2)?.apply {
         when {
             ncPsi1.isStatement && ncPsi2.isStatementOrExpr

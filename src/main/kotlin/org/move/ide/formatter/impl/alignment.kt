@@ -1,22 +1,22 @@
 package org.move.ide.formatter.impl
 
-import org.move.ide.formatter.MvAlignmentStrategy
-import org.move.ide.formatter.MvFormatterBlock
-import org.move.lang.MvElementTypes.*
+import org.move.ide.formatter.MoveAlignmentStrategy
+import org.move.ide.formatter.MoveFormatterBlock
+import org.move.lang.MoveElementTypes.*
 
-fun MvFormatterBlock.getAlignmentStrategy(): MvAlignmentStrategy = when (node.elementType) {
+fun MoveFormatterBlock.getAlignmentStrategy(): MoveAlignmentStrategy = when (node.elementType) {
     FUNCTION_PARAMS, CALL_ARGUMENTS ->
-        MvAlignmentStrategy
+        MoveAlignmentStrategy
             .shared()
             .alignUnlessBlockDelim()
             .alignIf(ctx.commonSettings.ALIGN_MULTILINE_PARAMETERS)
     TYPE_PARAMETER_LIST ->
-        MvAlignmentStrategy
+        MoveAlignmentStrategy
             .wrap()
             .alignIf(TYPE_PARAMETER)
-    else -> MvAlignmentStrategy.NullStrategy
+    else -> MoveAlignmentStrategy.NullStrategy
 
 }
 
-fun MvAlignmentStrategy.alignUnlessBlockDelim(): MvAlignmentStrategy =
+fun MoveAlignmentStrategy.alignUnlessBlockDelim(): MoveAlignmentStrategy =
     alignIf { c, p, _ -> !c.isBlockDelim(p) }

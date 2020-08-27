@@ -4,9 +4,9 @@ import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiBuilderUtil
 import com.intellij.lang.parser.GeneratedParserUtilBase
 import com.intellij.psi.tree.IElementType
-import org.move.lang.MvElementTypes.*
+import org.move.lang.MoveElementTypes.*
 
-object MvParserUtil : GeneratedParserUtilBase() {
+object MoveParserUtil : GeneratedParserUtilBase() {
 //    @JvmStatic
 //    fun gtgteqImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, GTGTEQ, GT, GT, EQ)
 

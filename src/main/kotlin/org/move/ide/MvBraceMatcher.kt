@@ -6,10 +6,10 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
-import org.move.lang.MvElementTypes.*
+import org.move.lang.MoveElementTypes.*
 import org.move.lang.core.MV_COMMENTS
 
-class MvBraceMatcher : PairedBraceMatcher {
+class MoveBraceMatcher : PairedBraceMatcher {
     override fun getPairs() = PAIRS
 
     override fun isPairedBracesAllowedBeforeType(lbraceType: IElementType, next: IElementType?): Boolean =

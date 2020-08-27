@@ -4,7 +4,7 @@ import org.move.utils.tests.MoveTestCase
 
 class ResolveTestCase : MoveTestCase() {
 //    protected open fun checkByCode(@Language("Move") code: String) =
-//        checkByCodeGeneric<MvNamedElement>(code)
+//        checkByCodeGeneric<MoveNamedElement>(code)
 //
 //    protected inline fun <reified T : NavigatablePsiElement> checkByCodeGeneric(
 //        @Language("Move") code: String
@@ -16,7 +16,7 @@ class ResolveTestCase : MoveTestCase() {
 //    ) {
 //        InlineFile(code, "main.move")
 //
-//        val (refElement, data, offset) = findElementWithDataAndOffsetInEditor<MvReferenceElementBase>("^")
+//        val (refElement, data, offset) = findElementWithDataAndOffsetInEditor<MoveReferenceElementBase>("^")
 //
 //        if (data == "unresolved") {
 //            val resolved = refElement.reference?.resolve()
@@ -40,7 +40,7 @@ class ResolveTestCase : MoveTestCase() {
 //fun PsiElement.checkedResolve(offset: Int): PsiElement {
 //    val reference = findReference(offset) ?: error("element doesn't have reference")
 //    val resolved = reference.resolve() ?: run {
-//        val multiResolve = (reference as? MvReference)?.multiResolve().orEmpty()
+//        val multiResolve = (reference as? MoveReference)?.multiResolve().orEmpty()
 //        check(multiResolve.size != 1)
 //        if (multiResolve.isEmpty()) {
 //            error("Failed to resolve $text")

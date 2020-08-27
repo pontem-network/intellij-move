@@ -2,6 +2,6 @@ package org.move.ide
 
 import com.intellij.icons.AllIcons
 
-object MvIcons {
+object MoveIcons {
     val MOVE = AllIcons.Plugins.ModifierJBLogo
 }

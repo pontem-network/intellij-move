@@ -4,12 +4,12 @@ import com.intellij.lexer.Lexer
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
-import org.move.lang.MvElementTypes.*
+import org.move.lang.MoveElementTypes.*
 import org.move.lang.core.MV_KEYWORDS
 import org.move.lang.MoveLexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors as Default
 
-class MvHighlighter : SyntaxHighlighterBase() {
+class MoveHighlighter : SyntaxHighlighterBase() {
     override fun getHighlightingLexer(): Lexer = MoveLexer()
 
     override fun getTokenHighlights(tokenType: IElementType?): Array<TextAttributesKey> {
