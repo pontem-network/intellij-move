@@ -177,9 +177,9 @@ StructDef ::= resource? struct identifier
 StructFields ::= '{' StructFields_body '}' { pin = 1 }
 private StructFields_body ::= (StructFieldDef (',' StructFieldDef)* ','?)?
 {
-    recoverWhile = "StructDef_body_recover"
+    recoverWhile = "StructFields_body_recover"
 }
-private StructDef_body_recover ::= !'}'
+private StructFields_body_recover ::= !'}'
 
 StructFieldDef ::= identifier StructFieldDef_type { pin = 1 }
 private StructFieldDef_type ::= TypeAscription {
@@ -220,7 +220,7 @@ TypeParameterList ::= '<' (TypeParameter (',' TypeParameter)* ','?)? '>'
 TypeParameter ::= identifier TypeParamBound?
 TypeParamBound ::= ':' (copyable | resource)
 
-TypeArguments ::= '<' (TypeArgument (',' TypeArgument)* ','?)? '>'
+TypeArgumentList ::= '<' (TypeArgument (',' TypeArgument)* ','?)? '>'
 private TypeArgument ::= TypeReference {
     recoverWhile = "TypeArgument_recover"
 }
@@ -457,7 +457,7 @@ private Initializer ::= '=' Expr {
 BorrowExpr ::= '&' mut? Expr { pin = 1 }
 DotExpr ::= Expr '.' identifier
 
-PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArguments?
+PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArgumentList?
 
 //PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArguments? {
 //    implements = ["org.move.lang.core.psi.ext.MoveReferenceElement"]

@@ -21,9 +21,29 @@ import org.move.lang.core.psi.ext.getPrevNonCommentSibling
 fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilder {
     return SpacingBuilder(commonSettings)
         .afterInside(COMMA, STRUCT_FIELDS).parentDependentLFSpacing(1, 1, true, 1)
+        .after(COMMA).spacing(1, 1, 0, true, 0)
         .before(COMMA).spaceIf(false)
         .after(COLON).spaceIf(true)
         .before(COLON).spaceIf(false)
+
+        //== empty parens
+        .between(L_PAREN, R_PAREN).spacing(0, 0, 0, false, 0)
+
+        //== paren delimited lists
+        .afterInside(L_PAREN, PAREN_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)
+        .beforeInside(R_PAREN, PAREN_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)
+        .afterInside(LT, ANGLE_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)
+        .beforeInside(GT, ANGLE_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)
+
+        //== items
+        .between(FUNCTION_PARAMS, RETURN_TYPE).spaceIf(false)
+
+        .between(IDENTIFIER, FUNCTION_PARAMS).spaceIf(false)
+        .between(IDENTIFIER, CALL_ARGUMENTS).spaceIf(false)
+        .between(IDENTIFIER, TYPE_PARAMETER_LIST).spaceIf(false)
+        .between(IDENTIFIER, TYPE_ARGUMENT_LIST).spaceIf(false)
+        .between(TYPE_PARAMETER_LIST, FUNCTION_PARAMS).spaceIf(false)
+        .before(CALL_ARGUMENTS).spaceIf(false)
 
         .around(BINARY_OPS).spaces(1)
         .around(MV_KEYWORDS).spaces(1)

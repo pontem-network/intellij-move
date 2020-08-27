@@ -320,7 +320,7 @@ FILE
               MvStructPatImpl(STRUCT_PAT)
                 MvPathExprImpl(PATH_EXPR)
                   PsiElement(identifier)('Generic')
-                  MvTypeArgumentsImpl(TYPE_ARGUMENTS)
+                  MvTypeArgumentListImpl(TYPE_ARGUMENT_LIST)
                     PsiElement(<)('<')
                     MvTypeReferenceImpl(TYPE_REFERENCE)
                       MvPathExprImpl(PATH_EXPR)
