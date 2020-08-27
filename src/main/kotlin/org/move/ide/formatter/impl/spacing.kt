@@ -13,12 +13,14 @@ import com.intellij.psi.impl.source.tree.TreeUtil
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.ide.formatter.MvFmtContext
+import org.move.lang.core.MV_KEYWORDS
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
 
 fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilder {
     return SpacingBuilder(commonSettings)
         .around(BINARY_OPS).spaces(1)
+        .around(MV_KEYWORDS).spaces(1)
         .applyForEach(BLOCK_LIKE) { before(it).spaces(1) }
 }
 
