@@ -44,10 +44,10 @@ class MvFormatterBlock(
     }
 
     private fun computeIndent(child: ASTNode): Indent? {
-        val parentType = node.elementType
-        val parentPsi = node.psi
-        val childType = child.elementType
-        val childPsi = child.psi
+//        val parentType = node.elementType
+//        val parentPsi = node.psi
+//        val childType = child.elementType
+//        val childPsi = child.psi
         return when {
             node.isDelimitedBlock -> getIndentIfNotDelim(child, node)
             else -> Indent.getNoneIndent()

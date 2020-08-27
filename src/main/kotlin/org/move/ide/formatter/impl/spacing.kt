@@ -11,6 +11,7 @@ import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.impl.source.tree.TreeUtil
 import com.intellij.psi.tree.IElementType
+import com.intellij.psi.tree.TokenSet
 import org.move.ide.formatter.MvFmtContext
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
@@ -18,6 +19,7 @@ import org.move.lang.core.psi.ext.getPrevNonCommentSibling
 fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilder {
     return SpacingBuilder(commonSettings)
         .around(BINARY_OPS).spaces(1)
+        .applyForEach(BLOCK_LIKE) { before(it).spaces(1) }
 }
 
 fun Block.computeSpacing(child1: Block?, child2: Block, ctx: MvFmtContext): Spacing? {
@@ -74,6 +76,16 @@ private data class SpacingContext(
                 }
             )
     }
+}
+
+private inline fun SpacingBuilder.applyForEach(
+    tokenSet: TokenSet, block: SpacingBuilder.(IElementType) -> SpacingBuilder
+): SpacingBuilder {
+    var self = this
+    for (tt in tokenSet.types) {
+        self = block(this, tt)
+    }
+    return self
 }
 
 private fun ASTNode.hasLineBreakAfterInSameParent(): Boolean =
