@@ -230,9 +230,13 @@ private TypeArgument_recover ::= !(','|'>')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Patterns (destructuring)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Pat ::= DerefPat | BorrowPat
-        | TuplePat | StructPat | DotPat
-        | WildPat | BindingPat
+Pat ::= DerefPat
+        | BorrowPat
+        | TuplePat
+        | StructPat
+        | DotPat
+        | WildPat
+        | BindingPat
 
 WildPat ::= '_'
 DerefPat ::= '*' Pat
