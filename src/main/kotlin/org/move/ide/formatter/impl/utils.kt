@@ -1,7 +1,9 @@
 package org.move.ide.formatter.impl
 
 import com.intellij.lang.ASTNode
+import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType
+import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet.orSet
 import org.move.lang.MvElementTypes.*
 import com.intellij.psi.tree.TokenSet.create as ts
@@ -37,3 +39,31 @@ fun ASTNode.isBlockDelim(parent: ASTNode?): Boolean {
         else -> false
     }
 }
+
+//class CommaList(
+//    val list: IElementType,
+//    val openingBrace: IElementType,
+//    val closingBrace: IElementType,
+//    val isElement: (PsiElement) -> Boolean
+//) {
+//    val needsSpaceBeforeClosingBrace: Boolean get() = closingBrace == R_BRACE // && list != USE_GROUP
+//
+//    override fun toString(): String = "CommaList($list)"
+//
+//    companion object {
+//        fun forElement(elementType: IElementType): CommaList? {
+//            return ALL.find { it.list == elementType }
+//        }
+//
+//        private val ALL = listOf(
+//            CommaList(BLOCK_FIELDS, LBRACE, RBRACE) { it.elementType == NAMED_FIELD_DECL },
+//            CommaList(STRUCT_LITERAL_BODY, LBRACE, RBRACE) { it.elementType == STRUCT_LITERAL_FIELD },
+//            CommaList(ENUM_BODY, LBRACE, RBRACE) { it.elementType == ENUM_VARIANT },
+//            CommaList(USE_GROUP, LBRACE, RBRACE) { it.elementType == USE_SPECK },
+//
+//            CommaList(TUPLE_FIELDS, LPAREN, RPAREN) { it.elementType == TUPLE_FIELD_DECL },
+//            CommaList(VALUE_PARAMETER_LIST, LPAREN, RPAREN) { it.elementType == VALUE_PARAMETER },
+//            CommaList(VALUE_ARGUMENT_LIST, LPAREN, RPAREN) { it is RsExpr }
+//        )
+//    }
+//}

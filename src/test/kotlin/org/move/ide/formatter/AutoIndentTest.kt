@@ -87,4 +87,17 @@ class AutoIndentTest : MoveTypingTestCase() {
        } 
     """
     )
+
+    fun `test function params`() = doTestByText(
+        """
+       script {
+           fun main(a: u8, /*caret*/b: u8) {}
+       } 
+    """, """
+       script {
+           fun main(a: u8, 
+                    /*caret*/b: u8) {}
+       } 
+    """
+    )
 }
