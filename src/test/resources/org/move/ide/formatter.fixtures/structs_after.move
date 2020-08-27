@@ -4,10 +4,16 @@ module M {
         b: u8,
         c: u8,
     }
+
+    resource struct MyStruct {
+        a: u8,
+        b: u8,
+        c: u8,
+    }
 }
 
 module M2 {
-    resource struct MyStruct {
+    struct MyStruct {
         a: u8,
         b: u8,
         c: u8,
