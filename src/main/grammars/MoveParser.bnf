@@ -244,7 +244,7 @@ BorrowPat ::= '&' Pat
 DotPat ::= identifier '.' identifier { pin = 2 }
 
 BindingPat ::= identifier {
-    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
+    implements = [ "org.move.lang.core.psi.MoveNamedElement" ]
     mixin = "org.move.lang.core.psi.mixins.MoveBindingPatImplMixin"
 }
 
@@ -290,6 +290,7 @@ private StatementExpr_recover ::= '!;'
 InlineBlock ::= Expr
 CodeBlock ::= '{' Block_body '}' {
     pin = 1
+    implements = ["org.move.lang.core.resolve.MoveResolveScope"]
 }
 private AnyBlock ::= CodeBlock | InlineBlock
 
@@ -452,6 +453,8 @@ WhileExpr ::= while Condition AnyBlock { pin = 1 }
 AssignmentExpr ::= Pat '=' Expr
 LetExpr ::= let Pat TypeAscription? Initializer? {
     pin = 1
+    implements = [ "org.move.lang.core.psi.MoveDeclaringElement" ]
+    mixin = "org.move.lang.core.psi.mixins.MoveLetExprImplMixin"
 }
 private Initializer ::= '=' Expr {
     pin = 1
@@ -462,10 +465,13 @@ private Initializer ::= '=' Expr {
 BorrowExpr ::= '&' mut? Expr { pin = 1 }
 DotExpr ::= Expr '.' identifier
 
-PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArgumentList?
+PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArgumentList? {
+    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+    mixin = "org.move.lang.core.psi.mixins.MovePathExprImplMixin"
+}
 
 //PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArguments? {
-//    implements = ["org.move.lang.core.psi.mixins.MoveReferenceElement"]
+//    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
 //    mixin = "org.move.lang.core.psi.mixins.MovePathExprImplMixin"
 //}
 

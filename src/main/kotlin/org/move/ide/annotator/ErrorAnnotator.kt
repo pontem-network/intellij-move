@@ -3,12 +3,7 @@ package org.move.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.MoveFunctionDef
-import org.move.lang.core.psi.MoveModuleDef
-import org.move.lang.core.psi.MoveNativeFunctionDef
-import org.move.lang.core.psi.MoveVisitor
-import org.move.lang.core.psi.MoveNameIdentifierOwner
-import org.move.lang.core.psi.MoveNamedElement
+import org.move.lang.core.psi.*
 
 class ErrorAnnotator : AnnotatorBase() {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
