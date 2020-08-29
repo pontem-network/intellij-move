@@ -25,7 +25,7 @@ abstract class ResolveTestCase : MoveTestCase() {
         val (refElement, data, offset) = findElementWithDataAndOffsetInEditor<MoveReferenceElement>("^")
 
         if (data == "unresolved") {
-            val resolved = refElement.reference.resolve()
+            val resolved = refElement.reference?.resolve()
             check(resolved == null) {
                 "$refElement `${refElement.text}`should be unresolved, was resolved to\n$resolved `${resolved?.text}`"
             }
@@ -45,7 +45,7 @@ fun PsiElement.findReference(offset: Int): PsiReference? = findReferenceAt(offse
 
 fun PsiElement.checkedResolve(offset: Int): PsiElement {
     val reference = findReference(offset) ?: error("element doesn't have reference")
-    val resolved = reference.resolve() ?: error("Failed to resolve $text")
+    val resolved = reference.resolve() ?: error("Failed to resolve `$text`")
 
     check(reference.isReferenceTo(resolved)) {
         "Incorrect `isReferenceTo` implementation in `${reference.javaClass.name}`"

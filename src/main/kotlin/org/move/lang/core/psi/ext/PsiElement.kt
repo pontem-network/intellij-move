@@ -13,6 +13,14 @@ val PsiElement.ancestors: Sequence<PsiElement>
         if (it is PsiFile) null else it.parent
     }
 
+/**
+ * Checks whether this node contains [descendant] one
+ */
+fun PsiElement.contains(descendant: PsiElement?): Boolean {
+    if (descendant == null) return false
+    return descendant.ancestors.any { it === this }
+}
+
 fun PsiElement.superParent(level: Int): PsiElement? {
     require(level > 0)
     return ancestors.drop(level).firstOrNull()

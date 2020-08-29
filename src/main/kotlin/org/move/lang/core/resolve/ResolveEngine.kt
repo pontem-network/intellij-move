@@ -3,6 +3,7 @@ package org.move.lang.core.resolve
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.contains
 import org.move.lang.core.psi.ext.statementExprList
 
 object ResolveEngine {
@@ -37,10 +38,6 @@ object ResolveEngine {
         generateSequence(ResolveUtil.getResolveScopeFor(element)) { parent ->
             ResolveUtil.getResolveScopeFor(parent)
         }
-
-//    fun resolve(ref: MoveReferenceElement): ResolveResult = recursionGuard(ref, Computable {
-//        ResolveResult.buildFrom(listOf())
-//    }) ?: ResolveResult.Unresolved
 }
 
 private fun declarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
@@ -56,6 +53,16 @@ private fun declarations(scope: MoveResolveScope, ref: MoveReferenceElement): Se
 
             declarations.addAll(allBoundElements.scopeEntries)
         }
+
+        override fun visitFunctionDef(o: MoveFunctionDef) {
+            if (o.contains(ref)) {
+                val entries = o.functionParams?.boundElements
+                    .orEmpty()
+                    .asSequence()
+                    .scopeEntries
+                declarations.addAll(entries)
+            }
+        }
     })
     return declarations.asSequence()
 }
@@ -66,9 +73,7 @@ private fun resolveIn(
 ): ResolveEngine.ResolveResult =
     scopes
         .flatMap { declarations(it, ref) }
-        .find {
-            it.name == ref.referenceName
-        }
+        .find { it.name == ref.referenceName }
         ?.element.asResolveResult()
 
 private class ScopeEntry private constructor(

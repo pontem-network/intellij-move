@@ -141,20 +141,27 @@ FunctionDef ::= public? fun identifier TypeParameterList?
 {
     pin = "fun"
     name = "function"
-    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
+    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
+                   "org.move.lang.core.resolve.MoveResolveScope" ]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionDefImplMixin"
 }
 
 // trailing comma is allowed
-FunctionParams ::= '(' FunctionParamsBody ')' { pin = 1 }
-private FunctionParamsBody ::= (FunctionParam ','?)* {
-    recoverWhile = "FunctionParamsBody_recover"
+FunctionParams ::= '(' FunctionParams_body ')' {
+    pin = 1
+    implements = [ "org.move.lang.core.psi.MoveDeclaringElement" ]
+    mixin = "org.move.lang.core.psi.mixins.MoveFunctionParamsImplMixin"
 }
-private FunctionParamsBody_recover ::= !')'
+private FunctionParams_body ::= (FunctionParam ','?)* {
+    recoverWhile = "FunctionParams_body_recover"
+}
+private FunctionParams_body_recover ::= !')'
 
 FunctionParam ::= identifier TypeAscription {
     pin = 1
     recoverWhile = "FunctionParams_recover"
+    implements = [ "org.move.lang.core.psi.MoveNamedElement" ]
+    mixin = "org.move.lang.core.psi.mixins.MoveFunctionParamImplMixin"
 }
 private FunctionParams_recover ::= !(','|')')
 
