@@ -26,7 +26,7 @@ abstract class MoveReferenceBase<T : MoveReferenceElement>(element: T) : PsiRefe
     open val T.referenceAnchor: PsiElement get() = referenceNameElement
 
     // enforce not nullability
-    final override fun getRangeInElement(): TextRange = super.getRangeInElement()
+//    final override fun getRangeInElement(): TextRange = super.getRangeInElement()
 
     final override fun calculateDefaultRangeInElement(): TextRange {
         val anchor = element.referenceAnchor

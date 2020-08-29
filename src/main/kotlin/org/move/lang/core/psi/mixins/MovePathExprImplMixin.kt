@@ -18,7 +18,9 @@ import org.move.lang.core.resolve.ref.MoveReferenceImpl
 abstract class MovePathExprImplMixin(node: ASTNode) : MoveElementImpl(node),
                                                       MovePathExpr {
     override val referenceNameElement: PsiElement
-        get() = this.notNullChild(this.findLastChildByType(MoveElementTypes.IDENTIFIER))
+        get() = checkNotNull(this.findLastChildByType(MoveElementTypes.IDENTIFIER)) {
+            "Path must contain identifier: $this `${this.text}` at `${this.containingFile.virtualFile.path}`"
+        }
 
     override fun getReference(): MoveReference =
         MoveReferenceImpl(this)

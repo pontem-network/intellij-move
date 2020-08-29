@@ -12,14 +12,14 @@ version = pluginVersion
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.3.72"
+    id("org.jetbrains.kotlin.jvm") version "1.4.0"
     id("org.jetbrains.intellij") version "0.4.21"
     id("org.jetbrains.grammarkit") version "2020.2.1"
 }
 
-dependencies {
-    "implementation"("org.jetbrains:annotations:19.0.0")
-}
+//dependencies {
+//    "implementation"("org.jetbrains:annotations:19.0.0")
+//}
 
 allprojects {
     apply {
@@ -77,6 +77,8 @@ allprojects {
             dependsOn(generateRustLexer, generateRustParser)
             kotlinOptions {
                 jvmTarget = "1.8"
+                languageVersion = "1.4"
+                apiVersion = "1.3"
                 freeCompilerArgs = listOf("-Xjvm-default=compatibility")
             }
         }
