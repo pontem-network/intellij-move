@@ -9,6 +9,7 @@
         <![CDATA[
             <p>0.6.0</p>
             <ul>
+                <li>Feature: Go-to-definition and rename refactoring for local variables and function params</li>
                 <li>Feature: initial "Reformat Code" support</li>
                 <li>Feature: create new Move file action</li>
                 <li>Feature: add auto-indentation for blocks</li>
