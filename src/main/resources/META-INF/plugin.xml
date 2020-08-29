@@ -43,6 +43,9 @@
         <lang.formatter language="Move"
                         implementationClass="org.move.ide.formatter.MoveFormattingModelBuilder"/>
 
+        <lang.namesValidator language="Move"
+                             implementationClass="org.move.ide.refactoring.MoveNamesValidator"/>
+
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.KeywordCompletionContributor"/>
         <psi.referenceContributor language="Move"
@@ -62,7 +65,7 @@
                 class="org.move.ide.actions.CreateMoveFileAction"
                 text="Move File"
                 description="Create new Move file">
-<!--            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>-->
+            <!--            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>-->
         </action>
     </actions>
 </idea-plugin>
