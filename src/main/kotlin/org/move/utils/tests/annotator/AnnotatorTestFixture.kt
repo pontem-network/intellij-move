@@ -46,6 +46,8 @@ class AnnotatorTestFixture(
 
     fun registerSeverities(severities: List<HighlightSeverity>) {
         val testSeverityProvider = TestSeverityProvider(severities)
-        SeveritiesProvider.EP_NAME.point.registerExtension(testSeverityProvider, testRootDisposable)
+        // BACKCOMPAT: 2020.1
+        @Suppress("DEPRECATION")
+        SeveritiesProvider.EP_NAME.getPoint(null).registerExtension(testSeverityProvider, testRootDisposable)
     }
 }
