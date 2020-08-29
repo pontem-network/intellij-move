@@ -4,7 +4,9 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.PsiUtilCore
 
 val PsiElement.ancestors: Sequence<PsiElement>
     get() = generateSequence(this) {
@@ -39,8 +41,17 @@ val PsiElement.leftSiblings: Sequence<PsiElement>
 val PsiElement.childrenWithLeaves: Sequence<PsiElement>
     get() = generateSequence(this.firstChild) { it.nextSibling }
 
+/**
+ * Extracts node's element type
+ */
+val PsiElement.elementType: IElementType
+    get() = PsiUtilCore.getElementType(this)
+
 fun PsiElement.isAncestorOf(child: PsiElement): Boolean =
     child.ancestors.contains(this)
+
+inline fun <reified T : PsiElement> PsiElement.descendantOfTypeStrict(): T? =
+    PsiTreeUtil.findChildOfType(this, T::class.java, /* strict */ true)
 
 val PsiElement.startOffset: Int
     get() = textRange.startOffset
@@ -64,7 +75,8 @@ val PsiElement.rangeWithSurroundingLineBreaks: TextRange
         val startOffset = textRange.startOffset
         val endOffset = textRange.endOffset
         val text = containingFile.text
-        val newLineBefore = text.lastIndexOf('\n', startOffset).takeIf { it >= 0 }?.let { it + 1 } ?: startOffset
+        val newLineBefore =
+            text.lastIndexOf('\n', startOffset).takeIf { it >= 0 }?.let { it + 1 } ?: startOffset
         val newLineAfter = text.indexOf('\n', endOffset).takeIf { it >= 0 }?.let { it + 1 } ?: endOffset
         return TextRange(newLineBefore, newLineAfter)
     }
