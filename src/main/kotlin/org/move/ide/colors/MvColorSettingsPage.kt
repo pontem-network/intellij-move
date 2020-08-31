@@ -18,10 +18,6 @@ class MoveColorSettingsPage : ColorSettingsPage {
     override fun getAdditionalHighlightingTagToDescriptorMap() = ANNOTATOR_TAGS
     override fun getAttributeDescriptors(): Array<AttributesDescriptor> = ATTRS
     override fun getColorDescriptors(): Array<ColorDescriptor> = ColorDescriptor.EMPTY_ARRAY
-    override fun getDemoText(): String = """
-        script {
-            fun main() {}
-        }
-    """.trimIndent()
+    override fun getDemoText(): String = ""
 
 }

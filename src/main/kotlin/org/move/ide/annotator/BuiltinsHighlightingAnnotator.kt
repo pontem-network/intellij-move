@@ -8,11 +8,14 @@ import org.move.ide.colors.MoveColor
 import org.move.lang.MoveElementTypes.IDENTIFIER
 import org.move.lang.core.psi.MoveElement
 import org.move.lang.core.psi.MoveQualifiedPath
-import org.move.lang.core.psi.MoveRefExpr
+import org.move.lang.core.psi.ext.identifierName
+import org.move.lang.core.psi.ext.isPlainIdentifier
 
 val PRIMITIVE_TYPE_IDENTIFIERS = setOf("signer", "u8", "u64", "u128", "address", "bool")
+val BUILTIN_FUNCTIONS =
+    setOf("move_from", "move_to", "borrow_global", "borrow_global_mut", "exists", "freeze", "assert")
 
-class BuiltinTypesHighlightingAnnotator : AnnotatorBase() {
+class BuiltinsHighlightingAnnotator : AnnotatorBase() {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         val color = when (element) {
             is LeafPsiElement -> highlightLeaf(element)
@@ -36,17 +39,12 @@ class BuiltinTypesHighlightingAnnotator : AnnotatorBase() {
         }
     }
 
-    private fun highlightIdentifier(element: PsiElement, parent: MoveElement): MoveColor? {
-        val isPrimitiveType = parent is MoveQualifiedPath && element.text in PRIMITIVE_TYPE_IDENTIFIERS
-        return when {
-            isPrimitiveType -> MoveColor.PRIMITIVE_TYPE
-            else -> null
-        }
-    }
-
-//    private fun highlightBuiltinType(holder: AnnotationHolder, type: MoveType) {
-//        val color = MoveColor.PRIMITIVE_TYPE;
-//        val severity = color.testSeverity;
-//        holder.newSilentAnnotation(severity).textAttributes(color.textAttributesKey).create()
-//    }
+    private fun highlightIdentifier(element: PsiElement, parent: MoveElement): MoveColor? =
+        if (parent is MoveQualifiedPath && parent.isPlainIdentifier) {
+            when (parent.identifierName) {
+                in PRIMITIVE_TYPE_IDENTIFIERS -> MoveColor.PRIMITIVE_TYPE
+                in BUILTIN_FUNCTIONS -> MoveColor.BUILTIN_FUNCTION
+                else -> null
+            }
+        } else null
 }

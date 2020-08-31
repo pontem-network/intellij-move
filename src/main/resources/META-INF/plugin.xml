@@ -63,10 +63,13 @@
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.ErrorAnnotator"/>
         <annotator language="Move"
-                   implementationClass="org.move.ide.annotator.BuiltinTypesHighlightingAnnotator"/>
+                   implementationClass="org.move.ide.annotator.BuiltinsHighlightingAnnotator"/>
         <configurationType implementation="org.move.move_tools.CompilerCheckConfigurationType"/>
 
+        <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MoveColorSettingsPage"/>
+
+        <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml"/>
 
     </extensions>
 
