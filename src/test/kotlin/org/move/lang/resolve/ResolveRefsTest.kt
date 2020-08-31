@@ -2,7 +2,7 @@ package org.move.lang.resolve
 
 import org.move.utils.tests.resolve.ResolveTestCase
 
-class ResolveTest: ResolveTestCase() {
+class ResolveRefsTest: ResolveTestCase() {
     fun `test function argument`() = checkByCode("""
         script {
             fun main(account: &signer) {
@@ -24,6 +24,17 @@ class ResolveTest: ResolveTestCase() {
         }
     """)
 
+    fun `test local variable has priority over function variable`() = checkByCode("""
+        script {
+            fun main(z: u8) {
+                let z = z + 1;
+                  //X
+                z;
+              //^  
+            }
+        }    
+    """)
+
     fun `test shadowing of variable with another variable`() = checkByCode("""
         script {
             fun main() {
@@ -42,6 +53,20 @@ class ResolveTest: ResolveTestCase() {
                    //X
                 let z = z + 1;
                       //^
+            }
+        }
+    """)
+
+    fun `test redefinition in nested block`() = checkByCode("""
+        script {
+            fun main() {
+                let a = 1;
+                  //X
+                {
+                    let a = 2;
+                };
+                a;
+              //^  
             }
         }
     """)
