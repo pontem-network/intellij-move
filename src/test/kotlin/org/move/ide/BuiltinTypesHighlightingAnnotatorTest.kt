@@ -16,7 +16,8 @@ class BuiltinTypesHighlightingAnnotatorTest : AnnotatorTestCase(BuiltinTypesHigh
             fun main(s: &<PRIMITIVE_TYPE>signer</PRIMITIVE_TYPE>,
                      val: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>,
                      val2: <PRIMITIVE_TYPE>u64</PRIMITIVE_TYPE>,
-                     val3: <PRIMITIVE_TYPE>u128</PRIMITIVE_TYPE>
+                     val3: <PRIMITIVE_TYPE>u128</PRIMITIVE_TYPE>,
+                     val4: <PRIMITIVE_TYPE>bool</PRIMITIVE_TYPE>
                      ) {}
         }
     """

@@ -10,7 +10,7 @@ import org.move.lang.core.psi.MoveElement
 import org.move.lang.core.psi.MoveQualifiedPath
 import org.move.lang.core.psi.MoveRefExpr
 
-val PRIMITIVE_TYPE_IDENTIFIERS = setOf("signer", "u8", "u64", "u128", "address")
+val PRIMITIVE_TYPE_IDENTIFIERS = setOf("signer", "u8", "u64", "u128", "address", "bool")
 
 class BuiltinTypesHighlightingAnnotator : AnnotatorBase() {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
