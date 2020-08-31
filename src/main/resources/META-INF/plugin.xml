@@ -7,6 +7,11 @@
     <vendor email="maxim.kurnikov@gmail.com">Maksim Kurnikov</vendor>
     <change-notes>
         <![CDATA[
+            <p>0.7.0</p>
+            <ul>
+                <li>FEAT: add shadowing support for locals</li>
+                <li>FEAT: add "Find usages" support for locals</li>
+            </ul>
             <p>0.6.0</p>
             <ul>
                 <li>Feature: Go-to-definition and rename refactoring for local variables and function params</li>
