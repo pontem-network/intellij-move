@@ -6,6 +6,7 @@ import com.intellij.lang.parser.GeneratedParserUtilBase
 import com.intellij.psi.tree.IElementType
 import org.move.lang.MoveElementTypes.*
 
+@Suppress("UNUSED_PARAMETER")
 object MoveParserUtil : GeneratedParserUtilBase() {
 //    @JvmStatic
 //    fun gtgteqImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, GTGTEQ, GT, GT, EQ)

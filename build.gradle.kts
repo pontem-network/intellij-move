@@ -17,9 +17,10 @@ plugins {
     id("org.jetbrains.grammarkit") version "2020.2.1"
 }
 
-//dependencies {
-//    "implementation"("org.jetbrains:annotations:19.0.0")
-//}
+dependencies {
+    // kotlin stdlib source code
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.3.70")
+}
 
 allprojects {
     apply {
