@@ -74,6 +74,42 @@ class RenameTest : MoveTestCase() {
         }
     """)
 
+    fun `test destructuring field reassignment`() = doTest("myval2", """
+        module M {
+            struct MyStruct { val: u8 }
+            fun main() {
+                let MyStruct { val: myval } = get_struct();
+                /*caret*/myval;
+            }
+        }
+    """, """
+        module M {
+            struct MyStruct { val: u8 }
+            fun main() {
+                let MyStruct { val: myval2 } = get_struct();
+                myval2;
+            }
+        }
+    """)
+
+//    fun `test rename removes shorthand notation`() = doTest("myval", """
+//        module M {
+//            struct MyStruct { val: u8 }
+//            fun main() {
+//                let MyStruct { val } = get_struct();
+//                /*caret*/val;
+//            }
+//        }
+//    """, """
+//        module M {
+//            struct MyStruct { val: u8 }
+//            fun main() {
+//                let MyStruct { val: myval } = get_struct();
+//                myval;
+//            }
+//        }
+//    """)
+
     private fun doTest(
         newName: String,
         @Language("Move") before: String,

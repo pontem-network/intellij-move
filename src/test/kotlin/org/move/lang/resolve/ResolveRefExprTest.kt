@@ -82,4 +82,38 @@ class ResolveRefExprTest : ResolveTestCase() {
         }
     """
     )
+
+    fun `test destructuring of struct`() = checkByCode(
+        """
+        module M {
+            struct MyStruct {
+                val: u8
+            }
+            
+            fun destructure() {
+                let MyStruct { val } = get_struct();
+                             //X
+                val;
+              //^  
+            }
+        }
+    """
+    )
+
+    fun `test destructuring of struct with variable rename`() = checkByCode(
+        """
+        module M {
+            struct MyStruct {
+                val: u8
+            }
+            
+            fun destructure() {
+                let MyStruct { val: myval } = get_struct();
+                                  //X
+                myval;
+              //^  
+            }
+        }
+    """
+    )
 }

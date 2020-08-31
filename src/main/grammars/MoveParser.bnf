@@ -263,7 +263,10 @@ private TuplePat_body ::= (Pat (',' Pat)*)? {
 private TuplePat_body_recover ::= !(')'|'=')
 
 StructPat ::= QualifiedPath '{' (StructPatField ','?)* '}' { pin = 2 }
-StructPatField ::= identifier StructPatFieldBinding?
+StructPatField ::= identifier StructPatFieldBinding? {
+    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
+    mixin = "org.move.lang.core.psi.mixins.MoveStructPatFieldImplMixin"
+}
 StructPatFieldBinding ::= ':' (StructPat | BindingPat) { pin = 1 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
