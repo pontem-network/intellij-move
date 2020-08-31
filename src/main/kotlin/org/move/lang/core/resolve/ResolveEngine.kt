@@ -1,6 +1,7 @@
 package org.move.lang.core.resolve
 
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.contains
@@ -45,9 +46,14 @@ private fun declarations(scope: MoveResolveScope, ref: MoveReferenceElement): Se
     scope.accept(object : MoveVisitor() {
         override fun visitCodeBlock(o: MoveCodeBlock) {
             val visibleLetExprs = o.statementExprList
+                // shadowing support (look at latest first)
+                .asReversed()
                 .asSequence()
                 .filterIsInstance<MoveLetExpr>()
+                // drops all let-statements after the current position
                 .dropWhile { PsiUtilCore.compareElementsByPosition(ref, it) < 0 }
+                // drops let-statement that is ancestors of ref (on the same statement, at most one)
+                .dropWhile { PsiTreeUtil.isAncestor(it, ref, true) }
 
             val allBoundElements = visibleLetExprs.flatMap { it.boundElements.asSequence() }
 

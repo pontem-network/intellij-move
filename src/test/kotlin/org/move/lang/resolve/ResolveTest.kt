@@ -23,4 +23,26 @@ class ResolveTest: ResolveTestCase() {
             }
         }
     """)
+
+    fun `test shadowing of variable with another variable`() = checkByCode("""
+        script {
+            fun main() {
+                let z = 1;
+                let z = z + 1;
+                  //X
+                z;
+              //^
+            }
+        }
+    """)
+
+    fun `test shadowing does not happen until end of statement`() = checkByCode("""
+        script {
+            fun main(z: u8) {
+                   //X
+                let z = z + 1;
+                      //^
+            }
+        }
+    """)
 }
