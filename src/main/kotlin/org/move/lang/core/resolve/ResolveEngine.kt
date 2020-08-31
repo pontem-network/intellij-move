@@ -41,6 +41,8 @@ object ResolveEngine {
         }
 }
 
+//private fun MoveDefsOwner.definitionEntries(): Sequence<ScopeEntry> = allDefinitions
+
 private fun declarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
     val declarations = mutableListOf<ScopeEntry>()
     scope.accept(object : MoveVisitor() {
@@ -66,6 +68,13 @@ private fun declarations(scope: MoveResolveScope, ref: MoveReferenceElement): Se
                     .orEmpty()
                     .asSequence()
                     .scopeEntries
+                declarations.addAll(entries)
+            }
+        }
+
+        override fun visitModuleDef(o: MoveModuleDef) {
+            if (o.contains(ref)) {
+                val entries = o.definitions().asSequence().scopeEntries
                 declarations.addAll(entries)
             }
         }

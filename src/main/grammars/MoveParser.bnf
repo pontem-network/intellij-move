@@ -102,7 +102,8 @@ private AddressBlockItems_recover ::= !'}'
 ModuleDef ::= module identifier ModuleBlock {
     pin = 1
     name = "module declaration"
-    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
+    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
+                   "org.move.lang.core.resolve.MoveDefsResolveScope" ]
     mixin = "org.move.lang.core.psi.mixins.MoveModuleDefImplMixin"
 }
 ModuleBlock ::= '{' ModuleBlockItems '}' { pin = 1 }

@@ -5,4 +5,5 @@ import org.move.lang.core.psi.MoveFunctionDef
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 
 abstract class MoveFunctionDefImplMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
-                                                         MoveFunctionDef
+                                                         MoveFunctionDef {
+}

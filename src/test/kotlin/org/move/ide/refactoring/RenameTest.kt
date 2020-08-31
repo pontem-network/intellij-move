@@ -34,6 +34,46 @@ class RenameTest : MoveTestCase() {
         }
     """)
 
+    fun `test local variable shadowed`() = doTest("spam", """
+        script {
+            fun main() {
+                let a = 1;
+                let a = /*caret*/a + 1;
+                a;
+            }
+        }
+    """, """
+        script {
+            fun main() {
+                let spam = 1;
+                let a = spam + 1;
+                a;
+            }
+        }
+    """)
+
+    fun `test function name`() = doTest("renamed_call", """
+        module M {
+            fun /*caret*/call() {
+                1
+            }
+
+            fun main() {
+                call();
+            }
+        }
+    """, """
+        module M {
+            fun renamed_call() {
+                1
+            }
+
+            fun main() {
+                renamed_call();
+            }
+        }
+    """)
+
     private fun doTest(
         newName: String,
         @Language("Move") before: String,
