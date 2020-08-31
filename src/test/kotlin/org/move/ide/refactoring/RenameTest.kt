@@ -81,7 +81,7 @@ class RenameTest : MoveTestCase() {
     ) {
         InlineFile(before).withCaret()
         val element = myFixture.elementAtCaret
-        myFixture.renameElement(element, newName, true, true)
+        myFixture.renameElement(element, newName, false, false)
         myFixture.checkResult(after)
     }
 }
