@@ -46,6 +46,8 @@
 
         <lang.namesValidator language="Move"
                              implementationClass="org.move.ide.refactoring.MoveNamesValidator"/>
+        <lang.refactoringSupport language="Move"
+                                 implementationClass="org.move.ide.refactoring.MoveRefactoringSupportProvider"/>
 
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.KeywordCompletionContributor"/>
