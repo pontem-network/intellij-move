@@ -2,7 +2,7 @@ package org.move.lang.resolve
 
 import org.move.utils.tests.resolve.ResolveTestCase
 
-class ResolveRefsTest : ResolveTestCase() {
+class ResolveRefExprTest : ResolveTestCase() {
     fun `test function argument`() = checkByCode(
         """
         script {
