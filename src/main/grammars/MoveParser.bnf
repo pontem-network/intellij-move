@@ -172,7 +172,7 @@ ReturnType ::= ':' Type {
     pin = 1
 }
 // acquires T, Record
-AcquiresType ::= acquires PathExpr (',' PathExpr)* ','? { pin = 1 }
+AcquiresType ::= acquires QualifiedPath (',' QualifiedPath)* ','? { pin = 1 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
@@ -220,7 +220,7 @@ ImportAlias ::= as identifier { pin = 1 }
 private TypeAscription ::= ':' Type { pin = 1 }
 
 Type ::= TupleType | TypeReference
-TypeReference ::= ('&' mut?)? (address | PathExpr) {
+TypeReference ::= ('&' mut?)? (address | QualifiedPath) {
     name = "type"
 }
 TupleType ::= '(' (Type ','?)* ','? ')' { pin = 1 }
@@ -262,7 +262,7 @@ private TuplePat_body ::= (Pat (',' Pat)*)? {
 }
 private TuplePat_body_recover ::= !(')'|'=')
 
-StructPat ::= PathExpr '{' (StructPatField ','?)* '}' { pin = 2 }
+StructPat ::= QualifiedPath '{' (StructPatField ','?)* '}' { pin = 2 }
 StructPatField ::= identifier StructPatFieldBinding?
 StructPatFieldBinding ::= ':' (StructPat | BindingPat) { pin = 1 }
 
@@ -355,7 +355,7 @@ private AtomExpr ::=
                     | StructLiteralExpr
                     | DotExpr
                     | CallExpr
-                    | PathExpr
+                    | RefExpr
                     | LiteralExpr
                     | BlockExpr
 
@@ -399,7 +399,7 @@ AbortExpr ::= abort Expr
 BreakExpr ::= break
 ContinueExpr ::= continue
 
-StructLiteralExpr ::= PathExpr '{' StructLiteralExpr_body '}'
+StructLiteralExpr ::= QualifiedPath '{' StructLiteralExpr_body '}'
 {
     pin = 2
 }
@@ -435,7 +435,10 @@ LiteralExpr ::= BOOL_LITERAL
                 | BYTE_STRING_LITERAL
                 | ADDRESS_LITERAL
 
-CallExpr ::= PathExpr CallArguments
+CallExpr ::= QualifiedPath CallArguments {
+    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+    mixin = "org.move.lang.core.psi.mixins.MoveCallExprImplMixin"
+}
 
 CallArguments ::= '(' (CallArgument (',' CallArgument)* ','?)? ')' { pin = 1 }
 private CallArgument ::= Expr {
@@ -472,11 +475,12 @@ private Initializer ::= '=' Expr {
 
 BorrowExpr ::= '&' mut? Expr { pin = 1 }
 DotExpr ::= Expr '.' identifier
-
-PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArgumentList? {
+RefExpr ::= QualifiedPath {
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MovePathExprImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveRefExprImplMixin"
 }
+
+QualifiedPath ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArgumentList?
 
 //PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArguments? {
 //    implements = ["org.move.lang.core.psi.MoveReferenceElement"]

@@ -6,14 +6,14 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.util.elementType
 import org.move.ide.colors.MoveColor
 import org.move.lang.MoveElementTypes.IDENTIFIER
-import org.move.lang.core.psi.MovePathExpr
 import org.move.lang.core.psi.MoveElement
+import org.move.lang.core.psi.MoveQualifiedPath
+import org.move.lang.core.psi.MoveRefExpr
 
 val PRIMITIVE_TYPE_IDENTIFIERS = setOf("signer", "u8", "u64", "u128", "address")
 
 class BuiltinTypesHighlightingAnnotator : AnnotatorBase() {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-//        val color = highlightLeaf(element, holder) ?: return
         val color = when (element) {
             is LeafPsiElement -> highlightLeaf(element)
 //            is RsAttr -> RsColor.ATTRIBUTE
@@ -37,7 +37,7 @@ class BuiltinTypesHighlightingAnnotator : AnnotatorBase() {
     }
 
     private fun highlightIdentifier(element: PsiElement, parent: MoveElement): MoveColor? {
-        val isPrimitiveType = parent is MovePathExpr && element.text in PRIMITIVE_TYPE_IDENTIFIERS
+        val isPrimitiveType = parent is MoveQualifiedPath && element.text in PRIMITIVE_TYPE_IDENTIFIERS
         return when {
             isPrimitiveType -> MoveColor.PRIMITIVE_TYPE
             else -> null

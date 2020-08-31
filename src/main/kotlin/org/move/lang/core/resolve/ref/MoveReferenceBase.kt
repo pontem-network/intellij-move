@@ -27,7 +27,6 @@ abstract class MoveReferenceBase<T : MoveReferenceElement>(element: T) : PsiRefe
 
     final override fun calculateDefaultRangeInElement(): TextRange {
         val anchor = element.referenceAnchor
-        check(anchor.parent === element)
         return TextRange.from(anchor.startOffsetInParent, anchor.textLength)
     }
 

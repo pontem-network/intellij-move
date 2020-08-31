@@ -83,6 +83,11 @@ allprojects {
                 freeCompilerArgs = listOf("-Xjvm-default=compatibility")
             }
         }
+
+        withType<org.jetbrains.intellij.tasks.BuildSearchableOptionsTask> {
+            jbrVersion("8u252b1649.2")
+        }
+
         withType<org.jetbrains.intellij.tasks.RunIdeTask> {
             jbrVersion("8u252b1649.2")
         }
