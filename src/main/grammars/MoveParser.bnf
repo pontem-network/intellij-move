@@ -161,7 +161,7 @@ private FunctionParams_body_recover ::= !')'
 FunctionParam ::= identifier TypeAscription {
     pin = 1
     recoverWhile = "FunctionParams_recover"
-    implements = [ "org.move.lang.core.psi.MoveNamedElement" ]
+    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionParamImplMixin"
 }
 private FunctionParams_recover ::= !(','|')')
@@ -252,7 +252,7 @@ BorrowPat ::= '&' Pat
 DotPat ::= identifier '.' identifier { pin = 2 }
 
 BindingPat ::= identifier {
-    implements = [ "org.move.lang.core.psi.MoveNamedElement" ]
+    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.mixins.MoveBindingPatImplMixin"
 }
 

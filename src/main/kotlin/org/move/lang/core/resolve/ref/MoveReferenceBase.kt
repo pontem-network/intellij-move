@@ -32,7 +32,8 @@ abstract class MoveReferenceBase<T : MoveReferenceElement>(element: T) : PsiRefe
     }
 
     override fun handleElementRename(newElementName: String): PsiElement {
-        doRename(element.referenceNameElement, newElementName)
+        val refNameElement = element.referenceNameElement
+        doRename(refNameElement, newElementName)
         return element
     }
 

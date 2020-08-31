@@ -48,6 +48,8 @@
                              implementationClass="org.move.ide.refactoring.MoveNamesValidator"/>
         <lang.refactoringSupport language="Move"
                                  implementationClass="org.move.ide.refactoring.MoveRefactoringSupportProvider"/>
+        <lang.findUsagesProvider language="Move"
+                                 implementationClass="org.move.ide.search.MoveFindUsagesProvider"/>
 
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.KeywordCompletionContributor"/>

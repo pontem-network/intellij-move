@@ -37,8 +37,8 @@ class RenameTest : MoveTestCase() {
     fun `test local variable shadowed`() = doTest("spam", """
         script {
             fun main() {
-                let a = 1;
-                let a = /*caret*/a + 1;
+                let /*caret*/a = 1;
+                let a = a + 1;
                 a;
             }
         }
