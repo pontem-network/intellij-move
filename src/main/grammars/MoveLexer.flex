@@ -32,6 +32,7 @@ import static org.move.lang.MoveElementTypes.*;
 
 %s IN_BLOCK_COMMENT
 %s IN_SPEC
+%s IN_APPLY_TO
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Whitespaces
@@ -55,13 +56,11 @@ INTEGER_LITERAL=[0-9]+((u8)|(u64)|(u128))?
 HEX_STRING_LITERAL=x\"([A-F0-9a-f]*)\"
 BYTE_STRING_LITERAL=b\"(.*)\"
 
-NOT_START_OF_FUNCTION_CALL=![<(]
-
 IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
-//SCHEMA_APPLY_NAME_PATTERN=[*_a-zA-Z][*_a-zA-Z0-9]*
+FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
 
 %%
-<YYINITIAL,IN_SPEC> {
+<YYINITIAL,IN_SPEC,IN_APPLY_TO> {
   {WHITE_SPACE}              { return WHITE_SPACE; }
 
   "{"                        {
@@ -89,7 +88,13 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "!"                             { return EXCL; }
   "+"                             { return PLUS; }
   "-"                             { return MINUS; }
+}
+
+<YYINITIAL,IN_SPEC> {
   "*"                             { return MUL; }
+}
+
+<YYINITIAL,IN_SPEC,IN_APPLY_TO> {
   "/"                             { return DIV; }
   "%"                             { return MODULO; }
   "^"                             { return XOR; }
@@ -177,14 +182,25 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "pack"                           { return PACK; }
   "unpack"                         { return UNPACK; }
   "apply"                          { return APPLY; }
-  "to"                             { return TO; }
-  "except"                         { return EXCEPT; }
+  "to"                             { yybegin(IN_APPLY_TO); return TO; }
+  "except"                         { yybegin(IN_APPLY_TO); return EXCEPT; }
   "forall"                         { return FORALL; }
   "in"                             { return IN; }
   "where"                             { return WHERE; }
+//
+//   {FUNCTION_PATTERN_NAME}      {
+//          if (yycharat(-1) == 'o' && yycharat(-2) == 't') {
+//              return FUNCTION_PATTERN_NAME;
+//            }
+//    }
 }
 
-<YYINITIAL,IN_SPEC> {
+<IN_APPLY_TO> {
+    {FUNCTION_PATTERN_NAME}     { yybegin(IN_SPEC); return FUNCTION_PATTERN_NAME; }
+      [^]       { yybegin(IN_SPEC); }
+}
+
+<YYINITIAL,IN_SPEC,IN_APPLY_TO> {
   {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
   {BOOL_LITERAL}             { return BOOL_LITERAL; }
   {INTEGER_LITERAL}          { return INTEGER_LITERAL; }

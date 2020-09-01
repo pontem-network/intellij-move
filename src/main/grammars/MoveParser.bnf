@@ -28,7 +28,7 @@
         BYTE_STRING_LITERAL='regexp:b"(.*)"'
 
         IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
-//        SCHEMA_APPLY_NAME_PATTERN='regexp:[*_a-zA-Z][*_a-zA-Z0-9]*'
+        FUNCTION_PATTERN_NAME='regexp:[*_a-zA-Z][*_a-zA-Z0-9]*'
 
         L_BRACE          =  '{'
         R_BRACE          =  '}'
@@ -608,14 +608,16 @@ EnsuresStatement ::= ensures Predicate ';' { pin = 1 }
 ModifiesStatement ::= modifies Expr ';' { pin = 1 }
 IncludeStatement ::= include Expr ';' { pin = 1 }
 
-private ExprOrPathOrFunctionPattern ::= (Expr | QualifiedPath | FunctionPattern)
-
-FunctionPattern ::= (public | internal)? SCHEMA_APPLY_NAME_PATTERN TypeArgumentList? { pin = 2 }
+FunctionPattern ::= (public | internal)? FUNCTION_PATTERN_NAME TypeArgumentList? { pin = 2 }
 
 InvariantStatement ::= invariant (pack | unpack | module | update)? Predicate ';' { pin = 1 }
-ApplyStatement ::= apply ExprOrPathOrFunctionPattern
+ApplyStatement ::= apply ApplySchemaName
                     to FunctionPattern (',' FunctionPattern)*
                      (except FunctionPattern (',' FunctionPattern)*)? ';' { pin = 1 }
+ApplySchemaName ::= QualifiedPath ('{'
+                                ApplySchemaNameAttribute (',' ApplySchemaNameAttribute)*
+                            '}')?
+ApplySchemaNameAttribute ::= identifier ':' Expr
 
 Predicate ::= Precondition | Expr
 private Precondition ::= ((ForAllPrecondition ':' ExistsPrecondition)
