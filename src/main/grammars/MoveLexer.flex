@@ -10,7 +10,11 @@ import static org.move.lang.MoveElementTypes.*;
 %%
 
 %{
-    private int bracesDepth = 0;
+  private int bracesDepth = 0;
+
+  private boolean isSpec = false;
+
+  private int specBracesDepth = -1;
 %}
 
 %{
@@ -27,6 +31,7 @@ import static org.move.lang.MoveElementTypes.*;
 %unicode
 
 %s IN_BLOCK_COMMENT
+%s IN_SPEC
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Whitespaces
@@ -54,11 +59,19 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 //SCHEMA_APPLY_NAME_PATTERN=[*_a-zA-Z][*_a-zA-Z0-9]*
 
 %%
-<YYINITIAL> {
+<YYINITIAL,IN_SPEC> {
   {WHITE_SPACE}              { return WHITE_SPACE; }
 
-  "{"                        { bracesDepth++; return L_BRACE; }
-  "}"                        { bracesDepth--; return R_BRACE; }
+  "{"                        {
+          bracesDepth++;
+          return L_BRACE; }
+  "}"                        {
+          bracesDepth--;
+          if (bracesDepth < specBracesDepth) {
+              yybegin(YYINITIAL);
+          }
+          return R_BRACE;
+      }
   "["                        { return L_BRACK; }
   "]"                        { return R_BRACK; }
   "("                        { return L_PAREN; }
@@ -115,9 +128,27 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "loop"                           { return LOOP; }
   "while"                          { return WHILE; }
   "let"                            { return LET; }
-  "spec"                           { return SPEC; }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Literals
+///////////////////////////////////////////////////////////////////////////////////////////////////
+  "spec"                           {
+          specBracesDepth = bracesDepth + 1;
+          yybegin(IN_SPEC);
+          return SPEC;
+      }
   "schema"                         { return SCHEMA; }
   "define"                         { return DEFINE; }
+
+  "/*"                      { yybegin(IN_BLOCK_COMMENT); yypushback(2); }
+
+  {LINE_COMMENT}             { return LINE_COMMENT; }
+
+
+//  {SCHEMA_APPLY_NAME_PATTERN}      { return SCHEMA_APPLY_NAME_PATTERN; }
+}
+
+<IN_SPEC> {
   "local"                          { return LOCAL; }
   "global"                         { return GLOBAL; }
   "pragma"                         { return PRAGMA; }
@@ -139,18 +170,15 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "to"                             { return TO; }
   "except"                         { return EXCEPT; }
   "forall"                         { return FORALL; }
+}
 
-  "/*"                      { yybegin(IN_BLOCK_COMMENT); yypushback(2); }
-
-  {LINE_COMMENT}             { return LINE_COMMENT; }
-
+<YYINITIAL,IN_SPEC> {
   {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
   {BOOL_LITERAL}             { return BOOL_LITERAL; }
   {INTEGER_LITERAL}          { return INTEGER_LITERAL; }
   {HEX_STRING_LITERAL}       { return HEX_STRING_LITERAL; }
   {BYTE_STRING_LITERAL}      { return BYTE_STRING_LITERAL; }
   {IDENTIFIER}               { return IDENTIFIER; }
-//  {SCHEMA_APPLY_NAME_PATTERN}      { return SCHEMA_APPLY_NAME_PATTERN; }
 }
 
 <IN_BLOCK_COMMENT> {

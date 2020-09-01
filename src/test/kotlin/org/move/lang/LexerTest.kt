@@ -6,5 +6,6 @@ class LexerTest: MoveLexerTestCase() {
     fun `test address block`() = doTest()
     fun `test address identifier inside module`() = doTest()
     fun `test address identifier inside script`() = doTest()
-    fun `test address named module`() = doTest()
+    fun `test in module spec keywords are identifiers`() = doTest()
+    fun `test in spec keywords are keywords`() = doTest()
 }
