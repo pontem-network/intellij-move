@@ -8,4 +8,6 @@ class LexerTest: MoveLexerTestCase() {
     fun `test address identifier inside script`() = doTest()
     fun `test in module spec keywords are identifiers`() = doTest()
     fun `test in spec keywords are keywords`() = doTest()
+    fun `test global as keyword`() = doTest()
+    fun `test global as function`() = doTest()
 }

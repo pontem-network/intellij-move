@@ -4,4 +4,5 @@ import org.move.utils.tests.parser.MoveParsingTestCase
 
 class SpecsParsingTest: MoveParsingTestCase("specs") {
     fun `test scopes`() = doTest(true)
+    fun `test conditions`() = doTest(true)
 }

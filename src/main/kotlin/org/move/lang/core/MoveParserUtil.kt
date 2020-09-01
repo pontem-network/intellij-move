@@ -32,11 +32,11 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun andandImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, AND_AND, AND, AND)
 
-//    @JvmStatic
-//    fun eqeqgtImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, EQ_EQ_GT, EQ_EQ, GT)
+    @JvmStatic
+    fun eqeqgtImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, EQ_EQ_GT, EQ_EQ, GT)
 
-//    @JvmStatic
-//    fun gteqeqgtImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, GT_EQ_EQ_GT, GT, EQ_EQ, GT)
+    @JvmStatic
+    fun lteqeqgtImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, LT_EQ_EQ_GT, LT, EQ_EQ, GT)
 
     @JvmStatic
     private fun collapse(b: PsiBuilder, tokenType: IElementType, vararg parts: IElementType): Boolean {

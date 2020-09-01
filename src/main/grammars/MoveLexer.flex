@@ -55,6 +55,8 @@ INTEGER_LITERAL=[0-9]+((u8)|(u64)|(u128))?
 HEX_STRING_LITERAL=x\"([A-F0-9a-f]*)\"
 BYTE_STRING_LITERAL=b\"(.*)\"
 
+NOT_START_OF_FUNCTION_CALL=![<(]
+
 IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 //SCHEMA_APPLY_NAME_PATTERN=[*_a-zA-Z][*_a-zA-Z0-9]*
 
@@ -150,7 +152,16 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 
 <IN_SPEC> {
   "local"                          { return LOCAL; }
-  "global"                         { return GLOBAL; }
+
+  "global" / "("|"<"                        { return IDENTIFIER; }
+  "global"                        { return GLOBAL; }
+
+  "update" / "("|"<"                        { return IDENTIFIER; }
+  "update"                        { return UPDATE; }
+
+  "exists" / "("|"<"                        { return IDENTIFIER; }
+  "exists"                        { return EXISTS; }
+
   "pragma"                         { return PRAGMA; }
   "assume"                         { return ASSUME; }
   "assert"                         { return ASSERT; }
@@ -165,11 +176,11 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "invariant"                      { return INVARIANT; }
   "pack"                           { return PACK; }
   "unpack"                         { return UNPACK; }
-  "update"                         { return UPDATE; }
   "apply"                          { return APPLY; }
   "to"                             { return TO; }
   "except"                         { return EXCEPT; }
   "forall"                         { return FORALL; }
+  "in"                             { return IN; }
 }
 
 <YYINITIAL,IN_SPEC> {

@@ -76,7 +76,7 @@
         OR_OR           = '||'
         AND_AND         = '&&'
         EQ_EQ_GT        = '==>'
-        GT_EQ_EQ_GT     = '<==>'
+        LT_EQ_EQ_GT     = '<==>'
     ]
 }
 
@@ -337,6 +337,7 @@ private CodeBlock_body_recover ::= !'}'
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // from lowest to highest
 Expr ::= AssignmentExprItem
+        | ImplyOperatorsExprItem
         | OrExpr
         | AndExpr
         | LogicalEqExprItem
@@ -382,13 +383,13 @@ private AtomExpr ::=
                     | LiteralExpr
                     | CodeBlockExpr
 
-EqualsExpr ::= Expr '==' Expr
+EqualsExpr ::= Expr (!eqeq_gt '==') Expr
 NotEqualsExpr ::= Expr '!=' Expr
 
 OrExpr ::= Expr oror Expr
 AndExpr ::= Expr andand Expr
 
-LessExpr ::= Expr (!ltlt '<') Expr
+LessExpr ::= Expr (!(ltlt | lt_eqeq_gt) '<') Expr
 GreaterExpr ::= Expr (!gtgt '>') Expr
 LessEqualsExpr ::= Expr lteq Expr
 GreaterEqualsExpr ::= Expr gteq Expr
@@ -411,6 +412,10 @@ MinusExpr ::= Expr '-' Expr
 
 LeftShiftExpr ::= Expr ltlt Expr
 RightShiftExpr ::= Expr gtgt Expr
+
+private ImplyOperatorsExprItem ::= ImplyOperatorExpr | PartialImplyOperatorExpr
+ImplyOperatorExpr ::= Expr eqeq_gt Expr
+PartialImplyOperatorExpr ::= Expr lt_eqeq_gt Expr
 
 BangExpr ::= '!' Expr
 DerefExpr ::= '*' Expr
@@ -500,7 +505,7 @@ private Initializer ::= '=' Expr {
 
 BorrowExpr ::= '&' mut? Expr
 DotExpr ::= Expr '.' identifier
-IndexExpr ::= Expr '[' Expr ']'
+IndexExpr ::= Expr '[' Expr ']' { rightAssociative = true }
 RefExpr ::= QualifiedPath {
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveRefExprImplMixin"
@@ -521,6 +526,8 @@ private ltlt   ::= <<ltltImpl>>
 private lteq   ::= <<lteqImpl>>
 private oror   ::= <<ororImpl>>
 private andand ::= <<andandImpl>>
+private eqeq_gt ::= <<eqeqgtImpl>>
+private lt_eqeq_gt ::= <<lteqeqgtImpl>>
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -588,14 +595,14 @@ LocalVariableStatement ::= local RefExpr ':' Type ';' { pin = 1 }
 GlobalVariableStatement ::= global RefExpr ':' Type ';' { pin = 1 }
 
 PragmaStatement ::= pragma identifier '=' LiteralExpr ';' { pin = 1 }
-AssumeStatement ::= assume SpecCondition ';' { pin = 1 }
-AssertStatement ::= assert SpecCondition ';' { pin = 1 }
+AssumeStatement ::= assume Predicate ';' { pin = 1 }
+AssertStatement ::= assert Predicate ';' { pin = 1 }
 //noinspection BnfSuspiciousToken
-AbortsIfStatement ::= aborts_if SpecCondition (with Expr)? ';' { pin = 1 }
+AbortsIfStatement ::= aborts_if Predicate (with Expr)? ';' { pin = 1 }
 //noinspection BnfSuspiciousToken
-SucceedsIfStatement ::= succeeds_if SpecCondition ';' { pin = 1 }
-RequiresStatement ::= requires module? SpecCondition ';' { pin = 1 }
-EnsuresStatement ::= ensures SpecCondition ';' { pin = 1 }
+SucceedsIfStatement ::= succeeds_if Predicate ';' { pin = 1 }
+RequiresStatement ::= requires module? Predicate ';' { pin = 1 }
+EnsuresStatement ::= ensures Predicate ';' { pin = 1 }
 ModifiesStatement ::= modifies Expr ';' { pin = 1 }
 IncludeStatement ::= include Expr ';' { pin = 1 }
 
@@ -603,11 +610,31 @@ private ExprOrPathOrFunctionPattern ::= (Expr | QualifiedPath | FunctionPattern)
 
 FunctionPattern ::= (public | internal)? SCHEMA_APPLY_NAME_PATTERN TypeArgumentList? { pin = 2 }
 
-InvariantStatement ::= invariant (pack | unpack | module | update)? SpecCondition ';' { pin = 1 }
+InvariantStatement ::= invariant (pack | unpack | module | update)? Predicate ';' { pin = 1 }
 ApplyStatement ::= apply ExprOrPathOrFunctionPattern
                     to FunctionPattern (',' FunctionPattern)*
                      (except FunctionPattern (',' FunctionPattern)*)? ';' { pin = 1 }
 
-SpecCondition ::= Expr | ForAllCondition
-ForAllCondition ::= forall ForAllAttribute (',' ForAllAttribute)* ':' Expr { pin = 1 }
-private ForAllAttribute ::= identifier ':' Type
+Predicate ::= Precondition | Expr
+Precondition ::= ((ForAllPrecondition ':' ExistsPrecondition)
+                    | ExistsPrecondition
+                    | ForAllPrecondition) ':' Expr { pin = 2 }
+
+ForAllPrecondition ::= forall PreconditionAttribute (',' PreconditionAttribute)* {
+    pin = 1
+    extends = Predicate
+}
+ExistsPrecondition ::= exists PreconditionAttribute (',' PreconditionAttribute)* {
+    pin = 1
+    extends = Predicate
+}
+PreconditionAttribute ::= ContainsPreconditionAttribute | TypePreconditionAttribute
+
+ContainsPreconditionAttribute ::= identifier in RangeExpr {
+    pin = 2
+    extends = PreconditionAttribute
+}
+TypePreconditionAttribute ::= identifier ':' Type {
+    pin = 2
+    extends = PreconditionAttribute
+}

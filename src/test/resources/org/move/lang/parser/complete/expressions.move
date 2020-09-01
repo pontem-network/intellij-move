@@ -1,4 +1,4 @@
-script {
+module M {
     fun main() {
         (1 + 1) * (1 + 1);
         (!!true + !!true) * !!false;
@@ -21,5 +21,12 @@ script {
         (2) as u8;
         (let a = 1) as u8;
         (a = 2) as u8;
+    }
+
+    spec fun main {
+        a ==> b;
+        a <==> b;
+        x && y ==> x;
+        x && y <==> x;
     }
 }
