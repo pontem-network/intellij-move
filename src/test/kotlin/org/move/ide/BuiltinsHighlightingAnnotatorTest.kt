@@ -36,9 +36,7 @@ class BuiltinsHighlightingAnnotatorTest : AnnotatorTestCase(BuiltinsHighlighting
                 <BUILTIN_FUNCTION>move_from</BUILTIN_FUNCTION>();
                 <BUILTIN_FUNCTION>borrow_global</BUILTIN_FUNCTION>();
                 <BUILTIN_FUNCTION>borrow_global_mut</BUILTIN_FUNCTION>();
-                <BUILTIN_FUNCTION>exists</BUILTIN_FUNCTION>();
                 <BUILTIN_FUNCTION>freeze</BUILTIN_FUNCTION>();
-                <BUILTIN_FUNCTION>assert</BUILTIN_FUNCTION>();
             }
         }
     """

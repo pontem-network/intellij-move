@@ -1,0 +1,6 @@
+address ('address')
+WHITE_SPACE (' ')
+ADDRESS_LITERAL ('0x0')
+WHITE_SPACE (' ')
+{ ('{')
+} ('}')

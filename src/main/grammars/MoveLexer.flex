@@ -10,6 +10,10 @@ import static org.move.lang.MoveElementTypes.*;
 %%
 
 %{
+    private int bracesDepth = 0;
+%}
+
+%{
   public _MoveLexer() {
     this((java.io.Reader)null);
   }
@@ -27,31 +31,34 @@ import static org.move.lang.MoveElementTypes.*;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Whitespaces
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
 EOL_WS           = \n | \r | \r\n
 LINE_WS          = [\ \t]
 WHITE_SPACE_CHAR = {EOL_WS} | {LINE_WS}
 WHITE_SPACE      = {WHITE_SPACE_CHAR}+
 
-//EOL=\R
-//WHITE_SPACE=\s+
-
-//WHITESPACE=[ \n\t\r\f]
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Comments
+///////////////////////////////////////////////////////////////////////////////////////////////////
 LINE_COMMENT=("//".*\n)|("//".*\R)
-//BLOCK_COMMENT="/"\*(.|[ \t\n\x0B\f\r])*\*"/"
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Literals
+///////////////////////////////////////////////////////////////////////////////////////////////////
 ADDRESS_LITERAL=0x[0-9a-fA-F]{1,40}
 BOOL_LITERAL=(true)|(false)
 INTEGER_LITERAL=[0-9]+((u8)|(u64)|(u128))?
 HEX_STRING_LITERAL=x\"([A-F0-9a-f]*)\"
 BYTE_STRING_LITERAL=b\"(.*)\"
+
 IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
+//SCHEMA_APPLY_NAME_PATTERN=[*_a-zA-Z][*_a-zA-Z0-9]*
 
 %%
 <YYINITIAL> {
   {WHITE_SPACE}              { return WHITE_SPACE; }
 
-  "{"                        { return L_BRACE; }
-  "}"                        { return R_BRACE; }
+  "{"                        { bracesDepth++; return L_BRACE; }
+  "}"                        { bracesDepth--; return R_BRACE; }
   "["                        { return L_BRACK; }
   "]"                        { return R_BRACK; }
   "("                        { return L_PAREN; }
@@ -76,51 +83,74 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   ">"                        { return GT; }
   "&"                        { return AND; }
   "|"                        { return OR; }
-//  "<="                       { return LT_EQ; }
-//  "<<"                       { return LT_LT; }
-//  ">="                       { return GT_EQ; }
-//  ">>"                       { return GT_GT; }
-//  "||"                       { return OR_OR; }
-//  "&&"                       { return AND_AND; }
-  "script"                   { return SCRIPT; }
-  "address"                  { return ADDRESS; }
-  "module"                   { return MODULE; }
-  "const"                    { return CONST; }
-  "native"                   { return NATIVE; }
-  "public"                   { return PUBLIC; }
-  "fun"                      { return FUN; }
-  "acquires"                 { return ACQUIRES; }
-  "resource"                 { return RESOURCE; }
-  "struct"                   { return STRUCT; }
-  "use"                      { return USE; }
-  "as"                       { return AS; }
-  "mut"                      { return MUT; }
-  "copyable"                 { return COPYABLE; }
-  "copy"                     { return COPY; }
-  "move"                     { return MOVE; }
-  "return"                   { return RETURN; }
-  "abort"                    { return ABORT; }
-  "break"                    { return BREAK; }
-  "continue"                 { return CONTINUE; }
-  "if"                       { return IF; }
-  "else"                     { return ELSE; }
-  "loop"                     { return LOOP; }
-  "while"                    { return WHILE; }
-  "let"                      { return LET; }
+
+  "address"                        {
+          if (bracesDepth == 0) {
+              return ADDRESS;
+          } else {
+              return IDENTIFIER;
+          }
+      }
+  "script"                         { return SCRIPT; }
+  "module"                         { return MODULE; }
+  "const"                          { return CONST; }
+  "native"                         { return NATIVE; }
+  "public"                         { return PUBLIC; }
+  "fun"                            { return FUN; }
+  "acquires"                       { return ACQUIRES; }
+  "resource"                       { return RESOURCE; }
+  "struct"                         { return STRUCT; }
+  "use"                            { return USE; }
+  "as"                             { return AS; }
+  "mut"                            { return MUT; }
+  "copyable"                       { return COPYABLE; }
+  "copy"                           { return COPY; }
+  "move"                           { return MOVE; }
+  "return"                         { return RETURN; }
+  "abort"                          { return ABORT; }
+  "break"                          { return BREAK; }
+  "continue"                       { return CONTINUE; }
+  "if"                             { return IF; }
+  "else"                           { return ELSE; }
+  "loop"                           { return LOOP; }
+  "while"                          { return WHILE; }
+  "let"                            { return LET; }
+  "spec"                           { return SPEC; }
+  "schema"                         { return SCHEMA; }
+  "define"                         { return DEFINE; }
+  "local"                          { return LOCAL; }
+  "global"                         { return GLOBAL; }
+  "pragma"                         { return PRAGMA; }
+  "assume"                         { return ASSUME; }
+  "assert"                         { return ASSERT; }
+  "aborts_if"                      { return ABORTS_IF; }
+  "with"                           { return WITH; }
+  "succeeds_if"                    { return SUCCEEDS_IF; }
+  "requires"                       { return REQUIRES; }
+  "ensures"                        { return ENSURES; }
+  "modifies"                       { return MODIFIES; }
+  "include"                        { return INCLUDE; }
+  "internal"                       { return INTERNAL; }
+  "invariant"                      { return INVARIANT; }
+  "pack"                           { return PACK; }
+  "unpack"                         { return UNPACK; }
+  "update"                         { return UPDATE; }
+  "apply"                          { return APPLY; }
+  "to"                             { return TO; }
+  "except"                         { return EXCEPT; }
+  "forall"                         { return FORALL; }
 
   "/*"                      { yybegin(IN_BLOCK_COMMENT); yypushback(2); }
 
-//  {WHITESPACE}               { return WHITESPACE; }
   {LINE_COMMENT}             { return LINE_COMMENT; }
 
-//  {BLOCK_COMMENT}            { return BLOCK_COMMENT; }
   {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
   {BOOL_LITERAL}             { return BOOL_LITERAL; }
   {INTEGER_LITERAL}          { return INTEGER_LITERAL; }
   {HEX_STRING_LITERAL}       { return HEX_STRING_LITERAL; }
   {BYTE_STRING_LITERAL}      { return BYTE_STRING_LITERAL; }
   {IDENTIFIER}               { return IDENTIFIER; }
-
+//  {SCHEMA_APPLY_NAME_PATTERN}      { return SCHEMA_APPLY_NAME_PATTERN; }
 }
 
 <IN_BLOCK_COMMENT> {

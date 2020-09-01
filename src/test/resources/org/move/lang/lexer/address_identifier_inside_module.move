@@ -1,0 +1,1 @@
+module M { fun main() { let address = 1; } }

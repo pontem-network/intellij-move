@@ -28,6 +28,7 @@
         BYTE_STRING_LITERAL='regexp:b"(.*)"'
 
         IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
+        SCHEMA_APPLY_NAME_PATTERN='regexp:[*_a-zA-Z][*_a-zA-Z0-9]*'
 
         L_BRACE          =  '{'
         R_BRACE          =  '}'
@@ -74,6 +75,8 @@
         GT_GT           = '>>'
         OR_OR           = '||'
         AND_AND         = '&&'
+        EQ_EQ_GT        = '==>'
+        GT_EQ_EQ_GT     = '<==>'
     ]
 }
 
@@ -110,7 +113,7 @@ ModuleBlock ::= '{' ModuleBlockItems '}' { pin = 1 }
 private ModuleBlockItems ::= ModuleItem* { recoverWhile = "ModuleBlockItems_recover" }
 private ModuleBlockItems_recover ::= !'}'
 
-private ModuleItem ::= ImportStatement | StructDef | FunctionDef | NativeFunctionDef | ConstDef
+private ModuleItem ::= ImportStatement | StructDef | FunctionDef | NativeFunctionDef | ConstDef | SpecDef
 
 ConstDef ::= const ConstDefInner ';' {
     pin = 1
@@ -219,8 +222,10 @@ ImportAlias ::= as identifier { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 private TypeAscription ::= ':' Type { pin = 1 }
 
-Type ::= TupleType | TypeReference
-TypeReference ::= ('&' mut?)? (address | QualifiedPath) {
+Type ::= TupleType | TypeReference | LambdaType
+
+LambdaType ::= '|' (Type (',' Type)*)? '|' Type { pin = 1 }
+TypeReference ::= ('&' mut?)? QualifiedPath {
     name = "type"
 }
 TupleType ::= '(' (Type ','?)* ','? ')' { pin = 1 }
@@ -276,11 +281,18 @@ StructPatFieldBinding ::= ':' (StructPat | BindingPat) { pin = 1 }
 //                            | LetStatement | AssignmentStatement
 //                            | ExprStatement
 Statement ::= StatementExpr ';'
-private StatementExpr ::= IfExpr | LoopExpr | WhileExpr
-                        | LetExpr | AssignmentExpr | Expr {
+private StatementExpr ::= IfExpr
+                            | LoopExpr
+                            | WhileExpr
+                            | LetExpr
+                            | AssignmentExpr
+                            | Expr
+{
     recoverWhile = "StatementExpr_recover"
 }
 private StatementExpr_recover ::= '!;'
+
+//InlineSpecBlock ::= spec SpecBlock { pin = 1 }
 
 //IfStatement ::= IfExpr ';'
 //LoopStatement ::= LoopExpr ';'
@@ -308,8 +320,8 @@ CodeBlock ::= '{' CodeBlock_body '}' {
 CodeBlockExpr ::= '{' CodeBlock_body '}' { pin = 1 }
 
 private CodeBlock_body ::= (ImportStatement*)?
-                            Statement*
-                            Expr?
+                            (Statement | SpecBlockStatement)*
+                             Expr?
 {
     recoverWhile = "CodeBlock_body_recover"
 }
@@ -362,8 +374,11 @@ private AtomExpr ::=
 //                    | AssignmentExpr
                     | StructLiteralExpr
                     | DotExpr
+                    | IndexExpr
                     | CallExpr
                     | RefExpr
+                    | LambdaExpr
+                    | RangeExpr
                     | LiteralExpr
                     | CodeBlockExpr
 
@@ -432,6 +447,8 @@ ParensExpr ::= '(' Expr ')'
 //TupleLiteralExpr ::= '('
 //TupleLiteralExpr ::= '(' TupleLiteralExpr? ')' { pin = 2 }
 //private TupleLiteralExpr_body ::= (Expr ',' (Expr ','?)*)?
+LambdaExpr ::= '|' (identifier (',' identifier)*)? '|' Expr { pin = 1 }
+RangeExpr ::= Expr '..' Expr
 
 TupleLiteralExpr ::= EmptyTupleExpr | TupleExpr
 private EmptyTupleExpr ::= '(' ')'
@@ -483,6 +500,7 @@ private Initializer ::= '=' Expr {
 
 BorrowExpr ::= '&' mut? Expr { pin = 1 }
 DotExpr ::= Expr '.' identifier
+IndexExpr ::= Expr '[' Expr ']'
 RefExpr ::= QualifiedPath {
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveRefExprImplMixin"
@@ -504,3 +522,92 @@ private lteq   ::= <<lteqImpl>>
 private oror   ::= <<ororImpl>>
 private andand ::= <<andandImpl>>
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Specs
+///////////////////////////////////////////////////////////////////////////////////////////////////
+SpecDef ::= spec SpecInnerItem { pin = 1 }
+private SpecInnerItem ::= FunctionSpec
+                          | ModuleSpec
+                          | StructSpec
+                          | SchemaSpec
+                          | SpecHelperFunctionDef
+                          | SpecHelperNativeFunctionDef
+
+FunctionSpec ::= fun identifier SpecBlock { pin = 1 }
+StructSpec ::= struct identifier SpecBlock { pin = 1 }
+SchemaSpec ::= schema identifier TypeArgumentList? SpecBlock { pin = 1 }
+
+ModuleSpec ::= module SpecBlock { pin = 1 }
+SpecHelperFunctionDef ::= define identifier TypeParameterList?
+                                                   FunctionParams
+                                                   ReturnType?
+                                                   CodeBlock
+{
+    pin = 1
+}
+SpecHelperNativeFunctionDef ::= native define identifier TypeParameterList?
+                                                   FunctionParams
+                                                   ReturnType? ';'
+{
+    pin = 2
+}
+
+SpecBlockStatement ::= spec SpecBlock ';' {
+    pin = 1
+    extends = Statement
+}
+
+SpecBlock ::= '{' SpecBlock_body '}' { pin = 1 }
+private SpecBlock_body ::= (
+                                SpecHelperFunctionDef
+                                | (spec SpecHelperFunctionDef)
+                                | SpecHelperNativeFunctionDef
+                                | (spec SpecHelperNativeFunctionDef)
+                                | Statement
+                                | VariableStatement | LocalVariableStatement | GlobalVariableStatement
+                                | PragmaStatement
+                                | AssumeStatement
+                                | AssertStatement
+                                | AbortsIfStatement
+                                | SucceedsIfStatement
+                                | RequiresStatement
+                                | EnsuresStatement
+                                | ModifiesStatement
+                                | IncludeStatement
+                                | InvariantStatement
+                                | ApplyStatement
+                            )*
+{
+    recoverWhile = SpecBlock_body_recover
+}
+private SpecBlock_body_recover ::= !'}'
+
+VariableStatement ::= RefExpr ':' Type ';'
+LocalVariableStatement ::= local RefExpr ':' Type ';' { pin = 1 }
+GlobalVariableStatement ::= global RefExpr ':' Type ';' { pin = 1 }
+
+PragmaStatement ::= pragma identifier '=' LiteralExpr ';' { pin = 1 }
+AssumeStatement ::= assume SpecCondition ';' { pin = 1 }
+AssertStatement ::= assert SpecCondition ';' { pin = 1 }
+//noinspection BnfSuspiciousToken
+AbortsIfStatement ::= aborts_if SpecCondition (with Expr)? ';' { pin = 1 }
+//noinspection BnfSuspiciousToken
+SucceedsIfStatement ::= succeeds_if SpecCondition ';' { pin = 1 }
+RequiresStatement ::= requires module? SpecCondition ';' { pin = 1 }
+EnsuresStatement ::= ensures SpecCondition ';' { pin = 1 }
+ModifiesStatement ::= modifies Expr ';' { pin = 1 }
+IncludeStatement ::= include Expr ';' { pin = 1 }
+
+private ExprOrPathOrFunctionPattern ::= (Expr | QualifiedPath | FunctionPattern)
+
+FunctionPattern ::= (public | internal)? SCHEMA_APPLY_NAME_PATTERN TypeArgumentList? { pin = 2 }
+
+InvariantStatement ::= invariant (pack | unpack | module | update)? SpecCondition ';' { pin = 1 }
+ApplyStatement ::= apply ExprOrPathOrFunctionPattern
+                    to FunctionPattern (',' FunctionPattern)*
+                     (except FunctionPattern (',' FunctionPattern)*)? ';' { pin = 1 }
+
+SpecCondition ::= Expr | ForAllCondition
+ForAllCondition ::= forall ForAllAttribute (',' ForAllAttribute)* ':' Expr { pin = 1 }
+private ForAllAttribute ::= identifier ':' Type
