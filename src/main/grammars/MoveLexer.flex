@@ -181,6 +181,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "except"                         { return EXCEPT; }
   "forall"                         { return FORALL; }
   "in"                             { return IN; }
+  "where"                             { return WHERE; }
 }
 
 <YYINITIAL,IN_SPEC> {

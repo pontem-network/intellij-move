@@ -28,7 +28,7 @@
         BYTE_STRING_LITERAL='regexp:b"(.*)"'
 
         IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
-        SCHEMA_APPLY_NAME_PATTERN='regexp:[*_a-zA-Z][*_a-zA-Z0-9]*'
+//        SCHEMA_APPLY_NAME_PATTERN='regexp:[*_a-zA-Z][*_a-zA-Z0-9]*'
 
         L_BRACE          =  '{'
         R_BRACE          =  '}'
@@ -594,7 +594,9 @@ VariableStatement ::= RefExpr ':' Type ';'
 LocalVariableStatement ::= local RefExpr ':' Type ';' { pin = 1 }
 GlobalVariableStatement ::= global RefExpr ':' Type ';' { pin = 1 }
 
-PragmaStatement ::= pragma identifier '=' LiteralExpr ';' { pin = 1 }
+PragmaStatement ::= pragma PragmaAttribute (',' PragmaAttribute)* ';' { pin = 1 }
+PragmaAttribute ::= identifier ('=' LiteralExpr)?
+
 AssumeStatement ::= assume Predicate ';' { pin = 1 }
 AssertStatement ::= assert Predicate ';' { pin = 1 }
 //noinspection BnfSuspiciousToken
@@ -616,17 +618,19 @@ ApplyStatement ::= apply ExprOrPathOrFunctionPattern
                      (except FunctionPattern (',' FunctionPattern)*)? ';' { pin = 1 }
 
 Predicate ::= Precondition | Expr
-Precondition ::= ((ForAllPrecondition ':' ExistsPrecondition)
+private Precondition ::= ((ForAllPrecondition ':' ExistsPrecondition)
                     | ExistsPrecondition
-                    | ForAllPrecondition) ':' Expr { pin = 2 }
+                    | ForAllPrecondition) ':' Expr
 
-ForAllPrecondition ::= forall PreconditionAttribute (',' PreconditionAttribute)* {
+ForAllPrecondition ::= forall PreconditionAttribute (',' PreconditionAttribute)* ForAllWhereCondition? {
     pin = 1
-    extends = Predicate
+//    extends = Precondition
 }
+ForAllWhereCondition ::= where Expr { pin = 1 }
+
 ExistsPrecondition ::= exists PreconditionAttribute (',' PreconditionAttribute)* {
     pin = 1
-    extends = Predicate
+//    extends = Precondition
 }
 PreconditionAttribute ::= ContainsPreconditionAttribute | TypePreconditionAttribute
 

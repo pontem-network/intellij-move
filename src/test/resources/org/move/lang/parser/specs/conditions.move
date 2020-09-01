@@ -2,15 +2,12 @@ module M {
     spec module {
         invariant x > 0;
         invariant x == y;
+        invariant module old(y) < x;
 
         invariant update old(y) < x;
         invariant update expected_coin_sum = expected_coin_sum - old(x) + x;
         invariant pack expected_coin_sum = expected_coin_sum + x;
         invariant unpack expected_coin_sum = expected_coin_sum - x;
-
-        invariant forall x: num, y: num, z: num : x == y && y == z ==> x == z;
-        invariant forall x: num : exists y: num : y >= x;
-        invariant exists x in 1..10, y in 8..12 : x == y;
 
         aborts_if x == 0;
         aborts_if y == 0;
