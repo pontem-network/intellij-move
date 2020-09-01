@@ -619,8 +619,8 @@ ApplyStatement ::= apply ExprOrPathOrFunctionPattern
 
 Predicate ::= Precondition | Expr
 private Precondition ::= ((ForAllPrecondition ':' ExistsPrecondition)
-                    | ExistsPrecondition
-                    | ForAllPrecondition) ':' Expr
+                            | ExistsPrecondition
+                            | ForAllPrecondition) (':' Expr)?
 
 ForAllPrecondition ::= forall PreconditionAttribute (',' PreconditionAttribute)* ForAllWhereCondition? {
     pin = 1
