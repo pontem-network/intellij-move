@@ -486,7 +486,7 @@ ElseBlock ::= else AnyBlock { pin = 1 }
 LoopExpr ::= loop AnyBlock { pin = 1 }
 WhileExpr ::= while Condition AnyBlock { pin = 1 }
 
-AssignmentExpr ::= Pat '=' Expr
+AssignmentExpr ::= Expr '=' Expr
 LetExpr ::= let Pat TypeAscription? Initializer? {
     pin = 1
     implements = [ "org.move.lang.core.psi.MoveDeclaringElement" ]
@@ -498,7 +498,7 @@ private Initializer ::= '=' Expr {
 }
 //private Initializer_recover ::= !(';'|'}'|')')
 
-BorrowExpr ::= '&' mut? Expr { pin = 1 }
+BorrowExpr ::= '&' mut? Expr
 DotExpr ::= Expr '.' identifier
 IndexExpr ::= Expr '[' Expr ']'
 RefExpr ::= QualifiedPath {
