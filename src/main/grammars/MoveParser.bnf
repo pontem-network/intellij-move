@@ -298,17 +298,22 @@ private StatementExpr_recover ::= '!;'
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+private AnyBlock ::= CodeBlock | InlineBlock
+
 InlineBlock ::= Expr
-CodeBlock ::= '{' Block_body '}' {
+CodeBlock ::= '{' CodeBlock_body '}' {
     pin = 1
     implements = ["org.move.lang.core.resolve.MoveResolveScope"]
 }
-private AnyBlock ::= CodeBlock | InlineBlock
+CodeBlockExpr ::= '{' CodeBlock_body '}' { pin = 1 }
 
-BlockExpr ::= '{' Block_body '}' { pin = 1 }
-
-private Block_body ::= (Statement)* Expr? { recoverWhile = "Block_body_recover" }
-private Block_body_recover ::= !'}'
+private CodeBlock_body ::= (ImportStatement*)?
+                            Statement*
+                            Expr?
+{
+    recoverWhile = "CodeBlock_body_recover"
+}
+private CodeBlock_body_recover ::= !'}'
 
 //Block ::= '{' (StatementItem ';')* Expr? '}' {
 //    pin = 1
@@ -360,7 +365,7 @@ private AtomExpr ::=
                     | CallExpr
                     | RefExpr
                     | LiteralExpr
-                    | BlockExpr
+                    | CodeBlockExpr
 
 EqualsExpr ::= Expr '==' Expr
 NotEqualsExpr ::= Expr '!=' Expr

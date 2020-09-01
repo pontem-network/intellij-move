@@ -13,4 +13,5 @@ class CompleteParsingTest : MoveParsingTestCase("complete") {
     fun `test expressions`() = doTest(true)
     fun `test let`() = doTest(true)
     fun `test comments`() = doTest(true)
+    fun `test use`() = doTest(true)
 }
