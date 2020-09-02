@@ -7,6 +7,4 @@ import org.move.lang.core.psi.impl.MoveElementImpl
 
 abstract class MoveFunctionParamsMixin(node: ASTNode) : MoveElementImpl(node),
                                                         MoveFunctionParams {
-    override val boundElements: Collection<MoveNamedElement>
-        get() = functionParamList
 }

@@ -8,6 +8,4 @@ import org.move.lang.core.psi.impl.MoveElementImpl
 
 abstract class MoveLetExprMixin(node: ASTNode) : MoveElementImpl(node),
                                                  MoveLetExpr {
-    override val boundElements: Collection<MoveNamedElement>
-        get() = pat?.boundElements.orEmpty()
 }

@@ -116,4 +116,16 @@ class ResolveVariablesTest : ResolveTestCase() {
         }
     """
     )
+
+    fun `test type params used in as statement`() = checkByCode(
+        """
+        module M {
+            fun convert<T>() {
+                      //X
+                1 as T
+                   //^
+            }
+        }
+    """
+    )
 }

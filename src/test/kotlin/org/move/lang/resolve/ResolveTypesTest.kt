@@ -94,4 +94,28 @@ class ResolveTypesTest: ResolveTestCase() {
         }
     """
     )
+
+    fun `test resolve struct type param`() = checkByCode(
+        """
+        module M {
+            struct MyStruct<T> {
+                          //X
+                val: T
+                   //^
+            }
+        }
+    """
+    )
+
+    fun `test resolve struct type param inside vector`() = checkByCode(
+        """
+        module M {
+            struct MyStruct<T> {
+                          //X
+                val: vector<T>
+                          //^
+            }
+        }
+    """
+    )
 }

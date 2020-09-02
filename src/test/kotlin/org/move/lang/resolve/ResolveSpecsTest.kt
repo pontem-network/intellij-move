@@ -15,4 +15,16 @@ class ResolveSpecsTest: ResolveTestCase() {
         }
     """
     )
+
+    fun `test schema type param`() = checkByCode(
+        """
+        module M {
+            spec schema ExactlyOne<C> {
+                                 //X
+                aborts_if !spec_is_currency<C>();
+                                          //^
+            }
+        }
+    """
+    )
 }

@@ -4,8 +4,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.boundElements
 import org.move.lang.core.psi.ext.contains
 import org.move.lang.core.psi.ext.statementExprList
+import org.move.lang.core.psi.ext.typeParams
 import org.move.lang.core.resolve.ref.MoveReferenceKind
 
 object ResolveEngine {
@@ -62,14 +64,14 @@ private fun nameDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement)
                 // drops let-statement that is ancestors of ref (on the same statement, at most one)
                 .dropWhile { PsiTreeUtil.isAncestor(it, ref, true) }
 
-            val allBoundElements = visibleLetExprs.flatMap { it.boundElements.asSequence() }
+            val allBoundElements = visibleLetExprs.flatMap { it.pat?.boundElements.orEmpty().asSequence() }
 
             declarations.addAll(allBoundElements.scopeEntries)
         }
 
         override fun visitFunctionDef(o: MoveFunctionDef) {
             if (o.contains(ref)) {
-                val entries = o.functionParams?.boundElements
+                val entries = o.functionParams?.functionParamList
                     .orEmpty()
                     .asSequence()
                     .scopeEntries
@@ -90,6 +92,27 @@ private fun nameDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement)
 private fun typeDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
     val declarations = mutableListOf<ScopeEntry>()
     scope.accept(object : MoveVisitor() {
+        override fun visitFunctionDef(o: MoveFunctionDef) {
+            if (o.contains(ref)) {
+                val entries = o.typeParams.asSequence().scopeEntries
+                declarations.addAll(entries)
+            }
+        }
+
+        override fun visitStructDef(o: MoveStructDef) {
+            if (o.contains(ref)) {
+                val entries = o.typeParams.asSequence().scopeEntries
+                declarations.addAll(entries)
+            }
+        }
+
+        override fun visitSchemaDef(o: MoveSchemaDef) {
+            if (o.contains(ref)) {
+                val entries = o.typeParams.asSequence().scopeEntries
+                declarations.addAll(entries)
+            }
+        }
+
         override fun visitModuleDef(o: MoveModuleDef) {
             if (o.contains(ref)) {
                 val entries = o.definitions()
