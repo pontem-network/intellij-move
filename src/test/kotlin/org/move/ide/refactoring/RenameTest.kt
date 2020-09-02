@@ -154,7 +154,37 @@ class RenameTest : MoveTestCase() {
         }
     """)
 
+    fun `test type param`() = doTest("U", """
+        module M {
+            struct MyStruct<T> {
+                val: /*caret*/T
+            }
+        }
+    """, """
+        module M {
+            struct MyStruct<U> {
+                val: U
+            }
+        }
+    """)
 
+    fun `test const`() = doTest("RENAMED_CONST", """
+        module M {
+            const /*caret*/MY_CONST: u8 = 1;
+            
+            fun main(): u8 {
+                MY_CONST
+            }
+        }
+    """, """
+        module M {
+            const RENAMED_CONST: u8 = 1;
+            
+            fun main(): u8 {
+                RENAMED_CONST
+            }
+        }
+    """)
 
     private fun doTest(
         newName: String,

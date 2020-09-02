@@ -115,13 +115,15 @@ private ModuleBlockItems_recover ::= !'}'
 
 private ModuleItem ::= ImportStatement | StructDef | FunctionDef | NativeFunctionDef | ConstDef | SpecItem
 
-ConstDef ::= const ConstDefInner ';' {
+ConstDef ::= const identifier TypeAscription ConstDef_init ';' {
     pin = 1
+    implements = ["org.move.lang.core.psi.MoveNameIdentifierOwner"]
+    mixin = "org.move.lang.core.psi.mixins.MoveConstDefMixin"
 }
-private ConstDefInner ::= identifier TypeAscription '=' Expr {
-    recoverWhile = "ConstDefInner_recover"
+private ConstDef_init ::= '=' Expr {
+    recoverWhile = "ConstDef_init_recover"
 }
-private ConstDefInner_recover ::= !';'
+private ConstDef_init_recover ::= !';'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions

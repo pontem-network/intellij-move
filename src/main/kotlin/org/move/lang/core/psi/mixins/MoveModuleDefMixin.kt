@@ -13,8 +13,9 @@ abstract class MoveModuleDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(n
             PsiTreeUtil.getChildrenOfTypeAsList(this.moduleBlock, MoveNativeFunctionDef::class.java)
         val structs = PsiTreeUtil.getChildrenOfTypeAsList(this.moduleBlock, MoveStructDef::class.java)
         val schemas = PsiTreeUtil.getChildrenOfTypeAsList(this.moduleBlock, MoveSchemaDef::class.java)
+        val consts = PsiTreeUtil.getChildrenOfTypeAsList(this.moduleBlock, MoveConstDef::class.java)
         return listOf(
-            functions, nativeFunctions, structs, schemas
+            functions, nativeFunctions, structs, schemas, consts
         ).flatten()
     }
 }
