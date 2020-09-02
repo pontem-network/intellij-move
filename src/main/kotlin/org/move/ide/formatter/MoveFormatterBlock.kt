@@ -4,8 +4,7 @@ import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
 import com.intellij.psi.formatter.common.AbstractBlock
 import org.move.ide.formatter.impl.*
-import org.move.lang.MoveElementTypes.FUNCTION_PARAM
-import org.move.lang.MoveElementTypes.FUNCTION_PARAMS
+import org.move.lang.MoveElementTypes.*
 
 class MoveFormatterBlock(
     node: ASTNode,
@@ -46,6 +45,7 @@ class MoveFormatterBlock(
 
     override fun getChildAttributes(newChildIndex: Int): ChildAttributes {
         val indent = when {
+            node.elementType == ADDRESS_BLOCK -> Indent.getNoneIndent()
             node.isDelimitedBlock -> Indent.getNormalIndent()
             // Otherwise we don't want any indentation (null means continuation indent)
             else -> Indent.getNoneIndent()
@@ -59,7 +59,7 @@ class MoveFormatterBlock(
 //        val childType = child.elementType
 //        val childPsi = child.psi
         return when {
-            node.isDelimitedBlock -> getIndentIfNotDelim(child, node)
+            node.isDelimitedBlock -> getNormalIndentIfNotCurrentBlockDelimiter(child, node)
             else -> Indent.getNoneIndent()
         }
     }

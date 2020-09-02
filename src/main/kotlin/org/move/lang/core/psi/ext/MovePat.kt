@@ -11,13 +11,8 @@ val MovePat.boundElements: List<MoveNamedElement>
             }
 
             override fun visitStructPat(o: MoveStructPat) {
-                o.structPatFieldList.forEach { field ->
-                    val fieldBinding = field.structPatFieldBinding
-                    if (fieldBinding == null) {
-                        elements.add(field)
-                    } else {
-                        fieldBinding.pat?.accept(this)
-                    }
+                o.structPatFieldsBlock.structPatFieldList.forEach { field ->
+                    field.pat?.accept(this) ?: elements.add(field)
                 }
             }
         })

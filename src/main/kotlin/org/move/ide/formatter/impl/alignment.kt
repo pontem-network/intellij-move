@@ -19,4 +19,4 @@ fun MoveFormatterBlock.getAlignmentStrategy(): MoveAlignmentStrategy = when (nod
 }
 
 fun MoveAlignmentStrategy.alignUnlessBlockDelim(): MoveAlignmentStrategy =
-    alignIf { c, p, _ -> !c.isBlockDelim(p) }
+    alignIf { c, p, _ -> !c.isDelimiterOfCurrentBlock(p) }

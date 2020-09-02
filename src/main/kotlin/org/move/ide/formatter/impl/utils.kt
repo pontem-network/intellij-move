@@ -14,7 +14,7 @@ val UNARY_OPS = ts(MINUS, MUL, EXCL, AND)
 val BINARY_OPS = ts(
     PLUS, MINUS, MUL, DIV, MODULO,
     OR, AND, OR_OR, AND_AND,
-    EQ, EQ_EQ
+    EQ, EQ_EQ, NOT_EQ,
 )
 val ONE_LINE_ITEMS = ts(IMPORT_STATEMENT, CONST_DEF)
 
@@ -24,7 +24,10 @@ val PAREN_DELIMITED_BLOCKS = ts(
 )
 val ANGLE_DELIMITED_BLOCKS = ts(TYPE_PARAMETER_LIST, TYPE_ARGUMENT_LIST)
 
-val BLOCK_LIKE = ts(SCRIPT_BLOCK, ADDRESS_BLOCK, MODULE_BLOCK, CODE_BLOCK, STRUCT_FIELDS)
+val BLOCK_LIKE = ts(
+    SCRIPT_BLOCK, ADDRESS_BLOCK, MODULE_BLOCK, CODE_BLOCK, SPEC_BLOCK,
+    STRUCT_FIELDS_DEF_BLOCK, STRUCT_PAT_FIELDS_BLOCK, STRUCT_LITERAL_FIELDS_BLOCK
+)
 
 val DELIMITED_BLOCKS = orSet(PAREN_DELIMITED_BLOCKS, ANGLE_DELIMITED_BLOCKS, BLOCK_LIKE)
 
@@ -35,7 +38,7 @@ val PsiElement.isTopLevelItem: Boolean
 
 val PsiElement.isDeclarationItem: Boolean
     get() = (this is MoveModuleDef && parent is MoveAddressBlock)
-            || (this is MoveFunctionDef || this is MoveConstDef || this is MoveStructDef || this is MoveImport)
+            || (this is MoveFunctionDef || this is MoveConstDef || this is MoveStructDef || this is MoveImportStatement)
 
 val PsiElement.isStatement: Boolean
     get() = this is MoveStatement && parent is MoveCodeBlock
@@ -46,15 +49,13 @@ val PsiElement.isStatementOrExpr: Boolean
 val ASTNode.isDelimitedBlock: Boolean
     get() = elementType in DELIMITED_BLOCKS
 
-fun ASTNode.isBlockDelim(parent: ASTNode?): Boolean {
+fun ASTNode.isDelimiterOfCurrentBlock(parent: ASTNode?): Boolean {
     if (parent == null) return false
     val parentType = parent.elementType
     return when (elementType) {
-        L_BRACE, R_BRACE -> parentType in BLOCK_LIKE // || parent.isFlatBraceBlock
-//        LBRACK, RBRACK -> parentType in BRACK_LISTS
-        L_PAREN, R_PAREN -> parentType in PAREN_DELIMITED_BLOCKS // || parentType == PAT_TUPLE_STRUCT
+        L_BRACE, R_BRACE -> parentType in BLOCK_LIKE
+        L_PAREN, R_PAREN -> parentType in PAREN_DELIMITED_BLOCKS
         LT, GT -> parentType in ANGLE_DELIMITED_BLOCKS
-//        OR -> parentType == VALUE_PARAMETER_LIST && parent.treeParent?.elementType == LAMBDA_EXPR
         else -> false
     }
 }

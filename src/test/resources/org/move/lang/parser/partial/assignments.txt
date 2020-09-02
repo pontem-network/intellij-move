@@ -93,12 +93,13 @@ FILE
                 MoveQualifiedPathImpl(QUALIFIED_PATH)
                   PsiElement(identifier)('R')
                 PsiWhiteSpace(' ')
-                PsiElement({)('{')
-                PsiWhiteSpace(' ')
-                MoveStructPatFieldImpl(STRUCT_PAT_FIELD)
-                  PsiElement(identifier)('a')
-                PsiErrorElement:',', ':', identifier or '}' expected, got '='
-                  <empty list>
+                MoveStructPatFieldsBlockImpl(STRUCT_PAT_FIELDS_BLOCK)
+                  PsiElement({)('{')
+                  PsiWhiteSpace(' ')
+                  MoveStructPatFieldImpl(STRUCT_PAT_FIELD)
+                    PsiElement(identifier)('a')
+                  PsiErrorElement:',', ':' or '}' expected, got '='
+                    <empty list>
               PsiWhiteSpace(' ')
               PsiElement(=)('=')
               PsiErrorElement:<expr> expected, got ';'
@@ -114,12 +115,13 @@ FILE
                 MoveQualifiedPathImpl(QUALIFIED_PATH)
                   PsiElement(identifier)('R')
                 PsiWhiteSpace(' ')
-                PsiElement({)('{')
-                PsiWhiteSpace(' ')
-                MoveStructPatFieldImpl(STRUCT_PAT_FIELD)
-                  PsiElement(identifier)('a')
-                PsiErrorElement:',', ':', identifier or '}' expected, got ';'
-                  <empty list>
+                MoveStructPatFieldsBlockImpl(STRUCT_PAT_FIELDS_BLOCK)
+                  PsiElement({)('{')
+                  PsiWhiteSpace(' ')
+                  MoveStructPatFieldImpl(STRUCT_PAT_FIELD)
+                    PsiElement(identifier)('a')
+                  PsiErrorElement:',', ':' or '}' expected, got ';'
+                    <empty list>
             PsiElement(;)(';')
           PsiWhiteSpace('\n        ')
           MoveStatementImpl(STATEMENT)
@@ -130,16 +132,17 @@ FILE
                 MoveQualifiedPathImpl(QUALIFIED_PATH)
                   PsiElement(identifier)('R')
                 PsiWhiteSpace(' ')
-                PsiElement({)('{')
-                PsiWhiteSpace(' ')
-                MoveStructPatFieldImpl(STRUCT_PAT_FIELD)
-                  PsiElement(identifier)('a')
-                PsiElement(,)(',')
-                PsiWhiteSpace(' ')
-                MoveStructPatFieldImpl(STRUCT_PAT_FIELD)
-                  PsiElement(identifier)('b')
-                PsiWhiteSpace(' ')
-                PsiElement(})('}')
+                MoveStructPatFieldsBlockImpl(STRUCT_PAT_FIELDS_BLOCK)
+                  PsiElement({)('{')
+                  PsiWhiteSpace(' ')
+                  MoveStructPatFieldImpl(STRUCT_PAT_FIELD)
+                    PsiElement(identifier)('a')
+                  PsiElement(,)(',')
+                  PsiWhiteSpace(' ')
+                  MoveStructPatFieldImpl(STRUCT_PAT_FIELD)
+                    PsiElement(identifier)('b')
+                  PsiWhiteSpace(' ')
+                  PsiElement(})('}')
               PsiWhiteSpace(' ')
               PsiElement(=)('=')
               PsiErrorElement:<expr> expected, got ';'

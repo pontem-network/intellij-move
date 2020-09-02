@@ -45,6 +45,7 @@
         AND = '&'
         OR = '|'
         EQ_EQ = '=='
+        NOT_EQ = '!='
         EQ = '='
         DOT         =  '.'
 
@@ -184,19 +185,19 @@ AcquiresType ::= acquires TypeRef (',' TypeRef)* ','? { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 StructDef ::= resource? struct identifier
                 TypeParameterList?
-                StructFields
+                StructFieldsDefBlock
 {
     pin = "struct"
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
                    "org.move.lang.core.resolve.MoveResolveScope" ]
     mixin = "org.move.lang.core.psi.mixins.MoveStructDefMixin"
 }
-StructFields ::= '{' StructFields_body '}' { pin = 1 }
-private StructFields_body ::= (StructFieldDef (',' StructFieldDef)* ','?)?
+StructFieldsDefBlock ::= '{' StructFieldsBlock_body '}' { pin = 1 }
+private StructFieldsBlock_body ::= (StructFieldDef (',' StructFieldDef)* ','?)?
 {
-    recoverWhile = "StructFields_body_recover"
+    recoverWhile = "StructFieldsBlock_body_recover"
 }
-private StructFields_body_recover ::= !'}'
+private StructFieldsBlock_body_recover ::= !'}'
 
 StructFieldDef ::= identifier StructFieldDef_type { pin = 1 }
 private StructFieldDef_type ::= TypeAscription {
@@ -277,16 +278,18 @@ private TuplePat_body ::= (Pat (',' Pat)*)? {
 }
 private TuplePat_body_recover ::= !(')'|'=')
 
-StructPat ::= QualifiedPath '{' (StructPatField ','?)* '}' {
-    pin = 2
+StructPat ::= QualifiedPath StructPatFieldsBlock {
     implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveStructPatMixin"
 }
-StructPatField ::= identifier StructPatFieldBinding? {
+StructPatFieldsBlock ::= '{' (StructPatField (',' StructPatField)* ','?)? '}' { pin = 1 }
+
+StructPatField ::= identifier (':' Pat)? {
+    pin = 1
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.mixins.MoveStructPatFieldMixin"
 }
-StructPatFieldBinding ::= ':' (StructPat | BindingPat) { pin = 1 }
+//StructPatFieldBinding ::= ':' Pat { pin = 1 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Statements
@@ -441,17 +444,17 @@ AbortExpr ::= abort Expr
 BreakExpr ::= break
 ContinueExpr ::= continue
 
-StructLiteralExpr ::= QualifiedPath '{' StructLiteralExpr_body '}'
+StructLiteralExpr ::= QualifiedPath StructLiteralFieldsBlock
 {
-    pin = 2
     implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveStructLiteralExprMixin"
 }
-private StructLiteralExpr_body ::= (StructLiteralExprField ','?)*
+StructLiteralFieldsBlock ::= '{' StructLiteralFieldsBlock_body '}' { pin = 1 }
+private StructLiteralFieldsBlock_body ::= (StructLiteralExprField ','?)*
 {
-    recoverWhile = "StructLiteralExpr_body_recover"
+    recoverWhile = "StructLiteralFieldsBlock_body_recover"
 }
-private StructLiteralExpr_body_recover ::= !'}'
+private StructLiteralFieldsBlock_body_recover ::= !'}'
 
 StructLiteralExprField ::= identifier (':' Expr)? {
     pin = 1

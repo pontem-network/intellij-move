@@ -16,15 +16,15 @@ script {
 }
 
 address 0x0 {
-    module M {}
+module M {}
 
-    module M2 {
-        use 0x0::Transaction;
-        use 0x0::Account;
-        use 0x0::XFI;
+module M2 {
+    use 0x0::Transaction;
+    use 0x0::Account;
+    use 0x0::XFI;
 
-        fun main() {}
+    fun main() {}
 
-        struct MyStruct {}
-    }
+    struct MyStruct {}
+}
 }

@@ -84,6 +84,7 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
   "."                        { return DOT; }
   "="                        { return EQ; }
   "=="                       { return EQ_EQ; }
+  "!="                      { return NOT_EQ; }
 
   "!"                             { return EXCL; }
   "+"                             { return PLUS; }

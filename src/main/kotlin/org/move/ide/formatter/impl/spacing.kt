@@ -17,26 +17,42 @@ import org.move.lang.MoveElementTypes.*
 import org.move.lang.core.MV_KEYWORDS
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
+import org.move.lang.core.tokenSetOf
 
 fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilder {
     return SpacingBuilder(commonSettings)
-        .afterInside(COMMA, STRUCT_FIELDS).parentDependentLFSpacing(1, 1, true, 1)
+        .afterInside(COMMA, STRUCT_FIELDS_DEF_BLOCK).parentDependentLFSpacing(1, 1, true, 1)
         .after(COMMA).spacing(1, 1, 0, true, 0)
         .before(COMMA).spaceIf(false)
         .after(COLON).spaceIf(true)
         .before(COLON).spaceIf(false)
+
+        .afterInside(AND, TYPE_REF).spacing(0, 0, 0, false, 0)
+        .afterInside(AND, BORROW_EXPR).spacing(0, 0, 0, false, 0)
+        .afterInside(AND, BORROW_PAT).spacing(0, 0, 0, false, 0)
+
+        .afterInside(MUL, DEREF_EXPR).spacing(0, 0, 0, false, 0)
 
         //== empty parens
         .between(L_BRACE, R_BRACE).spacing(0, 0, 0, false, 0)
         .between(L_PAREN, R_PAREN).spacing(0, 0, 0, false, 0)
 
         //== paren delimited lists
-        .afterInside(L_BRACE, BLOCK_LIKE).spacing(0, 0, 0, true, 0)
-        .beforeInside(R_BRACE, BLOCK_LIKE).spacing(0, 0, 0, true, 0)
+//        .afterInside(L_BRACE, BLOCK_LIKE).spacing(0, 0, 0, true, 0)
+//        .beforeInside(R_BRACE, BLOCK_LIKE).spacing(0, 0, 0, true, 0)
         .afterInside(L_PAREN, PAREN_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)
         .beforeInside(R_PAREN, PAREN_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)
         .afterInside(LT, ANGLE_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)
         .beforeInside(GT, ANGLE_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)
+
+        .afterInside(L_BRACE, BLOCK_LIKE).parentDependentLFSpacing(1, 1, true, 0)
+        .beforeInside(R_BRACE, BLOCK_LIKE).parentDependentLFSpacing(1, 1, true, 0)
+//        .withinPairInside(L_BRACE, R_BRACE, STRUCT_PAT).spacing(1, 1, 0, true, 0)
+//        .withinPairInside(L_BRACE, R_BRACE, STRUCT_LITERAL_EXPR).spacing(1, 1, 0, true, 0)
+
+//        .afterInside(L_BRACE, tokenSetOf(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LITERAL_FIELDS_BLOCK)).spaces(1)
+//        .beforeInside(R_BRACE, tokenSetOf(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LITERAL_FIELDS_BLOCK)).spaces(1)
+//        .beforeInside(L_BRACE, tokenSetOf(STRUCT_PAT, STRUCT_LITERAL_EXPR)).spaces(1)
 
         //== items
         .between(FUNCTION_PARAMS, RETURN_TYPE).spaceIf(false)
@@ -45,6 +61,10 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .between(IDENTIFIER, CALL_ARGUMENTS).spaceIf(false)
         .between(IDENTIFIER, TYPE_PARAMETER_LIST).spaceIf(false)
         .between(IDENTIFIER, TYPE_ARGUMENT_LIST).spaceIf(false)
+
+//        .between(IDENTIFIER, STRUCT_LITERAL_FIELDS_BLOCK).spaceIf(true)
+//        .between(IDENTIFIER, STRUCT_LITERAL_FIELDS_BLOCK).spaceIf(true)
+
         .between(TYPE_PARAMETER_LIST, FUNCTION_PARAMS).spaceIf(false)
         .before(CALL_ARGUMENTS).spaceIf(false)
 
