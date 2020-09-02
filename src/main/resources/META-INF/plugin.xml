@@ -2,7 +2,7 @@
     <id>org.move.lang</id>
     <name>Move Language</name>
     <description>Support for the Move,
-        smart contract language for the Libra blockchain.
+        smart-contract language for the Libra blockchain.
     </description>
     <vendor>Dfinance</vendor>
     <change-notes>
