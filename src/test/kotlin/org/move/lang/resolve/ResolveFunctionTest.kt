@@ -2,7 +2,7 @@ package org.move.lang.resolve
 
 import org.move.utils.tests.resolve.ResolveTestCase
 
-class ResolveCallExprTest : ResolveTestCase() {
+class ResolveFunctionTest : ResolveTestCase() {
     fun `test resolve reference to function`() = checkByCode(
         """
         module M {
@@ -33,4 +33,17 @@ class ResolveCallExprTest : ResolveTestCase() {
     """
     )
 
+    fun `test resolve from spec fun to function`() = checkByCode(
+        """
+        module M {
+            fun call(): u8 {};
+              //X
+
+            spec fun call {
+                   //^
+                assert true;
+            }
+        }
+    """
+    )
 }

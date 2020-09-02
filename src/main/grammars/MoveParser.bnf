@@ -113,7 +113,7 @@ ModuleBlock ::= '{' ModuleBlockItems '}' { pin = 1 }
 private ModuleBlockItems ::= ModuleItem* { recoverWhile = "ModuleBlockItems_recover" }
 private ModuleBlockItems_recover ::= !'}'
 
-private ModuleItem ::= ImportStatement | StructDef | FunctionDef | NativeFunctionDef | ConstDef | SpecDef
+private ModuleItem ::= ImportStatement | StructDef | FunctionDef | NativeFunctionDef | ConstDef | SpecItem
 
 ConstDef ::= const ConstDefInner ';' {
     pin = 1
@@ -533,31 +533,50 @@ private lt_eqeq_gt ::= <<lteqeqgtImpl>>
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Specs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-SpecDef ::= spec SpecInnerItem { pin = 1 }
-private SpecInnerItem ::= FunctionSpec
+//SpecDef ::= spec SpecInnerItem { pin = 1 }
+private SpecItem ::= FunctionSpec
                           | ModuleSpec
                           | StructSpec
                           | SchemaSpec
-                          | SpecHelperFunctionDef
-                          | SpecHelperNativeFunctionDef
+                          | SpecDefineFunction
+                          | NativeDefineFunction
 
-FunctionSpec ::= fun identifier SpecBlock { pin = 1 }
-StructSpec ::= struct identifier SpecBlock { pin = 1 }
-SchemaSpec ::= schema identifier TypeArgumentList? SpecBlock { pin = 1 }
+FunctionSpec ::= spec fun identifier SpecBlock {
+    pin = 2
+    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+    mixin = "org.move.lang.core.psi.mixins.MoveFunctionSpecImplMixin"
+}
+StructSpec ::= spec struct identifier SpecBlock { pin = 2 }
+SchemaSpec ::= spec schema identifier TypeArgumentList? SpecBlock { pin = 2 }
 
-ModuleSpec ::= module SpecBlock { pin = 1 }
-SpecHelperFunctionDef ::= define identifier TypeParameterList?
+ModuleSpec ::= spec module SpecBlock { pin = 2 }
+
+DefineFunction ::= define identifier TypeParameterList?
                                                    FunctionParams
                                                    ReturnType?
                                                    CodeBlock
 {
     pin = 1
 }
-SpecHelperNativeFunctionDef ::= native define identifier TypeParameterList?
+SpecDefineFunction ::= spec define identifier TypeParameterList?
+                                                   FunctionParams
+                                                   ReturnType?
+                                                   CodeBlock
+{
+    pin = 2
+}
+
+NativeDefineFunction ::= native define identifier TypeParameterList?
                                                    FunctionParams
                                                    ReturnType? ';'
 {
     pin = 2
+}
+SpecNativeDefineFunction ::= spec native define identifier TypeParameterList?
+                                                   FunctionParams
+                                                   ReturnType? ';'
+{
+    pin = 3
 }
 
 SpecBlockStatement ::= spec SpecBlock ';' {
@@ -567,11 +586,9 @@ SpecBlockStatement ::= spec SpecBlock ';' {
 
 SpecBlock ::= '{' SpecBlock_body '}' { pin = 1 }
 private SpecBlock_body ::= (
-                                SpecHelperFunctionDef
-                                | (spec SpecHelperFunctionDef)
-                                | SpecHelperNativeFunctionDef
-                                | (spec SpecHelperNativeFunctionDef)
-                                | Statement
+                                Statement
+                                | DefineFunction | SpecDefineFunction
+                                | NativeDefineFunction | SpecNativeDefineFunction
                                 | VariableStatement | LocalVariableStatement | GlobalVariableStatement
                                 | PragmaStatement
                                 | AssumeStatement
