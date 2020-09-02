@@ -9,8 +9,11 @@
         <![CDATA[
             <p>0.7.0</p>
             <ul>
-                <li>FEAT: add shadowing support for locals</li>
-                <li>FEAT: add "Find usages" support for locals</li>
+                <li>FEAT: add partial support for specs in parser and formatter</li>
+                <li>FEAT: add name resolution to consts, structs, functions, type parameters and specs</li>
+                <li>BUG: fix lots of indentation problems with formatter</li>
+                <li>BUG: parser bugfixes</li>
+                <li>INTERNAL: make repo for the plugin public at https://github.com/dfinance/intellij-move</li>
             </ul>
             <p>0.6.0</p>
             <ul>
