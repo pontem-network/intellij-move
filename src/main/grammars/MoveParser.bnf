@@ -579,7 +579,7 @@ DefineFunction ::= define identifier TypeParameterList?
 SpecDefineFunction ::= spec define identifier TypeParameterList?
                                                    FunctionParams
                                                    ReturnType?
-                                                   CodeBlock
+                                                   SpecBlock
 {
     pin = 2
 }
@@ -602,8 +602,8 @@ SpecBlockStatement ::= spec SpecBlock ';' {
     extends = Statement
 }
 
-SpecBlock ::= '{' SpecBlock_body '}' { pin = 1 }
-private SpecBlock_body ::= (
+SpecBlock ::= '{' SpecBlockItem '}' { pin = 1 }
+private SpecBlockItem ::= (
                                 Statement
                                 | DefineFunction | SpecDefineFunction
                                 | NativeDefineFunction | SpecNativeDefineFunction

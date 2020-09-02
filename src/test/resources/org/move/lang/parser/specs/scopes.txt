@@ -115,7 +115,7 @@ FILE
                   PsiElement(identifier)('address')
           PsiElement())(')')
         PsiWhiteSpace(' ')
-        MoveCodeBlockImpl(CODE_BLOCK)
+        MoveSpecBlockImpl(SPEC_BLOCK)
           PsiElement({)('{')
           PsiElement(})('}')
       PsiWhiteSpace('\n\n    ')
