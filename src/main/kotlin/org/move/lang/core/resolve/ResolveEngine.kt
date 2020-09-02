@@ -32,6 +32,9 @@ object ResolveEngine {
         class Resolved(resolved: MoveNamedElement) : ResolveResult(resolved)
     }
 
+    fun resolveTypeRef(ref: MoveReferenceElement): ResolveResult =
+        resolveTypeIn(enumerateScopesFor(ref), ref)
+
     fun resolve(ref: MoveReferenceElement): ResolveResult =
         resolveIn(enumerateScopesFor(ref), ref)
 
@@ -42,6 +45,21 @@ object ResolveEngine {
 }
 
 //private fun MoveDefsOwner.definitionEntries(): Sequence<ScopeEntry> = allDefinitions
+private fun typeDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
+    val typeDeclarations = mutableListOf<ScopeEntry>()
+    scope.accept(object : MoveVisitor() {
+        override fun visitModuleDef(o: MoveModuleDef) {
+            if (o.contains(ref)) {
+                val entries = o.definitions()
+                    .asSequence()
+                    .filterIsInstance<MoveStructDef>()
+                    .scopeEntries
+                typeDeclarations.addAll(entries)
+            }
+        }
+    })
+    return typeDeclarations.asSequence()
+}
 
 private fun declarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
     val declarations = mutableListOf<ScopeEntry>()
@@ -88,6 +106,15 @@ private fun resolveIn(
 ): ResolveEngine.ResolveResult =
     scopes
         .flatMap { declarations(it, ref) }
+        .find { it.name == ref.referenceName }
+        ?.element.asResolveResult()
+
+private fun resolveTypeIn(
+    scopes: Sequence<MoveResolveScope>,
+    ref: MoveReferenceElement
+): ResolveEngine.ResolveResult =
+    scopes
+        .flatMap { typeDeclarations(it, ref) }
         .find { it.name == ref.referenceName }
         ?.element.asResolveResult()
 

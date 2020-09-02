@@ -322,7 +322,7 @@ FILE
                   PsiElement(identifier)('Generic')
                   MoveTypeArgumentListImpl(TYPE_ARGUMENT_LIST)
                     PsiElement(<)('<')
-                    MoveTypeReferenceImpl(TYPE_REFERENCE)
+                    MoveTypeRefImpl(TYPE_REF)
                       MoveQualifiedPathImpl(QUALIFIED_PATH)
                         PsiElement(identifier)('R')
                     PsiElement(>)('>')

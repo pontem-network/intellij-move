@@ -114,6 +114,28 @@ class RenameTest : MoveTestCase() {
 //        }
 //    """)
 
+    fun `test struct`() = doTest("RenamedStruct", """
+        module M {
+            struct /*caret*/MyStruct { val: u8 }
+            
+            fun main(s: MyStruct): MyStruct {
+                let MyStruct { val: myval } = get_struct();
+                let a = MyStruct { val: 1 };
+                move_from<MyStruct>();
+            }
+        }
+    """, """
+        module M {
+            struct RenamedStruct { val: u8 }
+            
+            fun main(s: RenamedStruct): RenamedStruct {
+                let RenamedStruct { val: myval } = get_struct();
+                let a = RenamedStruct { val: 1 };
+                move_from<RenamedStruct>();
+            }
+        }
+    """)
+
     private fun doTest(
         newName: String,
         @Language("Move") before: String,

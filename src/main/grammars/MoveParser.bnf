@@ -185,6 +185,8 @@ StructDef ::= resource? struct identifier
                 StructFields
 {
     pin = "struct"
+    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
+    mixin = "org.move.lang.core.psi.mixins.MoveStructDefImplMixin"
 }
 StructFields ::= '{' StructFields_body '}' { pin = 1 }
 private StructFields_body ::= (StructFieldDef (',' StructFieldDef)* ','?)?
@@ -222,11 +224,13 @@ ImportAlias ::= as identifier { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 private TypeAscription ::= ':' Type { pin = 1 }
 
-Type ::= TupleType | TypeReference | LambdaType
+Type ::= TupleType | TypeRef | LambdaType
 
 LambdaType ::= '|' (Type (',' Type)*)? '|' Type { pin = 1 }
-TypeReference ::= ('&' mut?)? QualifiedPath {
+TypeRef ::= ('&' mut?)? QualifiedPath {
     name = "type"
+    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+    mixin = "org.move.lang.core.psi.mixins.MoveTypeRefImplMixin"
 }
 TupleType ::= '(' (Type ','?)* ','? ')' { pin = 1 }
 
@@ -235,7 +239,7 @@ TypeParameter ::= identifier TypeParamBound?
 TypeParamBound ::= ':' (copyable | resource)
 
 TypeArgumentList ::= '<' (TypeArgument (',' TypeArgument)* ','?)? '>'
-private TypeArgument ::= TypeReference {
+private TypeArgument ::= TypeRef {
     recoverWhile = "TypeArgument_recover"
 }
 private TypeArgument_recover ::= !(','|'>')
@@ -267,7 +271,11 @@ private TuplePat_body ::= (Pat (',' Pat)*)? {
 }
 private TuplePat_body_recover ::= !(')'|'=')
 
-StructPat ::= QualifiedPath '{' (StructPatField ','?)* '}' { pin = 2 }
+StructPat ::= QualifiedPath '{' (StructPatField ','?)* '}' {
+    pin = 2
+    implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
+    mixin = "org.move.lang.core.psi.mixins.MoveStructPatImplMixin"
+}
 StructPatField ::= identifier StructPatFieldBinding? {
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.mixins.MoveStructPatFieldImplMixin"
@@ -430,6 +438,8 @@ ContinueExpr ::= continue
 StructLiteralExpr ::= QualifiedPath '{' StructLiteralExpr_body '}'
 {
     pin = 2
+    implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
+    mixin = "org.move.lang.core.psi.mixins.MoveStructLiteralExprImplMixin"
 }
 private StructLiteralExpr_body ::= (StructLiteralExprField ','?)*
 {
@@ -546,7 +556,11 @@ FunctionSpec ::= spec fun identifier SpecBlock {
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionSpecImplMixin"
 }
-StructSpec ::= spec struct identifier SpecBlock { pin = 2 }
+StructSpec ::= spec struct identifier SpecBlock {
+    pin = 2
+    implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
+    mixin = "org.move.lang.core.psi.mixins.MoveStructSpecImplMixin"
+}
 SchemaSpec ::= spec schema identifier TypeArgumentList? SpecBlock { pin = 2 }
 
 ModuleSpec ::= spec module SpecBlock { pin = 2 }
