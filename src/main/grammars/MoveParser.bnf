@@ -175,7 +175,7 @@ ReturnType ::= ':' Type {
     pin = 1
 }
 // acquires T, Record
-AcquiresType ::= acquires QualifiedPath (',' QualifiedPath)* ','? { pin = 1 }
+AcquiresType ::= acquires TypeRef (',' TypeRef)* ','? { pin = 1 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs

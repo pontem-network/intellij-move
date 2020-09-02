@@ -7,11 +7,12 @@ class CompleteParsingTest : MoveParsingTestCase("complete") {
     fun `test contextual token operators`() = doTest(true)
     fun `test generics`() = doTest(true)
     fun `test annotated literals`() = doTest(true)
-    fun `test struct fields`() = doTest(true)
+    fun `test structs`() = doTest(true)
     fun `test assignment lhs`() = doTest(true)
     fun `test function calls`() = doTest(true)
     fun `test expressions`() = doTest(true)
     fun `test let`() = doTest(true)
     fun `test comments`() = doTest(true)
     fun `test use`() = doTest(true)
+    fun `test function declarations`() = doTest(true)
 }

@@ -15,6 +15,30 @@ class ResolveTypesTest: ResolveTestCase() {
     """
     )
 
+    fun `test resolve struct as return type`() = checkByCode(
+        """
+        module M {
+            struct MyStruct {}
+                 //X
+            
+            fun call(): MyStruct {}
+                      //^
+        }
+    """
+    )
+
+    fun `test resolve struct as acquires type`() = checkByCode(
+        """
+        module M {
+            struct MyStruct {}
+                 //X
+            
+            fun call() acquires MyStruct {}
+                              //^
+        }
+    """
+    )
+
     fun `test resolve struct as struct literal`() = checkByCode(
         """
         module M {
