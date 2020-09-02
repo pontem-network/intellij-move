@@ -96,7 +96,7 @@ abstract class MoveTestCase : BasePlatformTestCase() {
                 val injectionElement = InjectedLanguageManager.getInstance(project)
                     .findInjectedElementAt(myFixture.file, elementOffset)
                     ?.let { PsiTreeUtil.getParentOfType(it, psiClass, false) }
-                    ?: error("No ${psiClass.simpleName} at ${elementAtMarker.text}")
+                    ?: error("No ${psiClass.simpleName} at `${elementAtMarker.text}`")
                 val injectionOffset = (injectionElement.containingFile.virtualFile as VirtualFileWindow)
                     .documentWindow.hostToInjected(elementOffset)
                 triples.add(Triple(injectionElement, data, injectionOffset))

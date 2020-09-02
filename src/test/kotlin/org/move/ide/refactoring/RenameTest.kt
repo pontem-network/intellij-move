@@ -57,7 +57,7 @@ class RenameTest : MoveTestCase() {
             fun /*caret*/call() {
                 1
             }
-            
+
             spec fun call {}
 
             fun main() {

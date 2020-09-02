@@ -36,7 +36,7 @@ class ResolveFunctionTest : ResolveTestCase() {
     fun `test resolve from spec fun to function`() = checkByCode(
         """
         module M {
-            fun call(): u8 {};
+            fun call(): u8 {}
               //X
 
             spec fun call {
