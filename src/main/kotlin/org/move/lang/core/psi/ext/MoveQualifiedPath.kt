@@ -30,6 +30,3 @@ val MoveQualifiedPath.moduleName: String?
 
 val MoveQualifiedPath.address: String?
     get() = addressElement?.text
-
-val MoveQualifiedPath.isPlainIdentifier: Boolean
-    get() = moduleNameElement == null && addressElement == null

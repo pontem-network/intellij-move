@@ -43,4 +43,14 @@ class BuiltinsHighlightingAnnotatorTest : AnnotatorTestCase(BuiltinsHighlighting
         }
     """
     )
+
+    fun `test function param named as builtin type`() = checkHighlighting(
+        """
+        script {
+            fun main(signer: &<PRIMITIVE_TYPE>signer</PRIMITIVE_TYPE>) {
+                Signer::address_of(signer)
+            }
+        }
+    """
+    )
 }

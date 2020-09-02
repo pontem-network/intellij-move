@@ -6,10 +6,13 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.util.elementType
 import org.move.ide.colors.MoveColor
 import org.move.lang.MoveElementTypes.IDENTIFIER
+import org.move.lang.core.psi.MoveCallExpr
 import org.move.lang.core.psi.MoveElement
 import org.move.lang.core.psi.MoveQualifiedPath
+import org.move.lang.core.psi.MoveTypeRef
+import org.move.lang.core.psi.ext.addressElement
 import org.move.lang.core.psi.ext.identifierName
-import org.move.lang.core.psi.ext.isPlainIdentifier
+import org.move.lang.core.psi.ext.moduleNameElement
 
 val PRIMITIVE_TYPE_IDENTIFIERS = setOf("signer", "u8", "u64", "u128", "address", "bool")
 val BUILTIN_FUNCTIONS =
@@ -40,11 +43,18 @@ class BuiltinsHighlightingAnnotator : AnnotatorBase() {
     }
 
     private fun highlightIdentifier(element: PsiElement, parent: MoveElement): MoveColor? =
-        if (parent is MoveQualifiedPath && parent.isPlainIdentifier) {
-            when (parent.identifierName) {
-                in PRIMITIVE_TYPE_IDENTIFIERS -> MoveColor.PRIMITIVE_TYPE
-                in BUILTIN_FUNCTIONS -> MoveColor.BUILTIN_FUNCTION
+        if (parent is MoveQualifiedPath
+            && parent.moduleNameElement == null
+            && parent.addressElement == null
+        ) {
+            val name = parent.identifierName
+            val container = parent.parent
+            when {
+                container is MoveTypeRef && name in PRIMITIVE_TYPE_IDENTIFIERS -> MoveColor.PRIMITIVE_TYPE
+                container is MoveCallExpr && name in BUILTIN_FUNCTIONS -> MoveColor.BUILTIN_FUNCTION
                 else -> null
             }
-        } else null
+        } else {
+            null
+        }
 }
