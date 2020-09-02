@@ -136,6 +136,26 @@ class RenameTest : MoveTestCase() {
         }
     """)
 
+    fun `test schema`() = doTest("RenamedSchema", """
+        module M {
+            spec schema /*caret*/MySchema {}
+            
+            spec module {
+                apply MySchema to *;
+            }
+        }
+    """, """
+        module M {
+            spec schema RenamedSchema {}
+            
+            spec module {
+                apply RenamedSchema to *;
+            }
+        }
+    """)
+
+
+
     private fun doTest(
         newName: String,
         @Language("Move") before: String,

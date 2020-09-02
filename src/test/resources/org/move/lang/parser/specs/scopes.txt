@@ -119,7 +119,7 @@ FILE
           PsiElement({)('{')
           PsiElement(})('}')
       PsiWhiteSpace('\n\n    ')
-      MoveSchemaSpecImpl(SCHEMA_SPEC)
+      MoveSchemaDefImpl(SCHEMA_DEF)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
         PsiElement(schema)('schema')

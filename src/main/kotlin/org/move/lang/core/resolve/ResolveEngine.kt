@@ -6,6 +6,7 @@ import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.contains
 import org.move.lang.core.psi.ext.statementExprList
+import org.move.lang.core.resolve.ref.MoveReferenceKind
 
 object ResolveEngine {
     open class ResolveResult private constructor(val resolved: MoveNamedElement?) : com.intellij.psi.ResolveResult {
@@ -32,11 +33,14 @@ object ResolveEngine {
         class Resolved(resolved: MoveNamedElement) : ResolveResult(resolved)
     }
 
-    fun resolveTypeRef(ref: MoveReferenceElement): ResolveResult =
-        resolveTypeIn(enumerateScopesFor(ref), ref)
-
-    fun resolve(ref: MoveReferenceElement): ResolveResult =
-        resolveIn(enumerateScopesFor(ref), ref)
+    fun resolve(ref: MoveReferenceElement, kind: MoveReferenceKind): ResolveResult {
+        val scopes = enumerateScopesFor(ref)
+        return when (kind) {
+            MoveReferenceKind.NAME -> resolveIn(scopes, ref)
+            MoveReferenceKind.TYPE -> resolveTypeIn(scopes, ref)
+            MoveReferenceKind.SCHEMA -> resolveSchemaIn(scopes, ref)
+        }
+    }
 
     private fun enumerateScopesFor(element: PsiElement): Sequence<MoveResolveScope> =
         generateSequence(ResolveUtil.getResolveScopeFor(element)) { parent ->
@@ -44,24 +48,7 @@ object ResolveEngine {
         }
 }
 
-//private fun MoveDefsOwner.definitionEntries(): Sequence<ScopeEntry> = allDefinitions
-private fun typeDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
-    val typeDeclarations = mutableListOf<ScopeEntry>()
-    scope.accept(object : MoveVisitor() {
-        override fun visitModuleDef(o: MoveModuleDef) {
-            if (o.contains(ref)) {
-                val entries = o.definitions()
-                    .asSequence()
-                    .filterIsInstance<MoveStructDef>()
-                    .scopeEntries
-                typeDeclarations.addAll(entries)
-            }
-        }
-    })
-    return typeDeclarations.asSequence()
-}
-
-private fun declarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
+private fun nameDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
     val declarations = mutableListOf<ScopeEntry>()
     scope.accept(object : MoveVisitor() {
         override fun visitCodeBlock(o: MoveCodeBlock) {
@@ -100,12 +87,44 @@ private fun declarations(scope: MoveResolveScope, ref: MoveReferenceElement): Se
     return declarations.asSequence()
 }
 
+private fun typeDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
+    val declarations = mutableListOf<ScopeEntry>()
+    scope.accept(object : MoveVisitor() {
+        override fun visitModuleDef(o: MoveModuleDef) {
+            if (o.contains(ref)) {
+                val entries = o.definitions()
+                    .asSequence()
+                    .filterIsInstance<MoveStructDef>()
+                    .scopeEntries
+                declarations.addAll(entries)
+            }
+        }
+    })
+    return declarations.asSequence()
+}
+
+private fun schemaDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
+    val declarations = mutableListOf<ScopeEntry>()
+    scope.accept(object : MoveVisitor() {
+        override fun visitModuleDef(o: MoveModuleDef) {
+            if (o.contains(ref)) {
+                val entries = o.definitions()
+                    .asSequence()
+                    .filterIsInstance<MoveSchemaDef>()
+                    .scopeEntries
+                declarations.addAll(entries)
+            }
+        }
+    })
+    return declarations.asSequence()
+}
+
 private fun resolveIn(
     scopes: Sequence<MoveResolveScope>,
     ref: MoveReferenceElement
 ): ResolveEngine.ResolveResult =
     scopes
-        .flatMap { declarations(it, ref) }
+        .flatMap { nameDeclarations(it, ref) }
         .find { it.name == ref.referenceName }
         ?.element.asResolveResult()
 
@@ -115,6 +134,15 @@ private fun resolveTypeIn(
 ): ResolveEngine.ResolveResult =
     scopes
         .flatMap { typeDeclarations(it, ref) }
+        .find { it.name == ref.referenceName }
+        ?.element.asResolveResult()
+
+private fun resolveSchemaIn(
+    scopes: Sequence<MoveResolveScope>,
+    ref: MoveReferenceElement
+): ResolveEngine.ResolveResult =
+    scopes
+        .flatMap { schemaDeclarations(it, ref) }
         .find { it.name == ref.referenceName }
         ?.element.asResolveResult()
 

@@ -2,7 +2,7 @@ package org.move.lang.resolve
 
 import org.move.utils.tests.resolve.ResolveTestCase
 
-class ResolveStructTest: ResolveTestCase() {
+class ResolveTypesTest: ResolveTestCase() {
     fun `test resolve struct as function param type`() = checkByCode(
         """
         module M {

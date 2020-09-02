@@ -547,9 +547,15 @@ private lt_eqeq_gt ::= <<lteqeqgtImpl>>
 private SpecItem ::= FunctionSpec
                           | ModuleSpec
                           | StructSpec
-                          | SchemaSpec
+                          | SchemaDef
                           | SpecDefineFunction
                           | NativeDefineFunction
+
+SchemaDef ::= spec schema identifier TypeArgumentList? SpecBlock {
+  pin = 2
+  implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
+  mixin = "org.move.lang.core.psi.mixins.MoveSchemaDefMixin"
+}
 
 FunctionSpec ::= spec fun identifier SpecBlock {
     pin = 2
@@ -561,8 +567,6 @@ StructSpec ::= spec struct identifier SpecBlock {
     implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveStructSpecMixin"
 }
-SchemaSpec ::= spec schema identifier TypeArgumentList? SpecBlock { pin = 2 }
-
 ModuleSpec ::= spec module SpecBlock { pin = 2 }
 
 DefineFunction ::= define identifier TypeParameterList?
@@ -646,8 +650,12 @@ ApplyStatement ::= apply ApplySchemaName
                     to FunctionPattern (',' FunctionPattern)*
                      (except FunctionPattern (',' FunctionPattern)*)? ';' { pin = 1 }
 ApplySchemaName ::= QualifiedPath ('{'
-                                ApplySchemaNameAttribute (',' ApplySchemaNameAttribute)*
+                                    ApplySchemaNameAttribute (',' ApplySchemaNameAttribute)*
                             '}')?
+{
+    implements = [ "org.move.lang.core.psi.MoveSchemaReferenceElement" ]
+    mixin = "org.move.lang.core.psi.mixins.MoveApplySchemaNameMixin"
+}
 ApplySchemaNameAttribute ::= identifier ':' Expr
 
 Predicate ::= Precondition | Expr

@@ -8,14 +8,13 @@ import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 abstract class MoveModuleDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
                                                    MoveModuleDef {
     override fun definitions(): List<MoveNamedElement> {
-        val functionDefs = PsiTreeUtil.getChildrenOfTypeAsList(this.moduleBlock, MoveFunctionDef::class.java)
-        val nativeFunctionDefs =
+        val functions = PsiTreeUtil.getChildrenOfTypeAsList(this.moduleBlock, MoveFunctionDef::class.java)
+        val nativeFunctions =
             PsiTreeUtil.getChildrenOfTypeAsList(this.moduleBlock, MoveNativeFunctionDef::class.java)
-        val structDefs = PsiTreeUtil.getChildrenOfTypeAsList(this.moduleBlock, MoveStructDef::class.java)
+        val structs = PsiTreeUtil.getChildrenOfTypeAsList(this.moduleBlock, MoveStructDef::class.java)
+        val schemas = PsiTreeUtil.getChildrenOfTypeAsList(this.moduleBlock, MoveSchemaDef::class.java)
         return listOf(
-            functionDefs,
-            nativeFunctionDefs,
-            structDefs
+            functions, nativeFunctions, structs, schemas
         ).flatten()
     }
 }
