@@ -1,8 +1,13 @@
 <?xml version='1.0'?>
 <list>
+<!--    <option name="org.move.PRIMITIVE_TYPE">-->
+<!--        <value>-->
+<!--            <option name="FOREGROUND" value="3C3C9C"/>-->
+<!--        </value>-->
+<!--    </option>-->
     <option name="org.move.BUILTIN_FUNCTION">
         <value>
-            <option name="FOREGROUND" value="000080"/>
+            <option name="FOREGROUND" value="3C3C9C"/>
         </value>
     </option>
 </list>

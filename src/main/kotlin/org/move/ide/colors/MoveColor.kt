@@ -7,9 +7,12 @@ import com.intellij.openapi.options.colors.AttributesDescriptor
 
 enum class MoveColor(humanName: String, default: TextAttributesKey? = null) {
     IDENTIFIER("Variables//Default", DefaultLanguageHighlighterColors.IDENTIFIER),
+
     KEYWORD("Keywords//Keyword", DefaultLanguageHighlighterColors.KEYWORD),
-    PRIMITIVE_TYPE("Types//Primitive", DefaultLanguageHighlighterColors.KEYWORD),
-    BUILTIN_FUNCTION("Functions//Builtins", DefaultLanguageHighlighterColors.IDENTIFIER);
+
+    PRIMITIVE_TYPE("Types//Primitive", DefaultLanguageHighlighterColors.IDENTIFIER),
+
+    BUILTIN_FUNCTION("Functions//Built-ins", DefaultLanguageHighlighterColors.IDENTIFIER);
 
     val textAttributesKey = TextAttributesKey.createTextAttributesKey("org.move.$name", default)
     val attributesDescriptor = AttributesDescriptor(humanName, textAttributesKey)
