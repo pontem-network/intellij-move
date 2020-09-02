@@ -4,5 +4,5 @@ import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.MoveNativeFunctionDef
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 
-abstract class MoveNativeFunctionDefImplMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
-                                                               MoveNativeFunctionDef
+abstract class MoveNativeFunctionDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
+                                                           MoveNativeFunctionDef

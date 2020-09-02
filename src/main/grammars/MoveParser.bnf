@@ -107,7 +107,7 @@ ModuleDef ::= module identifier ModuleBlock {
     name = "module declaration"
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
                    "org.move.lang.core.resolve.MoveDefsResolveScope" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveModuleDefImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveModuleDefMixin"
 }
 ModuleBlock ::= '{' ModuleBlockItems '}' { pin = 1 }
 private ModuleBlockItems ::= ModuleItem* { recoverWhile = "ModuleBlockItems_recover" }
@@ -134,7 +134,7 @@ NativeFunctionDef ::= native public? fun identifier TypeParameterList?
     pin = 1
     name = "native function"
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveNativeFunctionDefImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveNativeFunctionDefMixin"
 }
 
 FunctionDef ::= public? fun identifier TypeParameterList?
@@ -147,14 +147,14 @@ FunctionDef ::= public? fun identifier TypeParameterList?
     name = "function"
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
                    "org.move.lang.core.resolve.MoveResolveScope" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveFunctionDefImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveFunctionDefMixin"
 }
 
 // trailing comma is allowed
 FunctionParams ::= '(' FunctionParams_body ')' {
     pin = 1
     implements = [ "org.move.lang.core.psi.MoveDeclaringElement" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveFunctionParamsImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveFunctionParamsMixin"
 }
 private FunctionParams_body ::= (FunctionParam ','?)* {
     recoverWhile = "FunctionParams_body_recover"
@@ -165,7 +165,7 @@ FunctionParam ::= identifier TypeAscription {
     pin = 1
     recoverWhile = "FunctionParams_recover"
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveFunctionParamImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveFunctionParamMixin"
 }
 private FunctionParams_recover ::= !(','|')')
 
@@ -186,7 +186,7 @@ StructDef ::= resource? struct identifier
 {
     pin = "struct"
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveStructDefImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveStructDefMixin"
 }
 StructFields ::= '{' StructFields_body '}' { pin = 1 }
 private StructFields_body ::= (StructFieldDef (',' StructFieldDef)* ','?)?
@@ -230,7 +230,7 @@ LambdaType ::= '|' (Type (',' Type)*)? '|' Type { pin = 1 }
 TypeRef ::= ('&' mut?)? QualifiedPath {
     name = "type"
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveTypeRefImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveTypeRefMixin"
 }
 TupleType ::= '(' (Type ','?)* ','? ')' { pin = 1 }
 
@@ -262,7 +262,7 @@ DotPat ::= identifier '.' identifier { pin = 2 }
 
 BindingPat ::= identifier {
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveBindingPatImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveBindingPatMixin"
 }
 
 TuplePat ::= '(' TuplePat_body ')'
@@ -274,11 +274,11 @@ private TuplePat_body_recover ::= !(')'|'=')
 StructPat ::= QualifiedPath '{' (StructPatField ','?)* '}' {
     pin = 2
     implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveStructPatImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveStructPatMixin"
 }
 StructPatField ::= identifier StructPatFieldBinding? {
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveStructPatFieldImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveStructPatFieldMixin"
 }
 StructPatFieldBinding ::= ':' (StructPat | BindingPat) { pin = 1 }
 
@@ -439,7 +439,7 @@ StructLiteralExpr ::= QualifiedPath '{' StructLiteralExpr_body '}'
 {
     pin = 2
     implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveStructLiteralExprImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveStructLiteralExprMixin"
 }
 private StructLiteralExpr_body ::= (StructLiteralExprField ','?)*
 {
@@ -477,7 +477,7 @@ LiteralExpr ::= BOOL_LITERAL
 
 CallExpr ::= QualifiedPath CallArguments {
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveCallExprImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveCallExprMixin"
 }
 
 CallArguments ::= '(' (CallArgument (',' CallArgument)* ','?)? ')' { pin = 1 }
@@ -505,7 +505,7 @@ AssignmentExpr ::= Expr '=' Expr
 LetExpr ::= let Pat TypeAscription? Initializer? {
     pin = 1
     implements = [ "org.move.lang.core.psi.MoveDeclaringElement" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveLetExprImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveLetExprMixin"
 }
 private Initializer ::= '=' Expr {
     pin = 1
@@ -518,7 +518,7 @@ DotExpr ::= Expr '.' identifier
 IndexExpr ::= Expr '[' Expr ']' { rightAssociative = true }
 RefExpr ::= QualifiedPath {
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveRefExprImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveRefExprMixin"
 }
 
 QualifiedPath ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArgumentList?
@@ -554,12 +554,12 @@ private SpecItem ::= FunctionSpec
 FunctionSpec ::= spec fun identifier SpecBlock {
     pin = 2
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveFunctionSpecImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveFunctionSpecMixin"
 }
 StructSpec ::= spec struct identifier SpecBlock {
     pin = 2
     implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveStructSpecImplMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveStructSpecMixin"
 }
 SchemaSpec ::= spec schema identifier TypeArgumentList? SpecBlock { pin = 2 }
 

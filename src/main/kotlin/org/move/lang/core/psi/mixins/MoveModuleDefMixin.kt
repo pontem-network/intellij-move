@@ -5,8 +5,8 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 
-abstract class MoveModuleDefImplMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
-                                                       MoveModuleDef {
+abstract class MoveModuleDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
+                                                   MoveModuleDef {
     override fun definitions(): List<MoveNamedElement> {
         val functionDefs = PsiTreeUtil.getChildrenOfTypeAsList(this.moduleBlock, MoveFunctionDef::class.java)
         val nativeFunctionDefs =

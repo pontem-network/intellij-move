@@ -16,8 +16,8 @@ import org.move.lang.core.resolve.ref.MoveReferenceImpl
 //    override fun resolve(): MoveNamedElement? = null
 //}
 
-abstract class MoveRefExprImplMixin(node: ASTNode) : MoveElementImpl(node),
-                                                     MoveRefExpr {
+abstract class MoveRefExprMixin(node: ASTNode) : MoveElementImpl(node),
+                                                 MoveRefExpr {
     override val referenceNameElement: PsiElement
         get() = qualifiedPath.identifierNameElement
 //    override val referenceNameElement: PsiElement
