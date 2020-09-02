@@ -4,7 +4,7 @@
     <description>Support for the Move,
         smart contract language for the Libra blockchain.
     </description>
-    <vendor email="maxim.kurnikov@gmail.com">Maksim Kurnikov</vendor>
+    <vendor>Dfinance</vendor>
     <change-notes>
         <![CDATA[
             <p>0.7.0</p>

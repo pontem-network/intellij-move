@@ -608,7 +608,7 @@ EnsuresStatement ::= ensures Predicate ';' { pin = 1 }
 ModifiesStatement ::= modifies Expr ';' { pin = 1 }
 IncludeStatement ::= include Expr ';' { pin = 1 }
 
-FunctionPattern ::= (public | internal)? FUNCTION_PATTERN_NAME TypeArgumentList? { pin = 2 }
+FunctionPattern ::= (public | internal)? (FUNCTION_PATTERN_NAME | IDENTIFIER) TypeArgumentList? { pin = 2 }
 
 InvariantStatement ::= invariant (pack | unpack | module | update)? Predicate ';' { pin = 1 }
 ApplyStatement ::= apply ApplySchemaName
