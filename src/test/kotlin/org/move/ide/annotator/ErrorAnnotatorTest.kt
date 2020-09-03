@@ -1,10 +1,9 @@
-package org.move.ide
+package org.move.ide.annotator
 
-import org.move.ide.annotator.ErrorAnnotator
-import org.move.utils.tests.annotator.AnnotatorTestCase
+import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class ErrorAnnotatorTest : AnnotatorTestCase(ErrorAnnotator::class) {
-    fun `test duplicate function definition in script`() = checkError(
+    fun `test duplicate function definition in script`() = checkErrors(
         """
         script {
             fun <error descr="Duplicate definitions with name `main`">main</error>() {}
@@ -13,7 +12,7 @@ class ErrorAnnotatorTest : AnnotatorTestCase(ErrorAnnotator::class) {
     """.trimIndent()
     )
 
-    fun `test duplicate function definitions in module`() = checkError(
+    fun `test duplicate function definitions in module`() = checkErrors(
         """
         module M {
             fun <error descr="Duplicate definitions with name `main`">main</error>() {}
@@ -23,7 +22,7 @@ class ErrorAnnotatorTest : AnnotatorTestCase(ErrorAnnotator::class) {
     """.trimIndent()
     )
 
-    fun `test duplicate module definition`() = checkError(
+    fun `test duplicate module definition`() = checkErrors(
         """
         address 0x0 {
             module <error descr="Duplicate definitions with name `MyModule`">MyModule</error> {}
@@ -32,7 +31,7 @@ class ErrorAnnotatorTest : AnnotatorTestCase(ErrorAnnotator::class) {
     """.trimIndent()
     )
 
-    fun `test duplicate module definition at the toplevel`() = checkError(
+    fun `test duplicate module definition at the toplevel`() = checkErrors(
         """
         module <error descr="Duplicate definitions with name `MyModule`">MyModule</error> {}
         module <error descr="Duplicate definitions with name `MyModule`">MyModule</error> {}

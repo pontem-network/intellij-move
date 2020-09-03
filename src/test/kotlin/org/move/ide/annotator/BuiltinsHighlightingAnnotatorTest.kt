@@ -1,13 +1,12 @@
-package org.move.ide
+package org.move.ide.annotator
 
-import org.move.ide.annotator.BuiltinsHighlightingAnnotator
 import org.move.ide.colors.MoveColor
-import org.move.utils.tests.annotator.AnnotatorTestCase
+import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class BuiltinsHighlightingAnnotatorTest : AnnotatorTestCase(BuiltinsHighlightingAnnotator::class) {
     override fun setUp() {
         super.setUp()
-        createAnnotatorFixture().registerSeverities(MoveColor.values().map(MoveColor::testSeverity))
+        annotationFixture.registerSeverities(MoveColor.values().map(MoveColor::testSeverity))
     }
 
     fun `test primitive types highlighed in type positions`() = checkHighlighting(
