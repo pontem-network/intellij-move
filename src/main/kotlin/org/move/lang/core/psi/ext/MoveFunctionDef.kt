@@ -7,7 +7,3 @@ import org.move.lang.core.psi.MoveTypeParameter
 val MoveFunctionDef.params: List<MoveFunctionParameter>
     get() =
         this.functionParameterList?.functionParameterList.orEmpty()
-
-val MoveFunctionDef.typeParams: List<MoveTypeParameter>
-    get() =
-        this.typeParameterList?.typeParameterList.orEmpty()

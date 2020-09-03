@@ -103,7 +103,7 @@ fun typeDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequen
     scope.accept(object : MoveVisitor() {
         override fun visitFunctionDef(o: MoveFunctionDef) {
             if (o.contains(ref)) {
-                val entries = o.typeParams.asSequence().scopeEntries
+                val entries = o.typeParameters.asSequence().scopeEntries
                 declarations.addAll(entries)
             }
         }
