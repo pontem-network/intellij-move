@@ -130,7 +130,7 @@ private ConstDef_init_recover ::= !';'
 // Functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 NativeFunctionDef ::= native public? fun identifier TypeParameterList?
-                     FunctionParams
+                     FunctionParameterList
                      ReturnType?
                      AcquiresType? ';'
 {
@@ -141,7 +141,7 @@ NativeFunctionDef ::= native public? fun identifier TypeParameterList?
 }
 
 FunctionDef ::= public? fun identifier TypeParameterList?
-                    FunctionParams
+                    FunctionParameterList
                     ReturnType?
                     AcquiresType?
                     CodeBlock
@@ -154,23 +154,22 @@ FunctionDef ::= public? fun identifier TypeParameterList?
 }
 
 // trailing comma is allowed
-FunctionParams ::= '(' FunctionParams_body ')' {
+FunctionParameterList ::= '(' FunctionParameterList_body ')' {
     pin = 1
-//    implements = [ "org.move.lang.core.psi.MoveDeclaringElement" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveFunctionParamsMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveFunctionParameterListMixin"
 }
-private FunctionParams_body ::= (FunctionParam ','?)* {
-    recoverWhile = "FunctionParams_body_recover"
+private FunctionParameterList_body ::= (FunctionParameter ','?)* {
+    recoverWhile = "FunctionParameterList_body_recover"
 }
-private FunctionParams_body_recover ::= !')'
+private FunctionParameterList_body_recover ::= !')'
 
-FunctionParam ::= identifier TypeAscription {
+FunctionParameter ::= identifier TypeAscription {
     pin = 1
-    recoverWhile = "FunctionParams_recover"
+    recoverWhile = "FunctionParameter_recover"
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionParamMixin"
 }
-private FunctionParams_recover ::= !(','|')')
+private FunctionParameter_recover ::= !(','|')')
 
 // u8 | (u8,) | (u8, u8) | (u8, u8,)
 // tuples only allowed as a return types
@@ -579,14 +578,14 @@ StructSpec ::= spec struct identifier SpecBlock {
 ModuleSpec ::= spec module SpecBlock { pin = 2 }
 
 DefineFunction ::= define identifier TypeParameterList?
-                                                   FunctionParams
+                                                   FunctionParameterList
                                                    ReturnType?
                                                    CodeBlock
 {
     pin = 1
 }
 SpecDefineFunction ::= spec define identifier TypeParameterList?
-                                                   FunctionParams
+                                                   FunctionParameterList
                                                    ReturnType?
                                                    SpecBlock
 {
@@ -594,13 +593,13 @@ SpecDefineFunction ::= spec define identifier TypeParameterList?
 }
 
 NativeDefineFunction ::= native define identifier TypeParameterList?
-                                                   FunctionParams
+                                                   FunctionParameterList
                                                    ReturnType? ';'
 {
     pin = 2
 }
 SpecNativeDefineFunction ::= spec native define identifier TypeParameterList?
-                                                   FunctionParams
+                                                   FunctionParameterList
                                                    ReturnType? ';'
 {
     pin = 3

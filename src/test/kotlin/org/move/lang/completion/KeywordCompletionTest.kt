@@ -1,8 +1,8 @@
-package org.move.lang
+package org.move.lang.completion
 
 import org.move.utils.tests.completion.CompletionTestCase
 
-class KeywordCompletionProviderTest : CompletionTestCase() {
+class KeywordCompletionTest : CompletionTestCase() {
     fun `test top level completion`() = completionFixture.checkContainsCompletion(
         """/*caret*/""",
         listOf("address")
@@ -55,11 +55,6 @@ class KeywordCompletionProviderTest : CompletionTestCase() {
         "module M { fun myfunction() { /*caret*/ }} ",
         "let"
     )
-
-//    fun `test let statement mut keyword`() = completionFixture.checkContainsCompletion(
-//        "script { fun main () { let /*caret*/ } } ",
-//        "mut"
-//    )
 
 //    fun `test continue break in loop`() = completionFixture.checkContainsCompletion(
 //        "script { fun main() { loop { /*caret*/ } } } ",

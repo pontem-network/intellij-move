@@ -1,6 +1,7 @@
 package org.move.utils.tests.completion
 
 import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
 import org.intellij.lang.annotations.Language
@@ -11,17 +12,36 @@ import org.move.utils.tests.replaceCaretMarker
 class CompletionTestFixture(
     val myFixture: CodeInsightTestFixture
 ) : BaseFixture() {
+    private val project: Project get() = myFixture.project
+
+    fun doFirstCompletion(@Language("Move") code: String, @Language("Move") after: String) {
+        check(hasCaretMarker(after))
+        checkByText(code, after.trimIndent()) {
+            val variants = myFixture.completeBasic()
+            if (variants != null) {
+                myFixture.type('\n')
+            }
+        }
+    }
+
+    fun doSingleCompletion(@Language("Move") code: String, @Language("Move") after: String) {
+        check(hasCaretMarker(after))
+        checkByText(code, after.trimIndent()) { executeSoloCompletion() }
+    }
 
     fun checkCompletion(
         lookupString: String,
         @Language("Move") before: String,
-        @Language("Move") after: String
-    ) = checkByText(before, after.trimIndent()) {
-        val items = myFixture.completeBasic()
-            ?: return@checkByText // single completion was inserted
-        val lookupItem = items.find { it.lookupString == lookupString } ?: return@checkByText
-        myFixture.lookup.currentItem = lookupItem
-        myFixture.type('\n')
+        @Language("Move") after: String,
+        completionChar: Char,
+    ) {
+        checkByText(before, after.trimIndent()) {
+            val items = myFixture.completeBasic()
+                ?: return@checkByText // single completion was inserted
+            val lookupItem = items.find { it.lookupString == lookupString } ?: return@checkByText
+            myFixture.lookup.currentItem = lookupItem
+            myFixture.type(completionChar)
+        }
     }
 
     fun checkNoCompletion(@Language("Move") code: String) {
@@ -75,11 +95,6 @@ class CompletionTestFixture(
                 error("Expected completions that don't contain $variant, but got ${lookups.map { it.lookupString }}")
             }
         }
-    }
-
-    fun doSingleCompletion(@Language("Move") code: String, @Language("Move") after: String) {
-        check(hasCaretMarker(after))
-        checkByText(code, after.trimIndent()) { executeSoloCompletion() }
     }
 
     private fun executeSoloCompletion() {

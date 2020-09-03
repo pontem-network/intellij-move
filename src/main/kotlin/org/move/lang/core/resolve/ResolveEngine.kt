@@ -4,10 +4,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.boundElements
-import org.move.lang.core.psi.ext.contains
-import org.move.lang.core.psi.ext.statementExprList
-import org.move.lang.core.psi.ext.typeParams
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.MoveReferenceKind
 
 object ResolveEngine {
@@ -44,13 +41,16 @@ object ResolveEngine {
         }
     }
 
-    private fun enumerateScopesFor(element: PsiElement): Sequence<MoveResolveScope> =
+//    fun nameDeclarations(scope: MoveResolveScope, pivot: PsiElement? = null): Sequence<RustNamedElement> =
+//        nameDeclarations(scope, pivot).mapNotNull { it.element }
+
+    fun enumerateScopesFor(element: PsiElement): Sequence<MoveResolveScope> =
         generateSequence(ResolveUtil.getResolveScopeFor(element)) { parent ->
             ResolveUtil.getResolveScopeFor(parent)
         }
 }
 
-private fun nameDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
+fun nameDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
     val declarations = mutableListOf<ScopeEntry>()
     scope.accept(object : MoveVisitor() {
         override fun visitCodeBlock(o: MoveCodeBlock) {
@@ -64,15 +64,24 @@ private fun nameDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement)
                 // drops let-statement that is ancestors of ref (on the same statement, at most one)
                 .dropWhile { PsiTreeUtil.isAncestor(it, ref, true) }
 
-            val allBoundElements = visibleLetExprs.flatMap { it.pat?.boundElements.orEmpty().asSequence() }
+            val allEntries =
+                visibleLetExprs.flatMap { it.pat?.boundElements.orEmpty().asSequence() }
+                    .scopeEntries
 
-            declarations.addAll(allBoundElements.scopeEntries)
+            // entries are in reverse order, so keep only one-per-name first encountered
+            val declaredNames = hashSetOf<String>()
+            val nonShadowedEntries = allEntries.filter {
+                val res = it.name !in declaredNames
+                declaredNames.add(it.name)
+                res
+            }
+
+            declarations.addAll(nonShadowedEntries)
         }
 
         override fun visitFunctionDef(o: MoveFunctionDef) {
             if (o.contains(ref)) {
-                val entries = o.functionParams?.functionParamList
-                    .orEmpty()
+                val entries = o.params
                     .asSequence()
                     .scopeEntries
                 declarations.addAll(entries)
@@ -89,7 +98,7 @@ private fun nameDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement)
     return declarations.asSequence()
 }
 
-private fun typeDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
+fun typeDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
     val declarations = mutableListOf<ScopeEntry>()
     scope.accept(object : MoveVisitor() {
         override fun visitFunctionDef(o: MoveFunctionDef) {
@@ -126,7 +135,7 @@ private fun typeDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement)
     return declarations.asSequence()
 }
 
-private fun schemaDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
+fun schemaDeclarations(scope: MoveResolveScope, ref: MoveReferenceElement): Sequence<ScopeEntry> {
     val declarations = mutableListOf<ScopeEntry>()
     scope.accept(object : MoveVisitor() {
         override fun visitModuleDef(o: MoveModuleDef) {
@@ -169,7 +178,7 @@ private fun resolveSchemaIn(
         .find { it.name == ref.referenceName }
         ?.element.asResolveResult()
 
-private class ScopeEntry private constructor(
+class ScopeEntry private constructor(
     val name: String,
     private val thunk: Lazy<MoveNamedElement?>
 ) {

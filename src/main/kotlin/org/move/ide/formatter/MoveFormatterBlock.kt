@@ -23,8 +23,8 @@ class MoveFormatterBlock(
 
     override fun buildChildren(): List<Block> {
         val sharedAlignment = when (node.elementType) {
-            FUNCTION_PARAMS -> Alignment.createAlignment()
-            FUNCTION_PARAM -> ctx.sharedAlignment
+            FUNCTION_PARAMETER_LIST -> Alignment.createAlignment()
+            FUNCTION_PARAMETER -> ctx.sharedAlignment
             else -> null
         }
         val alignment = getAlignmentStrategy()

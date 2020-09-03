@@ -5,7 +5,7 @@ import org.move.ide.formatter.MoveFormatterBlock
 import org.move.lang.MoveElementTypes.*
 
 fun MoveFormatterBlock.getAlignmentStrategy(): MoveAlignmentStrategy = when (node.elementType) {
-    FUNCTION_PARAMS, CALL_ARGUMENTS ->
+    FUNCTION_PARAMETER_LIST, CALL_ARGUMENTS ->
         MoveAlignmentStrategy
             .shared()
             .alignUnlessBlockDelim()

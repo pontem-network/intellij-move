@@ -18,7 +18,7 @@ FILE
           MoveTypeParameterImpl(TYPE_PARAMETER)
             PsiElement(identifier)('U')
           PsiElement(>)('>')
-        MoveFunctionParamsImpl(FUNCTION_PARAMS)
+        MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')
           PsiElement())(')')
         PsiWhiteSpace(' ')

@@ -17,7 +17,6 @@ import org.move.lang.MoveElementTypes.*
 import org.move.lang.core.MV_KEYWORDS
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
-import org.move.lang.core.tokenSetOf
 
 fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilder {
     return SpacingBuilder(commonSettings)
@@ -55,9 +54,9 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
 //        .beforeInside(L_BRACE, tokenSetOf(STRUCT_PAT, STRUCT_LITERAL_EXPR)).spaces(1)
 
         //== items
-        .between(FUNCTION_PARAMS, RETURN_TYPE).spaceIf(false)
+        .between(FUNCTION_PARAMETER_LIST, RETURN_TYPE).spaceIf(false)
 
-        .between(IDENTIFIER, FUNCTION_PARAMS).spaceIf(false)
+        .between(IDENTIFIER, FUNCTION_PARAMETER_LIST).spaceIf(false)
         .between(IDENTIFIER, CALL_ARGUMENTS).spaceIf(false)
         .between(IDENTIFIER, TYPE_PARAMETER_LIST).spaceIf(false)
         .between(IDENTIFIER, TYPE_ARGUMENT_LIST).spaceIf(false)
@@ -65,7 +64,7 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
 //        .between(IDENTIFIER, STRUCT_LITERAL_FIELDS_BLOCK).spaceIf(true)
 //        .between(IDENTIFIER, STRUCT_LITERAL_FIELDS_BLOCK).spaceIf(true)
 
-        .between(TYPE_PARAMETER_LIST, FUNCTION_PARAMS).spaceIf(false)
+        .between(TYPE_PARAMETER_LIST, FUNCTION_PARAMETER_LIST).spaceIf(false)
         .before(CALL_ARGUMENTS).spaceIf(false)
 
         .around(BINARY_OPS).spaces(1)

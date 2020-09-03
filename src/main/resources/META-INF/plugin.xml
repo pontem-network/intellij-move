@@ -60,7 +60,7 @@
                                  implementationClass="org.move.ide.search.MoveFindUsagesProvider"/>
 
         <completion.contributor language="Move"
-                                implementationClass="org.move.lang.KeywordCompletionContributor"/>
+                                implementationClass="org.move.lang.core.completion.KeywordCompletionContributor"/>
         <psi.referenceContributor language="Move"
                                   implementation="org.move.lang.ReferenceContributor"/>
         <annotator language="Move"

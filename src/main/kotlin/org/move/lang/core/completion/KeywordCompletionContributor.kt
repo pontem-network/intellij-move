@@ -1,4 +1,4 @@
-package org.move.lang
+package org.move.lang.core.completion
 
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionType
@@ -8,6 +8,7 @@ import com.intellij.patterns.StandardPatterns.or
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import org.move.lang.MoveElementTypes.IDENTIFIER
+import org.move.lang.MoveFile
 import org.move.lang.core.MovePatterns
 import org.move.lang.core.psi.MoveAddressBlock
 import org.move.lang.core.psi.MoveCodeBlock
