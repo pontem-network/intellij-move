@@ -5,11 +5,11 @@
 
 package org.move.utils.tests.annotation
 
-import org.move.ide.annotator.AnnotatorBase
+import org.move.ide.annotator.MoveAnnotatorBase
 import kotlin.reflect.KClass
 
 abstract class AnnotatorTestCase(
-    private val annotatorClass: KClass<out AnnotatorBase>
+    private val annotatorClass: KClass<out MoveAnnotatorBase>
 ) : MoveAnnotationTestCase() {
 
     override fun createAnnotationFixture(): MoveAnnotationTestFixture = MoveAnnotationTestFixture(

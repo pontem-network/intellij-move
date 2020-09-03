@@ -13,13 +13,13 @@ import com.intellij.testFramework.InspectionTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
 import junit.framework.TestCase
-import org.move.ide.annotator.AnnotatorBase
+import org.move.ide.annotator.MoveAnnotatorBase
 import kotlin.reflect.KClass
 
 class MoveAnnotationTestFixture(
     private val testCase: TestCase,
     private val codeInsightFixture: CodeInsightTestFixture,
-    private val annotatorClasses: List<KClass<out AnnotatorBase>> = emptyList(),
+    private val annotatorClasses: List<KClass<out MoveAnnotatorBase>> = emptyList(),
     private val inspectionClasses: List<KClass<out InspectionProfileEntry>> = emptyList(),
 ) : BaseFixture() {
     val project: Project get() = codeInsightFixture.project
@@ -28,7 +28,7 @@ class MoveAnnotationTestFixture(
     override fun setUp() {
         super.setUp()
         annotatorClasses.forEach {
-            AnnotatorBase.enableAnnotator(
+            MoveAnnotatorBase.enableAnnotator(
                 it.java,
                 testRootDisposable
             )
@@ -39,7 +39,7 @@ class MoveAnnotationTestFixture(
 
     private fun replaceCaretMarker(text: String) = text.replace("/*caret*/", "<caret>")
 
-    fun checkHighlighting(text: String, ignoreExtraHighlighting: Boolean) = check(
+    fun checkHighlighting(text: String, ignoreExtraHighlighting: Boolean) = checkByText(
         text,
         checkWarn = false,
         checkWeakWarn = false,
@@ -47,22 +47,43 @@ class MoveAnnotationTestFixture(
         ignoreExtraHighlighting = ignoreExtraHighlighting
     )
 
-    fun checkInfo(text: String) = check(text, checkWarn = false, checkWeakWarn = false, checkInfo = true)
-    fun checkWarnings(text: String) = check(text, checkWarn = true, checkWeakWarn = true, checkInfo = false)
-    fun checkErrors(text: String) = check(text, checkWarn = false, checkWeakWarn = false, checkInfo = false)
+    fun checkInfo(text: String) =
+        checkByText(text, checkWarn = false, checkWeakWarn = false, checkInfo = true)
+
+    fun checkWarnings(text: String) =
+        checkByText(text, checkWarn = true, checkWeakWarn = true, checkInfo = false)
+
+    fun checkErrors(text: String) =
+        checkByText(text, checkWarn = false, checkWeakWarn = false, checkInfo = false)
 
     private fun configureByText(text: String) {
         codeInsightFixture.configureByText("main.move", replaceCaretMarker(text.trimIndent()))
     }
+
+    fun checkByText(
+        text: String,
+        checkWarn: Boolean = true,
+        checkInfo: Boolean = false,
+        checkWeakWarn: Boolean = false,
+        ignoreExtraHighlighting: Boolean = false,
+    ) = check(
+        text,
+        checkWarn = checkWarn,
+        checkInfo = checkInfo,
+        checkWeakWarn = checkWeakWarn,
+        ignoreExtraHighlighting = ignoreExtraHighlighting,
+        configure = this::configureByText
+    )
 
     fun check(
         text: String,
         checkWarn: Boolean = true,
         checkInfo: Boolean = false,
         checkWeakWarn: Boolean = false,
-        ignoreExtraHighlighting: Boolean = false
+        ignoreExtraHighlighting: Boolean = false,
+        configure: (String) -> Unit
     ) {
-        configureByText(text)
+        configure(text)
         codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn, ignoreExtraHighlighting)
     }
 

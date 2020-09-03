@@ -69,6 +69,11 @@
                    implementationClass="org.move.ide.annotator.BuiltinsHighlightingAnnotator"/>
         <configurationType implementation="org.move.move_tools.CompilerCheckConfigurationType"/>
 
+<!--        <localInspection language="Move" groupPath="Move" groupName="Lints"-->
+<!--                         displayName="Liveness analysis"-->
+<!--                         enabledByDefault="true" level="WARNING"-->
+<!--                         implementationClass="org.move.ide.inspections.lints.LivenessInspection"/>-->
+
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MoveColorSettingsPage"/>
 

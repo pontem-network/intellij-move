@@ -18,7 +18,7 @@ val PRIMITIVE_TYPE_IDENTIFIERS = setOf("signer", "u8", "u64", "u128", "address",
 val BUILTIN_FUNCTIONS =
     setOf("move_from", "move_to", "borrow_global", "borrow_global_mut", "exists", "freeze", "assert")
 
-class BuiltinsHighlightingAnnotator : AnnotatorBase() {
+class BuiltinsHighlightingAnnotator : MoveAnnotatorBase() {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         val color = when (element) {
             is LeafPsiElement -> highlightLeaf(element)

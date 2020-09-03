@@ -3,7 +3,7 @@ package org.move.utils.tests.annotation
 import com.intellij.codeInspection.InspectionProfileEntry
 import kotlin.reflect.KClass
 
-class InspectionsTestCase(
+abstract class InspectionsTestCase(
     private val inspectionClass: KClass<out InspectionProfileEntry>
 ) : MoveAnnotationTestCase() {
 

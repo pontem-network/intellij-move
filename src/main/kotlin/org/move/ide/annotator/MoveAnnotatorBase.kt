@@ -11,12 +11,12 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.util.containers.ContainerUtil
 import org.jetbrains.annotations.TestOnly
 
-abstract class AnnotatorBase : Annotator {
+abstract class MoveAnnotatorBase : Annotator {
     companion object {
-        private val enabledAnnotators: MutableSet<Class<out AnnotatorBase>> = ContainerUtil.newConcurrentSet()
+        private val enabledAnnotators: MutableSet<Class<out MoveAnnotatorBase>> = ContainerUtil.newConcurrentSet()
 
         @TestOnly
-        fun enableAnnotator(annotatorClass: Class<out AnnotatorBase>, parentDisposable: Disposable) {
+        fun enableAnnotator(annotatorClass: Class<out MoveAnnotatorBase>, parentDisposable: Disposable) {
             enabledAnnotators += annotatorClass
             Disposer.register(parentDisposable, Disposable { enabledAnnotators -= annotatorClass })
         }

@@ -5,7 +5,7 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 
-class ErrorAnnotator : AnnotatorBase() {
+class ErrorAnnotator : MoveAnnotatorBase() {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         val visitor = object : MoveVisitor() {
             override fun visitFunctionDef(o: MoveFunctionDef) = checkFunctionDef(holder, o)

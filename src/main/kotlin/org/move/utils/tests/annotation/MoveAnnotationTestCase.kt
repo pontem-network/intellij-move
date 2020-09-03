@@ -26,4 +26,19 @@ abstract class MoveAnnotationTestCase : MoveTestCase() {
         )
 
     fun checkErrors(text: String) = annotationFixture.checkErrors(text)
+
+    protected fun checkByText(
+        @Language("Move") text: String,
+        checkWarn: Boolean = true,
+        checkInfo: Boolean = false,
+        checkWeakWarn: Boolean = false,
+        ignoreExtraHighlighting: Boolean = false,
+    ) = annotationFixture.checkByText(
+        text,
+        checkWarn,
+        checkInfo,
+        checkWeakWarn,
+        ignoreExtraHighlighting,
+    )
+
 }
