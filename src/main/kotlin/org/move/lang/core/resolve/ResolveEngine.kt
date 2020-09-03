@@ -207,3 +207,22 @@ private fun MoveNamedElement?.asResolveResult(): ResolveEngine.ResolveResult =
         ResolveEngine.ResolveResult.Unresolved
     else
         ResolveEngine.ResolveResult.Resolved(this)
+
+private fun walkUpThroughScopes(
+    start: MoveElement,
+    stopAfterTrue: (MoveElement) -> Boolean,
+    processor: (cameFrom: MoveElement, scope: MoveElement) -> Boolean
+): Boolean {
+
+    var cameFrom = start
+    var scope = start.parent as MoveElement?
+    while (scope != null) {
+        if (processor(cameFrom, scope)) return true
+        if (stopAfterTrue(scope)) break
+
+        cameFrom = scope
+        scope = scope.parent as MoveElement?
+    }
+
+    return false
+}

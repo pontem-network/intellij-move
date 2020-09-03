@@ -35,11 +35,44 @@ class VariablesCompletionTest: CompletionTestCase() {
         }
     """)
 
+    fun `test shadowing in nested blocks`() = doSingleCompletion("""
+        script {
+            fun main() {
+                let foobar = b"foobar";
+                {
+                    let foobar = b"foobar2";
+                    foo/*caret*/;
+                }
+            }
+        }
+    """, """
+        script {
+            fun main() {
+                let foobar = b"foobar";
+                {
+                    let foobar = b"foobar2";
+                    foobar/*caret*/;
+                }
+            }
+        }
+    """)
+
     fun `test local scope`() = checkNoCompletion("""
         script {
             fun main() {
                 let x = spam/*caret*/;
                 let spamlot = 92;
+            }
+        }
+    """)
+
+    fun `test inside scope is unreachable`() = checkNoCompletion("""
+        script {
+            fun main() {
+                {
+                    let spamlot = 92;    
+                };
+                let x = spam/*caret*/;
             }
         }
     """)
