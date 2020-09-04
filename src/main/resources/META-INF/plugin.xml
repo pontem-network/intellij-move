@@ -1,12 +1,23 @@
 <idea-plugin>
     <id>org.move.lang</id>
     <name>Move Language</name>
-    <description>Support for the Move,
-        smart-contract language for the Libra blockchain.
-    </description>
+
     <vendor>Dfinance</vendor>
+
+    <description>
+        <![CDATA[
+            Support for the Move,
+            smart-contract language for the Libra blockchain.
+            <a href="https://github.com/dfinance/intellij-move">https://github.com/dfinance/intellij-move</a>
+        ]]>
+    </description>
+
     <change-notes>
         <![CDATA[
+            <p>0.8.0</p>
+            <ul>
+                <li>FEAT: autocompletion for names, functions and structs</li>
+            </ul>
             <p>0.7.0</p>
             <ul>
                 <li>FEAT: add partial support for specs in parser and formatter</li>
