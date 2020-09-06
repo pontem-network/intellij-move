@@ -8,6 +8,19 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.compactText
 import org.move.lang.core.psi.ext.params
 
+const val KEYWORD_PRIORITY = 80.0
+const val PRIMITIVE_TYPE_PRIORITY = KEYWORD_PRIORITY
+
+//const val FRAGMENT_SPECIFIER_PRIORITY = KEYWORD_PRIORITY
+const val VARIABLE_PRIORITY = 5.0
+
+//const val ENUM_VARIANT_PRIORITY = 4.0
+const val FIELD_DECL_PRIORITY = 3.0
+//const val ASSOC_FN_PRIORITY = 2.0
+//const val DEFAULT_PRIORITY = 0.0
+//const val MACRO_PRIORITY = -0.1
+//const val DEPRECATED_PRIORITY = -1.0
+
 //open class MoveDefaultInsertHandler : InsertHandler<LookupElement> {
 //    final override fun handleInsert(context: InsertionContext, item: LookupElement) {
 //        val element = item.psiElement as? MoveElement ?: return
@@ -25,19 +38,26 @@ import org.move.lang.core.psi.ext.params
 //    }
 //}
 
+fun InsertionContext.addSuffix(suffix: String) {
+    document.insertString(selectionEndOffset, suffix)
+    EditorModificationUtil.moveCaretRelatively(editor, suffix.length)
+}
+
 fun MoveNamedElement.createLookupElement(isSpec: Boolean): LookupElement {
     return when (this) {
         is MoveFunctionDef -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTailText(this.functionParameterList?.compactText ?: "()")
             .withTypeText(this.returnType?.type?.text ?: "()")
-            .withInsertHandler { context: InsertionContext, _: LookupElement ->
-                if (!isSpec) {
-                    if (!context.alreadyHasCallParens) {
-                        context.document.insertString(context.selectionEndOffset, "()")
+            .withInsertHandler { ctx, _ ->
+                if (isSpec) {
+                    ctx.addSuffix(" ")
+                } else {
+                    if (!ctx.alreadyHasCallParens) {
+                        ctx.document.insertString(ctx.selectionEndOffset, "()")
                     }
                     EditorModificationUtil.moveCaretRelatively(
-                        context.editor,
+                        ctx.editor,
                         if (this.params.isEmpty()) 2 else 1
                     )
                 }
@@ -50,6 +70,10 @@ fun MoveNamedElement.createLookupElement(isSpec: Boolean): LookupElement {
         is MoveStructDef -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTailText(" { ... }")
+            .withInsertHandler { ctx, _ ->
+                if (isSpec)
+                    ctx.addSuffix(" ")
+            }
 
         is MoveFunctionParameter -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")

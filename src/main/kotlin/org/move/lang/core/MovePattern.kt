@@ -3,6 +3,7 @@ package org.move.lang.core
 import com.intellij.patterns.PatternCondition
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PsiElementPattern
+import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
@@ -10,20 +11,54 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.ProcessingContext
 import org.move.lang.MoveElementTypes.*
+import org.move.lang.MoveFile
+import org.move.lang.core.psi.MoveAddressBlock
+import org.move.lang.core.psi.MoveCodeBlock
+import org.move.lang.core.psi.MoveModuleBlock
+import org.move.lang.core.psi.MoveScriptBlock
 import org.move.lang.core.psi.ext.leftLeaves
 
-object MovePatterns {
+object MovePattern {
     private val STATEMENT_BOUNDARIES = TokenSet.create(SEMICOLON, L_BRACE, R_BRACE)
 
     val whitespace: PsiElementPattern.Capture<PsiElement> = PlatformPatterns.psiElement().whitespace()
-
-    val error: PsiElementPattern.Capture<PsiErrorElement> = psiElement<PsiErrorElement>()
 
     val onStatementBeginning: PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement().with(OnStatementBeginning())
 
     fun onStatementBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement().with(OnStatementBeginning(*startWords))
+
+    fun toplevel(): PsiElementPattern.Capture<PsiElement> =
+        psiElementWithParent<MoveFile>()
+
+    fun addressBlock(): PsiElementPattern.Capture<PsiElement> =
+        psiElementWithParent<MoveAddressBlock>()
+
+    fun moduleBlock(): PsiElementPattern.Capture<PsiElement> =
+        psiElementWithParent<MoveModuleBlock>()
+
+    fun scriptBlock(): PsiElementPattern.Capture<PsiElement> =
+        psiElementWithParent<MoveScriptBlock>()
+
+    fun codeStatement(): PsiElementPattern.Capture<PsiElement> =
+        psiElementInside<MoveCodeBlock>()
+
+    private inline fun <reified I : PsiElement> psiElementWithParent() =
+        PlatformPatterns.psiElement().withParent(
+            StandardPatterns.or(
+                psiElement<I>(),
+                psiElement<PsiErrorElement>().withParent(psiElement<I>())
+            )
+        )
+
+    private inline fun <reified I : PsiElement> psiElementInside() =
+        PlatformPatterns.psiElement().inside(
+            StandardPatterns.or(
+                psiElement<I>(),
+                psiElement<PsiErrorElement>().withParent(psiElement<I>())
+            )
+        )
 
     private class OnStatementBeginning(vararg startWords: String) :
         PatternCondition<PsiElement>("on statement beginning") {

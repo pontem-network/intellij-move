@@ -34,12 +34,12 @@ class StructsCompletionTest: CompletionTestCase() {
     fun `test struct spec`() = doSingleCompletion("""
         module M {
             struct Frobnicate {}
-            spec struct Frob/*caret*/ {}
+            spec struct Frob/*caret*/
         }
     """, """
         module M {
             struct Frobnicate {}
-            spec struct Frobnicate/*caret*/ {}
+            spec struct Frobnicate /*caret*/
         }
     """)
 
