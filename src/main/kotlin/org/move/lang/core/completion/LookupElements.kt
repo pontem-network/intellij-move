@@ -1,6 +1,5 @@
 package org.move.lang.core.completion
 
-import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
@@ -26,20 +25,22 @@ import org.move.lang.core.psi.ext.params
 //    }
 //}
 
-fun MoveNamedElement.createLookupElement(): LookupElement {
+fun MoveNamedElement.createLookupElement(isSpec: Boolean): LookupElement {
     return when (this) {
         is MoveFunctionDef -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTailText(this.functionParameterList?.compactText ?: "()")
             .withTypeText(this.returnType?.type?.text ?: "()")
             .withInsertHandler { context: InsertionContext, _: LookupElement ->
-                if (!context.alreadyHasCallParens) {
-                    context.document.insertString(context.selectionEndOffset, "()")
+                if (!isSpec) {
+                    if (!context.alreadyHasCallParens) {
+                        context.document.insertString(context.selectionEndOffset, "()")
+                    }
+                    EditorModificationUtil.moveCaretRelatively(
+                        context.editor,
+                        if (this.params.isEmpty()) 2 else 1
+                    )
                 }
-                EditorModificationUtil.moveCaretRelatively(
-                    context.editor,
-                    if (this.params.isEmpty()) 2 else 1
-                )
             }
 
         is MoveConstDef -> LookupElementBuilder.createWithIcon(this)

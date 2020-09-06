@@ -66,7 +66,7 @@ class LookupElementTest : MoveTestCase() {
 
         val element = findElementInEditor<T>() as? MoveNamedElement
             ?: error("Marker `^` should point to the MoveNamedElement")
-        val lookup = element.createLookupElement()
+        val lookup = element.createLookupElement(false)
 
         checkLookupPresentation(
             lookup,

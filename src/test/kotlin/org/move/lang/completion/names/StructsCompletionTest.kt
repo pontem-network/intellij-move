@@ -31,6 +31,18 @@ class StructsCompletionTest: CompletionTestCase() {
         }
     """)
 
+    fun `test struct spec`() = doSingleCompletion("""
+        module M {
+            struct Frobnicate {}
+            spec struct Frob/*caret*/ {}
+        }
+    """, """
+        module M {
+            struct Frobnicate {}
+            spec struct Frobnicate/*caret*/ {}
+        }
+    """)
+
 //    fun `test struct with type parameters`() = doSingleCompletion("""
 //        module M {
 //            struct Frobnicate<T> { val: T }

@@ -8,10 +8,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.MoveElementTypes
-import org.move.lang.core.psi.MoveQualifiedPath
-import org.move.lang.core.psi.MoveReferenceElement
-import org.move.lang.core.psi.MoveSchemaReferenceElement
-import org.move.lang.core.psi.MoveTypeReferenceElement
+import org.move.lang.core.psi.*
 import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.processNestedScopesUpwards
 import org.move.lang.core.resolve.ref.Namespace
@@ -48,7 +45,8 @@ object CommonCompletionProvider : CompletionProvider<CompletionParameters>() {
         }
         processNestedScopesUpwards(refElement, namespace) {
             if (it.element != null) {
-                result.addElement(it.element.createLookupElement())
+                val isSpec = refElement is MoveFunctionSpec || refElement is MoveStructSpec
+                result.addElement(it.element.createLookupElement(isSpec))
             }
             false
         }

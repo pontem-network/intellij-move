@@ -6,9 +6,9 @@
 
     <description>
         <![CDATA[
-            Support for the Move,
-            smart-contract language for the Libra blockchain.
-            <a href="https://github.com/dfinance/intellij-move">https://github.com/dfinance/intellij-move</a>
+            <p>Support for the Move, smart-contract language for the Libra and Dfinance blockchains.</p>
+
+            <p><a href="https://github.com/dfinance/intellij-move">https://github.com/dfinance/intellij-move</a></p>
         ]]>
     </description>
 
