@@ -70,12 +70,24 @@ class FunctionsCompletionTest: CompletionTestCase() {
     fun `test complete function name in spec fun without parens`() = doSingleCompletion("""
         module M {
             fun frobnicate(a: u8) {}
-            spec fun frob/*caret*/ 
+            spec fun frob/*caret*/
         }
     """, """
         module M {
             fun frobnicate(a: u8) {}
-            spec fun frobnicate /*caret*/ 
+            spec fun frobnicate /*caret*/
+        }
+    """)
+
+    fun `test spec fun do not add space if already there`() = doSingleCompletion("""
+        module M {
+            fun frobnicate(a: u8) {}
+            spec fun frob/*caret*/ {}
+        }
+    """, """
+        module M {
+            fun frobnicate(a: u8) {}
+            spec fun frobnicate/*caret*/ {}
         }
     """)
 

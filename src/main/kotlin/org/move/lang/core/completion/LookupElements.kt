@@ -38,10 +38,6 @@ const val FIELD_DECL_PRIORITY = 3.0
 //    }
 //}
 
-fun InsertionContext.addSuffix(suffix: String) {
-    document.insertString(selectionEndOffset, suffix)
-    EditorModificationUtil.moveCaretRelatively(editor, suffix.length)
-}
 
 fun MoveNamedElement.createLookupElement(isSpec: Boolean): LookupElement {
     return when (this) {
@@ -51,7 +47,7 @@ fun MoveNamedElement.createLookupElement(isSpec: Boolean): LookupElement {
             .withTypeText(this.returnType?.type?.text ?: "()")
             .withInsertHandler { ctx, _ ->
                 if (isSpec) {
-                    ctx.addSuffix(" ")
+                    if (!ctx.alreadyHasSpace) ctx.addSuffix(" ")
                 } else {
                     if (!ctx.alreadyHasCallParens) {
                         ctx.document.insertString(ctx.selectionEndOffset, "()")
@@ -71,7 +67,7 @@ fun MoveNamedElement.createLookupElement(isSpec: Boolean): LookupElement {
             .withLookupString(this.name ?: "")
             .withTailText(" { ... }")
             .withInsertHandler { ctx, _ ->
-                if (isSpec)
+                if (isSpec && !ctx.alreadyHasSpace)
                     ctx.addSuffix(" ")
             }
 
@@ -113,9 +109,16 @@ fun MoveNamedElement.createLookupElement(isSpec: Boolean): LookupElement {
 //
 //    return lookup.withPriority(priority)
 //}
+fun InsertionContext.addSuffix(suffix: String) {
+    document.insertString(selectionEndOffset, suffix)
+    EditorModificationUtil.moveCaretRelatively(editor, suffix.length)
+}
 
 val InsertionContext.alreadyHasCallParens: Boolean
     get() = nextCharIs('(')
+
+val InsertionContext.alreadyHasSpace: Boolean
+    get() = nextCharIs(' ')
 
 private val InsertionContext.alreadyHasAngleBrackets: Boolean
     get() = nextCharIs('<')
