@@ -10,9 +10,10 @@ enum class MoveColor(humanName: String, default: TextAttributesKey? = null) {
 
     KEYWORD("Keywords//Keyword", DefaultLanguageHighlighterColors.KEYWORD),
 
-    PRIMITIVE_TYPE("Types//Primitive", DefaultLanguageHighlighterColors.IDENTIFIER),
+    PRIMITIVE_TYPE("Types//Primitive", DefaultLanguageHighlighterColors.KEYWORD),
+    BUILTIN_TYPE("Types//Builtins", DefaultLanguageHighlighterColors.IDENTIFIER),
 
-    BUILTIN_FUNCTION("Functions//Built-ins", DefaultLanguageHighlighterColors.IDENTIFIER);
+    BUILTIN_FUNCTION("Functions//Builtins", DefaultLanguageHighlighterColors.IDENTIFIER);
 
     val textAttributesKey = TextAttributesKey.createTextAttributesKey("org.move.$name", default)
     val attributesDescriptor = AttributesDescriptor(humanName, textAttributesKey)

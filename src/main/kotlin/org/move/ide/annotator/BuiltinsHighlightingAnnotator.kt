@@ -14,7 +14,8 @@ import org.move.lang.core.psi.ext.addressElement
 import org.move.lang.core.psi.ext.identifierName
 import org.move.lang.core.psi.ext.moduleNameElement
 
-val PRIMITIVE_TYPE_IDENTIFIERS = setOf("signer", "u8", "u64", "u128", "address", "bool")
+val PRIMITIVE_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128", "bool")
+val BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer")
 val BUILTIN_FUNCTIONS =
     setOf("move_from", "move_to", "borrow_global", "borrow_global_mut", "exists", "freeze", "assert")
 
@@ -51,6 +52,7 @@ class BuiltinsHighlightingAnnotator : MoveAnnotatorBase() {
             val container = parent.parent
             when {
                 container is MoveTypeRef && name in PRIMITIVE_TYPE_IDENTIFIERS -> MoveColor.PRIMITIVE_TYPE
+                container is MoveTypeRef && name in BUILTIN_TYPE_IDENTIFIERS -> MoveColor.BUILTIN_TYPE
                 container is MoveCallExpr && name in BUILTIN_FUNCTIONS -> MoveColor.BUILTIN_FUNCTION
                 else -> null
             }

@@ -9,16 +9,17 @@ class BuiltinsHighlightingAnnotatorTest : AnnotatorTestCase(BuiltinsHighlighting
         annotationFixture.registerSeverities(MoveColor.values().map(MoveColor::testSeverity))
     }
 
-    fun `test primitive types highlighed in type positions`() = checkHighlighting(
+    fun `test types highlighed`() = checkHighlighting(
         """
         script {
-            fun main(s: &<PRIMITIVE_TYPE>signer</PRIMITIVE_TYPE>,
+            fun main(s: &<BUILTIN_TYPE>signer</BUILTIN_TYPE>,
                      val: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>,
                      val2: <PRIMITIVE_TYPE>u64</PRIMITIVE_TYPE>,
                      val3: <PRIMITIVE_TYPE>u128</PRIMITIVE_TYPE>,
                      val4: <PRIMITIVE_TYPE>bool</PRIMITIVE_TYPE>,
                      val5: 0x0::Transaction::bool,
                      ) {
+                        let mysigner: <BUILTIN_TYPE>signer</BUILTIN_TYPE>
                         let signer = 1;
                      }
         }
@@ -46,7 +47,7 @@ class BuiltinsHighlightingAnnotatorTest : AnnotatorTestCase(BuiltinsHighlighting
     fun `test function param named as builtin type`() = checkHighlighting(
         """
         script {
-            fun main(signer: &<PRIMITIVE_TYPE>signer</PRIMITIVE_TYPE>) {
+            fun main(signer: &<BUILTIN_TYPE>signer</BUILTIN_TYPE>) {
                 Signer::address_of(signer)
             }
         }
