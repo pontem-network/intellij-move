@@ -15,7 +15,7 @@ abstract class MoveReferenceBase<T : MoveReferenceElement>(element: T) : PsiRefe
                                                                          MoveReference {
     abstract fun resolveVerbose(): ResolveEngine.ResolveResult
 
-    final override fun resolve(): MoveNamedElement? =
+    override fun resolve(): MoveNamedElement? =
         resolveVerbose().let {
             when (it) {
                 is ResolveEngine.ResolveResult.Resolved -> it.element

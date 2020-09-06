@@ -106,8 +106,7 @@ private AddressBlockItems_recover ::= !'}'
 ModuleDef ::= module identifier ModuleBlock {
     pin = 1
     name = "module declaration"
-    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
-                   "org.move.lang.core.resolve.MoveDefsResolveScope" ]
+    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.mixins.MoveModuleDefMixin"
 }
 ModuleBlock ::= '{' ModuleBlockItems '}' { pin = 1 }
@@ -154,7 +153,6 @@ FunctionDef ::= public? fun identifier TypeParameterList?
     implements = [
         "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.resolve.MoveResolveScope"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionDefMixin"
 }
@@ -196,7 +194,6 @@ StructDef ::= resource? struct identifier
     implements = [
         "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.resolve.MoveResolveScope"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveStructDefMixin"
 }
@@ -340,7 +337,6 @@ private AnyBlock ::= CodeBlock | InlineBlock
 InlineBlock ::= Expr
 CodeBlock ::= '{' CodeBlock_body '}' {
     pin = 1
-    implements = ["org.move.lang.core.resolve.MoveResolveScope"]
 }
 CodeBlockExpr ::= '{' CodeBlock_body '}' { pin = 1 }
 
@@ -571,8 +567,7 @@ SchemaDef ::= spec schema identifier TypeParameterList? SpecBlock {
   pin = 2
   implements = [
     "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
-    "org.move.lang.core.psi.MoveNameIdentifierOwner"
-    "org.move.lang.core.resolve.MoveResolveScope" ]
+    "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
   mixin = "org.move.lang.core.psi.mixins.MoveSchemaDefMixin"
 }
 

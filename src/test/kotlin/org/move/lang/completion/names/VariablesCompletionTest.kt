@@ -60,7 +60,7 @@ class VariablesCompletionTest: CompletionTestCase() {
     fun `test local scope`() = checkNoCompletion("""
         script {
             fun main() {
-                let x = spam/*caret*/;
+                spam/*caret*/;
                 let spamlot = 92;
             }
         }

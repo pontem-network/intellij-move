@@ -6,7 +6,7 @@ import org.move.lang.MoveElementTypes.IDENTIFIER
 import org.move.lang.core.psi.MoveReferenceElement
 import org.move.lang.core.resolve.ref.MoveReference
 import org.move.lang.core.resolve.ref.MoveReferenceImpl
-import org.move.lang.core.resolve.ref.MoveReferenceKind
+import org.move.lang.core.resolve.ref.Namespace
 
 abstract class MoveReferenceElementImpl(node: ASTNode) : MoveElementImpl(node),
                                                          MoveReferenceElement {
@@ -14,5 +14,5 @@ abstract class MoveReferenceElementImpl(node: ASTNode) : MoveElementImpl(node),
         get() = findNotNullChildByType(IDENTIFIER)
 
     override fun getReference(): MoveReference =
-        MoveReferenceImpl(this, MoveReferenceKind.NAME)
+        MoveReferenceImpl(this, Namespace.NAME)
 }

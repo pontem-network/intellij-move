@@ -16,7 +16,7 @@ import org.move.lang.core.psi.MoveModuleBlock
 import org.move.lang.core.psi.MoveScriptBlock
 import org.move.lang.core.psiElement
 
-class KeywordCompletionContributor : CompletionContributor() {
+class MoveKeywordCompletionContributor : CompletionContributor() {
     init {
         extend(
             CompletionType.BASIC,

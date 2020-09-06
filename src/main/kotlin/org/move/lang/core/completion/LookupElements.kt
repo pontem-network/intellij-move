@@ -9,22 +9,22 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.compactText
 import org.move.lang.core.psi.ext.params
 
-open class MoveDefaultInsertHandler : InsertHandler<LookupElement> {
-    final override fun handleInsert(context: InsertionContext, item: LookupElement) {
-        val element = item.psiElement as? MoveElement ?: return
-        handleInsert(element, context, item)
-    }
-
-    protected open fun handleInsert(
-        element: MoveElement,
-        context: InsertionContext,
-        item: LookupElement
-    ) {
-        val document = context.document
-        val startOffset = context.startOffset
-
-    }
-}
+//open class MoveDefaultInsertHandler : InsertHandler<LookupElement> {
+//    final override fun handleInsert(context: InsertionContext, item: LookupElement) {
+//        val element = item.psiElement as? MoveElement ?: return
+//        handleInsert(element, context, item)
+//    }
+//
+//    protected open fun handleInsert(
+//        element: MoveElement,
+//        context: InsertionContext,
+//        item: LookupElement
+//    ) {
+//        val document = context.document
+//        val startOffset = context.startOffset
+//
+//    }
+//}
 
 fun MoveNamedElement.createLookupElement(): LookupElement {
     return when (this) {

@@ -4,10 +4,10 @@ import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.MoveSchemaReferenceElement
 import org.move.lang.core.resolve.ref.MoveReference
 import org.move.lang.core.resolve.ref.MoveReferenceImpl
-import org.move.lang.core.resolve.ref.MoveReferenceKind
+import org.move.lang.core.resolve.ref.Namespace
 
 abstract class MoveSchemaReferenceElementImpl(node: ASTNode) : MoveReferenceElementImpl(node),
                                                                MoveSchemaReferenceElement {
     override fun getReference(): MoveReference =
-        MoveReferenceImpl(this, MoveReferenceKind.SCHEMA)
+        MoveReferenceImpl(this, Namespace.SCHEMA)
 }

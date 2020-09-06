@@ -1,29 +1,30 @@
 package org.move.lang.core.completion
 
-import com.intellij.codeInsight.completion.*
+import com.intellij.codeInsight.completion.CompletionParameters
+import com.intellij.codeInsight.completion.CompletionProvider
+import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.util.ProcessingContext
 
-fun InsertionContext.addSuffix(suffix: String) {
-    document.insertString(selectionEndOffset, suffix)
-    EditorModificationUtil.moveCaretRelatively(editor, suffix.length)
-}
-
-class KeywordCompletionProvider(private vararg val keywords: String) :
-    CompletionProvider<CompletionParameters>() {
+class KeywordCompletionProvider(private vararg val keywords: String) : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
-        result: CompletionResultSet
+        result: CompletionResultSet,
     ) {
         for (keyword in keywords) {
             var element = LookupElementBuilder.create(keyword).bold()
-            element = element.withInsertHandler { ctx, _ -> ctx.addSuffix(" ") }
+            element = element.withInsertHandler { ctx, _ ->
+                ctx.document.insertString(ctx.selectionEndOffset, " ")
+                EditorModificationUtil.moveCaretRelatively(ctx.editor, 1)
+            }
             result.addElement(PrioritizedLookupElement.withPriority(element, 1.0))
         }
     }
 }
+
 
 //private val ALWAYS_NEEDS_SPACE = setOf("use", "let", "mut")
 
