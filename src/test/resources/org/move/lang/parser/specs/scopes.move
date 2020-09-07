@@ -12,5 +12,8 @@ module M {
     spec fun myfun {}
     spec define spec_is_valid(addr: address) {}
 
+    fun unpack() {}
+    spec fun unpack {}
+
     spec schema ModuleInvariant<X, Y> {}
 }

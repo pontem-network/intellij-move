@@ -12,7 +12,7 @@ import static org.move.lang.MoveElementTypes.*;
 %{
   private int bracesDepth = 0;
 
-  private boolean isSpec = false;
+  private boolean isSpecDef = false;
 
   private int specBracesDepth = -1;
 %}
@@ -65,6 +65,11 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
 
   "{"                        {
           bracesDepth++;
+          if (isSpecDef) {
+            specBracesDepth = bracesDepth;
+            isSpecDef = false;
+            yybegin(IN_SPEC);
+          }
           return L_BRACE; }
   "}"                        {
           bracesDepth--;
@@ -141,8 +146,8 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
 // Literals
 ///////////////////////////////////////////////////////////////////////////////////////////////////
   "spec"                           {
-          specBracesDepth = bracesDepth + 1;
-          yybegin(IN_SPEC);
+//          specBracesDepth = bracesDepth + 1;
+          isSpecDef = true;
           return SPEC;
       }
   "schema"                         { return SCHEMA; }
