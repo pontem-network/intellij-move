@@ -8,4 +8,5 @@ class SpecsParsingTest: MoveParsingTestCase("specs") {
     fun `test apply`() = doTest(true)
     fun `test forall exists`() = doTest(true)
     fun `test pragma`() = doTest(true)
+    fun `test define`() = doTest(true)
 }
