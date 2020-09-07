@@ -9,6 +9,11 @@ module M {
         invariant pack expected_coin_sum = expected_coin_sum + x;
         invariant unpack expected_coin_sum = expected_coin_sum - x;
 
+        invariant [global] x > 0;
+        invariant [global, isolated] x > 0;
+        invariant [global, isolated, deactivated] x > 0;
+        invariant update [global] x > 0;
+
         aborts_if x == 0;
         aborts_if y == 0;
         aborts_if 0 == y;

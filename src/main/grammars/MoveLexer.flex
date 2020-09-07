@@ -157,10 +157,12 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
 }
 
 <IN_SPEC> {
-  "local"                          { return LOCAL; }
-
   "global" / "("|"<"                        { return IDENTIFIER; }
+
   "global"                        { return GLOBAL; }
+  "local"                          { return LOCAL; }
+  "isolated"                        { return ISOLATED; }
+  "deactivated"                        { return DEACTIVATED; }
 
   "update" / "("|"<"                        { return IDENTIFIER; }
   "update"                        { return UPDATE; }

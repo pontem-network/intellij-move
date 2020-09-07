@@ -659,7 +659,7 @@ GlobalVariableStatement ::= global RefExpr ':' Type ';' { pin = 1 }
 PragmaStatement ::= pragma PragmaAttribute (',' PragmaAttribute)* ';' { pin = 1 }
 PragmaAttribute ::= identifier ('=' LiteralExpr)?
 
-SpecExpr ::= AssumeExpr | AssertExpr | AbortsIfExpr | SucceedsIfExpr | RequiresExpr | EnsuresExpr | ModifiesExpr
+SpecExpr ::= AssumeExpr | AssertExpr | AbortsIfExpr | SucceedsIfExpr | RequiresExpr | EnsuresExpr | ModifiesExpr | InvariantExpr
 {
     extends = Expr
 }
@@ -691,13 +691,20 @@ IncludeStatement ::= include Expr ';' { pin = 1 }
 
 FunctionPattern ::= (public | internal)? (FUNCTION_PATTERN_NAME | IDENTIFIER) TypeArgumentList? { pin = 2 }
 
-InvariantStatement ::= invariant (pack | unpack | module | update)? Predicate ';' { pin = 1 }
+InvariantStatement ::= InvariantExpr ';'
+InvariantExpr ::= invariant
+                    (pack | unpack | module | update)?
+                    InvariantVisibility?
+                    Predicate { pin = 1 }
+InvariantVisibility ::= '[' InvariantVisibilityModifier (',' InvariantVisibilityModifier)* ']' { pin = 1 }
+InvariantVisibilityModifier ::= global | isolated | deactivated
+
 ApplyStatement ::= apply ApplySchemaName
                     to FunctionPattern (',' FunctionPattern)*
                      (except FunctionPattern (',' FunctionPattern)*)? ';' { pin = 1 }
 ApplySchemaName ::= QualifiedPath ('{'
-                                    ApplySchemaNameAttribute (',' ApplySchemaNameAttribute)*
-                            '}')?
+                                        ApplySchemaNameAttribute (',' ApplySchemaNameAttribute)*
+                                    '}')?
 {
     implements = [ "org.move.lang.core.psi.MoveSchemaReferenceElement" ]
     mixin = "org.move.lang.core.psi.mixins.MoveApplySchemaNameMixin"
