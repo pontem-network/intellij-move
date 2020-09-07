@@ -9,7 +9,7 @@ class MoveTokenType(debugName: String) : IElementType(debugName, MoveLanguage)
 
 fun tokenSetOf(vararg tokens: IElementType) = TokenSet.create(*tokens)
 
-val MV_KEYWORDS = tokenSetOf(
+val MOVE_KEYWORDS = tokenSetOf(
     LET, MUT, ABORT, BREAK, CONTINUE, IF, ELSE, LOOP, RETURN, AS, WHILE,
     SCRIPT, ADDRESS, MODULE, PUBLIC, FUN, STRUCT, ACQUIRES, USE, RESOURCE, COPYABLE,
     COPY, MOVE, CONST, NATIVE,
@@ -19,4 +19,4 @@ val MV_KEYWORDS = tokenSetOf(
     UPDATE, FORALL, EXISTS, IN, WHERE,
 )
 
-val MV_COMMENTS = tokenSetOf(BLOCK_COMMENT, LINE_COMMENT)
+val MOVE_COMMENTS = tokenSetOf(BLOCK_COMMENT, LINE_COMMENT)

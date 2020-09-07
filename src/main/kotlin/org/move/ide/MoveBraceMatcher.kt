@@ -7,7 +7,7 @@ import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.lang.MoveElementTypes.*
-import org.move.lang.core.MV_COMMENTS
+import org.move.lang.core.MOVE_COMMENTS
 
 class MoveBraceMatcher : PairedBraceMatcher {
     override fun getPairs() = PAIRS
@@ -26,7 +26,7 @@ class MoveBraceMatcher : PairedBraceMatcher {
         )
 
         private val InsertPairBraceBefore = TokenSet.orSet(
-            MV_COMMENTS,
+            MOVE_COMMENTS,
             TokenSet.create(
                 TokenType.WHITE_SPACE,
                 SEMICOLON,

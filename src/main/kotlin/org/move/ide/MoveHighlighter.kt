@@ -5,7 +5,7 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
 import org.move.lang.MoveElementTypes.*
-import org.move.lang.core.MV_KEYWORDS
+import org.move.lang.core.MOVE_KEYWORDS
 import org.move.lang.MoveLexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors as Default
 
@@ -31,7 +31,7 @@ class MoveHighlighter : SyntaxHighlighterBase() {
             INTEGER_LITERAL, ADDRESS_LITERAL -> Default.NUMBER
 
             BOOL_LITERAL -> Default.KEYWORD
-            in MV_KEYWORDS -> Default.KEYWORD
+            in MOVE_KEYWORDS -> Default.KEYWORD
 
             else -> null
         }

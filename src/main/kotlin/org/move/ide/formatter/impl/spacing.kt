@@ -14,7 +14,7 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.ide.formatter.MoveFmtContext
 import org.move.lang.MoveElementTypes.*
-import org.move.lang.core.MV_KEYWORDS
+import org.move.lang.core.MOVE_KEYWORDS
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
 
@@ -68,7 +68,7 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .before(CALL_ARGUMENTS).spaceIf(false)
 
         .around(BINARY_OPS).spaces(1)
-        .around(MV_KEYWORDS).spaces(1)
+        .around(MOVE_KEYWORDS).spaces(1)
         .applyForEach(BLOCK_LIKE) { before(it).spaces(1) }
 }
 

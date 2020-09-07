@@ -5,11 +5,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.tree.IElementType
 import org.move.lang.MoveElementTypes.IDENTIFIER
 import org.move.lang.MoveLexer
-import org.move.lang.core.MV_KEYWORDS
+import org.move.lang.core.MOVE_KEYWORDS
 
 class MoveNamesValidator : NamesValidator {
     override fun isKeyword(name: String, project: Project?): Boolean {
-        return getLexerType(name) in MV_KEYWORDS
+        return getLexerType(name) in MOVE_KEYWORDS
     }
 
     override fun isIdentifier(name: String, project: Project?): Boolean = isIdentifier(name)
