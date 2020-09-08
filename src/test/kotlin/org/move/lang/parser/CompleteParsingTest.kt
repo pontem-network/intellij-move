@@ -3,13 +3,7 @@ package org.move.lang.parser
 import org.move.utils.tests.parser.MoveParsingTestCase
 
 class CompleteParsingTest : MoveParsingTestCase("complete") {
-//    fun `test while loop inline assignment`() = doTest(true)
-//    fun `test contextual token operators`() = doTest(true)
-//    fun `test generics`() = doTest(true)
-//    fun `test annotated literals`() = doTest(true)
-//    fun `test structs`() = doTest(true)
-//    fun `test assignment lhs`() = doTest(true)
-//    fun `test comments`() = doTest(true)
+    fun `test comments`() = doTest(true)
 
     // functions
     fun `test function declarations`() = doTest(true)
@@ -25,6 +19,14 @@ class CompleteParsingTest : MoveParsingTestCase("complete") {
     // use
     fun `test use`() = doTest(true)
 
-    // let patterns
+    // assignments
     fun `test let patterns`() = doTest(true)
+    fun `test assignments`() = doTest(true)
+
+    // misc
+    fun `test while loop inline assignment`() = doTest(true)
+    fun `test contextual token operators`() = doTest(true)
+    fun `test generics`() = doTest(true)
+    fun `test annotated literals`() = doTest(true)
+    fun `test structs`() = doTest(true)
 }
