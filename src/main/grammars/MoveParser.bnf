@@ -692,9 +692,10 @@ FunctionPattern ::= (public | internal)? (FUNCTION_PATTERN_NAME | IDENTIFIER) Ty
 
 InvariantStatement ::= InvariantExpr ';'
 InvariantExpr ::= invariant
-                    (pack | unpack | module | update)?
+                    InvariantModifier?
                     InvariantVisibility?
                     Predicate { pin = 1 }
+InvariantModifier ::= pack | unpack | module | update
 InvariantVisibility ::= '[' <<comma_sep_items InvariantVisibilityModifier>> ']' { pin = 1 }
 InvariantVisibilityModifier ::= global | isolated | deactivated
 
@@ -729,13 +730,23 @@ ExprPredicate ::= Expr
 //                            | ForAllPrecondition) (':' Expr)?
 
 AggregatePredicateStatement ::= AggregatePredicate ';'
-AggregatePredicate ::= AggregatePrecondition AggregateWhereExpr? ':' Expr {
+AggregatePredicate ::= AggregatePrecondition AggregateWhereExpr? (':' Expr)?
+{
+//    pin = AggregatePredicate_body
+    rightAssociative = true
+}
+//private AggregatePredicate_body ::= ':' Expr
+//{
+//    pin = 1
+//    rightAssociative = true
+//}
+private AggregatePrecondition ::= ExistsPrecondition | (ForAllPrecondition (':' ExistsPrecondition)?)
+
+AggregateWhereExpr ::= where Expr
+{
     pin = 1
     rightAssociative = true
 }
-private AggregatePrecondition ::= ExistsPrecondition | (ForAllPrecondition ExistsPrecondition?)
-
-AggregateWhereExpr ::= where Expr { pin = 1 rightAssociative = true }
 //private AggregateWhereExpr_body ::= Expr { recoverWhile = AggregateWhereExpr_body_recover }
 //private AggregateWhereExpr_body_recover ::= !':'
 

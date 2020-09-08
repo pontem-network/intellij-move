@@ -153,9 +153,9 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
   "schema"                         { return SCHEMA; }
   "define"                         { return DEFINE; }
 
-  "/*"                      { yybegin(IN_BLOCK_COMMENT); yypushback(2); }
-
   {LINE_COMMENT}             { return LINE_COMMENT; }
+
+  "/*"                      { yybegin(IN_BLOCK_COMMENT); yypushback(2); }
 
 
 //  {SCHEMA_APPLY_NAME_PATTERN}      { return SCHEMA_APPLY_NAME_PATTERN; }
