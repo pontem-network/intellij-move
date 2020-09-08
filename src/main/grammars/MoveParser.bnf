@@ -16,6 +16,11 @@
     tokenTypeClass="org.move.lang.core.MoveTokenType"
     extends(".*Expr")=Expr
     extends(".*Pat")=Pat
+
+    name(".*Expr")="expression"
+
+//    consumeTokenMethod(".*Expr") = "consumeTokenFast"
+
     tokens = [
         WHITESPACE='regexp:[ \n\t\r\f]'
         LINE_COMMENT='regexp:(//.*\n)|(//.*\R)'
@@ -99,28 +104,40 @@ private ScriptBlockItems_recover ::= !'}'
 AddressDef ::= address ADDRESS_LITERAL AddressBlock {
     pin = 1
 }
-AddressBlock ::= '{' AddressBlockItems '}' { pin = 1}
-private AddressBlockItems ::= ModuleDef* { recoverWhile = AddressBlockItems_recover }
+AddressBlock ::= '{' AddressBlockItems '}' { pin = 1 }
+private AddressBlockItems ::= ModuleDef*
+{
+    recoverWhile = AddressBlockItems_recover
+}
 private AddressBlockItems_recover ::= !'}'
 
-ModuleDef ::= module identifier ModuleBlock {
+ModuleDef ::= module identifier ModuleBlock
+{
     pin = 1
     name = "module declaration"
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.mixins.MoveModuleDefMixin"
 }
-ModuleBlock ::= '{' ModuleBlockItems '}' { pin = 1 }
-private ModuleBlockItems ::= ModuleItem* { recoverWhile = "ModuleBlockItems_recover" }
+ModuleBlock ::= '{' ModuleBlockItems '}'
+{
+    pin = 1
+}
+private ModuleBlockItems ::= ModuleItem*
+{
+    recoverWhile = "ModuleBlockItems_recover"
+}
 private ModuleBlockItems_recover ::= !'}'
 
 private ModuleItem ::= ImportStatement | StructDef | FunctionDef | NativeFunctionDef | ConstDef | SpecItem
 
-ConstDef ::= const identifier TypeAscription ConstDef_init ';' {
+ConstDef ::= const identifier TypeAscription ConstDef_init ';'
+{
     pin = 1
     implements = ["org.move.lang.core.psi.MoveNameIdentifierOwner"]
     mixin = "org.move.lang.core.psi.mixins.MoveConstDefMixin"
 }
-private ConstDef_init ::= '=' Expr {
+private ConstDef_init ::= '=' Expr
+{
     recoverWhile = "ConstDef_init_recover"
 }
 private ConstDef_init_recover ::= !';'
@@ -129,9 +146,9 @@ private ConstDef_init_recover ::= !';'
 // Functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 NativeFunctionDef ::= native public? fun identifier TypeParameterList?
-                     FunctionParameterList
-                     ReturnType?
-                     AcquiresType? ';'
+                         FunctionParameterList
+                         ReturnType?
+                         AcquiresType? ';'
 {
     pin = 1
     name = "native function"
@@ -157,17 +174,18 @@ FunctionDef ::= public? fun identifier TypeParameterList?
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionDefMixin"
 }
 
-// trailing comma is allowed
-FunctionParameterList ::= '(' FunctionParameterList_body ')' {
+FunctionParameterList ::= '(' <<comma_sep_items FunctionParameter>>? ')'
+{
     pin = 1
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionParameterListMixin"
 }
-private FunctionParameterList_body ::= (FunctionParameter ','?)* {
-    recoverWhile = "FunctionParameterList_body_recover"
-}
-private FunctionParameterList_body_recover ::= !')'
+//private FunctionParameterList_body ::= <<comma_separated_list FunctionParameter>> {
+//    recoverWhile = "FunctionParameterList_body_recover"
+//}
+//private FunctionParameterList_body_recover ::= !')'
 
-FunctionParameter ::= identifier TypeAscription {
+FunctionParameter ::= identifier TypeAscription
+{
     pin = 1
     recoverWhile = "FunctionParameter_recover"
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
@@ -177,11 +195,10 @@ private FunctionParameter_recover ::= !(','|')')
 
 // u8 | (u8,) | (u8, u8) | (u8, u8,)
 // tuples only allowed as a return types
-ReturnType ::= ':' Type {
-    pin = 1
-}
+ReturnType ::= ':' Type { pin = 1 }
+
 // acquires T, Record
-AcquiresType ::= acquires TypeRef (',' TypeRef)* ','? { pin = 1 }
+AcquiresType ::= acquires <<comma_sep_items TypeRef>> { pin = 1 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
@@ -197,15 +214,16 @@ StructDef ::= resource? struct identifier
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveStructDefMixin"
 }
-StructFieldsDefBlock ::= '{' StructFieldsBlock_body '}' { pin = 1 }
-private StructFieldsBlock_body ::= (StructFieldDef (',' StructFieldDef)* ','?)?
+StructFieldsDefBlock ::= '{' <<comma_sep_items StructFieldDef>>? '}' { pin = 1 }
+//private StructFieldsBlock_body ::= <<comma_sep_list StructFieldDef>>?
 {
-    recoverWhile = "StructFieldsBlock_body_recover"
+//    recoverWhile = "StructFieldsBlock_body_recover"
 }
-private StructFieldsBlock_body_recover ::= !'}'
+//private StructFieldsBlock_body_recover ::= !'}'
 
 StructFieldDef ::= identifier StructFieldDef_type { pin = 1 }
-private StructFieldDef_type ::= TypeAscription {
+private StructFieldDef_type ::= TypeAscription
+{
     recoverWhile = "StructFieldDef_type_recover"
 }
 private StructFieldDef_type_recover ::= !(','|'}')
@@ -217,13 +235,13 @@ private StructFieldDef_type_recover ::= !(','|'}')
 ImportStatement ::= use ADDRESS_LITERAL '::' (ModuleMemberImport | ModuleImport) ';' { pin = 1 }
 
 ModuleImport ::= Import
-ModuleMemberImport ::= identifier '::' (Import | MultipleImport) { pin = 2 }
+ModuleMemberImport ::= identifier '::' (Import | MultiImport) { pin = 2 }
 
-private MultipleImport ::= '{' Import MultipleImportSeq ','? '}' { pin = 1 }
-private MultipleImportSeq ::= (',' Import)* {
-    recoverWhile = "MultipleImportSeq_recover"
-}
-private MultipleImportSeq_recover ::= !((','? '}') | ';')
+private MultiImport ::= '{' <<comma_sep_items Import>> '}' { pin = 1 }
+//private MultipleImportSeq ::= (',' Import)* {
+//    recoverWhile = "MultipleImportSeq_recover"
+//}
+//private MultipleImportSeq_recover ::= !((','? '}') | ';')
 
 Import ::= identifier ImportAlias? { pin = 1 }
 ImportAlias ::= as identifier { pin = 1 }
@@ -235,26 +253,30 @@ private TypeAscription ::= ':' Type { pin = 1 }
 
 Type ::= TupleType | TypeRef | LambdaType
 
-LambdaType ::= '|' (Type (',' Type)*)? '|' Type { pin = 1 }
-TypeRef ::= ('&' mut?)? QualifiedPath {
+TypeRef ::= ('&' mut?)? QualifiedPath
+{
     name = "type"
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveTypeRefMixin"
 }
-TupleType ::= '(' (Type ','?)* ','? ')' { pin = 1 }
 
-TypeParameterList ::= '<' (TypeParameter (',' TypeParameter)* ','?)? '>'
+TupleType ::= '(' <<comma_sep_items Type>>? ')' { pin = 1 }
+
+LambdaType ::= '|' <<comma_sep_items Type>>? '|' Type { pin = 1 }
+
+TypeParameterList ::= '<' <<comma_sep_items TypeParameter>>? '>'
 TypeParameter ::= identifier TypeParamBound? {
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.mixins.MoveTypeParameterMixin"
 }
 TypeParamBound ::= ':' (copyable | resource)
 
-TypeArgumentList ::= '<' (TypeArgument (',' TypeArgument)* ','?)? '>'
-private TypeArgument ::= TypeRef {
-    recoverWhile = "TypeArgument_recover"
-}
-private TypeArgument_recover ::= !(','|'>')
+TypeArgumentList ::= '<' <<comma_sep_items (TypeRef &(','|'>'))>>? '>'
+//private TypeArgument ::= TypeRef &(','|'>')
+//{
+//    recoverWhile = "TypeArgument_recover"
+//}
+//private TypeArgument_recover ::= !(','|'>')
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Patterns (destructuring)
@@ -277,17 +299,17 @@ BindingPat ::= identifier {
     mixin = "org.move.lang.core.psi.mixins.MoveBindingPatMixin"
 }
 
-TuplePat ::= '(' TuplePat_body ')'
-private TuplePat_body ::= (Pat (',' Pat)*)? {
-    recoverWhile = "TuplePat_body_recover"
-}
-private TuplePat_body_recover ::= !(')'|'=')
+TuplePat ::= '(' <<comma_sep_items Pat>>? ')'
+//private TuplePat_body ::= (<<comma_sep_list Pat>>)? {
+//    recoverWhile = "TuplePat_body_recover"
+//}
+//private TuplePat_body_recover ::= !(')'|'=')
 
 StructPat ::= QualifiedPath StructPatFieldsBlock {
     implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveStructPatMixin"
 }
-StructPatFieldsBlock ::= '{' (StructPatField (',' StructPatField)* ','?)? '}' { pin = 1 }
+StructPatFieldsBlock ::= '{' (<<comma_sep_items StructPatField>>)? '}' { pin = 1 }
 
 StructPatField ::= identifier (':' Pat)? {
     pin = 1
@@ -307,7 +329,7 @@ private StatementExpr ::= IfExpr
                             | LoopExpr
                             | WhileExpr
                             | LetExpr
-                            | AssignmentExpr
+//                            | AssignmentExpr
                             | Expr
 {
     recoverWhile = "StatementExpr_recover"
@@ -335,23 +357,15 @@ private StatementExpr_recover ::= '!;'
 private AnyBlock ::= CodeBlock | InlineBlock
 
 InlineBlock ::= Expr
-CodeBlock ::= '{' CodeBlock_body '}' {
-    pin = 1
-}
-CodeBlockExpr ::= '{' CodeBlock_body '}' { pin = 1 }
 
-private CodeBlock_body ::= (ImportStatement*)?
-                            (Statement | SpecBlockStatement)*
-                             Expr?
-{
-    recoverWhile = "CodeBlock_body_recover"
-}
-private CodeBlock_body_recover ::= !'}'
+CodeBlockExpr ::= '{' CodeBlockItems '}'
+CodeBlock ::= '{' CodeBlockItems  '}'
 
-//Block ::= '{' (StatementItem ';')* Expr? '}' {
-//    pin = 1
-//    name = "block"
+private CodeBlockItems ::= ImportStatement* (Statement | BlockSpecStatement)* Expr?
+//{
+//    recoverWhile = "CodeBlock_body_recover"
 //}
+//private CodeBlock_body_recover ::= !'}'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Expressions
@@ -373,15 +387,12 @@ Expr ::= AssignmentExprItem
         | UnaryExpr
         | BorrowExpr
         | AtomExpr
-{
-    name = "expr"
-}
 
 private MulExprItem ::= DivExpr | MulExpr | ModExpr
 private AddExprItem ::= PlusExpr | MinusExpr
 private LogicalEqExprItem ::= EqualsExpr | NotEqualsExpr | LessEqualsExpr | LessExpr | GreaterEqualsExpr | GreaterExpr
 
-private AssignmentExprItem ::= AssignmentExpr | LetExpr
+private AssignmentExprItem ::= LetExpr | AssignmentExpr
 private ControlFlowExpr ::= IfExpr | LoopExpr | WhileExpr
 private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
                       | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
@@ -453,12 +464,12 @@ StructLiteralExpr ::= QualifiedPath StructLiteralFieldsBlock
     implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveStructLiteralExprMixin"
 }
-StructLiteralFieldsBlock ::= '{' StructLiteralFieldsBlock_body '}' { pin = 1 }
-private StructLiteralFieldsBlock_body ::= (StructLiteralExprField ','?)*
-{
-    recoverWhile = "StructLiteralFieldsBlock_body_recover"
-}
-private StructLiteralFieldsBlock_body_recover ::= !'}'
+StructLiteralFieldsBlock ::= '{' <<comma_sep_items StructLiteralExprField>> '}' { pin = 1 }
+//private StructLiteralFieldsBlock_body ::= (StructLiteralExprField ','?)*
+//{
+//    recoverWhile = "StructLiteralFieldsBlock_body_recover"
+//}
+//private StructLiteralFieldsBlock_body_recover ::= !'}'
 
 StructLiteralExprField ::= identifier (':' Expr)? {
     pin = 1
@@ -475,12 +486,12 @@ ParensExpr ::= '(' Expr ')'
 //TupleLiteralExpr ::= '('
 //TupleLiteralExpr ::= '(' TupleLiteralExpr? ')' { pin = 2 }
 //private TupleLiteralExpr_body ::= (Expr ',' (Expr ','?)*)?
-LambdaExpr ::= '|' (identifier (',' identifier)*)? '|' Expr { pin = 1 }
+LambdaExpr ::= '|' <<comma_sep_items identifier>> '|' Expr { pin = 1 }
 RangeExpr ::= Expr '..' Expr
 
 TupleLiteralExpr ::= EmptyTupleExpr | TupleExpr
 private EmptyTupleExpr ::= '(' ')'
-private TupleExpr ::= '(' Expr ',' (Expr ','?)* ')' { pin = 3 }
+private TupleExpr ::= '(' Expr ',' <<comma_sep_items Expr>>? ')' { pin = 3 }
 
 LiteralExpr ::= BOOL_LITERAL
                 | INTEGER_LITERAL
@@ -493,11 +504,11 @@ CallExpr ::= QualifiedPath CallArguments {
     mixin = "org.move.lang.core.psi.mixins.MoveCallExprMixin"
 }
 
-CallArguments ::= '(' (CallArgument (',' CallArgument)* ','?)? ')' { pin = 1 }
-private CallArgument ::= Expr {
-    recoverWhile = "CallArgument_recover"
-}
-private CallArgument_recover ::= !(','|')')
+CallArguments ::= '(' <<comma_sep_items Expr>>? ')' { pin = 1 }
+//private CallArgument ::= Expr {
+//    recoverWhile = "CallArgument_recover"
+//}
+//private CallArgument_recover ::= !(','|')')
 
 IfExpr ::= if Condition AnyBlock ElseBlock? { pin = 1 }
 //private IfExprBody ::= AnyBlock {
@@ -514,7 +525,8 @@ ElseBlock ::= else AnyBlock { pin = 1 }
 LoopExpr ::= loop AnyBlock { pin = 1 }
 WhileExpr ::= while Condition AnyBlock { pin = 1 }
 
-AssignmentExpr ::= Expr '=' Expr
+AssignmentExpr ::= Expr '=' Expr { rightAssociative = true }
+
 LetExpr ::= let Pat TypeAscription? Initializer? {
     pin = 1
     mixin = "org.move.lang.core.psi.mixins.MoveLetExprMixin"
@@ -534,23 +546,6 @@ RefExpr ::= QualifiedPath {
 }
 
 QualifiedPath ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArgumentList?
-
-//PathExpr ::= (ADDRESS_LITERAL '::')? (identifier '::')? identifier TypeArguments? {
-//    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-//    mixin = "org.move.lang.core.psi.mixins.MovePathExprImplMixin"
-//}
-
-//Initializer ::= '=' Expr { pin = 1 }
-
-private gtgt   ::= <<gtgtImpl>>
-private gteq   ::= <<gteqImpl>>
-private ltlt   ::= <<ltltImpl>>
-private lteq   ::= <<lteqImpl>>
-private oror   ::= <<ororImpl>>
-private andand ::= <<andandImpl>>
-private eqeq_gt ::= <<eqeqgtImpl>>
-private lt_eqeq_gt ::= <<lteqeqgtImpl>>
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Specs
@@ -623,9 +618,9 @@ SpecNativeDefineFunction ::= spec native define identifier TypeParameterList?
     ]
 }
 
-SpecBlockStatement ::= spec SpecBlock ';' {
+BlockSpecStatement ::= spec SpecBlock ';' {
     pin = 1
-    extends = Statement
+//    extends = Statement
 }
 
 SpecBlock ::= '{' SpecBlockItems '}' { pin = 1 }
@@ -645,8 +640,9 @@ private SpecBlockItems ::= (
                                 | IncludeStatement
                                 | InvariantStatement
                                 | ApplyStatement
+                                | AggregatePredicateStatement
                             )*
-                            (SpecExpr | Precondition | Expr)?
+                            (SpecExpr | AggregatePredicateExpr | Expr)?
 {
     recoverWhile = SpecBlock_body_recover
 }
@@ -656,10 +652,11 @@ VariableStatement ::= RefExpr ':' Type ';'
 LocalVariableStatement ::= local RefExpr ':' Type ';' { pin = 1 }
 GlobalVariableStatement ::= global RefExpr ':' Type ';' { pin = 1 }
 
-PragmaStatement ::= pragma PragmaAttribute (',' PragmaAttribute)* ';' { pin = 1 }
+PragmaStatement ::= pragma <<comma_sep_items PragmaAttribute>> ';' { pin = 1 }
 PragmaAttribute ::= identifier ('=' LiteralExpr)?
 
-SpecExpr ::= AssumeExpr | AssertExpr | AbortsIfExpr | SucceedsIfExpr | RequiresExpr | EnsuresExpr | ModifiesExpr | InvariantExpr
+SpecExpr ::= AssumeExpr | AssertExpr | AbortsIfExpr | SucceedsIfExpr | RequiresExpr | EnsuresExpr | ModifiesExpr
+                | InvariantExpr
 {
     extends = Expr
 }
@@ -696,37 +693,67 @@ InvariantExpr ::= invariant
                     (pack | unpack | module | update)?
                     InvariantVisibility?
                     Predicate { pin = 1 }
-InvariantVisibility ::= '[' InvariantVisibilityModifier (',' InvariantVisibilityModifier)* ']' { pin = 1 }
+InvariantVisibility ::= '[' <<comma_sep_items InvariantVisibilityModifier>> ']' { pin = 1 }
 InvariantVisibilityModifier ::= global | isolated | deactivated
 
 ApplyStatement ::= apply ApplySchemaName
-                    to FunctionPattern (',' FunctionPattern)*
-                     (except FunctionPattern (',' FunctionPattern)*)? ';' { pin = 1 }
-ApplySchemaName ::= QualifiedPath ('{'
-                                        ApplySchemaNameAttribute (',' ApplySchemaNameAttribute)*
-                                    '}')?
+                    to <<comma_sep_items FunctionPattern>>
+                     ( except <<comma_sep_items FunctionPattern>> )? ';'
+{
+    pin = 1
+}
+
+ApplySchemaName ::= QualifiedPath
+                    ('{' <<comma_sep_items ApplySchemaNameAttribute>> '}')?
 {
     implements = [ "org.move.lang.core.psi.MoveSchemaReferenceElement" ]
     mixin = "org.move.lang.core.psi.mixins.MoveApplySchemaNameMixin"
 }
 ApplySchemaNameAttribute ::= identifier ':' Expr
 
-Predicate ::= Precondition | Expr
-private Precondition ::= ((ForAllPrecondition ':' ExistsPrecondition)
-                            | ExistsPrecondition
-                            | ForAllPrecondition) (':' Expr)?
+Predicate ::= AggregatePredicateExpr | PredicateExpr
+PredicateExpr ::= Expr
 
-ForAllPrecondition ::= forall PreconditionAttribute (',' PreconditionAttribute)* ForAllWhereCondition? {
-    pin = 1
-//    extends = Precondition
-}
-ForAllWhereCondition ::= where Expr { pin = 1 }
+//PreconditionStatement ::= PreconditionExpr ';'
+//PreconditionExpr ::= Precondition ':' Expr {
+//    pin = 2
+//}
+//Precondition ::= ForAllExistsPrecondition | ExistsPrecondition | ForAllPrecondition
 
-ExistsPrecondition ::= exists PreconditionAttribute (',' PreconditionAttribute)* {
+//ForAllExistsPrecondition ::= ForAllPrecondition ':' ExistsPrecondition { pin = 2 }
+
+//private Precondition ::= ((ForAllPrecondition ':' ExistsPrecondition)
+//                            | ExistsPrecondition
+//                            | ForAllPrecondition) (':' Expr)?
+
+AggregatePredicateStatement ::= AggregatePredicateExpr ';'
+AggregatePredicateExpr ::= AggregatePrecondition AggregateWhereExpr? ':' Expr {
     pin = 1
-//    extends = Precondition
+    extends = Predicate
+    rightAssociative = true
 }
+AggregatePrecondition ::= (ForAllPrecondition ExistsPrecondition) | ForAllPrecondition | ExistsPrecondition
+
+AggregateWhereExpr ::= where AggregateWhereExpr_body { pin = 1 rightAssociative = true }
+private AggregateWhereExpr_body ::= Expr { recoverWhile = AggregateWhereExpr_body_recover }
+private AggregateWhereExpr_body_recover ::= !':'
+
+ForAllPrecondition ::= forall PreconditionAttributeList { pin = 1 }
+ExistsPrecondition ::= exists PreconditionAttributeList { pin = 1 }
+
+PreconditionAttributeList ::= <<comma_sep_items PreconditionAttribute>>
 PreconditionAttribute ::= ContainsPreconditionAttribute | TypePreconditionAttribute
+
+//ForAllPrecondition ::= forall PreconditionAttribute (',' PreconditionAttribute)* ForAllWhereCondition? {
+//    pin = 1
+//    extends = Precondition
+//}
+//ForAllWhereCondition ::= where Expr { pin = 1 }
+
+//ExistsPrecondition ::= exists PreconditionAttribute (',' PreconditionAttribute)* ForAllWhereCondition? {
+//    pin = 1
+//    extends = Precondition
+//}
 
 ContainsPreconditionAttribute ::= identifier in RangeExpr {
     pin = 2
@@ -736,3 +763,19 @@ TypePreconditionAttribute ::= identifier ':' Type {
     pin = 2
     extends = PreconditionAttribute
 }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Meta rules
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+private gtgt   ::= <<gtgtImpl>>
+private gteq   ::= <<gteqImpl>>
+private ltlt   ::= <<ltltImpl>>
+private lteq   ::= <<lteqImpl>>
+private oror   ::= <<ororImpl>>
+private andand ::= <<andandImpl>>
+private eqeq_gt ::= <<eqeqgtImpl>>
+private lt_eqeq_gt ::= <<lteqeqgtImpl>>
+
+private meta comma_sep_items ::= <<param>> ( ',' <<param>> )* ','?

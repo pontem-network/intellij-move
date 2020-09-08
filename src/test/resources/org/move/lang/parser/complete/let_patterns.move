@@ -10,6 +10,9 @@ script {
         let R { a: T { c: alias_c, d: _ }} = get_record();
 
         let (R { a, b }, M { a: _, b: _ }) = get_record_tuple();
+
+        let Generic<R> {} = g;
+        let Generic<R> { g } = g;
         let Generic<R> { g: R { f: f3 } } = g;
     }
 }

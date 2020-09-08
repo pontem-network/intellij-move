@@ -9,6 +9,7 @@ script {
         call<u8>();
         call<u8,>();
         call<u8, vector<u8>>();
+        call<u8, vector<u8>>(Transaction::new<Sender<u8>>());
 
         Transaction::call<u8, u8, vector<u8>>();
     }

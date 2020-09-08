@@ -17,11 +17,21 @@ module M {
         }
 
         define atMostOne(): bool {
-            forall a: address, b: address where exists<R>(a) & & exists<R>(b): a == b
+            forall a: address, b: address where exists<R>(a) && exists<R>(b): a == b
+        }
+
+        define atMostOneExists(): bool {
+            exists a: address, b: address where exists<R>(a) && exists<R>(b): a == b
         }
 
         define exists_R(addr: address): bool {
             exists<R>(addr)
+        }
+
+        define is_set(v: vector<u64>): bool {
+            forall ii: u64
+                where ii < len(v):
+                    v[ii] ==> ii
         }
     }
 
