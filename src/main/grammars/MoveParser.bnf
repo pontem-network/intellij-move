@@ -14,8 +14,10 @@
 
     elementTypeClass="org.move.lang.core.MoveElementType"
     tokenTypeClass="org.move.lang.core.MoveTokenType"
+
     extends(".*Expr")=Expr
     extends(".*Pat")=Pat
+    extends(".*Predicate")=Predicate
 
     name(".*Expr")="expression"
 
@@ -642,7 +644,7 @@ private SpecBlockItems ::= (
                                 | ApplyStatement
                                 | AggregatePredicateStatement
                             )*
-                            (SpecExpr | AggregatePredicateExpr | Expr)?
+                            (SpecExpr | AggregatePredicate | Expr)?
 {
     recoverWhile = SpecBlock_body_recover
 }
@@ -711,8 +713,8 @@ ApplySchemaName ::= QualifiedPath
 }
 ApplySchemaNameAttribute ::= identifier ':' Expr
 
-Predicate ::= AggregatePredicateExpr | PredicateExpr
-PredicateExpr ::= Expr
+Predicate ::= AggregatePredicate | ExprPredicate
+ExprPredicate ::= Expr
 
 //PreconditionStatement ::= PreconditionExpr ';'
 //PreconditionExpr ::= Precondition ':' Expr {
@@ -726,17 +728,16 @@ PredicateExpr ::= Expr
 //                            | ExistsPrecondition
 //                            | ForAllPrecondition) (':' Expr)?
 
-AggregatePredicateStatement ::= AggregatePredicateExpr ';'
-AggregatePredicateExpr ::= AggregatePrecondition AggregateWhereExpr? ':' Expr {
+AggregatePredicateStatement ::= AggregatePredicate ';'
+AggregatePredicate ::= AggregatePrecondition AggregateWhereExpr? ':' Expr {
     pin = 1
-    extends = Predicate
     rightAssociative = true
 }
-AggregatePrecondition ::= (ForAllPrecondition ExistsPrecondition) | ForAllPrecondition | ExistsPrecondition
+private AggregatePrecondition ::= ExistsPrecondition | (ForAllPrecondition ExistsPrecondition?)
 
-AggregateWhereExpr ::= where AggregateWhereExpr_body { pin = 1 rightAssociative = true }
-private AggregateWhereExpr_body ::= Expr { recoverWhile = AggregateWhereExpr_body_recover }
-private AggregateWhereExpr_body_recover ::= !':'
+AggregateWhereExpr ::= where Expr { pin = 1 rightAssociative = true }
+//private AggregateWhereExpr_body ::= Expr { recoverWhile = AggregateWhereExpr_body_recover }
+//private AggregateWhereExpr_body_recover ::= !':'
 
 ForAllPrecondition ::= forall PreconditionAttributeList { pin = 1 }
 ExistsPrecondition ::= exists PreconditionAttributeList { pin = 1 }
