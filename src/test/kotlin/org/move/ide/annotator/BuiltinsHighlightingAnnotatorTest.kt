@@ -19,7 +19,7 @@ class BuiltinsHighlightingAnnotatorTest : AnnotatorTestCase(BuiltinsHighlighting
                      val4: <PRIMITIVE_TYPE>bool</PRIMITIVE_TYPE>,
                      val5: 0x0::Transaction::bool,
                      ) {
-                        let mysigner: <BUILTIN_TYPE>signer</BUILTIN_TYPE>
+                        let mysigner: <BUILTIN_TYPE>signer</BUILTIN_TYPE>;
                         let signer = 1;
                      }
         }
