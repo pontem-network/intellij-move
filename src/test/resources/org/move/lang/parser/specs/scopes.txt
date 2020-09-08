@@ -18,7 +18,7 @@ FILE
         MoveCodeBlockImpl(CODE_BLOCK)
           PsiElement({)('{')
           PsiWhiteSpace('\n        ')
-          MoveSpecBlockStatementImpl(SPEC_BLOCK_STATEMENT)
+          MoveBlockSpecStatementImpl(BLOCK_SPEC_STATEMENT)
             PsiElement(spec)('spec')
             PsiWhiteSpace(' ')
             MoveSpecBlockImpl(SPEC_BLOCK)
