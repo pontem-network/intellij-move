@@ -23,10 +23,14 @@ class CompleteParsingTest : MoveParsingTestCase("complete") {
     fun `test let patterns`() = doTest(true)
     fun `test assignments`() = doTest(true)
 
+    // structs
+    fun `test struct declarations`() = doTest(true)
+    fun `test struct literals`() = doTest(true)
+
     // misc
     fun `test while loop inline assignment`() = doTest(true)
     fun `test contextual token operators`() = doTest(true)
     fun `test generics`() = doTest(true)
     fun `test annotated literals`() = doTest(true)
-    fun `test structs`() = doTest(true)
+
 }
