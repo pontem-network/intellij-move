@@ -14,6 +14,11 @@
 
     <change-notes>
         <![CDATA[
+            <p>0.9.0</p>
+            <ul>
+                <li>FEAT: add parser support for native structs</li>
+                <li>FEAT: fix remaining parser spec issues</li>
+            </ul>
             <p>0.8.0</p>
             <ul>
                 <li>FEAT: autocompletion for names, functions and structs</li>
