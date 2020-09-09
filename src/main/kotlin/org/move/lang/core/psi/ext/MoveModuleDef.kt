@@ -11,6 +11,9 @@ fun MoveModuleDef.nativeFunctions(): List<MoveNativeFunctionDef> =
 fun MoveModuleDef.structs(): List<MoveStructDef> =
     this.moduleBlock?.structDefList.orEmpty()
 
+fun MoveModuleDef.nativeStructs(): List<MoveNativeStructDef> =
+    this.moduleBlock?.nativeStructDefList.orEmpty()
+
 fun MoveModuleDef.consts(): List<MoveConstDef> =
     this.moduleBlock?.constDefList.orEmpty()
 

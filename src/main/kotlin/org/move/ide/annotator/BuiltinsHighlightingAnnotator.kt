@@ -9,7 +9,7 @@ import org.move.lang.MoveElementTypes.IDENTIFIER
 import org.move.lang.core.psi.MoveCallExpr
 import org.move.lang.core.psi.MoveElement
 import org.move.lang.core.psi.MoveQualifiedPath
-import org.move.lang.core.psi.MoveTypeRef
+import org.move.lang.core.psi.MoveQualifiedPathType
 import org.move.lang.core.psi.ext.addressElement
 import org.move.lang.core.psi.ext.identifierName
 import org.move.lang.core.psi.ext.moduleNameElement
@@ -51,9 +51,12 @@ class BuiltinsHighlightingAnnotator : MoveAnnotatorBase() {
             val name = parent.identifierName
             val container = parent.parent
             when {
-                container is MoveTypeRef && name in PRIMITIVE_TYPE_IDENTIFIERS -> MoveColor.PRIMITIVE_TYPE
-                container is MoveTypeRef && name in BUILTIN_TYPE_IDENTIFIERS -> MoveColor.BUILTIN_TYPE
-                container is MoveCallExpr && name in BUILTIN_FUNCTIONS -> MoveColor.BUILTIN_FUNCTION
+                container is MoveQualifiedPathType
+                        && name in PRIMITIVE_TYPE_IDENTIFIERS -> MoveColor.PRIMITIVE_TYPE
+                container is MoveQualifiedPathType
+                        && name in BUILTIN_TYPE_IDENTIFIERS -> MoveColor.BUILTIN_TYPE
+                container is MoveCallExpr
+                        && name in BUILTIN_FUNCTIONS -> MoveColor.BUILTIN_FUNCTION
                 else -> null
             }
         } else {

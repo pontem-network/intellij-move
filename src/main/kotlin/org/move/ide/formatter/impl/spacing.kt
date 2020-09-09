@@ -26,7 +26,7 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .after(COLON).spaceIf(true)
         .before(COLON).spaceIf(false)
 
-        .afterInside(AND, TYPE_REF).spacing(0, 0, 0, false, 0)
+        .afterInside(AND, QUALIFIED_PATH_TYPE).spacing(0, 0, 0, false, 0)
         .afterInside(AND, BORROW_EXPR).spacing(0, 0, 0, false, 0)
         .afterInside(AND, BORROW_PAT).spacing(0, 0, 0, false, 0)
 

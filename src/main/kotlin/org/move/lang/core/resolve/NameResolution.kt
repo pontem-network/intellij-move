@@ -57,16 +57,19 @@ fun processLexicalDeclarations(
                 scope.functions(),
                 scope.nativeFunctions(),
                 scope.structs(),
+                scope.nativeStructs(),
                 scope.consts()
             ).flatten()
             )
             else -> false
         }
         Namespace.TYPE -> when (scope) {
-            is MoveFunctionDef -> processor.matchAll(scope.typeParams)
-            is MoveStructDef -> processor.matchAll(scope.typeParams)
-            is MoveSchemaDef -> processor.matchAll(scope.typeParams)
-            is MoveModuleDef -> processor.matchAll(scope.structs())
+            is MoveTypeParametersOwner -> processor.matchAll(scope.typeParams)
+            is MoveModuleDef -> processor.matchAll(
+                listOf(
+                    scope.structs(),
+                    scope.nativeStructs()
+                ).flatten())
             else -> false
         }
         Namespace.SCHEMA -> when (scope) {

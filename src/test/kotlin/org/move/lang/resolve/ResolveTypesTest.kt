@@ -118,4 +118,37 @@ class ResolveTypesTest: ResolveTestCase() {
         }
     """
     )
+
+    fun `test resolve struct type to struct`() = checkByCode(
+        """
+        module M {
+            struct Native {}
+                 //X
+            fun main(n: Native): u8 {}
+                      //^
+        }
+    """
+    )
+
+    fun `test resolve struct type with generics`() = checkByCode(
+        """
+        module M {
+            struct Native<T> {}
+                 //X
+            fun main(n: Native<u8>): u8 {}
+                      //^
+        }
+    """
+    )
+
+    fun `test pass native struct to native fun`() = checkByCode(
+        """
+        module M {
+            native struct Native<T>;
+                        //X
+            native fun main(n: Native<u8>): u8;
+                             //^
+        }
+    """
+    )
 }

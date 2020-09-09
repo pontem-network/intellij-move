@@ -201,12 +201,20 @@ private FunctionParameter_recover ::= !(','|')')
 ReturnType ::= ':' Type { pin = 1 }
 
 // acquires T, Record
-AcquiresType ::= acquires <<comma_sep_items TypeRef>> { pin = 1 }
+AcquiresType ::= acquires <<comma_sep_items QualifiedPathType>> { pin = 1 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 NativeStructDef ::= native resource? struct identifier TypeParameterList? ';'
+{
+    pin = "struct"
+    implements = [
+        "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
+        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+    ]
+    mixin = "org.move.lang.core.psi.mixins.MoveNativeStructDefMixin"
+}
 
 StructDef ::= resource? struct identifier
                 TypeParameterList?
@@ -256,13 +264,13 @@ ImportAlias ::= as identifier { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 private TypeAscription ::= ':' Type { pin = 1 }
 
-Type ::= TupleType | TypeRef | LambdaType
+Type ::= QualifiedPathType | TupleType | LambdaType
 
-TypeRef ::= ('&' mut?)? QualifiedPath
+QualifiedPathType ::= ('&' mut?)? QualifiedPath
 {
     name = "type"
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveTypeRefMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveQualifiedPathTypeMixin"
 }
 
 TupleType ::= '(' <<comma_sep_items Type>>? ')' { pin = 1 }
@@ -276,7 +284,7 @@ TypeParameter ::= identifier TypeParamBound? {
 }
 TypeParamBound ::= ':' (copyable | resource)
 
-TypeArgumentList ::= '<' <<comma_sep_items (TypeRef &(','|'>'))>>? '>'
+TypeArgumentList ::= '<' <<comma_sep_items (QualifiedPathType &(','|'>'))>>? '>'
 //private TypeArgument ::= TypeRef &(','|'>')
 //{
 //    recoverWhile = "TypeArgument_recover"
