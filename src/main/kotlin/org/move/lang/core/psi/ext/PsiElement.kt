@@ -52,15 +52,11 @@ val PsiElement.childrenWithLeaves: Sequence<PsiElement>
 fun PsiElement.childrenByType(type: IElementType): Sequence<PsiElement> =
     childrenWithLeaves.filter { it.elementType == type }
 
+fun PsiElement.findFirstChildByType(type: IElementType): PsiElement? =
+    childrenByType(type).firstOrNull()
+
 fun PsiElement.findLastChildByType(type: IElementType): PsiElement? =
     childrenByType(type).lastOrNull()
-//    var child = lastChild
-//    while (child != null) {
-//        val node = child.node
-//        if (node != null && node.elementType == type) return child;
-//        child = child.prevSibling;
-//    }
-//    return null;
 
 /**
  * Extracts node's element type

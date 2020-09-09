@@ -8,9 +8,6 @@ import org.move.lang.core.psi.MovePsiFactory
 
 abstract class MoveNameIdentifierOwnerImpl(node: ASTNode) : MoveElementImpl(node),
                                                             MoveNameIdentifierOwner {
-    protected open val nameElement: PsiElement?
-        get() = findChildByType(MoveElementTypes.IDENTIFIER)
-
     override fun getName(): String? = nameElement?.text
 
     override fun setName(name: String): PsiElement {

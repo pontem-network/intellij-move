@@ -8,7 +8,7 @@ import org.move.ide.colors.MoveColor
 import org.move.lang.MoveElementTypes.IDENTIFIER
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.identifierName
-import org.move.lang.core.psi.ext.isNameOnly
+import org.move.lang.core.psi.ext.isIdentifierOnly
 
 val PRIMITIVE_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128", "bool")
 val BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer")
@@ -36,7 +36,7 @@ class HighlightingAnnotator : MoveAnnotatorBase() {
     private fun highlightIdentifier(element: MoveElement): MoveColor? {
         if (element is MoveTypeParameter) return MoveColor.TYPE_PARAMETER
 
-        if (element is MoveQualifiedPath && element.isNameOnly) {
+        if (element is MoveQualifiedPath && element.isIdentifierOnly) {
             val name = element.identifierName
             val container = element.parent
             if (container is MoveQualifiedPathType) {

@@ -13,7 +13,7 @@ FILE
       MoveFunctionDefImpl(FUNCTION_DEF)
         PsiElement(fun)('fun')
         PsiWhiteSpace(' ')
-        PsiElement(identifier)('main')
+        PsiElement(IDENTIFIER)('main')
         MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')
           PsiElement())(')')

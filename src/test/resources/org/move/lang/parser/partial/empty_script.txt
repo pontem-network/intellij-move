@@ -7,7 +7,7 @@ FILE
       PsiWhiteSpace('\n    ')
       MoveFunctionDefImpl(FUNCTION_DEF)
         PsiElement(fun)('fun')
-        PsiErrorElement:identifier expected, got '}'
+        PsiErrorElement:IDENTIFIER expected, got '}'
           <empty list>
       PsiWhiteSpace('\n')
       PsiElement(})('}')
@@ -21,7 +21,7 @@ FILE
       MoveFunctionDefImpl(FUNCTION_DEF)
         PsiElement(fun)('fun')
         PsiWhiteSpace(' ')
-        PsiElement(identifier)('main')
+        PsiElement(IDENTIFIER)('main')
         MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')
           PsiElement())(')')
@@ -40,14 +40,14 @@ FILE
       MoveFunctionDefImpl(FUNCTION_DEF)
         PsiElement(fun)('fun')
         PsiWhiteSpace(' ')
-        PsiElement(identifier)('main')
+        PsiElement(IDENTIFIER)('main')
         PsiErrorElement:'(' or < expected, got 'fun'
           <empty list>
       PsiWhiteSpace('\n    ')
       MoveFunctionDefImpl(FUNCTION_DEF)
         PsiElement(fun)('fun')
         PsiWhiteSpace(' ')
-        PsiElement(identifier)('main')
+        PsiElement(IDENTIFIER)('main')
         PsiErrorElement:'(' or < expected, got '}'
           <empty list>
       PsiWhiteSpace('\n')

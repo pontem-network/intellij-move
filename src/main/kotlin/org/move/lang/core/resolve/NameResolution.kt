@@ -53,13 +53,15 @@ fun processLexicalDeclarations(
                 }
                 return processorWithShadowing.matchAll(namedElements)
             }
-            is MoveModuleDef -> processor.matchAll(listOf(
-                scope.functions(),
-                scope.nativeFunctions(),
-                scope.structs(),
-                scope.nativeStructs(),
-                scope.consts()
-            ).flatten()
+            is MoveModuleDef -> processor.matchAll(
+                listOf(
+                    scope.importAliases(),
+                    scope.functions(),
+                    scope.nativeFunctions(),
+                    scope.structs(),
+                    scope.nativeStructs(),
+                    scope.consts(),
+                ).flatten()
             )
             else -> false
         }
@@ -67,11 +69,13 @@ fun processLexicalDeclarations(
             is MoveTypeParametersOwner -> processor.matchAll(scope.typeParams)
             is MoveModuleDef -> processor.matchAll(
                 listOf(
+                    scope.importAliases(),
                     scope.structs(),
                     scope.nativeStructs()
                 ).flatten())
             else -> false
         }
+        Namespace.MODULE -> false
         Namespace.SCHEMA -> when (scope) {
             is MoveModuleDef -> processor.matchAll(scope.schemas())
             else -> false
