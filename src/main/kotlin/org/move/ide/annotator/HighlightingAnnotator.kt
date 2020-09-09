@@ -6,51 +6,46 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.util.elementType
 import org.move.ide.colors.MoveColor
 import org.move.lang.MoveElementTypes.IDENTIFIER
-import org.move.lang.core.psi.MoveCallExpr
-import org.move.lang.core.psi.MoveElement
-import org.move.lang.core.psi.MoveQualifiedPath
-import org.move.lang.core.psi.MoveQualifiedPathType
-import org.move.lang.core.psi.ext.addressElement
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.identifierName
-import org.move.lang.core.psi.ext.moduleNameElement
+import org.move.lang.core.psi.ext.isNameOnly
 
 val PRIMITIVE_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128", "bool")
 val BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer")
 val BUILTIN_FUNCTIONS =
     setOf("move_from", "move_to", "borrow_global", "borrow_global_mut", "exists", "freeze", "assert")
 
-class BuiltinsHighlightingAnnotator : MoveAnnotatorBase() {
+class HighlightingAnnotator : MoveAnnotatorBase() {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         val color = when (element) {
             is LeafPsiElement -> highlightLeaf(element)
-//            is RsAttr -> RsColor.ATTRIBUTE
             else -> null
         } ?: return
-        val severity = color.testSeverity;
+        val severity = color.testSeverity
         holder.newSilentAnnotation(severity).textAttributes(color.textAttributesKey).create()
-
-//        val visitor = object : MoveVisitor() {
-//            override fun visitType(o: MoveType) = highlightBuiltinType(holder, o)
-//        }
-//        element.accept(visitor)
     }
 
     private fun highlightLeaf(element: PsiElement): MoveColor? {
         val parent = element.parent as? MoveElement ?: return null
         return when (element.elementType) {
-            IDENTIFIER -> highlightIdentifier(element, parent)
+            IDENTIFIER -> highlightIdentifier(parent)
             else -> null
         }
     }
 
-    private fun highlightIdentifier(element: PsiElement, parent: MoveElement): MoveColor? =
-        if (parent is MoveQualifiedPath
-            && parent.moduleNameElement == null
-            && parent.addressElement == null
-        ) {
-            val name = parent.identifierName
-            val container = parent.parent
-            when {
+    private fun highlightIdentifier(element: MoveElement): MoveColor? {
+        if (element is MoveTypeParameter) return MoveColor.TYPE_PARAMETER
+
+        if (element is MoveQualifiedPath && element.isNameOnly) {
+            val name = element.identifierName
+            val container = element.parent
+            if (container is MoveQualifiedPathType) {
+                val resolved = container.reference.resolve()
+                if (resolved is MoveTypeParameter) {
+                    return MoveColor.TYPE_PARAMETER
+                }
+            }
+            return when {
                 container is MoveQualifiedPathType
                         && name in PRIMITIVE_TYPE_IDENTIFIERS -> MoveColor.PRIMITIVE_TYPE
                 container is MoveQualifiedPathType
@@ -60,6 +55,7 @@ class BuiltinsHighlightingAnnotator : MoveAnnotatorBase() {
                 else -> null
             }
         } else {
-            null
+            return null
         }
+    }
 }

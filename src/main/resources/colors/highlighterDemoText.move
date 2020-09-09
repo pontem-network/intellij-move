@@ -1,7 +1,8 @@
 module M {
-    struct MyStruct {
+    struct MyStruct<T> {
         addr: <BUILTIN_TYPE>address</BUILTIN_TYPE>,
         val: <PRIMITIVE_TYPE>bool</PRIMITIVE_TYPE>
+        field: <TYPE_PARAMETER>T</TYPE_PARAMETER>
     }
 
     fun main(signer: &<BUILTIN_TYPE>signer</BUILTIN_TYPE>, val: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>, s: MyStruct) {

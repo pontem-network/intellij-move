@@ -10,4 +10,9 @@
             <option name="FOREGROUND" value="34349A"/>
         </value>
     </option>
+    <option name="org.move.TYPE_PARAMETER">
+        <value>
+            <option name="FOREGROUND" value="20999d"/>
+        </value>
+    </option>
 </list>

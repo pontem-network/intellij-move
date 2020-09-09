@@ -12,6 +12,7 @@ enum class MoveColor(humanName: String, default: TextAttributesKey? = null) {
 
     PRIMITIVE_TYPE("Types//Primitive", DefaultLanguageHighlighterColors.KEYWORD),
     BUILTIN_TYPE("Types//Builtins", DefaultLanguageHighlighterColors.IDENTIFIER),
+    TYPE_PARAMETER("Types//Generic type parameters", DefaultLanguageHighlighterColors.IDENTIFIER),
 
     BUILTIN_FUNCTION("Functions//Builtins", DefaultLanguageHighlighterColors.IDENTIFIER);
 

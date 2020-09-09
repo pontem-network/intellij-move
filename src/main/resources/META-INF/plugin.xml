@@ -17,6 +17,7 @@
             <p>0.9.0</p>
             <ul>
                 <li>FEAT: add support for native structs</li>
+                <li>FEAT: highlight generic parameters</li>
                 <li>FEAT: fix remaining parser spec issues</li>
             </ul>
             <p>0.8.0</p>
@@ -84,7 +85,7 @@
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.ErrorAnnotator"/>
         <annotator language="Move"
-                   implementationClass="org.move.ide.annotator.BuiltinsHighlightingAnnotator"/>
+                   implementationClass="org.move.ide.annotator.HighlightingAnnotator"/>
         <configurationType implementation="org.move.move_tools.CompilerCheckConfigurationType"/>
 
 <!--        <localInspection language="Move" groupPath="Move" groupName="Lints"-->
@@ -96,6 +97,7 @@
         <colorSettingsPage implementation="org.move.ide.colors.MoveColorSettingsPage"/>
 
         <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml"/>
+        <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
     </extensions>
 

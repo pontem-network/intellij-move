@@ -3,7 +3,7 @@ package org.move.ide.annotator
 import org.move.ide.colors.MoveColor
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
-class BuiltinsHighlightingAnnotatorTest : AnnotatorTestCase(BuiltinsHighlightingAnnotator::class) {
+class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class) {
     override fun setUp() {
         super.setUp()
         annotationFixture.registerSeverities(MoveColor.values().map(MoveColor::testSeverity))
@@ -49,6 +49,24 @@ class BuiltinsHighlightingAnnotatorTest : AnnotatorTestCase(BuiltinsHighlighting
         script {
             fun main(signer: &<BUILTIN_TYPE>signer</BUILTIN_TYPE>) {
                 Signer::address_of(signer)
+            }
+        }
+    """
+    )
+
+    fun `test generic type parameters highlighted`() = checkHighlighting(
+        """
+        module M {
+            struct MyStruct<<TYPE_PARAMETER>T</TYPE_PARAMETER>> {
+                field: <TYPE_PARAMETER>T</TYPE_PARAMETER>
+            }
+            
+            fun main<<TYPE_PARAMETER>U</TYPE_PARAMETER>, <TYPE_PARAMETER>V</TYPE_PARAMETER>>(
+                a: <TYPE_PARAMETER>U</TYPE_PARAMETER>, 
+                b: <TYPE_PARAMETER>V</TYPE_PARAMETER>
+            ): <TYPE_PARAMETER>U</TYPE_PARAMETER>
+            acquires <TYPE_PARAMETER>U</TYPE_PARAMETER> {
+                let a: <TYPE_PARAMETER>U</TYPE_PARAMETER> = 1;
             }
         }
     """
