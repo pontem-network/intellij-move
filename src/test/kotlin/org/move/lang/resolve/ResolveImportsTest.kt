@@ -25,6 +25,17 @@ class ResolveImportsTest: ResolveTestCase() {
     """
     )
 
+    fun `test resolve function return type to alias`() = checkByCode(
+        """
+        module M {
+            use 0x1::Transaction::Sender as MySender;
+                                          //X
+            fun main(): MySender {}
+                      //^
+        }
+    """
+    )
+
 //    fun `test resolve function to import`() = checkByCode(
 //        """
 //        module M {
@@ -76,6 +87,14 @@ class ResolveImportsTest: ResolveTestCase() {
         }
     """
     )
+
+    fun `test resolve type to alias in script`() = checkByCode("""
+        script {
+            use 0x1::Transaction::Sender as MySender;
+                                          //X
+            fun main(): MySender {}
+        }             //^ 
+    """)
 
 //    fun `test resolve use statement to the module in the same address block`() = checkByCode(
 //        """

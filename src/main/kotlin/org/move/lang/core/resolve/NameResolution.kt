@@ -63,6 +63,7 @@ fun processLexicalDeclarations(
                     scope.consts(),
                 ).flatten()
             )
+            is MoveScriptDef -> processor.matchAll(scope.importAliases())
             else -> false
         }
         Namespace.TYPE -> when (scope) {
@@ -73,9 +74,9 @@ fun processLexicalDeclarations(
                     scope.structs(),
                     scope.nativeStructs()
                 ).flatten())
+            is MoveScriptDef -> processor.matchAll(scope.importAliases())
             else -> false
         }
-        Namespace.MODULE -> false
         Namespace.SCHEMA -> when (scope) {
             is MoveModuleDef -> processor.matchAll(scope.schemas())
             else -> false

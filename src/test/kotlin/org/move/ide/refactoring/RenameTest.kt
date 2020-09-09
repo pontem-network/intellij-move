@@ -200,19 +200,19 @@ class RenameTest : MoveTestCase() {
         }
     """)
 
-//    fun `test import alias`() = doTest("RenamedTransaction", """
-//        script {
-//            use 0x1::Transaction as MyTransaction;
-//
-//            fun main(): /*caret*/MyTransaction {}
-//        }
-//    """, """
-//        script {
-//            use 0x1::Transaction as RenamedTransaction;
-//
-//            fun main(): RenamedTransaction {}
-//        }
-//    """)
+    fun `test import alias`() = doTest("RenamedTransaction", """
+        module M {
+            use 0x1::Transaction as MyTransaction;
+
+            fun main(): /*caret*/MyTransaction {}
+        }
+    """, """
+        module M {
+            use 0x1::Transaction as RenamedTransaction;
+
+            fun main(): RenamedTransaction {}
+        }
+    """)
 
     private fun doTest(
         newName: String,
