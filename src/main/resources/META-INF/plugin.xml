@@ -60,6 +60,8 @@
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
+        <stubElementTypeHolder class="org.move.lang.MoveElementTypes"/>
+
         <lang.syntaxHighlighter language="Move"
                                 implementationClass="org.move.ide.MoveHighlighter"/>
         <lang.commenter language="Move"
@@ -88,10 +90,12 @@
                    implementationClass="org.move.ide.annotator.HighlightingAnnotator"/>
         <configurationType implementation="org.move.move_tools.CompilerCheckConfigurationType"/>
 
+        <stubIndex implementation="org.move.lang.core.stubs.index.MoveNamedElementIndex"/>
+
 <!--        <localInspection language="Move" groupPath="Move" groupName="Lints"-->
 <!--                         displayName="Liveness analysis"-->
 <!--                         enabledByDefault="true" level="WARNING"-->
-<!--                         implementationClass="org.move.ide.inspections.lints.LivenessInspection"/>-->
+<!--                         implementationClass="org.move.lang.core.stubs.index.MoveNamedElementIndex.move.ide.inspections.lints.LivenessInspection"/>-->
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MoveColorSettingsPage"/>

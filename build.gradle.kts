@@ -7,7 +7,7 @@ val pluginJarName = "intellij-move-$intellijVersion"
 val pluginGroup = "org.move"
 val pluginVersion = "0.9.0"
 
-val kotlinVersion = "1.4.10"
+//val kotlinVersion = "1.4.10"
 
 group = pluginGroup
 version = pluginVersion
@@ -21,8 +21,8 @@ plugins {
 
 dependencies {
     // kotlin stdlib source code
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.3.70")
+//    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 }
 
 allprojects {
@@ -82,7 +82,7 @@ allprojects {
             kotlinOptions {
                 jvmTarget = "1.8"
                 languageVersion = "1.4"
-                apiVersion = "1.4"
+                apiVersion = "1.3"
                 freeCompilerArgs = listOf("-Xjvm-default=compatibility")
             }
         }

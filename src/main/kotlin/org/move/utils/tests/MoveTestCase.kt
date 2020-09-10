@@ -40,7 +40,7 @@ fun TestCase.pathToGoldTestFile(): Path =
 
 
 abstract class MoveTestCase : BasePlatformTestCase() {
-    @Suppress("TestFunctionName")
+    @Suppress("FunctionName")
     protected fun InlineFile(@Language("Move") code: String, name: String = "main.move"): InlineFile {
         return InlineFile(myFixture, code, name)
     }
@@ -129,4 +129,10 @@ abstract class MoveTestCase : BasePlatformTestCase() {
         val camelCase = super.getTestName(lowercaseFirstLetter)
         return camelOrWordsToSnake(camelCase)
     }
+
+    protected fun FileTree.create(): TestProject = create(myFixture)
+    protected fun FileTree.createAndOpenFileWithCaretMarker(): TestProject = createAndOpenFileWithCaretMarker(myFixture)
+
+    protected val PsiElement.lineNumber: Int
+        get() = myFixture.getDocument(myFixture.file).getLineNumber(textOffset)
 }

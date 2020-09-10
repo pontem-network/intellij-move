@@ -13,6 +13,21 @@ val PsiElement.ancestors: Sequence<PsiElement>
         if (it is PsiFile) null else it.parent
     }
 
+inline fun <reified T : PsiElement> PsiElement.ancestorStrict(): T? =
+    PsiTreeUtil.getParentOfType(this, T::class.java, true)
+
+inline fun <reified T : PsiElement> PsiElement.ancestorStrict(stopAt: Class<out PsiElement>): T? =
+    PsiTreeUtil.getParentOfType(this, T::class.java, true, stopAt)
+
+inline fun <reified T : PsiElement> PsiElement.ancestorOrSelf(): T? =
+    PsiTreeUtil.getParentOfType(this, T::class.java, false)
+
+inline fun <reified T : PsiElement> PsiElement.ancestorOrSelf(stopAt: Class<out PsiElement>): T? =
+    PsiTreeUtil.getParentOfType(this, T::class.java, false, stopAt)
+
+inline fun <reified T : PsiElement> PsiElement.stubAncestorStrict(): T? =
+    PsiTreeUtil.getStubOrPsiParentOfType(this, T::class.java)
+
 /**
  * Checks whether this node contains [descendant] one
  */
@@ -58,6 +73,9 @@ fun PsiElement.findFirstChildByType(type: IElementType): PsiElement? =
 fun PsiElement.findLastChildByType(type: IElementType): PsiElement? =
     childrenByType(type).lastOrNull()
 
+fun PsiElement.isChildExists(type: IElementType): Boolean =
+    findFirstChildByType(type) != null
+
 /**
  * Extracts node's element type
  */
@@ -68,7 +86,7 @@ fun PsiElement.isAncestorOf(child: PsiElement): Boolean =
     child.ancestors.contains(this)
 
 inline fun <reified T : PsiElement> PsiElement.descendantOfTypeStrict(): T? =
-    PsiTreeUtil.findChildOfType(this, T::class.java, /* strict */ true)
+    PsiTreeUtil.findChildOfType(this, T::class.java, true)
 
 val PsiElement.startOffset: Int
     get() = textRange.startOffset
