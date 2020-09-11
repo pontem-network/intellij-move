@@ -16,7 +16,8 @@ module M {
 
         aborts_if x == 0;
         aborts_if y == 0;
-        aborts_if 0 == y;
+        aborts_if 0 == y
+            with Error::MY_ERROR;
 
         ensures RET == x + 1;
         ensures RET == x/y;
