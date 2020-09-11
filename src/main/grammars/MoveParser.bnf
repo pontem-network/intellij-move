@@ -174,17 +174,18 @@ FunctionDef ::= public? fun IDENTIFIER TypeParameterList?
         "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
     ]
+//    extends = "org.move.lang.core.psi.MoveStubbedNamedElementImpl<?>"
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionDefMixin"
-    stubClass = "org.move.lang.core.stubs.MoveFunctionDefStub"
-    elementTypeFactory = "org.move.lang.core.stubs.StubImplementationsKt.factory"
+//    stubClass = "org.move.lang.core.stubs.MoveFunctionDefStub"
+//    elementTypeFactory = "org.move.lang.core.stubs.StubImplementationsKt.factory"
 }
 
 FunctionParameterList ::= '(' <<comma_sep_items FunctionParameter>>? ')'
 {
     pin = 1
-    extends = "org.move.lang.core.psi.MoveStubbedElementImpl<?>"
-    stubClass = "org.move.lang.core.stubs.PlaceholderStub"
-    elementTypeFactory = "org.move.lang.core.stubs.StubImplementationsKt.factory"
+//    extends = "org.move.lang.core.psi.MoveStubbedElementImpl<?>"
+//    stubClass = "org.move.lang.core.stubs.PlaceholderStub"
+//    elementTypeFactory = "org.move.lang.core.stubs.StubImplementationsKt.factory"
 }
 //private FunctionParameterList_body ::= <<comma_separated_list FunctionParameter>> {
 //    recoverWhile = "FunctionParameterList_body_recover"

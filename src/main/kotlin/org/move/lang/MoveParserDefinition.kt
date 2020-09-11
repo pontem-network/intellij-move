@@ -10,7 +10,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
-import org.move.lang.core.stubs.MoveFileStub
 import org.move.lang.core.tokenSetOf
 
 class MoveParserDefinition : ParserDefinition {
@@ -22,9 +21,7 @@ class MoveParserDefinition : ParserDefinition {
         return MoveParser()
     }
 
-    override fun getFileNodeType(): IFileElementType {
-        return MoveFileStub.Type
-    }
+    override fun getFileNodeType(): IFileElementType = FILE
 
     override fun getCommentTokens(): TokenSet {
         return tokenSetOf(MoveElementTypes.LINE_COMMENT, MoveElementTypes.BLOCK_COMMENT)
@@ -43,7 +40,7 @@ class MoveParserDefinition : ParserDefinition {
         return MoveFile(viewProvider)
     }
 
-//    companion object {
-//        val FILE = IFileElementType(MoveLanguage)
-//    }
+    companion object {
+        val FILE = IFileElementType(MoveLanguage)
+    }
 }
