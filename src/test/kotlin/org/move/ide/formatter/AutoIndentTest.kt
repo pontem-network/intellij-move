@@ -427,4 +427,38 @@ class AutoIndentTest : MoveTypingTestCase() {
         }
     """
     )
+
+    fun `test indent expression operator at the next line`() = doTestByText(
+        """
+        script {
+            fun main() {
+                get_record() /*caret*/&& mytransaction;
+            }
+        }
+    """, """
+        script {
+            fun main() {
+                get_record() 
+                        /*caret*/&& mytransaction;
+            }
+        }
+    """
+    )
+
+    fun `test indent expression operator at the next line in let`() = doTestByText(
+        """
+        script {
+            fun main() {
+                let alpha = get_record() /*caret*/&& mytransaction;
+            }
+        }
+    """, """
+        script {
+            fun main() {
+                let alpha = get_record() 
+                        /*caret*/&& mytransaction;
+            }
+        }
+    """
+    )
 }

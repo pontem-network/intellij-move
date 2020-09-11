@@ -33,6 +33,9 @@ fun MoveFormatterBlock.computeIndent(child: ASTNode): Indent? {
         }
         parentPsi is MoveSpecExpr -> Indent.getNormalIndent()
 
+        // binary expressions, chain calls
+        parentPsi is MoveExpr -> Indent.getContinuationWithoutFirstIndent()
+
         else -> Indent.getNoneIndent()
     }
 }
