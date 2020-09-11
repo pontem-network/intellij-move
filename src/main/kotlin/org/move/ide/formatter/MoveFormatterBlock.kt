@@ -52,15 +52,4 @@ class MoveFormatterBlock(
         }
         return ChildAttributes(indent, null)
     }
-
-    private fun computeIndent(child: ASTNode): Indent? {
-//        val parentType = node.elementType
-//        val parentPsi = node.psi
-//        val childType = child.elementType
-//        val childPsi = child.psi
-        return when {
-            node.isDelimitedBlock -> getNormalIndentIfNotCurrentBlockDelimiter(child, node)
-            else -> Indent.getNoneIndent()
-        }
-    }
 }

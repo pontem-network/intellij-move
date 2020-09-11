@@ -101,6 +101,19 @@ class AutoIndentTest : MoveTypingTestCase() {
     """
     )
 
+    fun `test function acquires on the same line as function`() = doTestByText(
+        """
+        script {
+            fun main() /*caret*/acquires T {}
+        } 
+    """, """
+        script {
+            fun main() 
+            /*caret*/acquires T {}
+        } 
+    """
+    )
+
     fun `test complex function declaration`() = doTestByText(
         """
        module M {
@@ -207,6 +220,211 @@ class AutoIndentTest : MoveTypingTestCase() {
                })      
            }
        } 
+    """
+    )
+
+    fun `test let assignment rhs on the next line`() = doTestByText(
+        """
+        script {
+            fun main() {
+                let a = /*caret*/get_record();
+            }
+        }
+    """, """
+        script {
+            fun main() {
+                let a = 
+                    /*caret*/get_record();
+            }
+        }
+    """
+    )
+
+    fun `test assignment rhs on the next line`() = doTestByText(
+        """
+        script {
+            fun main() {
+                a = /*caret*/get_record();
+            }
+        }
+    """, """
+        script {
+            fun main() {
+                a = 
+                    /*caret*/get_record();
+            }
+        }
+    """
+    )
+
+    fun `test const assignment rhs on the next line`() = doTestByText(
+        """
+        module M {
+            const VAL: u8 = /*caret*/1;
+        }
+    """, """
+        module M {
+            const VAL: u8 = 
+                /*caret*/1;
+        }
+    """
+    )
+
+    fun `test indent for first element of an assignment`() = doTestByText(
+        """
+        script {
+            fun main() {
+                /*caret*/a = get_record();
+            }
+        }
+    """, """
+        script {
+            fun main() {
+                
+                /*caret*/a = get_record();
+            }
+        }
+    """
+    )
+
+    fun `test block expr inside let`() = doTestByText(
+        """
+        script {
+            fun main() {
+                let a = {/*caret*/};
+            }
+        }
+    """, """
+        script {
+            fun main() {
+                let a = {
+                    /*caret*/
+                };
+            }
+        }
+    """
+    )
+
+    fun `test if stmt no indentation`() = doTestByText(
+        """
+        script {
+            fun main() {
+                /*caret*/if (true) a
+            }
+        }
+    """, """
+        script {
+            fun main() {
+                
+                /*caret*/if (true) a
+            }
+        }
+    """
+    )
+
+    fun `test if expr body`() = doTestByText(
+        """
+        script {
+            fun main() {
+                if (true) /*caret*/a
+            }
+        }
+    """, """
+        script {
+            fun main() {
+                if (true) 
+                    /*caret*/a
+            }
+        }
+    """
+    )
+
+    fun `test if else block`() = doTestByText(
+        """
+        script {
+            fun main() {
+                if (true) a /*caret*/else b
+            }
+        }
+    """, """
+        script {
+            fun main() {
+                if (true) a 
+                /*caret*/else b
+            }
+        }
+    """
+    )
+
+    fun `test if else body`() = doTestByText(
+        """
+        script {
+            fun main() {
+                if (true) 
+                    a 
+                else /*caret*/b
+            }
+        }
+    """, """
+        script {
+            fun main() {
+                if (true) 
+                    a 
+                else 
+                    /*caret*/b
+            }
+        }
+    """
+    )
+
+    fun `test aborts_if with`() = doTestByText(
+        """
+        module M {
+            spec schema AbortsIf {
+                aborts_if true /*caret*/with Errors::NOT_PUBLISHED;
+            }
+        }
+    """, """
+        module M {
+            spec schema AbortsIf {
+                aborts_if true 
+                    /*caret*/with Errors::NOT_PUBLISHED;
+            }
+        }
+    """
+    )
+
+    fun `test ensures stmt no indentation`() = doTestByText(
+        """
+        module M {
+            spec schema AbortsIf {
+                /*caret*/assert a == 1;
+            }
+        }
+    """, """
+        module M {
+            spec schema AbortsIf {
+                
+                /*caret*/assert a == 1;
+            }
+        }
+    """
+    )
+
+    fun `test ensures indentation`() = doTestByText(
+        """
+        module M {
+            spec schema AbortsIf {
+                ensures /*caret*/a == 1;
+            }
+        }
+    """, """
+        module M {
+            spec schema AbortsIf {
+                ensures 
+                    /*caret*/a == 1;
+            }
+        }
     """
     )
 }
