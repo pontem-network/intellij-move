@@ -157,8 +157,9 @@ NativeFunctionDef ::= native public? fun IDENTIFIER TypeParameterList?
     pin = "fun"
     name = "native function"
     implements = [
-        "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.psi.MoveTypeParametersOwner"
+        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveNativeFunctionDefMixin"
 }
@@ -172,8 +173,9 @@ FunctionDef ::= public? fun IDENTIFIER TypeParameterList?
     pin = "fun"
     name = "function"
     implements = [
-        "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.psi.MoveTypeParametersOwner"
+        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
 //    extends = "org.move.lang.core.psi.MoveStubbedNamedElementImpl<?>"
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionDefMixin"
@@ -216,7 +218,7 @@ NativeStructDef ::= native resource? struct IDENTIFIER TypeParameterList? ';'
 {
     pin = "struct"
     implements = [
-        "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
+        "org.move.lang.core.psi.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveNativeStructDefMixin"
@@ -228,7 +230,7 @@ StructDef ::= resource? struct IDENTIFIER
 {
     pin = "struct"
     implements = [
-        "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
+        "org.move.lang.core.psi.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveStructDefMixin"
@@ -603,7 +605,7 @@ private SpecItem ::= FunctionSpec
 SchemaDef ::= spec schema IDENTIFIER TypeParameterList? SpecBlock {
   pin = 2
   implements = [
-    "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
+    "org.move.lang.core.psi.MoveTypeParametersOwner"
     "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
   mixin = "org.move.lang.core.psi.mixins.MoveSchemaDefMixin"
 }
@@ -621,14 +623,17 @@ StructSpec ::= spec struct IDENTIFIER SpecBlock {
 ModuleSpec ::= spec module SpecBlock { pin = 2 }
 
 DefineFunction ::= define IDENTIFIER TypeParameterList?
-                                                   FunctionParameterList
-                                                   ReturnType?
-                                                   SpecBlock
+                                           FunctionParameterList
+                                           ReturnType?
+                                           SpecBlock
 {
     pin = 1
     implements = [
-        "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
+        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.psi.MoveTypeParametersOwner"
+        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
+    mixin = "org.move.lang.core.psi.mixins.MoveDefineFunctionMixin"
 }
 SpecDefineFunction ::= spec define IDENTIFIER TypeParameterList?
                                                    FunctionParameterList
@@ -637,7 +642,9 @@ SpecDefineFunction ::= spec define IDENTIFIER TypeParameterList?
 {
     pin = 2
     implements = [
-        "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.psi.MoveTypeParametersOwner"
+        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
 }
 
@@ -647,16 +654,20 @@ NativeDefineFunction ::= native define IDENTIFIER TypeParameterList?
 {
     pin = 2
     implements = [
-        "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.psi.MoveTypeParametersOwner"
+        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
 }
 SpecNativeDefineFunction ::= spec native define IDENTIFIER TypeParameterList?
-                                                   FunctionParameterList
-                                                   ReturnType? ';'
+                                                               FunctionParameterList
+                                                               ReturnType? ';'
 {
     pin = 3
     implements = [
-        "org.move.lang.core.psi.ext.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.psi.MoveTypeParametersOwner"
+        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
 }
 

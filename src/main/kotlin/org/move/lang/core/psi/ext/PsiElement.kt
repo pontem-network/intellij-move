@@ -7,6 +7,7 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
+import org.move.lang.core.resolve.walkUpThroughScopes
 
 val PsiElement.ancestors: Sequence<PsiElement>
     get() = generateSequence(this) {

@@ -14,4 +14,5 @@ class LexerTest : MoveLexerTestCase() {
     fun `test apply function pattern except`() = doTest()
     // fix sometime later, requires complex lexing logic
 //    fun `test apply function pattern multiple`() = doTest()
+    fun `test line comment inside spec block`() = doTest()
 }

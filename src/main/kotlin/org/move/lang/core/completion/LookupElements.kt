@@ -1,12 +1,12 @@
 package org.move.lang.core.completion
 
+import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.compactText
-import org.move.lang.core.psi.ext.params
 
 const val KEYWORD_PRIORITY = 80.0
 const val PRIMITIVE_TYPE_PRIORITY = KEYWORD_PRIORITY
@@ -37,15 +37,28 @@ const val FIELD_DECL_PRIORITY = 3.0
 //
 //    }
 //}
-
+fun functionInsertHandler(isSpec: Boolean, hasParams: Boolean): InsertHandler<LookupElement> =
+    InsertHandler<LookupElement> { ctx, _ ->
+        if (isSpec) {
+            if (!ctx.alreadyHasSpace) ctx.addSuffix(" ")
+        } else {
+            if (!ctx.alreadyHasCallParens) {
+                ctx.document.insertString(ctx.selectionEndOffset, "()")
+            }
+            EditorModificationUtil.moveCaretRelatively(
+                ctx.editor,
+                if (hasParams) 1 else 2
+            )
+        }
+    }
 
 fun MoveNamedElement.createLookupElement(isSpec: Boolean): LookupElement {
     return when (this) {
-        is MoveFunctionDef -> LookupElementBuilder.createWithIcon(this)
+        is MoveFunctionSignatureOwner -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTailText(this.functionParameterList?.compactText ?: "()")
             .withTypeText(this.returnType?.type?.text ?: "()")
-            .withInsertHandler { ctx, _ ->
+            .withInsertHandler{ ctx, _ ->
                 if (isSpec) {
                     if (!ctx.alreadyHasSpace) ctx.addSuffix(" ")
                 } else {
@@ -54,7 +67,7 @@ fun MoveNamedElement.createLookupElement(isSpec: Boolean): LookupElement {
                     }
                     EditorModificationUtil.moveCaretRelatively(
                         ctx.editor,
-                        if (this.params.isEmpty()) 2 else 1
+                        if (this.parameters.isEmpty()) 2 else 1
                     )
                 }
             }

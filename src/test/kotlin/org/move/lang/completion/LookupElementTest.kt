@@ -47,6 +47,15 @@ class LookupElementTest : MoveTestCase() {
         }
     """, tailText = " { ... }")
 
+    fun `test define`() = check("""
+        module M {
+            spec module {
+                define renamed_reserve_exists(val: u8): bool {}
+                     //^
+            }
+        }
+    """, tailText = "(val: u8)", typeText = "bool")
+
     private fun check(
         @Language("Move") code: String,
         tailText: String? = null,

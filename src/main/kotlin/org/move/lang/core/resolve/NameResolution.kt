@@ -53,6 +53,9 @@ fun processLexicalDeclarations(
                 }
                 return processorWithShadowing.matchAll(namedElements)
             }
+            is MoveSpecBlock -> {
+                processor.matchAll(scope.defineFunctionList)
+            }
             is MoveModuleDef -> processor.matchAll(
                 listOf(
                     scope.importAliases(),
@@ -67,7 +70,7 @@ fun processLexicalDeclarations(
             else -> false
         }
         Namespace.TYPE -> when (scope) {
-            is MoveTypeParametersOwner -> processor.matchAll(scope.typeParams)
+            is MoveTypeParametersOwner -> processor.matchAll(scope.typeParameters)
             is MoveModuleDef -> processor.matchAll(
                 listOf(
                     scope.importAliases(),

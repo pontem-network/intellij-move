@@ -3,7 +3,7 @@ package org.move.lang;
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 
-import static com.intellij.psi.TokenType.BAD_CHARACTER;
+import java.util.ArrayList;import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static org.move.lang.MoveElementTypes.*;
 
@@ -15,11 +15,23 @@ import static org.move.lang.MoveElementTypes.*;
   private boolean isSpecDef = false;
 
   private int specBracesDepth = -1;
+
+  private ArrayList<Integer> stateStack = new ArrayList<Integer>();
 %}
 
 %{
   public _MoveLexer() {
     this((java.io.Reader)null);
+  }
+
+  public void pushState(int state) {
+      this.stateStack.add(yystate());
+      yybegin(state);
+  }
+
+  public void popState() {
+      int oldState = this.stateStack.remove(this.stateStack.size() - 1);
+      yybegin(oldState);
   }
 %}
 
@@ -68,13 +80,15 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
           if (isSpecDef) {
             specBracesDepth = bracesDepth;
             isSpecDef = false;
-            yybegin(IN_SPEC);
+            pushState(IN_SPEC);
+//            yybegin(IN_SPEC);
           }
           return L_BRACE; }
   "}"                        {
           bracesDepth--;
           if (bracesDepth < specBracesDepth) {
-              yybegin(YYINITIAL);
+              popState();
+              specBracesDepth = -1;
           }
           return R_BRACE;
       }
@@ -155,7 +169,7 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
 
   {LINE_COMMENT}             { return LINE_COMMENT; }
 
-  "/*"                      { yybegin(IN_BLOCK_COMMENT); yypushback(2); }
+  "/*"                      { pushState(IN_BLOCK_COMMENT); yypushback(2); }
 
 
 //  {SCHEMA_APPLY_NAME_PATTERN}      { return SCHEMA_APPLY_NAME_PATTERN; }
@@ -190,8 +204,8 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
   "pack"                           { return PACK; }
   "unpack"                         { return UNPACK; }
   "apply"                          { return APPLY; }
-  "to"                             { yybegin(IN_APPLY_TO); return TO; }
-  "except"                         { yybegin(IN_APPLY_TO); return EXCEPT; }
+  "to"                             { pushState(IN_APPLY_TO); return TO; }
+  "except"                         { pushState(IN_APPLY_TO); return EXCEPT; }
   "forall"                         { return FORALL; }
   "in"                             { return IN; }
   "where"                             { return WHERE; }
@@ -204,8 +218,8 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
 }
 
 <IN_APPLY_TO> {
-    {FUNCTION_PATTERN_NAME}     { yybegin(IN_SPEC); return FUNCTION_PATTERN_NAME; }
-      [^]       { yybegin(IN_SPEC); }
+    {FUNCTION_PATTERN_NAME}     { pushState(IN_SPEC); return FUNCTION_PATTERN_NAME; }
+      [^]       { pushState(IN_SPEC); }
 }
 
 <YYINITIAL,IN_SPEC,IN_APPLY_TO> {
@@ -218,8 +232,8 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
 }
 
 <IN_BLOCK_COMMENT> {
-  "*/"    { yybegin(YYINITIAL); return BLOCK_COMMENT; }
-  <<EOF>> { yybegin(YYINITIAL); return BLOCK_COMMENT; }
+  "*/"    { popState(); return BLOCK_COMMENT; }
+  <<EOF>> { popState(); return BLOCK_COMMENT; }
   [^]     { }
 }
 

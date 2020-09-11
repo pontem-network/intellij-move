@@ -91,6 +91,28 @@ class FunctionsCompletionTest: CompletionTestCase() {
         }
     """)
 
+    fun `test define function accessible before definition`() = doSingleCompletion("""
+        module M {
+            spec module {
+                res/*caret*/;
+                
+                define reserve_exists(): bool {
+                   exists<Reserve>(CoreAddresses::CURRENCY_INFO_ADDRESS())
+                }
+            }
+        }
+    """, """
+        module M {
+            spec module {
+                reserve_exists()/*caret*/;
+                
+                define reserve_exists(): bool {
+                   exists<Reserve>(CoreAddresses::CURRENCY_INFO_ADDRESS())
+                }
+            }
+        }
+    """)
+
 //    fun `test generic function call with type parameters`() = doSingleCompletion("""
 //        module M {
 //            fun frobnicate<T>(a: T) {}
