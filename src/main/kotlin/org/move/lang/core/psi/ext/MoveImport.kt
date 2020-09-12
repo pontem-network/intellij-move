@@ -7,7 +7,14 @@ import org.move.lang.core.psi.MoveModuleImport
 
 fun MoveImport.aliases(): List<MoveImportAlias> =
     when (this) {
-        is MoveItemImport -> this.importedItemList.mapNotNull { it.importAlias }
+        is MoveItemImport -> {
+            val multipleAliases =
+                this.multiImportedItem?.importedItemList.orEmpty().mapNotNull { it.importAlias }
+            val singleAlias = listOfNotNull(this.importedItem?.importAlias)
+            listOf(
+                singleAlias,
+                multipleAliases).flatten()
+        }
         is MoveModuleImport -> listOfNotNull(this.importAlias)
         else -> emptyList()
     }

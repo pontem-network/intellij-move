@@ -283,19 +283,41 @@ private StructFieldDef_type_recover ::= !(','|'}')
 // Imports
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // 'use 0x0::Transaction as MyTransaction;'
-ImportStatement ::= use AddressRef '::' Import ';' { pin = 1 }
+ImportStatement ::= use AddressRef '::' Import ';'
+{
+    pin = 1
+}
+//private ImportStatement_body ::= AddressRef '::' Import
+//{
+//    recoverWhile = ImportStatement_body_recover
+//}
+//private ImportStatement_body_recover ::= !';'
 
 Import ::= ItemImport | ModuleImport
 ModuleImport ::= ModuleRef ImportAlias?
 {
     extends = Import
 }
-ItemImport ::= ModuleRef '::' (ImportedItem | ImportedItem_multiple)
+ItemImport ::= ModuleRef '::' (ImportedItem | MultiImportedItem)
 {
     pin = 2
     extends = Import
 }
-private ImportedItem_multiple ::= '{' <<comma_sep_items ImportedItem>> '}'  { pin = 1 }
+
+MultiImportedItem ::= '{' <<comma_sep_items MultiImportedItem_member_with_recovery>> '}'
+{
+    pin = 1
+}
+private MultiImportedItem_member_with_recovery ::= !('}' | ';' | <<eof>>) ImportedItem
+{
+    pin = 1
+}
+
+//private MultiImportedItem_items ::= <<comma_sep_items ImportedItem>>
+//{
+//    recoverWhile = MultiImportedItem_items_recovery
+//}
+//private MultiImportedItem_items_recovery ::= !'}'
 
 ImportedItem ::= IDENTIFIER ImportAlias?
 {
