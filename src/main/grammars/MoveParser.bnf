@@ -150,17 +150,20 @@ private ModuleItem_recover ::= !('}' | ModuleItem_first)
 private ModuleItem ::= ImportStatement | StructDef | NativeStructDef |
                             FunctionDef | NativeFunctionDef | ConstDef | SpecItem
 
-ConstDef ::= const IDENTIFIER TypeAscription ConstDef_init ';'
+ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
 {
     pin = 1
-    implements = ["org.move.lang.core.psi.MoveNameIdentifierOwner"]
+    implements = [
+        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.psi.MoveTypeAnnotated"
+    ]
     mixin = "org.move.lang.core.psi.mixins.MoveConstDefMixin"
 }
-private ConstDef_init ::= '=' Expr
-{
-    recoverWhile = "ConstDef_init_recover"
-}
-private ConstDef_init_recover ::= !';'
+//private ConstDef_init ::= '=' Expr
+//{
+//    recoverWhile = "ConstDef_init_recover"
+//}
+//private ConstDef_init_recover ::= !';'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions
@@ -211,11 +214,14 @@ FunctionParameterList ::= '(' <<comma_sep_items FunctionParameter>>? ')'
 //}
 //private FunctionParameterList_body_recover ::= !')'
 
-FunctionParameter ::= IDENTIFIER TypeAscription
+FunctionParameter ::= IDENTIFIER TypeAnnotation
 {
     pin = 1
     recoverWhile = "FunctionParameter_recover"
-    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
+    implements = [
+        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.psi.MoveTypeAnnotated"
+    ]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionParameterMixin"
 }
 private FunctionParameter_recover ::= !(','|')')
@@ -258,8 +264,16 @@ StructFieldsDefBlock ::= '{' <<comma_sep_items StructFieldDef>>? '}' { pin = 1 }
 }
 //private StructFieldsBlock_body_recover ::= !'}'
 
-StructFieldDef ::= IDENTIFIER StructFieldDef_type { pin = 1 }
-private StructFieldDef_type ::= TypeAscription
+StructFieldDef ::= IDENTIFIER StructFieldDef_type
+{
+    pin = 1
+    implements = [
+        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.psi.MoveTypeAnnotated"
+    ]
+    mixin = "org.move.lang.core.psi.mixins.MoveStructFieldDefMixin"
+}
+private StructFieldDef_type ::= TypeAnnotation
 {
     recoverWhile = "StructFieldDef_type_recover"
 }
@@ -299,7 +313,7 @@ ImportAlias ::= as IDENTIFIER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Types
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-private TypeAscription ::= ':' Type { pin = 1 }
+TypeAnnotation ::= ':' Type { pin = 1 }
 
 Type ::= QualifiedPathType | TupleType | LambdaType
 
@@ -577,11 +591,14 @@ WhileExpr ::= while Condition AnyBlock { pin = 1 }
 
 AssignmentExpr ::= Expr '=' Expr { rightAssociative = true }
 
-LetExpr ::= let Pat TypeAscription? Initializer? {
+LetExpr ::= let Pat TypeAnnotation? Initializer? {
     pin = 1
+    implements = [
+        "org.move.lang.core.psi.MoveTypeAnnotated"
+    ]
     mixin = "org.move.lang.core.psi.mixins.MoveLetExprMixin"
 }
-private Initializer ::= '=' Expr {
+Initializer ::= '=' Expr {
     pin = 1
 //    recoverWhile = "Initializer_recover"
 }

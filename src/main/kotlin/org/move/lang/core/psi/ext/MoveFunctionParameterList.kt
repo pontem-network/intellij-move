@@ -1,6 +1,7 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.MoveFunctionParameterList
+import org.move.lang.core.psi.type
 import org.move.stdext.joinToWithBuffer
 
 val MoveFunctionParameterList.compactText: String
