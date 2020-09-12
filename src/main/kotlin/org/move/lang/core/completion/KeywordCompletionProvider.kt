@@ -5,10 +5,9 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
-import com.intellij.lang.parser.GeneratedParserUtilBase.DUMMY_BLOCK
+import com.intellij.psi.TokenType
 import com.intellij.psi.util.elementType
 import com.intellij.util.ProcessingContext
-import org.move.lang.MoveElementTypes.SCRIPT_BLOCK
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 
 class KeywordCompletionProvider(private vararg val keywords: String) : CompletionProvider<CompletionParameters>() {
@@ -32,10 +31,11 @@ private fun addInsertionHandler(
 ): LookupElementBuilder {
     val suffix = when (keyword) {
         "script" -> {
-            val nextSibling = parameters.position.parent.getNextNonCommentSibling()
-            val aheadOfBlock =
-                nextSibling.elementType == DUMMY_BLOCK || nextSibling.elementType == SCRIPT_BLOCK;
-            if (aheadOfBlock) "" else " "
+            val nextSibling = parameters.position.parent.nextSibling
+            if (nextSibling.elementType == TokenType.WHITE_SPACE)
+                ""
+            else
+                " "
         }
         else -> " "
     }
