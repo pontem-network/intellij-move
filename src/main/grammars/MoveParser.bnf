@@ -754,13 +754,13 @@ SpecBlock ::= '{'
 //    recoverWhile = ScriptBlockItem_recover
 //}
 private SpecBlockStatement_with_recover ::= !('}' | <<eof>>) SpecBlockStatement
-{
-    pin = 1
-}
+//{
+//    pin = 1
+//}
 private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinishingExpr
-{
-    pin = 1
-}
+//{
+//    pin = 1
+//}
 private SpecBlockStatement ::= Statement
                                | DefineFunction | DefineFunctionSpec
                                | NativeDefineFunction | NativeDefineFunctionSpec
