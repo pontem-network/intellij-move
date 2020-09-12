@@ -96,13 +96,20 @@
 //   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
 File ::= (ScriptDef | AddressDef | ModuleDef)*
 
-
 ScriptDef ::= script ScriptBlock {
     pin = 1
 }
 ScriptBlock ::= '{' ScriptBlockItems '}' { pin = 1 }
-private ScriptBlockItems ::= (ImportStatement | FunctionDef)* { recoverWhile = "ScriptBlockItems_recover" }
-private ScriptBlockItems_recover ::= !'}'
+private ScriptBlockItems ::= ScriptBlockItem_with_recover*
+
+private ScriptBlockItem_with_recover ::= !('}' | <<eof>>) (ImportStatement | FunctionDef)
+{
+    pin = 1
+    recoverWhile = ScriptBlockItem_recover
+}
+// top-level recovery
+private ScriptBlockItem_first ::= use | fun
+private ScriptBlockItem_recover ::= !('}' | ScriptBlockItem_first)
 
 AddressDef ::= address ADDRESS_LITERAL AddressBlock {
     pin = 1
@@ -125,11 +132,20 @@ ModuleBlock ::= '{' ModuleBlockItems '}'
 {
     pin = 1
 }
-private ModuleBlockItems ::= ModuleItem*
+private ModuleBlockItems ::= ModuleItem_with_recover*
+//{
+//    recoverWhile = "ModuleBlockItems_recover"
+//}
+//private ModuleBlockItems_recover ::= !'}'
+
+private ModuleItem_with_recover ::= !('}' | <<eof>>) ModuleItem
 {
-    recoverWhile = "ModuleBlockItems_recover"
+    pin = 1
+    recoverWhile = ModuleItem_recover
 }
-private ModuleBlockItems_recover ::= !'}'
+// top-level recovery
+private ModuleItem_first ::= use | public | native | fun | const | resource | struct | spec
+private ModuleItem_recover ::= !('}' | ModuleItem_first)
 
 private ModuleItem ::= ImportStatement | StructDef | NativeStructDef |
                             FunctionDef | NativeFunctionDef | ConstDef | SpecItem
