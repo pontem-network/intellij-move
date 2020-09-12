@@ -15,11 +15,11 @@ class KeywordCompletionTest : CompletionTestCase() {
         module /*caret*/    
     """)
 
-    fun `test script keyword completion if brace is present`() = doSingleCompletion("""
-        scr/*caret*/ {}
-    """, """
-        script/*caret*/ {}
-    """)
+//    fun `test script keyword completion if brace is present`() = doSingleCompletion("""
+//        scr/*caret*/ {}
+//    """, """
+//        script/*caret*/ {}
+//    """)
 
     fun `test fun cannot be top-level`() = checkNoCompletion("""
         fu/*caret*/    
