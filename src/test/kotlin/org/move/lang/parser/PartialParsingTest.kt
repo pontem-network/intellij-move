@@ -8,6 +8,4 @@ class PartialParsingTest: MoveParsingTestCase("partial") {
     fun `test module const`() = doTest(true)
     fun `test module spec`() = doTest(true)
     fun `test module uses`() = doTest(true)
-//    fun `test assignments`() = doTest(true)
-//    fun `test function calls`() = doTest(true)
 }
