@@ -18,19 +18,19 @@ fun MoveModuleDef.imports(): Map<Address, MoveImport> {
 fun MoveModuleDef.importAliases(): List<MoveImportAlias> = imports().values.flatMap { it.aliases() }
 
 fun MoveModuleDef.functions(): List<MoveFunctionDef> =
-    this.moduleBlock?.functionDefList.orEmpty()
+    moduleBlock?.functionDefList.orEmpty()
 
 fun MoveModuleDef.nativeFunctions(): List<MoveNativeFunctionDef> =
-    this.moduleBlock?.nativeFunctionDefList.orEmpty()
+    moduleBlock?.nativeFunctionDefList.orEmpty()
 
 fun MoveModuleDef.structs(): List<MoveStructDef> =
-    this.moduleBlock?.structDefList.orEmpty()
+    moduleBlock?.structDefList.orEmpty()
 
 fun MoveModuleDef.nativeStructs(): List<MoveNativeStructDef> =
-    this.moduleBlock?.nativeStructDefList.orEmpty()
+    moduleBlock?.nativeStructDefList.orEmpty()
 
 fun MoveModuleDef.consts(): List<MoveConstDef> =
-    this.moduleBlock?.constDefList.orEmpty()
+    moduleBlock?.constDefList.orEmpty()
 
 fun MoveModuleDef.schemas(): List<MoveSchemaDef> =
-    this.moduleBlock?.schemaDefList.orEmpty()
+    moduleBlock?.itemSpecDefList.orEmpty().mapNotNull { it.schemaDef }

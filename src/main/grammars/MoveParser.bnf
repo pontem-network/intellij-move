@@ -148,7 +148,7 @@ private ModuleItem_first ::= use | public | native | fun | const | resource | st
 private ModuleItem_recover ::= !('}' | ModuleItem_first)
 
 private ModuleItem ::= ImportStatement | StructDef | NativeStructDef |
-                            FunctionDef | NativeFunctionDef | ConstDef | SpecItem
+                            FunctionDef | NativeFunctionDef | ConstDef | ItemSpecDef
 
 ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
 {
@@ -628,32 +628,40 @@ ModuleRef ::= IDENTIFIER
 // Specs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //SpecDef ::= spec SpecInnerItem { pin = 1 }
-private SpecItem ::= FunctionSpec
-                          | ModuleSpec
-                          | StructSpec
-                          | SchemaDef
-                          | SpecDefineFunction
-                          | NativeDefineFunction
+ItemSpecDef ::= spec (FunctionSpec
+                      | ModuleSpec
+                      | StructSpec
+                      | SchemaDef
+                      | DefineFunctionSpec
+                      | NativeDefineFunctionSpec)
+{
+    pin = 1
+}
 
-SchemaDef ::= spec schema IDENTIFIER TypeParameterList? SpecBlock {
-  pin = 2
+SchemaDef ::= schema IDENTIFIER TypeParameterList? SpecBlock {
+  pin = 1
   implements = [
     "org.move.lang.core.psi.MoveTypeParametersOwner"
     "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
   mixin = "org.move.lang.core.psi.mixins.MoveSchemaDefMixin"
 }
 
-FunctionSpec ::= spec fun IDENTIFIER SpecBlock {
-    pin = 2
+FunctionSpec ::= fun IDENTIFIER SpecBlock
+{
+    pin = 1
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionSpecMixin"
 }
-StructSpec ::= spec struct IDENTIFIER SpecBlock {
-    pin = 2
+StructSpec ::= struct IDENTIFIER SpecBlock
+{
+    pin = 1
     implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveStructSpecMixin"
 }
-ModuleSpec ::= spec module SpecBlock { pin = 2 }
+ModuleSpec ::= module SpecBlock
+{
+    pin = 1
+}
 
 DefineFunction ::= define IDENTIFIER TypeParameterList?
                                            FunctionParameterList
@@ -668,12 +676,12 @@ DefineFunction ::= define IDENTIFIER TypeParameterList?
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveDefineFunctionMixin"
 }
-SpecDefineFunction ::= spec define IDENTIFIER TypeParameterList?
-                                                   FunctionParameterList
-                                                   ReturnType?
-                                                   SpecBlock
+DefineFunctionSpec ::= define IDENTIFIER TypeParameterList?
+                                               FunctionParameterList
+                                               ReturnType?
+                                               SpecBlock
 {
-    pin = 2
+    pin = 1
     implements = [
 //        "org.move.lang.core.psi.MoveNameIdentifierOwner"
         "org.move.lang.core.psi.MoveTypeParametersOwner"
@@ -692,11 +700,11 @@ NativeDefineFunction ::= native define IDENTIFIER TypeParameterList?
         "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
 }
-SpecNativeDefineFunction ::= spec native define IDENTIFIER TypeParameterList?
+NativeDefineFunctionSpec ::= native define IDENTIFIER TypeParameterList?
                                                                FunctionParameterList
                                                                ReturnType? ';'
 {
-    pin = 3
+    pin = 2
     implements = [
 //        "org.move.lang.core.psi.MoveNameIdentifierOwner"
         "org.move.lang.core.psi.MoveTypeParametersOwner"
@@ -709,30 +717,68 @@ BlockSpecStatement ::= spec SpecBlock ';' {
 //    extends = Statement
 }
 
-SpecBlock ::= '{' SpecBlockItems '}' { pin = 1 }
-private SpecBlockItems ::= (
-                                Statement
-                                | DefineFunction | SpecDefineFunction
-                                | NativeDefineFunction | SpecNativeDefineFunction
-                                | VariableStatement | LocalVariableStatement | GlobalVariableStatement
-                                | PragmaStatement
-                                | AssumeStatement
-                                | AssertStatement
-                                | AbortsIfStatement
-                                | SucceedsIfStatement
-                                | RequiresStatement
-                                | EnsuresStatement
-                                | ModifiesStatement
-                                | IncludeStatement
-                                | InvariantStatement
-                                | ApplyStatement
-                                | AggregatePredicateStatement
-                            )*
-                            (SpecExpr | AggregatePredicate | Expr)?
+SpecBlock ::= '{'
+                SpecBlockStatement_with_recover*
+                SpecBlockFinishingExpr_with_recover?
+              '}'
 {
-    recoverWhile = SpecBlock_body_recover
+    pin = 1
 }
-private SpecBlock_body_recover ::= !'}'
+//private SpecBlockItems ::= SpecBlockStatement_with_recover*
+//                            SpecBlockFinishingExpr_with_recover?
+//private ScriptBlockItem_with_recover ::= !('}' | <<eof>>) (ImportStatement | FunctionDef)
+//{
+//    pin = 1
+//    recoverWhile = ScriptBlockItem_recover
+//}
+private SpecBlockStatement_with_recover ::= !('}' | <<eof>>) SpecBlockStatement
+{
+    pin = 1
+}
+private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinishingExpr
+{
+    pin = 1
+}
+private SpecBlockStatement ::= Statement
+                               | DefineFunction | DefineFunctionSpec
+                               | NativeDefineFunction | NativeDefineFunctionSpec
+                               | VariableStatement | LocalVariableStatement | GlobalVariableStatement
+                               | PragmaStatement
+                               | AssumeStatement
+                               | AssertStatement
+                               | AbortsIfStatement
+                               | SucceedsIfStatement
+                               | RequiresStatement
+                               | EnsuresStatement
+                               | ModifiesStatement
+                               | IncludeStatement
+                               | InvariantStatement
+                               | ApplyStatement
+                               | AggregatePredicateStatement
+private SpecBlockFinishingExpr ::= SpecExpr | AggregatePredicate | Expr
+//private SpecBlockItems ::= (
+//                                Statement
+//                                | DefineFunction | DefineFunctionSpec
+//                                | NativeDefineFunction | NativeDefineFunctionSpec
+//                                | VariableStatement | LocalVariableStatement | GlobalVariableStatement
+//                                | PragmaStatement
+//                                | AssumeStatement
+//                                | AssertStatement
+//                                | AbortsIfStatement
+//                                | SucceedsIfStatement
+//                                | RequiresStatement
+//                                | EnsuresStatement
+//                                | ModifiesStatement
+//                                | IncludeStatement
+//                                | InvariantStatement
+//                                | ApplyStatement
+//                                | AggregatePredicateStatement
+//                            )*
+//                            (SpecExpr | AggregatePredicate | Expr)?
+//{
+//    recoverWhile = SpecBlockItems_recover
+//}
+//private SpecBlockItems_recover ::= !'}'
 
 VariableStatement ::= RefExpr ':' Type ';'
 LocalVariableStatement ::= local RefExpr ':' Type ';' { pin = 1 }

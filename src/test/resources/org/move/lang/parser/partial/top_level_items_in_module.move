@@ -38,18 +38,6 @@ module M7 {
     fun main() {}
 }
 
-module M81 {
-    spec fun
-
-    fun main() {}
-}
-
-module M82 {
-    spec fun main
-
-    fun main() {}
-}
-
 module M9 {
     struct MyStruct
     struct MyStruct2 {}
