@@ -71,7 +71,7 @@ FILE
           PsiWhiteSpace(' ')
           MoveLiteralExprImpl(LITERAL_EXPR)
             PsiElement(INTEGER_LITERAL)('1')
-        PsiErrorElement:';' expected, got 'fun'
+        PsiErrorElement:';' or '=' expected, got 'fun'
           <empty list>
       PsiWhiteSpace('\n\n    ')
       MoveFunctionDefImpl(FUNCTION_DEF)

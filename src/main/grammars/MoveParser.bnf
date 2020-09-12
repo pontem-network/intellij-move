@@ -611,7 +611,7 @@ ElseBlock ::= else AnyBlock { pin = 1 }
 LoopExpr ::= loop AnyBlock { pin = 1 }
 WhileExpr ::= while Condition AnyBlock { pin = 1 }
 
-AssignmentExpr ::= Expr '=' Expr { rightAssociative = true }
+AssignmentExpr ::= Expr Initializer { rightAssociative = true }
 
 LetExpr ::= let Pat TypeAnnotation? Initializer? {
     pin = 1

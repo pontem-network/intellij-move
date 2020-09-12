@@ -21,8 +21,10 @@ fun MoveFormatterBlock.computeIndent(child: ASTNode): Indent? {
         //     let a =
         //         92;
         // except if RefExpr as lhs of assignment expr
+//        childPsi is MoveExpr
+//                && (parentType == LET_EXPR || parentType == ASSIGNMENT_EXPR || parentType == CONST_DEF) -> Indent.getNormalIndent()
         childPsi is MoveExpr
-                && (parentType == LET_EXPR || parentType == ASSIGNMENT_EXPR || parentType == CONST_DEF) -> Indent.getNormalIndent()
+                && parentPsi is MoveInitializer -> Indent.getNormalIndent()
 //        if (true)
 //            create()
 //        else
