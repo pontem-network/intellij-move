@@ -361,7 +361,16 @@ TupleType ::= '(' <<comma_sep_items Type>>? ')' { pin = 1 }
 
 LambdaType ::= '|' <<comma_sep_items Type>>? '|' Type { pin = 1 }
 
-TypeParameterList ::= '<' <<comma_sep_items TypeParameter>>? '>'
+TypeParameterList ::= '<' TypeParameterList_items? '>'
+{
+    pin = 1
+}
+private TypeParameterList_items ::= <<comma_sep_items (TypeParameter &(','|'>'))>>
+{
+    recoverWhile = TypeParameterList_items_recovery
+}
+private TypeParameterList_items_recovery ::= !('{'|'('|'>')
+
 TypeParameter ::= IDENTIFIER TypeParamBound? {
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.mixins.MoveTypeParameterMixin"

@@ -6,4 +6,9 @@ module M {
     fun main() acquires {}
     fun main() acquires U,,{}
     fun main() acquires U V{}
+
+    fun main<() {}
+    fun main<U() {}
+    fun main<U,V,() {}
+    fun main<U V>() {}
 }
