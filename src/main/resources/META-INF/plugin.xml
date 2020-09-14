@@ -67,7 +67,7 @@
         <lang.commenter language="Move"
                         implementationClass="org.move.ide.MoveCommenter"/>
         <lang.braceMatcher language="Move"
-                           implementationClass="org.move.ide.MoveBraceMatcher"/>
+                           implementationClass="org.move.ide.typing.MoveBraceMatcher"/>
         <lang.formatter language="Move"
                         implementationClass="org.move.ide.formatter.MoveFormattingModelBuilder"/>
 

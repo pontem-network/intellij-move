@@ -1,4 +1,4 @@
-package org.move.ide
+package org.move.ide.typing
 
 import com.intellij.codeInsight.highlighting.PairedBraceMatcherAdapter
 import com.intellij.lang.BracePair
