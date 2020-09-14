@@ -228,10 +228,21 @@ private FunctionParameter_recover ::= !(','|')')
 
 // u8 | (u8,) | (u8, u8) | (u8, u8,)
 // tuples only allowed as a return types
-ReturnType ::= ':' Type { pin = 1 }
+ReturnType ::= ':' ReturnType_type { pin = 1 }
+private ReturnType_type ::= Type
+{
+    pin = 1
+    recoverWhile = ReturnType_type_recover
+}
+private ReturnType_type_recover ::= !( '{' | ';' | acquires )
 
 // acquires T, Record
-AcquiresType ::= acquires <<comma_sep_items QualifiedPathType>> { pin = 1 }
+AcquiresType ::= acquires AcquiresType_items { pin = 1 }
+private AcquiresType_items ::= <<comma_sep_items QualifiedPathType>>
+{
+    recoverWhile = AcquiresType_items_recover
+}
+private AcquiresType_items_recover ::= !(';' | '{')
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
