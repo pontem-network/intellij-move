@@ -378,6 +378,11 @@ TypeParameter ::= IDENTIFIER TypeParamBound? {
 TypeParamBound ::= ':' (copyable | resource)
 
 TypeArgumentList ::= '<' <<comma_sep_items (QualifiedPathType &(','|'>'))>>? '>'
+//private TypeArgumentList_items ::= <<comma_sep_items (QualifiedPathType &(','|'>'))>>
+//{
+//    recoverWhile = TypeArgumentList_items_recover
+//}
+//private TypeArgumentList_items_recover ::= !('>'|'('|'{')
 //private TypeArgument ::= TypeRef &(','|'>')
 //{
 //    recoverWhile = "TypeArgument_recover"
@@ -440,7 +445,7 @@ private StatementExpr ::= IfExpr
 {
     recoverWhile = "StatementExpr_recover"
 }
-private StatementExpr_recover ::= '!;'
+private StatementExpr_recover ::= !(';' | '}')
 
 //InlineSpecBlock ::= spec SpecBlock { pin = 1 }
 
@@ -465,13 +470,13 @@ private AnyBlock ::= CodeBlock | InlineBlock
 InlineBlock ::= Expr
 
 CodeBlockExpr ::= '{' CodeBlockItems '}'
-CodeBlock ::= '{' CodeBlockItems  '}'
+CodeBlock ::= '{' CodeBlockItems  '}' { pin = 1 }
 
 private CodeBlockItems ::= ImportStatement* (Statement | BlockSpecStatement)* Expr?
-//{
-//    recoverWhile = "CodeBlock_body_recover"
-//}
-//private CodeBlock_body_recover ::= !'}'
+{
+    recoverWhile = "CodeBlockItems_recover"
+}
+private CodeBlockItems_recover ::= !'}'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Expressions
@@ -605,12 +610,14 @@ LiteralExpr ::= BOOL_LITERAL
                 | BYTE_STRING_LITERAL
                 | ADDRESS_LITERAL
 
-CallExpr ::= QualifiedPath CallArguments {
+CallExpr ::= (QualifiedPath &'(') CallArguments
+{
+    pin = 1
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveCallExprMixin"
 }
 
-CallArguments ::= '(' <<comma_sep_items Expr>>? ')' { pin = 1 }
+CallArguments ::= '(' <<comma_sep_items (Expr &(','|')'))>>? ')' { pin = 1 }
 //private CallArgument ::= Expr {
 //    recoverWhile = "CallArgument_recover"
 //}
