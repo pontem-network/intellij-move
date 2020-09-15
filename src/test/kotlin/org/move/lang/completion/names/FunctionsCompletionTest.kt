@@ -2,7 +2,7 @@ package org.move.lang.completion.names
 
 import org.move.utils.tests.completion.CompletionTestCase
 
-class FunctionsCompletionTest: CompletionTestCase() {
+class FunctionsCompletionTest : CompletionTestCase() {
     fun `test function call zero args`() = doSingleCompletion("""
         module M {
             fun frobnicate() {}
@@ -113,19 +113,33 @@ class FunctionsCompletionTest: CompletionTestCase() {
         }
     """)
 
-//    fun `test generic function call with type parameters`() = doSingleCompletion("""
-//        module M {
-//            fun frobnicate<T>(a: T) {}
-//            fun main() {
-//                frob/*caret*/
-//            }
-//        }
-//    """, """
-//        module M {
-//            fun frobnicate<T>(a: T) {}
-//            fun main() {
-//                frobnicate</*caret*/>()
-//            }
-//        }
-//    """)
+    fun `test generic function call with type parameters`() = doSingleCompletion("""
+        module M {
+            fun frobnicate<T>(a: T) {}
+            fun main() {
+                frob/*caret*/
+            }
+        }
+    """, """
+        module M {
+            fun frobnicate<T>(a: T) {}
+            fun main() {
+                frobnicate</*caret*/>()
+            }
+        }
+    """)
+
+    fun `test type parameters accessible in types completion`() = doSingleCompletion("""
+        module M {
+            fun main<CoinType>() {
+                let a: Coi/*caret*/
+            }
+        }
+    """, """
+        module M {
+            fun main<CoinType>() {
+                let a: CoinType/*caret*/
+            }
+        }
+    """)
 }

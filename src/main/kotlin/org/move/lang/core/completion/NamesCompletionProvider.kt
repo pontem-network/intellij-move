@@ -1,32 +1,42 @@
 package org.move.lang.core.completion
 
 import com.intellij.codeInsight.completion.CompletionParameters
-import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.MoveElementTypes
+import org.move.lang.core.MovePsiPatterns
 import org.move.lang.core.psi.*
-import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.processNestedScopesUpwards
 import org.move.lang.core.resolve.ref.Namespace
 
 object NamesCompletionProvider : MoveCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
-        get() {
-            val directRefIdentifier =
-                PlatformPatterns.psiElement()
-                    .withElementType(MoveElementTypes.IDENTIFIER)
-                    .withParent(psiElement<MoveReferenceElement>())
-            val qualifiedPathIdentifier =
-                PlatformPatterns.psiElement()
-                    .withElementType(MoveElementTypes.IDENTIFIER)
-                    .withParent(psiElement<MoveQualifiedPath>())
-                    .withSuperParent(2, psiElement<MoveReferenceElement>())
-            return PlatformPatterns.or(directRefIdentifier, qualifiedPathIdentifier)
-        }
+        get() =
+            PlatformPatterns.or(
+                MovePsiPatterns.qualifiedPathIdentifier(),
+                MovePsiPatterns.specIdentifier()
+            )
+//    override val elementPattern: ElementPattern<PsiElement>
+//        get() =
+//            PlatformPatterns.psiElement().withSuperParent()
+//                .andNot(PlatformPatterns.psiElement()
+//                    .withSuperParent<MoveQualifiedPathType>(2))
+
+//    override val elementPattern: ElementPattern<PsiElement>
+//        get() {
+//            val directRefIdentifier =
+//                PlatformPatterns.psiElement()
+//                    .withElementType(MoveElementTypes.IDENTIFIER)
+//                    .withParent(psiElement<MoveReferenceElement>())
+//            val qualifiedPathIdentifier =
+//                PlatformPatterns.psiElement()
+//                    .withElementType(MoveElementTypes.IDENTIFIER)
+//                    .withParent(psiElement<MoveQualifiedPath>())
+//                    .withSuperParent<MoveReferenceElement>(2)
+//            return PlatformPatterns.or(directRefIdentifier, qualifiedPathIdentifier)
+//        }
 
     override fun addCompletions(
         parameters: CompletionParameters,

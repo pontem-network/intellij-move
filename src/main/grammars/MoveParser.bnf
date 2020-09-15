@@ -177,7 +177,7 @@ NativeFunctionDef ::= native public? fun IDENTIFIER TypeParameterList?
     name = "native function"
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.psi.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveNativeFunctionDefMixin"
@@ -193,7 +193,7 @@ FunctionDef ::= public? fun IDENTIFIER TypeParameterList?
     name = "function"
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.psi.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
 //    extends = "org.move.lang.core.psi.MoveStubbedNamedElementImpl<?>"
@@ -720,7 +720,7 @@ DefineFunction ::= define IDENTIFIER TypeParameterList?
     pin = 1
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.psi.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveDefineFunctionMixin"
@@ -733,7 +733,7 @@ DefineFunctionSpec ::= define IDENTIFIER TypeParameterList?
     pin = 1
     implements = [
 //        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.psi.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
 }
@@ -745,7 +745,7 @@ NativeDefineFunction ::= native define IDENTIFIER TypeParameterList?
     pin = 2
     implements = [
 //        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.psi.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
 }
@@ -756,7 +756,7 @@ NativeDefineFunctionSpec ::= native define IDENTIFIER TypeParameterList?
     pin = 2
     implements = [
 //        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.psi.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
 }

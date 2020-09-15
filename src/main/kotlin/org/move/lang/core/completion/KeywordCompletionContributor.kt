@@ -6,12 +6,12 @@ import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.patterns.PsiElementPattern
 import com.intellij.psi.PsiElement
 import org.move.lang.MoveElementTypes.IDENTIFIER
-import org.move.lang.core.MovePattern
-import org.move.lang.core.MovePattern.addressBlock
-import org.move.lang.core.MovePattern.codeStatement
-import org.move.lang.core.MovePattern.moduleBlock
-import org.move.lang.core.MovePattern.scriptBlock
-import org.move.lang.core.MovePattern.toplevel
+import org.move.lang.core.MovePsiPatterns
+import org.move.lang.core.MovePsiPatterns.addressBlock
+import org.move.lang.core.MovePsiPatterns.codeStatement
+import org.move.lang.core.MovePsiPatterns.moduleBlock
+import org.move.lang.core.MovePsiPatterns.scriptBlock
+import org.move.lang.core.MovePsiPatterns.toplevel
 
 class KeywordCompletionContributor : CompletionContributor() {
     init {
@@ -84,7 +84,7 @@ class KeywordCompletionContributor : CompletionContributor() {
     }
 
     private fun onStatementBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
-        psiElement(IDENTIFIER).and(MovePattern.onStatementBeginning(*startWords))
+        psiElement(IDENTIFIER).and(MovePsiPatterns.onStatementBeginning(*startWords))
 
 //    private fun newCodeStatement(): PsiElementPattern.Capture<PsiElement> =
 //        psiElement().inside(psiElement<MoveCodeBlock>())

@@ -55,25 +55,27 @@ fun functionInsertHandler(isSpec: Boolean, hasParams: Boolean): InsertHandler<Lo
         }
     }
 
-fun MoveNamedElement.createLookupElement(isSpec: Boolean): LookupElement {
+fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupElement {
+    val insertHandler = DefaultInsertHandler(isSpecIdentifier)
     return when (this) {
         is MoveFunctionSignatureOwner -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTailText(this.functionParameterList?.compactText ?: "()")
             .withTypeText(this.returnType?.type?.text ?: "()")
-            .withInsertHandler{ ctx, _ ->
-                if (isSpec) {
-                    if (!ctx.alreadyHasSpace) ctx.addSuffix(" ")
-                } else {
-                    if (!ctx.alreadyHasCallParens) {
-                        ctx.document.insertString(ctx.selectionEndOffset, "()")
-                    }
-                    EditorModificationUtil.moveCaretRelatively(
-                        ctx.editor,
-                        if (this.parameters.isEmpty()) 2 else 1
-                    )
-                }
-            }
+            .withInsertHandler(insertHandler)
+//            .withInsertHandler { ctx, _ ->
+//                if (isSpecIdentifier) {
+//                    if (!ctx.alreadyHasSpace) ctx.addSuffix(" ")
+//                } else {
+//                    if (!ctx.alreadyHasCallParens) {
+//                        ctx.document.insertString(ctx.selectionEndOffset, "()")
+//                    }
+//                    EditorModificationUtil.moveCaretRelatively(
+//                        ctx.editor,
+//                        if (this.parameters.isEmpty()) 2 else 1
+//                    )
+//                }
+//            }
 
         is MoveConstDef -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
@@ -82,10 +84,11 @@ fun MoveNamedElement.createLookupElement(isSpec: Boolean): LookupElement {
         is MoveStructDef -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTailText(" { ... }")
-            .withInsertHandler { ctx, _ ->
-                if (isSpec && !ctx.alreadyHasSpace)
-                    ctx.addSuffix(" ")
-            }
+            .withInsertHandler(insertHandler)
+//            .withInsertHandler { ctx, _ ->
+//                if (isSpecIdentifier && !ctx.alreadyHasSpace)
+//                    ctx.addSuffix(" ")
+//            }
 
         is MoveFunctionParameter -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
@@ -153,3 +156,92 @@ private fun CharSequence.indexOfSkippingSpace(c: Char, startIndex: Int): Int? {
 
 fun LookupElementBuilder.withPriority(priority: Double): LookupElement =
     if (priority == DEFAULT_PRIORITY) this else PrioritizedLookupElement.withPriority(this, priority)
+
+
+class DefaultInsertHandler(private val isSpecIdentifier: Boolean) : InsertHandler<LookupElement> {
+    override fun handleInsert(context: InsertionContext, item: LookupElement) {
+        val document = context.document
+        val element = item.psiElement as? MoveElement ?: return
+
+//        if (element is MoveTypeParametersOwner) {
+//            addGenericTypeCompletion(element, document, context)
+//        }
+
+        when (element) {
+            is MoveFunctionSignatureOwner -> {
+                val angleBrackets = element.hasTypeParameters && !isSpecIdentifier
+                if (angleBrackets) {
+                    if (!context.alreadyHasAngleBrackets) {
+                        document.insertString(context.selectionEndOffset, "<>")
+                    }
+                    EditorModificationUtil.moveCaretRelatively(context.editor, 1)
+                }
+                if (isSpecIdentifier) {
+                    if (!context.alreadyHasSpace) context.addSuffix(" ")
+                } else {
+                    if (!context.alreadyHasCallParens) {
+                        document.insertString(context.selectionEndOffset, "()")
+                    }
+                    if (!angleBrackets) {
+                        EditorModificationUtil.moveCaretRelatively(
+                            context.editor,
+                            if (element.parameters.isEmpty()) 2 else 1
+                        )
+                    }
+                }
+            }
+            is MoveStructDef -> {
+                if (isSpecIdentifier && !context.alreadyHasSpace)
+                    context.addSuffix(" ")
+
+                if (element.hasTypeParameters && !isSpecIdentifier) {
+                    if (!context.alreadyHasAngleBrackets) {
+                        document.insertString(context.selectionEndOffset, "<>")
+                    }
+                    EditorModificationUtil.moveCaretRelatively(context.editor, 1)
+                }
+            }
+        }
+    }
+
+}
+
+//private fun addGenericTypeCompletion(
+//    element: MoveTypeParametersOwner,
+//    document: Document,
+//    context: InsertionContext,
+//) {
+//    // complete only types that have at least one type parameter without a default
+//    if (element.typeParameters.isEmpty()) return
+//
+//    if (!context.alreadyHasAngleBrackets) {
+//        document.insertString(context.selectionEndOffset, "<>")
+//    }
+//
+//    if (element is MoveFunctionSignatureOwner) {
+//        // functions
+//        if (!context.alreadyHasCallParens) {
+//            document.insertString(context.selectionEndOffset, "()")
+//        }
+//    } else {
+//        // structs
+//        if (!context.alreadyHasAngleBrackets) {
+//            document.insertString(context.selectionEndOffset, "<>")
+//        }
+//    }
+
+
+// complete angle brackets only in a type context
+//    val path = context.getElementOfType<RsPath>()
+//    if (path == null || path.parent !is RsTypeReference) return
+
+//    if (element.isFnLikeTrait) {
+//        if (!context.alreadyHasCallParens) {
+//            document.insertString(context.selectionEndOffset, "()")
+//            context.doNotAddOpenParenCompletionChar()
+//        }
+//    } else {
+//    }
+//
+//    EditorModificationUtil.moveCaretRelatively(context.editor, 1)
+//}

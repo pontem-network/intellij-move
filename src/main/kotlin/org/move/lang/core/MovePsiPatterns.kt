@@ -9,13 +9,10 @@ import com.intellij.psi.tree.TokenSet
 import com.intellij.util.ProcessingContext
 import org.move.lang.MoveElementTypes.*
 import org.move.lang.MoveFile
-import org.move.lang.core.psi.MoveAddressBlock
-import org.move.lang.core.psi.MoveCodeBlock
-import org.move.lang.core.psi.MoveModuleBlock
-import org.move.lang.core.psi.MoveScriptBlock
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.leftLeaves
 
-object MovePattern {
+object MovePsiPatterns {
     private val STATEMENT_BOUNDARIES = TokenSet.create(SEMICOLON, L_BRACE, R_BRACE)
 
     val whitespace: PsiElementPattern.Capture<PsiElement> = PlatformPatterns.psiElement().whitespace()
@@ -40,6 +37,24 @@ object MovePattern {
 
     fun codeStatement(): PsiElementPattern.Capture<PsiElement> =
         psiElementInside<MoveCodeBlock>()
+
+    fun typeRef(): PsiElementPattern.Capture<PsiElement> =
+        PlatformPatterns.psiElement()
+            .withSuperParent<MoveQualifiedPathType>(2)
+
+    fun qualifiedPathIdentifier(): PsiElementPattern.Capture<PsiElement> =
+        PlatformPatterns.psiElement()
+            .withParent<MoveQualifiedPath>()
+            .withCond("FirstChild") { e -> e.prevSibling == null }
+
+    fun qualifiedPathTypeIdentifier(): PsiElementPattern.Capture<PsiElement> =
+        PlatformPatterns.psiElement()
+            .withSuperParent<MoveQualifiedPathType>(2)
+            .withCond("FirstChild") { e -> e.prevSibling == null }
+
+    fun specIdentifier(): PsiElementPattern.Capture<PsiElement> =
+        PlatformPatterns.psiElement()
+            .withSuperParent<MoveItemSpecDef>(2)
 
     private inline fun <reified I : PsiElement> psiElementWithParent() =
         PlatformPatterns.psiElement().withParent(
@@ -84,11 +99,18 @@ inline fun <reified I : PsiElement> psiElement(): PsiElementPattern.Capture<I> {
     return PlatformPatterns.psiElement(I::class.java)
 }
 
+inline fun <reified I : PsiElement> PsiElementPattern.Capture<PsiElement>.withParent(): PsiElementPattern.Capture<PsiElement> {
+    return this.withSuperParent(1, I::class.java)
+}
+
 inline fun <reified I : PsiElement> PsiElementPattern.Capture<PsiElement>.withSuperParent(level: Int): PsiElementPattern.Capture<PsiElement> {
     return this.withSuperParent(level, I::class.java)
 }
 
-fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCond(name: String, cond: (T) -> Boolean): Self =
+fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCond(
+    name: String,
+    cond: (T) -> Boolean,
+): Self =
     with(object : PatternCondition<T>(name) {
         override fun accepts(t: T, context: ProcessingContext?): Boolean = cond(t)
     })

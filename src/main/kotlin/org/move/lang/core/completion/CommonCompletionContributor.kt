@@ -5,8 +5,9 @@ import com.intellij.codeInsight.completion.CompletionType
 
 class CommonCompletionContributor : CompletionContributor() {
     init {
-        extend(CompletionType.BASIC, NamesCompletionProvider)
         extend(CompletionType.BASIC, PrimitiveTypesCompletionProvider)
+        extend(CompletionType.BASIC, NamesCompletionProvider)
+        extend(CompletionType.BASIC, TypesCompletionProvider)
     }
 
     fun extend(type: CompletionType?, provider: MoveCompletionProvider) {

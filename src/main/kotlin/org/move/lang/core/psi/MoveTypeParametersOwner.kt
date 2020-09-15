@@ -5,4 +5,9 @@ interface MoveTypeParametersOwner : MoveElement {
 }
 
 val MoveTypeParametersOwner.typeParameters: List<MoveTypeParameter>
-    get() = typeParameterList?.typeParameterList.orEmpty()
+    get() =
+        typeParameterList?.typeParameterList.orEmpty()
+
+val MoveTypeParametersOwner.hasTypeParameters: Boolean
+    get() =
+        typeParameters.isNotEmpty()

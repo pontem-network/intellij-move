@@ -1,6 +1,6 @@
 package org.move.lang.core.psi
 
-interface MoveFunctionSignatureOwner : MoveElement {
+interface MoveFunctionSignatureOwner : MoveTypeParametersOwner {
     val functionParameterList: MoveFunctionParameterList?
     val returnType: MoveReturnType?
 }

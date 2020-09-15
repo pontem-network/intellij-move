@@ -43,35 +43,49 @@ class StructsCompletionTest: CompletionTestCase() {
         }
     """)
 
-//    fun `test struct with type parameters`() = doSingleCompletion("""
-//        module M {
-//            struct Frobnicate<T> { val: T }
-//            fun main() {
-//                let x: Frob/*caret*/;
-//            }
-//        }
-//    """, """
-//        module M {
-//            struct Frobnicate<T> { val: T }
-//            fun main() {
-//                let x: Frobnicate</*caret*/>;
-//            }
-//        }
-//    """)
+    fun `test type parameters accessible in fields types completion`() = doSingleCompletion("""
+        module M {
+            struct MyStruct<CoinType> { 
+                val: Coin/*caret*/ 
+            }
+        }
+    """, """
+        module M {
+            struct MyStruct<CoinType> { 
+                val: CoinType/*caret*/ 
+            }
+        }
+    """)
 
-//    fun `test struct with type parameters angle brackets already exist`() = doSingleCompletion("""
-//        module M {
-//            struct Frobnicate<T> { val: T }
-//            fun main() {
-//                let x: Frob/*caret*/<>;
-//            }
-//        }
-//    """, """
-//        module M {
-//            struct Frobnicate<T> { val: T }
-//            fun main() {
-//                let x: Frobnicate</*caret*/>;
-//            }
-//        }
-//    """)
+    fun `test struct with type parameters`() = doSingleCompletion("""
+        module M {
+            struct Frobnicate<T> { val: T }
+            fun main() {
+                let x: Frob/*caret*/;
+            }
+        }
+    """, """
+        module M {
+            struct Frobnicate<T> { val: T }
+            fun main() {
+                let x: Frobnicate</*caret*/>;
+            }
+        }
+    """)
+
+    fun `test struct with type parameters angle brackets already exist`() = doSingleCompletion("""
+        module M {
+            struct Frobnicate<T> { val: T }
+            fun main() {
+                let x: Frob/*caret*/<>;
+            }
+        }
+    """, """
+        module M {
+            struct Frobnicate<T> { val: T }
+            fun main() {
+                let x: Frobnicate</*caret*/>;
+            }
+        }
+    """)
 }
