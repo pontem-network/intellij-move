@@ -1,5 +1,11 @@
 module M {
     spec module {
+        sending: &mut signer;
+
+        amount: u64;
+        local amount: u64;
+        global amount: u64;
+
         invariant x > 0;
         invariant x == y;
         invariant module old(y) < x;

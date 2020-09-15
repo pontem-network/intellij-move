@@ -788,10 +788,10 @@ private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinish
 //{
 //    pin = 1
 //}
-private SpecBlockStatement ::= Statement
+private SpecBlockStatement ::= VariableStatement | LocalVariableStatement | GlobalVariableStatement
+                               | Statement
                                | DefineFunction | DefineFunctionSpec
                                | NativeDefineFunction | NativeDefineFunctionSpec
-                               | VariableStatement | LocalVariableStatement | GlobalVariableStatement
                                | PragmaStatement
                                | AssumeStatement
                                | AssertStatement
@@ -829,9 +829,10 @@ private SpecBlockFinishingExpr ::= SpecExpr | AggregatePredicate | Expr
 //}
 //private SpecBlockItems_recover ::= !'}'
 
-VariableStatement ::= RefExpr ':' Type ';'
-LocalVariableStatement ::= local RefExpr ':' Type ';' { pin = 1 }
-GlobalVariableStatement ::= global RefExpr ':' Type ';' { pin = 1 }
+VariableStatement ::= RefExpr TypeAnnotation ';' { pin = 2 }
+
+LocalVariableStatement ::= local RefExpr TypeAnnotation ';' { pin = 1 }
+GlobalVariableStatement ::= global RefExpr TypeAnnotation ';' { pin = 1 }
 
 PragmaStatement ::= pragma <<comma_sep_items PragmaAttribute>> ';' { pin = 1 }
 PragmaAttribute ::= IDENTIFIER ('=' LiteralExpr)?
