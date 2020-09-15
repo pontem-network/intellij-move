@@ -1,9 +1,6 @@
 package org.move.lang.core
 
-import com.intellij.patterns.PatternCondition
-import com.intellij.patterns.PlatformPatterns
-import com.intellij.patterns.PsiElementPattern
-import com.intellij.patterns.StandardPatterns
+import com.intellij.patterns.*
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
@@ -86,6 +83,15 @@ private val PsiElement.prevVisibleOrNewLine: PsiElement?
 inline fun <reified I : PsiElement> psiElement(): PsiElementPattern.Capture<I> {
     return PlatformPatterns.psiElement(I::class.java)
 }
+
+inline fun <reified I : PsiElement> PsiElementPattern.Capture<PsiElement>.withSuperParent(level: Int): PsiElementPattern.Capture<PsiElement> {
+    return this.withSuperParent(level, I::class.java)
+}
+
+fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCond(name: String, cond: (T) -> Boolean): Self =
+    with(object : PatternCondition<T>(name) {
+        override fun accepts(t: T, context: ProcessingContext?): Boolean = cond(t)
+    })
 
 //
 //inline fun <reified I : PsiElement> psiElementOrError(): PsiElementPattern.Capture<I> {

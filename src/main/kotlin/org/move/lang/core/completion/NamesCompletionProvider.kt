@@ -13,8 +13,8 @@ import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.processNestedScopesUpwards
 import org.move.lang.core.resolve.ref.Namespace
 
-object CommonCompletionProvider : CompletionProvider<CompletionParameters>() {
-    val elementPattern: ElementPattern<PsiElement>
+object NamesCompletionProvider : MoveCompletionProvider() {
+    override val elementPattern: ElementPattern<PsiElement>
         get() {
             val directRefIdentifier =
                 PlatformPatterns.psiElement()

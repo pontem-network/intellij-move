@@ -2,11 +2,14 @@ package org.move.lang.core.completion
 
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.compactText
+
+const val DEFAULT_PRIORITY = 0.0
 
 const val KEYWORD_PRIORITY = 80.0
 const val PRIMITIVE_TYPE_PRIORITY = KEYWORD_PRIORITY
@@ -148,3 +151,5 @@ private fun CharSequence.indexOfSkippingSpace(c: Char, startIndex: Int): Int? {
     return null
 }
 
+fun LookupElementBuilder.withPriority(priority: Double): LookupElement =
+    if (priority == DEFAULT_PRIORITY) this else PrioritizedLookupElement.withPriority(this, priority)
