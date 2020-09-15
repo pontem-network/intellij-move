@@ -18,6 +18,10 @@
             <ul>
                 <li>FEAT: add support for native structs</li>
                 <li>FEAT: highlight generic parameters</li>
+                <li>FEAT: add generic parameters to completion</li>
+                <li>FEAT: add primitive types to completion</li>
+                <li>FEAT: "define" name resolution</li>
+
                 <li>FEAT: fix remaining parser spec issues</li>
             </ul>
             <p>0.8.0</p>
