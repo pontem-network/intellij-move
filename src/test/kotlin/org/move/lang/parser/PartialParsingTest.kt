@@ -11,7 +11,4 @@ class PartialParsingTest: MoveParsingTestCase("partial") {
 
     // functions
     fun `test function signatures`() = doTest(true)
-
-    // specs
-    fun `test spec defines`() = doTest(true)
 }
