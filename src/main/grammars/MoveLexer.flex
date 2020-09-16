@@ -63,6 +63,8 @@ LINE_COMMENT=("//".*\n)|("//".*\R)
 // Literals
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ADDRESS_LITERAL=0x[0-9a-fA-F]{1,40}
+BECH32_ADDRESS_LITERAL=wallet1[A-Z0-9a-z&&[^boi1]]{6,83}
+
 BOOL_LITERAL=(true)|(false)
 INTEGER_LITERAL=[0-9]+((u8)|(u64)|(u128))?
 HEX_STRING_LITERAL=x\"([A-F0-9a-f]*)\"
@@ -224,6 +226,7 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
 
 <YYINITIAL,IN_SPEC,IN_APPLY_TO> {
   {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
+  {BECH32_ADDRESS_LITERAL}          { return BECH32_ADDRESS_LITERAL; }
   {BOOL_LITERAL}             { return BOOL_LITERAL; }
   {INTEGER_LITERAL}          { return INTEGER_LITERAL; }
   {HEX_STRING_LITERAL}       { return HEX_STRING_LITERAL; }

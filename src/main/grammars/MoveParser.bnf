@@ -30,6 +30,8 @@
         BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
 
         ADDRESS_LITERAL='regexp:0x[0-9a-fA-F]{1,40}'
+        BECH32_ADDRESS_LITERAL='regexp:wallet1[A-Z0-9a-z&&[^boi1]]{6,}'
+
         BOOL_LITERAL='regexp:(true)|(false)'
         INTEGER_LITERAL='regexp:[0-9]+((u8)|(u64)|(u128))?'
         HEX_STRING_LITERAL='regexp:x"([A-F0-9a-f]*)"'
@@ -111,7 +113,7 @@ private ScriptBlockItem_with_recover ::= !('}' | <<eof>>) (ImportStatement | Fun
 private ScriptBlockItem_first ::= use | fun
 private ScriptBlockItem_recover ::= !('}' | ScriptBlockItem_first)
 
-AddressDef ::= address ADDRESS_LITERAL AddressBlock {
+AddressDef ::= address AddressRef AddressBlock {
     pin = 1
 }
 AddressBlock ::= '{' AddressBlockItems '}' { pin = 1 }
@@ -609,6 +611,7 @@ LiteralExpr ::= BOOL_LITERAL
                 | HEX_STRING_LITERAL
                 | BYTE_STRING_LITERAL
                 | ADDRESS_LITERAL
+                | BECH32_ADDRESS_LITERAL
 
 CallExpr ::= (QualifiedPath &'(') CallArguments
 {
@@ -666,7 +669,7 @@ QualifiedPath ::= (AddressRef '::')? (ModuleRef '::')? IDENTIFIER TypeArgumentLi
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveQualifiedPathMixin"
 }
-AddressRef ::= ADDRESS_LITERAL
+AddressRef ::= ADDRESS_LITERAL | BECH32_ADDRESS_LITERAL
 ModuleRef ::= IDENTIFIER
 {
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]

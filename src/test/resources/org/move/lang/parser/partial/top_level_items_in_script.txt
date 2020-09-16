@@ -38,7 +38,7 @@ FILE
       PsiWhiteSpace('\n    ')
       MoveImportStatementImpl(IMPORT_STATEMENT)
         PsiElement(use)('use')
-        PsiErrorElement:ADDRESS_LITERAL expected, got 'fun'
+        PsiErrorElement:<address ref> expected, got 'fun'
           <empty list>
       PsiWhiteSpace('\n    ')
       MoveFunctionDefImpl(FUNCTION_DEF)

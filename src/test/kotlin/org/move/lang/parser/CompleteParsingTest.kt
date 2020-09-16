@@ -4,6 +4,7 @@ import org.move.utils.tests.parser.MoveParsingTestCase
 
 class CompleteParsingTest : MoveParsingTestCase("complete") {
     fun `test comments`() = doTest(true)
+    fun `test addresses`() = doTest(true)
 
     // functions
     fun `test function declarations`() = doTest(true)

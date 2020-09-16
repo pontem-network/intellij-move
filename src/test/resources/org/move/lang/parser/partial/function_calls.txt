@@ -22,7 +22,7 @@ FILE
                 PsiElement(IDENTIFIER)('call')
               MoveCallArgumentsImpl(CALL_ARGUMENTS)
                 PsiElement(()('(')
-              PsiErrorElement:')' or <expression> expected, got '1'
+              PsiErrorElement:')', <expression> or <qualified path> expected, got '1'
                 <empty list>
             PsiElement(INTEGER_LITERAL)('1')
             PsiElement(;)(';')
