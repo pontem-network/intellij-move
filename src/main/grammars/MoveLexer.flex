@@ -184,6 +184,8 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
   "local"                          { return LOCAL; }
   "isolated"                        { return ISOLATED; }
   "deactivated"                        { return DEACTIVATED; }
+  "concrete"                        { return CONCRETE; }
+  "abstract"                        { return ABSTRACT; }
 
   "update" / "("|"<"                        { return IDENTIFIER; }
   "update"                        { return UPDATE; }

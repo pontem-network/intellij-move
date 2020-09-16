@@ -877,11 +877,13 @@ FunctionPattern ::= (public | internal)? (FUNCTION_PATTERN_NAME | IDENTIFIER) Ty
 InvariantStatement ::= InvariantSpecExpr ';'
 InvariantSpecExpr ::= invariant
                     InvariantModifier?
-                    InvariantVisibility?
                     Predicate { pin = 1 }
 InvariantModifier ::= pack | unpack | module | update
-InvariantVisibility ::= '[' <<comma_sep_items InvariantVisibilityModifier>> ']' { pin = 1 }
-InvariantVisibilityModifier ::= global | isolated | deactivated
+
+SpecVisibility ::= '[' <<comma_sep_items VisibilityModifier>> ']' { pin = 1 }
+VisibilityModifier ::= global | isolated | deactivated
+                                | concrete | abstract
+                                | assert | assume
 
 ApplyStatement ::= apply ApplySchemaName
                     to <<comma_sep_items FunctionPattern>>
@@ -898,7 +900,7 @@ ApplySchemaName ::= QualifiedPath
 }
 ApplySchemaNameAttribute ::= IDENTIFIER ':' Expr
 
-Predicate ::= AggregatePredicate | ExprPredicate
+Predicate ::= SpecVisibility? (AggregatePredicate | ExprPredicate)
 ExprPredicate ::= Expr
 
 //PreconditionStatement ::= PreconditionExpr ';'

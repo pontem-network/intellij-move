@@ -17,10 +17,12 @@ class ErrorAnnotator : MoveAnnotatorBase() {
 
     private fun checkFunctionDef(holder: AnnotationHolder, fn: MoveFunctionDef) {
         checkDuplicates(holder, fn)
+        warnOnBuiltInFunctionName(holder, fn)
     }
 
     private fun checkNativeFunctionDef(holder: AnnotationHolder, nativeFn: MoveNativeFunctionDef) {
         checkDuplicates(holder, nativeFn)
+        warnOnBuiltInFunctionName(holder, nativeFn)
     }
 
     private fun checkModuleDef(holder: AnnotationHolder, mod: MoveModuleDef) {
@@ -31,7 +33,7 @@ class ErrorAnnotator : MoveAnnotatorBase() {
 private fun checkDuplicates(
     holder: AnnotationHolder,
     element: MoveNameIdentifierOwner,
-    scope: PsiElement = element.parent
+    scope: PsiElement = element.parent,
 ) {
     val duplicateNamedElements = getDuplicateElements(scope)
     if (element.name !in duplicateNamedElements.map { it.name }) {
@@ -56,4 +58,16 @@ private fun getDuplicateElements(owner: PsiElement): Set<MoveNamedElement> {
 
 private fun PsiElement.namedChildren(): Sequence<MoveNamedElement> {
     return this.children.filterIsInstance<MoveNamedElement>().asSequence()
+}
+
+private fun warnOnBuiltInFunctionName(holder: AnnotationHolder, element: MoveNamedElement) {
+    val nameElement = element.nameElement ?: return
+    val name = element.name ?: return
+    if (name in BUILTIN_FUNCTIONS) {
+        val builder = holder.newAnnotation(HighlightSeverity.ERROR,
+            "Invalid function name: `$name` is a built-in function")
+        builder.range(nameElement)
+        builder.create()
+
+    }
 }

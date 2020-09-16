@@ -1,8 +1,9 @@
-package org.move.ide.annotator
+package org.move.ide.annotator.errors
 
+import org.move.ide.annotator.ErrorAnnotator
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
-class ErrorAnnotatorTest : AnnotatorTestCase(ErrorAnnotator::class) {
+class DuplicateMembersErrorTest : AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test duplicate function definition in script`() = checkErrors(
         """
         script {
