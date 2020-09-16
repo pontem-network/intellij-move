@@ -96,10 +96,10 @@
 
 <!--        <stubIndex implementation="org.move.lang.core.stubs.index.MoveNamedElementIndex"/>-->
 
-<!--        <localInspection language="Move" groupPath="Move" groupName="Lints"-->
-<!--                         displayName="Liveness analysis"-->
-<!--                         enabledByDefault="true" level="WARNING"-->
-<!--                         implementationClass="org.move.lang.core.stubs.index.MoveNamedElementIndex.move.ide.inspections.lints.LivenessInspection"/>-->
+        <localInspection language="Move" groupPath="Move" groupName="Naming"
+                         displayName="Attempt to override a built-in function"
+                         enabledByDefault="true" level="ERROR"
+                         implementationClass="org.move.ide.inspections.lints.FunctionNamingInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MoveColorSettingsPage"/>
