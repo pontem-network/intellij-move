@@ -8,6 +8,13 @@ import org.move.utils.tests.completion.CompletionTestCase
 class PrimitiveTypesCompletionTest: CompletionTestCase() {
     fun `test builtin types present in type positions for function param`() = doTest("""
         script {
+            fun main(val: /*caret*/) {
+            }
+        }
+    """)
+
+    fun `test builtin types present in borrow type positions for function param`() = doTest("""
+        script {
             fun main(signer: &/*caret*/) {
             }
         }
@@ -29,14 +36,15 @@ class PrimitiveTypesCompletionTest: CompletionTestCase() {
 
     fun `test type in type parameter place`() = doTest("""
         module M {
-            fun main() { let a: vector</*caret*/>; }
+            struct MyStruct<T> {}
+            fun main() { let a: MyStruct</*caret*/>; }
         }
     """)
 
     fun `test no builtin types in expression position`() = checkNoCompletion("""
         script {
             fun main() {
-                let a = /*caret*/
+                let a = u6/*caret*/
             }
         }
     """)
@@ -49,9 +57,29 @@ class PrimitiveTypesCompletionTest: CompletionTestCase() {
         }
     """)
 
+    fun `test vector completion`() = doSingleCompletion("""
+        script {
+            fun main(s: vec/*caret*/) {}
+        }
+    """, """
+        script {
+            fun main(s: vector</*caret*/>) {}
+        }
+    """)
+
+    fun `test vector completion with angle brackets`() = doSingleCompletion("""
+        script {
+            fun main(s: vec/*caret*/<>) {}
+        }
+    """, """
+        script {
+            fun main(s: vector</*caret*/>) {}
+        }
+    """)
+
     private fun doTest(@Language("Move") text: String) {
-        val primitiveTypeNames = PRIMITIVE_TYPE_IDENTIFIERS + BUILTIN_TYPE_IDENTIFIERS
-        for (typeName in primitiveTypeNames) {
+        val typeNames = PRIMITIVE_TYPE_IDENTIFIERS + BUILTIN_TYPE_IDENTIFIERS
+        for (typeName in typeNames) {
             checkContainsCompletion(typeName, text)
         }
     }

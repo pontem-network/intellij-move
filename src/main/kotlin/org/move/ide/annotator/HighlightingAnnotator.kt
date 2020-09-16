@@ -11,7 +11,7 @@ import org.move.lang.core.psi.ext.identifierName
 import org.move.lang.core.psi.ext.isIdentifierOnly
 
 val PRIMITIVE_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128", "bool")
-val BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer")
+val BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer", "vector")
 val BUILTIN_FUNCTIONS =
     setOf("move_from", "move_to", "borrow_global", "borrow_global_mut", "exists", "freeze", "assert")
 

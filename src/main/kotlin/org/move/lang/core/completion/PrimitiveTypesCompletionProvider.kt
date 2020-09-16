@@ -25,7 +25,12 @@ object PrimitiveTypesCompletionProvider : MoveCompletionProvider() {
         result: CompletionResultSet,
     ) {
         primitives.forEach {
-            result.addElement(LookupElementBuilder.create(it).bold().withPriority(PRIMITIVE_TYPE_PRIORITY))
+            var lookup = LookupElementBuilder.create(it).bold()
+            if (lookup.lookupString == "vector") {
+                lookup = lookup.withInsertHandler(AngleBracketsInsertHandler())
+            }
+            result.addElement(lookup.withPriority(PRIMITIVE_TYPE_PRIORITY))
+//            result.addElement(LookupElementBuilder.create(it).bold().withPriority(PRIMITIVE_TYPE_PRIORITY))
         }
     }
 }

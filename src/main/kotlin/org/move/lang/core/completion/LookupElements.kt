@@ -14,6 +14,9 @@ const val DEFAULT_PRIORITY = 0.0
 const val KEYWORD_PRIORITY = 80.0
 const val PRIMITIVE_TYPE_PRIORITY = KEYWORD_PRIORITY
 
+const val BUILTIN_FUNCTION_PRIORITY = 10.0
+const val FUNCTION_PRIORITY = 10.0
+
 //const val FRAGMENT_SPECIFIER_PRIORITY = KEYWORD_PRIORITY
 const val VARIABLE_PRIORITY = 5.0
 
@@ -156,6 +159,18 @@ private fun CharSequence.indexOfSkippingSpace(c: Char, startIndex: Int): Int? {
 
 fun LookupElementBuilder.withPriority(priority: Double): LookupElement =
     if (priority == DEFAULT_PRIORITY) this else PrioritizedLookupElement.withPriority(this, priority)
+
+
+class AngleBracketsInsertHandler : InsertHandler<LookupElement> {
+
+    override fun handleInsert(context: InsertionContext, item: LookupElement) {
+        val document = context.document
+        if (!context.alreadyHasAngleBrackets) {
+            document.insertString(context.selectionEndOffset, "<>")
+        }
+        EditorModificationUtil.moveCaretRelatively(context.editor, 1)
+    }
+}
 
 
 class DefaultInsertHandler(private val isSpecIdentifier: Boolean) : InsertHandler<LookupElement> {

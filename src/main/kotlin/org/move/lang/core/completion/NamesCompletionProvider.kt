@@ -7,7 +7,10 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.MovePsiPatterns
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MoveReferenceElement
+import org.move.lang.core.psi.MoveSchemaReferenceElement
+import org.move.lang.core.psi.MoveTypeReferenceElement
+import org.move.lang.core.psi.ext.isSpecElement
 import org.move.lang.core.resolve.processNestedScopesUpwards
 import org.move.lang.core.resolve.ref.Namespace
 
@@ -55,8 +58,8 @@ object NamesCompletionProvider : MoveCompletionProvider() {
         }
         processNestedScopesUpwards(refElement, namespace) {
             if (it.element != null) {
-                val isSpec = refElement is MoveFunctionSpec || refElement is MoveStructSpec
-                result.addElement(it.element.createLookupElement(isSpec))
+                val lookup = it.element.createLookupElement(refElement.isSpecElement())
+                result.addElement(lookup)
             }
             false
         }
