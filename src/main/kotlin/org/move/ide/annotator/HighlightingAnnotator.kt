@@ -15,8 +15,8 @@ val BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer", "vector")
 val BUILTIN_FUNCTIONS =
     setOf("move_from", "move_to", "borrow_global", "borrow_global_mut", "exists", "freeze", "assert")
 
-class HighlightingAnnotator : MoveAnnotatorBase() {
-    override fun annotate(element: PsiElement, holder: AnnotationHolder) {
+class HighlightingAnnotator : MoveAnnotator() {
+    override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val color = when (element) {
             is LeafPsiElement -> highlightLeaf(element)
             else -> null

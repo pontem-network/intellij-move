@@ -5,7 +5,7 @@ val intellijVersion = prop("intellijVersion", "2020.2")
 
 val pluginJarName = "intellij-move-$intellijVersion"
 val pluginGroup = "org.move"
-val pluginVersion = "0.9.0"
+val pluginVersion = "0.10.0"
 
 //val kotlinVersion = "1.4.10"
 

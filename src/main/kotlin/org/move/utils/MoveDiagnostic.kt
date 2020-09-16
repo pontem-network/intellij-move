@@ -40,3 +40,6 @@ class PreparedAnnotation(
 //    )
 //    holder.registerProblem(descriptor)
 //}
+
+fun pluralise(count: Int, singular: String, plural: String): String =
+    if (count == 1) singular else plural

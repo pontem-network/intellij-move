@@ -13,6 +13,20 @@ class BuiltInsCompletionTest : CompletionTestCase() {
         }    
     """)
 
+    fun `test no builtins in type position`() = checkNoCompletion("""
+        script {
+            fun main(a: borrow/*caret*/) {}
+        }    
+    """)
+
+    fun `test no builtins in qualified path`() = checkNoCompletion("""
+        script {
+            fun main() {
+                let a = Libra::borrow/*caret*/
+            }
+        }    
+    """)
+
     private fun doTest(@Language("Move") text: String) {
         val functionNames = BUILTIN_FUNCTIONS
         for (name in functionNames) {

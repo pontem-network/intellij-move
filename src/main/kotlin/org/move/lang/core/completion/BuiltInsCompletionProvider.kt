@@ -12,6 +12,7 @@ import org.move.lang.core.MovePsiPatterns
 object BuiltInsCompletionProvider : MoveCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = MovePsiPatterns.qualifiedPathIdentifier()
+            .andNot(MovePsiPatterns.qualifiedPathTypeIdentifier())
 
     override fun addCompletions(
         parameters: CompletionParameters,

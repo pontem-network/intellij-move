@@ -13,13 +13,13 @@ import com.intellij.testFramework.InspectionTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
 import junit.framework.TestCase
-import org.move.ide.annotator.MoveAnnotatorBase
+import org.move.ide.annotator.MoveAnnotator
 import kotlin.reflect.KClass
 
 class MoveAnnotationTestFixture(
     private val testCase: TestCase,
     private val codeInsightFixture: CodeInsightTestFixture,
-    private val annotatorClasses: List<KClass<out MoveAnnotatorBase>> = emptyList(),
+    private val annotatorClasses: List<KClass<out MoveAnnotator>> = emptyList(),
     private val inspectionClasses: List<KClass<out InspectionProfileEntry>> = emptyList(),
 ) : BaseFixture() {
     val project: Project get() = codeInsightFixture.project
@@ -28,7 +28,7 @@ class MoveAnnotationTestFixture(
     override fun setUp() {
         super.setUp()
         annotatorClasses.forEach {
-            MoveAnnotatorBase.enableAnnotator(
+            MoveAnnotator.enableAnnotator(
                 it.java,
                 testRootDisposable
             )
