@@ -80,7 +80,7 @@ class ParameterInfoHandlerTest
                 borrow_global(/*caret*/);
             }    
         }
-    """, "_: address", 0)
+    """, "addr: address", 0)
 
     fun `test not applied within declaration`() = checkByText("""
         module M {

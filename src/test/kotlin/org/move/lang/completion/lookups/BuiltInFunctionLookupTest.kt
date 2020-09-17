@@ -10,25 +10,25 @@ import org.move.utils.tests.MoveTestCase
 class BuiltInFunctionLookupTest : MoveTestCase() {
     fun `test move_from`() = checkBuiltinPresentation(
         "move_from",
-        tailText = "(_: address)",
+        tailText = "(addr: address)",
         typeText = "R"
     )
 
     fun `test move_to`() = checkBuiltinPresentation(
         "move_to",
-        tailText = "(_: address, _: R)",
+        tailText = "(addr: address, res: R)",
         typeText = "()"
     )
 
     fun `test borrow_global`() = checkBuiltinPresentation(
         "borrow_global",
-        tailText = "(_: address)",
+        tailText = "(addr: address)",
         typeText = "&R"
     )
 
     fun `test borrow_global_mut`() = checkBuiltinPresentation(
         "borrow_global_mut",
-        tailText = "(_: address)",
+        tailText = "(addr: address)",
         typeText = "&mut R"
     )
 
