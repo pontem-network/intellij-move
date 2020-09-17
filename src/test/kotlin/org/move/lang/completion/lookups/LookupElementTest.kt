@@ -1,4 +1,4 @@
-package org.move.lang.completion
+package org.move.lang.completion.lookups
 
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementPresentation
@@ -61,7 +61,7 @@ class LookupElementTest : MoveTestCase() {
         tailText: String? = null,
         typeText: String? = null,
         isBold: Boolean = false,
-        isStrikeout: Boolean = false
+        isStrikeout: Boolean = false,
     ) = checkInner<MoveNamedElement>(code, tailText, typeText, isBold, isStrikeout)
 
     private inline fun <reified T> checkInner(
@@ -69,14 +69,14 @@ class LookupElementTest : MoveTestCase() {
         tailText: String? = null,
         typeText: String? = null,
         isBold: Boolean = false,
-        isStrikeout: Boolean = false
+        isStrikeout: Boolean = false,
     ) where T : NavigatablePsiElement, T : MoveElement {
         InlineFile(code)
 
         val element = findElementInEditor<T>() as? MoveNamedElement
             ?: error("Marker `^` should point to the MoveNamedElement")
-        val lookup = element.createLookupElement(false)
 
+        val lookup = element.createLookupElement(false)
         checkLookupPresentation(
             lookup,
             tailText = tailText,
@@ -91,7 +91,7 @@ class LookupElementTest : MoveTestCase() {
         tailText: String?,
         typeText: String?,
         isBold: Boolean,
-        isStrikeout: Boolean
+        isStrikeout: Boolean,
     ) {
         val presentation = LookupElementPresentation()
         lookup.renderElement(presentation)

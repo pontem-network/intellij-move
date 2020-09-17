@@ -5,20 +5,25 @@
 
 package org.move.ide.utils
 
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MoveCallExpr
+import org.move.lang.core.psi.MoveFunctionSignatureOwner
+import org.move.lang.core.psi.parameters
+import org.move.lang.core.psi.type
 
-class CallInfo private constructor(
-    val methodName: String,
+class CallInfo(
+    val name: String,
     val parameters: List<Parameter>,
+    val returnType: String?,
 ) {
     class Parameter(val name: String, val type: String)
 
     companion object {
         fun resolve(callExpr: MoveCallExpr): CallInfo? {
             val resolved = callExpr.reference.resolve() ?: return null
-
             val name = resolved.name ?: return null
-            val parameters = (resolved as? MoveFunctionSignatureOwner)?.parameters.orEmpty().map {
+
+            val signature = resolved as? MoveFunctionSignatureOwner ?: return null
+            val parameters = signature.parameters.map {
                 val paramName = it.name
                 val paramType = it.type
                 if (paramName == null || paramType == null) {
@@ -26,7 +31,9 @@ class CallInfo private constructor(
                 }
                 Parameter(paramName, paramType.text)
             }
-            return CallInfo(name, parameters)
+            val returnType = signature.returnType?.type?.text
+
+            return CallInfo(name, parameters, returnType)
         }
     }
 }

@@ -74,6 +74,14 @@ class ParameterInfoHandlerTest
         }
     """, "val1: u8, val2: u8", 0)
 
+    fun `test builtin function`() = checkByText("""
+        module M {
+            fun main() {
+                borrow_global(/*caret*/);
+            }    
+        }
+    """, "_: address", 0)
+
     fun `test not applied within declaration`() = checkByText("""
         module M {
             fun foo(val1/*caret*/: u8, val2: u8) {}

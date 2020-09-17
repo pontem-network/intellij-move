@@ -1,6 +1,8 @@
 package org.move.lang.core.psi.ext
 
+import com.intellij.openapi.project.Project
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.mixins.MoveNativeFunctionDefMixin
 import org.move.lang.core.types.Address
 
 private val MoveModuleDef.importStatements: List<MoveImportStatement>
@@ -20,8 +22,31 @@ fun MoveModuleDef.importAliases(): List<MoveImportAlias> = imports().values.flat
 fun MoveModuleDef.functions(): List<MoveFunctionDef> =
     moduleBlock?.functionDefList.orEmpty()
 
-fun MoveModuleDef.nativeFunctions(): List<MoveNativeFunctionDef> =
-    moduleBlock?.nativeFunctionDefList.orEmpty()
+fun createBuiltinFunc(text: String, project: Project): MoveNativeFunctionDef {
+    val function =
+        MovePsiFactory(project).createNativeFunctionDef(text)
+    (function as MoveNativeFunctionDefMixin).builtin = true
+    return function
+}
+
+fun MoveModuleDef.nativeFunctions(): List<MoveNativeFunctionDef> {
+    val block = moduleBlock ?: return emptyList()
+
+    val builtins = listOf(
+        createBuiltinFunc("native fun move_from<R: resource>(_: address): R;", project),
+        createBuiltinFunc("native fun move_to<R: resource>(_: address, _: R): ();", project),
+        createBuiltinFunc("native fun borrow_global<R: resource>(_: address): &R;", project),
+        createBuiltinFunc("native fun borrow_global_mut<R: resource>(_: address): &mut R;", project),
+        createBuiltinFunc("native fun exists<R: resource>(_: address): bool;", project),
+        createBuiltinFunc("native fun freeze<S>(_: &mut S): &S;", project),
+        createBuiltinFunc("native fun assert(_: bool, error_code: u64): ();", project),
+    )
+    return listOf(
+        block.nativeFunctionDefList,
+        builtins
+    ).flatten()
+}
+
 
 fun MoveModuleDef.structs(): List<MoveStructDef> =
     moduleBlock?.structDefList.orEmpty()

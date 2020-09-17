@@ -184,25 +184,25 @@ class DefaultInsertHandler(private val isSpecIdentifier: Boolean) : InsertHandle
 
         when (element) {
             is MoveFunctionSignatureOwner -> {
-                val angleBrackets = element.hasTypeParameters && !isSpecIdentifier
-                if (angleBrackets) {
-                    if (!context.alreadyHasAngleBrackets) {
-                        document.insertString(context.selectionEndOffset, "<>")
-                    }
-                    EditorModificationUtil.moveCaretRelatively(context.editor, 1)
-                }
+//                val angleBrackets = element.hasTypeParameters && !isSpecIdentifier
+//                if (angleBrackets) {
+//                    if (!context.alreadyHasAngleBrackets) {
+//                        document.insertString(context.selectionEndOffset, "<>")
+//                    }
+//                    EditorModificationUtil.moveCaretRelatively(context.editor, 1)
+//                }
                 if (isSpecIdentifier) {
                     if (!context.alreadyHasSpace) context.addSuffix(" ")
                 } else {
                     if (!context.alreadyHasCallParens) {
                         document.insertString(context.selectionEndOffset, "()")
                     }
-                    if (!angleBrackets) {
-                        EditorModificationUtil.moveCaretRelatively(
-                            context.editor,
-                            if (element.parameters.isEmpty()) 2 else 1
-                        )
-                    }
+//                    if (!angleBrackets) {
+                    EditorModificationUtil.moveCaretRelatively(
+                        context.editor,
+                        if (element.parameters.isEmpty()) 2 else 1
+                    )
+//                    }
                 }
             }
             is MoveStructDef -> {

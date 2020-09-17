@@ -18,7 +18,8 @@ object NamesCompletionProvider : MoveCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
             PlatformPatterns.or(
-                MovePsiPatterns.qualifiedPathIdentifier(),
+                MovePsiPatterns.qualifiedPathIdentifier()
+                    .andNot(MovePsiPatterns.qualifiedPathTypeIdentifier()),
                 MovePsiPatterns.specIdentifier()
             )
 //    override val elementPattern: ElementPattern<PsiElement>

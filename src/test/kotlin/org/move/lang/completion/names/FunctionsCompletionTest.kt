@@ -113,21 +113,21 @@ class FunctionsCompletionTest : CompletionTestCase() {
         }
     """)
 
-    fun `test generic function call with type parameters`() = doSingleCompletion("""
-        module M {
-            fun frobnicate<T>(a: T) {}
-            fun main() {
-                frob/*caret*/
-            }
-        }
-    """, """
-        module M {
-            fun frobnicate<T>(a: T) {}
-            fun main() {
-                frobnicate</*caret*/>()
-            }
-        }
-    """)
+//    fun `test generic function call with type parameters`() = doSingleCompletion("""
+//        module M {
+//            fun frobnicate<T>(a: T) {}
+//            fun main() {
+//                frob/*caret*/
+//            }
+//        }
+//    """, """
+//        module M {
+//            fun frobnicate<T>(a: T) {}
+//            fun main() {
+//                frobnicate</*caret*/>()
+//            }
+//        }
+//    """)
 
     fun `test type parameters accessible in types completion`() = doSingleCompletion("""
         module M {

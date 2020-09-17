@@ -12,6 +12,12 @@ class MovePsiFactory(private val project: Project) {
         createFromText<MoveModuleDef>("module $text {}")?.nameIdentifier
             ?: error("Failed to create identifier: `$text`")
 
+    fun createNativeFunctionDef(
+        text: String,
+    ): MoveNativeFunctionDef =
+        createFromText("module _IntellijPreludeDummy { $text }")
+            ?: error("Failed to create a method member from text: `$text`")
+
     private inline fun <reified T : MoveElement> createFromText(code: CharSequence): T? {
         val dummyFile = PsiFileFactory.getInstance(project)
             .createFileFromText(
