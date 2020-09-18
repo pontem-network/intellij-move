@@ -96,6 +96,8 @@
 
         <codeInsight.parameterInfo language="Move"
                                    implementationClass="org.move.ide.hints.parameter.FunctionParameterInfoHandler"/>
+        <codeInsight.parameterInfo language="Move"
+                                   implementationClass="org.move.ide.hints.parameter.TypeParameterInfoHandler"/>
         <codeInsight.parameterNameHints language="Move"
                                         implementationClass="org.move.ide.hints.parameter.MoveInlayParameterHintsProvider"/>
 

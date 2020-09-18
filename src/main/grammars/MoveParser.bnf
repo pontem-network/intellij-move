@@ -377,7 +377,7 @@ TypeParameter ::= IDENTIFIER TypeParamBound? {
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.mixins.MoveTypeParameterMixin"
 }
-TypeParamBound ::= ':' (copyable | resource)
+TypeParamBound ::= ':' (copyable | resource) { pin = 1 }
 
 TypeArgumentList ::= '<' <<comma_sep_items (QualifiedPathType &(','|'>'))>>? '>'
 //private TypeArgumentList_items ::= <<comma_sep_items (QualifiedPathType &(','|'>'))>>

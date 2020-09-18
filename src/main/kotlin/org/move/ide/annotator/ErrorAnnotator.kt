@@ -7,6 +7,7 @@ import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.expectedParamsCount
 import org.move.lang.core.psi.ext.findFirstChildByType
+import org.move.lang.core.psiElement
 import org.move.utils.pluralise
 
 class ErrorAnnotator : MoveAnnotator() {
