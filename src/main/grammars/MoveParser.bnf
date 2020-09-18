@@ -367,17 +367,21 @@ TypeParameterList ::= '<' TypeParameterList_items? '>'
 {
     pin = 1
 }
-private TypeParameterList_items ::= <<comma_sep_items (TypeParameter &(','|'>'))>>
+private TypeParameterList_items ::= <<comma_sep_items TypeParameter>>
 {
     recoverWhile = TypeParameterList_items_recovery
 }
 private TypeParameterList_items_recovery ::= !('{'|'('|'>')
 
-TypeParameter ::= IDENTIFIER TypeParamBound? {
+TypeParameter ::= IDENTIFIER TypeParamBound? &(',' | '>') {
+    pin = 1
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.mixins.MoveTypeParameterMixin"
 }
-TypeParamBound ::= ':' (copyable | resource) { pin = 1 }
+TypeParamBound ::= ':' (copyable | resource)
+{
+    pin = 1
+}
 
 TypeArgumentList ::= '<' <<comma_sep_items (QualifiedPathType &(','|'>'))>>? '>'
 //private TypeArgumentList_items ::= <<comma_sep_items (QualifiedPathType &(','|'>'))>>

@@ -42,6 +42,13 @@ object MovePsiPatterns {
         PlatformPatterns.psiElement()
             .withSuperParent<MoveQualifiedPathType>(2)
 
+    fun typeParamBound(): PsiElementPattern.Capture<PsiElement> =
+        psiElementWithParent<MoveTypeParameterList>()
+            .afterLeafSkipping(
+                PlatformPatterns.psiElement().whitespaceCommentEmptyOrError(),
+                PlatformPatterns.psiElement(COLON),
+            )
+
     fun qualifiedPathIdentifier(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
             .withParent<MoveQualifiedPath>()

@@ -169,6 +169,16 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
+    fun `test resource`() = doSingleCompletion("""
+        module M {
+            reso/*caret*/
+        }
+    """, """
+        module M {
+            resource /*caret*/
+        }
+    """)
+
     fun `test resource struct`() = doSingleCompletion("""
         module M {
             resource st/*caret*/
@@ -176,6 +186,32 @@ class KeywordCompletionTest : CompletionTestCase() {
     """, """
         module M {
             resource struct /*caret*/
+        }
+    """)
+
+    fun `test no completion in bound if no colon`() = checkNoCompletion("""
+        module M {
+            struct MyStruct<T cop/*caret*/> {}
+        }
+    """)
+
+    fun `test copyable bound`() = doSingleCompletion("""
+        module M {
+            struct MyStruct<T: cop/*caret*/> {}
+        }
+    """, """
+        module M {
+            struct MyStruct<T: copyable/*caret*/> {}
+        }
+    """)
+
+    fun `test resource bound`() = doSingleCompletion("""
+        module M {
+            struct MyStruct<T: res/*caret*/> {}
+        }
+    """, """
+        module M {
+            struct MyStruct<T: resource/*caret*/> {}
         }
     """)
 }

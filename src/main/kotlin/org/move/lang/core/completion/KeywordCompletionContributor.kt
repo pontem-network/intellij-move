@@ -12,6 +12,7 @@ import org.move.lang.core.MovePsiPatterns.codeStatement
 import org.move.lang.core.MovePsiPatterns.moduleBlock
 import org.move.lang.core.MovePsiPatterns.scriptBlock
 import org.move.lang.core.MovePsiPatterns.toplevel
+import org.move.lang.core.MovePsiPatterns.typeParamBound
 
 class KeywordCompletionContributor : CompletionContributor() {
     init {
@@ -79,6 +80,14 @@ class KeywordCompletionContributor : CompletionContributor() {
                 "while",
                 "abort",
                 "return",
+            )
+        )
+        extend(
+            CompletionType.BASIC,
+            typeParamBound(),
+            KeywordCompletionProvider(
+                "copyable",
+                "resource",
             )
         )
     }

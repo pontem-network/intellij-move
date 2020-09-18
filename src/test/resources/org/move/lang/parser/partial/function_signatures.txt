@@ -182,9 +182,10 @@ FILE
         PsiElement(IDENTIFIER)('main')
         MoveTypeParameterListImpl(TYPE_PARAMETER_LIST)
           PsiElement(<)('<')
-          PsiElement(IDENTIFIER)('U')
-          PsiErrorElement:',', ':' or '>' expected, got '('
-            <empty list>
+          MoveTypeParameterImpl(TYPE_PARAMETER)
+            PsiElement(IDENTIFIER)('U')
+            PsiErrorElement:',', ':' or '>' expected, got '('
+              <empty list>
         MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')
           PsiElement())(')')
@@ -221,10 +222,43 @@ FILE
         PsiElement(IDENTIFIER)('main')
         MoveTypeParameterListImpl(TYPE_PARAMETER_LIST)
           PsiElement(<)('<')
-          PsiElement(IDENTIFIER)('U')
+          MoveTypeParameterImpl(TYPE_PARAMETER)
+            PsiElement(IDENTIFIER)('U')
+            PsiErrorElement:',', ':' or '>' expected, got 'V'
+              <empty list>
           PsiWhiteSpace(' ')
-          PsiErrorElement:',', ':' or '>' expected, got 'V'
+          PsiElement(IDENTIFIER)('V')
+          PsiElement(>)('>')
+        MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
+          PsiElement(()('(')
+          PsiElement())(')')
+        PsiWhiteSpace(' ')
+        MoveCodeBlockImpl(CODE_BLOCK)
+          PsiElement({)('{')
+          PsiElement(})('}')
+      PsiWhiteSpace('\n    ')
+      MoveFunctionDefImpl(FUNCTION_DEF)
+        PsiElement(fun)('fun')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('main')
+        MoveTypeParameterListImpl(TYPE_PARAMETER_LIST)
+          PsiElement(<)('<')
+          MoveTypeParameterImpl(TYPE_PARAMETER)
+            PsiElement(IDENTIFIER)('U')
+            MoveTypeParamBoundImpl(TYPE_PARAM_BOUND)
+              PsiElement(:)(':')
+              PsiErrorElement:copyable or resource expected, got ','
+                <empty list>
+          PsiElement(,)(',')
+          PsiWhiteSpace(' ')
+          MoveTypeParameterImpl(TYPE_PARAMETER)
             PsiElement(IDENTIFIER)('V')
+            MoveTypeParamBoundImpl(TYPE_PARAM_BOUND)
+              PsiElement(:)(':')
+              PsiErrorElement:copyable or resource expected, got 'unknown'
+                <empty list>
+          PsiWhiteSpace(' ')
+          PsiElement(IDENTIFIER)('unknown')
           PsiElement(>)('>')
         MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')

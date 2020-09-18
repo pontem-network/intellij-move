@@ -11,4 +11,5 @@ module M {
     fun main<U() {}
     fun main<U,V,() {}
     fun main<U V>() {}
+    fun main<U:, V: unknown>() {}
 }

@@ -8,6 +8,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.TokenType
 import com.intellij.psi.util.elementType
 import com.intellij.util.ProcessingContext
+import org.move.lang.core.psi.MoveTypeParameterList
 
 class KeywordCompletionProvider(private vararg val keywords: String) : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
@@ -15,10 +16,15 @@ class KeywordCompletionProvider(private vararg val keywords: String) : Completio
         context: ProcessingContext,
         result: CompletionResultSet,
     ) {
+        val parent = parameters.position.parent
         for (keyword in keywords) {
-            val element =
+            var element =
                 LookupElementBuilder.create(keyword).bold()
-                    .withInsertHandler { ctx, _ -> ctx.addSuffix(" ") }
+            val typeBound = keyword == "copyable" || (keyword == "resource" && parent is MoveTypeParameterList)
+            if (!typeBound) {
+                element = element.withInsertHandler { ctx, _ -> ctx.addSuffix(" ") }
+            }
+
             result.addElement(PrioritizedLookupElement.withPriority(element, KEYWORD_PRIORITY))
         }
     }
