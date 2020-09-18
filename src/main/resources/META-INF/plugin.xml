@@ -96,6 +96,8 @@
 
         <codeInsight.parameterInfo language="Move"
                                    implementationClass="org.move.ide.hints.parameter.FunctionParameterInfoHandler"/>
+        <codeInsight.parameterNameHints language="Move"
+                                        implementationClass="org.move.ide.hints.parameter.MoveInlayParameterHintsProvider"/>
 
         <!--        <stubIndex implementation="org.move.lang.core.stubs.index.MoveNamedElementIndex"/>-->
 

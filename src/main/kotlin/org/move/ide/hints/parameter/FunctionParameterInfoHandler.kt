@@ -14,6 +14,7 @@ import org.move.lang.core.psi.MoveCallArguments
 import org.move.lang.core.psi.MoveCallExpr
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.startOffset
+import org.move.utils.AsyncParameterInfoHandler
 
 class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MoveCallArguments, ParametersDescription>() {
     override fun couldShowInLookup(): Boolean = true

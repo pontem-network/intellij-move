@@ -1,4 +1,4 @@
-package org.move.ide.hints.parameter
+package org.move.utils
 
 import com.intellij.lang.parameterInfo.CreateParameterInfoContext
 import com.intellij.lang.parameterInfo.ParameterInfoHandler
