@@ -5,16 +5,26 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.expectedParamsCount
 import org.move.lang.core.psi.ext.findFirstChildByType
 import org.move.utils.pluralise
 
 class ErrorAnnotator : MoveAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val visitor = object : MoveVisitor() {
+            override fun visitConstDef(o: MoveConstDef) = checkConstDef(holder, o)
+
             override fun visitFunctionDef(o: MoveFunctionDef) = checkFunctionDef(holder, o)
             override fun visitNativeFunctionDef(o: MoveNativeFunctionDef) = checkNativeFunctionDef(holder, o)
+
             override fun visitModuleDef(o: MoveModuleDef) = checkModuleDef(holder, o)
+
+            override fun visitStructDef(o: MoveStructDef) = checkStructDef(holder, o)
+            override fun visitNativeStructDef(o: MoveNativeStructDef) = checkNativeStructDef(holder, o)
+            override fun visitStructFieldDef(o: MoveStructFieldDef) = checkStructFieldDef(holder, o)
+
             override fun visitCallArguments(o: MoveCallArguments) = checkCallArguments(holder, o)
+//            override fun visitAcquiresType(o: MoveAcquiresType) = checkAcquiresType(holder, o)
         }
         element.accept(visitor)
     }
@@ -32,6 +42,27 @@ class ErrorAnnotator : MoveAnnotator() {
     private fun checkModuleDef(holder: AnnotationHolder, mod: MoveModuleDef) {
         checkDuplicates(holder, mod)
     }
+
+    private fun checkStructDef(holder: AnnotationHolder, struct: MoveStructDef) {
+        checkDuplicates(holder, struct)
+    }
+
+    private fun checkNativeStructDef(holder: AnnotationHolder, nativeStruct: MoveNativeStructDef) {
+        checkDuplicates(holder, nativeStruct)
+    }
+
+    private fun checkStructFieldDef(holder: AnnotationHolder, structField: MoveStructFieldDef) {
+        checkDuplicates(holder, structField)
+    }
+
+    private fun checkConstDef(holder: AnnotationHolder, const: MoveConstDef) {
+        checkDuplicates(holder, const)
+    }
+//
+//    private fun checkAcquiresType(holder: AnnotationHolder, acquires: MoveAcquiresType) {
+//        val types = acquires.qualifiedPathTypeList
+//        types.map { it.qualifiedPath.text }
+//    }
 
     private fun checkCallArguments(holder: AnnotationHolder, arguments: MoveCallArguments) {
         val expectedCount = (arguments.parent as? MoveCallExpr)?.expectedParamsCount() ?: return
@@ -63,8 +94,8 @@ private fun checkDuplicates(
     element: MoveNameIdentifierOwner,
     scope: PsiElement = element.parent,
 ) {
-    val duplicateNamedElements = getDuplicateElements(scope)
-    if (element.name !in duplicateNamedElements.map { it.name }) {
+    val duplicateNamedChildren = getDuplicatedNamedChildren(scope)
+    if (element.name !in duplicateNamedChildren.map { it.name }) {
         return
     }
     val identifier = element.nameIdentifier ?: element
@@ -74,7 +105,7 @@ private fun checkDuplicates(
     builder.create()
 }
 
-private fun getDuplicateElements(owner: PsiElement): Set<MoveNamedElement> {
+private fun getDuplicatedNamedChildren(owner: PsiElement): Set<MoveNamedElement> {
     return owner
         .namedChildren()
         .groupBy { it.name }
@@ -98,12 +129,3 @@ private fun warnOnBuiltInFunctionName(holder: AnnotationHolder, element: MoveNam
         builder.create()
     }
 }
-
-private fun MoveCallExpr.expectedParamsCount(): Int? {
-    val referred = this.qualifiedPath.reference.resolve()
-    if (referred is MoveFunctionSignatureOwner) {
-        return referred.parameters.size
-    }
-    return null
-}
-

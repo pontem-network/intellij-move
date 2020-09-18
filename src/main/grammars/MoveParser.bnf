@@ -617,7 +617,7 @@ CallExpr ::= (QualifiedPath &'(') CallArguments
 {
     pin = 1
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveCallExprMixin"
+    mixin = "org.move.lang.core.psi.ext.MoveCallExprMixin"
 }
 
 CallArguments ::= '(' <<comma_sep_items (Expr &(','|')'))>>? ')' { pin = 1 }
