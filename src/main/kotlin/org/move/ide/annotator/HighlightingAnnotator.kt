@@ -12,8 +12,11 @@ import org.move.lang.core.psi.ext.isIdentifierOnly
 
 val PRIMITIVE_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128", "bool")
 val BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer", "vector")
+
+val BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE =
+    setOf("move_from", "borrow_global", "borrow_global_mut", "exists", "freeze")
 val BUILTIN_FUNCTIONS =
-    setOf("move_from", "move_to", "borrow_global", "borrow_global_mut", "exists", "freeze", "assert")
+    BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE + setOf("assert", "move_to")
 
 class HighlightingAnnotator : MoveAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {

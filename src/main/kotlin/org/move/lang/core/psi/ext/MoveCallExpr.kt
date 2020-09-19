@@ -14,7 +14,6 @@ abstract class MoveCallExprMixin(node: ASTNode) : MoveReferenceElementImpl(node)
         get() = qualifiedPath.identifier
 }
 
-
 fun MoveCallExpr.expectedParamsCount(): Int? {
     val referred = this.qualifiedPath.reference.resolve()
     if (referred is MoveFunctionSignatureOwner) {
