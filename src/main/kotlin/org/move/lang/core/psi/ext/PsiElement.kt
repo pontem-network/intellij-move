@@ -4,10 +4,25 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.impl.source.PsiFileImpl
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.core.resolve.walkUpThroughScopes
+
+inline fun <reified T : PsiElement> PsiElement.childOfType(): T? =
+    PsiTreeUtil.getChildOfType(this, T::class.java)
+
+inline fun <reified T : PsiElement> PsiElement.childrenOfType(): List<T> =
+    PsiTreeUtil.getChildrenOfTypeAsList(this, T::class.java)
+
+inline fun <reified T : PsiElement> PsiElement.stubChildrenOfType(): List<T> {
+    return if (this is PsiFileImpl) {
+        stub?.childrenStubs?.mapNotNull { it.psi as? T } ?: return childrenOfType()
+    } else {
+        PsiTreeUtil.getStubChildrenOfTypeAsList(this, T::class.java)
+    }
+}
 
 val PsiElement.ancestors: Sequence<PsiElement>
     get() = generateSequence(this) {

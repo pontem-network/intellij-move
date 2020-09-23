@@ -2,7 +2,7 @@ package org.move.lang.resolve
 
 import org.move.utils.tests.resolve.ResolveTestCase
 
-class ResolveTypesTest: ResolveTestCase() {
+class ResolveTypesTest : ResolveTestCase() {
     fun `test resolve struct as function param type`() = checkByCode(
         """
         module M {
@@ -148,6 +148,60 @@ class ResolveTypesTest: ResolveTestCase() {
                         //X
             native fun main(n: Native<u8>): u8;
                              //^
+        }
+    """
+    )
+
+    fun `test resolve type to import`() = checkByCode(
+        """
+        script {
+            use 0x1::Transaction::Sender;
+            
+            fun main(s: Sender) {}
+                      //^ unresolved
+        }
+    """
+    )
+
+    fun `test resolve type from import`() = checkByCode(
+        """
+        address 0x1 {
+            module Transaction {
+                struct Sender {}
+                     //X
+            }
+        }
+        script {
+            use 0x1::Transaction::Sender;
+                                //^
+        }
+    """
+    )
+
+    fun `test resolve type from usage`() = checkByCode(
+        """
+        address 0x1 {
+            module Transaction {
+                struct Sender {}
+                     //X
+            }
+        }
+        script {
+            use 0x1::Transaction::Sender;
+
+            fun main(n: Sender) {}
+                      //^
+        }
+    """
+    )
+
+    fun `test resolve type to alias`() = checkByCode(
+        """
+        module M {
+            use 0x1::Transaction::Sender as MySender;
+                                          //X
+            fun main(n: MySender) {}
+                      //^
         }
     """
     )

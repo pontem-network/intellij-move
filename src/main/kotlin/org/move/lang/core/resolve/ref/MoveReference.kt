@@ -5,6 +5,8 @@ import org.move.lang.core.psi.MoveNamedElement
 import org.move.lang.core.psi.MoveElement
 
 interface MoveReference : PsiReference {
+
     override fun getElement(): MoveElement
+
     override fun resolve(): MoveNamedElement?
 }

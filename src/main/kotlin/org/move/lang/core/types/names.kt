@@ -1,5 +1,7 @@
 package org.move.lang.core.types
 
-data class Address(val inner: String)
-
-//data class ModuleName(val inner: String)
+data class Address(val text: String) {
+    companion object {
+        fun default(): Address = Address("0x0")
+    }
+}

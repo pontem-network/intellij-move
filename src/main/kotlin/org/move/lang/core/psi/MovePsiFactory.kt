@@ -12,6 +12,9 @@ class MovePsiFactory(private val project: Project) {
         createFromText<MoveModuleDef>("module $text {}")?.nameIdentifier
             ?: error("Failed to create identifier: `$text`")
 
+    fun createQualifiedPath(text: String): MoveQualifiedPath =
+        createFromText("script { fun main() { $text; } }") ?: error("Failed to create QualifiedPath")
+
     fun createNativeFunctionDef(
         text: String,
     ): MoveNativeFunctionDef =

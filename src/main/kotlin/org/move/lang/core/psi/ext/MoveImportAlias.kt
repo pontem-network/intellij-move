@@ -1,8 +1,6 @@
-package org.move.lang.core.psi.mixins
+package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.MoveImport
 import org.move.lang.core.psi.MoveImportAlias
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 

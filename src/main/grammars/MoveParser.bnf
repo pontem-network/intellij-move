@@ -4,7 +4,7 @@
     psiImplClassSuffix="Impl"
 
     implements="org.move.lang.core.psi.MoveElement"
-    extends="org.move.lang.core.psi.impl.MoveElementImpl"
+    extends="org.move.lang.core.psi.MoveElementImpl"
 
     psiPackage="org.move.lang.core.psi"
     psiImplPackage="org.move.lang.core.psi.impl"
@@ -100,6 +100,8 @@ File ::= (ScriptDef | AddressDef | ModuleDef)*
 
 ScriptDef ::= script ScriptBlock {
     pin = 1
+    implements = [ "org.move.lang.core.psi.MoveImportStatementsOwner" ]
+    mixin = "org.move.lang.core.psi.ext.MoveScriptDefMixin"
 }
 ScriptBlock ::= '{' ScriptBlockItems '}' { pin = 1 }
 private ScriptBlockItems ::= ScriptBlockItem_with_recover*
@@ -127,8 +129,11 @@ ModuleDef ::= module IDENTIFIER ModuleBlock
 {
     pin = 1
     name = "module declaration"
-    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveModuleDefMixin"
+    implements = [
+        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.psi.MoveImportStatementsOwner"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MoveModuleDefMixin"
 }
 ModuleBlock ::= '{' ModuleBlockItems '}'
 {
@@ -296,32 +301,48 @@ private StructFieldDef_type_recover ::= !(','|'}')
 // Imports
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // 'use 0x0::Transaction as MyTransaction;'
-ImportStatement ::= use AddressRef '::' Import ';'
+//ImportStatement ::= use ModuleRef ('::' Import) ';'
+//{
+//    pin = 1
+//}
+
+//ImportStatement ::= use AddressRef '::' Import ';'
+//{
+//    pin = 1
+//}
+
+ImportStatement ::= use (ModuleImport | ModuleItemsImport)
 {
     pin = 1
 }
+
 //private ImportStatement_body ::= AddressRef '::' Import
 //{
 //    recoverWhile = ImportStatement_body_recover
 //}
 //private ImportStatement_body_recover ::= !';'
 
-Import ::= ItemImport | ModuleImport
-ModuleImport ::= ModuleRef ImportAlias?
+//Import ::= ItemImport | ModuleImport
+ModuleImport ::= FullyQualifiedModuleRef ImportAlias? !'::'
 {
-    extends = Import
+//    extends = Import
+    implements = [
+        "org.move.lang.core.psi.MoveNamedElement"
+//        "org.move.lang.core.psi.MoveReferenceElement"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MoveModuleImportMixin"
 }
-ItemImport ::= ModuleRef '::' (ImportedItem | MultiImportedItem)
+ModuleItemsImport ::= FullyQualifiedModuleRef '::' (ItemImport | MultiItemImport)
 {
     pin = 2
-    extends = Import
+//    extends = Import
 }
 
-MultiImportedItem ::= '{' <<comma_sep_items MultiImportedItem_member_with_recovery>> '}'
+MultiItemImport ::= '{' <<comma_sep_items MultiItemImport_member_with_recovery>> '}'
 {
     pin = 1
 }
-private MultiImportedItem_member_with_recovery ::= !('}' | ';' | <<eof>>) ImportedItem
+private MultiItemImport_member_with_recovery ::= !('}' | ';' | <<eof>>) ItemImport
 {
     pin = 1
 }
@@ -332,17 +353,20 @@ private MultiImportedItem_member_with_recovery ::= !('}' | ';' | <<eof>>) Import
 //}
 //private MultiImportedItem_items_recovery ::= !'}'
 
-ImportedItem ::= IDENTIFIER ImportAlias?
+ItemImport ::= IDENTIFIER ImportAlias?
 {
     pin = 1
-//    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
-//    mixin = "org.move.lang.core.psi.mixins.MoveImportMixin"
+    implements = [
+        "org.move.lang.core.psi.MoveNamedElement"
+        "org.move.lang.core.psi.MoveReferenceElement"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MoveItemImportMixin"
 }
 ImportAlias ::= as IDENTIFIER
 {
     pin = 1
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveImportAliasMixin"
+    mixin = "org.move.lang.core.psi.ext.MoveImportAliasMixin"
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -355,8 +379,8 @@ Type ::= QualifiedPathType | TupleType | LambdaType
 QualifiedPathType ::= ('&' mut?)? QualifiedPath
 {
     name = "type"
-    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveQualifiedPathTypeMixin"
+//    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+//    mixin = "org.move.lang.core.psi.mixins.MoveQualifiedPathTypeMixin"
 }
 
 TupleType ::= '(' <<comma_sep_items Type>>? ')' { pin = 1 }
@@ -423,8 +447,8 @@ TuplePat ::= '(' <<comma_sep_items Pat>>? ')'
 //private TuplePat_body_recover ::= !(')'|'=')
 
 StructPat ::= QualifiedPath StructPatFieldsBlock {
-    implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveStructPatMixin"
+//    implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
+//    mixin = "org.move.lang.core.psi.mixins.MoveStructPatMixin"
 }
 StructPatFieldsBlock ::= '{' (<<comma_sep_items StructPatField>>)? '}' { pin = 1 }
 
@@ -476,7 +500,11 @@ private AnyBlock ::= CodeBlock | InlineBlock
 InlineBlock ::= Expr
 
 CodeBlockExpr ::= '{' CodeBlockItems '}'
-CodeBlock ::= '{' CodeBlockItems  '}' { pin = 1 }
+CodeBlock ::= '{' CodeBlockItems  '}'
+{
+    pin = 1
+//    implements = [ "org.move.lang.core.psi.MoveImportStatementsOwner" ]
+}
 
 private CodeBlockItems ::= ImportStatement* (Statement | BlockSpecStatement)* Expr?
 {
@@ -578,8 +606,8 @@ ContinueExpr ::= continue
 
 StructLiteralExpr ::= QualifiedPath StructLiteralFieldsBlock
 {
-    implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveStructLiteralExprMixin"
+//    implements = ["org.move.lang.core.psi.MoveTypeReferenceElement"]
+//    mixin = "org.move.lang.core.psi.mixins.MoveStructLiteralExprMixin"
 }
 StructLiteralFieldsBlock ::= '{' <<comma_sep_items StructLiteralExprField>>? '}' { pin = 1 }
 //private StructLiteralFieldsBlock_body ::= (StructLiteralExprField ','?)*
@@ -620,8 +648,8 @@ LiteralExpr ::= BOOL_LITERAL
 CallExpr ::= (QualifiedPath &'(') CallArguments
 {
     pin = 1
-    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.ext.MoveCallExprMixin"
+//    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+//    mixin = "org.move.lang.core.psi.ext.MoveCallExprMixin"
 }
 
 CallArguments ::= '(' <<comma_sep_items (Expr &(','|')'))>>? ')' { pin = 1 }
@@ -663,22 +691,28 @@ Initializer ::= '=' Expr {
 BorrowExpr ::= '&' mut? Expr
 DotExpr ::= Expr '.' IDENTIFIER
 IndexExpr ::= Expr '[' Expr ']' { rightAssociative = true }
-RefExpr ::= QualifiedPath {
-    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveRefExprMixin"
-}
 
-QualifiedPath ::= (AddressRef '::')? (ModuleRef '::')? IDENTIFIER TypeArgumentList?
+RefExpr ::= QualifiedPath
+
+QualifiedPath ::= ((FullyQualifiedModuleRef | ModuleRef) '::')? IDENTIFIER TypeArgumentList?
+//QualifiedPath ::= (AddressRef '::')? (ModuleRef '::')? IDENTIFIER TypeArgumentList?
 {
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveQualifiedPathMixin"
+    mixin = "org.move.lang.core.psi.ext.MoveQualifiedPathMixin"
 }
-AddressRef ::= ADDRESS_LITERAL | BECH32_ADDRESS_LITERAL
+
 ModuleRef ::= IDENTIFIER
 {
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.mixins.MoveModuleRefMixin"
+    mixin = "org.move.lang.core.psi.ext.MoveModuleRefMixin"
 }
+
+FullyQualifiedModuleRef ::= AddressRef '::' IDENTIFIER
+{
+    extends = ModuleRef
+}
+
+AddressRef ::= ADDRESS_LITERAL | BECH32_ADDRESS_LITERAL
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Specs
@@ -899,8 +933,8 @@ ApplyStatement ::= apply ApplySchemaName
 ApplySchemaName ::= QualifiedPath
                     ('{' <<comma_sep_items ApplySchemaNameAttribute>> '}')?
 {
-    implements = [ "org.move.lang.core.psi.MoveSchemaReferenceElement" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveApplySchemaNameMixin"
+//    implements = [ "org.move.lang.core.psi.MoveSchemaReferenceElement" ]
+//    mixin = "org.move.lang.core.psi.mixins.MoveApplySchemaNameMixin"
 }
 ApplySchemaNameAttribute ::= IDENTIFIER ':' Expr
 

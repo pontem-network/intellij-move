@@ -43,7 +43,7 @@ class HighlightingAnnotator : MoveAnnotator() {
             val name = element.identifierName
             val container = element.parent
             if (container is MoveQualifiedPathType) {
-                val resolved = container.reference.resolve()
+                val resolved = container.qualifiedPath.reference.resolve()
                 if (resolved is MoveTypeParameter) {
                     return MoveColor.TYPE_PARAMETER
                 }

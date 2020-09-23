@@ -2,9 +2,75 @@ package org.move.lang.core.resolve
 
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
+
+
+fun processItemResolveVariants(
+    element: MoveReferenceElement,
+    namespace: Namespace,
+    processor: MatchingProcessor,
+): Boolean {
+    return walkUpThroughScopes(
+        element,
+        stopAfter = { it is MoveModuleDef || it is MoveScriptDef }
+    ) { cameFrom, scope ->
+        processLexicalDeclarations(
+            scope, cameFrom, namespace, processor)
+    }
+}
+
+
+fun resolveItem(element: MoveReferenceElement, namespace: Namespace): MoveNamedElement? {
+    var resolved: MoveNamedElement? = null
+    processItemResolveVariants(element, namespace) {
+        if (it.name == element.referenceName && it.element != null) {
+            resolved = it.element
+            return@processItemResolveVariants true
+        }
+        return@processItemResolveVariants false
+    }
+    return resolved
+}
+
+fun resolveModuleRef(moduleRef: MoveModuleRef): MoveNamedElement? {
+    return when (moduleRef) {
+        is MoveFullyQualifiedModuleRef -> resolveExternalModule(moduleRef)
+        else -> resolveUnqualifiedModuleRef(moduleRef)
+    }
+}
+
+fun resolveUnqualifiedModuleRef(moduleRef: MoveModuleRef): MoveNamedElement? {
+    val referredElement = resolveItem(moduleRef, Namespace.MODULE) ?: return null
+    if (referredElement is MoveImportAlias) {
+        return referredElement
+    }
+    return resolveExternalModule((referredElement as MoveModuleImport).fullyQualifiedModuleRef)
+        ?: referredElement
+}
+
+
+fun resolveExternalModule(moduleRef: MoveFullyQualifiedModuleRef): MoveModuleDef? {
+    val file = moduleRef.containingFile as? MoveFile ?: return null
+
+    val address = moduleRef.addressRef.address()
+
+    var resolved: MoveModuleDef? = null
+    file.accept(object : MoveRecursiveVisitor() {
+        override fun visitAddressDef(o: MoveAddressDef) {
+            if (o.address == address) {
+                for (module in o.modules()) {
+                    if (module.name == moduleRef.referenceName) {
+                        resolved = module
+                    }
+                }
+            }
+        }
+    })
+    return resolved
+}
 
 fun processNestedScopesUpwards(
     startElement: MoveElement,
@@ -18,7 +84,6 @@ fun processNestedScopesUpwards(
         processLexicalDeclarations(
             scope, cameFrom, namespace, processor)
     }
-
 }
 
 fun processLexicalDeclarations(
@@ -58,7 +123,8 @@ fun processLexicalDeclarations(
             }
             is MoveModuleDef -> processor.matchAll(
                 listOf(
-                    scope.importAliases(),
+                    scope.itemImportsWithoutAliases(),
+                    scope.itemImportsAliases(),
                     scope.functions(),
                     scope.nativeFunctions(),
                     scope.structs(),
@@ -66,22 +132,43 @@ fun processLexicalDeclarations(
                     scope.consts(),
                 ).flatten()
             )
-            is MoveScriptDef -> processor.matchAll(scope.importAliases())
+            is MoveScriptDef -> processor.matchAll(
+                listOf(
+                    scope.itemImportsWithoutAliases(),
+                    scope.itemImportsAliases(),
+                ).flatten(),
+            )
             else -> false
         }
         Namespace.TYPE -> when (scope) {
             is MoveTypeParametersOwner -> processor.matchAll(scope.typeParameters)
             is MoveModuleDef -> processor.matchAll(
                 listOf(
-                    scope.importAliases(),
+                    scope.itemImportsWithoutAliases(),
+                    scope.itemImportsAliases(),
                     scope.structs(),
-                    scope.nativeStructs()
-                ).flatten())
-            is MoveScriptDef -> processor.matchAll(scope.importAliases())
+                    scope.nativeStructs(),
+                ).flatten(),
+            )
+            is MoveScriptDef -> processor.matchAll(
+                listOf(
+                    scope.itemImportsWithoutAliases(),
+                    scope.itemImportsAliases(),
+                ).flatten(),
+            )
             else -> false
         }
         Namespace.SCHEMA -> when (scope) {
             is MoveModuleDef -> processor.matchAll(scope.schemas())
+            else -> false
+        }
+        Namespace.MODULE -> when (scope) {
+            is MoveImportStatementsOwner -> processor.matchAll(
+                listOf(
+                    scope.moduleImportsWithoutAliases(),
+                    scope.moduleImportAliases(),
+                ).flatten(),
+            )
             else -> false
         }
     }

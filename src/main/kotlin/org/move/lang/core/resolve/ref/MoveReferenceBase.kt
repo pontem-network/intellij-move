@@ -9,21 +9,28 @@ import org.move.lang.core.psi.MoveNamedElement
 import org.move.lang.core.psi.MovePsiFactory
 import org.move.lang.core.psi.MoveReferenceElement
 import org.move.lang.core.psi.ext.elementType
-import org.move.lang.core.resolve.ResolveEngine
 
 abstract class MoveReferenceBase<T : MoveReferenceElement>(element: T) : PsiReferenceBase<T>(element),
                                                                          MoveReference {
-    abstract fun resolveVerbose(): ResolveEngine.ResolveResult
-
-    override fun resolve(): MoveNamedElement? =
-        resolveVerbose().let {
-            when (it) {
-                is ResolveEngine.ResolveResult.Resolved -> it.element
-                else -> null
-            }
-        }
 
     open val T.referenceAnchor: PsiElement get() = referenceNameElement
+
+    abstract override fun resolve(): MoveNamedElement?
+//    abstract fun resolveVerbose(): ResolveEngine.ResolveResult
+
+//    override fun resolve(): MoveNamedElement? =
+//        resolveVerbose().let {
+//            when (it) {
+//                is ResolveEngine.ResolveResult.Resolved -> it.element
+//                else -> null
+//            }
+//        }
+
+    override fun equals(other: Any?): Boolean = other is MoveReferenceBase<*> && element === other.element
+
+    override fun hashCode(): Int = element.hashCode()
+
+    final override fun getRangeInElement(): TextRange = super.getRangeInElement()
 
     final override fun calculateDefaultRangeInElement(): TextRange {
         val anchor = element.referenceAnchor

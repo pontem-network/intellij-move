@@ -91,4 +91,117 @@ class ResolveFunctionTest : ResolveTestCase() {
         }
     """
     )
+
+    fun `test resolve function to the same module full path`() = checkByCode(
+        """
+        address 0x1 {
+        module M {
+            public fun call() {}
+                     //X
+            
+            fun main() {
+                0x1::M::call();
+                      //^
+            }
+        }    
+        }
+    """
+    )
+
+    fun `test resolve function to another module full path`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            public fun call() {}
+                     //X
+        }
+        
+        module M {
+            fun call() {}
+            
+            fun main() {
+                0x1::Original::call();
+                             //^
+            }
+        }    
+        }
+    """
+    )
+
+    fun `test resolve function to another module through use`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            public fun call() {}
+                     //X
+        }
+        
+        module M {
+            use 0x1::Original;
+            
+            fun call() {}
+            
+            fun main() {
+                Original::call();
+                        //^
+            }
+        }    
+        }
+    """
+    )
+
+    fun `test resolve function from import`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            public fun call() {}
+                     //X
+        }
+        
+        module M {
+            use 0x1::Original::call;
+                             //^
+        }    
+        }
+    """
+    )
+
+    fun `test cannot resolve private function from import`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            fun call() {}
+              //X
+        }
+        
+        module M {
+            use 0x1::Original::call;
+                             //^ unresolved
+        }    
+        }
+    """
+    )
+
+    fun `test resolve through member import`() = checkByCode(
+        """
+        address 0x1 {
+            module Original {
+                public fun call() {}
+                         //X
+            }
+        }
+        address 0x2 {
+            module M {
+                use 0x1::Original::call;
+                
+                fun main() {
+                    call();
+                  //^  
+                }
+            }    
+        
+        }
+
+    """
+    )
 }

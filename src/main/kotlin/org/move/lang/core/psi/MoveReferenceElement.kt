@@ -21,16 +21,3 @@ interface MoveReferenceElement : MoveElement {
 //    @JvmDefault
 //    override val referenceName: String get() = referenceNameElement.unescapedText
 //}
-
-/**
- * Marks an element that has a reference.
- */
-//interface MoveMandatoryReferenceElement : MoveReferenceElement {
-//
-////    override val referenceNameElement: PsiElement
-//
-////    @JvmDefault
-////    override val referenceName: String get() = referenceNameElement.text
-//
-//    override fun getReference(): PsiReference
-//}

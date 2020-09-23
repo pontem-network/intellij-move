@@ -15,9 +15,9 @@ fun interface MatchingProcessor {
         return match(entry)
     }
 
-    fun match(elem: MoveNamedElement): Boolean {
-        val name = elem.name ?: return false
-        return match(name, elem)
+    fun match(element: MoveNamedElement): Boolean {
+        val name = element.name ?: return false
+        return match(name, element)
     }
 
     fun matchAll(elements: Collection<MoveNamedElement>): Boolean =
