@@ -7,13 +7,13 @@ import org.move.lang.core.resolve.resolveExternalModule
 import org.move.lang.core.resolve.resolveItem
 import org.move.lang.core.resolve.resolveModuleRef
 
-class MoveQualPathReferenceImpl(
-    qualPath: MoveQualPath,
+class MoveQualPathReferenceImpl<T : MoveQualPathReferenceElement>(
+    qualPathRefElement: T,
     private val namespace: Namespace,
-) : MoveReferenceBase<MoveQualPath>(qualPath) {
+) : MoveReferenceBase<T>(qualPathRefElement) {
 
     override fun resolve(): MoveNamedElement? {
-        var moduleRef = element.moduleRef
+        var moduleRef = element.qualPath.moduleRef
         if (moduleRef == null) {
             val resolved = resolveItem(element, namespace)
             if (resolved !is MoveItemImport) {
@@ -23,8 +23,7 @@ class MoveQualPathReferenceImpl(
         }
 //        val moduleRef = element.moduleRef
 //            ?: return resolveItem(element, namespace)
-        val res = resolveQualifiedPath(moduleRef, element.referenceName, setOf(namespace))
-        return res
+        return resolveQualifiedPath(moduleRef, element.referenceName, setOf(namespace))
     }
 }
 

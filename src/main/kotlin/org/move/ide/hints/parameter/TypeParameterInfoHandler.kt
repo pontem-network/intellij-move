@@ -7,7 +7,6 @@ import com.intellij.psi.PsiFile
 import org.move.lang.MoveElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
-import org.move.lang.core.psi.ref_element.MoveReferenceElement
 import org.move.utils.AsyncParameterInfoHandler
 
 class TypeParameterInfoHandler : AsyncParameterInfoHandler<MoveTypeArgumentList, TypeParametersDescription>() {

@@ -22,22 +22,22 @@ val MoveQualPath.typeArguments: List<MoveQualPathType>
         typeArgumentList?.qualPathTypeList.orEmpty()
 
 
-abstract class MoveQualPathMixin(node: ASTNode) : MoveReferenceElementImpl(node),
-                                                       MoveQualPath {
-    override fun getReference(): MoveReference =
-        when (parent) {
-            is MoveQualPathType,
-            is MoveStructPat,
-            is MoveStructLiteralExpr,
-            ->
-                MoveQualPathReferenceImpl(this, Namespace.TYPE)
-
-            is MoveCallExpr,
-            is MoveRefExpr,
-            -> MoveQualPathReferenceImpl(this, Namespace.NAME)
-
-            is MoveApplySchemaName -> MoveQualPathReferenceImpl(this, Namespace.SCHEMA)
-
-            else -> error("Parser ensures that types are exhaustive")
-        }
-}
+//abstract class MoveQualPathMixin(node: ASTNode) : MoveReferenceElementImpl(node),
+//                                                       MoveQualPath {
+//    override fun getReference(): MoveReference =
+//        when (parent) {
+//            is MoveQualPathType,
+//            is MoveStructPat,
+//            is MoveStructLiteralExpr,
+//            ->
+//                MoveQualPathReferenceImpl(this, Namespace.TYPE)
+//
+//            is MoveCallExpr,
+//            is MoveRefExpr,
+//            -> MoveQualPathReferenceImpl(this, Namespace.NAME)
+//
+//            is MoveApplySchemaName -> MoveQualPathReferenceImpl(this, Namespace.SCHEMA)
+//
+//            else -> error("Parser ensures that types are exhaustive")
+//        }
+//}

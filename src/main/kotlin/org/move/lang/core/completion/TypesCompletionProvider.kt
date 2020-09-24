@@ -24,7 +24,7 @@ object TypesCompletionProvider : MoveCompletionProvider() {
         val refElement =
             directParent as? MoveQualPathType ?: directParent.parent as MoveQualPathType
 
-        if (parameters.position !== refElement.qualPath.referenceNameElement) return
+        if (parameters.position !== refElement.referenceNameElement) return
 
         processNestedScopesUpwards(refElement, Namespace.TYPE) {
             if (it.element != null) {

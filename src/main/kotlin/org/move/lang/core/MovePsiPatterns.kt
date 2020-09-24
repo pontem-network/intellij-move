@@ -52,12 +52,12 @@ object MovePsiPatterns {
     fun qualPathIdentifier(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
             .withParent<MoveQualPath>()
-            .withCond("FirstChild") { e -> e.prevSibling == null }
+//            .withCond("FirstChild") { e -> e.prevSibling == null }
 
     fun qualPathTypeIdentifier(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
             .withSuperParent<MoveQualPathType>(2)
-            .withCond("FirstChild") { e -> e.prevSibling == null }
+//            .withCond("FirstChild") { e -> e.prevSibling == null }
 
     fun specIdentifier(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()

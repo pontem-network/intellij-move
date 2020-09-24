@@ -5,6 +5,10 @@ module M {
 
     fun fn_with_type_params<T, U>(): T {}
 
+    fun fn_with_signer(s: &signer) {}
+
+    fun fn_with_borrowed_qual_type(s: &Transaction::Sender) {}
+
     fun fn_with_arguments(a: vector<T>, b: u8, c: Transaction::Sender): 0x1::Transaction::Sender {}
 
     fun fn_with_acquires()

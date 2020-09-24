@@ -136,6 +136,28 @@ class RenameTest : MoveTestCase() {
         }
     """)
 
+    fun `test struct from use position`() = doTest("RenamedStruct", """
+        module M {
+            struct MyStruct { val: u8 }
+            
+            fun main(s: MyStruct): /*caret*/MyStruct {
+                let MyStruct { val: myval } = get_struct();
+                let a = MyStruct { val: 1 };
+                move_from<MyStruct>();
+            }
+        }
+    """, """
+        module M {
+            struct RenamedStruct { val: u8 }
+            
+            fun main(s: RenamedStruct): RenamedStruct {
+                let RenamedStruct { val: myval } = get_struct();
+                let a = RenamedStruct { val: 1 };
+                move_from<RenamedStruct>();
+            }
+        }
+    """)
+
     fun `test schema`() = doTest("RenamedSchema", """
         module M {
             spec schema /*caret*/MySchema {}
@@ -200,17 +222,85 @@ class RenameTest : MoveTestCase() {
         }
     """)
 
-    fun `test import alias`() = doTest("RenamedTransaction", """
-        module M {
-            use 0x1::Transaction as MyTransaction;
-
-            fun main(): /*caret*/MyTransaction {}
+    fun `test import alias`() = doTest("RenamedStruct", """
+        address 0x1 {
+            module Transaction {
+                struct Struct {}
+            }
+            
+            module M {
+                use 0x1::Transaction::Struct as MyStruct;
+    
+                fun main(): /*caret*/MyStruct {}
+            }
         }
     """, """
-        module M {
-            use 0x1::Transaction as RenamedTransaction;
+        address 0x1 {
+            module Transaction {
+                struct Struct {}
+            }
+            
+            module M {
+                use 0x1::Transaction::Struct as RenamedStruct;
+    
+                fun main(): RenamedStruct {}
+            }
+        }
+    """)
 
-            fun main(): RenamedTransaction {}
+    fun `test rename module via import`() = doTest("RenamedTransaction", """
+        address 0x1 {
+            module Transaction {}
+            
+            module M {
+                use 0x1::Transaction;
+    
+                fun main() {
+                    let a = /*caret*/Transaction::create();
+                }
+            }
+        }
+    """, """
+        address 0x1 {
+            module RenamedTransaction {}
+            
+            module M {
+                use 0x1::RenamedTransaction;
+    
+                fun main() {
+                    let a = RenamedTransaction::create();
+                }
+            }
+        }
+    """)
+
+    fun `test rename module member via import`() = doTest("renamed_create", """
+        address 0x1 {
+            module Transaction {
+                public fun create() {}
+            }
+            
+            module M {
+                use 0x1::Transaction;
+    
+                fun main() {
+                    let a = Transaction::/*caret*/create();
+                }
+            }
+        }
+    """, """
+        address 0x1 {
+            module Transaction {
+                public fun renamed_create() {}
+            }
+            
+            module M {
+                use 0x1::Transaction;
+    
+                fun main() {
+                    let a = Transaction::renamed_create();
+                }
+            }
         }
     """)
 

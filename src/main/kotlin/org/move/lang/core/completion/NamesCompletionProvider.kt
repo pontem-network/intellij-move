@@ -7,9 +7,9 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.MovePsiPatterns
-import org.move.lang.core.psi.ref_element.MoveReferenceElement
-import org.move.lang.core.psi.ref_element.MoveSchemaReferenceElement
-import org.move.lang.core.psi.ref_element.MoveQualTypeReferenceElement
+import org.move.lang.core.psi.MoveQualTypeReferenceElement
+import org.move.lang.core.psi.MoveReferenceElement
+import org.move.lang.core.psi.MoveSchemaReferenceElement
 import org.move.lang.core.psi.ext.isSpecElement
 import org.move.lang.core.resolve.processNestedScopesUpwards
 import org.move.lang.core.resolve.ref.Namespace

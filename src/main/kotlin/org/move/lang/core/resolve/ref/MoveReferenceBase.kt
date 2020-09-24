@@ -7,7 +7,7 @@ import org.move.ide.refactoring.isValidMoveVariableIdentifier
 import org.move.lang.MoveElementTypes.IDENTIFIER
 import org.move.lang.core.psi.MoveNamedElement
 import org.move.lang.core.psi.MovePsiFactory
-import org.move.lang.core.psi.ref_element.MoveReferenceElement
+import org.move.lang.core.psi.MoveReferenceElement
 import org.move.lang.core.psi.ext.elementType
 
 abstract class MoveReferenceBase<T : MoveReferenceElement>(element: T) : PsiReferenceBase<T>(element),

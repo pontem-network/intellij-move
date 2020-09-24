@@ -84,7 +84,7 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
 }
 
 private fun checkQualifiedPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) {
-    val referred = qualPath.reference.resolve()
+    val referred = (qualPath.parent as MoveQualPathReferenceElement).reference.resolve()
     if (referred == null && qualPath.identifierName == "vector") {
         if (qualPath.typeArguments.isEmpty()) {
             holder.createErrorAnnotation(qualPath.identifier, "Missing item type argument")

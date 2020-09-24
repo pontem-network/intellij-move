@@ -205,4 +205,15 @@ class ResolveTypesTest : ResolveTestCase() {
         }
     """
     )
+
+    fun `test resolve return type to alias`() = checkByCode(
+        """
+        module M {
+            use 0x1::Transaction::Sender as MySender;
+                                          //X
+            fun main(): MySender {}
+                      //^
+        }
+    """
+    )
 }

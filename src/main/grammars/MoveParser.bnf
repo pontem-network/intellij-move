@@ -331,7 +331,7 @@ ModuleImport ::= FullyQualifiedModuleRef ImportAlias?
     name = "qual path to imported item"
     implements = [
         "org.move.lang.core.psi.MoveNamedElement"
-//        "org.move.lang.core.psi.ref_element.MoveReferenceElement"
+//        "org.move.lang.core.psi.MoveReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveModuleImportMixin"
 }
@@ -363,7 +363,7 @@ ItemImport ::= IDENTIFIER ImportAlias?
     name = "item name"
     implements = [
         "org.move.lang.core.psi.MoveNamedElement"
-        "org.move.lang.core.psi.ref_element.MoveReferenceElement"
+        "org.move.lang.core.psi.MoveReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveItemImportMixin"
 }
@@ -385,7 +385,7 @@ QualPathType ::= ('&' mut?)? QualPath
 {
     name = "type"
     implements = [
-        "org.move.lang.core.psi.ref_element.MoveQualTypeReferenceElement"
+        "org.move.lang.core.psi.MoveQualTypeReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveQualPathTypeMixin"
 }
@@ -455,7 +455,7 @@ TuplePat ::= '(' <<comma_sep_items Pat>>? ')'
 
 StructPat ::= QualPath StructPatFieldsBlock {
     implements = [
-        "org.move.lang.core.psi.ref_element.MoveQualTypeReferenceElement"
+        "org.move.lang.core.psi.MoveQualTypeReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveStructPatMixin"
 }
@@ -617,8 +617,8 @@ ContinueExpr ::= continue
 
 StructLiteralExpr ::= QualPath StructLiteralFieldsBlock
 {
-//    implements = ["org.move.lang.core.psi.ref_element.MoveTypeReferenceElement"]
-//    mixin = "org.move.lang.core.psi.mixins.MoveStructLiteralExprMixin"
+    implements = ["org.move.lang.core.psi.MoveQualTypeReferenceElement"]
+    mixin = "org.move.lang.core.psi.ext.MoveStructLiteralExprMixin"
 }
 StructLiteralFieldsBlock ::= '{' <<comma_sep_items StructLiteralExprField>>? '}' { pin = 1 }
 //private StructLiteralFieldsBlock_body ::= (StructLiteralExprField ','?)*
@@ -659,8 +659,8 @@ LiteralExpr ::= BOOL_LITERAL
 CallExpr ::= (QualPath &'(') CallArguments
 {
     pin = 1
-//    implements = ["org.move.lang.core.psi.ref_element.MoveReferenceElement"]
-//    mixin = "org.move.lang.core.psi.ext.MoveCallExprMixin"
+    implements = ["org.move.lang.core.psi.MoveQualNameReferenceElement"]
+    mixin = "org.move.lang.core.psi.ext.MoveCallExprMixin"
 }
 
 CallArguments ::= '(' <<comma_sep_items (Expr &(','|')'))>>? ')' { pin = 1 }
@@ -704,17 +704,22 @@ DotExpr ::= Expr '.' IDENTIFIER
 IndexExpr ::= Expr '[' Expr ']' { rightAssociative = true }
 
 RefExpr ::= QualPath
+{
+    implements = [
+        "org.move.lang.core.psi.MoveQualNameReferenceElement"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MoveRefExprMixin"
+}
 
 QualPath ::= ((FullyQualifiedModuleRef | ModuleRef) '::')? IDENTIFIER TypeArgumentList?
-//QualifiedPath ::= (AddressRef '::')? (ModuleRef '::')? IDENTIFIER TypeArgumentList?
 {
-    implements = ["org.move.lang.core.psi.ref_element.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.ext.MoveQualPathMixin"
+//    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+//    mixin = "org.move.lang.core.psi.ext.MoveQualPathMixin"
 }
 
 ModuleRef ::= IDENTIFIER
 {
-    implements = ["org.move.lang.core.psi.ref_element.MoveReferenceElement"]
+    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MoveModuleRefMixin"
 }
 
@@ -751,13 +756,13 @@ SchemaDef ::= schema IDENTIFIER TypeParameterList? SpecBlock {
 FunctionSpec ::= fun IDENTIFIER SpecBlock
 {
     pin = 1
-    implements = ["org.move.lang.core.psi.ref_element.MoveReferenceElement"]
+    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionSpecMixin"
 }
 StructSpec ::= struct IDENTIFIER SpecBlock
 {
     pin = 1
-    implements = ["org.move.lang.core.psi.ref_element.MoveTypeReferenceElement"]
+    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveStructSpecMixin"
 }
 ModuleSpec ::= module SpecBlock
@@ -945,8 +950,10 @@ ApplyStatement ::= apply ApplySchemaName
 ApplySchemaName ::= QualPath
                     ('{' <<comma_sep_items ApplySchemaNameAttribute>> '}')?
 {
-//    implements = [ "org.move.lang.core.psi.ref_element.MoveSchemaReferenceElement" ]
-//    mixin = "org.move.lang.core.psi.mixins.MoveApplySchemaNameMixin"
+    implements = [
+        "org.move.lang.core.psi.MoveQualSchemaReferenceElement"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MoveApplySchemaNameMixin"
 }
 ApplySchemaNameAttribute ::= IDENTIFIER ':' Expr
 

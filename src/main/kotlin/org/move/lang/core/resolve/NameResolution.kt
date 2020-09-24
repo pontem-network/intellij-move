@@ -5,11 +5,10 @@ import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.ref_element.MoveReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 
 
-fun processItemResolveVariants(
+fun processItems(
     element: MoveReferenceElement,
     namespace: Namespace,
     processor: MatchingProcessor,
@@ -26,12 +25,12 @@ fun processItemResolveVariants(
 
 fun resolveItem(element: MoveReferenceElement, namespace: Namespace): MoveNamedElement? {
     var resolved: MoveNamedElement? = null
-    processItemResolveVariants(element, namespace) {
+    processItems(element, namespace) {
         if (it.name == element.referenceName && it.element != null) {
             resolved = it.element
-            return@processItemResolveVariants true
+            return@processItems true
         }
-        return@processItemResolveVariants false
+        return@processItems false
     }
     return resolved
 }

@@ -1,7 +1,7 @@
 package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.MoveNamedElement
-import org.move.lang.core.psi.ref_element.MoveReferenceElement
+import org.move.lang.core.psi.MoveReferenceElement
 import org.move.lang.core.resolve.resolveItem
 
 class MoveReferenceImpl(
