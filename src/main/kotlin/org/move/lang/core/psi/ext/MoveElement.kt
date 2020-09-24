@@ -12,7 +12,7 @@ import org.move.lang.core.resolve.walkUpThroughScopes
 fun MoveElement.isDescendantOf(elementType: IElementType): Boolean {
     var descendant = false
     walkUpThroughScopes(this, { it is PsiFile }) { _, scope ->
-        if (scope.elementType == elementType) descendant = true;
+        if (scope.elementType == elementType) descendant = true
         false
     }
     return descendant

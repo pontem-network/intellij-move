@@ -29,7 +29,7 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .before(TYPE_ANNOTATION).spacing(0, 0, 0, true, 0)
         .before(INITIALIZER).spacing(1, 1, 0, true, 0)
 
-        .afterInside(AND, QUALIFIED_PATH_TYPE).spacing(0, 0, 0, false, 0)
+        .afterInside(AND, QUAL_PATH_TYPE).spacing(0, 0, 0, false, 0)
         .afterInside(AND, BORROW_EXPR).spacing(0, 0, 0, false, 0)
         .afterInside(AND, BORROW_PAT).spacing(0, 0, 0, false, 0)
 

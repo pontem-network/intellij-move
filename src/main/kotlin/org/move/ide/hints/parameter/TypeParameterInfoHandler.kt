@@ -7,6 +7,7 @@ import com.intellij.psi.PsiFile
 import org.move.lang.MoveElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ref_element.MoveReferenceElement
 import org.move.utils.AsyncParameterInfoHandler
 
 class TypeParameterInfoHandler : AsyncParameterInfoHandler<MoveTypeArgumentList, TypeParametersDescription>() {
@@ -14,8 +15,8 @@ class TypeParameterInfoHandler : AsyncParameterInfoHandler<MoveTypeArgumentList,
         file.findElementAt(offset)?.ancestorStrict()
 
     override fun calculateParameterInfo(element: MoveTypeArgumentList): Array<TypeParametersDescription>? {
-        val qualifiedPath = element.parent
-        val container = qualifiedPath.parent
+        val qualPath = element.parent
+        val container = qualPath.parent
         if (container is MoveReferenceElement) {
             val referred = container.reference.resolve() ?: return null
             if (referred is MoveTypeParametersOwner) {

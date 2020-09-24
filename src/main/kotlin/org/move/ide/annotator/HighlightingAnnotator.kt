@@ -39,19 +39,19 @@ class HighlightingAnnotator : MoveAnnotator() {
     private fun highlightIdentifier(element: MoveElement): MoveColor? {
         if (element is MoveTypeParameter) return MoveColor.TYPE_PARAMETER
 
-        if (element is MoveQualifiedPath && element.isIdentifierOnly) {
+        if (element is MoveQualPath && element.isIdentifierOnly) {
             val name = element.identifierName
             val container = element.parent
-            if (container is MoveQualifiedPathType) {
-                val resolved = container.qualifiedPath.reference.resolve()
+            if (container is MoveQualPathType) {
+                val resolved = container.qualPath.reference.resolve()
                 if (resolved is MoveTypeParameter) {
                     return MoveColor.TYPE_PARAMETER
                 }
             }
             return when {
-                container is MoveQualifiedPathType
+                container is MoveQualPathType
                         && name in PRIMITIVE_TYPE_IDENTIFIERS -> MoveColor.PRIMITIVE_TYPE
-                container is MoveQualifiedPathType
+                container is MoveQualPathType
                         && name in BUILTIN_TYPE_IDENTIFIERS -> MoveColor.BUILTIN_TYPE
                 container is MoveCallExpr
                         && name in BUILTIN_FUNCTIONS -> MoveColor.BUILTIN_FUNCTION

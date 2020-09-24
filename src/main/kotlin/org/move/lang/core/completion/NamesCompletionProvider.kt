@@ -7,9 +7,9 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.MovePsiPatterns
-import org.move.lang.core.psi.MoveReferenceElement
-import org.move.lang.core.psi.MoveSchemaReferenceElement
-import org.move.lang.core.psi.MoveTypeReferenceElement
+import org.move.lang.core.psi.ref_element.MoveReferenceElement
+import org.move.lang.core.psi.ref_element.MoveSchemaReferenceElement
+import org.move.lang.core.psi.ref_element.MoveQualTypeReferenceElement
 import org.move.lang.core.psi.ext.isSpecElement
 import org.move.lang.core.resolve.processNestedScopesUpwards
 import org.move.lang.core.resolve.ref.Namespace
@@ -18,15 +18,15 @@ object NamesCompletionProvider : MoveCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
             PlatformPatterns.or(
-                MovePsiPatterns.qualifiedPathIdentifier()
-                    .andNot(MovePsiPatterns.qualifiedPathTypeIdentifier()),
+                MovePsiPatterns.qualPathIdentifier()
+                    .andNot(MovePsiPatterns.qualPathTypeIdentifier()),
                 MovePsiPatterns.specIdentifier()
             )
 //    override val elementPattern: ElementPattern<PsiElement>
 //        get() =
 //            PlatformPatterns.psiElement().withSuperParent()
 //                .andNot(PlatformPatterns.psiElement()
-//                    .withSuperParent<MoveQualifiedPathType>(2))
+//                    .withSuperParent<MoveQualPathType>(2))
 
 //    override val elementPattern: ElementPattern<PsiElement>
 //        get() {
@@ -34,12 +34,12 @@ object NamesCompletionProvider : MoveCompletionProvider() {
 //                PlatformPatterns.psiElement()
 //                    .withElementType(MoveElementTypes.IDENTIFIER)
 //                    .withParent(psiElement<MoveReferenceElement>())
-//            val qualifiedPathIdentifier =
+//            val qualPathIdentifier =
 //                PlatformPatterns.psiElement()
 //                    .withElementType(MoveElementTypes.IDENTIFIER)
-//                    .withParent(psiElement<MoveQualifiedPath>())
+//                    .withParent(psiElement<MoveQualPath>())
 //                    .withSuperParent<MoveReferenceElement>(2)
-//            return PlatformPatterns.or(directRefIdentifier, qualifiedPathIdentifier)
+//            return PlatformPatterns.or(directRefIdentifier, qualPathIdentifier)
 //        }
 
     override fun addCompletions(
@@ -53,7 +53,7 @@ object NamesCompletionProvider : MoveCompletionProvider() {
         if (parameters.position !== refElement.referenceNameElement) return
 
         val namespace = when (refElement) {
-            is MoveTypeReferenceElement -> Namespace.TYPE
+            is MoveQualTypeReferenceElement -> Namespace.TYPE
             is MoveSchemaReferenceElement -> Namespace.SCHEMA
             else -> Namespace.NAME
         }

@@ -1,6 +1,7 @@
-package org.move.lang.core.psi
+package org.move.lang.core.psi.ref_element
 
 import com.intellij.psi.PsiElement
+import org.move.lang.core.psi.MoveElement
 import org.move.lang.core.resolve.ref.MoveReference
 
 interface MoveReferenceElement : MoveElement {

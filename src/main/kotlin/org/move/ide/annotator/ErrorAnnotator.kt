@@ -25,7 +25,7 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitNativeStructDef(o: MoveNativeStructDef) = checkNativeStructDef(moveHolder, o)
             override fun visitStructFieldDef(o: MoveStructFieldDef) = checkStructFieldDef(moveHolder, o)
 
-            override fun visitQualifiedPath(o: MoveQualifiedPath) = checkQualifiedPath(moveHolder, o)
+            override fun visitQualPath(o: MoveQualPath) = checkQualifiedPath(moveHolder, o)
 
             override fun visitCallArguments(o: MoveCallArguments) = checkCallArguments(moveHolder, o)
         }
@@ -83,7 +83,7 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
     }
 }
 
-private fun checkQualifiedPath(holder: MoveAnnotationHolder, qualPath: MoveQualifiedPath) {
+private fun checkQualifiedPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) {
     val referred = qualPath.reference.resolve()
     if (referred == null && qualPath.identifierName == "vector") {
         if (qualPath.typeArguments.isEmpty()) {

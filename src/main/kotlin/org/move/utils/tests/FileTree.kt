@@ -17,7 +17,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import org.intellij.lang.annotations.Language
 import org.junit.Assert
-import org.move.lang.core.psi.MoveReferenceElement
+import org.move.lang.core.psi.ref_element.MoveReferenceElement
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.openapiext.document
 import org.move.openapiext.fullyRefreshDirectory

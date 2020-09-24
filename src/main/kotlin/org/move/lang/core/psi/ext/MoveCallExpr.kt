@@ -11,11 +11,11 @@ import org.move.lang.core.psi.parameters
 abstract class MoveCallExprMixin(node: ASTNode) : MoveReferenceElementImpl(node),
                                                   MoveCallExpr {
     override val referenceNameElement: PsiElement
-        get() = qualifiedPath.identifier
+        get() = qualPath.identifier
 }
 
 fun MoveCallExpr.expectedParamsCount(): Int? {
-    val referred = this.qualifiedPath.reference.resolve()
+    val referred = this.qualPath.reference.resolve()
     if (referred is MoveFunctionSignatureOwner) {
         return referred.parameters.size
     }

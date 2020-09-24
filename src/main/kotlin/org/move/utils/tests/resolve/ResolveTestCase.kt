@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MoveNamedElement
-import org.move.lang.core.psi.MoveReferenceElement
+import org.move.lang.core.psi.ref_element.MoveReferenceElement
 import org.move.utils.tests.MoveTestCase
 
 abstract class ResolveTestCase : MoveTestCase() {

@@ -7,10 +7,10 @@ import org.move.lang.core.resolve.resolveExternalModule
 import org.move.lang.core.resolve.resolveItem
 import org.move.lang.core.resolve.resolveModuleRef
 
-class MoveQualifiedPathReferenceImpl(
-    qualPath: MoveQualifiedPath,
+class MoveQualPathReferenceImpl(
+    qualPath: MoveQualPath,
     private val namespace: Namespace,
-) : MoveReferenceBase<MoveQualifiedPath>(qualPath) {
+) : MoveReferenceBase<MoveQualPath>(qualPath) {
 
     override fun resolve(): MoveNamedElement? {
         var moduleRef = element.moduleRef

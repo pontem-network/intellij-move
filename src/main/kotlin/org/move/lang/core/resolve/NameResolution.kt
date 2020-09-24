@@ -5,6 +5,7 @@ import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ref_element.MoveReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 
 
