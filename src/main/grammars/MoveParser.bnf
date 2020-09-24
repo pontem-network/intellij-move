@@ -311,7 +311,7 @@ private StructFieldDef_type_recover ::= !(','|'}')
 //    pin = 1
 //}
 
-ImportStatement ::= use (ModuleImport | ModuleItemsImport)
+ImportStatement ::= use (ModuleImport | ModuleItemsImport) ';'
 {
     pin = 1
 }
@@ -323,9 +323,10 @@ ImportStatement ::= use (ModuleImport | ModuleItemsImport)
 //private ImportStatement_body_recover ::= !';'
 
 //Import ::= ItemImport | ModuleImport
-ModuleImport ::= FullyQualifiedModuleRef ImportAlias? !'::'
+ModuleImport ::= FullyQualifiedModuleRef ImportAlias?
 {
 //    extends = Import
+    name = "import path"
     implements = [
         "org.move.lang.core.psi.MoveNamedElement"
 //        "org.move.lang.core.psi.MoveReferenceElement"
@@ -335,12 +336,14 @@ ModuleImport ::= FullyQualifiedModuleRef ImportAlias? !'::'
 ModuleItemsImport ::= FullyQualifiedModuleRef '::' (ItemImport | MultiItemImport)
 {
     pin = 2
+    name = "import path"
 //    extends = Import
 }
 
 MultiItemImport ::= '{' <<comma_sep_items MultiItemImport_member_with_recovery>> '}'
 {
     pin = 1
+    name = "import path"
 }
 private MultiItemImport_member_with_recovery ::= !('}' | ';' | <<eof>>) ItemImport
 {

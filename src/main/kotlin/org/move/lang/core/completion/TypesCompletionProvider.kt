@@ -6,7 +6,7 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.MovePsiPatterns
-import org.move.lang.core.psi.MoveTypeReferenceElement
+import org.move.lang.core.psi.MoveQualifiedPathType
 import org.move.lang.core.psi.ext.isSpecElement
 import org.move.lang.core.resolve.processNestedScopesUpwards
 import org.move.lang.core.resolve.ref.Namespace
@@ -22,9 +22,9 @@ object TypesCompletionProvider : MoveCompletionProvider() {
     ) {
         val directParent = parameters.position.parent
         val refElement =
-            directParent as? MoveTypeReferenceElement ?: directParent.parent as MoveTypeReferenceElement
+            directParent as? MoveQualifiedPathType ?: directParent.parent as MoveQualifiedPathType
 
-        if (parameters.position !== refElement.referenceNameElement) return
+        if (parameters.position !== refElement.qualifiedPath.referenceNameElement) return
 
         processNestedScopesUpwards(refElement, Namespace.TYPE) {
             if (it.element != null) {
