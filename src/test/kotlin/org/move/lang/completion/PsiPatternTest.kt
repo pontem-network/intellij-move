@@ -66,6 +66,14 @@ class PsiPatternTest : MoveTestCase() {
         }
     """, MovePsiPatterns.codeStatement())
 
+    fun `test borrow type`() = testPattern("""
+        script {
+            fun main(s: &signer) {
+                       //^
+            }
+        }
+    """, MovePsiPatterns.qualPathTypeIdentifier())
+
     private inline fun <reified T : PsiElement> testPattern(
         @Language("Move") code: String,
         pattern: ElementPattern<T>,

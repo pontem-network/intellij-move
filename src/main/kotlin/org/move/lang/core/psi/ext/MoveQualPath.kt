@@ -17,9 +17,9 @@ val MoveQualPath.identifierName: String get() = identifier.text
 
 val MoveQualPath.isIdentifierOnly: Boolean get() = moduleRef == null
 
-val MoveQualPath.typeArguments: List<MoveQualPathType>
+val MoveQualPath.typeArguments: List<MoveType>
     get() =
-        typeArgumentList?.qualPathTypeList.orEmpty()
+        typeArgumentList?.typeList.orEmpty()
 
 
 //abstract class MoveQualPathMixin(node: ASTNode) : MoveReferenceElementImpl(node),

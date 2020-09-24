@@ -52,12 +52,11 @@ object MovePsiPatterns {
     fun qualPathIdentifier(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
             .withParent<MoveQualPath>()
-//            .withCond("FirstChild") { e -> e.prevSibling == null }
+            .withCond("FirstChild") { it.prevSibling == null }
 
     fun qualPathTypeIdentifier(): PsiElementPattern.Capture<PsiElement> =
-        PlatformPatterns.psiElement()
+        qualPathIdentifier()
             .withSuperParent<MoveQualPathType>(2)
-//            .withCond("FirstChild") { e -> e.prevSibling == null }
 
     fun specIdentifier(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
@@ -70,6 +69,14 @@ object MovePsiPatterns {
                 psiElement<PsiErrorElement>().withParent(psiElement<I>())
             )
         )
+
+//    private inline fun <reified I : PsiElement> psiElementWithGrandParent() =
+//        PlatformPatterns.psiElement().withSuperParent(2,
+//            StandardPatterns.or(
+//                psiElement<I>(),
+//                psiElement<PsiErrorElement>().withParent(psiElement<I>())
+//            )
+//        )
 
     private inline fun <reified I : PsiElement> psiElementInside() =
         PlatformPatterns.psiElement().inside(
@@ -115,10 +122,10 @@ inline fun <reified I : PsiElement> PsiElementPattern.Capture<PsiElement>.withSu
 }
 
 fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCond(
-    name: String,
+    debugName: String,
     cond: (T) -> Boolean,
 ): Self =
-    with(object : PatternCondition<T>(name) {
+    with(object : PatternCondition<T>(debugName) {
         override fun accepts(t: T, context: ProcessingContext?): Boolean = cond(t)
     })
 

@@ -15,7 +15,14 @@ class PrimitiveTypesCompletionTest: CompletionTestCase() {
 
     fun `test builtin types present in borrow type positions for function param`() = doTest("""
         script {
-            fun main(signer: &/*caret*/) {
+            fun main(s: &/*caret*/) {
+            }
+        }
+    """)
+
+    fun `test builtin types present in borrow type positions for nested ref type`() = doTest("""
+        script {
+            fun main(s: &&/*caret*/) {
             }
         }
     """)

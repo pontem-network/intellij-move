@@ -45,6 +45,14 @@ inline fun <reified T : PsiElement> PsiElement.stubAncestorStrict(): T? =
     PsiTreeUtil.getStubOrPsiParentOfType(this, T::class.java)
 
 /**
+ * Extracts node's element type
+ */
+val PsiElement.elementType: IElementType
+    // XXX: be careful not to switch to AST
+//    get() = if (this is RsFile) RsFileStub.Type else PsiUtilCore.getElementType(this)
+    get() = PsiUtilCore.getElementType(this)
+
+/**
  * Checks whether this node contains [descendant] one
  */
 fun PsiElement.contains(descendant: PsiElement?): Boolean {
@@ -95,8 +103,8 @@ fun PsiElement.isChildExists(type: IElementType): Boolean =
 /**
  * Extracts node's element type
  */
-val PsiElement.elementType: IElementType
-    get() = PsiUtilCore.getElementType(this)
+//val PsiElement.elementType: IElementType
+//    get() = PsiUtilCore.getElementType(this)
 
 fun PsiElement.isAncestorOf(child: PsiElement): Boolean =
     child.ancestors.contains(this)

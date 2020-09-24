@@ -19,6 +19,7 @@
     extends(".*Expr")=Expr
     extends(".*Pat")=Pat
     extends(".*Predicate")=Predicate
+    extends("(Lambda|Ref|QualPath|Tuple)Type")=Type
 
     name(".*Expr")="expression"
 
@@ -379,9 +380,12 @@ ImportAlias ::= as IDENTIFIER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 TypeAnnotation ::= ':' Type { pin = 1 }
 
-Type ::= QualPathType | TupleType | LambdaType
+Type ::= RefType | QualPathType | TupleType | LambdaType
 
-QualPathType ::= ('&' mut?)? QualPath
+RefType ::= RefTypeStart Type { pin = 1 }
+RefTypeStart ::= ('&' mut?)
+
+QualPathType ::= QualPath
 {
     name = "type"
     implements = [
@@ -414,7 +418,7 @@ TypeParamBound ::= ':' (copyable | resource)
     pin = 1
 }
 
-TypeArgumentList ::= '<' <<comma_sep_items (QualPathType &(','|'>'))>>? '>'
+TypeArgumentList ::= '<' <<comma_sep_items (Type &(','|'>'))>>? '>'
 //private TypeArgumentList_items ::= <<comma_sep_items (QualifiedPathType &(','|'>'))>>
 //{
 //    recoverWhile = TypeArgumentList_items_recover

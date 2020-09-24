@@ -2,6 +2,9 @@ package org.move.lang.core.completion
 
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionType
+import com.intellij.psi.PsiElement
+import org.move.lang.MoveElementTypes.COLON
+import org.move.lang.core.psi.ext.elementType
 
 class CommonCompletionContributor : CompletionContributor() {
     init {
@@ -13,4 +16,7 @@ class CommonCompletionContributor : CompletionContributor() {
     fun extend(type: CompletionType?, provider: MoveCompletionProvider) {
         extend(type, provider.elementPattern, provider)
     }
+
+    override fun invokeAutoPopup(position: PsiElement, typeChar: Char): Boolean =
+        typeChar == ':' && position.elementType == COLON
 }
