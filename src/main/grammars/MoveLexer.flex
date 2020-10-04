@@ -10,7 +10,7 @@ import static org.move.lang.MoveElementTypes.*;
 %%
 
 %{
-  private int bracesDepth = 0;
+//  private int bracesDepth = 0;
 
   private boolean isSpecDef = false;
 
@@ -43,8 +43,9 @@ import static org.move.lang.MoveElementTypes.*;
 %unicode
 
 %s IN_BLOCK_COMMENT
+%s BEGIN_SPEC
 %s IN_SPEC
-%s IN_APPLY_TO
+//%s IN_APPLY_TO
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Whitespaces
@@ -71,29 +72,45 @@ HEX_STRING_LITERAL=x\"([A-F0-9a-f]*)\"
 BYTE_STRING_LITERAL=b\"(.*)\"
 
 IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
-FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
+//FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
 
 %%
-<YYINITIAL,IN_SPEC,IN_APPLY_TO> {
+<YYINITIAL, BEGIN_SPEC, IN_SPEC> {
   {WHITE_SPACE}              { return WHITE_SPACE; }
+}
 
-  "{"                        {
-          bracesDepth++;
-          if (isSpecDef) {
-            specBracesDepth = bracesDepth;
-            isSpecDef = false;
-            pushState(IN_SPEC);
-//            yybegin(IN_SPEC);
-          }
-          return L_BRACE; }
-  "}"                        {
-          bracesDepth--;
-          if (bracesDepth < specBracesDepth) {
-              popState();
-              specBracesDepth = -1;
-          }
-          return R_BRACE;
-      }
+<BEGIN_SPEC> {
+    "fun"  { yybegin(IN_SPEC); return FUN; }
+    "struct" { yybegin(IN_SPEC); return STRUCT; }
+    "schema" { yybegin(IN_SPEC); return SCHEMA; }
+    "define" { yybegin(IN_SPEC); return DEFINE; }
+    "module" { yybegin(IN_SPEC); return MODULE; }
+
+    [^...]     { yybegin(YYINITIAL); yypushback(yylength()); }
+}
+
+<YYINITIAL, IN_SPEC> {
+//  {WHITE_SPACE}              { return WHITE_SPACE; }
+
+//  "{"                        {
+////          bracesDepth++;
+////          if (isSpecDef) {
+////            specBracesDepth = bracesDepth;
+////            isSpecDef = false;
+////            pushState(IN_SPEC);
+//////            yybegin(IN_SPEC);
+////          }
+//          return L_BRACE; }
+//  "}"                        {
+////          bracesDepth--;
+////          if (bracesDepth < specBracesDepth) {
+////              popState();
+////              specBracesDepth = -1;
+////          }
+//          return R_BRACE;
+//      }
+    "{"  { return L_BRACE; }
+    "}"  { return R_BRACE; }
   "["                        { return L_BRACK; }
   "]"                        { return R_BRACK; }
   "("                        { return L_PAREN; }
@@ -112,11 +129,11 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
   "-"                             { return MINUS; }
 }
 
-<YYINITIAL,IN_SPEC> {
+<YYINITIAL, IN_SPEC> {
   "*"                             { return MUL; }
 }
 
-<YYINITIAL,IN_SPEC,IN_APPLY_TO> {
+<YYINITIAL, IN_SPEC> {
   "/"                             { return DIV; }
   "%"                             { return MODULO; }
   "^"                             { return XOR; }
@@ -127,22 +144,23 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
   "|"                        { return OR; }
 
   "address"                        {
-          if (bracesDepth == 0) {
-              return ADDRESS;
-          } else {
-              return IDENTIFIER;
-          }
+          return ADDRESS;
+//          if (bracesDepth == 0) {
+//              return ADDRESS;
+//          } else {
+//              return IDENTIFIER;
+//          }
       }
-  "script"                         { return SCRIPT; }
-  "module"                         { return MODULE; }
-  "const"                          { return CONST; }
-  "native"                         { return NATIVE; }
-  "public"                         { return PUBLIC; }
-  "fun"                            { return FUN; }
+  "script"                         { yybegin(YYINITIAL); return SCRIPT; }
+  "module"                         { yybegin(YYINITIAL); return MODULE; }
+  "const"                          { yybegin(YYINITIAL); return CONST; }
+  "native"                         { yybegin(YYINITIAL); return NATIVE; }
+  "public"                         { yybegin(YYINITIAL); return PUBLIC; }
+  "fun"                            { yybegin(YYINITIAL); return FUN; }
   "acquires"                       { return ACQUIRES; }
-  "resource"                       { return RESOURCE; }
-  "struct"                         { return STRUCT; }
-  "use"                            { return USE; }
+  "resource"                       { yybegin(YYINITIAL); return RESOURCE; }
+  "struct"                         { yybegin(YYINITIAL); return STRUCT; }
+  "use"                            { yybegin(YYINITIAL); return USE; }
   "as"                             { return AS; }
   "mut"                            { return MUT; }
   "copyable"                       { return COPYABLE; }
@@ -163,8 +181,8 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
 ///////////////////////////////////////////////////////////////////////////////////////////////////
   "spec"                           {
 //          specBracesDepth = bracesDepth + 1;
-          isSpecDef = true;
-          return SPEC;
+//          isSpecDef = true;
+          yybegin(BEGIN_SPEC); return SPEC;
       }
   "schema"                         { return SCHEMA; }
   "define"                         { return DEFINE; }
@@ -179,8 +197,8 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
 
 <IN_SPEC> {
   "global" / "("|"<"                        { return IDENTIFIER; }
-
   "global"                        { return GLOBAL; }
+
   "local"                          { return LOCAL; }
   "isolated"                        { return ISOLATED; }
   "deactivated"                        { return DEACTIVATED; }
@@ -208,8 +226,8 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
   "pack"                           { return PACK; }
   "unpack"                         { return UNPACK; }
   "apply"                          { return APPLY; }
-  "to"                             { pushState(IN_APPLY_TO); return TO; }
-  "except"                         { pushState(IN_APPLY_TO); return EXCEPT; }
+  "to"                             { return TO; }
+  "except"                         { return EXCEPT; }
   "forall"                         { return FORALL; }
   "in"                             { return IN; }
   "where"                             { return WHERE; }
@@ -221,12 +239,12 @@ FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
 //    }
 }
 
-<IN_APPLY_TO> {
-    {FUNCTION_PATTERN_NAME}     { pushState(IN_SPEC); return FUNCTION_PATTERN_NAME; }
-      [^]       { pushState(IN_SPEC); }
-}
+//<IN_APPLY_TO> {
+//    {FUNCTION_PATTERN_NAME}     { pushState(IN_SPEC); return FUNCTION_PATTERN_NAME; }
+//      [^]       { pushState(IN_SPEC); }
+//}
 
-<YYINITIAL,IN_SPEC,IN_APPLY_TO> {
+<YYINITIAL, IN_SPEC> {
   {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
   {BECH32_ADDRESS_LITERAL}          { return BECH32_ADDRESS_LITERAL; }
   {BOOL_LITERAL}             { return BOOL_LITERAL; }

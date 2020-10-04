@@ -7,6 +7,9 @@ import org.move.utils.tests.MoveTestCase
 import org.move.utils.tests.replaceCaretMarker
 
 class RestartLexerTest : MoveTestCase() {
+    fun `test lexer restart outer address`() =
+        doTestLexerRestart(""" module M {} addres/*caret*/ 0x0 {} """, 's')
+
     fun `test lexer restart`() =
         doTestLexerRestart(""" module M { fun main() { le/*caret*/} } """, 't')
 
@@ -14,7 +17,10 @@ class RestartLexerTest : MoveTestCase() {
         doTestLexerRestart(""" module M { fun main() { let a: addres/*caret*/} } """, 's')
 
     fun `test lexer restart inside spec`() =
-        doTestLexerRestart(""" module M { spec module { asser/*caret*/ true } } """, 't')
+        doTestLexerRestart(""" module M { spec module { asser/*caret*/ true } fun main() { assert (1 == 1, 0); } } """, 't')
+
+    fun `test lexer restart inside spec 2`() =
+        doTestLexerRestart(""" module M { spec module { assert true } fun main() { asser/*caret*/(1 == 1, 0); } } """, 't')
 
     private fun doTestLexerRestart(@Language("Move") originalText: String, char: Char) {
         val text = replaceCaretMarker(originalText)

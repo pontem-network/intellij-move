@@ -6,11 +6,11 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
 import org.move.lang.MoveElementTypes.*
 import org.move.lang.core.MOVE_KEYWORDS
-import org.move.lang.MoveLexer
+import org.move.lang.core.lexer.createMoveLexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors as Default
 
 class MoveHighlighter : SyntaxHighlighterBase() {
-    override fun getHighlightingLexer(): Lexer = MoveLexer()
+    override fun getHighlightingLexer(): Lexer = createMoveLexer()
 
     override fun getTokenHighlights(tokenType: IElementType?): Array<TextAttributesKey> {
         val color = when (tokenType) {

@@ -10,11 +10,12 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
+import org.move.lang.core.lexer.createMoveLexer
 import org.move.lang.core.tokenSetOf
 
 class MoveParserDefinition : ParserDefinition {
     override fun createLexer(project: Project): Lexer {
-        return MoveLexer()
+        return createMoveLexer()
     }
 
     override fun createParser(project: Project): PsiParser {

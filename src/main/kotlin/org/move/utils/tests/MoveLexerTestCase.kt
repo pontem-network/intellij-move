@@ -7,7 +7,8 @@ import com.intellij.openapi.vfs.CharsetToolkit
 import com.intellij.testFramework.LexerTestCase
 import com.intellij.testFramework.UsefulTestCase
 import org.jetbrains.annotations.NonNls
-import org.move.lang.MoveLexer
+import org.move.lang.core.lexer.MoveDelegateLexer
+import org.move.lang.core.lexer.createMoveLexer
 import java.io.IOException
 
 abstract class MoveLexerTestCase : LexerTestCase(),
@@ -16,7 +17,7 @@ abstract class MoveLexerTestCase : LexerTestCase(),
     override fun getDirPath(): String = throw UnsupportedOperationException()
 
     override fun getTestDataPath(): String = "org/move/lang/lexer"
-    override fun createLexer(): Lexer = MoveLexer()
+    override fun createLexer(): Lexer = createMoveLexer()
 
     override fun getTestName(lowercaseFirstLetter: Boolean): String {
         val camelCase = super.getTestName(lowercaseFirstLetter)
