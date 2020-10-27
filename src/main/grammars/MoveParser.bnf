@@ -256,13 +256,13 @@ FunctionParameter ::= IDENTIFIER TypeAnnotation
 
 // u8 | (u8,) | (u8, u8) | (u8, u8,)
 // tuples only allowed as a return types
-ReturnType ::= ':' ReturnType_type { pin = 1 }
-private ReturnType_type ::= Type
+ReturnType ::= ':' ReturnTypeItem_with_recover { pin = 1 }
+private ReturnTypeItem_with_recover ::= Type
 {
     pin = 1
-    recoverWhile = ReturnType_type_recover
+    recoverWhile = ReturnTypeItem_recover
 }
-private ReturnType_type_recover ::= !( '{' | ';' | acquires )
+private ReturnTypeItem_recover ::= !( '{' | ';' | acquires )
 
 // acquires T, Record
 AcquiresType ::= acquires AcquiresType_items { pin = 1 }
@@ -422,21 +422,34 @@ QualPathType ::= QualPath
     mixin = "org.move.lang.core.psi.ext.MoveQualPathTypeMixin"
 }
 
-TupleType ::= '(' <<comma_sep_items Type>>? ')' { pin = 1 }
+TupleType ::= '(' TupleTypeItem_with_recover* ')' { pin = 1 }
+private TupleTypeItem_with_recover ::= !')' Type (',' | &')')
+{
+    pin = 1
+    recoverWhile = TupleTypeItem_recover
+}
+private TupleTypeItem_recover ::= !(')' | '{' | IDENTIFIER)
 
 LambdaType ::= '|' <<comma_sep_items Type>>? '|' Type { pin = 1 }
 
-TypeParameterList ::= '<' TypeParameterList_items? '>'
+TypeParameterList ::= '<' TypeParameter_with_recover* '>'
 {
     pin = 1
 }
-private TypeParameterList_items ::= <<comma_sep_items TypeParameter>>
+private TypeParameter_with_recover ::= !'>' TypeParameter (',' | &'>')
 {
-    recoverWhile = TypeParameterList_items_recovery
+    pin = 1
+    recoverWhile = TypeParameter_recover
 }
-private TypeParameterList_items_recovery ::= !('{'|'('|'>')
+private TypeParameter_recover ::= !('>' | '(' | '{' | IDENTIFIER)
 
-TypeParameter ::= IDENTIFIER TypeParamBound? &(',' | '>') {
+//private TypeParameterList_items ::= <<comma_sep_items TypeParameter>>
+//{
+//    recoverWhile = TypeParameterList_items_recovery
+//}
+//private TypeParameterList_items_recovery ::= !('{'|'('|'>')
+
+TypeParameter ::= IDENTIFIER TypeParamBound? {
     pin = 1
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.mixins.MoveTypeParameterMixin"

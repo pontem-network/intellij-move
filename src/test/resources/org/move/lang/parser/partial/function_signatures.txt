@@ -169,11 +169,90 @@ FILE
         MoveReturnTypeImpl(RETURN_TYPE)
           PsiElement(:)(':')
           PsiWhiteSpace(' ')
-          MoveQualPathTypeImpl(QUAL_PATH_TYPE)
-            MoveQualPathImpl(QUAL_PATH)
-              PsiElement(IDENTIFIER)('u8')
-          PsiErrorElement:'::' or < expected, got ','
+          MoveTupleTypeImpl(TUPLE_TYPE)
+            PsiElement(()('(')
+            MoveQualPathTypeImpl(QUAL_PATH_TYPE)
+              MoveQualPathImpl(QUAL_PATH)
+                PsiElement(IDENTIFIER)('u8')
+            PsiErrorElement:')', ',', '::' or < expected, got '{'
+              <empty list>
+        PsiWhiteSpace(' ')
+        MoveCodeBlockImpl(CODE_BLOCK)
+          PsiElement({)('{')
+          PsiElement(})('}')
+      PsiWhiteSpace('\n    ')
+      MoveFunctionDefImpl(FUNCTION_DEF)
+        PsiElement(fun)('fun')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('main')
+        MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
+          PsiElement(()('(')
+          PsiElement())(')')
+        MoveReturnTypeImpl(RETURN_TYPE)
+          PsiElement(:)(':')
+          PsiWhiteSpace(' ')
+          MoveTupleTypeImpl(TUPLE_TYPE)
+            PsiElement(()('(')
+            MoveQualPathTypeImpl(QUAL_PATH_TYPE)
+              MoveQualPathImpl(QUAL_PATH)
+                PsiElement(IDENTIFIER)('u8')
             PsiElement(,)(',')
+            PsiErrorElement:<type> expected, got '{'
+              <empty list>
+        PsiWhiteSpace(' ')
+        MoveCodeBlockImpl(CODE_BLOCK)
+          PsiElement({)('{')
+          PsiElement(})('}')
+      PsiWhiteSpace('\n    ')
+      MoveFunctionDefImpl(FUNCTION_DEF)
+        PsiElement(fun)('fun')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('main')
+        MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
+          PsiElement(()('(')
+          PsiElement())(')')
+        MoveReturnTypeImpl(RETURN_TYPE)
+          PsiElement(:)(':')
+          PsiWhiteSpace(' ')
+          MoveTupleTypeImpl(TUPLE_TYPE)
+            PsiElement(()('(')
+            MoveQualPathTypeImpl(QUAL_PATH_TYPE)
+              MoveQualPathImpl(QUAL_PATH)
+                PsiElement(IDENTIFIER)('u8')
+            PsiElement(,)(',')
+            PsiWhiteSpace(' ')
+            MoveQualPathTypeImpl(QUAL_PATH_TYPE)
+              MoveQualPathImpl(QUAL_PATH)
+                PsiElement(IDENTIFIER)('u8')
+            PsiErrorElement:')', ',', '::' or < expected, got '{'
+              <empty list>
+        PsiWhiteSpace(' ')
+        MoveCodeBlockImpl(CODE_BLOCK)
+          PsiElement({)('{')
+          PsiElement(})('}')
+      PsiWhiteSpace('\n    ')
+      MoveFunctionDefImpl(FUNCTION_DEF)
+        PsiElement(fun)('fun')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('main')
+        MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
+          PsiElement(()('(')
+          PsiElement())(')')
+        MoveReturnTypeImpl(RETURN_TYPE)
+          PsiElement(:)(':')
+          PsiWhiteSpace(' ')
+          MoveTupleTypeImpl(TUPLE_TYPE)
+            PsiElement(()('(')
+            MoveQualPathTypeImpl(QUAL_PATH_TYPE)
+              MoveQualPathImpl(QUAL_PATH)
+                PsiElement(IDENTIFIER)('u')
+            PsiErrorElement:')', ',', '::' or < expected, got 'u8'
+              <empty list>
+            PsiWhiteSpace(' ')
+            MoveQualPathTypeImpl(QUAL_PATH_TYPE)
+              MoveQualPathImpl(QUAL_PATH)
+                PsiElement(IDENTIFIER)('u8')
+            PsiElement())(')')
         PsiWhiteSpace(' ')
         MoveCodeBlockImpl(CODE_BLOCK)
           PsiElement({)('{')
@@ -255,7 +334,7 @@ FILE
         PsiElement(IDENTIFIER)('main')
         MoveTypeParameterListImpl(TYPE_PARAMETER_LIST)
           PsiElement(<)('<')
-          PsiErrorElement:'>' or IDENTIFIER expected, got '('
+          PsiErrorElement:IDENTIFIER expected, got '('
             <empty list>
         MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')
@@ -273,8 +352,8 @@ FILE
           PsiElement(<)('<')
           MoveTypeParameterImpl(TYPE_PARAMETER)
             PsiElement(IDENTIFIER)('U')
-            PsiErrorElement:',', ':' or '>' expected, got '('
-              <empty list>
+          PsiErrorElement:',', ':' or '>' expected, got '('
+            <empty list>
         MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')
           PsiElement())(')')
@@ -295,7 +374,7 @@ FILE
           MoveTypeParameterImpl(TYPE_PARAMETER)
             PsiElement(IDENTIFIER)('V')
           PsiElement(,)(',')
-          PsiErrorElement:'>' expected, got '('
+          PsiErrorElement:IDENTIFIER expected, got '('
             <empty list>
         MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')
@@ -313,10 +392,11 @@ FILE
           PsiElement(<)('<')
           MoveTypeParameterImpl(TYPE_PARAMETER)
             PsiElement(IDENTIFIER)('U')
-            PsiErrorElement:',', ':' or '>' expected, got 'V'
-              <empty list>
+          PsiErrorElement:',', ':' or '>' expected, got 'V'
+            <empty list>
           PsiWhiteSpace(' ')
-          PsiElement(IDENTIFIER)('V')
+          MoveTypeParameterImpl(TYPE_PARAMETER)
+            PsiElement(IDENTIFIER)('V')
           PsiElement(>)('>')
         MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')
@@ -347,7 +427,8 @@ FILE
               PsiErrorElement:copyable or resource expected, got 'unknown'
                 <empty list>
           PsiWhiteSpace(' ')
-          PsiElement(IDENTIFIER)('unknown')
+          MoveTypeParameterImpl(TYPE_PARAMETER)
+            PsiElement(IDENTIFIER)('unknown')
           PsiElement(>)('>')
         MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')
