@@ -1,12 +1,27 @@
 package org.move.lang.stubs
 
-//import com.intellij.psi.impl.DebugUtil
-//import com.intellij.psi.stubs.StubTreeLoader
-//import org.intellij.lang.annotations.Language
-//import org.move.utils.tests.MoveTestCase
-//import org.move.utils.tests.fileTreeFromText
+import org.move.utils.tests.MoveStubTestCase
 
-//class StubTest: MoveTestCase() {
+class StubTest : MoveStubTestCase() {
+    fun `test module`() = doTest("""
+        module M {}
+    """, """
+        PsiFileStubImpl
+          MODULE_DEF:MoveModuleDefStub
+    """)
+
+    fun `test module in address`() = doTest("""
+        address 0x0 {
+            module M {
+                fun main() {}
+            }
+        }
+    """, """
+        PsiFileStubImpl
+          ADDRESS_DEF:MoveAddressDefStub
+            MODULE_DEF:MoveModuleDefStub
+    """)
+
 //    fun `test literal is not stubbed inside function statement`() = doTest("""
 //        script {
 //            fun main() { 10; }
@@ -26,13 +41,4 @@ package org.move.lang.stubs
 //          FUNCTION_DEF:MoveFunctionDefStub
 //            FUNCTION_PARAMETER_LIST:PlaceholderStub
 //    """)
-//
-//    private fun doTest(@Language("Move") code: String, expectedStubText: String) {
-//        val fileName = "main.move"
-//        fileTreeFromText("//- $fileName\n$code").create()
-//        val vFile = myFixture.findFileInTempDir(fileName)
-//        val stubTree = StubTreeLoader.getInstance().readFromVFile(project, vFile) ?: error("Stub tree is null")
-//        val stubText = DebugUtil.stubTreeToString(stubTree.root)
-//        assertEquals(expectedStubText.trimIndent() + "\n", stubText)
-//    }
-//}
+}

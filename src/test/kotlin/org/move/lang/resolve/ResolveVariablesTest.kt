@@ -141,4 +141,17 @@ class ResolveVariablesTest : ResolveTestCase() {
         }
     """
     )
+
+    fun `test tuple destructuring`() = checkByCode(
+        """
+        module M {
+            fun main() {
+                let (a, b) = call();
+                   //X
+                a;
+              //^  
+            }
+        }
+    """
+    )
 }

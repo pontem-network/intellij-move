@@ -1,10 +1,8 @@
-address 0x0 {
-    module M {
-        fun main() {
-            let a = 0x0;
-            let a = 0x0000;
-            let a = 0x00001111;
-        }
+module M {
+    fun main() {
+        let a = 0x0;
+        let a = 0x0000;
+        let a = 0x00001111;
     }
 }
 

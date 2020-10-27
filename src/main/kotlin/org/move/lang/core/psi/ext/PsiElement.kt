@@ -1,14 +1,11 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiFileImpl
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
-import org.move.lang.core.resolve.walkUpThroughScopes
 
 inline fun <reified T : PsiElement> PsiElement.childOfType(): T? =
     PsiTreeUtil.getChildOfType(this, T::class.java)
@@ -147,3 +144,9 @@ fun PsiElement?.getPrevNonCommentSibling(): PsiElement? =
 /** Finds first sibling that is neither comment, nor whitespace after given element */
 fun PsiElement?.getNextNonCommentSibling(): PsiElement? =
     PsiTreeUtil.skipWhitespacesAndCommentsForward(this)
+
+fun PsiElement.isWhitespace(): Boolean =
+    this is PsiWhiteSpace || this is PsiComment
+
+fun PsiElement.isErrorElement(): Boolean =
+    this is PsiErrorElement

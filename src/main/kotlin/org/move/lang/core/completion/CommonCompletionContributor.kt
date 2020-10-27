@@ -11,6 +11,7 @@ class CommonCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, PrimitiveTypesCompletionProvider)
         extend(CompletionType.BASIC, NamesCompletionProvider)
         extend(CompletionType.BASIC, TypesCompletionProvider)
+        extend(CompletionType.BASIC, StructFieldsCompletionProvider)
     }
 
     fun extend(type: CompletionType?, provider: MoveCompletionProvider) {

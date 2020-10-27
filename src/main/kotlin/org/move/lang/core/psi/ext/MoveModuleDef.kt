@@ -2,8 +2,10 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.project.Project
+import com.intellij.psi.stubs.IStubElementType
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
+import org.move.lang.core.psi.impl.MoveStubbedNameIdentifierOwnerImpl
 import org.move.lang.core.psi.mixins.MoveNativeFunctionDefMixin
 
 fun MoveModuleDef.functions(): List<MoveFunctionDef> =
@@ -58,7 +60,21 @@ fun MoveModuleDef.schemas(): List<MoveSchemaDef> =
 
 abstract class MoveModuleDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
                                                    MoveModuleDef {
+
+//    constructor(stub: MoveModuleDefStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+
     override val importStatements: List<MoveImportStatement>
         get() =
             moduleBlock?.importStatementList.orEmpty()
 }
+
+//abstract class MoveModuleDefMixin : MoveStubbedNameIdentifierOwnerImpl<MoveModuleDefStub>,
+//                                    MoveModuleDef {
+//    constructor(node: ASTNode) : super(node)
+//
+//    constructor(stub: MoveModuleDefStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+//
+//    override val importStatements: List<MoveImportStatement>
+//        get() =
+//            moduleBlock?.importStatementList.orEmpty()
+//}

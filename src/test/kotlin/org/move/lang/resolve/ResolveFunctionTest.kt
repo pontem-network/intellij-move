@@ -204,4 +204,18 @@ class ResolveFunctionTest : ResolveTestCase() {
 
     """
     )
+
+    fun `test resolve function to import`() = checkByCode(
+        """
+        module M {
+            use 0x1::Original::call;
+                             //X
+            
+            fun main() {
+                call();
+              //^  
+            }
+        }    
+    """
+    )
 }

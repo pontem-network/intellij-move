@@ -106,6 +106,17 @@ FILE
           PsiElement(()('(')
           PsiElement())(')')
         PsiWhiteSpace(' ')
+        PsiErrorElement:':', acquires or '{' expected, got 'acq'
+          PsiElement(IDENTIFIER)('acq')
+      PsiWhiteSpace('\n    ')
+      MoveFunctionDefImpl(FUNCTION_DEF)
+        PsiElement(fun)('fun')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('main')
+        MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
+          PsiElement(()('(')
+          PsiElement())(')')
+        PsiWhiteSpace(' ')
         MoveAcquiresTypeImpl(ACQUIRES_TYPE)
           PsiElement(acquires)('acquires')
           PsiErrorElement:<qual path> expected, got '{'

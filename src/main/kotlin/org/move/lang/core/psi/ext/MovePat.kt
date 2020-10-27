@@ -12,8 +12,12 @@ val MovePat.boundElements: List<MoveNamedElement>
 
             override fun visitStructPat(o: MoveStructPat) {
                 o.structPatFieldsBlock.structPatFieldList.forEach { field ->
-                    field.pat?.accept(this) ?: elements.add(field)
+                    field.structPatFieldBinding?.pat?.accept(this) ?: elements.add(field)
                 }
+            }
+
+            override fun visitTuplePat(o: MoveTuplePat) {
+                o.patList.forEach { it.accept(this) }
             }
         })
         return elements

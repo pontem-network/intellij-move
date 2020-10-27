@@ -11,6 +11,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.lang.core.lexer.createMoveLexer
+//import org.move.lang.core.stubs.MoveFileStub
 import org.move.lang.core.tokenSetOf
 
 class MoveParserDefinition : ParserDefinition {

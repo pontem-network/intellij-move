@@ -8,10 +8,11 @@ object MoveIcons {
     val MODULE = AllIcons.Nodes.Module
 
     val STRUCT = AllIcons.Nodes.Class
-    val CONST = AllIcons.Nodes.Constant
+    val STRUCT_FIELD = AllIcons.Nodes.Field
 
-    val FIELD = AllIcons.Nodes.Field
+    val CONST = AllIcons.Nodes.Constant
     val FUNCTION = AllIcons.Nodes.Function
+    
     val BINDING = AllIcons.Nodes.Variable
 
     val VARIABLE = AllIcons.Nodes.Variable

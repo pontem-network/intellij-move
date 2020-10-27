@@ -93,6 +93,11 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
 //                    ctx.addSuffix(" ")
 //            }
 
+        is MoveStructFieldDef -> LookupElementBuilder
+            .createWithIcon(this)
+            .withLookupString(this.name ?: "")
+            .withTypeText(this.type?.text)
+
         is MoveFunctionParameter -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTypeText(this.type?.text)

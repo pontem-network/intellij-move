@@ -2,17 +2,21 @@ package org.move.lang.core.completion
 
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionType
+import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.patterns.PsiElementPattern
 import com.intellij.psi.PsiElement
 import org.move.lang.MoveElementTypes.IDENTIFIER
+import org.move.lang.MoveElementTypes.STRUCT
 import org.move.lang.core.MovePsiPatterns
+import org.move.lang.core.MovePsiPatterns.acquiresPlacement
 import org.move.lang.core.MovePsiPatterns.addressBlock
 import org.move.lang.core.MovePsiPatterns.codeStatement
 import org.move.lang.core.MovePsiPatterns.moduleBlock
 import org.move.lang.core.MovePsiPatterns.scriptBlock
 import org.move.lang.core.MovePsiPatterns.toplevel
 import org.move.lang.core.MovePsiPatterns.typeParamBound
+import org.move.lang.core.MovePsiPatterns.whitespace
 
 class KeywordCompletionContributor : CompletionContributor() {
     init {
@@ -60,6 +64,12 @@ class KeywordCompletionContributor : CompletionContributor() {
             moduleBlock().and(onStatementBeginning("resource")),
             KeywordCompletionProvider("struct")
         )
+//        extend(
+//            CompletionType.BASIC,
+//            moduleBlock().and(
+//                psiElement().beforeLeafSkipping(whitespace(), psiElement(STRUCT))),
+//            KeywordCompletionProvider("struct")
+//        )
         extend(
             CompletionType.BASIC,
             moduleBlock().and(onStatementBeginning("public")),
@@ -88,6 +98,13 @@ class KeywordCompletionContributor : CompletionContributor() {
             KeywordCompletionProvider(
                 "copyable",
                 "resource",
+            )
+        )
+        extend(
+            CompletionType.BASIC,
+            acquiresPlacement(),
+            KeywordCompletionProvider(
+                "acquires",
             )
         )
     }

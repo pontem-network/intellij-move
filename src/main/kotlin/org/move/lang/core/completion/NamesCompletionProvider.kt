@@ -22,25 +22,6 @@ object NamesCompletionProvider : MoveCompletionProvider() {
                     .andNot(MovePsiPatterns.qualPathTypeIdentifier()),
                 MovePsiPatterns.specIdentifier()
             )
-//    override val elementPattern: ElementPattern<PsiElement>
-//        get() =
-//            PlatformPatterns.psiElement().withSuperParent()
-//                .andNot(PlatformPatterns.psiElement()
-//                    .withSuperParent<MoveQualPathType>(2))
-
-//    override val elementPattern: ElementPattern<PsiElement>
-//        get() {
-//            val directRefIdentifier =
-//                PlatformPatterns.psiElement()
-//                    .withElementType(MoveElementTypes.IDENTIFIER)
-//                    .withParent(psiElement<MoveReferenceElement>())
-//            val qualPathIdentifier =
-//                PlatformPatterns.psiElement()
-//                    .withElementType(MoveElementTypes.IDENTIFIER)
-//                    .withParent(psiElement<MoveQualPath>())
-//                    .withSuperParent<MoveReferenceElement>(2)
-//            return PlatformPatterns.or(directRefIdentifier, qualPathIdentifier)
-//        }
 
     override fun addCompletions(
         parameters: CompletionParameters,

@@ -182,7 +182,8 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "spec"                           {
 //          specBracesDepth = bracesDepth + 1;
 //          isSpecDef = true;
-          yybegin(BEGIN_SPEC); return SPEC;
+//          yybegin(BEGIN_SPEC);
+          return SPEC;
       }
   "schema"                         { return SCHEMA; }
   "define"                         { return DEFINE; }

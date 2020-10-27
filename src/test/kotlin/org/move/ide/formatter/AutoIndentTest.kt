@@ -461,4 +461,44 @@ class AutoIndentTest : MoveTypingTestCase() {
         }
     """
     )
+
+    fun `test indent before comment`() = doTestByText(
+        """
+        script {
+            fun main() {/*caret*/
+                // hello
+            }
+        }
+    """, """
+        script {
+            fun main() {
+                /*caret*/
+                // hello
+            }
+        }
+    """
+    )
+
+    fun `test indent after commented use`() = doTestByText(
+        """
+    address 0x0 {
+        module M {
+            use 0x0::Account;
+            // use 0x0::Signer;/*caret*/
+            
+            fun main() {}
+        }
+    }
+    """, """
+    address 0x0 {
+        module M {
+            use 0x0::Account;
+            // use 0x0::Signer;
+            /*caret*/
+            
+            fun main() {}
+        }
+    }
+    """
+    )
 }

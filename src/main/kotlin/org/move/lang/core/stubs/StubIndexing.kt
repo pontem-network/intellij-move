@@ -7,7 +7,9 @@ import org.move.lang.core.stubs.index.MoveNamedElementIndex
 //    indexNamedStub(stub)
 //}
 
-private fun IndexSink.indexNamedStub(stub: MoveNamedStub) {
+//fun IndexSink.indexAddressDef(stub: MoveAddressDefStub) {}
+
+fun IndexSink.indexNamedStub(stub: MoveNamedStub) {
     stub.name?.let {
         occurrence(MoveNamedElementIndex.KEY, it)
     }

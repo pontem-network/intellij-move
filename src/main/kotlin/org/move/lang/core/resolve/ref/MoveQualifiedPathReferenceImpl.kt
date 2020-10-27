@@ -3,9 +3,7 @@ package org.move.lang.core.resolve.ref
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.MatchingProcessor
-import org.move.lang.core.resolve.resolveExternalModule
 import org.move.lang.core.resolve.resolveItem
-import org.move.lang.core.resolve.resolveModuleRef
 
 class MoveQualPathReferenceImpl<T : MoveQualPathReferenceElement>(
     qualPathRefElement: T,
@@ -16,10 +14,11 @@ class MoveQualPathReferenceImpl<T : MoveQualPathReferenceElement>(
         var moduleRef = element.qualPath.moduleRef
         if (moduleRef == null) {
             val resolved = resolveItem(element, namespace)
-            if (resolved !is MoveItemImport) {
-                return resolved
-            }
-            moduleRef = resolved.parentImport().fullyQualifiedModuleRef
+            return resolved
+//            if (resolved !is MoveItemImport) {
+//                return resolved
+//            }
+//            moduleRef = resolved.parentImport().fullyQualifiedModuleRef
         }
 //        val moduleRef = element.moduleRef
 //            ?: return resolveItem(element, namespace)
@@ -84,24 +83,25 @@ fun processPublicModuleItems(
 
 
 fun resolveQualifiedPath(moduleRef: MoveModuleRef, refName: String, ns: Set<Namespace>): MoveNamedElement? {
-    var resolved: MoveNamedElement = resolveModuleRef(moduleRef) ?: return null
-    // resolved could be either external module or local module alias
-    // in case of alias, we need to get to the actual module import, and resolve from there
-    if (resolved is MoveImportAlias) {
-        val parentImport = resolved.parent as MoveModuleImport
-        resolved = resolveExternalModule(parentImport.fullyQualifiedModuleRef) ?: return null
-    }
-
-    val module = resolved as MoveModuleDef
-    var resolvedItem: MoveNamedElement? = null
-    processPublicModuleItems(module, ns) {
-        if (it.name == refName && it.element != null) {
-            resolvedItem = it.element
-            return@processPublicModuleItems true
-        }
-        return@processPublicModuleItems false
-    }
-    return resolvedItem
+    return null
+//    var resolved: MoveNamedElement = resolveModuleRef(moduleRef) ?: return null
+//    // resolved could be either external module or local module alias
+//    // in case of alias, we need to get to the actual module import, and resolve from there
+//    if (resolved is MoveImportAlias) {
+//        val parentImport = resolved.parent as MoveModuleImport
+//        resolved = resolveExternalModule(parentImport.fullyQualifiedModuleRef) ?: return null
+//    }
+//
+//    val module = resolved as MoveModuleDef
+//    var resolvedItem: MoveNamedElement? = null
+//    processPublicModuleItems(module, ns) {
+//        if (it.name == refName && it.element != null) {
+//            resolvedItem = it.element
+//            return@processPublicModuleItems true
+//        }
+//        return@processPublicModuleItems false
+//    }
+//    return resolvedItem
 }
 
 

@@ -12,7 +12,7 @@ abstract class MoveStubElementType<StubT : StubElement<*>, PsiT : MoveElement>(
     debugName: String,
 ) : IStubElementType<StubT, PsiT>(debugName, MoveLanguage) {
 
-    final override fun getExternalId(): String = "move.lololo.${super.toString()}"
+    final override fun getExternalId(): String = "move.${super.toString()}"
 
     override fun indexStub(stub: StubT, sink: IndexSink) {}
 }

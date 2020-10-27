@@ -67,7 +67,7 @@ object MoveUsageTypeProvider : UsageTypeProviderEx {
 //            }
 ////            is RsUseSpeck -> USE
 //            is MoveStructLiteralExpr -> INIT_STRUCT
-//            is MoveStructLiteralExprField -> INIT_FIELD
+//            is MoveStructLiteralField -> INIT_FIELD
 ////            is RsTraitRef -> TRAIT_REFERENCE
 ////            is RsMethodCall -> METHOD_CALL
 ////            is RsMetaItem -> META_ITEM

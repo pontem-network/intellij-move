@@ -38,14 +38,20 @@ object MovePsiPatterns {
     fun codeStatement(): PsiElementPattern.Capture<PsiElement> =
         psiElementInside<MoveCodeBlock>()
 
-    fun typeRef(): PsiElementPattern.Capture<PsiElement> =
-        PlatformPatterns.psiElement()
-            .withSuperParent<MoveQualPathType>(2)
+    fun acquiresPlacement(): PsiElementPattern.Capture<PsiElement> =
+        psiElementWithParent<MoveFunctionDef>()
+            .and(
+                psiElementAfterSiblingSkipping<MoveFunctionParameterList>(whitespace())
+            )
+
+//    fun typeRef(): PsiElementPattern.Capture<PsiElement> =
+//        PlatformPatterns.psiElement()
+//            .withSuperParent<MoveQualPathType>(2)
 
     fun typeParamBound(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MoveTypeParameterList>()
             .afterLeafSkipping(
-                PlatformPatterns.psiElement().whitespaceCommentEmptyOrError(),
+                whitespace(),
                 PlatformPatterns.psiElement(COLON),
             )
 
@@ -62,6 +68,8 @@ object MovePsiPatterns {
         PlatformPatterns.psiElement()
             .withSuperParent<MoveItemSpecDef>(2)
 
+    fun whitespace() = PlatformPatterns.psiElement().whitespaceCommentEmptyOrError()
+
     private inline fun <reified I : PsiElement> psiElementWithParent() =
         PlatformPatterns.psiElement().withParent(
             StandardPatterns.or(
@@ -70,15 +78,24 @@ object MovePsiPatterns {
             )
         )
 
-//    private inline fun <reified I : PsiElement> psiElementWithGrandParent() =
-//        PlatformPatterns.psiElement().withSuperParent(2,
-//            StandardPatterns.or(
-//                psiElement<I>(),
-//                psiElement<PsiErrorElement>().withParent(psiElement<I>())
-//            )
+    private inline fun <reified I : PsiElement> psiElementAfterSiblingSkipping(
+        skip: ElementPattern<*>,
+    ) =
+        StandardPatterns.or(
+            PlatformPatterns.psiElement()
+                .afterSiblingSkipping(skip, psiElement<I>()),
+            PlatformPatterns.psiElement()
+                .withParent(psiElement<PsiErrorElement>().afterSiblingSkipping(skip, psiElement<I>()))
+        )
+
+//    private inline fun <reified I : PsiElement> beforeLeaf() =
+//        StandardPatterns.or(
+//            PlatformPatterns.psiElement().be
+//            PlatformPatterns.psiElement()
+//                .withParent(psiElement<PsiErrorElement>().afterSiblingSkipping(skip, psiElement<I>()))
 //        )
 
-    private inline fun <reified I : PsiElement> psiElementInside() =
+    inline fun <reified I : PsiElement> psiElementInside() =
         PlatformPatterns.psiElement().inside(
             StandardPatterns.or(
                 psiElement<I>(),

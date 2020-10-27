@@ -12,4 +12,7 @@ class PartialParsingTest: MoveParsingTestCase("partial") {
     // functions
     fun `test function signatures`() = doTest(true)
     fun `test function calls`() = doTest(true)
+
+    // structs
+    fun `test struct fields`() = doTest(true)
 }

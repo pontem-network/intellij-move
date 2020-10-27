@@ -88,4 +88,77 @@ class StructsCompletionTest: CompletionTestCase() {
             }
         }
     """)
+
+    fun `test struct fields completion`() = doSingleCompletion("""
+        module M {
+            struct T { my_field: u8 }
+            fun main() {
+                T { my_/*caret*/ }
+            }
+        }        
+    """, """
+        module M {
+            struct T { my_field: u8 }
+            fun main() {
+                T { my_field/*caret*/ }
+            }
+        }        
+    """)
+
+    fun `test struct fields completion all fields are filled`() = checkNoCompletion("""
+        module M {
+            struct T { my_field: u8 }
+            fun main() {
+                T {  my_/*caret*/ my_field }
+            }
+        }        
+    """)
+
+    fun `test struct fields completion in presence of shorthand`() = doSingleCompletion("""
+        module M {
+            struct T { my_field: u8 }
+            fun main() {
+                let my_field = 1;
+                T { my_/*caret*/ };
+            }
+        }
+    """, """
+        module M {
+            struct T { my_field: u8 }
+            fun main() {
+                let my_field = 1;
+                T { my_field/*caret*/ };
+            }
+        }
+    """)
+
+    fun `test struct fields completion in struct pattern`() = doSingleCompletion("""
+        module M {
+            struct T { my_field: u8 }
+            fun main() {
+                let T { my_/*caret*/ } = call();
+            }
+        }        
+    """, """
+        module M {
+            struct T { my_field: u8 }
+            fun main() {
+                let T { my_field/*caret*/ } = call();
+            }
+        }        
+    """)
+
+    fun `test no completion in struct pattern if fields specified`() = checkNoCompletion("""
+        module M {
+            struct T { offered: u8, collateral: u8 }
+            fun main() {
+                let T { 
+                    off/*caret*/ 
+                    offered: _, 
+                    collateral
+                } = call();
+            }
+        }        
+    """)
+
 }

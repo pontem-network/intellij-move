@@ -1,5 +1,7 @@
 package org.move.lang.core.resolve
 
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiRecursiveVisitor
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.MoveFile
@@ -36,40 +38,79 @@ fun resolveItem(element: MoveReferenceElement, namespace: Namespace): MoveNamedE
 }
 
 fun resolveModuleRef(moduleRef: MoveModuleRef): MoveNamedElement? {
-    return when (moduleRef) {
-        is MoveFullyQualifiedModuleRef -> resolveExternalModule(moduleRef)
-        else -> resolveUnqualifiedModuleRef(moduleRef)
-    }
+    val fullyQualifiedModuleRef =
+        if (moduleRef !is MoveFullyQualifiedModuleRef) {
+            val referredItem = resolveItem(moduleRef, Namespace.MODULE) ?: return null
+
+            if (referredItem is MoveImportAlias) return referredItem
+            if (referredItem is MoveItemImport && referredItem.text == "Self") {
+                return referredItem
+            }
+            (referredItem as MoveModuleImport).fullyQualifiedModuleRef
+        } else {
+            moduleRef
+        }
+//    val resolvedModule = null
+//    val resolvedModule = resolveFullyQualifiedModuleRef(fullyQualifiedModuleRef)
+//    if (resolvedModule == null) {
+    return (fullyQualifiedModuleRef.parent as? MoveModuleImport)
+//    }
+//    return resolvedModule
 }
 
-fun resolveUnqualifiedModuleRef(moduleRef: MoveModuleRef): MoveNamedElement? {
-    val referredElement = resolveItem(moduleRef, Namespace.MODULE) ?: return null
-    if (referredElement is MoveImportAlias) {
-        return referredElement
-    }
-    return resolveExternalModule((referredElement as MoveModuleImport).fullyQualifiedModuleRef)
-        ?: referredElement
-}
+//fun resolveUnqualifiedModuleRef(moduleRef: MoveModuleRef): MoveNamedElement? {
+//    val referredElement = resolveItem(moduleRef, Namespace.MODULE) ?: return null
+//    if (referredElement is MoveImportAlias) {
+//        return referredElement
+//    }
+//    val referredModuleImport = referredElement as MoveModuleImport;
+//    return resolveFullyQualifiedModuleRef(referredModuleImport.fullyQualifiedModuleRef)
+//        ?: referredElement
+//}
 
-
-fun resolveExternalModule(moduleRef: MoveFullyQualifiedModuleRef): MoveModuleDef? {
-    val file = moduleRef.containingFile as? MoveFile ?: return null
-
-    val address = moduleRef.addressRef.address()
+fun resolveFullyQualifiedModuleRefInFile(
+    moduleRef: MoveFullyQualifiedModuleRef,
+    file: MoveFile,
+): MoveModuleDef? {
+    val moduleAddress = moduleRef.addressRef.address()
+    val moduleName = moduleRef.referenceName
+    val containingModuleName = moduleRef.containingModule?.name
 
     var resolved: MoveModuleDef? = null
-    file.accept(object : MoveRecursiveVisitor() {
-        override fun visitAddressDef(o: MoveAddressDef) {
-            if (o.address == address) {
-                for (module in o.modules()) {
-                    if (module.name == moduleRef.referenceName) {
-                        resolved = module
+    file.accept(
+        object : MoveVisitor(),
+                 PsiRecursiveVisitor {
+            override fun visitFile(file: PsiFile) {
+                file.acceptChildren(this)
+            }
+
+            override fun visitAddressDef(o: MoveAddressDef) {
+                if (resolved != null) return
+
+                if (o.address == moduleAddress) {
+                    val modules = o.addressBlock?.moduleDefList
+                        .orEmpty()
+                        .filter { it.name != containingModuleName }
+                    for (module in modules) {
+                        module.accept(this)
                     }
                 }
             }
-        }
-    })
+
+            override fun visitModuleDef(moduleDef: MoveModuleDef) {
+                if (resolved != null) return
+
+                if (moduleDef.name == moduleName) {
+                    resolved = moduleDef
+                }
+            }
+        })
     return resolved
+}
+
+fun resolveFullyQualifiedModuleRef(moduleRef: MoveFullyQualifiedModuleRef): MoveModuleDef? {
+    val file = moduleRef.containingFile as? MoveFile ?: return null
+    return resolveFullyQualifiedModuleRefInFile(moduleRef, file)
 }
 
 fun processNestedScopesUpwards(
@@ -95,6 +136,13 @@ fun processLexicalDeclarations(
     check(cameFrom.parent == scope)
 
     return when (namespace) {
+        Namespace.STRUCT_FIELD -> {
+            val structDef = (scope as? MoveQualTypeReferenceElement)?.referredStructDef
+            if (structDef != null) {
+                return processor.matchAll(structDef.fields)
+            }
+            false
+        }
         Namespace.NAME -> when (scope) {
             is MoveFunctionDef -> processor.matchAll(scope.params)
             is MoveCodeBlock -> {
@@ -136,6 +184,7 @@ fun processLexicalDeclarations(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
+                    scope.consts()
                 ).flatten(),
             )
             else -> false
@@ -165,8 +214,9 @@ fun processLexicalDeclarations(
         Namespace.MODULE -> when (scope) {
             is MoveImportStatementsOwner -> processor.matchAll(
                 listOf(
-                    scope.moduleImportsWithoutAliases(),
+                    scope.moduleImports(),
                     scope.moduleImportAliases(),
+                    scope.selfItemImports(),
                 ).flatten(),
             )
             else -> false
