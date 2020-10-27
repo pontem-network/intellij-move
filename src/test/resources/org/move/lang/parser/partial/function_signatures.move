@@ -2,6 +2,11 @@ module M {
     fun main(a,) {}
     fun main(a: u8, b) {}
     fun main(a: u8, b:) {}
+
+    fun main(a b: u8) {}
+    fun main(, b: u8) {}
+    fun main(a: &, b: u8) {}
+
     fun main(): u8, {}
     fun main() acq
     fun main() acquires {}

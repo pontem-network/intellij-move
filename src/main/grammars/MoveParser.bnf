@@ -225,7 +225,7 @@ FunctionDef ::= public? fun IDENTIFIER TypeParameterList?
 //}
 //private FunctionReturnItems_recover ::= !(CodeBlock | ';' | Item_first)
 
-FunctionParameterList ::= '(' <<comma_sep_items FunctionParameter>>? ')'
+FunctionParameterList ::= '(' FunctionParameter_with_recover* ')'
 {
     pin = 1
 //    extends = "org.move.lang.core.psi.MoveStubbedElementImpl<?>"
@@ -237,17 +237,22 @@ FunctionParameterList ::= '(' <<comma_sep_items FunctionParameter>>? ')'
 //}
 //private FunctionParameterList_body_recover ::= !')'
 
+private FunctionParameter_with_recover ::= !(')' | '{' | ';') FunctionParameter (',' | &')')
+{
+    pin = 1
+    recoverWhile = FunctionParameter_recover
+}
+private FunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER)
+
 FunctionParameter ::= IDENTIFIER TypeAnnotation
 {
     pin = 1
-    recoverWhile = "FunctionParameter_recover"
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
         "org.move.lang.core.psi.MoveTypeAnnotated"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionParameterMixin"
 }
-private FunctionParameter_recover ::= !(','|')')
 
 // u8 | (u8,) | (u8, u8) | (u8, u8,)
 // tuples only allowed as a return types
@@ -291,14 +296,22 @@ StructDef ::= resource? struct IDENTIFIER
     ]
     mixin = "org.move.lang.core.psi.ext.MoveStructDefMixin"
 }
-StructFieldsDefBlock ::= '{' <<comma_sep_items StructFieldDef>>? '}' { pin = 1 }
+StructFieldsDefBlock ::= '{' StructFieldDef_with_recover* '}' { pin = 1 }
+
+private StructFieldDef_with_recover ::= !'}' StructFieldDef (',' | &'}')
+{
+    pin = 1
+    recoverWhile = StructFieldDef_recover
+}
+private StructFieldDef_recover ::= !('}' | IDENTIFIER)
+
 //private StructFieldsBlock_body ::= <<comma_sep_list StructFieldDef>>?
 {
 //    recoverWhile = "StructFieldsBlock_body_recover"
 }
 //private StructFieldsBlock_body_recover ::= !'}'
 
-StructFieldDef ::= IDENTIFIER StructFieldDef_type
+StructFieldDef ::= IDENTIFIER TypeAnnotation (',' | &'}')
 {
     pin = 1
     implements = [
@@ -307,11 +320,11 @@ StructFieldDef ::= IDENTIFIER StructFieldDef_type
     ]
     mixin = "org.move.lang.core.psi.ext.MoveStructFieldDefMixin"
 }
-private StructFieldDef_type ::= TypeAnnotation
-{
-    recoverWhile = "StructFieldDef_type_recover"
-}
-private StructFieldDef_type_recover ::= !(','|'}')
+//private StructFieldDef_type ::= TypeAnnotation
+//{
+//    recoverWhile = "StructFieldDef_type_recover"
+//}
+//private StructFieldDef_type_recover ::= !(','|'}')
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Imports

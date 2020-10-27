@@ -1,4 +1,17 @@
 module M {
+    struct T {
+        : u8,
+        my_field: u8
+    }
+    struct T {
+        my_field: ,
+        my_field: u8
+    }
+    struct T {
+        my_field: u8
+        my_field: u8
+    }
+
     fun main() {
         let T { my:  } = 1;
         let T { my: , my_field } = 1;
