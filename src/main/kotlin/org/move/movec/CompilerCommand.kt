@@ -1,3 +1,3 @@
-package org.move.move_tools
+package org.move.movec
 
 data class CompilerCommand(val message: String)

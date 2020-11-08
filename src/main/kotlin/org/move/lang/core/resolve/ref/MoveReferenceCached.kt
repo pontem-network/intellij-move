@@ -5,28 +5,49 @@ import com.intellij.psi.impl.source.resolve.ResolveCache
 import org.move.lang.core.psi.MoveNamedElement
 import org.move.lang.core.psi.MoveReferenceElement
 
-abstract class MoveReferenceCached<T : MoveReferenceElement>(
-    element: T,
-) : MoveReferenceBase<T>(element) {
-
-    abstract fun resolveInner(): List<MoveNamedElement>
+abstract class MoveReferenceCached<T : MoveReferenceElement>(element: T) : MoveReferenceBase<T>(element) {
+    abstract fun resolveInner(): MoveNamedElement?
 
     override fun resolve(): MoveNamedElement? {
-        return cachedMultiResolve().firstOrNull() as MoveNamedElement?
+        return resolveWithCache()?.element as? MoveNamedElement
     }
 
-    private fun cachedMultiResolve(): List<PsiElementResolveResult> {
-        return ResolveCache
+    private fun resolveWithCache() =
+        ResolveCache
             .getInstance(element.project)
             .resolveWithCaching(this, Resolver, true, false)
-            .orEmpty()
-    }
 
-    private object Resolver : ResolveCache.AbstractResolver<MoveReferenceCached<*>, List<PsiElementResolveResult>> {
+    private object Resolver : ResolveCache.AbstractResolver<MoveReferenceCached<*>, PsiElementResolveResult> {
         override fun resolve(
             ref: MoveReferenceCached<*>,
             incompleteCode: Boolean,
-        ): List<PsiElementResolveResult> = ref.resolveInner().map { PsiElementResolveResult(it) }
+        ): PsiElementResolveResult? = ref.resolveInner()?.let { PsiElementResolveResult(it) }
 
     }
 }
+
+//abstract class MoveReferenceCached<T : MoveReferenceElement>(
+//    element: T,
+//) : MoveReferenceBase<T>(element) {
+//
+//    abstract fun resolveInner(): List<MoveNamedElement>
+//
+//    override fun resolve(): MoveNamedElement? {
+//        return cachedMultiResolve().firstOrNull() as MoveNamedElement?
+//    }
+//
+//    private fun cachedMultiResolve(): List<PsiElementResolveResult> {
+//        return ResolveCache
+//            .getInstance(element.project)
+//            .resolveWithCaching(this, Resolver, true, false)
+//            .orEmpty()
+//    }
+//
+//    private object Resolver : ResolveCache.AbstractResolver<MoveReferenceCached<*>, List<PsiElementResolveResult>> {
+//        override fun resolve(
+//            ref: MoveReferenceCached<*>,
+//            incompleteCode: Boolean,
+//        ): List<PsiElementResolveResult> = ref.resolveInner().map { PsiElementResolveResult(it) }
+//
+//    }
+//}

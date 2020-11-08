@@ -1,4 +1,4 @@
-package org.move.move_tools
+package org.move.movec
 
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType

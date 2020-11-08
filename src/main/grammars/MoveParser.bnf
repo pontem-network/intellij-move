@@ -121,8 +121,8 @@ private ScriptItem_item ::= ImportStatement | ConstDef | FunctionDef
 AddressDef ::= address AddressRef AddressBlock {
     pin = 1
     mixin = "org.move.lang.core.psi.ext.MoveAddressDefMixin"
-//    stubClass = "org.move.lang.core.stubs.MoveAddressDefStub"
-//    elementTypeFactory = "org.move.lang.core.stubs.StubImplementationsKt.factory"
+//    stubClass = "org.move.lang.core.stubs.impl.MoveAddressDefStub"
+//    elementTypeFactory = "org.move.lang.core.stubs.StubImplFactoryKt.factory"
 }
 AddressBlock ::= '{' AddressBlockItems '}' { pin = 1 }
 private AddressBlockItems ::= ModuleDef*
@@ -140,8 +140,8 @@ ModuleDef ::= module IDENTIFIER ModuleBlock
         "org.move.lang.core.psi.MoveImportStatementsOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveModuleDefMixin"
-//    stubClass = "org.move.lang.core.stubs.MoveModuleDefStub"
-//    elementTypeFactory = "org.move.lang.core.stubs.StubImplementationsKt.factory"
+//    stubClass = "org.move.lang.core.stubs.impl.MoveModuleDefStub"
+//    elementTypeFactory = "org.move.lang.core.stubs.StubImplFactoryKt.factory"
 }
 ModuleBlock ::= '{' ModuleBlockItems '}'
 {
@@ -311,7 +311,7 @@ private StructFieldDef_recover ::= !('}' | IDENTIFIER)
 }
 //private StructFieldsBlock_body_recover ::= !'}'
 
-StructFieldDef ::= IDENTIFIER TypeAnnotation (',' | &'}')
+StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
 {
     pin = 1
     implements = [
@@ -392,7 +392,7 @@ ItemImport ::= IDENTIFIER ImportAlias?
     name = "item name"
     implements = [
         "org.move.lang.core.psi.MoveNamedElement"
-//        "org.move.lang.core.psi.MoveReferenceElement"
+        "org.move.lang.core.psi.MoveReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveItemImportMixin"
 }
@@ -539,11 +539,20 @@ StructPatFieldBinding ::= ':' Pat { pin = 1 }
 //private Statement ::= IfStatement | LoopStatement | WhileStatement
 //                            | LetStatement | AssignmentStatement
 //                            | ExprStatement
-Statement ::= StatementExpr ';'
+
+Statement ::= LetStatement | (StatementExpr ';')
+LetStatement ::= let Pat TypeAnnotation? Initializer? ';' {
+    pin = 1
+    implements = [
+        "org.move.lang.core.psi.MoveTypeAnnotated"
+    ]
+    mixin = "org.move.lang.core.psi.mixins.MoveLetStatementMixin"
+}
+
 private StatementExpr ::= IfExpr
                             | LoopExpr
                             | WhileExpr
-                            | LetExpr
+//                            | LetExpr
 //                            | AssignmentExpr
                             | Expr
 {
@@ -590,7 +599,7 @@ private CodeBlockItems_recover ::= !'}'
 // Expressions
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // from lowest to highest
-Expr ::= AssignmentExprItem
+Expr ::= AssignmentExpr
         | ImplyOperatorsExprItem
         | OrExpr
         | AndExpr
@@ -611,7 +620,7 @@ private MulExprItem ::= DivExpr | MulExpr | ModExpr
 private AddExprItem ::= PlusExpr | MinusExpr
 private LogicalEqExprItem ::= EqualsExpr | NotEqualsExpr | LessEqualsExpr | LessExpr | GreaterEqualsExpr | GreaterExpr
 
-private AssignmentExprItem ::= LetExpr | AssignmentExpr
+//private AssignmentExprItem ::= LetExpr | AssignmentExpr
 private ControlFlowExpr ::= IfExpr | LoopExpr | WhileExpr
 private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
                       | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
@@ -767,13 +776,6 @@ WhileExpr ::= while Condition AnyBlock { pin = 1 }
 
 AssignmentExpr ::= Expr Initializer { rightAssociative = true }
 
-LetExpr ::= let Pat TypeAnnotation? Initializer? {
-    pin = 1
-    implements = [
-        "org.move.lang.core.psi.MoveTypeAnnotated"
-    ]
-    mixin = "org.move.lang.core.psi.mixins.MoveLetExprMixin"
-}
 Initializer ::= '=' Expr {
     pin = 1
 //    recoverWhile = "Initializer_recover"
@@ -808,6 +810,8 @@ FullyQualifiedModuleRef ::= AddressRef '::' IDENTIFIER
 {
     pin = 2
     extends = ModuleRef
+    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+    mixin = "org.move.lang.core.psi.ext.MoveFullyQualifiedModuleRefMixin"
 }
 
 AddressRef ::= ADDRESS_LITERAL | BECH32_ADDRESS_LITERAL

@@ -30,7 +30,7 @@ import kotlin.text.Charsets.UTF_8
 fun fileTree(builder: FileTreeBuilder.() -> Unit): FileTree =
     FileTree(FileTreeBuilderImpl().apply { builder() }.intoDirectory())
 
-fun fileTreeFromText(@Language("Rust") text: String): FileTree {
+fun fileTreeFromText(@Language("Move") text: String): FileTree {
     val fileSeparator = """^\s*//- (\S+)\s*$""".toRegex(RegexOption.MULTILINE)
     val fileNames = fileSeparator.findAll(text).map { it.groupValues[1] }.toList()
     val fileTexts = fileSeparator.split(text)
@@ -66,14 +66,15 @@ interface FileTreeBuilder {
     fun dir(name: String, tree: FileTree)
     fun file(name: String, code: String)
 
-    fun rust(name: String, @Language("Rust") code: String) = file(name, code)
+    fun move(name: String, @Language("Move") code: String) = file(name, code)
     fun toml(name: String, @Language("TOML") code: String) = file(name, code)
 }
 
 class FileTree(val rootDirectory: Entry.Directory) {
     fun create(project: Project, directory: VirtualFile): TestProject {
         val filesWithCaret: MutableList<String> = mutableListOf()
-        val filesWithSelection: MutableList<String> = mutableListOf()
+//        val filesWithSelection: MutableList<String> = mutableListOf()
+        val filesWithNamedElement: MutableList<String> = mutableListOf()
 
         fun go(dir: Entry.Directory, root: VirtualFile, parentComponents: List<String> = emptyList()) {
             for ((name, entry) in dir.children) {
@@ -85,8 +86,11 @@ class FileTree(val rootDirectory: Entry.Directory) {
                         if (hasCaretMarker(entry.text) || "//^" in entry.text || "#^" in entry.text) {
                             filesWithCaret += components.joinToString(separator = "/")
                         }
-                        if (hasSelectionMarker(entry.text)) {
-                            filesWithSelection += components.joinToString(separator = "/")
+//                        if (hasSelectionMarker(entry.text)) {
+//                            filesWithSelection += components.joinToString(separator = "/")
+//                        }
+                        if ("//X" in entry.text) {
+                            filesWithNamedElement += components.joinToString(separator = "/")
                         }
                     }
                     is Entry.Directory -> {
@@ -101,7 +105,7 @@ class FileTree(val rootDirectory: Entry.Directory) {
             fullyRefreshDirectory(directory)
         }
 
-        return TestProject(project, directory, filesWithCaret, filesWithSelection)
+        return TestProject(project, directory, filesWithCaret, filesWithNamedElement)
     }
 
     fun assertEquals(baseDir: VirtualFile) {
@@ -158,11 +162,12 @@ class TestProject(
     private val project: Project,
     val root: VirtualFile,
     private val filesWithCaret: List<String>,
-    private val filesWithSelection: List<String>
+    private val filesWithNamedElement: List<String>,
 ) {
 
     val fileWithCaret: String get() = filesWithCaret.single()
-    val fileWithCaretOrSelection: String get() = filesWithCaret.singleOrNull() ?: filesWithSelection.single()
+    val fileWithNamedElement: String get() = filesWithNamedElement.single()
+//    val fileWithCaretOrSelection: String get() = filesWithCaret.singleOrNull() ?: filesWithSelection.single()
 
     inline fun <reified T : PsiElement> findElementInFile(path: String): T {
         val element = doFindElementInFile(path)
@@ -259,3 +264,5 @@ private fun findElementInFile(file: PsiFile, marker: String): PsiElement {
 fun replaceCaretMarker(text: String): String = text.replace("/*caret*/", "<caret>")
 fun hasCaretMarker(text: String): Boolean = text.contains("/*caret*/") || text.contains("<caret>")
 fun hasSelectionMarker(text: String): Boolean = text.contains("<selection>") && text.contains("</selection>")
+
+//fun hasResolveNamedElementMarker(text: String): Boolean = text.contains("<selection>") && text.contains("</selection>")

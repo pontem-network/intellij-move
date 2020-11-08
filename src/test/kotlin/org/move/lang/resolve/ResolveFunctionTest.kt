@@ -128,7 +128,7 @@ class ResolveFunctionTest : ResolveTestCase() {
     """
     )
 
-    fun `test resolve function to another module through use`() = checkByCode(
+    fun `test resolve function to another module in the same address block`() = checkByCode(
         """
         address 0x1 {
         module Original {
@@ -198,24 +198,57 @@ class ResolveFunctionTest : ResolveTestCase() {
                     call();
                   //^  
                 }
-            }    
-        
+            }
         }
-
     """
     )
 
-    fun `test resolve function to import`() = checkByCode(
+//    fun `test resolve function to import`() = checkByCode(
+//        """
+//        module M {
+//            use 0x1::Original::call;
+//                             //X
+//
+//            fun main() {
+//                call();
+//              //^
+//            }
+//        }
+//    """
+//    )
+
+    fun `test resolve function to import alias`() = checkByCode(
         """
         module M {
-            use 0x1::Original::call;
-                             //X
+            use 0x1::Original::call as mycall;
+                                     //X
             
             fun main() {
-                call();
+                mycall();
               //^  
             }
         }    
+    """
+    )
+
+    fun `test resolve function qualed with module`() = checkByCode(
+        """
+        address 0x1 {
+            module Original {
+                public fun call() {}
+                         //X
+            }
+        }
+        address 0x2 {
+            module M {
+                use 0x1::Original;
+                
+                fun main() {
+                    Original::call();
+                            //^  
+                }
+            }
+        }
     """
     )
 }

@@ -3,31 +3,30 @@ package org.move.lang.resolve
 import org.move.utils.tests.resolve.ResolveTestCase
 
 class ResolveModulesTest : ResolveTestCase() {
-    fun `test resolve module to imported module`() = checkByCode(
-        """
-        module M {
-            use 0x1::Transaction;
-                   //X
-            fun main() {
-                let a = Transaction::create();
-                      //^
-            }
-        }
-    """
-    )
+//    fun `test resolve module to imported module`() = checkByCode(
+//        """
+//        module M {
+//            use 0x1::Transaction;
+//            fun main() {
+//                let a = Transaction::create();
+//                      //^
+//            }
+//        }
+//    """
+//    )
 
-    fun `test resolve module to Self`() = checkByCode(
-        """
-        module M {
-            use 0x1::Transaction::{Self};
-                                 //X
-            fun main() {
-                let a = Transaction::create();
-                      //^
-            }
-        }
-    """
-    )
+//    fun `test resolve module to Self`() = checkByCode(
+//        """
+//        module M {
+//            use 0x1::Transaction::{Self};
+//                                 //X
+//            fun main() {
+//                let a = Transaction::create();
+//                      //^
+//            }
+//        }
+//    """
+//    )
 
     fun `test resolve module to imported module with alias`() = checkByCode(
         """
@@ -156,7 +155,7 @@ class ResolveModulesTest : ResolveTestCase() {
                  //X
             }
         }
-
+        
         script {
             use 0x2::A;
             

@@ -142,4 +142,30 @@ class FunctionsCompletionTest : CompletionTestCase() {
             }
         }
     """)
+
+    fun `test public functions completion from another module`() = doSingleCompletion("""
+        address 0x1 {
+        module Transaction {
+            public fun create() {}
+        }
+        }
+        
+        module M {
+            fun main() {
+                0x1::Transaction::cr/*caret*/
+            }
+        }
+    """, """
+        address 0x1 {
+        module Transaction {
+            public fun create() {}
+        }
+        }
+        
+        module M {
+            fun main() {
+                0x1::Transaction::create()/*caret*/
+            }
+        }
+    """)
 }

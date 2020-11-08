@@ -23,7 +23,7 @@ FILE
             PsiElement(IDENTIFIER)('u8')
             PsiErrorElement:':' expected, got ','
               <empty list>
-            PsiElement(,)(',')
+          PsiElement(,)(',')
           PsiWhiteSpace('\n        ')
           MoveStructFieldDefImpl(STRUCT_FIELD_DEF)
             PsiElement(IDENTIFIER)('my_field')
@@ -50,8 +50,8 @@ FILE
               PsiElement(:)(':')
               PsiErrorElement:<type> expected, got ','
                 <empty list>
-            PsiWhiteSpace(' ')
-            PsiElement(,)(',')
+          PsiWhiteSpace(' ')
+          PsiElement(,)(',')
           PsiWhiteSpace('\n        ')
           MoveStructFieldDefImpl(STRUCT_FIELD_DEF)
             PsiElement(IDENTIFIER)('my_field')

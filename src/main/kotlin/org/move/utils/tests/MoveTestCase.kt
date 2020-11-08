@@ -9,7 +9,9 @@ import com.intellij.injected.editor.VirtualFileWindow
 import com.intellij.lang.LanguageCommenters
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.LogicalPosition
+import com.intellij.openapi.vfs.VirtualFileFilter
 import com.intellij.psi.PsiElement
+import com.intellij.psi.impl.PsiManagerEx
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
@@ -45,6 +47,15 @@ abstract class MoveTestCase : BasePlatformTestCase() {
         return InlineFile(myFixture, code, name)
     }
 
+    protected fun checkAstNotLoaded(fileFilter: VirtualFileFilter) {
+        PsiManagerEx.getInstanceEx(project).setAssertOnFileLoadingFilter(fileFilter, testRootDisposable)
+    }
+
+    protected fun checkAstNotLoaded() {
+        PsiManagerEx.getInstanceEx(project)
+            .setAssertOnFileLoadingFilter(VirtualFileFilter.ALL, testRootDisposable)
+    }
+
     protected inline fun <reified T : PsiElement> findElementInEditor(marker: String = "^"): T =
         findElementInEditor(T::class.java, marker)
 
@@ -55,14 +66,14 @@ abstract class MoveTestCase : BasePlatformTestCase() {
     }
 
     protected inline fun <reified T : PsiElement> findElementWithDataAndOffsetInEditor(
-        marker: String = "^"
+        marker: String = "^",
     ): Triple<T, String, Int> {
         return findElementWithDataAndOffsetInEditor(T::class.java, marker)
     }
 
     protected fun <T : PsiElement> findElementWithDataAndOffsetInEditor(
         psiClass: Class<T>,
-        marker: String
+        marker: String,
     ): Triple<T, String, Int> {
         val elementsWithDataAndOffset = findElementsWithDataAndOffsetInEditor(psiClass, marker)
         check(elementsWithDataAndOffset.isNotEmpty()) { "No `$marker` marker:\n${myFixture.file.text}" }
@@ -72,7 +83,7 @@ abstract class MoveTestCase : BasePlatformTestCase() {
 
     protected fun <T : PsiElement> findElementsWithDataAndOffsetInEditor(
         psiClass: Class<T>,
-        marker: String
+        marker: String,
     ): List<Triple<T, String, Int>> {
         val commentPrefix =
             LanguageCommenters.INSTANCE.forLanguage(myFixture.file.language).lineCommentPrefix ?: "//"
@@ -108,7 +119,7 @@ abstract class MoveTestCase : BasePlatformTestCase() {
     protected fun checkByText(
         @Language("Move") before: String,
         @Language("Move") after: String,
-        action: () -> Unit
+        action: () -> Unit,
     ) {
         InlineFile(before)
         action()
@@ -131,7 +142,8 @@ abstract class MoveTestCase : BasePlatformTestCase() {
     }
 
     protected fun FileTree.create(): TestProject = create(myFixture)
-    protected fun FileTree.createAndOpenFileWithCaretMarker(): TestProject = createAndOpenFileWithCaretMarker(myFixture)
+    protected fun FileTree.createAndOpenFileWithCaretMarker(): TestProject =
+        createAndOpenFileWithCaretMarker(myFixture)
 
     protected val PsiElement.lineNumber: Int
         get() = myFixture.getDocument(myFixture.file).getLineNumber(textOffset)

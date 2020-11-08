@@ -6,11 +6,11 @@ import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
 import org.move.lang.core.psi.MoveNamedElement
 import org.move.lang.core.psi.MovePsiFactory
-import org.move.lang.core.stubs.MoveNamedStub
+import org.move.lang.core.stubs.MoveNamedElementStub
 
 abstract class MoveStubbedNamedElementImpl<StubT> : MoveStubbedElementImpl<StubT>,
                                                     MoveNamedElement
-        where StubT : MoveNamedStub, StubT : StubElement<*> {
+        where StubT : MoveNamedElementStub, StubT : StubElement<*> {
 
     constructor(node: ASTNode) : super(node)
 

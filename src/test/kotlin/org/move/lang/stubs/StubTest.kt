@@ -18,8 +18,7 @@ class StubTest : MoveStubTestCase() {
         }
     """, """
         PsiFileStubImpl
-          ADDRESS_DEF:MoveAddressDefStub
-            MODULE_DEF:MoveModuleDefStub
+          MODULE_DEF:MoveModuleDefStub
     """)
 
 //    fun `test literal is not stubbed inside function statement`() = doTest("""

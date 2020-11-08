@@ -5,11 +5,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
 import org.move.lang.core.psi.MoveNameIdentifierOwner
-import org.move.lang.core.stubs.MoveNamedStub
+import org.move.lang.core.stubs.MoveNamedElementStub
 
 abstract class MoveStubbedNameIdentifierOwnerImpl<StubT> : MoveStubbedNamedElementImpl<StubT>,
                                                            MoveNameIdentifierOwner
-        where StubT : MoveNamedStub, StubT : StubElement<*> {
+        where StubT : MoveNamedElementStub, StubT : StubElement<*> {
 
     constructor(node: ASTNode) : super(node)
 

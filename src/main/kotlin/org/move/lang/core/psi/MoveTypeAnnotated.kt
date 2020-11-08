@@ -1,6 +1,6 @@
 package org.move.lang.core.psi
 
-interface MoveTypeAnnotated {
+interface MoveTypeAnnotated : MoveElement {
     val typeAnnotation: MoveTypeAnnotation?
 }
 

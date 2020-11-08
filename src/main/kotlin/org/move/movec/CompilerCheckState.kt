@@ -1,4 +1,4 @@
-package org.move.move_tools
+package org.move.movec
 
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.configurations.GeneralCommandLine

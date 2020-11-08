@@ -18,10 +18,3 @@ abstract class MoveAddressDefMixin(node: ASTNode) : MoveElementImpl(node),
                                                     MoveAddressDef {
 
 }
-
-//abstract class MoveAddressDefMixin : MoveStubbedElementImpl<MoveAddressDefStub>,
-//                                     MoveAddressDef {
-//    constructor(node: ASTNode) : super(node)
-//
-//    constructor(stub: MoveAddressDefStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
-//}

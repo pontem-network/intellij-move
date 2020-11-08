@@ -1,4 +1,4 @@
-package org.move.move_tools
+package org.move.movec
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction

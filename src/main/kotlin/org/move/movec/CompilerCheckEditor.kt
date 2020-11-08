@@ -1,4 +1,4 @@
-package org.move.move_tools
+package org.move.movec
 
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.ui.EditorTextField
