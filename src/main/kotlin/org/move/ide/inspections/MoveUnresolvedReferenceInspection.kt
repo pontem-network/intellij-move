@@ -12,7 +12,6 @@ import org.move.lang.core.psi.ext.isIdentifierOnly
 class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor =
         object : MoveVisitor() {
-
             override fun visitModuleRef(moduleRef: MoveModuleRef) {
                 if (moduleRef.ancestorStrict<MoveImportStatement>() != null) return
                 if (moduleRef is MoveFullyQualifiedModuleRef) return

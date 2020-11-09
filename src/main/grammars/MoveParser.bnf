@@ -795,10 +795,17 @@ RefExpr ::= QualPath
 }
 
 QualPath ::= ((FullyQualifiedModuleRef | ModuleRef) '::')? IDENTIFIER TypeArgumentList?
-{
-//    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-//    mixin = "org.move.lang.core.psi.ext.MoveQualPathMixin"
-}
+
+//LocalQualPath ::= (ModuleRef '::' &IDENTIFIER)? IDENTIFIER TypeArgumentList?
+//FullyQualPath ::= (FullyQualifiedModuleRef '::' &IDENTIFIER)? IDENTIFIER TypeArgumentList?
+
+//FullyQual
+//private QualPathModulePrefix ::= (FullyQualifiedModuleRef | ModuleRef) &'::'
+//QualPathStart ::= FullyQualifiedModuleRef
+//{
+//    pin = 1
+//}
+//private QualPathPrefix ::= ((FullyQualifiedModuleRef | ModuleRef) '::')
 
 ModuleRef ::= IDENTIFIER
 {

@@ -44,10 +44,6 @@ object MovePsiPatterns {
                 psiElementAfterSiblingSkipping<MoveFunctionParameterList>(whitespace())
             )
 
-//    fun typeRef(): PsiElementPattern.Capture<PsiElement> =
-//        PlatformPatterns.psiElement()
-//            .withSuperParent<MoveQualPathType>(2)
-
     fun typeParamBound(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MoveTypeParameterList>()
             .afterLeafSkipping(
@@ -58,11 +54,15 @@ object MovePsiPatterns {
     fun qualPathIdentifier(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
             .withParent<MoveQualPath>()
-//            .withCond("FirstChild") { it.prevSibling == null }
 
     fun qualPathTypeIdentifier(): PsiElementPattern.Capture<PsiElement> =
         qualPathIdentifier()
             .withSuperParent<MoveQualPathType>(2)
+
+    fun nameTypeIdentifier(): PsiElementPattern.Capture<PsiElement> =
+        qualPathIdentifier()
+            .withSuperParent<MoveQualPathType>(2)
+            .withCond("FirstChild") { it.prevSibling == null }
 
     fun specIdentifier(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
@@ -70,7 +70,7 @@ object MovePsiPatterns {
 
     fun whitespace() = PlatformPatterns.psiElement().whitespaceCommentEmptyOrError()
 
-    private inline fun <reified I : PsiElement> psiElementWithParent() =
+    inline fun <reified I : PsiElement> psiElementWithParent() =
         PlatformPatterns.psiElement().withParent(
             StandardPatterns.or(
                 psiElement<I>(),

@@ -161,4 +161,30 @@ class StructsCompletionTest: CompletionTestCase() {
         }        
     """)
 
+    fun `test module struct completion in type position`() = doSingleCompletion("""
+        address 0x1 {
+        module Transaction {
+            struct T {
+                val: u8                   
+            }
+        }
+        }
+        module M {
+            fun main(a: 0x1::Transaction::/*caret*/) {
+            }
+        }
+    """, """
+        address 0x1 {
+        module Transaction {
+            struct T {
+                val: u8                   
+            }
+        }
+        }
+        module M {
+            fun main(a: 0x1::Transaction::T/*caret*/) {
+            }
+        }
+    """)
+
 }

@@ -92,52 +92,44 @@ fun resolveModuleRefIntoQual(moduleRef: MoveModuleRef): MoveFullyQualifiedModule
 private fun resolveQualModuleRefInFile(
     qualModuleRef: MoveFullyQualifiedModuleRef,
     file: MoveFile,
-): MoveModuleDef? {
+    processor: MatchingProcessor,
+): Boolean {
     val moduleAddress = qualModuleRef.addressRef.address()
-    val referredModuleName = qualModuleRef.referenceName
 
-    var resolved: MoveModuleDef? = null
-    file.accept(
-        object : MoveVisitor(),
-                 PsiRecursiveVisitor {
-            override fun visitFile(file: PsiFile) {
-                if (resolved != null) return
+    var resolved = false
+    file.accept(object : MoveVisitor(),
+                         PsiRecursiveVisitor {
+        override fun visitFile(file: PsiFile) {
+            if (resolved) return
+            file.acceptChildren(this)
+        }
 
-                file.acceptChildren(this)
+        override fun visitAddressDef(o: MoveAddressDef) {
+            if (resolved) return
+            if (o.address == moduleAddress) {
+                resolved = processor.matchAll(o.modules())
             }
-
-            override fun visitAddressDef(o: MoveAddressDef) {
-                if (resolved != null) return
-
-                if (o.address == moduleAddress) {
-                    for (module in o.modules()) {
-                        val moduleName = module.name
-                        if (moduleName == referredModuleName) {
-                            resolved = module
-                            break
-                        }
-                    }
-                }
-            }
-        })
+        }
+    })
     return resolved
 }
 
-fun resolveQualModuleRef(
+fun processQualModuleRef(
     qualModuleRef: MoveFullyQualifiedModuleRef,
-): MoveModuleDef? {
+    processor: MatchingProcessor,
+): Boolean {
     val project = qualModuleRef.project
     val vfm = VirtualFileManager.getInstance()
     val projectRoot = project.basePath?.let { vfm.findFileByNioPath(Paths.get(it)) }
-        ?: return null
+        ?: return true
 
     val dirs = listOfNotNull(
         projectRoot.findFileByRelativePath("modules"),
         projectRoot.findFileByRelativePath("stdlib")
     )
-    var resolved: MoveModuleDef? = null
+    var isResolved = false
     for (modulesDir in dirs) {
-        if (resolved != null) break
+        if (isResolved) break
         VfsUtil.iterateChildrenRecursively(
             modulesDir,
             { it.isDirectory || it.extension == "move" })
@@ -145,18 +137,18 @@ fun resolveQualModuleRef(
             if (file.isDirectory) return@iterateChildrenRecursively true
             val moduleFile = PsiManager.getInstance(project).findFile(file) as? MoveFile
                 ?: return@iterateChildrenRecursively true
-            resolved = resolveQualModuleRefInFile(qualModuleRef, moduleFile)
-            // true if not resolved, continue processing
-            resolved == null
+            isResolved = resolveQualModuleRefInFile(qualModuleRef, moduleFile, processor)
+            // will continue processing if true
+            !isResolved
+//            resolved == null
         }
     }
-
-    if (resolved == null) {
+    if (!isResolved) {
         // search current file for modules too
-        val containingFile = qualModuleRef.containingFile as? MoveFile ?: return null
-        resolved = resolveQualModuleRefInFile(qualModuleRef, containingFile)
+        val containingFile = qualModuleRef.containingFile as? MoveFile ?: return false
+        isResolved = resolveQualModuleRefInFile(qualModuleRef, containingFile, processor)
     }
-    return resolved
+    return isResolved
 }
 
 fun processNestedScopesUpwards(

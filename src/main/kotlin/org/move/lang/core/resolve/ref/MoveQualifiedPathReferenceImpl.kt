@@ -45,7 +45,7 @@ fun processPublicModuleItems(
             )
             Namespace.TYPE -> processor.matchAll(
                 listOf(
-                    module.itemImportsWithoutAliases(),
+//                    module.itemImportsWithoutAliases(),
                     module.structs(),
                     module.nativeStructs(),
                 ).flatten()

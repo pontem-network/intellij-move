@@ -17,7 +17,7 @@ object PrimitiveTypesCompletionProvider : MoveCompletionProvider() {
 
     override val elementPattern: ElementPattern<out PsiElement>
         get() =
-            MovePsiPatterns.qualPathTypeIdentifier()
+            MovePsiPatterns.nameTypeIdentifier()
 
     override fun addCompletions(
         parameters: CompletionParameters,

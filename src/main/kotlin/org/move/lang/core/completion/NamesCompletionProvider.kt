@@ -36,10 +36,10 @@ object NamesCompletionProvider : MoveCompletionProvider() {
         if (refElement is MoveQualPathReferenceElement) {
             val moduleRef = refElement.qualPath.moduleRef
             if (moduleRef != null) {
-                val module = (moduleRef.reference.resolve() as? MoveModuleDef) ?: return
+                val module = moduleRef.reference.resolve() as? MoveModuleDef ?: return
                 processPublicModuleItems(module, setOf(namespace)) {
                     if (it.element != null) {
-                        val lookup = it.element.createLookupElement(refElement.isSpecElement())
+                        val lookup = it.element.createLookupElement(false)
                         result.addElement(lookup)
                     }
                     false
@@ -47,6 +47,25 @@ object NamesCompletionProvider : MoveCompletionProvider() {
                 return
             }
         }
+//        if (refElement is MoveQualPathReferenceElement) {
+//            val moduleRef = refElement.qualPath.moduleRef
+//            if (moduleRef != null) {
+//                return moduleRef.reference.resolve() as? MoveModuleDef
+//            }
+//            return null
+//
+////            val module = resolveModule(refElement)
+//            if (module != null) {
+//                processPublicModuleItems(module, setOf(namespace)) {
+//                    if (it.element != null) {
+//                        val lookup = it.element.createLookupElement(refElement.isSpecElement())
+//                        result.addElement(lookup)
+//                    }
+//                    false
+//                }
+//                return
+//            }
+//        }
 
         processNestedScopesUpwards(refElement, namespace) {
             if (it.element != null) {

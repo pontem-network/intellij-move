@@ -15,4 +15,7 @@ class PartialParsingTest: MoveParsingTestCase("partial") {
 
     // structs
     fun `test struct fields`() = doTest(true)
+
+    // expressions
+//    fun `test expressions`() = doTest(true)
 }

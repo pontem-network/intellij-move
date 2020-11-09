@@ -168,4 +168,16 @@ class FunctionsCompletionTest : CompletionTestCase() {
             }
         }
     """)
+
+    fun `test no function completion in type position`() = checkNoCompletion("""
+        address 0x1 {
+        module Transaction {
+            public fun create() {}
+        }
+        }
+        
+        module M {
+            fun main(a: 0x1::Transaction::cr/*caret*/) {}
+        }
+    """)
 }
