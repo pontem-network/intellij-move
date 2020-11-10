@@ -154,4 +154,17 @@ class ResolveVariablesTest : ResolveTestCase() {
         }
     """
     )
+
+    fun `test variable defined in nested block`() = checkByCode("""
+        module M {
+            fun main() {
+                let a = {
+                    let b = 1;
+                      //X
+                    b + 1
+                  //^  
+                };
+            }
+        }        
+    """)
 }

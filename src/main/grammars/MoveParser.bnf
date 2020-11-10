@@ -582,7 +582,7 @@ private AnyBlock ::= CodeBlock | InlineBlock
 
 InlineBlock ::= Expr
 
-CodeBlockExpr ::= '{' CodeBlockItems '}'
+CodeBlockExpr ::= CodeBlock
 CodeBlock ::= '{' CodeBlockItems  '}'
 {
     pin = 1

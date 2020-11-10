@@ -184,7 +184,6 @@ fun processLexicalDeclarations(
         Namespace.NAME -> when (scope) {
             is MoveFunctionDef -> processor.matchAll(scope.params)
             is MoveCodeBlock -> {
-
                 val precedingLetDecls = scope.letStatements
                     // drops all let-statements after the current position
                     .filter { PsiUtilCore.compareElementsByPosition(it, cameFrom) <= 0 }
