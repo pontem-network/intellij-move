@@ -76,7 +76,74 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 
 %%
 <YYINITIAL, BEGIN_SPEC, IN_SPEC> {
-  {WHITE_SPACE}              { return WHITE_SPACE; }
+      {WHITE_SPACE}        { return WHITE_SPACE; }
+      {LINE_COMMENT}       { return LINE_COMMENT; }
+
+      "/*"                 { pushState(IN_BLOCK_COMMENT); yypushback(2); }
+}
+
+<YYINITIAL, IN_SPEC> {
+      // operators
+      "{"        { return L_BRACE; }
+      "}"        { return R_BRACE; }
+
+      "["        { return L_BRACK; }
+      "]"        { return R_BRACK; }
+      "("        { return L_PAREN; }
+      ")"        { return R_PAREN; }
+      "::"       { return COLON_COLON; }
+      ":"        { return COLON; }
+      ";"        { return SEMICOLON; }
+      ","        { return COMMA; }
+      "."        { return DOT; }
+      "="        { return EQ; }
+      "=="       { return EQ_EQ; }
+      "!="       { return NOT_EQ; }
+
+      "!"        { return EXCL; }
+      "+"        { return PLUS; }
+      "-"        { return MINUS; }
+      "*"        { return MUL; }
+      "/"        { return DIV; }
+      "%"        { return MODULO; }
+      "^"        { return XOR; }
+
+      "<"        { return LT; }
+      ">"        { return GT; }
+      "&"        { return AND; }
+      "|"        { return OR; }
+
+      // keywords
+      "address"        { return ADDRESS; }
+      "script"         { yybegin(YYINITIAL); return SCRIPT; }
+      "module"         { yybegin(YYINITIAL); return MODULE; }
+      "const"          { yybegin(YYINITIAL); return CONST; }
+      "native"         { yybegin(YYINITIAL); return NATIVE; }
+      "public"         { yybegin(YYINITIAL); return PUBLIC; }
+      "fun"            { yybegin(YYINITIAL); return FUN; }
+      "acquires"       { return ACQUIRES; }
+      "resource"       { yybegin(YYINITIAL); return RESOURCE; }
+      "struct"         { yybegin(YYINITIAL); return STRUCT; }
+      "use"            { yybegin(YYINITIAL); return USE; }
+      "as"             { return AS; }
+      "mut"            { return MUT; }
+      "copyable"       { return COPYABLE; }
+      "copy"           { return COPY; }
+      "move"           { return MOVE; }
+      "return"         { return RETURN; }
+      "abort"          { return ABORT; }
+      "break"          { return BREAK; }
+      "continue"       { return CONTINUE; }
+      "if"             { return IF; }
+      "else"           { return ELSE; }
+      "loop"           { return LOOP; }
+      "while"          { return WHILE; }
+      "let"            { return LET; }
+
+      "schema"         { return SCHEMA; }
+      "define"         { return DEFINE; }
+
+      "spec"           { yybegin(BEGIN_SPEC); return SPEC; }
 }
 
 <BEGIN_SPEC> {
@@ -87,113 +154,6 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
     "module" { yybegin(IN_SPEC); return MODULE; }
 
     [^...]     { yybegin(YYINITIAL); yypushback(yylength()); }
-}
-
-<YYINITIAL, IN_SPEC> {
-//  {WHITE_SPACE}              { return WHITE_SPACE; }
-
-//  "{"                        {
-////          bracesDepth++;
-////          if (isSpecDef) {
-////            specBracesDepth = bracesDepth;
-////            isSpecDef = false;
-////            pushState(IN_SPEC);
-//////            yybegin(IN_SPEC);
-////          }
-//          return L_BRACE; }
-//  "}"                        {
-////          bracesDepth--;
-////          if (bracesDepth < specBracesDepth) {
-////              popState();
-////              specBracesDepth = -1;
-////          }
-//          return R_BRACE;
-//      }
-    "{"  { return L_BRACE; }
-    "}"  { return R_BRACE; }
-  "["                        { return L_BRACK; }
-  "]"                        { return R_BRACK; }
-  "("                        { return L_PAREN; }
-  ")"                        { return R_PAREN; }
-  "::"                       { return COLON_COLON; }
-  ":"                        { return COLON; }
-  ";"                        { return SEMICOLON; }
-  ","                        { return COMMA; }
-  "."                        { return DOT; }
-  "="                        { return EQ; }
-  "=="                       { return EQ_EQ; }
-  "!="                      { return NOT_EQ; }
-
-  "!"                             { return EXCL; }
-  "+"                             { return PLUS; }
-  "-"                             { return MINUS; }
-}
-
-<YYINITIAL, IN_SPEC> {
-  "*"                             { return MUL; }
-}
-
-<YYINITIAL, IN_SPEC> {
-  "/"                             { return DIV; }
-  "%"                             { return MODULO; }
-  "^"                             { return XOR; }
-
-  "<"                        { return LT; }
-  ">"                        { return GT; }
-  "&"                        { return AND; }
-  "|"                        { return OR; }
-
-  "address"                        {
-          return ADDRESS;
-//          if (bracesDepth == 0) {
-//              return ADDRESS;
-//          } else {
-//              return IDENTIFIER;
-//          }
-      }
-  "script"                         { yybegin(YYINITIAL); return SCRIPT; }
-  "module"                         { yybegin(YYINITIAL); return MODULE; }
-  "const"                          { yybegin(YYINITIAL); return CONST; }
-  "native"                         { yybegin(YYINITIAL); return NATIVE; }
-  "public"                         { yybegin(YYINITIAL); return PUBLIC; }
-  "fun"                            { yybegin(YYINITIAL); return FUN; }
-  "acquires"                       { return ACQUIRES; }
-  "resource"                       { yybegin(YYINITIAL); return RESOURCE; }
-  "struct"                         { yybegin(YYINITIAL); return STRUCT; }
-  "use"                            { yybegin(YYINITIAL); return USE; }
-  "as"                             { return AS; }
-  "mut"                            { return MUT; }
-  "copyable"                       { return COPYABLE; }
-  "copy"                           { return COPY; }
-  "move"                           { return MOVE; }
-  "return"                         { return RETURN; }
-  "abort"                          { return ABORT; }
-  "break"                          { return BREAK; }
-  "continue"                       { return CONTINUE; }
-  "if"                             { return IF; }
-  "else"                           { return ELSE; }
-  "loop"                           { return LOOP; }
-  "while"                          { return WHILE; }
-  "let"                            { return LET; }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Literals
-///////////////////////////////////////////////////////////////////////////////////////////////////
-  "spec"                           {
-//          specBracesDepth = bracesDepth + 1;
-//          isSpecDef = true;
-//          yybegin(BEGIN_SPEC);
-          return SPEC;
-      }
-  "schema"                         { return SCHEMA; }
-  "define"                         { return DEFINE; }
-
-  {LINE_COMMENT}             { return LINE_COMMENT; }
-
-  "/*"                      { pushState(IN_BLOCK_COMMENT); yypushback(2); }
-
-
-//  {SCHEMA_APPLY_NAME_PATTERN}      { return SCHEMA_APPLY_NAME_PATTERN; }
 }
 
 <IN_SPEC> {
@@ -232,20 +192,9 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "forall"                         { return FORALL; }
   "in"                             { return IN; }
   "where"                             { return WHERE; }
-//
-//   {FUNCTION_PATTERN_NAME}      {
-//          if (yycharat(-1) == 'o' && yycharat(-2) == 't') {
-//              return FUNCTION_PATTERN_NAME;
-//            }
-//    }
 }
 
-//<IN_APPLY_TO> {
-//    {FUNCTION_PATTERN_NAME}     { pushState(IN_SPEC); return FUNCTION_PATTERN_NAME; }
-//      [^]       { pushState(IN_SPEC); }
-//}
-
-<YYINITIAL, IN_SPEC> {
+<YYINITIAL, BEGIN_SPEC, IN_SPEC> {
   {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
   {BECH32_ADDRESS_LITERAL}          { return BECH32_ADDRESS_LITERAL; }
   {BOOL_LITERAL}             { return BOOL_LITERAL; }
