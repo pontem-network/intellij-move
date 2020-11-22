@@ -211,6 +211,7 @@ fun processLexicalDeclarations(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
                     scope.functions(),
+                    scope.builtinFunctions(),
                     scope.nativeFunctions(),
                     scope.structs(),
                     scope.nativeStructs(),
@@ -221,6 +222,7 @@ fun processLexicalDeclarations(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
+                    scope.builtinFunctions(),
                     scope.consts()
                 ).flatten(),
             )

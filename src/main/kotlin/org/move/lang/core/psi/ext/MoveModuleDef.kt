@@ -19,23 +19,19 @@ fun createBuiltinFunc(text: String, project: Project): MoveNativeFunctionDef {
     return function
 }
 
-fun MoveModuleDef.nativeFunctions(): List<MoveNativeFunctionDef> {
-    val block = moduleBlock ?: return emptyList()
-
-    val builtins = listOf(
+fun MoveModuleDef.builtinFunctions(): List<MoveNativeFunctionDef> =
+    listOf(
         createBuiltinFunc("native fun move_from<R: resource>(addr: address): R;", project),
         createBuiltinFunc("native fun move_to<R: resource>(addr: address, res: R): ();", project),
         createBuiltinFunc("native fun borrow_global<R: resource>(addr: address): &R;", project),
         createBuiltinFunc("native fun borrow_global_mut<R: resource>(addr: address): &mut R;", project),
         createBuiltinFunc("native fun exists<R: resource>(addr: address): bool;", project),
         createBuiltinFunc("native fun freeze<S>(mut_ref: &mut S): &S;", project),
-        createBuiltinFunc("native fun assert(predicate: bool, error_code: u64): ();", project),
+        createBuiltinFunc("native fun assert(_: bool, err: u64): ();", project),
     )
-    return listOf(
-        block.nativeFunctionDefList,
-        builtins
-    ).flatten()
-}
+
+fun MoveModuleDef.nativeFunctions(): List<MoveNativeFunctionDef> =
+    moduleBlock?.nativeFunctionDefList.orEmpty()
 
 fun MoveModuleDef.publicNativeFunctions(): List<MoveNativeFunctionDef> =
     nativeFunctions().filter { it.isPublic }

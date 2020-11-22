@@ -6,9 +6,12 @@ import org.move.openapiext.createLexer
 import org.move.utils.tests.MoveTestCase
 import org.move.utils.tests.replaceCaretMarker
 
-class RestartLexerTest : MoveTestCase() {
+class RestartableLexerTest : MoveTestCase() {
     fun `test lexer restart outer address`() =
         doTestLexerRestart(""" module M {} addres/*caret*/ 0x0 {} """, 's')
+
+    fun `test lexer restart outer address with other address block`() =
+        doTestLexerRestart(""" module M {} addres/*caret*/ 0x0 {} address 0x1 {}""", 's')
 
     fun `test lexer restart`() =
         doTestLexerRestart(""" module M { fun main() { le/*caret*/} } """, 't')

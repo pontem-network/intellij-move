@@ -2,8 +2,8 @@ package org.move.lang.lexer
 
 import org.move.utils.tests.MoveLexerTestCase
 
-class LexerTest : MoveLexerTestCase() {
-    fun `test address block`() = doTest()
+class SpecsLexerTest : MoveLexerTestCase() {
+//    fun `test address block`() = doTest()
     fun `test in module spec keywords are identifiers`() = doTest()
     fun `test in spec keywords are keywords`() = doTest()
     fun `test global as keyword`() = doTest()
