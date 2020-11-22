@@ -33,6 +33,7 @@ object NamesCompletionProvider : MoveCompletionProvider() {
         if (parameters.position !== refElement.referenceNameElement) return
 
         val namespace = namespaceOf(refElement)
+        // if refElement is qual path with module ref present -> get names from the module and return
         if (refElement is MoveQualPathReferenceElement) {
             val moduleRef = refElement.qualPath.moduleRef
             if (moduleRef != null) {
@@ -47,28 +48,11 @@ object NamesCompletionProvider : MoveCompletionProvider() {
                 return
             }
         }
-//        if (refElement is MoveQualPathReferenceElement) {
-//            val moduleRef = refElement.qualPath.moduleRef
-//            if (moduleRef != null) {
-//                return moduleRef.reference.resolve() as? MoveModuleDef
-//            }
-//            return null
-//
-////            val module = resolveModule(refElement)
-//            if (module != null) {
-//                processPublicModuleItems(module, setOf(namespace)) {
-//                    if (it.element != null) {
-//                        val lookup = it.element.createLookupElement(refElement.isSpecElement())
-//                        result.addElement(lookup)
-//                    }
-//                    false
-//                }
-//                return
-//            }
-//        }
 
+        val visited = mutableSetOf<String>()
         processNestedScopesUpwards(refElement, namespace) {
-            if (it.element != null) {
+            if (it.element != null && !visited.contains(it.name)) {
+                visited.add(it.name)
                 val lookup = it.element.createLookupElement(refElement.isSpecElement())
                 result.addElement(lookup)
             }
