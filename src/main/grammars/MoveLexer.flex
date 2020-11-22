@@ -153,6 +153,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
     "schema" { yybegin(IN_SPEC); return SCHEMA; }
     "define" { yybegin(IN_SPEC); return DEFINE; }
     "module" { yybegin(IN_SPEC); return MODULE; }
+    "spec"           { return SPEC; }
 
     [^...]     { yybegin(YYINITIAL); yypushback(yylength()); }
 }

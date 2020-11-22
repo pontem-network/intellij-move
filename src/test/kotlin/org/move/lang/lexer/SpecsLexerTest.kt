@@ -9,8 +9,8 @@ class SpecsLexerTest : MoveLexerTestCase() {
     fun `test global as function`() = doTest()
     fun `test line comment inside spec block`() = doTest()
 
-    fun `test initial and spec`() = doTest()
     fun `test specs and address`() = doTest()
+    fun `test specs and initial keywords`() = doTest()
 
     override fun getTestDataPath(): String = "org/move/lang/specs_lexer"
 }
