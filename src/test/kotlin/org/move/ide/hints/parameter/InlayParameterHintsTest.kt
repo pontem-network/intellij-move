@@ -23,6 +23,24 @@ class InlayParameterHintsTest : MoveTestCase() {
         }    
     """)
 
+    fun `test no hint for first argument of assert`() = checkByText("""
+        module M {
+            fun main() {
+                assert(true, /*hint="err:"*/2)
+            }    
+        }    
+    """)
+
+    fun `test no hint if variable name is the same as parameter name`() = checkByText("""
+        module M {
+            fun call(account: address) {}
+            fun main() {
+                let account = 0x1;
+                call(account)
+            }    
+        }    
+    """)
+
     private fun checkByText(@Language("Move") code: String) {
         InlineFile(code.replace(
             HINT_COMMENT_PATTERN,
