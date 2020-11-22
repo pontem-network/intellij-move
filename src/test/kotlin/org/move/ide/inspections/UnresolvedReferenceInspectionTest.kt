@@ -19,12 +19,12 @@ class UnresolvedReferenceInspectionTest : InspectionsTestCase(MoveUnresolvedRefe
         }
     """)
 
-    fun `test test no unresolved module member`() = checkByText("""
+    fun `test test unresolved module member`() = checkByText("""
         script {
             use 0x1::MyModule::call;
-            
+
             fun main() {
-                call();
+                <error descr="Unresolved reference: `call`">call</error>();
             }
         }
     """)

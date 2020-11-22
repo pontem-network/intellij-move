@@ -222,7 +222,7 @@ fun processLexicalDeclarations(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
-                    scope.builtinFunctions(),
+//                    scope.builtinFunctions(),
                     scope.consts()
                 ).flatten(),
             )

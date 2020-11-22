@@ -45,7 +45,7 @@ object MovePsiPatterns {
             )
 
     fun typeParamBound(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MoveTypeParameterList>()
+        psiElementWithParent<MoveTypeParameter>()
             .afterLeafSkipping(
                 whitespace(),
                 PlatformPatterns.psiElement(COLON),

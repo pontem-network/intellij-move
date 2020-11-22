@@ -5,9 +5,7 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.ancestorStrict
-import org.move.lang.core.psi.ext.fieldNames
-import org.move.lang.core.psi.ext.isIdentifierOnly
+import org.move.lang.core.psi.ext.*
 
 class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor =
@@ -38,7 +36,7 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
             }
 
             override fun visitStructPatField(o: MoveStructPatField) {
-                val resolvedStructDef = o.ancestorStrict<MoveStructPat>()?.referredStructDef ?: return
+                val resolvedStructDef = o.structPat.referredStructDef ?: return
                 if (!resolvedStructDef.fieldNames.any { it == o.referenceName }) {
                     val highlightedElement = o.referenceNameElement
                     holder.registerProblem(
@@ -49,12 +47,16 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
             }
 
             override fun visitStructLiteralField(o: MoveStructLiteralField) {
-                val resolvedStructDef = o.ancestorStrict<MoveStructLiteralExpr>()?.referredStructDef ?: return
-                if (!resolvedStructDef.fieldNames.any { it == o.referenceName }) {
+                if (o.isUnresolved) {
                     val highlightedElement = o.referenceNameElement
+                    val errorMessage =
+                        if (o.isShorthand)
+                            "Unresolved reference: `${o.referenceName}`"
+                        else
+                            "Unresolved field: `${o.referenceName}`"
                     holder.registerProblem(
                         highlightedElement,
-                        "Unresolved field: `${o.referenceName}`",
+                        errorMessage,
                         ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
                 }
             }

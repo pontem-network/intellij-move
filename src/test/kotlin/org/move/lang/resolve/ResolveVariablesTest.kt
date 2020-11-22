@@ -167,4 +167,17 @@ class ResolveVariablesTest : ResolveTestCase() {
             }
         }        
     """)
+
+    fun `test resolve variable in struct field shorthand`() = checkByCode("""
+        module M {
+            struct S { myfield: u8 }
+            
+            fun main() {
+                let myfield = 1;
+                  //X
+                S { myfield }
+                  //^
+            }
+        }        
+    """)
 }

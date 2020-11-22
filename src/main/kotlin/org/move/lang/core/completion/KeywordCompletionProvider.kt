@@ -8,6 +8,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.TokenType
 import com.intellij.psi.util.elementType
 import com.intellij.util.ProcessingContext
+import org.move.lang.core.psi.MoveTypeParameter
 import org.move.lang.core.psi.MoveTypeParameterList
 import org.move.lang.core.psi.ext.isErrorElement
 import org.move.lang.core.psi.ext.isWhitespace
@@ -26,7 +27,7 @@ class KeywordCompletionProvider(private vararg val keywords: String) : Completio
                 LookupElementBuilder.create(keyword).bold()
 
             val typeBound =
-                keyword == "copyable" || (keyword == "resource" && parent is MoveTypeParameterList)
+                keyword == "copyable" || (keyword == "resource" && parent is MoveTypeParameter)
 
             val nextSibling = pos
                 .rightSiblings

@@ -19,23 +19,6 @@ class ResolveStructFieldsTest: ResolveTestCase() {
     """
     )
 
-    fun `test resolve reference to field from shorthard`() = checkByCode(
-        """
-        module M {
-            resource struct T {
-                my_field: u8
-              //X  
-            }
-
-            fun main() {
-                let my_field = 1;
-                let t = T { my_field };
-                          //^
-            }
-        }
-    """
-    )
-
     fun `test resolve reference to field from pattern`() = checkByCode(
         """
         module M {
