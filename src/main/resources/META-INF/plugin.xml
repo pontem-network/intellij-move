@@ -14,39 +14,13 @@
 
     <change-notes>
         <![CDATA[
-            <p>0.9.0</p>
+            <p>0.10.0</p>
+            <p>Adds support for multi-file module resolution. For it to work, you need to create stdlib/
+            and/or modules/ directories in the root of the project. Modules found in those paths will be
+            used in process of module resolution.</p>
             <ul>
-                <li>FEAT: add support for native structs</li>
-                <li>FEAT: highlight generic parameters</li>
-                <li>FEAT: add generic parameters to completion</li>
-                <li>FEAT: add primitive types to completion</li>
-                <li>FEAT: "define" name resolution</li>
-
-                <li>FEAT: fix remaining parser spec issues</li>
-            </ul>
-            <p>0.8.0</p>
-            <ul>
-                <li>FEAT: autocompletion for names, functions and structs</li>
-            </ul>
-            <p>0.7.0</p>
-            <ul>
-                <li>FEAT: add partial support for specs in parser and formatter</li>
-                <li>FEAT: add go-to-definition/rename support for consts, structs, functions, type parameters and specs</li>
-                <li>BUG: fix lots of indentation problems with formatter</li>
-                <li>BUG: parser bugfixes</li>
-                <li>INTERNAL: make repo for the plugin public at https://github.com/dfinance/intellij-move</li>
-            </ul>
-            <p>0.6.0</p>
-            <ul>
-                <li>Feature: Go-to-definition and rename refactoring for local variables and function params</li>
-                <li>Feature: initial "Reformat Code" support</li>
-                <li>Feature: create new Move file action</li>
-                <li>Feature: add auto-indentation for blocks</li>
-                <li>Feature: highlight primitive types as keywords</li>
-            </ul>
-            <p>0.5.0</p>
-            <ul>
-                <li>Bug: fix block comments</li>
+                <li>FEAT: Unresolved reference inspection</li>
+                <li>FEAT: Name resolution for struct fields</li>
             </ul>
         ]]>
     </change-notes>
