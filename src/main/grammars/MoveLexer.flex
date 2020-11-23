@@ -59,7 +59,7 @@ WHITE_SPACE      = {WHITE_SPACE_CHAR}+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Comments
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-LINE_COMMENT=("//".*\n)|("//".*\R)
+//LINE_COMMENT=("//".*)|("//".*)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Literals
@@ -78,8 +78,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 %%
 <YYINITIAL, BEGIN_SPEC, IN_SPEC> {
       {WHITE_SPACE}        { return WHITE_SPACE; }
-      {LINE_COMMENT}       { return LINE_COMMENT; }
-
+      "//" .*              { return LINE_COMMENT; }
       "/*"                 { pushState(IN_BLOCK_COMMENT); yypushback(2); }
 }
 

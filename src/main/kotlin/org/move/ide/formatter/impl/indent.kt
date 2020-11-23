@@ -3,7 +3,7 @@ package org.move.ide.formatter.impl
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
 import org.move.ide.formatter.MoveFormatterBlock
-import org.move.lang.MoveElementTypes.*
+import org.move.lang.MoveElementTypes.ADDRESS_BLOCK
 import org.move.lang.core.psi.*
 
 fun MoveFormatterBlock.computeIndent(child: ASTNode): Indent? {
@@ -36,7 +36,8 @@ fun MoveFormatterBlock.computeIndent(child: ASTNode): Indent? {
         parentPsi is MoveSpecExpr -> Indent.getNormalIndent()
 
         // binary expressions, chain calls
-        parentPsi is MoveExpr -> Indent.getContinuationWithoutFirstIndent()
+        // no indent on it's own, use parent indent
+        parentPsi is MoveExpr -> Indent.getIndent(Indent.Type.NONE, true, true)
 
         else -> Indent.getNoneIndent()
     }

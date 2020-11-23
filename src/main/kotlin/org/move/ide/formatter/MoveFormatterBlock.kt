@@ -5,6 +5,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.formatter.common.AbstractBlock
 import org.move.ide.formatter.impl.*
 import org.move.lang.MoveElementTypes.*
+import org.move.lang.core.psi.MoveExpr
 
 class MoveFormatterBlock(
     node: ASTNode,

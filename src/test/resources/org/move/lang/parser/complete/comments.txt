@@ -1,5 +1,6 @@
 FILE
-  PsiComment(LINE_COMMENT)('// line comment\n')
+  PsiComment(LINE_COMMENT)('// line comment')
+  PsiWhiteSpace('\n')
   MoveScriptDefImpl(SCRIPT_DEF)
     PsiElement(script)('script')
     PsiWhiteSpace(' ')
@@ -22,6 +23,8 @@ FILE
           PsiElement({)('{')
           PsiElement(})('}')
       PsiWhiteSpace('\n')
-      PsiComment(LINE_COMMENT)('// /* unclosed block comment inside line comment\n')
-      PsiComment(LINE_COMMENT)('// /* block comment inside line comment */\n')
+      PsiComment(LINE_COMMENT)('// /* unclosed block comment inside line comment')
+      PsiWhiteSpace('\n')
+      PsiComment(LINE_COMMENT)('// /* block comment inside line comment */')
+      PsiWhiteSpace('\n')
       PsiElement(})('}')

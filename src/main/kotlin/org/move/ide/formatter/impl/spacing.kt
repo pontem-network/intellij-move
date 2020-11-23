@@ -16,6 +16,7 @@ import org.move.ide.formatter.MoveFmtContext
 import org.move.lang.MoveElementTypes.*
 import org.move.lang.core.MOVE_COMMENTS
 import org.move.lang.core.MOVE_KEYWORDS
+import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
 
@@ -115,7 +116,7 @@ private data class SpacingContext(
     val parentType: IElementType?,
     val parentPsi: PsiElement?,
     val ncPsi1: PsiElement,
-    val ncPsi2: PsiElement
+    val ncPsi2: PsiElement,
 ) {
     companion object {
         fun create(child1: ASTBlock, child2: ASTBlock): SpacingContext? {
@@ -139,7 +140,7 @@ private data class SpacingContext(
          */
         private fun omitCommentBlocks(
             node1: ASTNode, psi1: PsiElement,
-            node2: ASTNode, psi2: PsiElement
+            node2: ASTNode, psi2: PsiElement,
         ): Pair<PsiElement, PsiElement> =
             Pair(
                 if (psi1 is PsiComment && node1.hasLineBreakAfterInSameParent()) {
@@ -157,7 +158,7 @@ private data class SpacingContext(
 }
 
 private inline fun SpacingBuilder.applyForEach(
-    tokenSet: TokenSet, block: SpacingBuilder.(IElementType) -> SpacingBuilder
+    tokenSet: TokenSet, block: SpacingBuilder.(IElementType) -> SpacingBuilder,
 ): SpacingBuilder {
     var self = this
     for (tt in tokenSet.types) {
@@ -169,7 +170,7 @@ private inline fun SpacingBuilder.applyForEach(
 private fun lineBreak(
     minLineFeeds: Int = 1,
     keepLineBreaks: Boolean = true,
-    keepBlankLines: Int = 1
+    keepBlankLines: Int = 1,
 ): Spacing =
     Spacing.createSpacing(0, Int.MAX_VALUE, minLineFeeds, keepLineBreaks, keepBlankLines)
 

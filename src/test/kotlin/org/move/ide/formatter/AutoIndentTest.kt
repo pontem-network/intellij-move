@@ -439,7 +439,7 @@ class AutoIndentTest : MoveTypingTestCase() {
         script {
             fun main() {
                 get_record() 
-                        /*caret*/&& mytransaction;
+                /*caret*/&& mytransaction;
             }
         }
     """
@@ -456,7 +456,7 @@ class AutoIndentTest : MoveTypingTestCase() {
         script {
             fun main() {
                 let alpha = get_record() 
-                        /*caret*/&& mytransaction;
+                            /*caret*/&& mytransaction;
             }
         }
     """
@@ -497,6 +497,78 @@ class AutoIndentTest : MoveTypingTestCase() {
             /*caret*/
             
             fun main() {}
+        }
+    }
+    """
+    )
+
+    fun `test indent after operator`() = doTestByText(
+        """
+    script  {
+        fun main() {
+            true /*caret*/&& true;
+        }
+    }
+    """, """
+    script  {
+        fun main() {
+            true 
+            /*caret*/&& true;
+        }
+    }
+    """
+    )
+
+    fun `test indent after operator in function arguments`() = doTestByText(
+        """
+    script  {
+        fun main() {
+            assert(true /*caret*/&& true, 1);
+        }
+    }
+    """, """
+    script  {
+        fun main() {
+            assert(true 
+                   /*caret*/&& true, 1);
+        }
+    }
+    """
+    )
+
+    fun `test indent after before argument in multiline function arguments`() = doTestByText(
+        """
+    script  {
+        fun main() {
+            assert(/*caret*/true && true, 1);
+        }
+    }
+    """, """
+    script  {
+        fun main() {
+            assert(
+                /*caret*/true && true, 1);
+        }
+    }
+    """
+    )
+
+    fun `test indent after operator in multiline function arguments`() = doTestByText(
+        """
+    script  {
+        fun main() {
+            assert(
+                true /*caret*/&& true, 1
+            );
+        }
+    }
+    """, """
+    script  {
+        fun main() {
+            assert(
+                true 
+                /*caret*/&& true, 1
+            );
         }
     }
     """
