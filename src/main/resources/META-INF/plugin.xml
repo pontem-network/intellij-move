@@ -64,7 +64,7 @@
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
-        <!--        <stubElementTypeHolder class="org.move.lang.MoveElementTypes"/>-->
+<!--        <stubElementTypeHolder class="org.move.lang.MoveElementTypes"/>-->
 
         <lang.syntaxHighlighter language="Move"
                                 implementationClass="org.move.ide.MoveHighlighter"/>
@@ -92,7 +92,7 @@
                    implementationClass="org.move.ide.annotator.ErrorAnnotator"/>
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.HighlightingAnnotator"/>
-        <configurationType implementation="org.move.move_tools.CompilerCheckConfigurationType"/>
+        <configurationType implementation="org.move.movec.CompilerCheckConfigurationType"/>
 
         <codeInsight.parameterInfo language="Move"
                                    implementationClass="org.move.ide.hints.parameter.FunctionParameterInfoHandler"/>
@@ -107,12 +107,22 @@
         <!--                         displayName="Attempt to override a built-in function"-->
         <!--                         enabledByDefault="true" level="ERROR"-->
         <!--                         implementationClass="org.move.ide.inspections.lints.FunctionNamingInspection"/>-->
+        <localInspection language="Move" groupName="Move"
+                         displayName="Unresolved reference"
+                         enabledByDefault="true" level="ERROR"
+                         implementationClass="org.move.ide.inspections.MoveUnresolvedReferenceInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MoveColorSettingsPage"/>
 
         <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml"/>
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
+
+        <!-- Movec -->
+        <projectConfigurable instance="org.move.movec.project.configurable.MoveProjectConfigurable"
+                             displayName="Move"
+                             groupId="language"
+                             id="language.move"/>
 
     </extensions>
 

@@ -7,12 +7,11 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.MovePsiPatterns
-import org.move.lang.core.psi.MoveQualTypeReferenceElement
-import org.move.lang.core.psi.MoveReferenceElement
-import org.move.lang.core.psi.MoveSchemaReferenceElement
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isSpecElement
 import org.move.lang.core.resolve.processNestedScopesUpwards
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.processPublicModuleItems
 
 object NamesCompletionProvider : MoveCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
@@ -22,25 +21,6 @@ object NamesCompletionProvider : MoveCompletionProvider() {
                     .andNot(MovePsiPatterns.qualPathTypeIdentifier()),
                 MovePsiPatterns.specIdentifier()
             )
-//    override val elementPattern: ElementPattern<PsiElement>
-//        get() =
-//            PlatformPatterns.psiElement().withSuperParent()
-//                .andNot(PlatformPatterns.psiElement()
-//                    .withSuperParent<MoveQualPathType>(2))
-
-//    override val elementPattern: ElementPattern<PsiElement>
-//        get() {
-//            val directRefIdentifier =
-//                PlatformPatterns.psiElement()
-//                    .withElementType(MoveElementTypes.IDENTIFIER)
-//                    .withParent(psiElement<MoveReferenceElement>())
-//            val qualPathIdentifier =
-//                PlatformPatterns.psiElement()
-//                    .withElementType(MoveElementTypes.IDENTIFIER)
-//                    .withParent(psiElement<MoveQualPath>())
-//                    .withSuperParent<MoveReferenceElement>(2)
-//            return PlatformPatterns.or(directRefIdentifier, qualPathIdentifier)
-//        }
 
     override fun addCompletions(
         parameters: CompletionParameters,
@@ -52,17 +32,38 @@ object NamesCompletionProvider : MoveCompletionProvider() {
 
         if (parameters.position !== refElement.referenceNameElement) return
 
-        val namespace = when (refElement) {
-            is MoveQualTypeReferenceElement -> Namespace.TYPE
-            is MoveSchemaReferenceElement -> Namespace.SCHEMA
-            else -> Namespace.NAME
+        val namespace = namespaceOf(refElement)
+        // if refElement is qual path with module ref present -> get names from the module and return
+        if (refElement is MoveQualPathReferenceElement) {
+            val moduleRef = refElement.qualPath.moduleRef
+            if (moduleRef != null) {
+                val module = moduleRef.reference.resolve() as? MoveModuleDef ?: return
+                processPublicModuleItems(module, setOf(namespace)) {
+                    if (it.element != null) {
+                        val lookup = it.element.createLookupElement(false)
+                        result.addElement(lookup)
+                    }
+                    false
+                }
+                return
+            }
         }
+
+        val visited = mutableSetOf<String>()
         processNestedScopesUpwards(refElement, namespace) {
-            if (it.element != null) {
+            if (it.element != null && !visited.contains(it.name)) {
+                visited.add(it.name)
                 val lookup = it.element.createLookupElement(refElement.isSpecElement())
                 result.addElement(lookup)
             }
             false
         }
     }
+
+    private fun namespaceOf(refElement: MoveReferenceElement) =
+        when (refElement) {
+            is MoveQualTypeReferenceElement -> Namespace.TYPE
+            is MoveSchemaReferenceElement -> Namespace.SCHEMA
+            else -> Namespace.NAME
+        }
 }

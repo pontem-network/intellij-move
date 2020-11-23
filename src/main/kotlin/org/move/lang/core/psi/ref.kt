@@ -2,8 +2,12 @@ package org.move.lang.core.psi
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import org.move.ide.annotator.BUILTIN_FUNCTIONS
+import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
+import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
 import org.move.lang.core.resolve.ref.MoveQualPathReferenceImpl
 import org.move.lang.core.resolve.ref.MoveReference
+import org.move.lang.core.resolve.ref.MoveStructFieldReferenceImpl
 import org.move.lang.core.resolve.ref.Namespace
 
 interface MoveReferenceElement : MoveElement {
@@ -18,6 +22,10 @@ interface MoveReferenceElement : MoveElement {
     @JvmDefault
     val referenceName: String
         get() = identifier.text
+
+    @JvmDefault
+    val isUnresolved: Boolean
+        get() = reference.resolve() == null
 }
 
 interface MoveSchemaReferenceElement : MoveReferenceElement
@@ -34,14 +42,28 @@ interface MoveSchemaReferenceElement : MoveReferenceElement
 //}
 
 interface MoveQualPathReferenceElement : MoveReferenceElement {
+    val isPrimitive: Boolean
+
     val qualPath: MoveQualPath
+
+    @JvmDefault
+    override val isUnresolved: Boolean
+        get() = !isPrimitive && reference.resolve() == null
 }
 
 //abstract class MoveQualPathReferenceElementImpl : MoveQualPathReferenceElement {
 //    override fun getReference(): MoveReference = qualPath.reference
 //}
 
-interface MoveQualTypeReferenceElement : MoveQualPathReferenceElement
+interface MoveQualTypeReferenceElement : MoveQualPathReferenceElement {
+    override val isPrimitive: Boolean
+        get() = referenceName in PRIMITIVE_TYPE_IDENTIFIERS
+                || referenceName in BUILTIN_TYPE_IDENTIFIERS
+
+    @JvmDefault
+    val referredStructDef: MoveStructDef?
+        get() = reference.resolve() as? MoveStructDef
+}
 
 abstract class MoveQualTypeReferenceElementImpl(node: ASTNode) : MoveElementImpl(node),
                                                                  MoveQualTypeReferenceElement {
@@ -50,7 +72,10 @@ abstract class MoveQualTypeReferenceElementImpl(node: ASTNode) : MoveElementImpl
     override fun getReference(): MoveReference = MoveQualPathReferenceImpl(this, Namespace.TYPE)
 }
 
-interface MoveQualNameReferenceElement : MoveQualPathReferenceElement
+interface MoveQualNameReferenceElement : MoveQualPathReferenceElement {
+    override val isPrimitive: Boolean
+        get() = referenceName in BUILTIN_FUNCTIONS
+}
 
 abstract class MoveQualNameReferenceElementImpl(node: ASTNode) : MoveElementImpl(node),
                                                                  MoveQualNameReferenceElement {
@@ -61,7 +86,12 @@ abstract class MoveQualNameReferenceElementImpl(node: ASTNode) : MoveElementImpl
 }
 
 
-interface MoveQualSchemaReferenceElement : MoveQualPathReferenceElement
+interface MoveQualSchemaReferenceElement : MoveQualPathReferenceElement {
+    @JvmDefault
+    override val isUnresolved: Boolean
+        get() =
+            reference.resolve() == null
+}
 
 abstract class MoveQualSchemaReferenceElementImpl(node: ASTNode) : MoveElementImpl(node),
                                                                    MoveQualSchemaReferenceElement {
@@ -71,4 +101,4 @@ abstract class MoveQualSchemaReferenceElementImpl(node: ASTNode) : MoveElementIm
     override fun getReference(): MoveReference = MoveQualPathReferenceImpl(this, Namespace.SCHEMA)
 }
 
-
+interface MoveStructFieldReferenceElement : MoveReferenceElement

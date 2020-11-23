@@ -16,6 +16,11 @@ fun MoveItemImport.parentImport(): MoveModuleItemsImport =
 
 abstract class MoveItemImportMixin(node: ASTNode) : MoveNamedElementImpl(node),
                                                     MoveItemImport {
+    override fun getName(): String? {
+        val name = super.getName()
+        if (name != "Self") return name
+        return ancestorStrict<MoveModuleItemsImport>()?.fullyQualifiedModuleRef?.referenceName ?: name
+    }
 
     override val referenceNameElement: PsiElement get() = identifier
 

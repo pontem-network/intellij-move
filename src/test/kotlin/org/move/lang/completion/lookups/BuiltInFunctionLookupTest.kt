@@ -4,6 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementPresentation
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MoveModuleDef
+import org.move.lang.core.psi.ext.builtinFunctions
 import org.move.lang.core.psi.ext.nativeFunctions
 import org.move.utils.tests.MoveTestCase
 
@@ -40,7 +41,7 @@ class BuiltInFunctionLookupTest : MoveTestCase() {
         InlineFile(moduleText)
         val moduleElement = findElementInEditor<MoveModuleDef>()
         val lookup =
-            moduleElement.nativeFunctions().find { it.name == name }!!.createLookupElement(false)
+            moduleElement.builtinFunctions().find { it.name == name }!!.createLookupElement(false)
         checkLookupPresentation(
             lookup,
             tailText = tailText,

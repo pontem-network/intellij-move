@@ -17,6 +17,8 @@ object InlayParameterHints {
         return callInfo.parameters
             .map { it.name }
             .zip(arguments)
+            .filter { (hint, arg) -> !arg.text.endsWith(hint) }
+            .filter { (hint, _) -> hint != "_" }
             .map { (hint, arg) -> InlayInfo("$hint:", arg.startOffset) }
     }
 }

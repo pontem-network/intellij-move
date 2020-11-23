@@ -6,4 +6,6 @@ script {
     fun main3<T, U>() {}
 
     fun main_signer(mysigner: &signer) {}
+
+    fun main_signer2(mysigner: &mut signer) {}
 }

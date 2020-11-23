@@ -1,6 +1,7 @@
 script {
     use 0x0::Transaction;
     use 0x0::Account;
+    // use 0x0::Signer;
     use 0x0::XFI;
 
     fun main() {}
@@ -15,13 +16,19 @@ script {
     }
 }
 
+module MM {
+    use 0x0::Transaction;
+    use 0x0::Account;
+    // use 0x0::Signer;
+    use 0x0::XFI;
+}
+
 address 0x0 {
 module M {}
 
 module M2 {
     use 0x0::Transaction;
     use 0x0::Account;
-    use 0x0::XFI;
 
     fun main() {}
 

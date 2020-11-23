@@ -61,6 +61,21 @@ fun functionInsertHandler(isSpec: Boolean, hasParams: Boolean): InsertHandler<Lo
 fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupElement {
     val insertHandler = DefaultInsertHandler(isSpecIdentifier)
     return when (this) {
+        is MoveModuleImport ->
+            LookupElementBuilder
+                .createWithIcon(this)
+                .withLookupString(this.name ?: "")
+                .withInsertHandler { context, _ ->
+                    val document = context.document
+                    if (!context.alreadyHasColonColon) {
+                        document.insertString(context.selectionEndOffset, "::")
+                        EditorModificationUtil.moveCaretRelatively(
+                            context.editor,
+                            2
+                        )
+                    }
+                }
+
         is MoveFunctionSignatureOwner -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTailText(this.functionParameterList?.compactText ?: "()")
@@ -92,6 +107,11 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
 //                if (isSpecIdentifier && !ctx.alreadyHasSpace)
 //                    ctx.addSuffix(" ")
 //            }
+
+        is MoveStructFieldDef -> LookupElementBuilder
+            .createWithIcon(this)
+            .withLookupString(this.name ?: "")
+            .withTypeText(this.type?.text)
 
         is MoveFunctionParameter -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
@@ -138,6 +158,9 @@ fun InsertionContext.addSuffix(suffix: String) {
 
 val InsertionContext.alreadyHasCallParens: Boolean
     get() = nextCharIs('(')
+
+val InsertionContext.alreadyHasColonColon: Boolean
+    get() = nextCharIs(':')
 
 val InsertionContext.alreadyHasSpace: Boolean
     get() = nextCharIs(' ')

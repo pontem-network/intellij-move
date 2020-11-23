@@ -152,16 +152,17 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
-    fun `test resolve type to import`() = checkByCode(
-        """
-        script {
-            use 0x1::Transaction::Sender;
-            
-            fun main(s: Sender) {}
-                      //^ unresolved
-        }
-    """
-    )
+//    fun `test resolve type to import`() = checkByCode(
+//        """
+//        script {
+//            use 0x1::Transaction::Sender;
+//                                //X
+//
+//            fun main(s: Sender) {}
+//                      //^
+//        }
+//    """
+//    )
 
     fun `test resolve type from import`() = checkByCode(
         """

@@ -33,10 +33,11 @@ class MoveFormatterBlock(
             .filter { !it.isWhitespaceOrEmpty() }
             .map { childNode: ASTNode ->
                 val childCtx = ctx.copy(sharedAlignment = sharedAlignment)
+                val indent = computeIndent(childNode)
                 MoveFormatterBlock(
                     node = childNode,
                     alignment = alignment.getAlignment(childNode, node, childCtx),
-                    indent = computeIndent(childNode),
+                    indent = indent,
                     wrap = null,
                     ctx = childCtx
                 )

@@ -139,6 +139,40 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
+    fun `test public`() = doSingleCompletion("""
+        module M {
+            pub/*caret*/
+        }
+    """, """
+        module M {
+            public /*caret*/
+        }
+    """)
+
+    fun `test public with other function`() = doSingleCompletion("""
+        module M {
+            pub/*caret*/
+            
+            public fun main() {}
+        }
+    """, """
+        module M {
+            public /*caret*/
+            
+            public fun main() {}
+        }
+    """)
+
+    fun `test public before fun`() = doSingleCompletion("""
+        module M {
+            pub/*caret*/ fun main() {}
+        }
+    """, """
+        module M {
+            public/*caret*/ fun main() {}
+        }
+    """)
+
     fun `test public fun`() = doSingleCompletion("""
         module M {
             public f/*caret*/
@@ -189,6 +223,16 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
+    fun `test resource before struct`() = doSingleCompletion("""
+        module M {
+            res/*caret*/ struct
+        }
+    """, """
+        module M {
+            resource/*caret*/ struct
+        }
+    """)
+
     fun `test no completion in bound if no colon`() = checkNoCompletion("""
         module M {
             struct MyStruct<T cop/*caret*/> {}
@@ -212,6 +256,34 @@ class KeywordCompletionTest : CompletionTestCase() {
     """, """
         module M {
             struct MyStruct<T: resource/*caret*/> {}
+        }
+    """)
+
+    fun `test acquires keyword`() = doSingleCompletion("""
+        module M {
+            fun main() acq/*caret*/ {}
+        }
+    """, """
+        module M {
+            fun main() acquires /*caret*/ {}
+        }
+    """)
+
+    fun `test no acquires after fun keyword`() = checkNoCompletion("""
+        module M {
+            fun acq/*caret*/ {}
+        }
+    """)
+
+    fun `test no acquires inside param list`() = checkNoCompletion("""
+        module M {
+            fun main(acq/*caret*/ {}
+        }
+    """)
+
+    fun `test no acquires inside return type`() = checkNoCompletion("""
+        module M {
+            fun main(): acq/*caret*/ {}
         }
     """)
 }

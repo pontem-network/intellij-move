@@ -5,4 +5,7 @@ import org.move.lang.core.psi.MoveApplySchemaName
 import org.move.lang.core.psi.MoveQualSchemaReferenceElementImpl
 
 abstract class MoveApplySchemaNameMixin(node: ASTNode) : MoveQualSchemaReferenceElementImpl(node),
-                                                         MoveApplySchemaName
+                                                         MoveApplySchemaName {
+    override val isPrimitive: Boolean
+        get() = false
+}

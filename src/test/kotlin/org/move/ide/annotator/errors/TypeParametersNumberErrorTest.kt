@@ -32,7 +32,7 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
             struct MyStruct<T> { field: T }
             
             fun main() {
-                let a = MyStruct { field: 1 }
+                let a = MyStruct { field: 1 };
             }
         }    
     """)
@@ -59,7 +59,7 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test resource could be inferred for move_to`() = checkErrors("""
         module M {
             fun main() {
-                let a = move_to(0x0, 1)
+                let a = move_to(0x0, 1);
             }
         }    
     """)

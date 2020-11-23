@@ -1,14 +1,15 @@
 package org.move.lang.core.stubs
 
-import com.intellij.psi.stubs.IndexSink
-import org.move.lang.core.stubs.index.MoveNamedElementIndex
+//fun IndexSink.indexModuleDef(stub: MoveModuleDefStub) {
+//    occurrence(MoveModulesIndex.KEY, stub.fullname)
+//}
 
-//fun IndexSink.indexFunctionDef(stub: MoveFunctionDefStub) {
+//fun IndexSink.indexModuleDef(stub: MoveModuleDefStub) {
 //    indexNamedStub(stub)
 //}
 
-private fun IndexSink.indexNamedStub(stub: MoveNamedStub) {
-    stub.name?.let {
-        occurrence(MoveNamedElementIndex.KEY, it)
-    }
-}
+//fun IndexSink.indexNamedStub(stub: MoveNamedElementStub) {
+//    stub.name?.let {
+//        occurrence(MoveNamedElementIndex.KEY, it)
+//    }
+//}

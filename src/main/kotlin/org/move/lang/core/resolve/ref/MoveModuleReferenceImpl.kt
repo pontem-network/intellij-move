@@ -1,29 +1,23 @@
 package org.move.lang.core.resolve.ref
 
-import org.move.lang.core.psi.MoveModuleRef
-import org.move.lang.core.psi.MoveNamedElement
-import org.move.lang.core.resolve.resolveModuleRef
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.parentImport
+import org.move.lang.core.resolve.resolveItem
 
 class MoveModuleReferenceImpl(
     element: MoveModuleRef,
-) : MoveReferenceBase<MoveModuleRef>(element) {
+) : MoveReferenceCached<MoveModuleRef>(element) {
 
-    override fun resolve(): MoveNamedElement? {
-        return resolveModuleRef(element)
-//        val moduleRef = element
-//        return when (moduleRef) {
-//            is MoveFullyQualifiedModuleRef -> resolveExternalModule(moduleRef)
-//            else -> resolveUnqualifiedModuleRef(moduleRef)
-//        }
-//        return when (container) {
-//            is MoveModuleImport -> resolveExternalModule(container.fullyQualifiedModuleRef)
-//            else -> {
-//                if (moduleRef is MoveFullyQualifiedModuleRef) {
-//                    resolveExternalModule(moduleRef)
-//                } else {
-//                    resolveUnqualifiedModuleRef(moduleRef)
-//                }
-//            }
-//        }
+    override fun resolveInner(): MoveNamedElement? {
+        val resolved = resolveItem(element, Namespace.MODULE)
+        if (resolved is MoveImportAlias) {
+            return resolved
+        }
+        val qualModuleRef = when {
+            resolved is MoveItemImport && resolved.text == "Self" -> resolved.parentImport().fullyQualifiedModuleRef
+            resolved is MoveModuleImport -> resolved.fullyQualifiedModuleRef
+            else -> return null
+        }
+        return qualModuleRef.reference.resolve()
     }
 }

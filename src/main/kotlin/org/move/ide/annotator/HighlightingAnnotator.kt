@@ -38,6 +38,7 @@ class HighlightingAnnotator : MoveAnnotator() {
 
     private fun highlightIdentifier(element: MoveElement): MoveColor? {
         if (element is MoveTypeParameter) return MoveColor.TYPE_PARAMETER
+        if (element is MoveItemImport && element.text == "Self") return MoveColor.KEYWORD
 
         if (element is MoveQualPath && element.isIdentifierOnly) {
             val name = element.identifierName

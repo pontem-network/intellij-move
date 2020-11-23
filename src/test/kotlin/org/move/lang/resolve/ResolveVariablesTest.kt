@@ -141,4 +141,43 @@ class ResolveVariablesTest : ResolveTestCase() {
         }
     """
     )
+
+    fun `test tuple destructuring`() = checkByCode(
+        """
+        module M {
+            fun main() {
+                let (a, b) = call();
+                   //X
+                a;
+              //^  
+            }
+        }
+    """
+    )
+
+    fun `test variable defined in nested block`() = checkByCode("""
+        module M {
+            fun main() {
+                let a = {
+                    let b = 1;
+                      //X
+                    b + 1
+                  //^  
+                };
+            }
+        }        
+    """)
+
+    fun `test resolve variable in struct field shorthand`() = checkByCode("""
+        module M {
+            struct S { myfield: u8 }
+            
+            fun main() {
+                let myfield = 1;
+                  //X
+                S { myfield }
+                  //^
+            }
+        }        
+    """)
 }

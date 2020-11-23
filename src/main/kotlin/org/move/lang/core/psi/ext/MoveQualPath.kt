@@ -1,11 +1,8 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.lang.ASTNode
-import org.move.lang.core.psi.*
-import org.move.lang.core.psi.impl.MoveReferenceElementImpl
-import org.move.lang.core.resolve.ref.MoveQualPathReferenceImpl
-import org.move.lang.core.resolve.ref.MoveReference
-import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.psi.MoveFullyQualifiedModuleRef
+import org.move.lang.core.psi.MoveQualPath
+import org.move.lang.core.psi.MoveType
 import org.move.lang.core.types.Address
 
 

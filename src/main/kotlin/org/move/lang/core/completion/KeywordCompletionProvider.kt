@@ -8,7 +8,11 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.TokenType
 import com.intellij.psi.util.elementType
 import com.intellij.util.ProcessingContext
+import org.move.lang.core.psi.MoveTypeParameter
 import org.move.lang.core.psi.MoveTypeParameterList
+import org.move.lang.core.psi.ext.isErrorElement
+import org.move.lang.core.psi.ext.isWhitespace
+import org.move.lang.core.psi.ext.rightSiblings
 
 class KeywordCompletionProvider(private vararg val keywords: String) : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
@@ -16,13 +20,26 @@ class KeywordCompletionProvider(private vararg val keywords: String) : Completio
         context: ProcessingContext,
         result: CompletionResultSet,
     ) {
-        val parent = parameters.position.parent
+        val pos = parameters.position
+        val parent = pos.parent
         for (keyword in keywords) {
             var element =
                 LookupElementBuilder.create(keyword).bold()
-            val typeBound = keyword == "copyable" || (keyword == "resource" && parent is MoveTypeParameterList)
+
+            val typeBound =
+                keyword == "copyable" || (keyword == "resource" && parent is MoveTypeParameter)
+
+            val nextSibling = pos
+                .rightSiblings
+                .filter { !it.isWhitespace() && !it.isErrorElement() }
+                .firstOrNull()?.firstChild
+//            val publicPrefix = keyword == "public" && nextSiblingText in setOf("fun", "const")
+//            val resourcePrefix = keyword == "resource" && nextSiblingText == "struct"
+
             if (!typeBound) {
-                element = element.withInsertHandler { ctx, _ -> ctx.addSuffix(" ") }
+                element = element.withInsertHandler { ctx, _ ->
+                    if (!(nextSibling != null && ctx.alreadyHasSpace)) ctx.addSuffix(" ")
+                }
             }
 
             result.addElement(PrioritizedLookupElement.withPriority(element, KEYWORD_PRIORITY))

@@ -4,10 +4,7 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.expectedParamsCount
-import org.move.lang.core.psi.ext.findFirstChildByType
-import org.move.lang.core.psi.ext.identifierName
-import org.move.lang.core.psi.ext.typeArguments
+import org.move.lang.core.psi.ext.*
 
 class ErrorAnnotator : MoveAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
@@ -28,6 +25,22 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitQualPath(o: MoveQualPath) = checkQualifiedPath(moveHolder, o)
 
             override fun visitCallArguments(o: MoveCallArguments) = checkCallArguments(moveHolder, o)
+
+            override fun visitStructPat(o: MoveStructPat) {
+                val fieldNames = o.providedFields.map { it.referenceName }
+                val referredStructDef = o.referredStructDef ?: return
+                checkMissingFields(moveHolder, o.referenceNameElement, fieldNames.toSet(), referredStructDef)
+            }
+
+            override fun visitStructLiteralExpr(o: MoveStructLiteralExpr) {
+                val referredStructDef = o.referredStructDef ?: return
+                checkMissingFields(
+                    moveHolder,
+                    o.referenceNameElement,
+                    o.providedFieldNames.toSet(),
+                    referredStructDef)
+
+            }
         }
         element.accept(visitor)
     }
@@ -60,6 +73,17 @@ class ErrorAnnotator : MoveAnnotator() {
 
     private fun checkConstDef(holder: MoveAnnotationHolder, const: MoveConstDef) {
         checkDuplicates(holder, const)
+    }
+}
+
+private fun checkMissingFields(
+    holder: MoveAnnotationHolder,
+    target: PsiElement,
+    providedFieldNames: Set<String>,
+    referredStructDef: MoveStructDef,
+) {
+    if ((referredStructDef.fieldNames.toSet() - providedFieldNames).isNotEmpty()) {
+        holder.createErrorAnnotation(target, "Some fields are missing")
     }
 }
 

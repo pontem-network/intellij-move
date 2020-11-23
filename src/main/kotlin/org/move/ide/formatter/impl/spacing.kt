@@ -14,6 +14,7 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.ide.formatter.MoveFmtContext
 import org.move.lang.MoveElementTypes.*
+import org.move.lang.core.MOVE_COMMENTS
 import org.move.lang.core.MOVE_KEYWORDS
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
@@ -28,6 +29,8 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
 
         .before(TYPE_ANNOTATION).spacing(0, 0, 0, true, 0)
         .before(INITIALIZER).spacing(1, 1, 0, true, 0)
+
+        .between(AND, MUT).spacing(0, 0, 0, false, 0)
 
         .afterInside(AND, QUAL_PATH_TYPE).spacing(0, 0, 0, false, 0)
         .afterInside(AND, BORROW_EXPR).spacing(0, 0, 0, false, 0)
@@ -180,8 +183,8 @@ private fun ASTNode?.isWhiteSpaceWithLineBreak(): Boolean =
     this != null && elementType == TokenType.WHITE_SPACE && textContains('\n')
 
 private fun SpacingContext.needsBlankLineBetweenItems(): Boolean {
-//    if (elementType1 in MV_COMMENTS || elementType2 in MV_COMMENTS)
-//        return false
+    if (elementType1 in MOVE_COMMENTS || elementType2 in MOVE_COMMENTS)
+        return false
 
     // Allow to keep consecutive runs of `use`, `const` or other "one line" items without blank lines
     if (elementType1 == elementType2 && elementType1 in ONE_LINE_ITEMS)

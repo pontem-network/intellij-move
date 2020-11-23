@@ -25,8 +25,8 @@ FILE
         MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')
           PsiElement())(')')
-        PsiErrorElement:':', acquires or '{' expected, got '}'
-          <empty list>
+      PsiErrorElement:':', acquires or '{' expected, got '}'
+        <empty list>
       PsiWhiteSpace('\n')
       PsiElement(})('}')
   PsiWhiteSpace('\n\n')
