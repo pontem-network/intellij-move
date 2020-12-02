@@ -6,7 +6,8 @@ import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.MoveFunctionParameterList
+import com.intellij.psi.util.PsiTreeUtil
+import org.move.lang.core.psi.*
 
 class MoveFoldingBuilder : FoldingBuilderEx(),
                            DumbAware {
@@ -19,14 +20,34 @@ class MoveFoldingBuilder : FoldingBuilderEx(),
     override fun buildFoldRegions(
         root: PsiElement,
         document: Document,
-        quick: Boolean
+        quick: Boolean,
     ): Array<FoldingDescriptor> {
-        return emptyArray()
+        val descriptors = mutableListOf<FoldingDescriptor>()
+        val visitor = FoldingVisitor(descriptors)
+        PsiTreeUtil.processElements(root) { it.accept(visitor); true }
+        return descriptors.toTypedArray()
     }
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean {
         return false
     }
 
-    private class FoldingVisitor
+    private class FoldingVisitor(private val descriptors: MutableList<FoldingDescriptor>) : MoveVisitor() {
+        override fun visitCodeBlock(o: MoveCodeBlock) = fold(o)
+        override fun visitScriptBlock(o: MoveScriptBlock) = fold(o)
+        override fun visitModuleBlock(o: MoveModuleBlock) = fold(o)
+
+        override fun visitFunctionParameterList(o: MoveFunctionParameterList) {
+            if (o.functionParameterList.isNotEmpty())
+                fold(o)
+        }
+        override fun visitStructFieldsDefBlock(o: MoveStructFieldsDefBlock) {
+            if (o.structFieldDefList.isNotEmpty())
+                fold(o)
+        }
+
+        private fun fold(element: PsiElement) {
+            descriptors += FoldingDescriptor(element.node, element.textRange)
+        }
+    }
 }
