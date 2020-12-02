@@ -9,7 +9,7 @@ import org.intellij.lang.annotations.Language
 
 open class ParameterInfoHandlerTestCase<A : PsiElement, B>(
     private val handler: ParameterInfoHandler<A, B>,
-) : MoveTestCase() {
+) : MoveTestBase() {
     protected fun checkByText(@Language("Move") code: String, hint: String, index: Int) =
         checkByText(code, hint to index)
 

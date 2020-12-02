@@ -3,10 +3,10 @@ package org.move.lang.lexer
 import com.intellij.openapi.editor.Editor
 import org.intellij.lang.annotations.Language
 import org.move.openapiext.createLexer
-import org.move.utils.tests.MoveTestCase
+import org.move.utils.tests.MoveTestBase
 import org.move.utils.tests.replaceCaretMarker
 
-class RestartableLexerTest : MoveTestCase() {
+class RestartableLexerTest : MoveTestBase() {
     fun `test lexer restart outer address`() =
         doTestLexerRestart(""" module M {} addres/*caret*/ 0x0 {} """, 's')
 

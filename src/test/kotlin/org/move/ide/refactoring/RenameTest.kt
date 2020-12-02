@@ -1,9 +1,9 @@
 package org.move.ide.refactoring
 
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.MoveTestCase
+import org.move.utils.tests.MoveTestBase
 
-class RenameTest : MoveTestCase() {
+class RenameTest : MoveTestBase() {
     fun `test function argument`() = doTest("spam", """
         script {
             fun main(/*caret*/account: &signer) {
@@ -331,7 +331,7 @@ class RenameTest : MoveTestCase() {
         @Language("Move") before: String,
         @Language("Move") after: String,
     ) {
-        InlineFile(before).withCaret()
+        inlineFile(before).withCaret()
         val element = myFixture.elementAtCaret
         myFixture.renameElement(element, newName, false, false)
         myFixture.checkResult(after)

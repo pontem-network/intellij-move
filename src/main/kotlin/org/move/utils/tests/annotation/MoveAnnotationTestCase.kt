@@ -1,9 +1,9 @@
 package org.move.utils.tests.annotation
 
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.MoveTestCase
+import org.move.utils.tests.MoveTestBase
 
-abstract class MoveAnnotationTestCase : MoveTestCase() {
+abstract class MoveAnnotationTestCase : MoveTestBase() {
     protected lateinit var annotationFixture: MoveAnnotationTestFixture
 
     override fun setUp() {

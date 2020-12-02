@@ -5,9 +5,9 @@ import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.MovePsiPatterns
 import org.move.utils.tests.InlineFile
-import org.move.utils.tests.MoveTestCase
+import org.move.utils.tests.MoveTestBase
 
-class PsiPatternTest : MoveTestCase() {
+class PsiPatternTest : MoveTestBase() {
     fun `test on stmt beginning`() = testPattern("""
         //^
     """, MovePsiPatterns.onStatementBeginning)

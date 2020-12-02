@@ -4,7 +4,7 @@ import com.intellij.psi.impl.DebugUtil
 import com.intellij.psi.stubs.StubTreeLoader
 import org.intellij.lang.annotations.Language
 
-open class MoveStubTestCase : MoveTestCase() {
+open class MoveStubTestCase : MoveTestBase() {
     fun doTest(@Language("Move") code: String, expectedStubText: String) {
         val fileName = "main.move"
         fileTreeFromText("//- $fileName\n$code").create()

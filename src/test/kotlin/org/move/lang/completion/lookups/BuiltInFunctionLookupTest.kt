@@ -5,10 +5,9 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MoveModuleDef
 import org.move.lang.core.psi.ext.builtinFunctions
-import org.move.lang.core.psi.ext.nativeFunctions
-import org.move.utils.tests.MoveTestCase
+import org.move.utils.tests.MoveTestBase
 
-class BuiltInFunctionLookupTest : MoveTestCase() {
+class BuiltInFunctionLookupTest : MoveTestBase() {
     fun `test move_from`() = checkBuiltinPresentation(
         "move_from",
         tailText = "(addr: address)",
@@ -38,7 +37,7 @@ class BuiltInFunctionLookupTest : MoveTestCase() {
            module M {}
                 //^
         """
-        InlineFile(moduleText)
+        inlineFile(moduleText)
         val moduleElement = findElementInEditor<MoveModuleDef>()
         val lookup =
             moduleElement.builtinFunctions().find { it.name == name }!!.createLookupElement(false)
