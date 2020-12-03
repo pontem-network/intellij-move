@@ -28,21 +28,15 @@ jobs:
 
             -   name: Set dove binary name (linux)
                 if: matrix.os == 'ubuntu-latest'
-                env:
-                    DOVE_VERSION: ${{ dove-version }}
-                run: echo "::set-env name=DOVE_BINARY_NAME=dove-$DOVE_VERSION-linux-x86_64"
+                run: echo "::set-env name=DOVE_BINARY_NAME=dove-${{ matrix.dove-version }}-linux-x86_64"
 
             -   name: Set dove binary name (macos)
                 if: matrix.os == 'macos-latest'
-                env:
-                    DOVE_VERSION: ${{ dove-version }}
-                run: echo "::set-env name=DOVE_BINARY_NAME=dove-$DOVE_VERSION-mac-x86_64"
+                run: echo "::set-env name=DOVE_BINARY_NAME=dove-${{ matrix.dove-version }}-mac-x86_64"
 
             -   name: Set dove binary name (windows)
                 if: matrix.os == 'windows-latest'
-                env:
-                    DOVE_VERSION: ${{ dove-version }}
-                run: echo "::set-env name=DOVE_BINARY_NAME=dove-$DOVE_VERSION-win-x86_64.exe"
+                run: echo "::set-env name=DOVE_BINARY_NAME=dove-${{ matrix.dove-version }}-win-x86_64.exe"
 
             -   name: Fetch dove executable from move-tools releases
                 uses: dsaltares/fetch-gh-release-asset@master
