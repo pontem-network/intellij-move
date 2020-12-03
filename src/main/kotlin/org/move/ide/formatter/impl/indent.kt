@@ -7,9 +7,9 @@ import org.move.lang.MoveElementTypes.ADDRESS_BLOCK
 import org.move.lang.core.psi.*
 
 fun MoveFormatterBlock.computeIndent(child: ASTNode): Indent? {
-    val parentType = node.elementType
+//    val parentType = node.elementType
     val parentPsi = node.psi
-    val childType = child.elementType
+//    val childType = child.elementType
     val childPsi = child.psi
     return when {
         node.isDelimitedBlock -> getNormalIndentIfNotCurrentBlockDelimiter(child, node)

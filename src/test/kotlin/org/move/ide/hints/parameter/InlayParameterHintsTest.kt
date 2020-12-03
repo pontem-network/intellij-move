@@ -2,9 +2,9 @@ package org.move.ide.hints.parameter
 
 import com.intellij.codeInsight.daemon.impl.HintRenderer
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.MoveTestCase
+import org.move.utils.tests.MoveTestBase
 
-class InlayParameterHintsTest : MoveTestCase() {
+class InlayParameterHintsTest : MoveTestBase() {
     fun `test fun`() = checkByText("""
         module M {
             fun call(val: u8, val2: u8) {}
@@ -42,7 +42,7 @@ class InlayParameterHintsTest : MoveTestCase() {
     """)
 
     private fun checkByText(@Language("Move") code: String) {
-        InlineFile(code.replace(
+        inlineFile(code.replace(
             HINT_COMMENT_PATTERN,
             "<$1/>"
         ))

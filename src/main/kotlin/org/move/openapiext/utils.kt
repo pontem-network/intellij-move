@@ -62,6 +62,8 @@ fun <T> Project.runWriteCommandAction(command: () -> T): T {
 val Project.modules: Collection<Module>
     get() = ModuleManager.getInstance(this).modules.toList()
 
+val Project.rootDir: Path
+    get() = Paths.get(basePath!!)
 
 fun <T> recursionGuard(key: Any, block: Computable<T>, memoize: Boolean = true): T? =
     RecursionManager.doPreventingRecursion(key, memoize, block)
@@ -113,7 +115,11 @@ fun checkCommitIsNotInProgress(project: Project) {
 }
 
 fun fullyRefreshDirectory(directory: VirtualFile) {
-    VfsUtil.markDirtyAndRefresh(/* async = */ false, /* recursive = */ true, /* reloadChildren = */ true, directory)
+    VfsUtil.markDirtyAndRefresh(
+        false,
+        true,
+        true,
+        directory)
 }
 
 fun VirtualFile.findFileByMaybeRelativePath(path: String): VirtualFile? =
@@ -148,7 +154,7 @@ val VirtualFile.fileId: Int
 inline fun <Key, reified Psi : PsiElement> getElements(
     indexKey: StubIndexKey<Key, Psi>,
     key: Key, project: Project,
-    scope: GlobalSearchScope?
+    scope: GlobalSearchScope?,
 ): Collection<Psi> =
     StubIndex.getElements(indexKey, key, project, scope, Psi::class.java)
 
@@ -194,6 +200,7 @@ private fun FileDocumentManager.stripDocumentLater(document: Document): Boolean 
     if (this !is FileDocumentManagerImpl) return false
     val trailingSpacesStripper = trailingSpacesStripperField
         ?.get(this) as? TrailingSpacesStripper ?: return false
+
     @Suppress("UNCHECKED_CAST")
     val documentsToStripLater = documentsToStripLaterField
         ?.get(trailingSpacesStripper) as? MutableSet<Document> ?: return false
@@ -233,7 +240,8 @@ fun <T> Project.computeWithCancelableProgress(title: String, supplier: () -> T):
     if (isUnitTestMode) {
         return supplier()
     }
-    return ProgressManager.getInstance().runProcessWithProgressSynchronously<T, Exception>(supplier, title, true, this)
+    return ProgressManager.getInstance()
+        .runProcessWithProgressSynchronously<T, Exception>(supplier, title, true, this)
 }
 
 fun Project.runWithCancelableProgress(title: String, process: () -> Unit): Boolean {
@@ -270,7 +278,10 @@ fun <T> runReadActionInSmartMode(dumbService: DumbService, action: () -> T): T {
     })
 }
 
-fun <T : Any> executeUnderProgressWithWriteActionPriorityWithRetries(indicator: ProgressIndicator, action: () -> T): T {
+fun <T : Any> executeUnderProgressWithWriteActionPriorityWithRetries(
+    indicator: ProgressIndicator,
+    action: () -> T,
+): T {
     checkReadAccessNotAllowed()
     indicator.checkCanceled()
     var result: T? = null
@@ -318,7 +329,8 @@ val DataContext.elementUnderCaretInEditor: PsiElement?
     }
 
 fun isFeatureEnabled(featureId: String): Boolean = Experiments.getInstance().isFeatureEnabled(featureId)
-fun setFeatureEnabled(featureId: String, enabled: Boolean) = Experiments.getInstance().setFeatureEnabled(featureId, enabled)
+fun setFeatureEnabled(featureId: String, enabled: Boolean) =
+    Experiments.getInstance().setFeatureEnabled(featureId, enabled)
 
 fun runWithEnabledFeature(featureId: String, action: () -> Unit) {
     val currentValue = isFeatureEnabled(featureId)

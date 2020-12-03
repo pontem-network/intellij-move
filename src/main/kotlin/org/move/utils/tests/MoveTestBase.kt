@@ -9,52 +9,37 @@ import com.intellij.injected.editor.VirtualFileWindow
 import com.intellij.lang.LanguageCommenters
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.LogicalPosition
-import com.intellij.openapi.vfs.VirtualFileFilter
 import com.intellij.psi.PsiElement
-import com.intellij.psi.impl.PsiManagerEx
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
-import java.nio.file.Path
-import java.nio.file.Paths
+import org.move.utils.tests.base.MoveTestCase
+import org.move.utils.tests.base.TestCase
 
-fun camelOrWordsToSnake(name: String): String {
-    if (' ' in name) return name.trim().replace(" ", "_")
+abstract class MoveTestBase : BasePlatformTestCase(),
+                              MoveTestCase {
+    protected val fileName: String
+        get() = "${getTestName(true)}.$testFileExtension"
+    open val dataPath: String = ""
 
-    return name.split("(?=[A-Z])".toRegex()).joinToString("_", transform = String::toLowerCase)
-}
-
-interface TestCase {
-    val testFileExtension: String
-    fun getTestDataPath(): String
-    fun getTestName(lowercaseFirstLetter: Boolean): String
-
-    companion object {
-        const val testResourcesPath = "src/test/resources"
+    override fun getTestDataPath(): String = "${TestCase.testResourcesPath}/$dataPath"
+    override fun getTestName(lowercaseFirstLetter: Boolean): String {
+        val camelCase = super.getTestName(lowercaseFirstLetter)
+        return TestCase.camelOrWordsToSnake(camelCase)
     }
-}
 
-fun TestCase.pathToSourceTestFile(): Path =
-    Paths.get("${TestCase.testResourcesPath}/${getTestDataPath()}/${getTestName(true)}.$testFileExtension")
-
-fun TestCase.pathToGoldTestFile(): Path =
-    Paths.get("${TestCase.testResourcesPath}/${getTestDataPath()}/${getTestName(true)}.txt")
-
-
-abstract class MoveTestCase : BasePlatformTestCase() {
-    @Suppress("FunctionName")
-    protected fun InlineFile(@Language("Move") code: String, name: String = "main.move"): InlineFile {
+    protected fun inlineFile(@Language("Move") code: String, name: String = "main.move"): InlineFile {
         return InlineFile(myFixture, code, name)
     }
 
-    protected fun checkAstNotLoaded(fileFilter: VirtualFileFilter) {
-        PsiManagerEx.getInstanceEx(project).setAssertOnFileLoadingFilter(fileFilter, testRootDisposable)
-    }
+//    protected fun checkAstNotLoaded(fileFilter: VirtualFileFilter) {
+//        PsiManagerEx.getInstanceEx(project).setAssertOnFileLoadingFilter(fileFilter, testRootDisposable)
+//    }
 
-    protected fun checkAstNotLoaded() {
-        PsiManagerEx.getInstanceEx(project)
-            .setAssertOnFileLoadingFilter(VirtualFileFilter.ALL, testRootDisposable)
-    }
+//    protected fun checkAstNotLoaded() {
+//        PsiManagerEx.getInstanceEx(project)
+//            .setAssertOnFileLoadingFilter(VirtualFileFilter.ALL, testRootDisposable)
+//    }
 
     protected inline fun <reified T : PsiElement> findElementInEditor(marker: String = "^"): T =
         findElementInEditor(T::class.java, marker)
@@ -81,7 +66,17 @@ abstract class MoveTestCase : BasePlatformTestCase() {
         return elementsWithDataAndOffset.first()
     }
 
-    protected fun <T : PsiElement> findElementsWithDataAndOffsetInEditor(
+    protected fun checkByText(
+        @Language("Move") before: String,
+        @Language("Move") after: String,
+        action: () -> Unit,
+    ) {
+        inlineFile(before)
+        action()
+        myFixture.checkResult(replaceCaretMarker(after))
+    }
+
+    private fun <T : PsiElement> findElementsWithDataAndOffsetInEditor(
         psiClass: Class<T>,
         marker: String,
     ): List<Triple<T, String, Int>> {
@@ -116,16 +111,6 @@ abstract class MoveTestCase : BasePlatformTestCase() {
         return triples
     }
 
-    protected fun checkByText(
-        @Language("Move") before: String,
-        @Language("Move") after: String,
-        action: () -> Unit,
-    ) {
-        InlineFile(before)
-        action()
-        myFixture.checkResult(replaceCaretMarker(after))
-    }
-
     protected fun checkByFile(ignoreTrailingWhitespace: Boolean = true, action: () -> Unit) {
         val (before, after) = (fileName to fileName.replace(".move", "_after.move"))
         myFixture.configureByFile(before)
@@ -133,18 +118,10 @@ abstract class MoveTestCase : BasePlatformTestCase() {
         myFixture.checkResultByFile(after, ignoreTrailingWhitespace)
     }
 
-    protected val fileName: String
-        get() = "${getTestName(true)}.move"
-
-    override fun getTestName(lowercaseFirstLetter: Boolean): String {
-        val camelCase = super.getTestName(lowercaseFirstLetter)
-        return camelOrWordsToSnake(camelCase)
-    }
-
     protected fun FileTree.create(): TestProject = create(myFixture)
     protected fun FileTree.createAndOpenFileWithCaretMarker(): TestProject =
         createAndOpenFileWithCaretMarker(myFixture)
 
-    protected val PsiElement.lineNumber: Int
-        get() = myFixture.getDocument(myFixture.file).getLineNumber(textOffset)
+//    protected val PsiElement.lineNumber: Int
+//        get() = myFixture.getDocument(myFixture.file).getLineNumber(textOffset)
 }

@@ -3,8 +3,7 @@ package org.move.utils.tests.parser
 import com.intellij.testFramework.ParsingTestCase
 import org.jetbrains.annotations.NonNls
 import org.move.lang.MoveParserDefinition
-import org.move.utils.tests.MoveTestCase
-import org.move.utils.tests.camelOrWordsToSnake
+import org.move.utils.tests.base.TestCase
 
 abstract class MoveParsingTestCase(@NonNls dataPath: String) : ParsingTestCase(
     "org/move/lang/parser/$dataPath",
@@ -16,6 +15,6 @@ abstract class MoveParsingTestCase(@NonNls dataPath: String) : ParsingTestCase(
 
     override fun getTestName(lowercaseFirstLetter: Boolean): String {
         val camelCase = super.getTestName(lowercaseFirstLetter)
-        return camelOrWordsToSnake(camelCase)
+        return TestCase.camelOrWordsToSnake(camelCase)
     }
 }

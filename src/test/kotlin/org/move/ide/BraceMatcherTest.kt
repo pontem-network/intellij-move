@@ -4,10 +4,10 @@ import com.intellij.codeInsight.highlighting.BraceMatchingUtil
 import com.intellij.openapi.editor.ex.EditorEx
 import org.intellij.lang.annotations.Language
 import org.move.lang.MoveFileType
-import org.move.utils.tests.MoveTestCase
+import org.move.utils.tests.MoveTestBase
 import org.move.utils.tests.replaceCaretMarker
 
-class BraceMatcherTest : MoveTestCase() {
+class BraceMatcherTest : MoveTestBase() {
     fun `test don't pair parenthesis before identifier`() = doTest(
         "script { fun main() { let _ = /*caret*/typing }}",
         '(',

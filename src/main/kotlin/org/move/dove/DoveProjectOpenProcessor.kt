@@ -1,4 +1,4 @@
-package org.move.movec.project
+package org.move.dove
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupManager
@@ -6,13 +6,13 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.PlatformProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenProcessor
-import org.move.movec.MovecConstants
+import org.move.movec.project.setupMoveProject
 
-class MovecProjectOpenProcessor : ProjectOpenProcessor() {
-    override fun getName(): String = "Movec"
+class DoveProjectOpenProcessor : ProjectOpenProcessor() {
+    override fun getName(): String = "Move"
 
     override fun canOpenProject(file: VirtualFile): Boolean =
-        FileUtil.namesEqual(file.name, MovecConstants.MANIFEST_FILE)
+        FileUtil.namesEqual(file.name, DoveConstants.MANIFEST_FILE)
 
     override fun doOpenProject(
         virtualFile: VirtualFile,

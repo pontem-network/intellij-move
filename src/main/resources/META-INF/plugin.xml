@@ -38,7 +38,7 @@
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
-<!--        <stubElementTypeHolder class="org.move.lang.MoveElementTypes"/>-->
+        <!--        <stubElementTypeHolder class="org.move.lang.MoveElementTypes"/>-->
 
         <lang.syntaxHighlighter language="Move"
                                 implementationClass="org.move.ide.MoveHighlighter"/>
@@ -48,6 +48,7 @@
                            implementationClass="org.move.ide.typing.MoveBraceMatcher"/>
         <lang.formatter language="Move"
                         implementationClass="org.move.ide.formatter.MoveFormattingModelBuilder"/>
+        <lang.foldingBuilder language="Move" implementationClass="org.move.ide.folding.MoveFoldingBuilder"/>
 
         <lang.namesValidator language="Move"
                              implementationClass="org.move.ide.refactoring.MoveNamesValidator"/>
@@ -93,10 +94,12 @@
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
         <!-- Movec -->
-        <projectConfigurable instance="org.move.movec.project.configurable.MoveProjectConfigurable"
+        <projectConfigurable instance="org.move.project.configurable.MoveProjectConfigurable"
                              displayName="Move"
                              groupId="language"
                              id="language.move"/>
+        <projectService serviceInterface="org.move.project.settings.MoveProjectSettingsService"
+                        serviceImplementation="org.move.project.settings.impl.MoveProjectSettingsServiceImpl"/>
 
     </extensions>
 

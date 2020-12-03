@@ -1,4 +1,4 @@
-package org.move.movec.project.settings
+package org.move.project.settings.ui
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -11,14 +11,14 @@ import javax.swing.JPanel
 class MoveProjectSettingsPanel : Disposable {
     override fun dispose() {}
 
-    private val pathToMovecField =
+    private val pathToDoveExecutableField =
         pathTextField(
             FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
             this,
-            "Select movec binary")
+            "Dove executable")
 
     fun attachTo(layout: LayoutBuilder) = with(layout) {
-        row("Movec binary location:") { wrapComponent(pathToMovecField)(growX, pushX) }
+        row("Dove executable:") { wrapComponent(pathToDoveExecutableField)(growX, pushX) }
     }
 }
 

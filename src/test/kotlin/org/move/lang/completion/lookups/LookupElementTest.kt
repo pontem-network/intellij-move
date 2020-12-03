@@ -7,9 +7,9 @@ import org.intellij.lang.annotations.Language
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MoveElement
 import org.move.lang.core.psi.MoveNamedElement
-import org.move.utils.tests.MoveTestCase
+import org.move.utils.tests.MoveTestBase
 
-class LookupElementTest : MoveTestCase() {
+class LookupElementTest : MoveTestBase() {
     fun `test function param`() = check("""
         module M {
             fun call(a: u8) {
@@ -71,7 +71,7 @@ class LookupElementTest : MoveTestCase() {
         isBold: Boolean = false,
         isStrikeout: Boolean = false,
     ) where T : NavigatablePsiElement, T : MoveElement {
-        InlineFile(code)
+        inlineFile(code)
 
         val element = findElementInEditor<T>() as? MoveNamedElement
             ?: error("Marker `^` should point to the MoveNamedElement")

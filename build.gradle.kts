@@ -1,11 +1,11 @@
 import org.jetbrains.grammarkit.tasks.GenerateLexer
 import org.jetbrains.grammarkit.tasks.GenerateParser
 
-val intellijVersion = prop("intellijVersion", "2020.2")
+val intellijVersion = prop("intellijVersion", "2020.3")
 
 val pluginJarName = "intellij-move-$intellijVersion"
 val pluginGroup = "org.move"
-val pluginVersion = "0.10.0"
+val pluginVersion = "0.11.0"
 
 //val kotlinVersion = "1.4.10"
 
@@ -14,14 +14,14 @@ version = pluginVersion
 
 plugins {
     id("java")
+    id("org.jetbrains.intellij") version "0.6.5"
     id("org.jetbrains.kotlin.jvm") version "1.4.10"
-    id("org.jetbrains.intellij") version "0.4.21"
     id("org.jetbrains.grammarkit") version "2020.2.1"
 }
 
 dependencies {
     // kotlin stdlib source code
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.3.70")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.4.10")
 //    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 }
 
@@ -45,8 +45,8 @@ allprojects {
     }
 
     configure<JavaPluginConvention> {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     sourceSets {
@@ -80,19 +80,19 @@ allprojects {
         withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
             dependsOn(generateRustLexer, generateRustParser)
             kotlinOptions {
-                jvmTarget = "1.8"
+                jvmTarget = "11"
                 languageVersion = "1.4"
-                apiVersion = "1.3"
+                apiVersion = "1.4"
                 freeCompilerArgs = listOf("-Xjvm-default=compatibility")
             }
         }
 
         withType<org.jetbrains.intellij.tasks.BuildSearchableOptionsTask> {
-            jbrVersion("8u252b1649.2")
+            jbrVersion("11_0_9_1b1202.1")
         }
 
         withType<org.jetbrains.intellij.tasks.RunIdeTask> {
-            jbrVersion("8u252b1649.2")
+            jbrVersion("11_0_9_1b1202.1")
         }
     }
 }
