@@ -42,7 +42,7 @@ jobs:
                 uses: dsaltares/fetch-gh-release-asset@master
                 with:
                     repo: "dfinance/move-tools"
-                    version: "tags/${{ dove-version }}"
+                    version: "tags/${{ matrix.dove-version }}"
                     file: ${{ env.DOVE_BINARY_NAME }}
 
             -   name: Rename dove executable and set proper permissions
