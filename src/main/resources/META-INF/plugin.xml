@@ -2,26 +2,21 @@
     <id>org.move.lang</id>
     <name>Move Language</name>
 
-    <vendor>Dfinance</vendor>
+    <vendor>Maksim Kurnikov</vendor>
 
     <description>
         <![CDATA[
             <p>Support for the Move, smart-contract language for the Libra and Dfinance blockchains.</p>
 
-            <p><a href="https://github.com/dfinance/intellij-move">https://github.com/dfinance/intellij-move</a></p>
+            <p><a href="https://github.com/mkurnikov/intellij-move">https://github.com/mkurnikov/intellij-move</a></p>
         ]]>
     </description>
 
     <change-notes>
         <![CDATA[
-            <p>0.10.0</p>
-            <p>Adds support for multi-file module resolution. For it to work, you need to create stdlib/
-            and/or modules/ directories in the root of the project. Modules found in those paths will be
-            used in process of module resolution.</p>
-            <ul>
-                <li>FEAT: Unresolved reference inspection</li>
-                <li>FEAT: Name resolution for struct fields</li>
-            </ul>
+            <p>0.11.0</p>
+            <p>Support for Intellij IDEA 2020.3</p>
+            <p>Initial folding support</p>
         ]]>
     </change-notes>
 
