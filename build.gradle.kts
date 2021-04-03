@@ -5,23 +5,21 @@ val intellijVersion = prop("intellijVersion", "2020.3")
 
 val pluginJarName = "intellij-move-$intellijVersion"
 val pluginGroup = "org.move"
-val pluginVersion = "0.11.0"
-
-//val kotlinVersion = "1.4.10"
+val pluginVersion = "0.12.0"
 
 group = pluginGroup
 version = pluginVersion
 
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "0.6.5"
-    id("org.jetbrains.kotlin.jvm") version "1.4.10"
-    id("org.jetbrains.grammarkit") version "2020.2.1"
+    id("org.jetbrains.intellij") version "0.7.2"
+    id("org.jetbrains.kotlin.jvm") version "1.4.32"
+    id("org.jetbrains.grammarkit") version "2020.3.2"
 }
 
 dependencies {
     // kotlin stdlib source code
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.4.10")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.4.30")
 //    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 }
 

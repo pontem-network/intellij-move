@@ -1,4 +1,4 @@
-package org.move.dove
+package org.move.cli
 
 import com.intellij.util.io.exists
 import org.move.project.settings.moveSettings

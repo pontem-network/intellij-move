@@ -21,27 +21,27 @@ import java.nio.file.Path
 
 private val LOG = Logger.getInstance("org.rust.openapiext.CommandLineExt")
 
-@Suppress("FunctionName")
-fun GeneralCommandLine(path: Path, vararg args: String) = GeneralCommandLine(path.systemIndependentPath, *args)
-
-fun GeneralCommandLine.withWorkDirectory(path: Path?) = withWorkDirectory(path?.systemIndependentPath)
-
-fun GeneralCommandLine.execute(timeoutInMilliseconds: Int? = 1000): ProcessOutput? {
-    val output = try {
-        val handler = CapturingProcessHandler(this)
-        LOG.info("Executing `$commandLineString`")
-        handler.runProcessWithGlobalProgress(timeoutInMilliseconds)
-    } catch (e: ExecutionException) {
-        LOG.warn("Failed to run executable", e)
-        return null
-    }
-
-    if (!output.isSuccess) {
-        LOG.warn(errorMessage(this, output))
-    }
-
-    return output
-}
+//@Suppress("FunctionName")
+//fun GeneralCommandLine(path: Path, vararg args: String) = GeneralCommandLine(path.systemIndependentPath, *args)
+//
+//fun GeneralCommandLine.withWorkDirectory(path: Path?) = withWorkDirectory(path?.systemIndependentPath)
+//
+//fun GeneralCommandLine.execute(timeoutInMilliseconds: Int? = 1000): ProcessOutput? {
+//    val output = try {
+//        val handler = CapturingProcessHandler(this)
+//        LOG.info("Executing `$commandLineString`")
+//        handler.runProcessWithGlobalProgress(timeoutInMilliseconds)
+//    } catch (e: ExecutionException) {
+//        LOG.warn("Failed to run executable", e)
+//        return null
+//    }
+//
+//    if (!output.isSuccess) {
+//        LOG.warn(errorMessage(this, output))
+//    }
+//
+//    return output
+//}
 
 @Throws(ExecutionException::class)
 fun GeneralCommandLine.execute(

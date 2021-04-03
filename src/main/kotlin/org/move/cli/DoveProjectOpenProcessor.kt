@@ -1,4 +1,4 @@
-package org.move.dove
+package org.move.cli
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupManager
@@ -12,7 +12,7 @@ class DoveProjectOpenProcessor : ProjectOpenProcessor() {
     override fun getName(): String = "Move"
 
     override fun canOpenProject(file: VirtualFile): Boolean =
-        FileUtil.namesEqual(file.name, DoveConstants.MANIFEST_FILE)
+        FileUtil.namesEqual(file.name, Constants.DOVE_MANIFEST_FILE)
 
     override fun doOpenProject(
         virtualFile: VirtualFile,

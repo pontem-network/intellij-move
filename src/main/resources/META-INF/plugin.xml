@@ -30,6 +30,8 @@
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
 
+        <configurationType implementation="org.move.cli.DoveRunConfigurationType" />
+
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
         <!--        <stubElementTypeHolder class="org.move.lang.MoveElementTypes"/>-->
@@ -87,7 +89,7 @@
         <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml"/>
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
-        <!-- Movec -->
+        <!-- Dove -->
         <projectConfigurable instance="org.move.project.configurable.MoveProjectConfigurable"
                              displayName="Move"
                              groupId="language"
