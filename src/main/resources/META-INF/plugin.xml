@@ -6,17 +6,16 @@
 
     <description>
         <![CDATA[
-            <p>Support for the Move, smart-contract language for the Libra and Dfinance blockchains.</p>
+            <p>Support for the Move, smart-contract language for the Diem and Dfinance blockchains.</p>
 
-            <p><a href="https://github.com/mkurnikov/intellij-move">https://github.com/mkurnikov/intellij-move</a></p>
+            <p><a href="https://github.com/dfinance/intellij-move">https://github.com/dfinance/intellij-move</a></p>
         ]]>
     </description>
 
     <change-notes>
         <![CDATA[
-            <p>0.11.0</p>
-            <p>Support for Intellij IDEA 2020.3</p>
-            <p>Initial folding support</p>
+            <p>0.12.0</p>
+            <p>Support for Intellij IDEA 2021.1</p>
         ]]>
     </change-notes>
 
