@@ -30,7 +30,7 @@
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
 
-        <configurationType implementation="org.move.cli.DoveRunConfigurationType" />
+        <configurationType implementation="org.move.cli.DoveRunConfigurationType"/>
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
@@ -42,8 +42,12 @@
                         implementationClass="org.move.ide.MoveCommenter"/>
         <lang.braceMatcher language="Move"
                            implementationClass="org.move.ide.typing.MoveBraceMatcher"/>
+
         <lang.formatter language="Move"
                         implementationClass="org.move.ide.formatter.MoveFormattingModelBuilder"/>
+        <langCodeStyleSettingsProvider
+                implementation="org.move.ide.formatter.MoveLanguageCodeStyleSettingsProvider"/>
+
         <lang.foldingBuilder language="Move" implementationClass="org.move.ide.folding.MoveFoldingBuilder"/>
 
         <lang.namesValidator language="Move"

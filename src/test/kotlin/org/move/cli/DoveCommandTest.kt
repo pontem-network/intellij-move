@@ -1,35 +1,35 @@
 package org.move.cli
 
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.util.io.exists
-import org.move.project.settings.moveSettings
 import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.base.TestCase
 import java.nio.file.Paths
 
-//class DoveCommandTest : MoveTestBase() {
-//    override fun setUp() {
-//        super.setUp()
-//        val executable = Paths.get(".").toAbsolutePath().normalize().resolve("dove")
-//        check(executable.exists()) { "No dove executable $executable" }
-//        project.moveSettings
-//            .modifyTemporary(testRootDisposable) { it.doveExecutable = executable.toString() }
-//    }
+class DoveCommandTest : MoveTestBase() {
 
-//    fun `test fetch package metadata for a test project`() {
-//        val cwd = Paths.get(".").toAbsolutePath().normalize()
-//        val testProjDir = cwd.resolve("src/test/resources/org/move/dove/proj")
-//
-//        val pkg = Dove.fetchPackageMetadata(project, testProjDir)
-//        check(pkg.account_address == "0000000000000000000000000000000000000001")
-//        check(pkg.authors == emptyList<String>())
-//        check(pkg.git_dependencies == listOf(DoveMetadata.GitDependency("https://github.com/dfinance/move-stdlib")))
-//    }
+    override fun setUp() {
+        super.setUp()
+        val doveExecutablePath = Paths.get("dove")
+        check(doveExecutablePath.exists()) { "$doveExecutablePath file does not exist" }
 
-//    fun `test fetch layout metadata for a test project`() {
-//        val cwd = Paths.get(".").toAbsolutePath().normalize()
-//        val testProjDir = cwd.resolve("src/test/resources/org/move/dove/proj")
-//
-//        val layout = Dove.fetchLayoutMetadata(project, testProjDir)
-//        check(layout.module_dir == "modules")
-//        check(layout.tests_dir == "tests")
-//    }
-//}
+        PropertiesComponent.getInstance(this.project)
+                .setValue(
+                    Constants.DOVE_EXECUTABLE_PATH_PROPERTY,
+                    doveExecutablePath.toAbsolutePath().toString()
+                )
+    }
+
+    fun `test fetch package metadata for a test project`() {
+        val moveProjectRoot = Paths.get(TestCase.testResourcesPath).resolve("move_project")
+        val metadata = DoveExecutable(project).metadata(moveProjectRoot)!!
+
+        check(metadata.package_info.dialect == "dfinance")
+        check(
+            metadata.package_info.local_dependencies == listOf(
+                moveProjectRoot.resolve("stdlib").toAbsolutePath().toString()
+            )
+        )
+        check(metadata.package_info.account_address == "0x0000000000000000000000000000000000000001")
+    }
+}

@@ -1,5 +1,0 @@
-[package]
-name = "proj"
-dependencies = [
-    { git = "https://github.com/dfinance/move-stdlib" }
-]

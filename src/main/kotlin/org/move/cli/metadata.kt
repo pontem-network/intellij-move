@@ -6,17 +6,14 @@ data class GitDependency(
     val git: String,
 )
 
-data class LocalDependency(
-    val path: String,
-)
-
 data class PackageInfo(
     val name: String,
     val account_address: String,
     val authors: List<String>,
-    val local_dependencies: List<LocalDependency>,
+    val local_dependencies: List<String>,
     val git_dependencies: List<GitDependency>,
     val blockchain_api: String?,
+    val dialect: String,
 )
 
 data class LayoutInfo(
@@ -32,6 +29,6 @@ data class LayoutInfo(
 
 data class DoveProjectMetadata(
     @SerializedName("package")
-    val _package: PackageInfo,
+    val package_info: PackageInfo,
     val layout: LayoutInfo,
 )

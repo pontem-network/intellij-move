@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.layout.panel
+import org.move.cli.Constants
 import org.move.project.settings.ui.MoveProjectSettingsPanel
 import java.nio.file.Path
 
@@ -16,7 +17,7 @@ class MoveProjectConfigurable(val project: Project) : BoundConfigurable("Move"),
 
     init {
         val executablePath = PropertiesComponent.getInstance(project)
-                .getValue("org.move.dove.executable_path", "")
+                .getValue(Constants.DOVE_EXECUTABLE_PATH_PROPERTY, "")
         moveProjectSettings = MoveProjectSettingsPanel(executablePath)
     }
 
@@ -27,7 +28,7 @@ class MoveProjectConfigurable(val project: Project) : BoundConfigurable("Move"),
     override fun disposeUIResources() {
         PropertiesComponent.getInstance(project)
                 .setValue(
-                    "org.move.dove.executable_path",
+                    Constants.DOVE_EXECUTABLE_PATH_PROPERTY,
                     moveProjectSettings.getExecutablePath()
                 )
 
@@ -39,5 +40,5 @@ class MoveProjectConfigurable(val project: Project) : BoundConfigurable("Move"),
 fun Project.pathToDoveExecutable(): String {
     return PropertiesComponent
             .getInstance(this)
-            .getValue("org.move.dove.executable_path", "")
+            .getValue(Constants.DOVE_EXECUTABLE_PATH_PROPERTY, "")
 }
