@@ -11,7 +11,7 @@ jobs:
         strategy:
             matrix:
                 os: [ ubuntu-latest ]
-                platform-version: [ 2020.3 ]
+                platform-version: [ 2021.1 ]
                 dove-version: [ 1.0.0 ]
 
         runs-on: ${{ matrix.os }}
