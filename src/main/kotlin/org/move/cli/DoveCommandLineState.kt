@@ -14,15 +14,21 @@ class DoveCommandLineState(
     private val runConfiguration: DoveRunConfiguration,
 ) : CommandLineState(environment) {
 
+//    init {
+//        consoleBuilder.addFilter(MoveFileHyperlinkFilter(runConfiguration.project,
+//                                                         runConfiguration.workingDirectory!!))
+//    }
+
     override fun startProcess(): ProcessHandler {
         val pathToExecutable = runConfiguration.project.pathToDoveExecutable()
         val params = ParametersListUtil.parse(runConfiguration.command).toTypedArray()
         val commandLine =
             GeneralCommandLine(pathToExecutable, *params)
-                    .withWorkDirectory(runConfiguration.project.basePath)
-                    .withCharset(Charsets.UTF_8)
+                .withWorkDirectory(runConfiguration.workingDirectory.toString())
+                .withCharset(Charsets.UTF_8)
 
         val handler = OSProcessHandler(commandLine)
+        consoleBuilder.console.attachToProcess(handler)
         ProcessTerminatedListener.attach(handler)  // shows exit code upon termination
         return handler
     }
