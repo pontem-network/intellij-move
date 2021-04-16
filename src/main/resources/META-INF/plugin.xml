@@ -67,7 +67,6 @@
                    implementationClass="org.move.ide.annotator.ErrorAnnotator"/>
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.HighlightingAnnotator"/>
-        <configurationType implementation="org.move.movec.CompilerCheckConfigurationType"/>
 
         <codeInsight.parameterInfo language="Move"
                                    implementationClass="org.move.ide.hints.parameter.FunctionParameterInfoHandler"/>
@@ -94,14 +93,24 @@
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
         <!-- Dove -->
-        <projectConfigurable instance="org.move.project.configurable.MoveProjectConfigurable"
+        <projectOpenProcessor id="Move" implementation="org.move.cli.DoveProjectOpenProcessor"/>
+        <projectConfigurable instance="org.move.settings.MoveProjectConfigurable"
                              displayName="Move"
                              groupId="language"
                              id="language.move"/>
-        <projectService serviceInterface="org.move.project.settings.MoveProjectSettingsService"
-                        serviceImplementation="org.move.project.settings.impl.MoveProjectSettingsServiceImpl"/>
+        <projectService serviceInterface="org.move.settings.MoveProjectSettingsService"
+                        serviceImplementation="org.move.settings.MoveProjectSettingsServiceImpl"/>
 
     </extensions>
+
+    <projectListeners>
+        <listener class="org.move.cli.DoveTomlWatcher"
+                  topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
+                  activeInTestMode="false"/>
+        <listener class="org.move.cli.RefreshProjectListener"
+                  topic="org.move.settings.MoveSettingsListener"
+                  activeInTestMode="false"/>
+    </projectListeners>
 
     <actions>
         <action id="Move.NewMoveFile"

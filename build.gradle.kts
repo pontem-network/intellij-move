@@ -2,6 +2,7 @@ import org.jetbrains.grammarkit.tasks.GenerateLexer
 import org.jetbrains.grammarkit.tasks.GenerateParser
 
 val intellijVersion = prop("intellijVersion", "2021.1")
+val kotlinVersion = "1.4.32"
 
 val pluginJarName = "intellij-move-$intellijVersion"
 val pluginGroup = "org.move"
@@ -19,8 +20,8 @@ plugins {
 
 dependencies {
     // kotlin stdlib source code
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.4.32")
-//    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 }
 
 allprojects {

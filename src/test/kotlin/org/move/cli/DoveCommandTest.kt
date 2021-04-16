@@ -15,7 +15,7 @@ class DoveCommandTest : MoveTestBase() {
 
         PropertiesComponent.getInstance(this.project)
                 .setValue(
-                    Constants.DOVE_EXECUTABLE_PATH_PROPERTY,
+                    DoveConstants.EXECUTABLE_PATH_PROPERTY,
                     doveExecutablePath.toAbsolutePath().toString()
                 )
     }

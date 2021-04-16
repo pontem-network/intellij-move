@@ -46,7 +46,6 @@ class MoveFileHyperlinkFilter(
                                           .toFile()
                                           .canonicalPath)
         val file = VirtualFileManager.getInstance().findFileByNioPath(canonicalPath)
-        println(file)
         return file
     }
 }
