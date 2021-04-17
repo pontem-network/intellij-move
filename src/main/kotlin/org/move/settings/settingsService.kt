@@ -1,66 +1,43 @@
 package org.move.settings
 
 import com.intellij.configurationStore.serializeObjectInto
-import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.ServiceManager
-import com.intellij.openapi.components.Storage
-import com.intellij.openapi.components.StoragePathMacros
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
+import org.jetbrains.annotations.TestOnly
+import org.move.cli.DoveExecutable
+import java.nio.file.Paths
+
+data class MoveSettingsChangedEvent(
+    val oldState: MoveProjectSettingsService.State,
+    val newState: MoveProjectSettingsService.State,
+)
 
 interface MoveSettingsListener {
-    fun moveSettingsChanged(e: MoveProjectSettingsService.MoveSettingsChangedEvent)
+    fun moveSettingsChanged(e: MoveSettingsChangedEvent)
 }
 
+private const val serviceName: String = "MoveProjectSettings"
 
-interface MoveProjectSettingsService {
+@Service
+@com.intellij.openapi.components.State(name = serviceName, storages = [
+    Storage(StoragePathMacros.WORKSPACE_FILE),
+    Storage("misc.xml", deprecated = true)
+])
+class MoveProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
         var doveExecutablePath: String = "",
     )
 
-    var settingsState: State
-
-//    val doveExecutable: Path?
-
-    /**
-     * Allows to modify settings.
-     * After setting change,
-     */
-//    fun modify(action: (State) -> Unit)
-
-//    @TestOnly
-//    fun modifyTemporary(parentDisposable: Disposable, action: (State) -> Unit)
-
-    /**
-     * Returns current state of the service.
-     * Note, result is a copy of service state, so you need to set modified state back to apply changes
-     */
-//    var settingsState: State
-
-    companion object {
-        val MOVE_SETTINGS_TOPIC = Topic(
-            "move settings changes",
-            MoveSettingsListener::class.java)
-    }
-
-    data class MoveSettingsChangedEvent(val oldState: State, val newState: State)
-}
-
-private const val serviceName: String = "MoveProjectSettings"
-
-@com.intellij.openapi.components.State(name = serviceName, storages = [
-    Storage(StoragePathMacros.WORKSPACE_FILE),
-    Storage("misc.xml", deprecated = true)
-])
-class MoveProjectSettingsServiceImpl(private val project: Project) : MoveProjectSettingsService,
-                                                                     PersistentStateComponent<Element> {
     @Volatile
-    private var _state = MoveProjectSettingsService.State()
+    private var _state = State()
 
-    override var settingsState: MoveProjectSettingsService.State
+    var settingsState: State
         get() = _state.copy()
         set(newState) {
             println("set newState $newState")
@@ -72,11 +49,11 @@ class MoveProjectSettingsServiceImpl(private val project: Project) : MoveProject
         }
 
     private fun notifySettingsChanged(
-        oldState: MoveProjectSettingsService.State,
-        newState: MoveProjectSettingsService.State,
+        oldState: State,
+        newState: State,
     ) {
-        val event = MoveProjectSettingsService.MoveSettingsChangedEvent(oldState, newState)
-        project.messageBus.syncPublisher(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC)
+        val event = MoveSettingsChangedEvent(oldState, newState)
+        project.messageBus.syncPublisher(MOVE_SETTINGS_TOPIC)
             .moveSettingsChanged(event)
     }
 
@@ -92,12 +69,47 @@ class MoveProjectSettingsServiceImpl(private val project: Project) : MoveProject
         XmlSerializer.deserializeInto(_state, rawState)
         println("loadState $_state")
     }
+
+    /**
+     * Allows to modify settings.
+     * After setting change,
+     */
+    @TestOnly
+    fun modifyTemporary(parentDisposable: Disposable, action: (State) -> Unit) {
+        val oldState = settingsState
+        settingsState = oldState.also(action)
+        Disposer.register(parentDisposable) {
+            _state = oldState
+        }
+    }
+//    @TestOnly
+//    fun modifyTemporary(parentDisposable: Disposable, action: (State) -> Unit)
+
+    /**
+     * Returns current state of the service.
+     * Note, result is a copy of service state, so you need to set modified state back to apply changes
+     */
+    companion object {
+        val MOVE_SETTINGS_TOPIC = Topic(
+            "move settings changes",
+            MoveSettingsListener::class.java)
+    }
 }
 
 val Project.moveSettings: MoveProjectSettingsService
     get() = ServiceManager.getService(this, MoveProjectSettingsService::class.java)
-        ?: error("Failed to get MoveProjectSettingsService for $this")
 
-val Project.dovePath: String get() {
-    return this.moveSettings.settingsState.doveExecutablePath
+val Project.dovePath: String
+    get() {
+        return this.moveSettings.settingsState.doveExecutablePath
+    }
+
+fun Project.getDoveExecutable(): DoveExecutable? {
+    val value = this.dovePath
+    if (value.isBlank()) return null
+
+    val path = Paths.get(value)
+    if (!path.toFile().exists()) return null
+
+    return DoveExecutable(path)
 }

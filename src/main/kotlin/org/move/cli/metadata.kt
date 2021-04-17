@@ -1,6 +1,11 @@
 package org.move.cli
 
 import com.google.gson.annotations.SerializedName
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.project.Project
+import org.move.settings.getDoveExecutable
+import org.move.utils.rootService
 
 data class GitDependency(
     val git: String,
@@ -32,3 +37,25 @@ data class DoveProjectMetadata(
     val package_info: PackageInfo,
     val layout: LayoutInfo,
 )
+
+
+@Service(Service.Level.PROJECT)
+class MetadataService(private val project: Project) {
+    var metadata: DoveProjectMetadata? = null;
+
+    init {
+        this.refresh()
+    }
+
+    fun refresh() {
+        val root = project.rootService.path ?: return
+        val executable = project.getDoveExecutable() ?: return
+        this.metadata = executable.metadata(root)
+    }
+}
+
+val Project.metadataService: MetadataService
+    get() = ServiceManager.getService(
+        this,
+        MetadataService::class.java
+    )

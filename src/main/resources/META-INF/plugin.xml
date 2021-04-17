@@ -98,9 +98,9 @@
                              displayName="Move"
                              groupId="language"
                              id="language.move"/>
-        <projectService serviceInterface="org.move.settings.MoveProjectSettingsService"
-                        serviceImplementation="org.move.settings.MoveProjectSettingsServiceImpl"/>
-
+        <projectService serviceInterface="org.move.utils.ProjectRootService"
+                        serviceImplementation="org.move.utils.ProjectRootServiceImpl"
+                        testServiceImplementation="org.move.utils.TestProjectRootServiceImpl"/>
     </extensions>
 
     <projectListeners>
