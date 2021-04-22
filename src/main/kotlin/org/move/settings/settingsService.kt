@@ -3,6 +3,7 @@ package org.move.settings
 import com.intellij.configurationStore.serializeObjectInto
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.*
+import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.util.messages.Topic
@@ -10,6 +11,7 @@ import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
 import org.move.cli.DoveExecutable
+import java.nio.file.Path
 import java.nio.file.Paths
 
 data class MoveSettingsChangedEvent(
@@ -24,10 +26,12 @@ interface MoveSettingsListener {
 private const val serviceName: String = "MoveProjectSettings"
 
 @Service
-@com.intellij.openapi.components.State(name = serviceName, storages = [
-    Storage(StoragePathMacros.WORKSPACE_FILE),
-    Storage("misc.xml", deprecated = true)
-])
+@com.intellij.openapi.components.State(
+    name = serviceName, storages = [
+        Storage(StoragePathMacros.WORKSPACE_FILE),
+        Storage("misc.xml", deprecated = true)
+    ]
+)
 class MoveProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
@@ -40,13 +44,16 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
     var settingsState: State
         get() = _state.copy()
         set(newState) {
-            println("set newState $newState")
             if (_state != newState) {
                 val oldState = _state
                 _state = newState.copy()
                 notifySettingsChanged(oldState, newState)
             }
         }
+
+    fun showMoveConfigureSettings() {
+        ShowSettingsUtil.getInstance().showSettingsDialog(project, MoveConfigurable::class.java)
+    }
 
     private fun notifySettingsChanged(
         oldState: State,
@@ -60,14 +67,12 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
     override fun getState(): Element {
         val element = Element(serviceName)
         serializeObjectInto(_state, element)
-        println("getState $_state")
         return element
     }
 
     override fun loadState(element: Element) {
         val rawState = element.clone()
         XmlSerializer.deserializeInto(_state, rawState)
-        println("loadState $_state")
     }
 
     /**
@@ -82,8 +87,6 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
             _state = oldState
         }
     }
-//    @TestOnly
-//    fun modifyTemporary(parentDisposable: Disposable, action: (State) -> Unit)
 
     /**
      * Returns current state of the service.
@@ -92,24 +95,31 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
     companion object {
         val MOVE_SETTINGS_TOPIC = Topic(
             "move settings changes",
-            MoveSettingsListener::class.java)
+            MoveSettingsListener::class.java
+        )
     }
 }
 
 val Project.moveSettings: MoveProjectSettingsService
     get() = ServiceManager.getService(this, MoveProjectSettingsService::class.java)
 
-val Project.dovePath: String
+val Project.dovePathValue: String
     get() {
         return this.moveSettings.settingsState.doveExecutablePath
     }
 
+val Project.dovePath: Path?
+    get() {
+        val value = this.dovePathValue
+        if (value.isBlank()) return null
+
+        val path = Paths.get(value)
+        if (!path.toFile().exists()) return null
+
+        return path
+    }
+
 fun Project.getDoveExecutable(): DoveExecutable? {
-    val value = this.dovePath
-    if (value.isBlank()) return null
-
-    val path = Paths.get(value)
-    if (!path.toFile().exists()) return null
-
-    return DoveExecutable(path)
+    val path = this.dovePath ?: return null
+    return DoveExecutable(this, path)
 }

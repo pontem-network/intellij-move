@@ -94,13 +94,20 @@
 
         <!-- Dove -->
         <projectOpenProcessor id="Move" implementation="org.move.cli.DoveProjectOpenProcessor"/>
-        <projectConfigurable instance="org.move.settings.MoveProjectConfigurable"
+        <projectConfigurable instance="org.move.settings.MoveConfigurable"
                              displayName="Move"
                              groupId="language"
                              id="language.move"/>
         <projectService serviceInterface="org.move.utils.ProjectRootService"
                         serviceImplementation="org.move.utils.ProjectRootServiceImpl"
                         testServiceImplementation="org.move.utils.TestProjectRootServiceImpl"/>
+
+        <!-- Notifications -->
+        <notificationGroup id="Move Plugin" displayType="BALLOON"/>
+
+        <editorNotificationProvider
+                implementation="org.move.ide.notifications.InvalidDoveExecutableNotificationsProvider"/>
+
     </extensions>
 
     <projectListeners>
@@ -108,6 +115,9 @@
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
                   activeInTestMode="false"/>
         <listener class="org.move.cli.RefreshProjectListener"
+                  topic="org.move.settings.MoveSettingsListener"
+                  activeInTestMode="false"/>
+        <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
                   topic="org.move.settings.MoveSettingsListener"
                   activeInTestMode="false"/>
     </projectListeners>

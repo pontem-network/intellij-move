@@ -7,8 +7,8 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.layout.panel
 
-class MoveProjectConfigurable(val project: Project) : BoundConfigurable("Move"),
-                                                      Configurable.NoScroll {
+class MoveConfigurable(val project: Project) : BoundConfigurable("Move"),
+                                               Configurable.NoScroll {
     private val settingsPanel =
         MoveProjectSettingsPanel(project.moveSettings.settingsState.doveExecutablePath)
 

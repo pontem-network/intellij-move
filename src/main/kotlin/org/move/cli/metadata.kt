@@ -41,13 +41,17 @@ data class DoveProjectMetadata(
 
 @Service(Service.Level.PROJECT)
 class MetadataService(private val project: Project) {
-    var metadata: DoveProjectMetadata? = null;
+    var metadata: DoveProjectMetadata? = null
+        private set
 
     init {
         this.refresh()
     }
 
     fun refresh() {
+        // clean previous state
+        this.metadata = null;
+
         val root = project.rootService.path ?: return
         val executable = project.getDoveExecutable() ?: return
         this.metadata = executable.metadata(root)
