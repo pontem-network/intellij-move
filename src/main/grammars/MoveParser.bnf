@@ -32,6 +32,7 @@
 
         ADDRESS_LITERAL='regexp:0x[0-9a-fA-F]{1,40}'
         BECH32_ADDRESS_LITERAL='regexp:wallet1[A-Z0-9a-z&&[^boi1]]{6,}'
+        POLKADOT_ADDRESS_LITERAL='regexp:[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
 
         BOOL_LITERAL='regexp:(true)|(false)'
         INTEGER_LITERAL='regexp:[0-9]+((u8)|(u64)|(u128))?'
@@ -745,6 +746,7 @@ LiteralExpr ::= BOOL_LITERAL
                 | BYTE_STRING_LITERAL
                 | ADDRESS_LITERAL
                 | BECH32_ADDRESS_LITERAL
+                | POLKADOT_ADDRESS_LITERAL
 
 CallExpr ::= (QualPath &'(') CallArguments
 {
@@ -821,7 +823,7 @@ FullyQualifiedModuleRef ::= AddressRef '::' IDENTIFIER
     mixin = "org.move.lang.core.psi.ext.MoveFullyQualifiedModuleRefMixin"
 }
 
-AddressRef ::= ADDRESS_LITERAL | BECH32_ADDRESS_LITERAL
+AddressRef ::= ADDRESS_LITERAL | BECH32_ADDRESS_LITERAL | POLKADOT_ADDRESS_LITERAL
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Specs

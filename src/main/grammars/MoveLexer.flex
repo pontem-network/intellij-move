@@ -66,6 +66,7 @@ WHITE_SPACE      = {WHITE_SPACE_CHAR}+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ADDRESS_LITERAL=0x[0-9a-fA-F]{1,40}
 BECH32_ADDRESS_LITERAL=wallet1[A-Z0-9a-z&&[^boi1]]{6,83}
+POLKADOT_ADDRESS_LITERAL=[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*
 
 BOOL_LITERAL=(true)|(false)
 INTEGER_LITERAL=[0-9]+((u8)|(u64)|(u128))?
@@ -198,6 +199,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 <YYINITIAL, BEGIN_SPEC, IN_SPEC> {
   {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
   {BECH32_ADDRESS_LITERAL}          { return BECH32_ADDRESS_LITERAL; }
+  {POLKADOT_ADDRESS_LITERAL}          { return POLKADOT_ADDRESS_LITERAL; }
   {BOOL_LITERAL}             { return BOOL_LITERAL; }
   {INTEGER_LITERAL}          { return INTEGER_LITERAL; }
   {HEX_STRING_LITERAL}       { return HEX_STRING_LITERAL; }

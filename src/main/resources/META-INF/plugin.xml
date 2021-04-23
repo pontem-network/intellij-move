@@ -21,6 +21,7 @@
             <p>0.12.0</p>
             <p>Support for Intellij IDEA 2021.1</p>
             <p>Add new Diem syntax support</p>
+            <p>Add support for Polkadot addresses</p>
             <p>Fix module resolution false-positive if Dove is not configured</p>
         ]]>
     </change-notes>
