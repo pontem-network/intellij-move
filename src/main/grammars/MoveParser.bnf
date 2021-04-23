@@ -287,7 +287,7 @@ NativeStructDef ::= native resource? struct IDENTIFIER TypeParameterList? ';'
 }
 
 StructDef ::= resource? struct IDENTIFIER
-                TypeParameterList?
+                TypeParameterList? StructTraitList?
                 StructFieldsDefBlock
 {
     pin = "struct"
@@ -297,8 +297,11 @@ StructDef ::= resource? struct IDENTIFIER
     ]
     mixin = "org.move.lang.core.psi.ext.MoveStructDefMixin"
 }
-StructFieldsDefBlock ::= '{' StructFieldDef_with_recover* '}' { pin = 1 }
 
+StructTraitList ::= has <<comma_sep_items StructTrait>> { pin = 1 }
+StructTrait ::= IDENTIFIER
+
+StructFieldsDefBlock ::= '{' StructFieldDef_with_recover* '}' { pin = 1 }
 private StructFieldDef_with_recover ::= !'}' StructFieldDef (',' | &'}')
 {
     pin = 1

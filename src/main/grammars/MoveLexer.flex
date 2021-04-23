@@ -127,6 +127,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "struct"         { yybegin(YYINITIAL); return STRUCT; }
       "use"            { yybegin(YYINITIAL); return USE; }
       "as"             { return AS; }
+      "has"             { return HAS; }
       "mut"            { return MUT; }
       "copyable"       { return COPYABLE; }
       "copy"           { return COPY; }
