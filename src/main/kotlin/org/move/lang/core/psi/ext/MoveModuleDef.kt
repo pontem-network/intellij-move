@@ -4,43 +4,80 @@ import com.intellij.lang.ASTNode
 import com.intellij.openapi.project.Project
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
-import org.move.lang.core.psi.mixins.MoveNativeFunctionDefMixin
+import org.move.lang.core.psi.mixins.MoveFunctionSignatureMixin
 
-fun MoveModuleDef.functions(): List<MoveFunctionDef> =
-    moduleBlock?.functionDefList.orEmpty()
-
-fun MoveModuleDef.publicFunctions(): List<MoveFunctionDef> =
-    functions().filter { it.isPublic }
-
-fun createBuiltinFunc(text: String, project: Project): MoveNativeFunctionDef {
-    val function =
-        MovePsiFactory(project).createNativeFunctionDef(text)
-    (function as MoveNativeFunctionDefMixin).builtin = true
-    return function
+fun MoveModuleDef.allFnSignatures(): List<MoveFunctionSignature> {
+    val block = moduleBlock ?: return emptyList()
+    return listOf(
+        block.functionDefList.mapNotNull { it.functionSignature },
+        block.nativeDefList.mapNotNull { it.functionSignature },
+    ).flatten()
 }
 
-fun MoveModuleDef.builtinFunctions(): List<MoveNativeFunctionDef> =
-    listOf(
-        createBuiltinFunc("native fun move_from<R: resource>(addr: address): R;", project),
-        createBuiltinFunc("native fun move_to<R: resource>(addr: address, res: R): ();", project),
-        createBuiltinFunc("native fun borrow_global<R: resource>(addr: address): &R;", project),
-        createBuiltinFunc("native fun borrow_global_mut<R: resource>(addr: address): &mut R;", project),
-        createBuiltinFunc("native fun exists<R: resource>(addr: address): bool;", project),
-        createBuiltinFunc("native fun freeze<S>(mut_ref: &mut S): &S;", project),
-        createBuiltinFunc("native fun assert(_: bool, err: u64): ();", project),
+fun MoveModuleDef.builtinFnSignatures(): List<MoveFunctionSignature> {
+    return listOfNotNull(
+        createBuiltinFuncSignature("native fun move_from<R: resource>(addr: address): R;", project),
+        createBuiltinFuncSignature("native fun move_to<R: resource>(addr: address, res: R): ();", project),
+        createBuiltinFuncSignature("native fun borrow_global<R: resource>(addr: address): &R;", project),
+        createBuiltinFuncSignature(
+            "native fun borrow_global_mut<R: resource>(addr: address): &mut R;",
+            project
+        ),
+        createBuiltinFuncSignature("native fun exists<R: resource>(addr: address): bool;", project),
+        createBuiltinFuncSignature("native fun freeze<S>(mut_ref: &mut S): &S;", project),
+        createBuiltinFuncSignature("native fun assert(_: bool, err: u64): ();", project),
     )
+}
 
-fun MoveModuleDef.nativeFunctions(): List<MoveNativeFunctionDef> =
-    moduleBlock?.nativeFunctionDefList.orEmpty()
+fun MoveModuleDef.publicFnSignatures(): List<MoveFunctionSignature> {
+    return allFnSignatures()
+        .filter { it.visibility == FunctionVisibility.PUBLIC }
+}
 
-fun MoveModuleDef.publicNativeFunctions(): List<MoveNativeFunctionDef> =
-    nativeFunctions().filter { it.isPublic }
+fun createBuiltinFuncSignature(text: String, project: Project): MoveFunctionSignature? {
+    val signature = MovePsiFactory(project)
+        .createNativeDef(text)
+        .functionSignature ?: return null
+    (signature as MoveFunctionSignatureMixin).builtIn = true
+    return signature
+}
 
-fun MoveModuleDef.structs(): List<MoveStructDef> =
-    moduleBlock?.structDefList.orEmpty()
+//fun MoveModuleDef.builtinFunctions(): List<MoveNativeFunctionDef> =
+//    listOf(
+//        createBuiltinFuncSignature("native fun move_from<R: resource>(addr: address): R;", project),
+//        createBuiltinFuncSignature("native fun move_to<R: resource>(addr: address, res: R): ();", project),
+//        createBuiltinFuncSignature("native fun borrow_global<R: resource>(addr: address): &R;", project),
+//        createBuiltinFuncSignature(
+//            "native fun borrow_global_mut<R: resource>(addr: address): &mut R;",
+//            project
+//        ),
+//        createBuiltinFuncSignature("native fun exists<R: resource>(addr: address): bool;", project),
+//        createBuiltinFuncSignature("native fun freeze<S>(mut_ref: &mut S): &S;", project),
+//        createBuiltinFuncSignature("native fun assert(_: bool, err: u64): ();", project),
+//    )
 
-fun MoveModuleDef.nativeStructs(): List<MoveNativeStructDef> =
-    moduleBlock?.nativeStructDefList.orEmpty()
+//fun MoveModuleDef.nativeFunctions(): List<MoveNativeFunctionDef> =
+//    emptyList()
+//    moduleBlock?.nativeFunctionDefList.orEmpty()
+
+//fun MoveModuleDef.publicNativeFunctions(): List<MoveNativeFunctionDef> =
+//    nativeFunctions().filter { it.isPublic }
+
+//fun MoveModuleDef.structs(): List<MoveStructDef> =
+//    moduleBlock?.structDefList.orEmpty()
+
+fun MoveModuleDef.structSignatures(): List<MoveStructSignature> {
+    val block = moduleBlock ?: return emptyList()
+    return listOf(
+        block.nativeDefList.mapNotNull { it.structSignature },
+        block.structDefList.map { it.structSignature }
+    ).flatten()
+}
+
+fun MoveModuleDef.nativeStructs(): List<MoveStructSignature> {
+//    val block = moduleBlock ?: return emptyList()
+    return emptyList()
+}
 
 fun MoveModuleDef.consts(): List<MoveConstDef> =
     moduleBlock?.constDefList.orEmpty()

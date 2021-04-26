@@ -5,19 +5,15 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
-import org.move.cli.metadataService
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.openapiext.common.isUnitTestMode
 
 fun registerProblem(holder: ProblemsHolder, element: PsiElement, description: String) {
-    if (!isUnitTestMode && holder.project.metadataService.metadata != null) {
-        holder.registerProblem(
-            element,
-            description,
-            ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
-        )
-    }
+    holder.registerProblem(
+        element,
+        description,
+        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+    )
 }
 
 class MoveUnresolvedReferenceInspection : LocalInspectionTool() {

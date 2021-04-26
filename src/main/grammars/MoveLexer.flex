@@ -141,6 +141,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "loop"           { return LOOP; }
       "while"          { return WHILE; }
       "let"            { return LET; }
+      "friend"            { return FRIEND; }
 
       "schema"         { return SCHEMA; }
       "define"         { return DEFINE; }

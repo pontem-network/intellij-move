@@ -1,6 +1,12 @@
 module M {
     fun fn(): u8 {}
 
+    public fun fn(): u8 {}
+
+    public(script) fun fn(): u8 {}
+
+    public(friend) fun fn(): u8 {}
+
     fun fn_with_returned_tuple(): (u8, u8) {}
 
     fun fn_with_type_params<T, U>(): T {}
@@ -14,7 +20,13 @@ module M {
     fun fn_with_acquires()
         acquires vector<T>, T, Transaction::Sender {}
 
-    native fun native_function(a: vector<u8>): u8;
+    native fun native_fn(a: vector<u8>): u8;
 
-    native fun native_function_with_acquires() acquires T;
+    native public fun native_fn(a: vector<u8>): u8;
+
+    native public(script) fun native_fn(a: vector<u8>): u8;
+
+    native public(friend) fun native_fn(a: vector<u8>): u8;
+
+    native fun native_fn_with_acquires() acquires T;
 }

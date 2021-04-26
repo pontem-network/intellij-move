@@ -3,6 +3,18 @@ module M {
     fun main(a: u8, b) {}
     fun main(a: u8, b:) {}
 
+    public
+    public(friend)
+    public(script)
+    public fun
+
+    native
+    native fun
+    native public
+    native public(friend)
+    native public(script)
+    native public fun
+
     fun main(a b: u8) {}
     fun main(, b: u8) {}
     fun main(a: &, b: u8) {}

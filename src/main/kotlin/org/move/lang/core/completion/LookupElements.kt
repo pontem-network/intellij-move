@@ -99,7 +99,7 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
             .withLookupString(this.name ?: "")
             .withTypeText(this.type?.text)
 
-        is MoveStructDef -> LookupElementBuilder.createWithIcon(this)
+        is MoveStructSignature -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTailText(" { ... }")
             .withInsertHandler(insertHandler)
@@ -228,7 +228,7 @@ class DefaultInsertHandler(private val isSpecIdentifier: Boolean) : InsertHandle
 //                    }
                 }
             }
-            is MoveStructDef -> {
+            is MoveStructSignature -> {
                 if (isSpecIdentifier && !context.alreadyHasSpace)
                     context.addSuffix(" ")
 

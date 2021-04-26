@@ -191,7 +191,7 @@ fun processLexicalDeclarations(
             false
         }
         Namespace.NAME -> when (scope) {
-            is MoveFunctionDef -> processor.matchAll(scope.params)
+            is MoveFunctionDef -> processor.matchAll(scope.functionSignature?.parameters.orEmpty())
             is MoveCodeBlock -> {
                 val precedingLetDecls = scope.letStatements
                     // drops all let-statements after the current position
@@ -219,11 +219,9 @@ fun processLexicalDeclarations(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
-                    scope.functions(),
-                    scope.builtinFunctions(),
-                    scope.nativeFunctions(),
-                    scope.structs(),
-                    scope.nativeStructs(),
+                    scope.allFnSignatures(),
+                    scope.builtinFnSignatures(),
+                    scope.structSignatures(),
                     scope.consts(),
                 ).flatten()
             )
@@ -238,13 +236,14 @@ fun processLexicalDeclarations(
             else -> false
         }
         Namespace.TYPE -> when (scope) {
-            is MoveTypeParametersOwner -> processor.matchAll(scope.typeParameters)
+            is MoveFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
+            is MoveStructDef -> processor.matchAll(scope.structSignature.typeParameters)
+            is MoveSchemaDef -> processor.matchAll(scope.typeParams)
             is MoveModuleDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
-                    scope.structs(),
-                    scope.nativeStructs(),
+                    scope.structSignatures(),
                 ).flatten(),
             )
             is MoveScriptDef -> processor.matchAll(

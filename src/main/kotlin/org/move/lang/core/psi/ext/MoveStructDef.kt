@@ -14,8 +14,8 @@ val MoveStructDef.fields: List<MoveStructFieldDef>
 val MoveStructDef.fieldNames: List<String>
     get() = fields.mapNotNull { it.name }
 
-val MoveStructDef.typeParams: List<MoveTypeParameter>
-    get() = typeParameterList?.typeParameterList.orEmpty()
+//val MoveStructDef.typeParams: List<MoveTypeParameter>
+//    get() = typeParameterList?.typeParameterList.orEmpty()
 
 
 abstract class MoveStructDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
