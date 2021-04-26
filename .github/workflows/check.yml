@@ -50,6 +50,9 @@ jobs:
             -   name: Rename dove executable and set proper permissions
                 run: mv ./${{ env.DOVE_BINARY_NAME }} ./dove && sudo chown runner ./dove && chmod +x ./dove
 
+            -   name: Sanity check for Dove executable
+                run: ./dove --version
+
             -   name: Build
                 uses: eskatos/gradle-command-action@v1
                 with:
