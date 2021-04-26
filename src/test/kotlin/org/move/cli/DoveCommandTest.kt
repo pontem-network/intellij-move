@@ -23,7 +23,8 @@ class DoveCommandTest : MoveTestBase() {
 
         project.metadataService.refresh()
 
-        val metadata = project.metadataService.metadata!!
+        val metadata = project.metadataService.metadata
+        check(metadata != null) { "Metadata is null" }
         check(metadata.package_info.dialect == "dfinance")
         check(
             metadata.package_info.local_dependencies == listOf(
