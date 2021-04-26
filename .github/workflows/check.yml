@@ -12,23 +12,25 @@ jobs:
             matrix:
                 os: [ ubuntu-latest ]
                 platform-version: [ 2021.1 ]
-                dove-version: [ 1.0.0 ]
+                dove-version: [ 1.1.4 ]
 
         runs-on: ${{ matrix.os }}
         env:
             ORG_GRADLE_PROJECT_intellijVersion: ${{ matrix.platform-version }}
+            DOVE_BINARY_NAME: dove-1.1.4-linux-x86_64
 
         steps:
             -   uses: actions/checkout@v2
 
             -   name: Set up JDK 11
-                uses: actions/setup-java@v1
+                uses: actions/setup-java@v2
                 with:
                     java-version: 11
+                    distribution: 'zulu'
 
-            -   name: Set dove binary name (linux)
-                if: matrix.os == 'ubuntu-latest'
-                run: echo "DOVE_BINARY_NAME=dove-${{ matrix.dove-version }}-linux-x86_64" >> $GITHUB_ENV
+#            -   name: Set dove binary name (linux)
+#                if: matrix.os == 'ubuntu-latest'
+#                run: echo "DOVE_BINARY_NAME=dove-${{ matrix.dove-version }}-linux-x86_64" >> $GITHUB_ENV
 
 #            -   name: Set dove binary name (macos)
 #                if: matrix.os == 'macos-latest'
@@ -41,7 +43,7 @@ jobs:
             -   name: Fetch dove executable from move-tools releases
                 uses: dsaltares/fetch-gh-release-asset@master
                 with:
-                    repo: "dfinance/move-tools"
+                    repo: "pontem-network/move-tools"
                     version: "tags/${{ matrix.dove-version }}"
                     file: ${{ env.DOVE_BINARY_NAME }}
 
@@ -62,5 +64,3 @@ jobs:
                 uses: eskatos/gradle-command-action@v1
                 with:
                     arguments: ":verifyPlugin"
-
-
