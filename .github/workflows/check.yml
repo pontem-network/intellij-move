@@ -58,10 +58,10 @@ jobs:
                 with:
                     arguments: "assemble testClasses -Pkotlin.incremental=false --no-daemon --stacktrace"
 
-            -   name: Check
-                uses: eskatos/gradle-command-action@v1
-                with:
-                    arguments: "check -Pkotlin.incremental=false --no-daemon --stacktrace"
+#            -   name: Check
+#                uses: eskatos/gradle-command-action@v1
+#                with:
+#                    arguments: "check -Pkotlin.incremental=false --no-daemon --stacktrace"
 
             -   name: Verify plugin
                 uses: eskatos/gradle-command-action@v1
