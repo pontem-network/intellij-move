@@ -21,7 +21,7 @@ class MoveColorSettingsPage : ColorSettingsPage {
     }
 
     override fun getDisplayName() = "Move"
-    override fun getIcon(): Icon? = MoveIcons.MOVE
+    override fun getIcon(): Icon = MoveIcons.MOVE
     override fun getHighlighter(): SyntaxHighlighter = MoveHighlighter()
     override fun getAdditionalHighlightingTagToDescriptorMap() = ANNOTATOR_TAGS
     override fun getAttributeDescriptors(): Array<AttributesDescriptor> = ATTRS

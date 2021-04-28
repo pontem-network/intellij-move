@@ -78,7 +78,7 @@ class KeywordCompletionContributor : CompletionContributor() {
         extend(
             CompletionType.BASIC,
             moduleBlock().and(onStatementBeginning("native")),
-            KeywordCompletionProvider("public", "fun")
+            KeywordCompletionProvider("public", "fun", "struct")
         )
         extend(
             CompletionType.BASIC,

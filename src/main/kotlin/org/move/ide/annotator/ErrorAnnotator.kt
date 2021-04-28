@@ -12,14 +12,20 @@ class ErrorAnnotator : MoveAnnotator() {
         val visitor = object : MoveVisitor() {
             override fun visitConstDef(o: MoveConstDef) = checkConstDef(moveHolder, o)
 
-            override fun visitFunctionDef(o: MoveFunctionDef) = checkFunctionDef(moveHolder, o)
-            override fun visitNativeFunctionDef(o: MoveNativeFunctionDef) =
-                checkNativeFunctionDef(moveHolder, o)
+            override fun visitFunctionSignature(o: MoveFunctionSignature) =
+                checkFunctionSignature(moveHolder, o)
+
+            override fun visitStructSignature(o: MoveStructSignature) {
+                checkStructSignature(moveHolder, o)
+            }
+//            override fun visitFunctionDef(o: MoveFunctionDef) = checkFunctionDef(moveHolder, o)
+//            override fun visitNativeFunctionDef(o: MoveNativeFunctionDef) =
+//                checkNativeFunctionDef(moveHolder, o)
 
             override fun visitModuleDef(o: MoveModuleDef) = checkModuleDef(moveHolder, o)
 
-            override fun visitStructDef(o: MoveStructDef) = checkStructDef(moveHolder, o)
-            override fun visitNativeStructDef(o: MoveNativeStructDef) = checkNativeStructDef(moveHolder, o)
+            //            override fun visitStructDef(o: MoveStructDef) = checkStructDef(moveHolder, o)
+//            override fun visitNativeStructDef(o: MoveNativeStructDef) = checkNativeStructDef(moveHolder, o)
             override fun visitStructFieldDef(o: MoveStructFieldDef) = checkStructFieldDef(moveHolder, o)
 
             override fun visitQualPath(o: MoveQualPath) = checkQualifiedPath(moveHolder, o)
@@ -38,33 +44,25 @@ class ErrorAnnotator : MoveAnnotator() {
                     moveHolder,
                     o.referenceNameElement,
                     o.providedFieldNames.toSet(),
-                    referredStructDef)
+                    referredStructDef
+                )
 
             }
         }
         element.accept(visitor)
     }
 
-    private fun checkFunctionDef(holder: MoveAnnotationHolder, fn: MoveFunctionDef) {
-        checkDuplicates(holder, fn)
-        warnOnBuiltInFunctionName(holder, fn)
+    private fun checkStructSignature(holder: MoveAnnotationHolder, signature: MoveStructSignature) {
+        checkStructSignatureDuplicates(holder, signature)
     }
 
-    private fun checkNativeFunctionDef(holder: MoveAnnotationHolder, nativeFn: MoveNativeFunctionDef) {
-        checkDuplicates(holder, nativeFn)
-        warnOnBuiltInFunctionName(holder, nativeFn)
+    private fun checkFunctionSignature(holder: MoveAnnotationHolder, signature: MoveFunctionSignature) {
+        checkFunctionSignatureDuplicates(holder, signature)
+        warnOnBuiltInFunctionName(holder, signature)
     }
 
     private fun checkModuleDef(holder: MoveAnnotationHolder, mod: MoveModuleDef) {
         checkDuplicates(holder, mod)
-    }
-
-    private fun checkStructDef(holder: MoveAnnotationHolder, struct: MoveStructDef) {
-        checkDuplicates(holder, struct)
-    }
-
-    private fun checkNativeStructDef(holder: MoveAnnotationHolder, nativeStruct: MoveNativeStructDef) {
-        checkDuplicates(holder, nativeStruct)
     }
 
     private fun checkStructFieldDef(holder: MoveAnnotationHolder, structField: MoveStructFieldDef) {
@@ -80,9 +78,9 @@ private fun checkMissingFields(
     holder: MoveAnnotationHolder,
     target: PsiElement,
     providedFieldNames: Set<String>,
-    referredStructDef: MoveStructDef,
+    referredStruct: MoveStructDef,
 ) {
-    if ((referredStructDef.fieldNames.toSet() - providedFieldNames).isNotEmpty()) {
+    if ((referredStruct.fieldNames.toSet() - providedFieldNames).isNotEmpty()) {
         holder.createErrorAnnotation(target, "Some fields are missing")
     }
 }
@@ -117,8 +115,10 @@ private fun checkQualifiedPath(holder: MoveAnnotationHolder, qualPath: MoveQualP
         val realCount = qualPath.typeArguments.size
         if (realCount > 1) {
             qualPath.typeArguments.drop(1).forEach {
-                holder.createErrorAnnotation(it,
-                    "Wrong number of type arguments: expected 1, found $realCount")
+                holder.createErrorAnnotation(
+                    it,
+                    "Wrong number of type arguments: expected 1, found $realCount"
+                )
             }
             return
         }
@@ -126,7 +126,7 @@ private fun checkQualifiedPath(holder: MoveAnnotationHolder, qualPath: MoveQualP
     val name = referred?.name ?: return
 
     when {
-        referred is MoveNativeFunctionDef
+        referred is MoveFunctionSignature
                 && name in BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE
                 && qualPath.typeArguments.isEmpty() -> {
             holder.createErrorAnnotation(qualPath, "Missing resource type argument")
@@ -143,8 +143,10 @@ private fun checkQualifiedPath(holder: MoveAnnotationHolder, qualPath: MoveQualP
 
             if (realCount > expectedCount) {
                 qualPath.typeArguments.drop(expectedCount).forEach {
-                    holder.createErrorAnnotation(it,
-                        "Wrong number of type arguments: expected $expectedCount, found $realCount")
+                    holder.createErrorAnnotation(
+                        it,
+                        "Wrong number of type arguments: expected $expectedCount, found $realCount"
+                    )
                 }
                 return
             }
@@ -164,6 +166,44 @@ private fun checkDuplicates(
     }
     val identifier = element.nameIdentifier ?: element
     holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${element.name}`")
+}
+
+private fun checkFunctionSignatureDuplicates(
+    holder: MoveAnnotationHolder,
+    fnSignature: MoveFunctionSignature,
+) {
+    val fnSignatures =
+        fnSignature.module?.allFnSignatures()
+            ?: fnSignature.script?.allFnSignatures()
+            ?: emptyList()
+    val duplicateSignatures = getDuplicates(fnSignatures.asSequence())
+
+    if (fnSignature.name !in duplicateSignatures.map { it.name }) {
+        return
+    }
+    val identifier = fnSignature.nameIdentifier ?: fnSignature
+    holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${fnSignature.name}`")
+}
+
+private fun checkStructSignatureDuplicates(
+    holder: MoveAnnotationHolder,
+    structSignature: MoveStructSignature,
+) {
+    val duplicateSignatures = getDuplicates(structSignature.module.structSignatures().asSequence())
+    if (structSignature.name !in duplicateSignatures.map { it.name }) {
+        return
+    }
+    val identifier = structSignature.nameIdentifier ?: structSignature
+    holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${structSignature.name}`")
+}
+
+private fun getDuplicates(elements: Sequence<MoveNamedElement>): Set<MoveNamedElement> {
+    return elements
+        .groupBy { it.name }
+        .map { it.value }
+        .filter { it.size > 1 }
+        .flatten()
+        .toSet()
 }
 
 private fun getDuplicatedNamedChildren(owner: PsiElement): Set<MoveNamedElement> {

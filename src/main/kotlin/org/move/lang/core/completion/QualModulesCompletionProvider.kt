@@ -5,7 +5,6 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.MovePsiPatterns
 import org.move.lang.core.psi.MoveFullyQualifiedModuleRef
 import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.processQualModuleRef

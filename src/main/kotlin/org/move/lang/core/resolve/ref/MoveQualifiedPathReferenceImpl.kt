@@ -36,20 +36,12 @@ fun processPublicModuleItems(
         val found = when (namespace) {
             Namespace.NAME -> processor.matchAll(
                 listOf(
-                    module.publicFunctions(),
-                    module.publicNativeFunctions(),
-                    module.structs(),
-                    module.nativeStructs(),
+                    module.publicFnSignatures(),
+                    module.structSignatures(),
                     module.consts(),
                 ).flatten()
             )
-            Namespace.TYPE -> processor.matchAll(
-                listOf(
-//                    module.itemImportsWithoutAliases(),
-                    module.structs(),
-                    module.nativeStructs(),
-                ).flatten()
-            )
+            Namespace.TYPE -> processor.matchAll(module.structSignatures())
             Namespace.SCHEMA -> processor.matchAll(module.schemas())
             else -> false
         }

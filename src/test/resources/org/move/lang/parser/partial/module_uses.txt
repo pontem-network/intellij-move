@@ -9,7 +9,7 @@ FILE
       PsiWhiteSpace('\n    ')
       MoveImportStatementImpl(IMPORT_STATEMENT)
         PsiElement(use)('use')
-        PsiErrorElement:<qual path to imported item> expected, got 'use'
+        PsiErrorElement:<address ref> expected, got 'use'
           <empty list>
       PsiWhiteSpace('\n    ')
       MoveImportStatementImpl(IMPORT_STATEMENT)
@@ -221,12 +221,13 @@ FILE
         PsiElement(;)(';')
       PsiWhiteSpace('\n\n    ')
       MoveFunctionDefImpl(FUNCTION_DEF)
-        PsiElement(fun)('fun')
-        PsiWhiteSpace(' ')
-        PsiElement(IDENTIFIER)('main')
-        MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
-          PsiElement(()('(')
-          PsiElement())(')')
+        MoveFunctionSignatureImpl(FUNCTION_SIGNATURE)
+          PsiElement(fun)('fun')
+          PsiWhiteSpace(' ')
+          PsiElement(IDENTIFIER)('main')
+          MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
+            PsiElement(()('(')
+            PsiElement())(')')
         PsiWhiteSpace(' ')
         MoveCodeBlockImpl(CODE_BLOCK)
           PsiElement({)('{')

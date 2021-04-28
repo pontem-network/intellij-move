@@ -7,6 +7,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiRecursiveVisitor
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
+import org.move.cli.metadataService
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -24,7 +25,8 @@ fun processItems(
         stopAfter = { it is MoveModuleDef || it is MoveScriptDef }
     ) { cameFrom, scope ->
         processLexicalDeclarations(
-            scope, cameFrom, namespace, processor)
+            scope, cameFrom, namespace, processor
+        )
     }
 }
 
@@ -119,19 +121,26 @@ fun processQualModuleRef(
     processor: MatchingProcessor,
 ): Boolean {
     val project = qualModuleRef.project
-    val vfm = VirtualFileManager.getInstance()
-    val projectRoot = project.basePath?.let { vfm.findFileByNioPath(Paths.get(it)) }
-        ?: return true
 
-    val dirs = listOfNotNull(
-        projectRoot.findFileByRelativePath("modules"),
-        projectRoot.findFileByRelativePath("stdlib")
-    )
-    var isResolved = false
-    for (modulesDir in dirs) {
+    // first search modules in the current file
+    val containingFile = qualModuleRef.containingFile as? MoveFile ?: return false
+    var isResolved = resolveQualModuleRefInFile(qualModuleRef, containingFile, processor)
+    if (isResolved) return true
+
+    // fetch metadata, and end processing if not available
+    val metadata = project.metadataService.metadata ?: return true
+//    val metadata = project.metadataService.metadata ?: return processor.match(Stop())
+
+    val moduleFolders = metadata.package_info
+        .local_dependencies
+        .mapNotNull {
+            VirtualFileManager.getInstance().findFileByNioPath(Paths.get(it))
+        }
+
+    for (folder in moduleFolders) {
         if (isResolved) break
         VfsUtil.iterateChildrenRecursively(
-            modulesDir,
+            folder,
             { it.isDirectory || it.extension == "move" })
         { file ->
             if (file.isDirectory) return@iterateChildrenRecursively true
@@ -140,14 +149,13 @@ fun processQualModuleRef(
             isResolved = resolveQualModuleRefInFile(qualModuleRef, moduleFile, processor)
             // will continue processing if true
             !isResolved
-//            resolved == null
         }
     }
-    if (!isResolved) {
-        // search current file for modules too
-        val containingFile = qualModuleRef.containingFile as? MoveFile ?: return false
-        isResolved = resolveQualModuleRefInFile(qualModuleRef, containingFile, processor)
-    }
+//    if (!isResolved) {
+//        // search current file for modules too
+//        val containingFile = qualModuleRef.containingFile as? MoveFile ?: return false
+//        isResolved = resolveQualModuleRefInFile(qualModuleRef, containingFile, processor)
+//    }
     return isResolved
 }
 
@@ -161,7 +169,8 @@ fun processNestedScopesUpwards(
         stopAfter = { it is MoveModuleDef || it is MoveScriptDef }
     ) { cameFrom, scope ->
         processLexicalDeclarations(
-            scope, cameFrom, namespace, processor)
+            scope, cameFrom, namespace, processor
+        )
     }
 }
 
@@ -182,7 +191,7 @@ fun processLexicalDeclarations(
             false
         }
         Namespace.NAME -> when (scope) {
-            is MoveFunctionDef -> processor.matchAll(scope.params)
+            is MoveFunctionDef -> processor.matchAll(scope.functionSignature?.parameters.orEmpty())
             is MoveCodeBlock -> {
                 val precedingLetDecls = scope.letStatements
                     // drops all let-statements after the current position
@@ -210,11 +219,9 @@ fun processLexicalDeclarations(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
-                    scope.functions(),
-                    scope.builtinFunctions(),
-                    scope.nativeFunctions(),
-                    scope.structs(),
-                    scope.nativeStructs(),
+                    scope.allFnSignatures(),
+                    scope.builtinFnSignatures(),
+                    scope.structSignatures(),
                     scope.consts(),
                 ).flatten()
             )
@@ -229,13 +236,14 @@ fun processLexicalDeclarations(
             else -> false
         }
         Namespace.TYPE -> when (scope) {
-            is MoveTypeParametersOwner -> processor.matchAll(scope.typeParameters)
+            is MoveFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
+            is MoveStructDef -> processor.matchAll(scope.structSignature.typeParameters)
+            is MoveSchemaDef -> processor.matchAll(scope.typeParams)
             is MoveModuleDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
-                    scope.structs(),
-                    scope.nativeStructs(),
+                    scope.structSignatures(),
                 ).flatten(),
             )
             is MoveScriptDef -> processor.matchAll(

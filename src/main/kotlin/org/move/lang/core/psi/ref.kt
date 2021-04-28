@@ -5,9 +5,9 @@ import com.intellij.psi.PsiElement
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
 import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
+import org.move.lang.core.psi.ext.structDef
 import org.move.lang.core.resolve.ref.MoveQualPathReferenceImpl
 import org.move.lang.core.resolve.ref.MoveReference
-import org.move.lang.core.resolve.ref.MoveStructFieldReferenceImpl
 import org.move.lang.core.resolve.ref.Namespace
 
 interface MoveReferenceElement : MoveElement {
@@ -61,8 +61,12 @@ interface MoveQualTypeReferenceElement : MoveQualPathReferenceElement {
                 || referenceName in BUILTIN_TYPE_IDENTIFIERS
 
     @JvmDefault
+    val referredStructSignature: MoveStructSignature?
+        get() = reference.resolve() as? MoveStructSignature
+
+    @JvmDefault
     val referredStructDef: MoveStructDef?
-        get() = reference.resolve() as? MoveStructDef
+        get() = referredStructSignature?.structDef
 }
 
 abstract class MoveQualTypeReferenceElementImpl(node: ASTNode) : MoveElementImpl(node),

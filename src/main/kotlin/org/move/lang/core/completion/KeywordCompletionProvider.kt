@@ -26,10 +26,16 @@ class KeywordCompletionProvider(private vararg val keywords: String) : Completio
             var element =
                 LookupElementBuilder.create(keyword).bold()
 
-            val typeBound =
-                keyword == "copyable" || (keyword == "resource" && parent is MoveTypeParameter)
+            val typeBound = parent is MoveTypeParameter
+//            val typeBound =
+//                keyword == "copyable" || (keyword == "resource" && parent is MoveTypeParameter)
 
+//            println(pos)
+//            println(pos.parent.parent)
+//            println(pos.text)
+//            println(pos.rightSiblings.toList())
             val nextSibling = pos
+                .parent
                 .rightSiblings
                 .filter { !it.isWhitespace() && !it.isErrorElement() }
                 .firstOrNull()?.firstChild

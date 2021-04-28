@@ -13,3 +13,11 @@ address wallet1pxqfjvnu0utauj8fctw2s7j4mfyvrsjd59c2u8 {
         }
     }
 }
+
+address 5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty {
+    module M {
+        fun main() {
+            let a: address = 5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty;
+        }
+    }
+}

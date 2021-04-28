@@ -48,7 +48,7 @@ class FindUsagesTest : MoveTestBase() {
     private fun markersActual(source: MoveNamedElement) =
         myFixture.findUsages(source)
             .filter { it.element != null }
-            .map { Pair(it.element?.line ?: -1, MoveUsageTypeProvider.getUsageType(it.element).toString()) }
+            .map { Pair(it.element?.line ?: -1, MoveUsageTypeProvider.getUsageType(it.element!!).toString()) }
             .sortedBy { it.first }
 
     private fun markersFrom(text: String) =

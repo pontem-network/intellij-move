@@ -16,7 +16,6 @@ import org.move.ide.formatter.MoveFmtContext
 import org.move.lang.MoveElementTypes.*
 import org.move.lang.core.MOVE_COMMENTS
 import org.move.lang.core.MOVE_KEYWORDS
-import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
 

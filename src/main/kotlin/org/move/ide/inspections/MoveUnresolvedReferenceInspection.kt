@@ -3,9 +3,18 @@ package org.move.ide.inspections
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+
+fun registerProblem(holder: ProblemsHolder, element: PsiElement, description: String) {
+    holder.registerProblem(
+        element,
+        description,
+        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+    )
+}
 
 class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor =
@@ -15,10 +24,11 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
                 if (moduleRef is MoveFullyQualifiedModuleRef) return
 
                 if (moduleRef.isUnresolved) {
-                    holder.registerProblem(
+                    registerProblem(
+                        holder,
                         moduleRef,
-                        "Unresolved module reference: `${moduleRef.referenceName}`",
-                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
+                        "Unresolved module reference: `${moduleRef.referenceName}`"
+                    )
                 }
             }
 
@@ -28,10 +38,16 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
 
                 if (refElement.isUnresolved && qualPath.isIdentifierOnly) {
                     val highlightedElement = refElement.referenceNameElement
-                    holder.registerProblem(
+                    registerProblem(
+                        holder,
                         highlightedElement,
-                        "Unresolved reference: `${refElement.referenceName}`",
-                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
+                        "Unresolved reference: `${refElement.referenceName}`"
+                    )
+//                    holder.registerProblem(
+//                        highlightedElement,
+//                        "Unresolved reference: `${refElement.referenceName}`",
+//                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+//                    )
                 }
             }
 
@@ -39,10 +55,16 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
                 val resolvedStructDef = o.structPat.referredStructDef ?: return
                 if (!resolvedStructDef.fieldNames.any { it == o.referenceName }) {
                     val highlightedElement = o.referenceNameElement
-                    holder.registerProblem(
+                    registerProblem(
+                        holder,
                         highlightedElement,
-                        "Unresolved field: `${o.referenceName}`",
-                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
+                        "Unresolved field: `${o.referenceName}`"
+                    )
+//                    holder.registerProblem(
+//                        highlightedElement,
+//                        "Unresolved field: `${o.referenceName}`",
+//                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+//                    )
                 }
             }
 
@@ -54,10 +76,16 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
                             "Unresolved reference: `${o.referenceName}`"
                         else
                             "Unresolved field: `${o.referenceName}`"
-                    holder.registerProblem(
+                    registerProblem(
+                        holder,
                         highlightedElement,
-                        errorMessage,
-                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
+                        errorMessage
+                    )
+//                    holder.registerProblem(
+//                        highlightedElement,
+//                        errorMessage,
+//                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+//                    )
                 }
             }
         }

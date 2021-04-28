@@ -223,16 +223,6 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
-    fun `test resource before struct`() = doSingleCompletion("""
-        module M {
-            res/*caret*/ struct
-        }
-    """, """
-        module M {
-            resource/*caret*/ struct
-        }
-    """)
-
     fun `test no completion in bound if no colon`() = checkNoCompletion("""
         module M {
             struct MyStruct<T cop/*caret*/> {}
@@ -259,15 +249,25 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
-    fun `test acquires keyword`() = doSingleCompletion("""
-        module M {
-            fun main() acq/*caret*/ {}
-        }
-    """, """
-        module M {
-            fun main() acquires /*caret*/ {}
-        }
-    """)
+//    fun `test acquires keyword`() = doSingleCompletion("""
+//        module M {
+//            fun main() acq/*caret*/ {}
+//        }
+//    """, """
+//        module M {
+//            fun main() acquires /*caret*/ {}
+//        }
+//    """)
+//
+//    fun `test acquires after return type`() = doSingleCompletion("""
+//        module M {
+//            fun main(): u8 acq/*caret*/ {}
+//        }
+//    """, """
+//        module M {
+//            fun main(): u8 acquires /*caret*/ {}
+//        }
+//    """)
 
     fun `test no acquires after fun keyword`() = checkNoCompletion("""
         module M {
@@ -284,6 +284,16 @@ class KeywordCompletionTest : CompletionTestCase() {
     fun `test no acquires inside return type`() = checkNoCompletion("""
         module M {
             fun main(): acq/*caret*/ {}
+        }
+    """)
+
+    fun `test native struct`() = doSingleCompletion("""
+        module M {
+            native stru/*caret*/
+        }
+    """, """
+        module M {
+            native struct /*caret*/
         }
     """)
 }

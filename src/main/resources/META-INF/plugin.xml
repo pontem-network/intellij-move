@@ -2,13 +2,17 @@
     <id>org.move.lang</id>
     <name>Move Language</name>
 
-    <vendor>Maksim Kurnikov</vendor>
+    <vendor>Pontem Network</vendor>
 
     <description>
         <![CDATA[
-            <p>Support for the Move, smart-contract language for the Diem and Dfinance blockchains.</p>
+            <p>Support for the Move, smart-contract language for the Diem, Dfinance and Pontem blockchains.</p>
 
-            <p><a href="https://github.com/dfinance/intellij-move">https://github.com/dfinance/intellij-move</a></p>
+            <p><a href="https://github.com/pontem-network/intellij-move">https://github.com/pontem-network/intellij-move</a></p>
+
+            <p>The plugin offers integration with Dove, Cargo-like utility for Move language. You can find binary for your platform at <a href="https://github.com/pontem-network/move-tools/releases">https://github.com/pontem-network/move-tools/releases</a></p>
+
+            <p>We recommend it for any project that is more than one file in size. You need to add path to Dove binary in Settings -> Languages & Frameworks -> Move and initialize your project with <code>dove init</code> to enable integration.</p>
         ]]>
     </description>
 
@@ -16,6 +20,9 @@
         <![CDATA[
             <p>0.12.0</p>
             <p>Support for Intellij IDEA 2021.1</p>
+            <p>Add new Diem syntax support</p>
+            <p>Add support for Polkadot addresses</p>
+            <p>Fix module resolution false-positive if Dove is not configured</p>
         ]]>
     </change-notes>
 
@@ -30,6 +37,8 @@
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
 
+        <configurationType implementation="org.move.cli.DoveRunConfigurationType"/>
+
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
         <!--        <stubElementTypeHolder class="org.move.lang.MoveElementTypes"/>-->
@@ -40,8 +49,12 @@
                         implementationClass="org.move.ide.MoveCommenter"/>
         <lang.braceMatcher language="Move"
                            implementationClass="org.move.ide.typing.MoveBraceMatcher"/>
+
         <lang.formatter language="Move"
                         implementationClass="org.move.ide.formatter.MoveFormattingModelBuilder"/>
+        <langCodeStyleSettingsProvider
+                implementation="org.move.ide.formatter.MoveLanguageCodeStyleSettingsProvider"/>
+
         <lang.foldingBuilder language="Move" implementationClass="org.move.ide.folding.MoveFoldingBuilder"/>
 
         <lang.namesValidator language="Move"
@@ -61,7 +74,6 @@
                    implementationClass="org.move.ide.annotator.ErrorAnnotator"/>
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.HighlightingAnnotator"/>
-        <configurationType implementation="org.move.movec.CompilerCheckConfigurationType"/>
 
         <codeInsight.parameterInfo language="Move"
                                    implementationClass="org.move.ide.hints.parameter.FunctionParameterInfoHandler"/>
@@ -78,7 +90,8 @@
         <!--                         implementationClass="org.move.ide.inspections.lints.FunctionNamingInspection"/>-->
         <localInspection language="Move" groupName="Move"
                          displayName="Unresolved reference"
-                         enabledByDefault="true" level="ERROR"
+                         enabledByDefault="false"
+                         level="ERROR"
                          implementationClass="org.move.ide.inspections.MoveUnresolvedReferenceInspection"/>
 
         <!-- Color Settings -->
@@ -87,15 +100,35 @@
         <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml"/>
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
-        <!-- Movec -->
-        <projectConfigurable instance="org.move.project.configurable.MoveProjectConfigurable"
+        <!-- Dove -->
+        <projectOpenProcessor id="Move" implementation="org.move.cli.DoveProjectOpenProcessor"/>
+        <projectConfigurable instance="org.move.settings.MoveConfigurable"
                              displayName="Move"
                              groupId="language"
                              id="language.move"/>
-        <projectService serviceInterface="org.move.project.settings.MoveProjectSettingsService"
-                        serviceImplementation="org.move.project.settings.impl.MoveProjectSettingsServiceImpl"/>
+        <projectService serviceInterface="org.move.utils.ProjectRootService"
+                        serviceImplementation="org.move.utils.ProjectRootServiceImpl"
+                        testServiceImplementation="org.move.utils.TestProjectRootServiceImpl"/>
+
+        <!-- Notifications -->
+        <notificationGroup id="Move Plugin" displayType="BALLOON"/>
+
+        <editorNotificationProvider
+                implementation="org.move.ide.notifications.InvalidDoveExecutableNotificationsProvider"/>
 
     </extensions>
+
+    <projectListeners>
+        <listener class="org.move.cli.DoveTomlWatcher"
+                  topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
+                  activeInTestMode="false"/>
+        <listener class="org.move.cli.RefreshProjectListener"
+                  topic="org.move.settings.MoveSettingsListener"
+                  activeInTestMode="false"/>
+        <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
+                  topic="org.move.settings.MoveSettingsListener"
+                  activeInTestMode="false"/>
+    </projectListeners>
 
     <actions>
         <action id="Move.NewMoveFile"

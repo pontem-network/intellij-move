@@ -32,6 +32,7 @@
 
         ADDRESS_LITERAL='regexp:0x[0-9a-fA-F]{1,40}'
         BECH32_ADDRESS_LITERAL='regexp:wallet1[A-Z0-9a-z&&[^boi1]]{6,}'
+        POLKADOT_ADDRESS_LITERAL='regexp:[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
 
         BOOL_LITERAL='regexp:(true)|(false)'
         INTEGER_LITERAL='regexp:[0-9]+((u8)|(u64)|(u128))?'
@@ -162,8 +163,12 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
 private Item_first ::= use | public | native | fun | const | resource | struct | spec
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
-private ModuleItem_item ::= ImportStatement | StructDef | NativeStructDef |
-                            FunctionDef | NativeFunctionDef | ConstDef | ItemSpecDef
+private ModuleItem_item ::= ImportStatement
+                            | StructDef | FunctionDef | NativeDef
+                            | ConstDef | ItemSpecDef
+//private ModuleItem_item ::= ImportStatement | StructDef | NativeStructDef
+//                            | FunctionDef | FunctionVisibilityContainer
+//                            | NativeFunctionDef | ConstDef | ItemSpecDef
 
 ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
 {
@@ -184,40 +189,72 @@ ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-NativeFunctionDef ::= native public? fun IDENTIFIER TypeParameterList?
-                         FunctionParameterList
-                         ReturnType?
-                         AcquiresType? ';'
+//NativeFunctionDef ::= native FunctionSignature
+
+//NativeFunctionDef ::= native FunctionVisibilityModifier?
+//                      fun IDENTIFIER TypeParameterList?
+//                         FunctionParameterList
+//                         ReturnType?
+//                         AcquiresType? ';'
+//{
+//    pin = "fun"
+//    name = "native function"
+//    implements = [
+//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+////        "org.move.lang.core.psi.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
+//    ]
+//    mixin = "org.move.lang.core.psi.mixins.MoveNativeFunctionDefMixin"
+//    recoverWhile = Item_recover
+//}
+
+NativeDef ::= native (FunctionSignatureWithOptionalVisibility | StructSignature) ';'
 {
-    pin = "fun"
-    name = "native function"
-    implements = [
-        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-//        "org.move.lang.core.psi.MoveTypeParametersOwner"
-        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
-    ]
-    mixin = "org.move.lang.core.psi.mixins.MoveNativeFunctionDefMixin"
-    recoverWhile = Item_recover
+    pin = 1
+//    recoverWhile = Item_recover
 }
 
-FunctionDef ::= public? fun IDENTIFIER TypeParameterList?
-                    FunctionParameterList
-                    ReturnType? AcquiresType?
-                    CodeBlock
+private FunctionSignatureWithOptionalVisibility ::= FunctionSignatureVisibility | FunctionSignature
+private FunctionSignatureVisibility ::= FunctionVisibilityModifier FunctionSignature { pin = 1 }
+FunctionSignature ::= fun IDENTIFIER TypeParameterList?
+                          FunctionParameterList
+                          ReturnType? AcquiresType?
 {
     pin = "fun"
-    name = "function"
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-//        "org.move.lang.core.psi.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
-//    extends = "org.move.lang.core.psi.MoveStubbedNamedElementImpl<?>"
-    mixin = "org.move.lang.core.psi.mixins.MoveFunctionDefMixin"
-    recoverWhile = Item_recover
-//    stubClass = "org.move.lang.core.stubs.MoveFunctionDefStub"
-//    elementTypeFactory = "org.move.lang.core.stubs.StubImplementationsKt.factory"
+    mixin = "org.move.lang.core.psi.mixins.MoveFunctionSignatureMixin"
 }
+
+FunctionDef ::= FunctionSignatureWithOptionalVisibility CodeBlock
+{
+    pin = 1
+//    recoverWhile = Item_recover
+}
+//NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';'
+
+//FunctionDef ::= fun IDENTIFIER TypeParameterList?
+//                    FunctionParameterList
+//                    ReturnType? AcquiresType?
+//                    CodeBlock
+//{
+//    pin = "fun"
+//    name = "function"
+//    implements = [
+//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+////        "org.move.lang.core.psi.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
+//    ]
+////    extends = "org.move.lang.core.psi.MoveStubbedNamedElementImpl<?>"
+//    mixin = "org.move.lang.core.psi.mixins.MoveFunctionDefMixin"
+//    recoverWhile = Item_recover
+////    stubClass = "org.move.lang.core.stubs.MoveFunctionDefStub"
+////    elementTypeFactory = "org.move.lang.core.stubs.StubImplementationsKt.factory"
+//}
+
+FunctionVisibilityModifier ::= public ('(' (script | friend) ')')?
 
 //private FunctionReturnItems ::= ReturnType? AcquiresType?
 //{
@@ -275,29 +312,44 @@ private AcquiresType_items_recover ::= !(';' | '{')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-NativeStructDef ::= native resource? struct IDENTIFIER TypeParameterList? ';'
+StructSignature ::= resource? struct IDENTIFIER TypeParameterList? StructTraitList?
 {
     pin = "struct"
     implements = [
         "org.move.lang.core.psi.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
     ]
-    mixin = "org.move.lang.core.psi.mixins.MoveNativeStructDefMixin"
+    mixin = "org.move.lang.core.psi.mixins.MoveStructSignatureMixin"
 }
 
-StructDef ::= resource? struct IDENTIFIER
-                TypeParameterList?
-                StructFieldsDefBlock
-{
-    pin = "struct"
-    implements = [
-        "org.move.lang.core.psi.MoveTypeParametersOwner"
-        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-    ]
-    mixin = "org.move.lang.core.psi.ext.MoveStructDefMixin"
-}
+StructDef ::= StructSignature StructFieldsDefBlock
+
+//NativeStructDef ::= native resource? struct IDENTIFIER TypeParameterList? ';'
+//{
+//    pin = "struct"
+//    implements = [
+//        "org.move.lang.core.psi.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+//    ]
+//    mixin = "org.move.lang.core.psi.mixins.MoveNativeStructDefMixin"
+//}
+
+//StructDef ::= resource? struct IDENTIFIER
+//                TypeParameterList? StructTraitList?
+//                StructFieldsDefBlock
+//{
+//    pin = "struct"
+//    implements = [
+//        "org.move.lang.core.psi.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MoveStructDefMixin"
+//}
+
+StructTraitList ::= has <<comma_sep_items StructTrait>> { pin = 1 }
+StructTrait ::= IDENTIFIER
+
 StructFieldsDefBlock ::= '{' StructFieldDef_with_recover* '}' { pin = 1 }
-
 private StructFieldDef_with_recover ::= !'}' StructFieldDef (',' | &'}')
 {
     pin = 1
@@ -745,6 +797,7 @@ LiteralExpr ::= BOOL_LITERAL
                 | BYTE_STRING_LITERAL
                 | ADDRESS_LITERAL
                 | BECH32_ADDRESS_LITERAL
+                | POLKADOT_ADDRESS_LITERAL
 
 CallExpr ::= (QualPath &'(') CallArguments
 {
@@ -821,7 +874,7 @@ FullyQualifiedModuleRef ::= AddressRef '::' IDENTIFIER
     mixin = "org.move.lang.core.psi.ext.MoveFullyQualifiedModuleRefMixin"
 }
 
-AddressRef ::= ADDRESS_LITERAL | BECH32_ADDRESS_LITERAL
+AddressRef ::= ADDRESS_LITERAL | BECH32_ADDRESS_LITERAL | POLKADOT_ADDRESS_LITERAL
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Specs
@@ -900,8 +953,8 @@ NativeDefineFunction ::= native define IDENTIFIER TypeParameterList?
     ]
 }
 NativeDefineFunctionSpec ::= native define IDENTIFIER TypeParameterList?
-                                                               FunctionParameterList
-                                                               ReturnType? ';'
+                                                       FunctionParameterList
+                                                       ReturnType? ';'
 {
     pin = 2
     implements = [
@@ -1027,8 +1080,8 @@ InvariantSpecExpr ::= invariant
                     Predicate { pin = 1 }
 InvariantModifier ::= pack | unpack | module | update
 
-SpecVisibility ::= '[' <<comma_sep_items VisibilityModifier>> ']' { pin = 1 }
-VisibilityModifier ::= global | isolated | deactivated
+SpecVisibility ::= '[' <<comma_sep_items SpecVisibilityModifier>> ']' { pin = 1 }
+SpecVisibilityModifier ::= global | isolated | deactivated
                                 | concrete | abstract
                                 | assert | assume
 

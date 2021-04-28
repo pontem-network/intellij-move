@@ -5,14 +5,13 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.formatter.common.AbstractBlock
 import org.move.ide.formatter.impl.*
 import org.move.lang.MoveElementTypes.*
-import org.move.lang.core.psi.MoveExpr
 
 class MoveFormatterBlock(
     node: ASTNode,
     wrap: Wrap?,
     alignment: Alignment?,
     private val indent: Indent?,
-    val ctx: MoveFmtContext
+    val ctx: MoveFmtContext,
 ) : AbstractBlock(node, wrap, alignment) {
     override fun isLeaf(): Boolean = node.firstChildNode == null
     override fun getIndent(): Indent? = indent

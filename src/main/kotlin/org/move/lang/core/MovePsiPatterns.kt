@@ -39,7 +39,7 @@ object MovePsiPatterns {
         psiElementInside<MoveCodeBlock>()
 
     fun acquiresPlacement(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MoveFunctionDef>()
+        psiElementWithParent<MoveFunctionSignature>()
             .and(
                 psiElementAfterSiblingSkipping<MoveFunctionParameterList>(whitespace())
             )
@@ -151,4 +151,3 @@ fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCond(
 //    return PlatformPatterns.psiElement(I::class.java)
 //        .andOr(PlatformPatterns.psiElement().withParent(MovePatterns.error))
 //}
-

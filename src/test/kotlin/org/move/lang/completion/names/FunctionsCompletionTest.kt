@@ -3,7 +3,8 @@ package org.move.lang.completion.names
 import org.move.utils.tests.completion.CompletionTestCase
 
 class FunctionsCompletionTest : CompletionTestCase() {
-    fun `test function call zero args`() = doSingleCompletion("""
+    fun `test function call zero args`() = doSingleCompletion(
+        """
         module M {
             fun frobnicate() {}
             fun main() {
@@ -17,9 +18,11 @@ class FunctionsCompletionTest : CompletionTestCase() {
                 frobnicate()/*caret*/
             }
         }
-    """)
+    """
+    )
 
-    fun `test function call one arg`() = doSingleCompletion("""
+    fun `test function call one arg`() = doSingleCompletion(
+        """
         module M {
             fun frobnicate(a: u8) {}
             fun main() {
@@ -33,9 +36,11 @@ class FunctionsCompletionTest : CompletionTestCase() {
                 frobnicate(/*caret*/)
             }
         }
-    """)
+    """
+    )
 
-    fun `test function call with parens`() = doSingleCompletion("""
+    fun `test function call with parens`() = doSingleCompletion(
+        """
         module M {
             fun frobnicate() {}
             fun main() {
@@ -49,9 +54,11 @@ class FunctionsCompletionTest : CompletionTestCase() {
                 frobnicate()/*caret*/
             }
         }
-    """)
+    """
+    )
 
-    fun `test function call with parens with arg`() = doSingleCompletion("""
+    fun `test function call with parens with arg`() = doSingleCompletion(
+        """
         module M {
             fun frobnicate(a: u8) {}
             fun main() {
@@ -65,9 +72,11 @@ class FunctionsCompletionTest : CompletionTestCase() {
                 frobnicate(/*caret*/)
             }
         }
-    """)
+    """
+    )
 
-    fun `test complete function name in spec fun without parens`() = doSingleCompletion("""
+    fun `test complete function name in spec fun without parens`() = doSingleCompletion(
+        """
         module M {
             fun frobnicate(a: u8) {}
             spec fun frob/*caret*/
@@ -77,9 +86,11 @@ class FunctionsCompletionTest : CompletionTestCase() {
             fun frobnicate(a: u8) {}
             spec fun frobnicate /*caret*/
         }
-    """)
+    """
+    )
 
-    fun `test spec fun do not add space if already there`() = doSingleCompletion("""
+    fun `test spec fun do not add space if already there`() = doSingleCompletion(
+        """
         module M {
             fun frobnicate(a: u8) {}
             spec fun frob/*caret*/ {}
@@ -89,9 +100,11 @@ class FunctionsCompletionTest : CompletionTestCase() {
             fun frobnicate(a: u8) {}
             spec fun frobnicate/*caret*/ {}
         }
-    """)
+    """
+    )
 
-    fun `test define function accessible before definition`() = doSingleCompletion("""
+    fun `test define function accessible before definition`() = doSingleCompletion(
+        """
         module M {
             spec module {
                 res/*caret*/;
@@ -111,7 +124,8 @@ class FunctionsCompletionTest : CompletionTestCase() {
                 }
             }
         }
-    """)
+    """
+    )
 
 //    fun `test generic function call with type parameters`() = doSingleCompletion("""
 //        module M {
@@ -129,7 +143,8 @@ class FunctionsCompletionTest : CompletionTestCase() {
 //        }
 //    """)
 
-    fun `test type parameters accessible in types completion`() = doSingleCompletion("""
+    fun `test type parameters accessible in types completion`() = doSingleCompletion(
+        """
         module M {
             fun main<CoinType>() {
                 let a: Coi/*caret*/
@@ -141,9 +156,11 @@ class FunctionsCompletionTest : CompletionTestCase() {
                 let a: CoinType/*caret*/
             }
         }
-    """)
+    """
+    )
 
-    fun `test public functions completion from another module`() = doSingleCompletion("""
+    fun `test public functions completion from another module in the same file`() = doSingleCompletion(
+        """
         address 0x1 {
         module Transaction {
             public fun create() {}
@@ -167,9 +184,11 @@ class FunctionsCompletionTest : CompletionTestCase() {
                 0x1::Transaction::create()/*caret*/
             }
         }
-    """)
+    """
+    )
 
-    fun `test no function completion in type position`() = checkNoCompletion("""
+    fun `test no function completion in type position`() = checkNoCompletion(
+        """
         address 0x1 {
         module Transaction {
             public fun create() {}
@@ -179,5 +198,6 @@ class FunctionsCompletionTest : CompletionTestCase() {
         module M {
             fun main(a: 0x1::Transaction::cr/*caret*/) {}
         }
-    """)
+    """
+    )
 }
