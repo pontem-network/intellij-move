@@ -9,8 +9,8 @@ import com.intellij.ui.layout.panel
 
 class MoveConfigurable(val project: Project) : BoundConfigurable("Move"),
                                                Configurable.NoScroll {
-    private val settingsPanel =
-        MoveProjectSettingsPanel(project.moveSettings.settingsState.doveExecutablePath)
+
+    private val settingsPanel = MoveProjectSettingsPanel(project)
 
     override fun createPanel(): DialogPanel {
         return panel {

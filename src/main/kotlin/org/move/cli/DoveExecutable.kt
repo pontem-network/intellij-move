@@ -28,7 +28,7 @@ class DoveExecutable(private val project: Project, private val dovePath: Path) {
         try {
             val (out, err) = runExecutable(project.rootService.path!!.toFile(), "--version")
             if (err.isNotEmpty()) return null
-            return out
+            return out.split(' ').last()
         } catch (e: ProcessNotCreatedException) {
             return null
         }
