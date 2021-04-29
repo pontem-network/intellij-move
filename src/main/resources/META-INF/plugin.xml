@@ -10,9 +10,7 @@
 
             <p><a href="https://github.com/pontem-network/intellij-move">https://github.com/pontem-network/intellij-move</a></p>
 
-            <p>The plugin offers integration with Dove, Cargo-like utility for Move language. You can find binary for your platform at <a href="https://github.com/pontem-network/move-tools/releases">https://github.com/pontem-network/move-tools/releases</a></p>
-
-            <p>We recommend it for any project that is more than one file in size. You need to add path to Dove binary in Settings -> Languages & Frameworks -> Move and initialize your project with <code>dove init</code> to enable integration.</p>
+            <p>See documentation at <a href="https://github.com/pontem-network/intellij-move#readme">Project README</a></p>
         ]]>
     </description>
 
