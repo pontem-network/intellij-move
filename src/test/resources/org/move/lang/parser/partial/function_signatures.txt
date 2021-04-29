@@ -114,12 +114,11 @@ FILE
           PsiErrorElement:IDENTIFIER expected, got 'native'
             <empty list>
       PsiWhiteSpace('\n\n    ')
-      MoveNativeDefImpl(NATIVE_DEF)
-        PsiElement(native)('native')
-        PsiErrorElement:<struct signature>, fun or public expected, got 'native'
-          <empty list>
+      PsiElement(native)('native')
+      PsiErrorElement:<struct signature>, fun or public expected, got 'native'
+        <empty list>
       PsiWhiteSpace('\n    ')
-      MoveNativeDefImpl(NATIVE_DEF)
+      MoveNativeFunctionDefImpl(NATIVE_FUNCTION_DEF)
         PsiElement(native)('native')
         PsiWhiteSpace(' ')
         MoveFunctionSignatureImpl(FUNCTION_SIGNATURE)
@@ -127,7 +126,7 @@ FILE
           PsiErrorElement:IDENTIFIER expected, got 'native'
             <empty list>
       PsiWhiteSpace('\n    ')
-      MoveNativeDefImpl(NATIVE_DEF)
+      MoveNativeFunctionDefImpl(NATIVE_FUNCTION_DEF)
         PsiElement(native)('native')
         PsiWhiteSpace(' ')
         MoveFunctionVisibilityModifierImpl(FUNCTION_VISIBILITY_MODIFIER)
@@ -135,7 +134,7 @@ FILE
         PsiErrorElement:'(' or fun expected, got 'native'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MoveNativeDefImpl(NATIVE_DEF)
+      MoveNativeFunctionDefImpl(NATIVE_FUNCTION_DEF)
         PsiElement(native)('native')
         PsiWhiteSpace(' ')
         MoveFunctionVisibilityModifierImpl(FUNCTION_VISIBILITY_MODIFIER)
@@ -146,7 +145,7 @@ FILE
         PsiErrorElement:fun expected, got 'native'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MoveNativeDefImpl(NATIVE_DEF)
+      MoveNativeFunctionDefImpl(NATIVE_FUNCTION_DEF)
         PsiElement(native)('native')
         PsiWhiteSpace(' ')
         MoveFunctionVisibilityModifierImpl(FUNCTION_VISIBILITY_MODIFIER)
@@ -157,7 +156,7 @@ FILE
         PsiErrorElement:fun expected, got 'native'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MoveNativeDefImpl(NATIVE_DEF)
+      MoveNativeFunctionDefImpl(NATIVE_FUNCTION_DEF)
         PsiElement(native)('native')
         PsiWhiteSpace(' ')
         MoveFunctionVisibilityModifierImpl(FUNCTION_VISIBILITY_MODIFIER)

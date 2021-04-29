@@ -173,6 +173,16 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
+    fun `test native fun to public`() = doSingleCompletion("""
+        module M {
+            native pub/*caret*/ fun main();
+        }
+    """, """
+        module M {
+            native public/*caret*/ fun main();
+        }
+    """)
+
     fun `test public fun`() = doSingleCompletion("""
         module M {
             public f/*caret*/
