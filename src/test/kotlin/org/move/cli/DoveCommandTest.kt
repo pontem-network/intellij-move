@@ -31,6 +31,6 @@ class DoveCommandTest : MoveTestBase() {
                 moveProjectRoot.resolve("stdlib").toAbsolutePath().toString()
             )
         )
-        check(metadata.package_info.account_address == "0x0000000000000000000000000000000000000001")
+        check(metadata.package_info.account_address == "0x0000000000000000000000000000000000000000000000000000000000000001")
     }
 }
