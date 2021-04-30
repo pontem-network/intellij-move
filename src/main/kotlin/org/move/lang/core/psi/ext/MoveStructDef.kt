@@ -9,7 +9,7 @@ import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import javax.swing.Icon
 
 val MoveStructDef.fields: List<MoveStructFieldDef>
-    get() = structFieldsDefBlock?.structFieldDefList.orEmpty()
+    get() = structFieldsDefBlock.structFieldDefList
 
 val MoveStructDef.fieldNames: List<String>
     get() = fields.mapNotNull { it.name }

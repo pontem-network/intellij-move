@@ -10,7 +10,7 @@ fun MoveModuleDef.allFnSignatures(): List<MoveFunctionSignature> {
     val block = moduleBlock ?: return emptyList()
     return listOf(
         block.functionDefList.mapNotNull { it.functionSignature },
-        block.nativeDefList.mapNotNull { it.functionSignature },
+        block.nativeFunctionDefList.mapNotNull { it.functionSignature },
     ).flatten()
 }
 
@@ -36,7 +36,7 @@ fun MoveModuleDef.publicFnSignatures(): List<MoveFunctionSignature> {
 
 fun createBuiltinFuncSignature(text: String, project: Project): MoveFunctionSignature? {
     val signature = MovePsiFactory(project)
-        .createNativeDef(text)
+        .createNativeFunctionDef(text)
         .functionSignature ?: return null
     (signature as MoveFunctionSignatureMixin).builtIn = true
     return signature
@@ -69,15 +69,15 @@ fun createBuiltinFuncSignature(text: String, project: Project): MoveFunctionSign
 fun MoveModuleDef.structSignatures(): List<MoveStructSignature> {
     val block = moduleBlock ?: return emptyList()
     return listOf(
-        block.nativeDefList.mapNotNull { it.structSignature },
+        block.nativeStructDefList.mapNotNull { it.structSignature },
         block.structDefList.map { it.structSignature }
     ).flatten()
 }
 
-fun MoveModuleDef.nativeStructs(): List<MoveStructSignature> {
-//    val block = moduleBlock ?: return emptyList()
-    return emptyList()
-}
+//fun MoveModuleDef.nativeStructs(): List<MoveStructSignature> {
+////    val block = moduleBlock ?: return emptyList()
+//    return emptyList()
+//}
 
 fun MoveModuleDef.consts(): List<MoveConstDef> =
     moduleBlock?.constDefList.orEmpty()

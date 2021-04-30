@@ -163,8 +163,9 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
 private Item_first ::= use | public | native | fun | const | resource | struct | spec
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
-private ModuleItem_item ::= ImportStatement
-                            | StructDef | FunctionDef | NativeDef
+private ModuleItem_item ::= ImportStatement | FriendStatement
+                            | StructDef | FunctionDef
+                            | NativeStructDef | NativeFunctionDef
                             | ConstDef | ItemSpecDef
 //private ModuleItem_item ::= ImportStatement | StructDef | NativeStructDef
 //                            | FunctionDef | FunctionVisibilityContainer
@@ -208,11 +209,14 @@ ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
 //    recoverWhile = Item_recover
 //}
 
-NativeDef ::= native (FunctionSignatureWithOptionalVisibility | StructSignature) ';'
-{
-    pin = 1
-//    recoverWhile = Item_recover
-}
+//private NativeDef ::=
+//{
+//    pin = 1
+////    recoverWhile = Item_recover
+//}
+
+NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';' { pin = 2 }
+NativeStructDef ::= native StructSignature ';' { pin = 2 }
 
 private FunctionSignatureWithOptionalVisibility ::= FunctionSignatureVisibility | FunctionSignature
 private FunctionSignatureVisibility ::= FunctionVisibilityModifier FunctionSignature { pin = 1 }
@@ -391,6 +395,7 @@ StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
 //{
 //    pin = 1
 //}
+FriendStatement ::= friend FullyQualifiedModuleRef ';' { pin = 1 }
 
 ImportStatement ::= use (ModuleItemsImport | ModuleImport) ';'
 {
