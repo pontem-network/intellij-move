@@ -163,7 +163,7 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
 private Item_first ::= use | public | native | fun | const | resource | struct | spec
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
-private ModuleItem_item ::= ImportStatement
+private ModuleItem_item ::= ImportStatement | FriendStatement
                             | StructDef | FunctionDef
                             | NativeStructDef | NativeFunctionDef
                             | ConstDef | ItemSpecDef
@@ -395,6 +395,7 @@ StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
 //{
 //    pin = 1
 //}
+FriendStatement ::= friend FullyQualifiedModuleRef ';' { pin = 1 }
 
 ImportStatement ::= use (ModuleItemsImport | ModuleImport) ';'
 {

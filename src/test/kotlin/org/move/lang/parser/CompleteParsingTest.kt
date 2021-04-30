@@ -19,6 +19,7 @@ class CompleteParsingTest : MoveParsingTestCase("complete") {
 
     // use
     fun `test use`() = doTest(true)
+    fun `test friend`() = doTest(true)
 
     // assignments
     fun `test let patterns`() = doTest(true)
