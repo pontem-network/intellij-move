@@ -32,4 +32,4 @@ see [https://docs.pontem.network/03.-move-vm/compiler_and_toolset#dove](https://
 
 ## Compatible IDEs
 
-All Intellij-based IDEs starting from version 2021.1. 
+All Intellij-based IDEs starting from version 2021.1. For 2020.3 and below you can use old versions of the plugin. 
