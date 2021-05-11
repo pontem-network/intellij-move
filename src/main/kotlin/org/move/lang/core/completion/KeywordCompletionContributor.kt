@@ -44,7 +44,7 @@ class KeywordCompletionContributor : CompletionContributor() {
             CompletionType.BASIC,
             moduleBlock().and(onStatementBeginning()),
             KeywordCompletionProvider(
-                "public",
+                *VISIBILITY_MODIFIERS,
                 "native",
                 "fun",
                 "resource",
@@ -78,7 +78,7 @@ class KeywordCompletionContributor : CompletionContributor() {
         extend(
             CompletionType.BASIC,
             moduleBlock().and(onStatementBeginning("native")),
-            KeywordCompletionProvider("public", "fun", "struct")
+            KeywordCompletionProvider(*VISIBILITY_MODIFIERS, "fun", "struct")
         )
         extend(
             CompletionType.BASIC,
@@ -159,6 +159,9 @@ class KeywordCompletionContributor : CompletionContributor() {
 //            .andNot(moduleDeclarationPattern())
 //            .andNot(addressDeclarationPattern())
 //            .andNot(functionDeclarationPattern())
+    companion object {
+        private val VISIBILITY_MODIFIERS = arrayOf("public", "public(script)", "public(friend)")
+    }
 
 
 }
