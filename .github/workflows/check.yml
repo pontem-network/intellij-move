@@ -12,12 +12,12 @@ jobs:
             matrix:
                 os: [ ubuntu-latest ]
                 platform-version: [ 2021.1 ]
-                dove-version: [ 1.1.5 ]
+                dove-version: [ 1.1.4 ]
 
         runs-on: ${{ matrix.os }}
         env:
             ORG_GRADLE_PROJECT_intellijVersion: ${{ matrix.platform-version }}
-            DOVE_BINARY_NAME: dove-1.1.5-linux-x86_64
+            DOVE_BINARY_NAME: dove-1.1.4-linux-x86_64
 
         steps:
             -   uses: actions/checkout@v2
