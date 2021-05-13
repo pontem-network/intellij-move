@@ -12,6 +12,7 @@ import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.stdext.chain
 import java.nio.file.Paths
 
 
@@ -133,6 +134,7 @@ fun processQualModuleRef(
 
     val moduleFolders = metadata.package_info
         .local_dependencies
+        .chain(listOf(metadata.layout.module_dir))
         .mapNotNull {
             VirtualFileManager.getInstance().findFileByNioPath(Paths.get(it))
         }

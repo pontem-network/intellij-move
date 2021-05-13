@@ -51,6 +51,9 @@ object MovePsiPatterns {
                 PlatformPatterns.psiElement(COLON),
             )
 
+    fun structTrait(): PsiElementPattern.Capture<PsiElement> =
+        psiElementWithParent<MoveStructTrait>()
+
     fun qualPathIdentifier(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
             .withParent<MoveQualPath>()

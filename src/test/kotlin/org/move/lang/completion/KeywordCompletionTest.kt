@@ -231,23 +231,29 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
-    fun `test copyable bound`() = doSingleCompletion("""
+    fun `test copy bound`() = doSingleCompletion("""
         module M {
             struct MyStruct<T: cop/*caret*/> {}
         }
     """, """
         module M {
-            struct MyStruct<T: copyable/*caret*/> {}
+            struct MyStruct<T: copy/*caret*/> {}
         }
     """)
 
-    fun `test resource bound`() = doSingleCompletion("""
+    fun `test store bound`() = doSingleCompletion("""
         module M {
-            struct MyStruct<T: res/*caret*/> {}
+            struct MyStruct<T: st/*caret*/> {}
         }
     """, """
         module M {
-            struct MyStruct<T: resource/*caret*/> {}
+            struct MyStruct<T: store/*caret*/> {}
+        }
+    """)
+
+    fun `test resource bound`() = checkNoCompletion("""
+        module M {
+            struct MyStruct<T: res/*caret*/> {}
         }
     """)
 

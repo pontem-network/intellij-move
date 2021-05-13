@@ -6,47 +6,30 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.psi.MoveTypeParameter
 import org.move.lang.core.psi.ext.isErrorElement
 import org.move.lang.core.psi.ext.isWhitespace
 import org.move.lang.core.psi.ext.rightSiblings
 
-class KeywordCompletionProvider(private vararg val keywords: String) :
-    CompletionProvider<CompletionParameters>() {
+class KeywordCompletionProvider(
+    private vararg val keywords: String
+) : CompletionProvider<CompletionParameters>() {
+
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
         result: CompletionResultSet,
     ) {
-        val pos = parameters.position
-        val parent = pos.parent
         for (keyword in keywords) {
             var element =
                 LookupElementBuilder.create(keyword).bold()
-
-            val typeBound = parent is MoveTypeParameter
-//            val typeBound =
-//                keyword == "copyable" || (keyword == "resource" && parent is MoveTypeParameter)
-
-//            println(pos)
-//            println(pos.parent.parent)
-//            println(pos.text)
-//            println(pos.rightSiblings.toList())
-
-            val nextSibling = pos
-                .parent
+            val nextSibling = parameters.position.parent
                 .rightSiblings
                 .filter { !it.isWhitespace() && !it.isErrorElement() }
                 .firstOrNull()?.firstChild
-//            val publicPrefix = keyword == "public" && nextSiblingText in setOf("fun", "const")
-//            val resourcePrefix = keyword == "resource" && nextSiblingText == "struct"
 
-            if (!typeBound) {
-                element = element.withInsertHandler { ctx, _ ->
-                    if (!(nextSibling != null && ctx.alreadyHasSpace)) ctx.addSuffix(" ")
-                }
+            element = element.withInsertHandler { ctx, _ ->
+                if (!(nextSibling != null && ctx.alreadyHasSpace)) ctx.addSuffix(" ")
             }
-
             result.addElement(PrioritizedLookupElement.withPriority(element, KEYWORD_PRIORITY))
         }
     }

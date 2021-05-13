@@ -522,7 +522,7 @@ FILE
               PsiElement(IDENTIFIER)('U')
               MoveTypeParamBoundImpl(TYPE_PARAM_BOUND)
                 PsiElement(:)(':')
-                PsiErrorElement:copyable or resource expected, got ','
+                PsiErrorElement:<trait> expected, got ','
                   <empty list>
             PsiElement(,)(',')
             PsiWhiteSpace(' ')
@@ -530,11 +530,23 @@ FILE
               PsiElement(IDENTIFIER)('V')
               MoveTypeParamBoundImpl(TYPE_PARAM_BOUND)
                 PsiElement(:)(':')
-                PsiErrorElement:copyable or resource expected, got 'unknown'
+                PsiWhiteSpace(' ')
+                MoveStructTraitImpl(STRUCT_TRAIT)
+                  PsiElement(IDENTIFIER)('store')
+                PsiElement(+)('+')
+                PsiErrorElement:<trait> expected, got ','
                   <empty list>
+            PsiElement(,)(',')
             PsiWhiteSpace(' ')
             MoveTypeParameterImpl(TYPE_PARAMETER)
-              PsiElement(IDENTIFIER)('unknown')
+              PsiElement(IDENTIFIER)('T')
+              MoveTypeParamBoundImpl(TYPE_PARAM_BOUND)
+                PsiElement(:)(':')
+                MoveStructTraitImpl(STRUCT_TRAIT)
+                  PsiElement(IDENTIFIER)('drop')
+                PsiElement(+)('+')
+                PsiErrorElement:<trait> expected, got '>'
+                  <empty list>
             PsiElement(>)('>')
           MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
             PsiElement(()('(')

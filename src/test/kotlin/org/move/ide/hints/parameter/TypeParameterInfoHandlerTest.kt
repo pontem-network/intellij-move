@@ -40,31 +40,31 @@ class TypeParameterInfoHandlerTest :
 
     fun `test function`() = checkByText("""
         module M {
-            fun call<R: resource>() {}
+            fun call<R: store>() {}
             
             fun main() {
                 call</*caret*/>()
             }
         } 
-    """, "R: resource", 0)
+    """, "R: store", 0)
 
     fun `test function index 0`() = checkByText("""
         module M {
-            fun call<R: resource, S: copyable>() {}
+            fun call<R: store, S: copy>() {}
             
             fun main() {
                 call<u8/*caret*/, u8>()
             }
         } 
-    """, "R: resource, S: copyable", 0)
+    """, "R: store, S: copy", 0)
 
     fun `test function index 1`() = checkByText("""
         module M {
-            fun call<R: resource, S: copyable>() {}
+            fun call<R: store, S: copy>() {}
             
             fun main() {
                 call<u8, u8/*caret*/>()
             }
         } 
-    """, "R: resource, S: copyable", 1)
+    """, "R: store, S: copy", 1)
 }
