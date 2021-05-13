@@ -11,7 +11,7 @@ jobs:
         strategy:
             matrix:
                 os: [ ubuntu-latest ]
-                platform-version: [ 2021.1 ]
+                platform-version: [ 2021.1.1 ]
                 dove-version: [ 1.1.4 ]
 
         runs-on: ${{ matrix.os }}
@@ -43,9 +43,10 @@ jobs:
             -   name: Fetch dove executable from move-tools releases
                 uses: dsaltares/fetch-gh-release-asset@master
                 with:
+                    token: ${{ secrets.GITHUB_TOKEN }}
+                    file: ${{ env.DOVE_BINARY_NAME }}
                     repo: "pontem-network/move-tools"
                     version: "tags/${{ matrix.dove-version }}"
-                    file: ${{ env.DOVE_BINARY_NAME }}
 
             -   name: Rename dove executable and set proper permissions
                 run: mv ./${{ env.DOVE_BINARY_NAME }} ./dove && sudo chown runner ./dove && chmod +x ./dove
