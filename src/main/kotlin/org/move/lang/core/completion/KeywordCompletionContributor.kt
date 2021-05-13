@@ -2,21 +2,19 @@ package org.move.lang.core.completion
 
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionType
-import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.patterns.PsiElementPattern
 import com.intellij.psi.PsiElement
 import org.move.lang.MoveElementTypes.IDENTIFIER
-import org.move.lang.MoveElementTypes.STRUCT
 import org.move.lang.core.MovePsiPatterns
 import org.move.lang.core.MovePsiPatterns.acquiresPlacement
 import org.move.lang.core.MovePsiPatterns.addressBlock
 import org.move.lang.core.MovePsiPatterns.codeStatement
 import org.move.lang.core.MovePsiPatterns.moduleBlock
 import org.move.lang.core.MovePsiPatterns.scriptBlock
+import org.move.lang.core.MovePsiPatterns.structTrait
 import org.move.lang.core.MovePsiPatterns.toplevel
 import org.move.lang.core.MovePsiPatterns.typeParamBound
-import org.move.lang.core.MovePsiPatterns.whitespace
 
 class KeywordCompletionContributor : CompletionContributor() {
     init {
@@ -44,7 +42,7 @@ class KeywordCompletionContributor : CompletionContributor() {
             CompletionType.BASIC,
             moduleBlock().and(onStatementBeginning()),
             KeywordCompletionProvider(
-                "public",
+                *VISIBILITY_MODIFIERS,
                 "native",
                 "fun",
                 "resource",
@@ -78,7 +76,7 @@ class KeywordCompletionContributor : CompletionContributor() {
         extend(
             CompletionType.BASIC,
             moduleBlock().and(onStatementBeginning("native")),
-            KeywordCompletionProvider("public", "fun", "struct")
+            KeywordCompletionProvider(*VISIBILITY_MODIFIERS, "fun", "struct")
         )
         extend(
             CompletionType.BASIC,
@@ -92,14 +90,14 @@ class KeywordCompletionContributor : CompletionContributor() {
                 "return",
             )
         )
-        extend(
-            CompletionType.BASIC,
-            typeParamBound(),
-            KeywordCompletionProvider(
-                "copyable",
-                "resource",
-            )
-        )
+//        extend(
+//            CompletionType.BASIC,
+//            structTrait(),
+//            KeywordCompletionProvider(
+//                *STRUCT_TRAITS,
+//                addWhitespaceAfter = false
+//            )
+//        )
         extend(
             CompletionType.BASIC,
             acquiresPlacement(),
@@ -128,7 +126,7 @@ class KeywordCompletionContributor : CompletionContributor() {
 //            .withSuperParent(2, psiElement<MoveBlock>())
 //            .and(psiElement().withSuperParent(3, psiElement<MoveFunctionDef>()))
 
-//    private fun statementBeginningPattern(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
+    //    private fun statementBeginningPattern(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
 //        PlatformPatterns.psiElement(IDENTIFIER)
 //            .and(MovePsiPatterns.onStatementBeginning(*startWords))
 //
@@ -159,6 +157,10 @@ class KeywordCompletionContributor : CompletionContributor() {
 //            .andNot(moduleDeclarationPattern())
 //            .andNot(addressDeclarationPattern())
 //            .andNot(functionDeclarationPattern())
+    companion object {
+        private val VISIBILITY_MODIFIERS = arrayOf("public", "public(script)", "public(friend)")
+        private val STRUCT_TRAITS = arrayOf("copy", "drop", "store", "key")
+    }
 
 
 }

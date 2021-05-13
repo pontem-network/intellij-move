@@ -18,6 +18,7 @@ import org.move.lang.core.MOVE_COMMENTS
 import org.move.lang.core.MOVE_KEYWORDS
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
+import org.move.lang.core.tokenSetOf
 
 fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilder {
     return SpacingBuilder(commonSettings)
@@ -73,10 +74,20 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .between(TYPE_PARAMETER_LIST, FUNCTION_PARAMETER_LIST).spaceIf(false)
         .before(CALL_ARGUMENTS).spaceIf(false)
 
+        .betweenInside(PUBLIC, L_PAREN, FUNCTION_VISIBILITY_MODIFIER).spaces(0)
+        .betweenInside(tokenSetOf(L_PAREN),
+                       tokenSetOf(SCRIPT, FRIEND),
+                       FUNCTION_VISIBILITY_MODIFIER).spaces(0)
+        .betweenInside(tokenSetOf(SCRIPT, FRIEND),
+                       tokenSetOf(R_PAREN),
+                       FUNCTION_VISIBILITY_MODIFIER).spaces(0)
+        .after(FUNCTION_VISIBILITY_MODIFIER).spaces(1)
+
         .around(BINARY_OPS).spaces(1)
         .around(MOVE_KEYWORDS).spaces(1)
         .applyForEach(BLOCK_LIKE) { before(it).spaces(1) }
 }
+
 
 fun Block.computeSpacing(child1: Block?, child2: Block, ctx: MoveFmtContext): Spacing? {
     if (child1 is ASTBlock && child2 is ASTBlock) SpacingContext.create(child1, child2)?.apply {
@@ -192,4 +203,3 @@ private fun SpacingContext.needsBlankLineBetweenItems(): Boolean {
 
     return true
 }
-

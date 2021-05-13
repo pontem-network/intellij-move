@@ -9,7 +9,7 @@ module M {
 
     fun fn_with_returned_tuple(): (u8, u8) {}
 
-    fun fn_with_type_params<T, U>(): T {}
+    fun fn_with_type_params<T: store, U: store + drop>(): T {}
 
     fun fn_with_signer(s: &signer) {}
 

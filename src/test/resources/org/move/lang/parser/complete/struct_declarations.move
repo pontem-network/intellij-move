@@ -4,7 +4,7 @@ module M {
         val2: vector<T>,
     }
 
-    resource struct ResourceValidatorConfig<T> {
+    resource struct ResourceValidatorConfig<T: copy> {
         val1: u8,
         val2: vector<T>,
         operator_account: Option<address>,

@@ -351,7 +351,10 @@ StructDef ::= StructSignature StructFieldsDefBlock
 //}
 
 StructTraitList ::= has <<comma_sep_items StructTrait>> { pin = 1 }
-StructTrait ::= IDENTIFIER
+StructTrait ::= copy | IDENTIFIER
+{
+    name = "trait"
+}
 
 StructFieldsDefBlock ::= '{' StructFieldDef_with_recover* '}' { pin = 1 }
 private StructFieldDef_with_recover ::= !'}' StructFieldDef (',' | &'}')
@@ -511,10 +514,15 @@ TypeParameter ::= IDENTIFIER TypeParamBound? {
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
     mixin = "org.move.lang.core.psi.mixins.MoveTypeParameterMixin"
 }
-TypeParamBound ::= ':' (copyable | resource)
+TypeParamBound ::= ':' TypeParamBound_items
 {
     pin = 1
 }
+private TypeParamBound_items ::= StructTrait ( '+' StructTrait )*
+{
+    recoverWhile = TypeParamBound_items_recover
+}
+private TypeParamBound_items_recover ::= !('>' | ',')
 
 TypeArgumentList ::= '<' <<comma_sep_items (Type &(','|'>'))>>? '>'
 //private TypeArgumentList_items ::= <<comma_sep_items (QualifiedPathType &(','|'>'))>>

@@ -52,9 +52,9 @@ class KeywordCompletionTest : CompletionTestCase() {
     )
 
     fun `test space after declaration`() = doSingleCompletion("""
-            module M { pub/*caret*/ }
+            module M { fu/*caret*/ }
         """, """
-            module M { public /*caret*/ }
+            module M { fun /*caret*/ }
         """)
 
     fun `test no completion in address literal`() = checkNoCompletion(
@@ -139,47 +139,39 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
-    fun `test public`() = doSingleCompletion("""
+    fun `test public`() = completionFixture.checkContainsCompletion("""
         module M {
             pub/*caret*/
         }
-    """, """
-        module M {
-            public /*caret*/
-        }
-    """)
+    """, listOf("public", "public(script)", "public(friend)"))
 
-    fun `test public with other function`() = doSingleCompletion("""
+    fun `test public with other function`() = checkContainsCompletion("public","""
         module M {
             pub/*caret*/
             
             public fun main() {}
         }
-    """, """
-        module M {
-            public /*caret*/
-            
-            public fun main() {}
-        }
     """)
 
-    fun `test public before fun`() = doSingleCompletion("""
+    fun `test public before fun`() = checkContainsCompletion("public", """
         module M {
             pub/*caret*/ fun main() {}
         }
+    """)
+
+    fun `test native before fun`() = doSingleCompletion("""
+        module M {
+            nat/*caret*/ fun main() {}
+        }
     """, """
         module M {
-            public/*caret*/ fun main() {}
+            native/*caret*/ fun main() {}
         }
     """)
 
-    fun `test native fun to public`() = doSingleCompletion("""
+    fun `test native fun to public`() = checkContainsCompletion("public","""
         module M {
             native pub/*caret*/ fun main();
-        }
-    """, """
-        module M {
-            native public/*caret*/ fun main();
         }
     """)
 
@@ -195,7 +187,7 @@ class KeywordCompletionTest : CompletionTestCase() {
 
     fun `test native fun`() = doSingleCompletion("""
         module M {
-            native f/*caret*/
+            native fu/*caret*/
         }
     """, """
         module M {
@@ -239,23 +231,29 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
-    fun `test copyable bound`() = doSingleCompletion("""
+    fun `test copy bound`() = doSingleCompletion("""
         module M {
             struct MyStruct<T: cop/*caret*/> {}
         }
     """, """
         module M {
-            struct MyStruct<T: copyable/*caret*/> {}
+            struct MyStruct<T: copy/*caret*/> {}
         }
     """)
 
-    fun `test resource bound`() = doSingleCompletion("""
+    fun `test store bound`() = doSingleCompletion("""
         module M {
-            struct MyStruct<T: res/*caret*/> {}
+            struct MyStruct<T: st/*caret*/> {}
         }
     """, """
         module M {
-            struct MyStruct<T: resource/*caret*/> {}
+            struct MyStruct<T: store/*caret*/> {}
+        }
+    """)
+
+    fun `test resource bound`() = checkNoCompletion("""
+        module M {
+            struct MyStruct<T: res/*caret*/> {}
         }
     """)
 
@@ -306,4 +304,10 @@ class KeywordCompletionTest : CompletionTestCase() {
             native struct /*caret*/
         }
     """)
+
+    fun `test visibility modifiers`() = completionFixture.checkContainsCompletion("""
+       module M {
+        pub/*caret*/ fun main() {}
+       }    
+    """, listOf("public", "public(script)", "public(friend)"))
 }

@@ -129,7 +129,6 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "as"             { return AS; }
       "has"             { return HAS; }
       "mut"            { return MUT; }
-      "copyable"       { return COPYABLE; }
       "copy"           { return COPY; }
       "move"           { return MOVE; }
       "return"         { return RETURN; }
