@@ -10,7 +10,11 @@ https://plugins.jetbrains.com/plugin/14721-move-language
 * Rename refactoring
 * [Dove](https://docs.pontem.network/03.-move-vm/compiler_and_toolset#dove) integration
 
-"Unresolved reference" inspection is supported, but disabled by default as it creates false-positives in some cases. You
+![img.png](images/run_configurations.png)
+
+* "Unresolved reference" inspection
+
+Disabled by default as it creates false-positives in some cases. You
 can enable it in your settings at `Editor -> Inspections -> Move`.
 
 ## Installation
@@ -23,6 +27,9 @@ To enable multi-file support you need to set up Dove. For that you need to:
    repository [https://github.com/pontem-network/move-tools/releases](https://github.com/pontem-network/move-tools/releases)
    .
 2. Add its filesystem path to the `Settings -> Languages & Frameworks -> Move -> Dove executable`.
+
+![img.png](images/settings.png)   
+
 3. Initialize your project root with `dove init`. This will create the following file structure:
 
 ```
