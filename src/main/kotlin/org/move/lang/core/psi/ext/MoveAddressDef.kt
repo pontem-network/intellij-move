@@ -10,6 +10,10 @@ val MoveAddressDef.address: Address?
     get() =
         addressRef?.address()
 
+val MoveAddressDef.normalizedAddress: Address?
+    get() =
+        addressRef?.normalizedAddress()
+
 fun MoveAddressDef.modules(): List<MoveModuleDef> =
     addressBlock?.childrenOfType<MoveModuleDef>().orEmpty()
 

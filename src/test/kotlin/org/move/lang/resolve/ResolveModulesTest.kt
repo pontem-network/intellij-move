@@ -186,9 +186,9 @@ class ResolveModulesTest : ResolveTestCase() {
     """
     )
 
-    fun `test resolve to different address block import`() = checkByCode(
+    fun `test resolve to different address block import with address normalization`() = checkByCode(
         """
-        address 0x2 {
+        address 0x0002 {
             module A {
                  //X
             }
@@ -196,7 +196,7 @@ class ResolveModulesTest : ResolveTestCase() {
         
         address 0x1 {
             module B {
-                use 0x2::A;
+                use 0x02::A;
                 
                 fun main() {
                     let a = A::create();

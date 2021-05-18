@@ -97,7 +97,8 @@ private fun resolveQualModuleRefInFile(
     file: MoveFile,
     processor: MatchingProcessor,
 ): Boolean {
-    val moduleAddress = qualModuleRef.addressRef.address()
+//    val moduleAddress = qualModuleRef.addressRef.address()
+    val normalizedModuleAddress = qualModuleRef.addressRef.address()?.normalized()
 
     var resolved = false
     file.accept(object : MoveVisitor(),
@@ -109,7 +110,7 @@ private fun resolveQualModuleRefInFile(
 
         override fun visitAddressDef(o: MoveAddressDef) {
             if (resolved) return
-            if (o.address == moduleAddress) {
+            if (o.normalizedAddress == normalizedModuleAddress) {
                 resolved = processor.matchAll(o.modules())
             }
         }
