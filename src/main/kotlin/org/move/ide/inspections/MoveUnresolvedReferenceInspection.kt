@@ -37,11 +37,15 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
                 if (refElement !is MoveQualPathReferenceElement) return
 
                 if (refElement.isUnresolved && qualPath.isIdentifierOnly) {
-                    val highlightedElement = refElement.referenceNameElement
+                    val description = when (refElement) {
+                        is MoveQualPathType -> "Unresolved type: `${refElement.referenceName}`"
+                        else -> "Unresolved reference: `${refElement.referenceName}`"
+                    }
+                    val highlightedElement = refElement.referenceNameElement ?: return
                     registerProblem(
                         holder,
                         highlightedElement,
-                        "Unresolved reference: `${refElement.referenceName}`"
+                        description
                     )
 //                    holder.registerProblem(
 //                        highlightedElement,
@@ -54,7 +58,7 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
             override fun visitStructPatField(o: MoveStructPatField) {
                 val resolvedStructDef = o.structPat.referredStructDef ?: return
                 if (!resolvedStructDef.fieldNames.any { it == o.referenceName }) {
-                    val highlightedElement = o.referenceNameElement
+                    val highlightedElement = o.referenceNameElement ?: return
                     registerProblem(
                         holder,
                         highlightedElement,
@@ -70,7 +74,7 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
 
             override fun visitStructLiteralField(o: MoveStructLiteralField) {
                 if (o.isUnresolved) {
-                    val highlightedElement = o.referenceNameElement
+                    val highlightedElement = o.referenceNameElement ?: return
                     val errorMessage =
                         if (o.isShorthand)
                             "Unresolved reference: `${o.referenceName}`"

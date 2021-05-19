@@ -23,7 +23,8 @@ class MoveQualPathReferenceImpl<T : MoveQualPathReferenceElement>(
             } else {
                 resolveModuleRefIntoQual(moduleRef) ?: return null
             }
-        return resolveQualifiedPath(qualModuleRef, element.referenceName, setOf(namespace))
+        val refName = element.referenceName ?: return null
+        return resolveQualifiedPath(qualModuleRef, refName, setOf(namespace))
     }
 }
 
@@ -55,7 +56,7 @@ fun resolveQualifiedPath(
     refName: String,
     ns: Set<Namespace>,
 ): MoveNamedElement? {
-    val module = (qualModuleRef.reference.resolve() as? MoveModuleDef) ?: return null
+    val module = (qualModuleRef.reference?.resolve() as? MoveModuleDef) ?: return null
     var resolved: MoveNamedElement? = null
     processPublicModuleItems(module, ns) {
         if (it.name == refName && it.element != null) {

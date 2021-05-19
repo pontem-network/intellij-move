@@ -13,8 +13,14 @@ script {
 
 script {
     use 0x0::
+}
 
-    fun main() {}
+script {
+    use 0x0::
+
+    fun main() {
+        use 0x0::
+    }
 }
 
 script {

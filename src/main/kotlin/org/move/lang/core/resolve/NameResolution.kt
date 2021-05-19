@@ -240,6 +240,7 @@ fun processLexicalDeclarations(
         }
         Namespace.TYPE -> when (scope) {
             is MoveFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
+            is MoveNativeFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
             is MoveStructDef -> processor.matchAll(scope.structSignature.typeParameters)
             is MoveSchemaDef -> processor.matchAll(scope.typeParams)
             is MoveModuleDef -> processor.matchAll(

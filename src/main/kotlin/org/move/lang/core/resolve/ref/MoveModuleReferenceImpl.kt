@@ -18,6 +18,6 @@ class MoveModuleReferenceImpl(
             resolved is MoveModuleImport -> resolved.fullyQualifiedModuleRef
             else -> return null
         }
-        return qualModuleRef.reference.resolve()
+        return qualModuleRef.reference?.resolve()
     }
 }

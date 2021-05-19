@@ -1,5 +1,6 @@
 package org.move.lang.core.completion
 
+import com.intellij.codeInsight.AutoPopupController
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
@@ -73,6 +74,7 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
                             context.editor,
                             2
                         )
+                        AutoPopupController.getInstance(context.project).scheduleAutoPopup(context.editor)
                     }
                 }
 
@@ -98,6 +100,10 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
         is MoveConstDef -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTypeText(this.type?.text)
+
+        is MoveModuleDef -> LookupElementBuilder.createWithIcon(this)
+            .withLookupString(this.name ?: "")
+            .withTypeText(this.containingFile?.name)
 
         is MoveStructSignature -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")

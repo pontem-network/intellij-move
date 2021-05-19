@@ -9,7 +9,7 @@ import javax.swing.Icon
 
 abstract class MoveModuleImportMixin(node: ASTNode) : MoveNamedElementImpl(node),
                                                       MoveModuleImport {
-    override val nameElement: PsiElement
+    override val nameElement: PsiElement?
         get() =
             importAlias?.identifier ?: fullyQualifiedModuleRef.identifier
 

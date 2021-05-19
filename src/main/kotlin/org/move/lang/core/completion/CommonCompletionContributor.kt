@@ -13,7 +13,7 @@ class CommonCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, NamesCompletionProvider)
         extend(CompletionType.BASIC, TypesCompletionProvider)
         extend(CompletionType.BASIC, ModulesCompletionProvider)
-//        extend(CompletionType.BASIC, QualModulesCompletionProvider)
+        extend(CompletionType.BASIC, QualModulesCompletionProvider)
         extend(CompletionType.BASIC, StructFieldsCompletionProvider)
         extend(
             CompletionType.BASIC,

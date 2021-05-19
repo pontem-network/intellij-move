@@ -33,16 +33,18 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitCallArguments(o: MoveCallArguments) = checkCallArguments(moveHolder, o)
 
             override fun visitStructPat(o: MoveStructPat) {
-                val fieldNames = o.providedFields.map { it.referenceName }
+                val fieldNames = o.providedFields.mapNotNull { it.referenceName }
                 val referredStructDef = o.referredStructDef ?: return
-                checkMissingFields(moveHolder, o.referenceNameElement, fieldNames.toSet(), referredStructDef)
+                val nameElement = o.referenceNameElement ?: return
+                checkMissingFields(moveHolder, nameElement, fieldNames.toSet(), referredStructDef)
             }
 
             override fun visitStructLiteralExpr(o: MoveStructLiteralExpr) {
                 val referredStructDef = o.referredStructDef ?: return
+                val nameElement = o.referenceNameElement ?: return
                 checkMissingFields(
                     moveHolder,
-                    o.referenceNameElement,
+                    nameElement,
                     o.providedFieldNames.toSet(),
                     referredStructDef
                 )
@@ -106,7 +108,7 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
 }
 
 private fun checkQualifiedPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) {
-    val referred = (qualPath.parent as MoveQualPathReferenceElement).reference.resolve()
+    val referred = (qualPath.parent as MoveQualPathReferenceElement).reference?.resolve()
     if (referred == null && qualPath.identifierName == "vector") {
         if (qualPath.typeArguments.isEmpty()) {
             holder.createErrorAnnotation(qualPath.identifier, "Missing item type argument")

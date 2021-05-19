@@ -860,7 +860,7 @@ RefExpr ::= QualPath
     mixin = "org.move.lang.core.psi.ext.MoveRefExprMixin"
 }
 
-QualPath ::= ((FullyQualifiedModuleRef | ModuleRef) '::')? IDENTIFIER TypeArgumentList?
+QualPath ::= (ModuleRef '::')? IDENTIFIER TypeArgumentList?
 
 //LocalQualPath ::= (ModuleRef '::' &IDENTIFIER)? IDENTIFIER TypeArgumentList?
 //FullyQualPath ::= (FullyQualifiedModuleRef '::' &IDENTIFIER)? IDENTIFIER TypeArgumentList?
@@ -873,9 +873,14 @@ QualPath ::= ((FullyQualifiedModuleRef | ModuleRef) '::')? IDENTIFIER TypeArgume
 //}
 //private QualPathPrefix ::= ((FullyQualifiedModuleRef | ModuleRef) '::')
 
-ModuleRef ::= IDENTIFIER
+ModuleRef ::= ImportedModuleRef | FullyQualifiedModuleRef
 {
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+}
+
+ImportedModuleRef ::= IDENTIFIER
+{
+    extends = ModuleRef
     mixin = "org.move.lang.core.psi.ext.MoveModuleRefMixin"
 }
 
@@ -883,7 +888,7 @@ FullyQualifiedModuleRef ::= AddressRef '::' IDENTIFIER
 {
     pin = 2
     extends = ModuleRef
-    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+//    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MoveFullyQualifiedModuleRefMixin"
 }
 

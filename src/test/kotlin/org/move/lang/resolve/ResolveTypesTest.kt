@@ -217,4 +217,41 @@ class ResolveTypesTest : ResolveTestCase() {
         }
     """
     )
+
+    fun `test function return type to type param`() = checkByCode(
+        """
+        module M {
+            fun main<Token>()
+                   //X
+                : Token {}
+                //^
+        }
+    """
+    )
+
+    fun `test function return type param to type param`() = checkByCode(
+        """
+        module M {
+            struct Coin<Token> {}
+            
+            fun main<Token>()
+                   //X
+                    : Coin<Token> {}
+                         //^
+        }
+    """
+    )
+
+    fun `test native function return type param to type param`() = checkByCode(
+        """
+        module M {
+            struct Coin<Token> {}
+            
+            native fun main<Token>()
+                          //X
+                    : Coin<Token>;
+                         //^
+        }
+    """
+    )
 }

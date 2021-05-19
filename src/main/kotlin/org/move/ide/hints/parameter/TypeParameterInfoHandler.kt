@@ -17,7 +17,7 @@ class TypeParameterInfoHandler : AsyncParameterInfoHandler<MoveTypeArgumentList,
         val qualPath = element.parent
         val container = qualPath.parent
         if (container is MoveReferenceElement) {
-            val referred = container.reference.resolve() ?: return null
+            val referred = container.reference?.resolve() ?: return null
             if (referred is MoveTypeParametersOwner) {
                 val paramsDescription = getDescription(referred.typeParameters)
                 return arrayOf(paramsDescription)

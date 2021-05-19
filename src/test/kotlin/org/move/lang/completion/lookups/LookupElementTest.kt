@@ -47,6 +47,13 @@ class LookupElementTest : MoveTestBase() {
         }
     """, tailText = " { ... }")
 
+    fun `test module`() = check("""
+        address 0x1 {
+            module M {}
+                //^
+        }
+    """, typeText = "main.move")
+
     fun `test define`() = check("""
         module M {
             spec module {
