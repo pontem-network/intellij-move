@@ -6,6 +6,7 @@ import org.move.lang.core.psi.MoveStructDef
 import org.move.lang.core.psi.MoveStructFieldDef
 import org.move.lang.core.psi.MoveTypeParameter
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
+import org.move.lang.core.types.StructType
 import javax.swing.Icon
 
 val MoveStructDef.fields: List<MoveStructFieldDef>
@@ -14,8 +15,8 @@ val MoveStructDef.fields: List<MoveStructFieldDef>
 val MoveStructDef.fieldNames: List<String>
     get() = fields.mapNotNull { it.name }
 
-//val MoveStructDef.typeParams: List<MoveTypeParameter>
-//    get() = typeParameterList?.typeParameterList.orEmpty()
+val MoveStructDef.structType: StructType
+    get() = StructType(structSignature)
 
 
 abstract class MoveStructDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
