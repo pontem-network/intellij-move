@@ -29,7 +29,7 @@ class ErrorAnnotator : MoveAnnotator() {
 //            override fun visitNativeStructDef(o: MoveNativeStructDef) = checkNativeStructDef(moveHolder, o)
             override fun visitStructFieldDef(o: MoveStructFieldDef) = checkStructFieldDef(moveHolder, o)
 
-            override fun visitQualPath(o: MoveQualPath) = checkQualifiedPath(moveHolder, o)
+//            override fun visitQualPath(o: MoveQualPath) = checkTypeArguments(moveHolder, o)
 
             override fun visitCallArguments(o: MoveCallArguments) = checkCallArguments(moveHolder, o)
 
@@ -51,9 +51,7 @@ class ErrorAnnotator : MoveAnnotator() {
                 )
             }
 
-//            override fun visitStructFieldsDefBlock(o: MoveStructFieldsDefBlock) {
-//                super.visitStructFieldsDefBlock(o)
-//            }
+            override fun visitQualPath(o: MoveQualPath) = checkQualPath(moveHolder, o)
         }
         element.accept(visitor)
     }
@@ -74,8 +72,8 @@ class ErrorAnnotator : MoveAnnotator() {
     private fun checkStructFieldDef(holder: MoveAnnotationHolder, structField: MoveStructFieldDef) {
         checkDuplicates(holder, structField)
 
-        val parentStructDef = structField.structDef ?: return
-        val structAbilities = parentStructDef.structSignature.abilities.mapNotNull { it.ability }.toSet()
+        val parentStructType = structField.structDef?.structType ?: return
+        val structAbilities = parentStructType.abilities()
         if (structAbilities.isEmpty()) return
 
         val fieldType = structField.typeAnnotation?.type?.resolvedType as? StructType ?: return
@@ -83,10 +81,10 @@ class ErrorAnnotator : MoveAnnotator() {
         for (ability in structAbilities) {
             val requiredAbility = ability.requires()
             if (requiredAbility !in fieldType.abilities()) {
-                val structName = parentStructDef.structSignature.name
                 val message =
                     "The type '${fieldType.name()}' does not have the ability '${requiredAbility.label()}' " +
-                        "required by the declared ability '${ability.label()}' of the struct '${structName}'"
+                            "required by the declared ability '${ability.label()}' " +
+                            "of the struct '${parentStructType.name()}'"
                 holder.createErrorAnnotation(structField, message)
                 return
             }
@@ -129,44 +127,52 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
     }
 }
 
-private fun checkQualifiedPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) {
-    val referred = (qualPath.parent as MoveQualPathReferenceElement).reference?.resolve()
-    if (referred == null && qualPath.identifierName == "vector") {
-        if (qualPath.typeArguments.isEmpty()) {
-            holder.createErrorAnnotation(qualPath.identifier, "Missing item type argument")
-            return
-        }
-        val realCount = qualPath.typeArguments.size
-        if (realCount > 1) {
-            qualPath.typeArguments.drop(1).forEach {
-                holder.createErrorAnnotation(
-                    it,
-                    "Wrong number of type arguments: expected 1, found $realCount"
-                )
-            }
-            return
-        }
-    }
-    val name = referred?.name ?: return
+private fun checkQualPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) {
+    val argumentTypeElements = qualPath.typeArguments
+    val referred =
+        (qualPath.parent as? MoveQualPathReferenceElement)?.reference?.resolve()
 
+    if (referred == null) {
+        if (qualPath.identifierName == "vector") {
+            if (argumentTypeElements.isEmpty()) {
+                holder.createErrorAnnotation(qualPath.identifier, "Missing item type argument")
+                return
+            }
+            val realCount = argumentTypeElements.size
+            if (realCount > 1) {
+                argumentTypeElements.drop(1).forEach {
+                    holder.createErrorAnnotation(
+                        it,
+                        "Wrong number of type arguments: expected 1, found $realCount"
+                    )
+                }
+                return
+            }
+        }
+        return
+    }
+
+    val name = referred.name ?: return
     when {
         referred is MoveFunctionSignature
                 && name in BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE
-                && qualPath.typeArguments.isEmpty() -> {
+                && argumentTypeElements.isEmpty() -> {
             holder.createErrorAnnotation(qualPath, "Missing resource type argument")
             return
         }
         referred is MoveTypeParametersOwner -> {
             val expectedCount = referred.typeParameters.size
-            val realCount = qualPath.typeArguments.size
+            val realCount = argumentTypeElements.size
 
             if (expectedCount == 0 && realCount != 0) {
-                holder.createErrorAnnotation(qualPath.typeArgumentList!!, "No type arguments expected")
+                holder.createErrorAnnotation(
+                    qualPath.typeArgumentList!!,
+                    "No type arguments expected"
+                )
                 return
             }
-
             if (realCount > expectedCount) {
-                qualPath.typeArguments.drop(expectedCount).forEach {
+                argumentTypeElements.drop(expectedCount).forEach {
                     holder.createErrorAnnotation(
                         it,
                         "Wrong number of type arguments: expected $expectedCount, found $realCount"
@@ -174,10 +180,27 @@ private fun checkQualifiedPath(holder: MoveAnnotationHolder, qualPath: MoveQualP
                 }
                 return
             }
+
+            for ((i, argumentTypeElement) in argumentTypeElements.withIndex()) {
+                val resolvedType = argumentTypeElement.resolvedType
+
+                val requiredAbilities = referred.typeParameters[i].typeParamType.abilities()
+                val abilities = resolvedType.abilities()
+
+                for (ability in requiredAbilities) {
+                    if (ability !in abilities) {
+                        holder.createErrorAnnotation(
+                            argumentTypeElement,
+                            "The type '${resolvedType.fullname()}' " +
+                                    "does not have required ability '${ability.label()}'"
+                        )
+                    }
+                }
+                return
+            }
         }
     }
 }
-
 
 private fun checkDuplicates(
     holder: MoveAnnotationHolder,

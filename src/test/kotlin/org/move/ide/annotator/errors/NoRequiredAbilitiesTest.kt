@@ -23,4 +23,28 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
         }
     }    
     """)
+
+    fun `test function invocation with explicitly provided generic type`() = checkErrors("""
+    module Event {
+        struct Message has drop {}
+        
+        public fun emit_event<T: store + drop>() {}
+        
+        public fun main() {
+            emit_event<<error descr="The type '0x1::Event::Message' does not have required ability 'store'">Message</error>>()
+        }
+    }    
+    """)
+
+    fun `test struct constructor with explicitly provided generic type`() = checkErrors("""
+    module Event {
+        struct Message has drop {}
+        
+        struct Event<Message: store + drop> {}
+        
+        public fun main() {
+            Event<<error descr="The type '0x1::Event::Message' does not have required ability 'store'">Message</error>> {};
+        }
+    }    
+    """)
 }
