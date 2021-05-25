@@ -12,11 +12,6 @@ https://plugins.jetbrains.com/plugin/14721-move-language
 
 ![img.png](images/run_configurations.png)
 
-* "Unresolved reference" inspection
-
-Disabled by default as it creates false-positives in some cases. You
-can enable it in your settings at `Editor -> Inspections -> Move`.
-
 ## Installation
 
 Open `Settings > Plugins > Marketplace` in your IDE, search for _Move Language_ and install the plugin.

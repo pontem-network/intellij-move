@@ -37,7 +37,7 @@ class HighlightingAnnotator : MoveAnnotator() {
     }
 
     private fun highlightIdentifier(element: MoveElement): MoveColor? {
-        if (element is MoveStructTrait) return MoveColor.IDENTIFIER
+        if (element is MoveAbility) return MoveColor.IDENTIFIER
         if (element is MoveTypeParameter) return MoveColor.TYPE_PARAMETER
         if (element is MoveItemImport && element.text == "Self") return MoveColor.KEYWORD
 

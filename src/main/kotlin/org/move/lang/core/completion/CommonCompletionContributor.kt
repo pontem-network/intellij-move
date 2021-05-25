@@ -17,7 +17,7 @@ class CommonCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, StructFieldsCompletionProvider)
         extend(
             CompletionType.BASIC,
-            MovePsiPatterns.structTrait(),
+            MovePsiPatterns.ability(),
             TraitsCompletionProvider()
         )
     }

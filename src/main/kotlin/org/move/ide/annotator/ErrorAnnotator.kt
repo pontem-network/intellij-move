@@ -5,6 +5,7 @@ import com.intellij.psi.PsiElement
 import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.types.StructType
 
 class ErrorAnnotator : MoveAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
@@ -48,8 +49,11 @@ class ErrorAnnotator : MoveAnnotator() {
                     o.providedFieldNames.toSet(),
                     referredStructDef
                 )
-
             }
+
+//            override fun visitStructFieldsDefBlock(o: MoveStructFieldsDefBlock) {
+//                super.visitStructFieldsDefBlock(o)
+//            }
         }
         element.accept(visitor)
     }
@@ -69,6 +73,24 @@ class ErrorAnnotator : MoveAnnotator() {
 
     private fun checkStructFieldDef(holder: MoveAnnotationHolder, structField: MoveStructFieldDef) {
         checkDuplicates(holder, structField)
+
+        val parentStructDef = structField.structDef ?: return
+        val structAbilities = parentStructDef.structSignature.abilities.mapNotNull { it.ability }.toSet()
+        if (structAbilities.isEmpty()) return
+
+        val fieldType = structField.typeAnnotation?.type?.resolvedType as? StructType ?: return
+
+        for (ability in structAbilities) {
+            val requiredAbility = ability.requires()
+            if (requiredAbility !in fieldType.abilities()) {
+                val structName = parentStructDef.structSignature.name
+                val message =
+                    "The type '${fieldType.name()}' does not have the ability '${requiredAbility.label()}' " +
+                        "required by the declared ability '${ability.label()}' of the struct '${structName}'"
+                holder.createErrorAnnotation(structField, message)
+                return
+            }
+        }
     }
 
     private fun checkConstDef(holder: MoveAnnotationHolder, const: MoveConstDef) {

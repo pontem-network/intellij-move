@@ -35,4 +35,6 @@ class CompleteParsingTest : MoveParsingTestCase("complete") {
     fun `test generics`() = doTest(true)
     fun `test annotated literals`() = doTest(true)
 
+    fun `test specs`() = doTest(true)
+
 }

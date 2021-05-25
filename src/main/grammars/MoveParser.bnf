@@ -316,7 +316,7 @@ private AcquiresType_items_recover ::= !(';' | '{')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-StructSignature ::= resource? struct IDENTIFIER TypeParameterList? StructTraitList?
+StructSignature ::= resource? struct IDENTIFIER TypeParameterList? AbilitiesList?
 {
     pin = "struct"
     implements = [
@@ -350,10 +350,10 @@ StructDef ::= StructSignature StructFieldsDefBlock
 //    mixin = "org.move.lang.core.psi.ext.MoveStructDefMixin"
 //}
 
-StructTraitList ::= has <<comma_sep_items StructTrait>> { pin = 1 }
-StructTrait ::= copy | IDENTIFIER
+AbilitiesList ::= has <<comma_sep_items Ability>> { pin = 1 }
+Ability ::= copy | IDENTIFIER
 {
-    name = "trait"
+    name = "ability"
 }
 
 StructFieldsDefBlock ::= '{' StructFieldDef_with_recover* '}' { pin = 1 }
@@ -518,7 +518,7 @@ TypeParamBound ::= ':' TypeParamBound_items
 {
     pin = 1
 }
-private TypeParamBound_items ::= StructTrait ( '+' StructTrait )*
+private TypeParamBound_items ::= Ability ( '+' Ability )*
 {
     recoverWhile = TypeParamBound_items_recover
 }
@@ -1011,6 +1011,7 @@ private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinish
 //}
 private SpecBlockStatement ::= VariableStatement | LocalVariableStatement | GlobalVariableStatement
                                | Statement
+                               | NativeFunctionDef
                                | DefineFunction | DefineFunctionSpec
                                | NativeDefineFunction | NativeDefineFunctionSpec
                                | PragmaStatement
