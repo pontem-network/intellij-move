@@ -1,8 +1,10 @@
 package org.move.lang.core.types
 
+import org.move.lang.core.psi.MoveStructDef
 import org.move.lang.core.psi.MoveStructSignature
 import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.psi.ext.ability
+import org.move.lang.core.psi.ext.structDef
 
 enum class Ability {
     DROP, COPY, STORE, KEY;
@@ -10,7 +12,7 @@ enum class Ability {
     fun label(): String = this.name.toLowerCase()
 
     fun requires(): Ability {
-        return when(this) {
+        return when (this) {
             DROP -> DROP
             COPY -> COPY
             KEY, STORE -> STORE
@@ -32,12 +34,30 @@ class PrimitiveType : BaseType() {
     override fun abilities(): Set<Ability> = Ability.all()
 }
 
-data class StructType(private val structSignature: MoveStructSignature) : BaseType() {
+class RefType(val referredType: BaseType) : BaseType() {
+
+    override fun name(): String = referredType.name()
+
+    override fun abilities(): Set<Ability> = referredType.abilities()
+
+    fun referredStructDef(): MoveStructDef? =
+        when (referredType) {
+            is StructType -> referredType.structDef()
+            is RefType -> referredType.referredStructDef()
+            else -> null
+        }
+}
+
+class StructType(private val structSignature: MoveStructSignature) : BaseType() {
 
     override fun name(): String = structSignature.name ?: ""
 
     override fun abilities(): Set<Ability> {
         return this.structSignature.abilities.mapNotNull { it.ability }.toSet()
+    }
+
+    fun structDef(): MoveStructDef? {
+        return this.structSignature.structDef
     }
 }
 

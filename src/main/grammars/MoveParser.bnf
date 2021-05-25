@@ -849,7 +849,14 @@ Initializer ::= '=' Expr {
 //private Initializer_recover ::= !(';'|'}'|')')
 
 BorrowExpr ::= '&' mut? Expr
-DotExpr ::= Expr '.' IDENTIFIER
+
+DotExpr ::= Expr '.' StructFieldRef
+StructFieldRef ::= IDENTIFIER
+{
+    implements = ["org.move.lang.core.psi.MoveStructFieldReferenceElement"]
+    mixin = "org.move.lang.core.psi.ext.MoveStructFieldRefMixin"
+}
+
 IndexExpr ::= Expr '[' Expr ']' { rightAssociative = true }
 
 RefExpr ::= QualPath
