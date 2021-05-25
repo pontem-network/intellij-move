@@ -7,13 +7,14 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.psi.MoveStructDef
-import org.move.lang.core.psi.MoveStructLiteralField
-import org.move.lang.core.psi.MoveStructPatField
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.fields
 import org.move.lang.core.psi.ext.providedFieldNames
 import org.move.lang.core.psi.ext.structLiteral
 import org.move.lang.core.psi.ext.structPat
+import org.move.lang.core.resolve.processItems
+import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.resolveItem
 import org.move.lang.core.withParent
 
 object StructFieldsCompletionProvider : MoveCompletionProvider() {
@@ -25,6 +26,9 @@ object StructFieldsCompletionProvider : MoveCompletionProvider() {
             PlatformPatterns
                 .psiElement()
                 .withParent<MoveStructPatField>(),
+            PlatformPatterns
+                .psiElement()
+                .withParent<MoveStructFieldRef>(),
         )
 
     override fun addCompletions(
@@ -33,10 +37,10 @@ object StructFieldsCompletionProvider : MoveCompletionProvider() {
         result: CompletionResultSet,
     ) {
         val pos = parameters.position
-        val parent = pos.parent
-        when (parent) {
+        val element = pos.parent
+        when (element) {
             is MoveStructPatField -> {
-                val structPat = parent.structPat
+                val structPat = element.structPat
                 addFieldsToCompletion(
                     structPat.referredStructDef ?: return,
                     structPat.providedFieldNames,
@@ -44,12 +48,21 @@ object StructFieldsCompletionProvider : MoveCompletionProvider() {
                 )
             }
             is MoveStructLiteralField -> {
-                val structLiteral = parent.structLiteral
+                val structLiteral = element.structLiteral
                 addFieldsToCompletion(
                     structLiteral.referredStructDef ?: return,
                     structLiteral.providedFieldNames,
                     result
                 )
+            }
+            is MoveStructFieldRef -> {
+                processItems(element, Namespace.DOT_ACCESSED_FIELD) {
+                    val field = it.element as? MoveStructFieldDef
+                    if (field != null) {
+                        result.addElement(field.createLookupElement(false))
+                    }
+                    false
+                }
             }
         }
     }
