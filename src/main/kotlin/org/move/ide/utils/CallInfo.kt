@@ -19,7 +19,7 @@ class CallInfo(
 
     companion object {
         fun resolve(callExpr: MoveCallExpr): CallInfo? {
-            val resolved = callExpr.reference.resolve() ?: return null
+            val resolved = callExpr.reference?.resolve() ?: return null
             val name = resolved.name ?: return null
 
             val signature = resolved as? MoveFunctionSignatureOwner ?: return null

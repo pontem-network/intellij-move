@@ -16,6 +16,10 @@ import org.move.ide.formatter.MoveFmtContext
 import org.move.lang.MoveElementTypes.*
 import org.move.lang.core.MOVE_COMMENTS
 import org.move.lang.core.MOVE_KEYWORDS
+import org.move.lang.core.psi.MoveAddressBlock
+import org.move.lang.core.psi.MoveAddressDef
+import org.move.lang.core.psi.MoveModuleBlock
+import org.move.lang.core.psi.MoveModuleDef
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
 import org.move.lang.core.tokenSetOf
@@ -75,12 +79,16 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .before(CALL_ARGUMENTS).spaceIf(false)
 
         .betweenInside(PUBLIC, L_PAREN, FUNCTION_VISIBILITY_MODIFIER).spaces(0)
-        .betweenInside(tokenSetOf(L_PAREN),
-                       tokenSetOf(SCRIPT, FRIEND),
-                       FUNCTION_VISIBILITY_MODIFIER).spaces(0)
-        .betweenInside(tokenSetOf(SCRIPT, FRIEND),
-                       tokenSetOf(R_PAREN),
-                       FUNCTION_VISIBILITY_MODIFIER).spaces(0)
+        .betweenInside(
+            tokenSetOf(L_PAREN),
+            tokenSetOf(SCRIPT, FRIEND),
+            FUNCTION_VISIBILITY_MODIFIER
+        ).spaces(0)
+        .betweenInside(
+            tokenSetOf(SCRIPT, FRIEND),
+            tokenSetOf(R_PAREN),
+            FUNCTION_VISIBILITY_MODIFIER
+        ).spaces(0)
         .after(FUNCTION_VISIBILITY_MODIFIER).spaces(1)
 
         .around(BINARY_OPS).spaces(1)
@@ -109,6 +117,15 @@ fun Block.computeSpacing(child1: Block?, child2: Block, ctx: MoveFmtContext): Sp
                 minLineFeeds = 1 + if (!needsBlankLineBetweenItems()) 0 else 1,
                 keepLineBreaks = ctx.commonSettings.KEEP_LINE_BREAKS,
                 keepBlankLines = ctx.commonSettings.KEEP_BLANK_LINES_IN_DECLARATIONS
+            )
+
+            (ncPsi1.text == "{" && ncPsi1.parent is MoveAddressBlock && ncPsi2 is MoveModuleDef)
+                    || (ncPsi1.text == "{" && ncPsi1.parent is MoveModuleBlock && ncPsi2.isModuleItem)
+            -> return lineBreak(
+                minLineFeeds = if (!needsBlankLineBetweenItems()) 0 else 1,
+                keepLineBreaks = ctx.commonSettings.KEEP_LINE_BREAKS,
+                // TODO: make formatter setting MAX_BLANK_LINES_AFTER_ADDRESS_DEF
+                keepBlankLines = 1
             )
 
         }

@@ -12,9 +12,7 @@ import org.move.lang.core.MovePsiPatterns.addressBlock
 import org.move.lang.core.MovePsiPatterns.codeStatement
 import org.move.lang.core.MovePsiPatterns.moduleBlock
 import org.move.lang.core.MovePsiPatterns.scriptBlock
-import org.move.lang.core.MovePsiPatterns.structTrait
 import org.move.lang.core.MovePsiPatterns.toplevel
-import org.move.lang.core.MovePsiPatterns.typeParamBound
 
 class KeywordCompletionContributor : CompletionContributor() {
     init {

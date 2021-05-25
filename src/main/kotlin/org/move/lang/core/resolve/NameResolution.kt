@@ -12,6 +12,8 @@ import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.types.RefType
+import org.move.lang.core.types.StructType
 import org.move.stdext.chain
 import java.nio.file.Paths
 
@@ -97,7 +99,8 @@ private fun resolveQualModuleRefInFile(
     file: MoveFile,
     processor: MatchingProcessor,
 ): Boolean {
-    val moduleAddress = qualModuleRef.addressRef.address()
+//    val moduleAddress = qualModuleRef.addressRef.address()
+    val normalizedModuleAddress = qualModuleRef.addressRef.address()?.normalized()
 
     var resolved = false
     file.accept(object : MoveVisitor(),
@@ -109,7 +112,7 @@ private fun resolveQualModuleRefInFile(
 
         override fun visitAddressDef(o: MoveAddressDef) {
             if (resolved) return
-            if (o.address == moduleAddress) {
+            if (o.normalizedAddress == normalizedModuleAddress) {
                 resolved = processor.matchAll(o.modules())
             }
         }
@@ -185,6 +188,19 @@ fun processLexicalDeclarations(
     check(cameFrom.parent == scope)
 
     return when (namespace) {
+        Namespace.DOT_ACCESSED_FIELD -> {
+            val dotExpr = scope as? MoveDotExpr ?: return false
+            val refExpr = dotExpr.refExpr ?: return false
+            val referredTypedVar = refExpr.reference?.resolve() as? MoveTypeAnnotated ?: return false
+
+            val resolvedType = referredTypedVar.type?.resolvedType
+            val structDef = when (resolvedType) {
+                is StructType -> resolvedType.structDef()
+                is RefType -> resolvedType.referredStructDef()
+                else -> null
+            }
+            return processor.matchAll(structDef?.fields.orEmpty())
+        }
         Namespace.STRUCT_FIELD -> {
             val structDef = (scope as? MoveQualTypeReferenceElement)?.referredStructDef
             if (structDef != null) {
@@ -239,6 +255,7 @@ fun processLexicalDeclarations(
         }
         Namespace.TYPE -> when (scope) {
             is MoveFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
+            is MoveNativeFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
             is MoveStructDef -> processor.matchAll(scope.structSignature.typeParameters)
             is MoveSchemaDef -> processor.matchAll(scope.typeParams)
             is MoveModuleDef -> processor.matchAll(

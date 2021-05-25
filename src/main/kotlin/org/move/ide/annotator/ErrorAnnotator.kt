@@ -5,6 +5,7 @@ import com.intellij.psi.PsiElement
 import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.types.StructType
 
 class ErrorAnnotator : MoveAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
@@ -33,21 +34,26 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitCallArguments(o: MoveCallArguments) = checkCallArguments(moveHolder, o)
 
             override fun visitStructPat(o: MoveStructPat) {
-                val fieldNames = o.providedFields.map { it.referenceName }
+                val fieldNames = o.providedFields.mapNotNull { it.referenceName }
                 val referredStructDef = o.referredStructDef ?: return
-                checkMissingFields(moveHolder, o.referenceNameElement, fieldNames.toSet(), referredStructDef)
+                val nameElement = o.referenceNameElement ?: return
+                checkMissingFields(moveHolder, nameElement, fieldNames.toSet(), referredStructDef)
             }
 
             override fun visitStructLiteralExpr(o: MoveStructLiteralExpr) {
                 val referredStructDef = o.referredStructDef ?: return
+                val nameElement = o.referenceNameElement ?: return
                 checkMissingFields(
                     moveHolder,
-                    o.referenceNameElement,
+                    nameElement,
                     o.providedFieldNames.toSet(),
                     referredStructDef
                 )
-
             }
+
+//            override fun visitStructFieldsDefBlock(o: MoveStructFieldsDefBlock) {
+//                super.visitStructFieldsDefBlock(o)
+//            }
         }
         element.accept(visitor)
     }
@@ -67,6 +73,24 @@ class ErrorAnnotator : MoveAnnotator() {
 
     private fun checkStructFieldDef(holder: MoveAnnotationHolder, structField: MoveStructFieldDef) {
         checkDuplicates(holder, structField)
+
+        val parentStructDef = structField.structDef ?: return
+        val structAbilities = parentStructDef.structSignature.abilities.mapNotNull { it.ability }.toSet()
+        if (structAbilities.isEmpty()) return
+
+        val fieldType = structField.typeAnnotation?.type?.resolvedType as? StructType ?: return
+
+        for (ability in structAbilities) {
+            val requiredAbility = ability.requires()
+            if (requiredAbility !in fieldType.abilities()) {
+                val structName = parentStructDef.structSignature.name
+                val message =
+                    "The type '${fieldType.name()}' does not have the ability '${requiredAbility.label()}' " +
+                        "required by the declared ability '${ability.label()}' of the struct '${structName}'"
+                holder.createErrorAnnotation(structField, message)
+                return
+            }
+        }
     }
 
     private fun checkConstDef(holder: MoveAnnotationHolder, const: MoveConstDef) {
@@ -106,7 +130,7 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
 }
 
 private fun checkQualifiedPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) {
-    val referred = (qualPath.parent as MoveQualPathReferenceElement).reference.resolve()
+    val referred = (qualPath.parent as MoveQualPathReferenceElement).reference?.resolve()
     if (referred == null && qualPath.identifierName == "vector") {
         if (qualPath.typeArguments.isEmpty()) {
             holder.createErrorAnnotation(qualPath.identifier, "Missing item type argument")

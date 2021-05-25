@@ -24,6 +24,7 @@ module MM {
 }
 
 address 0x0 {
+
 module M {}
 
 module M2 {
@@ -33,5 +34,13 @@ module M2 {
     fun main() {}
 
     struct MyStruct {}
+}
+}
+
+address 0x1 {
+
+module M2 {
+
+    struct T {}
 }
 }

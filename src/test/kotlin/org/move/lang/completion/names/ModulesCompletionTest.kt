@@ -2,8 +2,9 @@ package org.move.lang.completion.names
 
 import org.move.utils.tests.completion.CompletionTestCase
 
-class ModulesCompletionTest: CompletionTestCase() {
-    fun `test autocomplete imported modules in name position`() = doSingleCompletion("""
+class ModulesCompletionTest : CompletionTestCase() {
+    fun `test autocomplete imported modules in name position`() = doSingleCompletion(
+        """
         script {
             use 0x1::Transaction;
             
@@ -19,9 +20,11 @@ class ModulesCompletionTest: CompletionTestCase() {
                 let a = Transaction::/*caret*/
             }
         }    
-    """)
+    """
+    )
 
-    fun `test autocomplete imported modules in type position`() = doSingleCompletion("""
+    fun `test autocomplete imported modules in type position`() = doSingleCompletion(
+        """
         script {
             use 0x1::Transaction;
             
@@ -33,25 +36,18 @@ class ModulesCompletionTest: CompletionTestCase() {
             
             fun main(a: Transaction::/*caret*/) {}
         }    
-    """)
+    """
+    )
 
-//    fun `test autocomplete available modules for address`() = doSingleCompletion("""
-//    address 0x1 {
-//        module Transaction {}
-//    }
-//    script {
-//        fun main() {
-//            0x1::Tr/*caret*/
-//        }
-//    }
-//    """, """
-//    address 0x1 {
-//        module Transaction {}
-//    }
-//    script {
-//        fun main() {
-//            0x1::Transaction::/*caret*/
-//        }
-//    }
-//    """)
+    fun `test autocomplete available modules for address`() = checkContainsCompletion(
+        "Transaction", """
+        address 0x1 {
+            module Transaction {}
+        }
+        
+        script {
+            use 0x01::/*caret*/
+        }
+        """
+    )
 }

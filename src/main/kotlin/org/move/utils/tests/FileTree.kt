@@ -183,7 +183,7 @@ class TestProject(
     ) {
         val ref = findElementInFile<T>(path)
 //        val reference = ref.reference ?: error("Failed to get reference for `${ref.text}`")
-        val res = ref.reference.resolve()
+        val res = ref.reference?.resolve()
         if (shouldNotResolve) {
             check(res == null) {
                 "Reference ${ref.text} should be unresolved in `$path`"

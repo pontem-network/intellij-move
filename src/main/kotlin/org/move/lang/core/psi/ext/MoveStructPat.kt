@@ -11,7 +11,7 @@ val MoveStructPat.providedFields: List<MoveStructPatField>
 
 val MoveStructPat.providedFieldNames: List<String>
     get() =
-        providedFields.map { it.referenceName }
+        providedFields.mapNotNull { it.referenceName }
 
 abstract class MoveStructPatMixin(node: ASTNode) : MoveQualTypeReferenceElementImpl(node),
                                                    MoveStructPat {

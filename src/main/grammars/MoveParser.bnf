@@ -316,7 +316,7 @@ private AcquiresType_items_recover ::= !(';' | '{')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-StructSignature ::= resource? struct IDENTIFIER TypeParameterList? StructTraitList?
+StructSignature ::= resource? struct IDENTIFIER TypeParameterList? AbilitiesList?
 {
     pin = "struct"
     implements = [
@@ -350,10 +350,10 @@ StructDef ::= StructSignature StructFieldsDefBlock
 //    mixin = "org.move.lang.core.psi.ext.MoveStructDefMixin"
 //}
 
-StructTraitList ::= has <<comma_sep_items StructTrait>> { pin = 1 }
-StructTrait ::= copy | IDENTIFIER
+AbilitiesList ::= has <<comma_sep_items Ability>> { pin = 1 }
+Ability ::= copy | IDENTIFIER
 {
-    name = "trait"
+    name = "ability"
 }
 
 StructFieldsDefBlock ::= '{' StructFieldDef_with_recover* '}' { pin = 1 }
@@ -518,7 +518,7 @@ TypeParamBound ::= ':' TypeParamBound_items
 {
     pin = 1
 }
-private TypeParamBound_items ::= StructTrait ( '+' StructTrait )*
+private TypeParamBound_items ::= Ability ( '+' Ability )*
 {
     recoverWhile = TypeParamBound_items_recover
 }
@@ -849,7 +849,14 @@ Initializer ::= '=' Expr {
 //private Initializer_recover ::= !(';'|'}'|')')
 
 BorrowExpr ::= '&' mut? Expr
-DotExpr ::= Expr '.' IDENTIFIER
+
+DotExpr ::= Expr '.' StructFieldRef
+StructFieldRef ::= IDENTIFIER
+{
+    implements = ["org.move.lang.core.psi.MoveStructFieldReferenceElement"]
+    mixin = "org.move.lang.core.psi.ext.MoveStructFieldRefMixin"
+}
+
 IndexExpr ::= Expr '[' Expr ']' { rightAssociative = true }
 
 RefExpr ::= QualPath
@@ -860,7 +867,7 @@ RefExpr ::= QualPath
     mixin = "org.move.lang.core.psi.ext.MoveRefExprMixin"
 }
 
-QualPath ::= ((FullyQualifiedModuleRef | ModuleRef) '::')? IDENTIFIER TypeArgumentList?
+QualPath ::= (ModuleRef '::')? IDENTIFIER TypeArgumentList?
 
 //LocalQualPath ::= (ModuleRef '::' &IDENTIFIER)? IDENTIFIER TypeArgumentList?
 //FullyQualPath ::= (FullyQualifiedModuleRef '::' &IDENTIFIER)? IDENTIFIER TypeArgumentList?
@@ -873,9 +880,14 @@ QualPath ::= ((FullyQualifiedModuleRef | ModuleRef) '::')? IDENTIFIER TypeArgume
 //}
 //private QualPathPrefix ::= ((FullyQualifiedModuleRef | ModuleRef) '::')
 
-ModuleRef ::= IDENTIFIER
+ModuleRef ::= ImportedModuleRef | FullyQualifiedModuleRef
 {
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+}
+
+ImportedModuleRef ::= IDENTIFIER
+{
+    extends = ModuleRef
     mixin = "org.move.lang.core.psi.ext.MoveModuleRefMixin"
 }
 
@@ -883,7 +895,7 @@ FullyQualifiedModuleRef ::= AddressRef '::' IDENTIFIER
 {
     pin = 2
     extends = ModuleRef
-    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+//    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MoveFullyQualifiedModuleRefMixin"
 }
 
@@ -1006,6 +1018,7 @@ private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinish
 //}
 private SpecBlockStatement ::= VariableStatement | LocalVariableStatement | GlobalVariableStatement
                                | Statement
+                               | NativeFunctionDef
                                | DefineFunction | DefineFunctionSpec
                                | NativeDefineFunction | NativeDefineFunctionSpec
                                | PragmaStatement

@@ -11,7 +11,7 @@ val MoveStructLiteralExpr.providedFields: List<MoveStructLiteralField>
 
 val MoveStructLiteralExpr.providedFieldNames: List<String>
     get() =
-        providedFields.map { it.referenceName }
+        providedFields.mapNotNull { it.referenceName }
 
 abstract class MoveStructLiteralExprMixin(node: ASTNode) : MoveQualTypeReferenceElementImpl(node),
                                                            MoveStructLiteralExpr

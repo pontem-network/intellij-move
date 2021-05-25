@@ -11,7 +11,7 @@ import org.move.lang.core.psi.ext.isWhitespace
 import org.move.lang.core.psi.ext.rightSiblings
 
 class KeywordCompletionProvider(
-    private vararg val keywords: String
+    private vararg val keywords: String,
 ) : CompletionProvider<CompletionParameters>() {
 
     override fun addCompletions(
@@ -28,7 +28,7 @@ class KeywordCompletionProvider(
                 .firstOrNull()?.firstChild
 
             element = element.withInsertHandler { ctx, _ ->
-                if (!(nextSibling != null && ctx.alreadyHasSpace)) ctx.addSuffix(" ")
+                if (nextSibling == null || !ctx.alreadyHasSpace) ctx.addSuffix(" ")
             }
             result.addElement(PrioritizedLookupElement.withPriority(element, KEYWORD_PRIORITY))
         }

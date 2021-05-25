@@ -63,7 +63,7 @@ abstract class ResolveTestCase : MoveTestBase() {
         val (refElement, data, offset) = findElementWithDataAndOffsetInEditor<MoveReferenceElement>("^")
 
         if (data == "unresolved") {
-            val resolved = refElement.reference.resolve()
+            val resolved = refElement.reference?.resolve()
             check(resolved == null) {
                 "$refElement `${refElement.text}`should be unresolved, was resolved to\n$resolved `${resolved?.text}`"
             }
@@ -86,7 +86,7 @@ abstract class ResolveTestCase : MoveTestBase() {
         val (refElement, data, offset) = findElementWithDataAndOffsetInEditor<MoveReferenceElement>("^")
 
         if (data == "unresolved") {
-            val resolved = refElement.reference.resolve()
+            val resolved = refElement.reference?.resolve()
             check(resolved == null) {
                 "$refElement `${refElement.text}`should be unresolved, was resolved to\n$resolved `${resolved?.text}`"
             }

@@ -2,9 +2,11 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.project.Project
+import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.psi.mixins.MoveFunctionSignatureMixin
+import javax.swing.Icon
 
 fun MoveModuleDef.allFnSignatures(): List<MoveFunctionSignature> {
     val block = moduleBlock ?: return emptyList()
@@ -94,6 +96,8 @@ abstract class MoveModuleDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(n
 //    constructor(node: ASTNode) : super(node)
 //
 //    constructor(stub: MoveModuleDefStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+
+    override fun getIcon(flags: Int): Icon = MoveIcons.MODULE
 
     override val importStatements: List<MoveImportStatement>
         get() =

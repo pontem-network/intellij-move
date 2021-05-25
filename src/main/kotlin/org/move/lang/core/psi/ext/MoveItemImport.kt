@@ -30,15 +30,13 @@ abstract class MoveItemImportMixin(node: ASTNode) : MoveNamedElementImpl(node),
         val itemImport = this
         return object : MoveReferenceBase<MoveItemImport>(itemImport) {
             override fun resolve(): MoveNamedElement? {
-                return resolveQualifiedPath(moduleRef,
-                    referenceName,
-                    setOf(Namespace.TYPE, Namespace.NAME, Namespace.SCHEMA))
+                val refName = referenceName ?: return null
+                return resolveQualifiedPath(
+                    moduleRef,
+                    refName,
+                    setOf(Namespace.TYPE, Namespace.NAME, Namespace.SCHEMA)
+                )
             }
         }
     }
-
-
-//    override fun getReference(): MoveReference {
-//        return MoveItemImportReferenceImpl(this)
-//    }
 }

@@ -5,5 +5,6 @@ enum class Namespace {
     TYPE,
     SCHEMA,
     MODULE,
-    STRUCT_FIELD;
+    STRUCT_FIELD,
+    DOT_ACCESSED_FIELD;
 }

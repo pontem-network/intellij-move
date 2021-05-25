@@ -13,7 +13,7 @@ import org.move.lang.core.psi.ext.elementType
 abstract class MoveReferenceBase<T : MoveReferenceElement>(element: T) : PsiReferenceBase<T>(element),
                                                                          MoveReference {
 
-    open val T.referenceAnchor: PsiElement get() = referenceNameElement
+    open val T.referenceAnchor: PsiElement? get() = referenceNameElement
 
     abstract override fun resolve(): MoveNamedElement?
 //    abstract fun resolveVerbose(): ResolveEngine.ResolveResult
@@ -33,12 +33,15 @@ abstract class MoveReferenceBase<T : MoveReferenceElement>(element: T) : PsiRefe
     final override fun getRangeInElement(): TextRange = super.getRangeInElement()
 
     final override fun calculateDefaultRangeInElement(): TextRange {
-        val anchor = element.referenceAnchor
-        return TextRange.from(anchor.startOffsetInParent, anchor.textLength)
+        val anchor = element.referenceAnchor ?: return TextRange.EMPTY_RANGE
+        return TextRange.from(
+            anchor.startOffsetInParent,
+            anchor.textLength
+        )
     }
 
-    override fun handleElementRename(newElementName: String): PsiElement {
-        val refNameElement = element.referenceNameElement
+    override fun handleElementRename(newElementName: String): PsiElement? {
+        val refNameElement = element.referenceNameElement ?: return null
         doRename(refNameElement, newElementName)
         return element
     }

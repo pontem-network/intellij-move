@@ -133,4 +133,16 @@ class UnresolvedReferenceInspectionTest : InspectionsTestCase(MoveUnresolvedRefe
         }
     """
     )
+
+    fun `test unresolved reference to type in generic`() = checkByText(
+        """
+        module M {
+            fun deposit<Token> () {}
+
+            fun main() {
+                deposit<<error descr="Unresolved type: `PONT`">PONT</error>>()
+            }
+        }    
+        """
+    )
 }

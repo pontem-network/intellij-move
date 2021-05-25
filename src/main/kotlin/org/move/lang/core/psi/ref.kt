@@ -11,21 +11,21 @@ import org.move.lang.core.resolve.ref.MoveReference
 import org.move.lang.core.resolve.ref.Namespace
 
 interface MoveReferenceElement : MoveElement {
-    val identifier: PsiElement
+    val identifier: PsiElement?
 
-    override fun getReference(): MoveReference
+    override fun getReference(): MoveReference?
 
     @JvmDefault
-    val referenceNameElement: PsiElement
+    val referenceNameElement: PsiElement?
         get() = identifier
 
     @JvmDefault
-    val referenceName: String
-        get() = identifier.text
+    val referenceName: String?
+        get() = identifier?.text
 
     @JvmDefault
     val isUnresolved: Boolean
-        get() = reference.resolve() == null
+        get() = reference?.resolve() == null
 }
 
 interface MoveSchemaReferenceElement : MoveReferenceElement
@@ -48,7 +48,7 @@ interface MoveQualPathReferenceElement : MoveReferenceElement {
 
     @JvmDefault
     override val isUnresolved: Boolean
-        get() = !isPrimitive && reference.resolve() == null
+        get() = !isPrimitive && reference?.resolve() == null
 }
 
 //abstract class MoveQualPathReferenceElementImpl : MoveQualPathReferenceElement {
@@ -62,7 +62,7 @@ interface MoveQualTypeReferenceElement : MoveQualPathReferenceElement {
 
     @JvmDefault
     val referredStructSignature: MoveStructSignature?
-        get() = reference.resolve() as? MoveStructSignature
+        get() = reference?.resolve() as? MoveStructSignature
 
     @JvmDefault
     val referredStructDef: MoveStructDef?
@@ -94,7 +94,7 @@ interface MoveQualSchemaReferenceElement : MoveQualPathReferenceElement {
     @JvmDefault
     override val isUnresolved: Boolean
         get() =
-            reference.resolve() == null
+            reference?.resolve() == null
 }
 
 abstract class MoveQualSchemaReferenceElementImpl(node: ASTNode) : MoveElementImpl(node),

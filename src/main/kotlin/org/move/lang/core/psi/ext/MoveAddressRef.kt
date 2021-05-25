@@ -7,3 +7,8 @@ fun MoveAddressRef.address(): Address? {
     val addressLit = addressLiteral?.text ?: bech32AddressLiteral?.text ?: return null
     return Address(addressLit)
 }
+
+fun MoveAddressRef.normalizedAddress(): Address? {
+    val addressLit = addressLiteral?.text ?: bech32AddressLiteral?.text ?: return null
+    return Address(addressLit).normalized()
+}

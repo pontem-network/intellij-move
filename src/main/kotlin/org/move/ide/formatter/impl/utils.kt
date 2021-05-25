@@ -36,9 +36,11 @@ fun ASTNode?.isWhitespaceOrEmpty() = this == null || textLength == 0 || elementT
 val PsiElement.isTopLevelItem: Boolean
     get() = (this is MoveModuleDef || this is MoveAddressDef || this is MoveScriptDef) && parent is MoveFile
 
+val PsiElement.isModuleItem: Boolean
+    get() = this is MoveFunctionDef || this is MoveConstDef || this is MoveStructDef || this is MoveImportStatement
+
 val PsiElement.isDeclarationItem: Boolean
-    get() = (this is MoveModuleDef && parent is MoveAddressBlock)
-            || (this is MoveFunctionDef || this is MoveConstDef || this is MoveStructDef || this is MoveImportStatement)
+    get() = (this is MoveModuleDef && parent is MoveAddressBlock) || this.isModuleItem
 
 val PsiElement.isStatement: Boolean
     get() = this is MoveStatement && parent is MoveCodeBlock
