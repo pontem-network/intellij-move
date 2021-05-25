@@ -524,7 +524,8 @@ private TypeParamBound_items ::= Ability ( '+' Ability )*
 }
 private TypeParamBound_items_recover ::= !('>' | ',')
 
-TypeArgumentList ::= '<' <<comma_sep_items (Type &(','|'>'))>>? '>'
+TypeArgumentList ::= '<' <<comma_sep_items (TypeArgument &(','|'>'))>>? '>'
+TypeArgument ::= Type
 //private TypeArgumentList_items ::= <<comma_sep_items (QualifiedPathType &(','|'>'))>>
 //{
 //    recoverWhile = TypeArgumentList_items_recover
