@@ -3,6 +3,7 @@ package org.move.lang.core.psi.ext
 import org.move.lang.core.psi.MoveFullyQualifiedModuleRef
 import org.move.lang.core.psi.MoveQualPath
 import org.move.lang.core.psi.MoveType
+import org.move.lang.core.psi.MoveTypeArgument
 import org.move.lang.core.types.Address
 
 
@@ -14,9 +15,9 @@ val MoveQualPath.identifierName: String get() = identifier.text
 
 val MoveQualPath.isIdentifierOnly: Boolean get() = moduleRef == null
 
-val MoveQualPath.typeArguments: List<MoveType>
+val MoveQualPath.typeArguments: List<MoveTypeArgument>
     get() =
-        typeArgumentList?.typeList.orEmpty()
+        typeArgumentList?.typeArgumentList.orEmpty()
 
 
 //abstract class MoveQualPathMixin(node: ASTNode) : MoveReferenceElementImpl(node),

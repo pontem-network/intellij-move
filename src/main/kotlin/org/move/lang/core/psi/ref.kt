@@ -59,15 +59,12 @@ interface MoveQualTypeReferenceElement : MoveQualPathReferenceElement {
     override val isPrimitive: Boolean
         get() = referenceName in PRIMITIVE_TYPE_IDENTIFIERS
                 || referenceName in BUILTIN_TYPE_IDENTIFIERS
-
-    @JvmDefault
-    val referredStructSignature: MoveStructSignature?
-        get() = reference?.resolve() as? MoveStructSignature
-
-    @JvmDefault
-    val referredStructDef: MoveStructDef?
-        get() = referredStructSignature?.structDef
 }
+
+val MoveQualTypeReferenceElement.referredStructDef: MoveStructDef?
+    get() {
+        return (reference?.resolve() as? MoveStructSignature)?.structDef
+    }
 
 abstract class MoveQualTypeReferenceElementImpl(node: ASTNode) : MoveElementImpl(node),
                                                                  MoveQualTypeReferenceElement {

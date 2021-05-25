@@ -128,19 +128,19 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
 }
 
 private fun checkQualPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) {
-    val argumentTypeElements = qualPath.typeArguments
+    val typeArguments = qualPath.typeArguments
     val referred =
         (qualPath.parent as? MoveQualPathReferenceElement)?.reference?.resolve()
 
     if (referred == null) {
         if (qualPath.identifierName == "vector") {
-            if (argumentTypeElements.isEmpty()) {
+            if (typeArguments.isEmpty()) {
                 holder.createErrorAnnotation(qualPath.identifier, "Missing item type argument")
                 return
             }
-            val realCount = argumentTypeElements.size
+            val realCount = typeArguments.size
             if (realCount > 1) {
-                argumentTypeElements.drop(1).forEach {
+                typeArguments.drop(1).forEach {
                     holder.createErrorAnnotation(
                         it,
                         "Wrong number of type arguments: expected 1, found $realCount"
@@ -156,13 +156,13 @@ private fun checkQualPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) 
     when {
         referred is MoveFunctionSignature
                 && name in BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE
-                && argumentTypeElements.isEmpty() -> {
+                && typeArguments.isEmpty() -> {
             holder.createErrorAnnotation(qualPath, "Missing resource type argument")
             return
         }
         referred is MoveTypeParametersOwner -> {
             val expectedCount = referred.typeParameters.size
-            val realCount = argumentTypeElements.size
+            val realCount = typeArguments.size
 
             if (expectedCount == 0 && realCount != 0) {
                 holder.createErrorAnnotation(
@@ -172,7 +172,7 @@ private fun checkQualPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) 
                 return
             }
             if (realCount > expectedCount) {
-                argumentTypeElements.drop(expectedCount).forEach {
+                typeArguments.drop(expectedCount).forEach {
                     holder.createErrorAnnotation(
                         it,
                         "Wrong number of type arguments: expected $expectedCount, found $realCount"
@@ -181,8 +181,8 @@ private fun checkQualPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) 
                 return
             }
 
-            for ((i, argumentTypeElement) in argumentTypeElements.withIndex()) {
-                val resolvedType = argumentTypeElement.resolvedType
+            for ((i, typeArgument) in typeArguments.withIndex()) {
+                val resolvedType = typeArgument.type.resolvedType
 
                 val requiredAbilities = referred.typeParameters[i].typeParamType.abilities()
                 val abilities = resolvedType.abilities()
@@ -190,7 +190,7 @@ private fun checkQualPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) 
                 for (ability in requiredAbilities) {
                     if (ability !in abilities) {
                         holder.createErrorAnnotation(
-                            argumentTypeElement,
+                            typeArgument,
                             "The type '${resolvedType.fullname()}' " +
                                     "does not have required ability '${ability.label()}'"
                         )

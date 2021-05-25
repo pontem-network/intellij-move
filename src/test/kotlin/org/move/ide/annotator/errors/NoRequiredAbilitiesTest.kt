@@ -47,4 +47,16 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
         }
     }    
     """)
+
+    fun `test type param`() = checkErrors("""
+    module Event {
+        struct Message has drop {}
+        
+        public fun emit_event<T: store + drop>() {}
+        
+        public fun main<M: drop>() {
+            emit_event<<error descr="The type 'M' does not have required ability 'store'">M</error>>()
+        }
+    }    
+    """)
 }

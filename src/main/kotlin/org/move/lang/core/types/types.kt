@@ -81,8 +81,8 @@ class UnresolvedType : BaseType() {
 
 class TypeParamType(private val typeParam: MoveTypeParameter) : BaseType() {
 
-    override fun name(): String = TODO("Not yet implemented")
-    override fun fullname(): String = TODO("Not yet implemented")
+    override fun name(): String = typeParam.name ?: ""
+    override fun fullname(): String = this.name()
 
     override fun abilities(): Set<Ability> {
         return typeParam.abilities.mapNotNull { it.ability }.toSet()
