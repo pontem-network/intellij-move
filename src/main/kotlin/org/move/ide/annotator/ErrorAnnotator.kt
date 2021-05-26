@@ -6,6 +6,8 @@ import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.StructType
+import org.move.lang.core.types.UnresolvedType
+import org.move.lang.core.types.isCompatibleTypes
 
 class ErrorAnnotator : MoveAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
@@ -108,7 +110,10 @@ private fun checkMissingFields(
 }
 
 private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCallArguments) {
-    val expectedCount = (arguments.parent as? MoveCallExpr)?.expectedParamsCount() ?: return
+    val callExpr = arguments.parent as? MoveCallExpr ?: return
+    val signature = callExpr.reference?.resolve() as? MoveFunctionSignature ?: return
+
+    val expectedCount = signature.parameters.size
     val realCount = arguments.exprList.size
     val errorMessage =
         "This function takes $expectedCount ${pluralise(expectedCount, "parameter", "parameters")} " +
@@ -118,11 +123,26 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
         realCount < expectedCount -> {
             val target = arguments.findFirstChildByType(R_PAREN) ?: arguments
             holder.createErrorAnnotation(target, errorMessage)
+            return
         }
         realCount > expectedCount -> {
             arguments.exprList.drop(expectedCount).forEach {
                 holder.createErrorAnnotation(it, errorMessage)
             }
+            return
+        }
+    }
+
+    for ((i, expr) in arguments.exprList.withIndex()) {
+        val parameter = signature.parameters[i]
+        val parameterType = parameter.type?.resolvedType ?: UnresolvedType()
+        val exprType = expr.type ?: UnresolvedType()
+
+        if (!isCompatibleTypes(parameterType, exprType)) {
+            val message =
+                "Invalid argument for parameter '${parameter.name!!}': " +
+                    "type '${exprType.name()}' is not compatible with '${parameterType.name()}'"
+            holder.createErrorAnnotation(expr, message)
         }
     }
 }
