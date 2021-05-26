@@ -29,20 +29,34 @@ sealed class BaseType {
     abstract fun name(): String
     abstract fun fullname(): String
     abstract fun abilities(): Set<Ability>
+
+    open fun unresolvedType(): Boolean = false
 }
 
-class PrimitiveType : BaseType() {
-    override fun name(): String = TODO("Not yet implemented")
-    override fun fullname(): String = TODO("Not yet implemented")
-
+class PrimitiveType(private val name: String) : BaseType() {
+    override fun name(): String = name
+    override fun fullname(): String = name()
     override fun abilities(): Set<Ability> = Ability.all()
 }
 
-class RefType(private val referredType: BaseType) : BaseType() {
+class RefType(
+    val referredType: BaseType,
+    val mutable: Boolean
+) : BaseType() {
 
-    override fun name(): String = referredType.name()
-    override fun fullname(): String = referredType.fullname()
+    private fun prefix(): String {
+        return if (mutable) "&mut " else "&"
+    }
+
+    override fun name(): String = prefix() + referredType.name()
+    override fun fullname(): String = prefix() + referredType.fullname()
     override fun abilities(): Set<Ability> = referredType.abilities()
+    override fun unresolvedType(): Boolean =
+        super.unresolvedType()
+                || this.referredType.unresolvedType()
+
+    fun referredTypeName(): String = referredType.name()
+    fun referredTypeFullName(): String = referredType.fullname()
 
     fun referredStructDef(): MoveStructDef? =
         when (referredType) {
@@ -77,6 +91,7 @@ class UnresolvedType : BaseType() {
     override fun fullname(): String = TODO("Not yet implemented")
 
     override fun abilities(): Set<Ability> = Ability.all()
+    override fun unresolvedType(): Boolean = true
 }
 
 class TypeParamType(private val typeParam: MoveTypeParameter) : BaseType() {
@@ -87,4 +102,26 @@ class TypeParamType(private val typeParam: MoveTypeParameter) : BaseType() {
     override fun abilities(): Set<Ability> {
         return typeParam.abilities.mapNotNull { it.ability }.toSet()
     }
+}
+
+fun isCompatibleTypes(expectedType: BaseType, actualType: BaseType): Boolean {
+    if (expectedType.unresolvedType()
+        || actualType.unresolvedType()
+    ) return true
+
+    if (expectedType::class != actualType::class) return false
+    when {
+        expectedType is RefType && actualType is RefType -> {
+            if (expectedType.fullname() == actualType.fullname()) return true
+
+            val refsCompatible =
+                isCompatibleTypes(
+                    expectedType.referredType,
+                    actualType.referredType
+                )
+            return refsCompatible && (!expectedType.mutable && actualType.mutable)
+        }
+    }
+    return expectedType::class == actualType::class
+            && expectedType.fullname() == actualType.fullname()
 }
