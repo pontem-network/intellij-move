@@ -193,7 +193,7 @@ fun processLexicalDeclarations(
             val refExpr = dotExpr.refExpr ?: return false
             val referredTypedVar = refExpr.reference?.resolve() as? MoveTypeAnnotated ?: return false
 
-            val resolvedType = referredTypedVar.type?.resolvedType
+            val resolvedType = referredTypedVar.type?.resolvedType()
             val structDef = when (resolvedType) {
                 is StructType -> resolvedType.structDef()
                 is RefType -> resolvedType.referredStructDef()

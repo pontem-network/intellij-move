@@ -9,6 +9,12 @@ class MoveModuleReferenceImpl(
 ) : MoveReferenceCached<MoveModuleRef>(element) {
 
     override fun resolveInner(): MoveNamedElement? {
+        if (element is MoveImportedModuleRef
+            && element.referenceName == "Self"
+            && element.containingModule != null
+        ) {
+            return element.containingModule
+        }
         val resolved = resolveItem(element, Namespace.MODULE)
         if (resolved is MoveImportAlias) {
             return resolved
