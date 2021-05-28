@@ -12,7 +12,7 @@ class MoveModuleReferenceImpl(
     override fun resolveInner(): MoveNamedElement? {
         if (element.isSelf) return element.containingModule
 
-        val resolved = resolveItem(element, NameType.MODULE)
+        val resolved = resolveItem(element, Namespace.MODULE)
         if (resolved is MoveImportAlias) {
             return resolved
         }

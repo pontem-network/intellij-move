@@ -28,16 +28,17 @@ class MoveQualPathReferenceImpl<T : MoveQualPathReferenceElement>(
     }
 }
 
-fun processPublicModuleItems(
+fun processModuleItems(
     module: MoveModuleDef,
-    ns: Set<Namespace>,
+    visibilities: Set<Visibility>,
+    namespaces: Set<Namespace>,
     processor: MatchingProcessor,
 ): Boolean {
-    for (namespace in ns) {
+    for (namespace in namespaces) {
         val found = when (namespace) {
             Namespace.NAME -> processor.matchAll(
                 listOf(
-                    module.publicFnSignatures(),
+                    visibilities.flatMap { module.functionSignatures(it) },
                     module.structSignatures(),
                     module.consts(),
                 ).flatten()
@@ -58,12 +59,14 @@ fun resolveQualifiedPath(
 ): MoveNamedElement? {
     val module = (qualModuleRef.reference?.resolve() as? MoveModuleDef) ?: return null
     var resolved: MoveNamedElement? = null
-    processPublicModuleItems(module, ns) {
+
+    val vs = Visibility.buildSetOfVisibilities(qualModuleRef)
+    processModuleItems(module, vs, ns) {
         if (it.name == refName && it.element != null) {
             resolved = it.element
-            return@processPublicModuleItems true
+            return@processModuleItems true
         }
-        return@processPublicModuleItems false
+        return@processModuleItems false
     }
     return resolved
 }

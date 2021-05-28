@@ -11,7 +11,8 @@ import org.move.lang.core.psi.MoveQualPathType
 import org.move.lang.core.psi.ext.isSpecElement
 import org.move.lang.core.resolve.processNestedScopesUpwards
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.processPublicModuleItems
+import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.resolve.ref.processModuleItems
 
 object TypesCompletionProvider : MoveCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
@@ -31,7 +32,9 @@ object TypesCompletionProvider : MoveCompletionProvider() {
         val moduleRef = refElement.qualPath.moduleRef
         if (moduleRef != null) {
             val module = moduleRef.reference?.resolve() as? MoveModuleDef ?: return
-            processPublicModuleItems(module, setOf(Namespace.TYPE)) {
+            val vs = setOf(Visibility.Public())
+            val ns = setOf(Namespace.TYPE)
+            processModuleItems(module, vs, ns) {
                 if (it.element != null) {
                     val lookup = it.element.createLookupElement(false)
                     result.addElement(lookup)

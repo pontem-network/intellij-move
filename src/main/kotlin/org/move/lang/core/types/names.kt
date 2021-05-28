@@ -14,3 +14,5 @@ data class Address(val text: String) {
         fun default(): Address = Address("0x1")
     }
 }
+
+data class FriendModule(val address: Address, val name: String)

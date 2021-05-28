@@ -6,7 +6,29 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.psi.mixins.MoveFunctionSignatureMixin
+import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.types.FriendModule
 import javax.swing.Icon
+
+fun MoveModuleDef.asFriendModule(): FriendModule? {
+    val address = this.containingAddress.normalized()
+    val name = this.name ?: return null
+    return FriendModule(address, name)
+}
+
+val MoveModuleDef.friends: Set<FriendModule>
+    get() {
+        val block = this.moduleBlock ?: return emptySet()
+        val moduleRefs = block.friendStatementList.mapNotNull { it.fullyQualifiedModuleRef }
+
+        val friends = mutableSetOf<FriendModule>()
+        for (moduleRef in moduleRefs) {
+            val address = moduleRef.addressRef.normalizedAddress() ?: continue
+            val identifier = moduleRef.identifier?.text ?: continue
+            friends.add(FriendModule(address, identifier))
+        }
+        return friends
+    }
 
 fun MoveModuleDef.allFnSignatures(): List<MoveFunctionSignature> {
     val block = moduleBlock ?: return emptyList()
@@ -31,10 +53,27 @@ fun MoveModuleDef.builtinFnSignatures(): List<MoveFunctionSignature> {
     )
 }
 
-fun MoveModuleDef.publicFnSignatures(): List<MoveFunctionSignature> {
-    return allFnSignatures()
-        .filter { it.visibility == FunctionVisibility.PUBLIC }
-}
+fun MoveModuleDef.functionSignatures(visibility: Visibility): List<MoveFunctionSignature> =
+    when (visibility) {
+        is Visibility.Public ->
+            allFnSignatures()
+                .filter { it.visibility == FunctionVisibility.PUBLIC }
+        is Visibility.PublicScript ->
+            allFnSignatures()
+                .filter { it.visibility == FunctionVisibility.PUBLIC_SCRIPT }
+        is Visibility.PublicFriend -> {
+            if (visibility.module in this.friends) {
+                allFnSignatures().filter { it.visibility == FunctionVisibility.PUBLIC_FRIEND }
+            } else {
+                emptyList()
+            }
+        }
+    }
+
+//fun MoveModuleDef.publicFnSignatures(): List<MoveFunctionSignature> {
+//    return allFnSignatures()
+//        .filter { it.visibility == FunctionVisibility.PUBLIC }
+//}
 
 fun createBuiltinFuncSignature(text: String, project: Project): MoveFunctionSignature? {
     val signature = MovePsiFactory(project)
