@@ -59,4 +59,43 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
         }
     }    
     """)
+
+
+    fun `test no required ability 'key' for move_to argument`() = checkErrors("""
+    module M {
+        struct Res {}
+        fun main(r: Res) {
+            move_to<Res>(0x1, r)
+        }
+    }    
+    """)
+
+    fun `test no error in move_to with resource`() = checkErrors("""
+    module M {
+        struct Res has key {}
+        fun main(r: Res) {
+            move_to<Res>(0x1, r)
+        }
+    }    
+    """)
+
+    fun `test no required ability for struct for type param`() = checkErrors("""
+    module M {
+        struct Res {}
+        fun save<T: key>(r: T) {}
+        fun main(r: Res) {
+            save(r)
+        }
+    }    
+    """)
+
+    fun `test no error in type param if structure has required abilities`() = checkErrors("""
+    module M {
+        struct Res has key {}
+        fun save<T: key>(r: T) {}
+        fun main(r: Res) {
+            save(r)
+        }
+    }    
+    """)
 }

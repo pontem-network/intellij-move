@@ -222,7 +222,6 @@ class ResolveFunctionTest : ResolveTestCase() {
         module M {
             use 0x1::Original::call as mycall;
                                      //X
-            
             fun main() {
                 mycall();
               //^  
@@ -249,6 +248,101 @@ class ResolveFunctionTest : ResolveTestCase() {
                 }
             }
         }
+    """
+    )
+
+    fun `test resolve reference to function via Self`() = checkByCode(
+        """
+        module M {
+            fun call(): u8 {
+              //X
+                1
+            }
+            
+            fun main() {
+                Self::call();
+                    //^
+            }
+        }
+    """
+    )
+
+    fun `test resolve friend function`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            friend 0x1::M;
+            public(friend) fun call() {}
+                             //X
+        }
+        
+        module M {
+            use 0x1::Original;
+            fun main() {
+                Original::call();
+                        //^
+            }
+        }    
+        }
+    """
+    )
+
+    fun `test script function is unresolved in friend modules`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            friend 0x1::M;
+            public(script) fun call() {}
+        }
+        
+        module M {
+            use 0x1::Original;
+            fun main() {
+                Original::call();
+                        //^ unresolved
+            }
+        }    
+        }
+    """
+    )
+
+    fun `test resolve script function`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            public(script) fun call() {}
+                             //X
+        }
+        }
+        
+        script {
+            use 0x1::Original;
+            fun main() {
+                Original::call();
+                        //^
+            }
+        }    
+    """
+    )
+
+    fun `test friend function is unresolved in scripts`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            friend 0x1::M;
+            public(friend) fun call() {}
+        }
+        
+        module M {}    
+        }
+        
+        script {
+            use 0x1::Original;
+            fun main() {
+                Original::call();
+                        //^ unresolved
+            }
+        } 
     """
     )
 }

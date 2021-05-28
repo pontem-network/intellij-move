@@ -134,6 +134,20 @@ class UnresolvedReferenceInspectionTest : InspectionsTestCase(MoveUnresolvedRefe
     """
     )
 
+    fun `test unresolved reference for method of another module`() = checkByText(
+        """
+    address 0x1 {
+        module Other {}
+        module M {
+            use 0x1::Other;
+            fun main() {
+                Other::<error descr="Unresolved reference: `emit`">emit</error>();
+            }
+        }
+    }
+        """
+    )
+
     fun `test unresolved reference to type in generic`() = checkByText(
         """
         module M {

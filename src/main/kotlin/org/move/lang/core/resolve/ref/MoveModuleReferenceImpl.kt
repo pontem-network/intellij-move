@@ -1,6 +1,7 @@
 package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.parentImport
 import org.move.lang.core.resolve.resolveItem
 
@@ -9,13 +10,9 @@ class MoveModuleReferenceImpl(
 ) : MoveReferenceCached<MoveModuleRef>(element) {
 
     override fun resolveInner(): MoveNamedElement? {
-        if (element is MoveImportedModuleRef
-            && element.referenceName == "Self"
-            && element.containingModule != null
-        ) {
-            return element.containingModule
-        }
-        val resolved = resolveItem(element, Namespace.MODULE)
+        if (element.isSelf) return element.containingModule
+
+        val resolved = resolveItem(element, NameType.MODULE)
         if (resolved is MoveImportAlias) {
             return resolved
         }
