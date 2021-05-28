@@ -8,7 +8,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.MovePsiPatterns
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.asFriendModule
 import org.move.lang.core.psi.ext.isSpecElement
 import org.move.lang.core.resolve.processNestedScopesUpwards
 import org.move.lang.core.resolve.ref.Namespace

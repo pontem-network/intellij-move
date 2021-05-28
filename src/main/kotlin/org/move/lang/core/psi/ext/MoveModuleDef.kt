@@ -7,25 +7,25 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.psi.mixins.MoveFunctionSignatureMixin
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.types.FriendModule
+import org.move.lang.core.types.FullyQualModule
 import javax.swing.Icon
 
-fun MoveModuleDef.asFriendModule(): FriendModule? {
+fun MoveModuleDef.fullyQual(): FullyQualModule? {
     val address = this.containingAddress.normalized()
     val name = this.name ?: return null
-    return FriendModule(address, name)
+    return FullyQualModule(address, name)
 }
 
-val MoveModuleDef.friends: Set<FriendModule>
+val MoveModuleDef.friends: Set<FullyQualModule>
     get() {
         val block = this.moduleBlock ?: return emptySet()
         val moduleRefs = block.friendStatementList.mapNotNull { it.fullyQualifiedModuleRef }
 
-        val friends = mutableSetOf<FriendModule>()
+        val friends = mutableSetOf<FullyQualModule>()
         for (moduleRef in moduleRefs) {
             val address = moduleRef.addressRef.normalizedAddress() ?: continue
             val identifier = moduleRef.identifier?.text ?: continue
-            friends.add(FriendModule(address, identifier))
+            friends.add(FullyQualModule(address, identifier))
         }
         return friends
     }
@@ -62,12 +62,13 @@ fun MoveModuleDef.functionSignatures(visibility: Visibility): List<MoveFunctionS
             allFnSignatures()
                 .filter { it.visibility == FunctionVisibility.PUBLIC_SCRIPT }
         is Visibility.PublicFriend -> {
-            if (visibility.module in this.friends) {
+            if (visibility.currentModule in this.friends) {
                 allFnSignatures().filter { it.visibility == FunctionVisibility.PUBLIC_FRIEND }
             } else {
                 emptyList()
             }
         }
+        is Visibility.Internal -> allFnSignatures()
     }
 
 //fun MoveModuleDef.publicFnSignatures(): List<MoveFunctionSignature> {

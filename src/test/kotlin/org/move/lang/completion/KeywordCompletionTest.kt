@@ -311,23 +311,23 @@ class KeywordCompletionTest : CompletionTestCase() {
        }    
     """, listOf("public", "public(script)", "public(friend)"))
 
-    fun `test public(script) without leading fun adds fun`() = doSingleCompletion("""
-    module M {
-        public(scr/*caret*/
-    }
-    """, """
-    module M {
-        public(script) fun /*caret*/
-    }
-    """)
-
-    fun `test public(script) with leading fun adds just modifier`() = doSingleCompletion("""
-    module M {
-        public(scr/*caret*/ fun
-    }
-    """, """
-    module M {
-        public(script)/*caret*/ fun 
-    }
-    """)
+//    fun `test public(script) without leading fun adds fun`() = doSingleCompletion("""
+//    module M {
+//        public(scr/*caret*/
+//    }
+//    """, """
+//    module M {
+//        public(script) fun /*caret*/
+//    }
+//    """)
+//
+//    fun `test public(script) with leading fun adds just modifier`() = doSingleCompletion("""
+//    module M {
+//        public(scr/*caret*/ fun
+//    }
+//    """, """
+//    module M {
+//        public(script)/*caret*/ fun
+//    }
+//    """)
 }

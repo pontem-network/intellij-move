@@ -48,6 +48,7 @@ class KeywordCompletionContributor : CompletionContributor() {
                 "const",
                 "use",
                 "spec",
+                "friend",
             )
         )
         extend(

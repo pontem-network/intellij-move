@@ -12,10 +12,10 @@ interface MoveImportStatementsOwner : MoveElement {
         _moduleImports()
             .filter { it.importAlias == null }
 
-    @JvmDefault
-    fun selfItemImports(): List<MoveItemImport> =
-        itemImports()
-            .filter { it.importAlias == null && it.text == "Self" }
+//    @JvmDefault
+//    fun selfItemImports(): List<MoveItemImport> =
+//        itemImports()
+//            .filter { it.importAlias == null && it.text == "Self" }
 //            .map { it.parent }
 //            .filterIsInstance<MoveModuleItemsImport>()
 //            .map { it.fullyQualifiedModuleRef }

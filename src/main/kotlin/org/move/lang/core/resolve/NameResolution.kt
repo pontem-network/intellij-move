@@ -282,7 +282,7 @@ fun processLexicalDeclarations(
                 listOf(
                     scope.moduleImports(),
                     scope.moduleImportAliases(),
-                    scope.selfItemImports(),
+//                    scope.selfItemImports(),
                 ).flatten(),
             )
             else -> false

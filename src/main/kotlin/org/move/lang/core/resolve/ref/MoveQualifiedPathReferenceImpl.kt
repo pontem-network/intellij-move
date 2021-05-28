@@ -13,18 +13,29 @@ class MoveQualPathReferenceImpl<T : MoveQualPathReferenceElement>(
 
     override fun resolve(): MoveNamedElement? {
         val moduleRef = element.qualPath.moduleRef
+        val refName = element.referenceName ?: return null
+
         val qualModuleRef =
-            if (moduleRef == null) {
+            if (moduleRef != null) {
+                if (moduleRef.isSelf) {
+                    val containingModule = moduleRef.containingModule ?: return null
+                    val vs = setOf(Visibility.Internal())
+                    val ns = setOf(namespace)
+                    return resolveModuleItem(containingModule, refName, vs, ns)
+                }
+                resolveModuleRefIntoQual(moduleRef) ?: return null
+            } else {
                 val resolved = resolveItem(element, namespace)
                 if (resolved !is MoveItemImport) {
                     return resolved
                 }
                 resolved.parentImport().fullyQualifiedModuleRef
-            } else {
-                resolveModuleRefIntoQual(moduleRef) ?: return null
             }
-        val refName = element.referenceName ?: return null
-        return resolveQualifiedPath(qualModuleRef, refName, setOf(namespace))
+
+        val vs = Visibility.buildSetOfVisibilities(qualModuleRef)
+        val module = (qualModuleRef.reference?.resolve() as? MoveModuleDef) ?: return null
+
+        return resolveModuleItem(module, refName, vs, setOf(namespace))
     }
 }
 
@@ -52,15 +63,13 @@ fun processModuleItems(
     return false
 }
 
-fun resolveQualifiedPath(
-    qualModuleRef: MoveFullyQualifiedModuleRef,
+fun resolveModuleItem(
+    module: MoveModuleDef,
     refName: String,
+    vs: Set<Visibility>,
     ns: Set<Namespace>,
 ): MoveNamedElement? {
-    val module = (qualModuleRef.reference?.resolve() as? MoveModuleDef) ?: return null
     var resolved: MoveNamedElement? = null
-
-    val vs = Visibility.buildSetOfVisibilities(qualModuleRef)
     processModuleItems(module, vs, ns) {
         if (it.name == refName && it.element != null) {
             resolved = it.element

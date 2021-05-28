@@ -15,4 +15,4 @@ data class Address(val text: String) {
     }
 }
 
-data class FriendModule(val address: Address, val name: String)
+data class FullyQualModule(val address: Address, val name: String)
