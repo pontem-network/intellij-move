@@ -159,34 +159,6 @@ class FunctionsCompletionTest : CompletionTestCase() {
     """
     )
 
-    fun `test public functions completion from another module in the same file`() = doSingleCompletion(
-        """
-        address 0x1 {
-        module Transaction {
-            public fun create() {}
-        }
-        }
-        
-        module M {
-            fun main() {
-                0x1::Transaction::cr/*caret*/
-            }
-        }
-    """, """
-        address 0x1 {
-        module Transaction {
-            public fun create() {}
-        }
-        }
-        
-        module M {
-            fun main() {
-                0x1::Transaction::create()/*caret*/
-            }
-        }
-    """
-    )
-
     fun `test no function completion in type position`() = checkNoCompletion(
         """
         address 0x1 {
@@ -200,4 +172,55 @@ class FunctionsCompletionTest : CompletionTestCase() {
         }
     """
     )
+
+    fun `test public and public(friend) completions for module`() = completionFixture.checkContainsCompletion(
+        """
+        address 0x1 {
+        module Transaction {
+            friend 0x1::M;
+            public(friend) fun create_friend() {}
+            public fun create() {}
+        }
+        }
+        
+        module M {
+            fun main() {
+                0x1::Transaction::cr/*caret*/
+            }
+        }
+    """, listOf("create", "create_friend"))
+
+    fun `test public and public(script) completions for script`() = completionFixture.checkContainsCompletion(
+        """
+        address 0x1 {
+        module Transaction {
+            friend 0x1::M;
+            public(script) fun create_script() {}
+            public fun create() {}
+        }
+        }
+        
+        script {
+            fun main() {
+                0x1::Transaction::cr/*caret*/
+            }
+        }
+    """, listOf("create", "create_script"))
+
+    fun `test Self completion`() = completionFixture.checkContainsCompletion(
+        """
+        address 0x1 {
+        module Transaction {
+            friend 0x1::M;
+            public(friend) fun create_friend() {}
+            public(script) fun create_script() {}
+            public fun create() {}
+            fun create_private() {}
+            
+            fun main() {
+                Self::/*caret*/
+            }
+        }
+        }
+    """, listOf("create", "create_script", "create_friend", "create_private"))
 }

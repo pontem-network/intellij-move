@@ -345,4 +345,23 @@ class ResolveFunctionTest : ResolveTestCase() {
         } 
     """
     )
+
+    fun `test public(script) function can call public(script) from another module`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            public(script) fun call() {}
+                             //X
+        }
+        
+        module M {
+            use 0x1::Original;
+            public(script) fun main() {
+                Original::call();
+                        //^
+            }
+        }
+        }
+    """
+    )
 }

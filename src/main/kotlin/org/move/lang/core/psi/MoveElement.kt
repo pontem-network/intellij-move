@@ -19,6 +19,11 @@ interface MoveElement : PsiElement {
     val containingModule: MoveModuleDef?
         get() =
             ancestorStrict()
+
+    @JvmDefault
+    val containingFunction: MoveFunctionDef?
+        get() =
+            ancestorStrict()
 }
 
 abstract class MoveElementImpl(node: ASTNode) : ASTWrapperPsiElement(node),

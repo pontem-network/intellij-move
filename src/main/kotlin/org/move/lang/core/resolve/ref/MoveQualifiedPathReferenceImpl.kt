@@ -32,7 +32,7 @@ class MoveQualPathReferenceImpl<T : MoveQualPathReferenceElement>(
                 resolved.parentImport().fullyQualifiedModuleRef
             }
 
-        val vs = Visibility.buildSetOfVisibilities(qualModuleRef)
+        val vs = Visibility.buildSetOfVisibilities(element)
         val module = (qualModuleRef.reference?.resolve() as? MoveModuleDef) ?: return null
 
         return resolveModuleItem(module, refName, vs, setOf(namespace))

@@ -1,7 +1,9 @@
 package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.MoveElement
+import org.move.lang.core.psi.ext.FunctionVisibility
 import org.move.lang.core.psi.ext.fullyQual
+import org.move.lang.core.psi.ext.visibility
 import org.move.lang.core.types.FullyQualModule
 
 sealed class Visibility {
@@ -19,7 +21,12 @@ sealed class Visibility {
                 if (asFriendModule != null) {
                     vs.add(PublicFriend(asFriendModule))
                 }
-            } else {
+            }
+
+            val containingFunSignature = element.containingFunction?.functionSignature
+            if (containingModule == null
+                || (containingFunSignature?.visibility == FunctionVisibility.PUBLIC_SCRIPT)
+            ) {
                 vs.add(PublicScript())
             }
             return vs
