@@ -48,7 +48,7 @@ class KeywordCompletionTest : CompletionTestCase() {
 
     fun `test top level module declarations`() = completionFixture.checkContainsCompletion(
         """module M { /*caret*/ }""",
-        listOf("resource", "struct", "public", "fun", "const", "use", "native", "spec")
+        listOf("resource", "struct", "public", "fun", "const", "use", "friend", "native", "spec")
     )
 
     fun `test space after declaration`() = doSingleCompletion("""
@@ -310,4 +310,24 @@ class KeywordCompletionTest : CompletionTestCase() {
         pub/*caret*/ fun main() {}
        }    
     """, listOf("public", "public(script)", "public(friend)"))
+
+//    fun `test public(script) without leading fun adds fun`() = doSingleCompletion("""
+//    module M {
+//        public(scr/*caret*/
+//    }
+//    """, """
+//    module M {
+//        public(script) fun /*caret*/
+//    }
+//    """)
+//
+//    fun `test public(script) with leading fun adds just modifier`() = doSingleCompletion("""
+//    module M {
+//        public(scr/*caret*/ fun
+//    }
+//    """, """
+//    module M {
+//        public(script)/*caret*/ fun
+//    }
+//    """)
 }

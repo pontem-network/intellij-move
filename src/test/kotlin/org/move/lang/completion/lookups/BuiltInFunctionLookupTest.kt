@@ -16,7 +16,7 @@ class BuiltInFunctionLookupTest : MoveTestBase() {
 
     fun `test move_to`() = checkBuiltinPresentation(
         "move_to",
-        tailText = "(addr: address, res: R)",
+        tailText = "(acc: &signer, res: R)",
         typeText = "()"
     )
 

@@ -58,8 +58,8 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
 
     fun `test resource could be inferred for move_to`() = checkErrors("""
         module M {
-            fun main() {
-                let a = move_to(0x0, 1);
+            fun main(s: signer) {
+                let a = move_to(&s, 1);
             }
         }    
     """)
@@ -73,7 +73,7 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
         }    
     """)
 
-    fun `test generic argument could possibly be inferred`() = checkErrors("""
+    fun `test generic argument type could be inferred`() = checkErrors("""
         module M {
             fun call<T>(val: T) {}
             fun main() {

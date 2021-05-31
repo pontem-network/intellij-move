@@ -1,11 +1,13 @@
 package org.move.lang.core.types
 
-import org.move.lang.core.psi.MoveStructDef
-import org.move.lang.core.psi.MoveStructSignature
-import org.move.lang.core.psi.MoveTypeParameter
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.psi.ext.ability
 import org.move.lang.core.psi.ext.structDef
+
+interface HasType : MoveElement {
+    fun resolvedType(): BaseType?
+}
 
 enum class Ability {
     DROP, COPY, STORE, KEY;
@@ -29,14 +31,66 @@ sealed class BaseType {
     abstract fun name(): String
     abstract fun fullname(): String
     abstract fun abilities(): Set<Ability>
+    abstract fun definingModule(): MoveModuleDef?
+    abstract fun compatibleWith(other: BaseType): Boolean
 
-    open fun unresolvedType(): Boolean = false
+    fun typeLabel(relativeTo: MoveElement): String {
+        val exprTypeModule = this.definingModule()
+        return if (exprTypeModule != null
+            && exprTypeModule != relativeTo.containingModule
+        ) {
+            this.fullname()
+        } else {
+            this.name()
+        }
+    }
 }
 
 class PrimitiveType(private val name: String) : BaseType() {
     override fun name(): String = name
     override fun fullname(): String = name()
     override fun abilities(): Set<Ability> = Ability.all()
+    override fun definingModule(): MoveModuleDef? = null
+
+    override fun compatibleWith(other: BaseType): Boolean {
+        return other is PrimitiveType && this.name == other.name()
+    }
+}
+
+class IntegerType(private val precision: String? = null) : BaseType() {
+    override fun name(): String = precision ?: "integer"
+    override fun fullname(): String = name()
+    override fun abilities(): Set<Ability> = Ability.all()
+    override fun definingModule(): MoveModuleDef? = null
+
+    override fun compatibleWith(other: BaseType): Boolean {
+        if (other !is IntegerType) return false
+        return this.precision == null
+                || other.precision == null
+                || this.precision == other.precision
+    }
+}
+
+class VectorType(private val itemType: BaseType) : BaseType() {
+    override fun name(): String = "vector<${itemType.fullname()}>"
+    override fun fullname(): String = name()
+    override fun abilities(): Set<Ability> = Ability.all()
+    override fun definingModule(): MoveModuleDef? = null
+
+    override fun compatibleWith(other: BaseType): Boolean {
+        return other is VectorType && this.itemType.compatibleWith(other.itemType)
+    }
+}
+
+class VoidType : BaseType() {
+    override fun name(): String = "void"
+    override fun fullname(): String = "void"
+    override fun abilities(): Set<Ability> = emptySet()
+    override fun definingModule(): MoveModuleDef? = null
+
+    override fun compatibleWith(other: BaseType): Boolean {
+        return other is VoidType
+    }
 }
 
 class RefType(
@@ -51,12 +105,18 @@ class RefType(
     override fun name(): String = prefix() + referredType.name()
     override fun fullname(): String = prefix() + referredType.fullname()
     override fun abilities(): Set<Ability> = referredType.abilities()
-    override fun unresolvedType(): Boolean =
-        super.unresolvedType()
-                || this.referredType.unresolvedType()
+    override fun definingModule(): MoveModuleDef? = referredType.definingModule()
 
-    fun referredTypeName(): String = referredType.name()
-    fun referredTypeFullName(): String = referredType.fullname()
+    override fun compatibleWith(other: BaseType): Boolean {
+        if (other !is RefType) return false
+        if (this.fullname() == other.fullname()) return true
+
+        return this.referredType.compatibleWith(other.referredType)
+                && (!this.mutable && other.mutable)
+    }
+
+//    fun referredTypeName(): String = referredType.name()
+//    fun referredTypeFullName(): String = referredType.fullname()
 
     fun referredStructDef(): MoveStructDef? =
         when (referredType) {
@@ -66,7 +126,10 @@ class RefType(
         }
 }
 
-class StructType(private val structSignature: MoveStructSignature) : BaseType() {
+class StructType(
+    private val structSignature: MoveStructSignature,
+    private val typeArguments: List<BaseType> = emptyList()
+) : BaseType() {
 
     override fun name(): String = structSignature.name ?: ""
 
@@ -80,48 +143,48 @@ class StructType(private val structSignature: MoveStructSignature) : BaseType() 
         return this.structSignature.abilities.mapNotNull { it.ability }.toSet()
     }
 
+    override fun definingModule(): MoveModuleDef? {
+        return this.structSignature.containingModule
+    }
+
+    override fun compatibleWith(other: BaseType): Boolean {
+        return other is StructType && this.fullname() == other.fullname()
+    }
+
     fun structDef(): MoveStructDef? {
         return this.structSignature.structDef
     }
-}
-
-class UnresolvedType : BaseType() {
-
-    override fun name(): String = TODO("Not yet implemented")
-    override fun fullname(): String = TODO("Not yet implemented")
-
-    override fun abilities(): Set<Ability> = Ability.all()
-    override fun unresolvedType(): Boolean = true
 }
 
 class TypeParamType(private val typeParam: MoveTypeParameter) : BaseType() {
 
     override fun name(): String = typeParam.name ?: ""
     override fun fullname(): String = this.name()
+    override fun definingModule(): MoveModuleDef? = null
 
     override fun abilities(): Set<Ability> {
         return typeParam.abilities.mapNotNull { it.ability }.toSet()
     }
-}
 
-fun isCompatibleTypes(expectedType: BaseType, actualType: BaseType): Boolean {
-    if (expectedType.unresolvedType()
-        || actualType.unresolvedType()
-    ) return true
-
-    if (expectedType::class != actualType::class) return false
-    when {
-        expectedType is RefType && actualType is RefType -> {
-            if (expectedType.fullname() == actualType.fullname()) return true
-
-            val refsCompatible =
-                isCompatibleTypes(
-                    expectedType.referredType,
-                    actualType.referredType
-                )
-            return refsCompatible && (!expectedType.mutable && actualType.mutable)
-        }
+    override fun compatibleWith(other: BaseType): Boolean {
+        return (this.abilities() - other.abilities()).isEmpty()
     }
-    return expectedType::class == actualType::class
-            && expectedType.fullname() == actualType.fullname()
 }
+
+//fun isCompatibleTypes(expectedType: BaseType, actualType: BaseType): Boolean {
+//    if (expectedType::class != actualType::class) return false
+//    when {
+//        expectedType is RefType && actualType is RefType -> {
+//            if (expectedType.fullname() == actualType.fullname()) return true
+//
+//            val refsCompatible =
+//                isCompatibleTypes(
+//                    expectedType.referredType,
+//                    actualType.referredType
+//                )
+//            return refsCompatible && (!expectedType.mutable && actualType.mutable)
+//        }
+//    }
+//    return expectedType::class == actualType::class
+//            && expectedType.fullname() == actualType.fullname()
+//}

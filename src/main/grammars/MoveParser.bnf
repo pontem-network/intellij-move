@@ -36,7 +36,6 @@
 
         BOOL_LITERAL='regexp:(true)|(false)'
         INTEGER_LITERAL='regexp:[0-9]+((u8)|(u64)|(u128))?'
-        HEX_STRING_LITERAL='regexp:x"([A-F0-9a-f]*)"'
         BYTE_STRING_LITERAL='regexp:b"(.*)"'
 
         IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
@@ -469,8 +468,16 @@ ImportAlias ::= as IDENTIFIER
 TypeAnnotation ::= ':' Type { pin = 1 }
 
 Type ::= RefType | QualPathType | TupleType | LambdaType
+{
+    implements = ["org.move.lang.core.types.HasType"]
+    mixin = "org.move.lang.core.psi.ext.MoveTypeMixin"
+}
 
-RefType ::= RefTypeStart Type { pin = 1 }
+RefType ::= RefTypeStart Type
+{
+    pin = 1
+    mixin = "org.move.lang.core.psi.ext.MoveRefTypeMixin"
+}
 RefTypeStart ::= ('&' mut?)
 
 QualPathType ::= QualPath
@@ -511,7 +518,8 @@ private TypeParameter_recover ::= !('>' | '(' | '{' | IDENTIFIER)
 
 TypeParameter ::= IDENTIFIER TypeParamBound? {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
+    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
+                   "org.move.lang.core.types.HasType" ]
     mixin = "org.move.lang.core.psi.mixins.MoveTypeParameterMixin"
 }
 TypeParamBound ::= ':' TypeParamBound_items
@@ -681,6 +689,10 @@ Expr ::= AssignmentExpr
         | UnaryExpr
         | BorrowExpr
         | AtomExpr
+{
+    implements = ["org.move.lang.core.types.HasType"]
+    mixin = "org.move.lang.core.psi.ext.MoveExprMixin"
+}
 
 private MulExprItem ::= DivExpr | MulExpr | ModExpr
 private AddExprItem ::= PlusExpr | MinusExpr
@@ -807,11 +819,13 @@ private TupleExpr ::= '(' Expr ',' <<comma_sep_items Expr>>? ')' { pin = 3 }
 
 LiteralExpr ::= BOOL_LITERAL
                 | INTEGER_LITERAL
-                | HEX_STRING_LITERAL
                 | BYTE_STRING_LITERAL
                 | ADDRESS_LITERAL
                 | BECH32_ADDRESS_LITERAL
                 | POLKADOT_ADDRESS_LITERAL
+{
+    mixin = "org.move.lang.core.psi.ext.MoveLiteralExprMixin"
+}
 
 CallExpr ::= (QualPath &'(') CallArguments
 {

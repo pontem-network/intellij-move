@@ -5,9 +5,9 @@ import com.intellij.psi.PsiElement
 import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.types.HasType
 import org.move.lang.core.types.StructType
-import org.move.lang.core.types.UnresolvedType
-import org.move.lang.core.types.isCompatibleTypes
+import org.move.lang.core.types.TypeParamType
 
 class ErrorAnnotator : MoveAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
@@ -78,7 +78,7 @@ class ErrorAnnotator : MoveAnnotator() {
         val structAbilities = parentStructType.abilities()
         if (structAbilities.isEmpty()) return
 
-        val fieldType = structField.typeAnnotation?.type?.resolvedType as? StructType ?: return
+        val fieldType = structField.typeAnnotation?.type?.resolvedType() as? StructType ?: return
 
         for (ability in structAbilities) {
             val requiredAbility = ability.requires()
@@ -135,13 +135,23 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
 
     for ((i, expr) in arguments.exprList.withIndex()) {
         val parameter = signature.parameters[i]
-        val parameterType = parameter.type?.resolvedType ?: UnresolvedType()
-        val exprType = expr.type ?: UnresolvedType()
+        val paramType = parameter.type?.resolvedType()
+        if (paramType is TypeParamType) {
+            checkHasRequiredAbilities(holder, expr, paramType)
+            continue
+        }
 
-        if (!isCompatibleTypes(parameterType, exprType)) {
+        val exprType = expr.resolvedType()
+        if (paramType != null && exprType != null
+            && !paramType.compatibleWith(exprType)
+        ) {
+            val paramName = parameter.name ?: continue
+            val exprTypeName = exprType.typeLabel(relativeTo = arguments)
+            val paramTypeName = paramType.typeLabel(relativeTo = arguments)
+
             val message =
-                "Invalid argument for parameter '${parameter.name!!}': " +
-                    "type '${exprType.name()}' is not compatible with '${parameterType.name()}'"
+                "Invalid argument for parameter '$paramName': " +
+                        "type '$exprTypeName' is not compatible with '$paramTypeName'"
             holder.createErrorAnnotation(expr, message)
         }
     }
@@ -202,22 +212,34 @@ private fun checkQualPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) 
             }
 
             for ((i, typeArgument) in typeArguments.withIndex()) {
-                val resolvedType = typeArgument.type.resolvedType
-
-                val requiredAbilities = referred.typeParameters[i].typeParamType.abilities()
-                val abilities = resolvedType.abilities()
-
-                for (ability in requiredAbilities) {
-                    if (ability !in abilities) {
-                        holder.createErrorAnnotation(
-                            typeArgument,
-                            "The type '${resolvedType.fullname()}' " +
-                                    "does not have required ability '${ability.label()}'"
-                        )
-                    }
-                }
-                return
+                val typeParam = referred.typeParameters[i]
+                val typeParamType = typeParam.resolvedType() as? TypeParamType ?: continue
+                checkHasRequiredAbilities(
+                    holder,
+                    typeArgument.type,
+                    typeParamType
+                )
             }
+        }
+    }
+}
+
+private fun checkHasRequiredAbilities(
+    holder: MoveAnnotationHolder,
+    element: HasType, typeParamType: TypeParamType
+) {
+    val elementType = element.resolvedType() ?: return
+
+    val abilities = elementType.abilities()
+    for (ability in typeParamType.abilities()) {
+        if (ability !in abilities) {
+            val typeName = elementType.typeLabel(relativeTo = element)
+            holder.createErrorAnnotation(
+                element,
+                "The type '$typeName' " +
+                        "does not have required ability '${ability.label()}'"
+            )
+            return
         }
     }
 }

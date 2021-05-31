@@ -31,7 +31,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
         public fun emit_event<T: store + drop>() {}
         
         public fun main() {
-            emit_event<<error descr="The type '0x1::Event::Message' does not have required ability 'store'">Message</error>>()
+            emit_event<<error descr="The type 'Message' does not have required ability 'store'">Message</error>>()
         }
     }    
     """)
@@ -43,7 +43,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
         struct Event<Message: store + drop> {}
         
         public fun main() {
-            Event<<error descr="The type '0x1::Event::Message' does not have required ability 'store'">Message</error>> {};
+            Event<<error descr="The type 'Message' does not have required ability 'store'">Message</error>> {};
         }
     }    
     """)
@@ -56,6 +56,45 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
         
         public fun main<M: drop>() {
             emit_event<<error descr="The type 'M' does not have required ability 'store'">M</error>>()
+        }
+    }    
+    """)
+
+
+    fun `test no required ability 'key' for move_to argument`() = checkErrors("""
+    module M {
+        struct Res {}
+        fun main(s: &signer, r: Res) {
+            move_to(s, <error descr="The type 'Res' does not have required ability 'key'">r</error>)
+        }
+    }    
+    """)
+
+    fun `test no error in move_to with resource`() = checkErrors("""
+    module M {
+        struct Res has key {}
+        fun main(s: &signer, r: Res) {
+            move_to<Res>(s, r)
+        }
+    }    
+    """)
+
+    fun `test no required ability for struct for type param`() = checkErrors("""
+    module M {
+        struct Res {}
+        fun save<T: key>(r: T) {}
+        fun main(r: Res) {
+            save(<error descr="The type 'Res' does not have required ability 'key'">r</error>)
+        }
+    }    
+    """)
+
+    fun `test no error in type param if structure has required abilities`() = checkErrors("""
+    module M {
+        struct Res has key {}
+        fun save<T: key>(r: T) {}
+        fun main(r: Res) {
+            save(r)
         }
     }    
     """)

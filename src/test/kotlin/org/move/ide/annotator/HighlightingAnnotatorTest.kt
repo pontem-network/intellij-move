@@ -54,14 +54,6 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
     """
     )
 
-    fun `test import self is keyword`() = checkHighlighting(
-        """
-        script {
-            use 0x1::U256::{<KEYWORD>Self</KEYWORD>};
-        }
-    """
-    )
-
     fun `test generic type parameters highlighted`() = checkHighlighting(
         """
         module M {

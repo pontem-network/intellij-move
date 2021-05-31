@@ -15,18 +15,18 @@ class ResolveModulesTest : ResolveTestCase() {
 //    """
 //    )
 
-//    fun `test resolve module to Self`() = checkByCode(
-//        """
-//        module M {
-//            use 0x1::Transaction::{Self};
-//                                 //X
-//            fun main() {
-//                let a = Transaction::create();
-//                      //^
-//            }
-//        }
-//    """
-//    )
+    fun `test resolve Self to current module`() = checkByCode(
+        """
+        module Transaction {
+             //X
+            fun create() {}
+            fun main() {
+                let a = Self::create();
+                      //^
+            }
+        }
+    """
+    )
 
     fun `test resolve module to imported module with alias`() = checkByCode(
         """

@@ -61,4 +61,49 @@ class FunctionArgumentTypesErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
         } 
     }    
     """)
+
+    fun `test incorrect type of argument with struct literal`() = checkErrors("""
+    module M {
+        struct A {}
+        struct B {}
+        
+        fun use_a(a: A) {}
+        fun main() {
+            use_a(<error descr="Invalid argument for parameter 'a': type 'B' is not compatible with 'A'">B {}</error>)            
+        }
+    }
+    """)
+
+    fun `test incorrect type of argument with call expression`() = checkErrors("""
+    module M {
+        struct A {}
+        struct B {}
+        
+        fun use_a(a: A) {}
+        fun get_b(): B { B {} }
+        
+        fun main() {
+            use_a(<error descr="Invalid argument for parameter 'a': type 'B' is not compatible with 'A'">get_b()</error>)            
+        }
+    }
+    """)
+
+    fun `test incorrect type of argument with call expression from different module`() = checkErrors("""
+address 0x1 {
+    module Other {
+        struct B {}
+        public fun get_b(): B { B {} }
+    }
+    module M {
+        use 0x1::Other::get_b;
+        
+        struct A {}
+        fun use_a(a: A) {}
+        
+        fun main() {
+            use_a(<error descr="Invalid argument for parameter 'a': type '0x1::Other::B' is not compatible with 'A'">get_b()</error>)            
+        }
+    }
+}
+    """)
 }

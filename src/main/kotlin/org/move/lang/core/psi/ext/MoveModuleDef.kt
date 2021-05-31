@@ -6,7 +6,29 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.psi.mixins.MoveFunctionSignatureMixin
+import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.types.FullyQualModule
 import javax.swing.Icon
+
+fun MoveModuleDef.fullyQual(): FullyQualModule? {
+    val address = this.containingAddress.normalized()
+    val name = this.name ?: return null
+    return FullyQualModule(address, name)
+}
+
+val MoveModuleDef.friends: Set<FullyQualModule>
+    get() {
+        val block = this.moduleBlock ?: return emptySet()
+        val moduleRefs = block.friendStatementList.mapNotNull { it.fullyQualifiedModuleRef }
+
+        val friends = mutableSetOf<FullyQualModule>()
+        for (moduleRef in moduleRefs) {
+            val address = moduleRef.addressRef.normalizedAddress() ?: continue
+            val identifier = moduleRef.identifier?.text ?: continue
+            friends.add(FullyQualModule(address, identifier))
+        }
+        return friends
+    }
 
 fun MoveModuleDef.allFnSignatures(): List<MoveFunctionSignature> {
     val block = moduleBlock ?: return emptyList()
@@ -18,23 +40,41 @@ fun MoveModuleDef.allFnSignatures(): List<MoveFunctionSignature> {
 
 fun MoveModuleDef.builtinFnSignatures(): List<MoveFunctionSignature> {
     return listOfNotNull(
-        createBuiltinFuncSignature("native fun move_from<R: resource>(addr: address): R;", project),
-        createBuiltinFuncSignature("native fun move_to<R: resource>(addr: address, res: R): ();", project),
-        createBuiltinFuncSignature("native fun borrow_global<R: resource>(addr: address): &R;", project),
+        createBuiltinFuncSignature("native fun move_from<R: key>(addr: address): R;", project),
+        createBuiltinFuncSignature("native fun move_to<R: key>(acc: &signer, res: R): ();", project),
+        createBuiltinFuncSignature("native fun borrow_global<R: key>(addr: address): &R;", project),
         createBuiltinFuncSignature(
-            "native fun borrow_global_mut<R: resource>(addr: address): &mut R;",
+            "native fun borrow_global_mut<R: key>(addr: address): &mut R;",
             project
         ),
-        createBuiltinFuncSignature("native fun exists<R: resource>(addr: address): bool;", project),
+        createBuiltinFuncSignature("native fun exists<R: key>(addr: address): bool;", project),
         createBuiltinFuncSignature("native fun freeze<S>(mut_ref: &mut S): &S;", project),
         createBuiltinFuncSignature("native fun assert(_: bool, err: u64): ();", project),
     )
 }
 
-fun MoveModuleDef.publicFnSignatures(): List<MoveFunctionSignature> {
-    return allFnSignatures()
-        .filter { it.visibility == FunctionVisibility.PUBLIC }
-}
+fun MoveModuleDef.functionSignatures(visibility: Visibility): List<MoveFunctionSignature> =
+    when (visibility) {
+        is Visibility.Public ->
+            allFnSignatures()
+                .filter { it.visibility == FunctionVisibility.PUBLIC }
+        is Visibility.PublicScript ->
+            allFnSignatures()
+                .filter { it.visibility == FunctionVisibility.PUBLIC_SCRIPT }
+        is Visibility.PublicFriend -> {
+            if (visibility.currentModule in this.friends) {
+                allFnSignatures().filter { it.visibility == FunctionVisibility.PUBLIC_FRIEND }
+            } else {
+                emptyList()
+            }
+        }
+        is Visibility.Internal -> allFnSignatures()
+    }
+
+//fun MoveModuleDef.publicFnSignatures(): List<MoveFunctionSignature> {
+//    return allFnSignatures()
+//        .filter { it.visibility == FunctionVisibility.PUBLIC }
+//}
 
 fun createBuiltinFuncSignature(text: String, project: Project): MoveFunctionSignature? {
     val signature = MovePsiFactory(project)

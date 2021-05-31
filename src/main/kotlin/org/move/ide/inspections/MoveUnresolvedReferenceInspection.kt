@@ -6,7 +6,6 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.openapiext.common.isUnitTestMode
 
 class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor =
@@ -28,17 +27,22 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
                 val refElement = qualPath.parent
                 if (refElement !is MoveQualPathReferenceElement) return
 
-                if (refElement.isUnresolved && qualPath.isIdentifierOnly) {
-                    val description = when (refElement) {
-                        is MoveQualPathType -> "Unresolved type: `${refElement.referenceName}`"
-                        else -> "Unresolved reference: `${refElement.referenceName}`"
+                if (qualPath.isIdentifierOnly
+                    // module defined and exist
+                    || (qualPath.moduleRef?.reference?.resolve() != null)
+                ) {
+                    if (refElement.isUnresolved) {
+                        val description = when (refElement) {
+                            is MoveQualPathType -> "Unresolved type: `${refElement.referenceName}`"
+                            else -> "Unresolved reference: `${refElement.referenceName}`"
+                        }
+                        val highlightedElement = refElement.referenceNameElement ?: return
+                        holder.registerProblem(
+                            highlightedElement,
+                            description,
+                            ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                        )
                     }
-                    val highlightedElement = refElement.referenceNameElement ?: return
-                    holder.registerProblem(
-                        highlightedElement,
-                        description,
-                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
-                    )
                 }
             }
 

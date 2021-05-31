@@ -1,9 +1,8 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import org.move.lang.core.psi.MoveQualTypeReferenceElementImpl
-import org.move.lang.core.psi.MoveStructLiteralExpr
-import org.move.lang.core.psi.MoveStructLiteralField
+import org.move.lang.core.psi.*
+import org.move.lang.core.types.BaseType
 
 val MoveStructLiteralExpr.providedFields: List<MoveStructLiteralField>
     get() =
@@ -14,4 +13,8 @@ val MoveStructLiteralExpr.providedFieldNames: List<String>
         providedFields.mapNotNull { it.referenceName }
 
 abstract class MoveStructLiteralExprMixin(node: ASTNode) : MoveQualTypeReferenceElementImpl(node),
-                                                           MoveStructLiteralExpr
+                                                           MoveStructLiteralExpr {
+    override fun resolvedType(): BaseType? {
+        return this.referredStructDef?.structType
+    }
+}
