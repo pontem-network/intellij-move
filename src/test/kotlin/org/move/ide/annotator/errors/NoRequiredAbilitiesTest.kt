@@ -31,7 +31,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
         public fun emit_event<T: store + drop>() {}
         
         public fun main() {
-            emit_event<<error descr="The type '0x1::Event::Message' does not have required ability 'store'">Message</error>>()
+            emit_event<<error descr="The type 'Message' does not have required ability 'store'">Message</error>>()
         }
     }    
     """)
@@ -43,7 +43,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
         struct Event<Message: store + drop> {}
         
         public fun main() {
-            Event<<error descr="The type '0x1::Event::Message' does not have required ability 'store'">Message</error>> {};
+            Event<<error descr="The type 'Message' does not have required ability 'store'">Message</error>> {};
         }
     }    
     """)
@@ -64,8 +64,8 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test no required ability 'key' for move_to argument`() = checkErrors("""
     module M {
         struct Res {}
-        fun main(r: Res) {
-            move_to<Res>(0x1, r)
+        fun main(s: &signer, r: Res) {
+            move_to(s, <error descr="The type 'Res' does not have required ability 'key'">r</error>)
         }
     }    
     """)
@@ -73,8 +73,8 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test no error in move_to with resource`() = checkErrors("""
     module M {
         struct Res has key {}
-        fun main(r: Res) {
-            move_to<Res>(0x1, r)
+        fun main(s: &signer, r: Res) {
+            move_to<Res>(s, r)
         }
     }    
     """)
@@ -84,7 +84,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
         struct Res {}
         fun save<T: key>(r: T) {}
         fun main(r: Res) {
-            save(r)
+            save(<error descr="The type 'Res' does not have required ability 'key'">r</error>)
         }
     }    
     """)

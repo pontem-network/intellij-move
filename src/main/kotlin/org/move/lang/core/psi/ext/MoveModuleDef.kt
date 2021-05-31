@@ -40,14 +40,14 @@ fun MoveModuleDef.allFnSignatures(): List<MoveFunctionSignature> {
 
 fun MoveModuleDef.builtinFnSignatures(): List<MoveFunctionSignature> {
     return listOfNotNull(
-        createBuiltinFuncSignature("native fun move_from<R: resource>(addr: address): R;", project),
-        createBuiltinFuncSignature("native fun move_to<R: resource>(addr: address, res: R): ();", project),
-        createBuiltinFuncSignature("native fun borrow_global<R: resource>(addr: address): &R;", project),
+        createBuiltinFuncSignature("native fun move_from<R: key>(addr: address): R;", project),
+        createBuiltinFuncSignature("native fun move_to<R: key>(acc: &signer, res: R): ();", project),
+        createBuiltinFuncSignature("native fun borrow_global<R: key>(addr: address): &R;", project),
         createBuiltinFuncSignature(
-            "native fun borrow_global_mut<R: resource>(addr: address): &mut R;",
+            "native fun borrow_global_mut<R: key>(addr: address): &mut R;",
             project
         ),
-        createBuiltinFuncSignature("native fun exists<R: resource>(addr: address): bool;", project),
+        createBuiltinFuncSignature("native fun exists<R: key>(addr: address): bool;", project),
         createBuiltinFuncSignature("native fun freeze<S>(mut_ref: &mut S): &S;", project),
         createBuiltinFuncSignature("native fun assert(_: bool, err: u64): ();", project),
     )

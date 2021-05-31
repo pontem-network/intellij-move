@@ -27,7 +27,7 @@ class MoveHighlighter : SyntaxHighlighterBase() {
             DOT -> Default.DOT
             COMMA -> Default.COMMA
 
-            HEX_STRING_LITERAL, BYTE_STRING_LITERAL -> Default.STRING
+            BYTE_STRING_LITERAL -> Default.STRING
             INTEGER_LITERAL, ADDRESS_LITERAL -> Default.NUMBER
 
             BOOL_LITERAL -> Default.KEYWORD

@@ -8,17 +8,17 @@ class TypeParameterInfoHandlerTest :
 
     fun `test struct as type`() = checkByText("""
         module M {
-            struct S<T: copyable> {
+            struct S<T: copy> {
                 field: T
             }
             
             fun main(val: S</*caret*/>) {}
         } 
-    """, "T: copyable", 0)
+    """, "T: copy", 0)
 
     fun `test struct as literal`() = checkByText("""
         module M {
-            struct S<T: copyable> {
+            struct S<T: copy> {
                 field: T
             }
             
@@ -26,7 +26,7 @@ class TypeParameterInfoHandlerTest :
                 let a = S</*caret*/> {}
             }
         } 
-    """, "T: copyable", 0)
+    """, "T: copy", 0)
 
     fun `test function no arguments`() = checkByText("""
         module M {

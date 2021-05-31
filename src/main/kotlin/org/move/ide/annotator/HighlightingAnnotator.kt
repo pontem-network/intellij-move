@@ -11,7 +11,8 @@ import org.move.lang.core.psi.ext.identifierName
 import org.move.lang.core.psi.ext.isIdentifierOnly
 import org.move.lang.core.psi.ext.isSelf
 
-val PRIMITIVE_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128", "bool")
+val INTEGER_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128")
+val PRIMITIVE_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("bool")
 val BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer", "vector")
 
 val BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE =

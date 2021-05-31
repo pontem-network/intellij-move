@@ -76,6 +76,11 @@ abstract class MoveTestBase : BasePlatformTestCase(),
         myFixture.checkResult(replaceCaretMarker(after))
     }
 
+    protected inline fun <reified T : PsiElement> findElementAndDataInEditor(marker: String = "^"): Pair<T, String> {
+        val (element, data) = findElementWithDataAndOffsetInEditor<T>(marker)
+        return element to data
+    }
+
     private fun <T : PsiElement> findElementsWithDataAndOffsetInEditor(
         psiClass: Class<T>,
         marker: String,
