@@ -36,6 +36,7 @@
 
         BOOL_LITERAL='regexp:(true)|(false)'
         INTEGER_LITERAL='regexp:[0-9]+((u8)|(u64)|(u128))?'
+        HEX_STRING_LITERAL='regexp:x\"([A-F0-9a-f]*)\"'
         BYTE_STRING_LITERAL='regexp:b"(.*)"'
 
         IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
@@ -175,7 +176,7 @@ ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
     pin = 1
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.psi.MoveTypeAnnotated"
+        "org.move.lang.core.types.HasType"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveConstDefMixin"
 //    recoverWhile = ModuleItem_recover
@@ -289,7 +290,7 @@ FunctionParameter ::= IDENTIFIER TypeAnnotation
     pin = 1
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.psi.MoveTypeAnnotated"
+        "org.move.lang.core.types.HasType"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionParameterMixin"
 }
@@ -374,7 +375,7 @@ StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
     pin = 1
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.psi.MoveTypeAnnotated"
+        "org.move.lang.core.types.HasType"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveStructFieldDefMixin"
 }
@@ -562,8 +563,9 @@ BorrowPat ::= '&' Pat
 DotPat ::= IDENTIFIER '.' IDENTIFIER { pin = 2 }
 
 BindingPat ::= IDENTIFIER {
-    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.mixins.MoveBindingPatMixin"
+    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
+                   "org.move.lang.core.types.HasType" ]
+    mixin = "org.move.lang.core.psi.ext.MoveBindingPatMixin"
 }
 
 TuplePat ::= '(' <<comma_sep_items Pat>>? ')'
@@ -617,10 +619,10 @@ StructPatFieldBinding ::= ':' Pat { pin = 1 }
 Statement ::= LetStatement | (StatementExpr ';')
 LetStatement ::= let Pat TypeAnnotation? Initializer? ';' {
     pin = 1
-    implements = [
-        "org.move.lang.core.psi.MoveTypeAnnotated"
-    ]
-    mixin = "org.move.lang.core.psi.mixins.MoveLetStatementMixin"
+//    implements = [
+//        "org.move.lang.core.types.HasType"
+//    ]
+//    mixin = "org.move.lang.core.psi.mixins.MoveLetStatementMixin"
 }
 
 private StatementExpr ::= IfExpr
@@ -757,6 +759,9 @@ PartialImplyOperatorExpr ::= Expr lt_eqeq_gt Expr
 
 BangExpr ::= '!' Expr
 DerefExpr ::= '*' Expr
+{
+    mixin = "org.move.lang.core.psi.ext.MoveDerefExprMixin"
+}
 CopyExpr ::= copy Expr
 MoveExpr ::= move Expr
 
@@ -819,6 +824,7 @@ private TupleExpr ::= '(' Expr ',' <<comma_sep_items Expr>>? ')' { pin = 3 }
 
 LiteralExpr ::= BOOL_LITERAL
                 | INTEGER_LITERAL
+                | HEX_STRING_LITERAL
                 | BYTE_STRING_LITERAL
                 | ADDRESS_LITERAL
                 | BECH32_ADDRESS_LITERAL
@@ -864,6 +870,9 @@ Initializer ::= '=' Expr {
 //private Initializer_recover ::= !(';'|'}'|')')
 
 BorrowExpr ::= '&' mut? Expr
+{
+    mixin = "org.move.lang.core.psi.ext.MoveBorrowExprMixin"
+}
 
 DotExpr ::= Expr '.' StructFieldRef
 StructFieldRef ::= IDENTIFIER

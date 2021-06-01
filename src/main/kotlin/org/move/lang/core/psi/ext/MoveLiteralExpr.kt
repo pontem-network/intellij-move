@@ -21,7 +21,7 @@ abstract class MoveLiteralExprMixin(node: ASTNode) : MoveElementImpl(node), Move
                     else -> IntegerType()
                 }
             }
-            byteStringLiteral != null -> VectorType(PrimitiveType("u8"))
+            byteStringLiteral != null -> VectorType(IntegerType("u8"))
             else -> null
         }
     }

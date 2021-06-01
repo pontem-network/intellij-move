@@ -106,4 +106,15 @@ address 0x1 {
     }
 }
     """)
+
+    fun `test bytearray is vector of u8`() = checkErrors("""
+        module M {
+            fun send(a: vector<u8>) {}
+            fun main() {
+                let a = b"deadbeef";
+                send(a)
+            }
+        }        
+    """)
+
 }

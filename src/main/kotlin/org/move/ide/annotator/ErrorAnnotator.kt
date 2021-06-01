@@ -135,7 +135,7 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
 
     for ((i, expr) in arguments.exprList.withIndex()) {
         val parameter = signature.parameters[i]
-        val paramType = parameter.type?.resolvedType()
+        val paramType = parameter.resolvedType()
         if (paramType is TypeParamType) {
             checkHasRequiredAbilities(holder, expr, paramType)
             continue

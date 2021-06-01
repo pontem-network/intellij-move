@@ -71,4 +71,12 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
         }
     """
     )
+
+    fun `test imported Self as keyword`() = checkHighlighting(
+        """
+    module M {
+        use 0x1::Transaction::<KEYWORD>Self</KEYWORD>
+    }
+        """
+    )
 }

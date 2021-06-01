@@ -99,7 +99,7 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
 
         is MoveConstDef -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
-            .withTypeText(this.type?.text)
+            .withTypeText(this.typeAnnotation?.type?.text)
 
         is MoveModuleDef -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
@@ -117,11 +117,11 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
         is MoveStructFieldDef -> LookupElementBuilder
             .createWithIcon(this)
             .withLookupString(this.name ?: "")
-            .withTypeText(this.type?.text)
+            .withTypeText(this.typeAnnotation?.type?.text)
 
         is MoveFunctionParameter -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
-            .withTypeText(this.type?.text)
+            .withTypeText(this.typeAnnotation?.type?.text)
 
         is MoveBindingPat -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")

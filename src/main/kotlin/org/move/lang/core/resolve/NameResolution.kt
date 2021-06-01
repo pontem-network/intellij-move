@@ -12,6 +12,7 @@ import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.types.HasType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.StructType
 import org.move.stdext.chain
@@ -191,9 +192,11 @@ fun processLexicalDeclarations(
         Namespace.DOT_ACCESSED_FIELD -> {
             val dotExpr = scope as? MoveDotExpr ?: return false
             val refExpr = dotExpr.refExpr ?: return false
-            val referredTypedVar = refExpr.reference?.resolve() as? MoveTypeAnnotated ?: return false
 
-            val resolvedType = referredTypedVar.type?.resolvedType()
+            val referred = refExpr.reference?.resolve()
+            if (referred !is HasType) return false
+
+            val resolvedType = referred.resolvedType()
             val structDef = when (resolvedType) {
                 is StructType -> resolvedType.structDef()
                 is RefType -> resolvedType.referredStructDef()
@@ -282,7 +285,7 @@ fun processLexicalDeclarations(
                 listOf(
                     scope.moduleImports(),
                     scope.moduleImportAliases(),
-//                    scope.selfItemImports(),
+                    scope.selfItemImports(),
                 ).flatten(),
             )
             else -> false

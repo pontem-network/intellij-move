@@ -8,7 +8,6 @@ package org.move.ide.utils
 import org.move.lang.core.psi.MoveCallExpr
 import org.move.lang.core.psi.MoveFunctionSignatureOwner
 import org.move.lang.core.psi.parameters
-import org.move.lang.core.psi.type
 
 class CallInfo(
     val name: String,
@@ -25,7 +24,7 @@ class CallInfo(
             val signature = resolved as? MoveFunctionSignatureOwner ?: return null
             val parameters = signature.parameters.map {
                 val paramName = it.name
-                val paramType = it.type
+                val paramType = it.typeAnnotation?.type
                 if (paramName == null || paramType == null) {
                     return@resolve null
                 }

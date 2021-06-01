@@ -70,6 +70,7 @@ POLKADOT_ADDRESS_LITERAL=[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*
 
 BOOL_LITERAL=(true)|(false)
 INTEGER_LITERAL=[0-9]+((u8)|(u64)|(u128))?
+HEX_STRING_LITERAL=x\"([A-F0-9a-f]*)\"
 BYTE_STRING_LITERAL=b\"(.*)\"
 
 IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
@@ -202,6 +203,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   {POLKADOT_ADDRESS_LITERAL}          { return POLKADOT_ADDRESS_LITERAL; }
   {BOOL_LITERAL}             { return BOOL_LITERAL; }
   {INTEGER_LITERAL}          { return INTEGER_LITERAL; }
+  {HEX_STRING_LITERAL}       { return HEX_STRING_LITERAL; }
   {BYTE_STRING_LITERAL}      { return BYTE_STRING_LITERAL; }
   {IDENTIFIER}               { return IDENTIFIER; }
 }
