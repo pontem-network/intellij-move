@@ -12,11 +12,13 @@ import javax.swing.Icon
 val MoveStructDef.fields: List<MoveStructFieldDef>
     get() = structFieldsDefBlock.structFieldDefList
 
+val MoveStructDef.fieldsMap: Map<String, MoveStructFieldDef>
+    get() {
+        return fields.associateBy { it.identifier.text }
+    }
+
 val MoveStructDef.fieldNames: List<String>
     get() = fields.mapNotNull { it.name }
-
-val MoveStructDef.structType: StructType
-    get() = StructType(structSignature)
 
 
 abstract class MoveStructDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),

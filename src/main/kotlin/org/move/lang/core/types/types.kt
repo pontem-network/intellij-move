@@ -5,8 +5,10 @@ import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.psi.ext.ability
 import org.move.lang.core.psi.ext.structDef
 
+typealias TypeVarsMap = Map<String, BaseType?>
+
 interface HasType : MoveElement {
-    fun resolvedType(): BaseType?
+    fun resolvedType(typeVars: TypeVarsMap): BaseType?
 }
 
 enum class Ability {
@@ -128,15 +130,26 @@ class RefType(
 
 class StructType(
     private val structSignature: MoveStructSignature,
-    private val typeArguments: List<BaseType> = emptyList()
+    val typeArgumentTypes: List<BaseType?> = emptyList()
 ) : BaseType() {
 
     override fun name(): String = structSignature.name ?: ""
 
     override fun fullname(): String {
-        val moduleName = structSignature.containingModule?.name ?: return this.name()
-        val address = structSignature.containingAddress.text
-        return "$address::$moduleName::${this.name()}"
+//        val moduleName = structSignature.containingModule?.name ?: return this.name()
+//        val address = structSignature.containingAddress.text
+        var structName = structFullname()
+        if (typeArgumentTypes.isNotEmpty()) {
+            structName += "<"
+            for ((i, typeArgumentType) in typeArgumentTypes.withIndex()) {
+                structName += typeArgumentType?.fullname() ?: "unknown_type"
+                if (i < typeArgumentTypes.size - 1) {
+                    structName += ", "
+                }
+            }
+            structName += ">"
+        }
+        return structName
     }
 
     override fun abilities(): Set<Ability> {
@@ -148,11 +161,37 @@ class StructType(
     }
 
     override fun compatibleWith(other: BaseType): Boolean {
-        return other is StructType && this.fullname() == other.fullname()
+        return other is StructType
+                && this.structFullname() == other.structFullname()
+                && this.typeArgumentTypes.size == other.typeArgumentTypes.size
+                && this.typeArgumentTypes.zip(other.typeArgumentTypes)
+            .all { (left, right) ->
+                left == null || right == null
+                        || left.compatibleWith(right)
+            }
     }
 
     fun structDef(): MoveStructDef? {
         return this.structSignature.structDef
+    }
+
+    fun structFullname(): String {
+        val moduleName = structSignature.containingModule?.name ?: return this.name()
+        val address = structSignature.containingAddress.text
+        return "$address::$moduleName::${this.name()}"
+    }
+
+    fun typeVars(): TypeVarsMap {
+        val typeParams = this.structSignature.typeParameters
+        if (typeParams.size != this.typeArgumentTypes.size) return emptyMap()
+
+        val typeVars = mutableMapOf<String, BaseType?>()
+        for (i in typeParams.indices) {
+            val name = typeParams[i].name ?: continue
+            val type = typeArgumentTypes[i]
+            typeVars[name] = type
+        }
+        return typeVars
     }
 }
 
@@ -168,6 +207,16 @@ class TypeParamType(private val typeParam: MoveTypeParameter) : BaseType() {
 
     override fun compatibleWith(other: BaseType): Boolean {
         return (this.abilities() - other.abilities()).isEmpty()
+    }
+
+    companion object {
+        fun withSubstitutedTypeVars(
+            typeParam: MoveTypeParameter,
+            typeVars: TypeVarsMap
+        ): BaseType? {
+            val name = typeParam.name ?: return TypeParamType(typeParam)
+            return typeVars.getOrDefault(name, TypeParamType(typeParam))
+        }
     }
 }
 

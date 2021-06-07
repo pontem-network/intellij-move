@@ -74,11 +74,12 @@ class ErrorAnnotator : MoveAnnotator() {
     private fun checkStructFieldDef(holder: MoveAnnotationHolder, structField: MoveStructFieldDef) {
         checkDuplicates(holder, structField)
 
-        val parentStructType = structField.structDef?.structType ?: return
-        val structAbilities = parentStructType.abilities()
+        val signature = structField.structDef?.structSignature ?: return
+        val structType = StructType(signature)
+        val structAbilities = structType.abilities()
         if (structAbilities.isEmpty()) return
 
-        val fieldType = structField.typeAnnotation?.type?.resolvedType() as? StructType ?: return
+        val fieldType = structField.typeAnnotation?.type?.resolvedType(emptyMap()) as? StructType ?: return
 
         for (ability in structAbilities) {
             val requiredAbility = ability.requires()
@@ -86,7 +87,7 @@ class ErrorAnnotator : MoveAnnotator() {
                 val message =
                     "The type '${fieldType.name()}' does not have the ability '${requiredAbility.label()}' " +
                             "required by the declared ability '${ability.label()}' " +
-                            "of the struct '${parentStructType.name()}'"
+                            "of the struct '${structType.name()}'"
                 holder.createErrorAnnotation(structField, message)
                 return
             }
@@ -135,13 +136,13 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
 
     for ((i, expr) in arguments.exprList.withIndex()) {
         val parameter = signature.parameters[i]
-        val paramType = parameter.resolvedType()
+        val paramType = parameter.resolvedType(emptyMap())
         if (paramType is TypeParamType) {
             checkHasRequiredAbilities(holder, expr, paramType)
             continue
         }
 
-        val exprType = expr.resolvedType()
+        val exprType = expr.resolvedType(emptyMap())
         if (paramType != null && exprType != null
             && !paramType.compatibleWith(exprType)
         ) {
@@ -213,7 +214,7 @@ private fun checkQualPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) 
 
             for ((i, typeArgument) in typeArguments.withIndex()) {
                 val typeParam = referred.typeParameters[i]
-                val typeParamType = typeParam.resolvedType() as? TypeParamType ?: continue
+                val typeParamType = typeParam.resolvedType(emptyMap()) as? TypeParamType ?: continue
                 checkHasRequiredAbilities(
                     holder,
                     typeArgument.type,
@@ -228,7 +229,9 @@ private fun checkHasRequiredAbilities(
     holder: MoveAnnotationHolder,
     element: HasType, typeParamType: TypeParamType
 ) {
-    val elementType = element.resolvedType() ?: return
+    val elementType = element.resolvedType(emptyMap()) ?: return
+    // do not check for specs
+    if (element.ancestorStrict<MoveItemSpecDef>() != null) return
 
     val abilities = elementType.abilities()
     for (ability in typeParamType.abilities()) {

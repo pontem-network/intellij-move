@@ -5,6 +5,7 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MoveStructFieldDef
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.types.BaseType
+import org.move.lang.core.types.TypeVarsMap
 import javax.swing.Icon
 
 abstract class MoveStructFieldDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
@@ -12,7 +13,7 @@ abstract class MoveStructFieldDefMixin(node: ASTNode) : MoveNameIdentifierOwnerI
 
     override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT_FIELD
 
-    override fun resolvedType(): BaseType? {
-        return this.typeAnnotation?.type?.resolvedType()
+    override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
+        return this.typeAnnotation?.type?.resolvedType(emptyMap())
     }
 }

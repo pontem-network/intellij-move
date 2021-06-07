@@ -808,6 +808,9 @@ StructLiteralField ::= IDENTIFIER StructLiteralFieldAssignment?
 StructLiteralFieldAssignment ::= ':' Expr { pin = 1 }
 
 ParensExpr ::= '(' Expr ')'
+{
+    mixin = "org.move.lang.core.psi.ext.MoveParensExprMixin"
+}
 //private ParensExpr_body ::= Expr { recoverWhile = "ParensExpr_body_recover" }
 //private ParensExpr_body_recover ::= !(':'|')'|',')
 //private ParensExprBody ::= Expr { recoverWhile = "ParensExprBody_recover"}
@@ -877,6 +880,10 @@ BorrowExpr ::= '&' mut? Expr
 }
 
 DotExpr ::= Expr '.' StructFieldRef
+{
+    mixin = "org.move.lang.core.psi.ext.MoveDotExprMixin"
+}
+
 StructFieldRef ::= IDENTIFIER
 {
     implements = ["org.move.lang.core.psi.MoveStructFieldReferenceElement"]

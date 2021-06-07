@@ -61,9 +61,14 @@ interface MoveQualTypeReferenceElement : MoveQualPathReferenceElement {
                 || referenceName in BUILTIN_TYPE_IDENTIFIERS
 }
 
+val MoveQualTypeReferenceElement.referredStructSignature: MoveStructSignature?
+    get() {
+        return reference?.resolve() as? MoveStructSignature
+    }
+
 val MoveQualTypeReferenceElement.referredStructDef: MoveStructDef?
     get() {
-        return (reference?.resolve() as? MoveStructSignature)?.structDef
+        return referredStructSignature?.structDef
     }
 
 abstract class MoveQualTypeReferenceElementImpl(node: ASTNode) : MoveElementImpl(node),

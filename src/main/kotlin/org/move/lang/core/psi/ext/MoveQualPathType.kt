@@ -9,7 +9,7 @@ import org.move.lang.core.types.*
 
 abstract class MoveQualPathTypeMixin(node: ASTNode) : MoveQualTypeReferenceElementImpl(node),
                                                       MoveQualPathType {
-    override fun resolvedType(): BaseType? {
+    override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
         val referred = this.reference.resolve()
         if (referred == null) {
             val refName = this.referenceName ?: return null
@@ -19,7 +19,7 @@ abstract class MoveQualPathTypeMixin(node: ASTNode) : MoveQualTypeReferenceEleme
                 in PRIMITIVE_BUILTIN_TYPE_IDENTIFIERS -> PrimitiveType(refName)
                 "vector" -> {
                     val vectorItem = this.qualPath.typeArguments.firstOrNull() ?: return null
-                    val itemType = vectorItem.type.resolvedType() ?: return null
+                    val itemType = vectorItem.type.resolvedType(emptyMap()) ?: return null
                     return VectorType(itemType)
                 }
                 else -> null
@@ -27,8 +27,13 @@ abstract class MoveQualPathTypeMixin(node: ASTNode) : MoveQualTypeReferenceEleme
         }
 
         return when (referred) {
-            is MoveTypeParameter -> TypeParamType(referred)
-            is MoveStructSignature -> referred.structDef?.structType
+            is MoveTypeParameter -> TypeParamType.withSubstitutedTypeVars(referred, typeVars)
+            is MoveStructSignature -> {
+                val typeArguments =
+                    this.qualPath.typeArguments
+                        .map { it.type.resolvedType(emptyMap()) }
+                StructType(referred, typeArguments)
+            }
             else -> null
         }
     }
