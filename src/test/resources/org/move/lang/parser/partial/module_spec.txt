@@ -28,7 +28,7 @@ FILE
           PsiWhiteSpace(' ')
           MoveSpecBlockImpl(SPEC_BLOCK)
             PsiElement({)('{')
-            PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, ensures, include, invariant, modifies, native, pragma, requires, succeeds_if or '}' expected, got 'spec'
+            PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, emits, ensures, include, invariant, modifies, native, pragma, requires, succeeds_if or '}' expected, got 'spec'
               <empty list>
       PsiWhiteSpace('\n    ')
       MoveItemSpecDefImpl(ITEM_SPEC_DEF)
@@ -59,7 +59,7 @@ FILE
           PsiWhiteSpace(' ')
           MoveSpecBlockImpl(SPEC_BLOCK)
             PsiElement({)('{')
-            PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, ensures, include, invariant, modifies, native, pragma, requires, succeeds_if or '}' expected, got 'spec'
+            PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, emits, ensures, include, invariant, modifies, native, pragma, requires, succeeds_if or '}' expected, got 'spec'
               <empty list>
       PsiWhiteSpace('\n    ')
       MoveItemSpecDefImpl(ITEM_SPEC_DEF)
@@ -101,7 +101,7 @@ FILE
           PsiWhiteSpace(' ')
           MoveSpecBlockImpl(SPEC_BLOCK)
             PsiElement({)('{')
-            PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, ensures, include, invariant, modifies, native, pragma, requires, succeeds_if or '}' expected, got 'fun'
+            PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, emits, ensures, include, invariant, modifies, native, pragma, requires, succeeds_if or '}' expected, got 'fun'
               <empty list>
       PsiWhiteSpace('\n\n    ')
       MoveFunctionDefImpl(FUNCTION_DEF)

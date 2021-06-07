@@ -64,6 +64,7 @@ WHITE_SPACE      = {WHITE_SPACE_CHAR}+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Literals
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+SENDER_ADDRESS_LITERAL=\{\{sender\}\}
 ADDRESS_LITERAL=0x[0-9a-fA-F]{1,40}
 BECH32_ADDRESS_LITERAL=wallet1[A-Z0-9a-z&&[^boi1]]{6,83}
 POLKADOT_ADDRESS_LITERAL=[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*
@@ -190,6 +191,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "pack"                           { return PACK; }
   "unpack"                         { return UNPACK; }
   "apply"                          { return APPLY; }
+  "emits"                          { return EMITS; }
   "to"                             { return TO; }
   "except"                         { return EXCEPT; }
   "forall"                         { return FORALL; }
@@ -198,6 +200,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 }
 
 <YYINITIAL, BEGIN_SPEC, IN_SPEC> {
+  {SENDER_ADDRESS_LITERAL}          { return SENDER_ADDRESS_LITERAL; }
   {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
   {BECH32_ADDRESS_LITERAL}          { return BECH32_ADDRESS_LITERAL; }
   {POLKADOT_ADDRESS_LITERAL}          { return POLKADOT_ADDRESS_LITERAL; }

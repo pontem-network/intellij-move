@@ -79,4 +79,15 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
     }
         """
     )
+
+    fun `test copy is keyword`() = checkHighlighting(
+        """
+    module M {
+        struct S has copy {}
+        fun main() {
+            let a = <KEYWORD>copy</KEYWORD> 1;
+        }
+    }
+        """
+    )
 }

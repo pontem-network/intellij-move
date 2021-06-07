@@ -30,7 +30,10 @@ object NamesCompletionProvider : MoveCompletionProvider() {
         result: CompletionResultSet,
     ) {
         val directParent = parameters.position.parent
-        val refElement = directParent as? MoveReferenceElement ?: directParent.parent as MoveReferenceElement
+        val refElement =
+            directParent as? MoveReferenceElement
+                ?: directParent.parent as? MoveReferenceElement
+                ?: return
 
         if (parameters.position !== refElement.referenceNameElement) return
 

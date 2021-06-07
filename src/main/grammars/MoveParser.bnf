@@ -30,6 +30,7 @@
         LINE_COMMENT='regexp:(//.*\n)|(//.*\R)'
         BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
 
+        SENDER_ADDRESS_LITERAL='{{sender}}'
         ADDRESS_LITERAL='regexp:0x[0-9a-fA-F]{1,40}'
         BECH32_ADDRESS_LITERAL='regexp:wallet1[A-Z0-9a-z&&[^boi1]]{6,}'
         POLKADOT_ADDRESS_LITERAL='regexp:[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
@@ -826,6 +827,7 @@ LiteralExpr ::= BOOL_LITERAL
                 | INTEGER_LITERAL
                 | HEX_STRING_LITERAL
                 | BYTE_STRING_LITERAL
+                | SENDER_ADDRESS_LITERAL
                 | ADDRESS_LITERAL
                 | BECH32_ADDRESS_LITERAL
                 | POLKADOT_ADDRESS_LITERAL
@@ -923,7 +925,10 @@ FullyQualifiedModuleRef ::= AddressRef '::' IDENTIFIER
     mixin = "org.move.lang.core.psi.ext.MoveFullyQualifiedModuleRefMixin"
 }
 
-AddressRef ::= ADDRESS_LITERAL | BECH32_ADDRESS_LITERAL | POLKADOT_ADDRESS_LITERAL
+AddressRef ::= SENDER_ADDRESS_LITERAL
+                | ADDRESS_LITERAL
+                | BECH32_ADDRESS_LITERAL
+                | POLKADOT_ADDRESS_LITERAL
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Specs
@@ -1056,6 +1061,7 @@ private SpecBlockStatement ::= VariableStatement | LocalVariableStatement | Glob
                                | IncludeStatement
                                | InvariantStatement
                                | ApplyStatement
+                               | EmitsStatement
                                | AggregatePredicateStatement
 private SpecBlockFinishingExpr ::= SpecExpr | AggregatePredicate | Expr
 //private SpecBlockItems ::= (
@@ -1120,7 +1126,7 @@ EnsuresSpecExpr ::= ensures Predicate { pin = 1 }
 ModifiesStatement ::= ModifiesSpecExpr ';'
 ModifiesSpecExpr ::= modifies Expr { pin = 1 }
 
-IncludeStatement ::= include Expr ';' { pin = 1 }
+IncludeStatement ::= include SpecVisibility? Expr ';' { pin = 1 }
 
 FunctionPattern ::= (public | internal)? IDENTIFIER TypeArgumentList? { pin = 2 }
 
@@ -1134,6 +1140,9 @@ SpecVisibility ::= '[' <<comma_sep_items SpecVisibilityModifier>> ']' { pin = 1 
 SpecVisibilityModifier ::= global | isolated | deactivated
                                 | concrete | abstract
                                 | assert | assume
+
+EmitsStatement ::= emits Expr to Expr EmitsCondition? ';' { pin = 1 }
+EmitsCondition ::= if Expr { pin = 1 }
 
 ApplyStatement ::= apply ApplySchemaName
                     to <<comma_sep_items FunctionPattern>>
@@ -1168,7 +1177,7 @@ ExprPredicate ::= Expr
 //                            | ForAllPrecondition) (':' Expr)?
 
 AggregatePredicateStatement ::= AggregatePredicate ';'
-AggregatePredicate ::= AggregatePrecondition AggregateWhereExpr? (':' Expr)?
+AggregatePredicate ::= AggregatePrecondition (':' Expr)?
 {
 //    pin = AggregatePredicate_body
     rightAssociative = true
@@ -1178,18 +1187,22 @@ AggregatePredicate ::= AggregatePrecondition AggregateWhereExpr? (':' Expr)?
 //    pin = 1
 //    rightAssociative = true
 //}
-private AggregatePrecondition ::= ExistsPrecondition | (ForAllPrecondition (':' ExistsPrecondition)?)
+//private AggregatePrecondition ::= ExistsPrecondition
+//                                | (ForAllPrecondition (':' AggregatePrecondition)?)
 
-AggregateWhereExpr ::= where Expr
+AggregateWhere ::= where Expr
 {
     pin = 1
-    rightAssociative = true
+//    rightAssociative = true
 }
-//private AggregateWhereExpr_body ::= Expr { recoverWhile = AggregateWhereExpr_body_recover }
-//private AggregateWhereExpr_body_recover ::= !':'
 
-ForAllPrecondition ::= forall PreconditionAttributeList { pin = 1 }
-ExistsPrecondition ::= exists PreconditionAttributeList { pin = 1 }
+private AggregatePrecondition ::= ForAllPrecondition | ExistsPrecondition
+ForAllPrecondition ::= forall PreconditionAttributeList
+                        (AggregateWhere)?
+                        (':' AggregatePrecondition)? { pin = 1 }
+ExistsPrecondition ::= exists PreconditionAttributeList
+                        (AggregateWhere)?
+                        (':' AggregatePrecondition)? { pin = 1 }
 
 PreconditionAttributeList ::= <<comma_sep_items PreconditionAttribute>>
 PreconditionAttribute ::= ContainsPreconditionAttribute | TypePreconditionAttribute

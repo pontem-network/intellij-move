@@ -33,10 +33,23 @@ class HighlightingAnnotator : MoveAnnotator() {
 
     private fun highlightLeaf(element: PsiElement): MoveColor? {
         val parent = element.parent as? MoveElement ?: return null
-        return when (element.elementType) {
-            IDENTIFIER -> highlightIdentifier(parent)
+        return when {
+            element.elementType == IDENTIFIER -> highlightIdentifier(parent)
+            parent is MoveCopyExpr
+                    && element.text == "copy" -> MoveColor.KEYWORD
             else -> null
         }
+//        if (element.elementType == IDENTIFIER)
+//            return highlightIdentifier(parent)
+//
+//        if (parent is MoveCopyExpr && element.text == "copy") {
+//            return MoveColor.KEYWORD
+//        }
+//        return null
+//        return when (element.elementType) {
+//            IDENTIFIER -> highlightIdentifier(parent)
+//            else -> null
+//        }
     }
 
     private fun highlightIdentifier(element: MoveElement): MoveColor? {
