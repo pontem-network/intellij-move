@@ -41,6 +41,8 @@
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
+        <lang.documentationProvider language="Move"
+                                    implementationClass="org.move.ide.docs.MoveDocumentationProvider"/>
         <!--        <stubElementTypeHolder class="org.move.lang.MoveElementTypes"/>-->
 
         <lang.syntaxHighlighter language="Move"
