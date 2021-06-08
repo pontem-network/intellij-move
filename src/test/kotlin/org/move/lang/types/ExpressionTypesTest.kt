@@ -23,9 +23,44 @@ class ExpressionTypesTest: TypificationTestCase() {
 
     fun `test deref expr`() = testExpr("""
     module M {
-        fun main(s: &u8) {
+        fun main(s: &signer) {
             *s;
-          //^ u8 
+          //^ signer 
+        }
+    }    
+    """)
+
+    fun `test dot access to primitive field`() = testExpr("""
+    module M {
+        struct S { addr: address }
+        fun main() {
+            let s = S { addr: 0x1 };
+            ((&s).addr)
+          //^ address 
+        }
+    }    
+    """)
+
+    fun `test dot access to field with struct type`() = testExpr("""
+    module M {
+        struct Addr {}
+        struct S { addr: Addr }
+        fun main() {
+            let s = S { addr: Addr {} };
+            ((&s).addr)
+          //^ 0x1::M::Addr 
+        }
+    }    
+    """)
+
+    fun `test borrow expr of dot access`() = testExpr("""
+    module M {
+        struct Addr {}
+        struct S { addr: Addr }
+        fun main() {
+            let s = S { addr: Addr {} };
+            &mut s.addr
+          //^ &mut 0x1::M::Addr 
         }
     }    
     """)

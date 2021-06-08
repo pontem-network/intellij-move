@@ -34,9 +34,9 @@ sealed class BaseType {
     abstract fun fullname(): String
     abstract fun abilities(): Set<Ability>
     abstract fun definingModule(): MoveModuleDef?
-    abstract fun compatibleWith(other: BaseType): Boolean
+    abstract fun compatibleWith(actualType: BaseType): Boolean
 
-    fun typeLabel(relativeTo: MoveElement): String {
+    open fun typeLabel(relativeTo: MoveElement): String {
         val exprTypeModule = this.definingModule()
         return if (exprTypeModule != null
             && exprTypeModule != relativeTo.containingModule
@@ -48,28 +48,50 @@ sealed class BaseType {
     }
 }
 
-class PrimitiveType(private val name: String) : BaseType() {
+open class PrimitiveType(private val name: String) : BaseType() {
     override fun name(): String = name
     override fun fullname(): String = name()
     override fun abilities(): Set<Ability> = Ability.all()
     override fun definingModule(): MoveModuleDef? = null
 
-    override fun compatibleWith(other: BaseType): Boolean {
-        return other is PrimitiveType && this.name == other.name()
+    override fun compatibleWith(actualType: BaseType): Boolean {
+        // &address is compatible with address
+//        if (this.isCopyable()
+//            && other is RefType
+//            && other.innerReferredType() is PrimitiveType
+//            && (other.innerReferredType() as PrimitiveType).isCopyable()
+//        ) return true
+
+        return actualType is PrimitiveType && this.name == actualType.name()
     }
 }
 
-class IntegerType(private val precision: String? = null) : BaseType() {
+class SignerType : BaseType() {
+    override fun name(): String = "signer"
+    override fun fullname(): String = "signer"
+    override fun abilities(): Set<Ability> = Ability.all()
+    override fun definingModule(): MoveModuleDef? = null
+
+    override fun compatibleWith(actualType: BaseType): Boolean {
+        return actualType is SignerType
+    }
+}
+
+class IntegerType(
+    private val precision: String? = null
+) :
+    PrimitiveType(precision ?: "integer") {
+
     override fun name(): String = precision ?: "integer"
     override fun fullname(): String = name()
     override fun abilities(): Set<Ability> = Ability.all()
     override fun definingModule(): MoveModuleDef? = null
 
-    override fun compatibleWith(other: BaseType): Boolean {
-        if (other !is IntegerType) return false
+    override fun compatibleWith(actualType: BaseType): Boolean {
+        if (actualType !is IntegerType) return false
         return this.precision == null
-                || other.precision == null
-                || this.precision == other.precision
+                || actualType.precision == null
+                || this.precision == actualType.precision
     }
 }
 
@@ -79,8 +101,8 @@ class VectorType(private val itemType: BaseType) : BaseType() {
     override fun abilities(): Set<Ability> = Ability.all()
     override fun definingModule(): MoveModuleDef? = null
 
-    override fun compatibleWith(other: BaseType): Boolean {
-        return other is VectorType && this.itemType.compatibleWith(other.itemType)
+    override fun compatibleWith(actualType: BaseType): Boolean {
+        return actualType is VectorType && this.itemType.compatibleWith(actualType.itemType)
     }
 }
 
@@ -90,8 +112,8 @@ class VoidType : BaseType() {
     override fun abilities(): Set<Ability> = emptySet()
     override fun definingModule(): MoveModuleDef? = null
 
-    override fun compatibleWith(other: BaseType): Boolean {
-        return other is VoidType
+    override fun compatibleWith(actualType: BaseType): Boolean {
+        return actualType is VoidType
     }
 }
 
@@ -109,12 +131,16 @@ class RefType(
     override fun abilities(): Set<Ability> = referredType.abilities()
     override fun definingModule(): MoveModuleDef? = referredType.definingModule()
 
-    override fun compatibleWith(other: BaseType): Boolean {
-        if (other !is RefType) return false
-        if (this.fullname() == other.fullname()) return true
+    override fun compatibleWith(actualType: BaseType): Boolean {
+        if (actualType !is RefType) return false
+        if (this.fullname() == actualType.fullname()) return true
 
-        return this.referredType.compatibleWith(other.referredType)
-                && (!this.mutable && other.mutable)
+        return this.referredType.compatibleWith(actualType.referredType)
+                && (!this.mutable || actualType.mutable)
+    }
+
+    override fun typeLabel(relativeTo: MoveElement): String {
+        return prefix() + referredType.typeLabel(relativeTo)
     }
 
 //    fun referredTypeName(): String = referredType.name()
@@ -126,6 +152,14 @@ class RefType(
             is RefType -> referredType.referredStructDef()
             else -> null
         }
+
+    fun innerReferredType(): BaseType {
+        var referredType = this.referredType
+        while (referredType is RefType) {
+            referredType = referredType.referredType;
+        }
+        return referredType
+    }
 }
 
 class StructType(
@@ -139,6 +173,7 @@ class StructType(
 //        val moduleName = structSignature.containingModule?.name ?: return this.name()
 //        val address = structSignature.containingAddress.text
         var structName = structFullname()
+
         if (typeArgumentTypes.isNotEmpty()) {
             structName += "<"
             for ((i, typeArgumentType) in typeArgumentTypes.withIndex()) {
@@ -160,11 +195,11 @@ class StructType(
         return this.structSignature.containingModule
     }
 
-    override fun compatibleWith(other: BaseType): Boolean {
-        return other is StructType
-                && this.structFullname() == other.structFullname()
-                && this.typeArgumentTypes.size == other.typeArgumentTypes.size
-                && this.typeArgumentTypes.zip(other.typeArgumentTypes)
+    override fun compatibleWith(actualType: BaseType): Boolean {
+        return actualType is StructType
+                && this.structFullname() == actualType.structFullname()
+                && this.typeArgumentTypes.size == actualType.typeArgumentTypes.size
+                && this.typeArgumentTypes.zip(actualType.typeArgumentTypes)
             .all { (left, right) ->
                 left == null || right == null
                         || left.compatibleWith(right)
@@ -193,6 +228,26 @@ class StructType(
         }
         return typeVars
     }
+
+    override fun typeLabel(relativeTo: MoveElement): String {
+        val typeLabel = super.typeLabel(relativeTo)
+        return typeLabel + typeArgumentsLabel(relativeTo)
+    }
+
+    private fun typeArgumentsLabel(relativeTo: MoveElement): String {
+        var label = ""
+        if (this.typeArgumentTypes.isNotEmpty()) {
+            label += "<"
+            for ((i, typeArgumentType) in typeArgumentTypes.withIndex()) {
+                label += typeArgumentType?.typeLabel(relativeTo) ?: "unknown_type"
+                if (i < typeArgumentTypes.size - 1) {
+                    label += ", "
+                }
+            }
+            label += ">"
+        }
+        return label
+    }
 }
 
 class TypeParamType(private val typeParam: MoveTypeParameter) : BaseType() {
@@ -205,8 +260,8 @@ class TypeParamType(private val typeParam: MoveTypeParameter) : BaseType() {
         return typeParam.abilities.mapNotNull { it.ability }.toSet()
     }
 
-    override fun compatibleWith(other: BaseType): Boolean {
-        return (this.abilities() - other.abilities()).isEmpty()
+    override fun compatibleWith(actualType: BaseType): Boolean {
+        return (this.abilities() - actualType.abilities()).isEmpty()
     }
 
     companion object {

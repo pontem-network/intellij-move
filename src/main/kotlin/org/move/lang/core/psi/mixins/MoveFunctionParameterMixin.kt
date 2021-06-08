@@ -14,6 +14,7 @@ abstract class MoveFunctionParameterMixin(node: ASTNode) : MoveNameIdentifierOwn
     override fun getIcon(flags: Int): Icon = MoveIcons.PARAMETER
 
     override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
-        return this.typeAnnotation?.type?.resolvedType(emptyMap())
+        val type = this.typeAnnotation?.type ?: return null
+        return type.resolvedType(typeVars)
     }
 }

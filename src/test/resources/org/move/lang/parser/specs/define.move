@@ -40,4 +40,5 @@ module M {
         e && e || e
     }
 
+    spec define native_exists_R(addr: address): bool;
 }

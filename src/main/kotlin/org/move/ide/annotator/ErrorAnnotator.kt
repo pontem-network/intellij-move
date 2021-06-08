@@ -134,25 +134,26 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
         }
     }
 
+    val callExprTypeVars = callExpr.typeVars
     for ((i, expr) in arguments.exprList.withIndex()) {
         val parameter = signature.parameters[i]
-        val paramType = parameter.resolvedType(emptyMap())
-        if (paramType is TypeParamType) {
-            checkHasRequiredAbilities(holder, expr, paramType)
+        val expectedtype = parameter.resolvedType(callExprTypeVars)
+        if (expectedtype is TypeParamType) {
+            checkHasRequiredAbilities(holder, expr, expectedtype)
             continue
         }
 
         val exprType = expr.resolvedType(emptyMap())
-        if (paramType != null && exprType != null
-            && !paramType.compatibleWith(exprType)
+        if (expectedtype != null && exprType != null
+            && !expectedtype.compatibleWith(exprType)
         ) {
             val paramName = parameter.name ?: continue
             val exprTypeName = exprType.typeLabel(relativeTo = arguments)
-            val paramTypeName = paramType.typeLabel(relativeTo = arguments)
+            val expectedTypeName = expectedtype.typeLabel(relativeTo = arguments)
 
             val message =
                 "Invalid argument for parameter '$paramName': " +
-                        "type '$exprTypeName' is not compatible with '$paramTypeName'"
+                        "type '$exprTypeName' is not compatible with '$expectedTypeName'"
             holder.createErrorAnnotation(expr, message)
         }
     }
@@ -231,7 +232,7 @@ private fun checkHasRequiredAbilities(
 ) {
     val elementType = element.resolvedType(emptyMap()) ?: return
     // do not check for specs
-    if (element.ancestorStrict<MoveItemSpecDef>() != null) return
+    if (element.ancestorStrict<MoveSpecDef>() != null) return
 
     val abilities = elementType.abilities()
     for (ability in typeParamType.abilities()) {

@@ -15,8 +15,8 @@ abstract class MoveQualPathTypeMixin(node: ASTNode) : MoveQualTypeReferenceEleme
             val refName = this.referenceName ?: return null
             return when (refName) {
                 in INTEGER_TYPE_IDENTIFIERS -> IntegerType(refName)
-                in PRIMITIVE_TYPE_IDENTIFIERS,
-                in PRIMITIVE_BUILTIN_TYPE_IDENTIFIERS -> PrimitiveType(refName)
+                "bool", "address" -> PrimitiveType(refName)
+                "signer" -> SignerType()
                 "vector" -> {
                     val vectorItem = this.qualPath.typeArguments.firstOrNull() ?: return null
                     val itemType = vectorItem.type.resolvedType(emptyMap()) ?: return null
@@ -31,7 +31,7 @@ abstract class MoveQualPathTypeMixin(node: ASTNode) : MoveQualTypeReferenceEleme
             is MoveStructSignature -> {
                 val typeArguments =
                     this.qualPath.typeArguments
-                        .map { it.type.resolvedType(emptyMap()) }
+                        .map { it.type.resolvedType(typeVars) }
                 StructType(referred, typeArguments)
             }
             else -> null

@@ -20,6 +20,7 @@
     extends(".*Pat")=Pat
     extends(".*Predicate")=Predicate
     extends("(Lambda|Ref|QualPath|Tuple)Type")=Type
+    extends(".*SpecDef")=SpecDef
 
     name(".*Expr")="expression"
 
@@ -167,7 +168,8 @@ private Item_recover ::= !('}' | <<eof>> | Item_first)
 private ModuleItem_item ::= ImportStatement | FriendStatement
                             | StructDef | FunctionDef
                             | NativeStructDef | NativeFunctionDef
-                            | ConstDef | ItemSpecDef
+                            | ConstDef
+                            | SpecDef
 //private ModuleItem_item ::= ImportStatement | StructDef | NativeStructDef
 //                            | FunctionDef | FunctionVisibilityContainer
 //                            | NativeFunctionDef | ConstDef | ItemSpecDef
@@ -942,17 +944,17 @@ AddressRef ::= SENDER_ADDRESS_LITERAL
 // Specs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //SpecDef ::= spec SpecInnerItem { pin = 1 }
-ItemSpecDef ::= spec (FunctionSpec
-                      | ModuleSpec
-                      | StructSpec
-                      | SchemaDef
-                      | DefineFunctionSpec
-                      | NativeDefineFunctionSpec)
+SpecDef ::= FunctionSpecDef
+                  | ModuleSpecDef
+                  | StructSpecDef
+                  | SchemaSpecDef
+                  | DefineFunctionSpecDef
+                  | NativeDefineFunctionSpecDef
 {
     pin = 1
 }
 
-SchemaDef ::= schema IDENTIFIER TypeParameterList? SpecBlock {
+SchemaSpecDef ::= (spec schema) IDENTIFIER TypeParameterList? SpecBlock {
   pin = 1
   implements = [
     "org.move.lang.core.psi.MoveTypeParametersOwner"
@@ -960,71 +962,86 @@ SchemaDef ::= schema IDENTIFIER TypeParameterList? SpecBlock {
   mixin = "org.move.lang.core.psi.mixins.MoveSchemaDefMixin"
 }
 
-FunctionSpec ::= fun IDENTIFIER SpecBlock
+FunctionSpecDef ::= (spec fun) IDENTIFIER SpecBlock
 {
     pin = 1
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionSpecMixin"
 }
-StructSpec ::= struct IDENTIFIER SpecBlock
+StructSpecDef ::= (spec struct) IDENTIFIER SpecBlock
 {
     pin = 1
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.mixins.MoveStructSpecMixin"
 }
-ModuleSpec ::= module SpecBlock
+ModuleSpecDef ::= (spec module) SpecBlock
 {
     pin = 1
 }
 
-DefineFunction ::= define IDENTIFIER TypeParameterList?
-                                           FunctionParameterList
-                                           ReturnType?
-                                           SpecBlock
-{
-    pin = 1
-    implements = [
-        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-//        "org.move.lang.core.psi.MoveTypeParametersOwner"
-        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
-    ]
-    mixin = "org.move.lang.core.psi.mixins.MoveDefineFunctionMixin"
-}
-DefineFunctionSpec ::= define IDENTIFIER TypeParameterList?
-                                               FunctionParameterList
-                                               ReturnType?
-                                               SpecBlock
+DefineFunctionSignature ::= define IDENTIFIER
+                                TypeParameterList?
+                                FunctionParameterList ReturnType?
 {
     pin = 1
     implements = [
 //        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-//        "org.move.lang.core.psi.MoveTypeParametersOwner"
         "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
 }
 
-NativeDefineFunction ::= native define IDENTIFIER TypeParameterList?
-                                                   FunctionParameterList
-                                                   ReturnType? ';'
-{
-    pin = 2
-    implements = [
+DefineFunction ::= DefineFunctionSignature SpecBlock
+//DefineFunction ::= define IDENTIFIER TypeParameterList?
+//                                           FunctionParameterList
+//                                           ReturnType?
+//                                           SpecBlock
+//{
+//    pin = 1
+////    implements = [
+////        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+//////        "org.move.lang.core.psi.MoveTypeParametersOwner"
+////        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
+////    ]
+////    mixin = "org.move.lang.core.psi.mixins.MoveDefineFunctionMixin"
+//}
+DefineFunctionSpecDef ::= spec DefineFunctionSignature SpecBlock
+//DefineFunctionSpec ::= define IDENTIFIER TypeParameterList?
+//                                               FunctionParameterList
+//                                               ReturnType?
+//                                               SpecBlock
+//{
+//    pin = 1
+//    implements = [
+////        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+////        "org.move.lang.core.psi.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
+//    ]
+//}
+
+NativeDefineFunction ::= DefineFunctionSignature ';'
+//NativeDefineFunction ::= native define IDENTIFIER TypeParameterList?
+//                                                   FunctionParameterList
+//                                                   ReturnType? ';'
+//{
+//    pin = 2
+//    implements = [
+////        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+////        "org.move.lang.core.psi.MoveTypeParametersOwner"
+//        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
+//    ]
+//}
+NativeDefineFunctionSpecDef ::= spec DefineFunctionSignature ';'
+//NativeDefineFunctionSpec ::= define IDENTIFIER TypeParameterList?
+//                                                FunctionParameterList
+//                                                ReturnType? ';'
+//{
+//    pin = 2
+//    implements = [
 //        "org.move.lang.core.psi.MoveNameIdentifierOwner"
 //        "org.move.lang.core.psi.MoveTypeParametersOwner"
-        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
-    ]
-}
-NativeDefineFunctionSpec ::= native define IDENTIFIER TypeParameterList?
-                                                       FunctionParameterList
-                                                       ReturnType? ';'
-{
-    pin = 2
-    implements = [
-//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-//        "org.move.lang.core.psi.MoveTypeParametersOwner"
-        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
-    ]
-}
+//        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
+//    ]
+//}
 
 BlockSpecStatement ::= spec SpecBlock ';' {
     pin = 1
@@ -1056,8 +1073,8 @@ private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinish
 private SpecBlockStatement ::= VariableStatement | LocalVariableStatement | GlobalVariableStatement
                                | Statement
                                | NativeFunctionDef
-                               | DefineFunction | DefineFunctionSpec
-                               | NativeDefineFunction | NativeDefineFunctionSpec
+                               | DefineFunction | DefineFunctionSpecDef
+                               | NativeDefineFunction | NativeDefineFunctionSpecDef
                                | PragmaStatement
                                | AssumeStatement
                                | AssertStatement

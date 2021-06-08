@@ -15,19 +15,31 @@ class TypeSubstitutionTest: TypificationTestCase() {
 
     fun `test borrow_global_mut returns reference to type`() = testExpr("""
     module M {
+        struct MyToken has key {}
         fun main() {
-            borrow_global_mut<u8>(0x1)
-          //^ &mut u8  
+            borrow_global_mut<MyToken>(0x1)
+          //^ &mut 0x1::M::MyToken  
         }
     }    
     """)
 
-    fun `test struct field reference`() = testExpr("""
+    fun `test primitive type field reference`() = testExpr("""
     module M {
         struct MyToken has key { val: u8 }
         fun main() {
             (borrow_global_mut<MyToken>(0x1).val)
-          //^ &mut u8
+          //^ u8
+        }
+    }    
+    """)
+
+    fun `test type field reference for struct`() = testExpr("""
+    module M {
+        struct Val has store {}
+        struct MyToken has key { val: Val }
+        fun main() {
+            (borrow_global_mut<MyToken>(0x1).val)
+          //^ 0x1::M::Val
         }
     }    
     """)
@@ -59,7 +71,7 @@ class TypeSubstitutionTest: TypificationTestCase() {
         fun call<Token>(): Token {}
         fun main() {
             (borrow_global_mut<MyToken<u8>>(0x1).val)
-          //^ &mut u8
+          //^ u8
         }
     }    
     """)

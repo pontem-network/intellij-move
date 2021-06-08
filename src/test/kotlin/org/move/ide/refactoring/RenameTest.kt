@@ -158,23 +158,23 @@ class RenameTest : MoveTestBase() {
         }
     """)
 
-    fun `test schema`() = doTest("RenamedSchema", """
-        module M {
-            spec schema /*caret*/MySchema {}
-            
-            spec module {
-                apply MySchema to *;
-            }
-        }
-    """, """
-        module M {
-            spec schema RenamedSchema {}
-            
-            spec module {
-                apply RenamedSchema to *;
-            }
-        }
-    """)
+//    fun `test schema`() = doTest("RenamedSchema", """
+//        module M {
+//            spec schema /*caret*/MySchema {}
+//
+//            spec module {
+//                apply MySchema to *;
+//            }
+//        }
+//    """, """
+//        module M {
+//            spec schema RenamedSchema {}
+//
+//            spec module {
+//                apply RenamedSchema to *;
+//            }
+//        }
+//    """)
 
     fun `test type param`() = doTest("U", """
         module M {
@@ -304,27 +304,27 @@ class RenameTest : MoveTestBase() {
         }
     """)
 
-    fun `test define inside spec module`() = doTest("renamed_reserve_exists", """
-        module M {
-            spec module {
-                define /*caret*/reserve_exists(): bool {
-                   exists<Reserve>(CoreAddresses::CURRENCY_INFO_ADDRESS())
-                }
-                
-                invariant [global] LibraTimestamp::is_operating() ==> reserve_exists()
-            }
-        }
-    """, """
-        module M {
-            spec module {
-                define renamed_reserve_exists(): bool {
-                   exists<Reserve>(CoreAddresses::CURRENCY_INFO_ADDRESS())
-                }
-                
-                invariant [global] LibraTimestamp::is_operating() ==> renamed_reserve_exists()
-            }
-        }
-    """)
+//    fun `test define inside spec module`() = doTest("renamed_reserve_exists", """
+//        module M {
+//            spec module {
+//                define /*caret*/reserve_exists(): bool {
+//                   exists<Reserve>(CoreAddresses::CURRENCY_INFO_ADDRESS())
+//                }
+//
+//                invariant [global] LibraTimestamp::is_operating() ==> reserve_exists()
+//            }
+//        }
+//    """, """
+//        module M {
+//            spec module {
+//                define renamed_reserve_exists(): bool {
+//                   exists<Reserve>(CoreAddresses::CURRENCY_INFO_ADDRESS())
+//                }
+//
+//                invariant [global] LibraTimestamp::is_operating() ==> renamed_reserve_exists()
+//            }
+//        }
+//    """)
 
     private fun doTest(
         newName: String,

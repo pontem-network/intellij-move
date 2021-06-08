@@ -75,57 +75,57 @@ class FunctionsCompletionTest : CompletionTestCase() {
     """
     )
 
-    fun `test complete function name in spec fun without parens`() = doSingleCompletion(
-        """
-        module M {
-            fun frobnicate(a: u8) {}
-            spec fun frob/*caret*/
-        }
-    """, """
-        module M {
-            fun frobnicate(a: u8) {}
-            spec fun frobnicate /*caret*/
-        }
-    """
-    )
+//    fun `test complete function name in spec fun without parens`() = doSingleCompletion(
+//        """
+//        module M {
+//            fun frobnicate(a: u8) {}
+//            spec fun frob/*caret*/
+//        }
+//    """, """
+//        module M {
+//            fun frobnicate(a: u8) {}
+//            spec fun frobnicate /*caret*/
+//        }
+//    """
+//    )
 
-    fun `test spec fun do not add space if already there`() = doSingleCompletion(
-        """
-        module M {
-            fun frobnicate(a: u8) {}
-            spec fun frob/*caret*/ {}
-        }
-    """, """
-        module M {
-            fun frobnicate(a: u8) {}
-            spec fun frobnicate/*caret*/ {}
-        }
-    """
-    )
+//    fun `test spec fun do not add space if already there`() = doSingleCompletion(
+//        """
+//        module M {
+//            fun frobnicate(a: u8) {}
+//            spec fun frob/*caret*/ {}
+//        }
+//    """, """
+//        module M {
+//            fun frobnicate(a: u8) {}
+//            spec fun frobnicate/*caret*/ {}
+//        }
+//    """
+//    )
 
-    fun `test define function accessible before definition`() = doSingleCompletion(
-        """
-        module M {
-            spec module {
-                res/*caret*/;
-                
-                define reserve_exists(): bool {
-                   exists<Reserve>(CoreAddresses::CURRENCY_INFO_ADDRESS())
-                }
-            }
-        }
-    """, """
-        module M {
-            spec module {
-                reserve_exists()/*caret*/;
-                
-                define reserve_exists(): bool {
-                   exists<Reserve>(CoreAddresses::CURRENCY_INFO_ADDRESS())
-                }
-            }
-        }
-    """
-    )
+//    fun `test define function accessible before definition`() = doSingleCompletion(
+//        """
+//        module M {
+//            spec module {
+//                res/*caret*/;
+//
+//                define reserve_exists(): bool {
+//                   exists<Reserve>(CoreAddresses::CURRENCY_INFO_ADDRESS())
+//                }
+//            }
+//        }
+//    """, """
+//        module M {
+//            spec module {
+//                reserve_exists()/*caret*/;
+//
+//                define reserve_exists(): bool {
+//                   exists<Reserve>(CoreAddresses::CURRENCY_INFO_ADDRESS())
+//                }
+//            }
+//        }
+//    """
+//    )
 
 //    fun `test generic function call with type parameters`() = doSingleCompletion("""
 //        module M {

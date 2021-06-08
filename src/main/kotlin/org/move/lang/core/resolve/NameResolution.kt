@@ -233,9 +233,9 @@ fun processLexicalDeclarations(
                 }
                 return processorWithShadowing.matchAll(namedElements)
             }
-            is MoveSpecBlock -> {
-                processor.matchAll(scope.defineFunctionList)
-            }
+//            is MoveSpecBlock -> {
+//                processor.matchAll(scope.defineFunctionList)
+//            }
             is MoveModuleDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
@@ -260,7 +260,7 @@ fun processLexicalDeclarations(
             is MoveFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
             is MoveNativeFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
             is MoveStructDef -> processor.matchAll(scope.structSignature.typeParameters)
-            is MoveSchemaDef -> processor.matchAll(scope.typeParams)
+            is MoveSchemaSpecDef -> processor.matchAll(scope.typeParams)
             is MoveModuleDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
@@ -277,7 +277,7 @@ fun processLexicalDeclarations(
             else -> false
         }
         Namespace.SCHEMA -> when (scope) {
-            is MoveModuleDef -> processor.matchAll(scope.schemas())
+//            is MoveModuleDef -> processor.matchAll(scope.schemas())
             else -> false
         }
         Namespace.MODULE -> when (scope) {

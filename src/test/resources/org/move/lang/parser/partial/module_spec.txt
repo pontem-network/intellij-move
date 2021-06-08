@@ -7,102 +7,92 @@ FILE
     MoveModuleBlockImpl(MODULE_BLOCK)
       PsiElement({)('{')
       PsiWhiteSpace('\n    ')
-      MoveItemSpecDefImpl(ITEM_SPEC_DEF)
+      PsiElement(spec)('spec')
+      PsiErrorElement:define, fun, module, schema or struct expected, got 'spec'
+        <empty list>
+      PsiWhiteSpace('\n    ')
+      MoveModuleSpecDefImpl(MODULE_SPEC_DEF)
         PsiElement(spec)('spec')
-        PsiErrorElement:define, fun, module, native, schema or struct expected, got 'spec'
+        PsiWhiteSpace(' ')
+        PsiElement(module)('module')
+        PsiErrorElement:'{' expected, got 'spec'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MoveItemSpecDefImpl(ITEM_SPEC_DEF)
+      MoveModuleSpecDefImpl(MODULE_SPEC_DEF)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
-        MoveModuleSpecImpl(MODULE_SPEC)
-          PsiElement(module)('module')
-          PsiErrorElement:'{' expected, got 'spec'
-            <empty list>
+        PsiElement(module)('module')
+        PsiWhiteSpace(' ')
+        MoveSpecBlockImpl(SPEC_BLOCK)
+          PsiElement({)('{')
+      PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, emits, ensures, include, invariant, modifies, native, pragma, requires, spec, succeeds_if or '}' expected, got 'spec'
+        <empty list>
       PsiWhiteSpace('\n    ')
-      MoveItemSpecDefImpl(ITEM_SPEC_DEF)
+      MoveFunctionSpecDefImpl(FUNCTION_SPEC_DEF)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
-        MoveModuleSpecImpl(MODULE_SPEC)
-          PsiElement(module)('module')
-          PsiWhiteSpace(' ')
-          MoveSpecBlockImpl(SPEC_BLOCK)
-            PsiElement({)('{')
-            PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, emits, ensures, include, invariant, modifies, native, pragma, requires, succeeds_if or '}' expected, got 'spec'
-              <empty list>
+        PsiElement(fun)('fun')
+        PsiErrorElement:IDENTIFIER expected, got 'spec'
+          <empty list>
       PsiWhiteSpace('\n    ')
-      MoveItemSpecDefImpl(ITEM_SPEC_DEF)
+      MoveFunctionSpecDefImpl(FUNCTION_SPEC_DEF)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
-        MoveFunctionSpecImpl(FUNCTION_SPEC)
-          PsiElement(fun)('fun')
-          PsiErrorElement:IDENTIFIER expected, got 'spec'
-            <empty list>
+        PsiElement(fun)('fun')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('main')
+        PsiErrorElement:'{' expected, got 'spec'
+          <empty list>
       PsiWhiteSpace('\n    ')
-      MoveItemSpecDefImpl(ITEM_SPEC_DEF)
+      MoveFunctionSpecDefImpl(FUNCTION_SPEC_DEF)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
-        MoveFunctionSpecImpl(FUNCTION_SPEC)
-          PsiElement(fun)('fun')
-          PsiWhiteSpace(' ')
-          PsiElement(IDENTIFIER)('main')
-          PsiErrorElement:'{' expected, got 'spec'
-            <empty list>
+        PsiElement(fun)('fun')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('main')
+        PsiWhiteSpace(' ')
+        MoveSpecBlockImpl(SPEC_BLOCK)
+          PsiElement({)('{')
+      PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, emits, ensures, include, invariant, modifies, native, pragma, requires, spec, succeeds_if or '}' expected, got 'spec'
+        <empty list>
       PsiWhiteSpace('\n    ')
-      MoveItemSpecDefImpl(ITEM_SPEC_DEF)
+      MoveStructSpecDefImpl(STRUCT_SPEC_DEF)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
-        MoveFunctionSpecImpl(FUNCTION_SPEC)
-          PsiElement(fun)('fun')
-          PsiWhiteSpace(' ')
-          PsiElement(IDENTIFIER)('main')
-          PsiWhiteSpace(' ')
-          MoveSpecBlockImpl(SPEC_BLOCK)
-            PsiElement({)('{')
-            PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, emits, ensures, include, invariant, modifies, native, pragma, requires, succeeds_if or '}' expected, got 'spec'
-              <empty list>
+        PsiElement(struct)('struct')
+        PsiErrorElement:IDENTIFIER expected, got 'spec'
+          <empty list>
       PsiWhiteSpace('\n    ')
-      MoveItemSpecDefImpl(ITEM_SPEC_DEF)
+      MoveStructSpecDefImpl(STRUCT_SPEC_DEF)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
-        MoveStructSpecImpl(STRUCT_SPEC)
-          PsiElement(struct)('struct')
-          PsiErrorElement:IDENTIFIER expected, got 'spec'
-            <empty list>
+        PsiElement(struct)('struct')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('MyStruct')
+        PsiErrorElement:'{' expected, got 'spec'
+          <empty list>
       PsiWhiteSpace('\n    ')
-      MoveItemSpecDefImpl(ITEM_SPEC_DEF)
+      MoveStructSpecDefImpl(STRUCT_SPEC_DEF)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
-        MoveStructSpecImpl(STRUCT_SPEC)
-          PsiElement(struct)('struct')
-          PsiWhiteSpace(' ')
-          PsiElement(IDENTIFIER)('MyStruct')
-          PsiErrorElement:'{' expected, got 'spec'
-            <empty list>
-      PsiWhiteSpace('\n    ')
-      MoveItemSpecDefImpl(ITEM_SPEC_DEF)
-        PsiElement(spec)('spec')
+        PsiElement(struct)('struct')
         PsiWhiteSpace(' ')
-        MoveStructSpecImpl(STRUCT_SPEC)
-          PsiElement(struct)('struct')
-          PsiWhiteSpace(' ')
-          PsiElement(IDENTIFIER)('MyStruct')
-          PsiErrorElement:'{' expected, got '<'
-            <empty list>
+        PsiElement(IDENTIFIER)('MyStruct')
+        PsiErrorElement:'{' expected, got '<'
+          <empty list>
       PsiElement(<)('<')
       PsiWhiteSpace('\n    ')
-      MoveItemSpecDefImpl(ITEM_SPEC_DEF)
+      MoveStructSpecDefImpl(STRUCT_SPEC_DEF)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
-        MoveStructSpecImpl(STRUCT_SPEC)
-          PsiElement(struct)('struct')
-          PsiWhiteSpace(' ')
-          PsiElement(IDENTIFIER)('MyStruct')
-          PsiWhiteSpace(' ')
-          MoveSpecBlockImpl(SPEC_BLOCK)
-            PsiElement({)('{')
-            PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, emits, ensures, include, invariant, modifies, native, pragma, requires, succeeds_if or '}' expected, got 'fun'
-              <empty list>
+        PsiElement(struct)('struct')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('MyStruct')
+        PsiWhiteSpace(' ')
+        MoveSpecBlockImpl(SPEC_BLOCK)
+          PsiElement({)('{')
+          PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, emits, ensures, include, invariant, modifies, native, pragma, requires, spec, succeeds_if or '}' expected, got 'fun'
+            <empty list>
       PsiWhiteSpace('\n\n    ')
       MoveFunctionDefImpl(FUNCTION_DEF)
         MoveFunctionSignatureImpl(FUNCTION_SIGNATURE)

@@ -55,7 +55,7 @@ fun processModuleItems(
                 ).flatten()
             )
             Namespace.TYPE -> processor.matchAll(module.structSignatures())
-            Namespace.SCHEMA -> processor.matchAll(module.schemas())
+//            Namespace.SCHEMA -> processor.matchAll(module.schemas())
             else -> false
         }
         if (found) return true

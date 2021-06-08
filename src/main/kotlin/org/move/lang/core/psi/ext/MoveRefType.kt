@@ -14,7 +14,8 @@ val MoveRefType.mutable: Boolean
 
 abstract class MoveRefTypeMixin(node: ASTNode) : MoveElementImpl(node), MoveRefType {
     override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
-        val referredType = this.type?.resolvedType(typeVars) ?: return null
+        val innerType = this.type ?: return null
+        val referredType = innerType.resolvedType(typeVars) ?: return null
         return RefType(referredType, this.mutable)
     }
 
