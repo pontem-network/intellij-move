@@ -696,6 +696,7 @@ Expr ::= AssignmentExpr
     implements = ["org.move.lang.core.types.HasType"]
     mixin = "org.move.lang.core.psi.ext.MoveExprMixin"
 }
+//private SpecExpr ::= Expr | AggregatePredicate
 
 private MulExprItem ::= DivExpr | MulExpr | ModExpr
 private AddExprItem ::= PlusExpr | MinusExpr
@@ -1184,7 +1185,7 @@ ExprPredicate ::= Expr
 //                            | ForAllPrecondition) (':' Expr)?
 
 AggregatePredicateStatement ::= AggregatePredicate ';'
-AggregatePredicate ::= AggregatePrecondition (':' Expr)?
+AggregatePredicate ::= QuantifierExpr (':' Expr)?
 {
 //    pin = AggregatePredicate_body
     rightAssociative = true
@@ -1197,22 +1198,20 @@ AggregatePredicate ::= AggregatePrecondition (':' Expr)?
 //private AggregatePrecondition ::= ExistsPrecondition
 //                                | (ForAllPrecondition (':' AggregatePrecondition)?)
 
-AggregateWhere ::= where Expr
+QuantifierWhere ::= where Expr
 {
     pin = 1
 //    rightAssociative = true
 }
 
-private AggregatePrecondition ::= ForAllPrecondition | ExistsPrecondition
-ForAllPrecondition ::= forall PreconditionAttributeList
-                        (AggregateWhere)?
-                        (':' AggregatePrecondition)? { pin = 1 }
-ExistsPrecondition ::= exists PreconditionAttributeList
-                        (AggregateWhere)?
-                        (':' AggregatePrecondition)? { pin = 1 }
+private QuantifierExpr ::= ForallQuantifier | ExistsQuantifier
+ForallQuantifier ::= forall QuantifierBindings
+                        (QuantifierWhere)? (':' QuantifierExpr)? { pin = 1 }
+ExistsQuantifier ::= exists QuantifierBindings
+                        (QuantifierWhere)? (':' QuantifierExpr)? { pin = 1 }
 
-PreconditionAttributeList ::= <<comma_sep_items PreconditionAttribute>>
-PreconditionAttribute ::= ContainsPreconditionAttribute | TypePreconditionAttribute
+QuantifierBindings ::= <<comma_sep_items QuantifierBind>>
+QuantifierBind ::= RangeQuantifierBind | TypeQuantifierBind
 
 //ForAllPrecondition ::= forall PreconditionAttribute (',' PreconditionAttribute)* ForAllWhereCondition? {
 //    pin = 1
@@ -1225,13 +1224,13 @@ PreconditionAttribute ::= ContainsPreconditionAttribute | TypePreconditionAttrib
 //    extends = Precondition
 //}
 
-ContainsPreconditionAttribute ::= IDENTIFIER in RangeExpr {
+RangeQuantifierBind ::= IDENTIFIER in RangeExpr {
     pin = 2
-    extends = PreconditionAttribute
+    extends = QuantifierBind
 }
-TypePreconditionAttribute ::= IDENTIFIER ':' Type {
+TypeQuantifierBind ::= IDENTIFIER ':' Type {
     pin = 2
-    extends = PreconditionAttribute
+    extends = QuantifierBind
 }
 
 
