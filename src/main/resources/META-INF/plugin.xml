@@ -44,6 +44,8 @@
         <lang.documentationProvider language="Move"
                                     implementationClass="org.move.ide.docs.MoveDocumentationProvider"/>
         <!--        <stubElementTypeHolder class="org.move.lang.MoveElementTypes"/>-->
+        <gotoSymbolContributor implementation="org.move.ide.navigation.MoveSymbolNavigationContributor"/>
+        <gotoClassContributor implementation="org.move.ide.navigation.MoveStructNavigationContributor"/>
 
         <lang.syntaxHighlighter language="Move"
                                 implementationClass="org.move.ide.MoveHighlighter"/>

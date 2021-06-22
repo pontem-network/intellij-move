@@ -1,8 +1,6 @@
 package org.move.lang.core.resolve
 
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiRecursiveVisitor
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
@@ -14,7 +12,7 @@ import org.move.lang.core.types.HasType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.StructType
 import org.move.openapiext.folders
-
+import org.move.utils.iterateOverMoveFiles
 
 fun processItems(
     element: MoveReferenceElement,
@@ -132,17 +130,20 @@ fun processQualModuleRef(
     val virtualFolders = project.folders()
     for (folder in virtualFolders) {
         if (isResolved) break
-        VfsUtil.iterateChildrenRecursively(
-            folder,
-            { it.isDirectory || it.extension == "move" })
-        { file ->
-            if (file.isDirectory) return@iterateChildrenRecursively true
-            val moduleFile = PsiManager.getInstance(project).findFile(file) as? MoveFile
-                ?: return@iterateChildrenRecursively true
-            isResolved = resolveQualModuleRefInFile(qualModuleRef, moduleFile, processor)
-            // will continue processing if true
+        iterateOverMoveFiles(project, folder) { moveFile ->
+            isResolved = resolveQualModuleRefInFile(qualModuleRef, moveFile, processor)
             !isResolved
         }
+//        VfsUtil.iterateChildrenRecursively(
+//            folder,
+//            { it.isDirectory || it.extension == "move" })
+//        { file ->
+//            if (file.isDirectory) return@iterateChildrenRecursively true
+//            val moduleFile = PsiManager.getInstance(project).findFile(file) as? MoveFile
+//                ?: return@iterateChildrenRecursively true
+//            // will continue processing if true
+//            !isResolved
+//        }
     }
 //    if (!isResolved) {
 //        // search current file for modules too
@@ -263,7 +264,7 @@ fun processLexicalDeclarations(
             )
             else -> false
         }
-        Namespace.SCHEMA -> when (scope) {
+        Namespace.SCHEMA -> when {
 //            is MoveModuleDef -> processor.matchAll(scope.schemas())
             else -> false
         }

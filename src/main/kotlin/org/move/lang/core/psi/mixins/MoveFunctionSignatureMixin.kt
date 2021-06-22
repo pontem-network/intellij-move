@@ -1,6 +1,7 @@
 package org.move.lang.core.psi.mixins
 
 import com.intellij.lang.ASTNode
+import com.intellij.navigation.ItemPresentation
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MoveFunctionSignature
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
