@@ -162,7 +162,7 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
     recoverWhile = Item_recover
 }
 // top-level recovery
-private Item_first ::= use | public | native | fun | const | resource | struct | spec
+private Item_first ::= use | public | native | fun | const | struct | spec
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= ImportStatement | FriendStatement
@@ -319,7 +319,7 @@ private AcquiresType_items_recover ::= !(';' | '{')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-StructSignature ::= resource? struct IDENTIFIER TypeParameterList? AbilitiesList?
+StructSignature ::= struct IDENTIFIER TypeParameterList? AbilitiesList?
 {
     pin = "struct"
     implements = [
@@ -1071,7 +1071,7 @@ private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinish
 //    pin = 1
 //}
 private SpecBlockStatement ::= VariableStatement | LocalVariableStatement | GlobalVariableStatement
-                               | Statement
+                               | ImportStatement
                                | NativeFunctionDef
                                | DefineFunction | DefineFunctionSpecDef
                                | NativeDefineFunction | NativeDefineFunctionSpecDef
@@ -1088,7 +1088,8 @@ private SpecBlockStatement ::= VariableStatement | LocalVariableStatement | Glob
                                | ApplyStatement
                                | EmitsStatement
                                | AggregatePredicateStatement
-private SpecBlockFinishingExpr ::= SpecExpr | AggregatePredicate | Expr
+                               | Statement
+private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
 //private SpecBlockItems ::= (
 //                                Statement
 //                                | DefineFunction | DefineFunctionSpec
@@ -1186,8 +1187,8 @@ ApplySchemaName ::= QualPath
 }
 ApplySchemaNameAttribute ::= IDENTIFIER ':' Expr
 
-Predicate ::= SpecVisibility? (AggregatePredicate | ExprPredicate)
-ExprPredicate ::= Expr
+Predicate ::= SpecVisibility? (Expr | AggregateExpr)
+//ExprPredicate ::= Expr
 
 //PreconditionStatement ::= PreconditionExpr ';'
 //PreconditionExpr ::= Precondition ':' Expr {
@@ -1201,8 +1202,8 @@ ExprPredicate ::= Expr
 //                            | ExistsPrecondition
 //                            | ForAllPrecondition) (':' Expr)?
 
-AggregatePredicateStatement ::= AggregatePredicate ';'
-AggregatePredicate ::= QuantifierExpr (':' Expr)?
+AggregatePredicateStatement ::= AggregateExpr ';'
+AggregateExpr ::= QuantifierExpr (':' Expr)?
 {
 //    pin = AggregatePredicate_body
     rightAssociative = true

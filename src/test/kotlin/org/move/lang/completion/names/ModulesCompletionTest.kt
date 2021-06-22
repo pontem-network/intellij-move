@@ -17,7 +17,7 @@ class ModulesCompletionTest : CompletionTestCase() {
             use 0x1::Transaction;
             
             fun main() {
-                let a = Transaction::/*caret*/
+                let a = Transaction/*caret*/
             }
         }    
     """
@@ -34,7 +34,7 @@ class ModulesCompletionTest : CompletionTestCase() {
         script {
             use 0x1::Transaction;
             
-            fun main(a: Transaction::/*caret*/) {}
+            fun main(a: Transaction/*caret*/) {}
         }    
     """
     )

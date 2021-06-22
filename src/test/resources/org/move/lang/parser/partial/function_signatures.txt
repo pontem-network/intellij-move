@@ -115,7 +115,7 @@ FILE
             <empty list>
       PsiWhiteSpace('\n\n    ')
       PsiElement(native)('native')
-      PsiErrorElement:<struct signature>, fun or public expected, got 'native'
+      PsiErrorElement:fun, public or struct expected, got 'native'
         <empty list>
       PsiWhiteSpace('\n    ')
       MoveNativeFunctionDefImpl(NATIVE_FUNCTION_DEF)

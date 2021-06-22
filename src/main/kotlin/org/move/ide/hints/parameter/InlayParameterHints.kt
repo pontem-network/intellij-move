@@ -17,8 +17,14 @@ object InlayParameterHints {
         return callInfo.parameters
             .map { it.name }
             .zip(arguments)
-            .filter { (hint, arg) -> !arg.text.endsWith(hint) }
+            .filter { (hint, arg) -> !isSimilar(hint, arg.text) }
             .filter { (hint, _) -> hint != "_" }
             .map { (hint, arg) -> InlayInfo("$hint:", arg.startOffset) }
+    }
+
+    private fun isSimilar(hint: String, argumentText: String): Boolean {
+        val argText = argumentText.toLowerCase()
+        val hintText = hint.toLowerCase()
+        return argText.endsWith(hintText) || argText.startsWith(hintText)
     }
 }

@@ -88,6 +88,7 @@ class IntegerType(
     override fun definingModule(): MoveModuleDef? = null
 
     override fun compatibleWith(actualType: BaseType): Boolean {
+        if (actualType is TypeParamType) return true
         if (actualType !is IntegerType) return false
         return this.precision == null
                 || actualType.precision == null
@@ -102,6 +103,7 @@ class VectorType(private val itemType: BaseType) : BaseType() {
     override fun definingModule(): MoveModuleDef? = null
 
     override fun compatibleWith(actualType: BaseType): Boolean {
+        if (actualType is TypeParamType) return true
         return actualType is VectorType && this.itemType.compatibleWith(actualType.itemType)
     }
 }
@@ -132,6 +134,7 @@ class RefType(
     override fun definingModule(): MoveModuleDef? = referredType.definingModule()
 
     override fun compatibleWith(actualType: BaseType): Boolean {
+        if (actualType is TypeParamType) return true
         if (actualType !is RefType) return false
         if (this.fullname() == actualType.fullname()) return true
 
@@ -196,6 +199,7 @@ class StructType(
     }
 
     override fun compatibleWith(actualType: BaseType): Boolean {
+        if (actualType is TypeParamType) return true
         return actualType is StructType
                 && this.structFullname() == actualType.structFullname()
                 && this.typeArgumentTypes.size == actualType.typeArgumentTypes.size
@@ -261,6 +265,7 @@ class TypeParamType(private val typeParam: MoveTypeParameter) : BaseType() {
     }
 
     override fun compatibleWith(actualType: BaseType): Boolean {
+        if (actualType is TypeParamType) return true
         return (this.abilities() - actualType.abilities()).isEmpty()
     }
 

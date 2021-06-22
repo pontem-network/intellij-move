@@ -25,7 +25,7 @@ FILE
         PsiWhiteSpace(' ')
         MoveSpecBlockImpl(SPEC_BLOCK)
           PsiElement({)('{')
-      PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, emits, ensures, include, invariant, modifies, native, pragma, requires, spec, succeeds_if or '}' expected, got 'spec'
+      PsiErrorElement:<expression> or '}' expected, got 'spec'
         <empty list>
       PsiWhiteSpace('\n    ')
       MoveFunctionSpecDefImpl(FUNCTION_SPEC_DEF)
@@ -53,7 +53,7 @@ FILE
         PsiWhiteSpace(' ')
         MoveSpecBlockImpl(SPEC_BLOCK)
           PsiElement({)('{')
-      PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, emits, ensures, include, invariant, modifies, native, pragma, requires, spec, succeeds_if or '}' expected, got 'spec'
+      PsiErrorElement:<expression> or '}' expected, got 'spec'
         <empty list>
       PsiWhiteSpace('\n    ')
       MoveStructSpecDefImpl(STRUCT_SPEC_DEF)
@@ -91,7 +91,7 @@ FILE
         PsiWhiteSpace(' ')
         MoveSpecBlockImpl(SPEC_BLOCK)
           PsiElement({)('{')
-          PsiErrorElement:<aggregate predicate statement>, <expression>, aborts_if, apply, assert, assume, define, emits, ensures, include, invariant, modifies, native, pragma, requires, spec, succeeds_if or '}' expected, got 'fun'
+          PsiErrorElement:<expression> or '}' expected, got 'fun'
             <empty list>
       PsiWhiteSpace('\n\n    ')
       MoveFunctionDefImpl(FUNCTION_DEF)

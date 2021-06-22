@@ -66,17 +66,17 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
             LookupElementBuilder
                 .createWithIcon(this)
                 .withLookupString(this.name ?: "")
-                .withInsertHandler { context, _ ->
-                    val document = context.document
-                    if (!context.alreadyHasColonColon) {
-                        document.insertString(context.selectionEndOffset, "::")
-                        EditorModificationUtil.moveCaretRelatively(
-                            context.editor,
-                            2
-                        )
-                        AutoPopupController.getInstance(context.project).scheduleAutoPopup(context.editor)
-                    }
-                }
+//                .withInsertHandler { context, _ ->
+//                    val document = context.document
+//                    if (!context.alreadyHasColonColon) {
+//                        document.insertString(context.selectionEndOffset, "::")
+//                        EditorModificationUtil.moveCaretRelatively(
+//                            context.editor,
+//                            2
+//                        )
+//                        AutoPopupController.getInstance(context.project).scheduleAutoPopup(context.editor)
+//                    }
+//                }
 
         is MoveFunctionSignatureOwner -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")

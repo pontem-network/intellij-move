@@ -47,7 +47,7 @@ class UnresolvedReferenceInspectionTest : InspectionsTestCase(MoveUnresolvedRefe
     fun `test unresolved reference to variable in struct constructor field`() = checkByText(
         """
         module M {
-            resource struct T {
+            struct T {
                 my_field: u8
             }
 
@@ -61,7 +61,7 @@ class UnresolvedReferenceInspectionTest : InspectionsTestCase(MoveUnresolvedRefe
     fun `test unresolved reference to variable in struct shorthand`() = checkByText(
         """
         module M {
-            resource struct T {
+            struct T {
                 my_field: u8
             }
 
@@ -75,7 +75,7 @@ class UnresolvedReferenceInspectionTest : InspectionsTestCase(MoveUnresolvedRefe
     fun `test unresolved reference to field in struct constructor`() = checkByText(
         """
         module M {
-            resource struct T {
+            struct T {
                 my_field: u8
             }
 
@@ -89,7 +89,7 @@ class UnresolvedReferenceInspectionTest : InspectionsTestCase(MoveUnresolvedRefe
     fun `test unresolved reference to field in struct pat`() = checkByText(
         """
         module M {
-            resource struct T {
+            struct T {
                 my_field: u8
             }
 
@@ -103,7 +103,7 @@ class UnresolvedReferenceInspectionTest : InspectionsTestCase(MoveUnresolvedRefe
     fun `test unresolved reference to field in struct pat shorthand`() = checkByText(
         """
         module M {
-            resource struct T {
+            struct T {
                 my_field: u8
             }
 

@@ -3,6 +3,16 @@ package org.move.lang.types
 import org.move.utils.tests.types.TypificationTestCase
 
 class ExpressionTypesTest: TypificationTestCase() {
+    fun `test struct literal expr with unresolved type param`() = testExpr("""
+    module M {
+        struct R<CoinType> {}
+        fun main() {
+            R {};
+          //^ 0x1::M::R<CoinType>  
+        }
+    }
+    """)
+
     fun `test borrow expr`() = testExpr("""
     module M {
         fun main(s: signer) {

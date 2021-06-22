@@ -124,7 +124,6 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "public"         { yybegin(YYINITIAL); return PUBLIC; }
       "fun"            { yybegin(YYINITIAL); return FUN; }
       "acquires"       { return ACQUIRES; }
-      "resource"       { yybegin(YYINITIAL); return RESOURCE; }
       "struct"         { yybegin(YYINITIAL); return STRUCT; }
       "use"            { yybegin(YYINITIAL); return USE; }
       "as"             { return AS; }

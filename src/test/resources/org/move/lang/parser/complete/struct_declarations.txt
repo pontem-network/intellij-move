@@ -62,8 +62,6 @@ FILE
       PsiWhiteSpace('\n\n    ')
       MoveStructDefImpl(STRUCT_DEF)
         MoveStructSignatureImpl(STRUCT_SIGNATURE)
-          PsiElement(resource)('resource')
-          PsiWhiteSpace(' ')
           PsiElement(struct)('struct')
           PsiWhiteSpace(' ')
           PsiElement(IDENTIFIER)('ResourceValidatorConfig')

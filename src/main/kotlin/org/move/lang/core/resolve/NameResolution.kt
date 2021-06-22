@@ -15,7 +15,6 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.HasType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.StructType
-import org.move.stdext.chain
 import java.nio.file.Paths
 
 
@@ -134,16 +133,31 @@ fun processQualModuleRef(
 
     // fetch metadata, and end processing if not available
     val metadata = project.metadataService.metadata ?: return true
-//    val metadata = project.metadataService.metadata ?: return processor.match(Stop())
 
-    val moduleFolders = metadata.package_info
-        .local_dependencies
-        .chain(listOf(metadata.layout.module_dir))
-        .mapNotNull {
-            VirtualFileManager.getInstance().findFileByNioPath(Paths.get(it))
-        }
+    val moduleFolders = listOf(
+        metadata.package_info.local_dependencies,
+        listOf(metadata.layout.modules_dir),
+        metadata.package_info.git_dependencies.flatMap { it.local_paths }
+    ).flatten()
+//    val moduleFolders = metadata.package_info.local_dependencies
+//    val moduleFolders = metadata.package_info.local_dependencies.toMutableList()
+//    moduleFolders.add(metadata.layout.module_dir)
+//    moduleFolders.addAll(metadata.package_info.git_dependencies.mapNotNull { it.local_path })
+//    val virtualFolders = mutableListOf<VirtualFile>()
+//    for (moduleFolder in moduleFolders) {
+//        val path = Paths.get(moduleFolder)
+//        if (path.exists()) {
+//            val virtualFolder =
+//                VirtualFileManager.getInstance().findFileByNioPath(path)
+//                    ?: continue
+//            virtualFolders.add(virtualFolder)
+//        }
+//    }
+    val virtualFolders = moduleFolders.mapNotNull {
+        VirtualFileManager.getInstance().findFileByNioPath(Paths.get(it))
+    }
 
-    for (folder in moduleFolders) {
+    for (folder in virtualFolders) {
         if (isResolved) break
         VfsUtil.iterateChildrenRecursively(
             folder,

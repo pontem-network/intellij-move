@@ -1,9 +1,7 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.MoveAbility
-import org.move.lang.core.psi.MoveModuleDef
-import org.move.lang.core.psi.MoveStructDef
-import org.move.lang.core.psi.MoveStructSignature
+import com.intellij.psi.util.descendantsOfType
+import org.move.lang.core.psi.*
 
 val MoveStructSignature.module: MoveModuleDef
     get() {

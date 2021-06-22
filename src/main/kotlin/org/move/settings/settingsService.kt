@@ -6,6 +6,7 @@ import com.intellij.openapi.components.*
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import com.intellij.psi.PsiManager
 import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
@@ -13,11 +14,16 @@ import org.jetbrains.annotations.TestOnly
 import org.move.cli.DoveExecutable
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.reflect.KProperty1
 
 data class MoveSettingsChangedEvent(
     val oldState: MoveProjectSettingsService.State,
     val newState: MoveProjectSettingsService.State,
-)
+) {
+    /** Use it like `event.isChanged(State::foo)` to check whether `foo` property is changed or not */
+    fun isChanged(prop: KProperty1<MoveProjectSettingsService.State, *>): Boolean =
+        prop.get(oldState) != prop.get(newState)
+}
 
 interface MoveSettingsListener {
     fun moveSettingsChanged(e: MoveSettingsChangedEvent)
@@ -36,6 +42,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
 
     data class State(
         var doveExecutablePath: String = "",
+        var collapseSpecs: Boolean = false,
     )
 
     @Volatile
@@ -62,6 +69,10 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
         val event = MoveSettingsChangedEvent(oldState, newState)
         project.messageBus.syncPublisher(MOVE_SETTINGS_TOPIC)
             .moveSettingsChanged(event)
+
+        if (event.isChanged(State::collapseSpecs)) {
+            PsiManager.getInstance(project).dropPsiCaches()
+        }
     }
 
     override fun getState(): Element {
@@ -106,6 +117,11 @@ val Project.moveSettings: MoveProjectSettingsService
 val Project.dovePathValue: String
     get() {
         return this.moveSettings.settingsState.doveExecutablePath
+    }
+
+val Project.collapseSpecs: Boolean
+    get() {
+        return this.moveSettings.settingsState.collapseSpecs
     }
 
 val Project.dovePath: Path?

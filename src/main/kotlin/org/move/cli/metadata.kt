@@ -9,6 +9,11 @@ import org.move.utils.rootService
 
 data class GitDependency(
     val git: String,
+    val branch: String?,
+    val rev: String?,
+    val tag: String?,
+    val path: String?,
+    val local_paths: List<String>
 )
 
 data class PackageInfo(
@@ -22,13 +27,15 @@ data class PackageInfo(
 )
 
 data class LayoutInfo(
-    val module_dir: String,
-    val script_dir: String,
+    val modules_dir: String,
+    val scripts_dir: String,
     val tests_dir: String,
-    val module_output: String,
-    val script_output: String,
-    val target_deps: String,
-    val target: String,
+    val modules_output: String,
+    val scripts_output: String,
+    val transactions_output: String,
+    val bundles_output: String,
+    val deps: String,
+    val artifacts: String,
     val index: String,
 )
 
@@ -50,7 +57,7 @@ class MetadataService(private val project: Project) {
 
     fun refresh() {
         // clean previous state
-        this.metadata = null;
+        this.metadata = null
 
         val root = project.rootService.path ?: return
         val executable = project.getDoveExecutable() ?: return

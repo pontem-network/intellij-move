@@ -1,9 +1,11 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
+import com.intellij.psi.util.descendantsOfType
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MoveStructDef
 import org.move.lang.core.psi.MoveStructFieldDef
+import org.move.lang.core.psi.MoveStructSignature
 import org.move.lang.core.psi.MoveTypeParameter
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.types.StructType
@@ -20,6 +22,9 @@ val MoveStructDef.fieldsMap: Map<String, MoveStructFieldDef>
 val MoveStructDef.fieldNames: List<String>
     get() = fields.mapNotNull { it.name }
 
+fun MoveStructDef.getField(fieldName: String): MoveStructFieldDef? =
+    this.descendantsOfType<MoveStructFieldDef>()
+        .find { it.name == fieldName }
 
 abstract class MoveStructDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
                                                    MoveStructDef {
