@@ -1,13 +1,11 @@
 package org.move.lang.core.resolve
 
 import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiRecursiveVisitor
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
-import org.move.cli.metadataService
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -15,7 +13,7 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.HasType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.StructType
-import java.nio.file.Paths
+import org.move.openapiext.folders
 
 
 fun processItems(
@@ -131,32 +129,7 @@ fun processQualModuleRef(
     var isResolved = resolveQualModuleRefInFile(qualModuleRef, containingFile, processor)
     if (isResolved) return true
 
-    // fetch metadata, and end processing if not available
-    val metadata = project.metadataService.metadata ?: return true
-
-    val moduleFolders = listOf(
-        metadata.package_info.local_dependencies,
-        listOf(metadata.layout.modules_dir),
-        metadata.package_info.git_dependencies.flatMap { it.local_paths }
-    ).flatten()
-//    val moduleFolders = metadata.package_info.local_dependencies
-//    val moduleFolders = metadata.package_info.local_dependencies.toMutableList()
-//    moduleFolders.add(metadata.layout.module_dir)
-//    moduleFolders.addAll(metadata.package_info.git_dependencies.mapNotNull { it.local_path })
-//    val virtualFolders = mutableListOf<VirtualFile>()
-//    for (moduleFolder in moduleFolders) {
-//        val path = Paths.get(moduleFolder)
-//        if (path.exists()) {
-//            val virtualFolder =
-//                VirtualFileManager.getInstance().findFileByNioPath(path)
-//                    ?: continue
-//            virtualFolders.add(virtualFolder)
-//        }
-//    }
-    val virtualFolders = moduleFolders.mapNotNull {
-        VirtualFileManager.getInstance().findFileByNioPath(Paths.get(it))
-    }
-
+    val virtualFolders = project.folders()
     for (folder in virtualFolders) {
         if (isResolved) break
         VfsUtil.iterateChildrenRecursively(
