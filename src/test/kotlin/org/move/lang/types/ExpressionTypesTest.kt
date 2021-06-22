@@ -3,6 +3,87 @@ package org.move.lang.types
 import org.move.utils.tests.types.TypificationTestCase
 
 class ExpressionTypesTest: TypificationTestCase() {
+    fun `test add expr`() = testExpr("""
+    script {
+        fun main() {
+            (1u8 + 1u8);
+          //^ u8
+        }
+    }    
+    """)
+
+    fun `test sub expr`() = testExpr("""
+    script {
+        fun main() {
+            (1u8 - 1u8);
+          //^ u8
+        }
+    }    
+    """)
+
+    fun `test mul expr`() = testExpr("""
+    script {
+        fun main() {
+            (1u8 * 1u8);
+          //^ u8
+        }
+    }    
+    """)
+
+    fun `test div expr`() = testExpr("""
+    script {
+        fun main() {
+            (1u8 / 1u8);
+          //^ u8
+        }
+    }    
+    """)
+
+    fun `test mod expr`() = testExpr("""
+    script {
+        fun main() {
+            (1u8 % 10);
+          //^ u8
+        }
+    }    
+    """)
+
+    fun `test bang expr`() = testExpr("""
+    script {
+        fun main() {
+            !true;
+          //^ bool
+        }
+    }    
+    """)
+
+    fun `test cast expr`() = testExpr("""
+    script {
+        fun main() {
+            (1 as u8);
+          //^ u8
+        }
+    }    
+    """)
+
+    fun `test copy expr`() = testExpr("""
+    script {
+        fun main() {
+            copy 1u8;
+          //^ u8
+        }
+    }    
+    """)
+
+    fun `test move expr`() = testExpr("""
+    script {
+        fun main() {
+            move 1u8;
+          //^ u8
+        }
+    }    
+    """)
+
     fun `test struct literal expr with unresolved type param`() = testExpr("""
     module M {
         struct R<CoinType> {}

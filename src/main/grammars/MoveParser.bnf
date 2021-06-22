@@ -743,16 +743,34 @@ BitAndExpr ::= Expr (!andand '&') Expr
 BitXorExpr ::= Expr '^' Expr
 
 CastExpr ::= Expr as Type
+{
+    mixin = "org.move.lang.core.psi.ext.MoveCastExprMixin"
+}
 
 private AnnotatedExpPrefix ::= '(' Expr ':'
 AnnotatedExpr ::= AnnotatedExpPrefix Type ')' { pin = 1 }
 
-DivExpr ::= Expr '/' Expr
 MulExpr ::= Expr '*' Expr
-ModExpr ::= Expr '%' Expr
-
+{
+    mixin = "org.move.lang.core.psi.ext.MoveMulExprMixin"
+}
+DivExpr ::= Expr '/' Expr
+{
+    mixin = "org.move.lang.core.psi.ext.MoveDivExprMixin"
+}
 PlusExpr ::= Expr '+' Expr
+{
+    mixin = "org.move.lang.core.psi.ext.MovePlusExprMixin"
+}
 MinusExpr ::= Expr '-' Expr
+{
+    mixin = "org.move.lang.core.psi.ext.MoveMinusExprMixin"
+}
+
+ModExpr ::= Expr '%' Expr
+{
+    mixin = "org.move.lang.core.psi.ext.MoveModExprMixin"
+}
 
 LeftShiftExpr ::= Expr ltlt Expr
 RightShiftExpr ::= Expr gtgt Expr
@@ -762,12 +780,20 @@ ImplyOperatorExpr ::= Expr eqeq_gt Expr
 PartialImplyOperatorExpr ::= Expr lt_eqeq_gt Expr
 
 BangExpr ::= '!' Expr
+{ mixin = "org.move.lang.core.psi.ext.MoveBangExprMixin" }
+
 DerefExpr ::= '*' Expr
 {
     mixin = "org.move.lang.core.psi.ext.MoveDerefExprMixin"
 }
 CopyExpr ::= copy Expr
+{
+    mixin = "org.move.lang.core.psi.ext.MoveCopyExprMixin"
+}
 MoveExpr ::= move Expr
+{
+    mixin = "org.move.lang.core.psi.ext.MoveMoveExprMixin"
+}
 
 ReturnExpr ::= return Expr?
 AbortExpr ::= abort Expr
