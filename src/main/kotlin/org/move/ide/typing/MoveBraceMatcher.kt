@@ -157,7 +157,6 @@ class MoveBraceMatcher : PairedBraceMatcherAdapter(MovePairedBraceMatcher(), Mov
 //                EQ,
                 COLON_COLON,
 //                INTEGER_LITERAL,
-                RESOURCE,
 //                AND, MUT, CONST, MUL,
 //                EXCL
             )

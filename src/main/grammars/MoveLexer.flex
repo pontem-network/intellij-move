@@ -64,12 +64,14 @@ WHITE_SPACE      = {WHITE_SPACE_CHAR}+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Literals
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+SENDER_ADDRESS_LITERAL=\{\{sender\}\}
 ADDRESS_LITERAL=0x[0-9a-fA-F]{1,40}
 BECH32_ADDRESS_LITERAL=wallet1[A-Z0-9a-z&&[^boi1]]{6,83}
 POLKADOT_ADDRESS_LITERAL=[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*
 
 BOOL_LITERAL=(true)|(false)
 INTEGER_LITERAL=[0-9]+((u8)|(u64)|(u128))?
+HEX_STRING_LITERAL=x\"([A-F0-9a-f]*)\"
 BYTE_STRING_LITERAL=b\"(.*)\"
 
 IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
@@ -122,7 +124,6 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "public"         { yybegin(YYINITIAL); return PUBLIC; }
       "fun"            { yybegin(YYINITIAL); return FUN; }
       "acquires"       { return ACQUIRES; }
-      "resource"       { yybegin(YYINITIAL); return RESOURCE; }
       "struct"         { yybegin(YYINITIAL); return STRUCT; }
       "use"            { yybegin(YYINITIAL); return USE; }
       "as"             { return AS; }
@@ -189,6 +190,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
   "pack"                           { return PACK; }
   "unpack"                         { return UNPACK; }
   "apply"                          { return APPLY; }
+  "emits"                          { return EMITS; }
   "to"                             { return TO; }
   "except"                         { return EXCEPT; }
   "forall"                         { return FORALL; }
@@ -197,11 +199,13 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 }
 
 <YYINITIAL, BEGIN_SPEC, IN_SPEC> {
+  {SENDER_ADDRESS_LITERAL}          { return SENDER_ADDRESS_LITERAL; }
   {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
   {BECH32_ADDRESS_LITERAL}          { return BECH32_ADDRESS_LITERAL; }
   {POLKADOT_ADDRESS_LITERAL}          { return POLKADOT_ADDRESS_LITERAL; }
   {BOOL_LITERAL}             { return BOOL_LITERAL; }
   {INTEGER_LITERAL}          { return INTEGER_LITERAL; }
+  {HEX_STRING_LITERAL}       { return HEX_STRING_LITERAL; }
   {BYTE_STRING_LITERAL}      { return BYTE_STRING_LITERAL; }
   {IDENTIFIER}               { return IDENTIFIER; }
 }

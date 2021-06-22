@@ -66,17 +66,17 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
             LookupElementBuilder
                 .createWithIcon(this)
                 .withLookupString(this.name ?: "")
-                .withInsertHandler { context, _ ->
-                    val document = context.document
-                    if (!context.alreadyHasColonColon) {
-                        document.insertString(context.selectionEndOffset, "::")
-                        EditorModificationUtil.moveCaretRelatively(
-                            context.editor,
-                            2
-                        )
-                        AutoPopupController.getInstance(context.project).scheduleAutoPopup(context.editor)
-                    }
-                }
+//                .withInsertHandler { context, _ ->
+//                    val document = context.document
+//                    if (!context.alreadyHasColonColon) {
+//                        document.insertString(context.selectionEndOffset, "::")
+//                        EditorModificationUtil.moveCaretRelatively(
+//                            context.editor,
+//                            2
+//                        )
+//                        AutoPopupController.getInstance(context.project).scheduleAutoPopup(context.editor)
+//                    }
+//                }
 
         is MoveFunctionSignatureOwner -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
@@ -99,7 +99,7 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
 
         is MoveConstDef -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
-            .withTypeText(this.type?.text)
+            .withTypeText(this.typeAnnotation?.type?.text)
 
         is MoveModuleDef -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
@@ -117,11 +117,11 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
         is MoveStructFieldDef -> LookupElementBuilder
             .createWithIcon(this)
             .withLookupString(this.name ?: "")
-            .withTypeText(this.type?.text)
+            .withTypeText(this.typeAnnotation?.type?.text)
 
         is MoveFunctionParameter -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
-            .withTypeText(this.type?.text)
+            .withTypeText(this.typeAnnotation?.type?.text)
 
         is MoveBindingPat -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")

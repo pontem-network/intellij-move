@@ -5,9 +5,12 @@ import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import org.move.lang.MoveElementTypes.SPEC_BLOCK
 import org.move.lang.core.psi.*
+import org.move.settings.collapseSpecs
 
 class MoveFoldingBuilder : FoldingBuilderEx(),
                            DumbAware {
@@ -29,13 +32,15 @@ class MoveFoldingBuilder : FoldingBuilderEx(),
     }
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean {
-        return false
+        return node.psi.project.collapseSpecs
+                && node.elementType == SPEC_BLOCK
     }
 
     private class FoldingVisitor(private val descriptors: MutableList<FoldingDescriptor>) : MoveVisitor() {
         override fun visitCodeBlock(o: MoveCodeBlock) = fold(o)
         override fun visitScriptBlock(o: MoveScriptBlock) = fold(o)
         override fun visitModuleBlock(o: MoveModuleBlock) = fold(o)
+        override fun visitSpecBlock(o: MoveSpecBlock) = fold(o)
 
         override fun visitFunctionParameterList(o: MoveFunctionParameterList) {
             if (o.functionParameterList.isNotEmpty())

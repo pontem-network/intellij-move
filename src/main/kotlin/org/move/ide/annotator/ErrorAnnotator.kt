@@ -5,6 +5,7 @@ import com.intellij.psi.PsiElement
 import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.types.BaseType
 import org.move.lang.core.types.HasType
 import org.move.lang.core.types.StructType
 import org.move.lang.core.types.TypeParamType
@@ -51,6 +52,33 @@ class ErrorAnnotator : MoveAnnotator() {
                     o.providedFieldNames.toSet(),
                     referredStructDef
                 )
+
+                for (field in o.structLiteralFieldsBlock.structLiteralFieldList) {
+                    val assignmentExpr = field.structLiteralFieldAssignment?.expr ?: continue
+                    val assignmentType = assignmentExpr.resolvedType(emptyMap())
+                    if (assignmentType == null) continue
+
+                    val fieldName = field.referenceName ?: continue
+                    val fieldDef = referredStructDef.getField(fieldName) ?: continue
+                    val expectedFieldType = fieldDef.resolvedType(emptyMap())
+                    if (expectedFieldType is TypeParamType) {
+                        checkHasRequiredAbilities(moveHolder, assignmentExpr, expectedFieldType)
+                        return
+                    }
+                    val exprType = assignmentExpr.resolvedType(emptyMap())
+                    if (expectedFieldType != null
+                        && exprType != null
+                        && !expectedFieldType.compatibleWith(exprType)
+                    ) {
+                        val exprTypeName = exprType.typeLabel(relativeTo = o)
+                        val expectedTypeName = expectedFieldType.typeLabel(relativeTo = o)
+
+                        val message =
+                            "Invalid argument for field '$fieldName': " +
+                                    "type '$exprTypeName' is not compatible with '$expectedTypeName'"
+                        moveHolder.createErrorAnnotation(assignmentExpr, message)
+                    }
+                }
             }
 
             override fun visitQualPath(o: MoveQualPath) = checkQualPath(moveHolder, o)
@@ -74,11 +102,12 @@ class ErrorAnnotator : MoveAnnotator() {
     private fun checkStructFieldDef(holder: MoveAnnotationHolder, structField: MoveStructFieldDef) {
         checkDuplicates(holder, structField)
 
-        val parentStructType = structField.structDef?.structType ?: return
-        val structAbilities = parentStructType.abilities()
+        val signature = structField.structDef?.structSignature ?: return
+        val structType = StructType(signature)
+        val structAbilities = structType.abilities()
         if (structAbilities.isEmpty()) return
 
-        val fieldType = structField.typeAnnotation?.type?.resolvedType() as? StructType ?: return
+        val fieldType = structField.typeAnnotation?.type?.resolvedType(emptyMap()) as? StructType ?: return
 
         for (ability in structAbilities) {
             val requiredAbility = ability.requires()
@@ -86,7 +115,7 @@ class ErrorAnnotator : MoveAnnotator() {
                 val message =
                     "The type '${fieldType.name()}' does not have the ability '${requiredAbility.label()}' " +
                             "required by the declared ability '${ability.label()}' " +
-                            "of the struct '${parentStructType.name()}'"
+                            "of the struct '${structType.name()}'"
                 holder.createErrorAnnotation(structField, message)
                 return
             }
@@ -133,25 +162,26 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
         }
     }
 
+    val callExprTypeVars = callExpr.typeVars
     for ((i, expr) in arguments.exprList.withIndex()) {
         val parameter = signature.parameters[i]
-        val paramType = parameter.type?.resolvedType()
-        if (paramType is TypeParamType) {
-            checkHasRequiredAbilities(holder, expr, paramType)
-            continue
+        val expectedType = parameter.resolvedType(callExprTypeVars)
+        if (expectedType is TypeParamType) {
+            checkHasRequiredAbilities(holder, expr, expectedType)
+            return
         }
 
-        val exprType = expr.resolvedType()
-        if (paramType != null && exprType != null
-            && !paramType.compatibleWith(exprType)
+        val exprType = expr.resolvedType(emptyMap())
+        if (expectedType != null && exprType != null
+            && !expectedType.compatibleWith(exprType)
         ) {
             val paramName = parameter.name ?: continue
             val exprTypeName = exprType.typeLabel(relativeTo = arguments)
-            val paramTypeName = paramType.typeLabel(relativeTo = arguments)
+            val expectedTypeName = expectedType.typeLabel(relativeTo = arguments)
 
             val message =
                 "Invalid argument for parameter '$paramName': " +
-                        "type '$exprTypeName' is not compatible with '$paramTypeName'"
+                        "type '$exprTypeName' is not compatible with '$expectedTypeName'"
             holder.createErrorAnnotation(expr, message)
         }
     }
@@ -213,7 +243,7 @@ private fun checkQualPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) 
 
             for ((i, typeArgument) in typeArguments.withIndex()) {
                 val typeParam = referred.typeParameters[i]
-                val typeParamType = typeParam.resolvedType() as? TypeParamType ?: continue
+                val typeParamType = typeParam.resolvedType(emptyMap()) as? TypeParamType ?: continue
                 checkHasRequiredAbilities(
                     holder,
                     typeArgument.type,
@@ -228,7 +258,9 @@ private fun checkHasRequiredAbilities(
     holder: MoveAnnotationHolder,
     element: HasType, typeParamType: TypeParamType
 ) {
-    val elementType = element.resolvedType() ?: return
+    val elementType = element.resolvedType(emptyMap()) ?: return
+    // do not check for specs
+    if (element.ancestorStrict<MoveSpecDef>() != null) return
 
     val abilities = elementType.abilities()
     for (ability in typeParamType.abilities()) {

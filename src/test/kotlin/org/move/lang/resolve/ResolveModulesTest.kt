@@ -3,17 +3,24 @@ package org.move.lang.resolve
 import org.move.utils.tests.resolve.ResolveTestCase
 
 class ResolveModulesTest : ResolveTestCase() {
-//    fun `test resolve module to imported module`() = checkByCode(
-//        """
-//        module M {
-//            use 0x1::Transaction;
-//            fun main() {
-//                let a = Transaction::create();
-//                      //^
-//            }
-//        }
-//    """
-//    )
+    fun `test import module itself with Self import`() = checkByCode(
+        """
+    address 0x1 {
+        module Transaction {
+             //X
+            fun create() {}
+        }
+        
+        module M {
+            use 0x1::Transaction::Self;
+            fun main() {
+                let a = Transaction::create();
+                      //^
+            }
+        }
+    }        
+    """
+    )
 
     fun `test resolve Self to current module`() = checkByCode(
         """

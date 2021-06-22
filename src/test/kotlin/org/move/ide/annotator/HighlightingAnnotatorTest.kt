@@ -71,4 +71,23 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
         }
     """
     )
+
+    fun `test imported Self as keyword`() = checkHighlighting(
+        """
+    module M {
+        use 0x1::Transaction::<KEYWORD>Self</KEYWORD>
+    }
+        """
+    )
+
+    fun `test copy is keyword`() = checkHighlighting(
+        """
+    module M {
+        struct S has copy {}
+        fun main() {
+            let a = <KEYWORD>copy</KEYWORD> 1;
+        }
+    }
+        """
+    )
 }

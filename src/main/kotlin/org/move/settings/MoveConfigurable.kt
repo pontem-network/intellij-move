@@ -12,15 +12,22 @@ class MoveConfigurable(val project: Project) : BoundConfigurable("Move"),
 
     private val settingsPanel = MoveProjectSettingsPanel(project)
 
+    private val state: MoveProjectSettingsService.State = project.moveSettings.settingsState
+
     override fun createPanel(): DialogPanel {
         return panel {
             settingsPanel.attachTo(this)
+            row {
+                checkBox("Collapse specs by default", state::collapseSpecs)
+            }
         }
     }
 
     override fun disposeUIResources() {
+        val dovePath = settingsPanel.selectedExecutablePath()
+        val collapseSpecs = this.state.collapseSpecs
         project.moveSettings.settingsState =
-            MoveProjectSettingsService.State(settingsPanel.selectedExecutablePath())
+            MoveProjectSettingsService.State(dovePath, collapseSpecs)
 
         super.disposeUIResources()
         Disposer.dispose(settingsPanel)

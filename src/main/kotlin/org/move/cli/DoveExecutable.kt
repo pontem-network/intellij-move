@@ -35,6 +35,25 @@ class DoveExecutable(private val project: Project, private val dovePath: Path) {
         }
     }
 
+    fun tomlValidate(doveProjectRoot: Path): ValidationOutput? {
+        try {
+            val (out, err) = runExecutable(doveProjectRoot.toFile(), "metadata", "--validate")
+            if (err.isNotEmpty()) {
+                MoveNotifications.pluginNotifications()
+                    .createNotification(err, NotificationType.ERROR)
+                    .notify(project)
+                return null
+            }
+            return try {
+                Gson().fromJson(out, ValidationOutput::class.java)
+            } catch (e: JsonSyntaxException) {
+                null
+            }
+        } catch (e: ProcessNotCreatedException) {
+            return null
+        }
+    }
+
     fun metadata(doveProjectRoot: Path): DoveProjectMetadata? {
         try {
             val (out, err) = runExecutable(doveProjectRoot.toFile(), "metadata")

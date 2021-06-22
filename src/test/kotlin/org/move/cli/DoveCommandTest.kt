@@ -25,12 +25,12 @@ class DoveCommandTest : MoveTestBase() {
 
         val metadata = project.metadataService.metadata
         check(metadata != null) { "Metadata is null" }
-        check(metadata.package_info.dialect == "dfinance")
+        check(metadata.package_info.dialect == "pont")
         check(
             metadata.package_info.local_dependencies == listOf(
                 moveProjectRoot.resolve("stdlib").toAbsolutePath().toString()
             )
         )
-        check(metadata.package_info.account_address == "0x0000000000000000000000000000000000000000000000000000000000000001")
+        check(metadata.package_info.account_address == "0x1")
     }
 }

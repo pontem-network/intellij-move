@@ -69,7 +69,7 @@ object MovePsiPatterns {
 
     fun specIdentifier(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
-            .withSuperParent<MoveItemSpecDef>(2)
+            .withSuperParent<MoveSpecDef>(2)
 
     fun whitespace() = PlatformPatterns.psiElement().whitespaceCommentEmptyOrError()
 

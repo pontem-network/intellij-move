@@ -31,17 +31,17 @@ class StructsCompletionTest: CompletionTestCase() {
         }
     """)
 
-    fun `test struct spec`() = doSingleCompletion("""
-        module M {
-            struct Frobnicate {}
-            spec struct Frob/*caret*/
-        }
-    """, """
-        module M {
-            struct Frobnicate {}
-            spec struct Frobnicate /*caret*/
-        }
-    """)
+//    fun `test struct spec`() = doSingleCompletion("""
+//        module M {
+//            struct Frobnicate {}
+//            spec struct Frob/*caret*/
+//        }
+//    """, """
+//        module M {
+//            struct Frobnicate {}
+//            spec struct Frobnicate /*caret*/
+//        }
+//    """)
 
     fun `test type parameters accessible in fields types completion`() = doSingleCompletion("""
         module M {

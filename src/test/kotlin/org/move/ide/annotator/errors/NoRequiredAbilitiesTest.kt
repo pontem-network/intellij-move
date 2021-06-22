@@ -98,4 +98,13 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
         }
     }    
     """)
+
+    fun `test no error in specs`() = checkErrors("""
+    module M {
+        fun balance<Token: store>() {}
+        spec schema PayFromEnsures<Token> {
+            ensures balance<Token>();
+        }
+    }    
+    """)
 }

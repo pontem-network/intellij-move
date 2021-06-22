@@ -1,10 +1,9 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.MoveFullyQualifiedModuleRef
-import org.move.lang.core.psi.MoveQualPath
-import org.move.lang.core.psi.MoveType
-import org.move.lang.core.psi.MoveTypeArgument
+import org.move.lang.core.psi.*
 import org.move.lang.core.types.Address
+import org.move.lang.core.types.BaseType
+import org.move.lang.core.types.TypeVarsMap
 
 
 val MoveQualPath.address: Address? get() = (moduleRef as? MoveFullyQualifiedModuleRef)?.addressRef?.address()
@@ -18,7 +17,6 @@ val MoveQualPath.isIdentifierOnly: Boolean get() = moduleRef == null
 val MoveQualPath.typeArguments: List<MoveTypeArgument>
     get() =
         typeArgumentList?.typeArgumentList.orEmpty()
-
 
 //abstract class MoveQualPathMixin(node: ASTNode) : MoveReferenceElementImpl(node),
 //                                                       MoveQualPath {

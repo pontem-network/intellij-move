@@ -20,7 +20,7 @@
         <![CDATA[
             <p>0.12.0</p>
             <p>Support for Intellij IDEA 2021.1</p>
-            <p>Add new Diem syntax support</p>
+            <p>Update syntax to Move 1.2</p>
             <p>Add support for Polkadot addresses</p>
             <p>Fix module resolution false-positive if Dove is not configured</p>
         ]]>
@@ -41,7 +41,11 @@
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
+        <lang.documentationProvider language="Move"
+                                    implementationClass="org.move.ide.docs.MoveDocumentationProvider"/>
         <!--        <stubElementTypeHolder class="org.move.lang.MoveElementTypes"/>-->
+        <gotoSymbolContributor implementation="org.move.ide.navigation.MoveSymbolNavigationContributor"/>
+        <gotoClassContributor implementation="org.move.ide.navigation.MoveStructNavigationContributor"/>
 
         <lang.syntaxHighlighter language="Move"
                                 implementationClass="org.move.ide.MoveHighlighter"/>

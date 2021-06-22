@@ -6,7 +6,7 @@ import org.move.lang.core.psi.MoveLiteralExpr
 import org.move.lang.core.types.*
 
 abstract class MoveLiteralExprMixin(node: ASTNode) : MoveElementImpl(node), MoveLiteralExpr {
-    override fun resolvedType(): BaseType? {
+    override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
         return when {
             boolLiteral != null -> PrimitiveType("bool")
             addressLiteral != null
@@ -21,7 +21,7 @@ abstract class MoveLiteralExprMixin(node: ASTNode) : MoveElementImpl(node), Move
                     else -> IntegerType()
                 }
             }
-            byteStringLiteral != null -> VectorType(PrimitiveType("u8"))
+            byteStringLiteral != null -> VectorType(IntegerType("u8"))
             else -> null
         }
     }

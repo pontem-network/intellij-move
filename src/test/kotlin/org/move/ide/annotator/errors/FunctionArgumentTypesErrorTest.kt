@@ -46,7 +46,38 @@ class FunctionArgumentTypesErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
             is_none(opt)
         } 
     }    
-    """)
+    """
+    )
+
+    fun `test different generic types`() = checkErrors(
+        """
+    module M {
+        struct Option<Element> {}
+        fun is_none<Elem>(t: Option<u64>): bool {
+            true
+        }
+        fun main() {
+            let opt = Option<u8> {};
+            is_none(<error descr="Invalid argument for parameter 't': type 'Option<u8>' is not compatible with 'Option<u64>'">opt</error>)
+        } 
+    }    
+    """
+    )
+
+    fun `test different generic types for references`() = checkErrors(
+        """
+    module M {
+        struct Option<Element> {}
+        fun is_none<Elem>(t: &Option<u64>): bool {
+            true
+        }
+        fun main() {
+            let opt = &Option<u8> {};
+            is_none(<error descr="Invalid argument for parameter 't': type '&Option<u8>' is not compatible with '&Option<u64>'">opt</error>)
+        } 
+    }    
+    """
+    )
 
     fun `test immutable reference is not compatible with mutable reference`() = checkErrors("""
     module M {
@@ -56,8 +87,8 @@ class FunctionArgumentTypesErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
         fun is_none<Element>(t: &mut Option<Element>): bool {
             true
         }
-        fun main(opt: &Option<Element>) {
-            is_none(<error descr="Invalid argument for parameter 't': type '&Option' is not compatible with '&mut Option'">opt</error>)
+        fun main<Element>(opt: &Option<Element>) {
+            is_none(<error descr="Invalid argument for parameter 't': type '&Option<Element>' is not compatible with '&mut Option<Element>'">opt</error>)
         } 
     }    
     """)
@@ -105,5 +136,49 @@ address 0x1 {
         }
     }
 }
+    """)
+
+    fun `test bytearray is vector of u8`() = checkErrors("""
+        module M {
+            fun send(a: vector<u8>) {}
+            fun main() {
+                let a = b"deadbeef";
+                send(a)
+            }
+        }        
+    """)
+
+    fun `test no error for compatible generic with explicit parameter`() = checkErrors("""
+    module M {
+        struct Diem<CoinType> has store { val: u64 }
+        struct Balance<Token> has key {
+            coin: Diem<Token>
+        }
+        
+        fun value<CoinType: store>(coin: &Diem<CoinType>) {}
+        
+        fun main<Token: store>() {
+            let balance: Balance<Token>;
+            let coin = &balance.coin;
+            value<Token>(coin)
+        }
+    }        
+    """)
+
+    fun `test no error for compatible generic with inferred parameter`() = checkErrors("""
+    module M {
+        struct Diem<CoinType> has store { val: u64 }
+        struct Balance<Token> has key {
+            coin: Diem<Token>
+        }
+        
+        fun value<CoinType: store>(coin: &Diem<CoinType>) {}
+        
+        fun main<Token: store>() {
+            let balance: Balance<Token>;
+            let coin = &balance.coin;
+            value(coin)
+        }
+    }        
     """)
 }

@@ -1,22 +1,18 @@
 package org.move.lang.core.resolve
 
-import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiRecursiveVisitor
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
-import org.move.cli.metadataService
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.types.HasType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.StructType
-import org.move.stdext.chain
-import java.nio.file.Paths
-
+import org.move.openapiext.folders
+import org.move.utils.iterateOverMoveFiles
 
 fun processItems(
     element: MoveReferenceElement,
@@ -131,30 +127,23 @@ fun processQualModuleRef(
     var isResolved = resolveQualModuleRefInFile(qualModuleRef, containingFile, processor)
     if (isResolved) return true
 
-    // fetch metadata, and end processing if not available
-    val metadata = project.metadataService.metadata ?: return true
-//    val metadata = project.metadataService.metadata ?: return processor.match(Stop())
-
-    val moduleFolders = metadata.package_info
-        .local_dependencies
-        .chain(listOf(metadata.layout.module_dir))
-        .mapNotNull {
-            VirtualFileManager.getInstance().findFileByNioPath(Paths.get(it))
-        }
-
-    for (folder in moduleFolders) {
+    val virtualFolders = project.folders()
+    for (folder in virtualFolders) {
         if (isResolved) break
-        VfsUtil.iterateChildrenRecursively(
-            folder,
-            { it.isDirectory || it.extension == "move" })
-        { file ->
-            if (file.isDirectory) return@iterateChildrenRecursively true
-            val moduleFile = PsiManager.getInstance(project).findFile(file) as? MoveFile
-                ?: return@iterateChildrenRecursively true
-            isResolved = resolveQualModuleRefInFile(qualModuleRef, moduleFile, processor)
-            // will continue processing if true
+        iterateOverMoveFiles(project, folder) { moveFile ->
+            isResolved = resolveQualModuleRefInFile(qualModuleRef, moveFile, processor)
             !isResolved
         }
+//        VfsUtil.iterateChildrenRecursively(
+//            folder,
+//            { it.isDirectory || it.extension == "move" })
+//        { file ->
+//            if (file.isDirectory) return@iterateChildrenRecursively true
+//            val moduleFile = PsiManager.getInstance(project).findFile(file) as? MoveFile
+//                ?: return@iterateChildrenRecursively true
+//            // will continue processing if true
+//            !isResolved
+//        }
     }
 //    if (!isResolved) {
 //        // search current file for modules too
@@ -191,9 +180,11 @@ fun processLexicalDeclarations(
         Namespace.DOT_ACCESSED_FIELD -> {
             val dotExpr = scope as? MoveDotExpr ?: return false
             val refExpr = dotExpr.refExpr ?: return false
-            val referredTypedVar = refExpr.reference?.resolve() as? MoveTypeAnnotated ?: return false
 
-            val resolvedType = referredTypedVar.type?.resolvedType()
+            val referred = refExpr.reference?.resolve()
+            if (referred !is HasType) return false
+
+            val resolvedType = referred.resolvedType(emptyMap())
             val structDef = when (resolvedType) {
                 is StructType -> resolvedType.structDef()
                 is RefType -> resolvedType.referredStructDef()
@@ -230,9 +221,9 @@ fun processLexicalDeclarations(
                 }
                 return processorWithShadowing.matchAll(namedElements)
             }
-            is MoveSpecBlock -> {
-                processor.matchAll(scope.defineFunctionList)
-            }
+//            is MoveSpecBlock -> {
+//                processor.matchAll(scope.defineFunctionList)
+//            }
             is MoveModuleDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
@@ -257,7 +248,7 @@ fun processLexicalDeclarations(
             is MoveFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
             is MoveNativeFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
             is MoveStructDef -> processor.matchAll(scope.structSignature.typeParameters)
-            is MoveSchemaDef -> processor.matchAll(scope.typeParams)
+            is MoveSchemaSpecDef -> processor.matchAll(scope.typeParams)
             is MoveModuleDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
@@ -273,8 +264,8 @@ fun processLexicalDeclarations(
             )
             else -> false
         }
-        Namespace.SCHEMA -> when (scope) {
-            is MoveModuleDef -> processor.matchAll(scope.schemas())
+        Namespace.SCHEMA -> when {
+//            is MoveModuleDef -> processor.matchAll(scope.schemas())
             else -> false
         }
         Namespace.MODULE -> when (scope) {
@@ -282,7 +273,7 @@ fun processLexicalDeclarations(
                 listOf(
                     scope.moduleImports(),
                     scope.moduleImportAliases(),
-//                    scope.selfItemImports(),
+                    scope.selfItemImports(),
                 ).flatten(),
             )
             else -> false

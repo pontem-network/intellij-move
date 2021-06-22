@@ -127,8 +127,8 @@ fun MoveModuleDef.consts(): List<MoveConstDef> =
 //fun MoveModuleDef.publicConsts(): List<MoveConstDef> =
 //    consts().filter {  }
 
-fun MoveModuleDef.schemas(): List<MoveSchemaDef> =
-    moduleBlock?.itemSpecDefList.orEmpty().mapNotNull { it.schemaDef }
+//fun MoveModuleDef.schemas(): List<MoveSchemaDef> =
+//    moduleBlock?.itemSpecDefList.orEmpty().mapNotNull { it.schemaDef }
 
 
 abstract class MoveModuleDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
