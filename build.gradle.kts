@@ -2,7 +2,7 @@ import org.jetbrains.grammarkit.tasks.GenerateLexer
 import org.jetbrains.grammarkit.tasks.GenerateParser
 
 val intellijVersion = prop("intellijVersion", "2021.1.1")
-val kotlinVersion = "1.4.32"
+val kotlinVersion = "1.5.20"
 
 val pluginJarName = "intellij-move-$intellijVersion"
 val pluginGroup = "org.move"
@@ -13,8 +13,8 @@ version = pluginVersion
 
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "0.7.2"
-    id("org.jetbrains.kotlin.jvm") version "1.4.32"
+    id("org.jetbrains.intellij") version "1.0"
+    id("org.jetbrains.kotlin.jvm") version "1.5.20"
     id("org.jetbrains.grammarkit") version "2021.1.1"
 }
 
@@ -39,8 +39,8 @@ allprojects {
     }
 
     intellij {
-        pluginName = pluginJarName
-        version = intellijVersion
+        pluginName.set(pluginJarName)
+        version.set(intellijVersion)
     }
 
     configure<JavaPluginConvention> {
@@ -80,18 +80,18 @@ allprojects {
             dependsOn(generateRustLexer, generateRustParser)
             kotlinOptions {
                 jvmTarget = "11"
-                languageVersion = "1.4"
-                apiVersion = "1.4"
+                languageVersion = "1.5"
+                apiVersion = "1.5"
                 freeCompilerArgs = listOf("-Xjvm-default=compatibility")
             }
         }
 
         withType<org.jetbrains.intellij.tasks.BuildSearchableOptionsTask> {
-            jbrVersion("11_0_9_1b1202.1")
+            jbrVersion.set("11_0_9_1b1202.1")
         }
 
         withType<org.jetbrains.intellij.tasks.RunIdeTask> {
-            jbrVersion("11_0_9_1b1202.1")
+            jbrVersion.set("11_0_9_1b1202.1")
         }
     }
 }
