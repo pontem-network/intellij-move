@@ -1,6 +1,5 @@
 package org.move.lang.core.completion
 
-import com.intellij.codeInsight.AutoPopupController
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
@@ -8,7 +7,7 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.compactText
+import org.move.lang.core.psi.ext.parametersText
 
 const val DEFAULT_PRIORITY = 0.0
 
@@ -80,7 +79,7 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
 
         is MoveFunctionSignatureOwner -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
-            .withTailText(this.functionParameterList?.compactText ?: "()")
+            .withTailText(this.functionParameterList?.parametersText ?: "()")
             .withTypeText(this.returnType?.type?.text ?: "()")
             .withInsertHandler(insertHandler)
 //            .withInsertHandler { ctx, _ ->

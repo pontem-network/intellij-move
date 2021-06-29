@@ -86,8 +86,18 @@
         <codeInsight.parameterNameHints language="Move"
                                         implementationClass="org.move.ide.hints.parameter.MoveInlayParameterHintsProvider"/>
 
-        <defaultLiveTemplates file="liveTemplates/Move.xml" />
-        <liveTemplateContext implementation="org.move.ide.liveTemplates.MoveTemplateContext" />
+        <defaultLiveTemplates file="liveTemplates/Move.xml"/>
+        <liveTemplateContext implementation="org.move.ide.live_templates.MoveTemplateContext"/>
+
+        <lang.psiStructureViewFactory
+                language="Move"
+                implementationClass="org.move.ide.navigation.MoveStructureViewBuilderFactory"/>
+        <declarationRangeHandler
+                key="org.move.lang.core.psi.MoveModuleDef"
+                implementationClass="org.move.ide.navigation.ModuleDeclarationRangeHandler" />
+        <declarationRangeHandler
+                key="org.move.lang.core.psi.MoveFunctionDef"
+                implementationClass="org.move.ide.navigation.FunctionDeclarationRangeHandler" />
         <!--        <stubIndex implementation="org.move.lang.core.stubs.index.MoveNamedElementIndex"/>-->
 
         <!--        <localInspection language="Move" groupPath="Move" groupName="Naming"-->
