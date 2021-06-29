@@ -18,7 +18,7 @@
 
     <change-notes>
         <![CDATA[
-            <p>0.12.0</p>
+            <p>0.13.0</p>
             <p>Support for Intellij IDEA 2021.1</p>
             <p>Update syntax to Move 1.2</p>
             <p>Add support for Polkadot addresses</p>
@@ -86,6 +86,8 @@
         <codeInsight.parameterNameHints language="Move"
                                         implementationClass="org.move.ide.hints.parameter.MoveInlayParameterHintsProvider"/>
 
+        <defaultLiveTemplates file="liveTemplates/Move.xml" />
+        <liveTemplateContext implementation="org.move.ide.liveTemplates.MoveTemplateContext" />
         <!--        <stubIndex implementation="org.move.lang.core.stubs.index.MoveNamedElementIndex"/>-->
 
         <!--        <localInspection language="Move" groupPath="Move" groupName="Naming"-->
