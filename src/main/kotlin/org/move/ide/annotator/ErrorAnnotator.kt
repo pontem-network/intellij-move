@@ -5,7 +5,6 @@ import com.intellij.psi.PsiElement
 import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.BaseType
 import org.move.lang.core.types.HasType
 import org.move.lang.core.types.StructType
 import org.move.lang.core.types.TypeParamType
@@ -22,17 +21,32 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitStructSignature(o: MoveStructSignature) {
                 checkStructSignature(moveHolder, o)
             }
-//            override fun visitFunctionDef(o: MoveFunctionDef) = checkFunctionDef(moveHolder, o)
-//            override fun visitNativeFunctionDef(o: MoveNativeFunctionDef) =
-//                checkNativeFunctionDef(moveHolder, o)
-
             override fun visitModuleDef(o: MoveModuleDef) = checkModuleDef(moveHolder, o)
 
-            //            override fun visitStructDef(o: MoveStructDef) = checkStructDef(moveHolder, o)
-//            override fun visitNativeStructDef(o: MoveNativeStructDef) = checkNativeStructDef(moveHolder, o)
             override fun visitStructFieldDef(o: MoveStructFieldDef) = checkStructFieldDef(moveHolder, o)
 
-//            override fun visitQualPath(o: MoveQualPath) = checkTypeArguments(moveHolder, o)
+            override fun visitCallExpr(o: MoveCallExpr) {
+                if (o.referenceName !in ACQUIRES_BUILTIN_FUNCTIONS) return
+
+                val paramTypeArgument = o.qualPath.typeArguments.getOrNull(0) ?: return
+                val paramType = paramTypeArgument.type.resolvedType(emptyMap()) ?: return
+                if (paramType !is StructType) return
+                val paramTypeName = paramType.name()
+
+                val surroundingFunctionDef = o.ancestorStrict<MoveFunctionDef>() ?: return
+                val signature = surroundingFunctionDef.functionSignature ?: return
+                val name = signature.name ?: return
+                val acquiresTypeNames =
+                    signature.acquiresType?.qualPathTypeList.orEmpty()
+                        .map { it.resolvedType(emptyMap()) as? StructType ?: return }
+                        .map { it.name() }
+                if (paramTypeName !in acquiresTypeNames) {
+                    moveHolder.createErrorAnnotation(
+                        o,
+                        "Function '$name' is not marked as 'acquires $paramTypeName'"
+                    )
+                }
+            }
 
             override fun visitCallArguments(o: MoveCallArguments) = checkCallArguments(moveHolder, o)
 

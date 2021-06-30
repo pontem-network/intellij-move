@@ -16,8 +16,9 @@ val PRIMITIVE_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("bool")
 val PRIMITIVE_BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer")
 val BUILTIN_TYPE_IDENTIFIERS = PRIMITIVE_BUILTIN_TYPE_IDENTIFIERS + setOf("vector")
 
+val ACQUIRES_BUILTIN_FUNCTIONS = setOf("move_from", "borrow_global", "borrow_global_mut")
 val BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE =
-    setOf("move_from", "borrow_global", "borrow_global_mut", "exists", "freeze")
+    ACQUIRES_BUILTIN_FUNCTIONS + setOf("exists", "freeze")
 val BUILTIN_FUNCTIONS =
     BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE + setOf("assert", "move_to")
 
