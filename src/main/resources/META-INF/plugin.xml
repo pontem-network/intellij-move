@@ -130,6 +130,11 @@
         <editorNotificationProvider
                 implementation="org.move.ide.notifications.InvalidDoveExecutableNotificationsProvider"/>
 
+        <intentionAction>
+            <className>org.move.ide.intentions.AddAcquiresIntention</className>
+            <category>Move</category>
+        </intentionAction>
+
     </extensions>
 
     <projectListeners>

@@ -7,6 +7,7 @@ package org.move.openapiext
 
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -50,3 +51,23 @@ val DataContext.editor: Editor?
 
 val DataContext.project: Project?
     get() = getData(CommonDataKeys.PROJECT)
+
+fun checkWriteAccessAllowed() {
+    check(ApplicationManager.getApplication().isWriteAccessAllowed) {
+        "Needs write action"
+    }
+}
+
+fun checkWriteAccessNotAllowed() {
+    check(!ApplicationManager.getApplication().isWriteAccessAllowed)
+}
+
+fun checkReadAccessAllowed() {
+    check(ApplicationManager.getApplication().isReadAccessAllowed) {
+        "Needs read action"
+    }
+}
+
+fun checkReadAccessNotAllowed() {
+    check(!ApplicationManager.getApplication().isReadAccessAllowed)
+}

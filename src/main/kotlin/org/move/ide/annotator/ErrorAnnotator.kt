@@ -21,6 +21,7 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitStructSignature(o: MoveStructSignature) {
                 checkStructSignature(moveHolder, o)
             }
+
             override fun visitModuleDef(o: MoveModuleDef) = checkModuleDef(moveHolder, o)
 
             override fun visitStructFieldDef(o: MoveStructFieldDef) = checkStructFieldDef(moveHolder, o)
@@ -28,23 +29,24 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitCallExpr(o: MoveCallExpr) {
                 if (o.referenceName !in ACQUIRES_BUILTIN_FUNCTIONS) return
 
-                val paramTypeArgument = o.qualPath.typeArguments.getOrNull(0) ?: return
-                val paramType = paramTypeArgument.type.resolvedType(emptyMap()) ?: return
-                if (paramType !is StructType) return
+                val paramType =
+                    o.typeArguments.getOrNull(0)
+                        ?.type?.resolvedType(emptyMap()) as? StructType ?: return
                 val paramTypeName = paramType.name()
 
-                val surroundingFunctionDef = o.ancestorStrict<MoveFunctionDef>() ?: return
-                val signature = surroundingFunctionDef.functionSignature ?: return
+                val containingFunction = o.containingFunction ?: return
+                val signature = containingFunction.functionSignature ?: return
+
                 val name = signature.name ?: return
-                val acquiresTypeNames =
-                    signature.acquiresType?.qualPathTypeList.orEmpty()
-                        .map { it.resolvedType(emptyMap()) as? StructType ?: return }
-                        .map { it.name() }
+                val errorMessage = "Function '$name' is not marked as 'acquires $paramTypeName'"
+                val acquiresType = signature.acquiresType
+                if (acquiresType == null) {
+                    moveHolder.createErrorAnnotation(o, errorMessage)
+                    return
+                }
+                val acquiresTypeNames = acquiresType.typeNames ?: return
                 if (paramTypeName !in acquiresTypeNames) {
-                    moveHolder.createErrorAnnotation(
-                        o,
-                        "Function '$name' is not marked as 'acquires $paramTypeName'"
-                    )
+                    moveHolder.createErrorAnnotation(o, errorMessage)
                 }
             }
 
