@@ -19,10 +19,8 @@
     <change-notes>
         <![CDATA[
             <p>0.13.0</p>
-            <p>Support for Intellij IDEA 2021.1</p>
-            <p>Update syntax to Move 1.2</p>
-            <p>Add support for Polkadot addresses</p>
-            <p>Fix module resolution false-positive if Dove is not configured</p>
+            <p>Add Structure View and code navigation support</p>
+            <p>Add 0x1::Debug::print() live template</p>
         ]]>
     </change-notes>
 

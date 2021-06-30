@@ -1,7 +1,7 @@
 import org.jetbrains.grammarkit.tasks.GenerateLexer
 import org.jetbrains.grammarkit.tasks.GenerateParser
 
-val intellijVersion = prop("intellijVersion", "2021.1.1")
+val intellijVersion = prop("intellijVersion", "2021.1.2")
 val kotlinVersion = "1.5.20"
 
 val pluginJarName = "intellij-move-$intellijVersion"
