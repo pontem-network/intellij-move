@@ -39,8 +39,9 @@ class MoveStructureViewElement(val element: NavigatablePsiElement) : StructureVi
         return when (element) {
             is MoveFile -> {
                 val elements =
-                    PsiTreeUtil.getChildrenOfTypeAsList(element, MoveModuleDef::class.java)
-                    .toMutableList<NavigatablePsiElement>()
+                    PsiTreeUtil
+                        .getChildrenOfTypeAsList(element, MoveModuleDef::class.java)
+                        .toMutableList<NavigatablePsiElement>()
                 for (addressBlock in element.addressBlocks()) {
                     elements.addAll(addressBlock.moduleDefList)
                 }

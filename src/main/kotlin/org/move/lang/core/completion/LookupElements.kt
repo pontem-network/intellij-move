@@ -6,7 +6,11 @@ import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
+import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.PsiUtilBase
+import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.parametersText
 
 const val DEFAULT_PRIORITY = 0.0
@@ -237,7 +241,11 @@ class DefaultInsertHandler(private val isSpecIdentifier: Boolean) : InsertHandle
                 if (isSpecIdentifier && !context.alreadyHasSpace)
                     context.addSuffix(" ")
 
-                if (element.hasTypeParameters && !isSpecIdentifier) {
+                val insideAcquiresType =
+                    context.file
+                        .findElementAt(context.startOffset)
+                        ?.ancestorStrict<MoveAcquiresType>() != null
+                if (element.hasTypeParameters && !isSpecIdentifier && !insideAcquiresType) {
                     if (!context.alreadyHasAngleBrackets) {
                         document.insertString(context.selectionEndOffset, "<>")
                     }

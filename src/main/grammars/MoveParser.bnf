@@ -233,7 +233,9 @@ FunctionSignature ::= fun IDENTIFIER TypeParameterList?
         "org.move.lang.core.psi.MoveFunctionSignatureOwner"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionSignatureMixin"
+    recoverWhile = "FunctionSignature__recover"
 }
+private FunctionSignature__recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
 
 FunctionDef ::= FunctionSignatureWithOptionalVisibility CodeBlock
 {

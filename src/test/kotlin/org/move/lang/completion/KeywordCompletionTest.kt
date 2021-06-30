@@ -185,6 +185,16 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
+    fun `test public(script) fun`() = doSingleCompletion("""
+        module M {
+            public(script) f/*caret*/
+        }
+    """, """
+        module M {
+            public(script) fun /*caret*/
+        }
+    """)
+
     fun `test native fun`() = doSingleCompletion("""
         module M {
             native fu/*caret*/
@@ -257,25 +267,31 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
-//    fun `test acquires keyword`() = doSingleCompletion("""
-//        module M {
-//            fun main() acq/*caret*/ {}
-//        }
-//    """, """
-//        module M {
-//            fun main() acquires /*caret*/ {}
-//        }
-//    """)
+    fun `test acquires keyword`() = doSingleCompletion("""
+        module M {
+            fun main() acq/*caret*/ {}
+        }
+    """, """
+        module M {
+            fun main() acquires /*caret*/ {}
+        }
+    """)
 //
-//    fun `test acquires after return type`() = doSingleCompletion("""
-//        module M {
-//            fun main(): u8 acq/*caret*/ {}
-//        }
-//    """, """
-//        module M {
-//            fun main(): u8 acquires /*caret*/ {}
-//        }
-//    """)
+    fun `test acquires after return type`() = doSingleCompletion("""
+        module M {
+            fun main(): u8 acq/*caret*/ {}
+        }
+    """, """
+        module M {
+            fun main(): u8 acquires /*caret*/ {}
+        }
+    """)
+
+    fun `test no acquires after colon`() = checkNoCompletion("""
+        module M {
+            fun call(): acq/*caret*/ {}
+        }
+    """)
 
     fun `test no acquires after fun keyword`() = checkNoCompletion("""
         module M {

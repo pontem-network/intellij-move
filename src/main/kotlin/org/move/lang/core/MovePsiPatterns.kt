@@ -7,6 +7,7 @@ import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.ProcessingContext
+import org.jetbrains.annotations.NotNull
 import org.move.lang.MoveElementTypes.*
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
@@ -32,17 +33,80 @@ object MovePsiPatterns {
     fun moduleBlock(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MoveModuleBlock>()
 
+    fun functionDef(): PsiElementPattern.Capture<PsiElement> =
+        psiElementWithParent<MoveFunctionDef>()
+
+    fun nativeFunctionDef(): PsiElementPattern.Capture<PsiElement> =
+        psiElementWithParent<MoveNativeFunctionDef>()
+
     fun scriptBlock(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MoveScriptBlock>()
 
     fun codeStatement(): PsiElementPattern.Capture<PsiElement> =
         psiElementInside<MoveCodeBlock>()
 
-    fun acquiresPlacement(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MoveFunctionSignature>()
-            .and(
-                psiElementAfterSiblingSkipping<MoveFunctionParameterList>(whitespace())
-            )
+    inline fun <reified I : PsiElement> afterSibling(): ElementPattern<PsiElement> {
+        val afterSibling = PlatformPatterns
+            .psiElement()
+            .afterSiblingSkipping(whitespace(), psiElement<I>())
+        val afterSiblingWithError = PlatformPatterns
+            .psiElement()
+            .withParent(psiElement<PsiErrorElement>().afterSiblingSkipping(whitespace(), psiElement<I>()))
+        return PlatformPatterns.or(afterSibling, afterSiblingWithError)
+//        val errorIdentifier = PlatformPatterns
+//            .psiElement()
+//            .withParent(PsiErrorElement::class.java)
+//        return errorIdentifier.afterSiblingSkipping(whitespace(), psiElement<I>())
+//        val identifier = PlatformPatterns.psiElement()
+//        val identifierOrErrorIdentifier = StandardPatterns.or(identifier, errorIdentifier)
+
+//        StandardPatterns.or(
+//            psiElement<I>(),
+//            psiElement<PsiErrorElement>().withParent(psiElement<I>())
+//        )
+//        PlatformPatterns.psiElement().withParent(
+//            StandardPatterns.or(
+//                psiElement<I>(),
+//                psiElement<PsiErrorElement>().withParent(psiElement<I>())
+//            )
+//        )
+    }
+
+    fun acquiresPlacement(): ElementPattern<PsiElement> {
+//        return psiElementWithParent<MoveFunctionSignature>()
+//            .and(
+        return PlatformPatterns.or(
+            psiElementWithParent<MoveFunctionSignature>()
+                .and(afterSibling<MoveFunctionParameterList>()),
+            psiElementWithParent<MoveReturnType>()
+        )
+//        return psiElementWithParent<MoveFunctionSignature>()
+//            .and(
+//                PlatformPatterns.or(
+//                    afterSibling<MoveFunctionParameterList>(),
+//                    afterSibling<MoveReturnType>()
+//                ))
+//               return PlatformPatterns.psiElement().beforeLeafSkipping(
+//                    whitespace(), PlatformPatterns.psiElement(MoveCodeBlock::class.java))
+//            )
+//        return PlatformPatterns
+//            .psiElement()
+//            .withParent(MoveFunctionSignature::class.java)
+//            .and(psiElementAfterSiblingSkipping<MoveFunctionParameterList>(whitespace()))
+//        return psiElement<PsiElement>()
+//            .and(psiElementAfterSiblingSkipping<MoveFunctionParameterList>(whitespace()))
+//        return PlatformPatterns
+//            .and(
+//                psiElementAfterSiblingSkipping<MoveFunctionParameterList>(whitespace())
+//            )
+//        return psiElementWithParent<MoveFunctionSignature>()
+//            .and(
+//                psiElementAfterSiblingSkipping<MoveFunctionParameterList>(
+//                    PlatformPatterns.or(whitespace(), psiElement<MoveReturnType>())
+//                )
+//            )
+
+    }
 
     fun typeParamBound(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MoveTypeParameter>()
