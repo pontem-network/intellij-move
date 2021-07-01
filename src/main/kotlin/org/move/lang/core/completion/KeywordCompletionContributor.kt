@@ -9,10 +9,14 @@ import org.move.lang.MoveElementTypes.IDENTIFIER
 import org.move.lang.core.MovePsiPatterns
 import org.move.lang.core.MovePsiPatterns.acquiresPlacement
 import org.move.lang.core.MovePsiPatterns.addressBlock
+import org.move.lang.core.MovePsiPatterns.afterSibling
 import org.move.lang.core.MovePsiPatterns.codeStatement
+import org.move.lang.core.MovePsiPatterns.functionDef
 import org.move.lang.core.MovePsiPatterns.moduleBlock
+import org.move.lang.core.MovePsiPatterns.nativeFunctionDef
 import org.move.lang.core.MovePsiPatterns.scriptBlock
 import org.move.lang.core.MovePsiPatterns.toplevel
+import org.move.lang.core.psi.MoveFunctionVisibilityModifier
 
 class KeywordCompletionContributor : CompletionContributor() {
     init {
@@ -69,7 +73,12 @@ class KeywordCompletionContributor : CompletionContributor() {
 //        )
         extend(
             CompletionType.BASIC,
-            moduleBlock().and(onStatementBeginning("public")),
+            functionDef().and(afterSibling<MoveFunctionVisibilityModifier>()),
+            KeywordCompletionProvider("fun")
+        )
+        extend(
+            CompletionType.BASIC,
+            nativeFunctionDef().and(afterSibling<MoveFunctionVisibilityModifier>()),
             KeywordCompletionProvider("fun")
         )
         extend(

@@ -1,6 +1,8 @@
 package org.move.lang.core.psi.ext
 
+import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
+import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
@@ -138,6 +140,15 @@ abstract class MoveModuleDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(n
 //    constructor(stub: MoveModuleDefStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 
     override fun getIcon(flags: Int): Icon = MoveIcons.MODULE
+
+    override fun getPresentation(): ItemPresentation? {
+        val name = this.name ?: return null
+        val locationString = this.containingAddress.text
+        return PresentationData(name,
+                                locationString,
+                                MoveIcons.MODULE,
+                                null);
+    }
 
     override val importStatements: List<MoveImportStatement>
         get() =

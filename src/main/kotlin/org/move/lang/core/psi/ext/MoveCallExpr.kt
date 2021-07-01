@@ -6,6 +6,10 @@ import org.move.lang.core.types.BaseType
 import org.move.lang.core.types.TypeVarsMap
 import org.move.lang.core.types.VoidType
 
+val MoveCallExpr.typeArguments: List<MoveTypeArgument>
+    get() =
+        this.qualPath.typeArguments
+
 val MoveCallExpr.typeVars: TypeVarsMap
     get() {
         val typeVars = mutableMapOf<String, BaseType?>()

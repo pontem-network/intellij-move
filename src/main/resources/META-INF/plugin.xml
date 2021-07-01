@@ -18,11 +18,11 @@
 
     <change-notes>
         <![CDATA[
-            <p>0.12.0</p>
-            <p>Support for Intellij IDEA 2021.1</p>
-            <p>Update syntax to Move 1.2</p>
-            <p>Add support for Polkadot addresses</p>
-            <p>Fix module resolution false-positive if Dove is not configured</p>
+            <p>0.13.0</p>
+            <p>Add Structure View and code navigation support</p>
+            <p>Add 0x1::Debug::print() live template</p>
+            <p>'acquires' declaration errors check</p>
+            <p>Return type errors check</p>
         ]]>
     </change-notes>
 
@@ -86,6 +86,18 @@
         <codeInsight.parameterNameHints language="Move"
                                         implementationClass="org.move.ide.hints.parameter.MoveInlayParameterHintsProvider"/>
 
+        <defaultLiveTemplates file="liveTemplates/Move.xml"/>
+        <liveTemplateContext implementation="org.move.ide.live_templates.MoveTemplateContext"/>
+
+        <lang.psiStructureViewFactory
+                language="Move"
+                implementationClass="org.move.ide.navigation.MoveStructureViewBuilderFactory"/>
+        <declarationRangeHandler
+                key="org.move.lang.core.psi.MoveModuleDef"
+                implementationClass="org.move.ide.navigation.ModuleDeclarationRangeHandler" />
+        <declarationRangeHandler
+                key="org.move.lang.core.psi.MoveFunctionDef"
+                implementationClass="org.move.ide.navigation.FunctionDeclarationRangeHandler" />
         <!--        <stubIndex implementation="org.move.lang.core.stubs.index.MoveNamedElementIndex"/>-->
 
         <!--        <localInspection language="Move" groupPath="Move" groupName="Naming"-->
@@ -119,6 +131,11 @@
 
         <editorNotificationProvider
                 implementation="org.move.ide.notifications.InvalidDoveExecutableNotificationsProvider"/>
+
+        <intentionAction>
+            <className>org.move.ide.intentions.AddAcquiresIntention</className>
+            <category>Move</category>
+        </intentionAction>
 
     </extensions>
 

@@ -164,7 +164,7 @@ class StructsCompletionTest: CompletionTestCase() {
     fun `test module struct completion in type position`() = doSingleCompletion("""
         address 0x1 {
         module Transaction {
-            struct T {
+            struct Type {
                 val: u8                   
             }
         }
@@ -176,15 +176,28 @@ class StructsCompletionTest: CompletionTestCase() {
     """, """
         address 0x1 {
         module Transaction {
-            struct T {
+            struct Type {
                 val: u8                   
             }
         }
         }
         module M {
-            fun main(a: 0x1::Transaction::T/*caret*/) {
+            fun main(a: 0x1::Transaction::Type/*caret*/) {
             }
         }
+    """
+    )
+
+    fun `test no generics added for acquires`() = doSingleCompletion("""
+    module M {
+        struct Loan<Offered> {}
+        fun call() acquires Lo/*caret*/ {}
+    }    
+    """, """
+    module M {
+        struct Loan<Offered> {}
+        fun call() acquires Loan/*caret*/ {}
+    }    
     """)
 
 }

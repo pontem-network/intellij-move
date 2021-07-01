@@ -362,10 +362,9 @@ FILE
           MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
             PsiElement(()('(')
             PsiElement())(')')
-        PsiErrorElement:':', acquires or '{' expected, got 'acq'
-          <empty list>
-      PsiWhiteSpace(' ')
-      PsiElement(IDENTIFIER)('acq')
+          PsiWhiteSpace(' ')
+          PsiErrorElement:':' or acquires expected, got 'acq'
+            PsiElement(IDENTIFIER)('acq')
       PsiWhiteSpace('\n    ')
       MoveFunctionDefImpl(FUNCTION_DEF)
         MoveFunctionSignatureImpl(FUNCTION_SIGNATURE)

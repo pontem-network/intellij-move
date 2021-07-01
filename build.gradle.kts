@@ -1,12 +1,12 @@
 import org.jetbrains.grammarkit.tasks.GenerateLexer
 import org.jetbrains.grammarkit.tasks.GenerateParser
 
-val intellijVersion = prop("intellijVersion", "2021.1.1")
+val intellijVersion = prop("intellijVersion", "2021.1.2")
 val kotlinVersion = "1.5.20"
 
 val pluginJarName = "intellij-move-$intellijVersion"
 val pluginGroup = "org.move"
-val pluginVersion = "0.12.0"
+val pluginVersion = "0.13.0"
 
 group = pluginGroup
 version = pluginVersion

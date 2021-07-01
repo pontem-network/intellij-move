@@ -5,10 +5,11 @@ import com.intellij.psi.PsiElement
 import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.BaseType
+import org.move.lang.core.psi.mixins.resolvedReturnType
 import org.move.lang.core.types.HasType
 import org.move.lang.core.types.StructType
 import org.move.lang.core.types.TypeParamType
+import org.move.lang.core.types.VoidType
 
 class ErrorAnnotator : MoveAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
@@ -22,17 +23,63 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitStructSignature(o: MoveStructSignature) {
                 checkStructSignature(moveHolder, o)
             }
-//            override fun visitFunctionDef(o: MoveFunctionDef) = checkFunctionDef(moveHolder, o)
-//            override fun visitNativeFunctionDef(o: MoveNativeFunctionDef) =
-//                checkNativeFunctionDef(moveHolder, o)
 
             override fun visitModuleDef(o: MoveModuleDef) = checkModuleDef(moveHolder, o)
 
-            //            override fun visitStructDef(o: MoveStructDef) = checkStructDef(moveHolder, o)
-//            override fun visitNativeStructDef(o: MoveNativeStructDef) = checkNativeStructDef(moveHolder, o)
             override fun visitStructFieldDef(o: MoveStructFieldDef) = checkStructFieldDef(moveHolder, o)
 
-//            override fun visitQualPath(o: MoveQualPath) = checkTypeArguments(moveHolder, o)
+            override fun visitExpr(o: MoveExpr) {
+                if (o.isBlockReturnExpr()) {
+                    val outerSignature = o.containingFunction?.functionSignature ?: return
+                    val expectedReturnType = outerSignature.resolvedReturnType ?: return
+                    val actualReturnType = o.resolvedType(emptyMap()) ?: return
+                    if (!expectedReturnType.compatibleWith(actualReturnType)) {
+                        moveHolder.createErrorAnnotation(
+                            o,
+                            "Invalid return type '${actualReturnType.name()}'" +
+                                    ", expected '${expectedReturnType.name()}'"
+                        )
+                    }
+                }
+                super.visitExpr(o)
+            }
+
+            override fun visitReturnExpr(o: MoveReturnExpr) {
+                val outerSignature = o.containingFunction?.functionSignature ?: return
+                val expectedReturnType = outerSignature.resolvedReturnType ?: return
+                val actualReturnType = o.expr?.resolvedType(emptyMap()) ?: return
+                if (!expectedReturnType.compatibleWith(actualReturnType)) {
+                    moveHolder.createErrorAnnotation(
+                        o,
+                        "Invalid return type '${actualReturnType.name()}'" +
+                                ", expected '${expectedReturnType.name()}'"
+                    )
+                }
+            }
+
+            override fun visitCallExpr(o: MoveCallExpr) {
+                if (o.referenceName !in ACQUIRES_BUILTIN_FUNCTIONS) return
+
+                val paramType =
+                    o.typeArguments.getOrNull(0)
+                        ?.type?.resolvedType(emptyMap()) as? StructType ?: return
+                val paramTypeName = paramType.name()
+
+                val containingFunction = o.containingFunction ?: return
+                val signature = containingFunction.functionSignature ?: return
+
+                val name = signature.name ?: return
+                val errorMessage = "Function '$name' is not marked as 'acquires $paramTypeName'"
+                val acquiresType = signature.acquiresType
+                if (acquiresType == null) {
+                    moveHolder.createErrorAnnotation(o, errorMessage)
+                    return
+                }
+                val acquiresTypeNames = acquiresType.typeNames ?: return
+                if (paramTypeName !in acquiresTypeNames) {
+                    moveHolder.createErrorAnnotation(o, errorMessage)
+                }
+            }
 
             override fun visitCallArguments(o: MoveCallArguments) = checkCallArguments(moveHolder, o)
 

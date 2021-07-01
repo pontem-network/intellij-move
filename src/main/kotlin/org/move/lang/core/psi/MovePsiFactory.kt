@@ -15,6 +15,16 @@ class MovePsiFactory(private val project: Project) {
     fun createQualifiedPath(text: String): MoveQualPath =
         createFromText("script { fun main() { $text; } }") ?: error("Failed to create QualifiedPath")
 
+    fun createFunctionSignature(text: String): MoveFunctionSignature {
+        return createFromText("module _IntellijPreludeDummy { $text {}}")
+            ?: error("Failed to create a method member from text: `$text`")
+    }
+
+    fun createAcquiresType(text: String): MoveAcquiresType {
+        return createFromText("module _IntellijPreludeDummy { fun main() $text {}}")
+            ?: error("Failed to create a method member from text: `$text`")
+    }
+
     fun createNativeFunctionDef(
         text: String,
     ): MoveNativeFunctionDef =

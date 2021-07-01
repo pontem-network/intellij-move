@@ -9,6 +9,7 @@ import com.intellij.injected.editor.VirtualFileWindow
 import com.intellij.lang.LanguageCommenters
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.LogicalPosition
+import com.intellij.openapi.util.io.StreamUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
@@ -132,6 +133,14 @@ abstract class MoveTestBase : BasePlatformTestCase(),
     protected fun FileTree.createAndOpenFileWithCaretMarker(): TestProject =
         createAndOpenFileWithCaretMarker(myFixture)
 
+    companion object {
+        @JvmStatic
+        fun getResourceAsString(path: String): String? {
+            val stream = MoveTestBase::class.java.classLoader.getResourceAsStream(path)
+                ?: return null
+            return StreamUtil.readText(stream, Charsets.UTF_8)
+        }
+    }
 //    protected val PsiElement.lineNumber: Int
 //        get() = myFixture.getDocument(myFixture.file).getLineNumber(textOffset)
 }

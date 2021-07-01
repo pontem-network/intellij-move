@@ -51,7 +51,7 @@ sealed class BaseType {
 open class PrimitiveType(private val name: String) : BaseType() {
     override fun name(): String = name
     override fun fullname(): String = name()
-    override fun abilities(): Set<Ability> = Ability.all()
+    override fun abilities(): Set<Ability> = setOf(Ability.DROP, Ability.COPY, Ability.STORE)
     override fun definingModule(): MoveModuleDef? = null
 
     override fun compatibleWith(actualType: BaseType): Boolean {
@@ -69,7 +69,7 @@ open class PrimitiveType(private val name: String) : BaseType() {
 class SignerType : BaseType() {
     override fun name(): String = "signer"
     override fun fullname(): String = "signer"
-    override fun abilities(): Set<Ability> = Ability.all()
+    override fun abilities(): Set<Ability> = setOf(Ability.DROP)
     override fun definingModule(): MoveModuleDef? = null
 
     override fun compatibleWith(actualType: BaseType): Boolean {
@@ -99,18 +99,19 @@ class IntegerType(
 class VectorType(private val itemType: BaseType) : BaseType() {
     override fun name(): String = "vector<${itemType.fullname()}>"
     override fun fullname(): String = name()
-    override fun abilities(): Set<Ability> = Ability.all()
+    override fun abilities(): Set<Ability> = itemType.abilities()
     override fun definingModule(): MoveModuleDef? = null
 
     override fun compatibleWith(actualType: BaseType): Boolean {
         if (actualType is TypeParamType) return true
-        return actualType is VectorType && this.itemType.compatibleWith(actualType.itemType)
+        return actualType is VectorType
+                && this.itemType.compatibleWith(actualType.itemType)
     }
 }
 
 class VoidType : BaseType() {
-    override fun name(): String = "void"
-    override fun fullname(): String = "void"
+    override fun name(): String = "()"
+    override fun fullname(): String = "()"
     override fun abilities(): Set<Ability> = emptySet()
     override fun definingModule(): MoveModuleDef? = null
 
@@ -130,7 +131,7 @@ class RefType(
 
     override fun name(): String = prefix() + referredType.name()
     override fun fullname(): String = prefix() + referredType.fullname()
-    override fun abilities(): Set<Ability> = referredType.abilities()
+    override fun abilities(): Set<Ability> = setOf(Ability.COPY, Ability.DROP)
     override fun definingModule(): MoveModuleDef? = referredType.definingModule()
 
     override fun compatibleWith(actualType: BaseType): Boolean {
