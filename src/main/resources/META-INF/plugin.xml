@@ -21,6 +21,8 @@
             <p>0.13.0</p>
             <p>Add Structure View and code navigation support</p>
             <p>Add 0x1::Debug::print() live template</p>
+            <p>'acquires' declaration errors check</p>
+            <p>Return type errors check</p>
         ]]>
     </change-notes>
 
