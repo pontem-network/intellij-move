@@ -9,7 +9,19 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MoveFunctionSignature
 import org.move.lang.core.psi.ext.parametersText
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
+import org.move.lang.core.types.BaseType
+import org.move.lang.core.types.VoidType
 import javax.swing.Icon
+
+val MoveFunctionSignature.resolvedReturnType: BaseType?
+    get() {
+        val returnTypeElement = this.returnType
+        return if (returnTypeElement == null) {
+            VoidType()
+        } else {
+            returnTypeElement.type?.resolvedType(emptyMap())
+        }
+    }
 
 abstract class MoveFunctionSignatureMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
                                                            MoveFunctionSignature {

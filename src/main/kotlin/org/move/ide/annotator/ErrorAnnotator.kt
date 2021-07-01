@@ -5,9 +5,11 @@ import com.intellij.psi.PsiElement
 import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.mixins.resolvedReturnType
 import org.move.lang.core.types.HasType
 import org.move.lang.core.types.StructType
 import org.move.lang.core.types.TypeParamType
+import org.move.lang.core.types.VoidType
 
 class ErrorAnnotator : MoveAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
@@ -25,6 +27,35 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitModuleDef(o: MoveModuleDef) = checkModuleDef(moveHolder, o)
 
             override fun visitStructFieldDef(o: MoveStructFieldDef) = checkStructFieldDef(moveHolder, o)
+
+            override fun visitExpr(o: MoveExpr) {
+                if (o.isBlockReturnExpr()) {
+                    val outerSignature = o.containingFunction?.functionSignature ?: return
+                    val expectedReturnType = outerSignature.resolvedReturnType ?: return
+                    val actualReturnType = o.resolvedType(emptyMap()) ?: return
+                    if (!expectedReturnType.compatibleWith(actualReturnType)) {
+                        moveHolder.createErrorAnnotation(
+                            o,
+                            "Invalid return type '${actualReturnType.name()}'" +
+                                    ", expected '${expectedReturnType.name()}'"
+                        )
+                    }
+                }
+                super.visitExpr(o)
+            }
+
+            override fun visitReturnExpr(o: MoveReturnExpr) {
+                val outerSignature = o.containingFunction?.functionSignature ?: return
+                val expectedReturnType = outerSignature.resolvedReturnType ?: return
+                val actualReturnType = o.expr?.resolvedType(emptyMap()) ?: return
+                if (!expectedReturnType.compatibleWith(actualReturnType)) {
+                    moveHolder.createErrorAnnotation(
+                        o,
+                        "Invalid return type '${actualReturnType.name()}'" +
+                                ", expected '${expectedReturnType.name()}'"
+                    )
+                }
+            }
 
             override fun visitCallExpr(o: MoveCallExpr) {
                 if (o.referenceName !in ACQUIRES_BUILTIN_FUNCTIONS) return

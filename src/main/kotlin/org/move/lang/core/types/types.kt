@@ -104,13 +104,14 @@ class VectorType(private val itemType: BaseType) : BaseType() {
 
     override fun compatibleWith(actualType: BaseType): Boolean {
         if (actualType is TypeParamType) return true
-        return actualType is VectorType && this.itemType.compatibleWith(actualType.itemType)
+        return actualType is VectorType
+                && this.itemType.compatibleWith(actualType.itemType)
     }
 }
 
 class VoidType : BaseType() {
-    override fun name(): String = "void"
-    override fun fullname(): String = "void"
+    override fun name(): String = "()"
+    override fun fullname(): String = "()"
     override fun abilities(): Set<Ability> = emptySet()
     override fun definingModule(): MoveModuleDef? = null
 
