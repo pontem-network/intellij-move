@@ -24,6 +24,36 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
     }    
     """)
 
+    fun `test store struct requires store fields`() = checkErrors("""
+    module M {
+        struct A {}
+        
+        struct B has store {
+            <error descr="The type 'A' does not have the ability 'store' required by the declared ability 'store' of the struct 'B'">a: A</error>
+        }
+    }    
+    """)
+
+    fun `test copy struct requires copy fields`() = checkErrors("""
+    module M {
+        struct A {}
+        
+        struct B has copy {
+            <error descr="The type 'A' does not have the ability 'copy' required by the declared ability 'copy' of the struct 'B'">a: A</error>
+        }
+    }    
+    """)
+
+        fun `test drop struct requires drop fields`() = checkErrors("""
+    module M {
+        struct A {}
+        
+        struct B has drop {
+            <error descr="The type 'A' does not have the ability 'drop' required by the declared ability 'drop' of the struct 'B'">a: A</error>
+        }
+    }    
+    """)
+
     fun `test function invocation with explicitly provided generic type`() = checkErrors("""
     module Event {
         struct Message has drop {}
