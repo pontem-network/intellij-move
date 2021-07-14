@@ -1,7 +1,5 @@
 package org.move.cli
 
-import com.intellij.util.io.exists
-import org.move.settings.moveSettings
 import org.move.utils.TestProjectRootServiceImpl
 import org.move.utils.rootService
 import org.move.utils.tests.MoveTestBase
@@ -11,13 +9,6 @@ import java.nio.file.Paths
 class DoveCommandTest : MoveTestBase() {
 
     fun `test fetch package metadata for a test project`() {
-        val doveExecutablePath = Paths.get("dove")
-        check(doveExecutablePath.exists()) { "$doveExecutablePath file does not exist" }
-
-        project.moveSettings.modifyTemporary(testRootDisposable) {
-            it.doveExecutablePath = doveExecutablePath.toAbsolutePath().toString()
-        }
-
         val moveProjectRoot = Paths.get(TestCase.testResourcesPath).resolve("move_project")
         (project.rootService as TestProjectRootServiceImpl).modifyPath(moveProjectRoot)
 
@@ -25,12 +16,15 @@ class DoveCommandTest : MoveTestBase() {
 
         val metadata = project.metadataService.metadata
         check(metadata != null) { "Metadata is null" }
-        check(metadata.package_info.dialect == "pont")
+        check(metadata.packageTable?.dialect == "pont")
+        println(metadata.packageTable?.dependencies)
+
+        check(metadata.packageTable?.dependencies.orEmpty().size == 1)
         check(
-            metadata.package_info.local_dependencies == listOf(
-                moveProjectRoot.resolve("stdlib").toAbsolutePath().toString()
-            )
+            metadata
+                .packageTable?.dependencies
+                .orEmpty()[0].endsWith("intellij-move/src/test/resources/move_project/stdlib")
         )
-        check(metadata.package_info.account_address == "0x1")
+        check(metadata.packageTable?.account_address == "0x1")
     }
 }

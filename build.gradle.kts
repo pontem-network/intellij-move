@@ -7,6 +7,7 @@ val kotlinVersion = "1.5.20"
 val pluginJarName = "intellij-move-$intellijVersion"
 val pluginGroup = "org.move"
 val pluginVersion = "0.14.0"
+val pluginTomlVersion = "0.2.150.3968-211"
 
 group = pluginGroup
 version = pluginVersion
@@ -41,6 +42,7 @@ allprojects {
     intellij {
         pluginName.set(pluginJarName)
         version.set(intellijVersion)
+        plugins.set(listOf("org.toml.lang:$pluginTomlVersion"))
     }
 
     configure<JavaPluginConvention> {

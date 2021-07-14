@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import org.move.openapiext.resolveAbsPath
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -41,11 +42,8 @@ class MoveFileHyperlinkFilter(
 
     private fun resolveFilePath(fileName: String): VirtualFile? {
         val portablePath = FileUtil.toSystemIndependentName(fileName).trim()
-        val canonicalPath = Paths.get(moveProjectBasePath
-                                          .resolve(portablePath)
-                                          .toFile()
-                                          .canonicalPath)
-        val file = VirtualFileManager.getInstance().findFileByNioPath(canonicalPath)
-        return file
+        val absPath =
+            moveProjectBasePath.resolveAbsPath(portablePath) ?: return null
+        return VirtualFileManager.getInstance().findFileByNioPath(absPath)
     }
 }

@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
-import org.move.settings.getDoveExecutable
+import org.move.toml.DoveToml
 import org.move.utils.rootService
 
 data class GitDependency(
@@ -39,16 +39,16 @@ data class LayoutInfo(
     val index: String,
 )
 
-data class DoveProjectMetadata(
-    @SerializedName("package")
-    val package_info: PackageInfo,
-    val layout: LayoutInfo,
-)
+//data class DoveProjectMetadata(
+//    @SerializedName("package")
+//    val package_info: PackageInfo,
+//    val layout: LayoutInfo,
+//)
 
 
 @Service(Service.Level.PROJECT)
 class MetadataService(private val project: Project) {
-    var metadata: DoveProjectMetadata? = null
+    var metadata: DoveToml? = null
         private set
 
     init {
@@ -57,16 +57,16 @@ class MetadataService(private val project: Project) {
 
     fun refresh() {
         // clean previous state
-        this.metadata = null
-
-        val root = project.rootService.path ?: return
-        val executable = project.getDoveExecutable() ?: return
-        this.metadata = executable.metadata(root)
+//        this.doveToml = null
+        this.metadata =
+            project.rootService.path?.let { DoveToml.parse(project, it) }
+//        val root = project.rootService.path ?: return
+//        this.doveToml = DoveToml.parse(project, root)
+//        val executable = project.getDoveExecutable() ?: return
+//        this.doveToml = executable.metadata(root)
     }
 }
 
 val Project.metadataService: MetadataService
-    get() = ServiceManager.getService(
-        this,
-        MetadataService::class.java
-    )
+    get() =
+        ServiceManager.getService(this, MetadataService::class.java)

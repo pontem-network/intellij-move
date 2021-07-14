@@ -54,22 +54,22 @@ class DoveExecutable(private val project: Project, private val dovePath: Path) {
         }
     }
 
-    fun metadata(doveProjectRoot: Path): DoveProjectMetadata? {
-        try {
-            val (out, err) = runExecutable(doveProjectRoot.toFile(), "metadata")
-            if (err.isNotEmpty()) {
-                MoveNotifications.pluginNotifications()
-                    .createNotification(err, NotificationType.ERROR)
-                    .notify(project)
-                return null
-            }
-            return try {
-                Gson().fromJson(out, DoveProjectMetadata::class.java)
-            } catch (e: JsonSyntaxException) {
-                null
-            }
-        } catch (e: ProcessNotCreatedException) {
-            return null
-        }
-    }
+//    fun metadata(doveProjectRoot: Path): DoveProjectMetadata? {
+//        try {
+//            val (out, err) = runExecutable(doveProjectRoot.toFile(), "metadata")
+//            if (err.isNotEmpty()) {
+//                MoveNotifications.pluginNotifications()
+//                    .createNotification(err, NotificationType.ERROR)
+//                    .notify(project)
+//                return null
+//            }
+//            return try {
+//                Gson().fromJson(out, DoveProjectMetadata::class.java)
+//            } catch (e: JsonSyntaxException) {
+//                null
+//            }
+//        } catch (e: ProcessNotCreatedException) {
+//            return null
+//        }
+//    }
 }
