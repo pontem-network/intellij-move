@@ -18,7 +18,7 @@
 
     <change-notes>
         <![CDATA[
-            <p>0.13.0</p>
+            <p>0.14.0</p>
             <p>Add Structure View and code navigation support</p>
             <p>Add 0x1::Debug::print() live template</p>
             <p>'acquires' declaration errors check</p>
