@@ -71,7 +71,7 @@ class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MoveCallArguments
 class ParametersDescription(val parameters: Array<String>) {
     fun getArgumentRange(index: Int): TextRange {
         if (index < 0 || index >= parameters.size) return TextRange.EMPTY_RANGE
-        val start = parameters.take(index).sumBy { it.length + 2 }
+        val start = parameters.take(index).sumOf { it.length + 2 }
         return TextRange(start, start + parameters[index].length)
     }
 

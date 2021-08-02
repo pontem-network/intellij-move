@@ -14,7 +14,7 @@ interface HasType : MoveElement {
 enum class Ability {
     DROP, COPY, STORE, KEY;
 
-    fun label(): String = this.name.toLowerCase()
+    fun label(): String = this.name.lowercase()
 
     fun requires(): Ability {
         return when (this) {

@@ -31,12 +31,15 @@ class DoveToml(
     val layoutTable: LayoutTable?
 ) {
     companion object {
-        fun parse(project: Project, projectRoot: Path): DoveToml? {
-            val file = LocalFileSystem.getInstance()
-                .findFileByNioFile(projectRoot.resolve("Dove.toml")) ?: return null
+        private fun parseToml(project: Project, path: Path): TomlFile? {
+            val file = LocalFileSystem.getInstance().findFileByNioFile(path) ?: return null
             val tomlFileViewProvider =
                 PsiManager.getInstance(project).findViewProvider(file) ?: return null
-            val tomlFile = TomlFile(tomlFileViewProvider)
+            return TomlFile(tomlFileViewProvider)
+        }
+
+        fun parse(project: Project, projectRoot: Path): DoveToml? {
+            val tomlFile = parseToml(project, projectRoot.resolve("Dove.toml")) ?: return null
             val tables = tomlFile.children.filterIsInstance<TomlTable>()
 
             val packageTomlTable = tables.find { it.header.key?.text == "package" }
@@ -48,7 +51,7 @@ class DoveToml(
                 val blockchain_api = packageTomlTable.findValue("blockchain_api")?.stringValue()
 
                 val depEntries = packageTomlTable.findValue("dependencies")?.arrayValue().orEmpty()
-                val dependencies = parseDependencies(depEntries, projectRoot)
+                val dependencies = parseDependencies(project, depEntries, projectRoot)
 
                 packageTable = PackageTable(name, account_address, dialect, blockchain_api, dependencies)
             }
@@ -56,37 +59,53 @@ class DoveToml(
             val layoutTomlTable = tables.find { it.header.key?.text == "package" }
             var layoutTable: LayoutTable? = null
             if (layoutTomlTable != null) {
-                val modulesDirValue = layoutTomlTable.findValue("modules_dir")?.stringValue() ?: "./modules"
-                val modules_dir = projectRoot.resolveAbsPath(modulesDirValue)
-                layoutTable = LayoutTable(modules_dir)
+                fun findDir(key: String, default: String): Path? {
+                    val dirValue = layoutTomlTable.findValue(key)?.stringValue() ?: default
+                    return projectRoot.resolveAbsPath(dirValue)
+                }
+                layoutTable = LayoutTable(
+                    findDir("modules_dir", "./modules"),
+                    findDir("scripts_dir", "./scripts"),
+                    findDir("tests_dir", "./tests")
+                )
             }
             return DoveToml(packageTable, layoutTable)
         }
 
-        private const val EXTERNAL_DIRECTORY_PATH = "./artifacts/.external"
+        private const val ARTIFACTS_DIRECTORY_PATH = "./.artifacts"
+        private const val DOVE_MAN_PATH = "$ARTIFACTS_DIRECTORY_PATH/.Dove.man"
 
-        private fun parseDependencies(depEntries: List<TomlValue>, projectRoot: Path): List<Path> {
-            return depEntries
-                .filterIsInstance<TomlInlineTable>()
-                .mapNotNull {
-                    when {
-                        it.hasKey("git") -> {
-                            val gitDepsRoot =
-                                projectRoot.resolveAbsPath(EXTERNAL_DIRECTORY_PATH)
-                                    ?: return@mapNotNull null
+        private fun parseDependencies(
+            project: Project,
+            depEntries: List<TomlValue>,
+            projectRoot: Path
+        ): List<Path> {
+            val deps = mutableListOf<Path>()
 
-                        }
-                        else -> it.findValue("path")
-//                            it.hasKey("path") -> it.findValue("path")
-//                            else -> null
-//                            it.findValue("git") != null -> null
-//                            it.findValue("path") != null ->
-//                            else -> it.findValue("path")?.stringValue()
-                    }
-                }
-//                    .mapNotNull { it.findValue("path")?.stringValue() }
-                .mapNotNull { projectRoot.resolveAbsPath(it) }
-//            return dependencies
+            val depInlineTables = depEntries.filterIsInstance<TomlInlineTable>()
+            // TODO: add when .Doveman.toml is fixed
+//            if (depInlineTables.find { it.hasKey("git") } != null) {
+//                // read .Dove.man file for paths to git dependencies
+//                val doveManPath = projectRoot.resolveAbsPath(DOVE_MAN_PATH)
+//                val doveManTomlFile = doveManPath?.let { parseToml(project, it) }
+//                if (doveManTomlFile != null) {
+//                    deps.addAll(parseDependenciesFromDoveManFile(doveManTomlFile))
+//                }
+//            }
+
+            for (table in depInlineTables) {
+                val path = table.findValue("path")?.stringValue() ?: continue
+                val absPath = projectRoot.resolveAbsPath(path) ?: continue
+                deps.add(absPath)
+            }
+            return deps
         }
+
+//        private fun parseDependenciesFromDoveManFile(doveManTomlFile: TomlFile): List<Path> {
+//            println(doveManTomlFile.children)
+//            return emptyList()
+//            val doveManPath = projectRoot.resolveAbsPath(DOVE_MAN_PATH) ?: return emptyList()
+//            val doveMan = DoveMan
+//        }
     }
 }

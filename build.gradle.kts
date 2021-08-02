@@ -1,28 +1,30 @@
 import org.jetbrains.grammarkit.tasks.GenerateLexer
 import org.jetbrains.grammarkit.tasks.GenerateParser
 
-val intellijVersion = prop("intellijVersion", "2021.1.2")
+val intellijVersion = prop("intellijVersion", "2021.2")
 val kotlinVersion = "1.5.20"
 
 val pluginJarName = "intellij-move-$intellijVersion"
 val pluginGroup = "org.move"
 val pluginVersion = "0.14.0"
-val pluginTomlVersion = "0.2.150.3968-211"
+val pluginTomlVersion = "0.2.151.3997-212"
 
 group = pluginGroup
 version = pluginVersion
 
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.1.3"
+    id("org.jetbrains.intellij") version "1.1.4"
     id("org.jetbrains.kotlin.jvm") version "1.5.20"
-    id("org.jetbrains.grammarkit") version "2021.1.1"
+    id("org.jetbrains.grammarkit") version "2021.1.3"
 }
 
 dependencies {
     // kotlin stdlib source code
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
+
 }
 
 allprojects {
@@ -34,9 +36,7 @@ allprojects {
 
     repositories {
         mavenCentral()
-//        maven("https://oss.sonatype.org/content/repositories/snapshots/")
-        maven("https://jetbrains.bintray.com/intellij-third-party-dependencies")
-//        maven("http://dl.bintray.com/jetbrains/intellij-plugin-service")
+        maven("https://cache-redirector.jetbrains.com/intellij-dependencies")
     }
 
     intellij {
@@ -45,7 +45,7 @@ allprojects {
         plugins.set(listOf("org.toml.lang:$pluginTomlVersion"))
     }
 
-    configure<JavaPluginConvention> {
+    configure<JavaPluginExtension> {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }

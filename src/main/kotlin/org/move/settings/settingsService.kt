@@ -112,7 +112,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
 }
 
 val Project.moveSettings: MoveProjectSettingsService
-    get() = ServiceManager.getService(this, MoveProjectSettingsService::class.java)
+    get() = this.getService(MoveProjectSettingsService::class.java)
 
 val Project.dovePathValue: String
     get() {
