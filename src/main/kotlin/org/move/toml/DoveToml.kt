@@ -4,11 +4,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiManager
 import org.move.openapiext.resolveAbsPath
-import org.toml.lang.psi.TomlFile
-import org.toml.lang.psi.TomlInlineTable
-import org.toml.lang.psi.TomlTable
-import org.toml.lang.psi.TomlValue
+import org.toml.lang.psi.*
 import java.nio.file.Path
+
+
+fun TomlFile.getRootKey(key: String): TomlValue? {
+    val keyValue = this.children.filterIsInstance<TomlKeyValue>().find { it.key.text == key }
+    return keyValue?.value
+}
 
 
 data class PackageTable(
@@ -72,8 +75,8 @@ class DoveToml(
             return DoveToml(packageTable, layoutTable)
         }
 
-        private const val ARTIFACTS_DIRECTORY_PATH = "./.artifacts"
-        private const val DOVE_MAN_PATH = "$ARTIFACTS_DIRECTORY_PATH/.Dove.man"
+        private const val ARTIFACTS_DIRECTORY_PATH = "./artifacts"
+        private const val DOVE_INDEX_FILE = ".DoveIndex.toml"
 
         private fun parseDependencies(
             project: Project,
@@ -83,15 +86,19 @@ class DoveToml(
             val deps = mutableListOf<Path>()
 
             val depInlineTables = depEntries.filterIsInstance<TomlInlineTable>()
-            // TODO: add when .Doveman.toml is fixed
-//            if (depInlineTables.find { it.hasKey("git") } != null) {
-//                // read .Dove.man file for paths to git dependencies
-//                val doveManPath = projectRoot.resolveAbsPath(DOVE_MAN_PATH)
-//                val doveManTomlFile = doveManPath?.let { parseToml(project, it) }
-//                if (doveManTomlFile != null) {
-//                    deps.addAll(parseDependenciesFromDoveManFile(doveManTomlFile))
-//                }
-//            }
+            if (depInlineTables.find { it.hasKey("git") } != null) {
+                // read .DoveIndex.toml file for paths to git dependencies
+                val artifactsDir = projectRoot.resolveAbsPath(ARTIFACTS_DIRECTORY_PATH)
+                if (artifactsDir != null) {
+                    val doveIndexPath = artifactsDir.resolveAbsPath(DOVE_INDEX_FILE)
+                    val doveIndexTomlFile = doveIndexPath?.let { parseToml(project, it) }
+                    if (doveIndexTomlFile != null) {
+                        val values =
+                            parseDepsFromDoveIndex(doveIndexTomlFile)
+                        deps.addAll(values.mapNotNull { artifactsDir.resolveAbsPath(it) })
+                    }
+                }
+            }
 
             for (table in depInlineTables) {
                 val path = table.findValue("path")?.stringValue() ?: continue
@@ -101,11 +108,10 @@ class DoveToml(
             return deps
         }
 
-//        private fun parseDependenciesFromDoveManFile(doveManTomlFile: TomlFile): List<Path> {
-//            println(doveManTomlFile.children)
-//            return emptyList()
-//            val doveManPath = projectRoot.resolveAbsPath(DOVE_MAN_PATH) ?: return emptyList()
-//            val doveMan = DoveMan
-//        }
+        private fun parseDepsFromDoveIndex(doveIndexTomlFile: TomlFile): List<String> {
+            return doveIndexTomlFile.getRootKey("deps_roots")
+                ?.arrayValue().orEmpty()
+                .mapNotNull { it.stringValue() }
+        }
     }
 }

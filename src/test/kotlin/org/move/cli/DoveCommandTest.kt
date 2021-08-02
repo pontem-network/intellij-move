@@ -19,9 +19,9 @@ class DoveCommandTest : MoveTestBase() {
         check(metadata.packageTable?.dialect == "pont")
 
         val dependencies = metadata.packageTable?.dependencies.orEmpty()
-        check(dependencies.size == 1)
-//        check(dependencies[0].endsWith(".artifacts/modules"))
-        check(dependencies[0].endsWith("intellij-move/src/test/resources/move_project/stdlib"))
+        check(dependencies.size == 2)
+        check(dependencies[0].toString().endsWith("/artifacts/modules"))
+        check(dependencies[1].toString().endsWith("intellij-move/src/test/resources/move_project/stdlib"))
 
         check(metadata.packageTable?.account_address == "0x1")
     }
