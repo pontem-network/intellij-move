@@ -1,4 +1,4 @@
-package org.move.toml
+package org.move.manifest.dovetoml
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem

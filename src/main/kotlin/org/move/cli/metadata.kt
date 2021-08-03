@@ -1,12 +1,9 @@
 package org.move.cli
 
-import com.google.gson.annotations.SerializedName
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
 import org.move.openapiext.resolveAbsPath
-import org.move.toml.DoveToml
-import org.move.utils.rootService
+import org.move.manifest.dovetoml.DoveToml
 import java.nio.file.Path
 
 data class GitDependency(

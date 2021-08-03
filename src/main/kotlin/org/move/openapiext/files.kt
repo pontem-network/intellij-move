@@ -7,7 +7,7 @@ import com.intellij.util.containers.addIfNotNull
 import com.intellij.util.io.exists
 import com.intellij.util.io.isDirectory
 import org.move.cli.metadata
-import org.move.toml.DoveToml
+import org.move.manifest.dovetoml.DoveToml
 import org.move.utils.rootService
 import java.nio.file.Files
 import java.nio.file.Path

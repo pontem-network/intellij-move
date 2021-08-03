@@ -1,4 +1,4 @@
-package org.move.toml
+package org.move.manifest.dovetoml
 
 import org.toml.lang.psi.*
 import org.toml.lang.psi.ext.elementType
