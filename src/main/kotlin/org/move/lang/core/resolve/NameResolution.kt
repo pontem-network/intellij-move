@@ -1,6 +1,7 @@
 package org.move.lang.core.resolve
 
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiRecursiveVisitor
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
@@ -11,8 +12,9 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.HasType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.StructType
-import org.move.openapiext.folders
+import org.move.openapiext.currentProjectFolders
 import org.move.utils.iterateOverMoveFiles
+import java.nio.file.Paths
 
 fun processItems(
     element: MoveReferenceElement,
@@ -127,7 +129,10 @@ fun processQualModuleRef(
     var isResolved = resolveQualModuleRefInFile(qualModuleRef, containingFile, processor)
     if (isResolved) return true
 
-    val virtualFolders = project.folders()
+    val currentPathPathS = containingFile.virtualFile?.canonicalPath ?: return false
+    val currentFilePath = Paths.get(currentPathPathS)
+
+    val virtualFolders = project.currentProjectFolders(currentFilePath)
     for (folder in virtualFolders) {
         if (isResolved) break
         iterateOverMoveFiles(project, folder) { moveFile ->

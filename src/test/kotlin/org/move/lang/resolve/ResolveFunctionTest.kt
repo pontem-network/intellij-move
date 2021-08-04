@@ -171,11 +171,25 @@ class ResolveFunctionTest : ResolveTestCase() {
         address 0x1 {
         module Original {
             fun call() {}
-              //X
         }
         
         module M {
             use 0x1::Original::call;
+                             //^ unresolved
+        }    
+        }
+    """
+    )
+
+    fun `test cannot resolve const from import`() = checkByCode(
+        """
+        address 0x1 {
+        module Original {
+            const MY_CONST: u8 = 1;
+        }
+        
+        module M {
+            use 0x1::Original::MY_CONST;
                              //^ unresolved
         }    
         }

@@ -1,11 +1,10 @@
 package org.move.cli
 
-import com.google.gson.annotations.SerializedName
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
-import org.move.settings.getDoveExecutable
-import org.move.utils.rootService
+import org.move.openapiext.resolveAbsPath
+import org.move.manifest.dovetoml.DoveToml
+import java.nio.file.Path
 
 data class GitDependency(
     val git: String,
@@ -39,34 +38,52 @@ data class LayoutInfo(
     val index: String,
 )
 
-data class DoveProjectMetadata(
-    @SerializedName("package")
-    val package_info: PackageInfo,
-    val layout: LayoutInfo,
-)
+//data class DoveProjectMetadata(
+//    @SerializedName("package")
+//    val package_info: PackageInfo,
+//    val layout: LayoutInfo,
+//)
 
 
 @Service(Service.Level.PROJECT)
 class MetadataService(private val project: Project) {
-    var metadata: DoveProjectMetadata? = null
-        private set
-
-    init {
-        this.refresh()
+    private fun findDoveToml(currentFilePath: Path): Path? {
+        var dir = currentFilePath.parent
+        while (dir != null) {
+            val doveTomlPath = dir.resolveAbsPath("Dove.toml")
+            if (doveTomlPath != null) {
+                return doveTomlPath
+            }
+            dir = dir.parent
+        }
+        return null
     }
 
-    fun refresh() {
+    fun metadata(currentFilePath: Path): DoveToml? {
+        val doveTomlPath = findDoveToml(currentFilePath) ?: return null
+        return DoveToml.parse(this.project, doveTomlPath.parent)
+    }
+
+//    var metadata: DoveToml? = null
+//        private set
+//
+//    init {
+//        this.refresh()
+//    }
+
+//    fun refresh() {
         // clean previous state
-        this.metadata = null
-
-        val root = project.rootService.path ?: return
-        val executable = project.getDoveExecutable() ?: return
-        this.metadata = executable.metadata(root)
-    }
+//        this.doveToml = null
+//        this.metadata =
+//            project.rootService.path?.let { DoveToml.parse(project, it) }
+//        val root = project.rootService.path ?: return
+//        this.doveToml = DoveToml.parse(project, root)
+//        val executable = project.getDoveExecutable() ?: return
+//        this.doveToml = executable.metadata(root)
+//    }
 }
 
-val Project.metadataService: MetadataService
-    get() = ServiceManager.getService(
-        this,
-        MetadataService::class.java
-    )
+fun Project.metadata(currentFilePath: Path): DoveToml? {
+    val metadataService = this.getService(MetadataService::class.java)
+    return metadataService.metadata(currentFilePath)
+}

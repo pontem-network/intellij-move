@@ -1,6 +1,5 @@
 package org.move.utils
 
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -31,4 +30,4 @@ class TestProjectRootServiceImpl(private val project: Project) : ProjectRootServ
 }
 
 val Project.rootService: ProjectRootService
-    get() = ServiceManager.getService(this, ProjectRootService::class.java)
+    get() = this.getService(ProjectRootService::class.java)

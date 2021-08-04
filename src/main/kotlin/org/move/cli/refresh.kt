@@ -13,5 +13,5 @@ class RefreshProjectListener(
 }
 
 fun refreshProject(project: Project) {
-    ServiceManager.getService(project, MetadataService::class.java).refresh()
+//    ServiceManager.getService(project, MetadataService::class.java).refresh()
 }

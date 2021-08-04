@@ -18,7 +18,7 @@
 
     <change-notes>
         <![CDATA[
-            <p>0.13.0</p>
+            <p>0.14.0</p>
             <p>Add Structure View and code navigation support</p>
             <p>Add 0x1::Debug::print() live template</p>
             <p>'acquires' declaration errors check</p>
@@ -29,6 +29,7 @@
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>org.toml.lang</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Move"
@@ -129,8 +130,8 @@
         <!-- Notifications -->
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>
 
-        <editorNotificationProvider
-                implementation="org.move.ide.notifications.InvalidDoveExecutableNotificationsProvider"/>
+<!--        <editorNotificationProvider-->
+<!--                implementation="org.move.ide.notifications.InvalidDoveExecutableNotificationsProvider"/>-->
 
         <intentionAction>
             <className>org.move.ide.intentions.AddAcquiresIntention</className>

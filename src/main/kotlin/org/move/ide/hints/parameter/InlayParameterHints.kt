@@ -23,8 +23,8 @@ object InlayParameterHints {
     }
 
     private fun isSimilar(hint: String, argumentText: String): Boolean {
-        val argText = argumentText.toLowerCase()
-        val hintText = hint.toLowerCase()
+        val argText = argumentText.lowercase()
+        val hintText = hint.lowercase()
         return argText.endsWith(hintText) || argText.startsWith(hintText)
     }
 }

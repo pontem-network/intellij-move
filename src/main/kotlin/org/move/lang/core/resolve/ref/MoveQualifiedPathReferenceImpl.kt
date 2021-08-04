@@ -1,7 +1,13 @@
 package org.move.lang.core.resolve.ref
 
-import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.MoveItemImport
+import org.move.lang.core.psi.MoveModuleDef
+import org.move.lang.core.psi.MoveNamedElement
+import org.move.lang.core.psi.MoveQualPathReferenceElement
+import org.move.lang.core.psi.ext.functionSignatures
+import org.move.lang.core.psi.ext.isSelf
+import org.move.lang.core.psi.ext.parentImport
+import org.move.lang.core.psi.ext.structSignatures
 import org.move.lang.core.resolve.MatchingProcessor
 import org.move.lang.core.resolve.resolveItem
 import org.move.lang.core.resolve.resolveModuleRefIntoQual
@@ -48,11 +54,12 @@ fun processModuleItems(
     for (namespace in namespaces) {
         val found = when (namespace) {
             Namespace.NAME -> processor.matchAll(
-                listOf(
-                    visibilities.flatMap { module.functionSignatures(it) },
-                    module.structSignatures(),
-                    module.consts(),
-                ).flatten()
+                visibilities.flatMap { module.functionSignatures(it) }
+//                listOf(
+//                    visibilities.flatMap { module.functionSignatures(it) },
+////                    module.structSignatures(),
+////                    module.consts(),
+//                ).flatten()
             )
             Namespace.TYPE -> processor.matchAll(module.structSignatures())
 //            Namespace.SCHEMA -> processor.matchAll(module.schemas())

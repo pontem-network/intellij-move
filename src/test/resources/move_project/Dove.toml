@@ -2,5 +2,6 @@
 name = "move_project"
 dialect = "pont"
 dependencies = [
-    { path = "./stdlib" }
+    { path = "./stdlib" },
+    { git = "https://github.com/pontem-network/move-stdlib.git" }
 ]
