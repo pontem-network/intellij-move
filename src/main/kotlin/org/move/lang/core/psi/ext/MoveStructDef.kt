@@ -12,7 +12,7 @@ import org.move.lang.core.types.StructType
 import javax.swing.Icon
 
 val MoveStructDef.fields: List<MoveStructFieldDef>
-    get() = structFieldsDefBlock.structFieldDefList
+    get() = structFieldsDefBlock?.structFieldDefList.orEmpty()
 
 val MoveStructDef.fieldsMap: Map<String, MoveStructFieldDef>
     get() {

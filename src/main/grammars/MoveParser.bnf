@@ -93,6 +93,7 @@
         MODULO         =  '%'
 
         AT         =  '@'
+        HASH         =  '#'
 
         // Contextual tokens
         LT_EQ           = '<='
@@ -138,6 +139,11 @@
 //   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
 File ::= (ScriptDef | AddressDef | ModuleDef)*
 
+Attr ::= '#' '[' <<comma_sep_items AttrItem>> ']' { pin = 1 }
+AttrItem ::= IDENTIFIER AttrItemArguments?
+AttrItemArguments ::= '(' <<comma_sep_items AttrItemArgument>> ')'
+AttrItemArgument ::= IDENTIFIER '=' LiteralExpr
+
 ScriptDef ::= script ScriptBlock {
     pin = 1
     implements = [ "org.move.lang.core.psi.MoveImportStatementsOwner" ]
@@ -172,9 +178,9 @@ private AddressBlockItems ::= ModuleDef*
 }
 private AddressBlockItems_recover ::= !'}'
 
-ModuleDef ::= module (AddressRef '::')? IDENTIFIER ModuleBlock
+ModuleDef ::= Attr* module (AddressRef '::')? IDENTIFIER ModuleBlock
 {
-    pin = 1
+    pin = "module"
     name = "module declaration"
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
@@ -200,7 +206,7 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
     recoverWhile = Item_recover
 }
 // top-level recovery
-private Item_first ::= use | public | native | fun | const | struct | spec
+private Item_first ::= use | public | native | fun | const | struct | spec | Attr
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= ImportStatement | FriendStatement
@@ -280,9 +286,9 @@ FunctionSignature ::= fun IDENTIFIER TypeParameterList?
 }
 private FunctionSignature__recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
 
-FunctionDef ::= FunctionSignatureWithOptionalVisibility CodeBlock
+FunctionDef ::= Attr* FunctionSignatureWithOptionalVisibility CodeBlock
 {
-    pin = 1
+    pin = 2
 //    recoverWhile = Item_recover
 }
 //NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';'
@@ -374,7 +380,7 @@ StructSignature ::= struct IDENTIFIER TypeParameterList? AbilitiesList?
     mixin = "org.move.lang.core.psi.mixins.MoveStructSignatureMixin"
 }
 
-StructDef ::= StructSignature StructFieldsDefBlock
+StructDef ::= Attr* StructSignature StructFieldsDefBlock { pin = 2 }
 
 //NativeStructDef ::= native resource? struct IDENTIFIER TypeParameterList? ';'
 //{
@@ -448,9 +454,9 @@ StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
 //}
 FriendStatement ::= friend FullyQualifiedModuleRef ';' { pin = 1 }
 
-ImportStatement ::= use (ModuleItemsImport | ModuleImport) ';'
+ImportStatement ::= Attr* use (ModuleItemsImport | ModuleImport) ';'
 {
-    pin = 1
+    pin = "use"
 }
 //private ImportStatement_recover ::= !ModuleItem_first
 //private ImportStatement_body ::= ModuleItemsImport | ModuleImport

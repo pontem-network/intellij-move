@@ -130,6 +130,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "&"        { return AND; }
       "|"        { return OR; }
       "@"        { return AT; }
+      "#"        { return HASH; }
 
       // keywords
 //      "address"        { return ADDRESS; }
