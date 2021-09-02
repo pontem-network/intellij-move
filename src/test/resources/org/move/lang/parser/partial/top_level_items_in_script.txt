@@ -70,7 +70,7 @@ FILE
         MoveModuleImportImpl(MODULE_IMPORT)
           MoveFullyQualifiedModuleRefImpl(FULLY_QUALIFIED_MODULE_REF)
             MoveAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_LITERAL)('0x0')
+              PsiElement(ADDRESS_IDENT)('0x0')
             PsiElement(::)('::')
             PsiErrorElement:'::' or IDENTIFIER expected, got '}'
               <empty list>
@@ -89,7 +89,7 @@ FILE
         MoveModuleImportImpl(MODULE_IMPORT)
           MoveFullyQualifiedModuleRefImpl(FULLY_QUALIFIED_MODULE_REF)
             MoveAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_LITERAL)('0x0')
+              PsiElement(ADDRESS_IDENT)('0x0')
             PsiElement(::)('::')
             PsiErrorElement:'::' or IDENTIFIER expected, got 'fun'
               <empty list>
@@ -112,7 +112,7 @@ FILE
             MoveModuleImportImpl(MODULE_IMPORT)
               MoveFullyQualifiedModuleRefImpl(FULLY_QUALIFIED_MODULE_REF)
                 MoveAddressRefImpl(ADDRESS_REF)
-                  PsiElement(ADDRESS_LITERAL)('0x0')
+                  PsiElement(ADDRESS_IDENT)('0x0')
                 PsiElement(::)('::')
                 PsiErrorElement:'::' or IDENTIFIER expected, got '}'
                   <empty list>
@@ -133,7 +133,7 @@ FILE
         MoveModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
           MoveFullyQualifiedModuleRefImpl(FULLY_QUALIFIED_MODULE_REF)
             MoveAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_LITERAL)('0x0')
+              PsiElement(ADDRESS_IDENT)('0x0')
             PsiElement(::)('::')
             PsiElement(IDENTIFIER)('Transaction')
           PsiElement(::)('::')
@@ -167,7 +167,7 @@ FILE
         MoveModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
           MoveFullyQualifiedModuleRefImpl(FULLY_QUALIFIED_MODULE_REF)
             MoveAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_LITERAL)('0x0')
+              PsiElement(ADDRESS_IDENT)('0x0')
             PsiElement(::)('::')
             PsiElement(IDENTIFIER)('Transaction')
           PsiElement(::)('::')
@@ -203,7 +203,7 @@ FILE
         MoveModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
           MoveFullyQualifiedModuleRefImpl(FULLY_QUALIFIED_MODULE_REF)
             MoveAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_LITERAL)('0x0')
+              PsiElement(ADDRESS_IDENT)('0x0')
             PsiElement(::)('::')
             PsiElement(IDENTIFIER)('Transaction')
           PsiElement(::)('::')
@@ -238,7 +238,7 @@ FILE
         MoveModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
           MoveFullyQualifiedModuleRefImpl(FULLY_QUALIFIED_MODULE_REF)
             MoveAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_LITERAL)('0x0')
+              PsiElement(ADDRESS_IDENT)('0x0')
             PsiElement(::)('::')
             PsiElement(IDENTIFIER)('Transaction')
           PsiElement(::)('::')
@@ -253,7 +253,7 @@ FILE
         MoveModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
           MoveFullyQualifiedModuleRefImpl(FULLY_QUALIFIED_MODULE_REF)
             MoveAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_LITERAL)('0x0')
+              PsiElement(ADDRESS_IDENT)('0x0')
             PsiElement(::)('::')
             PsiElement(IDENTIFIER)('Transaction')
           PsiElement(::)('::')

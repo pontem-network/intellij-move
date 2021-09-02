@@ -11,6 +11,8 @@ FILE
       PsiWhiteSpace('\n')
       PsiComment(BLOCK_COMMENT)('/**\nmultiline comment\n*/')
       PsiWhiteSpace('\n    ')
+      PsiComment(BLOCK_COMMENT)('/**\n * One can have /* nested */\n    * // block comments\n    */')
+      PsiWhiteSpace('\n    ')
       MoveFunctionDefImpl(FUNCTION_DEF)
         MoveFunctionSignatureImpl(FUNCTION_SIGNATURE)
           PsiElement(fun)('fun')

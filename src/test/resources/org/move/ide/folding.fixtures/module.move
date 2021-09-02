@@ -3,7 +3,11 @@ module M <fold text='{...}'>{
         let a = 1;
     }</fold>
 
-    spec fun main <fold text='{...}'>{
+    spec main <fold text='{...}'>{
+        assert true;
+    }</fold>
+
+    spec fun spec_fun <fold text='{...}'>{
         assert true;
     }</fold>
 

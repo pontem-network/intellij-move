@@ -3,7 +3,7 @@ module M {
         assert true;
     }
 
-    spec struct MyStruct {
+    spec MyStruct {
         assert true;
     }
 

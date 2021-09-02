@@ -14,8 +14,6 @@ class MoveHighlighter : SyntaxHighlighterBase() {
 
     override fun getTokenHighlights(tokenType: IElementType?): Array<TextAttributesKey> {
         val color = when (tokenType) {
-            IDENTIFIER -> Default.IDENTIFIER
-
             BLOCK_COMMENT -> Default.BLOCK_COMMENT
             LINE_COMMENT -> Default.LINE_COMMENT
 
@@ -33,6 +31,7 @@ class MoveHighlighter : SyntaxHighlighterBase() {
             BOOL_LITERAL -> Default.KEYWORD
             in MOVE_KEYWORDS -> Default.KEYWORD
 
+            IDENTIFIER -> Default.IDENTIFIER
             else -> null
         }
         return pack(color)

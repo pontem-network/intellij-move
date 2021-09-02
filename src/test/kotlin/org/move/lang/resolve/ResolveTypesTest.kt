@@ -87,8 +87,8 @@ class ResolveTypesTest : ResolveTestCase() {
             struct MyStruct {}
                  //X
             
-            spec struct MyStruct {
-                      //^
+            spec MyStruct {
+               //^
                 assert true;
             }
         }

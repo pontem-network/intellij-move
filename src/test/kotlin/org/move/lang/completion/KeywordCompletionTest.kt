@@ -99,45 +99,35 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
-    fun `test spec fun`() = doSingleCompletion("""
-        module M {
-            spec f/*caret*/
-        }
-    """, """
-        module M {
-            spec fun /*caret*/
-        }
-    """)
+//    fun `test spec fun`() = doSingleCompletion("""
+//        module M {
+//            spec f/*caret*/
+//        }
+//    """, """
+//        module M {
+//            spec fun /*caret*/
+//        }
+//    """)
 
-    fun `test spec struct`() = doSingleCompletion("""
-        module M {
-            spec st/*caret*/
-        }
-    """, """
-        module M {
-            spec struct /*caret*/
-        }
-    """)
+//    fun `test spec module`() = doSingleCompletion("""
+//        module M {
+//            spec mod/*caret*/
+//        }
+//    """, """
+//        module M {
+//            spec module /*caret*/
+//        }
+//    """)
 
-    fun `test spec module`() = doSingleCompletion("""
-        module M {
-            spec mod/*caret*/
-        }
-    """, """
-        module M {
-            spec module /*caret*/
-        }
-    """)
-
-    fun `test spec schema`() = doSingleCompletion("""
-        module M {
-            spec sch/*caret*/
-        }
-    """, """
-        module M {
-            spec schema /*caret*/
-        }
-    """)
+//    fun `test spec schema`() = doSingleCompletion("""
+//        module M {
+//            spec sch/*caret*/
+//        }
+//    """, """
+//        module M {
+//            spec schema /*caret*/
+//        }
+//    """)
 
     fun `test public`() = completionFixture.checkContainsCompletion("""
         module M {

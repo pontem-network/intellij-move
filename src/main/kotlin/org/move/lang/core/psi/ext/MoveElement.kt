@@ -4,9 +4,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IElementType
 import org.move.lang.MoveElementTypes.SPEC_BLOCK
 import org.move.lang.core.psi.MoveElement
-import org.move.lang.core.psi.MoveFunctionSpecDef
 import org.move.lang.core.psi.MoveSpecDef
-import org.move.lang.core.psi.MoveStructSpecDef
 import org.move.lang.core.resolve.walkUpThroughScopes
 
 fun MoveElement.isDescendantOf(elementType: IElementType): Boolean {

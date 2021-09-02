@@ -2,13 +2,11 @@ module M {
     spec
     spec module
     spec module {
+    spec main
+    spec main {
     spec fun
-    spec fun main
-    spec fun main {
-    spec struct
-    spec struct MyStruct
-    spec struct MyStruct<
-    spec struct MyStruct {
+    spec fun spec_fun
+    spec fun spec_fun {
 
     fun main() {}
 }

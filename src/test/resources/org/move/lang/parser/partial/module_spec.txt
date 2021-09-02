@@ -8,7 +8,7 @@ FILE
       PsiElement({)('{')
       PsiWhiteSpace('\n    ')
       PsiElement(spec)('spec')
-      PsiErrorElement:define, fun, module, schema or struct expected, got 'spec'
+      PsiErrorElement:IDENTIFIER, fun, module or schema expected, got 'spec'
         <empty list>
       PsiWhiteSpace('\n    ')
       MoveModuleSpecDefImpl(MODULE_SPEC_DEF)
@@ -25,86 +25,68 @@ FILE
         PsiWhiteSpace(' ')
         MoveSpecBlockImpl(SPEC_BLOCK)
           PsiElement({)('{')
-      PsiErrorElement:<expression> or '}' expected, got 'spec'
-        <empty list>
-      PsiWhiteSpace('\n    ')
-      MoveFunctionSpecDefImpl(FUNCTION_SPEC_DEF)
-        PsiElement(spec)('spec')
-        PsiWhiteSpace(' ')
-        PsiElement(fun)('fun')
-        PsiErrorElement:IDENTIFIER expected, got 'spec'
-          <empty list>
-      PsiWhiteSpace('\n    ')
-      MoveFunctionSpecDefImpl(FUNCTION_SPEC_DEF)
-        PsiElement(spec)('spec')
-        PsiWhiteSpace(' ')
-        PsiElement(fun)('fun')
-        PsiWhiteSpace(' ')
-        PsiElement(IDENTIFIER)('main')
-        PsiErrorElement:'{' expected, got 'spec'
-          <empty list>
-      PsiWhiteSpace('\n    ')
-      MoveFunctionSpecDefImpl(FUNCTION_SPEC_DEF)
-        PsiElement(spec)('spec')
-        PsiWhiteSpace(' ')
-        PsiElement(fun)('fun')
-        PsiWhiteSpace(' ')
-        PsiElement(IDENTIFIER)('main')
-        PsiWhiteSpace(' ')
-        MoveSpecBlockImpl(SPEC_BLOCK)
-          PsiElement({)('{')
-      PsiErrorElement:<expression> or '}' expected, got 'spec'
-        <empty list>
-      PsiWhiteSpace('\n    ')
-      MoveStructSpecDefImpl(STRUCT_SPEC_DEF)
-        PsiElement(spec)('spec')
-        PsiWhiteSpace(' ')
-        PsiElement(struct)('struct')
-        PsiErrorElement:IDENTIFIER expected, got 'spec'
-          <empty list>
-      PsiWhiteSpace('\n    ')
-      MoveStructSpecDefImpl(STRUCT_SPEC_DEF)
-        PsiElement(spec)('spec')
-        PsiWhiteSpace(' ')
-        PsiElement(struct)('struct')
-        PsiWhiteSpace(' ')
-        PsiElement(IDENTIFIER)('MyStruct')
-        PsiErrorElement:'{' expected, got 'spec'
-          <empty list>
-      PsiWhiteSpace('\n    ')
-      MoveStructSpecDefImpl(STRUCT_SPEC_DEF)
-        PsiElement(spec)('spec')
-        PsiWhiteSpace(' ')
-        PsiElement(struct)('struct')
-        PsiWhiteSpace(' ')
-        PsiElement(IDENTIFIER)('MyStruct')
-        PsiErrorElement:'{' expected, got '<'
-          <empty list>
-      PsiElement(<)('<')
-      PsiWhiteSpace('\n    ')
-      MoveStructSpecDefImpl(STRUCT_SPEC_DEF)
-        PsiElement(spec)('spec')
-        PsiWhiteSpace(' ')
-        PsiElement(struct)('struct')
-        PsiWhiteSpace(' ')
-        PsiElement(IDENTIFIER)('MyStruct')
-        PsiWhiteSpace(' ')
-        MoveSpecBlockImpl(SPEC_BLOCK)
-          PsiElement({)('{')
-          PsiErrorElement:<expression> or '}' expected, got 'fun'
+          PsiErrorElement:<expression> or '}' expected, got 'spec'
             <empty list>
-      PsiWhiteSpace('\n\n    ')
-      MoveFunctionDefImpl(FUNCTION_DEF)
+      PsiWhiteSpace('\n    ')
+      MoveNameSpecDefImpl(NAME_SPEC_DEF)
+        PsiElement(spec)('spec')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('main')
+        PsiErrorElement:'{' expected, got 'spec'
+          <empty list>
+      PsiWhiteSpace('\n    ')
+      MoveNameSpecDefImpl(NAME_SPEC_DEF)
+        PsiElement(spec)('spec')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('main')
+        PsiWhiteSpace(' ')
+        MoveSpecBlockImpl(SPEC_BLOCK)
+          PsiElement({)('{')
+          PsiErrorElement:<expression> or '}' expected, got 'spec'
+            <empty list>
+      PsiWhiteSpace('\n    ')
+      MoveSpecFunctionDefImpl(SPEC_FUNCTION_DEF)
+        PsiElement(spec)('spec')
+        PsiWhiteSpace(' ')
+        MoveFunctionSignatureImpl(FUNCTION_SIGNATURE)
+          PsiElement(fun)('fun')
+          PsiErrorElement:IDENTIFIER expected, got 'spec'
+            <empty list>
+      PsiWhiteSpace('\n    ')
+      MoveSpecFunctionDefImpl(SPEC_FUNCTION_DEF)
+        PsiElement(spec)('spec')
+        PsiWhiteSpace(' ')
         MoveFunctionSignatureImpl(FUNCTION_SIGNATURE)
           PsiElement(fun)('fun')
           PsiWhiteSpace(' ')
-          PsiElement(IDENTIFIER)('main')
-          MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
-            PsiElement(()('(')
-            PsiElement())(')')
+          PsiElement(IDENTIFIER)('spec_fun')
+          PsiErrorElement:'(' or < expected, got 'spec'
+            <empty list>
+      PsiWhiteSpace('\n    ')
+      MoveSpecFunctionDefImpl(SPEC_FUNCTION_DEF)
+        PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
-        MoveCodeBlockImpl(CODE_BLOCK)
+        MoveFunctionSignatureImpl(FUNCTION_SIGNATURE)
+          PsiElement(fun)('fun')
+          PsiWhiteSpace(' ')
+          PsiElement(IDENTIFIER)('spec_fun')
+          PsiErrorElement:'(' or < expected, got '{'
+            <empty list>
+        PsiWhiteSpace(' ')
+        MoveSpecBlockImpl(SPEC_BLOCK)
           PsiElement({)('{')
+          PsiWhiteSpace('\n\n    ')
+          MoveInnerSpecFunctionDefImpl(INNER_SPEC_FUNCTION_DEF)
+            MoveFunctionSignatureImpl(FUNCTION_SIGNATURE)
+              PsiElement(fun)('fun')
+              PsiWhiteSpace(' ')
+              PsiElement(IDENTIFIER)('main')
+              MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
+                PsiElement(()('(')
+                PsiElement())(')')
+            PsiWhiteSpace(' ')
+            MoveSpecBlockImpl(SPEC_BLOCK)
+              PsiElement({)('{')
+              PsiElement(})('}')
+          PsiWhiteSpace('\n')
           PsiElement(})('}')
-      PsiWhiteSpace('\n')
-      PsiElement(})('}')
