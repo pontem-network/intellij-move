@@ -1,4 +1,6 @@
 module M {
+    struct Coin<phantom CoinType> {}
+
     struct ValidatorConfig<T> has store, drop {
         val1: u8,
         val2: vector<T>,

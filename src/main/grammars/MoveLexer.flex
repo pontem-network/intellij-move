@@ -158,6 +158,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "while"          { return WHILE; }
       "let"            { return LET; }
       "friend"            { return FRIEND; }
+      "phantom"            { return PHANTOM; }
 
       "schema"         { return SCHEMA; }
 //      "define"         { return DEFINE; }

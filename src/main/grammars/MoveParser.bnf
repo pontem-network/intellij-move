@@ -571,8 +571,8 @@ private TypeParameter_recover ::= !('>' | '(' | '{' | IDENTIFIER)
 //}
 //private TypeParameterList_items_recovery ::= !('{'|'('|'>')
 
-TypeParameter ::= IDENTIFIER TypeParamBound? {
-    pin = 1
+TypeParameter ::= phantom? IDENTIFIER TypeParamBound? {
+    pin = 2
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
                    "org.move.lang.core.types.HasType" ]
     mixin = "org.move.lang.core.psi.mixins.MoveTypeParameterMixin"
