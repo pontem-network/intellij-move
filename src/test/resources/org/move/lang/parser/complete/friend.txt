@@ -12,7 +12,7 @@ FILE
         PsiWhiteSpace(' ')
         MoveFullyQualifiedModuleRefImpl(FULLY_QUALIFIED_MODULE_REF)
           MoveAddressRefImpl(ADDRESS_REF)
-            PsiElement(ADDRESS_LITERAL)('0x1')
+            PsiElement(ADDRESS_IDENT)('0x1')
           PsiElement(::)('::')
           PsiElement(IDENTIFIER)('M2')
         PsiElement(;)(';')

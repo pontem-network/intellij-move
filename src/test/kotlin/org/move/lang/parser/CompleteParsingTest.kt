@@ -5,6 +5,7 @@ import org.move.utils.tests.parser.MoveParsingTestCase
 class CompleteParsingTest : MoveParsingTestCase("complete") {
     fun `test comments`() = doTest(true)
     fun `test addresses`() = doTest(true)
+    fun `test attributes`() = doTest(true)
 
     // functions
     fun `test function declarations`() = doTest(true)
@@ -34,7 +35,4 @@ class CompleteParsingTest : MoveParsingTestCase("complete") {
     fun `test contextual token operators`() = doTest(true)
     fun `test generics`() = doTest(true)
     fun `test annotated literals`() = doTest(true)
-
-    fun `test specs`() = doTest(true)
-
 }

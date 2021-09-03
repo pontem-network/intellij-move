@@ -435,7 +435,7 @@ FILE
           PsiElement(IDENTIFIER)('main')
           MoveTypeParameterListImpl(TYPE_PARAMETER_LIST)
             PsiElement(<)('<')
-            PsiErrorElement:IDENTIFIER expected, got '('
+            PsiErrorElement:<type parameter> expected, got '('
               <empty list>
           MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
             PsiElement(()('(')
@@ -477,7 +477,7 @@ FILE
             MoveTypeParameterImpl(TYPE_PARAMETER)
               PsiElement(IDENTIFIER)('V')
             PsiElement(,)(',')
-            PsiErrorElement:IDENTIFIER expected, got '('
+            PsiErrorElement:<type parameter> expected, got '('
               <empty list>
           MoveFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
             PsiElement(()('(')

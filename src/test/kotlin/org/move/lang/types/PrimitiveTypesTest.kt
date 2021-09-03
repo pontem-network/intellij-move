@@ -60,7 +60,7 @@ class PrimitiveTypesTest: TypificationTestCase() {
     fun `test address`() = testExpr("""
         script {
             fun main() {
-                let a = 0xBEEF;
+                let a = @0xBEEF;
                       //^ address
             }
         }

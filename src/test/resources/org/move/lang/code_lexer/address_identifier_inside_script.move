@@ -1,1 +1,0 @@
-script { fun main() { let address = 1; }}

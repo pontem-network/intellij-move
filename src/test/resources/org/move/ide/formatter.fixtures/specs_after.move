@@ -3,7 +3,7 @@ module M {
         assert true;
     }
 
-    spec struct MyStruct {
+    spec MyStruct {
         assert true;
     }
 
@@ -12,12 +12,12 @@ module M {
     }
 
     spec module {
-        define is_currency(): bool {
+        fun is_currency(): bool {
             true
         }
     }
 
-    spec define spec_is_lbr<CoinType>(): bool {
+    spec fun spec_is_lbr<CoinType>(): bool {
         type<CoinType>() == type<LBR>();
     }
 }

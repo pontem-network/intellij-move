@@ -58,7 +58,7 @@ class KeywordCompletionContributor : CompletionContributor() {
         extend(
             CompletionType.BASIC,
             moduleBlock().and(onStatementBeginning("spec")),
-            KeywordCompletionProvider("fun", "struct", "module", "schema")
+            KeywordCompletionProvider("module", "fun", "schema")
         )
         extend(
             CompletionType.BASIC,

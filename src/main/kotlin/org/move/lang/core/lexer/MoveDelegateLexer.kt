@@ -5,21 +5,21 @@ import com.intellij.psi.tree.IElementType
 import org.move.lang.MoveElementTypes.*
 import org.move.lang._MoveLexer
 
-val SPEC_KEYWORDS = mapOf(
-//    "global" to GLOBAL,
-//    "local" to LOCAL,
-    "assert" to ASSERT,
-    "assume" to ASSUME,
-    "invariant" to INVARIANT,
-    "requires" to REQUIRES,
-    "modifies" to MODIFIES,
-//    "forall" to FORALL,
-//    "exists" to EXISTS,
-    "define" to DEFINE,
-    "pragma" to PRAGMA,
-    "apply" to APPLY,
-    "aborts_if" to ABORTS_IF,
-)
+//val SPEC_KEYWORDS = mapOf(
+////    "global" to GLOBAL,
+////    "local" to LOCAL,
+//    "assert" to ASSERT,
+//    "assume" to ASSUME,
+//    "invariant" to INVARIANT,
+//    "requires" to REQUIRES,
+//    "modifies" to MODIFIES,
+////    "forall" to FORALL,
+////    "exists" to EXISTS,
+////    "define" to DEFINE,
+//    "pragma" to PRAGMA,
+//    "apply" to APPLY,
+//    "aborts_if" to ABORTS_IF,
+//)
 
 
 @Suppress("UnstableApiUsage")
@@ -83,29 +83,29 @@ class MoveDelegateLexer : RestartableLexer,
 //        }
 //    }
 //
-    override fun getTokenType(): IElementType? {
-        val tokenType = super.getTokenType()
-
-        if (tokenType == ADDRESS && depth > 0) {
-            return IDENTIFIER
-        }
-
-        if (tokenType == L_BRACE) depth += 1
-        if (tokenType == R_BRACE) depth -= 1
+//    override fun getTokenType(): IElementType? {
+//        val tokenType = super.getTokenType()
 //
 //        if (tokenType == ADDRESS && depth > 0) {
 //            return IDENTIFIER
 //        }
 //
-//        changeSpecBlockState(tokenType)
-//
-//        if (isSpecBlock) {
-//            if (tokenType == IDENTIFIER && super.getTokenText() in SPEC_KEYWORDS.keys) {
-//                return SPEC_KEYWORDS.get(super.getTokenText())
-//            }
-//        }
-        return tokenType
-    }
+//        if (tokenType == L_BRACE) depth += 1
+//        if (tokenType == R_BRACE) depth -= 1
+////
+////        if (tokenType == ADDRESS && depth > 0) {
+////            return IDENTIFIER
+////        }
+////
+////        changeSpecBlockState(tokenType)
+////
+////        if (isSpecBlock) {
+////            if (tokenType == IDENTIFIER && super.getTokenText() in SPEC_KEYWORDS.keys) {
+////                return SPEC_KEYWORDS.get(super.getTokenText())
+////            }
+////        }
+//        return tokenType
+//    }
 }
 
 fun createMoveLexer(): Lexer = MoveDelegateLexer()

@@ -45,4 +45,15 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test const type`() = testExpr("""
+    module M {
+        const NUM: u8 = 1;
+        
+        fun main() {
+            NUM;
+          //^ u8  
+        }
+    }    
+    """)
 }

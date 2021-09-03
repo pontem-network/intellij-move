@@ -78,7 +78,7 @@ class SignerType : BaseType() {
 }
 
 class IntegerType(
-    private val precision: String? = null
+    val precision: String? = null
 ) :
     PrimitiveType(precision ?: "integer") {
 

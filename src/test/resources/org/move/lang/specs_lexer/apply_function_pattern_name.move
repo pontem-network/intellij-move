@@ -1,1 +1,0 @@
-module M { spec module { apply Foo to t; } }

@@ -134,11 +134,11 @@ module M {
     fun `test spec function`() = doTestByText(
         """
 module M {
-    spec fun main {/*caret*/}
+    spec main {/*caret*/}
 } 
     """, """
 module M {
-    spec fun main {
+    spec main {
         /*caret*/
     }
 } 

@@ -126,7 +126,7 @@ class ExpressionTypesTest: TypificationTestCase() {
         struct S { addr: address }
         fun main() {
             let s = S { addr: 0x1 };
-            ((&s).addr)
+            ((&s).addr);
           //^ address 
         }
     }    
@@ -138,7 +138,7 @@ class ExpressionTypesTest: TypificationTestCase() {
         struct S { addr: Addr }
         fun main() {
             let s = S { addr: Addr {} };
-            ((&s).addr)
+            ((&s).addr);
           //^ 0x1::M::Addr 
         }
     }    
@@ -150,8 +150,26 @@ class ExpressionTypesTest: TypificationTestCase() {
         struct S { addr: Addr }
         fun main() {
             let s = S { addr: Addr {} };
-            &mut s.addr
+            &mut s.addr;
           //^ &mut 0x1::M::Addr 
+        }
+    }    
+    """)
+
+    fun `test add expr with untyped and typed integer`() = testExpr("""
+    module M {
+        fun main() {
+            (1 + 1u8);
+          //^ u8  
+        }
+    }    
+    """)
+
+    fun `test add expr with untyped and typed integer reversed`() = testExpr("""
+    module M {
+        fun main() {
+            (1u8 + 1);
+          //^ u8  
         }
     }    
     """)

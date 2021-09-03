@@ -39,8 +39,8 @@ class ResolveFunctionTest : ResolveTestCase() {
             fun call(): u8 {}
               //X
 
-            spec fun call {
-                   //^
+            spec call {
+               //^
                 assert true;
             }
         }
