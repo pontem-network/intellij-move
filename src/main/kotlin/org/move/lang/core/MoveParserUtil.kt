@@ -66,6 +66,27 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
+    fun invariantModifierKeyword(b: PsiBuilder, level: Int): Boolean {
+        if (b.tokenType in tokenSetOf(PACK, UNPACK, UPDATE)) {
+            b.advanceLexer();
+            return true;
+        };
+        if (b.tokenType != IDENTIFIER) return false;
+
+        val tokenType = when (b.tokenText) {
+            "pack" -> PACK
+            "unpack" -> UNPACK
+            "update" -> UPDATE
+            else -> {
+                return false
+            }
+        }
+        b.remapCurrentToken(tokenType);
+        b.advanceLexer();
+        return true;
+    }
+
+    @JvmStatic
     fun addressKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "address", ADDRESS)
 
     @JvmStatic
@@ -102,6 +123,9 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun invariantKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "invariant", INVARIANT)
+
+    @JvmStatic
+    fun axiomKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "axiom", AXIOM)
 
     @JvmStatic
     fun abortsIfKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "aborts_if", ABORTS_IF)

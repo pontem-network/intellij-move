@@ -4,16 +4,18 @@ module M {
     }
 
     spec module {
-        define all(): bool {}
-        native define all2(): bool;
+        fun all(): bool {}
+
+        /// Native function which is defined in the prover's prelude.
+        native fun serialize<MoveValue>(v: &MoveValue): vector<u8>;
     }
 
-    spec struct MyStruct {}
-    spec fun myfun {}
-    spec define spec_is_valid(addr: address) {}
+    spec MyStruct {}
+    spec fun spec_is_valid(addr: address) {}
+    spec native fun spec_is_valid_native(addr: address);
 
     fun unpack() {}
-    spec fun unpack {}
+    spec unpack {}
 
     spec schema ModuleInvariant<X, Y> {}
 }

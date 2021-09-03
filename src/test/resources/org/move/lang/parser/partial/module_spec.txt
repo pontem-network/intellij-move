@@ -8,7 +8,7 @@ FILE
       PsiElement({)('{')
       PsiWhiteSpace('\n    ')
       PsiElement(spec)('spec')
-      PsiErrorElement:IDENTIFIER, fun, module or schema expected, got 'spec'
+      PsiErrorElement:IDENTIFIER, fun, module, native or schema expected, got 'spec'
         <empty list>
       PsiWhiteSpace('\n    ')
       MoveModuleSpecDefImpl(MODULE_SPEC_DEF)

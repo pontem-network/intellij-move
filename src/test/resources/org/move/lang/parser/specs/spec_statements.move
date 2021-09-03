@@ -8,6 +8,9 @@ module M {
     spec main {
         fun inner_spec_fun() {}
         emits msg to handle if !is_synthetic;
+        ensures [concrete] result == 1;
+        ensures [global] result == 1;
+
         apply ModuleInvariant to bar;
         aborts_if exists(Signer::spec_address_of(to_limit));
         aborts_if exists<Window>(Signer::spec_address_of(to_limit));

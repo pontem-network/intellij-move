@@ -7,8 +7,10 @@ module M {
         global amount: u64;
 
         invariant x > 0;
+        invariant<T> x > 0;
+        axiom x > 0;
+        axiom<T> x > 0;
         invariant x == y;
-        invariant module old(y) < x;
 
         invariant update old(y) < x;
         invariant update expected_coin_sum = expected_coin_sum - old(x) + x;

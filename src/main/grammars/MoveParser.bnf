@@ -118,6 +118,11 @@
         WITH     = 'with_kw'
         INCLUDE     = 'include_kw'
         INVARIANT     = 'invariant_kw'
+        AXIOM     = 'axiom_kw'
+
+        PACK     = 'pack_kw'
+        UNPACK     = 'unpack_kw'
+        UPDATE     = 'update_kw'
 
         ASSERT     = 'assert_kw'
         ASSUME     = 'assume_kw'
@@ -215,7 +220,7 @@ private Item_recover ::= !('}' | <<eof>> | Item_first)
 private ModuleItem_item ::= ImportStatement | FriendStatement
                             | StructDef | FunctionDef
                             | NativeStructDef | NativeFunctionDef
-                            | SpecFunctionDef
+                            | SpecFunctionDef | SpecNativeFunctionDef
                             | ConstDef
                             | SpecDef
 //private ModuleItem_item ::= ImportStatement | StructDef | NativeStructDef
@@ -267,8 +272,10 @@ ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
 //}
 
 SpecFunctionDef ::= (spec FunctionSignature) SpecBlock { pin = 1 }
+SpecNativeFunctionDef ::= (spec native) FunctionSignature ';' { pin = 1 }
+
 InnerSpecFunctionDef ::= FunctionSignature SpecBlock { pin = 1 }
-InnerNativeSpecFunctionDef ::= native FunctionSignature SpecBlock { pin = 1 }
+InnerNativeSpecFunctionDef ::= native FunctionSignature ';' { pin = 1 }
 
 NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';' { pin = 2 }
 NativeStructDef ::= native StructSignature ';' { pin = 2 }
@@ -975,7 +982,9 @@ StructFieldRef ::= IDENTIFIER
     mixin = "org.move.lang.core.psi.ext.MoveStructFieldRefMixin"
 }
 
-IndexExpr ::= Expr '[' Expr ']' { rightAssociative = true }
+IndexExpr ::= Expr IndexArg
+// Do not inline this rule, it breaks expression parsing
+private IndexArg ::= '[' Expr ']'
 
 RefExpr ::= QualPath
 {
@@ -1037,6 +1046,7 @@ private aborts_if ::= <<abortsIfKeyword>>
 private include ::= <<includeKeyword>>
 
 private invariant ::= <<invariantKeyword>>
+private axiom ::= <<axiomKeyword>>
 private forall ::= <<forallKeyword>>
 private exists ::= <<existsKeyword>>
 private with ::= <<withKeyword>>
@@ -1207,6 +1217,7 @@ private SpecBlockStatement ::= VariableStatement | LocalVariableStatement | Glob
                                | ModifiesStatement
                                | IncludeStatement
                                | InvariantStatement
+                               | AxiomStatement
                                | ApplyStatement
                                | EmitsStatement
                                | AggregatePredicateStatement
@@ -1245,7 +1256,7 @@ PragmaStatement ::= pragma <<comma_sep_items PragmaAttribute>> ';' { pin = 1 }
 PragmaAttribute ::= IDENTIFIER ('=' LiteralExpr)?
 
 SpecExpr ::= AssumeSpecExpr | AssertSpecExpr | AbortsIfSpecExpr
-                | RequiresSpecExpr | EnsuresSpecExpr | ModifiesSpecExpr | InvariantSpecExpr
+                | RequiresSpecExpr | EnsuresSpecExpr | ModifiesSpecExpr | InvariantSpecExpr | AxiomSpecExpr
 {
     extends = Expr
 }
@@ -1278,16 +1289,21 @@ IncludeStatement ::= include SpecVisibility? Expr ';' { pin = 1 }
 
 FunctionPattern ::= (public | internal)? IDENTIFIER TypeArgumentList? { pin = 2 }
 
+private InvariantModifier ::= <<invariantModifierKeyword>>
 InvariantStatement ::= InvariantSpecExpr ';'
-InvariantSpecExpr ::= invariant
-//                    InvariantModifier?
-                    Predicate { pin = 1 }
-InvariantModifier ::= pack | unpack | module | update
+InvariantSpecExpr ::= invariant InvariantModifier? TypeParameterList? Predicate { pin = 1 }
+
+AxiomStatement ::= AxiomSpecExpr ';'
+AxiomSpecExpr ::= axiom TypeParameterList? Predicate { pin = 1 }
+//InvariantModifier ::= pack | unpack | module | update
 
 SpecVisibility ::= '[' <<comma_sep_items SpecVisibilityModifier>> ']' { pin = 1 }
-SpecVisibilityModifier ::= global | isolated | deactivated
-                                | concrete | abstract
-                                | assert | assume
+
+//private SpecVisibilityModifierIdent ::=
+SpecVisibilityModifier ::= IDENTIFIER
+//SpecVisibilityModifier ::= global | isolated | deactivated
+//                                | concrete | abstract
+//                                | assert | assume
 
 EmitsStatement ::= emits Expr to Expr EmitsCondition? ';' { pin = 1 }
 EmitsCondition ::= if Expr { pin = 1 }
