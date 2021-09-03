@@ -31,7 +31,8 @@
         LINE_COMMENT='regexp:(//.*\n)|(//.*\R)'
         BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
 
-        SENDER_ADDRESS_LITERAL='{{sender}}'
+        PLACEHOLDER_ADDRESS_IDENT='regexp:\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
+        PLACEHOLDER_ADDRESS_LITERAL='regexp:@\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
 
         ADDRESS_IDENT='regexp:0x[0-9a-fA-F]{1,40}'
         ADDRESS_LITERAL='regexp:@0x[0-9a-fA-F]{1,40}'
@@ -137,12 +138,14 @@
 //   * tokens are lowercase: for, if, identifier
 //   * rules are PascalCase: StructItem, EnuMoveariant
 //   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
-File ::= (ScriptDef | AddressDef | ModuleDef)*
+File ::= (NamedAddressDef | ScriptDef | AddressDef | ModuleDef)*
 
 Attr ::= '#' '[' <<comma_sep_items AttrItem>> ']' { pin = 1 }
 AttrItem ::= IDENTIFIER AttrItemArguments?
 AttrItemArguments ::= '(' <<comma_sep_items AttrItemArgument>> ')'
 AttrItemArgument ::= IDENTIFIER '=' LiteralExpr
+
+NamedAddressDef ::= address IDENTIFIER '=' AddressRef ';' { pin = 3 }
 
 ScriptDef ::= script ScriptBlock {
     pin = 1
@@ -912,7 +915,7 @@ LiteralExpr ::= HEX_INTEGER_LITERAL
                 | INTEGER_LITERAL
                 | HEX_STRING_LITERAL
                 | BYTE_STRING_LITERAL
-                | SENDER_ADDRESS_LITERAL
+                | PLACEHOLDER_ADDRESS_LITERAL
                 | ADDRESS_LITERAL
                 | BECH32_ADDRESS_LITERAL
                 | POLKADOT_ADDRESS_LITERAL
@@ -1016,7 +1019,7 @@ FullyQualifiedModuleRef ::= AddressRef '::' IDENTIFIER
 
 //private ADDRESS_IDENT ::= <<addressIdent>>
 AddressRef ::= NamedAddress
-                | SENDER_ADDRESS_LITERAL
+                | PLACEHOLDER_ADDRESS_IDENT
                 | BECH32_ADDRESS_IDENT
                 | POLKADOT_ADDRESS_IDENT
                 | ADDRESS_IDENT

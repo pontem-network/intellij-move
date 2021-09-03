@@ -1,3 +1,6 @@
+address named = 0x1;
+address named = {{alice}};
+
 module M {
     fun main() {
         @0x0;
@@ -5,7 +8,10 @@ module M {
         @0x00001111;
         @wallet1pxqfjvnu0utauj8fctw2s7j4mfyvrsjd59c2u8;
         @5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty;
-        {{sender}};
+        @{{sender}};
+        @{{default}};
+        @{{alice}};
+        @{{bob}};
     }
 }
 
