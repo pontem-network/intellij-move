@@ -12,13 +12,15 @@
 
             <p>Documentation can be found at <a href="https://github.com/pontem-network/intellij-move#readme">README</a></p>
 
-            <p>We'd appreciate if you click the "Star" button or give feedback so we'd know plugin is useful to the community!</p>
+            <p>We'd appreciate if you click the "Star" button or leave some feedback so we'd know plugin is useful to the community!</p>
         ]]>
     </description>
 
     <change-notes>
         <![CDATA[
             <p>0.15.0</p>
+            <p>Specs support</p>
+            <p>Move 1.3 support</p>
         ]]>
     </change-notes>
 
