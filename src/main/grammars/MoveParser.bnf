@@ -52,7 +52,7 @@
         BYTE_STRING_LITERAL='regexp:b"(.*)"'
 
         IDENTIFIER='regexp:[_a-zA-Z][_a-zA-Z0-9]*'
-//        FUNCTION_PATTERN_NAME='regexp:[*_a-zA-Z][*_a-zA-Z0-9]*'
+        FUNCTION_PATTERN_IDENT='regexp:[*_a-zA-Z][*_a-zA-Z0-9]*'
 
         L_BRACE          =  '{'
         R_BRACE          =  '}'
@@ -114,6 +114,7 @@
         EMITS     = 'emits_kw'
         TO     = 'to_kw'
         APPLY     = 'apply_kw'
+        INTERNAL     = 'internal_kw'
         EXCEPT     = 'except_kw'
         WITH     = 'with_kw'
         INCLUDE     = 'include_kw'
@@ -1287,7 +1288,12 @@ ModifiesSpecExpr ::= modifies Expr { pin = 1 }
 
 IncludeStatement ::= include SpecVisibility? Expr ';' { pin = 1 }
 
-FunctionPattern ::= (public | internal)? IDENTIFIER TypeArgumentList? { pin = 2 }
+private PatternVis ::= <<patternVisibility>>
+private PatternIdent ::= <<patternIdent>>
+
+//fake FunctionPatternIdent ::= ('*' | IDENTIFIER)+
+FunctionPattern ::= PatternVis? PatternIdent TypeArgumentList? { pin = 2 }
+//FunctionPattern ::= (public | internal)? IDENTIFIER TypeArgumentList? { pin = 2 }
 
 private InvariantModifier ::= <<invariantModifierKeyword>>
 InvariantStatement ::= InvariantSpecExpr ';'

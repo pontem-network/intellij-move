@@ -3,7 +3,9 @@ package org.move.lang.core
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiBuilderUtil
 import com.intellij.lang.parser.GeneratedParserUtilBase
+import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.tree.IElementType
+import com.intellij.psi.tree.TokenSet
 import org.move.lang.MoveElementTypes.*
 
 @Suppress("UNUSED_PARAMETER")
@@ -63,6 +65,45 @@ object MoveParserUtil : GeneratedParserUtilBase() {
         b.remapCurrentToken(HEX_INTEGER_LITERAL)
         b.advanceLexer()
         return true
+    }
+
+    @JvmStatic
+    fun patternIdent(b: PsiBuilder, level: Int): Boolean {
+        if (b.tokenType == FUNCTION_PATTERN_IDENT) { b.advanceLexer(); return true; }
+        if (b.tokenType in tokenSetOf(MUL, IDENTIFIER)) {
+            val marker = b.mark()
+            while (true) {
+                val consumed = consumeStopOnWhitespaceOrComment(b, tokenSetOf(MUL, IDENTIFIER))
+                if (!consumed) break
+            }
+            marker.collapse(FUNCTION_PATTERN_IDENT)
+            return true
+        }
+        return false
+    }
+
+    @JvmStatic
+    private fun consumeStopOnWhitespaceOrComment(b: PsiBuilder, tokens: TokenSet): Boolean {
+        val nextTokenType = b.rawLookup(1)
+        if (nextTokenType in MOVE_COMMENTS || nextTokenType == WHITE_SPACE) {
+            consumeToken(b, tokens)
+            return false
+        }
+        return consumeToken(b, tokens)
+    }
+
+    @JvmStatic
+    fun patternVisibility(b: PsiBuilder, level: Int): Boolean {
+        if (b.tokenType in tokenSetOf(PUBLIC, INTERNAL)) {
+            b.advanceLexer();
+            return true;
+        };
+        if (b.tokenType == IDENTIFIER && b.tokenText == "internal") {
+            b.remapCurrentToken(INTERNAL);
+            b.advanceLexer();
+            return true;
+        }
+        return false;
     }
 
     @JvmStatic

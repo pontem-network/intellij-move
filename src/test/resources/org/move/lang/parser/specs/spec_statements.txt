@@ -175,7 +175,7 @@ FILE
             PsiElement(to_kw)('to')
             PsiWhiteSpace(' ')
             MoveFunctionPatternImpl(FUNCTION_PATTERN)
-              PsiElement(IDENTIFIER)('bar')
+              PsiElement(FUNCTION_PATTERN_IDENT)('bar')
             PsiElement(;)(';')
           PsiWhiteSpace('\n        ')
           MoveAbortsIfStatementImpl(ABORTS_IF_STATEMENT)

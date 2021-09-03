@@ -9,6 +9,6 @@ class SpecsParsingTest: MoveParsingTestCase("specs") {
     fun `test pragma`() = doTest(true)
 //    fun `test define`() = doTest(true)
 
-//    fun `test apply`() = doTest(true)
+    fun `test apply`() = doTest(true)
     fun `test spec statements`() = doTest(true)
 }
