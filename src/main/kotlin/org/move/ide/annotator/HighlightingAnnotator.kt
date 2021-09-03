@@ -7,10 +7,10 @@ import com.intellij.psi.util.elementType
 import org.move.ide.colors.MoveColor
 import org.move.lang.MoveElementTypes.IDENTIFIER
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.identifierName
 import org.move.lang.core.psi.ext.isIdentifierOnly
 import org.move.lang.core.psi.ext.isSelf
-
 val INTEGER_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128")
 val PRIMITIVE_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("bool")
 val PRIMITIVE_BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer")
@@ -34,6 +34,7 @@ class HighlightingAnnotator : MoveAnnotator() {
 
     private fun highlightLeaf(element: PsiElement): MoveColor? {
         val parent = element.parent as? MoveElement ?: return null
+        if (element.elementType.toString().endsWith("_kw")) return MoveColor.KEYWORD
         return when {
             element.elementType == IDENTIFIER -> highlightIdentifier(parent)
             parent is MoveCopyExpr

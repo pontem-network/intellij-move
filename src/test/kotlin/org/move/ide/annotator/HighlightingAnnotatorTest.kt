@@ -90,4 +90,13 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
     }
         """
     )
+
+    fun `test spec keywords are highlighted`() = checkHighlighting("""
+    module M {
+        spec module {
+            <KEYWORD>assume</KEYWORD> 1 == 1;
+            <KEYWORD>assert</KEYWORD> 1 == 1;
+        }
+    }    
+    """)
 }
