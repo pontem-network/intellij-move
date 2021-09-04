@@ -159,7 +159,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "loop"           { return LOOP; }
       "while"          { return WHILE; }
       "let"            { return LET; }
-      "friend"            { return FRIEND; }
+//      "friend"            { return FRIEND; }
       "phantom"            { return PHANTOM; }
 
       "schema"         { return SCHEMA; }

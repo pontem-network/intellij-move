@@ -12,6 +12,7 @@ module M {
         axiom<T> x > 0;
         invariant x == y;
 
+        invariant global<Counter>(a).value < 128;
         invariant update old(y) < x;
         invariant update expected_coin_sum = expected_coin_sum - old(x) + x;
         invariant pack expected_coin_sum = expected_coin_sum + x;

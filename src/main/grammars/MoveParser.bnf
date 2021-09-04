@@ -107,10 +107,12 @@
         LT_EQ_EQ_GT     = '<==>'
 
         ADDRESS     = 'address_kw'
+        FRIEND     = 'friend_kw'
 
         LOCAL     = 'local_kw'
         GLOBAL     = 'global_kw'
         PRAGMA     = 'pragma_kw'
+        POST     = 'post_kw'
         EMITS     = 'emits_kw'
         TO     = 'to_kw'
         APPLY     = 'apply_kw'
@@ -221,7 +223,7 @@ private Item_recover ::= !('}' | <<eof>> | Item_first)
 private ModuleItem_item ::= ImportStatement | FriendStatement
                             | StructDef | FunctionDef
                             | NativeStructDef | NativeFunctionDef
-                            | SpecFunctionDef | SpecNativeFunctionDef
+                            | SpecFunctionDef | SpecNativeFunctionDef | UninterpretedSpecFunctionDef
                             | ConstDef
                             | SpecDef
 //private ModuleItem_item ::= ImportStatement | StructDef | NativeStructDef
@@ -272,11 +274,13 @@ ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
 ////    recoverWhile = Item_recover
 //}
 
-SpecFunctionDef ::= (spec FunctionSignature) SpecBlock { pin = 1 }
+SpecFunctionDef ::= (spec FunctionSignature) SpecBlock
 SpecNativeFunctionDef ::= (spec native) FunctionSignature ';' { pin = 1 }
+UninterpretedSpecFunctionDef ::= spec FunctionSignature ';'
 
-InnerSpecFunctionDef ::= FunctionSignature SpecBlock { pin = 1 }
+InnerSpecFunctionDef ::= FunctionSignature SpecBlock
 InnerNativeSpecFunctionDef ::= native FunctionSignature ';' { pin = 1 }
+InnerUninterpretedSpecFunctionDef ::= FunctionSignature ';'
 
 NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';' { pin = 2 }
 NativeStructDef ::= native StructSignature ';' { pin = 2 }
@@ -323,6 +327,7 @@ FunctionDef ::= Attr* FunctionSignatureWithOptionalVisibility CodeBlock
 ////    elementTypeFactory = "org.move.lang.core.stubs.StubImplementationsKt.factory"
 //}
 
+private friend ::= <<friendKeyword>>
 FunctionVisibilityModifier ::= public ('(' (script | friend) ')')?
 
 //private FunctionReturnItems ::= ReturnType? AcquiresType?
@@ -730,7 +735,7 @@ CodeBlock ::= '{' CodeBlockItems  '}'
 //    implements = [ "org.move.lang.core.psi.MoveImportStatementsOwner" ]
 }
 
-private CodeBlockItems ::= ImportStatement* (Statement | BlockSpecStatement)* Expr?
+private CodeBlockItems ::= ImportStatement* (Statement | SpecStatement)* (Expr | SpecBlockExpr)?
 {
     recoverWhile = "CodeBlockItems_recover"
 }
@@ -741,6 +746,7 @@ private CodeBlockItems_recover ::= !'}'
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // from lowest to highest
 Expr ::= AssignmentExpr
+        | RangeExpr
         | ImplyOperatorsExprItem
         | OrExpr
         | AndExpr
@@ -785,7 +791,7 @@ private AtomExpr ::=
                     | CallExpr
                     | RefExpr
                     | LambdaExpr
-                    | RangeExpr
+//                    | RangeExpr
                     | LiteralExpr
                     | CodeBlockExpr
 
@@ -1175,10 +1181,8 @@ SchemaSpecDef ::= (spec schema) IDENTIFIER TypeParameterList? SpecBlock {
 //    ]
 //}
 
-BlockSpecStatement ::= spec SpecBlock ';' {
-    pin = 1
-//    extends = Statement
-}
+SpecBlockExpr ::= spec SpecBlock
+SpecBlockStatement ::= SpecBlockExpr ';'
 
 SpecBlock ::= '{'
                 SpecBlockStatement_with_recover*
@@ -1194,7 +1198,7 @@ SpecBlock ::= '{'
 //    pin = 1
 //    recoverWhile = ScriptBlockItem_recover
 //}
-private SpecBlockStatement_with_recover ::= !('}' | <<eof>>) SpecBlockStatement
+private SpecBlockStatement_with_recover ::= !('}' | <<eof>>) SpecStatement
 //{
 //    pin = 1
 //}
@@ -1202,9 +1206,11 @@ private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinish
 //{
 //    pin = 1
 //}
-private SpecBlockStatement ::= VariableStatement | LocalVariableStatement | GlobalVariableStatement
+private SpecStatement ::= VariableStatement | LocalVariableStatement | GlobalVariableStatement
                                | ImportStatement
-                               | InnerSpecFunctionDef | InnerNativeSpecFunctionDef
+                               | InnerSpecFunctionDef
+                               | InnerNativeSpecFunctionDef
+                               | InnerUninterpretedSpecFunctionDef
 //                               | NativeFunctionDef
 //                               | DefineFunction | DefineFunctionSpecDef
 //                               | NativeDefineFunction | NativeDefineFunctionSpecDef
@@ -1222,6 +1228,8 @@ private SpecBlockStatement ::= VariableStatement | LocalVariableStatement | Glob
                                | ApplyStatement
                                | EmitsStatement
                                | AggregatePredicateStatement
+                               | SpecBlockStatement
+                               | SpecLetStatement
                                | Statement
 private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
 //private SpecBlockItems ::= (
@@ -1253,8 +1261,10 @@ VariableStatement ::= RefExpr TypeAnnotation ';' { pin = 2 }
 LocalVariableStatement ::= local RefExpr TypeAnnotation ';' { pin = 1 }
 GlobalVariableStatement ::= global RefExpr TypeAnnotation ';' { pin = 1 }
 
+private post ::= <<postKeyword>>
+SpecLetStatement ::= (let post?) Pat TypeAnnotation? Initializer? ';' { pin = 1 }
 PragmaStatement ::= pragma <<comma_sep_items PragmaAttribute>> ';' { pin = 1 }
-PragmaAttribute ::= IDENTIFIER ('=' LiteralExpr)?
+PragmaAttribute ::= IDENTIFIER ('=' Expr)?
 
 SpecExpr ::= AssumeSpecExpr | AssertSpecExpr | AbortsIfSpecExpr
                 | RequiresSpecExpr | EnsuresSpecExpr | ModifiesSpecExpr | InvariantSpecExpr | AxiomSpecExpr
