@@ -3,7 +3,6 @@ package org.move.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import com.intellij.psi.util.elementType
 import org.move.ide.colors.MoveColor
 import org.move.lang.MoveElementTypes.IDENTIFIER
 import org.move.lang.core.psi.*
@@ -55,18 +54,34 @@ class HighlightingAnnotator : MoveAnnotator() {
     }
 
     private fun highlightIdentifier(element: MoveElement): MoveColor? {
-        if (element is MoveAbility) return MoveColor.IDENTIFIER
+        if (element is MoveAbility) return MoveColor.ABILITY
         if (element is MoveTypeParameter) return MoveColor.TYPE_PARAMETER
         if (element is MoveModuleRef && element.isSelf) return MoveColor.KEYWORD
         if (element is MoveItemImport && element.text == "Self") return MoveColor.KEYWORD
+        if (element is MoveFunctionSignature) return MoveColor.FUNCTION_DEF
+        if (element is MoveConstDef) return MoveColor.CONSTANT_DEF
+        if (element is MoveModuleDef) return MoveColor.MODULE_DEF
 
         if (element is MoveQualPath && element.isIdentifierOnly) {
             val name = element.identifierName
             val container = element.parent
-            if (container is MoveQualPathType) {
-                val resolved = container.reference?.resolve()
-                if (resolved is MoveTypeParameter) {
-                    return MoveColor.TYPE_PARAMETER
+            when (container) {
+                is MoveQualPathType -> {
+                    val resolved = container.reference?.resolve()
+                    if (resolved is MoveTypeParameter) {
+                        return MoveColor.TYPE_PARAMETER
+                    }
+                }
+                is MoveCallExpr -> {
+                    val resolved = container.reference?.resolve()
+                    if (resolved != null) return MoveColor.FUNCTION_CALL
+                }
+                is MoveRefExpr -> {
+                    val resolved = container.reference?.resolve()
+                    when (resolved) {
+                        is MoveBindingPat -> return MoveColor.VARIABLE
+                        is MoveConstDef -> return MoveColor.CONSTANT
+                    }
                 }
             }
             return when {
@@ -75,7 +90,7 @@ class HighlightingAnnotator : MoveAnnotator() {
                 container is MoveQualPathType
                         && name in BUILTIN_TYPE_IDENTIFIERS -> MoveColor.BUILTIN_TYPE
                 container is MoveCallExpr
-                        && name in BUILTIN_FUNCTIONS -> MoveColor.BUILTIN_FUNCTION
+                        && name in BUILTIN_FUNCTIONS -> MoveColor.BUILTIN_FUNCTION_CALL
                 else -> null
             }
         } else {

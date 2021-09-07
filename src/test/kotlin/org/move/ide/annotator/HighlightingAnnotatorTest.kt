@@ -9,6 +9,27 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
         annotationFixture.registerSeverities(MoveColor.values().map(MoveColor::testSeverity))
     }
 
+    fun `test function calls annotated`() = checkHighlighting("""
+    module M {
+        fun <FUNCTION_DEF>call</FUNCTION_DEF>(x: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>) {}
+        fun <FUNCTION_DEF>main</FUNCTION_DEF>() {
+            <FUNCTION_CALL>call</FUNCTION_CALL>(1)
+        }
+    }    
+    """)
+
+    fun `test variable names annotated`() = checkHighlighting("""
+    module <MODULE_DEF>M</MODULE_DEF> {
+        const <CONSTANT_DEF>MAX_INT</CONSTANT_DEF>: u8 = 255;
+
+        fun <FUNCTION_DEF>main</FUNCTION_DEF>() {
+            let a = 1;
+            <VARIABLE>a</VARIABLE>;
+            <CONSTANT>MAX_INT</CONSTANT>;
+        }
+    }    
+    """)
+
     fun `test types highlighed`() = checkHighlighting(
         """
         script {
