@@ -401,28 +401,6 @@ StructSignature ::= struct IDENTIFIER TypeParameterList? AbilitiesList?
 
 StructDef ::= Attr* StructSignature StructFieldsDefBlock { pin = 2 }
 
-//NativeStructDef ::= native resource? struct IDENTIFIER TypeParameterList? ';'
-//{
-//    pin = "struct"
-//    implements = [
-//        "org.move.lang.core.psi.MoveTypeParametersOwner"
-//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-//    ]
-//    mixin = "org.move.lang.core.psi.mixins.MoveNativeStructDefMixin"
-//}
-
-//StructDef ::= resource? struct IDENTIFIER
-//                TypeParameterList? StructTraitList?
-//                StructFieldsDefBlock
-//{
-//    pin = "struct"
-//    implements = [
-//        "org.move.lang.core.psi.MoveTypeParametersOwner"
-//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-//    ]
-//    mixin = "org.move.lang.core.psi.ext.MoveStructDefMixin"
-//}
-
 AbilitiesList ::= has <<comma_sep_items Ability>> { pin = 1 }
 Ability ::= copy | IDENTIFIER
 {
@@ -437,12 +415,6 @@ private StructFieldDef_with_recover ::= !'}' StructFieldDef (',' | &'}')
 }
 private StructFieldDef_recover ::= !('}' | IDENTIFIER)
 
-//private StructFieldsBlock_body ::= <<comma_sep_list StructFieldDef>>?
-{
-//    recoverWhile = "StructFieldsBlock_body_recover"
-}
-//private StructFieldsBlock_body_recover ::= !'}'
-
 StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
 {
     pin = 1
@@ -452,25 +424,12 @@ StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
     ]
     mixin = "org.move.lang.core.psi.ext.MoveStructFieldDefMixin"
 }
-//private StructFieldDef_type ::= TypeAnnotation
-//{
-//    recoverWhile = "StructFieldDef_type_recover"
-//}
-//private StructFieldDef_type_recover ::= !(','|'}')
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Imports
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // 'use 0x0::Transaction as MyTransaction;'
-//ImportStatement ::= use ModuleRef ('::' Import) ';'
-//{
-//    pin = 1
-//}
 
-//ImportStatement ::= use AddressRef '::' Import ';'
-//{
-//    pin = 1
-//}
 FriendStatement ::= friend FullyQualifiedModuleRef ';' { pin = 1 }
 
 ImportStatement ::= Attr* use (ModuleItemsImport | ModuleImport) ';'
@@ -584,12 +543,6 @@ private TypeParameter_with_recover ::= !'>' TypeParameter (',' | &'>')
 }
 private TypeParameter_recover ::= !('>' | '(' | '{' | IDENTIFIER)
 
-//private TypeParameterList_items ::= <<comma_sep_items TypeParameter>>
-//{
-//    recoverWhile = TypeParameterList_items_recovery
-//}
-//private TypeParameterList_items_recovery ::= !('{'|'('|'>')
-
 TypeParameter ::= phantom? IDENTIFIER TypeParamBound? {
     pin = 2
     implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
@@ -608,16 +561,6 @@ private TypeParamBound_items_recover ::= !('>' | ',')
 
 TypeArgumentList ::= '<' <<comma_sep_items (TypeArgument &(','|'>'))>>? '>'
 TypeArgument ::= Type
-//private TypeArgumentList_items ::= <<comma_sep_items (QualifiedPathType &(','|'>'))>>
-//{
-//    recoverWhile = TypeArgumentList_items_recover
-//}
-//private TypeArgumentList_items_recover ::= !('>'|'('|'{')
-//private TypeArgument ::= TypeRef &(','|'>')
-//{
-//    recoverWhile = "TypeArgument_recover"
-//}
-//private TypeArgument_recover ::= !(','|'>')
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Patterns (destructuring)
@@ -663,12 +606,6 @@ private StructPatField_with_recover ::= !'}' StructPatField (',' | &'}')
 }
 private StructPatField_recover ::= !('}' | IDENTIFIER)
 
-//private StructPatField_items ::= <<comma_sep_items StructPatField>>
-//{
-//    recoverWhile = StructPatField_items_recover
-//}
-//private StructPatField_items_recover ::= !'}'
-
 StructPatField ::= IDENTIFIER StructPatFieldBinding? {
     pin = 1
     implements = [
@@ -685,10 +622,6 @@ StructPatFieldBinding ::= ':' Pat { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Statements
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//private Statement ::= IfStatement | LoopStatement | WhileStatement
-//                            | LetStatement | AssignmentStatement
-//                            | ExprStatement
-
 Statement ::= LetStatement | (StatementExpr ';')
 LetStatement ::= let Pat TypeAnnotation? Initializer? ';' {
     pin = 1
@@ -708,21 +641,6 @@ private StatementExpr ::= IfExpr
     recoverWhile = "StatementExpr_recover"
 }
 private StatementExpr_recover ::= !(';' | '}')
-
-//InlineSpecBlock ::= spec SpecBlock { pin = 1 }
-
-//IfStatement ::= IfExpr ';'
-//LoopStatement ::= LoopExpr ';'
-//WhileStatement ::= WhileExpr ';'
-
-//private StatementBody ::= IfExpr
-
-//LetStatement ::= LetStatementInner ';'
-//private LetStatementInner ::= LetExpr { recoverWhile = "LetStatementInner_recover"}
-//private LetStatementInner_recover ::= !';'
-
-//AssignmentStatement ::= AssignmentExpr ';'
-//ExprStatement ::= Expr ';'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
@@ -877,16 +795,7 @@ StructLiteralExpr ::= QualPath StructLiteralFieldsBlock
     mixin = "org.move.lang.core.psi.ext.MoveStructLiteralExprMixin"
 }
 StructLiteralFieldsBlock ::= '{' StructLiteralField_with_recover* '}' { pin = 1 }
-//private StructLiteralFieldsBlock_items ::= <<comma_sep_items StructLiteralField>>
-//{
-//    recoverWhile = StructLiteralFieldsBlock_items_recovery
-//}
-//private StructLiteralFieldsBlock_items_recovery ::= !'}'
-//private StructLiteralFieldsBlock_body ::= (StructLiteralExprField ','?)*
-//{
-//    recoverWhile = "StructLiteralFieldsBlock_body_recover"
-//}
-//private StructLiteralFieldsBlock_body_recover ::= !'}'
+
 private StructLiteralField_with_recover ::= !'}' StructLiteralField (',' | &'}')
 {
     pin = 1
@@ -1006,17 +915,6 @@ RefExpr ::= QualPath
 
 QualPath ::= (ModuleRef '::')? IDENTIFIER TypeArgumentList?
 
-//LocalQualPath ::= (ModuleRef '::' &IDENTIFIER)? IDENTIFIER TypeArgumentList?
-//FullyQualPath ::= (FullyQualifiedModuleRef '::' &IDENTIFIER)? IDENTIFIER TypeArgumentList?
-
-//FullyQual
-//private QualPathModulePrefix ::= (FullyQualifiedModuleRef | ModuleRef) &'::'
-//QualPathStart ::= FullyQualifiedModuleRef
-//{
-//    pin = 1
-//}
-//private QualPathPrefix ::= ((FullyQualifiedModuleRef | ModuleRef) '::')
-
 ModuleRef ::= ImportedModuleRef | FullyQualifiedModuleRef
 {
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
@@ -1032,11 +930,9 @@ FullyQualifiedModuleRef ::= AddressRef '::' IDENTIFIER
 {
     pin = 2
     extends = ModuleRef
-//    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MoveFullyQualifiedModuleRefMixin"
 }
 
-//private ADDRESS_IDENT ::= <<addressIdent>>
 AddressRef ::= NamedAddress
                 | PLACEHOLDER_ADDRESS_IDENT
                 | BECH32_ADDRESS_IDENT
@@ -1073,7 +969,6 @@ private to ::= <<toKeyword>>
 private apply ::= <<applyKeyword>>
 private except ::= <<exceptKeyword>>
 
-//SpecDef ::= spec SpecInnerItem { pin = 1 }
 SpecDef ::= NameSpecDef | ModuleSpecDef | SchemaSpecDef
 
 NameSpecDef ::= (spec IDENTIFIER) SpecBlock
@@ -1083,15 +978,6 @@ NameSpecDef ::= (spec IDENTIFIER) SpecBlock
     mixin = "org.move.lang.core.psi.ext.MoveNameSpecDefMixin"
 }
 ModuleSpecDef ::= (spec module) SpecBlock { pin = 1 }
-//SpecDef ::= FunctionSpecDef
-//                  | ModuleSpecDef
-//                  | StructSpecDef
-//                  | SchemaSpecDef
-//                  | DefineFunctionSpecDef
-//                  | NativeDefineFunctionSpecDef
-//{
-//    pin = 1
-//}
 
 SchemaSpecDef ::= (spec schema) IDENTIFIER TypeParameterList? SpecBlock {
   pin = 1
@@ -1100,91 +986,6 @@ SchemaSpecDef ::= (spec schema) IDENTIFIER TypeParameterList? SpecBlock {
     "org.move.lang.core.psi.MoveNameIdentifierOwner" ]
   mixin = "org.move.lang.core.psi.mixins.MoveSchemaDefMixin"
 }
-
-//FunctionSpecDef ::= (spec fun) IDENTIFIER SpecBlock
-//FunctionSpecDef ::= spec IDENTIFIER SpecBlock
-//{
-//    pin = 1
-//}
-//{
-//    pin = 1
-//    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-//    mixin = "org.move.lang.core.psi.mixins.MoveFunctionSpecMixin"
-//}
-//StructSpecDef ::= (spec struct) IDENTIFIER SpecBlock
-//{
-//    pin = 1
-//    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-//    mixin = "org.move.lang.core.psi.mixins.MoveStructSpecMixin"
-//}
-//ModuleSpecDef ::= (spec module) SpecBlock
-//{
-//    pin = 1
-//}
-
-//DefineFunctionSignature ::= define IDENTIFIER
-//                                TypeParameterList?
-//                                FunctionParameterList ReturnType?
-//{
-//    pin = 1
-//    implements = [
-////        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-//        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
-//    ]
-//}
-
-//DefineFunction ::= DefineFunctionSignature SpecBlock
-//DefineFunction ::= define IDENTIFIER TypeParameterList?
-//                                           FunctionParameterList
-//                                           ReturnType?
-//                                           SpecBlock
-//{
-//    pin = 1
-////    implements = [
-////        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-//////        "org.move.lang.core.psi.MoveTypeParametersOwner"
-////        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
-////    ]
-////    mixin = "org.move.lang.core.psi.mixins.MoveDefineFunctionMixin"
-//}
-//DefineFunctionSpecDef ::= spec DefineFunctionSignature SpecBlock
-//DefineFunctionSpec ::= define IDENTIFIER TypeParameterList?
-//                                               FunctionParameterList
-//                                               ReturnType?
-//                                               SpecBlock
-//{
-//    pin = 1
-//    implements = [
-////        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-////        "org.move.lang.core.psi.MoveTypeParametersOwner"
-//        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
-//    ]
-//}
-
-//NativeDefineFunction ::= DefineFunctionSignature ';'
-//NativeDefineFunction ::= native define IDENTIFIER TypeParameterList?
-//                                                   FunctionParameterList
-//                                                   ReturnType? ';'
-//{
-//    pin = 2
-//    implements = [
-////        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-////        "org.move.lang.core.psi.MoveTypeParametersOwner"
-//        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
-//    ]
-//}
-//NativeDefineFunctionSpecDef ::= spec DefineFunctionSignature ';'
-//NativeDefineFunctionSpec ::= define IDENTIFIER TypeParameterList?
-//                                                FunctionParameterList
-//                                                ReturnType? ';'
-//{
-//    pin = 2
-//    implements = [
-//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-//        "org.move.lang.core.psi.MoveTypeParametersOwner"
-//        "org.move.lang.core.psi.MoveFunctionSignatureOwner"
-//    ]
-//}
 
 SpecBlockExpr ::= spec SpecBlock
 SpecBlockStatement ::= SpecBlockExpr ';'
@@ -1196,34 +997,19 @@ SpecBlock ::= '{'
 {
     pin = 1
 }
-//private SpecBlockItems ::= SpecBlockStatement_with_recover*
-//                            SpecBlockFinishingExpr_with_recover?
-//private ScriptBlockItem_with_recover ::= !('}' | <<eof>>) (ImportStatement | f)
-//{
-//    pin = 1
-//    recoverWhile = ScriptBlockItem_recover
-//}
+
 private SpecBlockStatement_with_recover ::= !('}' | <<eof>>) SpecStatement
-//{
-//    pin = 1
-//}
 private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinishingExpr
-//{
-//    pin = 1
-//}
+
 private SpecStatement ::= VariableStatement | LocalVariableStatement | GlobalVariableStatement
                                | ImportStatement
                                | InnerSpecFunctionDef
                                | InnerNativeSpecFunctionDef
                                | InnerUninterpretedSpecFunctionDef
-//                               | NativeFunctionDef
-//                               | DefineFunction | DefineFunctionSpecDef
-//                               | NativeDefineFunction | NativeDefineFunctionSpecDef
                                | PragmaStatement
                                | AssumeStatement
                                | AssertStatement
                                | AbortsIfStatement
-//                               | SucceedsIfStatement
                                | RequiresStatement
                                | EnsuresStatement
                                | ModifiesStatement
@@ -1238,29 +1024,6 @@ private SpecStatement ::= VariableStatement | LocalVariableStatement | GlobalVar
                                | ChooseStatement
                                | Statement
 private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
-//private SpecBlockItems ::= (
-//                                Statement
-//                                | DefineFunction | DefineFunctionSpec
-//                                | NativeDefineFunction | NativeDefineFunctionSpec
-//                                | VariableStatement | LocalVariableStatement | GlobalVariableStatement
-//                                | PragmaStatement
-//                                | AssumeStatement
-//                                | AssertStatement
-//                                | AbortsIfStatement
-//                                | SucceedsIfStatement
-//                                | RequiresStatement
-//                                | EnsuresStatement
-//                                | ModifiesStatement
-//                                | IncludeStatement
-//                                | InvariantStatement
-//                                | ApplyStatement
-//                                | AggregatePredicateStatement
-//                            )*
-//                            (SpecExpr | AggregatePredicate | Expr)?
-//{
-//    recoverWhile = SpecBlockItems_recover
-//}
-//private SpecBlockItems_recover ::= !'}'
 
 VariableStatement ::= RefExpr TypeAnnotation ';' { pin = 2 }
 
@@ -1288,10 +1051,6 @@ AbortsIfStatement ::= AbortsIfSpecExpr ';'
 //noinspection BnfSuspiciousToken
 AbortsIfSpecExpr ::= aborts_if Predicate WithExpr? { pin = 1 }
 WithExpr ::= with Expr { pin = 1 }
-
-//SucceedsIfStatement ::= SucceedsIfSpecExpr ';'
-////noinspection BnfSuspiciousToken
-//SucceedsIfSpecExpr ::= succeeds_if Predicate { pin = 1 }
 
 RequiresStatement ::= RequiresSpecExpr ';'
 RequiresSpecExpr ::= requires module? Predicate { pin = 1 }
@@ -1321,7 +1080,6 @@ AxiomSpecExpr ::= axiom TypeParameterList? Predicate { pin = 1 }
 
 SpecVisibility ::= '[' <<comma_sep_items SpecVisibilityModifier>> ']' { pin = 1 }
 
-//private SpecVisibilityModifierIdent ::=
 SpecVisibilityModifier ::= IDENTIFIER
 //SpecVisibilityModifier ::= global | isolated | deactivated
 //                                | concrete | abstract
@@ -1348,33 +1106,12 @@ ApplySchemaName ::= QualPath
 ApplySchemaNameAttribute ::= IDENTIFIER ':' Expr
 
 Predicate ::= SpecVisibility? (AggregateExpr | Expr)
-//ExprPredicate ::= Expr
-
-//PreconditionStatement ::= PreconditionExpr ';'
-//PreconditionExpr ::= Precondition ':' Expr {
-//    pin = 2
-//}
-//Precondition ::= ForAllExistsPrecondition | ExistsPrecondition | ForAllPrecondition
-
-//ForAllExistsPrecondition ::= ForAllPrecondition ':' ExistsPrecondition { pin = 2 }
-
-//private Precondition ::= ((ForAllPrecondition ':' ExistsPrecondition)
-//                            | ExistsPrecondition
-//                            | ForAllPrecondition) (':' Expr)?
 
 AggregatePredicateStatement ::= AggregateExpr ';'
 AggregateExpr ::= QuantifierExpr (':' Expr)?
 {
-//    pin = AggregatePredicate_body
     rightAssociative = true
 }
-//private AggregatePredicate_body ::= ':' Expr
-//{
-//    pin = 1
-//    rightAssociative = true
-//}
-//private AggregatePrecondition ::= ExistsPrecondition
-//                                | (ForAllPrecondition (':' AggregatePrecondition)?)
 
 QuantifierWhere ::= where Expr
 {
@@ -1397,17 +1134,6 @@ ChooseStatement ::= choose min? QuantifierBindings
 
 QuantifierBindings ::= <<comma_sep_items QuantifierBind>>
 QuantifierBind ::= RangeQuantifierBind | TypeQuantifierBind
-
-//ForAllPrecondition ::= forall PreconditionAttribute (',' PreconditionAttribute)* ForAllWhereCondition? {
-//    pin = 1
-//    extends = Precondition
-//}
-//ForAllWhereCondition ::= where Expr { pin = 1 }
-
-//ExistsPrecondition ::= exists PreconditionAttribute (',' PreconditionAttribute)* ForAllWhereCondition? {
-//    pin = 1
-//    extends = Precondition
-//}
 
 RangeQuantifierBind ::= IDENTIFIER in RangeExpr {
     pin = 2
