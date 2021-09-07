@@ -39,7 +39,10 @@ module M {
 
         ensures generic<T> == 1;
         ensures Self::generic<T> == 1;
-    }
+
+        choose a: address where exists<R>(a) && global<R>(a).value > 0;
+        choose min i: num where in_range(v, i) && v[i] == 2;
+}
 
     spec schema ModuleInvariant<X, Y> {
         requires global<X>(0x0).f == global<X>(0x1).f;

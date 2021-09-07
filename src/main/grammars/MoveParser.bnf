@@ -134,6 +134,9 @@
         REQUIRES     = 'requires_kw'
         ABORTS_IF     = 'aborts_if_kw'
 
+        CHOOSE     = 'choose_kw'
+        MIN     = 'min_kw'
+
         FORALL     = 'forall_kw'
         EXISTS     = 'exists_kw'
         WHERE     = 'where_kw'
@@ -1051,6 +1054,8 @@ private requires ::= <<requiresKeyword>>
 private ensures ::= <<ensuresKeyword>>
 private aborts_if ::= <<abortsIfKeyword>>
 private include ::= <<includeKeyword>>
+private choose ::= <<chooseKeyword>>
+private min ::= <<minKeyword>>
 
 private invariant ::= <<invariantKeyword>>
 private axiom ::= <<axiomKeyword>>
@@ -1230,6 +1235,7 @@ private SpecStatement ::= VariableStatement | LocalVariableStatement | GlobalVar
                                | AggregatePredicateStatement
                                | SpecBlockStatement
                                | SpecLetStatement
+                               | ChooseStatement
                                | Statement
 private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
 //private SpecBlockItems ::= (
@@ -1381,6 +1387,13 @@ ForallQuantifier ::= forall QuantifierBindings
                         (QuantifierWhere)? (':' QuantifierExpr)?
 ExistsQuantifier ::= exists QuantifierBindings
                         (QuantifierWhere)? (':' QuantifierExpr)?
+
+ChooseStatement ::= choose min? QuantifierBindings
+                        (QuantifierWhere)?
+                        (':' QuantifierExpr)? ';'
+{
+    pin = 1
+}
 
 QuantifierBindings ::= <<comma_sep_items QuantifierBind>>
 QuantifierBind ::= RangeQuantifierBind | TypeQuantifierBind

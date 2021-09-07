@@ -169,6 +169,12 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     fun includeKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "include", INCLUDE)
 
     @JvmStatic
+    fun chooseKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "choose", CHOOSE)
+
+    @JvmStatic
+    fun minKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "min", MIN)
+
+    @JvmStatic
     fun invariantKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "invariant", INVARIANT)
 
     @JvmStatic
