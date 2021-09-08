@@ -39,6 +39,15 @@ class PrimitiveTypesTest: TypificationTestCase() {
         }
     """)
 
+    fun `test 0x integer`() = testExpr("""
+        script {
+            fun main() {
+                let a = 0x111;
+                      //^ integer
+            }
+        }
+    """)
+
     fun `test boolean true`() = testExpr("""
         script {
             fun main() {

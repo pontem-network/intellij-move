@@ -48,10 +48,10 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test missing resource argument for builtins`() = checkErrors("""
         module M {
             fun main() {
-                let a = <error descr="Missing resource type argument">move_from</error>(0x0);
-                let a = <error descr="Missing resource type argument">borrow_global</error>(0x0);
-                let a = <error descr="Missing resource type argument">borrow_global_mut</error>(0x0);
-                let a = <error descr="Missing resource type argument">exists</error>(0x0);
+                let a = <error descr="Missing resource type argument">move_from</error>(@0x0);
+                let a = <error descr="Missing resource type argument">borrow_global</error>(@0x0);
+                let a = <error descr="Missing resource type argument">borrow_global_mut</error>(@0x0);
+                let a = <error descr="Missing resource type argument">exists</error>(@0x0);
             }
         }    
     """)

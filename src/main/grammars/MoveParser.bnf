@@ -723,9 +723,21 @@ OrExpr ::= Expr oror Expr
 AndExpr ::= Expr andand Expr
 
 LessExpr ::= Expr (!(ltlt | lt_eqeq_gt) '<') Expr
+{
+    mixin = "org.move.lang.core.psi.ext.MoveBooleanExprMixin"
+}
 GreaterExpr ::= Expr (!gtgt '>') Expr
+{
+    mixin = "org.move.lang.core.psi.ext.MoveBooleanExprMixin"
+}
 LessEqualsExpr ::= Expr lteq Expr
+{
+    mixin = "org.move.lang.core.psi.ext.MoveBooleanExprMixin"
+}
 GreaterEqualsExpr ::= Expr gteq Expr
+{
+    mixin = "org.move.lang.core.psi.ext.MoveBooleanExprMixin"
+}
 
 BitOrExpr ::= Expr (!oror '|') Expr
 BitAndExpr ::= Expr (!andand '&') Expr
