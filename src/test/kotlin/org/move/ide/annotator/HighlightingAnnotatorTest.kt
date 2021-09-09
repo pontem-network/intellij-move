@@ -9,6 +9,13 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
         annotationFixture.registerSeverities(MoveColor.values().map(MoveColor::testSeverity))
     }
 
+    fun `test block comment do not break the highlighting`() = checkHighlighting("""
+    /* module M */
+    module <MODULE_DEF>M</MODULE_DEF> {
+        fun <FUNCTION_DEF>call</FUNCTION_DEF>() {}
+    }
+    """)
+
     fun `test function calls annotated`() = checkHighlighting("""
     module M {
         fun <FUNCTION_DEF>call</FUNCTION_DEF>(x: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>) {}

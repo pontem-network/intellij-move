@@ -7,6 +7,9 @@ import org.move.utils.tests.MoveTestBase
 import org.move.utils.tests.replaceCaretMarker
 
 class RestartableLexerTest : MoveTestBase() {
+    fun `test lexer restart closing block comment`() =
+        doTestLexerRestart(""" /* module */*caret*/ module M {} """, '/')
+
     fun `test lexer restart outer address`() =
         doTestLexerRestart(""" module M {} addres/*caret*/ 0x0 {} """, 's')
 

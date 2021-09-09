@@ -11,38 +11,32 @@ import static org.move.lang.MoveElementTypes.*;
 %%
 
 %{
-    public int commentDepth = 0;
-//  public ArrayList<Integer> stateStack = new ArrayList<Integer>();
+    /**
+        * Dedicated storage for starting position of some previously successful
+        * match
+    */
+    private int zzPostponedMarkedPos = -1;
+
+    /**
+        * Dedicated nested-comment level counter
+    */
+    private int zzNestedCommentLevel = 0;
 %}
 
 %{
-public _MoveLexer() {
-    this((java.io.Reader)null);
-}
+    public _MoveLexer() {
+        this((java.io.Reader)null);
+    }
 
-//public void maybeEndBlockComment() {
-//    if (commentDepth == 0) {
-//        yybegin(YYINITIAL);
-//        return BLOCK_COMMENT;
-//    }
-//}
-//public void pushState(int state) {
-//    System.out.println("pushState: " + yystate());
-//    this.stateStack.add(yystate());
-//    yybegin(state);
-//    System.out.println(stateStack);
-//}
+      IElementType blockComment() {
+          assert(zzNestedCommentLevel == 0);
+          yybegin(YYINITIAL);
 
-//public void popState() {
-//    System.out.println("popState: " + yystate());
-//    int oldState = this.stateStack.remove(this.stateStack.size() - 1);
-//    yybegin(oldState);
-//    System.out.println(stateStack);
-//}
+          zzStartRead = zzPostponedMarkedPos;
+          zzPostponedMarkedPos = -1;
 
-//public int stackSize() {
-//    return this.stateStack.size();
-//}
+          return BLOCK_COMMENT;
+      }
 %}
 
 %public
@@ -53,9 +47,6 @@ public _MoveLexer() {
 %unicode
 
 %s IN_BLOCK_COMMENT
-//%s BEGIN_SPEC
-//%s IN_SPEC
-//%s IN_APPLY_TO
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Whitespaces
@@ -135,16 +126,15 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "#"        { return HASH; }
 
       // keywords
-//      "address"        { return ADDRESS; }
-      "script"         { yybegin(YYINITIAL); return SCRIPT; }
-      "module"         { yybegin(YYINITIAL); return MODULE; }
-      "const"          { yybegin(YYINITIAL); return CONST; }
-      "native"         { yybegin(YYINITIAL); return NATIVE; }
-      "public"         { yybegin(YYINITIAL); return PUBLIC; }
-      "fun"            { yybegin(YYINITIAL); return FUN; }
+      "script"         { return SCRIPT; }
+      "module"         { return MODULE; }
+      "const"          { return CONST; }
+      "native"         { return NATIVE; }
+      "public"         { return PUBLIC; }
+      "fun"            { return FUN; }
       "acquires"       { return ACQUIRES; }
-      "struct"         { yybegin(YYINITIAL); return STRUCT; }
-      "use"            { yybegin(YYINITIAL); return USE; }
+      "struct"         { return STRUCT; }
+      "use"            { return USE; }
       "as"             { return AS; }
       "has"             { return HAS; }
       "mut"            { return MUT; }
@@ -159,66 +149,10 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "loop"           { return LOOP; }
       "while"          { return WHILE; }
       "let"            { return LET; }
-//      "friend"            { return FRIEND; }
       "phantom"            { return PHANTOM; }
-
       "schema"         { return SCHEMA; }
-//      "define"         { return DEFINE; }
-
       "spec"           { return SPEC; }
-}
 
-//<BEGIN_SPEC> {
-//    "fun"  { yybegin(IN_SPEC); return FUN; }
-//    "struct" { yybegin(IN_SPEC); return STRUCT; }
-//    "schema" { yybegin(IN_SPEC); return SCHEMA; }
-//    "define" { yybegin(IN_SPEC); return DEFINE; }
-//    "module" { yybegin(IN_SPEC); return MODULE; }
-//    "spec"           { return SPEC; }
-//
-//    [^...]     { yybegin(YYINITIAL); yypushback(yylength()); }
-//}
-
-//<IN_SPEC> {
-//  "global" / "("|"<"                        { return IDENTIFIER; }
-//  "global"                        { return GLOBAL; }
-//
-//  "local"                          { return LOCAL; }
-//  "isolated"                        { return ISOLATED; }
-//  "deactivated"                        { return DEACTIVATED; }
-//  "concrete"                        { return CONCRETE; }
-//  "abstract"                        { return ABSTRACT; }
-//
-//  "update" / "("|"<"                        { return IDENTIFIER; }
-//  "update"                        { return UPDATE; }
-//
-//  "exists" / "("|"<"                        { return IDENTIFIER; }
-//  "exists"                        { return EXISTS; }
-//
-//  "pragma"                         { return PRAGMA; }
-//  "assume"                         { return ASSUME; }
-//  "assert"                         { return ASSERT; }
-//  "aborts_if"                      { return ABORTS_IF; }
-//  "with"                           { return WITH; }
-//  "succeeds_if"                    { return SUCCEEDS_IF; }
-//  "requires"                       { return REQUIRES; }
-//  "ensures"                        { return ENSURES; }
-//  "modifies"                       { return MODIFIES; }
-//  "include"                        { return INCLUDE; }
-//  "internal"                       { return INTERNAL; }
-//  "invariant"                      { return INVARIANT; }
-//  "pack"                           { return PACK; }
-//  "unpack"                         { return UNPACK; }
-//  "apply"                          { return APPLY; }
-//  "emits"                          { return EMITS; }
-//  "to"                             { return TO; }
-//  "except"                         { return EXCEPT; }
-//  "forall"                         { return FORALL; }
-//  "in"                             { return IN; }
-//  "where"                             { return WHERE; }
-//}
-
-<YYINITIAL> {
   {PLACEHOLDER_ADDRESS_IDENT}          { return PLACEHOLDER_ADDRESS_IDENT; }
   {PLACEHOLDER_ADDRESS_LITERAL}          { return PLACEHOLDER_ADDRESS_LITERAL; }
   {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
@@ -238,22 +172,15 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 
 <IN_BLOCK_COMMENT> {
   "/*"    {
-          commentDepth += 1;
-//          pushState(IN_BLOCK_COMMENT);
+          if (zzNestedCommentLevel++ == 0)
+              zzPostponedMarkedPos = zzStartRead;
       }
   "*/"    {
-          commentDepth -= 1;
-    if (commentDepth == 0) {
-        yybegin(YYINITIAL);
-        return BLOCK_COMMENT;
-    }
-//          popState();
-//          if (stackSize() == 0) return BLOCK_COMMENT;
+          if (--zzNestedCommentLevel == 0)
+              return blockComment();
       }
-  <<EOF>> {     if (commentDepth == 0) {
-                    yybegin(YYINITIAL);
-                    return BLOCK_COMMENT;
-                }
+  <<EOF>> {
+          zzNestedCommentLevel = 0; return blockComment();
  }
   [^]     { }
 }
