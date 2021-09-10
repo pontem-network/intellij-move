@@ -28,10 +28,9 @@ class MoveHighlighter : SyntaxHighlighterBase() {
             BYTE_STRING_LITERAL -> Default.STRING
             INTEGER_LITERAL, ADDRESS_LITERAL -> Default.NUMBER
 
-            BOOL_LITERAL -> Default.KEYWORD
-            in MOVE_KEYWORDS -> Default.KEYWORD
-
+            in MOVE_KEYWORDS, BOOL_LITERAL -> Default.KEYWORD
             IDENTIFIER -> Default.IDENTIFIER
+
             else -> null
         }
         return pack(color)

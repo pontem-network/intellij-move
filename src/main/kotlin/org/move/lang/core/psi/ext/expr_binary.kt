@@ -4,6 +4,7 @@ import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.*
 import org.move.lang.core.types.BaseType
 import org.move.lang.core.types.IntegerType
+import org.move.lang.core.types.PrimitiveType
 import org.move.lang.core.types.TypeVarsMap
 
 fun binaryExprType(exprList: List<MoveExpr>, typeVars: TypeVarsMap): BaseType? {
@@ -46,5 +47,11 @@ abstract class MoveDivExprMixin(node: ASTNode): MoveElementImpl(node), MoveDivEx
 abstract class MoveModExprMixin(node: ASTNode): MoveElementImpl(node), MoveModExpr {
     override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
         return binaryExprType(this.exprList, typeVars)
+    }
+}
+
+abstract class MoveBooleanExprMixin(node: ASTNode): MoveElementImpl(node), MoveExpr {
+    override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
+        return PrimitiveType("bool")
     }
 }

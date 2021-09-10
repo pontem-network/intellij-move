@@ -1,5 +1,6 @@
 package org.move.lang
 
+//import org.move.lang.core.stubs.MoveFileStub
 import com.intellij.lang.ASTNode
 import com.intellij.lang.ParserDefinition
 import com.intellij.lang.PsiParser
@@ -11,8 +12,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.lang.core.lexer.createMoveLexer
-import org.move.lang.core.stubs.MoveFileStub
-//import org.move.lang.core.stubs.MoveFileStub
 import org.move.lang.core.tokenSetOf
 
 class MoveParserDefinition : ParserDefinition {
@@ -24,7 +23,7 @@ class MoveParserDefinition : ParserDefinition {
         return MoveParser()
     }
 
-//    override fun getFileNodeType(): IFileElementType = MoveFileStub.Type
+    //    override fun getFileNodeType(): IFileElementType = MoveFileStub.Type
     override fun getFileNodeType(): IFileElementType = FILE
 
     override fun getCommentTokens(): TokenSet {

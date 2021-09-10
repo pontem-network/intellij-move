@@ -21,6 +21,8 @@ FILE
       PsiElement(PLACEHOLDER_ADDRESS_IDENT)('{{alice}}')
     PsiElement(;)(';')
   PsiWhiteSpace('\n\n')
+  PsiComment(BLOCK_COMMENT)('/* my module */')
+  PsiWhiteSpace('\n')
   MoveModuleDefImpl(MODULE_DEF)
     PsiElement(module)('module')
     PsiWhiteSpace(' ')

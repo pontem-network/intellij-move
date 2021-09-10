@@ -1,6 +1,7 @@
 address named = 0x1;
 address named = {{alice}};
 
+/* my module */
 module M {
     fun main() {
         @0x0;

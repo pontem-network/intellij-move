@@ -91,7 +91,7 @@ FILE
         MoveFunctionVisibilityModifierImpl(FUNCTION_VISIBILITY_MODIFIER)
           PsiElement(public)('public')
           PsiElement(()('(')
-          PsiElement(friend)('friend')
+          PsiElement(friend_kw)('friend')
           PsiElement())(')')
         PsiErrorElement:fun expected, got 'public'
           <empty list>
@@ -140,7 +140,7 @@ FILE
         MoveFunctionVisibilityModifierImpl(FUNCTION_VISIBILITY_MODIFIER)
           PsiElement(public)('public')
           PsiElement(()('(')
-          PsiElement(friend)('friend')
+          PsiElement(friend_kw)('friend')
           PsiElement())(')')
         PsiErrorElement:fun expected, got 'native'
           <empty list>

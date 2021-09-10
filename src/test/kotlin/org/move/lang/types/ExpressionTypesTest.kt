@@ -57,6 +57,42 @@ class ExpressionTypesTest: TypificationTestCase() {
     }    
     """)
 
+    fun `test less expr`() = testExpr("""
+    script {
+        fun main() {
+            (1 < 1);
+          //^ bool
+        }
+    }    
+    """)
+
+    fun `test less equal expr`() = testExpr("""
+    script {
+        fun main() {
+            (1 <= 1);
+          //^ bool
+        }
+    }    
+    """)
+
+    fun `test greater expr`() = testExpr("""
+    script {
+        fun main() {
+            (1 > 1);
+          //^ bool
+        }
+    }    
+    """)
+
+    fun `test greater equal expr`() = testExpr("""
+    script {
+        fun main() {
+            (1 >= 1);
+          //^ bool
+        }
+    }    
+    """)
+
     fun `test cast expr`() = testExpr("""
     script {
         fun main() {

@@ -4,5 +4,6 @@ module M {
         pragma verify = true;
         pragma verify = true, timeout;
         pragma verify = true, timeout = 60;
+        pragma friend = gg;
     }
 }

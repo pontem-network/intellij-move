@@ -6,6 +6,9 @@ module M {
         let except = 1;
     }
     spec main {
+        let post new_a = 1;
+        let a = 1..1+1;
+
         fun inner_spec_fun() {}
         emits msg to handle if !is_synthetic;
         ensures [concrete] result == 1;

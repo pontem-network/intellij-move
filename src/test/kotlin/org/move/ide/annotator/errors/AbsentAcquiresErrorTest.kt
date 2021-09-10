@@ -8,9 +8,9 @@ class AbsentAcquiresErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     module M {
         struct Loan has key {}
         fun call() {
-            <error descr="Function 'call' is not marked as 'acquires Loan'">move_from<Loan>(0x1)</error>;
-            <error descr="Function 'call' is not marked as 'acquires Loan'">borrow_global<Loan>(0x1)</error>;
-            <error descr="Function 'call' is not marked as 'acquires Loan'">borrow_global_mut<Loan>(0x1)</error>;
+            <error descr="Function 'call' is not marked as 'acquires Loan'">move_from<Loan>(@0x1)</error>;
+            <error descr="Function 'call' is not marked as 'acquires Loan'">borrow_global<Loan>(@0x1)</error>;
+            <error descr="Function 'call' is not marked as 'acquires Loan'">borrow_global_mut<Loan>(@0x1)</error>;
         }
     }    
     """)
@@ -19,9 +19,9 @@ class AbsentAcquiresErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     module M {
         struct Loan has key {}
         fun call() acquires Loan {
-            move_from<Loan>(0x1);
-            borrow_global<Loan>(0x1);
-            borrow_global_mut<Loan>(0x1);
+            move_from<Loan>(@0x1);
+            borrow_global<Loan>(@0x1);
+            borrow_global_mut<Loan>(@0x1);
         }
     }    
     """)
