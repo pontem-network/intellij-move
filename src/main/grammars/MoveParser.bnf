@@ -22,6 +22,8 @@
     extends("(Lambda|Ref|QualPath|Tuple)Type")=Type
     extends(".*SpecDef")=SpecDef
 
+    extends(".*Statement")=Statement
+
     name(".*Expr")="expression"
 
 //    consumeTokenMethod(".*Expr") = "consumeTokenFast"
@@ -622,7 +624,7 @@ StructPatFieldBinding ::= ':' Pat { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Statements
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Statement ::= LetStatement | (StatementExpr ';')
+Statement ::= LetStatement | ExprStatement
 LetStatement ::= let Pat TypeAnnotation? Initializer? ';' {
     pin = 1
 //    implements = [
@@ -631,7 +633,8 @@ LetStatement ::= let Pat TypeAnnotation? Initializer? ';' {
 //    mixin = "org.move.lang.core.psi.mixins.MoveLetStatementMixin"
 }
 
-private StatementExpr ::= IfExpr
+ExprStatement ::= (ExprStatement_items ';')
+private ExprStatement_items ::= IfExpr
                             | LoopExpr
                             | WhileExpr
 //                            | LetExpr
