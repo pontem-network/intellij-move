@@ -22,6 +22,7 @@
     extends("(Lambda|Ref|QualPath|Tuple)Type")=Type
     extends(".*SpecDef")=SpecDef
 
+    extends(".*SpecStatement")=SpecStatement
     extends(".*Statement")=Statement
 
     name(".*Expr")="expression"
@@ -283,9 +284,9 @@ SpecFunctionDef ::= (spec FunctionSignature) SpecBlock
 SpecNativeFunctionDef ::= (spec native) FunctionSignature ';' { pin = 1 }
 UninterpretedSpecFunctionDef ::= spec FunctionSignature ';'
 
-InnerSpecFunctionDef ::= FunctionSignature SpecBlock
-InnerNativeSpecFunctionDef ::= native FunctionSignature ';' { pin = 1 }
-InnerUninterpretedSpecFunctionDef ::= FunctionSignature ';'
+FunctionDefSpecStatement ::= FunctionSignature SpecBlock
+NativeFunctionDefSpecStatement ::= native FunctionSignature ';' { pin = 1 }
+UninterpretedFunctionDefSpecStatement ::= FunctionSignature ';'
 
 NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';' { pin = 2 }
 NativeStructDef ::= native StructSignature ';' { pin = 2 }
@@ -625,6 +626,10 @@ StructPatFieldBinding ::= ':' Pat { pin = 1 }
 // Statements
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 Statement ::= LetStatement | ExprStatement
+{
+    implements = ["org.move.lang.core.types.HasType"]
+    mixin = "org.move.lang.core.psi.ext.MoveStatementMixin"
+}
 LetStatement ::= let Pat TypeAnnotation? Initializer? ';' {
     pin = 1
 //    implements = [
@@ -653,17 +658,17 @@ private AnyBlock ::= CodeBlock | InlineBlock
 InlineBlock ::= Expr
 
 CodeBlockExpr ::= CodeBlock
-CodeBlock ::= '{' CodeBlockItems  '}'
+CodeBlock ::= '{' CodeBlock_items  '}'
 {
     pin = 1
 //    implements = [ "org.move.lang.core.psi.MoveImportStatementsOwner" ]
 }
 
-private CodeBlockItems ::= ImportStatement* (Statement | SpecStatement)* (Expr | SpecBlockExpr)?
+private CodeBlock_items ::= ImportStatement* (Statement | SpecStatement)* (Expr | SpecBlockExpr)?
 {
-    recoverWhile = "CodeBlockItems_recover"
+    recoverWhile = "CodeBlock_items_recover"
 }
-private CodeBlockItems_recover ::= !'}'
+private CodeBlock_items_recover ::= !'}'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Expressions
@@ -1003,7 +1008,7 @@ SchemaSpecDef ::= (spec schema) IDENTIFIER TypeParameterList? SpecBlock {
 }
 
 SpecBlockExpr ::= spec SpecBlock
-SpecBlockStatement ::= SpecBlockExpr ';'
+SpecBlockSpecStatement ::= SpecBlockExpr ';'
 
 SpecBlock ::= '{'
                 SpecBlockStatement_with_recover*
@@ -1016,38 +1021,40 @@ SpecBlock ::= '{'
 private SpecBlockStatement_with_recover ::= !('}' | <<eof>>) SpecStatement
 private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinishingExpr
 
-private SpecStatement ::= VariableStatement | LocalVariableStatement | GlobalVariableStatement
-                               | ImportStatement
-                               | InnerSpecFunctionDef
-                               | InnerNativeSpecFunctionDef
-                               | InnerUninterpretedSpecFunctionDef
-                               | PragmaStatement
-                               | AssumeStatement
-                               | AssertStatement
-                               | AbortsIfStatement
-                               | RequiresStatement
-                               | EnsuresStatement
-                               | ModifiesStatement
-                               | IncludeStatement
-                               | InvariantStatement
-                               | AxiomStatement
-                               | ApplyStatement
-                               | EmitsStatement
-                               | AggregatePredicateStatement
-                               | SpecBlockStatement
-                               | SpecLetStatement
-                               | ChooseStatement
+SpecStatement ::= ImportStatement
+                               | VariableSpecStatement
+                               | LocalVariableSpecStatement
+                               | GlobalVariableSpecStatement
+                               | FunctionDefSpecStatement
+                               | NativeFunctionDefSpecStatement
+                               | UninterpretedFunctionDefSpecStatement
+                               | PragmaSpecStatement
+                               | AssumeSpecStatement
+                               | AssertSpecStatement
+                               | AbortsIfSpecStatement
+                               | RequiresSpecStatement
+                               | EnsuresSpecStatement
+                               | ModifiesSpecStatement
+                               | IncludeSpecStatement
+                               | InvariantSpecStatement
+                               | AxiomSpecStatement
+                               | ApplySpecStatement
+                               | EmitsSpecStatement
+                               | AggregatePredicateSpecStatement
+                               | SpecBlockSpecStatement
+                               | LetSpecStatement
+                               | ChooseSpecStatement
                                | Statement
 private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
 
-VariableStatement ::= RefExpr TypeAnnotation ';' { pin = 2 }
+VariableSpecStatement ::= RefExpr TypeAnnotation ';' { pin = 2 }
 
-LocalVariableStatement ::= local RefExpr TypeAnnotation ';' { pin = 1 }
-GlobalVariableStatement ::= global RefExpr TypeAnnotation ';' { pin = 1 }
+LocalVariableSpecStatement ::= local RefExpr TypeAnnotation ';' { pin = 1 }
+GlobalVariableSpecStatement ::= global RefExpr TypeAnnotation ';' { pin = 1 }
 
 private post ::= <<postKeyword>>
-SpecLetStatement ::= (let post?) Pat TypeAnnotation? Initializer? ';' { pin = 1 }
-PragmaStatement ::= pragma <<comma_sep_items PragmaAttribute>> ';' { pin = 1 }
+LetSpecStatement ::= (let post?) Pat TypeAnnotation? Initializer? ';' { pin = 1 }
+PragmaSpecStatement ::= pragma <<comma_sep_items PragmaAttribute>> ';' { pin = 1 }
 PragmaAttribute ::= IDENTIFIER ('=' Expr)?
 
 SpecExpr ::= AssumeSpecExpr | AssertSpecExpr | AbortsIfSpecExpr
@@ -1056,27 +1063,27 @@ SpecExpr ::= AssumeSpecExpr | AssertSpecExpr | AbortsIfSpecExpr
     extends = Expr
 }
 
-AssumeStatement ::= AssumeSpecExpr ';'
+AssumeSpecStatement ::= AssumeSpecExpr ';'
 AssumeSpecExpr ::= assume Predicate { pin = 1 }
 
-AssertStatement ::= AssertSpecExpr ';'
+AssertSpecStatement ::= AssertSpecExpr ';'
 AssertSpecExpr ::= assert Predicate { pin = 1 }
 
-AbortsIfStatement ::= AbortsIfSpecExpr ';'
+AbortsIfSpecStatement ::= AbortsIfSpecExpr ';'
 //noinspection BnfSuspiciousToken
 AbortsIfSpecExpr ::= aborts_if Predicate WithExpr? { pin = 1 }
 WithExpr ::= with Expr { pin = 1 }
 
-RequiresStatement ::= RequiresSpecExpr ';'
+RequiresSpecStatement ::= RequiresSpecExpr ';'
 RequiresSpecExpr ::= requires module? Predicate { pin = 1 }
 
-EnsuresStatement ::= EnsuresSpecExpr ';'
+EnsuresSpecStatement ::= EnsuresSpecExpr ';'
 EnsuresSpecExpr ::= ensures Predicate { pin = 1 }
 
-ModifiesStatement ::= ModifiesSpecExpr ';'
+ModifiesSpecStatement ::= ModifiesSpecExpr ';'
 ModifiesSpecExpr ::= modifies Expr { pin = 1 }
 
-IncludeStatement ::= include SpecVisibility? Expr ';' { pin = 1 }
+IncludeSpecStatement ::= include SpecVisibility? Expr ';' { pin = 1 }
 
 private PatternVis ::= <<patternVisibility>>
 private PatternIdent ::= <<patternIdent>>
@@ -1086,10 +1093,10 @@ FunctionPattern ::= PatternVis? PatternIdent TypeArgumentList? { pin = 2 }
 //FunctionPattern ::= (public | internal)? IDENTIFIER TypeArgumentList? { pin = 2 }
 
 private InvariantModifier ::= <<invariantModifierKeyword>>
-InvariantStatement ::= InvariantSpecExpr ';'
+InvariantSpecStatement ::= InvariantSpecExpr ';'
 InvariantSpecExpr ::= invariant InvariantModifier? TypeParameterList? Predicate { pin = 1 }
 
-AxiomStatement ::= AxiomSpecExpr ';'
+AxiomSpecStatement ::= AxiomSpecExpr ';'
 AxiomSpecExpr ::= axiom TypeParameterList? Predicate { pin = 1 }
 //InvariantModifier ::= pack | unpack | module | update
 
@@ -1100,10 +1107,10 @@ SpecVisibilityModifier ::= IDENTIFIER
 //                                | concrete | abstract
 //                                | assert | assume
 
-EmitsStatement ::= emits Expr to Expr EmitsCondition? ';' { pin = 1 }
+EmitsSpecStatement ::= emits Expr to Expr EmitsCondition? ';' { pin = 1 }
 EmitsCondition ::= if Expr { pin = 1 }
 
-ApplyStatement ::= apply ApplySchemaName
+ApplySpecStatement ::= apply ApplySchemaName
                     to <<comma_sep_items FunctionPattern>>
                      ( except <<comma_sep_items FunctionPattern>> )? ';'
 {
@@ -1122,7 +1129,7 @@ ApplySchemaNameAttribute ::= IDENTIFIER ':' Expr
 
 Predicate ::= SpecVisibility? (AggregateExpr | Expr)
 
-AggregatePredicateStatement ::= AggregateExpr ';'
+AggregatePredicateSpecStatement ::= AggregateExpr ';'
 AggregateExpr ::= QuantifierExpr (':' Expr)?
 {
     rightAssociative = true
@@ -1140,7 +1147,7 @@ ForallQuantifier ::= forall QuantifierBindings
 ExistsQuantifier ::= exists QuantifierBindings
                         (QuantifierWhere)? (':' QuantifierExpr)?
 
-ChooseStatement ::= choose min? QuantifierBindings
+ChooseSpecStatement ::= choose min? QuantifierBindings
                         (QuantifierWhere)?
                         (':' QuantifierExpr)? ';'
 {

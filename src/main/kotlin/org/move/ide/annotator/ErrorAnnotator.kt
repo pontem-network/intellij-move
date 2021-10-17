@@ -2,20 +2,46 @@ package org.move.ide.annotator
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.descendantsOfType
 import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.resolvedReturnType
-import org.move.lang.core.types.HasType
-import org.move.lang.core.types.StructType
-import org.move.lang.core.types.TypeParamType
-import org.move.lang.core.types.VoidType
+import org.move.lang.core.types.*
 
 class ErrorAnnotator : MoveAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val moveHolder = MoveAnnotationHolder(holder)
         val visitor = object : MoveVisitor() {
             override fun visitConstDef(o: MoveConstDef) = checkConstDef(moveHolder, o)
+
+            override fun visitIfExpr(o: MoveIfExpr) {
+                val ifCodeBlockExpr = o.codeBlock?.lastHasType ?: o.inlineBlock?.expr ?: return
+                val ifCodeBlockType = ifCodeBlockExpr.resolvedType(emptyMap()) ?: return
+
+                val elseCodeBlockExpr =
+                    o.elseBlock?.codeBlock?.lastHasType ?: o.elseBlock?.inlineBlock?.expr ?: return
+                val elseCodeBlockType = elseCodeBlockExpr.resolvedType(emptyMap()) ?: return
+
+                if (!elseCodeBlockType.compatibleWith(ifCodeBlockType)) {
+                    moveHolder.createErrorAnnotation(
+                        elseCodeBlockExpr,
+                        "Incompatible type '${elseCodeBlockType.typeLabel(o)}'" +
+                                ", expected '${ifCodeBlockType.typeLabel(o)}'"
+                    )
+                }
+            }
+
+            override fun visitCondition(o: MoveCondition) {
+                val expr = o.expr ?: return
+                val exprType = expr.resolvedType(emptyMap()) ?: return
+                if (!exprType.compatibleWith(PrimitiveType("bool"))) {
+                    moveHolder.createErrorAnnotation(
+                        expr,
+                        "Incompatible type '${exprType.typeLabel(o)}', expected 'bool'"
+                    )
+                }
+            }
 
             override fun visitFunctionSignature(o: MoveFunctionSignature) =
                 checkFunctionSignature(moveHolder, o)
@@ -28,20 +54,25 @@ class ErrorAnnotator : MoveAnnotator() {
 
             override fun visitStructFieldDef(o: MoveStructFieldDef) = checkStructFieldDef(moveHolder, o)
 
-            override fun visitExpr(o: MoveExpr) {
-                if (o.isBlockReturnExpr()) {
-                    val outerSignature = o.containingFunction?.functionSignature ?: return
-                    val expectedReturnType = outerSignature.resolvedReturnType ?: return
-                    val actualReturnType = o.resolvedType(emptyMap()) ?: return
+            override fun visitCodeBlock(o: MoveCodeBlock) {
+                if (o.parent is MoveFunctionDef) {
+                    val lastHasType = o.lastHasType
+                    val expectedReturnType =
+                        o.containingFunction?.functionSignature?.resolvedReturnType ?: return
+                    var actualReturnType: BaseType? = null
+                    if (lastHasType == null) {
+                        actualReturnType = VoidType()
+                    } else {
+                        actualReturnType = lastHasType.resolvedType(emptyMap()) ?: return
+                    }
                     if (!expectedReturnType.compatibleWith(actualReturnType)) {
                         moveHolder.createErrorAnnotation(
-                            o,
+                            lastHasType as PsiElement,
                             "Invalid return type '${actualReturnType.name()}'" +
                                     ", expected '${expectedReturnType.name()}'"
                         )
                     }
                 }
-                super.visitExpr(o)
             }
 
             override fun visitReturnExpr(o: MoveReturnExpr) {
@@ -143,7 +174,25 @@ class ErrorAnnotator : MoveAnnotator() {
     }
 
     private fun checkModuleDef(holder: MoveAnnotationHolder, mod: MoveModuleDef) {
-        checkDuplicates(holder, mod)
+        val modIdent = Pair(mod.definedAddressRef()?.address(), mod.name)
+        val file = mod.containingFile ?: return
+        val duplicateIdents =
+            file.descendantsOfType<MoveModuleDef>()
+                .filter { it.name != null }
+                .groupBy { Pair(it.definedAddressRef()?.address(), it.name) }
+                .filter { it.value.size > 1 }
+                .map { it.key }
+                .toSet()
+        if (modIdent !in duplicateIdents) return
+
+        val identifier = mod.nameIdentifier ?: mod
+        holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${mod.name}`")
+
+//        val addressRef = mod.definedAddressRef()
+//        if (addressRef == null) {
+//            val addressDef = (mod.parent as? MoveAddressDef)?.addressRef
+//        }
+//        checkDuplicates(holder, mod)
     }
 
     private fun checkStructFieldDef(holder: MoveAnnotationHolder, structField: MoveStructFieldDef) {

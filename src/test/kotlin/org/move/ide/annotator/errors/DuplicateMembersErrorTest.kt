@@ -77,4 +77,18 @@ class DuplicateMembersErrorTest : AnnotatorTestCase(ErrorAnnotator::class) {
         }
     """
     )
+
+    fun `test no duplicate modules if defined with different addresses`() = checkErrors(
+        """
+        module 0x1::M {}
+        module 0x2::M {}
+    """
+    )
+
+    fun `test duplicate modules on the same addresses`() = checkErrors(
+        """
+        module 0x1::<error descr="Duplicate definitions with name `M`">M</error> {}
+        module 0x1::<error descr="Duplicate definitions with name `M`">M</error> {}
+    """
+    )
 }

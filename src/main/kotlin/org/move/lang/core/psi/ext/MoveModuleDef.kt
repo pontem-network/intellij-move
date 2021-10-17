@@ -12,6 +12,9 @@ import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.FullyQualModule
 import javax.swing.Icon
 
+fun MoveModuleDef.definedAddressRef(): MoveAddressRef? =
+    this.addressRef ?: (this.parent as? MoveAddressDef)?.addressRef
+
 fun MoveModuleDef.fullyQual(): FullyQualModule? {
     val address = this.containingAddress.normalized()
     val name = this.name ?: return null

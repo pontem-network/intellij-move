@@ -211,7 +211,7 @@ fun processLexicalDeclarations(
                     // drops all let-statements after the current position
                     .filter { PsiUtilCore.compareElementsByPosition(it, cameFrom) <= 0 }
                     // drops let-statement that is ancestors of ref (on the same statement, at most one)
-                    .filter { !PsiTreeUtil.isAncestor(cameFrom, it, true) }
+                    .filter { cameFrom != it && !PsiTreeUtil.isAncestor(cameFrom, it, true) }
 
                 // shadowing support (look at latest first)
                 val namedElements = precedingLetDecls
