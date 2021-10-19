@@ -5,7 +5,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.layout.LayoutBuilder
-import org.move.cli.DoveExecutable
+import org.move.cli.CommandLineExecutable
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathTextField
 import java.awt.BorderLayout
@@ -42,7 +42,7 @@ class MoveProjectSettingsPanel(private val project: Project) : Disposable {
         val pathToExecutable = executablePathField.text
         versionUpdateDebouncer.run(
             onPooledThread = {
-                val dove = DoveExecutable(project, Paths.get(pathToExecutable))
+                val dove = CommandLineExecutable(project, Paths.get(pathToExecutable))
                 val version = dove.version()
                 version
             },

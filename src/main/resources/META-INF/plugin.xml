@@ -28,7 +28,7 @@
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
 
-        <configurationType implementation="org.move.cli.DoveRunConfigurationType"/>
+        <configurationType implementation="org.move.cli.dove.DoveRunConfigurationType"/>
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
@@ -131,12 +131,6 @@
     </extensions>
 
     <projectListeners>
-        <listener class="org.move.cli.DoveTomlWatcher"
-                  topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
-                  activeInTestMode="false"/>
-        <listener class="org.move.cli.RefreshProjectListener"
-                  topic="org.move.settings.MoveSettingsListener"
-                  activeInTestMode="false"/>
         <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
                   topic="org.move.settings.MoveSettingsListener"
                   activeInTestMode="false"/>

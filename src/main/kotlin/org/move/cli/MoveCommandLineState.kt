@@ -7,15 +7,14 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.util.execution.ParametersListUtil
-import org.move.settings.dovePathValue
 
-class DoveCommandLineState(
+class MoveCommandLineState(
     environment: ExecutionEnvironment,
-    private val runConfiguration: DoveRunConfiguration,
+    private val runConfiguration: SubcommandRunConfigurationBase,
 ) : CommandLineState(environment) {
 
     override fun startProcess(): ProcessHandler {
-        val pathToExecutable = runConfiguration.project.dovePathValue
+        val pathToExecutable = runConfiguration.pathToExecutable()
         val params = ParametersListUtil.parse(runConfiguration.command).toTypedArray()
         val commandLine =
             GeneralCommandLine(pathToExecutable, *params)

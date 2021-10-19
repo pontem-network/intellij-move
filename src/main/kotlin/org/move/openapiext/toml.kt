@@ -1,7 +1,18 @@
-package org.move.manifest.dovetoml
+package org.move.openapiext
 
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.psi.PsiManager
 import org.toml.lang.psi.*
 import org.toml.lang.psi.ext.elementType
+import java.nio.file.Path
+
+fun parseToml(project: Project, path: Path): TomlFile? {
+    val file = LocalFileSystem.getInstance().findFileByNioFile(path) ?: return null
+    val tomlFileViewProvider =
+        PsiManager.getInstance(project).findViewProvider(file) ?: return null
+    return TomlFile(tomlFileViewProvider)
+}
 
 fun TomlTable.findValue(key: String): TomlValue? =
     this.entries.findLast { it.key.text == key }?.value
@@ -24,3 +35,8 @@ fun TomlValue.stringValue(): String? {
 }
 
 fun TomlValue.arrayValue(): List<TomlValue> = (this as? TomlArray)?.elements.orEmpty()
+
+fun TomlFile.getRootKey(key: String): TomlValue? {
+    val keyValue = this.children.filterIsInstance<TomlKeyValue>().find { it.key.text == key }
+    return keyValue?.value
+}

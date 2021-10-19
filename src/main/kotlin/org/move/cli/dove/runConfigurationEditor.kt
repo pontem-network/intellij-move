@@ -1,7 +1,6 @@
-package org.move.cli
+package org.move.cli.dove
 
 import com.intellij.execution.ExecutionBundle
-import com.intellij.execution.configuration.EnvironmentVariablesComponent
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.ui.LabeledComponent
@@ -24,8 +23,6 @@ class DoveExecutableSettingsEditor : SettingsEditor<DoveRunConfiguration>() {
 
     val workingDirectory: LabeledComponent<TextFieldWithBrowseButton> =
         WorkingDirectoryComponent()
-
-//    val environmentVariables = EnvironmentVariablesComponent()
 
     override fun resetEditorFrom(configuration: DoveRunConfiguration) {
         textField.text = configuration.command
@@ -75,18 +72,3 @@ private class CommandLineEditor : JPanel(BorderLayout()), TextAccessor {
 
     override fun getText(): String = textField.text
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

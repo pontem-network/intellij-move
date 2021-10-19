@@ -11,7 +11,7 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
-import org.move.cli.DoveExecutable
+import org.move.cli.CommandLineExecutable
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.reflect.KProperty1
@@ -135,7 +135,7 @@ val Project.dovePath: Path?
         return path
     }
 
-fun Project.getDoveExecutable(): DoveExecutable? {
+fun Project.getDoveExecutable(): CommandLineExecutable? {
     val path = this.dovePath ?: return null
-    return DoveExecutable(this, path)
+    return CommandLineExecutable(this, path)
 }
