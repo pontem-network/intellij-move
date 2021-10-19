@@ -14,6 +14,10 @@ fun parseToml(project: Project, path: Path): TomlFile? {
     return TomlFile(tomlFileViewProvider)
 }
 
+fun TomlTable.namedEntries(): List<Pair<String, TomlValue?>> {
+    return this.entries.map { Pair(it.key.text, it.value) }
+}
+
 fun TomlTable.findValue(key: String): TomlValue? =
     this.entries.findLast { it.key.text == key }?.value
 
@@ -39,4 +43,9 @@ fun TomlValue.arrayValue(): List<TomlValue> = (this as? TomlArray)?.elements.orE
 fun TomlFile.getRootKey(key: String): TomlValue? {
     val keyValue = this.children.filterIsInstance<TomlKeyValue>().find { it.key.text == key }
     return keyValue?.value
+}
+
+fun TomlFile.getTable(headerText: String): TomlTable? {
+    val tables = this.children.filterIsInstance<TomlTable>()
+    return tables.find { it.header.key?.text == headerText }
 }
