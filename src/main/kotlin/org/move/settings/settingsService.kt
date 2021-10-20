@@ -11,7 +11,6 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
-import org.move.cli.CommandLineExecutable
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.reflect.KProperty1
@@ -42,6 +41,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
 
     data class State(
         var doveExecutablePath: String = "",
+        var moveCliExecutablePath: String = "",
         var collapseSpecs: Boolean = false,
     )
 
@@ -134,8 +134,3 @@ val Project.dovePath: Path?
 
         return path
     }
-
-fun Project.getDoveExecutable(): CommandLineExecutable? {
-    val path = this.dovePath ?: return null
-    return CommandLineExecutable(this, path)
-}

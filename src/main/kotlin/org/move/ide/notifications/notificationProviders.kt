@@ -8,7 +8,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
-import org.move.cli.CommandLineExecutable
+import org.move.cli.VersionedExecutable
 import org.move.lang.isMoveFile
 import org.move.openapiext.common.isUnitTestMode
 import org.move.settings.MoveSettingsChangedEvent
@@ -54,7 +54,7 @@ class InvalidDoveExecutableNotificationsProvider(
         if (!file.isMoveFile || isNotificationDisabled(file)) return null
 
         val doveExecutablePath = project.dovePath ?: return null
-        if (CommandLineExecutable(project, doveExecutablePath).version() != null) return null
+        if (VersionedExecutable(project, doveExecutablePath).version() != null) return null
 
         return EditorNotificationPanel().apply {
             text = "Dove configured incorrectly"

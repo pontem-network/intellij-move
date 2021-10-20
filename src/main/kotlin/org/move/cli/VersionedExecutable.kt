@@ -9,7 +9,7 @@ import java.io.File
 import java.io.InputStreamReader
 import java.nio.file.Path
 
-class CommandLineExecutable(private val project: Project, private val executablePath: Path) {
+class VersionedExecutable(private val project: Project, private val executablePath: Path) {
     fun version(): String? {
         try {
             val executablePath = project.rootService.path ?: return null
