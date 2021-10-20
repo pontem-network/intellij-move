@@ -119,6 +119,11 @@ val Project.dovePathValue: String
         return this.moveSettings.settingsState.doveExecutablePath
     }
 
+val Project.moveCLIPathValue: String
+    get() {
+        return this.moveSettings.settingsState.moveCliExecutablePath
+    }
+
 val Project.collapseSpecs: Boolean
     get() {
         return this.moveSettings.settingsState.collapseSpecs

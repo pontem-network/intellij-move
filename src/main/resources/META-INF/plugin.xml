@@ -29,6 +29,7 @@
                   fieldName="INSTANCE"/>
 
         <configurationType implementation="org.move.cli.dove.DoveRunConfigurationType"/>
+        <configurationType implementation="org.move.cli.move_cli.MoveCLIRunConfigurationType"/>
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
