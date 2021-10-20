@@ -1,7 +1,10 @@
 package org.move.manifest
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import org.move.cli.Constants
+import org.move.cli.metadata
 import org.move.openapiext.*
 import org.toml.lang.psi.TomlFile
 import org.toml.lang.psi.TomlInlineTable
@@ -29,6 +32,19 @@ class DoveToml(
     val packageTable: DoveTomlPackageTable?,
     val layoutTable: LayoutTable?
 ) {
+    fun getFolders(): List<VirtualFile> {
+        val moduleFolders = mutableListOf<Path>()
+        if (this.packageTable != null) {
+            moduleFolders.addAll(this.packageTable.dependencies)
+        }
+        if (this.layoutTable?.modules_dir != null) {
+            moduleFolders.add(this.layoutTable.modules_dir)
+        }
+        return moduleFolders.mapNotNull {
+            VirtualFileManager.getInstance().findFileByNioPath(it)
+        }
+    }
+
     companion object {
         fun parse(project: Project, projectRoot: Path): DoveToml? {
             val tomlFile =

@@ -16,13 +16,13 @@ class DoveCommandTest : MoveTestBase() {
         val metadata = project.metadata(debugMovePath)
 
         check(metadata != null) { "Metadata is null" }
-        check(metadata.packageTable?.dialect == "pont")
+        check(metadata.dialect == "pont")
 
-        val dependencies = metadata.packageTable?.dependencies.orEmpty()
-        check(dependencies.size == 2)
-        check(dependencies[0].toString().endsWith("/artifacts/modules"))
-        check(dependencies[1].toString().endsWith("intellij-move/src/test/resources/dove_toml_project/stdlib"))
+        val depFolders = metadata.depFolders
+        check(depFolders.size == 2)
+        check(depFolders[0].toNioPath().toString().endsWith("/artifacts/modules"))
+        check(depFolders[1].toNioPath().toString().endsWith("intellij-move/src/test/resources/dove_toml_project/stdlib"))
 
-        check(metadata.packageTable?.account_address == "0x1")
+        check(metadata.account_address == "0x1")
     }
 }
