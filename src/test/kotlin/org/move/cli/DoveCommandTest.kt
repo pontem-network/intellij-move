@@ -18,7 +18,7 @@ class DoveCommandTest : MoveTestBase() {
         check(metadata != null) { "Metadata is null" }
         check(metadata.dialect == "pont")
 
-        val depFolders = metadata.depFolders
+        val depFolders = metadata.moduleFolders
         check(depFolders.size == 2)
         check(depFolders[0].toNioPath().toString().endsWith("/artifacts/modules"))
         check(depFolders[1].toNioPath().toString().endsWith("intellij-move/src/test/resources/dove_toml_project/stdlib"))

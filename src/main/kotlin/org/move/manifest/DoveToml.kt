@@ -4,7 +4,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import org.move.cli.Constants
-import org.move.cli.metadata
 import org.move.openapiext.*
 import org.toml.lang.psi.TomlFile
 import org.toml.lang.psi.TomlInlineTable

@@ -5,9 +5,16 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.io.exists
 import com.intellij.util.io.isDirectory
 import org.move.cli.Constants
+import org.move.lang.MoveFile
 import org.move.manifest.DoveToml
+import org.move.utils.getMoveFilesInFolder
 import org.move.utils.rootService
 import java.nio.file.Files
+
+fun Project.allProjectMoveFiles(): List<MoveFile> {
+    return this.allProjectsFolders()
+        .flatMap { getMoveFilesInFolder(this, it) }
+}
 
 fun Project.allProjectsFolders(): List<VirtualFile> {
     val moduleFolders = mutableListOf<VirtualFile>()

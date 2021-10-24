@@ -2,10 +2,12 @@ package org.move.manifest
 
 import com.intellij.openapi.project.Project
 import org.move.openapiext.*
+import org.toml.lang.psi.TomlFile
 import org.toml.lang.psi.TomlInlineTable
-import org.toml.lang.psi.TomlTable
 import java.nio.file.Path
-import java.nio.file.Paths
+
+typealias AddressesMap = Map<String, String>
+typealias DependenciesMap = Map<String, Dependency>
 
 data class Dependency(
     val local: Path
@@ -20,8 +22,10 @@ data class MoveTomlPackageTable(
 
 class MoveToml(
     val packageTable: MoveTomlPackageTable?,
-    val addresses: Map<String, String>,
-    val dependencies: Map<String, Dependency>,
+    val addresses: AddressesMap,
+    val dev_addresses: AddressesMap,
+    val dependencies: DependenciesMap,
+    val dev_dependencies: DependenciesMap,
 ) {
     companion object {
         fun parse(project: Project, projectRoot: Path): MoveToml? {
@@ -38,14 +42,31 @@ class MoveToml(
                 packageTable = MoveTomlPackageTable(name, version, authors, license)
             }
 
+            val addresses = parseAddresses("addresses", tomlFile)
+            val dev_addresses = parseAddresses("dev_addresses", tomlFile)
+
+            val dependencies = parseDependencies("dependencies", tomlFile, projectRoot)
+            val dev_dependencies = parseDependencies("dev_dependencies", tomlFile, projectRoot)
+
+            return MoveToml(packageTable, addresses, dev_addresses, dependencies, dev_dependencies)
+        }
+
+        private fun parseAddresses(tableKey: String, tomlFile: TomlFile): AddressesMap {
             val addresses = mutableMapOf<String, String>()
-            val tomlAddresses = tomlFile.getTable("addresses")?.namedEntries().orEmpty()
+            val tomlAddresses = tomlFile.getTable(tableKey)?.namedEntries().orEmpty()
             for ((addressName, tomlValue) in tomlAddresses) {
                 addresses[addressName] = tomlValue?.stringValue() ?: continue
             }
+            return addresses
+        }
 
+        private fun parseDependencies(
+            tableKey: String,
+            tomlFile: TomlFile,
+            projectRoot: Path
+        ): DependenciesMap {
             val dependencies = mutableMapOf<String, Dependency>()
-            val tomlDeps = tomlFile.getTable("dependencies")?.namedEntries().orEmpty()
+            val tomlDeps = tomlFile.getTable(tableKey)?.namedEntries().orEmpty()
             for ((depName, tomlValue) in tomlDeps) {
                 val depTable = (tomlValue as? TomlInlineTable) ?: continue
                 val localPathValue = depTable.findValue("local")?.stringValue() ?: continue
@@ -53,8 +74,7 @@ class MoveToml(
                     projectRoot.resolve(localPathValue).toAbsolutePath().normalize()
                 dependencies[depName] = Dependency(localPath)
             }
-
-            return MoveToml(packageTable, addresses, dependencies)
+            return dependencies
         }
     }
 }

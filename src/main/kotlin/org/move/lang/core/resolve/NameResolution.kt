@@ -1,7 +1,6 @@
 package org.move.lang.core.resolve
 
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiRecursiveVisitor
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
@@ -13,7 +12,6 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.HasType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.StructType
-import org.move.utils.iterateOverMoveFiles
 import java.nio.file.Paths
 
 fun processItems(
@@ -61,43 +59,11 @@ fun resolveModuleRefIntoQual(moduleRef: MoveModuleRef): MoveFullyQualifiedModule
     return resolved.fullyQualifiedModuleRef
 }
 
-//fun resolveModuleRef(moduleRef: MoveModuleRef): MoveNamedElement? {
-//    val qualModuleRef =
-//        if (moduleRef !is MoveFullyQualifiedModuleRef) {
-//            val referredItem = resolveItem(moduleRef, Namespace.MODULE) ?: return null
-//
-//            if (referredItem is MoveImportAlias) return referredItem
-//            if (referredItem is MoveItemImport && referredItem.text == "Self") {
-//                return referredItem
-//            }
-//            (referredItem as MoveModuleImport).fullyQualifiedModuleRef
-//        } else {
-//            moduleRef
-//        }
-//
-//    val currentModuleName = moduleRef.containingModule?.name
-//
-//    val resolvedModule = resolveQualModuleRef(qualModuleRef, currentModuleName)
-//    return resolvedModule
-//    return resolvedModule ?: qualModuleRef.toParentModuleImport()
-//}
-
-//fun resolveUnqualifiedModuleRef(moduleRef: MoveModuleRef): MoveNamedElement? {
-//    val referredElement = resolveItem(moduleRef, Namespace.MODULE) ?: return null
-//    if (referredElement is MoveImportAlias) {
-//        return referredElement
-//    }
-//    val referredModuleImport = referredElement as MoveModuleImport;
-//    return resolveFullyQualifiedModuleRef(referredModuleImport.fullyQualifiedModuleRef)
-//        ?: referredElement
-//}
-
 private fun resolveQualModuleRefInFile(
     qualModuleRef: MoveFullyQualifiedModuleRef,
     file: MoveFile,
     processor: MatchingProcessor,
 ): Boolean {
-//    val moduleAddress = qualModuleRef.addressRef.address()
     val normalizedModuleAddress = qualModuleRef.addressRef.address()?.normalized()
 
     var resolved = false
@@ -132,30 +98,11 @@ fun processQualModuleRef(
     val currentPathPathS = containingFile.virtualFile?.canonicalPath ?: return false
     val currentFilePath = Paths.get(currentPathPathS)
 
-//    val virtualFolders = project.currentProjectFolders(currentFilePath)
-    val virtualFolders = project.metadata(currentFilePath)?.depFolders.orEmpty()
-    for (folder in virtualFolders) {
-        if (isResolved) break
-        iterateOverMoveFiles(project, folder) { moveFile ->
-            isResolved = resolveQualModuleRefInFile(qualModuleRef, moveFile, processor)
-            !isResolved
-        }
-//        VfsUtil.iterateChildrenRecursively(
-//            folder,
-//            { it.isDirectory || it.extension == "move" })
-//        { file ->
-//            if (file.isDirectory) return@iterateChildrenRecursively true
-//            val moduleFile = PsiManager.getInstance(project).findFile(file) as? MoveFile
-//                ?: return@iterateChildrenRecursively true
-//            // will continue processing if true
-//            !isResolved
-//        }
+    val metadata = project.metadata(currentFilePath) ?: return false
+    metadata.iterOverMoveModuleFiles { moduleFile ->
+        isResolved = resolveQualModuleRefInFile(qualModuleRef, moduleFile.file, processor)
+        !isResolved
     }
-//    if (!isResolved) {
-//        // search current file for modules too
-//        val containingFile = qualModuleRef.containingFile as? MoveFile ?: return false
-//        isResolved = resolveQualModuleRefInFile(qualModuleRef, containingFile, processor)
-//    }
     return isResolved
 }
 
