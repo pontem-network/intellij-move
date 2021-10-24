@@ -6,7 +6,7 @@ val kotlinVersion = "1.5.30"
 
 val pluginJarName = "intellij-move-$intellijVersion"
 val pluginGroup = "org.move"
-val pluginVersion = "0.16.0"
+val pluginVersion = "0.17.0"
 val pluginTomlVersion = "0.2.151.3997-212"
 
 group = pluginGroup

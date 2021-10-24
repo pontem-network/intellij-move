@@ -16,7 +16,8 @@ class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MoveIcons
         directory: PsiDirectory,
         builder: CreateFileFromTemplateDialog.Builder
     ) {
-        builder.setTitle(CAPTION).addKind("Empty file", MoveIcons.MOVE, "Move File")
+        builder.setTitle(CAPTION)
+            .addKind("Empty file", MoveIcons.MOVE, "Move File")
     }
 
     private companion object {

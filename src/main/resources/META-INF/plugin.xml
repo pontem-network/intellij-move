@@ -64,8 +64,10 @@
                                 implementationClass="org.move.lang.core.completion.CommonCompletionContributor"/>
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.core.completion.KeywordCompletionContributor"/>
-        <psi.referenceContributor language="Move"
-                                  implementation="org.move.lang.ReferenceContributor"/>
+
+        <psi.referenceContributor language="TOML"
+                                  implementation="org.move.toml.MoveTomlReferenceContributor"/>
+
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.ErrorAnnotator"/>
         <annotator language="Move"
@@ -142,7 +144,7 @@
                 class="org.move.ide.actions.CreateMoveFileAction"
                 text="Move File"
                 description="Create new Move file">
-            <!--            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>-->
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
         </action>
     </actions>
 </idea-plugin>
