@@ -13,11 +13,13 @@ fun iterateMoveFilesInFolder(
     VfsUtil
         .iterateChildrenRecursively(
             folder,
-            { it.isDirectory || it.extension == "move" }) { file ->
+            { it.isDirectory || it.extension == "move" }
+        ) { file ->
             if (file.isDirectory) return@iterateChildrenRecursively true
             val moveFile =
                 psiManager.findFile(file) as? MoveFile
                     ?: return@iterateChildrenRecursively true
+//            return@iterateChildrenRecursively true
             processFile(moveFile)
         }
 }

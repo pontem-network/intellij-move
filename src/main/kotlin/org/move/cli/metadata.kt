@@ -16,7 +16,7 @@ enum class ManifestType {
     MOVE_CLI, DOVE;
 }
 
-enum class NamedAddressScope {
+enum class GlobalScope {
     MAIN, DEV;
 }
 
@@ -26,22 +26,22 @@ data class MoveModuleFile(
 )
 
 data class ProjectMetadata(
-    val dialect: String?,
-    val account_address: String?,
-    val moduleFolders: List<VirtualFile>,
-//    val depModules: List<VirtualFile>,
-    val namedAddresses: Map<NamedAddressScope, AddressesMap> = mutableMapOf(
-        NamedAddressScope.MAIN to emptyMap(),
-        NamedAddressScope.DEV to emptyMap()
-    ),
     val project: Project,
+    val manifestType: ManifestType,
+    val dialect: String?,
+
+    val moduleFolders: List<VirtualFile>,
+    val devModuleFolders: List<VirtualFile>,
+
+    val addresses: AddressesMap,
+    val devAddresses: AddressesMap,
 ) {
     /// processFile should return false if iteration should be stopped
     fun iterOverMoveModuleFiles(processFile: (MoveModuleFile) -> Boolean) {
         for (folder in moduleFolders) {
             iterateMoveFilesInFolder(project, folder) {
                 val moduleFile = MoveModuleFile(it, emptyMap())
-                return@iterateMoveFilesInFolder !processFile(moduleFile)
+                processFile(moduleFile)
             }
         }
     }
@@ -72,26 +72,33 @@ class MetadataService(private val project: Project) {
             ManifestType.DOVE -> {
                 val doveToml = DoveToml.parse(this.project, manifestPath.parent)
                 ProjectMetadata(
+                    project,
+                    manifestType,
                     doveToml?.packageTable?.dialect,
-                    doveToml?.packageTable?.account_address,
                     doveToml?.getFolders().orEmpty(),
-                    project = project,
+                    emptyList(),
+                    emptyMap(),
+                    emptyMap(),
                 )
             }
             ManifestType.MOVE_CLI -> {
                 val moveToml = MoveToml.parse(this.project, manifestPath.parent)
-                val namedAddresses = mutableMapOf<NamedAddressScope, AddressesMap>()
-                if (moveToml != null) {
-                    namedAddresses[NamedAddressScope.MAIN] = moveToml.addresses
-                    namedAddresses[NamedAddressScope.DEV] = moveToml.dev_addresses
-                }
-                ProjectMetadata("diem", null, emptyList(), namedAddresses, project)
+                ProjectMetadata(
+                    project,
+                    manifestType,
+                    "diem",
+                    moveToml?.getFolders(GlobalScope.MAIN).orEmpty(),
+                    moveToml?.getFolders(GlobalScope.DEV).orEmpty(),
+                    moveToml?.addresses.orEmpty(),
+                    moveToml?.dev_addresses.orEmpty()
+                )
             }
         }
     }
 }
 
 fun Project.metadata(currentFilePath: Path): ProjectMetadata? {
-    val metadataService = this.getService(MetadataService::class.java)
-    return metadataService.metadata(currentFilePath)
+    return this
+        .getService(MetadataService::class.java)
+        .metadata(currentFilePath)
 }

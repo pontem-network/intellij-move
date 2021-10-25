@@ -8,6 +8,7 @@ import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MoveElement
 import org.move.lang.core.psi.MoveNamedElement
 import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.base.findElementInEditor
 
 class LookupElementTest : MoveTestBase() {
     fun `test function param`() = check("""
@@ -80,7 +81,7 @@ class LookupElementTest : MoveTestBase() {
     ) where T : NavigatablePsiElement, T : MoveElement {
         inlineFile(code)
 
-        val element = findElementInEditor<T>() as? MoveNamedElement
+        val element = myFixture.findElementInEditor<T>() as? MoveNamedElement
             ?: error("Marker `^` should point to the MoveNamedElement")
 
         val lookup = element.createLookupElement(false)

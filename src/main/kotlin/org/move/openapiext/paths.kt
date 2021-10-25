@@ -1,5 +1,7 @@
 package org.move.openapiext
 
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.util.io.exists
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -14,5 +16,7 @@ fun Path.resolveAbsPath(other: String): Path? {
     } else {
         return joined.toRealPath()
     }
-
 }
+
+fun Path.findVirtualFile(): VirtualFile? =
+    VirtualFileManager.getInstance().findFileByNioPath(this)

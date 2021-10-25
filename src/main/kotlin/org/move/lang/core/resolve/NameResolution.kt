@@ -1,9 +1,8 @@
 package org.move.lang.core.resolve
 
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiRecursiveVisitor
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
+import com.intellij.psi.util.descendantsOfType
 import org.move.cli.metadata
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
@@ -64,23 +63,22 @@ private fun resolveQualModuleRefInFile(
     file: MoveFile,
     processor: MatchingProcessor,
 ): Boolean {
-    val normalizedModuleAddress = qualModuleRef.addressRef.address()?.normalized()
+    val sourceNormalizedAddress = qualModuleRef.addressRef.address()?.normalized()
 
     var resolved = false
-    file.accept(object : MoveVisitor(),
-                         PsiRecursiveVisitor {
-        override fun visitFile(file: PsiFile) {
+    val visitor = object : MoveVisitor() {
+        override fun visitModuleDef(o: MoveModuleDef) {
             if (resolved) return
-            file.acceptChildren(this)
-        }
-
-        override fun visitAddressDef(o: MoveAddressDef) {
-            if (resolved) return
-            if (o.normalizedAddress == normalizedModuleAddress) {
-                resolved = processor.matchAll(o.modules())
+            val normalizedAddress = o.definedAddressRef()?.address()?.normalized()
+            if (normalizedAddress == sourceNormalizedAddress) {
+                resolved = processor.match(o)
             }
         }
-    })
+    }
+    val moduleDefs = file.descendantsOfType<MoveModuleDef>()
+    for (moduleDef in moduleDefs) {
+        moduleDef.accept(visitor)
+    }
     return resolved
 }
 

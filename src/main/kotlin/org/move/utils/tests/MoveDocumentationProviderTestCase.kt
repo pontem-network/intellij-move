@@ -4,13 +4,14 @@ import com.intellij.codeInsight.documentation.DocumentationManager
 import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
 import org.move.ide.docs.MoveDocumentationProvider
+import org.move.utils.tests.base.findElementAndOffsetInEditor
 
 abstract class MoveDocumentationProviderTestCase : MoveTestBase() {
 
     protected fun doTest(
         @Language("Move") code: String,
         @Language("Html") expected: String?,
-        findElement: () -> Pair<PsiElement, Int> = { findElementAndOffsetInEditor() },
+        findElement: () -> Pair<PsiElement, Int> = { myFixture.findElementAndOffsetInEditor() },
         block: MoveDocumentationProvider.(PsiElement, PsiElement?) -> String?
     ) {
         @Suppress("NAME_SHADOWING")
@@ -22,7 +23,7 @@ abstract class MoveDocumentationProviderTestCase : MoveTestBase() {
     protected fun doTest(
         @Language("Move") code: String,
         expected: Regex?,
-        findElement: () -> Pair<PsiElement, Int> = { findElementAndOffsetInEditor() },
+        findElement: () -> Pair<PsiElement, Int> = { myFixture.findElementAndOffsetInEditor() },
         block: MoveDocumentationProvider.(PsiElement, PsiElement?) -> String?
     ) {
         @Suppress("NAME_SHADOWING")
@@ -34,7 +35,7 @@ abstract class MoveDocumentationProviderTestCase : MoveTestBase() {
     protected fun <T> doTest(
         @Language("Move") code: String,
         expected: T?,
-        findElement: () -> Pair<PsiElement, Int> = { findElementAndOffsetInEditor() },
+        findElement: () -> Pair<PsiElement, Int> = { myFixture.findElementAndOffsetInEditor() },
         block: MoveDocumentationProvider.(PsiElement, PsiElement?) -> String?,
         check: (String, T) -> Unit
     ) {

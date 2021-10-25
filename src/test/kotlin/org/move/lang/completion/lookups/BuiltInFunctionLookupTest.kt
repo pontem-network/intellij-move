@@ -6,6 +6,7 @@ import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MoveModuleDef
 import org.move.lang.core.psi.ext.builtinFnSignatures
 import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.base.findElementInEditor
 
 class BuiltInFunctionLookupTest : MoveTestBase() {
     fun `test move_from`() = checkBuiltinPresentation(
@@ -38,7 +39,7 @@ class BuiltInFunctionLookupTest : MoveTestBase() {
                 //^
         """
         inlineFile(moduleText)
-        val moduleElement = findElementInEditor<MoveModuleDef>()
+        val moduleElement = myFixture.findElementInEditor<MoveModuleDef>()
         val lookup =
             moduleElement.builtinFnSignatures().find { it.name == name }!!.createLookupElement(false)
         checkLookupPresentation(

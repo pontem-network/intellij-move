@@ -6,6 +6,7 @@ import org.intellij.lang.annotations.Language
 import org.move.lang.core.MovePsiPatterns
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.base.findElementInEditor
 
 class PsiPatternTest : MoveTestBase() {
     fun `test on stmt beginning`() = testPattern("""
@@ -79,13 +80,13 @@ class PsiPatternTest : MoveTestBase() {
         pattern: ElementPattern<T>,
     ) {
         InlineFile(myFixture, code, "main.move")
-        val element = findElementInEditor<T>()
+        val element = myFixture.findElementInEditor<T>()
         assertTrue(pattern.accepts(element))
     }
 
     private fun <T> testPatternNegative(@Language("Move") code: String, pattern: ElementPattern<T>) {
         InlineFile(myFixture, code, "main.move")
-        val element = findElementInEditor<PsiElement>()
+        val element = myFixture.findElementInEditor<PsiElement>()
         assertFalse(pattern.accepts(element, null))
     }
 }

@@ -1,6 +1,10 @@
 package org.move.manifest
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.util.io.exists
+import org.move.cli.GlobalScope
 import org.move.openapiext.*
 import org.toml.lang.psi.TomlFile
 import org.toml.lang.psi.TomlInlineTable
@@ -21,12 +25,33 @@ data class MoveTomlPackageTable(
 )
 
 class MoveToml(
+    val root: Path,
     val packageTable: MoveTomlPackageTable?,
     val addresses: AddressesMap,
     val dev_addresses: AddressesMap,
     val dependencies: DependenciesMap,
     val dev_dependencies: DependenciesMap,
 ) {
+    fun getFolders(scope: GlobalScope): List<VirtualFile> {
+        val deps = when (scope) {
+            GlobalScope.MAIN -> dependencies
+            GlobalScope.DEV -> dependencies + dev_dependencies
+        }
+        val folders = mutableListOf<VirtualFile>()
+        val sourcesFolder = root.resolve("sources").findVirtualFile()
+        if (sourcesFolder != null) {
+            folders.add(sourcesFolder)
+        }
+
+        for (dep in deps.values) {
+            // TODO: make them absolute paths
+            val folder = dep.local.resolve("sources").findVirtualFile() ?: continue
+            if (folder.isDirectory)
+                folders.add(folder)
+        }
+        return folders
+    }
+
     companion object {
         fun parse(project: Project, projectRoot: Path): MoveToml? {
             val tomlFile = parseToml(project, projectRoot.resolve("Move.toml")) ?: return null
@@ -48,7 +73,7 @@ class MoveToml(
             val dependencies = parseDependencies("dependencies", tomlFile, projectRoot)
             val dev_dependencies = parseDependencies("dev_dependencies", tomlFile, projectRoot)
 
-            return MoveToml(packageTable, addresses, dev_addresses, dependencies, dev_dependencies)
+            return MoveToml(projectRoot, packageTable, addresses, dev_addresses, dependencies, dev_dependencies)
         }
 
         private fun parseAddresses(tableKey: String, tomlFile: TomlFile): AddressesMap {

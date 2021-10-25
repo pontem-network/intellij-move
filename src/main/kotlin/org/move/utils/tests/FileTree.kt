@@ -7,7 +7,6 @@ package org.move.utils.tests
 
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.text.StringUtil.convertLineSeparators
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -16,16 +15,13 @@ import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import org.intellij.lang.annotations.Language
-import org.junit.Assert
 import org.move.lang.core.psi.MoveReferenceElement
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.openapiext.document
 import org.move.openapiext.fullyRefreshDirectory
-import org.move.openapiext.saveAllDocuments
 import org.move.openapiext.toPsiFile
 import org.move.utils.tests.resolve.TestResolveResult
 import org.move.utils.tests.resolve.checkResolvedFile
-import kotlin.text.Charsets.UTF_8
 
 fun fileTree(builder: FileTreeBuilder.() -> Unit): FileTree =
     FileTree(FileTreeBuilderImpl().apply { builder() }.intoDirectory())
@@ -34,6 +30,7 @@ fun fileTreeFromText(@Language("Move") text: String): FileTree {
     val fileSeparator = """^\s*//- (\S+)\s*$""".toRegex(RegexOption.MULTILINE)
     val fileNames = fileSeparator.findAll(text).map { it.groupValues[1] }.toList()
     val fileTexts = fileSeparator.split(text)
+        // cleans up from the first blank text
         .let {
             check(it.first().isBlank())
             it.drop(1)
@@ -44,21 +41,25 @@ fun fileTreeFromText(@Language("Move") text: String): FileTree {
         "Have you placed `//- filename.rs` markers?"
     }
 
-    fun fill(dir: Entry.Directory, path: List<String>, contents: String) {
+    fun fillDirectory(dir: FilesystemEntry.Directory, path: List<String>, contents: String) {
         val name = path.first()
         if (path.size == 1) {
-            dir.children[name] = Entry.File(contents)
+            dir.children[name] = FilesystemEntry.File(contents)
         } else {
-            val childDir = dir.children.getOrPut(name) { Entry.Directory(mutableMapOf()) } as Entry.Directory
-            fill(childDir, path.drop(1), contents)
+            val childDir =
+                dir.children.getOrPut(name) { FilesystemEntry.Directory(mutableMapOf()) } as FilesystemEntry.Directory
+            fillDirectory(childDir, path.drop(1), contents)
         }
     }
 
-    return FileTree(Entry.Directory(mutableMapOf()).apply {
-        for ((path, contents) in fileNames.map { it.split("/") }.zip(fileTexts)) {
-            fill(this, path, contents)
+    val filesInfo =
+        FilesystemEntry.Directory(mutableMapOf()).apply {
+            val dirFiles = fileNames.map { it.split("/") }.zip(fileTexts)
+            for ((path, contents) in dirFiles) {
+                fillDirectory(this, path, contents)
+            }
         }
-    })
+    return FileTree(filesInfo)
 }
 
 interface FileTreeBuilder {
@@ -70,90 +71,49 @@ interface FileTreeBuilder {
     fun toml(name: String, @Language("TOML") code: String) = file(name, code)
 }
 
-class FileTree(val rootDirectory: Entry.Directory) {
-    fun create(project: Project, directory: VirtualFile): TestProject {
+class FileTree(val rootDirInfo: FilesystemEntry.Directory) {
+    fun prepareTestProject(project: Project, directory: VirtualFile): TestProject {
         val filesWithCaret: MutableList<String> = mutableListOf()
-//        val filesWithSelection: MutableList<String> = mutableListOf()
         val filesWithNamedElement: MutableList<String> = mutableListOf()
 
-        fun go(dir: Entry.Directory, root: VirtualFile, parentComponents: List<String> = emptyList()) {
-            for ((name, entry) in dir.children) {
-                val components = parentComponents + name
-                when (entry) {
-                    is Entry.File -> {
+        fun prepareFilesFromInfo(
+            dirInfo: FilesystemEntry.Directory,
+            root: VirtualFile,
+            parentComponents: List<String> = emptyList()
+        ) {
+            for ((name, fsEntry) in dirInfo.children) {
+                val pathComponents = parentComponents + name
+                when (fsEntry) {
+                    is FilesystemEntry.File -> {
                         val vFile = root.findChild(name) ?: root.createChildData(root, name)
-                        VfsUtil.saveText(vFile, replaceCaretMarker(entry.text))
-                        if (hasCaretMarker(entry.text) || "//^" in entry.text || "#^" in entry.text) {
-                            filesWithCaret += components.joinToString(separator = "/")
+                        VfsUtil.saveText(vFile, replaceCaretMarker(fsEntry.text))
+                        if (hasCaretMarker(fsEntry.text) || "//^" in fsEntry.text) {
+                            filesWithCaret += pathComponents.joinToString(separator = "/")
                         }
-//                        if (hasSelectionMarker(entry.text)) {
-//                            filesWithSelection += components.joinToString(separator = "/")
-//                        }
-                        if ("//X" in entry.text) {
-                            filesWithNamedElement += components.joinToString(separator = "/")
+                        if ("//X" in fsEntry.text) {
+                            filesWithNamedElement += pathComponents.joinToString(separator = "/")
                         }
                     }
-                    is Entry.Directory -> {
-                        go(entry, root.createChildDirectory(root, name), components)
+                    is FilesystemEntry.Directory -> {
+                        prepareFilesFromInfo(fsEntry, root.createChildDirectory(root, name), pathComponents)
                     }
                 }
             }
         }
 
         runWriteAction {
-            go(rootDirectory, directory)
+            prepareFilesFromInfo(rootDirInfo, directory)
             fullyRefreshDirectory(directory)
         }
-
         return TestProject(project, directory, filesWithCaret, filesWithNamedElement)
-    }
-
-    fun assertEquals(baseDir: VirtualFile) {
-        fun go(expected: Entry.Directory, actual: VirtualFile) {
-            val actualChildren = actual.children.associateBy { it.name }
-            check(expected.children.keys == actualChildren.keys) {
-                "Mismatch in directory ${actual.path}\n" +
-                        "Expected: ${expected.children.keys}\n" +
-                        "Actual  : ${actualChildren.keys}"
-            }
-
-            for ((name, entry) in expected.children) {
-                val a = actualChildren[name]!!
-                when (entry) {
-                    is Entry.File -> {
-                        check(!a.isDirectory)
-                        val actualText = convertLineSeparators(String(a.contentsToByteArray(), UTF_8))
-                        Assert.assertEquals(entry.text.trimEnd(), actualText.trimEnd())
-                    }
-                    is Entry.Directory -> go(entry, a)
-                }
-            }
-        }
-
-        saveAllDocuments()
-        go(rootDirectory, baseDir)
-    }
-
-    fun check(fixture: CodeInsightTestFixture) {
-        fun go(dir: Entry.Directory, rootPath: String) {
-            for ((name, entry) in dir.children) {
-                val path = "$rootPath/$name"
-                when (entry) {
-                    is Entry.File -> fixture.checkResult(path, entry.text, true)
-                    is Entry.Directory -> go(entry, path)
-                }
-            }
-        }
-
-        go(rootDirectory, ".")
     }
 }
 
-fun FileTree.create(fixture: CodeInsightTestFixture): TestProject =
-    create(fixture.project, fixture.findFileInTempDir("."))
+fun FileTree.prepareTestProject(fixture: CodeInsightTestFixture): TestProject =
+    prepareTestProject(fixture.project, fixture.findFileInTempDir("."))
 
 fun FileTree.createAndOpenFileWithCaretMarker(fixture: CodeInsightTestFixture): TestProject {
-    val testProject = create(fixture)
+    val testProject = prepareTestProject(fixture)
     fixture.configureFromTempProjectFile(testProject.fileWithCaret)
     return testProject
 }
@@ -162,12 +122,11 @@ class TestProject(
     private val project: Project,
     val root: VirtualFile,
     private val filesWithCaret: List<String>,
-    private val filesWithNamedElement: List<String>,
+    private val filesWithNamedElement: List<String>
 ) {
 
     val fileWithCaret: String get() = filesWithCaret.single()
     val fileWithNamedElement: String get() = filesWithNamedElement.single()
-//    val fileWithCaretOrSelection: String get() = filesWithCaret.singleOrNull() ?: filesWithSelection.single()
 
     inline fun <reified T : PsiElement> findElementInFile(path: String): T {
         val element = doFindElementInFile(path)
@@ -224,7 +183,10 @@ class TestProject(
 }
 
 
-private class FileTreeBuilderImpl(val directory: MutableMap<String, Entry> = mutableMapOf()) : FileTreeBuilder {
+private class FileTreeBuilderImpl(
+    val directory: MutableMap<String, FilesystemEntry> = mutableMapOf()
+) : FileTreeBuilder {
+
     override fun dir(name: String, builder: FileTreeBuilder.() -> Unit) {
         check('/' !in name) { "Bad directory name `$name`" }
         directory[name] = FileTreeBuilderImpl().apply { builder() }.intoDirectory()
@@ -232,20 +194,20 @@ private class FileTreeBuilderImpl(val directory: MutableMap<String, Entry> = mut
 
     override fun dir(name: String, tree: FileTree) {
         check('/' !in name) { "Bad directory name `$name`" }
-        directory[name] = tree.rootDirectory
+        directory[name] = tree.rootDirInfo
     }
 
     override fun file(name: String, code: String) {
         check('/' !in name && '.' in name) { "Bad file name `$name`" }
-        directory[name] = Entry.File(code.trimIndent())
+        directory[name] = FilesystemEntry.File(code.trimIndent())
     }
 
-    fun intoDirectory() = Entry.Directory(directory)
+    fun intoDirectory() = FilesystemEntry.Directory(directory)
 }
 
-sealed class Entry {
-    class File(val text: String) : Entry()
-    class Directory(val children: MutableMap<String, Entry>) : Entry()
+sealed class FilesystemEntry {
+    class File(val text: String) : FilesystemEntry()
+    class Directory(val children: MutableMap<String, FilesystemEntry>) : FilesystemEntry()
 }
 
 private fun findElementInFile(file: PsiFile, marker: String): PsiElement {
@@ -257,12 +219,8 @@ private fun findElementInFile(file: PsiFile, marker: String): PsiElement {
     val makerColumn = markerOffset - doc.getLineStartOffset(markerLine)
     val elementOffset = doc.getLineStartOffset(markerLine - 1) + makerColumn
 
-    return file.findElementAt(elementOffset) ?:
-    error { "No element found, offset = $elementOffset" }
+    return file.findElementAt(elementOffset) ?: error { "No element found, offset = $elementOffset" }
 }
 
 fun replaceCaretMarker(text: String): String = text.replace("/*caret*/", "<caret>")
 fun hasCaretMarker(text: String): Boolean = text.contains("/*caret*/") || text.contains("<caret>")
-fun hasSelectionMarker(text: String): Boolean = text.contains("<selection>") && text.contains("</selection>")
-
-//fun hasResolveNamedElementMarker(text: String): Boolean = text.contains("<selection>") && text.contains("</selection>")

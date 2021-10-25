@@ -22,7 +22,5 @@ class DoveCommandTest : MoveTestBase() {
         check(depFolders.size == 2)
         check(depFolders[0].toNioPath().toString().endsWith("/artifacts/modules"))
         check(depFolders[1].toNioPath().toString().endsWith("intellij-move/src/test/resources/dove_toml_project/stdlib"))
-
-        check(metadata.account_address == "0x1")
     }
 }

@@ -13,7 +13,7 @@ import org.move.lang.core.types.FullyQualModule
 import javax.swing.Icon
 
 fun MoveModuleDef.definedAddressRef(): MoveAddressRef? =
-    this.addressRef ?: (this.parent as? MoveAddressDef)?.addressRef
+    this.addressRef ?: (this.ancestorStrict<MoveAddressDef>())?.addressRef
 
 fun MoveModuleDef.fullyQual(): FullyQualModule? {
     val address = this.containingAddress.normalized()
