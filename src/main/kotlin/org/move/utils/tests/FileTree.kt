@@ -93,6 +93,9 @@ class FileTree(val rootDirInfo: FilesystemEntry.Directory) {
                         if ("//X" in fsEntry.text) {
                             filesWithNamedElement += pathComponents.joinToString(separator = "/")
                         }
+                        if ("#X" in fsEntry.text) {
+                            filesWithNamedElement += pathComponents.joinToString(separator = "/")
+                        }
                     }
                     is FilesystemEntry.Directory -> {
                         prepareFilesFromInfo(fsEntry, root.createChildDirectory(root, name), pathComponents)

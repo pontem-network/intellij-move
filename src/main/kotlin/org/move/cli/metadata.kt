@@ -7,6 +7,7 @@ import org.move.lang.MoveFile
 import org.move.manifest.AddressesMap
 import org.move.manifest.DoveToml
 import org.move.manifest.MoveToml
+import org.move.openapiext.parseToml
 import org.move.openapiext.resolveAbsPath
 import org.move.utils.iterateMoveFilesInFolder
 import java.nio.file.Path
@@ -47,24 +48,24 @@ data class ProjectMetadata(
     }
 }
 
+fun findCurrentTomlManifest(currentFilePath: Path): Pair<Path, ManifestType>? {
+    var dir = currentFilePath.parent
+    while (dir != null) {
+        val doveTomlPath = dir.resolveAbsPath(Constants.DOVE_MANIFEST_FILE)
+        if (doveTomlPath != null) {
+            return Pair(doveTomlPath, ManifestType.DOVE)
+        }
+        val moveTomlPath = dir.resolveAbsPath(Constants.MOVE_CLI_MANIFEST_FILE)
+        if (moveTomlPath != null) {
+            return Pair(moveTomlPath, ManifestType.MOVE_CLI)
+        }
+        dir = dir.parent
+    }
+    return null
+}
+
 @Service(Service.Level.PROJECT)
 class MetadataService(private val project: Project) {
-    private fun findCurrentTomlManifest(currentFilePath: Path): Pair<Path, ManifestType>? {
-        var dir = currentFilePath.parent
-        while (dir != null) {
-            val doveTomlPath = dir.resolveAbsPath(Constants.DOVE_MANIFEST_FILE)
-            if (doveTomlPath != null) {
-                return Pair(doveTomlPath, ManifestType.DOVE)
-            }
-            val moveTomlPath = dir.resolveAbsPath(Constants.MOVE_CLI_MANIFEST_FILE)
-            if (moveTomlPath != null) {
-                return Pair(moveTomlPath, ManifestType.MOVE_CLI)
-            }
-            dir = dir.parent
-        }
-        return null
-    }
-
     fun metadata(currentFilePath: Path): ProjectMetadata? {
         val (manifestPath, manifestType) =
             findCurrentTomlManifest(currentFilePath) ?: return null
@@ -82,7 +83,8 @@ class MetadataService(private val project: Project) {
                 )
             }
             ManifestType.MOVE_CLI -> {
-                val moveToml = MoveToml.parse(this.project, manifestPath.parent)
+                val tomlFile = parseToml(this.project, manifestPath) ?: return null
+                val moveToml = MoveToml.parse(tomlFile)
                 ProjectMetadata(
                     project,
                     manifestType,

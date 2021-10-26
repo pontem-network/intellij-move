@@ -1,8 +1,8 @@
 package org.move.lang.resolve
 
-import org.move.utils.tests.resolve.HeavyResolveTestCase
+import org.move.utils.tests.resolve.ResolveHeavyTestCase
 
-class ResolveMoveProjectModulesTest : HeavyResolveTestCase() {
+class ResolveMoveProjectModulesTest : ResolveHeavyTestCase() {
     fun `test resolve module from other file in sources folder`() = checkByFileTree(
         """
         //- Move.toml

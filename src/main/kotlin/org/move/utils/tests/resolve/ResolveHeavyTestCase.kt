@@ -10,7 +10,7 @@ import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 import org.move.utils.tests.fileTreeFromText
 
-abstract class HeavyResolveTestCase : HeavyMoveTestBase() {
+abstract class ResolveHeavyTestCase : HeavyMoveTestBase() {
     protected fun checkByFileTree(@Language("Move") code: String) {
         val fileTree = fileTreeFromText(code)
         val rootDirectory = myModule.rootManager.contentRoots.first()

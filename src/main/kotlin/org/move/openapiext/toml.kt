@@ -18,6 +18,9 @@ fun TomlTable.namedEntries(): List<Pair<String, TomlValue?>> {
     return this.entries.map { Pair(it.key.text, it.value) }
 }
 
+fun TomlTable.findKeyValue(key: String): TomlKeyValue? =
+    this.entries.findLast { it.key.text == key }
+
 fun TomlTable.findValue(key: String): TomlValue? =
     this.entries.findLast { it.key.text == key }?.value
 

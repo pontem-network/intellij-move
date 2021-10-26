@@ -2,8 +2,6 @@ package org.move.manifest
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.util.io.exists
 import org.move.cli.GlobalScope
 import org.move.openapiext.*
 import org.toml.lang.psi.TomlFile
@@ -53,8 +51,8 @@ class MoveToml(
     }
 
     companion object {
-        fun parse(project: Project, projectRoot: Path): MoveToml? {
-            val tomlFile = parseToml(project, projectRoot.resolve("Move.toml")) ?: return null
+        fun parse(tomlFile: TomlFile): MoveToml? {
+            val tomlFileRoot = tomlFile.virtualFile?.toNioPath()?.parent ?: return null
 
             val packageTomlTable = tomlFile.getTable("package");
             var packageTable: MoveTomlPackageTable? = null
@@ -70,10 +68,10 @@ class MoveToml(
             val addresses = parseAddresses("addresses", tomlFile)
             val dev_addresses = parseAddresses("dev_addresses", tomlFile)
 
-            val dependencies = parseDependencies("dependencies", tomlFile, projectRoot)
-            val dev_dependencies = parseDependencies("dev_dependencies", tomlFile, projectRoot)
+            val dependencies = parseDependencies("dependencies", tomlFile, tomlFileRoot)
+            val dev_dependencies = parseDependencies("dev_dependencies", tomlFile, tomlFileRoot)
 
-            return MoveToml(projectRoot, packageTable, addresses, dev_addresses, dependencies, dev_dependencies)
+            return MoveToml(tomlFileRoot, packageTable, addresses, dev_addresses, dependencies, dev_dependencies)
         }
 
         private fun parseAddresses(tableKey: String, tomlFile: TomlFile): AddressesMap {

@@ -1,6 +1,7 @@
 package org.move.cli.move_cli
 
 import org.move.manifest.MoveToml
+import org.move.openapiext.parseToml
 import org.move.utils.TestProjectRootServiceImpl
 import org.move.utils.rootService
 import org.move.utils.tests.MoveTestBase
@@ -12,7 +13,10 @@ class MoveTomlTest : MoveTestBase() {
         val moveProjectRoot = Paths.get(TestCase.testResourcesPath).resolve("move_toml_project")
         (project.rootService as TestProjectRootServiceImpl).modifyPath(moveProjectRoot)
 
-        val moveToml = MoveToml.parse(project, moveProjectRoot)!!
+        val manifestPath = moveProjectRoot.resolve("Move.toml")
+        val tomlFile = parseToml(project, manifestPath)!!
+
+        val moveToml = MoveToml.parse(tomlFile)!!
         check(moveToml.packageTable?.name == "move_toml")
         check(moveToml.packageTable?.version == "0.1.0")
         check(moveToml.packageTable?.authors.orEmpty().isEmpty())
