@@ -5,12 +5,12 @@ import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MoveNamedElement
 import org.move.lang.core.psi.MoveReferenceElement
 import org.move.openapiext.findVirtualFile
-import org.move.utils.tests.HeavyMoveTestBase
+import org.move.utils.tests.MoveHeavyTestBase
 import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 import org.move.utils.tests.fileTreeFromText
 
-abstract class ResolveHeavyTestCase : HeavyMoveTestBase() {
+abstract class ResolveHeavyTestCase : MoveHeavyTestBase() {
     protected fun checkByFileTree(@Language("Move") code: String) {
         val fileTree = fileTreeFromText(code)
         val rootDirectory = myModule.rootManager.contentRoots.first()

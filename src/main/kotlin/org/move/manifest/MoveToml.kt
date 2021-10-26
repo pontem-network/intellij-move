@@ -50,6 +50,13 @@ class MoveToml(
         return folders
     }
 
+    fun getAddresses(scope: GlobalScope): AddressesMap {
+        return when (scope) {
+            GlobalScope.MAIN -> this.addresses
+            GlobalScope.DEV -> this.addresses + this.dev_addresses
+        }
+    }
+
     companion object {
         fun parse(tomlFile: TomlFile): MoveToml? {
             val tomlFileRoot = tomlFile.virtualFile?.toNioPath()?.parent ?: return null

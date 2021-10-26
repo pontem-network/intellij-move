@@ -48,7 +48,7 @@ data class ProjectMetadata(
     }
 }
 
-fun findCurrentTomlManifest(currentFilePath: Path): Pair<Path, ManifestType>? {
+fun findCurrentTomlManifestPath(currentFilePath: Path): Pair<Path, ManifestType>? {
     var dir = currentFilePath.parent
     while (dir != null) {
         val doveTomlPath = dir.resolveAbsPath(Constants.DOVE_MANIFEST_FILE)
@@ -68,7 +68,7 @@ fun findCurrentTomlManifest(currentFilePath: Path): Pair<Path, ManifestType>? {
 class MetadataService(private val project: Project) {
     fun metadata(currentFilePath: Path): ProjectMetadata? {
         val (manifestPath, manifestType) =
-            findCurrentTomlManifest(currentFilePath) ?: return null
+            findCurrentTomlManifestPath(currentFilePath) ?: return null
         return when (manifestType) {
             ManifestType.DOVE -> {
                 val doveToml = DoveToml.parse(this.project, manifestPath.parent)
