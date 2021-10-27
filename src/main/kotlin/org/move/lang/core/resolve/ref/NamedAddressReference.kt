@@ -10,18 +10,14 @@ import org.move.openapiext.getTable
 import org.move.utils.doRenameIdentifier
 import org.toml.lang.psi.TomlKeySegment
 
-class NamedAddressReference<T : MoveNamedAddress>(element: T) : PsiReferenceBase<T>(element) {
-    val T.referenceAnchor: PsiElement? get() = referenceNameElement
-
+class NamedAddressReference(element: MoveNamedAddress) : PsiReferenceBase<MoveNamedAddress>(element) {
     override fun equals(other: Any?): Boolean =
-        other is NamedAddressReference<*> && element === other.element
+        other is NamedAddressReference && element === other.element
 
     override fun hashCode(): Int = element.hashCode()
 
-    override fun getRangeInElement(): TextRange = super.getRangeInElement()
-
     override fun calculateDefaultRangeInElement(): TextRange {
-        val anchor = element.referenceAnchor ?: return TextRange.EMPTY_RANGE
+        val anchor = element.referenceNameElement ?: return TextRange.EMPTY_RANGE
         return TextRange.from(
             anchor.startOffsetInParent,
             anchor.textLength

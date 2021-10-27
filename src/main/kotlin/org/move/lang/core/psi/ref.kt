@@ -11,6 +11,7 @@ import org.move.lang.core.resolve.ref.MoveQualPathReferenceImpl
 import org.move.lang.core.resolve.ref.MoveReference
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.NamedAddressReference
+import org.toml.lang.psi.TomlKeySegment
 
 interface PsiReferenceElement: PsiElement {
     val identifier: PsiElement?
@@ -25,6 +26,11 @@ interface PsiReferenceElement: PsiElement {
     @JvmDefault
     val isUnresolved: Boolean
         get() = reference?.resolve() == null
+}
+
+interface NamedAddressReferenceElement: PsiReferenceElement {
+
+    override fun getReference(): NamedAddressReference?
 }
 
 interface MoveReferenceElement : PsiReferenceElement, MoveElement {

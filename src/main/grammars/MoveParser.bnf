@@ -961,7 +961,7 @@ AddressRef ::= NamedAddress
                 | ADDRESS_IDENT
 NamedAddress ::= IDENTIFIER
 {
-    implements = ["org.move.lang.core.psi.PsiReferenceElement"]
+    implements = ["org.move.lang.core.psi.NamedAddressReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MoveNamedAddressMixin"
 }
 
