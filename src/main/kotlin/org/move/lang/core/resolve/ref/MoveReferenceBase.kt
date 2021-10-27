@@ -9,22 +9,12 @@ import org.move.lang.core.psi.MoveNamedElement
 import org.move.lang.core.psi.MovePsiFactory
 import org.move.lang.core.psi.MoveReferenceElement
 import org.move.lang.core.psi.ext.elementType
+import org.move.utils.doRenameIdentifier
 
 abstract class MoveReferenceBase<T : MoveReferenceElement>(element: T) : PsiReferenceBase<T>(element),
                                                                          MoveReference {
 
     open val T.referenceAnchor: PsiElement? get() = referenceNameElement
-
-    abstract override fun resolve(): MoveNamedElement?
-//    abstract fun resolveVerbose(): ResolveEngine.ResolveResult
-
-//    override fun resolve(): MoveNamedElement? =
-//        resolveVerbose().let {
-//            when (it) {
-//                is ResolveEngine.ResolveResult.Resolved -> it.element
-//                else -> null
-//            }
-//        }
 
     override fun equals(other: Any?): Boolean = other is MoveReferenceBase<*> && element === other.element
 
@@ -42,22 +32,7 @@ abstract class MoveReferenceBase<T : MoveReferenceElement>(element: T) : PsiRefe
 
     override fun handleElementRename(newElementName: String): PsiElement? {
         val refNameElement = element.referenceNameElement ?: return null
-        doRename(refNameElement, newElementName)
+        doRenameIdentifier(refNameElement, newElementName)
         return element
-    }
-
-    companion object {
-        @JvmStatic
-        protected fun doRename(identifier: PsiElement, newName: String) {
-            val factory = MovePsiFactory(identifier.project)
-            val newIdentifier = when (identifier.elementType) {
-                IDENTIFIER -> {
-                    if (!isValidMoveVariableIdentifier(newName)) return
-                    factory.createIdentifier(newName)
-                }
-                else -> error("Unsupported identifier type for `$newName` (${identifier.elementType})")
-            }
-            identifier.replace(newIdentifier)
-        }
     }
 }

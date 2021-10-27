@@ -7,6 +7,7 @@ import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.ProcessingContext
+import org.move.lang.MoveElementTypes
 import org.move.lang.MoveElementTypes.*
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
@@ -43,6 +44,10 @@ object MovePsiPatterns {
 
     fun codeStatement(): PsiElementPattern.Capture<PsiElement> =
         psiElementInside<MoveCodeBlock>()
+
+    fun namedAddress(): PsiElementPattern.Capture<MoveNamedAddress> {
+        return psiElement()
+    }
 
     inline fun <reified I : PsiElement> afterSibling(): ElementPattern<PsiElement> {
         val afterSibling = PlatformPatterns

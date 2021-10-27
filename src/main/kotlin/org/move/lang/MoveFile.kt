@@ -16,21 +16,22 @@ import org.move.manifest.MoveToml
 import org.move.openapiext.parseToml
 import org.toml.lang.psi.TomlFile
 
-fun PsiFile.getCorrespondingManifestTomlFile(): Pair<TomlFile, ManifestType>? {
+fun PsiFile.getCorrespondingMoveTomlFile(): TomlFile? {
     try {
         val (tomlPath, tomlManifestType) =
             this.virtualFile.toNioPath()
                 .let { findCurrentTomlManifestPath(it) } ?: return null
-        val tomlFile = parseToml(this.project, tomlPath) ?: return null
-        return Pair(tomlFile, tomlManifestType)
+        if (tomlManifestType != ManifestType.MOVE_CLI) return null
+
+        return parseToml(this.project, tomlPath)
+
     } catch (e: UnsupportedOperationException) {
         return null
     }
 }
 
 fun PsiFile.getCorrespondingMoveToml(): MoveToml? {
-    val (tomlFile, tomlManifestType) = getCorrespondingManifestTomlFile() ?: return null
-    if (tomlManifestType != ManifestType.MOVE_CLI) return null
+    val tomlFile = getCorrespondingMoveTomlFile() ?: return null
     return MoveToml.parse(tomlFile)
 }
 

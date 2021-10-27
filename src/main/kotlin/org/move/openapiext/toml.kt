@@ -2,16 +2,13 @@ package org.move.openapiext
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.psi.PsiManager
 import org.toml.lang.psi.*
 import org.toml.lang.psi.ext.elementType
 import java.nio.file.Path
 
 fun parseToml(project: Project, path: Path): TomlFile? {
     val file = LocalFileSystem.getInstance().findFileByNioFile(path) ?: return null
-    val tomlFileViewProvider =
-        PsiManager.getInstance(project).findViewProvider(file) ?: return null
-    return TomlFile(tomlFileViewProvider)
+    return file.toPsiFile(project) as? TomlFile
 }
 
 fun TomlTable.namedEntries(): List<Pair<String, TomlValue?>> {
@@ -21,6 +18,9 @@ fun TomlTable.namedEntries(): List<Pair<String, TomlValue?>> {
 fun TomlTable.findKeyValue(key: String): TomlKeyValue? =
     this.entries.findLast { it.key.text == key }
 
+fun TomlTable.findKey(key: String): TomlKey? =
+    this.entries.findLast { it.key.text == key }?.key
+
 fun TomlTable.findValue(key: String): TomlValue? =
     this.entries.findLast { it.key.text == key }?.value
 
@@ -29,6 +29,11 @@ fun TomlInlineTable.findValue(key: String): TomlValue? =
 
 fun TomlInlineTable.hasKey(key: String): Boolean =
     this.entries.any { it.key.text == key }
+
+val TomlKey.parentTable: TomlTable? get() = (this.parent as? TomlKeyValue)?.parentTable
+val TomlKeyValue.parentTable: TomlTable? get() = this.parent as? TomlTable
+
+val TomlKeyValue.parentInlineTable: TomlInlineTable? get() = this.parent as? TomlInlineTable
 
 fun TomlValue.stringValue(): String? {
     val delimiter = when (firstChild?.elementType) {

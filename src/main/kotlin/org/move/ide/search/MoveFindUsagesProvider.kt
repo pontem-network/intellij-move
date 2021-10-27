@@ -12,7 +12,6 @@ class MoveFindUsagesProvider : FindUsagesProvider {
         psiElement is MoveNamedElement
 
     override fun getHelpId(element: PsiElement) = HelpID.FIND_OTHER_USAGES
-
     override fun getType(element: PsiElement) = ""
     override fun getDescriptiveName(element: PsiElement) = ""
     override fun getNodeText(element: PsiElement, useFullName: Boolean) = ""

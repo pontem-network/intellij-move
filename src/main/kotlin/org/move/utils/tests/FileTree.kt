@@ -87,13 +87,10 @@ class FileTree(val rootDirInfo: FilesystemEntry.Directory) {
                     is FilesystemEntry.File -> {
                         val vFile = root.findChild(name) ?: root.createChildData(root, name)
                         VfsUtil.saveText(vFile, replaceCaretMarker(fsEntry.text))
-                        if (hasCaretMarker(fsEntry.text) || "//^" in fsEntry.text) {
+                        if (hasCaretMarker(fsEntry.text) || "//^" in fsEntry.text || "#^" in fsEntry.text) {
                             filesWithCaret += pathComponents.joinToString(separator = "/")
                         }
-                        if ("//X" in fsEntry.text) {
-                            filesWithNamedElement += pathComponents.joinToString(separator = "/")
-                        }
-                        if ("#X" in fsEntry.text) {
+                        if ("//X" in fsEntry.text || "#X" in fsEntry.text) {
                             filesWithNamedElement += pathComponents.joinToString(separator = "/")
                         }
                     }
@@ -123,7 +120,7 @@ fun FileTree.createAndOpenFileWithCaretMarker(fixture: CodeInsightTestFixture): 
 
 class TestProject(
     private val project: Project,
-    val root: VirtualFile,
+    val rootDirectory: VirtualFile,
     private val filesWithCaret: List<String>,
     private val filesWithNamedElement: List<String>
 ) {
@@ -171,14 +168,14 @@ class TestProject(
     }
 
     fun doFindElementInFile(path: String): PsiElement {
-        val vFile = root.findFileByRelativePath(path)
+        val vFile = rootDirectory.findFileByRelativePath(path)
             ?: error("No `$path` file in test project")
         val file = vFile.toPsiFile(project)!!
         return findElementInFile(file, "^")
     }
 
     fun psiFile(path: String): PsiFileSystemItem {
-        val vFile = root.findFileByRelativePath(path)
+        val vFile = rootDirectory.findFileByRelativePath(path)
             ?: error("Can't find `$path`")
         val psiManager = PsiManager.getInstance(project)
         return if (vFile.isDirectory) psiManager.findDirectory(vFile)!! else psiManager.findFile(vFile)!!

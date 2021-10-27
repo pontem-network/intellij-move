@@ -1,28 +1,39 @@
 package org.move.utils.tests.resolve
 
-import com.intellij.openapi.project.rootManager
+import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MoveNamedElement
 import org.move.lang.core.psi.MoveReferenceElement
+import org.move.lang.core.psi.PsiReferenceElement
 import org.move.openapiext.findVirtualFile
 import org.move.utils.tests.MoveHeavyTestBase
 import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
-import org.move.utils.tests.fileTreeFromText
 
 abstract class ResolveHeavyTestCase : MoveHeavyTestBase() {
     protected fun checkByFileTree(@Language("Move") code: String) {
-        val fileTree = fileTreeFromText(code)
-        val rootDirectory = myModule.rootManager.contentRoots.first()
+        checkByFileTree(
+            code,
+            MoveReferenceElement::class.java,
+            MoveNamedElement::class.java
+        )
+    }
 
-        val testProject = fileTree.prepareTestProject(myFixture.project, rootDirectory)
-        val fileWithCaret =
-            rootDirectory.toNioPath().resolve(testProject.fileWithCaret).findVirtualFile()
-                ?: error("No file with //^ caret")
-        myFixture.configureFromExistingVirtualFile(fileWithCaret)
+    protected fun <T : PsiElement, R : PsiElement> checkByFileTree(
+        @Language("Move") code: String,
+        refClass: Class<R>,
+        targetClass: Class<T>
+    ) {
+        val testProject = testProjectFromFileTree(code)
+        myFixture.configureFromFileWithCaret(testProject)
+//        val fileWithCaret =
+//            testProject.rootDirectory.toNioPath()
+//                .resolve(testProject.fileWithCaret).findVirtualFile()
+//                ?: error("No file with //^ caret")
+//        myFixture.configureFromExistingVirtualFile(fileWithCaret)
 
         val (refElement, data, offset) =
-            myFixture.findElementWithDataAndOffsetInEditor<MoveReferenceElement>("^")
+            myFixture.findElementWithDataAndOffsetInEditor(refClass, "^")
         if (data == "unresolved") {
             val resolved = refElement.reference?.resolve()
             check(resolved == null) {
@@ -33,11 +44,12 @@ abstract class ResolveHeavyTestCase : MoveHeavyTestBase() {
         val resolved = refElement.checkedResolve(offset)
 
         val fileWithNamedElement =
-            rootDirectory.toNioPath()
+            testProject.rootDirectory.toNioPath()
                 .resolve(testProject.fileWithNamedElement).findVirtualFile()
                 ?: error("No file with //X caret")
         myFixture.configureFromExistingVirtualFile(fileWithNamedElement)
-        val target = myFixture.findElementInEditor(MoveNamedElement::class.java, "X")
+
+        val target = myFixture.findElementInEditor(targetClass, "X")
         check(resolved == target) {
             "$refElement `${refElement.text}` should resolve to $target (${target.text}), was $resolved (${resolved.text}) instead"
         }

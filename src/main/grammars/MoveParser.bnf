@@ -960,6 +960,10 @@ AddressRef ::= NamedAddress
                 | POLKADOT_ADDRESS_IDENT
                 | ADDRESS_IDENT
 NamedAddress ::= IDENTIFIER
+{
+    implements = ["org.move.lang.core.psi.PsiReferenceElement"]
+    mixin = "org.move.lang.core.psi.ext.MoveNamedAddressMixin"
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Specs

@@ -16,12 +16,10 @@ abstract class MoveDocumentationProviderHeavyTestCase: MoveHeavyTestBase() {
         findElement: () -> Pair<PsiElement, Int> = { myFixture.findElementAndOffsetInEditor() },
         block: MoveDocumentationProvider.(PsiElement, PsiElement?) -> String?
     ) {
-        val fileTree = fileTreeFromText(code)
-        val rootDirectory = myModule.rootManager.contentRoots.first()
-        val testProject = fileTree.prepareTestProject(myFixture.project, rootDirectory)
-
+        val testProject = testProjectFromFileTree(code)
         val fileWithCaret =
-            rootDirectory.toNioPath().resolve(testProject.fileWithCaret).findVirtualFile()
+            testProject.rootDirectory.toNioPath()
+                .resolve(testProject.fileWithCaret).findVirtualFile()
                 ?: error("No file with //^ caret")
         myFixture.configureFromExistingVirtualFile(fileWithCaret)
 

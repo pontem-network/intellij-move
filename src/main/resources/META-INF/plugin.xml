@@ -57,8 +57,13 @@
                              implementationClass="org.move.ide.refactoring.MoveNamesValidator"/>
         <lang.refactoringSupport language="Move"
                                  implementationClass="org.move.ide.refactoring.MoveRefactoringSupportProvider"/>
+
         <lang.findUsagesProvider language="Move"
                                  implementationClass="org.move.ide.search.MoveFindUsagesProvider"/>
+        <usageTypeProvider
+                implementation="org.move.ide.search.NamedAddressUsageTypeProvider"/>
+        <findUsagesHandlerFactory
+                implementation="org.move.ide.search.NamedAddressFindUsagesHandlerFactory"/>
 
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.core.completion.CommonCompletionContributor"/>
@@ -67,6 +72,8 @@
 
         <psi.referenceContributor language="TOML"
                                   implementation="org.move.toml.MoveTomlReferenceContributor"/>
+        <psi.referenceContributor language="Move"
+                                  implementation="org.move.toml.NamedAddressReferenceContributor"/>
 
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.ErrorAnnotator"/>
