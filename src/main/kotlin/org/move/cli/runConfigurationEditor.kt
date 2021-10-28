@@ -1,4 +1,4 @@
-package org.move.cli.move_cli
+package org.move.cli
 
 import com.intellij.execution.ExecutionBundle
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -15,7 +15,7 @@ import java.nio.file.Paths
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-class MoveCLIExecutableSettingsEditor : SettingsEditor<MoveCLIRunConfiguration>() {
+class MoveExecutableSettingsEditor : SettingsEditor<MoveRunConfiguration>() {
     private val textField = EditorTextField()
 
     val currentWorkingDirectory: Path?
@@ -24,12 +24,12 @@ class MoveCLIExecutableSettingsEditor : SettingsEditor<MoveCLIRunConfiguration>(
     val workingDirectory: LabeledComponent<TextFieldWithBrowseButton> =
         WorkingDirectoryComponent()
 
-    override fun resetEditorFrom(configuration: MoveCLIRunConfiguration) {
+    override fun resetEditorFrom(configuration: MoveRunConfiguration) {
         textField.text = configuration.command
         workingDirectory.component.text = configuration.workingDirectory?.toString().orEmpty()
     }
 
-    override fun applyEditorTo(configuration: MoveCLIRunConfiguration) {
+    override fun applyEditorTo(configuration: MoveRunConfiguration) {
         configuration.command = textField.text
         configuration.workingDirectory = currentWorkingDirectory
     }

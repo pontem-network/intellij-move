@@ -5,8 +5,9 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.io.exists
 import com.intellij.util.io.isDirectory
 import org.move.cli.Constants
+import org.move.cli.GlobalScope
+import org.move.cli.MoveToml
 import org.move.lang.MoveFile
-import org.move.manifest.DoveToml
 import org.move.utils.getMoveFilesInFolder
 import org.move.utils.rootService
 import java.nio.file.Files
@@ -19,9 +20,12 @@ fun Project.allProjectMoveFiles(): List<MoveFile> {
 fun Project.allProjectsFolders(): List<VirtualFile> {
     val moduleFolders = mutableListOf<VirtualFile>()
     for (filePath in Files.walk(this.rootService.path)) {
-        if (filePath.isDirectory() && filePath.resolve(Constants.DOVE_MANIFEST_FILE).exists()) {
-            val doveToml = DoveToml.parse(this, filePath.parent)
-            val folders = doveToml?.getFolders().orEmpty()
+        if (filePath.isDirectory()
+            && filePath.resolve(Constants.MOVE_MANIFEST_FILE).exists()
+        ) {
+            val moveToml =
+                parseToml(this, filePath)?.let { MoveToml.fromTomlFile(it) } ?: continue
+            val folders = moveToml.getFolders(GlobalScope.DEV)
             moduleFolders.addAll(folders)
         }
     }

@@ -14,7 +14,7 @@ import org.toml.lang.psi.ext.name
 object MoveTomlPsiPatterns {
     private inline fun <reified I : PsiElement> moveTomlPsiElement(): PsiElementPattern.Capture<I> {
         return psiElement<I>().inVirtualFile(
-            VirtualFilePattern().withName(Constants.MOVE_CLI_MANIFEST_FILE))
+            VirtualFilePattern().withName(Constants.MOVE_MANIFEST_FILE))
     }
 
     fun dependencyProperty(name: String): PsiElementPattern.Capture<TomlKeyValue> = psiElement<TomlKeyValue>()

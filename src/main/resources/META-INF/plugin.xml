@@ -28,8 +28,7 @@
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
 
-        <configurationType implementation="org.move.cli.dove.DoveRunConfigurationType"/>
-        <configurationType implementation="org.move.cli.move_cli.MoveCLIRunConfigurationType"/>
+        <configurationType implementation="org.move.cli.MoveRunConfigurationType"/>
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
@@ -117,8 +116,7 @@
         <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml"/>
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
-        <!-- Dove -->
-        <projectOpenProcessor id="Move" implementation="org.move.cli.DoveProjectOpenProcessor"/>
+        <projectOpenProcessor id="Move" implementation="org.move.cli.MoveProjectOpenProcessor"/>
         <projectConfigurable instance="org.move.settings.MoveConfigurable"
                              displayName="Move"
                              groupId="language"

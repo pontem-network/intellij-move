@@ -1,7 +1,0 @@
-[package]
-name = "dove_toml_project"
-dialect = "pont"
-dependencies = [
-    { path = "./stdlib" },
-    { git = "https://github.com/pontem-network/move-stdlib.git" }
-]

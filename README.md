@@ -8,7 +8,7 @@ https://plugins.jetbrains.com/plugin/14721-move-language
 * Code formatting
 * Go-to-definition
 * Rename refactoring
-* [Dove](https://docs.pontem.network/03.-move-vm/compiler_and_toolset#dove) integration
+* Move CLI integration
 
 ![img.png](images/run_configurations.png)
 

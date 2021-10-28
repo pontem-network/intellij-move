@@ -1,15 +1,25 @@
-package org.move.manifest
+package org.move.cli
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.cli.GlobalScope
+import org.move.lang.MoveFile
 import org.move.openapiext.*
+import org.move.utils.iterateMoveFilesInFolder
 import org.toml.lang.psi.TomlFile
 import org.toml.lang.psi.TomlInlineTable
 import java.nio.file.Path
 
 typealias AddressesMap = Map<String, String>
 typealias DependenciesMap = Map<String, Dependency>
+
+enum class GlobalScope {
+    MAIN, DEV;
+}
+
+data class MoveModuleFile(
+    val file: MoveFile,
+    val addressSubst: Map<String, String>,
+)
 
 data class Dependency(
     val local: Path
@@ -23,6 +33,7 @@ data class MoveTomlPackageTable(
 )
 
 class MoveToml(
+    val project: Project,
     val root: Path,
     val packageTable: MoveTomlPackageTable?,
     val addresses: AddressesMap,
@@ -57,11 +68,21 @@ class MoveToml(
         }
     }
 
+    fun iterOverMoveModuleFiles(scope: GlobalScope, processFile: (MoveModuleFile) -> Boolean) {
+        val folders = getFolders(scope)
+        for (folder in folders) {
+            iterateMoveFilesInFolder(project, folder) {
+                val moduleFile = MoveModuleFile(it, emptyMap())
+                processFile(moduleFile)
+            }
+        }
+    }
+
     companion object {
-        fun parse(tomlFile: TomlFile): MoveToml? {
+        fun fromTomlFile(tomlFile: TomlFile): MoveToml? {
             val tomlFileRoot = tomlFile.virtualFile?.toNioPath()?.parent ?: return null
 
-            val packageTomlTable = tomlFile.getTable("package");
+            val packageTomlTable = tomlFile.getTable("package")
             var packageTable: MoveTomlPackageTable? = null
             if (packageTomlTable != null) {
                 val name = packageTomlTable.findValue("name")?.stringValue()
@@ -78,7 +99,15 @@ class MoveToml(
             val dependencies = parseDependencies("dependencies", tomlFile, tomlFileRoot)
             val dev_dependencies = parseDependencies("dev_dependencies", tomlFile, tomlFileRoot)
 
-            return MoveToml(tomlFileRoot, packageTable, addresses, dev_addresses, dependencies, dev_dependencies)
+            return MoveToml(
+                tomlFile.project,
+                tomlFileRoot,
+                packageTable,
+                addresses,
+                dev_addresses,
+                dependencies,
+                dev_dependencies
+            )
         }
 
         private fun parseAddresses(tableKey: String, tomlFile: TomlFile): AddressesMap {

@@ -1,4 +1,0 @@
-package_hash = "fdd173ed"
-deps_roots = [
-    "./modules"
-]

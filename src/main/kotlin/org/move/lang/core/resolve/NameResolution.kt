@@ -3,7 +3,7 @@ package org.move.lang.core.resolve
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.psi.util.descendantsOfType
-import org.move.cli.metadata
+import org.move.cli.GlobalScope
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -11,7 +11,7 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.HasType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.StructType
-import java.nio.file.Paths
+import org.move.lang.getCorrespondingMoveToml
 
 fun processItems(
     element: MoveReferenceElement,
@@ -93,11 +93,8 @@ fun processQualModuleRef(
     var isResolved = resolveQualModuleRefInFile(qualModuleRef, containingFile, processor)
     if (isResolved) return true
 
-    val currentPathPathS = containingFile.virtualFile?.canonicalPath ?: return false
-    val currentFilePath = Paths.get(currentPathPathS)
-
-    val metadata = project.metadata(currentFilePath) ?: return false
-    metadata.iterOverMoveModuleFiles { moduleFile ->
+    val moveToml = containingFile.getCorrespondingMoveToml() ?: return false
+    moveToml.iterOverMoveModuleFiles(GlobalScope.MAIN) { moduleFile ->
         isResolved = resolveQualModuleRefInFile(qualModuleRef, moduleFile.file, processor)
         !isResolved
     }

@@ -8,12 +8,12 @@ import com.intellij.projectImport.ProjectOpenProcessor
 import org.move.ide.MoveIcons
 import javax.swing.Icon
 
-class DoveProjectOpenProcessor : ProjectOpenProcessor() {
+class MoveProjectOpenProcessor : ProjectOpenProcessor() {
     override fun getName(): String = "Move"
     override fun getIcon(): Icon = MoveIcons.MOVE
 
     override fun canOpenProject(file: VirtualFile): Boolean =
-        FileUtil.namesEqual(file.name, Constants.DOVE_MANIFEST_FILE)
+        FileUtil.namesEqual(file.name, Constants.MOVE_MANIFEST_FILE)
 
     override fun doOpenProject(
         virtualFile: VirtualFile,
@@ -21,9 +21,10 @@ class DoveProjectOpenProcessor : ProjectOpenProcessor() {
         forceOpenInNewFrame: Boolean,
     ): Project? {
         val platformOpenProcessor = PlatformProjectOpenProcessor.getInstance()
-        val project = platformOpenProcessor.doOpenProject(virtualFile,
-                                                          projectToClose,
-                                                          forceOpenInNewFrame) ?: return null
-        return project
+        return platformOpenProcessor.doOpenProject(
+            virtualFile,
+            projectToClose,
+            forceOpenInNewFrame
+        )
     }
 }

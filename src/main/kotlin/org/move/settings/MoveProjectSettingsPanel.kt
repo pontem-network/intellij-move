@@ -31,51 +31,28 @@ class MoveProjectSettingsPanel(private val project: Project) : Disposable {
     override fun dispose() {}
     private val versionUpdateDebouncer = UiDebouncer(this)
 
-    private val doveExecutablePathField =
-        pathTextField(
-            FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
-            this,
-            "Dove executable"
-        ) { updateDoveVersion() }
-    private val doveVersion = VersionLabel()
-
-    private val moveCLIExecutablePathField =
+    private val moveExecutablePathField =
         pathTextField(
             FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
             this,
             "Move CLI executable"
         ) { updateMoveCLIVersion() }
-    private val moveCliVersion = VersionLabel()
+    private val moveExecVersion = VersionLabel()
 
     init {
-        doveExecutablePathField.textField.text =
-            project.moveSettings.settingsState.doveExecutablePath
-        moveCLIExecutablePathField.textField.text =
-            project.moveSettings.settingsState.moveCliExecutablePath
+        moveExecutablePathField.textField.text =
+            project.moveSettings.settingsState.moveExecutablePath
     }
 
     fun attachTo(layout: LayoutBuilder) = with(layout) {
-        titledRow("Dove") {
-            subRowIndent = 0
-            row("Dove executable:") { wrapComponent(doveExecutablePathField)(growX, pushX) }
-            row("Dove version") { doveVersion() }
-        }
-        titledRow("Move CLI") {
-            subRowIndent = 0
-            row("Move CLI executable:") { wrapComponent(moveCLIExecutablePathField)(growX, pushX) }
-            row("Move CLI version") { moveCliVersion() }
-        }
+        row("Move executable:") { wrapComponent(moveExecutablePathField)(growX, pushX) }
+        row("Move executable version") { moveExecVersion() }
     }
 
-    fun selectedDovePath(): String = this.doveExecutablePathField.textField.text
+    fun selectedMoveExecPath(): String = this.moveExecutablePathField.textField.text
 
-    fun selectedMoveCLIPath(): String = this.moveCLIExecutablePathField.textField.text
-
-    private fun updateDoveVersion() {
-        this.updateVersionField(doveExecutablePathField, doveVersion)
-    }
     private fun updateMoveCLIVersion() {
-        this.updateVersionField(moveCLIExecutablePathField, moveCliVersion)
+        this.updateVersionField(moveExecutablePathField, moveExecVersion)
     }
 
     private fun updateVersionField(executablePathField: TextFieldWithBrowseButton,

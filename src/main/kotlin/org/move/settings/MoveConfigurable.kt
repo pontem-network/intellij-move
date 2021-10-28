@@ -24,11 +24,10 @@ class MoveConfigurable(val project: Project) : BoundConfigurable("Move"),
     }
 
     override fun disposeUIResources() {
-        val dovePath = settingsPanel.selectedDovePath()
-        val moveCliPath = settingsPanel.selectedMoveCLIPath()
+        val moveExecutablePath = settingsPanel.selectedMoveExecPath()
         val collapseSpecs = this.state.collapseSpecs
         project.moveSettings.settingsState =
-            MoveProjectSettingsService.State(dovePath, moveCliPath, collapseSpecs)
+            MoveProjectSettingsService.State(moveExecutablePath, collapseSpecs)
 
         super.disposeUIResources()
         Disposer.dispose(settingsPanel)
