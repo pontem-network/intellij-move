@@ -8,6 +8,6 @@ module M {
     fun main(signer: &<BUILTIN_TYPE>signer</BUILTIN_TYPE>, val: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>, s: MyStruct) {
         let local_val = val;
 
-        let myresource = <BUILTIN_FUNCTION>move_from</BUILTIN_FUNCTION>(signer)
+        let myresource = <BUILTIN_FUNCTION_CALL>move_from</BUILTIN_FUNCTION_CALL>(signer)
     }
 }

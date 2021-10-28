@@ -10,6 +10,8 @@ import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.identifierName
 import org.move.lang.core.psi.ext.isIdentifierOnly
 import org.move.lang.core.psi.ext.isSelf
+import org.move.lang.core.psi.mixins.isNative
+
 val INTEGER_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128")
 val PRIMITIVE_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("bool")
 val PRIMITIVE_BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer")
@@ -62,6 +64,7 @@ class HighlightingAnnotator : MoveAnnotator() {
         if (element is MoveConstDef) return MoveColor.CONSTANT_DEF
         if (element is MoveModuleDef) return MoveColor.MODULE_DEF
 
+
         if (element is MoveQualPath && element.isIdentifierOnly) {
             val name = element.identifierName
             val container = element.parent
@@ -73,8 +76,14 @@ class HighlightingAnnotator : MoveAnnotator() {
                     }
                 }
                 is MoveCallExpr -> {
-                    val resolved = container.reference?.resolve()
-                    if (resolved != null) return MoveColor.FUNCTION_CALL
+                    val resolved = container.reference?.resolve() as? MoveFunctionSignature
+                    if (resolved != null) {
+                        if (resolved.isNative && name in BUILTIN_FUNCTIONS) {
+                            return MoveColor.BUILTIN_FUNCTION_CALL
+                        } else {
+                            return MoveColor.FUNCTION_CALL
+                        }
+                    }
                 }
                 is MoveRefExpr -> {
                     val resolved = container.reference?.resolve()
@@ -89,8 +98,6 @@ class HighlightingAnnotator : MoveAnnotator() {
                         && name in PRIMITIVE_TYPE_IDENTIFIERS -> MoveColor.PRIMITIVE_TYPE
                 container is MoveQualPathType
                         && name in BUILTIN_TYPE_IDENTIFIERS -> MoveColor.BUILTIN_TYPE
-                container is MoveCallExpr
-                        && name in BUILTIN_FUNCTIONS -> MoveColor.BUILTIN_FUNCTION_CALL
                 else -> null
             }
         } else {
