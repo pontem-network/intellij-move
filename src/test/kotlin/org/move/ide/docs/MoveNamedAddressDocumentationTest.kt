@@ -1,8 +1,8 @@
 package org.move.ide.docs
 
-import org.move.utils.tests.MoveDocumentationProviderHeavyTestCase
+import org.move.utils.tests.MoveDocumentationProviderProjectTestCase
 
-class MoveNamedAddressDocumentationTest : MoveDocumentationProviderHeavyTestCase() {
+class MoveNamedAddressDocumentationTest : MoveDocumentationProviderProjectTestCase() {
     fun `test value of named address accessible from documentation`() = doTestByFileTree(
         """
     //- Move.toml

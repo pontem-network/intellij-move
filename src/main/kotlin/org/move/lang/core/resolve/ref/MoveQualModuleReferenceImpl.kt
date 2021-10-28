@@ -13,8 +13,6 @@ class MoveQualModuleReferenceImpl(
         val referenceName = element.referenceName
         var resolved: MoveModuleDef? = null
         processQualModuleRef(element) {
-//            if (it is Stop) return@processQualModuleRef true
-
             val element = it.element as? MoveModuleDef ?: return@processQualModuleRef false
             if (it.name == referenceName) {
                 resolved = element

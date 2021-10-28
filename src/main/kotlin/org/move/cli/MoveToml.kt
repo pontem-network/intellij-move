@@ -3,6 +3,7 @@ package org.move.cli
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.lang.MoveFile
+import org.move.lang.toNioPath
 import org.move.openapiext.*
 import org.move.utils.iterateMoveFilesInFolder
 import org.toml.lang.psi.TomlFile
@@ -80,7 +81,7 @@ class MoveToml(
 
     companion object {
         fun fromTomlFile(tomlFile: TomlFile): MoveToml? {
-            val tomlFileRoot = tomlFile.virtualFile?.toNioPath()?.parent ?: return null
+            val tomlFileRoot = tomlFile.toNioPath()?.parent ?: return null
 
             val packageTomlTable = tomlFile.getTable("package")
             var packageTable: MoveTomlPackageTable? = null

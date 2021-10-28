@@ -1,10 +1,10 @@
 package org.move.lang.resolve
 
 import org.move.lang.core.psi.MoveNamedAddress
-import org.move.utils.tests.resolve.ResolveHeavyTestCase
+import org.move.utils.tests.resolve.ResolveProjectTestCase
 import org.toml.lang.psi.TomlKeySegment
 
-class ResolveNamedAddressTest : ResolveHeavyTestCase() {
+class ResolveNamedAddressProjectTest : ResolveProjectTestCase() {
     fun `test resolve named address to toml key`() = checkByFileTree(
         """
         //- Move.toml

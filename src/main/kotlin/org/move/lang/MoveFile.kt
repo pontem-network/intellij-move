@@ -1,6 +1,9 @@
 package org.move.lang
 
 import com.intellij.extapi.psi.PsiFileBase
+import com.intellij.openapi.components.ComponentManager
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.fileEditor.impl.FocusBasedCurrentEditorProvider
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.FileViewProvider
@@ -30,19 +33,21 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
 }
 
 fun PsiFile.getCorrespondingMoveTomlFile(): TomlFile? {
-    try {
-        val moveTomlPath =
-            this.virtualFile?.toNioPath()?.let { findMoveTomlPath(it) } ?: return null
-        return parseToml(this.project, moveTomlPath)
-
-    } catch (e: UnsupportedOperationException) {
-        return null
-    }
+    val moveTomlPath = this.toNioPath()?.let { findMoveTomlPath(it) } ?: return null
+    return parseToml(this.project, moveTomlPath)
 }
 
 fun PsiFile.getCorrespondingMoveToml(): MoveToml? {
     val tomlFile = getCorrespondingMoveTomlFile() ?: return null
     return MoveToml.fromTomlFile(tomlFile)
+}
+
+fun PsiFile.toNioPath(): Path? {
+    try {
+        return this.originalFile.virtualFile.toNioPath()
+    } catch (e: UnsupportedOperationException) {
+        return null
+    }
 }
 
 class MoveFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvider, MoveLanguage) {

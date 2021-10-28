@@ -19,7 +19,6 @@ fun iterateMoveFilesInFolder(
             val moveFile =
                 psiManager.findFile(file) as? MoveFile
                     ?: return@iterateChildrenRecursively true
-//            return@iterateChildrenRecursively true
             processFile(moveFile)
         }
 }

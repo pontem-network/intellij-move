@@ -12,6 +12,7 @@ import org.move.lang.core.types.HasType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.StructType
 import org.move.lang.getCorrespondingMoveToml
+import org.move.lang.toNioPath
 
 fun processItems(
     element: MoveReferenceElement,
@@ -58,18 +59,18 @@ fun resolveModuleRefIntoQual(moduleRef: MoveModuleRef): MoveFullyQualifiedModule
     return resolved.fullyQualifiedModuleRef
 }
 
-private fun resolveQualModuleRefInFile(
+private fun processQualModuleRefInFile(
     qualModuleRef: MoveFullyQualifiedModuleRef,
     file: MoveFile,
     processor: MatchingProcessor,
 ): Boolean {
-    val sourceNormalizedAddress = qualModuleRef.addressRef.address()?.normalized()
+    val sourceNormalizedAddress = qualModuleRef.addressRef.normalizedAddress()
 
     var resolved = false
     val visitor = object : MoveVisitor() {
         override fun visitModuleDef(o: MoveModuleDef) {
             if (resolved) return
-            val normalizedAddress = o.definedAddressRef()?.address()?.normalized()
+            val normalizedAddress = o.definedAddressRef()?.normalizedAddress()
             if (normalizedAddress == sourceNormalizedAddress) {
                 resolved = processor.match(o)
             }
@@ -85,20 +86,20 @@ private fun resolveQualModuleRefInFile(
 fun processQualModuleRef(
     qualModuleRef: MoveFullyQualifiedModuleRef,
     processor: MatchingProcessor,
-): Boolean {
-    val project = qualModuleRef.project
-
+) {
     // first search modules in the current file
-    val containingFile = qualModuleRef.containingFile as? MoveFile ?: return false
-    var isResolved = resolveQualModuleRefInFile(qualModuleRef, containingFile, processor)
-    if (isResolved) return true
+    val containingFile = qualModuleRef.containingFile as? MoveFile ?: return
+    var stopped = processQualModuleRefInFile(qualModuleRef, containingFile, processor)
+    if (stopped) return
 
-    val moveToml = containingFile.getCorrespondingMoveToml() ?: return false
+    val moveToml = containingFile.getCorrespondingMoveToml() ?: return
     moveToml.iterOverMoveModuleFiles(GlobalScope.MAIN) { moduleFile ->
-        isResolved = resolveQualModuleRefInFile(qualModuleRef, moduleFile.file, processor)
-        !isResolved
+        if (moduleFile.file.toNioPath() == containingFile.toNioPath())
+            return@iterOverMoveModuleFiles true
+        stopped = processQualModuleRefInFile(qualModuleRef, moduleFile.file, processor)
+        // if not resolved, returns true to indicate that next file should be tried
+        !stopped
     }
-    return isResolved
 }
 
 fun processNestedScopesUpwards(

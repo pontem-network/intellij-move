@@ -4,13 +4,12 @@ import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MoveNamedElement
 import org.move.lang.core.psi.MoveReferenceElement
-import org.move.lang.core.psi.PsiReferenceElement
 import org.move.openapiext.findVirtualFile
-import org.move.utils.tests.MoveHeavyTestBase
+import org.move.utils.tests.MoveProjectTestCase
 import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 
-abstract class ResolveHeavyTestCase : MoveHeavyTestBase() {
+abstract class ResolveProjectTestCase : MoveProjectTestCase() {
     protected fun checkByFileTree(@Language("Move") code: String) {
         checkByFileTree(
             code,
