@@ -11,7 +11,7 @@ abstract class MoveModuleImportMixin(node: ASTNode) : MoveNamedElementImpl(node)
                                                       MoveModuleImport {
     override val nameElement: PsiElement?
         get() =
-            importAlias?.identifier ?: fullyQualifiedModuleRef.identifier
+            importAlias?.identifier ?: fqModuleRef.identifier
 
     override fun getIcon(flags: Int): Icon = MoveIcons.MODULE
 

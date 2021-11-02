@@ -1,15 +1,18 @@
 package org.move.lang.core.resolve.ref
 
-import org.move.lang.core.psi.MoveFullyQualifiedModuleRef
+import org.move.lang.core.psi.MoveFQModuleRef
 import org.move.lang.core.psi.MoveModuleDef
-import org.move.lang.core.psi.MoveNamedElement
 import org.move.lang.core.resolve.processQualModuleRef
 
-class MoveQualModuleReferenceImpl(
-    element: MoveFullyQualifiedModuleRef,
-) : MoveReferenceCached<MoveFullyQualifiedModuleRef>(element) {
+interface MoveFQModuleReference : MoveReference {
+    override fun resolve(): MoveModuleDef?
+}
 
-    override fun resolveInner(): MoveNamedElement? {
+class MoveFQModuleReferenceImpl(
+    element: MoveFQModuleRef,
+) : MoveReferenceBase<MoveFQModuleRef>(element), MoveFQModuleReference {
+
+    override fun resolve(): MoveModuleDef? {
         val referenceName = element.referenceName
         var resolved: MoveModuleDef? = null
         processQualModuleRef(element) {

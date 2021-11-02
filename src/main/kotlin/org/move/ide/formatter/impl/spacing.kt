@@ -37,7 +37,7 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
 
         .between(AND, MUT).spacing(0, 0, 0, false, 0)
 
-        .afterInside(AND, QUAL_PATH_TYPE).spacing(0, 0, 0, false, 0)
+        .afterInside(AND, PATH_TYPE).spacing(0, 0, 0, false, 0)
         .afterInside(AND, BORROW_EXPR).spacing(0, 0, 0, false, 0)
         .afterInside(AND, BORROW_PAT).spacing(0, 0, 0, false, 0)
 

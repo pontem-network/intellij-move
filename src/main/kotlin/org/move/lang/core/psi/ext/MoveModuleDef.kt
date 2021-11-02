@@ -9,28 +9,28 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.psi.mixins.MoveFunctionSignatureMixin
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.types.FullyQualModule
+import org.move.lang.core.types.FQModule
 import javax.swing.Icon
 
 fun MoveModuleDef.definedAddressRef(): MoveAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MoveAddressDef>())?.addressRef
 
-fun MoveModuleDef.fullyQual(): FullyQualModule? {
+fun MoveModuleDef.fqModule(): FQModule? {
     val address = this.containingAddress.normalized()
     val name = this.name ?: return null
-    return FullyQualModule(address, name)
+    return FQModule(address, name)
 }
 
-val MoveModuleDef.friends: Set<FullyQualModule>
+val MoveModuleDef.friends: Set<FQModule>
     get() {
         val block = this.moduleBlock ?: return emptySet()
-        val moduleRefs = block.friendStatementList.mapNotNull { it.fullyQualifiedModuleRef }
+        val moduleRefs = block.friendStatementList.mapNotNull { it.fqModuleRef }
 
-        val friends = mutableSetOf<FullyQualModule>()
+        val friends = mutableSetOf<FQModule>()
         for (moduleRef in moduleRefs) {
             val address = moduleRef.addressRef.normalizedAddress() ?: continue
             val identifier = moduleRef.identifier?.text ?: continue
-            friends.add(FullyQualModule(address, identifier))
+            friends.add(FQModule(address, identifier))
         }
         return friends
     }
@@ -150,7 +150,7 @@ abstract class MoveModuleDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(n
         return PresentationData(name,
                                 locationString,
                                 MoveIcons.MODULE,
-                                null);
+                                null)
     }
 
     override val importStatements: List<MoveImportStatement>

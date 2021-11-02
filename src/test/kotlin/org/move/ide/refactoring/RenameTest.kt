@@ -58,8 +58,6 @@ class RenameTest : MoveTestBase() {
                 1
             }
 
-            spec call {}
-
             fun main() {
                 call();
             }
@@ -69,8 +67,6 @@ class RenameTest : MoveTestBase() {
             fun renamed_call() {
                 1
             }
-
-            spec renamed_call {}
 
             fun main() {
                 renamed_call();

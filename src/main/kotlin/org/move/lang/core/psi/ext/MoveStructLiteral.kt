@@ -15,11 +15,10 @@ val MoveStructLiteralExpr.providedFieldNames: List<String>
     get() =
         providedFields.mapNotNull { it.referenceName }
 
-abstract class MoveStructLiteralExprMixin(node: ASTNode) : MoveQualTypeReferenceElementImpl(node),
-                                                           MoveStructLiteralExpr {
+abstract class MoveStructLiteralExprMixin(node: ASTNode) : MoveElementImpl(node), MoveStructLiteralExpr {
     override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
-        val signature = this.referredStructSignature ?: return null
-        val typeArgs = this.qualPath.typeArguments
+        val signature = this.path.maybeStructSignature ?: return null
+        val typeArgs = this.path.typeArguments
         if (typeArgs.size < signature.typeParameters.size) {
             val typeParamTypes = signature.typeParameters.map { it.typeParamType }
             return StructType(signature, typeParamTypes)

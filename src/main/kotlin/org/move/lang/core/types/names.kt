@@ -15,4 +15,4 @@ data class Address(val text: String) {
     }
 }
 
-data class FullyQualModule(val address: Address, val name: String)
+data class FQModule(val address: Address, val name: String)

@@ -1,12 +1,11 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import org.move.lang.MoveElementTypes.COLON
 import org.move.lang.core.psi.MoveStructLiteralExpr
 import org.move.lang.core.psi.MoveStructLiteralField
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.resolve.ref.MoveReference
-import org.move.lang.core.resolve.ref.MoveReferenceImpl
+import org.move.lang.core.resolve.ref.OldMoveReferenceImpl
 import org.move.lang.core.resolve.ref.MoveStructFieldReferenceImpl
 import org.move.lang.core.resolve.ref.Namespace
 
@@ -20,7 +19,7 @@ abstract class MoveStructLiteralFieldMixin(node: ASTNode) : MoveNameIdentifierOw
                                                             MoveStructLiteralField {
     override fun getReference(): MoveReference {
         if (this.isShorthand) {
-            return MoveReferenceImpl(this, Namespace.NAME)
+            return OldMoveReferenceImpl(this, Namespace.NAME)
         }
         return MoveStructFieldReferenceImpl(this)
     }

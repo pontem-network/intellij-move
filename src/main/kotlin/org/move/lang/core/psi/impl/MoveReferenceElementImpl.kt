@@ -10,10 +10,5 @@ import org.move.lang.core.resolve.ref.MoveReference
 
 abstract class MoveReferenceElementImpl(node: ASTNode) : MoveElementImpl(node),
                                                          MoveReferenceElement {
-//    override val referenceNameElement: PsiElement
-//        get() = requireNotNull(findFirstChildByType(IDENTIFIER)) {
-//            "Reference elements should all have IDENTIFIER as a direct child: $node doesn't for some reason"
-//        }
-
     abstract override fun getReference(): MoveReference
 }

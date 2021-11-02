@@ -9,32 +9,17 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.utils.AsyncParameterInfoHandler
 
-class TypeParameterInfoHandler : AsyncParameterInfoHandler<MoveTypeArgumentList, TypeParametersDescription>() {
+class TypeParameterInfoHandler :
+    AsyncParameterInfoHandler<MoveTypeArgumentList, TypeParametersDescription>() {
     override fun findTargetElement(file: PsiFile, offset: Int): MoveTypeArgumentList? =
         file.findElementAt(offset)?.ancestorStrict()
 
     override fun calculateParameterInfo(element: MoveTypeArgumentList): Array<TypeParametersDescription>? {
-        val qualPath = element.parent
-        val container = qualPath.parent
-        if (container is MoveReferenceElement) {
-            val referred = container.reference?.resolve() ?: return null
-            if (referred is MoveTypeParametersOwner) {
-                val paramsDescription = getDescription(referred.typeParameters)
-                return arrayOf(paramsDescription)
-            }
-        }
-        return emptyArray()
-//        if (parent is MoveCallExpr || parent is MoveStructLiteralExpr) {
-//
-//        }
-//        val genericDeclaration = if (parent is RsMethodCall || parent is RsPath) {
-//            parent.reference?.resolve() as? RsGenericDeclaration ?: return null
-//        } else {
-//            return null
-//        }
-//        val typesWithBounds = genericDeclaration.typeParameters.nullize() ?: return null
-//        return listOf(getDescription(typesWithBounds)).toTypedArray()
-//        return listOfNotNull(firstLine(typesWithBounds), secondLine(typesWithBounds)).toTypedArray()
+        val owner =
+            (element.parent as? MovePath)
+                ?.reference?.resolve() ?: return null
+        if (owner !is MoveTypeParametersOwner) return null
+        return arrayOf(typeParamsDescription(owner.typeParameters))
     }
 
     override fun showParameterInfo(element: MoveTypeArgumentList, context: CreateParameterInfoContext) {
@@ -51,9 +36,11 @@ class TypeParameterInfoHandler : AsyncParameterInfoHandler<MoveTypeArgumentList,
             return
         }
         val curParam =
-            ParameterInfoUtils.getCurrentParameterIndex(parameterOwner.node,
+            ParameterInfoUtils.getCurrentParameterIndex(
+                parameterOwner.node,
                 context.offset,
-                MoveElementTypes.COMMA)
+                MoveElementTypes.COMMA
+            )
         context.setCurrentParameter(curParam)
     }
 
@@ -89,7 +76,7 @@ class TypeParametersDescription(
 /**
  * Calculates the text representation and ranges for parameters
  */
-private fun getDescription(params: List<MoveTypeParameter>): TypeParametersDescription {
+private fun typeParamsDescription(params: List<MoveTypeParameter>): TypeParametersDescription {
     val parts = params.map {
         val name = it.name ?: "_"
         val bound = it.typeParamBound?.text ?: ""

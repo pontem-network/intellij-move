@@ -8,13 +8,9 @@ import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.fields
-import org.move.lang.core.psi.ext.providedFieldNames
-import org.move.lang.core.psi.ext.structLiteral
-import org.move.lang.core.psi.ext.structPat
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.resolveItem
 import org.move.lang.core.withParent
 
 object StructFieldsCompletionProvider : MoveCompletionProvider() {
@@ -42,7 +38,7 @@ object StructFieldsCompletionProvider : MoveCompletionProvider() {
             is MoveStructPatField -> {
                 val structPat = element.structPat
                 addFieldsToCompletion(
-                    structPat.referredStructDef ?: return,
+                    structPat.path.maybeStruct ?: return,
                     structPat.providedFieldNames,
                     result
                 )
@@ -50,7 +46,7 @@ object StructFieldsCompletionProvider : MoveCompletionProvider() {
             is MoveStructLiteralField -> {
                 val structLiteral = element.structLiteral
                 addFieldsToCompletion(
-                    structLiteral.referredStructDef ?: return,
+                    structLiteral.path.maybeStruct ?: return,
                     structLiteral.providedFieldNames,
                     result
                 )

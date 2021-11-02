@@ -4,7 +4,7 @@ import org.move.lang.core.psi.MoveNamedElement
 import org.move.lang.core.psi.MoveReferenceElement
 import org.move.lang.core.resolve.resolveItem
 
-class MoveReferenceImpl(
+class OldMoveReferenceImpl(
     element: MoveReferenceElement,
     private val namespace: Namespace,
 ) : MoveReferenceBase<MoveReferenceElement>(element) {

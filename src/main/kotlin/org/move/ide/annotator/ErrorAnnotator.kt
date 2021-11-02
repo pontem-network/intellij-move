@@ -89,7 +89,7 @@ class ErrorAnnotator : MoveAnnotator() {
             }
 
             override fun visitCallExpr(o: MoveCallExpr) {
-                if (o.referenceName !in ACQUIRES_BUILTIN_FUNCTIONS) return
+                if (o.path.referenceName !in ACQUIRES_BUILTIN_FUNCTIONS) return
 
                 val paramType =
                     o.typeArguments.getOrNull(0)
@@ -115,20 +115,19 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitCallArguments(o: MoveCallArguments) = checkCallArguments(moveHolder, o)
 
             override fun visitStructPat(o: MoveStructPat) {
+                val nameElement = o.path.referenceNameElement ?: return
+                val refStruct = o.path.maybeStruct ?: return
                 val fieldNames = o.providedFields.mapNotNull { it.referenceName }
-                val referredStructDef = o.referredStructDef ?: return
-                val nameElement = o.referenceNameElement ?: return
-                checkMissingFields(moveHolder, nameElement, fieldNames.toSet(), referredStructDef)
+                checkMissingFields(
+                    moveHolder, nameElement, fieldNames.toSet(), refStruct
+                )
             }
 
             override fun visitStructLiteralExpr(o: MoveStructLiteralExpr) {
-                val referredStructDef = o.referredStructDef ?: return
-                val nameElement = o.referenceNameElement ?: return
+                val nameElement = o.path.referenceNameElement ?: return
+                val refStruct = o.path.maybeStruct ?: return
                 checkMissingFields(
-                    moveHolder,
-                    nameElement,
-                    o.providedFieldNames.toSet(),
-                    referredStructDef
+                    moveHolder, nameElement, o.providedFieldNames.toSet(), refStruct
                 )
 
                 for (field in o.structLiteralFieldsBlock.structLiteralFieldList) {
@@ -137,7 +136,7 @@ class ErrorAnnotator : MoveAnnotator() {
                     if (assignmentType == null) continue
 
                     val fieldName = field.referenceName ?: continue
-                    val fieldDef = referredStructDef.getField(fieldName) ?: continue
+                    val fieldDef = refStruct.getField(fieldName) ?: continue
                     val expectedFieldType = fieldDef.resolvedType(emptyMap())
                     if (expectedFieldType is TypeParamType) {
                         checkHasRequiredAbilities(moveHolder, assignmentExpr, expectedFieldType)
@@ -159,7 +158,11 @@ class ErrorAnnotator : MoveAnnotator() {
                 }
             }
 
-            override fun visitQualPath(o: MoveQualPath) = checkQualPath(moveHolder, o)
+            override fun visitPath(o: MovePath) = checkPath(moveHolder, o)
+//            override fun visitPathWithTypeArgs(o: MovePathWithTypeArgs) {
+//                checkPath(moveHolder, o)
+//            }
+//            override fun visitQualPath(o: MovePathOptTypeArguments) = checkQualPath(moveHolder, o)
         }
         element.accept(visitor)
     }
@@ -236,7 +239,7 @@ private fun checkMissingFields(
 
 private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCallArguments) {
     val callExpr = arguments.parent as? MoveCallExpr ?: return
-    val signature = callExpr.reference?.resolve() as? MoveFunctionSignature ?: return
+    val signature = callExpr.path.reference?.resolve() as? MoveFunctionSignature ?: return
 
     val expectedCount = signature.parameters.size
     val realCount = arguments.exprList.size
@@ -283,15 +286,16 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
     }
 }
 
-private fun checkQualPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) {
-    val typeArguments = qualPath.typeArguments
-    val referred =
-        (qualPath.parent as? MoveQualPathReferenceElement)?.reference?.resolve()
+private fun checkPath(holder: MoveAnnotationHolder, path: MovePath) {
+    val identifier = path.identifier ?: return
+
+    val typeArguments = path.typeArguments
+    val referred = path.reference?.resolve()
 
     if (referred == null) {
-        if (qualPath.identifierName == "vector") {
+        if (path.identifierName == "vector") {
             if (typeArguments.isEmpty()) {
-                holder.createErrorAnnotation(qualPath.identifier, "Missing item type argument")
+                holder.createErrorAnnotation(identifier, "Missing item type argument")
                 return
             }
             val realCount = typeArguments.size
@@ -313,7 +317,7 @@ private fun checkQualPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) 
         referred is MoveFunctionSignature
                 && name in BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE
                 && typeArguments.isEmpty() -> {
-            holder.createErrorAnnotation(qualPath, "Missing resource type argument")
+            holder.createErrorAnnotation(path, "Missing resource type argument")
             return
         }
         referred is MoveTypeParametersOwner -> {
@@ -322,7 +326,7 @@ private fun checkQualPath(holder: MoveAnnotationHolder, qualPath: MoveQualPath) 
 
             if (expectedCount == 0 && realCount != 0) {
                 holder.createErrorAnnotation(
-                    qualPath.typeArgumentList!!,
+                    path.typeArgumentList!!,
                     "No type arguments expected"
                 )
                 return

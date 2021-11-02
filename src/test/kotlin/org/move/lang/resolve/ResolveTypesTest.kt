@@ -81,20 +81,6 @@ class ResolveTypesTest : ResolveTestCase() {
     """
     )
 
-    fun `test resolve struct spec`() = checkByCode(
-        """
-        module M {
-            struct MyStruct {}
-                 //X
-            
-            spec MyStruct {
-               //^
-                assert true;
-            }
-        }
-    """
-    )
-
     fun `test resolve struct type param`() = checkByCode(
         """
         module M {

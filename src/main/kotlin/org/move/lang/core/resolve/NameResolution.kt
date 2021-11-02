@@ -42,25 +42,25 @@ fun resolveItem(element: MoveReferenceElement, namespace: Namespace): MoveNamedE
     return resolved
 }
 
-fun resolveModuleRefIntoQual(moduleRef: MoveModuleRef): MoveFullyQualifiedModuleRef? {
-    if (moduleRef is MoveFullyQualifiedModuleRef) {
+fun resolveIntoFQModuleRef(moduleRef: MoveModuleRef): MoveFQModuleRef? {
+    if (moduleRef is MoveFQModuleRef) {
         return moduleRef
     }
     // module refers to ModuleImport
     val resolved = resolveItem(moduleRef, Namespace.MODULE)
     if (resolved is MoveImportAlias) {
-        return (resolved.parent as MoveModuleImport).fullyQualifiedModuleRef
+        return (resolved.parent as MoveModuleImport).fqModuleRef
     }
     if (resolved is MoveItemImport && resolved.text == "Self") {
-        return resolved.parentImport().fullyQualifiedModuleRef
+        return resolved.moduleImport().fqModuleRef
     }
     if (resolved !is MoveModuleImport) return null
 
-    return resolved.fullyQualifiedModuleRef
+    return resolved.fqModuleRef
 }
 
 private fun processQualModuleRefInFile(
-    qualModuleRef: MoveFullyQualifiedModuleRef,
+    qualModuleRef: MoveFQModuleRef,
     file: MoveFile,
     processor: MatchingProcessor,
 ): Boolean {
@@ -84,7 +84,7 @@ private fun processQualModuleRefInFile(
 }
 
 fun processQualModuleRef(
-    qualModuleRef: MoveFullyQualifiedModuleRef,
+    qualModuleRef: MoveFQModuleRef,
     processor: MatchingProcessor,
 ) {
     // first search modules in the current file
@@ -130,7 +130,7 @@ fun processLexicalDeclarations(
             val dotExpr = scope as? MoveDotExpr ?: return false
             val refExpr = dotExpr.refExpr ?: return false
 
-            val referred = refExpr.reference?.resolve()
+            val referred = refExpr.path.reference?.resolve()
             if (referred !is HasType) return false
 
             val resolvedType = referred.resolvedType(emptyMap())
@@ -142,13 +142,33 @@ fun processLexicalDeclarations(
             return processor.matchAll(structDef?.fields.orEmpty())
         }
         Namespace.STRUCT_FIELD -> {
-            val structDef = (scope as? MoveQualTypeReferenceElement)?.referredStructDef
-            if (structDef != null) {
-                return processor.matchAll(structDef.fields)
+            val struct = when (scope) {
+                is MoveStructPat -> scope.path.maybeStruct
+                is MoveStructLiteralExpr -> scope.path.maybeStruct
+                else -> null
             }
+            if (struct != null) return processor.matchAll(struct.fields)
             false
         }
         Namespace.NAME -> when (scope) {
+            is MoveModuleDef -> processor.matchAll(
+                listOf(
+                    scope.itemImportsWithoutAliases(),
+                    scope.itemImportsAliases(),
+                    scope.allFnSignatures(),
+                    scope.builtinFnSignatures(),
+                    scope.structSignatures(),
+                    scope.consts(),
+                ).flatten()
+            )
+            is MoveScriptDef -> processor.matchAll(
+                listOf(
+                    scope.itemImportsWithoutAliases(),
+                    scope.itemImportsAliases(),
+                    scope.consts(),
+                    scope.builtinScriptFnSignatures(),
+                ).flatten(),
+            )
             is MoveFunctionDef -> processor.matchAll(scope.functionSignature?.parameters.orEmpty())
             is MoveCodeBlock -> {
                 val precedingLetDecls = scope.letStatements
@@ -170,27 +190,6 @@ fun processLexicalDeclarations(
                 }
                 return processorWithShadowing.matchAll(namedElements)
             }
-//            is MoveSpecBlock -> {
-//                processor.matchAll(scope.defineFunctionList)
-//            }
-            is MoveModuleDef -> processor.matchAll(
-                listOf(
-                    scope.itemImportsWithoutAliases(),
-                    scope.itemImportsAliases(),
-                    scope.allFnSignatures(),
-                    scope.builtinFnSignatures(),
-                    scope.structSignatures(),
-                    scope.consts(),
-                ).flatten()
-            )
-            is MoveScriptDef -> processor.matchAll(
-                listOf(
-                    scope.itemImportsWithoutAliases(),
-                    scope.itemImportsAliases(),
-//                    scope.builtinFunctions(),
-                    scope.consts()
-                ).flatten(),
-            )
             else -> false
         }
         Namespace.TYPE -> when (scope) {

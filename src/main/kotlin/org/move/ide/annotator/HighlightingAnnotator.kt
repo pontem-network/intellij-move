@@ -42,17 +42,6 @@ class HighlightingAnnotator : MoveAnnotator() {
                     && element.text == "copy" -> MoveColor.KEYWORD
             else -> null
         }
-//        if (element.elementType == IDENTIFIER)
-//            return highlightIdentifier(parent)
-//
-//        if (parent is MoveCopyExpr && element.text == "copy") {
-//            return MoveColor.KEYWORD
-//        }
-//        return null
-//        return when (element.elementType) {
-//            IDENTIFIER -> highlightIdentifier(parent)
-//            else -> null
-//        }
     }
 
     private fun highlightIdentifier(element: MoveElement): MoveColor? {
@@ -64,44 +53,40 @@ class HighlightingAnnotator : MoveAnnotator() {
         if (element is MoveConstDef) return MoveColor.CONSTANT_DEF
         if (element is MoveModuleDef) return MoveColor.MODULE_DEF
 
+        // any qual :: access is not highlighted
+        if (element !is MovePathIdent || !element.isIdentifierOnly) return null
 
-        if (element is MoveQualPath && element.isIdentifierOnly) {
-            val name = element.identifierName
-            val container = element.parent
-            when (container) {
-                is MoveQualPathType -> {
-                    val resolved = container.reference?.resolve()
-                    if (resolved is MoveTypeParameter) {
-                        return MoveColor.TYPE_PARAMETER
-                    }
+        val path = element.parent as? MovePath ?: return null
+        val identifierName = path.identifierName
+        val pathContainer = path.parent
+        when (pathContainer) {
+            is MovePathType -> {
+                if (identifierName in PRIMITIVE_TYPE_IDENTIFIERS) return MoveColor.PRIMITIVE_TYPE
+                if (identifierName in BUILTIN_TYPE_IDENTIFIERS) return MoveColor.BUILTIN_TYPE
+
+                val resolved = path.reference?.resolve()
+                if (resolved is MoveTypeParameter) {
+                    return MoveColor.TYPE_PARAMETER
                 }
-                is MoveCallExpr -> {
-                    val resolved = container.reference?.resolve() as? MoveFunctionSignature
-                    if (resolved != null) {
-                        if (resolved.isNative && name in BUILTIN_FUNCTIONS) {
-                            return MoveColor.BUILTIN_FUNCTION_CALL
-                        } else {
-                            return MoveColor.FUNCTION_CALL
-                        }
-                    }
-                }
-                is MoveRefExpr -> {
-                    val resolved = container.reference?.resolve()
-                    when (resolved) {
-                        is MoveBindingPat -> return MoveColor.VARIABLE
-                        is MoveConstDef -> return MoveColor.CONSTANT
+            }
+            is MoveCallExpr -> {
+                val resolved = path.reference?.resolve() as? MoveFunctionSignature
+                if (resolved != null) {
+                    if (resolved.isNative && identifierName in BUILTIN_FUNCTIONS) {
+                        return MoveColor.BUILTIN_FUNCTION_CALL
+                    } else {
+                        return MoveColor.FUNCTION_CALL
                     }
                 }
             }
-            return when {
-                container is MoveQualPathType
-                        && name in PRIMITIVE_TYPE_IDENTIFIERS -> MoveColor.PRIMITIVE_TYPE
-                container is MoveQualPathType
-                        && name in BUILTIN_TYPE_IDENTIFIERS -> MoveColor.BUILTIN_TYPE
-                else -> null
+            is MoveRefExpr -> {
+                val resolved = path.reference?.resolve()
+                when (resolved) {
+                    is MoveBindingPat -> return MoveColor.VARIABLE
+                    is MoveConstDef -> return MoveColor.CONSTANT
+                }
             }
-        } else {
-            return null
         }
+        return null
     }
 }

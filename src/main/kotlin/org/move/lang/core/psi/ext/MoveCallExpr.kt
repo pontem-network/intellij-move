@@ -7,14 +7,15 @@ import org.move.lang.core.types.TypeVarsMap
 import org.move.lang.core.types.VoidType
 
 val MoveCallExpr.typeArguments: List<MoveTypeArgument>
-    get() =
-        this.qualPath.typeArguments
+    get() {
+        return this.path.typeArguments
+    }
 
 val MoveCallExpr.typeVars: TypeVarsMap
     get() {
         val typeVars = mutableMapOf<String, BaseType?>()
-        val referred = this.reference?.resolve() as? MoveTypeParametersOwner ?: return typeVars
-        val typeArguments = this.qualPath.typeArguments
+        val referred = this.path.reference?.resolve() as? MoveTypeParametersOwner ?: return typeVars
+        val typeArguments = this.path.typeArguments
         if (referred.typeParameters.size != typeArguments.size) return typeVars
 
         for ((i, typeArgument) in typeArguments.withIndex()) {
@@ -25,10 +26,10 @@ val MoveCallExpr.typeVars: TypeVarsMap
         return typeVars
     }
 
-abstract class MoveCallExprMixin(node: ASTNode) : MoveQualNameReferenceElementImpl(node),
-                                                  MoveCallExpr {
+abstract class MoveCallExprMixin(node: ASTNode) : MoveElementImpl(node), MoveCallExpr {
+
     override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
-        val signature = this.reference.resolve() as? MoveFunctionSignature ?: return null
+        val signature = this.path.reference?.resolve() as? MoveFunctionSignature ?: return null
         val returnTypeElement = signature.returnType
         if (returnTypeElement == null) {
             return VoidType()

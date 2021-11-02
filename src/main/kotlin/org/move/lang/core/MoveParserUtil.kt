@@ -61,6 +61,8 @@ object MoveParserUtil : GeneratedParserUtilBase() {
             return true
         }
         if (b.tokenType != ADDRESS_IDENT) return false
+        // should not be :: next, it's an address then
+        if (b.lookAhead(1) == COLON_COLON) return false
 
         b.remapCurrentToken(HEX_INTEGER_LITERAL)
         b.advanceLexer()

@@ -12,8 +12,8 @@ class MovePsiFactory(private val project: Project) {
         createFromText<MoveModuleDef>("module $text {}")?.nameIdentifier
             ?: error("Failed to create identifier: `$text`")
 
-    fun createQualifiedPath(text: String): MoveQualPath =
-        createFromText("script { fun main() { $text; } }") ?: error("Failed to create QualifiedPath")
+//    fun createQualifiedPath(text: String): MoveQualPath =
+//        createFromText("script { fun main() { $text; } }") ?: error("Failed to create QualifiedPath")
 
     fun createFunctionSignature(text: String): MoveFunctionSignature {
         return createFromText("module _IntellijPreludeDummy { $text {}}")

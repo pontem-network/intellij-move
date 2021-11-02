@@ -25,7 +25,7 @@ FILE
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MoveModuleImportImpl(MODULE_IMPORT)
-          MoveFullyQualifiedModuleRefImpl(FULLY_QUALIFIED_MODULE_REF)
+          MoveFQModuleRefImpl(FQ_MODULE_REF)
             MoveAddressRefImpl(ADDRESS_REF)
               PsiElement(ADDRESS_IDENT)('0x1')
             PsiElement(::)('::')

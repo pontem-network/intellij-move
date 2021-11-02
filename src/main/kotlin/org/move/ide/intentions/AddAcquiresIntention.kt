@@ -27,8 +27,8 @@ class AddAcquiresIntention : MoveElementBaseIntentionAction<AddAcquiresIntention
         element: PsiElement
     ): Context? {
         val callExpr = element.ancestorOrSelf<MoveCallExpr>() ?: return null
-        if (callExpr.referenceName == null
-            || callExpr.referenceName !in ACQUIRES_BUILTIN_FUNCTIONS
+        if (callExpr.path.referenceName == null
+            || callExpr.path.referenceName !in ACQUIRES_BUILTIN_FUNCTIONS
         ) return null
         if (callExpr.typeArguments.isEmpty()) return null
         val expectedAcquiresType =

@@ -18,7 +18,7 @@ interface MoveImportStatementsOwner : MoveElement {
             .filter { it.importAlias == null && it.text == "Self" }
 //            .map { it.parent }
 //            .filterIsInstance<MoveModuleItemsImport>()
-//            .map { it.fullyQualifiedModuleRef }
+//            .map { it.fqModuleRef }
 
     @JvmDefault
     fun moduleImportAliases(): List<MoveImportAlias> =
