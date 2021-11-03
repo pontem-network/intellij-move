@@ -13,7 +13,7 @@ fun MoveScriptDef.consts(): List<MoveConstDef> =
 
 fun MoveScriptDef.builtinScriptFnSignatures(): List<MoveFunctionSignature> {
     return listOfNotNull(
-        createBuiltinFuncSignature("native fun assert(_: bool, err: u64): ();", project)
+        createBuiltinFuncSignature("native fun assert(_: bool, err: u64);", project)
     )
 }
 

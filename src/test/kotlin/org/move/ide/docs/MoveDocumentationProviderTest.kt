@@ -16,6 +16,15 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
     """, "u64"
     )
 
+    fun `test show docs for move_from`() = doTest("""
+    module M {
+        fun m() {
+            move_from();
+          //^  
+        }
+    }
+    """, expected = "<div class='definition'><pre><b>move_from</b>(): R</pre></div>")
+
     private fun doTest(@Language("Rust") code: String, @Language("Html") expected: String?) =
         doTest(code, expected, block = MoveDocumentationProvider::generateDoc)
 }

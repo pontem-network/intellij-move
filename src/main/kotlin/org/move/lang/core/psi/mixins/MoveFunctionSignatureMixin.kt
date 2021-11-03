@@ -6,6 +6,7 @@ import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.util.PlatformIcons
 import org.move.ide.MoveIcons
+import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.core.psi.MoveFunctionSignature
 import org.move.lang.core.psi.MoveNativeFunctionDef
 import org.move.lang.core.psi.ext.parametersText
@@ -15,6 +16,8 @@ import org.move.lang.core.types.VoidType
 import javax.swing.Icon
 
 val MoveFunctionSignature.isNative get() = this.parent is MoveNativeFunctionDef
+
+val MoveFunctionSignature.isBuiltinFunc get() = this.isNative && this.name in BUILTIN_FUNCTIONS
 
 val MoveFunctionSignature.resolvedReturnType: BaseType?
     get() {

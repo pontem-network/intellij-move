@@ -18,4 +18,21 @@ class ResolveNamedAddressProjectTest : ResolveProjectTestCase() {
         refClass = MoveNamedAddress::class.java,
         targetClass = TomlKeySegment::class.java
     )
+
+    fun `test resolve named address to toml key of the dependency`() = checkByFileTree(
+        """
+        //- Move.toml
+        [dependencies]
+        Stdlib = { local = "./stdlib" }
+        //- stdlib/Move.toml
+        [addresses]
+        Std = "0x1"
+        #X 
+        //- sources/main.move
+        module Std::Module {}
+             //^ 
+        """,
+        refClass = MoveNamedAddress::class.java,
+        targetClass = TomlKeySegment::class.java
+    )
 }

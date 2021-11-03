@@ -4,6 +4,7 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
+import org.intellij.lang.annotations.Language
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
@@ -46,7 +47,7 @@ fun MoveModuleDef.allFnSignatures(): List<MoveFunctionSignature> {
 fun MoveModuleDef.builtinFnSignatures(): List<MoveFunctionSignature> {
     return listOfNotNull(
         createBuiltinFuncSignature("native fun move_from<R: key>(addr: address): R;", project),
-        createBuiltinFuncSignature("native fun move_to<R: key>(acc: &signer, res: R): ();", project),
+        createBuiltinFuncSignature("native fun move_to<R: key>(acc: &signer, res: R);", project),
         createBuiltinFuncSignature("native fun borrow_global<R: key>(addr: address): &R;", project),
         createBuiltinFuncSignature(
             "native fun borrow_global_mut<R: key>(addr: address): &mut R;",
@@ -54,7 +55,7 @@ fun MoveModuleDef.builtinFnSignatures(): List<MoveFunctionSignature> {
         ),
         createBuiltinFuncSignature("native fun exists<R: key>(addr: address): bool;", project),
         createBuiltinFuncSignature("native fun freeze<S>(mut_ref: &mut S): &S;", project),
-        createBuiltinFuncSignature("native fun assert(_: bool, err: u64): ();", project),
+        createBuiltinFuncSignature("native fun assert(_: bool, err: u64);", project),
     )
 }
 
