@@ -7,7 +7,7 @@ class InvalidReturnTypeTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test no return type but returns u8`() = checkErrors("""
     module M {
         fun call() {
-            <error descr="Invalid return type 'integer', expected '()'">return 1</error>;
+            <error descr="Invalid return type: expected '()', found 'integer'">return 1</error>;
         }
     }    
     """)
@@ -15,7 +15,7 @@ class InvalidReturnTypeTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test no return type but returns u8 with expression`() = checkErrors("""
     module M {
         fun call() {
-            <error descr="Invalid return type 'integer', expected '()'">1</error>
+            <error descr="Invalid return type: expected '()', found 'integer'">1</error>
         }
     }    
     """)
@@ -35,4 +35,12 @@ class InvalidReturnTypeTest: AnnotatorTestCase(ErrorAnnotator::class) {
         }
     }    
     """)
+
+    fun `test error on code block if empty block and return type`() = checkErrors(
+        """
+    module M {
+        fun call(): u8 {<error descr="Invalid return type: expected 'u8', found '()'">}</error>
+    }    
+        """
+    )
 }

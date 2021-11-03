@@ -10,6 +10,13 @@ import org.move.lang.core.psi.mixins.resolvedReturnType
 import org.move.lang.core.types.*
 
 class ErrorAnnotator : MoveAnnotator() {
+    companion object {
+        private fun invalidReturnTypeMessage(expectedType: BaseType, actualType: BaseType): String {
+            return "Invalid return type: " +
+                    "expected '${expectedType.name()}', found '${actualType.name()}'"
+        }
+    }
+
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val moveHolder = MoveAnnotationHolder(holder)
         val visitor = object : MoveVisitor() {
@@ -54,11 +61,11 @@ class ErrorAnnotator : MoveAnnotator() {
 
             override fun visitStructFieldDef(o: MoveStructFieldDef) = checkStructFieldDef(moveHolder, o)
 
-            override fun visitCodeBlock(o: MoveCodeBlock) {
-                if (o.parent is MoveFunctionDef) {
-                    val lastHasType = o.lastHasType
+            override fun visitCodeBlock(codeBlock: MoveCodeBlock) {
+                if (codeBlock.parent is MoveFunctionDef) {
+                    val lastHasType = codeBlock.lastHasType
                     val expectedReturnType =
-                        o.containingFunction?.functionSignature?.resolvedReturnType ?: return
+                        codeBlock.containingFunction?.functionSignature?.resolvedReturnType ?: return
                     var actualReturnType: BaseType? = null
                     if (lastHasType == null) {
                         actualReturnType = VoidType()
@@ -66,10 +73,12 @@ class ErrorAnnotator : MoveAnnotator() {
                         actualReturnType = lastHasType.resolvedType(emptyMap()) ?: return
                     }
                     if (!expectedReturnType.compatibleWith(actualReturnType)) {
+                        val annotatedElement = lastHasType as? PsiElement
+                            ?: codeBlock.rightBrace
+                            ?: codeBlock
                         moveHolder.createErrorAnnotation(
-                            lastHasType as PsiElement,
-                            "Invalid return type '${actualReturnType.name()}'" +
-                                    ", expected '${expectedReturnType.name()}'"
+                            annotatedElement,
+                            invalidReturnTypeMessage(expectedReturnType, actualReturnType)
                         )
                     }
                 }
@@ -82,8 +91,7 @@ class ErrorAnnotator : MoveAnnotator() {
                 if (!expectedReturnType.compatibleWith(actualReturnType)) {
                     moveHolder.createErrorAnnotation(
                         o,
-                        "Invalid return type '${actualReturnType.name()}'" +
-                                ", expected '${expectedReturnType.name()}'"
+                        invalidReturnTypeMessage(expectedReturnType, actualReturnType)
                     )
                 }
             }
