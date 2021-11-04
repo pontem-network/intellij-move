@@ -293,6 +293,7 @@ UninterpretedFunctionDefSpecStatement ::= FunctionSignature ';'
 NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';'
 {
     pin = 2
+    implements = [ "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner" ]
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 NativeStructDef ::= native StructSignature ';'
@@ -320,6 +321,9 @@ private FunctionSignature__recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
 FunctionDef ::= Attr* FunctionSignatureWithOptionalVisibility CodeBlock
 {
     pin = 2
+    implements = [
+        "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner"
+    ]
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 //    recoverWhile = Item_recover
 }

@@ -6,9 +6,10 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.MoveDocAndAttributeOwner
 import org.move.lang.core.psi.ext.addressValue
-import org.move.lang.core.psi.mixins.isBuiltinFunc
 import org.move.lang.core.types.HasType
+import org.move.stdext.joinToWithBuffer
 
 class MoveDocumentationProvider : AbstractDocumentationProvider() {
     override fun getCustomDocumentationElement(
@@ -23,37 +24,63 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
 
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         val buffer = StringBuilder()
-        when (element) {
+        var docElement = element
+        if (docElement is MoveFunctionSignature) docElement = docElement.parent
+        when (docElement) {
             // TODO: add docs for both scopes
-            is MoveNamedAddress -> return element.addressValue
-            is MoveFunctionSignature -> generateFuncDoc(element, buffer)
+            is MoveNamedAddress -> return docElement.addressValue
+            is MoveDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             else -> {
-                if (element !is HasType) return null
-                val type = element.resolvedType(emptyMap()) ?: return null
-                buffer += type.typeLabel(element)
+                if (docElement !is HasType) return null
+                val type = docElement.resolvedType(emptyMap()) ?: return null
+                buffer += type.typeLabel(docElement)
             }
         }
         return if (buffer.isEmpty()) null else buffer.toString()
     }
 
-    private fun generateFuncDoc(element: MoveFunctionSignature, buffer: StringBuilder) {
+    private fun generateOwnerDoc(element: MoveDocAndAttributeOwner, buffer: StringBuilder) {
         definition(buffer) {
             element.signature(it)
         }
+        val text = element.documentationAsHtml()
+        buffer += "\n" // Just for more pretty html text representation
+        content(buffer) { it += text }
     }
 }
 
+fun MoveDocAndAttributeOwner.documentationAsHtml(): String {
+    return docComments()
+        .flatMap { it.text.split("\n") }
+        .map { it.trimStart('/', ' ') }
+        .map { "<p>$it</p>" }
+        .joinToString("\n")
+}
+
 fun MoveElement.signature(builder: StringBuilder) {
-    val rawLines = when (this) {
-        is MoveFunctionSignature -> {
-            val buffer = StringBuilder()
-            buffer.b { it += name }
-            buffer += "()"
-            returnType?.generateDocumentation(buffer)
-            listOf(buffer.toString())
-        }
-        else -> emptyList()
-    }
+    val funcSignature = when (this) {
+        is MoveFunctionDef -> this.functionSignature
+        is MoveNativeFunctionDef -> this.functionSignature
+        else -> return
+    } ?: return
+
+    val buffer = StringBuilder()
+    buffer.b { it += funcSignature.name }
+    funcSignature.functionParameterList?.generateDocumentation(buffer)
+    funcSignature.returnType?.generateDocumentation(buffer)
+    val rawLines = listOf(buffer.toString())
+
+//    val rawLines = when (this) {
+//        is MoveFunctionDef, is MoveNativeFunctionDef -> {
+//            val funcSignature = this.functi
+//            val buffer = StringBuilder()
+//            buffer.b { it += name }
+//            buffer += "()"
+//            returnType?.generateDocumentation(buffer)
+//            listOf(buffer.toString())
+//        }
+//        else -> emptyList()
+//    }
     rawLines.joinTo(builder, "<br>")
 }
 
@@ -62,6 +89,13 @@ private fun PsiElement.generateDocumentation(buffer: StringBuilder, prefix: Stri
     when (this) {
         is MoveType -> {
             buffer += this.resolvedType(emptyMap())?.typeLabel(this) ?: "<unknown>"
+        }
+        is MoveFunctionParameterList ->
+            this.functionParameterList
+                .joinToWithBuffer(buffer, ", ", "(", ")") { generateDocumentation(it) }
+        is MoveFunctionParameter -> {
+            buffer += this.identifier.text
+            this.typeAnnotation?.type?.generateDocumentation(buffer, ": ")
         }
         is MoveReturnType -> this.type?.generateDocumentation(buffer, ": ")
     }
@@ -72,6 +106,12 @@ private inline fun definition(buffer: StringBuilder, block: (StringBuilder) -> U
     buffer += DocumentationMarkup.DEFINITION_START
     block(buffer)
     buffer += DocumentationMarkup.DEFINITION_END
+}
+
+private inline fun content(buffer: StringBuilder, block: (StringBuilder) -> Unit) {
+    buffer += DocumentationMarkup.CONTENT_START
+    block(buffer)
+    buffer += DocumentationMarkup.CONTENT_END
 }
 
 private operator fun StringBuilder.plusAssign(value: String?) {

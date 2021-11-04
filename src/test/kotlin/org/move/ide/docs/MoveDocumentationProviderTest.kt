@@ -23,7 +23,25 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
           //^  
         }
     }
-    """, expected = "<div class='definition'><pre><b>move_from</b>(): R</pre></div>")
+    """, expected = """
+        <div class='definition'><pre><b>move_from</b>(addr: address): R</pre></div>
+        <div class='content'></div>
+        """)
+
+    fun `test show doc comments and signature for function`() = doTest("""
+    module M {
+        /// Adds two numbers.
+        /// Returns their sum.
+        fun add(a: u8, b: u8): u8 {
+          //^
+          a + b
+        }
+    }
+    """, expected = """
+        <div class='definition'><pre><b>add</b>(a: u8, b: u8): u8</pre></div>
+        <div class='content'><p>Adds two numbers.</p>
+        <p>Returns their sum.</p></div>
+    """)
 
     private fun doTest(@Language("Rust") code: String, @Language("Html") expected: String?) =
         doTest(code, expected, block = MoveDocumentationProvider::generateDoc)
