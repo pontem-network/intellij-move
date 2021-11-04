@@ -656,7 +656,9 @@ CodeBlock ::= '{' CodeBlock_items  '}'
 //    implements = [ "org.move.lang.core.psi.MoveImportStatementsOwner" ]
 }
 
-private CodeBlock_items ::= ImportStatement* (Statement | SpecStatement)* (Expr | SpecBlockExpr)?
+private CodeBlock_items ::= ImportStatement*
+                            (Statement | SpecBlockSpecStatement)*
+                            (Expr | SpecBlockExpr)?
 {
     recoverWhile = "CodeBlock_items_recover"
 }
