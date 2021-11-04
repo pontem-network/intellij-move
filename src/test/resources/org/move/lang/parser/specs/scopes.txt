@@ -84,7 +84,7 @@ FILE
                 PsiElement())(')')
             PsiElement(;)(';')
           PsiWhiteSpace('\n\n        ')
-          PsiComment(LINE_COMMENT)('/// Native function which is defined in the prover's prelude.')
+          PsiComment(EOL_COMMENT)('// Native function which is defined in the prover's prelude.')
           PsiWhiteSpace('\n        ')
           MoveNativeFunctionDefSpecStatementImpl(NATIVE_FUNCTION_DEF_SPEC_STATEMENT)
             PsiElement(native)('native')

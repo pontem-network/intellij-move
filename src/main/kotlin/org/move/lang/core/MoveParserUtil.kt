@@ -2,16 +2,39 @@ package org.move.lang.core
 
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiBuilderUtil
+import com.intellij.lang.WhitespacesAndCommentsBinder
 import com.intellij.lang.parser.GeneratedParserUtilBase
+import com.intellij.psi.TokenType
 import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.lang.MoveElementTypes.*
+import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
+import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 
 @Suppress("UNUSED_PARAMETER")
 object MoveParserUtil : GeneratedParserUtilBase() {
 //    @JvmStatic
 //    fun gtgteqImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, GTGTEQ, GT, GT, EQ)
+
+    @JvmField
+    val ADJACENT_LINE_COMMENTS = WhitespacesAndCommentsBinder { tokens, _, getter ->
+        var candidate = tokens.size
+        for (i in 0 until tokens.size) {
+            val token = tokens[i]
+            if (EOL_DOC_COMMENT == token) {
+                candidate = minOf(candidate, i)
+                break
+            }
+            if (EOL_COMMENT == token) {
+                candidate = minOf(candidate, i)
+            }
+            if (WHITE_SPACE == token && "\n\n" in getter[i]) {
+                candidate = tokens.size
+            }
+        }
+        candidate
+    }
 
     @JvmStatic
     fun gtgtImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, GT_GT, GT, GT)

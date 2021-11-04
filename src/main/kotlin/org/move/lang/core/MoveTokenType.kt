@@ -4,6 +4,9 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.lang.MoveLanguage
 import org.move.lang.MoveElementTypes.*
+import org.move.lang.MoveParserDefinition.Companion.BLOCK_COMMENT
+import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
+import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 
 class MoveTokenType(debugName: String) : IElementType(debugName, MoveLanguage)
 
@@ -19,4 +22,4 @@ val MOVE_KEYWORDS = tokenSetOf(
     FORALL, EXISTS, IN, WHERE,
 )
 
-val MOVE_COMMENTS = tokenSetOf(BLOCK_COMMENT, LINE_COMMENT)
+val MOVE_COMMENTS = tokenSetOf(BLOCK_COMMENT, EOL_COMMENT, EOL_DOC_COMMENT)

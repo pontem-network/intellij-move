@@ -3,10 +3,10 @@ package org.move.lang;
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 
-import java.util.ArrayList;
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
 import static org.move.lang.MoveElementTypes.*;
+import static org.move.lang.MoveParserDefinition.*;
 
 %%
 
@@ -28,15 +28,15 @@ import static org.move.lang.MoveElementTypes.*;
         this((java.io.Reader)null);
     }
 
-      IElementType blockComment() {
-          assert(zzNestedCommentLevel == 0);
-          yybegin(YYINITIAL);
+    IElementType imbueBlockComment() {
+        assert(zzNestedCommentLevel == 0);
+        yybegin(YYINITIAL);
 
-          zzStartRead = zzPostponedMarkedPos;
-          zzPostponedMarkedPos = -1;
+        zzStartRead = zzPostponedMarkedPos;
+        zzPostponedMarkedPos = -1;
 
-          return BLOCK_COMMENT;
-      }
+        return BLOCK_COMMENT;
+    }
 %}
 
 %public
@@ -59,7 +59,8 @@ WHITE_SPACE      = {WHITE_SPACE_CHAR}+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Comments
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//LINE_COMMENT=("//".*)|("//".*)
+EOL_DOC_LINE  = {LINE_WS}*("///".*)
+OUTER_EOL_DOC = ({EOL_DOC_LINE}{EOL_WS})*{EOL_DOC_LINE}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Literals
@@ -86,7 +87,8 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 %%
 <YYINITIAL> {
       {WHITE_SPACE}        { return WHITE_SPACE; }
-      "//" .*              { return LINE_COMMENT; }
+      {OUTER_EOL_DOC}                 { return EOL_DOC_COMMENT; }
+      "//" .*              { return EOL_COMMENT; }
       "/*"                 {
           yybegin(IN_BLOCK_COMMENT); yypushback(2);
        }
@@ -177,10 +179,10 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       }
   "*/"    {
           if (--zzNestedCommentLevel == 0)
-              return blockComment();
+              return imbueBlockComment();
       }
   <<EOF>> {
-          zzNestedCommentLevel = 0; return blockComment();
+          zzNestedCommentLevel = 0; return imbueBlockComment();
  }
   [^]     { }
 }

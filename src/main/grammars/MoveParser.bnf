@@ -31,8 +31,8 @@
 
     tokens = [
         WHITESPACE='regexp:[ \n\t\r\f]'
-        LINE_COMMENT='regexp:(//.*\n)|(//.*\R)'
-        BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
+//        EOL_COMMENT='regexp:(//.*\n)|(//.*\R)'
+//        BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
 
         PLACEHOLDER_ADDRESS_IDENT='regexp:\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
         PLACEHOLDER_ADDRESS_LITERAL='regexp:@\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
@@ -204,6 +204,7 @@ ModuleDef ::= Attr* module (AddressRef '::')? IDENTIFIER ModuleBlock
         "org.move.lang.core.psi.MoveImportStatementsOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveModuleDefMixin"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 //    stubClass = "org.move.lang.core.stubs.impl.MoveModuleDefStub"
 //    elementTypeFactory = "org.move.lang.core.stubs.StubImplFactoryKt.factory"
 }
@@ -244,6 +245,7 @@ ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
         "org.move.lang.core.types.HasType"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveConstDefMixin"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 //    recoverWhile = ModuleItem_recover
 }
 //private ConstDef_init ::= '=' Expr
@@ -288,8 +290,16 @@ FunctionDefSpecStatement ::= FunctionSignature SpecBlock
 NativeFunctionDefSpecStatement ::= native FunctionSignature ';' { pin = 1 }
 UninterpretedFunctionDefSpecStatement ::= FunctionSignature ';'
 
-NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';' { pin = 2 }
-NativeStructDef ::= native StructSignature ';' { pin = 2 }
+NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';'
+{
+    pin = 2
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+NativeStructDef ::= native StructSignature ';'
+{
+    pin = 2
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
 
 private FunctionSignatureWithOptionalVisibility ::= FunctionSignatureVisibility | FunctionSignature
 private FunctionSignatureVisibility ::= FunctionVisibilityModifier FunctionSignature { pin = 1 }
@@ -310,6 +320,7 @@ private FunctionSignature__recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
 FunctionDef ::= Attr* FunctionSignatureWithOptionalVisibility CodeBlock
 {
     pin = 2
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 //    recoverWhile = Item_recover
 }
 //NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';'
@@ -402,7 +413,11 @@ StructSignature ::= struct IDENTIFIER TypeParameterList? AbilitiesList?
     mixin = "org.move.lang.core.psi.mixins.MoveStructSignatureMixin"
 }
 
-StructDef ::= Attr* StructSignature StructFieldsDefBlock { pin = 2 }
+StructDef ::= Attr* StructSignature StructFieldsDefBlock
+{
+    pin = 2
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
 
 AbilitiesList ::= has <<comma_sep_items Ability>> { pin = 1 }
 Ability ::= copy | IDENTIFIER

@@ -11,6 +11,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
+import org.move.lang.core.MoveTokenType
 import org.move.lang.core.lexer.createMoveLexer
 import org.move.lang.core.tokenSetOf
 
@@ -27,7 +28,7 @@ class MoveParserDefinition : ParserDefinition {
     override fun getFileNodeType(): IFileElementType = FILE
 
     override fun getCommentTokens(): TokenSet {
-        return tokenSetOf(MoveElementTypes.LINE_COMMENT, MoveElementTypes.BLOCK_COMMENT)
+        return tokenSetOf(EOL_COMMENT, BLOCK_COMMENT, EOL_DOC_COMMENT)
     }
 
     override fun getStringLiteralElements(): TokenSet {
@@ -45,5 +46,9 @@ class MoveParserDefinition : ParserDefinition {
 
     companion object {
         val FILE = IFileElementType(MoveLanguage)
+
+        @JvmField val BLOCK_COMMENT = MoveTokenType("BLOCK_COMMENT")
+        @JvmField val EOL_COMMENT = MoveTokenType("EOL_COMMENT")
+        @JvmField val EOL_DOC_COMMENT = MoveTokenType("EOL_DOC_COMMENT")
     }
 }
