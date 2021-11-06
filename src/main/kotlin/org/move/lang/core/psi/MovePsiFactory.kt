@@ -20,6 +20,11 @@ class MovePsiFactory(private val project: Project) {
             ?: error("Failed to create a method member from text: `$text`")
     }
 
+    fun createItemImport(text: String): MoveItemImport {
+        return createFromText("module _IntellijPreludeDummy { use 0x1::Module::$text; }")
+            ?: error("Failed to create an item import from text: `$text`")
+    }
+
     fun createAcquiresType(text: String): MoveAcquiresType {
         return createFromText("module _IntellijPreludeDummy { fun main() $text {}}")
             ?: error("Failed to create a method member from text: `$text`")

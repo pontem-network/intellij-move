@@ -135,6 +135,10 @@
             <className>org.move.ide.intentions.AddAcquiresIntention</className>
             <category>Move</category>
         </intentionAction>
+        <intentionAction>
+            <className>org.move.ide.intentions.RemoveCurlyBracesIntention</className>
+            <category>Move</category>
+        </intentionAction>
 
     </extensions>
 
