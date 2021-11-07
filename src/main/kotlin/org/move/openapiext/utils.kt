@@ -11,7 +11,10 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
@@ -71,3 +74,10 @@ fun checkReadAccessAllowed() {
 fun checkReadAccessNotAllowed() {
     check(!ApplicationManager.getApplication().isReadAccessAllowed)
 }
+
+val Project.modules: Collection<Module>
+    get() = ModuleManager.getInstance(this).modules.toList()
+
+val Project.contentRoots: Sequence<VirtualFile>
+    get() = this.modules.asSequence()
+        .flatMap { ModuleRootManager.getInstance(it).contentRoots.asSequence() }

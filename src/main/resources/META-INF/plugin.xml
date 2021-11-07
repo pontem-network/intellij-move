@@ -124,6 +124,8 @@
         <projectService serviceInterface="org.move.utils.ProjectRootService"
                         serviceImplementation="org.move.utils.ProjectRootServiceImpl"
                         testServiceImplementation="org.move.utils.TestProjectRootServiceImpl"/>
+        <projectService serviceInterface="org.move.cli.MoveProjectsService"
+                        serviceImplementation="org.move.cli.MoveProjectsServiceImpl"/>
 
         <!-- Notifications -->
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>

@@ -13,7 +13,7 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
     override fun getIcon(): Icon = MoveIcons.MOVE
 
     override fun canOpenProject(file: VirtualFile): Boolean =
-        FileUtil.namesEqual(file.name, Constants.MOVE_MANIFEST_FILE)
+        FileUtil.namesEqual(file.name, MoveConstants.MANIFEST_FILE)
 
     override fun doOpenProject(
         virtualFile: VirtualFile,

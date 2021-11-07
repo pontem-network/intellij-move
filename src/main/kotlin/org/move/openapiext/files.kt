@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.io.exists
 import com.intellij.util.io.isDirectory
-import org.move.cli.Constants
+import org.move.cli.MoveConstants
 import org.move.cli.GlobalScope
 import org.move.cli.MoveToml
 import org.move.lang.MoveFile
@@ -21,7 +21,7 @@ fun Project.allProjectsFolders(): List<VirtualFile> {
     val moduleFolders = mutableListOf<VirtualFile>()
     for (filePath in Files.walk(this.rootService.path)) {
         if (filePath.isDirectory()
-            && filePath.resolve(Constants.MOVE_MANIFEST_FILE).exists()
+            && filePath.resolve(MoveConstants.MANIFEST_FILE).exists()
         ) {
             val moveToml =
                 parseToml(this, filePath)?.let { MoveToml.fromTomlFile(it) } ?: continue

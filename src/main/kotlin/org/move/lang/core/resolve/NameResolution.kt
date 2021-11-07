@@ -12,7 +12,7 @@ import org.move.lang.core.types.HasType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.StructType
 import org.move.lang.getCorrespondingMoveToml
-import org.move.lang.toNioPath
+import org.move.lang.toNioPathOrNull
 
 fun processItems(
     element: MoveReferenceElement,
@@ -94,7 +94,7 @@ fun processQualModuleRef(
 
     val moveToml = containingFile.getCorrespondingMoveToml() ?: return
     moveToml.iterOverMoveModuleFiles(GlobalScope.MAIN) { moduleFile ->
-        if (moduleFile.file.toNioPath() == containingFile.toNioPath())
+        if (moduleFile.file.toNioPathOrNull() == containingFile.toNioPathOrNull())
             return@iterOverMoveModuleFiles true
         stopped = processQualModuleRefInFile(qualModuleRef, moduleFile.file, processor)
         // if not resolved, returns true to indicate that next file should be tried
