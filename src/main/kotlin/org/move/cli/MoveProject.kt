@@ -4,9 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.lang.MoveFile
 import org.move.lang.toMoveFile
-import org.move.openapiext.findKey
 import org.move.openapiext.findVirtualFile
-import org.move.openapiext.getTable
 import org.move.openapiext.parseToml
 import org.move.stdext.deepIterateChildrenRecursivery
 import org.toml.lang.psi.TomlKeySegment
@@ -37,18 +35,35 @@ data class MoveProject(
         }
         for (dep in deps.values) {
             // TODO: make them absolute paths
-            val folder = dep.local.resolve("sources").findVirtualFile() ?: continue
+            val folder = dep.absoluteLocalPath.resolve("sources").findVirtualFile() ?: continue
             if (folder.isDirectory)
                 folders.add(folder)
         }
         return folders
     }
 
+    fun getAddressValue(addressName: String): String? {
+        var addrValue: String? = null
+        processNamedAddresses(this, emptyMap()) { segment, value ->
+            if (segment.name == addressName) {
+                addrValue = value
+                return@processNamedAddresses true
+            }
+            false
+        }
+        return addrValue
+    }
+
     fun getAddressTomlKeySegment(addressName: String): TomlKeySegment? {
-        return this.moveToml.tomlFile.getTable("addresses")
-            ?.findKey(addressName)
-            ?.segments
-            ?.singleOrNull()
+        var resolved: TomlKeySegment? = null
+        processNamedAddresses(this, emptyMap()) { segment, _ ->
+            if (segment.name == addressName) {
+                resolved = segment
+                return@processNamedAddresses true
+            }
+            false
+        }
+        return resolved
     }
 
     fun processModuleFiles(scope: GlobalScope, processFile: (MoveModuleFile) -> Boolean) {

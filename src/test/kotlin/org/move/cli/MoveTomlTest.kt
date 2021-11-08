@@ -27,9 +27,9 @@ class MoveTomlTest : MoveTestBase() {
 
         check(moveToml.dependencies.size == 1)
         check(
-            moveToml.dependencies["Debug"]?.local!!
+            moveToml.dependencies["Debug"]?.absoluteLocalPath!!
                 .toString()
                 .endsWith("intellij-move/src/test/resources/move_toml_project/stdlib/Debug.move")
-        ) { moveToml.dependencies["Debug"]?.local!! }
+        ) { moveToml.dependencies["Debug"]?.absoluteLocalPath!! }
     }
 }

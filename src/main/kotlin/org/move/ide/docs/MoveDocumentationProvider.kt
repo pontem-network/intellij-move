@@ -5,9 +5,9 @@ import com.intellij.lang.documentation.DocumentationMarkup
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MoveDocAndAttributeOwner
-import org.move.lang.core.psi.ext.addressValue
 import org.move.lang.core.types.HasType
 import org.move.stdext.joinToWithBuffer
 
@@ -28,7 +28,11 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
         if (docElement is MoveFunctionSignature) docElement = docElement.parent
         when (docElement) {
             // TODO: add docs for both scopes
-            is MoveNamedAddress -> return docElement.addressValue
+            is MoveNamedAddress -> {
+                val moveProject = docElement.containingFile.containingMoveProject() ?: return null
+                val refName = docElement.referenceName ?: return null
+                return moveProject.getAddressValue(refName)
+            }
             is MoveDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             else -> {
                 if (docElement !is HasType) return null

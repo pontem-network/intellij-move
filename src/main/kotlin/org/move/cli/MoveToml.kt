@@ -11,7 +11,8 @@ typealias AddressesMap = Map<String, String>
 typealias DependenciesMap = Map<String, Dependency>
 
 data class Dependency(
-    val local: Path
+    val absoluteLocalPath: Path,
+    val addrSubst: Map<String, String>,
 )
 
 data class MoveTomlPackageTable(
@@ -87,7 +88,14 @@ class MoveToml(
                 val localPathValue = depTable.findValue("local")?.stringValue() ?: continue
                 val localPath =
                     projectRoot.resolve(localPathValue).toAbsolutePath().normalize()
-                dependencies[depName] = Dependency(localPath)
+                val subst = depTable.findValue("addr_subst")
+                    ?.inlineTableValue()
+                    ?.entries.orEmpty()
+                    .map { Pair(it.singleSegmentOrNull()?.name?.trim('"'), it.value?.stringValue()) }
+                    .filter { it.first != null && it.second != null }
+                    .map { Pair(it.first!!, it.second!!) }
+                    .toMap()
+                dependencies[depName] = Dependency(localPath, subst)
             }
             return dependencies
         }

@@ -13,4 +13,18 @@ class MoveNamedAddressDocumentationTest : MoveDocumentationProviderProjectTestCa
          //^   
         """, "0xCOFFEE", block = MoveDocumentationProvider::generateDoc
     )
+
+    fun `test value of named address for imported and substituted`() = doTestByFileTree(
+        """
+    //- Move.toml
+    [dependencies]
+    Stdlib = { local = "./stdlib", addr_subst = { "Std" = "0xC0FFEE" }}
+    //- stdlib/Move.toml
+    [addresses]
+    Std = "_"
+    //- sources/main.move
+    module Std::Module {}        
+         //^   
+        """, "0xC0FFEE", block = MoveDocumentationProvider::generateDoc
+    )
 }
