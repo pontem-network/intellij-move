@@ -13,6 +13,6 @@ module M {
     #[attr1, attr2]
     fun main2() {}
 
-    #[test(a = @0x1, b = @0x2)]
+    #[test(a = @0x1, b = @0x2, c = @Std)]
     fun main3() {}
 }

@@ -13,6 +13,8 @@ module M {
         @{{default}};
         @{{alice}};
         @{{bob}};
+        @Std;
+        @DiemFramework;
     }
 }
 

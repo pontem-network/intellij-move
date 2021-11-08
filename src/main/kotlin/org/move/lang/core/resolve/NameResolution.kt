@@ -5,13 +5,13 @@ import com.intellij.psi.util.PsiUtilCore
 import com.intellij.psi.util.descendantsOfType
 import org.move.cli.GlobalScope
 import org.move.lang.MoveFile
+import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.HasType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.StructType
-import org.move.lang.getCorrespondingMoveToml
 import org.move.lang.toNioPathOrNull
 
 fun processItems(
@@ -92,10 +92,11 @@ fun processQualModuleRef(
     var stopped = processQualModuleRefInFile(qualModuleRef, containingFile, processor)
     if (stopped) return
 
-    val moveToml = containingFile.getCorrespondingMoveToml() ?: return
-    moveToml.iterOverMoveModuleFiles(GlobalScope.MAIN) { moduleFile ->
+    val moveProject = containingFile.containingMoveProject() ?: return
+    moveProject.processModuleFiles(GlobalScope.MAIN) { moduleFile ->
+        // skip current file as it's processed already
         if (moduleFile.file.toNioPathOrNull() == containingFile.toNioPathOrNull())
-            return@iterOverMoveModuleFiles true
+            return@processModuleFiles true
         stopped = processQualModuleRefInFile(qualModuleRef, moduleFile.file, processor)
         // if not resolved, returns true to indicate that next file should be tried
         !stopped

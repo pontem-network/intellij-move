@@ -15,6 +15,8 @@ import org.move.settings.MoveSettingsListener
 import org.move.stdext.MyLightDirectoryIndex
 import org.move.stdext.deepIterateChildrenRecursivery
 
+val Project.moveProjects: MoveProjectsService get() = this.getService(MoveProjectsService::class.java)
+
 interface MoveProjectsService {
     fun findMoveProjectForPsiFile(psiFile: PsiFile): MoveProject?
 //    fun findNamedAddressesForFile(scope: GlobalScope, file: VirtualFile): AddressesMap
@@ -57,20 +59,8 @@ class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
 
     private val directoryIndex: MyLightDirectoryIndex<MoveProject?> =
         MyLightDirectoryIndex(project, null) { index ->
-            val visited = mutableSetOf<String>()
-            // find Move.toml files in all project roots, remembering depth of those
-            // then search all .move children of those files, with biggest depth first
-            val moveFiles = findMoveFilesDeepestFirst(project).toList()
-            for (moveTomlFile in moveFiles) {
-                val root = moveTomlFile.parent
-                val moveTomlPath = moveTomlFile.toNioPathOrNull() ?: continue
-                val moveProject = MoveProject.fromMoveTomlPath(project, moveTomlPath) ?: continue
-                deepIterateChildrenRecursivery(root, { it.extension == "move" }) {
-                    if (it.path in visited) return@deepIterateChildrenRecursivery true
-                    visited.add(it.path)
-                    index.putInfo(it, moveProject)
-                    true
-                }
+            processAllMoveFilesOnce(project) { file, moveProject ->
+                index.putInfo(file, moveProject)
             }
         }
 }
@@ -86,14 +76,24 @@ fun findMoveFilesDeepestFirst(project: Project): Sequence<VirtualFile> {
             moveFiles.add(Pair(depth, it))
             true
         }
-//        VfsUtil.iterateChildrenRecursively(
-//            contentRoot, { it.isDirectory || it.name == "Move.toml" }
-//        ) {
-//            if (it.isDirectory) return@iterateChildrenRecursively true
-//            val depth = it.path.split("/").count()
-//            moveFiles.add(Pair(depth, it))
-//            true
-//        }
     }
     return moveFiles.asSequence().sortedByDescending { it.first }.map { it.second }
+}
+
+fun processAllMoveFilesOnce(project: Project, processFile: (VirtualFile, MoveProject) -> Unit) {
+    val visited = mutableSetOf<String>()
+    // find Move.toml files in all project roots, remembering depth of those
+    // then search all .move children of those files, with biggest depth first
+    val moveFiles = findMoveFilesDeepestFirst(project).toList()
+    for (moveTomlFile in moveFiles) {
+        val root = moveTomlFile.parent
+        val moveTomlPath = moveTomlFile.toNioPathOrNull() ?: continue
+        val moveProject = MoveProject.fromMoveTomlPath(project, moveTomlPath) ?: continue
+        deepIterateChildrenRecursivery(root, { it.extension == "move" }) {
+            if (it.path in visited) return@deepIterateChildrenRecursivery true
+            visited.add(it.path)
+            processFile(it, moveProject)
+            true
+        }
+    }
 }

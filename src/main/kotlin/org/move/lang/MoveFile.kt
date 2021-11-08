@@ -2,18 +2,18 @@ package org.move.lang
 
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.cli.MoveConstants
-import org.move.cli.MoveProjectsService
-import org.move.cli.MoveToml
+import org.move.cli.*
 import org.move.lang.core.psi.MoveAddressBlock
 import org.move.lang.core.psi.MoveAddressDef
 import org.move.lang.core.psi.MoveScriptBlock
 import org.move.lang.core.psi.MoveScriptDef
 import org.move.openapiext.resolveAbsPath
+import org.move.openapiext.toPsiFile
 import org.toml.lang.psi.TomlFile
 import java.nio.file.Path
 
@@ -29,19 +29,22 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
     return null
 }
 
-fun PsiFile.getCorrespondingMoveTomlFile(): TomlFile? {
-    val addressesService = project.getService(MoveProjectsService::class.java)
-    return addressesService.findMoveProjectForPsiFile(this)?.moveToml?.tomlFile
+//fun PsiFile.getCorrespondingMoveTomlFile(): TomlFile? {
+//    return project.moveProjects.findMoveProjectForPsiFile(this)?.moveToml?.tomlFile
 //    val moveTomlPath =
 //        addressesService.findMoveTomlPathForFile(this.originalFile.virtualFile)
 //            ?: return null
 //    val moveTomlPath = this.toNioPathOrNull()?.let { findMoveTomlPath(it) } ?: return null
 //    return parseToml(this.project, moveTomlPath)
-}
+//}
 
-fun PsiFile.getCorrespondingMoveToml(): MoveToml? {
-    val tomlFile = getCorrespondingMoveTomlFile() ?: return null
-    return MoveToml.fromTomlFile(tomlFile)
+//fun PsiFile.getCorrespondingMoveToml(): MoveToml? {
+//    val tomlFile = getCorrespondingMoveTomlFile() ?: return null
+//    return MoveToml.fromTomlFile(tomlFile)
+//}
+
+fun PsiFile.containingMoveProject(): MoveProject? {
+    return project.moveProjects.findMoveProjectForPsiFile(this)
 }
 
 fun VirtualFile.toNioPathOrNull(): Path? {
@@ -76,3 +79,5 @@ class MoveFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvide
 }
 
 val VirtualFile.isMoveFile: Boolean get() = fileType == MoveFileType
+
+fun VirtualFile.toMoveFile(project: Project): MoveFile? = this.toPsiFile(project) as? MoveFile

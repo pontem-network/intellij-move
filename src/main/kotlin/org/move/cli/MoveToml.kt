@@ -1,26 +1,14 @@
 package org.move.cli
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
-import org.move.lang.MoveFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.*
-import org.move.utils.iterateMoveFilesInFolder
 import org.toml.lang.psi.TomlFile
 import org.toml.lang.psi.TomlInlineTable
 import java.nio.file.Path
 
 typealias AddressesMap = Map<String, String>
 typealias DependenciesMap = Map<String, Dependency>
-
-enum class GlobalScope {
-    MAIN, DEV;
-}
-
-data class MoveModuleFile(
-    val file: MoveFile,
-    val addressSubst: Map<String, String>,
-)
 
 data class Dependency(
     val local: Path
@@ -43,43 +31,6 @@ class MoveToml(
     val dependencies: DependenciesMap,
     val dev_dependencies: DependenciesMap,
 ) {
-    fun getFolders(scope: GlobalScope): List<VirtualFile> {
-        val deps = when (scope) {
-            GlobalScope.MAIN -> dependencies
-            GlobalScope.DEV -> dependencies + dev_dependencies
-        }
-        val folders = mutableListOf<VirtualFile>()
-        val sourcesFolder = root.resolve("sources").findVirtualFile()
-        if (sourcesFolder != null) {
-            folders.add(sourcesFolder)
-        }
-
-        for (dep in deps.values) {
-            // TODO: make them absolute paths
-            val folder = dep.local.resolve("sources").findVirtualFile() ?: continue
-            if (folder.isDirectory)
-                folders.add(folder)
-        }
-        return folders
-    }
-
-    fun getAddresses(scope: GlobalScope): AddressesMap {
-        return when (scope) {
-            GlobalScope.MAIN -> this.addresses
-            GlobalScope.DEV -> this.addresses + this.dev_addresses
-        }
-    }
-
-    fun iterOverMoveModuleFiles(scope: GlobalScope, processFile: (MoveModuleFile) -> Boolean) {
-        val folders = getFolders(scope)
-        for (folder in folders) {
-            iterateMoveFilesInFolder(project, folder) {
-                val moduleFile = MoveModuleFile(it, emptyMap())
-                processFile(moduleFile)
-            }
-        }
-    }
-
     companion object {
         fun fromTomlFile(tomlFile: TomlFile): MoveToml? {
             val tomlFileRoot = tomlFile.toNioPathOrNull()?.parent ?: return null
@@ -90,7 +41,9 @@ class MoveToml(
                 val name = packageTomlTable.findValue("name")?.stringValue()
                 val version = packageTomlTable.findValue("version")?.stringValue()
                 val authors =
-                    packageTomlTable.findValue("authors")?.arrayValue().orEmpty().map { it.stringValue()!! }
+                    packageTomlTable.findValue("authors")?.arrayValue()
+                        .orEmpty()
+                        .mapNotNull { it.stringValue() }
                 val license = packageTomlTable.findValue("license")?.stringValue()
                 packageTable = MoveTomlPackageTable(name, version, authors, license)
             }

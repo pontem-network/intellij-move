@@ -877,6 +877,7 @@ LiteralExpr ::= HEX_INTEGER_LITERAL
                 | ADDRESS_LITERAL
                 | BECH32_ADDRESS_LITERAL
                 | POLKADOT_ADDRESS_LITERAL
+                | ('@' NamedAddress)
 {
     mixin = "org.move.lang.core.psi.ext.MoveLiteralExprMixin"
 }
