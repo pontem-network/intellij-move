@@ -30,6 +30,17 @@ FILE
             PsiWhiteSpace(' ')
             PsiElement(;)(';')
           PsiWhiteSpace('\n\n        ')
+          MoveExprStatementImpl(EXPR_STATEMENT)
+            MoveCallExprImpl(CALL_EXPR)
+              MovePathImpl(PATH)
+                MovePathIdentImpl(PATH_IDENT)
+                  PsiElement(IDENTIFIER)('call')
+              MoveCallArgumentsImpl(CALL_ARGUMENTS)
+                PsiElement(()('(')
+                PsiElement())(')')
+            PsiErrorElement:';' expected, got 'let'
+              <empty list>
+          PsiWhiteSpace('\n        ')
           MoveLetStatementImpl(LET_STATEMENT)
             PsiElement(let)('let')
             PsiWhiteSpace(' ')

@@ -224,7 +224,7 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
     recoverWhile = Item_recover
 }
 // top-level recovery
-private Item_first ::= use | public | native | fun | const | struct | spec | Attr
+private Item_first ::= use | public | native | fun | const | struct | spec | friend | Attr
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= ImportStatement | FriendStatement
@@ -649,17 +649,18 @@ LetStatement ::= let Pat TypeAnnotation? Initializer? ';' {
 //    mixin = "org.move.lang.core.psi.mixins.MoveLetStatementMixin"
 }
 
-ExprStatement ::= (ExprStatement_items ';')
+ExprStatement ::= (ExprStatement_items !('}')) ';' { pin = 1 }
 private ExprStatement_items ::= IfExpr
-                            | LoopExpr
-                            | WhileExpr
+                                | LoopExpr
+                                | WhileExpr
 //                            | LetExpr
 //                            | AssignmentExpr
-                            | Expr
+                                | Expr
 {
-    recoverWhile = "StatementExpr_recover"
+    recoverWhile = "ExprStatement_recover"
 }
-private StatementExpr_recover ::= !(';' | '}')
+private ExprStatement_recover ::= !(';' | '}' | ExprStatement_first)
+private ExprStatement_first ::= let | if | while
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks

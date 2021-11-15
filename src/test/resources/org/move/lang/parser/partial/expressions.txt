@@ -24,7 +24,7 @@ FILE
                   MoveAddressRefImpl(ADDRESS_REF)
                     PsiElement(ADDRESS_IDENT)('0x1')
                   PsiElement(::)('::')
-                  PsiErrorElement:'::', ';', <, IDENTIFIER or '{' expected, got '}'
+                  PsiErrorElement:'::', <, IDENTIFIER or '{' expected, got '}'
                     <empty list>
           PsiWhiteSpace('\n    ')
           PsiElement(})('}')
