@@ -8,7 +8,7 @@ fun processNamedAddresses(
     processAddress: (TomlKeySegment, String) -> Boolean
 ) {
     val currentTableEntries = moveProject.moveToml.tomlFile
-        .getTable("addresses")
+        ?.getTable("addresses")
         ?.entries.orEmpty()
     for (tableEntry in currentTableEntries) {
         val segment = tableEntry.singleSegmentOrNull() ?: continue
@@ -32,7 +32,7 @@ fun processNamedAddresses(
                 .findVirtualFile()
                 ?.toPsiFile(moveProject.project) ?: continue
         val depMoveProject =
-            project.moveProjects.findMoveProjectForPsiFile(depMoveFile) ?: continue
+            project.moveProjectsService.findMoveProjectForPsiFile(depMoveFile) ?: continue
         processNamedAddresses(depMoveProject, combinedDepSubst, processAddress)
     }
 }

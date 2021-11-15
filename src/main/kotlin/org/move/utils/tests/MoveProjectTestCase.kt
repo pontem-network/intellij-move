@@ -18,6 +18,8 @@ abstract class MoveProjectTestCase : CodeInsightFixtureTestCase<ModuleFixtureBui
         val fileTree = fileTreeFromText(code)
         val rootDirectory = myModule.rootManager.contentRoots.first()
         return fileTree.prepareTestProject(myFixture.project, rootDirectory)
+//        MoveExecutable(myFixture.project).build(rootDirectory.toNioPath())
+//        return testProject
     }
 
     protected fun CodeInsightTestFixture.configureFromFileWithCaret(testProject: TestProject) {

@@ -21,18 +21,17 @@ class ProjectAddressesServiceTest: MoveProjectTestCase() {
         }
         val rootDirectory = myModule.rootManager.contentRoots.first()
         val testProject = fileTree.prepareTestProject(myFixture.project, rootDirectory)
-        val addressesService =
-            project.getService(MoveProjectsService::class.java) as MoveProjectsServiceImpl
+        val addressesService = project.moveProjectsService
 //        addressesService.refreshProjectAddresses()
 
-        val moveFiles = findMoveFilesDeepestFirst(myFixture.project).toList()
+        val moveFiles = findMoveTomlFilesDeepestFirst(myFixture.project).toList()
         check(moveFiles.size == 2)
         check(moveFiles[0].path.endsWith("stdlib/Move.toml")) { moveFiles[0].path }
         check(moveFiles[1].path.endsWith("Move.toml")) { moveFiles[1].path }
 
         val vfile = testProject.psiFile("stdlib/sources/module2.move").virtualFile.toPsiFile(project)!!
-        println("moveTomlPath: ${addressesService.findMoveProjectForPsiFile(vfile)}")
-        println("moveTomlPath: ${addressesService.findMoveProjectForPsiFile(vfile)}")
-        println("moveTomlPath: ${addressesService.findMoveProjectForPsiFile(vfile)}")
+        println("moveTomlPath: ${addressesService.findMoveProjectForPsiFile(vfile)?.root}")
+        println("moveTomlPath: ${addressesService.findMoveProjectForPsiFile(vfile)?.root}")
+        println("moveTomlPath: ${addressesService.findMoveProjectForPsiFile(vfile)?.root}")
     }
 }

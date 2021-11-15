@@ -1,5 +1,6 @@
 package org.move.lang.core.types
 
+import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.psi.ext.ability

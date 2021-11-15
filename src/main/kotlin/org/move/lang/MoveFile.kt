@@ -5,16 +5,19 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.FileViewProvider
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.cli.*
+import org.move.cli.MoveConstants
+import org.move.cli.MoveProject
+import org.move.cli.moveProjectsService
 import org.move.lang.core.psi.MoveAddressBlock
 import org.move.lang.core.psi.MoveAddressDef
 import org.move.lang.core.psi.MoveScriptBlock
 import org.move.lang.core.psi.MoveScriptDef
 import org.move.openapiext.resolveAbsPath
 import org.move.openapiext.toPsiFile
-import org.toml.lang.psi.TomlFile
+import org.toml.lang.psi.TomlFileType
 import java.nio.file.Path
 
 fun findMoveTomlPath(currentFilePath: Path): Path? {
@@ -43,8 +46,10 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
 //    return MoveToml.fromTomlFile(tomlFile)
 //}
 
+fun PsiElement.moveProject(): MoveProject? = this.containingFile.containingMoveProject()
+
 fun PsiFile.containingMoveProject(): MoveProject? {
-    return project.moveProjects.findMoveProjectForPsiFile(this)
+    return project.moveProjectsService.findMoveProjectForPsiFile(this)
 }
 
 fun VirtualFile.toNioPathOrNull(): Path? {
@@ -79,5 +84,7 @@ class MoveFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvide
 }
 
 val VirtualFile.isMoveFile: Boolean get() = fileType == MoveFileType
+
+val VirtualFile.isMoveTomlManifestFile: Boolean get() = fileType == TomlFileType && name == "Move.toml"
 
 fun VirtualFile.toMoveFile(project: Project): MoveFile? = this.toPsiFile(project) as? MoveFile

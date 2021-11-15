@@ -13,7 +13,7 @@ open class ParameterInfoHandlerTestCase<A : PsiElement, B>(
     protected fun checkByText(@Language("Move") code: String, hint: String, index: Int) =
         checkByText(code, hint to index)
 
-    protected fun checkByText(code: String, vararg hintWithIndex: Pair<String, Int>) {
+    protected fun checkByText(@Language("Move") code: String, vararg hintWithIndex: Pair<String, Int>) {
         myFixture.configureByText("main.move", replaceCaretMarker(code))
         val createContext = MockCreateParameterInfoContext(myFixture.editor, myFixture.file)
 

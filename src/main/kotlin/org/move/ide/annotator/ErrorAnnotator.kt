@@ -4,6 +4,7 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
 import org.move.lang.MoveElementTypes.R_PAREN
+import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.resolvedReturnType
@@ -185,12 +186,13 @@ class ErrorAnnotator : MoveAnnotator() {
     }
 
     private fun checkModuleDef(holder: MoveAnnotationHolder, mod: MoveModuleDef) {
-        val modIdent = Pair(mod.definedAddressRef()?.address(), mod.name)
+//        val moveProject = mod.containingFile.containingMoveProject() ?: return
+        val modIdent = Pair(mod.definedAddressRef()?.toAddress(), mod.name)
         val file = mod.containingFile ?: return
         val duplicateIdents =
             file.descendantsOfType<MoveModuleDef>()
                 .filter { it.name != null }
-                .groupBy { Pair(it.definedAddressRef()?.address(), it.name) }
+                .groupBy { Pair(it.definedAddressRef()?.toAddress(), it.name) }
                 .filter { it.value.size > 1 }
                 .map { it.key }
                 .toSet()

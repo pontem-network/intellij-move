@@ -31,7 +31,8 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
             is MoveNamedAddress -> {
                 val moveProject = docElement.containingFile.containingMoveProject() ?: return null
                 val refName = docElement.referenceName ?: return null
-                return moveProject.getAddressValue(refName)
+//                return moveProject.getNormalizedAddressValue(refName)
+                return moveProject.getAddresses()[refName]
             }
             is MoveDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             else -> {

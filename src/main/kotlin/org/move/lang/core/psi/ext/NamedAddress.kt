@@ -25,9 +25,9 @@ val MoveNamedAddress.addressTomlKeyValue: TomlKeyValue? get() {
 //    val moveProject = this.containingFile.containingMoveProject() ?: return null
 //    moveProject.getAddressValue()
 //}
-val MoveNamedAddress.addressValue: String? get() {
-    return this.addressTomlKeyValue?.value?.stringValue()
-}
+//val MoveNamedAddress.addressValue: String? get() {
+//    return this.addressTomlKeyValue?.value?.stringValue()
+//}
 
 fun TomlKeySegment.isNamedAddressDef(): Boolean {
     val key = this.parent as? TomlKey ?: return false

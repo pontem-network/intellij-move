@@ -1,6 +1,7 @@
 package org.move.cli
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.startup.StartupManager
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.PlatformProjectOpenProcessor
@@ -25,6 +26,10 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
             virtualFile,
             projectToClose,
             forceOpenInNewFrame
-        )
+        )?.also {
+            StartupManager.getInstance(it).runWhenProjectIsInitialized {
+                it.moveProjectsService.refreshAllProjects()
+            }
+        }
     }
 }

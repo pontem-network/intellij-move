@@ -12,6 +12,7 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.HasType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.StructType
+import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 
 fun processItems(
@@ -64,13 +65,14 @@ private fun processQualModuleRefInFile(
     file: MoveFile,
     processor: MatchingProcessor,
 ): Boolean {
-    val sourceNormalizedAddress = qualModuleRef.addressRef.normalizedAddress()
+    val moveProject = qualModuleRef.moveProject() ?: return false
+    val sourceNormalizedAddress = qualModuleRef.addressRef.toNormalizedAddress(moveProject)
 
     var resolved = false
     val visitor = object : MoveVisitor() {
         override fun visitModuleDef(o: MoveModuleDef) {
             if (resolved) return
-            val normalizedAddress = o.definedAddressRef()?.normalizedAddress()
+            val normalizedAddress = o.definedAddressRef()?.toNormalizedAddress(moveProject)
             if (normalizedAddress == sourceNormalizedAddress) {
                 resolved = processor.match(o)
             }

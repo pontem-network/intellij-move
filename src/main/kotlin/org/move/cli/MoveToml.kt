@@ -6,9 +6,9 @@ import org.move.openapiext.*
 import org.toml.lang.psi.TomlFile
 import org.toml.lang.psi.TomlInlineTable
 import java.nio.file.Path
+import java.util.*
 
-typealias AddressesMap = Map<String, String>
-typealias DependenciesMap = Map<String, Dependency>
+typealias DependenciesMap = SortedMap<String, Dependency>
 
 data class Dependency(
     val absoluteLocalPath: Path,
@@ -24,8 +24,9 @@ data class MoveTomlPackageTable(
 
 class MoveToml(
     val project: Project,
-    val root: Path,
-    val tomlFile: TomlFile,
+    // TODO: change into VirtualFile and move to MoveProject
+//    val root: Path,
+    val tomlFile: TomlFile?,
     val packageTable: MoveTomlPackageTable?,
     val addresses: AddressesMap,
     val dev_addresses: AddressesMap,
@@ -33,8 +34,8 @@ class MoveToml(
     val dev_dependencies: DependenciesMap,
 ) {
     companion object {
-        fun fromTomlFile(tomlFile: TomlFile): MoveToml? {
-            val tomlFileRoot = tomlFile.toNioPathOrNull()?.parent ?: return null
+        fun fromTomlFile(tomlFile: TomlFile, projectRoot: Path): MoveToml {
+//            val tomlFileRoot = tomlFile.toNioPathOrNull()?.parent ?: return null
 
             val packageTomlTable = tomlFile.getTable("package")
             var packageTable: MoveTomlPackageTable? = null
@@ -52,12 +53,12 @@ class MoveToml(
             val addresses = parseAddresses("addresses", tomlFile)
             val dev_addresses = parseAddresses("dev_addresses", tomlFile)
 
-            val dependencies = parseDependencies("dependencies", tomlFile, tomlFileRoot)
-            val dev_dependencies = parseDependencies("dev_dependencies", tomlFile, tomlFileRoot)
+            val dependencies = parseDependencies("dependencies", tomlFile, projectRoot)
+            val dev_dependencies = parseDependencies("dev_dependencies", tomlFile, projectRoot)
 
             return MoveToml(
                 tomlFile.project,
-                tomlFileRoot,
+//                tomlFileRoot,
                 tomlFile,
                 packageTable,
                 addresses,
@@ -81,7 +82,7 @@ class MoveToml(
             tomlFile: TomlFile,
             projectRoot: Path
         ): DependenciesMap {
-            val dependencies = mutableMapOf<String, Dependency>()
+            val dependencies = sortedMapOf<String, Dependency>()
             val tomlDeps = tomlFile.getTable(tableKey)?.namedEntries().orEmpty()
             for ((depName, tomlValue) in tomlDeps) {
                 val depTable = (tomlValue as? TomlInlineTable) ?: continue

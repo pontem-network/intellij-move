@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.JBColor
 import com.intellij.ui.layout.LayoutBuilder
-import org.move.cli.VersionedExecutable
+import org.move.cli.MoveExecutable
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathTextField
 import java.awt.BorderLayout
@@ -60,7 +60,7 @@ class MoveProjectSettingsPanel(private val project: Project) : Disposable {
         val executablePath = executablePathField.text
         versionUpdateDebouncer.run(
             onPooledThread = {
-                VersionedExecutable(project, Paths.get(executablePath)).version()
+                MoveExecutable(project, Paths.get(executablePath)).version()
             },
             onUiThread = { version -> versionLabel.setVersion(version)}
         )

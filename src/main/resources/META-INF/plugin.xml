@@ -80,11 +80,11 @@
                    implementationClass="org.move.ide.annotator.HighlightingAnnotator"/>
 
         <codeInsight.parameterInfo language="Move"
-                                   implementationClass="org.move.ide.hints.parameter.FunctionParameterInfoHandler"/>
+                                   implementationClass="org.move.ide.hints.FunctionParameterInfoHandler"/>
         <codeInsight.parameterInfo language="Move"
-                                   implementationClass="org.move.ide.hints.parameter.TypeParameterInfoHandler"/>
+                                   implementationClass="org.move.ide.hints.TypeParameterInfoHandler"/>
         <codeInsight.parameterNameHints language="Move"
-                                        implementationClass="org.move.ide.hints.parameter.MoveInlayParameterHintsProvider"/>
+                                        implementationClass="org.move.ide.hints.MoveInlayParameterHintsProvider"/>
 
         <defaultLiveTemplates file="liveTemplates/Move.xml"/>
         <liveTemplateContext implementation="org.move.ide.live_templates.MoveTemplateContext"/>
@@ -94,10 +94,10 @@
                 implementationClass="org.move.ide.navigation.MoveStructureViewBuilderFactory"/>
         <declarationRangeHandler
                 key="org.move.lang.core.psi.MoveModuleDef"
-                implementationClass="org.move.ide.navigation.ModuleDeclarationRangeHandler" />
+                implementationClass="org.move.ide.navigation.ModuleDeclarationRangeHandler"/>
         <declarationRangeHandler
                 key="org.move.lang.core.psi.MoveFunctionDef"
-                implementationClass="org.move.ide.navigation.FunctionDeclarationRangeHandler" />
+                implementationClass="org.move.ide.navigation.FunctionDeclarationRangeHandler"/>
         <!--        <stubIndex implementation="org.move.lang.core.stubs.index.MoveNamedElementIndex"/>-->
 
         <!--        <localInspection language="Move" groupPath="Move" groupName="Naming"-->
@@ -125,13 +125,13 @@
                         serviceImplementation="org.move.utils.ProjectRootServiceImpl"
                         testServiceImplementation="org.move.utils.TestProjectRootServiceImpl"/>
         <projectService serviceInterface="org.move.cli.MoveProjectsService"
-                        serviceImplementation="org.move.cli.MoveProjectsServiceImpl"/>
+                        serviceImplementation="org.move.cli.MoveProjectsServiceImpl" />
 
         <!-- Notifications -->
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>
 
-<!--        <editorNotificationProvider-->
-<!--                implementation="org.move.ide.notifications.InvalidDoveExecutableNotificationsProvider"/>-->
+        <editorNotificationProvider
+                implementation="org.move.ide.notifications.InvalidMoveExecutableNotificationsProvider"/>
 
         <intentionAction>
             <className>org.move.ide.intentions.AddAcquiresIntention</className>
@@ -157,5 +157,8 @@
                 description="Create new Move file">
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
         </action>
+        <action id="Move.RefreshAllProjects"
+                class="org.move.ide.actions.RefreshMoveProjectsAction"
+                icon="AllIcons.Actions.Refresh"/>
     </actions>
 </idea-plugin>

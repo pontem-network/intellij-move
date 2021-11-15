@@ -4,32 +4,35 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
-import org.intellij.lang.annotations.Language
 import org.move.ide.MoveIcons
+import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.psi.mixins.MoveFunctionSignatureMixin
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.FQModule
+import org.move.lang.moveProject
 import javax.swing.Icon
 
 fun MoveModuleDef.definedAddressRef(): MoveAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MoveAddressDef>())?.addressRef
 
 fun MoveModuleDef.fqModule(): FQModule? {
+//    val moveProject = this.containingFile.containingMoveProject() ?: return null
     val address = this.containingAddress.normalized()
     val name = this.name ?: return null
     return FQModule(address, name)
 }
 
-val MoveModuleDef.friends: Set<FQModule>
+val MoveModuleDef.friendModules: Set<FQModule>
     get() {
         val block = this.moduleBlock ?: return emptySet()
         val moduleRefs = block.friendStatementList.mapNotNull { it.fqModuleRef }
 
         val friends = mutableSetOf<FQModule>()
+//        val moveProject = this.moveProject() ?: return emptySet()
         for (moduleRef in moduleRefs) {
-            val address = moduleRef.addressRef.normalizedAddress() ?: continue
+            val address = moduleRef.addressRef.toNormalizedAddress() ?: continue
             val identifier = moduleRef.identifier?.text ?: continue
             friends.add(FQModule(address, identifier))
         }
@@ -68,7 +71,7 @@ fun MoveModuleDef.functionSignatures(visibility: Visibility): List<MoveFunctionS
             allFnSignatures()
                 .filter { it.visibility == FunctionVisibility.PUBLIC_SCRIPT }
         is Visibility.PublicFriend -> {
-            if (visibility.currentModule in this.friends) {
+            if (visibility.currentModule in this.friendModules) {
                 allFnSignatures().filter { it.visibility == FunctionVisibility.PUBLIC_FRIEND }
             } else {
                 emptyList()
@@ -147,6 +150,7 @@ abstract class MoveModuleDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(n
 
     override fun getPresentation(): ItemPresentation? {
         val name = this.name ?: return null
+//        val moveProject = this.containingFile.containingMoveProject() ?: return null
         val locationString = this.containingAddress.text
         return PresentationData(name,
                                 locationString,

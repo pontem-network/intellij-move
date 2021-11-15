@@ -15,7 +15,7 @@ version = pluginVersion
 plugins {
     id("java")
     id("org.jetbrains.intellij") version "1.2.1"
-    id("org.jetbrains.kotlin.jvm") version "1.5.30"
+    kotlin("jvm") version "1.5.30"
     id("org.jetbrains.grammarkit") version "2021.1.3"
 }
 
@@ -24,7 +24,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
-
 }
 
 allprojects {

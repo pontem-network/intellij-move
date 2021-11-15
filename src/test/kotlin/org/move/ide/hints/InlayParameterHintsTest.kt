@@ -1,4 +1,4 @@
-package org.move.ide.hints.parameter
+package org.move.ide.hints
 
 import com.intellij.codeInsight.daemon.impl.HintRenderer
 import org.intellij.lang.annotations.Language

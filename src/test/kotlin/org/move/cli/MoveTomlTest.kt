@@ -15,7 +15,7 @@ class MoveTomlTest : MoveTestBase() {
         val manifestPath = moveProjectRoot.resolve("Move.toml")
         val tomlFile = parseToml(project, manifestPath)!!
 
-        val moveToml = MoveToml.fromTomlFile(tomlFile)!!
+        val moveToml = MoveToml.fromTomlFile(tomlFile, moveProjectRoot)
         check(moveToml.packageTable?.name == "move_toml")
         check(moveToml.packageTable?.version == "0.1.0")
         check(moveToml.packageTable?.authors.orEmpty().isEmpty())

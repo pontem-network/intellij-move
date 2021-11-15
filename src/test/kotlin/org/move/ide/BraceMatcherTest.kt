@@ -26,6 +26,18 @@ class BraceMatcherTest : MoveTestBase() {
         "script { fun main(/*caret*/) {}}"
     )
 
+    fun `test add second pair of angle brackets`() = doTest(
+        "script { fun main<NFT/*caret*/>() {}}",
+        '<',
+        "script { fun main<NFT</*caret*/>>() {}}",
+    )
+
+    fun `test add pair of angle brackets for struct field`() = doTest(
+        "module M { struct Col { a: Option/*caret*/ } }",
+        '<',
+        "module M { struct Col { a: Option</*caret*/> } }",
+    )
+
     fun `test match parens`() = doMatch("script { fun main/*caret*/(x: u8) {}}", ")")
 
     fun `test match angle brackets`() = doMatch("script { fun main/*caret*/<T>(x: u8) {}}", ">")

@@ -8,12 +8,12 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
-import org.move.cli.VersionedExecutable
+import org.move.cli.MoveExecutable
 import org.move.lang.isMoveFile
+import org.move.lang.isMoveTomlManifestFile
 import org.move.openapiext.common.isUnitTestMode
 import org.move.settings.MoveSettingsChangedEvent
 import org.move.settings.MoveSettingsListener
-import org.move.settings.moveExecPath
 import org.move.settings.moveSettings
 
 fun updateAllNotifications(project: Project) {
@@ -51,10 +51,13 @@ class InvalidMoveExecutableNotificationsProvider(
         project: Project
     ): EditorNotificationPanel? {
         if (isUnitTestMode) return null
-        if (!file.isMoveFile || isNotificationDisabled(file)) return null
+        if (
+            !(file.isMoveFile || file.isMoveTomlManifestFile)
+            || isNotificationDisabled(file)
+        ) return null
 
-        val moveExecPath = project.moveExecPath ?: return null
-        if (VersionedExecutable(project, moveExecPath).version() != null) return null
+//        val moveExecPath = project.moveExecPath ?: return null
+        if (MoveExecutable(project).version() != null) return null
 
         return EditorNotificationPanel().apply {
             text = "Move configured incorrectly"

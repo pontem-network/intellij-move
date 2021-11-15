@@ -1,4 +1,4 @@
-package org.move.ide.hints.parameter
+package org.move.ide.hints
 
 import org.move.lang.core.psi.MoveTypeArgumentList
 import org.move.utils.tests.ParameterInfoHandlerTestCase

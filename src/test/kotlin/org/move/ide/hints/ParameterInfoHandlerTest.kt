@@ -1,6 +1,7 @@
-package org.move.ide.hints.parameter
+package org.move.ide.hints
 
 import org.move.lang.core.psi.MoveCallArguments
+import org.move.lang.core.psi.MoveStructLiteralFieldsBlock
 import org.move.utils.tests.ParameterInfoHandlerTestCase
 
 class ParameterInfoHandlerTest

@@ -43,6 +43,18 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
         <p>Returns their sum.</p></div>
     """)
 
-    private fun doTest(@Language("Rust") code: String, @Language("Html") expected: String?) =
+    fun `test struct field as vector`() = doTest("""
+    module 0x1::M {
+        struct NFT {}
+        struct Collection { nfts: vector<NFT> }
+        fun m() {
+            let coll = borrow_global_mut<Collection>(0x1);
+            coll.nfts
+               //^
+        }
+    }    
+    """, expected = "vector<0x1::M::NFT>")
+
+    private fun doTest(@Language("Move") code: String, @Language("Html") expected: String?) =
         doTest(code, expected, block = MoveDocumentationProvider::generateDoc)
 }

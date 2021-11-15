@@ -68,7 +68,7 @@ class ResolveMoveProjectModulesTest : ResolveProjectTestCase() {
     fun `test resolve namedaddr_module from dependency file with addr_subst`() = checkByFileTree("""
         //- Move.toml
         [dependencies]
-        Stdlib = { local = "./stdlib" addr_subst = { Std = "0x1" } }
+        Stdlib = { local = "./stdlib", addr_subst = { Std = "0x1" } }
         
         //- stdlib/Move.toml
         [addresses]
