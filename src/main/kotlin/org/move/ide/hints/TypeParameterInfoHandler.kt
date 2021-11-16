@@ -1,7 +1,9 @@
 package org.move.ide.hints
 
-import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.lang.parameterInfo.*
+import com.intellij.lang.parameterInfo.CreateParameterInfoContext
+import com.intellij.lang.parameterInfo.ParameterInfoUIContext
+import com.intellij.lang.parameterInfo.ParameterInfoUtils
+import com.intellij.lang.parameterInfo.UpdateParameterInfoContext
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import org.move.lang.MoveElementTypes
@@ -55,11 +57,6 @@ class TypeParameterInfoHandler :
             context.defaultParameterColor
         )
     }
-
-    override fun getParametersForLookup(item: LookupElement?, context: ParameterInfoContext?): Array<Any>? =
-        null
-
-    override fun couldShowInLookup() = false
 }
 
 /**

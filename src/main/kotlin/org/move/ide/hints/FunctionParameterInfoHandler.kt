@@ -1,12 +1,9 @@
 package org.move.ide.hints
 
-import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.lang.parameterInfo.ParameterInfoContext
 import com.intellij.lang.parameterInfo.ParameterInfoUIContext
 import com.intellij.lang.parameterInfo.ParameterInfoUtils
 import com.intellij.lang.parameterInfo.UpdateParameterInfoContext
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.move.ide.utils.CallInfo
 import org.move.lang.MoveElementTypes
@@ -17,21 +14,6 @@ import org.move.lang.core.psi.ext.startOffset
 import org.move.utils.AsyncParameterInfoHandler
 
 class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MoveCallArguments, ParametersDescription>() {
-    override fun couldShowInLookup(): Boolean = true
-
-    override fun getParametersForLookup(
-        item: LookupElement,
-        context: ParameterInfoContext?,
-    ): Array<out Any>? {
-        val elem = item.`object` as? PsiElement ?: return null
-        val parent = elem.parent?.parent ?: return null
-
-        if (parent is MoveCallExpr && CallInfo.resolve(parent) != null) {
-            return arrayOf(parent)
-        } else {
-            return emptyArray()
-        }
-    }
 
     override fun findTargetElement(file: PsiFile, offset: Int): MoveCallArguments? =
         file.findElementAt(offset)?.ancestorStrict()
@@ -47,9 +29,11 @@ class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MoveCallArguments
         val currentParameterIndex = if (parameterOwner.startOffset == context.offset) {
             -1
         } else {
-            ParameterInfoUtils.getCurrentParameterIndex(parameterOwner.node,
+            ParameterInfoUtils.getCurrentParameterIndex(
+                parameterOwner.node,
                 context.offset,
-                MoveElementTypes.COMMA)
+                MoveElementTypes.COMMA
+            )
         }
         context.setCurrentParameter(currentParameterIndex)
     }
@@ -63,7 +47,8 @@ class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MoveCallArguments
             !context.isUIComponentEnabled,
             false,
             false,
-            context.defaultParameterColor)
+            context.defaultParameterColor
+        )
     }
 
 }
