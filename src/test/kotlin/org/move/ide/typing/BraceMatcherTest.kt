@@ -1,4 +1,4 @@
-package org.move.ide
+package org.move.ide.typing
 
 import com.intellij.codeInsight.highlighting.BraceMatchingUtil
 import com.intellij.openapi.editor.ex.EditorEx
@@ -30,6 +30,12 @@ class BraceMatcherTest : MoveTestBase() {
         "script { fun main<NFT/*caret*/>() {}}",
         '<',
         "script { fun main<NFT</*caret*/>>() {}}",
+    )
+
+    fun `test dont pair braces inside identifier`() = doTest(
+        "script { fun main<NF/*caret*/T>() {}}",
+        '<',
+        "script { fun main<NF</*caret*/T>() {}}",
     )
 
     fun `test add pair of angle brackets for struct field`() = doTest(

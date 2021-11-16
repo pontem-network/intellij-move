@@ -92,4 +92,18 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
             }
         }    
     """)
+
+    fun `test no need for explicit type parameter if inferrable from context`() = checkErrors("""
+        module M {
+            struct Option<Element> has copy, drop, store {}
+            public fun none<Element>(): Option<Element> {
+                Option {}
+            }
+            struct S { field: Option<address> }
+            fun m(): S {
+                S { field: none() }
+            }
+            
+        }
+    """)
 }
