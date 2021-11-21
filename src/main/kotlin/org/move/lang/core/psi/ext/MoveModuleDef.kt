@@ -24,6 +24,12 @@ fun MoveModuleDef.fqModule(): FQModule? {
     return FQModule(address, name)
 }
 
+val MoveModuleDef.fqName: String? get() {
+    val address = this.addressRef?.text?.let { "$it::" } ?: ""
+    val module = this.name ?: return null
+    return address + module
+}
+
 val MoveModuleDef.friendModules: Set<FQModule>
     get() {
         val block = this.moduleBlock ?: return emptySet()

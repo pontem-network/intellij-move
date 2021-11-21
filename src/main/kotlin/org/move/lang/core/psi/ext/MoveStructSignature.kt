@@ -1,7 +1,12 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.*
+
+val MoveStructSignature.fqName: String get() {
+    val moduleFqName = this.module.fqName?.let { "$it::" }
+    val name = this.name ?: "<unknown>"
+    return moduleFqName + name
+}
 
 val MoveStructSignature.module: MoveModuleDef
     get() {

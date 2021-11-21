@@ -11,6 +11,11 @@ val MoveCallExpr.typeArguments: List<MoveTypeArgument>
         return this.path.typeArguments
     }
 
+val MoveCallExpr.arguments: List<MoveExpr>
+    get() {
+        return this.callArguments?.exprList.orEmpty()
+    }
+
 val MoveCallExpr.typeVars: TypeVarsMap
     get() {
         val typeVars = mutableMapOf<String, BaseType?>()

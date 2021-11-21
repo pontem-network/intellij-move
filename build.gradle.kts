@@ -2,7 +2,7 @@ import org.jetbrains.grammarkit.tasks.GenerateLexer
 import org.jetbrains.grammarkit.tasks.GenerateParser
 
 val intellijVersion = prop("intellijVersion", "2021.2")
-val kotlinVersion = "1.5.30"
+val kotlinVersion = "1.5.31"
 
 val pluginJarName = "intellij-move-$intellijVersion"
 val pluginGroup = "org.move"
@@ -14,8 +14,8 @@ version = pluginVersion
 
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.2.1"
-    kotlin("jvm") version "1.5.30"
+    id("org.jetbrains.intellij") version "1.3.0"
+    kotlin("jvm") version "1.5.31"
     id("org.jetbrains.grammarkit") version "2021.1.3"
 }
 
