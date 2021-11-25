@@ -215,7 +215,7 @@ class ExpressionTypesTest: TypificationTestCase() {
         struct NFT {}
         struct Collection { nfts: vector<NFT> }
         fun m(coll: Collection) {
-            (coll.nfts)
+            (coll.nfts);
           //^ vector<0x1::M::NFT>  
         }
     }    

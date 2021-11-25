@@ -184,7 +184,7 @@ class StructType(
         if (typeArgumentTypes.isNotEmpty()) {
             structName += "<"
             for ((i, typeArgumentType) in typeArgumentTypes.withIndex()) {
-                structName += typeArgumentType.shortPresentableText(null)
+                structName += typeArgumentType.shortPresentableText(false)
                 if (i < typeArgumentTypes.size - 1) {
                     structName += ", "
                 }

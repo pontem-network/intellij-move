@@ -1,14 +1,16 @@
 package org.move.lang.core.types.ty
 
+import org.move.lang.core.psi.MoveModuleDef
 import org.move.lang.core.types.Ability
 import org.move.lang.core.types.infer.TypeFoldable
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
 
 typealias Substitution = Map<TyTypeParameter, Ty>
+
 val emptySubstitution: Substitution = emptyMap()
 
-interface Ty: TypeFoldable<Ty> {
+interface Ty : TypeFoldable<Ty> {
 
     override fun foldWith(folder: TypeFolder): Ty = folder(this)
 

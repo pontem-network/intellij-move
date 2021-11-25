@@ -16,7 +16,7 @@ import org.move.lang.core.types.infer.TypeFoldable
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.utils.Severity.*;
+import org.move.lang.utils.Severity.*
 
 sealed class MoveDiagnostic(
     val element: PsiElement,
@@ -46,8 +46,8 @@ sealed class MoveDiagnostic(
 
         private fun expectedFound(element: PsiElement, expectedTy: Ty, actualTy: Ty): String {
             val file = element.containingFile as? MoveFile ?: return ""
-            return "expected `${expectedTy.shortPresentableText(file)}`" +
-                    ", found `${actualTy.shortPresentableText(file)}`"
+            return "expected `${expectedTy.shortPresentableText(true)}`" +
+                    ", found `${actualTy.shortPresentableText(true)}`"
         }
     }
 }

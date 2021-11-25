@@ -2,26 +2,40 @@ package org.move.ide.presentation
 
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MoveElement
+import org.move.lang.core.psi.MoveModuleDef
 import org.move.lang.core.psi.ext.fqName
 import org.move.lang.core.types.ty.*
 
+fun Ty.getDefiningModule(): MoveModuleDef? =
+    when (this) {
+        is TyReference -> this.referenced.getDefiningModule()
+        is TyStruct -> this.item.containingModule
+        else -> null
+    }
+
 fun Ty.name(): String {
-    return fullname()
+    return shortPresentableText(fq = false)
 }
 
 fun Ty.fullname(): String {
-    return shortPresentableText(null)
+    return shortPresentableText(fq = true)
 }
 
 fun Ty.typeLabel(relativeTo: MoveElement): String {
-    val file = relativeTo.containingFile as? MoveFile
-    return shortPresentableText(file)
+    val typeModule = this.getDefiningModule()
+    if (typeModule != null && typeModule != relativeTo.containingModule) {
+        return this.fullname()
+    } else {
+        return this.name()
+    }
+//    val file = relativeTo.containingFile as? MoveFile
+//    return shortPresentableText(file)
 }
 
-fun Ty.shortPresentableText(contextFile: MoveFile?): String =
+fun Ty.shortPresentableText(fq: Boolean = false): String =
     render(this,
            level = 3,
-           contextFile = contextFile)
+           fq = fq)
 
 val Ty.insertionSafeText: String
     get() = render(this,
@@ -38,7 +52,7 @@ private fun render(
     unknown: String = "<unknown>",
     anonymous: String = "<anonymous>",
     integer: String = "{integer}",
-    contextFile: MoveFile? = null
+    fq: Boolean = false
 ): String {
     check(level >= 0)
     if (ty is TyUnknown) return unknown
@@ -62,7 +76,7 @@ private fun render(
 
     if (level == 0) return "_"
 
-    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer) }
+    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, fq) }
 
     return when (ty) {
 //        is TyFunction -> {
@@ -73,17 +87,16 @@ private fun render(
 //        is TySlice -> "[${r(ty.elementType)}]"
 
 //        is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
-        is TyVector -> "vector<${render(ty.item, level, unknown, anonymous, integer)}>"
+        is TyVector -> "vector<${render(ty.item, level, unknown, anonymous, integer, fq)}>"
 //        is TyVector -> "[${r(ty.item)}; ${ty.size ?: unknown}]"
         is TyReference -> "${if (ty.mutability.isMut) "&mut " else "&"}${
-            render(ty.referenced, level, unknown, anonymous, integer)
+            render(ty.referenced, level, unknown, anonymous, integer, fq)
         }"
 //        is TyPointer -> "*${if (ty.mutability.isMut) "mut" else "const"} ${r(ty.referenced)}"
 //        is TyTraitObject -> ty.trait.name ?: anonymous
         is TyTypeParameter -> ty.name ?: anonymous
         is TyStruct -> {
-            val isFQName = contextFile == null || contextFile != ty.item.containingFile
-            val name = if (isFQName) ty.item.fqName else (ty.item.name ?: anonymous)
+            val name = if (fq) ty.item.fqName else (ty.item.name ?: anonymous)
 //            val name = if (isFQName) {
 //                ty.item.fqName
 //            }

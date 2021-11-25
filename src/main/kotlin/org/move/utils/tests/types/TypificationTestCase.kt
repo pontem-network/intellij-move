@@ -46,7 +46,7 @@ abstract class TypificationTestCase : MoveTestBase() {
 //        val expectedTypes = data.split("|").map(String::trim)
         val expectedType = data.trim()
 
-        val type = expr.resolvedType(emptyMap()).shortPresentableText(null)
+        val type = expr.resolvedType(emptyMap()).shortPresentableText(true)
         check(type == expectedType) {
             "Type mismatch. Expected $expectedType, found: $type"
         }
