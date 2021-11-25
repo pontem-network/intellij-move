@@ -4,7 +4,6 @@ import com.intellij.lang.ASTNode
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MoveConstDef
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
-import org.move.lang.core.types.BaseType
 import org.move.lang.core.types.TypeVarsMap
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown

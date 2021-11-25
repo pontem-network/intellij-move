@@ -1,14 +1,14 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import org.move.lang.core.psi.*
-import org.move.lang.core.types.BaseType
-import org.move.lang.core.types.StructType
+import org.move.lang.core.psi.MoveElementImpl
+import org.move.lang.core.psi.MoveStructLiteralExpr
+import org.move.lang.core.psi.MoveStructLiteralField
+import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.TypeVarsMap
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
-import java.sql.Struct
 
 val MoveStructLiteralExpr.providedFields: List<MoveStructLiteralField>
     get() =

@@ -1,8 +1,7 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.lang.ASTNode
-import org.move.lang.core.psi.*
-import org.move.lang.core.types.BaseType
+import org.move.lang.core.psi.MoveStructPat
+import org.move.lang.core.psi.MoveStructPatField
 
 val MoveStructPat.providedFields: List<MoveStructPatField>
     get() =

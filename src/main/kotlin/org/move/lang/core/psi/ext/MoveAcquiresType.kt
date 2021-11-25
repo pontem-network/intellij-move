@@ -1,12 +1,13 @@
 package org.move.lang.core.psi.ext
 
+import org.move.ide.presentation.name
 import org.move.lang.core.psi.MoveAcquiresType
-import org.move.lang.core.types.StructType
+import org.move.lang.core.types.ty.TyStruct
 
 val MoveAcquiresType.typeNames: List<String>?
     get() {
         return pathTypeList
             .map { it.resolvedType(emptyMap()) ?: return null }
-            .map { (it as? StructType) ?: return null }
+            .map { (it as? TyStruct) ?: return null }
             .map { it.name() }
     }

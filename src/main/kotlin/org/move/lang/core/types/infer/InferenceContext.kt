@@ -45,10 +45,6 @@ fun inferLiteralExprTy(literalExpr: MoveLiteralExpr): Ty {
     }
 }
 
-val Ty.isUnknown get() = this is TyUnknown
-
-val Ty.isNotUnknown get() = this !is TyUnknown
-
 fun isCompatible(ty1: Ty, ty2: Ty): Boolean {
     if (ty1 is TyUnknown || ty2 is TyUnknown) return true
     return true

@@ -3,8 +3,6 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.MoveElementImpl
 import org.move.lang.core.psi.MoveRefType
-import org.move.lang.core.types.BaseType
-import org.move.lang.core.types.RefType
 import org.move.lang.core.types.TypeVarsMap
 import org.move.lang.core.types.infer.inferMoveTypeTy
 import org.move.lang.core.types.ty.Ty

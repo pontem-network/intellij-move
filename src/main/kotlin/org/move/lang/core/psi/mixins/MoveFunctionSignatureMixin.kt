@@ -12,8 +12,6 @@ import org.move.lang.core.psi.MoveFunctionSignature
 import org.move.lang.core.psi.MoveNativeFunctionDef
 import org.move.lang.core.psi.ext.parametersText
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
-import org.move.lang.core.types.BaseType
-import org.move.lang.core.types.VoidType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
 import org.move.lang.core.types.ty.TyUnknown

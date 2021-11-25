@@ -6,7 +6,6 @@ import org.move.lang.core.psi.MoveCodeBlock
 import org.move.lang.core.psi.MoveElementImpl
 import org.move.lang.core.psi.MoveExpr
 import org.move.lang.core.psi.MoveFunctionDef
-import org.move.lang.core.types.BaseType
 import org.move.lang.core.types.TypeVarsMap
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty

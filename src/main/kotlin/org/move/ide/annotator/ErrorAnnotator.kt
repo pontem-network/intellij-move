@@ -211,7 +211,7 @@ class ErrorAnnotator : MoveAnnotator() {
         checkDuplicates(holder, structField)
 
         val signature = structField.structDef?.structSignature ?: return
-        val structType = StructType(signature)
+        val structType = TyStruct(signature)
         val structAbilities = structType.abilities()
         if (structAbilities.isEmpty()) return
 

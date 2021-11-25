@@ -1,14 +1,11 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import org.move.ide.annotator.INTEGER_TYPE_IDENTIFIERS
-import org.move.lang.core.psi.*
-import org.move.lang.core.types.*
+import org.move.lang.core.psi.MoveElementImpl
+import org.move.lang.core.psi.MovePathType
+import org.move.lang.core.types.TypeVarsMap
 import org.move.lang.core.types.infer.inferMoveTypeTy
-import org.move.lang.core.types.infer.instantiateItemTy
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyInteger
-import org.move.lang.core.types.ty.TyUnknown
 
 abstract class MovePathTypeMixin(node: ASTNode) : MoveElementImpl(node), MovePathType {
     override fun resolvedType(typeVars: TypeVarsMap): Ty {
