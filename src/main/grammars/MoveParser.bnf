@@ -506,7 +506,7 @@ ItemImport ::= IDENTIFIER ImportAlias?
     name = "item name"
     implements = [
         "org.move.lang.core.psi.MoveNamedElement"
-        "org.move.lang.core.psi.MoveReferenceElement"
+        "org.move.lang.core.psi.MoveMandatoryReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveItemImportMixin"
 }
@@ -564,8 +564,10 @@ private TypeParameter_recover ::= !('>' | '(' | '{' | IDENTIFIER)
 
 TypeParameter ::= phantom? IDENTIFIER TypeParamBound? {
     pin = 2
-    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
-                   "org.move.lang.core.types.HasType" ]
+    implements = [
+        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.types.HasType"
+    ]
     mixin = "org.move.lang.core.psi.mixins.MoveTypeParameterMixin"
 }
 TypeParamBound ::= ':' TypeParamBound_items
@@ -598,8 +600,10 @@ BorrowPat ::= '&' Pat
 DotPat ::= IDENTIFIER '.' IDENTIFIER { pin = 2 }
 
 BindingPat ::= IDENTIFIER {
-    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
-                   "org.move.lang.core.types.HasType" ]
+    implements = [
+    "org.move.lang.core.psi.MoveNameIdentifierOwner"
+                   "org.move.lang.core.types.HasType"
+                   ]
     mixin = "org.move.lang.core.psi.ext.MoveBindingPatMixin"
 }
 
@@ -960,7 +964,7 @@ RefExpr ::= Path
 // TODO: add NamedAddress parsing with Move.toml info and switch FQModulePathIdent and ModulePathIdent
 Path ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList?
 {
-    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+    implements = ["org.move.lang.core.psi.MovePathReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MovePathMixin"
 }
 

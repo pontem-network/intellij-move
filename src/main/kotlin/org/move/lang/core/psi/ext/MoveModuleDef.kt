@@ -25,7 +25,7 @@ fun MoveModuleDef.fqModule(): FQModule? {
 }
 
 val MoveModuleDef.fqName: String? get() {
-    val address = this.addressRef?.text?.let { "$it::" } ?: ""
+    val address = this.definedAddressRef()?.text?.let { "$it::" } ?: ""
     val module = this.name ?: return null
     return address + module
 }

@@ -7,7 +7,7 @@ import org.move.lang.core.types.infer.DAGValue
 
 sealed class TyInfer : Ty {
     class TyVar(
-        val origin: TyTypeParameter,
+        val origin: TyTypeParameter? = null,
         override var next: DAGNodeOrValue = DAGValue(null)
     ) : TyInfer(), DAGNode
 

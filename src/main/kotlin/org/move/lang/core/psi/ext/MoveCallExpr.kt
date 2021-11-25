@@ -5,6 +5,10 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.types.BaseType
 import org.move.lang.core.types.TypeVarsMap
 import org.move.lang.core.types.VoidType
+import org.move.lang.core.types.infer.ConstraintSolver
+import org.move.lang.core.types.infer.UnificationTable
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyInfer
 
 val MoveCallExpr.typeArguments: List<MoveTypeArgument>
     get() {
@@ -39,6 +43,7 @@ abstract class MoveCallExprMixin(node: ASTNode) : MoveElementImpl(node), MoveCal
         if (returnTypeElement == null) {
             return VoidType()
         }
+
         return returnTypeElement.type?.resolvedType(this.typeVars)
     }
 }

@@ -65,17 +65,4 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
         }
     }    
     """)
-
-    fun `test return type of generic function parametrized by the vector of types`() = testExpr("""
-    module M {
-        native public fun borrow<Element>(v: &vector<Element>, i: u64): &Element;
-        
-        fun m() {
-            let a: vector<u8>;
-            let b = borrow(&a, 0);
-            b;
-          //^ &u8 
-        }
-    }    
-    """)
 }

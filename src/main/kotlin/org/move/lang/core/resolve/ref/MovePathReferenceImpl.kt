@@ -8,6 +8,7 @@ import org.move.lang.core.psi.ext.structSignatures
 import org.move.lang.core.resolve.MatchingProcessor
 import org.move.lang.core.resolve.resolveIntoFQModuleRef
 import org.move.lang.core.resolve.resolveItem
+import org.move.lang.core.types.BoundElement
 
 fun processModuleItems(
     module: MoveModuleDef,
@@ -54,7 +55,7 @@ fun resolveModuleItem(
 class MovePathReferenceImpl(
     element: MovePath,
     private val namespace: Namespace,
-) : MoveReferenceBase<MovePath>(element) {
+) : MoveReferenceBase<MovePath>(element), MovePathReference {
 
     override fun resolve(): MoveNamedElement? {
         val vs = Visibility.buildSetOfVisibilities(element)
@@ -90,5 +91,9 @@ class MovePathReferenceImpl(
             val module = fqModuleRef.reference?.resolve() ?: return null
             return resolveModuleItem(module, refName, vs, ns)
         }
+    }
+
+    override fun advancedResolve(): BoundElement<MoveNamedElement>? {
+        return resolve()?.let { BoundElement(it) }
     }
 }

@@ -50,6 +50,8 @@ class UnificationTable<K : DAGNode, V> {
 //        } ?: Root(key as K)
     }
 
+    fun findRoot(key: K): K = getRoot(key).key
+
     fun findValue(key: K): V? = getRoot(key).value
 
     fun unifyVarVar(key1: K, key2: K): K {

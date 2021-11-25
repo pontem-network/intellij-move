@@ -28,7 +28,7 @@ class RemoveCurlyBracesIntention: MoveElementBaseIntentionAction<RemoveCurlyBrac
         val multiItemImport =
             importStatement.moduleItemsImport?.multiItemImport ?: return null
         val itemImport = multiItemImport.itemImportList.singleOrNull() ?: return null
-        val refName = itemImport.referenceName ?: return null
+        val refName = itemImport.referenceName
         val aliasName = itemImport.importAlias?.name
         return Context(multiItemImport, itemImport, refName, aliasName)
     }

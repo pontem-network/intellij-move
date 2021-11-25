@@ -68,20 +68,7 @@ class ObligationForest {
     }
 }
 
-//class ConstraintsQueue {
-//    private val constraints = mutableListOf<Constraint>()
-//
-//    fun addConstraint(constraint: Constraint) {
-//
-//    }
-//
-//    fun popConstraint(constraint: Constraint) {
-//
-//    }
-//}
-
-class ConstraintSolver(val fctx: FunctionInferenceContext) {
-//    private val obligations = ObligationForest()
+class ConstraintSolver(val unificationTable: UnificationTable<TyInfer.TyVar, Ty>) {
     private val constraints = mutableListOf<Constraint>()
 
     fun registerConstraint(constraint: Constraint) {
@@ -103,13 +90,13 @@ class ConstraintSolver(val fctx: FunctionInferenceContext) {
                 val ty2 = constraint.ty2
                 when {
                     ty1 is TyInfer.TyVar && ty2 is TyInfer.TyVar -> {
-                        fctx.varUnificationTable.unifyVarVar(ty1, ty2)
+                        unificationTable.unifyVarVar(ty1, ty2)
                     }
                     ty1 is TyInfer.TyVar && ty2 !is TyInfer.TyVar -> {
-                        fctx.varUnificationTable.unifyVarValue(ty1, ty2)
+                        unificationTable.unifyVarValue(ty1, ty2)
                     }
                     ty2 is TyInfer.TyVar && ty1 !is TyInfer.TyVar -> {
-                        fctx.varUnificationTable.unifyVarValue(ty2, ty1)
+                        unificationTable.unifyVarValue(ty2, ty1)
                     }
                     else -> {
                         when {

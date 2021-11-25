@@ -125,7 +125,7 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitStructPat(o: MoveStructPat) {
                 val nameElement = o.path.referenceNameElement ?: return
                 val refStruct = o.path.maybeStruct ?: return
-                val fieldNames = o.providedFields.mapNotNull { it.referenceName }
+                val fieldNames = o.providedFields.map { it.referenceName }
                 checkMissingFields(
                     moveHolder, nameElement, fieldNames.toSet(), refStruct
                 )
@@ -143,7 +143,7 @@ class ErrorAnnotator : MoveAnnotator() {
                     val assignmentType = assignmentExpr.resolvedType(emptyMap())
                     if (assignmentType == null) continue
 
-                    val fieldName = field.referenceName ?: continue
+                    val fieldName = field.referenceName
                     val fieldDef = refStruct.getField(fieldName) ?: continue
                     val expectedFieldType = fieldDef.resolvedType(emptyMap())
                     if (expectedFieldType is TypeParamType) {
@@ -365,7 +365,8 @@ private fun checkPath(holder: MoveAnnotationHolder, path: MovePath) {
 
 private fun checkHasRequiredAbilities(
     holder: MoveAnnotationHolder,
-    element: HasType, typeParamType: TypeParamType
+    element: HasType,
+    typeParamType: TypeParamType
 ) {
     val elementType = element.resolvedType(emptyMap()) ?: return
     // do not check for specs

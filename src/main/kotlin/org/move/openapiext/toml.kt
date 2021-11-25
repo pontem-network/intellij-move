@@ -1,5 +1,7 @@
 package org.move.openapiext
 
+import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
@@ -14,6 +16,7 @@ fun parseToml(project: Project, path: Path): TomlFile? {
 
 fun parseTomlFromFile(project: Project, moveFile: VirtualFile): TomlFile? {
     return moveFile.toPsiFile(project) as? TomlFile
+//    return moveFile.toPsiFile(project) as? TomlFile
 }
 
 fun TomlTable.namedEntries(): List<Pair<String, TomlValue?>> {

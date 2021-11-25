@@ -62,7 +62,7 @@ open class PrimitiveType(private val name: String) : BaseType() {
 //            && other.innerReferredType() is PrimitiveType
 //            && (other.innerReferredType() as PrimitiveType).isCopyable()
 //        ) return true
-
+        if (actualType is TypeParamType) return true
         return actualType is PrimitiveType && this.name == actualType.name()
     }
 }

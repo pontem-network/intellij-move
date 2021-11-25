@@ -64,7 +64,7 @@ object NamesCompletionProvider : MoveCompletionProvider() {
 
     private fun namespaceOf(refElement: MoveReferenceElement) =
         when (refElement) {
-            is MoveSchemaReferenceElement -> Namespace.SCHEMA
+//            is MoveSchemaReferenceElement -> Namespace.SCHEMA
             else -> Namespace.NAME
         }
 }

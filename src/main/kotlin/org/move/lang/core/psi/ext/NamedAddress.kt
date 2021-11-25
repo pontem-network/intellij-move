@@ -41,6 +41,5 @@ abstract class MoveNamedAddressMixin(node: ASTNode) : MoveElementImpl(node),
         return ReferenceProvidersRegistry.getReferencesFromProviders(this)
     }
 
-    override fun getReference(): NamedAddressReference? =
-        references.lastOrNull() as? NamedAddressReference
+    override fun getReference(): NamedAddressReference = references.last() as NamedAddressReference
 }

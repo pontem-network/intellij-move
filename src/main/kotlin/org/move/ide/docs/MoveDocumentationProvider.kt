@@ -5,14 +5,10 @@ import com.intellij.lang.documentation.DocumentationMarkup
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.parentOfType
-import org.move.ide.presentation.shortPresentableText
-import org.move.lang.MoveFile
 import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MoveDocAndAttributeOwner
-import org.move.lang.core.types.infer.inferMoveTypeTy
-import org.move.lang.core.types.infer.inference
+import org.move.lang.core.types.HasType
 import org.move.stdext.joinToWithBuffer
 
 class MoveDocumentationProvider : AbstractDocumentationProvider() {
@@ -27,9 +23,7 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
     }
 
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
-        val file = originalElement?.containingFile as? MoveFile
         val buffer = StringBuilder()
-
         var docElement = element
         if (docElement is MoveFunctionSignature) docElement = docElement.parent
         when (docElement) {
@@ -41,33 +35,11 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
                 return moveProject.getAddresses()[refName]
             }
             is MoveDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
-            is MoveBindingPat -> {
-                val name = docElement.name ?: return null
-                val inference = docElement.inference ?: return null
-                return inference.bindings[name]?.shortPresentableText(file)
-//                val function = docElement.ancestorStrict<MoveFunctionDef>() ?: return null
-//                val inference = infer(function)
-//                return inference.bindings[name]?.shortPresentableText
-            }
-//            is MoveExpr -> {
-//                val function = docElement.ancestorStrict<MoveFunctionDef>() ?: return null
-
-//                val exprType = inferenceRes.exprTypes[docElement] ?: return null
-//                return exprType.shortPresentableText
-//            }
             else -> {
-                val originalElementExpr = originalElement?.parentOfType<MoveExpr>()
-                if (originalElementExpr != null) {
-                    val inference = originalElementExpr.inference ?: return null
-                    return inference.exprTypes[originalElementExpr]?.shortPresentableText(file)
-                }
-                return null
+                if (docElement !is HasType) return null
+                val type = docElement.resolvedType(emptyMap()) ?: return null
+                buffer += type.typeLabel(docElement)
             }
-//            else -> {
-//                if (docElement !is HasType) return null
-//                val type = docElement.resolvedType(emptyMap()) ?: return null
-//                buffer += type.typeLabel(docElement)
-//            }
         }
         return if (buffer.isEmpty()) null else buffer.toString()
     }
@@ -117,16 +89,11 @@ fun MoveElement.signature(builder: StringBuilder) {
     rawLines.joinTo(builder, "<br>")
 }
 
-private fun PsiElement.generateDocumentation(
-    buffer: StringBuilder,
-    prefix: String = "",
-    suffix: String = ""
-) {
+private fun PsiElement.generateDocumentation(buffer: StringBuilder, prefix: String = "", suffix: String = "") {
     buffer += prefix
     when (this) {
         is MoveType -> {
-            buffer += inferMoveTypeTy(this).shortPresentableText(null)
-//            buffer += this.resolvedType(emptyMap())?.typeLabel(this) ?: "<unknown>"
+            buffer += this.resolvedType(emptyMap())?.typeLabel(this) ?: "<unknown>"
         }
         is MoveFunctionParameterList ->
             this.functionParameterList

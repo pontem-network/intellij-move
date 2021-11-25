@@ -57,9 +57,8 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
             override fun visitStructPatField(o: MoveStructPatField) {
                 val resolvedStructDef = o.structPat.path.maybeStruct ?: return
                 if (!resolvedStructDef.fieldNames.any { it == o.referenceName }) {
-                    val highlightedElement = o.referenceNameElement ?: return
                     holder.registerProblem(
-                        highlightedElement,
+                        o.referenceNameElement,
                         "Unresolved field: `${o.referenceName}`",
                         ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
                     )
@@ -68,14 +67,13 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
 
             override fun visitStructLiteralField(o: MoveStructLiteralField) {
                 if (o.isUnresolved) {
-                    val highlightedElement = o.referenceNameElement ?: return
                     val errorMessage =
                         if (o.isShorthand)
                             "Unresolved reference: `${o.referenceName}`"
                         else
                             "Unresolved field: `${o.referenceName}`"
                     holder.registerProblem(
-                        highlightedElement,
+                        o.referenceNameElement,
                         errorMessage,
                         ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
                     )

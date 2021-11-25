@@ -4,34 +4,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
 import org.move.lang.core.psi.*
 import org.move.lang.core.types.ty.*
-
-
-//fun FunctionInferenceContext.inferLiteralExprTy(literalExpr: MoveLiteralExpr): Ty {
-//    return when {
-//        literalExpr.boolLiteral != null -> TyBool
-//        literalExpr.addressLiteral != null
-//                || literalExpr.bech32AddressLiteral != null
-//                || literalExpr.polkadotAddressLiteral != null -> TyAddress
-//        literalExpr.integerLiteral != null || literalExpr.hexIntegerLiteral != null -> {
-//            val literal = (literalExpr.integerLiteral ?: literalExpr.hexIntegerLiteral)!!
-//            return TyInteger.fromSuffixedLiteral(literal) ?: TyInteger(TyInteger.DEFAULT_KIND)
-//        }
-//        literalExpr.byteStringLiteral != null -> TyByteString
-//        else -> TyUnknown
-//    }
-//}
-
-//fun FunctionInferenceContext.inferCastExprTy(castExpr: MoveCastExpr): Ty {
-//    return inferMoveTypeTy(castExpr.type)
-//}
-//
-//fun FunctionInferenceContext.inferExprType(expr: MoveExpr): Ty {
-//    return when (expr) {
-//        is MoveLiteralExpr -> this.inferLiteralExprTy(expr)
-//        is MoveCastExpr -> this.inferCastExprTy(expr)
-//        else -> TyUnknown
-//    }
-//}
+import org.move.lang.utils.MoveDiagnostic
 
 fun infer(fn: MoveFunctionDef): InferenceResult {
     val fctx = FunctionInferenceContext()
@@ -44,40 +17,61 @@ fun infer(fn: MoveFunctionDef): InferenceResult {
     }
     val codeBlock = fn.codeBlock
     if (codeBlock != null) {
-        for (stmt in codeBlock.statementList) {
-            fctx.extractBindingsFromStatement(stmt)
-        }
+        fctx.inferExprsAndCollectBindings(codeBlock)
+
         fctx.exprTypes.replaceAll { _, ty -> fctx.deepResolveTyInferFromContext(ty) }
         fctx.bindings.replaceAll { _, ty -> fctx.deepResolveTyInferFromContext(ty) }
     }
-    return InferenceResult(fctx.bindings, fctx.exprTypes, emptyList())
+//    fctx.diagnostics.replaceAll { _, diag -> fctx.deepResolveTyInferFromContext(diag) }
+    return InferenceResult(fctx.bindings, fctx.exprTypes, fctx.diagnostics)
 }
 
 class FunctionInferenceContext {
     val bindings: MutableMap<String, Ty> = HashMap()
     val exprTypes: MutableMap<MoveExpr, Ty> = HashMap()
-
-    val constraintSolver = ConstraintSolver(this)
+    val diagnostics: MutableList<MoveDiagnostic> = mutableListOf()
 
     val varUnificationTable = UnificationTable<TyInfer.TyVar, Ty>()
 
-    fun extractBindingsFromStatement(stmt: MoveStatement) {
-        val fctx = TypeInferenceWalker(this)
-        when (stmt) {
-            is MoveLetStatement -> {
-                val explicitTy = stmt.typeAnnotation?.type?.let { inferMoveTypeTy(it) }
-                val inferredExprTy = stmt.initializer?.expr?.let { fctx.inferExprTy(it) }
-                // TODO: check inferred type is coercable (assignable) to explicitly passed type
-                val pat = stmt.pat
-                if (pat != null) {
-                    bindings += collectBindings(
-                        pat,
-                        explicitTy ?: inferredExprTy ?: TyUnknown
-                    )
+    val constraintSolver = ConstraintSolver(this.varUnificationTable)
+
+    fun inferExprsAndCollectBindings(codeBlock: MoveCodeBlock) {
+        val walker = TypeInferenceWalker(this)
+        for (stmt in codeBlock.statementList) {
+            when (stmt) {
+                is MoveLetStatement -> {
+                    val explicitTy = stmt.typeAnnotation?.type?.let { inferMoveTypeTy(it) }
+                    val expr = stmt.initializer?.expr
+
+                    val coercedInferredTy =
+                        if (expr != null) {
+                            val inferredTy = walker.inferExprTy(expr)
+                            val coercedTy =
+                                when {
+                                    explicitTy != null
+                                            && walker.isCoerceableTypes(expr, inferredTy, explicitTy) -> explicitTy
+                                    else -> inferredTy
+                                }
+                            coercedTy
+                        } else {
+                            TyInfer.TyVar()
+                        }
+
+//                    val inferredExprTy = stmt.initializer?.expr?.let { walker.inferExprTy(it) }
+
+                    // TODO: check inferred type is coercable (assignable) to explicitly passed type
+                    val pat = stmt.pat
+                    if (pat != null) {
+                        bindings += collectBindings(
+                            pat,
+                            explicitTy ?: coercedInferredTy ?: TyUnknown
+                        )
+                    }
                 }
+                is MoveExprStatement -> walker.inferExprTy(stmt.expr)
             }
-            is MoveExprStatement -> fctx.inferExprTy(stmt.expr)
         }
+        codeBlock.expr?.let { walker.inferExprTy(it) }
     }
 
     fun resolveTyInferFromContext(ty: Ty): Ty {
@@ -86,6 +80,41 @@ class FunctionInferenceContext {
 //            is TyInfer.IntVar -> intUnificationTable.findValue(ty)?.let(::TyInteger) ?: ty
             is TyInfer.TyVar -> varUnificationTable.findValue(ty)?.let(this::resolveTyInferFromContext)
                 ?: ty
+        }
+    }
+
+    fun tryCoerceTypes(ty1: Ty, ty2: Ty): CoerceResult {
+        val resolvedTy1 = resolveTyInferFromContext(ty1)
+        val resolvedTy2 = resolveTyInferFromContext(ty2)
+        return tryCoerceTypesResolved(resolvedTy1, resolvedTy2)
+    }
+
+    fun tryCoerceTypesResolved(ty1: Ty, ty2: Ty): CoerceResult {
+        return when {
+            ty1 is TyInfer.TyVar -> unifyTyVarCoerceOk(ty1, ty2)
+            ty2 is TyInfer.TyVar -> unifyTyVarCoerceOk(ty2, ty1)
+            else -> tryCoerceNoVars(ty1, ty2)
+        }
+    }
+
+    private fun unifyTyVarCoerceOk(ty1: TyInfer.TyVar, ty2: Ty): CoerceResult {
+        when (ty2) {
+            is TyInfer.TyVar -> varUnificationTable.unifyVarVar(ty1, ty2)
+            else -> {
+                val ty1r = varUnificationTable.findRoot(ty1)
+                // TODO: add isTy2ContainsTy1 check
+                varUnificationTable.unifyVarValue(ty1r, ty2)
+            }
+        }
+        return CoerceResult.Ok
+    }
+
+    fun tryCoerceNoVars(ty1: Ty, ty2: Ty): CoerceResult {
+        return when {
+            ty1 === ty2 -> CoerceResult.Ok
+            ty1 is TyPrimitive && ty2 is TyPrimitive && ty1 == ty2 -> CoerceResult.Ok
+            ty1 is TyTypeParameter && ty2 is TyTypeParameter && ty1 == ty2 -> CoerceResult.Ok
+            else -> CoerceResult.Mismatch(ty1, ty2)
         }
     }
 
@@ -124,16 +153,16 @@ class FunctionInferenceContext {
 class InferenceResult(
     val bindings: Map<String, Ty>,
     val exprTypes: Map<MoveExpr, Ty>,
-    val diagnostics: List<String>
+    val diagnostics: List<MoveDiagnostic>
 )
 
 val PsiElement.inference: InferenceResult?
-    get() = parentOfType<MoveFunctionDef>()?.let { infer(it) }
+    get() = parentOfType<MoveFunctionDef>(true)?.let { infer(it) }
 
 
 sealed class CoerceResult {
-    object Ok: CoerceResult()
-    class Mismatch(val ty1: Ty, ty2: Ty): CoerceResult()
+    object Ok : CoerceResult()
+    class Mismatch(val ty1: Ty, ty2: Ty) : CoerceResult()
 
     val isOk: Boolean get() = this is Ok
 }

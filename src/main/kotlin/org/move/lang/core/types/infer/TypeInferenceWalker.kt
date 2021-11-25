@@ -2,8 +2,8 @@ package org.move.lang.core.types.infer
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.RefType
 import org.move.lang.core.types.ty.*
+import org.move.lang.utils.MoveDiagnostic
 
 class TypeInferenceWalker(
     val ctx: FunctionInferenceContext
@@ -37,7 +37,7 @@ class TypeInferenceWalker(
                 return TyUnknown
             }
         }
-        val fieldName = dotExpr.structFieldRef.referenceName ?: return TyUnknown
+        val fieldName = dotExpr.structFieldRef.referenceName
         val fieldTy = structTy.item.structDef
             ?.fieldsMap?.get(fieldName)
             ?.typeAnnotation
@@ -88,7 +88,16 @@ class TypeInferenceWalker(
         return TyReference(innerTy, Mutability.valueOf(borrowExpr.isMut))
     }
 
-    fun inferExprTy(expr: MoveExpr): Ty {
+    fun inferIfExprTy(ifExpr: MoveIfExpr): Ty {
+        ifExpr.condition?.expr?.let { inferExprTy(it, TyBool) }
+        return TyUnknown
+    }
+
+    fun inferStructLiteralExprTy(structLiteralExpr: MoveStructLiteralExpr): Ty {
+        return TyUnknown
+    }
+
+    fun inferExprTy(expr: MoveExpr, expected: Ty? = null): Ty {
         if (ctx.exprTypes.containsKey(expr)) {
             // TODO: add this
             // error("Trying to infer expression type twice")
@@ -97,11 +106,14 @@ class TypeInferenceWalker(
 
         val exprTy = when (expr) {
             is MoveRefExpr -> this.inferRefExprTy(expr)
+            is MoveStructLiteralExpr -> this.inferStructLiteralExprTy(expr)
             is MoveCallExpr -> this.inferCallExprTy(expr)
             is MoveLiteralExpr -> this.inferLiteralExprTy(expr)
             is MoveCastExpr -> this.inferCastExprTy(expr)
             is MoveDotExpr -> this.inferDotExprTy(expr)
             is MoveBorrowExpr -> this.inferBorrowExprTy(expr)
+            is MoveIfExpr -> this.inferIfExprTy(expr)
+            is MoveParensExpr -> expr.expr?.let { this.inferExprTy(it) } ?: TyUnknown
             else -> TyUnknown
         }
         this.ctx.exprTypes[expr] = exprTy
@@ -115,7 +127,7 @@ class TypeInferenceWalker(
                 val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
 
                 fun findTypeVar(parameter: MoveTypeParameter): Ty {
-                    return typeVars.find { it.origin.parameter == parameter }!!
+                    return typeVars.find { it.origin?.parameter == parameter }!!
                 }
 
                 val paramTypes = mutableListOf<Ty>()
@@ -134,16 +146,42 @@ class TypeInferenceWalker(
         }
     }
 
-    private fun coerceResolved(inferred: Ty, expected: Ty): Boolean {
-        when (val result = tryCoerce(inferred, expected)) {
-            CoerceResult.Ok -> return true
+    fun isCoerceableTypes(element: MoveElement, inferred: Ty, expected: Ty): Boolean {
+        val coerceResult = tryCoerce(inferred, expected)
+        return when (coerceResult) {
+            CoerceResult.Ok -> true
             is CoerceResult.Mismatch -> {
                 // TODO: ignore unsupported types
-                // TODO: add diagnostics from type mismatches
-                return false
+                reportTypeMismatch(element, inferred, expected)
+                false
             }
         }
+//        return isCoerceableResolved(element, inferred, expected)
     }
+
+    // Another awful hack: check that inner expressions did not annotated as an error
+    // to disallow annotation intersections. This should be done in a different way
+    private fun reportTypeMismatch(element: MoveElement, expected: Ty, inferred: Ty) {
+        if (ctx.diagnostics.all { !element.isAncestorOf(it.element) }) {
+            addDiagnostic(MoveDiagnostic.TypeError(element, expected, inferred))
+        }
+    }
+
+    fun addDiagnostic(diagnostic: MoveDiagnostic) {
+        if (diagnostic.element.containingFile.isPhysical) {
+            ctx.diagnostics.add(diagnostic)
+        }
+    }
+
+    private fun isCoerceableResolved(element: MoveElement, inferred: Ty, expected: Ty): Boolean =
+        when (val result = tryCoerce(inferred, expected)) {
+            CoerceResult.Ok -> true
+            is CoerceResult.Mismatch -> {
+                // TODO: ignore unsupported types
+                reportTypeMismatch(element, inferred, expected)
+                false
+            }
+        }
 
     private fun tryCoerce(inferred: Ty, expected: Ty): CoerceResult {
         return when {
@@ -151,7 +189,7 @@ class TypeInferenceWalker(
                     coerceMutability(inferred.mutability, expected.mutability) -> {
                 coerceReference(inferred, expected)
             }
-            else -> CoerceResult.Ok
+            else -> ctx.tryCoerceTypes(inferred, expected)
         }
     }
 

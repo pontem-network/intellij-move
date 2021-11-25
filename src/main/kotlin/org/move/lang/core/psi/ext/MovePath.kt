@@ -5,8 +5,8 @@ import com.intellij.psi.PsiElement
 import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
 import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
 import org.move.lang.core.psi.*
+import org.move.lang.core.resolve.ref.MovePathReference
 import org.move.lang.core.resolve.ref.MovePathReferenceImpl
-import org.move.lang.core.resolve.ref.MoveReference
 import org.move.lang.core.resolve.ref.Namespace
 
 //val MoveQualPath.address: Address? get() = (moduleRef as? MoveFQModuleRef)?.addressRef?.address()
@@ -41,7 +41,7 @@ abstract class MovePathMixin(node: ASTNode) : MoveElementImpl(node), MovePath {
 
     override val identifier: PsiElement? get() = this.pathIdent.identifier
 
-    override fun getReference(): MoveReference? {
+    override fun getReference(): MovePathReference? {
         if (this.parent is MovePathType) return MovePathReferenceImpl(this, Namespace.TYPE)
         return MovePathReferenceImpl(this, Namespace.NAME)
     }

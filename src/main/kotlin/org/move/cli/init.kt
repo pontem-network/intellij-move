@@ -1,8 +1,8 @@
 package org.move.cli
 
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
 import org.move.openapiext.parseTomlFromFile
 import org.move.stdext.deepIterateChildrenRecursivery
@@ -47,13 +47,20 @@ fun findMoveTomlFiles(project: Project): Sequence<VirtualFile> {
 }
 
 fun initializeMoveProject(project: Project, fsMoveTomlFile: VirtualFile): MoveProject? {
-    val tomlFile = parseTomlFromFile(project, fsMoveTomlFile) ?: return null
-    val projectRoot = fsMoveTomlFile.parent!!
-    val moveToml =
-        MoveToml.fromTomlFile(tomlFile, projectRoot.toNioPath())
+    return runReadAction {
+        val tomlFile = parseTomlFromFile(project, fsMoveTomlFile) ?: return@runReadAction null
+        val projectRoot = fsMoveTomlFile.parent!!
+        val moveToml = MoveToml.fromTomlFile(tomlFile, projectRoot.toNioPath())
+        val dependencyAddresses = parseDependencyAddresses(moveToml)
+        MoveProject(project, moveToml, projectRoot, dependencyAddresses)
+    }
+//    val (moveToml, projectRoot) = runReadAction {
+//        val tomlFile = parseTomlFromFile(project, fsMoveTomlFile) ?: return@runReadAction null
+//        val projectRoot = fsMoveTomlFile.parent!!
+//        val moveToml = MoveToml.fromTomlFile(tomlFile, projectRoot.toNioPath())
+//        Pair(moveToml, projectRoot)
+//    } ?: return null
 
-    val dependencyAddresses = parseDependencyAddresses(moveToml)
-    return MoveProject(project, moveToml, projectRoot, dependencyAddresses)
 }
 
 private fun parseDependencyAddresses(moveToml: MoveToml): DependencyAddresses {
