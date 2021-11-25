@@ -79,9 +79,8 @@ class UnificationTable<K : DAGNode, V> {
 
     fun unifyVarValue(key: K, value: V) {
         val root = getRoot(key)
-        if (root.value != null
-            && root.value != value
-        ) error("unification error") // must be solved on the upper level
+        if (root.value != null && root.value != value)
+            error("unification error") // must be solved on the upper level
 
         root.key.next = DAGValue<V>(value)
     }

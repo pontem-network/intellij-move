@@ -4,7 +4,7 @@ import org.move.ide.presentation.tyToString
 import org.move.lang.core.psi.MoveTypeParameter
 import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.psi.ext.ability
-import org.move.lang.core.types.Ability
+
 
 class TyTypeParameter(val parameter: MoveTypeParameter): Ty {
 

@@ -242,7 +242,7 @@ ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
     pin = 1
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.types.HasType"
+        "org.move.lang.core.types.ty.HasType"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveConstDefMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
@@ -382,7 +382,7 @@ FunctionParameter ::= IDENTIFIER TypeAnnotation
     pin = 1
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.types.HasType"
+        "org.move.lang.core.types.ty.HasType"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionParameterMixin"
 }
@@ -443,7 +443,7 @@ StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
     pin = 1
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.types.HasType"
+        "org.move.lang.core.types.ty.HasType"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveStructFieldDefMixin"
 }
@@ -525,7 +525,7 @@ TypeAnnotation ::= ':' Type { pin = 1 }
 
 Type ::= RefType | PathType | TupleType | LambdaType
 {
-    implements = ["org.move.lang.core.types.HasType"]
+    implements = ["org.move.lang.core.types.ty.HasType"]
     mixin = "org.move.lang.core.psi.ext.MoveTypeMixin"
 }
 
@@ -567,7 +567,7 @@ TypeParameter ::= phantom? IDENTIFIER TypeParamBound? {
     pin = 2
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.types.HasType"
+        "org.move.lang.core.types.ty.HasType"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveTypeParameterMixin"
 }
@@ -603,7 +603,7 @@ DotPat ::= IDENTIFIER '.' IDENTIFIER { pin = 2 }
 BindingPat ::= IDENTIFIER {
     implements = [
     "org.move.lang.core.psi.MoveNameIdentifierOwner"
-                   "org.move.lang.core.types.HasType"
+                   "org.move.lang.core.types.ty.HasType"
                    ]
     mixin = "org.move.lang.core.psi.ext.MoveBindingPatMixin"
 }
@@ -643,13 +643,13 @@ StructPatFieldBinding ::= ':' Pat { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 Statement ::= LetStatement | ExprStatement
 {
-    implements = ["org.move.lang.core.types.HasType"]
+    implements = ["org.move.lang.core.types.ty.HasType"]
     mixin = "org.move.lang.core.psi.ext.MoveStatementMixin"
 }
 LetStatement ::= let Pat TypeAnnotation? Initializer? ';' {
     pin = 1
 //    implements = [
-//        "org.move.lang.core.types.HasType"
+//        "org.move.lang.core.types.ty.HasType"
 //    ]
 //    mixin = "org.move.lang.core.psi.mixins.MoveLetStatementMixin"
 }
@@ -711,7 +711,7 @@ Expr ::= AssignmentExpr
         | BorrowExpr
         | AtomExpr
 {
-    implements = ["org.move.lang.core.types.HasType"]
+    implements = ["org.move.lang.core.types.ty.HasType"]
     mixin = "org.move.lang.core.psi.ext.MoveExprMixin"
 }
 //private SpecExpr ::= Expr | AggregatePredicate

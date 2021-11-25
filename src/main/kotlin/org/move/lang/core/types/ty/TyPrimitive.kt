@@ -2,31 +2,31 @@ package org.move.lang.core.types.ty
 
 import com.intellij.psi.PsiElement
 import org.move.ide.presentation.tyToString
-import org.move.lang.core.types.Ability
 
-interface TyPrimitive: Ty {
+
+abstract class TyPrimitive(val name: String): Ty {
     override fun abilities() = setOf(Ability.DROP, Ability.COPY, Ability.STORE)
 }
 
-object TyBool: TyPrimitive {
+object TyBool: TyPrimitive("bool") {
     override fun toString(): String = tyToString(this)
 }
 
-object TyAddress: TyPrimitive {
+object TyAddress: TyPrimitive("address") {
     override fun toString(): String = tyToString(this)
 }
 
-object TySigner: TyPrimitive {
+object TySigner: TyPrimitive("signer") {
     override fun abilities() = setOf(Ability.DROP)
     override fun toString(): String = tyToString(this)
 }
 
-object TyUnit: TyPrimitive {
+object TyUnit: TyPrimitive("()") {
     override fun abilities() = Ability.none()
     override fun toString(): String = tyToString(this)
 }
 
-class TyInteger(val kind: Kind): TyPrimitive {
+class TyInteger(val kind: Kind): TyPrimitive(kind.name.lowercase()) {
     override fun abilities() = Ability.all()
 
     companion object {

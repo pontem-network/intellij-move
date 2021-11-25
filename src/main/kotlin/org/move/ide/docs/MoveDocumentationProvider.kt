@@ -9,7 +9,7 @@ import org.move.ide.presentation.typeLabel
 import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MoveDocAndAttributeOwner
-import org.move.lang.core.types.HasType
+import org.move.lang.core.types.ty.HasType
 import org.move.stdext.joinToWithBuffer
 
 class MoveDocumentationProvider : AbstractDocumentationProvider() {

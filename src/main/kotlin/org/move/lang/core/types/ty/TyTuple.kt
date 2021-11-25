@@ -6,7 +6,7 @@
 package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
-import org.move.lang.core.types.Ability
+
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
 

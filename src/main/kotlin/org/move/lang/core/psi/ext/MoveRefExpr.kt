@@ -3,8 +3,7 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.MoveElementImpl
 import org.move.lang.core.psi.MoveRefExpr
-import org.move.lang.core.types.HasType
-import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.ty.HasType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 

@@ -1,7 +1,6 @@
 package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
-import org.move.lang.core.types.Ability
 import org.move.lang.core.types.infer.DAGNode
 import org.move.lang.core.types.infer.DAGNodeOrValue
 import org.move.lang.core.types.infer.DAGValue

@@ -2,7 +2,6 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.*
-import org.move.lang.core.types.TypeVarsMap
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction

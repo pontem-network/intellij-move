@@ -1,11 +1,13 @@
 package org.move.lang.core.types.infer
 
-import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
+import org.move.ide.presentation.fullname
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.fqName
 import org.move.lang.core.psi.ext.hexIntegerLiteral
 import org.move.lang.core.psi.impl.MoveFunctionDefImpl
 import org.move.lang.core.types.ty.*
+import kotlin.math.exp
 
 val MoveExpr.outerFunction
     get() = (parentOfType<MoveFunctionDef>(true) as? MoveFunctionDefImpl)!!
@@ -62,9 +64,55 @@ fun inferLiteralExprTy(literalExpr: MoveLiteralExpr): Ty {
     }
 }
 
-fun isCompatible(ty1: Ty, ty2: Ty): Boolean {
-    if (ty1 is TyUnknown || ty2 is TyUnknown) return true
-    return true
+
+//sealed class TypesCompatibility {
+//    object Ok : TypesCompatibility()
+//    class Mismatch(val ty1: Ty, ty2: Ty) : TypesCompatibility()
+//    class AbilitiesMismatch(val ty1: Ty, ty2: Ty) : TypesCompatibility()
+//
+//    val isOk: Boolean get() = this is Ok
+//}
+
+fun isCompatibleMutability(from: Mutability, to: Mutability): Boolean =
+    from == to || from.isMut && !to.isMut
+
+fun isCompatibleReferences(expectedTy: TyReference, inferredTy: TyReference): Boolean {
+    return isCompatible(expectedTy.referenced, inferredTy.referenced)
+}
+
+fun isCompatibleStructs(expectedTy: TyStruct, inferredTy: TyStruct): Boolean {
+    return expectedTy.item.fqName == inferredTy.item.fqName
+            && expectedTy.typeArguments.size == inferredTy.typeArguments.size
+            && expectedTy.typeArguments.zip(inferredTy.typeArguments)
+        .all { isCompatible(it.first, it.second) }
+}
+
+fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean {
+    return expectedTy.kind == TyInteger.DEFAULT_KIND
+            || inferredTy.kind == TyInteger.DEFAULT_KIND
+            || expectedTy.kind == inferredTy.kind
+}
+
+fun isCompatible(expectedTy: Ty, inferredTy: Ty): Boolean {
+    return when {
+        expectedTy is TyUnknown || inferredTy is TyUnknown -> true
+        expectedTy is TyTypeParameter || inferredTy is TyTypeParameter -> {
+            // check abilities
+            true
+        }
+        expectedTy is TyInteger && inferredTy is TyInteger -> isCompatibleIntegers(expectedTy, inferredTy)
+        expectedTy is TyPrimitive && inferredTy is TyPrimitive
+                && expectedTy.name == inferredTy.name -> true
+        expectedTy is TyVector && inferredTy is TyVector
+                && isCompatible(expectedTy.item, inferredTy.item) -> true
+
+        expectedTy is TyReference && inferredTy is TyReference
+                && isCompatibleMutability(inferredTy.mutability, expectedTy.mutability) ->
+            isCompatibleReferences(expectedTy, inferredTy)
+
+        expectedTy is TyStruct && inferredTy is TyStruct -> isCompatibleStructs(expectedTy, inferredTy)
+        else -> false
+    }
 }
 
 fun Ty.compatibleWith(ty: Ty): Boolean {

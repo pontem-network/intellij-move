@@ -54,7 +54,7 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
                //^
         }
     }    
-    """, expected = "vector<0x1::M::NFT>")
+    """, expected = "vector<NFT>")
 
     private fun doTest(@Language("Move") code: String, @Language("Html") expected: String?) =
         doTest(code, expected, block = MoveDocumentationProvider::generateDoc)

@@ -1,7 +1,7 @@
 package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
-import org.move.lang.core.types.Ability
+
 import org.move.lang.core.types.infer.TypeFolder
 
 open class TyVector(val item: Ty): Ty {

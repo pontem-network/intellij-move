@@ -7,10 +7,10 @@ import org.move.lang.core.psi.ext.ability
 import org.move.lang.core.psi.ext.fieldsMap
 import org.move.lang.core.psi.ext.structDef
 import org.move.lang.core.psi.typeParameters
-import org.move.lang.core.types.Ability
+
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 
-class TyStruct(
+data class TyStruct(
     val item: MoveStructSignature,
     val typeArguments: List<Ty> = emptyList()
 ) : Ty {

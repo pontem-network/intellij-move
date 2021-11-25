@@ -1,12 +1,34 @@
 package org.move.lang.core.types.ty
 
-import org.move.lang.core.psi.MoveModuleDef
-import org.move.lang.core.types.Ability
+import org.move.lang.core.psi.MoveElement
 import org.move.lang.core.types.infer.TypeFoldable
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
 
 typealias Substitution = Map<TyTypeParameter, Ty>
+
+interface HasType : MoveElement {
+    fun resolvedType(): Ty
+}
+
+enum class Ability {
+    DROP, COPY, STORE, KEY;
+
+    fun label(): String = this.name.lowercase()
+
+    fun requires(): Ability {
+        return when (this) {
+            DROP -> DROP
+            COPY -> COPY
+            KEY, STORE -> STORE
+        }
+    }
+
+    companion object {
+        fun none(): Set<Ability> = setOf()
+        fun all(): Set<Ability> = setOf(DROP, COPY, STORE, KEY)
+    }
+}
 
 val emptySubstitution: Substitution = emptyMap()
 
