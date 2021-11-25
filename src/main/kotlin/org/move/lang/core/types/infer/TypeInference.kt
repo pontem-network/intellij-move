@@ -156,8 +156,8 @@ class InferenceResult(
     val diagnostics: List<MoveDiagnostic>
 )
 
-val PsiElement.inference: InferenceResult?
-    get() = parentOfType<MoveFunctionDef>(true)?.let { infer(it) }
+//val PsiElement.inference: InferenceResult?
+//    get() = parentOfType<MoveFunctionDef>(true)?.let { infer(it) }
 
 
 sealed class CoerceResult {

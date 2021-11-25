@@ -34,7 +34,7 @@ class AddAcquiresIntention : MoveElementBaseIntentionAction<AddAcquiresIntention
         if (callExpr.typeArguments.isEmpty()) return null
         val expectedAcquiresType =
             callExpr.typeArguments
-                .getOrNull(0)?.type?.resolvedType(emptyMap()) as? TyStruct ?: return null
+                .getOrNull(0)?.type?.resolvedType() as? TyStruct ?: return null
 
         val outFunction = callExpr.containingFunction ?: return null
         val outFunctionSignature = outFunction.functionSignature ?: return null

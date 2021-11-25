@@ -1,8 +1,25 @@
 package org.move.lang.core.types.infer
 
+import com.intellij.psi.PsiElement
+import com.intellij.psi.util.parentOfType
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.hexIntegerLiteral
+import org.move.lang.core.psi.impl.MoveFunctionDefImpl
 import org.move.lang.core.types.ty.*
+
+val MoveExpr.outerFunction
+    get() = (parentOfType<MoveFunctionDef>(true) as? MoveFunctionDefImpl)!!
+
+//fun prepareFunctionInferenceContext(function: MoveFunctionDef) {
+//    val inference = InferenceContext()
+//    val statements = function.codeBlock?.statementList.orEmpty()
+//    for (statement in statements) {
+//        when (statement) {
+//            is MoveLetStatement -> null
+//            is MoveExprStatement -> null
+//        }
+//    }
+//}
 
 fun instantiateItemTy(item: MoveNameIdentifierOwner): Ty {
     return when (item) {

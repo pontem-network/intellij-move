@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import org.move.lang.MoveElementTypes.HEX_INTEGER_LITERAL
 import org.move.lang.core.psi.MoveElementImpl
 import org.move.lang.core.psi.MoveLiteralExpr
-import org.move.lang.core.types.*
+import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferLiteralExprTy
 import org.move.lang.core.types.ty.Ty
 
@@ -13,7 +13,7 @@ val MoveLiteralExpr.hexIntegerLiteral: PsiElement? get() =
     this.findFirstChildByType(HEX_INTEGER_LITERAL)
 
 abstract class MoveLiteralExprMixin(node: ASTNode) : MoveElementImpl(node), MoveLiteralExpr {
-    override fun resolvedType(typeVars: TypeVarsMap): Ty {
+    override fun resolvedType(): Ty {
         return inferLiteralExprTy(this)
 //        return when {
 //            boolLiteral != null -> PrimitiveType("bool")

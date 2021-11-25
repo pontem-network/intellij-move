@@ -45,7 +45,6 @@ sealed class MoveDiagnostic(
             expectedTy.visitWith(visitor) || actualTy.visitWith(visitor)
 
         private fun expectedFound(element: PsiElement, expectedTy: Ty, actualTy: Ty): String {
-            val file = element.containingFile as? MoveFile ?: return ""
             return "expected `${expectedTy.shortPresentableText(true)}`" +
                     ", found `${actualTy.shortPresentableText(true)}`"
         }

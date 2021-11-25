@@ -3,12 +3,12 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.MoveElementImpl
 import org.move.lang.core.psi.MovePathType
-import org.move.lang.core.types.TypeVarsMap
+import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferMoveTypeTy
 import org.move.lang.core.types.ty.Ty
 
 abstract class MovePathTypeMixin(node: ASTNode) : MoveElementImpl(node), MovePathType {
-    override fun resolvedType(typeVars: TypeVarsMap): Ty {
+    override fun resolvedType(): Ty {
         return inferMoveTypeTy(this)
 //        val item = this.path.reference?.resolve()
 //        if (item == null) {

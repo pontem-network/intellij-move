@@ -3,10 +3,7 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.*
 import org.move.lang.core.types.TypeVarsMap
-import org.move.lang.core.types.infer.Constraint
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.inferMoveTypeTy
-import org.move.lang.core.types.infer.instantiateItemTy
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
@@ -21,24 +18,24 @@ val MoveCallExpr.arguments: List<MoveExpr>
         return this.callArguments?.exprList.orEmpty()
     }
 
-val MoveCallExpr.typeVars: TypeVarsMap
-    get() {
-        val typeVars = mutableMapOf<String, Ty>()
-        val referred = this.path.reference?.resolve() as? MoveTypeParametersOwner ?: return typeVars
-        val typeArguments = this.path.typeArguments
-        if (referred.typeParameters.size != typeArguments.size) return typeVars
-
-        for ((i, typeArgument) in typeArguments.withIndex()) {
-            val name = referred.typeParameters[i].name ?: continue
-            val type = typeArgument.type.resolvedType(emptyMap())
-            typeVars[name] = type
-        }
-        return typeVars
-    }
+//val MoveCallExpr.typeVars: TypeVarsMap
+//    get() {
+//        val typeVars = mutableMapOf<String, Ty>()
+//        val referred = this.path.reference?.resolve() as? MoveTypeParametersOwner ?: return typeVars
+//        val typeArguments = this.path.typeArguments
+//        if (referred.typeParameters.size != typeArguments.size) return typeVars
+//
+//        for ((i, typeArgument) in typeArguments.withIndex()) {
+//            val name = referred.typeParameters[i].name ?: continue
+//            val type = typeArgument.type.resolvedType()
+//            typeVars[name] = type
+//        }
+//        return typeVars
+//    }
 
 abstract class MoveCallExprMixin(node: ASTNode) : MoveElementImpl(node), MoveCallExpr {
 
-    override fun resolvedType(typeVars: TypeVarsMap): Ty {
+    override fun resolvedType(): Ty {
         val inference = InferenceContext()
 
         val path = this.path
@@ -57,7 +54,7 @@ abstract class MoveCallExprMixin(node: ASTNode) : MoveElementImpl(node), MoveCal
         // find all types of passed expressions, create constraints with those
         if (this.arguments.isNotEmpty()) {
             for ((paramTy, argumentExpr) in funcTy.paramTypes.zip(this.arguments)) {
-                val argumentTy = argumentExpr.resolvedType(emptyMap())
+                val argumentTy = argumentExpr.resolvedType()
 //                val argumentTy = this.inferExprTy(argumentExpr)
                 inference.registerConstraint(Constraint.Equate(paramTy, argumentTy))
             }

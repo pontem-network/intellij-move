@@ -5,7 +5,7 @@ import org.move.lang.core.psi.MoveElementImpl
 import org.move.lang.core.psi.MoveStructLiteralExpr
 import org.move.lang.core.psi.MoveStructLiteralField
 import org.move.lang.core.psi.typeParameters
-import org.move.lang.core.types.TypeVarsMap
+import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
@@ -19,7 +19,7 @@ val MoveStructLiteralExpr.providedFieldNames: List<String>
         providedFields.map { it.referenceName }
 
 abstract class MoveStructLiteralExprMixin(node: ASTNode) : MoveElementImpl(node), MoveStructLiteralExpr {
-    override fun resolvedType(typeVars: TypeVarsMap): Ty {
+    override fun resolvedType(): Ty {
         val signature = this.path.maybeStructSignature ?: return TyUnknown
         val typeArgs = this.path.typeArguments
         if (typeArgs.size < signature.typeParameters.size) {
@@ -27,7 +27,7 @@ abstract class MoveStructLiteralExprMixin(node: ASTNode) : MoveElementImpl(node)
             return TyStruct(signature, typeParamTypes)
         } else {
             val typeArgumentTypes =
-                typeArgs.map { it.type.resolvedType(emptyMap()) }
+                typeArgs.map { it.type.resolvedType() }
             return TyStruct(signature, typeArgumentTypes)
         }
     }

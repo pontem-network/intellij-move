@@ -23,7 +23,7 @@ class StructLiteralFieldsDescription(val fields: Array<String>) {
             val struct = structLiteralExpr.path.maybeStruct ?: return null
             val fieldParams =
                 struct.fieldsMap.entries.map { (name, field) ->
-                    val type = field.resolvedType(emptyMap()).fullname()
+                    val type = field.resolvedType().fullname()
                     "$name: $type"
                 }.toTypedArray()
             return StructLiteralFieldsDescription(fieldParams)

@@ -79,11 +79,10 @@ private fun render(
     val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, fq) }
 
     return when (ty) {
-//        is TyFunction -> {
-//            val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
-//            return if (ty.retType is TyUnit) params else "$params -> ${ty.retType}"
-//
-//        }
+        is TyFunction -> {
+            val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
+            return if (ty.retType is TyUnit) params else "$params -> ${ty.retType}"
+        }
 //        is TySlice -> "[${r(ty.elementType)}]"
 
 //        is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)

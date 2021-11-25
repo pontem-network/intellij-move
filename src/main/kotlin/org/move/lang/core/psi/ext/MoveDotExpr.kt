@@ -4,11 +4,12 @@ import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.MoveDotExpr
 import org.move.lang.core.psi.MoveElementImpl
 import org.move.lang.core.psi.MoveRefExpr
-import org.move.lang.core.types.TypeVarsMap
-import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyReference
-import org.move.lang.core.types.ty.TyStruct
-import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.psi.typeParameters
+import org.move.lang.core.types.infer.Constraint
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.inferMoveTypeTy
+import org.move.lang.core.types.infer.outerFunction
+import org.move.lang.core.types.ty.*
 
 val MoveDotExpr.refExpr: MoveRefExpr?
     get() {
@@ -16,20 +17,22 @@ val MoveDotExpr.refExpr: MoveRefExpr?
     }
 
 abstract class MoveDotExprMixin(node: ASTNode) : MoveElementImpl(node), MoveDotExpr {
-    override fun resolvedType(typeVars: TypeVarsMap): Ty {
-        val objectType = this.expr.resolvedType(typeVars)
-        val structType =
-            when (objectType) {
-                is TyReference -> objectType.referenced as? TyStruct
-                is TyStruct -> objectType
+    override fun resolvedType(): Ty {
+        val objectTy = this.expr.resolvedType()
+        val structTy =
+            when (objectTy) {
+                is TyReference -> objectTy.referenced as? TyStruct
+                is TyStruct -> objectTy
                 else -> null
-            }
-        if (structType == null) return TyUnknown
+            } ?: return TyUnknown
+
+        val inferenceContext = InferenceContext()
+        for ((tyVar, tyArg) in structTy.typeVars.zip(structTy.typeArguments)) {
+            inferenceContext.registerConstraint(Constraint.Equate(tyVar, tyArg))
+        }
+        inferenceContext.processConstraints()
 
         val fieldName = this.structFieldRef.referenceName
-        val field = structType.item.structDef?.fieldsMap?.get(fieldName) ?: return TyUnknown
-
-//        val fieldTypeVars = structType.typeVars()
-        return field.typeAnnotation?.type?.resolvedType(emptyMap()) ?: TyUnknown
+        return inferenceContext.resolveTy(structTy.fieldTy(fieldName))
     }
 }

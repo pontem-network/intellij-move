@@ -38,7 +38,7 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
             is MoveDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             else -> {
                 if (docElement !is HasType) return null
-                val type = docElement.resolvedType(emptyMap())
+                val type = docElement.resolvedType()
                 buffer += type.typeLabel(docElement)
             }
         }
@@ -94,7 +94,7 @@ private fun PsiElement.generateDocumentation(buffer: StringBuilder, prefix: Stri
     buffer += prefix
     when (this) {
         is MoveType -> {
-            buffer += this.resolvedType(emptyMap()).typeLabel(this)
+            buffer += this.resolvedType().typeLabel(this)
         }
         is MoveFunctionParameterList ->
             this.functionParameterList

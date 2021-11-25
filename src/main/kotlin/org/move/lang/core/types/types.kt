@@ -5,12 +5,13 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.psi.ext.ability
 import org.move.lang.core.psi.ext.structDef
+import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.ty.Ty
 
 typealias TypeVarsMap = Map<String, Ty>
 
 interface HasType : MoveElement {
-    fun resolvedType(typeVars: TypeVarsMap): Ty
+    fun resolvedType(): Ty
 }
 
 enum class Ability {

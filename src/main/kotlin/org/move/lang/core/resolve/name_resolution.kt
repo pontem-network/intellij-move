@@ -136,7 +136,7 @@ fun processLexicalDeclarations(
             val referred = refExpr.path.reference?.resolve()
             if (referred !is HasType) return false
 
-            val resolvedType = referred.resolvedType(emptyMap())
+            val resolvedType = referred.resolvedType()
             val structDef = when (resolvedType) {
                 is TyStruct -> resolvedType.item.structDef
                 is TyReference -> (resolvedType.innerTy() as? TyStruct)?.item?.structDef

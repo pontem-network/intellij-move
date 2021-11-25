@@ -29,7 +29,7 @@ val MoveFunctionSignature.resolvedReturnType: Ty
         return if (returnTypeElement == null) {
             TyUnit
         } else {
-            returnTypeElement.type?.resolvedType(emptyMap()) ?: TyUnknown
+            returnTypeElement.type?.resolvedType() ?: TyUnknown
         }
     }
 
