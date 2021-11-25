@@ -5,7 +5,7 @@ import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test fields of struct should have abilities of struct`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct A {}
         
         struct B has copy {
@@ -15,7 +15,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test key struct requires store fields`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct A {}
         
         struct B has key {
@@ -25,7 +25,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test store struct requires store fields`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct A {}
         
         struct B has store {
@@ -35,7 +35,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test copy struct requires copy fields`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct A {}
         
         struct B has copy {
@@ -45,7 +45,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
         fun `test drop struct requires drop fields`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct A {}
         
         struct B has drop {
@@ -92,7 +92,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
 
 
     fun `test no required ability 'key' for move_to argument`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct Res {}
         fun main(s: &signer, r: Res) {
             move_to(s, <error descr="The type 'Res' does not have required ability 'key'">r</error>)
@@ -101,7 +101,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test no error in move_to with resource`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct Res has key {}
         fun main(s: &signer, r: Res) {
             move_to<Res>(s, r)
@@ -110,7 +110,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test no required ability for struct for type param`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct Res {}
         fun save<T: key>(r: T) {}
         fun main(r: Res) {
@@ -120,7 +120,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test no error in type param if structure has required abilities`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct Res has key {}
         fun save<T: key>(r: T) {}
         fun main(r: Res) {
@@ -130,7 +130,7 @@ class NoRequiredAbilitiesTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test no error in specs`() = checkErrors("""
-    module M {
+    module 0x1::M {
         fun balance<Token: store>() {}
         spec schema PayFromEnsures<Token> {
             ensures balance<Token>();

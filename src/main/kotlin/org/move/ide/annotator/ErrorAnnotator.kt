@@ -3,15 +3,20 @@ package org.move.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
+import org.move.ide.presentation.name
+import org.move.ide.presentation.typeLabel
 import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.resolvedReturnType
 import org.move.lang.core.types.*
+import org.move.lang.core.types.infer.compatibleWith
+import org.move.lang.core.types.infer.isCompatible
+import org.move.lang.core.types.ty.*
 
 class ErrorAnnotator : MoveAnnotator() {
     companion object {
-        private fun invalidReturnTypeMessage(expectedType: BaseType, actualType: BaseType): String {
+        private fun invalidReturnTypeMessage(expectedType: Ty, actualType: Ty): String {
             return "Invalid return type: " +
                     "expected '${expectedType.name()}', found '${actualType.name()}'"
         }
@@ -24,13 +29,13 @@ class ErrorAnnotator : MoveAnnotator() {
 
             override fun visitIfExpr(o: MoveIfExpr) {
                 val ifCodeBlockExpr = o.codeBlock?.lastHasType ?: o.inlineBlock?.expr ?: return
-                val ifCodeBlockType = ifCodeBlockExpr.resolvedType(emptyMap()) ?: return
+                val ifCodeBlockType = ifCodeBlockExpr.resolvedType(emptyMap())
 
                 val elseCodeBlockExpr =
                     o.elseBlock?.codeBlock?.lastHasType ?: o.elseBlock?.inlineBlock?.expr ?: return
-                val elseCodeBlockType = elseCodeBlockExpr.resolvedType(emptyMap()) ?: return
+                val elseCodeBlockType = elseCodeBlockExpr.resolvedType(emptyMap())
 
-                if (!elseCodeBlockType.compatibleWith(ifCodeBlockType)) {
+                if (!isCompatible(ifCodeBlockType, elseCodeBlockType)) {
                     moveHolder.createErrorAnnotation(
                         elseCodeBlockExpr,
                         "Incompatible type '${elseCodeBlockType.typeLabel(o)}'" +
@@ -41,8 +46,9 @@ class ErrorAnnotator : MoveAnnotator() {
 
             override fun visitCondition(o: MoveCondition) {
                 val expr = o.expr ?: return
-                val exprType = expr.resolvedType(emptyMap()) ?: return
-                if (!exprType.compatibleWith(PrimitiveType("bool"))) {
+                val exprType = expr.resolvedType(emptyMap())
+//                if (!exprType.compatibleWith(PrimitiveType("bool"))) {
+                if (!isCompatible(exprType, TyBool)) {
                     moveHolder.createErrorAnnotation(
                         expr,
                         "Incompatible type '${exprType.typeLabel(o)}', expected 'bool'"
@@ -66,13 +72,9 @@ class ErrorAnnotator : MoveAnnotator() {
                     val lastHasType = codeBlock.lastHasType
                     val expectedReturnType =
                         codeBlock.containingFunction?.functionSignature?.resolvedReturnType ?: return
-                    var actualReturnType: BaseType? = null
-                    if (lastHasType == null) {
-                        actualReturnType = VoidType()
-                    } else {
-                        actualReturnType = lastHasType.resolvedType(emptyMap()) ?: return
-                    }
-                    if (!expectedReturnType.compatibleWith(actualReturnType)) {
+                    val actualReturnType = lastHasType?.resolvedType(emptyMap()) ?: TyUnit
+                    if (!isCompatible(expectedReturnType, actualReturnType)) {
+//                    if (!expectedReturnType.compatibleWith(actualReturnType)) {
                         val annotatedElement = lastHasType as? PsiElement
                             ?: codeBlock.rightBrace
                             ?: codeBlock
@@ -86,9 +88,10 @@ class ErrorAnnotator : MoveAnnotator() {
 
             override fun visitReturnExpr(o: MoveReturnExpr) {
                 val outerSignature = o.containingFunction?.functionSignature ?: return
-                val expectedReturnType = outerSignature.resolvedReturnType ?: return
+                val expectedReturnType = outerSignature.resolvedReturnType
                 val actualReturnType = o.expr?.resolvedType(emptyMap()) ?: return
-                if (!expectedReturnType.compatibleWith(actualReturnType)) {
+//                if (!expectedReturnType.compatibleWith(actualReturnType)) {
+                if (!isCompatible(expectedReturnType, actualReturnType)) {
                     moveHolder.createErrorAnnotation(
                         o,
                         invalidReturnTypeMessage(expectedReturnType, actualReturnType)
@@ -101,7 +104,7 @@ class ErrorAnnotator : MoveAnnotator() {
 
                 val paramType =
                     o.typeArguments.getOrNull(0)
-                        ?.type?.resolvedType(emptyMap()) as? StructType ?: return
+                        ?.type?.resolvedType(emptyMap()) as? TyStruct ?: return
                 val paramTypeName = paramType.name()
 
                 val containingFunction = o.containingFunction ?: return
@@ -141,20 +144,17 @@ class ErrorAnnotator : MoveAnnotator() {
                 for (field in o.structLiteralFieldsBlock.structLiteralFieldList) {
                     val assignmentExpr = field.structLiteralFieldAssignment?.expr ?: continue
                     val assignmentType = assignmentExpr.resolvedType(emptyMap())
-                    if (assignmentType == null) continue
+                    if (assignmentType is TyUnknown) continue
 
                     val fieldName = field.referenceName
                     val fieldDef = refStruct.getField(fieldName) ?: continue
                     val expectedFieldType = fieldDef.resolvedType(emptyMap())
-                    if (expectedFieldType is TypeParamType) {
-                        checkHasRequiredAbilities(moveHolder, assignmentExpr, expectedFieldType)
-                        return
-                    }
+//                    if (expectedFieldType is TypeParamType) {
+//                        checkHasRequiredAbilities(moveHolder, assignmentExpr, expectedFieldType)
+//                        return
+//                    }
                     val exprType = assignmentExpr.resolvedType(emptyMap())
-                    if (expectedFieldType != null
-                        && exprType != null
-                        && !expectedFieldType.compatibleWith(exprType)
-                    ) {
+                    if (!isCompatible(expectedFieldType, exprType)) {
                         val exprTypeName = exprType.typeLabel(relativeTo = o)
                         val expectedTypeName = expectedFieldType.typeLabel(relativeTo = o)
 
@@ -215,7 +215,7 @@ class ErrorAnnotator : MoveAnnotator() {
         val structAbilities = structType.abilities()
         if (structAbilities.isEmpty()) return
 
-        val fieldType = structField.typeAnnotation?.type?.resolvedType(emptyMap()) as? StructType ?: return
+        val fieldType = structField.typeAnnotation?.type?.resolvedType(emptyMap()) as? TyStruct ?: return
 
         for (ability in structAbilities) {
             val requiredAbility = ability.requires()
@@ -274,15 +274,13 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
     for ((i, expr) in arguments.exprList.withIndex()) {
         val parameter = signature.parameters[i]
         val expectedType = parameter.resolvedType(callExprTypeVars)
-        if (expectedType is TypeParamType) {
+        if (expectedType is TyTypeParameter) {
             checkHasRequiredAbilities(holder, expr, expectedType)
             return
         }
 
         val exprType = expr.resolvedType(emptyMap())
-        if (expectedType != null && exprType != null
-            && !expectedType.compatibleWith(exprType)
-        ) {
+        if (!expectedType.compatibleWith(exprType)) {
             val paramName = parameter.name ?: continue
             val exprTypeName = exprType.typeLabel(relativeTo = arguments)
             val expectedTypeName = expectedType.typeLabel(relativeTo = arguments)
@@ -352,7 +350,7 @@ private fun checkPath(holder: MoveAnnotationHolder, path: MovePath) {
 
             for ((i, typeArgument) in typeArguments.withIndex()) {
                 val typeParam = referred.typeParameters[i]
-                val typeParamType = typeParam.resolvedType(emptyMap()) as? TypeParamType ?: continue
+                val typeParamType = typeParam.resolvedType(emptyMap()) as? TyTypeParameter ?: continue
                 checkHasRequiredAbilities(
                     holder,
                     typeArgument.type,
@@ -366,9 +364,9 @@ private fun checkPath(holder: MoveAnnotationHolder, path: MovePath) {
 private fun checkHasRequiredAbilities(
     holder: MoveAnnotationHolder,
     element: HasType,
-    typeParamType: TypeParamType
+    typeParamType: TyTypeParameter
 ) {
-    val elementType = element.resolvedType(emptyMap()) ?: return
+    val elementType = element.resolvedType(emptyMap())
     // do not check for specs
     if (element.ancestorStrict<MoveSpecDef>() != null) return
 

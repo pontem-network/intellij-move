@@ -2,13 +2,10 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.*
-import org.move.lang.core.types.BaseType
 import org.move.lang.core.types.TypeVarsMap
-import org.move.lang.core.types.VoidType
-import org.move.lang.core.types.infer.ConstraintSolver
-import org.move.lang.core.types.infer.UnificationTable
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyInfer
+import org.move.lang.core.types.ty.TyUnit
+import org.move.lang.core.types.ty.TyUnknown
 
 val MoveCallExpr.typeArguments: List<MoveTypeArgument>
     get() {
@@ -22,7 +19,7 @@ val MoveCallExpr.arguments: List<MoveExpr>
 
 val MoveCallExpr.typeVars: TypeVarsMap
     get() {
-        val typeVars = mutableMapOf<String, BaseType?>()
+        val typeVars = mutableMapOf<String, Ty>()
         val referred = this.path.reference?.resolve() as? MoveTypeParametersOwner ?: return typeVars
         val typeArguments = this.path.typeArguments
         if (referred.typeParameters.size != typeArguments.size) return typeVars
@@ -37,13 +34,13 @@ val MoveCallExpr.typeVars: TypeVarsMap
 
 abstract class MoveCallExprMixin(node: ASTNode) : MoveElementImpl(node), MoveCallExpr {
 
-    override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
-        val signature = this.path.reference?.resolve() as? MoveFunctionSignature ?: return null
+    override fun resolvedType(typeVars: TypeVarsMap): Ty {
+        val signature = this.path.reference?.resolve() as? MoveFunctionSignature ?: return TyUnknown
         val returnTypeElement = signature.returnType
         if (returnTypeElement == null) {
-            return VoidType()
+            return TyUnit
         }
 
-        return returnTypeElement.type?.resolvedType(this.typeVars)
+        return returnTypeElement.type?.resolvedType(this.typeVars) ?: TyUnknown
     }
 }

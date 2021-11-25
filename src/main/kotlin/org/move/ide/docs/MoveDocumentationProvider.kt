@@ -5,6 +5,7 @@ import com.intellij.lang.documentation.DocumentationMarkup
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import org.move.ide.presentation.typeLabel
 import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MoveDocAndAttributeOwner
@@ -37,7 +38,7 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
             is MoveDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             else -> {
                 if (docElement !is HasType) return null
-                val type = docElement.resolvedType(emptyMap()) ?: return null
+                val type = docElement.resolvedType(emptyMap())
                 buffer += type.typeLabel(docElement)
             }
         }
@@ -93,7 +94,7 @@ private fun PsiElement.generateDocumentation(buffer: StringBuilder, prefix: Stri
     buffer += prefix
     when (this) {
         is MoveType -> {
-            buffer += this.resolvedType(emptyMap())?.typeLabel(this) ?: "<unknown>"
+            buffer += this.resolvedType(emptyMap()).typeLabel(this)
         }
         is MoveFunctionParameterList ->
             this.functionParameterList

@@ -12,6 +12,9 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.HasType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.StructType
+import org.move.lang.core.types.ty.TyReference
+import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 
@@ -138,8 +141,8 @@ fun processLexicalDeclarations(
 
             val resolvedType = referred.resolvedType(emptyMap())
             val structDef = when (resolvedType) {
-                is StructType -> resolvedType.structDef()
-                is RefType -> resolvedType.referredStructDef()
+                is TyStruct -> resolvedType.item.structDef
+                is TyReference -> (resolvedType.innerTy() as? TyStruct)?.item?.structDef
                 else -> null
             }
             return processor.matchAll(structDef?.fields.orEmpty())

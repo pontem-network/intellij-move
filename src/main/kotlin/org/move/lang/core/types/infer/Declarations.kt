@@ -7,6 +7,22 @@ import org.move.lang.core.psi.ext.structDef
 import org.move.lang.core.psi.ext.typeArguments
 import org.move.lang.core.types.ty.*
 
+//fun tyFromBuiltinTypeLabel(label: String): Ty {
+//    return when (label) {
+//        in INTEGER_TYPE_IDENTIFIERS -> TyInteger.fromName(label)!!
+//        "bool" -> TyBool
+//        "address" -> TyAddress
+//        "signer" -> TySigner
+//        "vector" -> {
+//            val itemTy = moveType.path.typeArguments
+//                .firstOrNull()
+//                ?.type
+//                ?.let { inferMoveTypeTy(it) } ?: TyUnknown
+//            return TyVector(itemTy)
+//        }
+//        else -> TyUnknown
+//}
+
 fun inferMoveTypeTy(moveType: MoveType): Ty {
     return when (moveType) {
         is MovePathType -> {

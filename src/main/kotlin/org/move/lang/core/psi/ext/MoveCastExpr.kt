@@ -5,9 +5,10 @@ import org.move.lang.core.psi.MoveCastExpr
 import org.move.lang.core.psi.MoveElementImpl
 import org.move.lang.core.types.BaseType
 import org.move.lang.core.types.TypeVarsMap
+import org.move.lang.core.types.ty.Ty
 
 abstract class MoveCastExprMixin(node: ASTNode): MoveElementImpl(node), MoveCastExpr {
-    override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
+    override fun resolvedType(typeVars: TypeVarsMap): Ty {
         return this.type.resolvedType(typeVars)
     }
 }

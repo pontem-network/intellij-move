@@ -6,12 +6,14 @@ import org.move.lang.core.psi.MoveElementImpl
 import org.move.lang.core.types.BaseType
 import org.move.lang.core.types.RefType
 import org.move.lang.core.types.TypeVarsMap
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyReference
+import org.move.lang.core.types.ty.TyUnknown
 
 abstract class MoveDerefExprMixin(node: ASTNode) : MoveElementImpl(node),
                                                    MoveDerefExpr {
-    override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
-        val innerExpr = this.expr ?: return null
-        val innerRefType = innerExpr.resolvedType(emptyMap()) as? RefType ?: return null
-        return innerRefType.referredType
+    override fun resolvedType(typeVars: TypeVarsMap): Ty {
+        val innerRefType = this.expr?.resolvedType(emptyMap()) as? TyReference ?: return TyUnknown
+        return innerRefType.referenced
     }
 }

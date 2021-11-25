@@ -1,8 +1,22 @@
 package org.move.ide.presentation
 
 import org.move.lang.MoveFile
+import org.move.lang.core.psi.MoveElement
 import org.move.lang.core.psi.ext.fqName
 import org.move.lang.core.types.ty.*
+
+fun Ty.name(): String {
+    return fullname()
+}
+
+fun Ty.fullname(): String {
+    return shortPresentableText(null)
+}
+
+fun Ty.typeLabel(relativeTo: MoveElement): String {
+    val file = relativeTo.containingFile as? MoveFile
+    return shortPresentableText(file)
+}
 
 fun Ty.shortPresentableText(contextFile: MoveFile?): String =
     render(this,
@@ -35,7 +49,13 @@ private fun render(
             is TySigner -> "signer"
             is TyVector -> "vector"
             is TyUnit -> "()"
-            is TyInteger -> ty.kind.toString()
+            is TyInteger -> {
+                if (ty.kind == TyInteger.DEFAULT_KIND) {
+                    "integer"
+                } else {
+                    ty.kind.toString()
+                }
+            }
             else -> error("unreachable")
         }
     }

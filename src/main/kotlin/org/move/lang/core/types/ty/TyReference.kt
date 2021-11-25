@@ -6,6 +6,7 @@
 package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
+import org.move.lang.core.types.Ability
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
 
@@ -22,6 +23,8 @@ enum class Mutability {
 }
 
 data class TyReference(val referenced: Ty, val mutability: Mutability) : Ty {
+    override fun abilities() = setOf(Ability.COPY, Ability.DROP)
+
     fun innerTy(): Ty {
         if (referenced is TyReference) {
             return referenced.innerTy()

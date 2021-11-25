@@ -2,6 +2,7 @@ package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
 import org.move.lang.core.psi.MoveFunctionSignature
+import org.move.lang.core.types.Ability
 
 class TyFunction(
     val item: MoveFunctionSignature,
@@ -9,5 +10,7 @@ class TyFunction(
     val paramTypes: List<Ty>,
     val retType: Ty
 ) : Ty {
+    override fun abilities(): Set<Ability> = Ability.all()
+
     override fun toString(): String = tyToString(this)
 }

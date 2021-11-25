@@ -4,6 +4,7 @@ import com.intellij.lang.parameterInfo.ParameterInfoUIContext
 import com.intellij.lang.parameterInfo.ParameterInfoUtils
 import com.intellij.lang.parameterInfo.UpdateParameterInfoContext
 import com.intellij.psi.PsiFile
+import org.move.ide.presentation.fullname
 import org.move.lang.MoveElementTypes
 import org.move.lang.core.psi.MoveStructLiteralExpr
 import org.move.lang.core.psi.MoveStructLiteralFieldsBlock
@@ -22,7 +23,7 @@ class StructLiteralFieldsDescription(val fields: Array<String>) {
             val struct = structLiteralExpr.path.maybeStruct ?: return null
             val fieldParams =
                 struct.fieldsMap.entries.map { (name, field) ->
-                    val type = field.resolvedType(emptyMap())?.fullname() ?: "<unknown>"
+                    val type = field.resolvedType(emptyMap()).fullname()
                     "$name: $type"
                 }.toTypedArray()
             return StructLiteralFieldsDescription(fieldParams)

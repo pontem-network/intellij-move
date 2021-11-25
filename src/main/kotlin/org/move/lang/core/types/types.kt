@@ -1,15 +1,16 @@
 package org.move.lang.core.types
 
-import org.move.lang.containingMoveProject
+import org.move.ide.presentation.shortPresentableText
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.psi.ext.ability
 import org.move.lang.core.psi.ext.structDef
+import org.move.lang.core.types.ty.Ty
 
-typealias TypeVarsMap = Map<String, BaseType?>
+typealias TypeVarsMap = Map<String, Ty>
 
 interface HasType : MoveElement {
-    fun resolvedType(typeVars: TypeVarsMap): BaseType?
+    fun resolvedType(typeVars: TypeVarsMap): Ty
 }
 
 enum class Ability {
@@ -26,6 +27,7 @@ enum class Ability {
     }
 
     companion object {
+        fun none(): Set<Ability> = setOf()
         fun all(): Set<Ability> = setOf(DROP, COPY, STORE, KEY)
     }
 }
@@ -169,7 +171,7 @@ class RefType(
 
 class StructType(
     private val structSignature: MoveStructSignature,
-    val typeArgumentTypes: List<BaseType?> = emptyList()
+    val typeArgumentTypes: List<Ty> = emptyList()
 ) : BaseType() {
 
     override fun name(): String = structSignature.name ?: ""
@@ -182,7 +184,7 @@ class StructType(
         if (typeArgumentTypes.isNotEmpty()) {
             structName += "<"
             for ((i, typeArgumentType) in typeArgumentTypes.withIndex()) {
-                structName += typeArgumentType?.fullname() ?: "unknown_type"
+                structName += typeArgumentType.shortPresentableText(null)
                 if (i < typeArgumentTypes.size - 1) {
                     structName += ", "
                 }
@@ -201,15 +203,16 @@ class StructType(
     }
 
     override fun compatibleWith(actualType: BaseType): Boolean {
-        if (actualType is TypeParamType) return true
-        return actualType is StructType
-                && this.structFullname() == actualType.structFullname()
-                && this.typeArgumentTypes.size == actualType.typeArgumentTypes.size
-                && this.typeArgumentTypes.zip(actualType.typeArgumentTypes)
-            .all { (left, right) ->
-                left == null || right == null
-                        || left.compatibleWith(right)
-            }
+        return true
+//        if (actualType is TypeParamType) return true
+//        return actualType is StructType
+//                && this.structFullname() == actualType.structFullname()
+//                && this.typeArgumentTypes.size == actualType.typeArgumentTypes.size
+//                && this.typeArgumentTypes.zip(actualType.typeArgumentTypes)
+//            .all { (left, right) ->
+//                left == null || right == null
+//                        || left.compatibleWith(right)
+//            }
     }
 
     fun structDef(): MoveStructDef? {
@@ -226,7 +229,7 @@ class StructType(
         val typeParams = this.structSignature.typeParameters
         if (typeParams.size != this.typeArgumentTypes.size) return emptyMap()
 
-        val typeVars = mutableMapOf<String, BaseType?>()
+        val typeVars = mutableMapOf<String, Ty>()
         for (i in typeParams.indices) {
             val name = typeParams[i].name ?: continue
             val type = typeArgumentTypes[i]
@@ -242,16 +245,16 @@ class StructType(
 
     private fun typeArgumentsLabel(relativeTo: MoveElement): String {
         var label = ""
-        if (this.typeArgumentTypes.isNotEmpty()) {
-            label += "<"
-            for ((i, typeArgumentType) in typeArgumentTypes.withIndex()) {
-                label += typeArgumentType?.typeLabel(relativeTo) ?: "unknown_type"
-                if (i < typeArgumentTypes.size - 1) {
-                    label += ", "
-                }
-            }
-            label += ">"
-        }
+//        if (this.typeArgumentTypes.isNotEmpty()) {
+//            label += "<"
+//            for ((i, typeArgumentType) in typeArgumentTypes.withIndex()) {
+//                label += typeArgumentType?.typeLabel(relativeTo) ?: "unknown_type"
+//                if (i < typeArgumentTypes.size - 1) {
+//                    label += ", "
+//                }
+//            }
+//            label += ">"
+//        }
         return label
     }
 }
@@ -271,15 +274,15 @@ class TypeParamType(private val typeParam: MoveTypeParameter) : BaseType() {
         return (this.abilities() - actualType.abilities()).isEmpty()
     }
 
-    companion object {
-        fun withSubstitutedTypeVars(
-            typeParam: MoveTypeParameter,
-            typeVars: TypeVarsMap
-        ): BaseType? {
-            val name = typeParam.name ?: return TypeParamType(typeParam)
-            return typeVars.getOrDefault(name, TypeParamType(typeParam))
-        }
-    }
+//    companion object {
+//        fun withSubstitutedTypeVars(
+//            typeParam: MoveTypeParameter,
+//            typeVars: TypeVarsMap
+//        ): BaseType? {
+//            val name = typeParam.name ?: return TypeParamType(typeParam)
+//            return typeVars.getOrDefault(name, TypeParamType(typeParam))
+//        }
+//    }
 }
 
 //fun isCompatibleTypes(expectedType: BaseType, actualType: BaseType): Boolean {

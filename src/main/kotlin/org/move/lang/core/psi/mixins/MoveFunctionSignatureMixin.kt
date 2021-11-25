@@ -14,6 +14,9 @@ import org.move.lang.core.psi.ext.parametersText
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.types.BaseType
 import org.move.lang.core.types.VoidType
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnit
+import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.Icon
 
 val MoveFunctionSignature.functionDef get() = this.parent as? MoveFunctionDef
@@ -22,13 +25,13 @@ val MoveFunctionSignature.isNative get() = this.parent is MoveNativeFunctionDef
 
 val MoveFunctionSignature.isBuiltinFunc get() = this.isNative && this.name in BUILTIN_FUNCTIONS
 
-val MoveFunctionSignature.resolvedReturnType: BaseType?
+val MoveFunctionSignature.resolvedReturnType: Ty
     get() {
         val returnTypeElement = this.returnType
         return if (returnTypeElement == null) {
-            VoidType()
+            TyUnit
         } else {
-            returnTypeElement.type?.resolvedType(emptyMap())
+            returnTypeElement.type?.resolvedType(emptyMap()) ?: TyUnknown
         }
     }
 

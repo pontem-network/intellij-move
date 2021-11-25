@@ -5,6 +5,9 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.types.BaseType
 import org.move.lang.core.types.StructType
 import org.move.lang.core.types.TypeVarsMap
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.core.types.ty.TyUnknown
 import java.sql.Struct
 
 val MoveStructLiteralExpr.providedFields: List<MoveStructLiteralField>
@@ -13,19 +16,19 @@ val MoveStructLiteralExpr.providedFields: List<MoveStructLiteralField>
 
 val MoveStructLiteralExpr.providedFieldNames: List<String>
     get() =
-        providedFields.mapNotNull { it.referenceName }
+        providedFields.map { it.referenceName }
 
 abstract class MoveStructLiteralExprMixin(node: ASTNode) : MoveElementImpl(node), MoveStructLiteralExpr {
-    override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
-        val signature = this.path.maybeStructSignature ?: return null
+    override fun resolvedType(typeVars: TypeVarsMap): Ty {
+        val signature = this.path.maybeStructSignature ?: return TyUnknown
         val typeArgs = this.path.typeArguments
         if (typeArgs.size < signature.typeParameters.size) {
             val typeParamTypes = signature.typeParameters.map { it.typeParamType }
-            return StructType(signature, typeParamTypes)
+            return TyStruct(signature, typeParamTypes)
         } else {
             val typeArgumentTypes =
                 typeArgs.map { it.type.resolvedType(emptyMap()) }
-            return StructType(signature, typeArgumentTypes)
+            return TyStruct(signature, typeArgumentTypes)
         }
     }
 }

@@ -22,6 +22,6 @@ fun MoveExpr.isLastExprInFunctionCodeBlock(): Boolean {
 }
 
 abstract class MoveExprMixin(node: ASTNode) : MoveElementImpl(node), MoveExpr {
-    override fun resolvedType(typeVars: TypeVarsMap): BaseType? = null
+    override fun resolvedType(typeVars: TypeVarsMap): Ty = TyUnknown
 
 }

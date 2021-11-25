@@ -121,7 +121,7 @@ class ExpressionTypesTest: TypificationTestCase() {
     """)
 
     fun `test struct literal expr with unresolved type param`() = testExpr("""
-    module M {
+    module 0x1::M {
         struct R<CoinType> {}
         fun main() {
             R {};
@@ -131,7 +131,7 @@ class ExpressionTypesTest: TypificationTestCase() {
     """)
 
     fun `test borrow expr`() = testExpr("""
-    module M {
+    module 0x1::M {
         fun main(s: signer) {
             &s;
           //^ &signer 
@@ -140,7 +140,7 @@ class ExpressionTypesTest: TypificationTestCase() {
     """)
 
     fun `test mutable borrow expr`() = testExpr("""
-    module M {
+    module 0x1::M {
         fun main(s: signer) {
             &mut s;
           //^ &mut signer 
@@ -149,7 +149,7 @@ class ExpressionTypesTest: TypificationTestCase() {
     """)
 
     fun `test deref expr`() = testExpr("""
-    module M {
+    module 0x1::M {
         fun main(s: &signer) {
             *s;
           //^ signer 
@@ -158,7 +158,7 @@ class ExpressionTypesTest: TypificationTestCase() {
     """)
 
     fun `test dot access to primitive field`() = testExpr("""
-    module M {
+    module 0x1::M {
         struct S { addr: address }
         fun main() {
             let s = S { addr: 0x1 };
@@ -169,7 +169,7 @@ class ExpressionTypesTest: TypificationTestCase() {
     """)
 
     fun `test dot access to field with struct type`() = testExpr("""
-    module M {
+    module 0x1::M {
         struct Addr {}
         struct S { addr: Addr }
         fun main() {
@@ -181,7 +181,7 @@ class ExpressionTypesTest: TypificationTestCase() {
     """)
 
     fun `test borrow expr of dot access`() = testExpr("""
-    module M {
+    module 0x1::M {
         struct Addr {}
         struct S { addr: Addr }
         fun main() {
@@ -193,7 +193,7 @@ class ExpressionTypesTest: TypificationTestCase() {
     """)
 
     fun `test add expr with untyped and typed integer`() = testExpr("""
-    module M {
+    module 0x1::M {
         fun main() {
             (1 + 1u8);
           //^ u8  
@@ -202,7 +202,7 @@ class ExpressionTypesTest: TypificationTestCase() {
     """)
 
     fun `test add expr with untyped and typed integer reversed`() = testExpr("""
-    module M {
+    module 0x1::M {
         fun main() {
             (1u8 + 1);
           //^ u8  
