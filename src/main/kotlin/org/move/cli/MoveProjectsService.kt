@@ -95,7 +95,6 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
                         }
                         project.messageBus.syncPublisher(MoveProjectsService.MOVE_PROJECTS_TOPIC)
                             .moveProjectsUpdated(this, projects)
-//                        initialized = true
                     }
                 }
 
@@ -104,13 +103,11 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
 
     override fun findMoveProjectForPsiFile(psiFile: PsiFile): MoveProject? {
         val file = psiFile.originalFile.virtualFile
+        // in-memory file
+        if (file == null) return null
 
         val cachedProject = this.directoryIndex.getInfoForFile(file)
         if (cachedProject != null) return cachedProject
-
-//        if (isUnitTestMode) {
-//            return testEmptyMoveProject(project)
-//        }
 
         LOG.warn("MoveProject is not found in cache")
         val moveProject =
@@ -118,17 +115,14 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
                 ?.let { findMoveTomlPath(it) }
                 ?.findVirtualFile()
                 ?.let { initializeMoveProject(project, it) }
-        if (moveProject == null && isUnitTestMode) {
+        if (moveProject == null) {
             // this is for light tests, heavy test should always have valid moveProject
-            return testEmptyMoveProject(project)
+            if (isUnitTestMode) return testEmptyMoveProject(project)
+            return null
         }
-//        val moveProject = initializeMoveProject(project, moveTomlFile)
-//        val moveProject = MoveProject.fromMoveTomlPath(project, moveTomlFile) ?: return null
         this.directoryIndex.putInfo(file, moveProject)
         return moveProject
     }
-
-//    override var initialized: Boolean = false
 
     override fun refreshAllProjects() {
         LOG.info("Project state refresh started")

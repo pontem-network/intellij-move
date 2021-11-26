@@ -9,7 +9,6 @@ import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.resolvedReturnType
-import org.move.lang.core.types.*
 import org.move.lang.core.types.infer.compatibleWith
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.*
@@ -105,7 +104,8 @@ class ErrorAnnotator : MoveAnnotator() {
                 val paramType =
                     o.typeArguments.getOrNull(0)
                         ?.type?.resolvedType() as? TyStruct ?: return
-                val paramTypeName = paramType.name()
+                val paramTypeFQName = paramType.item.fqName
+                val paramTypeName = paramType.item.name ?: return
 
                 val containingFunction = o.containingFunction ?: return
                 val signature = containingFunction.functionSignature ?: return
@@ -117,8 +117,8 @@ class ErrorAnnotator : MoveAnnotator() {
                     moveHolder.createErrorAnnotation(o, errorMessage)
                     return
                 }
-                val acquiresTypeNames = acquiresType.typeNames ?: return
-                if (paramTypeName !in acquiresTypeNames) {
+                val acquiresTypeNames = acquiresType.typeFQNames ?: return
+                if (paramTypeFQName !in acquiresTypeNames) {
                     moveHolder.createErrorAnnotation(o, errorMessage)
                 }
             }

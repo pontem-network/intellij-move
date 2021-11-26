@@ -96,6 +96,10 @@ fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean 
 fun isCompatible(expectedTy: Ty, inferredTy: Ty): Boolean {
     return when {
         expectedTy is TyUnknown || inferredTy is TyUnknown -> true
+        expectedTy is TyInfer.TyVar || inferredTy is TyInfer.TyVar -> {
+            // check abilities
+            true
+        }
         expectedTy is TyTypeParameter || inferredTy is TyTypeParameter -> {
             // check abilities
             true

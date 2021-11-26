@@ -15,7 +15,7 @@ class AddAcquiresIntentionTest: MoveIntentionTestCase(AddAcquiresIntention::clas
     module 0x1::M {
         struct Loan has key {}
         fun main() {
-            move_from/*caret*/(0x1);
+            move_from/*caret*/(@0x1);
         }
     }    
     """)
@@ -23,7 +23,7 @@ class AddAcquiresIntentionTest: MoveIntentionTestCase(AddAcquiresIntention::clas
     fun `test unavailable if unresolved type`() = doUnavailableTest("""
     module 0x1::M {
         fun main() {
-            move_from<Loan>/*caret*/(0x1);
+            move_from<Loan>/*caret*/(@0x1);
         }
     }    
     """)
@@ -32,7 +32,7 @@ class AddAcquiresIntentionTest: MoveIntentionTestCase(AddAcquiresIntention::clas
     module 0x1::M {
         struct Loan has key {}
         fun main() acquires Loan {
-            move_from<Loan>/*caret*/(0x1);
+            move_from<Loan>/*caret*/(@0x1);
         }
     }    
     """)
@@ -41,14 +41,14 @@ class AddAcquiresIntentionTest: MoveIntentionTestCase(AddAcquiresIntention::clas
     module 0x1::M {
         struct Loan has key {}
         fun main() {
-            move_from<Loan>/*caret*/(0x1);
+            move_from<Loan>/*caret*/(@0x1);
         }
     }    
     """, """
     module 0x1::M {
         struct Loan has key {}
         fun main() acquires Loan {
-            move_from<Loan>/*caret*/(0x1);
+            move_from<Loan>/*caret*/(@0x1);
         }
     }    
     """)
@@ -74,7 +74,7 @@ class AddAcquiresIntentionTest: MoveIntentionTestCase(AddAcquiresIntention::clas
         struct Loan has key {}
         struct Deal has key {}
         fun main() acquires Deal {
-            move_from<Loan>/*caret*/(0x1);
+            move_from<Loan>/*caret*/(@0x1);
         }
     }    
     """, """
@@ -82,8 +82,24 @@ class AddAcquiresIntentionTest: MoveIntentionTestCase(AddAcquiresIntention::clas
         struct Loan has key {}
         struct Deal has key {}
         fun main() acquires Deal, Loan {
-            move_from<Loan>/*caret*/(0x1);
+            move_from<Loan>/*caret*/(@0x1);
         }
+    }    
+    """)
+
+    fun `test add acquires if present with generic`() = doAvailableTest("""
+    module 0x1::M {
+        struct CapState<phantom Feature> has key {}
+        fun main<Feature>() {
+            move_from<CapState<Feature>>/*caret*/(@0x1);
+        }  
+    }    
+    """, """
+    module 0x1::M {
+        struct CapState<phantom Feature> has key {}
+        fun main<Feature>() acquires CapState {
+            move_from<CapState<Feature>>/*caret*/(@0x1);
+        }  
     }    
     """)
 }

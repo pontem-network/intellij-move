@@ -9,8 +9,9 @@ import org.move.lang.core.psi.MoveCallExpr
 import org.move.lang.core.psi.MoveFunctionSignature
 import org.move.lang.core.psi.MovePsiFactory
 import org.move.lang.core.psi.ext.ancestorOrSelf
+import org.move.lang.core.psi.ext.fqName
 import org.move.lang.core.psi.ext.typeArguments
-import org.move.lang.core.psi.ext.typeNames
+import org.move.lang.core.psi.ext.typeFQNames
 import org.move.lang.core.types.ty.TyStruct
 
 class AddAcquiresIntention : MoveElementBaseIntentionAction<AddAcquiresIntention.Context>() {
@@ -43,14 +44,14 @@ class AddAcquiresIntention : MoveElementBaseIntentionAction<AddAcquiresIntention
         val context = Context(outFunctionSignature, expectedAcquiresType)
         if (acquiresType == null) return context
 
-        val acquiresTypeNames = acquiresType.typeNames ?: return null
-        if (expectedAcquiresType.name() in acquiresTypeNames) return null
+        val acquiresTypeFQNames = acquiresType.typeFQNames ?: return null
+        if (expectedAcquiresType.item.fqName in acquiresTypeFQNames) return null
         return context
     }
 
     override fun invoke(project: Project, editor: Editor, ctx: Context) {
         val acquiresType = ctx.functionSignature.acquiresType
-        val expectedAcquiresTypeName = ctx.expectedAcquiresType.name()
+        val expectedAcquiresTypeName = ctx.expectedAcquiresType.item.name!!
         if (acquiresType == null) {
             val newFunctionSignature =
                 MovePsiFactory(project)
