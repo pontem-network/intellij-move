@@ -2,6 +2,7 @@ package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
 import org.move.lang.core.psi.MoveFunctionSignature
+import org.move.lang.core.psi.typeParameters
 
 class TyFunction(
     val item: MoveFunctionSignature,

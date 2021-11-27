@@ -43,4 +43,16 @@ class InvalidReturnTypeTest: AnnotatorTestCase(ErrorAnnotator::class) {
     }    
         """
     )
+
+    fun `test vector push back`() = checkErrors(
+        """
+    module 0x1::M {
+        native public fun push_back<Element>(v: &mut vector<Element>, e: Element);
+        
+        fun m<E: drop>(v: &mut vector<E>, x: E): u8 {
+            <error descr="Invalid return type: expected 'u8', found '()'">push_back(v, x)</error>
+        }
+    }    
+    """
+    )
 }

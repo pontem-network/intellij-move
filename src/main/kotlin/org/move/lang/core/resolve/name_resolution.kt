@@ -12,6 +12,7 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.ty.HasType
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 
@@ -131,18 +132,17 @@ fun processLexicalDeclarations(
     return when (namespace) {
         Namespace.DOT_ACCESSED_FIELD -> {
             val dotExpr = scope as? MoveDotExpr ?: return false
-            val refExpr = dotExpr.refExpr ?: return false
 
-            val referred = refExpr.path.reference?.resolve()
-            if (referred !is HasType) return false
-
-            val resolvedType = referred.resolvedType()
-            val structDef = when (resolvedType) {
-                is TyStruct -> resolvedType.item.structDef
-                is TyReference -> (resolvedType.innerTy() as? TyStruct)?.item?.structDef
-                else -> null
+            val receiverTy = dotExpr.expr.resolvedType()
+            val innerTy = when (receiverTy) {
+                is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
+                is TyStruct -> receiverTy
+                else -> TyUnknown
             }
-            return processor.matchAll(structDef?.fields.orEmpty())
+            if (innerTy !is TyStruct) return false
+
+            val fields = innerTy.item.structDef?.fields.orEmpty()
+            return processor.matchAll(fields)
         }
         Namespace.STRUCT_FIELD -> {
             val struct = when (scope) {

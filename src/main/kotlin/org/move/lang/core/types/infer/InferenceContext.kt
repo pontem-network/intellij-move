@@ -1,13 +1,11 @@
 package org.move.lang.core.types.infer
 
 import com.intellij.psi.util.parentOfType
-import org.move.ide.presentation.fullname
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.fqName
 import org.move.lang.core.psi.ext.hexIntegerLiteral
 import org.move.lang.core.psi.impl.MoveFunctionDefImpl
 import org.move.lang.core.types.ty.*
-import kotlin.math.exp
 
 val MoveExpr.outerFunction
     get() = (parentOfType<MoveFunctionDef>(true) as? MoveFunctionDefImpl)!!
@@ -40,9 +38,14 @@ fun instantiateItemTy(item: MoveNameIdentifierOwner): Ty {
                     ?.foldTyTypeParameterWith { findTypeVar(it.parameter) } ?: TyUnknown
                 paramTypes.add(paramType)
             }
-            val retType = item.returnType?.type
-                ?.let { inferMoveTypeTy(it) }
-                ?.foldTyTypeParameterWith { findTypeVar(it.parameter) } ?: TyUnknown
+            val returnMoveType = item.returnType?.type
+            val retType: Ty
+            if (returnMoveType == null) {
+                retType = TyUnit
+            } else {
+                retType = inferMoveTypeTy(returnMoveType)
+                    .foldTyTypeParameterWith { findTypeVar(it.parameter) }
+            }
             TyFunction(item, typeVars, paramTypes, retType)
         }
         else -> TyUnknown

@@ -17,21 +17,6 @@ val MoveCallExpr.arguments: List<MoveExpr>
         return this.callArguments?.exprList.orEmpty()
     }
 
-//val MoveCallExpr.typeVars: TypeVarsMap
-//    get() {
-//        val typeVars = mutableMapOf<String, Ty>()
-//        val referred = this.path.reference?.resolve() as? MoveTypeParametersOwner ?: return typeVars
-//        val typeArguments = this.path.typeArguments
-//        if (referred.typeParameters.size != typeArguments.size) return typeVars
-//
-//        for ((i, typeArgument) in typeArguments.withIndex()) {
-//            val name = referred.typeParameters[i].name ?: continue
-//            val type = typeArgument.type.resolvedType()
-//            typeVars[name] = type
-//        }
-//        return typeVars
-//    }
-
 abstract class MoveCallExprMixin(node: ASTNode) : MoveElementImpl(node), MoveCallExpr {
 
     override fun resolvedType(): Ty {
@@ -63,14 +48,5 @@ abstract class MoveCallExprMixin(node: ASTNode) : MoveElementImpl(node), MoveCal
         // see whether every arg is coerceable with those vars having those values
         // resolve return type with those vars
         return inference.resolveTy(funcTy.retType)
-//        return this.ctx.foldResolvingTyInfersFromCurrentContext(funcTy.retType)
-
-//        val signature = this.path.reference?.resolve() as? MoveFunctionSignature ?: return TyUnknown
-//        val returnTypeElement = signature.returnType
-//        if (returnTypeElement == null) {
-//            return TyUnit
-//        }
-//
-//        return returnTypeElement.type?.resolvedType(this.typeVars) ?: TyUnknown
     }
 }

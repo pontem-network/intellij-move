@@ -11,6 +11,10 @@ open class TyVector(val item: Ty): Ty {
         TyVector(item.foldWith(folder))
 
     override fun toString(): String = tyToString(this)
+
+    override fun equals(other: Any?): Boolean = other is TyVector && item == other.item
+
+    override fun hashCode(): Int = item.hashCode()
 }
 
 object TyByteString: TyVector(TyInteger(TyInteger.Kind.u8))

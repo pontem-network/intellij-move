@@ -26,7 +26,7 @@ object TyUnit: TyPrimitive("()") {
     override fun toString(): String = tyToString(this)
 }
 
-class TyInteger(val kind: Kind): TyPrimitive(kind.name.lowercase()) {
+data class TyInteger(val kind: Kind): TyPrimitive(kind.name.lowercase()) {
     override fun abilities() = Ability.all()
 
     companion object {
