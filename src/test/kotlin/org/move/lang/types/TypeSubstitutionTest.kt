@@ -96,4 +96,16 @@ class TypeSubstitutionTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test struct literal type generic`() = testExpr("""
+    module 0x1::M {
+        struct Vault<VaultContent: store> has key {
+            content: VaultContent
+        }
+        public fun new<Content: store>(owner: &signer,  content: Content) {
+            Vault { content };
+          //^ 0x1::M::Vault<Content>  
+        }
+    }    
+    """)
 }

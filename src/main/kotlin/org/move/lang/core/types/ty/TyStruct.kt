@@ -7,6 +7,7 @@ import org.move.lang.core.psi.ext.ability
 import org.move.lang.core.psi.ext.fieldsMap
 import org.move.lang.core.psi.ext.structDef
 import org.move.lang.core.psi.typeParameters
+import org.move.lang.core.types.infer.TypeFolder
 
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 
@@ -20,10 +21,12 @@ data class TyStruct(
         return this.item.abilities.mapNotNull { it.ability }.toSet()
     }
 
+    override fun innerFoldWith(folder: TypeFolder): Ty = TyStruct(item, typeArguments.map(folder))
+
     override fun toString(): String = tyToString(this)
 
     fun fieldTy(name: String): Ty {
-        val field = this.item.structDef?.fieldsMap?.get(name) ?: return TyUnknown
+        val field = this.item.structDef.fieldsMap[name] ?: return TyUnknown
         return field.typeAnnotation
             ?.type
             ?.resolvedType()

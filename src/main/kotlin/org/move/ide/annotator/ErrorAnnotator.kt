@@ -211,8 +211,8 @@ class ErrorAnnotator : MoveAnnotator() {
         checkDuplicates(holder, structField)
 
         val signature = structField.structDef?.structSignature ?: return
-        val structType = TyStruct(signature)
-        val structAbilities = structType.abilities()
+        val structTy = TyStruct(signature)
+        val structAbilities = structTy.abilities()
         if (structAbilities.isEmpty()) return
 
         val fieldType = structField.typeAnnotation?.type?.resolvedType() as? TyStruct ?: return
@@ -223,7 +223,7 @@ class ErrorAnnotator : MoveAnnotator() {
                 val message =
                     "The type '${fieldType.name()}' does not have the ability '${requiredAbility.label()}' " +
                             "required by the declared ability '${ability.label()}' " +
-                            "of the struct '${structType.name()}'"
+                            "of the struct '${structTy.name()}'"
                 holder.createErrorAnnotation(structField, message)
                 return
             }

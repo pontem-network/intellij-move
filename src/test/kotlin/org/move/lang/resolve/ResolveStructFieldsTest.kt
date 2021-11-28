@@ -5,7 +5,7 @@ import org.move.utils.tests.resolve.ResolveTestCase
 class ResolveStructFieldsTest : ResolveTestCase() {
     fun `test resolve reference to field from constructor`() = checkByCode(
         """
-        module M {
+        module 0x1::M {
             struct T {
                 my_field: u8
               //X  
@@ -21,7 +21,7 @@ class ResolveStructFieldsTest : ResolveTestCase() {
 
     fun `test resolve reference to field from pattern`() = checkByCode(
         """
-        module M {
+        module 0x1::M {
             struct T {
                 my_field: u8
               //X  
@@ -37,7 +37,7 @@ class ResolveStructFieldsTest : ResolveTestCase() {
 
     fun `test resolve reference to field from pattern shorthand`() = checkByCode(
         """
-        module M {
+        module 0x1::M {
             struct T {
                 my_field: u8
               //X  
@@ -53,7 +53,7 @@ class ResolveStructFieldsTest : ResolveTestCase() {
 
     fun `test resolve fields from dot access to struct reference`() = checkByCode(
         """
-        module M {
+        module 0x1::M {
             struct Option<Element> has copy, drop, store {
                 vec: vector<Element>
               //X  
@@ -69,7 +69,7 @@ class ResolveStructFieldsTest : ResolveTestCase() {
 
     fun `test resolve fields from dot access to struct mutable reference`() = checkByCode(
         """
-        module M {
+        module 0x1::M {
             struct Option<Element> has copy, drop, store {
                 vec: vector<Element>
               //X  

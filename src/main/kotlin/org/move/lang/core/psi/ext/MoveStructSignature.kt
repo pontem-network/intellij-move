@@ -14,9 +14,9 @@ val MoveStructSignature.module: MoveModuleDef
         return moduleBlock.parent as MoveModuleDef
     }
 
-val MoveStructSignature.structDef: MoveStructDef?
+val MoveStructSignature.structDef: MoveStructDef
     get() {
-        return this.parent as? MoveStructDef
+        return this.parent as MoveStructDef
     }
 
 val MoveStructSignature.abilities: List<MoveAbility>

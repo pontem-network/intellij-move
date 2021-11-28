@@ -4,12 +4,12 @@ import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.MoveDotExpr
 import org.move.lang.core.psi.MoveElementImpl
 import org.move.lang.core.psi.MoveRefExpr
-import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.Constraint
 import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.inferMoveTypeTy
-import org.move.lang.core.types.infer.outerFunction
-import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyReference
+import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.core.types.ty.TyUnknown
 
 val MoveDotExpr.refExpr: MoveRefExpr?
     get() {
