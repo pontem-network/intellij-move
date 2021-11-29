@@ -42,7 +42,8 @@ abstract class MoveStructLiteralExprMixin(node: ASTNode) : MoveElementImpl(node)
             val fieldExprTy = field.assignedExprTy
             inference.registerConstraint(Constraint.Equate(declaredFieldTy, fieldExprTy))
         }
-        inference.processConstraints()
+        // solve constraints, return TyUnknown if cannot
+        if (!inference.processConstraints()) return TyUnknown
 
         val structTy = TyStruct(structItem, structTypeVars)
         return inference.resolveTy(structTy)

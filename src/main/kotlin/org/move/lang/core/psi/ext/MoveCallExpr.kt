@@ -43,8 +43,9 @@ abstract class MoveCallExprMixin(node: ASTNode) : MoveElementImpl(node), MoveCal
                 inference.registerConstraint(Constraint.Equate(paramTy, argumentTy))
             }
         }
-        // solve constraints
-        inference.processConstraints()
+        // solve constraints, return TyUnknown if cannot
+        if (!inference.processConstraints()) return TyUnknown
+
         // see whether every arg is coerceable with those vars having those values
         // resolve return type with those vars
         return inference.resolveTy(funcTy.retType)

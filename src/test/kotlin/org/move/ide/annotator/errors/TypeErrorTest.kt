@@ -272,13 +272,13 @@ address 0x1 {
     """
     )
 
-    fun `test no type error yet with incompatible generic types`() = checkErrors("""
+    fun `test type checking disabled if constraints are incompatible`() = checkErrors("""
     module 0x1::M {
         struct C {}
         struct D {}
         fun new<Content>(content: Content, content2: Content): Content {}
         fun m() {
-            new(C {}, D {});
+            new(C {}, D {})
         }
     }    
     """)

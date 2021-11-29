@@ -30,7 +30,8 @@ abstract class MoveDotExprMixin(node: ASTNode) : MoveElementImpl(node), MoveDotE
         for ((tyVar, tyArg) in structTy.typeVars.zip(structTy.typeArguments)) {
             inferenceContext.registerConstraint(Constraint.Equate(tyVar, tyArg))
         }
-        inferenceContext.processConstraints()
+        // solve constraints, return TyUnknown if cannot
+        if (!inferenceContext.processConstraints()) return TyUnknown
 
         val fieldName = this.structFieldRef.referenceName
         return inferenceContext.resolveTy(structTy.fieldTy(fieldName))

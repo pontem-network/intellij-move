@@ -1,5 +1,6 @@
 package org.move.lang.core.types.infer
 
+import org.move.ide.presentation.fullname
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference
@@ -75,14 +76,16 @@ class ConstraintSolver(val ctx: InferenceContext) {
         constraints.add(constraint)
     }
 
-    fun processConstraints() {
+    fun processConstraints(): Boolean {
         while (constraints.isNotEmpty()) {
             val constraint = constraints.removeFirst()
-            processConstraint(constraint)
+            val isSuccessful = processConstraint(constraint)
+            if (!isSuccessful) return false
         }
+        return true
     }
 
-    private fun processConstraint(rawConstraint: Constraint) {
+    private fun processConstraint(rawConstraint: Constraint): Boolean {
         val constraint = rawConstraint.foldTyInferWith(ctx::resolveTyInferFromContext)
         when (constraint) {
             is Constraint.Equate -> {
@@ -107,14 +110,18 @@ class ConstraintSolver(val ctx: InferenceContext) {
                                 registerConstraint(Constraint.Equate(ty1.referenced, ty2.referenced))
                             }
                             else -> {
-                            // TODO: add
-                            // error("type == type should not occur for now")
+                                // if types are not compatible, constraints are unsolvable
+                                if (!isCompatible(ty1, ty2))
+                                    return false
+                                // TODO: add
+                                // error("type == type should not occur for now")
                             }
                         }
                     }
                 }
             }
         }
+        return true
     }
 
 //    fun processObligationsWherePossible() {

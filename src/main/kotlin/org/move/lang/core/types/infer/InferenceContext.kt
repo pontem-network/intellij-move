@@ -134,8 +134,8 @@ class InferenceContext {
         solver.registerConstraint(constraint)
     }
 
-    fun processConstraints() {
-        solver.processConstraints()
+    fun processConstraints(): Boolean {
+        return solver.processConstraints()
     }
 
     fun resolveTy(ty: Ty): Ty {
