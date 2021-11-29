@@ -127,8 +127,8 @@ fun Ty.compatibleWith(ty: Ty): Boolean {
 }
 
 class InferenceContext {
-    private val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
-    private val solver = ConstraintSolver(unificationTable)
+    val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
+    private val solver = ConstraintSolver(this)
 
     fun registerConstraint(constraint: Constraint) {
         solver.registerConstraint(constraint)
@@ -142,7 +142,7 @@ class InferenceContext {
         return ty.foldTyInferWith(this::resolveTyInferFromContext)
     }
 
-    private fun resolveTyInferFromContext(ty: Ty): Ty {
+    fun resolveTyInferFromContext(ty: Ty): Ty {
         if (ty !is TyInfer) return ty
         return when (ty) {
             is TyInfer.TyVar -> unificationTable.findValue(ty)?.let(this::resolveTyInferFromContext) ?: ty

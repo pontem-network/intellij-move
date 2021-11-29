@@ -250,19 +250,36 @@ address 0x1 {
     }    
     """)
 
-    fun `test no type error with explicit generic`() = checkErrors(
+    fun `test no type error with explicit generic as move_to`() = checkErrors(
         """
     module 0x1::M {
+        struct Option<Element> has copy, drop, store {
+            element: Element
+        }
+        public fun some<Element>(e: Element): Option<Element> {
+            Option { element: e }
+        }
         struct Vault<VaultContent: store> has key {
-            content: VaultContent
+            content: Option<VaultContent>
         }
         public fun new<Content: store>(owner: &signer,  content: Content) {
             move_to<Vault<Content>>(
                 owner,
-                Vault { content }
+                Vault { content: some(content) }
             )
         }
     }    
     """
     )
+
+    fun `test no type error yet with incompatible generic types`() = checkErrors("""
+    module 0x1::M {
+        struct C {}
+        struct D {}
+        fun new<Content>(content: Content, content2: Content): Content {}
+        fun m() {
+            new(C {}, D {});
+        }
+    }    
+    """)
 }

@@ -33,7 +33,7 @@ class FunctionInferenceContext {
 
     val varUnificationTable = UnificationTable<TyInfer.TyVar, Ty>()
 
-    val constraintSolver = ConstraintSolver(this.varUnificationTable)
+    val constraintSolver = ConstraintSolver(InferenceContext())
 
     fun inferExprsAndCollectBindings(codeBlock: MoveCodeBlock) {
         val walker = TypeInferenceWalker(this)
