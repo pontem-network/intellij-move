@@ -243,6 +243,7 @@ ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
     pin = 1
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner"
         "org.move.lang.core.types.ty.HasType"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveConstDefMixin"
@@ -444,9 +445,11 @@ StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
     pin = 1
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner"
         "org.move.lang.core.types.ty.HasType"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveStructFieldDefMixin"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
