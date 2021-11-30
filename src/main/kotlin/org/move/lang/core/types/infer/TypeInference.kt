@@ -60,13 +60,13 @@ class FunctionInferenceContext {
 //                    val inferredExprTy = stmt.initializer?.expr?.let { walker.inferExprTy(it) }
 
                     // TODO: check inferred type is coercable (assignable) to explicitly passed type
-                    val pat = stmt.pat
-                    if (pat != null) {
-                        bindings += collectBindings(
-                            pat,
-                            explicitTy ?: coercedInferredTy ?: TyUnknown
-                        )
-                    }
+//                    val pat = stmt.pat
+//                    if (pat != null) {
+//                        bindings += collectBindings(
+//                            pat,
+//                            explicitTy ?: coercedInferredTy ?: TyUnknown
+//                        )
+//                    }
                 }
                 is MoveExprStatement -> walker.inferExprTy(stmt.expr)
             }

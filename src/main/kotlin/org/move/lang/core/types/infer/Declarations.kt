@@ -45,8 +45,7 @@ fun inferMoveTypeTy(moveType: MoveType): Ty {
         is MovePathType -> {
             val referred = moveType.path.reference?.resolve()
             if (referred == null) return inferPrimitivePathType(moveType)
-
-            return when (referred) {
+            when (referred) {
                 is MoveTypeParameter -> TyTypeParameter(referred)
                 is MoveStructSignature -> {
                     val typeArgs = moveType.path.typeArguments.map { inferMoveTypeTy(it.type) }
@@ -56,11 +55,14 @@ fun inferMoveTypeTy(moveType: MoveType): Ty {
             }
         }
         is MoveRefType -> {
-            // TODO
             val mutability = Mutability.valueOf(moveType.mutable)
             val innerTypeRef = moveType.type ?: return TyReference(TyUnknown, mutability)
             val innerTy = inferMoveTypeTy(innerTypeRef)
-            return TyReference(innerTy, mutability)
+            TyReference(innerTy, mutability)
+        }
+        is MoveTupleType -> {
+            val innerTypes = moveType.typeList.map { inferMoveTypeTy(it) }
+            TyTuple(innerTypes)
         }
         else -> TyUnknown
     }

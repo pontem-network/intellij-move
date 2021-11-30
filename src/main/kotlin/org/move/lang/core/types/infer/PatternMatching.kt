@@ -1,16 +1,27 @@
 package org.move.lang.core.types.infer
 
-import org.move.lang.core.psi.MoveBindingPat
-import org.move.lang.core.psi.MovePat
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.providedFields
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.core.types.ty.TyTuple
+import org.move.lang.core.types.ty.TyUnknown
 
-fun collectBindings(pattern: MovePat, type: Ty): Map<String, Ty> {
-    val bindings = mutableMapOf<String, Ty>()
-    fun go(pat: MovePat, type: Ty) {
+fun collectBindings(pattern: MovePat, type: Ty): Map<MoveBindingPat, Ty> {
+    val bindings = mutableMapOf<MoveBindingPat, Ty>()
+    fun bind(pat: MovePat, ty: Ty) {
         when (pat) {
-            is MoveBindingPat -> bindings += pat.name!! to type
+            is MoveBindingPat -> bindings += pat to ty
+            is MoveTuplePat -> {
+                if (ty is TyTuple && pat.patList.size == ty.types.size) {
+                    pat.patList.zip(ty.types)
+                        .forEach { (pat, ty) -> bind(pat, ty) }
+                } else {
+                    pat.patList.map { bind(it, TyUnknown) }
+                }
+            }
         }
     }
-    go(pattern, type)
+    bind(pattern, type)
     return bindings
 }

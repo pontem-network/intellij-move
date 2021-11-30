@@ -43,8 +43,8 @@ fun instantiateItemTy(item: MoveNameIdentifierOwner): Ty {
             if (returnMoveType == null) {
                 retType = TyUnit
             } else {
-                retType = inferMoveTypeTy(returnMoveType)
-                    .foldTyTypeParameterWith { findTypeVar(it.parameter) }
+                retType =
+                    inferMoveTypeTy(returnMoveType).foldTyTypeParameterWith { findTypeVar(it.parameter) }
             }
             TyFunction(item, typeVars, paramTypes, retType)
         }
@@ -136,6 +136,10 @@ class InferenceContext {
 
     fun processConstraints(): Boolean {
         return solver.processConstraints()
+    }
+
+    fun inferExprTy(expr: MoveExpr): Ty {
+        return expr.resolvedType()
     }
 
     fun resolveTy(ty: Ty): Ty {
