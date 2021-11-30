@@ -17,7 +17,7 @@ import org.toml.lang.psi.TomlTableHeader
 val TomlTableHeader.isAddressesHeader: Boolean get() = text in setOf("[addresses]")
 
 val MoveNamedAddress.addressTomlKeyValue: TomlKeyValue? get() {
-    val segment = this.reference?.resolve() ?: return null
+    val segment = this.reference.resolve() ?: return null
     return segment.ancestorStrict()
 }
 

@@ -11,11 +11,11 @@ jobs:
         strategy:
             matrix:
                 os: [ ubuntu-latest ]
-                platform-version: [ 2021.2 ]
+                gradle-properties-version: [ 211, 212 ]
 
         runs-on: ${{ matrix.os }}
         env:
-            ORG_GRADLE_PROJECT_intellijVersion: ${{ matrix.platform-version }}
+            GRADLE_PROPS_VERSION: ${{ matrix.gradle-properties-version }}
 
         steps:
             -   uses: actions/checkout@v2
@@ -39,4 +39,4 @@ jobs:
             -   name: Verify plugin
                 uses: eskatos/gradle-command-action@v1
                 with:
-                    arguments: ":verifyPlugin"
+                    arguments: "runPluginVerifier"

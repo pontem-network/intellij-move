@@ -141,7 +141,7 @@ fun processLexicalDeclarations(
             }
             if (innerTy !is TyStruct) return false
 
-            val fields = innerTy.item.structDef?.fields.orEmpty()
+            val fields = innerTy.item.structDef.fields.orEmpty()
             return processor.matchAll(fields)
         }
         Namespace.STRUCT_FIELD -> {

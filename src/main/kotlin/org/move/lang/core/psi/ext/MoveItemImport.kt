@@ -26,12 +26,11 @@ abstract class MoveItemImportMixin(node: ASTNode) : MoveNamedElementImpl(node),
         val itemImport = this
         return object : MoveReferenceBase<MoveItemImport>(itemImport) {
             override fun resolve(): MoveNamedElement? {
-                val refName = referenceName ?: return null
                 val module = moduleRef.reference?.resolve() ?: return null
                 val vs = Visibility.buildSetOfVisibilities(moduleRef)
                 return resolveModuleItem(
                     module,
-                    refName,
+                    referenceName,
                     vs,
                     setOf(Namespace.TYPE, Namespace.NAME, Namespace.SCHEMA)
                 )
