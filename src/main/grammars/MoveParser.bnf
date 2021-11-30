@@ -202,6 +202,7 @@ ModuleDef ::= Attr* module (AddressRef '::')? IDENTIFIER ModuleBlock
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
         "org.move.lang.core.psi.MoveImportStatementsOwner"
+        "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveModuleDefMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]

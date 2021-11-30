@@ -32,8 +32,9 @@ class MovePsiFactory(private val project: Project) {
 
     fun createNativeFunctionDef(
         text: String,
+        moduleName: String = "_IntellijPreludeDummy"
     ): MoveNativeFunctionDef =
-        createFromText("module _IntellijPreludeDummy { $text }")
+        createFromText("module $moduleName { $text }")
             ?: error("Failed to create a method member from text: `$text`")
 
     private inline fun <reified T : MoveElement> createFromText(code: CharSequence): T? {

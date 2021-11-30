@@ -9,6 +9,8 @@ import org.move.ide.presentation.typeLabel
 import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MoveDocAndAttributeOwner
+import org.move.lang.core.psi.ext.fqName
+import org.move.lang.core.psi.ext.module
 import org.move.lang.core.types.ty.HasType
 import org.move.stdext.joinToWithBuffer
 
@@ -67,10 +69,21 @@ fun MoveElement.signature(builder: StringBuilder) {
     val funcSignature = when (this) {
         is MoveFunctionDef -> this.functionSignature
         is MoveNativeFunctionDef -> this.functionSignature
+        is MoveModuleDef -> {
+            val buffer = StringBuilder()
+            buffer += this.fqName
+            listOf(buffer.toString()).joinTo(builder, "<br>")
+            return
+        }
         else -> return
     } ?: return
 
     val buffer = StringBuilder()
+    val module = funcSignature.module
+    if (module != null) {
+        buffer += module.fqName
+        buffer += "\n"
+    }
     buffer.b { it += funcSignature.name }
     funcSignature.functionParameterList?.generateDocumentation(buffer)
     funcSignature.returnType?.generateDocumentation(buffer)

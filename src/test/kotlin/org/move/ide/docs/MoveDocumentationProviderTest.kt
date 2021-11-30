@@ -24,12 +24,23 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
         }
     }
     """, expected = """
-        <div class='definition'><pre><b>move_from</b>(addr: address): R</pre></div>
+        <div class='definition'><pre>builtin_functions
+        <b>move_from</b>(addr: address): R</pre></div>
         <div class='content'></div>
         """)
 
+    fun `test show doc comment for module`() = doTest("""
+    /// module docstring
+    module 0x1::M {}
+              //^   
+    """, expected = """
+        <div class='definition'><pre>0x1::M</pre></div>
+        <div class='content'><p>module docstring</p></div>
+        """
+    )
+
     fun `test show doc comments and signature for function`() = doTest("""
-    module M {
+    module 0x1::M {
         /// Adds two numbers.
         /// Returns their sum.
         fun add(a: u8, b: u8): u8 {
@@ -38,7 +49,8 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
         }
     }
     """, expected = """
-        <div class='definition'><pre><b>add</b>(a: u8, b: u8): u8</pre></div>
+        <div class='definition'><pre>0x1::M
+        <b>add</b>(a: u8, b: u8): u8</pre></div>
         <div class='content'><p>Adds two numbers.</p>
         <p>Returns their sum.</p></div>
     """)
