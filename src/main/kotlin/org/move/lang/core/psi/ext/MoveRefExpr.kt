@@ -1,18 +1,17 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import org.move.lang.core.psi.MoveQualNameReferenceElementImpl
+import org.move.lang.core.psi.MoveElementImpl
 import org.move.lang.core.psi.MoveRefExpr
-import org.move.lang.core.types.BaseType
-import org.move.lang.core.types.HasType
-import org.move.lang.core.types.TypeVarsMap
+import org.move.lang.core.types.ty.HasType
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnknown
 
-abstract class MoveRefExprMixin(node: ASTNode) : MoveQualNameReferenceElementImpl(node),
-                                                 MoveRefExpr {
-    override fun resolvedType(typeVars: TypeVarsMap): BaseType? {
-        val referred = this.reference.resolve() ?: return null
-        if (referred !is HasType) return null
+abstract class MoveRefExprMixin(node: ASTNode) : MoveElementImpl(node), MoveRefExpr {
 
-        return referred.resolvedType(emptyMap())
+    override fun resolvedType(): Ty {
+        val refTyped =
+            this.path.reference?.resolve() as? HasType ?: return TyUnknown
+        return refTyped.resolvedType()
     }
 }

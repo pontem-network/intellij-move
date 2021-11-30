@@ -2,7 +2,7 @@ package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isSelf
-import org.move.lang.core.psi.ext.parentImport
+import org.move.lang.core.psi.ext.moduleImport
 import org.move.lang.core.resolve.resolveItem
 
 class MoveModuleReferenceImpl(
@@ -16,11 +16,11 @@ class MoveModuleReferenceImpl(
         if (resolved is MoveImportAlias) {
             return resolved
         }
-        val qualModuleRef = when {
-            resolved is MoveItemImport && resolved.text == "Self" -> resolved.parentImport().fullyQualifiedModuleRef
-            resolved is MoveModuleImport -> resolved.fullyQualifiedModuleRef
+        val moduleRef = when {
+            resolved is MoveItemImport && resolved.text == "Self" -> resolved.moduleImport().fqModuleRef
+            resolved is MoveModuleImport -> resolved.fqModuleRef
             else -> return null
         }
-        return qualModuleRef.reference?.resolve()
+        return moduleRef.reference?.resolve()
     }
 }

@@ -4,6 +4,7 @@ import com.intellij.lang.ASTNode
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MoveFunctionDef
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
+import org.move.lang.core.types.infer.InferenceContext
 import javax.swing.Icon
 
 abstract class MoveFunctionDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),

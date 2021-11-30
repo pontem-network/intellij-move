@@ -11,8 +11,11 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor =
         object : MoveVisitor() {
             override fun visitModuleRef(moduleRef: MoveModuleRef) {
+//                 skip this check, as it will be checked in MovePath visitor
+                if (moduleRef.ancestorStrict<MovePath>() != null) return
+
                 if (moduleRef.ancestorStrict<MoveImportStatement>() != null) return
-                if (moduleRef is MoveFullyQualifiedModuleRef) return
+                if (moduleRef is MoveFQModuleRef) return
 
                 if (moduleRef.isUnresolved) {
                     holder.registerProblem(
@@ -23,35 +26,39 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
                 }
             }
 
-            override fun visitQualPath(qualPath: MoveQualPath) {
-                val refElement = qualPath.parent
-                if (refElement !is MoveQualPathReferenceElement) return
-
-                if (qualPath.isIdentifierOnly
-                    // module defined and exist
-                    || (qualPath.moduleRef?.reference?.resolve() != null)
-                ) {
-                    if (refElement.isUnresolved) {
-                        val description = when (refElement) {
-                            is MoveQualPathType -> "Unresolved type: `${refElement.referenceName}`"
-                            else -> "Unresolved reference: `${refElement.referenceName}`"
-                        }
-                        val highlightedElement = refElement.referenceNameElement ?: return
+            override fun visitPath(path: MovePath) {
+                if (path.isPrimitiveType()) return
+                val moduleRef = path.pathIdent.moduleRef
+                if (moduleRef != null) {
+                    if (moduleRef is MoveFQModuleRef) return
+                    if (moduleRef.isUnresolved) {
                         holder.registerProblem(
-                            highlightedElement,
-                            description,
+                            moduleRef,
+                            "Unresolved module reference: `${moduleRef.referenceName}`",
                             ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
                         )
+                        return
                     }
+                }
+                if (path.isUnresolved) {
+                    val description = when (path.parent) {
+                        is MovePathType -> "Unresolved type: `${path.referenceName}`"
+                        else -> "Unresolved reference: `${path.referenceName}`"
+                    }
+                    val highlightedElement = path.referenceNameElement ?: return
+                    holder.registerProblem(
+                        highlightedElement,
+                        description,
+                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                    )
                 }
             }
 
             override fun visitStructPatField(o: MoveStructPatField) {
-                val resolvedStructDef = o.structPat.referredStructDef ?: return
+                val resolvedStructDef = o.structPat.path.maybeStruct ?: return
                 if (!resolvedStructDef.fieldNames.any { it == o.referenceName }) {
-                    val highlightedElement = o.referenceNameElement ?: return
                     holder.registerProblem(
-                        highlightedElement,
+                        o.referenceNameElement,
                         "Unresolved field: `${o.referenceName}`",
                         ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
                     )
@@ -60,14 +67,13 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
 
             override fun visitStructLiteralField(o: MoveStructLiteralField) {
                 if (o.isUnresolved) {
-                    val highlightedElement = o.referenceNameElement ?: return
                     val errorMessage =
                         if (o.isShorthand)
                             "Unresolved reference: `${o.referenceName}`"
                         else
                             "Unresolved field: `${o.referenceName}`"
                     holder.registerProblem(
-                        highlightedElement,
+                        o.referenceNameElement,
                         errorMessage,
                         ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
                     )

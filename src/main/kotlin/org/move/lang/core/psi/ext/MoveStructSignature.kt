@@ -1,7 +1,12 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.*
+
+val MoveStructSignature.fqName: String get() {
+    val moduleFqName = this.module.fqName?.let { "$it::" }
+    val name = this.name ?: "<unknown>"
+    return moduleFqName + name
+}
 
 val MoveStructSignature.module: MoveModuleDef
     get() {
@@ -9,9 +14,9 @@ val MoveStructSignature.module: MoveModuleDef
         return moduleBlock.parent as MoveModuleDef
     }
 
-val MoveStructSignature.structDef: MoveStructDef?
+val MoveStructSignature.structDef: MoveStructDef
     get() {
-        return this.parent as? MoveStructDef
+        return this.parent as MoveStructDef
     }
 
 val MoveStructSignature.abilities: List<MoveAbility>

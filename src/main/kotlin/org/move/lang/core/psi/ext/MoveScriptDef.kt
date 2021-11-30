@@ -11,6 +11,12 @@ fun MoveScriptDef.allFnSignatures(): List<MoveFunctionSignature> {
 fun MoveScriptDef.consts(): List<MoveConstDef> =
     scriptBlock?.constDefList.orEmpty()
 
+fun MoveScriptDef.builtinScriptFnSignatures(): List<MoveFunctionSignature> {
+    return listOfNotNull(
+        createBuiltinFuncSignature("native fun assert(_: bool, err: u64);", project)
+    )
+}
+
 //fun MoveScriptDef.builtinFunctions(): List<MoveNativeFunctionDef> =
 //    listOf(
 //        createBuiltinFuncSignature("native fun assert(_: bool, err: u64): ();", project)

@@ -1,21 +1,34 @@
 import org.jetbrains.grammarkit.tasks.GenerateLexer
 import org.jetbrains.grammarkit.tasks.GenerateParser
+import org.jetbrains.intellij.tasks.RunPluginVerifierTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.util.*
 
-val intellijVersion = prop("intellijVersion", "2021.2")
-val kotlinVersion = "1.5.30"
+val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "212"
 
-val pluginJarName = "intellij-move-$intellijVersion"
+val baseProperties = "base-gradle.properties"
+val properties = "gradle-$propsVersion.properties"
+
+val props = Properties()
+file(baseProperties).inputStream().let { props.load(it) }
+file(properties).inputStream().let { props.load(it) }
+
+fun prop(key: String): String = props[key].toString()
+
+//val intellijVersion = prop("intellijVersion", "2021.2")
+val kotlinVersion = "1.5.31"
+
+val pluginJarName = "intellij-move-$propsVersion"
+val pluginVersion = "1.0.0"
 val pluginGroup = "org.move"
-val pluginVersion = "0.17.0"
-val pluginTomlVersion = "0.2.151.3997-212"
 
 group = pluginGroup
 version = pluginVersion
 
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.1.4"
-    id("org.jetbrains.kotlin.jvm") version "1.5.30"
+    kotlin("jvm") version "1.5.31"
+    id("org.jetbrains.intellij") version "1.3.0"
     id("org.jetbrains.grammarkit") version "2021.1.3"
 }
 
@@ -24,7 +37,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
-
 }
 
 allprojects {
@@ -41,8 +53,11 @@ allprojects {
 
     intellij {
         pluginName.set(pluginJarName)
-        version.set(intellijVersion)
-        plugins.set(listOf("org.toml.lang:$pluginTomlVersion"))
+        version.set(prop("platformVersion"))
+        type.set(prop("platformType"))
+
+        // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
+        plugins.set(prop("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
     }
 
     configure<JavaPluginExtension> {
@@ -78,7 +93,29 @@ allprojects {
     }
 
     tasks {
-        withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        patchPluginXml {
+            version.set(pluginVersion)
+            sinceBuild.set(prop("pluginSinceBuild"))
+            untilBuild.set(prop("pluginUntilBuild"))
+        }
+
+        runPluginVerifier {
+            ideVersions.set(
+                prop("verifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty)
+            )
+            failureLevel.set(
+                EnumSet.complementOf(
+                    EnumSet.of(
+                        // these are the only issues we tolerate
+                        RunPluginVerifierTask.FailureLevel.DEPRECATED_API_USAGES,
+                        RunPluginVerifierTask.FailureLevel.EXPERIMENTAL_API_USAGES,
+                        RunPluginVerifierTask.FailureLevel.INTERNAL_API_USAGES,
+                    )
+                )
+            )
+        }
+
+        withType<KotlinCompile> {
             dependsOn(generateRustLexer, generateRustParser)
             kotlinOptions {
                 jvmTarget = "11"
@@ -97,8 +134,6 @@ allprojects {
         }
     }
 }
-
-fun hasProp(name: String): Boolean = extra.has(name)
 
 fun prop(name: String, default: String = ""): String {
     val value = extra.properties.getOrDefault(name, default) as String

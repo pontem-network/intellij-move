@@ -1,8 +1,8 @@
 package org.move.lang.resolve
 
-import org.move.utils.tests.resolve.ResolveHeavyTestCase
+import org.move.utils.tests.resolve.ResolveProjectTestCase
 
-class ResolveMoveProjectModulesTest : ResolveHeavyTestCase() {
+class ResolveMoveProjectModulesTest : ResolveProjectTestCase() {
     fun `test resolve module from other file in sources folder`() = checkByFileTree(
         """
         //- Move.toml
@@ -36,18 +36,50 @@ class ResolveMoveProjectModulesTest : ResolveHeavyTestCase() {
         }    
     """
     )
-//
-//    fun `test resolve module from other file with inline address`() = checkByFileTree(
-//        """
-//        //- Move.toml
-//        //- sources/module.move
-//        module 0x1::Module {}
-//                  //X
-//        //- sources/main.move
-//        script {
-//            use 0x1::Module;
-//                   //^
-//        }
-//    """
-//    )
+
+    fun `test resolve module from other file with inline address`() = checkByFileTree(
+        """
+        //- Move.toml
+        //- sources/module.move
+        module 0x1::Module {}
+                  //X
+        //- sources/main.move
+        script {
+            use 0x1::Module;
+                   //^
+        }
+    """
+    )
+
+    fun `test resolve module from another file with named address`() = checkByFileTree("""
+        //- Move.toml
+        [addresses]
+        Std = "0x1"
+        //- sources/module.move
+        module Std::Module {}
+                  //X
+        //- sources/main.move
+        script {
+            use Std::Module;
+                   //^
+        }
+    """)
+
+    fun `test resolve namedaddr_module from dependency file with addr_subst`() = checkByFileTree("""
+        //- Move.toml
+        [dependencies]
+        Stdlib = { local = "./stdlib", addr_subst = { Std = "0x1" } }
+        
+        //- stdlib/Move.toml
+        [addresses]
+        Std = "_"
+        //- stdlib/sources/module.move
+        module Std::Module {}
+                  //X
+        //- sources/main.move
+        script {
+            use Std::Module;
+                   //^
+        }    
+    """)
 }

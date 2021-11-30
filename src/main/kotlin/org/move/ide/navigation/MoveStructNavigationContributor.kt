@@ -8,7 +8,7 @@ import com.intellij.util.indexing.FindSymbolParameters
 import com.intellij.util.indexing.IdFilter
 import org.move.lang.core.psi.MoveNamedElement
 import org.move.lang.core.psi.MoveStructSignature
-import org.move.openapiext.allProjectMoveFiles
+import org.move.openapiext.allMoveFilesForContentRoots
 
 class MoveStructNavigationContributor : ChooseByNameContributorEx {
     override fun processNames(processor: Processor<in String>, scope: GlobalSearchScope, filter: IdFilter?) {
@@ -22,7 +22,7 @@ class MoveStructNavigationContributor : ChooseByNameContributorEx {
                 }
             }
         }
-        project.allProjectMoveFiles().map { it.accept(visitor) }
+        project.allMoveFilesForContentRoots().map { it.accept(visitor) }
     }
 
     override fun processElementsWithName(
@@ -39,6 +39,6 @@ class MoveStructNavigationContributor : ChooseByNameContributorEx {
                 }
             }
         }
-        project.allProjectMoveFiles().map { it.accept(visitor) }
+        project.allMoveFilesForContentRoots().map { it.accept(visitor) }
     }
 }

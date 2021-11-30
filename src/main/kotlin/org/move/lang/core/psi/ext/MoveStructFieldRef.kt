@@ -19,7 +19,7 @@ class MoveDotStructFieldAccessReferenceImpl(
 
 abstract class MoveStructFieldRefMixin(node: ASTNode) : MoveElementImpl(node),
                                                         MoveStructFieldRef {
-    override fun getReference(): MoveReference? {
+    override fun getReference(): MoveReference {
         return MoveDotStructFieldAccessReferenceImpl(this)
     }
 }

@@ -12,8 +12,6 @@ import org.move.utils.tests.replaceCaretMarker
 class CompletionTestFixture(
     val myFixture: CodeInsightTestFixture
 ) : BaseFixture() {
-    private val project: Project get() = myFixture.project
-
     fun doFirstCompletion(@Language("Move") code: String, @Language("Move") after: String) {
         check(hasCaretMarker(after))
         checkByText(code, after.trimIndent()) {

@@ -7,7 +7,6 @@ import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.ProcessingContext
-import org.move.lang.MoveElementTypes
 import org.move.lang.MoveElementTypes.*
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
@@ -122,17 +121,21 @@ object MovePsiPatterns {
     fun ability(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MoveAbility>()
 
-    fun qualPathIdentifier(): PsiElementPattern.Capture<PsiElement> =
+    fun pathIdent(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
-            .withParent<MoveQualPath>()
+            .withParent<MovePathIdent>()
+//            .withSuperParent<MovePath>(2)
 
-    fun qualPathTypeIdentifier(): PsiElementPattern.Capture<PsiElement> =
-        qualPathIdentifier()
-            .withSuperParent<MoveQualPathType>(2)
+    fun path(): PsiElementPattern.Capture<PsiElement> =
+        pathIdent()
+            .withSuperParent<MovePath>(2)
+
+    fun pathType(): PsiElementPattern.Capture<PsiElement> =
+        pathIdent()
+            .withSuperParent<MovePathType>(3)
 
     fun nameTypeIdentifier(): PsiElementPattern.Capture<PsiElement> =
-        qualPathIdentifier()
-            .withSuperParent<MoveQualPathType>(2)
+        pathType()
             .withCond("FirstChild") { it.prevSibling == null }
 
     fun specIdentifier(): PsiElementPattern.Capture<PsiElement> =

@@ -1,5 +1,7 @@
 package org.move.stdext
 
+import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.openapi.vfs.VirtualFile
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -18,3 +20,15 @@ val <T> T.exhaustive: T
     inline get() = this
 
 fun Path.isExecutable(): Boolean = Files.isExecutable(this)
+
+fun deepIterateChildrenRecursivery(
+    root: VirtualFile,
+    filePredicate: (VirtualFile) -> Boolean,
+    processDirectory: (VirtualFile) -> Boolean = { true },
+    processFile: (VirtualFile) -> Boolean,
+) {
+    VfsUtil.iterateChildrenRecursively(root, { it.isDirectory || filePredicate(it) }) {
+        if (it.isDirectory) return@iterateChildrenRecursively processDirectory(it)
+        processFile(it)
+    }
+}

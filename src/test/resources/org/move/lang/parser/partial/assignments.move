@@ -2,6 +2,7 @@ script {
     fun main() {
         let a = ;
 
+        call()
         let (a, b) = ;
         let (a +++ ) = 1;
 

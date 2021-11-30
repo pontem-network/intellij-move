@@ -33,20 +33,6 @@ class ResolveFunctionTest : ResolveTestCase() {
     """
     )
 
-    fun `test resolve from spec fun to function`() = checkByCode(
-        """
-        module M {
-            fun call(): u8 {}
-              //X
-
-            spec call {
-               //^
-                assert true;
-            }
-        }
-    """
-    )
-
     fun `test resolve type param in param pos`() = checkByCode(
         """
         module M {

@@ -1,7 +1,7 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.MoveAbility
-import org.move.lang.core.types.Ability
+import org.move.lang.core.types.ty.Ability
 
 val MoveAbility.ability: Ability?
     get() =

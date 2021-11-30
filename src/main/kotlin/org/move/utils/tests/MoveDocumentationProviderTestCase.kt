@@ -1,7 +1,6 @@
 package org.move.utils.tests
 
 import com.intellij.codeInsight.documentation.DocumentationManager
-import com.intellij.openapi.project.rootManager
 import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
 import org.move.ide.docs.MoveDocumentationProvider
@@ -9,7 +8,7 @@ import org.move.lang.core.psi.MoveElement
 import org.move.openapiext.findVirtualFile
 import org.move.utils.tests.base.findElementAndOffsetInEditor
 
-abstract class MoveDocumentationProviderHeavyTestCase: MoveHeavyTestBase() {
+abstract class MoveDocumentationProviderProjectTestCase: MoveProjectTestCase() {
     protected fun doTestByFileTree(
         @Language("Move") code: String,
         @Language("Html") expected: String?,

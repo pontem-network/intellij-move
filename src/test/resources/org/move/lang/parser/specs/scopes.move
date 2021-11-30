@@ -8,7 +8,7 @@ module M {
         fun all(): bool {}
         fun uninterpreted(addr: address);
 
-        /// Native function which is defined in the prover's prelude.
+        // Native function which is defined in the prover's prelude.
         native fun serialize<MoveValue>(v: &MoveValue): vector<u8>;
     }
 

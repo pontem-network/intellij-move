@@ -56,17 +56,16 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
 
     fun `test builtin functions highlighted in call positions`() = checkHighlighting(
         """
-        script {
+        module M {
             fun move_to() {
                 let move_to = 1;
-                
-                <BUILTIN_FUNCTION>move_to</BUILTIN_FUNCTION>();
-                <BUILTIN_FUNCTION>move_from</BUILTIN_FUNCTION>();
-                <BUILTIN_FUNCTION>borrow_global</BUILTIN_FUNCTION>();
-                <BUILTIN_FUNCTION>borrow_global_mut</BUILTIN_FUNCTION>();
-                <BUILTIN_FUNCTION>exists</BUILTIN_FUNCTION>();
-                <BUILTIN_FUNCTION>freeze</BUILTIN_FUNCTION>();
-                <BUILTIN_FUNCTION>assert</BUILTIN_FUNCTION>();
+                move_to();
+                <BUILTIN_FUNCTION_CALL>move_from</BUILTIN_FUNCTION_CALL>();
+                <BUILTIN_FUNCTION_CALL>borrow_global</BUILTIN_FUNCTION_CALL>();
+                <BUILTIN_FUNCTION_CALL>borrow_global_mut</BUILTIN_FUNCTION_CALL>();
+                <BUILTIN_FUNCTION_CALL>exists</BUILTIN_FUNCTION_CALL>();
+                <BUILTIN_FUNCTION_CALL>freeze</BUILTIN_FUNCTION_CALL>();
+                <BUILTIN_FUNCTION_CALL>assert</BUILTIN_FUNCTION_CALL>();
             }
         }
     """

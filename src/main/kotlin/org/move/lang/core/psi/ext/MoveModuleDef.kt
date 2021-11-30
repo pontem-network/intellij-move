@@ -5,32 +5,42 @@ import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import org.move.ide.MoveIcons
+import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.psi.mixins.MoveFunctionSignatureMixin
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.types.FullyQualModule
+import org.move.lang.core.types.FQModule
+import org.move.lang.moveProject
 import javax.swing.Icon
 
 fun MoveModuleDef.definedAddressRef(): MoveAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MoveAddressDef>())?.addressRef
 
-fun MoveModuleDef.fullyQual(): FullyQualModule? {
+fun MoveModuleDef.fqModule(): FQModule? {
+//    val moveProject = this.containingFile.containingMoveProject() ?: return null
     val address = this.containingAddress.normalized()
     val name = this.name ?: return null
-    return FullyQualModule(address, name)
+    return FQModule(address, name)
 }
 
-val MoveModuleDef.friends: Set<FullyQualModule>
+val MoveModuleDef.fqName: String? get() {
+    val address = this.definedAddressRef()?.text?.let { "$it::" } ?: ""
+    val module = this.name ?: return null
+    return address + module
+}
+
+val MoveModuleDef.friendModules: Set<FQModule>
     get() {
         val block = this.moduleBlock ?: return emptySet()
-        val moduleRefs = block.friendStatementList.mapNotNull { it.fullyQualifiedModuleRef }
+        val moduleRefs = block.friendStatementList.mapNotNull { it.fqModuleRef }
 
-        val friends = mutableSetOf<FullyQualModule>()
+        val friends = mutableSetOf<FQModule>()
+//        val moveProject = this.moveProject() ?: return emptySet()
         for (moduleRef in moduleRefs) {
-            val address = moduleRef.addressRef.normalizedAddress() ?: continue
+            val address = moduleRef.addressRef.toNormalizedAddress() ?: continue
             val identifier = moduleRef.identifier?.text ?: continue
-            friends.add(FullyQualModule(address, identifier))
+            friends.add(FQModule(address, identifier))
         }
         return friends
     }
@@ -46,7 +56,7 @@ fun MoveModuleDef.allFnSignatures(): List<MoveFunctionSignature> {
 fun MoveModuleDef.builtinFnSignatures(): List<MoveFunctionSignature> {
     return listOfNotNull(
         createBuiltinFuncSignature("native fun move_from<R: key>(addr: address): R;", project),
-        createBuiltinFuncSignature("native fun move_to<R: key>(acc: &signer, res: R): ();", project),
+        createBuiltinFuncSignature("native fun move_to<R: key>(acc: &signer, res: R);", project),
         createBuiltinFuncSignature("native fun borrow_global<R: key>(addr: address): &R;", project),
         createBuiltinFuncSignature(
             "native fun borrow_global_mut<R: key>(addr: address): &mut R;",
@@ -54,7 +64,7 @@ fun MoveModuleDef.builtinFnSignatures(): List<MoveFunctionSignature> {
         ),
         createBuiltinFuncSignature("native fun exists<R: key>(addr: address): bool;", project),
         createBuiltinFuncSignature("native fun freeze<S>(mut_ref: &mut S): &S;", project),
-        createBuiltinFuncSignature("native fun assert(_: bool, err: u64): ();", project),
+        createBuiltinFuncSignature("native fun assert(_: bool, err: u64);", project),
     )
 }
 
@@ -67,7 +77,7 @@ fun MoveModuleDef.functionSignatures(visibility: Visibility): List<MoveFunctionS
             allFnSignatures()
                 .filter { it.visibility == FunctionVisibility.PUBLIC_SCRIPT }
         is Visibility.PublicFriend -> {
-            if (visibility.currentModule in this.friends) {
+            if (visibility.currentModule in this.friendModules) {
                 allFnSignatures().filter { it.visibility == FunctionVisibility.PUBLIC_FRIEND }
             } else {
                 emptyList()
@@ -146,11 +156,12 @@ abstract class MoveModuleDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(n
 
     override fun getPresentation(): ItemPresentation? {
         val name = this.name ?: return null
+//        val moveProject = this.containingFile.containingMoveProject() ?: return null
         val locationString = this.containingAddress.text
         return PresentationData(name,
                                 locationString,
                                 MoveIcons.MODULE,
-                                null);
+                                null)
     }
 
     override val importStatements: List<MoveImportStatement>

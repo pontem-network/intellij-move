@@ -5,8 +5,8 @@ import org.move.utils.tests.resolve.ResolveTestCase
 class ResolveStructFieldsTest : ResolveTestCase() {
     fun `test resolve reference to field from constructor`() = checkByCode(
         """
-        module M {
-            resource struct T {
+        module 0x1::M {
+            struct T {
                 my_field: u8
               //X  
             }
@@ -21,8 +21,8 @@ class ResolveStructFieldsTest : ResolveTestCase() {
 
     fun `test resolve reference to field from pattern`() = checkByCode(
         """
-        module M {
-            resource struct T {
+        module 0x1::M {
+            struct T {
                 my_field: u8
               //X  
             }
@@ -37,8 +37,8 @@ class ResolveStructFieldsTest : ResolveTestCase() {
 
     fun `test resolve reference to field from pattern shorthand`() = checkByCode(
         """
-        module M {
-            resource struct T {
+        module 0x1::M {
+            struct T {
                 my_field: u8
               //X  
             }
@@ -53,7 +53,7 @@ class ResolveStructFieldsTest : ResolveTestCase() {
 
     fun `test resolve fields from dot access to struct reference`() = checkByCode(
         """
-        module M {
+        module 0x1::M {
             struct Option<Element> has copy, drop, store {
                 vec: vector<Element>
               //X  
@@ -69,7 +69,7 @@ class ResolveStructFieldsTest : ResolveTestCase() {
 
     fun `test resolve fields from dot access to struct mutable reference`() = checkByCode(
         """
-        module M {
+        module 0x1::M {
             struct Option<Element> has copy, drop, store {
                 vec: vector<Element>
               //X  
@@ -81,5 +81,31 @@ class ResolveStructFieldsTest : ResolveTestCase() {
             }
         }    
     """
+    )
+
+    fun `test resolve field for borrow_global_mut`() = checkByCode(
+        """
+        module 0x1::M {
+            struct CapState<phantom Feature> has key { delegates: vector<address> }
+                                                     //X
+            fun m() acquires CapState {
+                borrow_global_mut<CapState<u8>>(@0x1).delegates;
+                                                     //^
+            }
+        }    
+        """
+    )
+
+    fun `test resolve field for parameter type`() = checkByCode(
+        """
+        module 0x1::M {
+            struct Cap<phantom Feature> has key { root: address }
+                                                 //X
+            fun m<Feature>(cap: Cap<Feature>) {
+                cap.root;
+                  //^          
+            }
+        }    
+        """
     )
 }

@@ -5,9 +5,11 @@
 
 package org.move.utils.tests
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.util.io.StreamUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
+import org.move.cli.moveProjectsService
 import org.move.utils.tests.base.MoveTestCase
 import org.move.utils.tests.base.TestCase
 

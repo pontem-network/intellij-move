@@ -19,7 +19,7 @@
     extends(".*Expr")=Expr
     extends(".*Pat")=Pat
     extends(".*Predicate")=Predicate
-    extends("(Lambda|Ref|QualPath|Tuple)Type")=Type
+    extends("(Lambda|Ref|Path|Tuple)Type")=Type
     extends(".*SpecDef")=SpecDef
 
     extends(".*SpecStatement")=SpecStatement
@@ -31,8 +31,8 @@
 
     tokens = [
         WHITESPACE='regexp:[ \n\t\r\f]'
-        LINE_COMMENT='regexp:(//.*\n)|(//.*\R)'
-        BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
+//        EOL_COMMENT='regexp:(//.*\n)|(//.*\R)'
+//        BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
 
         PLACEHOLDER_ADDRESS_IDENT='regexp:\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
         PLACEHOLDER_ADDRESS_LITERAL='regexp:@\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
@@ -204,6 +204,7 @@ ModuleDef ::= Attr* module (AddressRef '::')? IDENTIFIER ModuleBlock
         "org.move.lang.core.psi.MoveImportStatementsOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveModuleDefMixin"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 //    stubClass = "org.move.lang.core.stubs.impl.MoveModuleDefStub"
 //    elementTypeFactory = "org.move.lang.core.stubs.StubImplFactoryKt.factory"
 }
@@ -223,7 +224,7 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
     recoverWhile = Item_recover
 }
 // top-level recovery
-private Item_first ::= use | public | native | fun | const | struct | spec | Attr
+private Item_first ::= use | public | native | fun | const | struct | spec | friend | Attr
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= ImportStatement | FriendStatement
@@ -241,9 +242,10 @@ ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
     pin = 1
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.types.HasType"
+        "org.move.lang.core.types.ty.HasType"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveConstDefMixin"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 //    recoverWhile = ModuleItem_recover
 }
 //private ConstDef_init ::= '=' Expr
@@ -288,8 +290,17 @@ FunctionDefSpecStatement ::= FunctionSignature SpecBlock
 NativeFunctionDefSpecStatement ::= native FunctionSignature ';' { pin = 1 }
 UninterpretedFunctionDefSpecStatement ::= FunctionSignature ';'
 
-NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';' { pin = 2 }
-NativeStructDef ::= native StructSignature ';' { pin = 2 }
+NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';'
+{
+    pin = 2
+    implements = [ "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner" ]
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+NativeStructDef ::= native StructSignature ';'
+{
+    pin = 2
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
 
 private FunctionSignatureWithOptionalVisibility ::= FunctionSignatureVisibility | FunctionSignature
 private FunctionSignatureVisibility ::= FunctionVisibilityModifier FunctionSignature { pin = 1 }
@@ -310,6 +321,11 @@ private FunctionSignature__recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
 FunctionDef ::= Attr* FunctionSignatureWithOptionalVisibility CodeBlock
 {
     pin = 2
+    implements = [
+        "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner"
+    ]
+    mixin = "org.move.lang.core.psi.mixins.MoveFunctionDefMixin"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 //    recoverWhile = Item_recover
 }
 //NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';'
@@ -366,7 +382,7 @@ FunctionParameter ::= IDENTIFIER TypeAnnotation
     pin = 1
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.types.HasType"
+        "org.move.lang.core.types.ty.HasType"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveFunctionParameterMixin"
 }
@@ -383,7 +399,7 @@ private ReturnTypeItem_recover ::= !( '{' | ';' | acquires )
 
 // acquires T, Record
 AcquiresType ::= acquires AcquiresType_items { pin = 1 }
-private AcquiresType_items ::= <<comma_sep_items QualPathType>>
+private AcquiresType_items ::= <<comma_sep_items PathType>>
 {
     recoverWhile = AcquiresType_items_recover
 }
@@ -402,7 +418,11 @@ StructSignature ::= struct IDENTIFIER TypeParameterList? AbilitiesList?
     mixin = "org.move.lang.core.psi.mixins.MoveStructSignatureMixin"
 }
 
-StructDef ::= Attr* StructSignature StructFieldsDefBlock { pin = 2 }
+StructDef ::= Attr* StructSignature StructFieldsDefBlock
+{
+    pin = 2
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
 
 AbilitiesList ::= has <<comma_sep_items Ability>> { pin = 1 }
 Ability ::= copy | IDENTIFIER
@@ -423,7 +443,7 @@ StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
     pin = 1
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.types.HasType"
+        "org.move.lang.core.types.ty.HasType"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveStructFieldDefMixin"
 }
@@ -433,7 +453,7 @@ StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // 'use 0x0::Transaction as MyTransaction;'
 
-FriendStatement ::= friend FullyQualifiedModuleRef ';' { pin = 1 }
+FriendStatement ::= friend FQModuleRef ';' { pin = 1 }
 
 ImportStatement ::= Attr* use (ModuleItemsImport | ModuleImport) ';'
 {
@@ -449,7 +469,7 @@ ImportStatement ::= Attr* use (ModuleItemsImport | ModuleImport) ';'
 //private ImportStatement_body_recover ::= !';'
 
 //Import ::= ItemImport | ModuleImport
-ModuleImport ::= FullyQualifiedModuleRef ImportAlias?
+ModuleImport ::= FQModuleRef ImportAlias?
 {
 //    extends = Import
     name = "qual path to imported item"
@@ -459,7 +479,7 @@ ModuleImport ::= FullyQualifiedModuleRef ImportAlias?
     ]
     mixin = "org.move.lang.core.psi.ext.MoveModuleImportMixin"
 }
-ModuleItemsImport ::= FullyQualifiedModuleRef '::' (ItemImport | MultiItemImport)
+ModuleItemsImport ::= FQModuleRef '::' (ItemImport | MultiItemImport)
 {
     pin = 2
     name = "qual path to imported item"
@@ -487,7 +507,7 @@ ItemImport ::= IDENTIFIER ImportAlias?
     name = "item name"
     implements = [
         "org.move.lang.core.psi.MoveNamedElement"
-        "org.move.lang.core.psi.MoveReferenceElement"
+        "org.move.lang.core.psi.MoveMandatoryReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveItemImportMixin"
 }
@@ -503,9 +523,9 @@ ImportAlias ::= as IDENTIFIER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 TypeAnnotation ::= ':' Type { pin = 1 }
 
-Type ::= RefType | QualPathType | TupleType | LambdaType
+Type ::= RefType | PathType | TupleType | LambdaType
 {
-    implements = ["org.move.lang.core.types.HasType"]
+    implements = ["org.move.lang.core.types.ty.HasType"]
     mixin = "org.move.lang.core.psi.ext.MoveTypeMixin"
 }
 
@@ -516,13 +536,10 @@ RefType ::= RefTypeStart Type
 }
 RefTypeStart ::= ('&' mut?)
 
-QualPathType ::= QualPath
+PathType ::= Path
 {
     name = "type"
-    implements = [
-        "org.move.lang.core.psi.MoveQualTypeReferenceElement"
-    ]
-    mixin = "org.move.lang.core.psi.ext.MoveQualPathTypeMixin"
+    mixin = "org.move.lang.core.psi.ext.MovePathTypeMixin"
 }
 
 TupleType ::= '(' TupleTypeItem_with_recover* ')' { pin = 1 }
@@ -548,8 +565,10 @@ private TypeParameter_recover ::= !('>' | '(' | '{' | IDENTIFIER)
 
 TypeParameter ::= phantom? IDENTIFIER TypeParamBound? {
     pin = 2
-    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
-                   "org.move.lang.core.types.HasType" ]
+    implements = [
+        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+        "org.move.lang.core.types.ty.HasType"
+    ]
     mixin = "org.move.lang.core.psi.mixins.MoveTypeParameterMixin"
 }
 TypeParamBound ::= ':' TypeParamBound_items
@@ -582,8 +601,10 @@ BorrowPat ::= '&' Pat
 DotPat ::= IDENTIFIER '.' IDENTIFIER { pin = 2 }
 
 BindingPat ::= IDENTIFIER {
-    implements = [ "org.move.lang.core.psi.MoveNameIdentifierOwner"
-                   "org.move.lang.core.types.HasType" ]
+    implements = [
+    "org.move.lang.core.psi.MoveNameIdentifierOwner"
+                   "org.move.lang.core.types.ty.HasType"
+                   ]
     mixin = "org.move.lang.core.psi.ext.MoveBindingPatMixin"
 }
 
@@ -593,12 +614,7 @@ TuplePat ::= '(' <<comma_sep_items Pat>>? ')'
 //}
 //private TuplePat_body_recover ::= !(')'|'=')
 
-StructPat ::= QualPath StructPatFieldsBlock {
-    implements = [
-        "org.move.lang.core.psi.MoveQualTypeReferenceElement"
-    ]
-    mixin = "org.move.lang.core.psi.ext.MoveStructPatMixin"
-}
+StructPat ::= Path StructPatFieldsBlock
 StructPatFieldsBlock ::= '{' StructPatField_with_recover* '}' { pin = 1 }
 
 private StructPatField_with_recover ::= !'}' StructPatField (',' | &'}')
@@ -625,30 +641,31 @@ StructPatFieldBinding ::= ':' Pat { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Statements
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Statement ::= LetStatement | ExprStatement
+Statement ::= LetStatement | MacroCallStatement | ExprStatement
 {
-    implements = ["org.move.lang.core.types.HasType"]
+    implements = ["org.move.lang.core.types.ty.HasType"]
     mixin = "org.move.lang.core.psi.ext.MoveStatementMixin"
 }
 LetStatement ::= let Pat TypeAnnotation? Initializer? ';' {
     pin = 1
 //    implements = [
-//        "org.move.lang.core.types.HasType"
+//        "org.move.lang.core.types.ty.HasType"
 //    ]
 //    mixin = "org.move.lang.core.psi.mixins.MoveLetStatementMixin"
 }
 
-ExprStatement ::= (ExprStatement_items ';')
+ExprStatement ::= (ExprStatement_items !('}')) ';' { pin = 1 }
 private ExprStatement_items ::= IfExpr
-                            | LoopExpr
-                            | WhileExpr
+                                | LoopExpr
+                                | WhileExpr
 //                            | LetExpr
 //                            | AssignmentExpr
-                            | Expr
+                                | Expr
 {
-    recoverWhile = "StatementExpr_recover"
+    recoverWhile = "ExprStatement_recover"
 }
-private StatementExpr_recover ::= !(';' | '}')
+private ExprStatement_recover ::= !(';' | '}' | ExprStatement_first)
+private ExprStatement_first ::= let | if | while
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
@@ -664,7 +681,9 @@ CodeBlock ::= '{' CodeBlock_items  '}'
 //    implements = [ "org.move.lang.core.psi.MoveImportStatementsOwner" ]
 }
 
-private CodeBlock_items ::= ImportStatement* (Statement | SpecStatement)* (Expr | SpecBlockExpr)?
+private CodeBlock_items ::= ImportStatement*
+                            (Statement | SpecBlockSpecStatement)*
+                            (Expr | SpecBlockExpr)?
 {
     recoverWhile = "CodeBlock_items_recover"
 }
@@ -692,7 +711,7 @@ Expr ::= AssignmentExpr
         | BorrowExpr
         | AtomExpr
 {
-    implements = ["org.move.lang.core.types.HasType"]
+    implements = ["org.move.lang.core.types.ty.HasType"]
     mixin = "org.move.lang.core.psi.ext.MoveExprMixin"
 }
 //private SpecExpr ::= Expr | AggregatePredicate
@@ -809,9 +828,8 @@ AbortExpr ::= abort Expr
 BreakExpr ::= break
 ContinueExpr ::= continue
 
-StructLiteralExpr ::= QualPath StructLiteralFieldsBlock
+StructLiteralExpr ::= Path StructLiteralFieldsBlock
 {
-    implements = ["org.move.lang.core.psi.MoveQualTypeReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MoveStructLiteralExprMixin"
 }
 StructLiteralFieldsBlock ::= '{' StructLiteralField_with_recover* '}' { pin = 1 }
@@ -865,14 +883,15 @@ LiteralExpr ::= HEX_INTEGER_LITERAL
                 | ADDRESS_LITERAL
                 | BECH32_ADDRESS_LITERAL
                 | POLKADOT_ADDRESS_LITERAL
+                | ('@' NamedAddress)
 {
     mixin = "org.move.lang.core.psi.ext.MoveLiteralExprMixin"
 }
 
-CallExpr ::= (QualPath &'(') CallArguments
+CallExpr ::= (Path &'(') CallArguments
 {
     pin = 1
-    implements = ["org.move.lang.core.psi.MoveQualNameReferenceElement"]
+//    implements = ["org.move.lang.core.psi.MoveQualNameReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MoveCallExprMixin"
 }
 
@@ -925,33 +944,65 @@ IndexExpr ::= Expr IndexArg
 // Do not inline this rule, it breaks expression parsing
 private IndexArg ::= '[' Expr ']'
 
-RefExpr ::= QualPath
+RefExpr ::= Path
 {
-    implements = [
-        "org.move.lang.core.psi.MoveQualNameReferenceElement"
-    ]
+//    implements = [
+//        "org.move.lang.core.psi.MoveQualNameReferenceElement"
+//    ]
     mixin = "org.move.lang.core.psi.ext.MoveRefExprMixin"
 }
 
-QualPath ::= (ModuleRef '::')? IDENTIFIER TypeArgumentList?
+//private Path ::= QualPath | LocalPath
+//fake Path ::= (ModuleRef '::')? IDENTIFIER? TypeArgumentList?
+//{
+//    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+//    mixin = "org.move.lang.core.psi.ext.MovePathMixin"
+//}
 
-ModuleRef ::= ImportedModuleRef | FullyQualifiedModuleRef
+//LocalPath ::= IDENTIFIER TypeArgumentList? { pin = 1 elementType = Path }
+//QualPath ::= ModuleRef '::' IDENTIFIER TypeArgumentList? { pin = 1 elementType = Path }
+
+// TODO: add NamedAddress parsing with Move.toml info and switch FQModulePathIdent and ModulePathIdent
+Path ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList?
+{
+    implements = ["org.move.lang.core.psi.MovePathReferenceElement"]
+    mixin = "org.move.lang.core.psi.ext.MovePathMixin"
+}
+
+fake PathIdent ::= ((FQModuleRef | ModuleRef) '::')? IDENTIFIER?
+
+LocalPathIdent ::= IDENTIFIER { elementType = PathIdent }
+ModulePathIdent ::= ModuleRef '::' IDENTIFIER
+{
+    pin = 2
+    elementType = PathIdent
+}
+FQModulePathIdent ::= FQModuleRef '::' IDENTIFIER
+{
+    pin = 1
+    elementType = PathIdent
+}
+
+ModuleRef ::= IDENTIFIER | FQModuleRef
 {
     implements = ["org.move.lang.core.psi.MoveReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MoveModuleRefMixin"
 }
 
-ImportedModuleRef ::= IDENTIFIER
-{
-    extends = ModuleRef
-    mixin = "org.move.lang.core.psi.ext.MoveImportedModuleRefMixin"
-}
+//ImportedModuleRef ::= IDENTIFIER
+//{
+//    extends = ModuleRef
+//    mixin = "org.move.lang.core.psi.ext.MoveImportedModuleRefMixin"
+//}
 
-FullyQualifiedModuleRef ::= AddressRef '::' IDENTIFIER
+FQModuleRef ::= AddressRef '::' IDENTIFIER
 {
     pin = 2
     extends = ModuleRef
-    mixin = "org.move.lang.core.psi.ext.MoveFullyQualifiedModuleRefMixin"
+    implements = [
+        "org.move.lang.core.psi.MoveFQModuleReferenceElement"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MoveFQModuleRefMixin"
 }
 
 AddressRef ::= NamedAddress
@@ -964,6 +1015,9 @@ NamedAddress ::= IDENTIFIER
     implements = ["org.move.lang.core.psi.NamedAddressReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MoveNamedAddressMixin"
 }
+
+/// Macros
+MacroCallStatement ::= IDENTIFIER '!' CallArguments ';' { pin = 2 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Specs
@@ -997,11 +1051,11 @@ private except ::= <<exceptKeyword>>
 SpecDef ::= NameSpecDef | ModuleSpecDef | SchemaSpecDef
 
 NameSpecDef ::= (spec IDENTIFIER) SpecBlock
-{
-    pin = 1
-    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
-    mixin = "org.move.lang.core.psi.ext.MoveNameSpecDefMixin"
-}
+//{
+//    pin = 1
+//    implements = ["org.move.lang.core.psi.MoveReferenceElement"]
+//    mixin = "org.move.lang.core.psi.ext.MoveNameSpecDefMixin"
+//}
 ModuleSpecDef ::= (spec module) SpecBlock { pin = 1 }
 
 SchemaSpecDef ::= (spec schema) IDENTIFIER TypeParameterList? SpecBlock {
@@ -1122,14 +1176,14 @@ ApplySpecStatement ::= apply ApplySchemaName
     pin = 1
 }
 
-ApplySchemaName ::= QualPath
+ApplySchemaName ::= Path
                     ('{' <<comma_sep_items ApplySchemaNameAttribute>> '}')?
-{
-    implements = [
-        "org.move.lang.core.psi.MoveQualSchemaReferenceElement"
-    ]
-    mixin = "org.move.lang.core.psi.ext.MoveApplySchemaNameMixin"
-}
+//{
+//    implements = [
+//        "org.move.lang.core.psi.MoveQualSchemaReferenceElement"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MoveApplySchemaNameMixin"
+//}
 ApplySchemaNameAttribute ::= IDENTIFIER ':' Expr
 
 Predicate ::= SpecVisibility? (AggregateExpr | Expr)

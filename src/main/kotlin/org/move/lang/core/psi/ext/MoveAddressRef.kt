@@ -1,18 +1,19 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.psi.PsiElement
-import org.move.lang.MoveElementTypes.ADDRESS_IDENT
+import org.move.cli.MoveProject
 import org.move.lang.core.psi.MoveAddressRef
 import org.move.lang.core.types.Address
+import org.move.lang.moveProject
 
-//val MoveAddressRef.addressIdent: PsiElement? get() = this.findFirstChildByType(ADDRESS_IDENT)
-
-fun MoveAddressRef.address(): Address? {
+fun MoveAddressRef.toAddress(contextProject: MoveProject? = this.moveProject()): Address? {
+    val namedAddress = this.namedAddress
+    if (namedAddress != null) {
+        val refName = namedAddress.referenceName ?: return null
+        return contextProject?.getAddresses()?.get(refName)?.let { Address(it) }
+    }
     val addressLit = addressIdent?.text ?: bech32AddressIdent?.text ?: return null
     return Address(addressLit)
 }
 
-fun MoveAddressRef.normalizedAddress(): Address? {
-    val addressLit = addressIdent?.text ?: bech32AddressIdent?.text ?: return null
-    return Address(addressLit).normalized()
-}
+fun MoveAddressRef.toNormalizedAddress(contextProject: MoveProject = this.moveProject()!!): Address? =
+    this.toAddress(contextProject)?.normalized()

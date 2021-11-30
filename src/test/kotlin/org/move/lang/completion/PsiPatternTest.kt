@@ -73,7 +73,7 @@ class PsiPatternTest : MoveTestBase() {
                        //^
             }
         }
-    """, MovePsiPatterns.qualPathTypeIdentifier())
+    """, MovePsiPatterns.pathType())
 
     private inline fun <reified T : PsiElement> testPattern(
         @Language("Move") code: String,

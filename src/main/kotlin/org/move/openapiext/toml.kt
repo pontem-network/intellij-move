@@ -1,7 +1,10 @@
 package org.move.openapiext
 
+import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import org.toml.lang.psi.*
 import org.toml.lang.psi.ext.elementType
 import java.nio.file.Path
@@ -9,6 +12,11 @@ import java.nio.file.Path
 fun parseToml(project: Project, path: Path): TomlFile? {
     val file = LocalFileSystem.getInstance().findFileByNioFile(path) ?: return null
     return file.toPsiFile(project) as? TomlFile
+}
+
+fun parseTomlFromFile(project: Project, moveFile: VirtualFile): TomlFile? {
+    return moveFile.toPsiFile(project) as? TomlFile
+//    return moveFile.toPsiFile(project) as? TomlFile
 }
 
 fun TomlTable.namedEntries(): List<Pair<String, TomlValue?>> {
@@ -20,6 +28,8 @@ fun TomlTable.findKeyValue(key: String): TomlKeyValue? =
 
 fun TomlTable.findKey(key: String): TomlKey? =
     this.entries.findLast { it.key.text == key }?.key
+
+fun TomlKeyValue.singleSegmentOrNull(): TomlKeySegment? = this.key.segments.singleOrNull()
 
 fun TomlTable.findValue(key: String): TomlValue? =
     this.entries.findLast { it.key.text == key }?.value
@@ -47,6 +57,8 @@ fun TomlValue.stringValue(): String? {
 }
 
 fun TomlValue.arrayValue(): List<TomlValue> = (this as? TomlArray)?.elements.orEmpty()
+
+fun TomlValue.inlineTableValue(): TomlInlineTable? = this as? TomlInlineTable
 
 fun TomlFile.getRootKey(key: String): TomlValue? {
     val keyValue = this.children.filterIsInstance<TomlKeyValue>().find { it.key.text == key }

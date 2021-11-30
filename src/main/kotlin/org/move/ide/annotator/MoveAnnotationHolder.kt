@@ -5,7 +5,7 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 
-class MoveAnnotationHolder(private val holder: AnnotationHolder) {
+class MoveAnnotationHolder(val holder: AnnotationHolder) {
     fun createErrorAnnotation(element: PsiElement, message: String?) {
         newErrorAnnotation(element, message)?.create()
     }

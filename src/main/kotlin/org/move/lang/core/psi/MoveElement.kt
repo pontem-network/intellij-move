@@ -3,18 +3,19 @@ package org.move.lang.core.psi
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiReference
-import org.move.lang.MoveFile
-import org.move.lang.core.psi.ext.address
+import org.move.cli.MoveProject
+import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.ext.ancestorStrict
-import org.move.lang.core.resolve.ref.MoveReference
+import org.move.lang.core.psi.ext.toAddress
 import org.move.lang.core.types.Address
 
 interface MoveElement : PsiElement {
     @JvmDefault
-    val containingAddress: Address
-        get() =
-            ancestorStrict<MoveAddressDef>()?.address ?: Address.default()
+    val containingAddress: Address get() {
+        return ancestorStrict<MoveAddressDef>()
+            ?.addressRef
+            ?.toAddress() ?: Address.default()
+    }
 
     @JvmDefault
     val containingModule: MoveModuleDef?

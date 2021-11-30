@@ -12,5 +12,8 @@ script {
         call<u8, vector<u8>>(Transaction::new<Sender<u8>>());
 
         Transaction::call<u8, u8, vector<u8>>();
+
+        assert(true, 1);
+        assert!(true, 1);
     }
 }

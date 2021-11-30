@@ -40,8 +40,7 @@ private const val serviceName: String = "MoveProjectSettings"
 class MoveProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
-        var doveExecutablePath: String = "",
-        var moveCliExecutablePath: String = "",
+        var moveExecutablePath: String = "",
         var collapseSpecs: Boolean = false,
     )
 
@@ -114,14 +113,9 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
 val Project.moveSettings: MoveProjectSettingsService
     get() = this.getService(MoveProjectSettingsService::class.java)
 
-val Project.dovePathValue: String
+val Project.moveExecutablePathValue: String
     get() {
-        return this.moveSettings.settingsState.doveExecutablePath
-    }
-
-val Project.moveCLIPathValue: String
-    get() {
-        return this.moveSettings.settingsState.moveCliExecutablePath
+        return this.moveSettings.settingsState.moveExecutablePath
     }
 
 val Project.collapseSpecs: Boolean
@@ -129,9 +123,9 @@ val Project.collapseSpecs: Boolean
         return this.moveSettings.settingsState.collapseSpecs
     }
 
-val Project.dovePath: Path?
+val Project.moveExecPath: Path?
     get() {
-        val value = this.dovePathValue
+        val value = this.moveExecutablePathValue
         if (value.isBlank()) return null
 
         val path = Paths.get(value)

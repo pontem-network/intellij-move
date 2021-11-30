@@ -2,37 +2,71 @@ package org.move.lang
 
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.FileViewProvider
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.cli.ManifestType
-import org.move.cli.findCurrentTomlManifestPath
+import org.move.cli.MoveConstants
+import org.move.cli.MoveProject
+import org.move.cli.moveProjectsService
 import org.move.lang.core.psi.MoveAddressBlock
 import org.move.lang.core.psi.MoveAddressDef
 import org.move.lang.core.psi.MoveScriptBlock
 import org.move.lang.core.psi.MoveScriptDef
-import org.move.manifest.MoveToml
-import org.move.openapiext.parseToml
-import org.toml.lang.psi.TomlFile
+import org.move.openapiext.resolveAbsPath
+import org.move.openapiext.toPsiFile
+import org.toml.lang.psi.TomlFileType
+import java.nio.file.Path
 
-fun PsiFile.getCorrespondingMoveTomlFile(): TomlFile? {
+fun findMoveTomlPath(currentFilePath: Path): Path? {
+    var dir = currentFilePath.parent
+    while (dir != null) {
+        val moveTomlPath = dir.resolveAbsPath(MoveConstants.MANIFEST_FILE)
+        if (moveTomlPath != null) {
+            return moveTomlPath
+        }
+        dir = dir.parent
+    }
+    return null
+}
+
+//fun PsiFile.getCorrespondingMoveTomlFile(): TomlFile? {
+//    return project.moveProjects.findMoveProjectForPsiFile(this)?.moveToml?.tomlFile
+//    val moveTomlPath =
+//        addressesService.findMoveTomlPathForFile(this.originalFile.virtualFile)
+//            ?: return null
+//    val moveTomlPath = this.toNioPathOrNull()?.let { findMoveTomlPath(it) } ?: return null
+//    return parseToml(this.project, moveTomlPath)
+//}
+
+//fun PsiFile.getCorrespondingMoveToml(): MoveToml? {
+//    val tomlFile = getCorrespondingMoveTomlFile() ?: return null
+//    return MoveToml.fromTomlFile(tomlFile)
+//}
+
+fun PsiElement.moveProject(): MoveProject? = this.containingFile.containingMoveProject()
+
+fun PsiFile.containingMoveProject(): MoveProject? {
+    return project.moveProjectsService.findMoveProjectForPsiFile(this)
+}
+
+fun VirtualFile.toNioPathOrNull(): Path? {
     try {
-        val (tomlPath, tomlManifestType) =
-            this.virtualFile.toNioPath()
-                .let { findCurrentTomlManifestPath(it) } ?: return null
-        if (tomlManifestType != ManifestType.MOVE_CLI) return null
-
-        return parseToml(this.project, tomlPath)
-
+        return this.toNioPath()
     } catch (e: UnsupportedOperationException) {
         return null
     }
 }
 
-fun PsiFile.getCorrespondingMoveToml(): MoveToml? {
-    val tomlFile = getCorrespondingMoveTomlFile() ?: return null
-    return MoveToml.parse(tomlFile)
+fun PsiFile.toNioPathOrNull(): Path? {
+    return this.originalFile.virtualFile.toNioPathOrNull()
+//    try {
+//        return this.originalFile.virtualFile.toNioPath()
+//    } catch (e: UnsupportedOperationException) {
+//        return null
+//    }
 }
 
 class MoveFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvider, MoveLanguage) {
@@ -50,3 +84,7 @@ class MoveFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvide
 }
 
 val VirtualFile.isMoveFile: Boolean get() = fileType == MoveFileType
+
+val VirtualFile.isMoveTomlManifestFile: Boolean get() = fileType == TomlFileType && name == "Move.toml"
+
+fun VirtualFile.toMoveFile(project: Project): MoveFile? = this.toPsiFile(project) as? MoveFile

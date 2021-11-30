@@ -2,14 +2,14 @@ package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.MoveElement
 import org.move.lang.core.psi.ext.FunctionVisibility
-import org.move.lang.core.psi.ext.fullyQual
+import org.move.lang.core.psi.ext.fqModule
 import org.move.lang.core.psi.ext.visibility
-import org.move.lang.core.types.FullyQualModule
+import org.move.lang.core.types.FQModule
 
 sealed class Visibility {
     class Public : Visibility()
     class PublicScript : Visibility()
-    class PublicFriend(val currentModule: FullyQualModule) : Visibility()
+    class PublicFriend(val currentModule: FQModule) : Visibility()
     class Internal : Visibility()
 
     companion object {
@@ -17,7 +17,7 @@ sealed class Visibility {
             val vs = mutableSetOf<Visibility>(Public())
             val containingModule = element.containingModule
             if (containingModule != null) {
-                val asFriendModule = containingModule.fullyQual()
+                val asFriendModule = containingModule.fqModule()
                 if (asFriendModule != null) {
                     vs.add(PublicFriend(asFriendModule))
                 }

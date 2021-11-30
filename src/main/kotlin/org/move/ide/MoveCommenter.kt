@@ -3,11 +3,11 @@ package org.move.ide
 import com.intellij.lang.Commenter
 
 class MoveCommenter: Commenter {
-    override fun getLineCommentPrefix(): String? = "//"
+    override fun getLineCommentPrefix() = "//"
 
-    override fun getBlockCommentPrefix(): String? = "/*"
-    override fun getBlockCommentSuffix(): String? = "*/"
+    override fun getBlockCommentPrefix() = "/*"
+    override fun getBlockCommentSuffix() = "*/"
 
-    override fun getCommentedBlockCommentPrefix(): String? = "*//*"
-    override fun getCommentedBlockCommentSuffix(): String? = "*//*"
+    override fun getCommentedBlockCommentPrefix() = "*//*"
+    override fun getCommentedBlockCommentSuffix() = "*//*"
 }

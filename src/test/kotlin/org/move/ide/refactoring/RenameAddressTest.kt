@@ -2,10 +2,10 @@ package org.move.ide.refactoring
 
 import com.intellij.openapi.project.rootManager
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.MoveHeavyTestBase
+import org.move.utils.tests.MoveProjectTestCase
 import org.move.utils.tests.fileTreeFromText
 
-class RenameAddressTest : MoveHeavyTestBase() {
+class RenameAddressTest : MoveProjectTestCase() {
     fun `test rename from move correctly replaces Std in toml`() = doTest(
         "NoStd", """
         //- Move.toml
