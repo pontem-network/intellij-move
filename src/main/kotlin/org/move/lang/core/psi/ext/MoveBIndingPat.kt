@@ -4,10 +4,10 @@ import com.intellij.lang.ASTNode
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MoveBindingPat
 import org.move.lang.core.psi.MoveLetStatement
-import org.move.lang.core.psi.MovePat
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.collectBindings
+import org.move.lang.core.types.infer.inferExprTy
 import org.move.lang.core.types.infer.inferMoveTypeTy
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
@@ -29,7 +29,7 @@ abstract class MoveBindingPatMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(
         }
 
         val inference = InferenceContext()
-        val inferredTy = letStmt.initializer?.expr?.let { inference.inferExprTy(it) } ?: TyUnknown
+        val inferredTy = letStmt.initializer?.expr?.let { inferExprTy(it, inference) } ?: TyUnknown
         return collectBindings(pat, inferredTy)[this] ?: TyUnknown
     }
 }

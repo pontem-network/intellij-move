@@ -133,7 +133,7 @@ fun processLexicalDeclarations(
         Namespace.DOT_ACCESSED_FIELD -> {
             val dotExpr = scope as? MoveDotExpr ?: return false
 
-            val receiverTy = dotExpr.expr.resolvedType()
+            val receiverTy = dotExpr.expr.inferExprTy()
             val innerTy = when (receiverTy) {
                 is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
                 is TyStruct -> receiverTy

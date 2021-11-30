@@ -3,6 +3,7 @@ package org.move.utils.tests.types
 import org.intellij.lang.annotations.Language
 import org.move.ide.presentation.shortPresentableText
 import org.move.lang.core.psi.MoveExpr
+import org.move.lang.core.psi.ext.inferExprTy
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.MoveTestBase
 import org.move.utils.tests.base.findElementAndDataInEditor
@@ -46,7 +47,7 @@ abstract class TypificationTestCase : MoveTestBase() {
 //        val expectedTypes = data.split("|").map(String::trim)
         val expectedType = data.trim()
 
-        val type = expr.resolvedType().shortPresentableText(true)
+        val type = expr.inferExprTy().shortPresentableText(true)
         check(type == expectedType) {
             "Type mismatch. Expected $expectedType, found: $type"
         }

@@ -9,11 +9,9 @@ import org.move.ide.presentation.shortPresentableText
 import org.move.ide.presentation.typeLabel
 import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.MoveDocAndAttributeOwner
-import org.move.lang.core.psi.ext.fqName
-import org.move.lang.core.psi.ext.module
-import org.move.lang.core.psi.ext.structDef
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.isNative
+import org.move.lang.core.types.infer.inferMoveTypeTy
 import org.move.lang.core.types.ty.HasType
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.stdext.joinToWithBuffer
@@ -97,17 +95,14 @@ fun MoveElement.signature(builder: StringBuilder) {
             buffer += this.structDef?.structSignature?.name ?: "<anonymous>"
             buffer += "\n"
             buffer.b { it += this.name }
-            this.typeAnnotation?.let {
-                val type = it.type?.resolvedType() ?: TyUnknown
-                buffer += ": ${type.shortPresentableText(true)}"
-            }
+            buffer += ": ${this.declaredTy.shortPresentableText(true)}"
         }
         is MoveConstDef -> {
             buffer += this.containingModule!!.fqName
             buffer += "\n"
             buffer += "const "
             buffer.b { it += this.name }
-            buffer += ": ${this.resolvedType().shortPresentableText(false)}"
+            buffer += ": ${this.declaredTy.shortPresentableText(false)}"
             this.initializer?.let { buffer += " ${it.text}" }
         }
         else -> return
@@ -119,7 +114,7 @@ private fun PsiElement.generateDocumentation(buffer: StringBuilder, prefix: Stri
     buffer += prefix
     when (this) {
         is MoveType -> {
-            buffer += this.resolvedType().typeLabel(this)
+            buffer += inferMoveTypeTy(this).typeLabel(this)
         }
         is MoveFunctionParameterList ->
             this.functionParameterList

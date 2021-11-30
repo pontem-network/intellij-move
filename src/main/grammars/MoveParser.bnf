@@ -246,7 +246,7 @@ ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
         "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner"
         "org.move.lang.core.types.ty.HasType"
     ]
-    mixin = "org.move.lang.core.psi.mixins.MoveConstDefMixin"
+    mixin = "org.move.lang.core.psi.ext.MoveConstDefMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 //    recoverWhile = ModuleItem_recover
 }
@@ -754,55 +754,24 @@ OrExpr ::= Expr oror Expr
 AndExpr ::= Expr andand Expr
 
 LessExpr ::= Expr (!(ltlt | lt_eqeq_gt) '<') Expr
-{
-    mixin = "org.move.lang.core.psi.ext.MoveBooleanExprMixin"
-}
 GreaterExpr ::= Expr (!gtgt '>') Expr
-{
-    mixin = "org.move.lang.core.psi.ext.MoveBooleanExprMixin"
-}
 LessEqualsExpr ::= Expr lteq Expr
-{
-    mixin = "org.move.lang.core.psi.ext.MoveBooleanExprMixin"
-}
 GreaterEqualsExpr ::= Expr gteq Expr
-{
-    mixin = "org.move.lang.core.psi.ext.MoveBooleanExprMixin"
-}
 
 BitOrExpr ::= Expr (!oror '|') Expr
 BitAndExpr ::= Expr (!andand '&') Expr
 BitXorExpr ::= Expr '^' Expr
 
 CastExpr ::= Expr as Type
-{
-    mixin = "org.move.lang.core.psi.ext.MoveCastExprMixin"
-}
 
 private AnnotatedExpPrefix ::= '(' Expr ':'
 AnnotatedExpr ::= AnnotatedExpPrefix Type ')' { pin = 1 }
 
 MulExpr ::= Expr '*' Expr
-{
-    mixin = "org.move.lang.core.psi.ext.MoveMulExprMixin"
-}
 DivExpr ::= Expr '/' Expr
-{
-    mixin = "org.move.lang.core.psi.ext.MoveDivExprMixin"
-}
 PlusExpr ::= Expr '+' Expr
-{
-    mixin = "org.move.lang.core.psi.ext.MovePlusExprMixin"
-}
 MinusExpr ::= Expr '-' Expr
-{
-    mixin = "org.move.lang.core.psi.ext.MoveMinusExprMixin"
-}
-
 ModExpr ::= Expr '%' Expr
-{
-    mixin = "org.move.lang.core.psi.ext.MoveModExprMixin"
-}
 
 LeftShiftExpr ::= Expr ltlt Expr
 RightShiftExpr ::= Expr gtgt Expr
@@ -812,20 +781,10 @@ ImplyOperatorExpr ::= Expr eqeq_gt Expr
 PartialImplyOperatorExpr ::= Expr lt_eqeq_gt Expr
 
 BangExpr ::= '!' Expr
-{ mixin = "org.move.lang.core.psi.ext.MoveBangExprMixin" }
-
 DerefExpr ::= '*' Expr
-{
-    mixin = "org.move.lang.core.psi.ext.MoveDerefExprMixin"
-}
+
 CopyExpr ::= copy Expr
-{
-    mixin = "org.move.lang.core.psi.ext.MoveCopyExprMixin"
-}
 MoveExpr ::= move Expr
-{
-    mixin = "org.move.lang.core.psi.ext.MoveMoveExprMixin"
-}
 
 ReturnExpr ::= return Expr?
 AbortExpr ::= abort Expr
@@ -833,9 +792,6 @@ BreakExpr ::= break
 ContinueExpr ::= continue
 
 StructLiteralExpr ::= Path StructLiteralFieldsBlock
-{
-    mixin = "org.move.lang.core.psi.ext.MoveStructLiteralExprMixin"
-}
 StructLiteralFieldsBlock ::= '{' StructLiteralField_with_recover* '}' { pin = 1 }
 
 private StructLiteralField_with_recover ::= !'}' StructLiteralField (',' | &'}')
@@ -859,9 +815,7 @@ StructLiteralField ::= IDENTIFIER StructLiteralFieldAssignment?
 StructLiteralFieldAssignment ::= ':' Expr { pin = 1 }
 
 ParensExpr ::= '(' Expr ')'
-{
-    mixin = "org.move.lang.core.psi.ext.MoveParensExprMixin"
-}
+
 //private ParensExpr_body ::= Expr { recoverWhile = "ParensExpr_body_recover" }
 //private ParensExpr_body_recover ::= !(':'|')'|',')
 //private ParensExprBody ::= Expr { recoverWhile = "ParensExprBody_recover"}
@@ -888,15 +842,12 @@ LiteralExpr ::= HEX_INTEGER_LITERAL
                 | BECH32_ADDRESS_LITERAL
                 | POLKADOT_ADDRESS_LITERAL
                 | ('@' NamedAddress)
-{
-    mixin = "org.move.lang.core.psi.ext.MoveLiteralExprMixin"
-}
 
 CallExpr ::= (Path &'(') CallArguments
 {
     pin = 1
 //    implements = ["org.move.lang.core.psi.MoveQualNameReferenceElement"]
-    mixin = "org.move.lang.core.psi.ext.MoveCallExprMixin"
+//    mixin = "org.move.lang.core.psi.ext.MoveCallExprMixin"
 }
 
 CallArguments ::= '(' <<comma_sep_items (Expr &(','|')'))>>? ')' { pin = 1 }
@@ -929,14 +880,7 @@ Initializer ::= '=' Expr {
 //private Initializer_recover ::= !(';'|'}'|')')
 
 BorrowExpr ::= '&' mut? Expr
-{
-    mixin = "org.move.lang.core.psi.ext.MoveBorrowExprMixin"
-}
-
 DotExpr ::= Expr '.' StructFieldRef
-{
-    mixin = "org.move.lang.core.psi.ext.MoveDotExprMixin"
-}
 
 StructFieldRef ::= IDENTIFIER
 {
@@ -949,12 +893,6 @@ IndexExpr ::= Expr IndexArg
 private IndexArg ::= '[' Expr ']'
 
 RefExpr ::= Path
-{
-//    implements = [
-//        "org.move.lang.core.psi.MoveQualNameReferenceElement"
-//    ]
-    mixin = "org.move.lang.core.psi.ext.MoveRefExprMixin"
-}
 
 //private Path ::= QualPath | LocalPath
 //fake Path ::= (ModuleRef '::')? IDENTIFIER? TypeArgumentList?

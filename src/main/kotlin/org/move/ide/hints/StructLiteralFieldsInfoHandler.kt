@@ -8,10 +8,7 @@ import org.move.ide.presentation.fullname
 import org.move.lang.MoveElementTypes
 import org.move.lang.core.psi.MoveStructLiteralExpr
 import org.move.lang.core.psi.MoveStructLiteralFieldsBlock
-import org.move.lang.core.psi.ext.ancestorStrict
-import org.move.lang.core.psi.ext.fieldsMap
-import org.move.lang.core.psi.ext.maybeStruct
-import org.move.lang.core.psi.ext.startOffset
+import org.move.lang.core.psi.ext.*
 import org.move.utils.AsyncParameterInfoHandler
 
 class StructLiteralFieldsDescription(val fields: Array<String>) {
@@ -23,7 +20,7 @@ class StructLiteralFieldsDescription(val fields: Array<String>) {
             val struct = structLiteralExpr.path.maybeStruct ?: return null
             val fieldParams =
                 struct.fieldsMap.entries.map { (name, field) ->
-                    val type = field.resolvedType().fullname()
+                    val type = field.declaredTy.fullname()
                     "$name: $type"
                 }.toTypedArray()
             return StructLiteralFieldsDescription(fieldParams)

@@ -8,10 +8,7 @@ import org.move.ide.presentation.name
 import org.move.lang.core.psi.MoveCallExpr
 import org.move.lang.core.psi.MoveFunctionSignature
 import org.move.lang.core.psi.MovePsiFactory
-import org.move.lang.core.psi.ext.ancestorOrSelf
-import org.move.lang.core.psi.ext.fqName
-import org.move.lang.core.psi.ext.typeArguments
-import org.move.lang.core.psi.ext.typeFQNames
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.TyStruct
 
 class AddAcquiresIntention : MoveElementBaseIntentionAction<AddAcquiresIntention.Context>() {
@@ -35,7 +32,7 @@ class AddAcquiresIntention : MoveElementBaseIntentionAction<AddAcquiresIntention
         if (callExpr.typeArguments.isEmpty()) return null
         val expectedAcquiresType =
             callExpr.typeArguments
-                .getOrNull(0)?.type?.resolvedType() as? TyStruct ?: return null
+                .getOrNull(0)?.type?.inferTypeTy() as? TyStruct ?: return null
 
         val outFunction = callExpr.containingFunction ?: return null
         val outFunctionSignature = outFunction.functionSignature ?: return null

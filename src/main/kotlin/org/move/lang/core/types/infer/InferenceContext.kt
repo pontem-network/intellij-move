@@ -52,22 +52,6 @@ fun instantiateItemTy(item: MoveNameIdentifierOwner): Ty {
     }
 }
 
-fun inferLiteralExprTy(literalExpr: MoveLiteralExpr): Ty {
-    return when {
-        literalExpr.boolLiteral != null -> TyBool
-        literalExpr.addressLiteral != null
-                || literalExpr.bech32AddressLiteral != null
-                || literalExpr.polkadotAddressLiteral != null -> TyAddress
-        literalExpr.integerLiteral != null || literalExpr.hexIntegerLiteral != null -> {
-            val literal = (literalExpr.integerLiteral ?: literalExpr.hexIntegerLiteral)!!
-            return TyInteger.fromSuffixedLiteral(literal) ?: TyInteger(TyInteger.DEFAULT_KIND)
-        }
-        literalExpr.byteStringLiteral != null -> TyByteString
-        else -> TyUnknown
-    }
-}
-
-
 //sealed class TypesCompatibility {
 //    object Ok : TypesCompatibility()
 //    class Mismatch(val ty1: Ty, ty2: Ty) : TypesCompatibility()
@@ -122,13 +106,17 @@ fun isCompatible(expectedTy: Ty, inferredTy: Ty): Boolean {
     }
 }
 
-fun Ty.compatibleWith(ty: Ty): Boolean {
-    return isCompatible(this, ty)
-}
-
-class InferenceContext {
-    val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
+class InferenceContext(
+    val exprTypes: MutableMap<MoveExpr, Ty> = mutableMapOf(),
+    val unificationTable: UnificationTable<TyInfer.TyVar, Ty> = UnificationTable()
+) {
+//    val exprTypes = mutableMapOf<MoveExpr, Ty>()
+//    val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
     private val solver = ConstraintSolver(this)
+
+    fun copyWithCache(): InferenceContext {
+        return InferenceContext(this.exprTypes)
+    }
 
     fun registerConstraint(constraint: Constraint) {
         solver.registerConstraint(constraint)
@@ -138,8 +126,8 @@ class InferenceContext {
         return solver.processConstraints()
     }
 
-    fun inferExprTy(expr: MoveExpr): Ty {
-        return expr.resolvedType()
+    fun cacheExprTy(expr: MoveExpr, ty: Ty) {
+        this.exprTypes[expr] = ty
     }
 
     fun resolveTy(ty: Ty): Ty {
