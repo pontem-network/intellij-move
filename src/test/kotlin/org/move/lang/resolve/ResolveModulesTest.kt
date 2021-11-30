@@ -213,4 +213,22 @@ class ResolveModulesTest : ResolveTestCase() {
         }
     """
     )
+
+    fun `test resolve to inline address module def`() = checkByCode(
+        """
+        module 0x0002::A {}
+                     //X
+        
+        address 0x1 {
+            module B {
+                use 0x02::A;
+                
+                fun main() {
+                    let a = A::create();
+                          //^
+                }
+            }
+        }
+    """
+    )
 }

@@ -19,4 +19,20 @@ class InvalidReturnTypeTest: AnnotatorTestCase(ErrorAnnotator::class) {
         }
     }    
     """)
+
+    fun `test if statement returns ()`() = checkErrors("""
+    module M {
+        fun m() {
+            if (true) {1} else {2};
+        }
+    }    
+    """)
+
+    fun `test block expr returns ()`() = checkErrors("""
+    module M {
+        fun m() {
+            {1};
+        }
+    }    
+    """)
 }

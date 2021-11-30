@@ -9,20 +9,18 @@ import java.nio.file.Paths
 class DoveCommandTest : MoveTestBase() {
 
     fun `test fetch package metadata for a test project`() {
-        val moveProjectRoot = Paths.get(TestCase.testResourcesPath).resolve("move_project")
+        val moveProjectRoot = Paths.get(TestCase.testResourcesPath).resolve("dove_toml_project")
         (project.rootService as TestProjectRootServiceImpl).modifyPath(moveProjectRoot)
 
         val debugMovePath = moveProjectRoot.resolve("stdlib").resolve("debug.move")
         val metadata = project.metadata(debugMovePath)
 
         check(metadata != null) { "Metadata is null" }
-        check(metadata.packageTable?.dialect == "pont")
+        check(metadata.dialect == "pont")
 
-        val dependencies = metadata.packageTable?.dependencies.orEmpty()
-        check(dependencies.size == 2)
-        check(dependencies[0].toString().endsWith("/artifacts/modules"))
-        check(dependencies[1].toString().endsWith("intellij-move/src/test/resources/move_project/stdlib"))
-
-        check(metadata.packageTable?.account_address == "0x1")
+        val depFolders = metadata.moduleFolders
+        check(depFolders.size == 2)
+        check(depFolders[0].toNioPath().toString().endsWith("/artifacts/modules"))
+        check(depFolders[1].toNioPath().toString().endsWith("intellij-move/src/test/resources/dove_toml_project/stdlib"))
     }
 }

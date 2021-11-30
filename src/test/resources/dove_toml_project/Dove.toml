@@ -1,5 +1,5 @@
 [package]
-name = "move_project"
+name = "dove_toml_project"
 dialect = "pont"
 dependencies = [
     { path = "./stdlib" },

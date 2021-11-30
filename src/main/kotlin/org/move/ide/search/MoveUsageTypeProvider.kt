@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.usages.UsageTarget
 import com.intellij.usages.impl.rules.UsageType
 import com.intellij.usages.impl.rules.UsageTypeProviderEx
+import org.move.lang.core.psi.MoveAddressRef
 import org.move.lang.core.psi.MoveExpr
 
 object MoveUsageTypeProvider : UsageTypeProviderEx {
@@ -25,6 +26,7 @@ object MoveUsageTypeProvider : UsageTypeProviderEx {
 
     //    private val METHOD_CALL = UsageType { "method call" }
     private val ARGUMENT = UsageType { "argument" }
+    private val ADDRESS_REF = UsageType { "address ref" }
 
 //    private val MACRO_CALL = UsageType { "macro call" }
 //    private val MACRO_ARGUMENT = UsageType { "macro argument" }
@@ -50,6 +52,7 @@ object MoveUsageTypeProvider : UsageTypeProviderEx {
         val parent = element.parent ?: return null;
         return when (parent) {
             is MoveExpr -> EXPR
+            is MoveAddressRef -> ADDRESS_REF
             else -> null
         }
 //        val parent = element?.goUpTillOtherThan<MovePathExpr>() ?: return null

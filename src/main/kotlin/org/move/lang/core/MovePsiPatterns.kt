@@ -7,7 +7,7 @@ import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.ProcessingContext
-import org.jetbrains.annotations.NotNull
+import org.move.lang.MoveElementTypes
 import org.move.lang.MoveElementTypes.*
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
@@ -44,6 +44,10 @@ object MovePsiPatterns {
 
     fun codeStatement(): PsiElementPattern.Capture<PsiElement> =
         psiElementInside<MoveCodeBlock>()
+
+    fun namedAddress(): PsiElementPattern.Capture<MoveNamedAddress> {
+        return psiElement()
+    }
 
     inline fun <reified I : PsiElement> afterSibling(): ElementPattern<PsiElement> {
         val afterSibling = PlatformPatterns
@@ -205,16 +209,12 @@ inline fun <reified I : PsiElement> PsiElementPattern.Capture<PsiElement>.withSu
     return this.withSuperParent(level, I::class.java)
 }
 
-fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCond(
-    debugName: String,
-    cond: (T) -> Boolean,
-): Self =
-    with(object : PatternCondition<T>(debugName) {
+fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCond(name: String, cond: (T) -> Boolean): Self =
+    with(object : PatternCondition<T>(name) {
         override fun accepts(t: T, context: ProcessingContext?): Boolean = cond(t)
     })
 
-//
-//inline fun <reified I : PsiElement> psiElementOrError(): PsiElementPattern.Capture<I> {
-//    return PlatformPatterns.psiElement(I::class.java)
-//        .andOr(PlatformPatterns.psiElement().withParent(MovePatterns.error))
-//}
+fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCondContext(name: String, cond: (T, ProcessingContext?) -> Boolean): Self =
+    with(object : PatternCondition<T>(name) {
+        override fun accepts(t: T, context: ProcessingContext?): Boolean = cond(t, context)
+    })

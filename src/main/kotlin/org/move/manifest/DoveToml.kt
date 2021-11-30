@@ -1,20 +1,18 @@
-package org.move.manifest.dovetoml
+package org.move.manifest
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.psi.PsiManager
-import org.move.openapiext.resolveAbsPath
-import org.toml.lang.psi.*
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import org.move.cli.Constants
+import org.move.openapiext.*
+import org.toml.lang.psi.TomlFile
+import org.toml.lang.psi.TomlInlineTable
+import org.toml.lang.psi.TomlTable
+import org.toml.lang.psi.TomlValue
 import java.nio.file.Path
 
 
-fun TomlFile.getRootKey(key: String): TomlValue? {
-    val keyValue = this.children.filterIsInstance<TomlKeyValue>().find { it.key.text == key }
-    return keyValue?.value
-}
-
-
-data class PackageTable(
+data class DoveTomlPackageTable(
     val name: String?,
     val account_address: String?,
     val dialect: String?,
@@ -30,23 +28,30 @@ data class LayoutTable(
 
 
 class DoveToml(
-    val packageTable: PackageTable?,
+    val packageTable: DoveTomlPackageTable?,
     val layoutTable: LayoutTable?
 ) {
-    companion object {
-        private fun parseToml(project: Project, path: Path): TomlFile? {
-            val file = LocalFileSystem.getInstance().findFileByNioFile(path) ?: return null
-            val tomlFileViewProvider =
-                PsiManager.getInstance(project).findViewProvider(file) ?: return null
-            return TomlFile(tomlFileViewProvider)
+    fun getFolders(): List<VirtualFile> {
+        val moduleFolders = mutableListOf<Path>()
+        if (this.packageTable != null) {
+            moduleFolders.addAll(this.packageTable.dependencies)
         }
+        if (this.layoutTable?.modules_dir != null) {
+            moduleFolders.add(this.layoutTable.modules_dir)
+        }
+        return moduleFolders.mapNotNull {
+            VirtualFileManager.getInstance().findFileByNioPath(it)
+        }
+    }
 
+    companion object {
         fun parse(project: Project, projectRoot: Path): DoveToml? {
-            val tomlFile = parseToml(project, projectRoot.resolve("Dove.toml")) ?: return null
+            val tomlFile =
+                parseToml(project, projectRoot.resolve(Constants.DOVE_MANIFEST_FILE)) ?: return null
             val tables = tomlFile.children.filterIsInstance<TomlTable>()
 
             val packageTomlTable = tables.find { it.header.key?.text == "package" }
-            var packageTable: PackageTable? = null
+            var packageTable: DoveTomlPackageTable? = null
             if (packageTomlTable != null) {
                 val name = packageTomlTable.findValue("name")?.stringValue()
                 val account_address = packageTomlTable.findValue("account_address")?.stringValue() ?: "0x1"
@@ -56,7 +61,8 @@ class DoveToml(
                 val depEntries = packageTomlTable.findValue("dependencies")?.arrayValue().orEmpty()
                 val dependencies = parseDependencies(project, depEntries, projectRoot)
 
-                packageTable = PackageTable(name, account_address, dialect, blockchain_api, dependencies)
+                packageTable =
+                    DoveTomlPackageTable(name, account_address, dialect, blockchain_api, dependencies)
             }
 
             val layoutTomlTable = tables.find { it.header.key?.text == "package" }

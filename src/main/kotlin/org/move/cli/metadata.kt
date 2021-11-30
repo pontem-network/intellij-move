@@ -2,88 +2,105 @@ package org.move.cli
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
+import org.move.lang.MoveFile
+import org.move.manifest.AddressesMap
+import org.move.manifest.DoveToml
+import org.move.manifest.MoveToml
+import org.move.openapiext.parseToml
 import org.move.openapiext.resolveAbsPath
-import org.move.manifest.dovetoml.DoveToml
+import org.move.utils.iterateMoveFilesInFolder
 import java.nio.file.Path
 
-data class GitDependency(
-    val git: String,
-    val branch: String?,
-    val rev: String?,
-    val tag: String?,
-    val path: String?,
-    val local_paths: List<String>
+
+enum class ManifestType {
+    MOVE_CLI, DOVE;
+}
+
+enum class GlobalScope {
+    MAIN, DEV;
+}
+
+data class MoveModuleFile(
+    val file: MoveFile,
+    val addressSubst: Map<String, String>,
 )
 
-data class PackageInfo(
-    val name: String,
-    val account_address: String,
-    val authors: List<String>,
-    val local_dependencies: List<String>,
-    val git_dependencies: List<GitDependency>,
-    val blockchain_api: String?,
-    val dialect: String,
-)
+data class ProjectMetadata(
+    val project: Project,
+    val manifestType: ManifestType,
+    val dialect: String?,
 
-data class LayoutInfo(
-    val modules_dir: String,
-    val scripts_dir: String,
-    val tests_dir: String,
-    val modules_output: String,
-    val scripts_output: String,
-    val transactions_output: String,
-    val bundles_output: String,
-    val deps: String,
-    val artifacts: String,
-    val index: String,
-)
+    val moduleFolders: List<VirtualFile>,
+    val devModuleFolders: List<VirtualFile>,
 
-//data class DoveProjectMetadata(
-//    @SerializedName("package")
-//    val package_info: PackageInfo,
-//    val layout: LayoutInfo,
-//)
+    val addresses: AddressesMap,
+    val devAddresses: AddressesMap,
+) {
+    /// processFile should return false if iteration should be stopped
+    fun iterOverMoveModuleFiles(processFile: (MoveModuleFile) -> Boolean) {
+        for (folder in moduleFolders) {
+            iterateMoveFilesInFolder(project, folder) {
+                val moduleFile = MoveModuleFile(it, emptyMap())
+                processFile(moduleFile)
+            }
+        }
+    }
+}
 
+fun findCurrentTomlManifestPath(currentFilePath: Path): Pair<Path, ManifestType>? {
+    var dir = currentFilePath.parent
+    while (dir != null) {
+        val doveTomlPath = dir.resolveAbsPath(Constants.DOVE_MANIFEST_FILE)
+        if (doveTomlPath != null) {
+            return Pair(doveTomlPath, ManifestType.DOVE)
+        }
+        val moveTomlPath = dir.resolveAbsPath(Constants.MOVE_CLI_MANIFEST_FILE)
+        if (moveTomlPath != null) {
+            return Pair(moveTomlPath, ManifestType.MOVE_CLI)
+        }
+        dir = dir.parent
+    }
+    return null
+}
 
 @Service(Service.Level.PROJECT)
 class MetadataService(private val project: Project) {
-    private fun findDoveToml(currentFilePath: Path): Path? {
-        var dir = currentFilePath.parent
-        while (dir != null) {
-            val doveTomlPath = dir.resolveAbsPath("Dove.toml")
-            if (doveTomlPath != null) {
-                return doveTomlPath
+    fun metadata(currentFilePath: Path): ProjectMetadata? {
+        val (manifestPath, manifestType) =
+            findCurrentTomlManifestPath(currentFilePath) ?: return null
+        return when (manifestType) {
+            ManifestType.DOVE -> {
+                val doveToml = DoveToml.parse(this.project, manifestPath.parent)
+                ProjectMetadata(
+                    project,
+                    manifestType,
+                    doveToml?.packageTable?.dialect,
+                    doveToml?.getFolders().orEmpty(),
+                    emptyList(),
+                    emptyMap(),
+                    emptyMap(),
+                )
             }
-            dir = dir.parent
+            ManifestType.MOVE_CLI -> {
+                val tomlFile = parseToml(this.project, manifestPath) ?: return null
+                val moveToml = MoveToml.parse(tomlFile)
+                ProjectMetadata(
+                    project,
+                    manifestType,
+                    "diem",
+                    moveToml?.getFolders(GlobalScope.MAIN).orEmpty(),
+                    moveToml?.getFolders(GlobalScope.DEV).orEmpty(),
+                    moveToml?.addresses.orEmpty(),
+                    moveToml?.dev_addresses.orEmpty()
+                )
+            }
         }
-        return null
     }
-
-    fun metadata(currentFilePath: Path): DoveToml? {
-        val doveTomlPath = findDoveToml(currentFilePath) ?: return null
-        return DoveToml.parse(this.project, doveTomlPath.parent)
-    }
-
-//    var metadata: DoveToml? = null
-//        private set
-//
-//    init {
-//        this.refresh()
-//    }
-
-//    fun refresh() {
-        // clean previous state
-//        this.doveToml = null
-//        this.metadata =
-//            project.rootService.path?.let { DoveToml.parse(project, it) }
-//        val root = project.rootService.path ?: return
-//        this.doveToml = DoveToml.parse(project, root)
-//        val executable = project.getDoveExecutable() ?: return
-//        this.doveToml = executable.metadata(root)
-//    }
 }
 
-fun Project.metadata(currentFilePath: Path): DoveToml? {
-    val metadataService = this.getService(MetadataService::class.java)
-    return metadataService.metadata(currentFilePath)
+fun Project.metadata(currentFilePath: Path): ProjectMetadata? {
+    return this
+        .getService(MetadataService::class.java)
+        .metadata(currentFilePath)
 }

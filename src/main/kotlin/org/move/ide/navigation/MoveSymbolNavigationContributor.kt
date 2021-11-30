@@ -7,27 +7,20 @@ import com.intellij.util.Processor
 import com.intellij.util.indexing.FindSymbolParameters
 import com.intellij.util.indexing.IdFilter
 import org.move.lang.core.psi.MoveNamedElement
-import org.move.openapiext.allProjectsFolders
-import org.move.utils.iterateOverMoveFiles
+import org.move.openapiext.allProjectMoveFiles
 
 
 class MoveSymbolNavigationContributor : ChooseByNameContributorEx {
     override fun processNames(processor: Processor<in String>, scope: GlobalSearchScope, filter: IdFilter?) {
         // get all names
         val project = scope.project ?: return
-        val folders = project.allProjectsFolders()
-        for (folder in folders) {
-            iterateOverMoveFiles(project, folder) { file ->
-                val visitor = object : MoveNamedElementsVisitor() {
-                    override fun processNamedElement(element: MoveNamedElement) {
-                        val elementName = element.name ?: return
-                        processor.process(elementName)
-                    }
-                }
-                file.accept(visitor)
-                return@iterateOverMoveFiles true
+        val visitor = object : MoveNamedElementsVisitor() {
+            override fun processNamedElement(element: MoveNamedElement) {
+                val elementName = element.name ?: return
+                processor.process(elementName)
             }
         }
+        project.allProjectMoveFiles().map { it.accept(visitor) }
     }
 
     override fun processElementsWithName(
@@ -36,18 +29,12 @@ class MoveSymbolNavigationContributor : ChooseByNameContributorEx {
         parameters: FindSymbolParameters
     ) {
         val project = parameters.project
-        val folders = project.allProjectsFolders()
-        for (folder in folders) {
-            iterateOverMoveFiles(project, folder) { file ->
-                val visitor = object : MoveNamedElementsVisitor() {
-                    override fun processNamedElement(element: MoveNamedElement) {
-                        val elementName = element.name ?: return
-                        if (elementName == name) processor.process(element)
-                    }
-                }
-                file.accept(visitor)
-                return@iterateOverMoveFiles true
+        val visitor = object : MoveNamedElementsVisitor() {
+            override fun processNamedElement(element: MoveNamedElement) {
+                val elementName = element.name ?: return
+                if (elementName == name) processor.process(element)
             }
         }
+        project.allProjectMoveFiles().map { it.accept(visitor) }
     }
 }

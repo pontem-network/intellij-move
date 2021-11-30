@@ -43,7 +43,7 @@ class FunctionArgumentTypesErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
             true
         }
         fun main(opt: &mut Option<Element>) {
-            is_none(opt)
+            is_none(opt);
         } 
     }    
     """

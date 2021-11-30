@@ -1,7 +1,6 @@
-package org.move.cli
+package org.move.cli.move_cli
 
 import com.intellij.execution.ExecutionBundle
-import com.intellij.execution.configuration.EnvironmentVariablesComponent
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.ui.LabeledComponent
@@ -16,7 +15,7 @@ import java.nio.file.Paths
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-class DoveExecutableSettingsEditor : SettingsEditor<DoveRunConfiguration>() {
+class MoveCLIExecutableSettingsEditor : SettingsEditor<MoveCLIRunConfiguration>() {
     private val textField = EditorTextField()
 
     val currentWorkingDirectory: Path?
@@ -25,14 +24,12 @@ class DoveExecutableSettingsEditor : SettingsEditor<DoveRunConfiguration>() {
     val workingDirectory: LabeledComponent<TextFieldWithBrowseButton> =
         WorkingDirectoryComponent()
 
-//    val environmentVariables = EnvironmentVariablesComponent()
-
-    override fun resetEditorFrom(configuration: DoveRunConfiguration) {
+    override fun resetEditorFrom(configuration: MoveCLIRunConfiguration) {
         textField.text = configuration.command
         workingDirectory.component.text = configuration.workingDirectory?.toString().orEmpty()
     }
 
-    override fun applyEditorTo(configuration: DoveRunConfiguration) {
+    override fun applyEditorTo(configuration: MoveCLIRunConfiguration) {
         configuration.command = textField.text
         configuration.workingDirectory = currentWorkingDirectory
     }
@@ -42,7 +39,6 @@ class DoveExecutableSettingsEditor : SettingsEditor<DoveRunConfiguration>() {
             row("Command:") {
                 textField(growX, pushX)
             }
-//            row(environmentVariables.label) { environmentVariables }
             row(workingDirectory.label) {
                 workingDirectory(growX)
             }
@@ -75,18 +71,3 @@ private class CommandLineEditor : JPanel(BorderLayout()), TextAccessor {
 
     override fun getText(): String = textField.text
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

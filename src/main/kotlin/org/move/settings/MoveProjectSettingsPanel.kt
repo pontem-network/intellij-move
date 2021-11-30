@@ -3,9 +3,10 @@ package org.move.settings
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.JBColor
 import com.intellij.ui.layout.LayoutBuilder
-import org.move.cli.DoveExecutable
+import org.move.cli.VersionedExecutable
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathTextField
 import java.awt.BorderLayout
@@ -14,48 +15,77 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 
+class VersionLabel: JLabel() {
+    fun setVersion(version: String?) {
+        if (version == null) {
+            this.text = "N/A"
+            this.foreground = JBColor.RED
+        } else {
+            this.text = version
+            this.foreground = JBColor.foreground()
+        }
+    }
+}
+
 class MoveProjectSettingsPanel(private val project: Project) : Disposable {
     override fun dispose() {}
-
     private val versionUpdateDebouncer = UiDebouncer(this)
 
-    private val executablePathField =
+    private val doveExecutablePathField =
         pathTextField(
             FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
             this,
             "Dove executable"
-        ) { update() }
-    private val doveVersion = JLabel()
+        ) { updateDoveVersion() }
+    private val doveVersion = VersionLabel()
+
+    private val moveCLIExecutablePathField =
+        pathTextField(
+            FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
+            this,
+            "Move CLI executable"
+        ) { updateMoveCLIVersion() }
+    private val moveCliVersion = VersionLabel()
 
     init {
-        executablePathField.textField.text = project.moveSettings.settingsState.doveExecutablePath
+        doveExecutablePathField.textField.text =
+            project.moveSettings.settingsState.doveExecutablePath
+        moveCLIExecutablePathField.textField.text =
+            project.moveSettings.settingsState.moveCliExecutablePath
     }
 
     fun attachTo(layout: LayoutBuilder) = with(layout) {
-        row("Dove executable:") { wrapComponent(executablePathField)(growX, pushX) }
-        row("Dove version") { doveVersion() }
+        titledRow("Dove") {
+            subRowIndent = 0
+            row("Dove executable:") { wrapComponent(doveExecutablePathField)(growX, pushX) }
+            row("Dove version") { doveVersion() }
+        }
+        titledRow("Move CLI") {
+            subRowIndent = 0
+            row("Move CLI executable:") { wrapComponent(moveCLIExecutablePathField)(growX, pushX) }
+            row("Move CLI version") { moveCliVersion() }
+        }
     }
 
-    fun selectedExecutablePath(): String = this.executablePathField.textField.text
+    fun selectedDovePath(): String = this.doveExecutablePathField.textField.text
 
-    private fun update() {
-        val pathToExecutable = executablePathField.text
+    fun selectedMoveCLIPath(): String = this.moveCLIExecutablePathField.textField.text
+
+    private fun updateDoveVersion() {
+        this.updateVersionField(doveExecutablePathField, doveVersion)
+    }
+    private fun updateMoveCLIVersion() {
+        this.updateVersionField(moveCLIExecutablePathField, moveCliVersion)
+    }
+
+    private fun updateVersionField(executablePathField: TextFieldWithBrowseButton,
+                                   versionLabel: VersionLabel) {
+        val executablePath = executablePathField.text
         versionUpdateDebouncer.run(
             onPooledThread = {
-                val dove = DoveExecutable(project, Paths.get(pathToExecutable))
-                val version = dove.version()
-                version
+                VersionedExecutable(project, Paths.get(executablePath)).version()
             },
-            onUiThread = { version ->
-                if (version == null) {
-                    doveVersion.text = "N/A"
-                    doveVersion.foreground = JBColor.RED
-                } else {
-                    doveVersion.text = version
-                    doveVersion.foreground = JBColor.foreground()
-                }
-//                updateListener?.invoke()
-            }
+            onUiThread = { version -> versionLabel.setVersion(version)}
         )
     }
 }

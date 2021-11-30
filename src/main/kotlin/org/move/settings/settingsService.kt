@@ -11,7 +11,6 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
-import org.move.cli.DoveExecutable
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.reflect.KProperty1
@@ -42,6 +41,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
 
     data class State(
         var doveExecutablePath: String = "",
+        var moveCliExecutablePath: String = "",
         var collapseSpecs: Boolean = false,
     )
 
@@ -119,6 +119,11 @@ val Project.dovePathValue: String
         return this.moveSettings.settingsState.doveExecutablePath
     }
 
+val Project.moveCLIPathValue: String
+    get() {
+        return this.moveSettings.settingsState.moveCliExecutablePath
+    }
+
 val Project.collapseSpecs: Boolean
     get() {
         return this.moveSettings.settingsState.collapseSpecs
@@ -134,8 +139,3 @@ val Project.dovePath: Path?
 
         return path
     }
-
-fun Project.getDoveExecutable(): DoveExecutable? {
-    val path = this.dovePath ?: return null
-    return DoveExecutable(this, path)
-}

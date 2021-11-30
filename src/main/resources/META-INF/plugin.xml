@@ -28,7 +28,8 @@
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
 
-        <configurationType implementation="org.move.cli.DoveRunConfigurationType"/>
+        <configurationType implementation="org.move.cli.dove.DoveRunConfigurationType"/>
+        <configurationType implementation="org.move.cli.move_cli.MoveCLIRunConfigurationType"/>
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
@@ -56,15 +57,24 @@
                              implementationClass="org.move.ide.refactoring.MoveNamesValidator"/>
         <lang.refactoringSupport language="Move"
                                  implementationClass="org.move.ide.refactoring.MoveRefactoringSupportProvider"/>
+
         <lang.findUsagesProvider language="Move"
                                  implementationClass="org.move.ide.search.MoveFindUsagesProvider"/>
+        <usageTypeProvider
+                implementation="org.move.ide.search.NamedAddressUsageTypeProvider"/>
+        <findUsagesHandlerFactory
+                implementation="org.move.ide.search.NamedAddressFindUsagesHandlerFactory"/>
 
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.core.completion.CommonCompletionContributor"/>
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.core.completion.KeywordCompletionContributor"/>
+
+        <psi.referenceContributor language="TOML"
+                                  implementation="org.move.toml.MoveTomlReferenceContributor"/>
         <psi.referenceContributor language="Move"
-                                  implementation="org.move.lang.ReferenceContributor"/>
+                                  implementation="org.move.toml.NamedAddressReferenceContributor"/>
+
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.ErrorAnnotator"/>
         <annotator language="Move"
@@ -131,12 +141,6 @@
     </extensions>
 
     <projectListeners>
-        <listener class="org.move.cli.DoveTomlWatcher"
-                  topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
-                  activeInTestMode="false"/>
-        <listener class="org.move.cli.RefreshProjectListener"
-                  topic="org.move.settings.MoveSettingsListener"
-                  activeInTestMode="false"/>
         <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
                   topic="org.move.settings.MoveSettingsListener"
                   activeInTestMode="false"/>
@@ -147,7 +151,7 @@
                 class="org.move.ide.actions.CreateMoveFileAction"
                 text="Move File"
                 description="Create new Move file">
-            <!--            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>-->
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
         </action>
     </actions>
 </idea-plugin>

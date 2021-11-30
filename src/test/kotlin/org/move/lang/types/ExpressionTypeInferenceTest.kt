@@ -56,4 +56,13 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test function parameter constraint`() = testExpr("""
+    module M {
+        fun main<Coin: copy + store>(coin: Coin) {
+            coin;
+          //^ Coin
+        }
+    }    
+    """)
 }

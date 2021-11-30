@@ -6,6 +6,7 @@ import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MoveNamedElement
 import org.move.lang.core.psi.ext.startOffset
 import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 
 class FindUsagesTest : MoveTestBase() {
     fun `test let declaration usages`() = doTestByText("""
@@ -33,7 +34,7 @@ class FindUsagesTest : MoveTestBase() {
     private fun doTestByText(@Language("Move") code: String) {
         inlineFile(code)
 
-        val (_, _, offset) = findElementWithDataAndOffsetInEditor<PsiElement>()
+        val (_, _, offset) = myFixture.findElementWithDataAndOffsetInEditor<PsiElement>()
         val source = TargetElementUtil.getInstance().findTargetElement(
             myFixture.editor,
             TargetElementUtil.ELEMENT_NAME_ACCEPTED,
