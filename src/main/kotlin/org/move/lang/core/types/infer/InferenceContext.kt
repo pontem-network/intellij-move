@@ -10,17 +10,6 @@ import org.move.lang.core.types.ty.*
 val MoveExpr.outerFunction
     get() = (parentOfType<MoveFunctionDef>(true) as? MoveFunctionDefImpl)!!
 
-//fun prepareFunctionInferenceContext(function: MoveFunctionDef) {
-//    val inference = InferenceContext()
-//    val statements = function.codeBlock?.statementList.orEmpty()
-//    for (statement in statements) {
-//        when (statement) {
-//            is MoveLetStatement -> null
-//            is MoveExprStatement -> null
-//        }
-//    }
-//}
-
 fun instantiateItemTy(item: MoveNameIdentifierOwner): Ty {
     return when (item) {
         is MoveStructSignature -> TyStruct(item)
@@ -106,17 +95,11 @@ fun isCompatible(expectedTy: Ty, inferredTy: Ty): Boolean {
     }
 }
 
-class InferenceContext(
-    val exprTypes: MutableMap<MoveExpr, Ty> = mutableMapOf(),
-    val unificationTable: UnificationTable<TyInfer.TyVar, Ty> = UnificationTable()
-) {
-//    val exprTypes = mutableMapOf<MoveExpr, Ty>()
-//    val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
-    private val solver = ConstraintSolver(this)
+class InferenceContext {
+    val exprTypes = mutableMapOf<MoveExpr, Ty>()
+    val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
 
-    fun copyWithCache(): InferenceContext {
-        return InferenceContext(this.exprTypes)
-    }
+    private val solver = ConstraintSolver(this)
 
     fun registerConstraint(constraint: Constraint) {
         solver.registerConstraint(constraint)
