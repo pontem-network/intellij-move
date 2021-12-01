@@ -46,6 +46,8 @@
                            implementationClass="org.move.ide.typing.MoveBraceMatcher"/>
         <typedHandler implementation="org.move.ide.typing.MoveAngleBraceTypedHandler"
                       id="MoveAngleBracketsHandler"/>
+        <enterHandlerDelegate implementation="org.move.ide.typing.MoveEnterInLineCommentHandler"
+                              id="MoveEnterInLineComments"/>
 
         <lang.formatter language="Move"
                         implementationClass="org.move.ide.formatter.MoveFormattingModelBuilder"/>
