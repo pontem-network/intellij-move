@@ -1,10 +1,10 @@
-import org.jetbrains.grammarkit.tasks.GenerateLexer
-import org.jetbrains.grammarkit.tasks.GenerateParser
+import org.jetbrains.grammarkit.tasks.GenerateLexerTask
+import org.jetbrains.grammarkit.tasks.GenerateParserTask
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "212"
+val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "213"
 
 val baseProperties = "base-gradle.properties"
 val properties = "gradle-$propsVersion.properties"
@@ -16,7 +16,7 @@ file(properties).inputStream().let { props.load(it) }
 fun prop(key: String): String = props[key].toString()
 
 //val intellijVersion = prop("intellijVersion", "2021.2")
-val kotlinVersion = "1.5.31"
+val kotlinVersion = "1.6.0"
 
 val pluginJarName = "intellij-move-$propsVersion"
 val pluginVersion = "1.0.0"
@@ -27,9 +27,9 @@ version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.5.31"
+    kotlin("jvm") version "1.6.0"
     id("org.jetbrains.intellij") version "1.3.0"
-    id("org.jetbrains.grammarkit") version "2021.1.3"
+    id("org.jetbrains.grammarkit") version "2021.2.1"
 }
 
 dependencies {
@@ -77,22 +77,29 @@ allprojects {
 //        }
     }
 
-    val generateRustLexer = task<GenerateLexer>("generateMoveLexer") {
-        source = "src/main/grammars/MoveLexer.flex"
-        targetDir = "src/main/gen/org/move/lang"
-        targetClass = "_MoveLexer"
-        purgeOldFiles = true
+    val generateRustLexer = task<GenerateLexerTask>("generateMoveLexer") {
+        source.set("src/main/grammars/MoveLexer.flex")
+        targetDir.set("src/main/gen/org/move/lang")
+        targetClass.set("_MoveLexer")
+        purgeOldFiles.set(true)
     }
 
-    val generateRustParser = task<GenerateParser>("generateMoveParser") {
-        source = "src/main/grammars/MoveParser.bnf"
-        targetRoot = "src/main/gen"
-        pathToParser = "/org/move/lang/MoveParser.java"
-        pathToPsiRoot = "/org/move/lang/psi"
-        purgeOldFiles = true
+    val generateRustParser = task<GenerateParserTask>("generateMoveParser") {
+        source.set("src/main/grammars/MoveParser.bnf")
+        targetRoot.set("src/main/gen")
+        pathToParser.set("/org/move/lang/MoveParser.java")
+        pathToPsiRoot.set("/org/move/lang/psi")
+        purgeOldFiles.set(true)
     }
 
     tasks {
+        // workaround for gradle not seeing tests in 2021.3
+        val test by getting(Test::class) {
+            setScanForTestClasses(false)
+            // Only run tests from classes that end with "Test"
+            include("**/*Test.class")
+        }
+
         patchPluginXml {
             version.set(pluginVersion)
             sinceBuild.set(prop("pluginSinceBuild"))
@@ -119,8 +126,8 @@ allprojects {
             dependsOn(generateRustLexer, generateRustParser)
             kotlinOptions {
                 jvmTarget = "11"
-                languageVersion = "1.5"
-                apiVersion = "1.5"
+                languageVersion = "1.6"
+                apiVersion = "1.6"
                 freeCompilerArgs = listOf("-Xjvm-default=compatibility")
             }
         }

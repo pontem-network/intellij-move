@@ -9,7 +9,7 @@ val MoveStructPat.providedFields: List<MoveStructPatField>
 
 val MoveStructPat.providedFieldNames: List<String>
     get() =
-        providedFields.mapNotNull { it.referenceName }
+        providedFields.map { it.referenceName }
 
 //abstract class MoveStructPatMixin(node: ASTNode) : MoveElementImpl(node), MoveStructPat {
 //    override fun resolvedType(): BaseType? {

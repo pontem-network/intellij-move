@@ -8,8 +8,9 @@ import org.move.ide.presentation.typeLabel
 import org.move.lang.MoveElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.mixins.declaredTy
 import org.move.lang.core.psi.mixins.resolvedReturnType
-import org.move.lang.core.types.infer.compatibleWith
+import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.*
 
@@ -45,12 +46,11 @@ class ErrorAnnotator : MoveAnnotator() {
 
             override fun visitCondition(o: MoveCondition) {
                 val expr = o.expr ?: return
-                val exprType = expr.resolvedType()
-//                if (!exprType.compatibleWith(PrimitiveType("bool"))) {
-                if (!isCompatible(exprType, TyBool)) {
+                val exprTy = expr.inferExprTy()
+                if (!isCompatible(exprTy, TyBool)) {
                     moveHolder.createErrorAnnotation(
                         expr,
-                        "Incompatible type '${exprType.typeLabel(o)}', expected 'bool'"
+                        "Incompatible type '${exprTy.typeLabel(o)}', expected 'bool'"
                     )
                 }
             }
@@ -88,7 +88,7 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitReturnExpr(o: MoveReturnExpr) {
                 val outerSignature = o.containingFunction?.functionSignature ?: return
                 val expectedReturnType = outerSignature.resolvedReturnType
-                val actualReturnType = o.expr?.resolvedType() ?: return
+                val actualReturnType = o.expr?.inferExprTy() ?: return
 //                if (!expectedReturnType.compatibleWith(actualReturnType)) {
                 if (!isCompatible(expectedReturnType, actualReturnType)) {
                     moveHolder.createErrorAnnotation(
@@ -103,7 +103,7 @@ class ErrorAnnotator : MoveAnnotator() {
 
                 val paramType =
                     o.typeArguments.getOrNull(0)
-                        ?.type?.resolvedType() as? TyStruct ?: return
+                        ?.type?.inferTypeTy() as? TyStruct ?: return
                 val paramTypeFQName = paramType.item.fqName
                 val paramTypeName = paramType.item.name ?: return
 
@@ -141,22 +141,20 @@ class ErrorAnnotator : MoveAnnotator() {
                     moveHolder, nameElement, o.providedFieldNames.toSet(), refStruct
                 )
 
+                val ctx = InferenceContext()
                 for (field in o.structLiteralFieldsBlock.structLiteralFieldList) {
                     val assignmentExpr = field.structLiteralFieldAssignment?.expr ?: continue
-                    val assignmentType = assignmentExpr.resolvedType()
+                    val assignmentType = assignmentExpr.inferExprTy(ctx)
                     if (assignmentType is TyUnknown) continue
 
                     val fieldName = field.referenceName
                     val fieldDef = refStruct.getField(fieldName) ?: continue
-                    val expectedFieldType = fieldDef.resolvedType()
-//                    if (expectedFieldType is TypeParamType) {
-//                        checkHasRequiredAbilities(moveHolder, assignmentExpr, expectedFieldType)
-//                        return
-//                    }
-                    val exprType = assignmentExpr.resolvedType()
-                    if (!isCompatible(expectedFieldType, exprType)) {
-                        val exprTypeName = exprType.typeLabel(relativeTo = o)
-                        val expectedTypeName = expectedFieldType.typeLabel(relativeTo = o)
+                    val expectedFieldTy = fieldDef.declaredTy
+                    val exprTy = assignmentExpr.inferExprTy(ctx)
+
+                    if (!isCompatible(expectedFieldTy, exprTy)) {
+                        val exprTypeName = exprTy.typeLabel(relativeTo = o)
+                        val expectedTypeName = expectedFieldTy.typeLabel(relativeTo = o)
 
                         val message =
                             "Invalid argument for field '$fieldName': " +
@@ -215,13 +213,12 @@ class ErrorAnnotator : MoveAnnotator() {
         val structAbilities = structTy.abilities()
         if (structAbilities.isEmpty()) return
 
-        val fieldType = structField.typeAnnotation?.type?.resolvedType() as? TyStruct ?: return
-
+        val fieldTy = structField.declaredTy as? TyStruct ?: return
         for (ability in structAbilities) {
             val requiredAbility = ability.requires()
-            if (requiredAbility !in fieldType.abilities()) {
+            if (requiredAbility !in fieldTy.abilities()) {
                 val message =
-                    "The type '${fieldType.name()}' does not have the ability '${requiredAbility.label()}' " +
+                    "The type '${fieldTy.name()}' does not have the ability '${requiredAbility.label()}' " +
                             "required by the declared ability '${ability.label()}' " +
                             "of the struct '${structTy.name()}'"
                 holder.createErrorAnnotation(structField, message)
@@ -272,17 +269,17 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
 
     for ((i, expr) in arguments.exprList.withIndex()) {
         val parameter = signature.parameters[i]
-        val expectedType = parameter.resolvedType()
-        if (expectedType is TyTypeParameter) {
-            checkHasRequiredAbilities(holder, expr, expectedType)
+        val expectedTy = parameter.declaredTy
+        if (expectedTy is TyTypeParameter) {
+            checkHasRequiredAbilities(holder, expr, expectedTy)
             return
         }
 
-        val exprType = expr.resolvedType()
-        if (!expectedType.compatibleWith(exprType)) {
+        val exprTy = expr.inferExprTy()
+        if (!isCompatible(expectedTy, exprTy)) {
             val paramName = parameter.name ?: continue
-            val exprTypeName = exprType.typeLabel(relativeTo = arguments)
-            val expectedTypeName = expectedType.typeLabel(relativeTo = arguments)
+            val exprTypeName = exprTy.typeLabel(relativeTo = arguments)
+            val expectedTypeName = expectedTy.typeLabel(relativeTo = arguments)
 
             val message =
                 "Invalid argument for parameter '$paramName': " +

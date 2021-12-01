@@ -10,17 +10,6 @@ import org.move.lang.core.types.ty.*
 val MoveExpr.outerFunction
     get() = (parentOfType<MoveFunctionDef>(true) as? MoveFunctionDefImpl)!!
 
-//fun prepareFunctionInferenceContext(function: MoveFunctionDef) {
-//    val inference = InferenceContext()
-//    val statements = function.codeBlock?.statementList.orEmpty()
-//    for (statement in statements) {
-//        when (statement) {
-//            is MoveLetStatement -> null
-//            is MoveExprStatement -> null
-//        }
-//    }
-//}
-
 fun instantiateItemTy(item: MoveNameIdentifierOwner): Ty {
     return when (item) {
         is MoveStructSignature -> TyStruct(item)
@@ -43,30 +32,14 @@ fun instantiateItemTy(item: MoveNameIdentifierOwner): Ty {
             if (returnMoveType == null) {
                 retType = TyUnit
             } else {
-                retType = inferMoveTypeTy(returnMoveType)
-                    .foldTyTypeParameterWith { findTypeVar(it.parameter) }
+                retType =
+                    inferMoveTypeTy(returnMoveType).foldTyTypeParameterWith { findTypeVar(it.parameter) }
             }
             TyFunction(item, typeVars, paramTypes, retType)
         }
         else -> TyUnknown
     }
 }
-
-fun inferLiteralExprTy(literalExpr: MoveLiteralExpr): Ty {
-    return when {
-        literalExpr.boolLiteral != null -> TyBool
-        literalExpr.addressLiteral != null
-                || literalExpr.bech32AddressLiteral != null
-                || literalExpr.polkadotAddressLiteral != null -> TyAddress
-        literalExpr.integerLiteral != null || literalExpr.hexIntegerLiteral != null -> {
-            val literal = (literalExpr.integerLiteral ?: literalExpr.hexIntegerLiteral)!!
-            return TyInteger.fromSuffixedLiteral(literal) ?: TyInteger(TyInteger.DEFAULT_KIND)
-        }
-        literalExpr.byteStringLiteral != null -> TyByteString
-        else -> TyUnknown
-    }
-}
-
 
 //sealed class TypesCompatibility {
 //    object Ok : TypesCompatibility()
@@ -122,12 +95,10 @@ fun isCompatible(expectedTy: Ty, inferredTy: Ty): Boolean {
     }
 }
 
-fun Ty.compatibleWith(ty: Ty): Boolean {
-    return isCompatible(this, ty)
-}
-
 class InferenceContext {
+    val exprTypes = mutableMapOf<MoveExpr, Ty>()
     val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
+
     private val solver = ConstraintSolver(this)
 
     fun registerConstraint(constraint: Constraint) {
@@ -136,6 +107,10 @@ class InferenceContext {
 
     fun processConstraints(): Boolean {
         return solver.processConstraints()
+    }
+
+    fun cacheExprTy(expr: MoveExpr, ty: Ty) {
+        this.exprTypes[expr] = ty
     }
 
     fun resolveTy(ty: Ty): Ty {

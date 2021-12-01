@@ -93,7 +93,7 @@ fun MoveModuleDef.functionSignatures(visibility: Visibility): List<MoveFunctionS
 
 fun createBuiltinFuncSignature(text: String, project: Project): MoveFunctionSignature? {
     val signature = MovePsiFactory(project)
-        .createNativeFunctionDef(text)
+        .createNativeFunctionDef(text, moduleName = "builtin_functions")
         .functionSignature ?: return null
     (signature as MoveFunctionSignatureMixin).builtIn = true
     return signature

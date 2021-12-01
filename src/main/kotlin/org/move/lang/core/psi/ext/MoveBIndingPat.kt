@@ -6,9 +6,14 @@ import org.move.lang.core.psi.MoveBindingPat
 import org.move.lang.core.psi.MoveLetStatement
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.collectBindings
+import org.move.lang.core.types.infer.inferExprTy
+import org.move.lang.core.types.infer.inferMoveTypeTy
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.Icon
+
+val MoveBindingPat.letStmt: MoveLetStatement get() = this.ancestorStrict()!!
 
 abstract class MoveBindingPatMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
                                                     MoveBindingPat {
@@ -16,18 +21,15 @@ abstract class MoveBindingPatMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(
     override fun getIcon(flags: Int): Icon = MoveIcons.VARIABLE
 
     override fun resolvedType(): Ty {
-        val letStmt = this.parent as? MoveLetStatement ?: return TyUnknown
-
-        val explicitAnnotation = letStmt.typeAnnotation
-        val patternType = when {
-            explicitAnnotation != null -> explicitAnnotation.type?.resolvedType()
-            else -> {
-                val initializerExpr = letStmt.initializer?.expr ?: return TyUnknown
-                initializerExpr.resolvedType()
-            }
+        val pat = letStmt.pat ?: return TyUnknown
+        val explicitType = this.letStmt.typeAnnotation?.type
+        if (explicitType != null) {
+            val explicitTy = inferMoveTypeTy(explicitType)
+            return collectBindings(pat, explicitTy)[this] ?: TyUnknown
         }
-        if (patternType == null) return TyUnknown
 
-        return patternType
+        val inference = InferenceContext()
+        val inferredTy = letStmt.initializer?.expr?.let { inferExprTy(it, inference) } ?: TyUnknown
+        return collectBindings(pat, inferredTy)[this] ?: TyUnknown
     }
 }

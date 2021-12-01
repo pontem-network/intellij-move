@@ -46,6 +46,8 @@
                            implementationClass="org.move.ide.typing.MoveBraceMatcher"/>
         <typedHandler implementation="org.move.ide.typing.MoveAngleBraceTypedHandler"
                       id="MoveAngleBracketsHandler"/>
+        <enterHandlerDelegate implementation="org.move.ide.typing.MoveEnterInLineCommentHandler"
+                              id="MoveEnterInLineComments"/>
 
         <lang.formatter language="Move"
                         implementationClass="org.move.ide.formatter.MoveFormattingModelBuilder"/>
@@ -91,7 +93,9 @@
                                         implementationClass="org.move.ide.hints.MoveInlayParameterHintsProvider"/>
 
         <defaultLiveTemplates file="liveTemplates/Move.xml"/>
-        <liveTemplateContext implementation="org.move.ide.live_templates.MoveTemplateContext"/>
+        <liveTemplateContext implementation="org.move.ide.live_templates.MoveContextType$Generic"/>
+        <liveTemplateContext implementation="org.move.ide.live_templates.MoveContextType$Module"/>
+        <liveTemplateContext implementation="org.move.ide.live_templates.MoveContextType$Block"/>
 
         <lang.psiStructureViewFactory
                 language="Move"

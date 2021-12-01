@@ -7,7 +7,7 @@ import org.move.lang.core.types.ty.TyStruct
 val MoveAcquiresType.typeFQNames: List<String>?
     get() {
         return pathTypeList
-            .map { it.resolvedType() }
+            .map { it.inferTypeTy() }
             .map { (it as? TyStruct) ?: return null }
             .map { it.item.fqName }
     }

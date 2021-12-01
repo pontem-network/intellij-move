@@ -6,7 +6,17 @@
               toShortenFQNames="true">
         <variable name="TEXT" expression="" defaultValue="" alwaysStopAt="true"/>
         <context>
-            <option name="MOVE" value="true"/>
+            <option name="MOVE_BLOCK" value="true"/>
+        </context>
+    </template>
+
+    <template name="t"
+              value="#[test]&#10;fun $NAME$() {&#10;    $END$&#10;}"
+              description="test function"
+              toReformat="false">
+        <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="MOVE_MODULE" value="true"/>
         </context>
     </template>
 </templateSet>

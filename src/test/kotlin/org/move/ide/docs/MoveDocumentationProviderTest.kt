@@ -24,12 +24,35 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
         }
     }
     """, expected = """
-        <div class='definition'><pre><b>move_from</b>(addr: address): R</pre></div>
+        <div class='definition'><pre>builtin_functions
+        native fun <b>move_from</b>(addr: address): R</pre></div>
         <div class='content'></div>
         """)
 
+    fun `test show doc comment for module`() = doTest("""
+    /// module docstring
+    module 0x1::M {}
+              //^   
+    """, expected = """
+        <div class='definition'><pre>module 0x1::M</pre></div>
+        <div class='content'><p>module docstring</p></div>
+        """
+    )
+
+    fun `test show doc comment for const`() = doTest("""
+    module 0x1::M {
+        /// const docstring
+        const ERR_COLLECTION_IS_ALREADY_EXISTS: u64 = 1;
+            //^
+    }    
+    """, expected = """
+        <div class='definition'><pre>0x1::M
+        const <b>ERR_COLLECTION_IS_ALREADY_EXISTS</b>: u64 = 1</pre></div>
+        <div class='content'><p>const docstring</p></div>    
+    """)
+
     fun `test show doc comments and signature for function`() = doTest("""
-    module M {
+    module 0x1::M {
         /// Adds two numbers.
         /// Returns their sum.
         fun add(a: u8, b: u8): u8 {
@@ -38,7 +61,8 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
         }
     }
     """, expected = """
-        <div class='definition'><pre><b>add</b>(a: u8, b: u8): u8</pre></div>
+        <div class='definition'><pre>0x1::M
+        fun <b>add</b>(a: u8, b: u8): u8</pre></div>
         <div class='content'><p>Adds two numbers.</p>
         <p>Returns their sum.</p></div>
     """)
@@ -47,14 +71,21 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
         """
     module 0x1::M {
         struct NFT {}
-        struct Collection has key { nfts: vector<NFT> }
+        struct Collection has key {
+            /// docstring
+            nfts: vector<NFT> 
+        }
         fun m() acquires Collection {
             let coll = borrow_global_mut<Collection>(@0x1);
             coll.nfts;
                //^
         }
     }    
-    """, expected = "vector<NFT>")
+    """, expected = """
+        <div class='definition'><pre>0x1::M::Collection
+        <b>nfts</b>: vector<0x1::M::NFT></pre></div>
+        <div class='content'><p>docstring</p></div>"""
+    )
 
     private fun doTest(@Language("Move") code: String, @Language("Html") expected: String?) =
         doTest(code, expected, block = MoveDocumentationProvider::generateDoc)

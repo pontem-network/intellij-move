@@ -10,6 +10,7 @@ import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.TypeFolder
 
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
+import org.move.lang.core.types.infer.inferMoveTypeTy
 
 data class TyStruct(
     val item: MoveStructSignature,
@@ -29,7 +30,7 @@ data class TyStruct(
         val field = this.item.structDef.fieldsMap[name] ?: return TyUnknown
         return field.typeAnnotation
             ?.type
-            ?.resolvedType()
+            ?.let { inferMoveTypeTy(it) }
             ?.foldTyTypeParameterWith { typeParam ->
                 this.typeVars.find { it.origin?.parameter == typeParam.parameter }!!
             } ?: TyUnknown

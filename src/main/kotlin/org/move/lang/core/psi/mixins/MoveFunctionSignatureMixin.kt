@@ -10,6 +10,7 @@ import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.core.psi.MoveFunctionDef
 import org.move.lang.core.psi.MoveFunctionSignature
 import org.move.lang.core.psi.MoveNativeFunctionDef
+import org.move.lang.core.psi.ext.inferTypeTy
 import org.move.lang.core.psi.ext.parametersText
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.types.ty.Ty
@@ -29,7 +30,7 @@ val MoveFunctionSignature.resolvedReturnType: Ty
         return if (returnTypeElement == null) {
             TyUnit
         } else {
-            returnTypeElement.type?.resolvedType() ?: TyUnknown
+            returnTypeElement.type?.inferTypeTy() ?: TyUnknown
         }
     }
 

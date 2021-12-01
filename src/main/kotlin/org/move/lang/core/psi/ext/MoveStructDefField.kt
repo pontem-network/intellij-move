@@ -15,6 +15,6 @@ abstract class MoveStructFieldDefMixin(node: ASTNode) : MoveNameIdentifierOwnerI
     override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT_FIELD
 
     override fun resolvedType(): Ty {
-        return this.typeAnnotation?.type?.resolvedType() ?: TyUnknown
+        return this.typeAnnotation?.type?.inferTypeTy() ?: TyUnknown
     }
 }
