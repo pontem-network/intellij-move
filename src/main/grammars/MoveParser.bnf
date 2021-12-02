@@ -1050,10 +1050,10 @@ SpecStatement ::= ImportStatement
                                | Statement
 private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
 
-VariableSpecStatement ::= RefExpr TypeAnnotation ';' { pin = 2 }
+VariableSpecStatement ::= IDENTIFIER TypeAnnotation ';' { pin = 2 }
 
-LocalVariableSpecStatement ::= local RefExpr TypeAnnotation ';' { pin = 1 }
-GlobalVariableSpecStatement ::= global RefExpr TypeAnnotation ';' { pin = 1 }
+LocalVariableSpecStatement ::= local IDENTIFIER TypeAnnotation ';' { pin = 1 }
+GlobalVariableSpecStatement ::= global IDENTIFIER TypeAnnotation ';' { pin = 1 }
 
 private post ::= <<postKeyword>>
 LetSpecStatement ::= (let post?) Pat TypeAnnotation? Initializer? ';' { pin = 1 }

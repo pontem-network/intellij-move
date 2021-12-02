@@ -37,7 +37,7 @@ sealed class Visibility {
 enum class Namespace {
     NAME,
     TYPE,
-    SCHEMA,
+    SPEC,
     MODULE,
     STRUCT_FIELD,
     DOT_ACCESSED_FIELD;

@@ -42,7 +42,11 @@ abstract class MovePathMixin(node: ASTNode) : MoveElementImpl(node), MovePath {
     override val identifier: PsiElement? get() = this.pathIdent.identifier
 
     override fun getReference(): MovePathReference? {
-        if (this.parent is MovePathType) return MovePathReferenceImpl(this, Namespace.TYPE)
-        return MovePathReferenceImpl(this, Namespace.NAME)
+        val namespace = when {
+            this.isInsideSpecBlock() -> Namespace.SPEC
+            this.parent is MovePathType -> Namespace.TYPE
+            else -> Namespace.NAME
+        }
+        return MovePathReferenceImpl(this, namespace)
     }
 }

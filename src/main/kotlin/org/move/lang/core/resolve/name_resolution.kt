@@ -9,7 +9,6 @@ import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.types.ty.HasType
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
@@ -215,7 +214,7 @@ fun processLexicalDeclarations(
             )
             else -> false
         }
-        Namespace.SCHEMA -> when {
+        Namespace.SPEC -> when {
 //            is MoveModuleDef -> processor.matchAll(scope.schemas())
             else -> false
         }
@@ -245,7 +244,7 @@ fun walkUpThroughScopes(
         if (stopAfter(scope)) break
 
         cameFrom = scope
-        scope = scope.parent as MoveElement?
+        scope = scope.parent as? MoveElement
     }
 
     return false

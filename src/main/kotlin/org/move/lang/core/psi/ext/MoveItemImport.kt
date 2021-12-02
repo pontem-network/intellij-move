@@ -32,7 +32,7 @@ abstract class MoveItemImportMixin(node: ASTNode) : MoveNamedElementImpl(node),
                     module,
                     referenceName,
                     vs,
-                    setOf(Namespace.TYPE, Namespace.NAME, Namespace.SCHEMA)
+                    setOf(Namespace.TYPE, Namespace.NAME, Namespace.SPEC)
                 )
             }
         }
