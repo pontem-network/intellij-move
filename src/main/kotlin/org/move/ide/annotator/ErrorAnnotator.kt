@@ -29,18 +29,15 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitConstDef(o: MoveConstDef) = checkConstDef(moveHolder, o)
 
             override fun visitIfExpr(o: MoveIfExpr) {
-                val ifCodeBlockExpr = o.codeBlock?.returningExpr ?: o.inlineBlock?.expr ?: return
-                val ifCodeBlockType = ifCodeBlockExpr.inferExprTy()
+                val ifTy = o.returningExpr?.inferExprTy() ?: return
+                val elseExpr = o.elseExpr ?: return
+                val elseTy = elseExpr.inferExprTy()
 
-                val elseCodeBlockExpr =
-                    o.elseBlock?.codeBlock?.returningExpr ?: o.elseBlock?.inlineBlock?.expr ?: return
-                val elseCodeBlockType = elseCodeBlockExpr.inferExprTy()
-
-                if (!isCompatible(ifCodeBlockType, elseCodeBlockType)) {
+                if (!isCompatible(ifTy, elseTy)) {
                     moveHolder.createErrorAnnotation(
-                        elseCodeBlockExpr,
-                        "Incompatible type '${elseCodeBlockType.typeLabel(o)}'" +
-                                ", expected '${ifCodeBlockType.typeLabel(o)}'"
+                        elseExpr,
+                        "Incompatible type '${elseTy.typeLabel(o)}'" +
+                                ", expected '${ifTy.typeLabel(o)}'"
                     )
                 }
             }
