@@ -4,18 +4,6 @@ import org.intellij.lang.annotations.Language
 import org.move.utils.tests.MoveDocumentationProviderTestCase
 
 class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
-    fun `test variable`() = doTest(
-        """
-    module M {
-        fun main() {
-            let a = 1u64;
-            a;
-          //^  
-        }
-    }    
-    """, "u64"
-    )
-
     fun `test show docs for move_from`() = doTest("""
     module M {
         fun m() {
@@ -25,7 +13,7 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
     }
     """, expected = """
         <div class='definition'><pre>builtin_functions
-        native fun <b>move_from</b>(addr: address): R</pre></div>
+        native fun <b>move_from</b><R: key>(addr: address): R</pre></div>
         <div class='content'></div>
         """)
 
@@ -65,6 +53,54 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
         fun <b>add</b>(a: u8, b: u8): u8</pre></div>
         <div class='content'><p>Adds two numbers.</p>
         <p>Returns their sum.</p></div>
+    """)
+
+    fun `test show signature for function parameter`() = doTest("""
+    module 0x1::M {
+        fun add(a: u8, b: u8): u8 {
+          a
+        //^  
+        }
+    }
+    """, expected = """
+        a: u8
+    """)
+
+    fun `test show signature for type parameter`() = doTest("""
+    module 0x1::M {
+        fun move_r<R: store + drop>(res: R): R {
+                                       //^
+        }
+    }
+    """, expected = """
+        R: store + drop
+    """)
+
+    fun `test show signature for let variable`() = doTest("""
+    module 0x1::M {
+        fun m() {
+          let a = 1;
+          a;
+        //^ 
+        }
+    }
+    """, expected = """
+        a: integer
+    """)
+
+    fun `test struct docstring`() = doTest("""
+    module 0x1::M {
+        /// docstring
+        struct S<R: store> has copy, drop, store {}
+        fun m() {
+            S { };
+          //^  
+        }
+    }    
+    """, expected = """
+        <div class='definition'><pre>0x1::M
+        struct <b>S</b><R: store> has copy, drop, store</pre></div>
+        <div class='content'><p>docstring</p></div>
     """)
 
     fun `test struct field as vector`() = doTest(

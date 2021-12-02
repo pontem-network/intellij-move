@@ -31,15 +31,22 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
         val buffer = StringBuilder()
         var docElement = element
         if (docElement is MoveFunctionSignature) docElement = docElement.parent
+        if (docElement is MoveStructSignature) docElement = docElement.parent
         when (docElement) {
             // TODO: add docs for both scopes
             is MoveNamedAddress -> {
                 val moveProject = docElement.containingFile.containingMoveProject() ?: return null
                 val refName = docElement.referenceName ?: return null
-//                return moveProject.getNormalizedAddressValue(refName)
                 return moveProject.getAddresses()[refName]
             }
             is MoveDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
+            is MoveBindingPat -> {
+                buffer += docElement.name!!
+                buffer += ": "
+                buffer +=  docElement.resolvedType().shortPresentableText(true)
+            }
+            is MoveFunctionParameter -> docElement.generateDocumentation(buffer)
+            is MoveTypeParameter -> docElement.generateDocumentation(buffer)
             else -> {
                 if (docElement !is HasType) return null
                 val type = docElement.resolvedType()
@@ -76,6 +83,7 @@ fun generateFunctionSignature(signature: MoveFunctionSignature, buffer: StringBu
     if (signature.isNative) buffer += "native "
     buffer += "fun "
     buffer.b { it += signature.name }
+    signature.typeParameterList?.generateDocumentation(buffer)
     signature.functionParameterList?.generateDocumentation(buffer)
     signature.returnType?.generateDocumentation(buffer)
 }
@@ -88,6 +96,17 @@ fun MoveElement.signature(builder: StringBuilder) {
         is MoveModuleDef -> {
             buffer += "module "
             buffer += this.fqName
+        }
+        is MoveStructDef -> {
+            buffer += this.containingModule!!.fqName
+            buffer += "\n"
+
+            val signature = this.structSignature
+            buffer += "struct "
+            buffer.b { it += signature.name }
+            signature.typeParameterList?.generateDocumentation(buffer)
+            signature.abilitiesList?.abilityList
+                ?.joinToWithBuffer(buffer, ", ", " has ") { generateDocumentation(it) }
         }
         is MoveStructFieldDef -> {
             buffer += this.containingModule!!.fqName
@@ -122,6 +141,19 @@ private fun PsiElement.generateDocumentation(buffer: StringBuilder, prefix: Stri
         is MoveFunctionParameter -> {
             buffer += this.identifier.text
             this.typeAnnotation?.type?.generateDocumentation(buffer, ": ")
+        }
+        is MoveTypeParameterList ->
+            this.typeParameterList
+                .joinToWithBuffer(buffer, ", ", "<", ">") { generateDocumentation(it) }
+        is MoveTypeParameter -> {
+            buffer += this.identifier.text
+            val bound = this.typeParamBound
+            if (bound != null) {
+                abilities.joinToWithBuffer(buffer, " + ", ": ") { generateDocumentation(it) }
+            }
+        }
+        is MoveAbility -> {
+            buffer += this.text
         }
         is MoveReturnType -> this.type?.generateDocumentation(buffer, ": ")
     }

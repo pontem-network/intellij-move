@@ -301,6 +301,7 @@ NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';'
 NativeStructDef ::= native StructSignature ';'
 {
     pin = 2
+    implements = [ "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner" ]
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
@@ -423,6 +424,7 @@ StructSignature ::= struct IDENTIFIER TypeParameterList? AbilitiesList?
 StructDef ::= Attr* StructSignature StructFieldsDefBlock
 {
     pin = 2
+    implements = [ "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner" ]
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
