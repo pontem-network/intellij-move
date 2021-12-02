@@ -2,6 +2,8 @@ package org.move.lang.core.psi.mixins
 
 import com.intellij.lang.ASTNode
 import org.move.ide.MoveIcons
+import org.move.lang.core.psi.MoveElement
+import org.move.lang.core.psi.MoveElementImpl
 import org.move.lang.core.psi.MoveFunctionParameter
 import org.move.lang.core.psi.ext.inferTypeTy
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
@@ -12,13 +14,13 @@ import javax.swing.Icon
 
 val MoveFunctionParameter.declaredTy: Ty get() = this.typeAnnotation?.type?.inferTypeTy() ?: TyUnknown
 
-abstract class MoveFunctionParameterMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
+abstract class MoveFunctionParameterMixin(node: ASTNode) : MoveElementImpl(node),
                                                            MoveFunctionParameter {
 
     override fun getIcon(flags: Int): Icon = MoveIcons.PARAMETER
 
-    override fun resolvedType(): Ty {
-//        val type = this.typeAnnotation?.type ?: return TyUnknown
-        return this.typeAnnotation?.type?.inferTypeTy() ?: TyUnknown
-    }
+//    override fun resolvedType(): Ty {
+////        val type = this.typeAnnotation?.type ?: return TyUnknown
+//        return this.typeAnnotation?.type?.inferTypeTy() ?: TyUnknown
+//    }
 }

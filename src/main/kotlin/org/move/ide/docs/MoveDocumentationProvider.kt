@@ -5,6 +5,7 @@ import com.intellij.lang.documentation.DocumentationMarkup
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import org.move.ide.presentation.presentationInfo
 import org.move.ide.presentation.shortPresentableText
 import org.move.ide.presentation.typeLabel
 import org.move.lang.containingMoveProject
@@ -12,8 +13,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.isNative
 import org.move.lang.core.types.infer.inferMoveTypeTy
-import org.move.lang.core.types.ty.HasType
-import org.move.lang.core.types.ty.TyUnknown
 import org.move.stdext.joinToWithBuffer
 
 class MoveDocumentationProvider : AbstractDocumentationProvider() {
@@ -32,6 +31,9 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
         var docElement = element
         if (docElement is MoveFunctionSignature) docElement = docElement.parent
         if (docElement is MoveStructSignature) docElement = docElement.parent
+        if (docElement is MoveBindingPat
+            && docElement.owner is MoveConstDef
+        ) docElement = docElement.owner
         when (docElement) {
             // TODO: add docs for both scopes
             is MoveNamedAddress -> {
@@ -41,16 +43,23 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
             }
             is MoveDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MoveBindingPat -> {
-                buffer += docElement.name!!
+                val presentationInfo = docElement.presentationInfo ?: return null
+                val type = docElement.inferBindingPatTy().shortPresentableText(true)
+                buffer += presentationInfo.type
+                buffer += " "
+                buffer.b { it += presentationInfo.name }
                 buffer += ": "
-                buffer +=  docElement.resolvedType().shortPresentableText(true)
+                buffer += type
             }
-            is MoveFunctionParameter -> docElement.generateDocumentation(buffer)
-            is MoveTypeParameter -> docElement.generateDocumentation(buffer)
-            else -> {
-                if (docElement !is HasType) return null
-                val type = docElement.resolvedType()
-                buffer += type.typeLabel(docElement)
+            is MoveTypeParameter -> {
+                val presentationInfo = docElement.presentationInfo ?: return null
+                buffer += presentationInfo.type
+                buffer += " "
+                buffer.b { it += presentationInfo.name }
+                val abilities = docElement.abilities
+                if (abilities.isNotEmpty()) {
+                    abilities.joinToWithBuffer(buffer, " + ", ": ") { generateDocumentation(it) }
+                }
             }
         }
         return if (buffer.isEmpty()) null else buffer.toString()
@@ -120,7 +129,7 @@ fun MoveElement.signature(builder: StringBuilder) {
             buffer += this.containingModule!!.fqName
             buffer += "\n"
             buffer += "const "
-            buffer.b { it += this.name }
+            buffer.b { it += this.bindingPat?.name ?: "<unknown>" }
             buffer += ": ${this.declaredTy.shortPresentableText(false)}"
             this.initializer?.let { buffer += " ${it.text}" }
         }
@@ -129,7 +138,11 @@ fun MoveElement.signature(builder: StringBuilder) {
     listOf(buffer.toString()).joinTo(builder, "<br>")
 }
 
-private fun PsiElement.generateDocumentation(buffer: StringBuilder, prefix: String = "", suffix: String = "") {
+private fun PsiElement.generateDocumentation(
+    buffer: StringBuilder,
+    prefix: String = "",
+    suffix: String = ""
+) {
     buffer += prefix
     when (this) {
         is MoveType -> {
@@ -139,7 +152,7 @@ private fun PsiElement.generateDocumentation(buffer: StringBuilder, prefix: Stri
             this.functionParameterList
                 .joinToWithBuffer(buffer, ", ", "(", ")") { generateDocumentation(it) }
         is MoveFunctionParameter -> {
-            buffer += this.identifier.text
+            buffer += this.bindingPat.identifier.text
             this.typeAnnotation?.type?.generateDocumentation(buffer, ": ")
         }
         is MoveTypeParameterList ->

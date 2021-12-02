@@ -1,6 +1,7 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
+import org.move.lang.core.psi.MoveBindingPat
 import org.move.lang.core.psi.MoveStructLiteralExpr
 import org.move.lang.core.psi.MoveStructLiteralField
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
@@ -10,7 +11,6 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.OldMoveReferenceImpl
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferExprTy
-import org.move.lang.core.types.ty.HasType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -24,8 +24,8 @@ fun MoveStructLiteralField.inferAssignedExprTy(ctx: InferenceContext): Ty {
     val assignment = this.structLiteralFieldAssignment
     return if (assignment == null) {
         // find type of binding
-        val resolved = this.reference.resolve() as? HasType ?: return TyUnknown
-        resolved.resolvedType()
+        val resolved = this.reference.resolve() as? MoveBindingPat ?: return TyUnknown
+        resolved.inferBindingPatTy()
     } else {
         // find type of expression
         assignment.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown

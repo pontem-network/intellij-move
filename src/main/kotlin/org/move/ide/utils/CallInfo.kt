@@ -23,7 +23,7 @@ class CallInfo(
 
             val signature = resolved as? MoveFunctionSignatureOwner ?: return null
             val parameters = signature.parameters.map {
-                val paramName = it.name
+                val paramName = it.bindingPat.name
                 val paramType = it.typeAnnotation?.type
                 if (paramName == null || paramType == null) {
                     return@resolve null

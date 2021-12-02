@@ -43,9 +43,9 @@ fun inferExprTy(expr: MoveExpr, ctx: InferenceContext): Ty {
 }
 
 private fun inferRefExprTy(refExpr: MoveRefExpr, ctx: InferenceContext): Ty {
-    val refTyped =
-        refExpr.path.reference?.resolve() as? HasType ?: return TyUnknown
-    return refTyped.resolvedType()
+    val binding =
+        refExpr.path.reference?.resolve() as? MoveBindingPat ?: return TyUnknown
+    return binding.inferBindingPatTy()
 }
 
 private fun inferBorrowExprTy(borrowExpr: MoveBorrowExpr, ctx: InferenceContext): Ty {

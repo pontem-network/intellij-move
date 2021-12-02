@@ -6,10 +6,7 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.move.ide.colors.MoveColor
 import org.move.lang.MoveElementTypes.IDENTIFIER
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.elementType
-import org.move.lang.core.psi.ext.identifierName
-import org.move.lang.core.psi.ext.isIdentifierOnly
-import org.move.lang.core.psi.ext.isSelf
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.isNative
 
 val INTEGER_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128")
@@ -50,7 +47,7 @@ class HighlightingAnnotator : MoveAnnotator() {
         if (element is MoveModuleRef && element.isSelf) return MoveColor.KEYWORD
         if (element is MoveItemImport && element.text == "Self") return MoveColor.KEYWORD
         if (element is MoveFunctionSignature) return MoveColor.FUNCTION_DEF
-        if (element is MoveConstDef) return MoveColor.CONSTANT_DEF
+        if (element is MoveBindingPat && element.owner is MoveConstDef) return MoveColor.CONSTANT_DEF
         if (element is MoveModuleDef) return MoveColor.MODULE_DEF
 
         // any qual :: access is not highlighted
@@ -80,10 +77,12 @@ class HighlightingAnnotator : MoveAnnotator() {
                 }
             }
             is MoveRefExpr -> {
-                val resolved = path.reference?.resolve()
-                when (resolved) {
-                    is MoveBindingPat -> return MoveColor.VARIABLE
+                val resolved = path.reference?.resolve() as? MoveBindingPat ?: return null
+                val owner = resolved.owner
+                when (owner) {
                     is MoveConstDef -> return MoveColor.CONSTANT
+                    is MoveLetStatement,
+                    is MoveFunctionParameter -> return MoveColor.VARIABLE
                 }
             }
         }

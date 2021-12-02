@@ -12,13 +12,3 @@ import javax.swing.Icon
 
 val MoveConstDef.declaredTy: Ty
     get() = this.typeAnnotation?.type?.let { inferMoveTypeTy(it) } ?: TyUnknown
-
-abstract class MoveConstDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
-                                                  MoveConstDef {
-
-    override fun getIcon(flags: Int): Icon = MoveIcons.CONST
-
-    override fun resolvedType(): Ty {
-        return this.typeAnnotation?.type?.inferTypeTy() ?: TyUnknown
-    }
-}

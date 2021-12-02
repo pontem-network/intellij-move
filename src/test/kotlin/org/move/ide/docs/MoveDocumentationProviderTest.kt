@@ -63,7 +63,7 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
         }
     }
     """, expected = """
-        a: u8
+        value parameter <b>a</b>: u8
     """)
 
     fun `test show signature for type parameter`() = doTest("""
@@ -73,10 +73,10 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
         }
     }
     """, expected = """
-        R: store + drop
+        type parameter <b>R</b>: store + drop
     """)
 
-    fun `test show signature for let variable`() = doTest("""
+    fun `test show signature for simple let variable`() = doTest("""
     module 0x1::M {
         fun m() {
           let a = 1;
@@ -85,7 +85,7 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
         }
     }
     """, expected = """
-        a: integer
+        variable <b>a</b>: integer
     """)
 
     fun `test struct docstring`() = doTest("""

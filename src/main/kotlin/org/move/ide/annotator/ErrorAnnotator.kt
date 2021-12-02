@@ -10,6 +10,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.declaredTy
 import org.move.lang.core.psi.mixins.resolvedReturnType
+import org.move.lang.core.psi.mixins.ty
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.*
@@ -28,12 +29,12 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitConstDef(o: MoveConstDef) = checkConstDef(moveHolder, o)
 
             override fun visitIfExpr(o: MoveIfExpr) {
-                val ifCodeBlockExpr = o.codeBlock?.lastHasType ?: o.inlineBlock?.expr ?: return
-                val ifCodeBlockType = ifCodeBlockExpr.resolvedType()
+                val ifCodeBlockExpr = o.codeBlock?.returningExpr ?: o.inlineBlock?.expr ?: return
+                val ifCodeBlockType = ifCodeBlockExpr.inferExprTy()
 
                 val elseCodeBlockExpr =
-                    o.elseBlock?.codeBlock?.lastHasType ?: o.elseBlock?.inlineBlock?.expr ?: return
-                val elseCodeBlockType = elseCodeBlockExpr.resolvedType()
+                    o.elseBlock?.codeBlock?.returningExpr ?: o.elseBlock?.inlineBlock?.expr ?: return
+                val elseCodeBlockType = elseCodeBlockExpr.inferExprTy()
 
                 if (!isCompatible(ifCodeBlockType, elseCodeBlockType)) {
                     moveHolder.createErrorAnnotation(
@@ -68,13 +69,12 @@ class ErrorAnnotator : MoveAnnotator() {
 
             override fun visitCodeBlock(codeBlock: MoveCodeBlock) {
                 if (codeBlock.parent is MoveFunctionDef) {
-                    val lastHasType = codeBlock.lastHasType
+                    val returningExpr = codeBlock.returningExpr
                     val expectedReturnType =
                         codeBlock.containingFunction?.functionSignature?.resolvedReturnType ?: return
-                    val actualReturnType = lastHasType?.resolvedType() ?: TyUnit
+                    val actualReturnType = returningExpr?.inferExprTy() ?: TyUnit
                     if (!isCompatible(expectedReturnType, actualReturnType)) {
-//                    if (!expectedReturnType.compatibleWith(actualReturnType)) {
-                        val annotatedElement = lastHasType as? PsiElement
+                        val annotatedElement = returningExpr as? PsiElement
                             ?: codeBlock.rightBrace
                             ?: codeBlock
                         moveHolder.createErrorAnnotation(
@@ -228,7 +228,14 @@ class ErrorAnnotator : MoveAnnotator() {
     }
 
     private fun checkConstDef(holder: MoveAnnotationHolder, const: MoveConstDef) {
-        checkDuplicates(holder, const)
+        val binding = const.bindingPat ?: return
+        val owner = const.parent?.parent ?: return
+        val allBindings = when (owner) {
+            is MoveModuleDef -> owner.constBindings()
+            is MoveScriptDef -> owner.constBindings()
+            else -> return
+        }
+        checkDuplicates(holder, binding, allBindings.asSequence())
     }
 }
 
@@ -267,17 +274,17 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
         }
     }
 
+    val ctx = InferenceContext()
     for ((i, expr) in arguments.exprList.withIndex()) {
         val parameter = signature.parameters[i]
         val expectedTy = parameter.declaredTy
+        val exprTy = expr.inferExprTy(ctx)
         if (expectedTy is TyTypeParameter) {
-            checkHasRequiredAbilities(holder, expr, expectedTy)
+            checkHasRequiredAbilities(holder, expr, exprTy, expectedTy)
             return
         }
-
-        val exprTy = expr.inferExprTy()
         if (!isCompatible(expectedTy, exprTy)) {
-            val paramName = parameter.name ?: continue
+            val paramName = parameter.bindingPat.name ?: continue
             val exprTypeName = exprTy.typeLabel(relativeTo = arguments)
             val expectedTypeName = expectedTy.typeLabel(relativeTo = arguments)
 
@@ -346,11 +353,12 @@ private fun checkPath(holder: MoveAnnotationHolder, path: MovePath) {
 
             for ((i, typeArgument) in typeArguments.withIndex()) {
                 val typeParam = referred.typeParameters[i]
-                val typeParamType = typeParam.resolvedType() as? TyTypeParameter ?: continue
+                val argumentTy = typeArgument.type.inferTypeTy()
                 checkHasRequiredAbilities(
                     holder,
                     typeArgument.type,
-                    typeParamType
+                    argumentTy,
+                    typeParam.ty()
                 )
             }
         }
@@ -359,17 +367,17 @@ private fun checkPath(holder: MoveAnnotationHolder, path: MovePath) {
 
 private fun checkHasRequiredAbilities(
     holder: MoveAnnotationHolder,
-    element: HasType,
+    element: MoveElement,
+    elementTy: Ty,
     typeParamType: TyTypeParameter
 ) {
-    val elementType = element.resolvedType()
     // do not check for specs
-    if (element.ancestorStrict<MoveSpecDef>() != null) return
+    if (element.isInsideSpecBlock()) return
 
-    val abilities = elementType.abilities()
+    val abilities = elementTy.abilities()
     for (ability in typeParamType.abilities()) {
         if (ability !in abilities) {
-            val typeName = elementType.typeLabel(relativeTo = element)
+            val typeName = elementTy.typeLabel(relativeTo = element)
             holder.createErrorAnnotation(
                 element,
                 "The type '$typeName' " +
@@ -383,9 +391,9 @@ private fun checkHasRequiredAbilities(
 private fun checkDuplicates(
     holder: MoveAnnotationHolder,
     element: MoveNameIdentifierOwner,
-    scope: PsiElement = element.parent,
+    scopeNamedChildren: Sequence<MoveNamedElement> = element.parent.namedChildren(),
 ) {
-    val duplicateNamedChildren = getDuplicatedNamedChildren(scope)
+    val duplicateNamedChildren = getDuplicatedNamedChildren(scopeNamedChildren)
     if (element.name !in duplicateNamedChildren.map { it.name }) {
         return
     }
@@ -431,9 +439,8 @@ private fun getDuplicates(elements: Sequence<MoveNamedElement>): Set<MoveNamedEl
         .toSet()
 }
 
-private fun getDuplicatedNamedChildren(owner: PsiElement): Set<MoveNamedElement> {
-    return owner
-        .namedChildren()
+private fun getDuplicatedNamedChildren(namedChildren: Sequence<MoveNamedElement>): Set<MoveNamedElement> {
+    return namedChildren
         .groupBy { it.name }
         .map { it.value }
         .filter { it.size > 1 }

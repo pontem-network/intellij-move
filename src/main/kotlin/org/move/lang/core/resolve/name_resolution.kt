@@ -160,18 +160,19 @@ fun processLexicalDeclarations(
                     scope.allFnSignatures(),
                     scope.builtinFnSignatures(),
                     scope.structSignatures(),
-                    scope.consts(),
+                    scope.constBindings(),
                 ).flatten()
             )
             is MoveScriptDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
-                    scope.consts(),
+                    scope.constBindings(),
                     scope.builtinScriptFnSignatures(),
                 ).flatten(),
             )
-            is MoveFunctionDef -> processor.matchAll(scope.functionSignature?.parameters.orEmpty())
+            is MoveFunctionDef ->
+                processor.matchAll(scope.functionSignature?.parameters.orEmpty().map { it.bindingPat })
             is MoveCodeBlock -> {
                 val precedingLetDecls = scope.letStatements
                     // drops all let-statements after the current position

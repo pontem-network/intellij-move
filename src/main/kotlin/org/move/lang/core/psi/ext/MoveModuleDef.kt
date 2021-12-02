@@ -136,8 +136,8 @@ fun MoveModuleDef.structSignatures(): List<MoveStructSignature> {
 //    return emptyList()
 //}
 
-fun MoveModuleDef.consts(): List<MoveConstDef> =
-    moduleBlock?.constDefList.orEmpty()
+fun MoveModuleDef.constBindings(): List<MoveBindingPat> =
+    moduleBlock?.constDefList.orEmpty().mapNotNull { it.bindingPat }
 
 //fun MoveModuleDef.publicConsts(): List<MoveConstDef> =
 //    consts().filter {  }
