@@ -101,7 +101,7 @@ allprojects {
         }
 
         patchPluginXml {
-            version.set(pluginVersion)
+            version.set("$pluginVersion.$propsVersion")
             sinceBuild.set(prop("pluginSinceBuild"))
             untilBuild.set(prop("pluginUntilBuild"))
         }
