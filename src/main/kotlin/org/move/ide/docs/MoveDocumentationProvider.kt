@@ -13,6 +13,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.isNative
 import org.move.lang.core.types.infer.inferMoveTypeTy
+import org.move.lang.core.types.ty.Ty
 import org.move.stdext.joinToWithBuffer
 
 class MoveDocumentationProvider : AbstractDocumentationProvider() {
@@ -44,7 +45,7 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
             is MoveDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MoveBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
-                val type = docElement.inferBindingPatTy().shortPresentableText(true)
+                val type = docElement.inferBindingPatTy().renderForDocs(true)
                 buffer += presentationInfo.type
                 buffer += " "
                 buffer.b { it += presentationInfo.name }
@@ -120,17 +121,17 @@ fun MoveElement.signature(builder: StringBuilder) {
         is MoveStructFieldDef -> {
             buffer += this.containingModule!!.fqName
             buffer += "::"
-            buffer += this.structDef?.structSignature?.name ?: "<anonymous>"
+            buffer += this.structDef?.structSignature?.name ?: angleWrapped("anonymous")
             buffer += "\n"
             buffer.b { it += this.name }
-            buffer += ": ${this.declaredTy.shortPresentableText(true)}"
+            buffer += ": ${this.declaredTy.renderForDocs(true)}"
         }
         is MoveConstDef -> {
             buffer += this.containingModule!!.fqName
             buffer += "\n"
             buffer += "const "
-            buffer.b { it += this.bindingPat?.name ?: "<unknown>" }
-            buffer += ": ${this.declaredTy.shortPresentableText(false)}"
+            buffer.b { it += this.bindingPat?.name ?: angleWrapped("unknown") }
+            buffer += ": ${this.declaredTy.renderForDocs(false)}"
             this.initializer?.let { buffer += " ${it.text}" }
         }
         else -> return
@@ -157,7 +158,7 @@ private fun PsiElement.generateDocumentation(
         }
         is MoveTypeParameterList ->
             this.typeParameterList
-                .joinToWithBuffer(buffer, ", ", "<", ">") { generateDocumentation(it) }
+                .joinToWithBuffer(buffer, ", ", "&lt;", "&gt;") { generateDocumentation(it) }
         is MoveTypeParameter -> {
             buffer += this.identifier.text
             val bound = this.typeParamBound
@@ -183,6 +184,15 @@ private inline fun content(buffer: StringBuilder, block: (StringBuilder) -> Unit
     buffer += DocumentationMarkup.CONTENT_START
     block(buffer)
     buffer += DocumentationMarkup.CONTENT_END
+}
+
+private fun angleWrapped(text: String): String = "&lt;$text&gt;"
+
+private fun Ty.renderForDocs(fq: Boolean): String {
+    val original = this.shortPresentableText(fq)
+    return original
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
 }
 
 private operator fun StringBuilder.plusAssign(value: String?) {

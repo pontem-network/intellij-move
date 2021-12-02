@@ -13,7 +13,7 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
     }
     """, expected = """
         <div class='definition'><pre>builtin_functions
-        native fun <b>move_from</b><R: key>(addr: address): R</pre></div>
+        native fun <b>move_from</b>&lt;R: key&gt;(addr: address): R</pre></div>
         <div class='content'></div>
         """)
 
@@ -79,13 +79,13 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
     fun `test show signature for simple let variable`() = doTest("""
     module 0x1::M {
         fun m() {
-          let a = 1;
+          let a: vector<u8>;
           a;
         //^ 
         }
     }
     """, expected = """
-        variable <b>a</b>: integer
+        variable <b>a</b>: vector&lt;u8&gt;
     """)
 
     fun `test struct docstring`() = doTest("""
@@ -99,7 +99,7 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
     }    
     """, expected = """
         <div class='definition'><pre>0x1::M
-        struct <b>S</b><R: store> has copy, drop, store</pre></div>
+        struct <b>S</b>&lt;R: store&gt; has copy, drop, store</pre></div>
         <div class='content'><p>docstring</p></div>
     """)
 
@@ -119,7 +119,7 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
     }    
     """, expected = """
         <div class='definition'><pre>0x1::M::Collection
-        <b>nfts</b>: vector<0x1::M::NFT></pre></div>
+        <b>nfts</b>: vector&lt;0x1::M::NFT&gt;</pre></div>
         <div class='content'><p>docstring</p></div>"""
     )
 
