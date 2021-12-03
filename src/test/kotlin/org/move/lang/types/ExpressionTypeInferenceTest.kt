@@ -77,25 +77,25 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
     }    
     """)
 
-//    fun `test struct type unpacking`() = testExpr("""
-//    module 0x1::M {
-//        struct S { val: u8 }
-//        fun m() {
-//            let S { val: myval } = S { val: 1 };
-//            myval;
-//          //^ u8
-//        }
-//    }
-//    """)
-//
-//    fun `test struct type unpacking shorthand`() = testExpr("""
-//    module 0x1::M {
-//        struct S { val: u8 }
-//        fun m() {
-//            let S { val } = S { val: 1 };
-//            val;
-//          //^ u8
-//        }
-//    }
-//    """)
+    fun `test struct type unpacking`() = testExpr("""
+    module 0x1::M {
+        struct S { val: u8 }
+        fun m() {
+            let S { val: myval } = S { val: 1 };
+            myval;
+          //^ u8
+        }
+    }
+    """)
+
+    fun `test struct type unpacking shorthand`() = testExpr("""
+    module 0x1::M {
+        struct S { val: u8 }
+        fun m() {
+            let S { val } = S { val: 1 };
+            val;
+          //^ u8
+        }
+    }
+    """)
 }

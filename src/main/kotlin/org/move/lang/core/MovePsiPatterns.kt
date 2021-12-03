@@ -44,6 +44,8 @@ object MovePsiPatterns {
     fun codeStatement(): PsiElementPattern.Capture<PsiElement> =
         psiElementInside<MoveCodeBlock>()
 
+    fun bindingPat(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MoveBindingPat>()
+
     fun namedAddress(): PsiElementPattern.Capture<MoveNamedAddress> {
         return psiElement()
     }

@@ -238,15 +238,13 @@ private ModuleItem_item ::= ImportStatement | FriendStatement
 //                            | FunctionDef | FunctionVisibilityContainer
 //                            | NativeFunctionDef | ConstDef | ItemSpecDef
 
-ConstDef ::= const IDENTIFIER TypeAnnotation Initializer ';'
+ConstDef ::= const BindingPat TypeAnnotation Initializer ';'
 {
     pin = 1
     implements = [
-        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner"
-        "org.move.lang.core.types.ty.HasType"
     ]
-    mixin = "org.move.lang.core.psi.ext.MoveConstDefMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 //    recoverWhile = ModuleItem_recover
 }
@@ -301,6 +299,7 @@ NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';'
 NativeStructDef ::= native StructSignature ';'
 {
     pin = 2
+    implements = [ "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner" ]
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
@@ -379,14 +378,13 @@ private FunctionParameter_with_recover ::= !(')' | '{' | ';') FunctionParameter 
 }
 private FunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER)
 
-FunctionParameter ::= IDENTIFIER TypeAnnotation
+FunctionParameter ::= BindingPat TypeAnnotation
 {
     pin = 1
-    implements = [
-        "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.types.ty.HasType"
-    ]
-    mixin = "org.move.lang.core.psi.mixins.MoveFunctionParameterMixin"
+//    implements = [
+//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+//    ]
+//    mixin = "org.move.lang.core.psi.mixins.MoveFunctionParameterMixin"
 }
 
 // u8 | (u8,) | (u8, u8) | (u8, u8,)
@@ -423,6 +421,7 @@ StructSignature ::= struct IDENTIFIER TypeParameterList? AbilitiesList?
 StructDef ::= Attr* StructSignature StructFieldsDefBlock
 {
     pin = 2
+    implements = [ "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner" ]
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
@@ -446,7 +445,6 @@ StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner"
-        "org.move.lang.core.types.ty.HasType"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveStructFieldDefMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
@@ -528,22 +526,18 @@ ImportAlias ::= as IDENTIFIER
 TypeAnnotation ::= ':' Type { pin = 1 }
 
 Type ::= RefType | PathType | TupleType | LambdaType
-{
-    implements = ["org.move.lang.core.types.ty.HasType"]
-    mixin = "org.move.lang.core.psi.ext.MoveTypeMixin"
-}
 
 RefType ::= RefTypeStart Type
 {
     pin = 1
-    mixin = "org.move.lang.core.psi.ext.MoveRefTypeMixin"
+//    mixin = "org.move.lang.core.psi.ext.MoveRefTypeMixin"
 }
 RefTypeStart ::= ('&' mut?)
 
 PathType ::= Path
 {
     name = "type"
-    mixin = "org.move.lang.core.psi.ext.MovePathTypeMixin"
+//    mixin = "org.move.lang.core.psi.ext.MovePathTypeMixin"
 }
 
 TupleType ::= '(' TupleTypeItem_with_recover* ')' { pin = 1 }
@@ -571,7 +565,7 @@ TypeParameter ::= phantom? IDENTIFIER TypeParamBound? {
     pin = 2
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.types.ty.HasType"
+//        "org.move.lang.core.types.ty.HasType"
     ]
     mixin = "org.move.lang.core.psi.mixins.MoveTypeParameterMixin"
 }
@@ -607,7 +601,7 @@ DotPat ::= IDENTIFIER '.' IDENTIFIER { pin = 2 }
 BindingPat ::= IDENTIFIER {
     implements = [
         "org.move.lang.core.psi.MoveNameIdentifierOwner"
-        "org.move.lang.core.types.ty.HasType"
+//        "org.move.lang.core.types.ty.HasType"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveBindingPatMixin"
 }
@@ -629,14 +623,24 @@ private StructPatField_with_recover ::= !'}' StructPatField (',' | &'}')
 }
 private StructPatField_recover ::= !('}' | IDENTIFIER)
 
-StructPatField ::= IDENTIFIER StructPatFieldBinding? {
+StructPatField ::= (BindingPat !':') | (IDENTIFIER StructPatFieldBinding)
+{
     pin = 1
     implements = [
-        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
         "org.move.lang.core.psi.MoveStructFieldReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveStructPatFieldMixin"
 }
+
+//StructPatField ::= IDENTIFIER StructPatFieldBinding? {
+//    pin = 1
+//    implements = [
+//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+//        "org.move.lang.core.psi.MoveStructFieldReferenceElement"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MoveStructPatFieldMixin"
+//}
 StructPatFieldBinding ::= ':' Pat { pin = 1 }
 
 //private StructPatField_recovery ::= !(',' | '}' | IDENTIFIER)
@@ -646,17 +650,8 @@ StructPatFieldBinding ::= ':' Pat { pin = 1 }
 // Statements
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 Statement ::= LetStatement | MacroCallStatement | ExprStatement
-{
-    implements = ["org.move.lang.core.types.ty.HasType"]
-    mixin = "org.move.lang.core.psi.ext.MoveStatementMixin"
-}
-LetStatement ::= let Pat TypeAnnotation? Initializer? ';' {
-    pin = 1
-//    implements = [
-//        "org.move.lang.core.types.ty.HasType"
-//    ]
-//    mixin = "org.move.lang.core.psi.mixins.MoveLetStatementMixin"
-}
+
+LetStatement ::= let Pat TypeAnnotation? Initializer? ';' { pin = 1 }
 
 ExprStatement ::= (ExprStatement_items !('}')) ';' { pin = 1 }
 private ExprStatement_items ::= IfExpr
@@ -715,8 +710,8 @@ Expr ::= AssignmentExpr
         | BorrowExpr
         | AtomExpr
 {
-    implements = ["org.move.lang.core.types.ty.HasType"]
-    mixin = "org.move.lang.core.psi.ext.MoveExprMixin"
+//    implements = ["org.move.lang.core.types.ty.HasType"]
+//    mixin = "org.move.lang.core.psi.ext.MoveExprMixin"
 }
 //private SpecExpr ::= Expr | AggregatePredicate
 
@@ -1048,10 +1043,10 @@ SpecStatement ::= ImportStatement
                                | Statement
 private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
 
-VariableSpecStatement ::= RefExpr TypeAnnotation ';' { pin = 2 }
+VariableSpecStatement ::= IDENTIFIER TypeAnnotation ';' { pin = 2 }
 
-LocalVariableSpecStatement ::= local RefExpr TypeAnnotation ';' { pin = 1 }
-GlobalVariableSpecStatement ::= global RefExpr TypeAnnotation ';' { pin = 1 }
+LocalVariableSpecStatement ::= local IDENTIFIER TypeAnnotation ';' { pin = 1 }
+GlobalVariableSpecStatement ::= global IDENTIFIER TypeAnnotation ';' { pin = 1 }
 
 private post ::= <<postKeyword>>
 LetSpecStatement ::= (let post?) Pat TypeAnnotation? Initializer? ';' { pin = 1 }

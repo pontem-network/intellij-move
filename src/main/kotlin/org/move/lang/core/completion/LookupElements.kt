@@ -9,8 +9,11 @@ import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilBase
 import com.intellij.psi.util.PsiUtilCore
+import org.move.ide.presentation.shortPresentableText
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ext.inferBindingPatTy
+import org.move.lang.core.psi.ext.owner
 import org.move.lang.core.psi.ext.parametersText
 
 const val DEFAULT_PRIORITY = 0.0
@@ -100,9 +103,9 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
 //                }
 //            }
 
-        is MoveConstDef -> LookupElementBuilder.createWithIcon(this)
-            .withLookupString(this.name ?: "")
-            .withTypeText(this.typeAnnotation?.type?.text)
+//        is MoveConstDef -> LookupElementBuilder.createWithIcon(this)
+//            .withLookupString(this.name ?: "")
+//            .withTypeText(this.typeAnnotation?.type?.text)
 
         is MoveModuleDef -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
@@ -122,12 +125,13 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
             .withLookupString(this.name ?: "")
             .withTypeText(this.typeAnnotation?.type?.text)
 
-        is MoveFunctionParameter -> LookupElementBuilder.createWithIcon(this)
-            .withLookupString(this.name ?: "")
-            .withTypeText(this.typeAnnotation?.type?.text)
+//        is MoveFunctionParameter -> LookupElementBuilder.createWithIcon(this)
+//            .withLookupString(this.name ?: "")
+//            .withTypeText(this.typeAnnotation?.type?.text)
 
         is MoveBindingPat -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
+            .withTypeText(this.inferBindingPatTy().shortPresentableText(true))
 
         else -> LookupElementBuilder.create(this).withLookupString(name ?: "")
     }

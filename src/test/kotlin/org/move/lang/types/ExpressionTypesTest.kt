@@ -220,4 +220,34 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test if expr`() = testExpr("""
+    module 0x1::M {
+        fun m() {
+            let a = if (true) 1 else 2;
+            a;
+          //^ integer  
+        }
+    }    
+    """)
+
+    fun `test if expr without else`() = testExpr("""
+    module 0x1::M {
+        fun m() {
+            let a = if (true) 1;
+            a;
+          //^ <unknown>  
+        }
+    }    
+    """)
+
+    fun `test if expr with incompatible else`() = testExpr("""
+    module 0x1::M {
+        fun m() {
+            let a = if (true) 1 else true;
+            a;
+          //^ <unknown>
+        }
+    }    
+    """)
 }

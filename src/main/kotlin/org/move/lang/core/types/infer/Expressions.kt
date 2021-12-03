@@ -1,5 +1,6 @@
 package org.move.lang.core.types.infer
 
+import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
@@ -36,6 +37,7 @@ fun inferExprTy(expr: MoveExpr, ctx: InferenceContext): Ty {
         is MoveAndExpr -> TyBool
         is MoveOrExpr -> TyBool
 
+        is MoveIfExpr -> inferIfExprTy(expr)
         else -> TyUnknown
     }
     ctx.cacheExprTy(expr, exprTy)
@@ -43,9 +45,9 @@ fun inferExprTy(expr: MoveExpr, ctx: InferenceContext): Ty {
 }
 
 private fun inferRefExprTy(refExpr: MoveRefExpr, ctx: InferenceContext): Ty {
-    val refTyped =
-        refExpr.path.reference?.resolve() as? HasType ?: return TyUnknown
-    return refTyped.resolvedType()
+    val binding =
+        refExpr.path.reference?.resolve() as? MoveBindingPat ?: return TyUnknown
+    return binding.inferBindingPatTy()
 }
 
 private fun inferBorrowExprTy(borrowExpr: MoveBorrowExpr, ctx: InferenceContext): Ty {
@@ -152,7 +154,7 @@ private fun inferDerefExprTy(derefExpr: MoveDerefExpr, ctx: InferenceContext): T
     return (exprTy as? TyReference)?.referenced ?: TyUnknown
 }
 
-fun inferLiteralExprTy(literalExpr: MoveLiteralExpr): Ty {
+private fun inferLiteralExprTy(literalExpr: MoveLiteralExpr): Ty {
     return when {
         literalExpr.boolLiteral != null -> TyBool
         literalExpr.addressLiteral != null
@@ -165,4 +167,11 @@ fun inferLiteralExprTy(literalExpr: MoveLiteralExpr): Ty {
         literalExpr.byteStringLiteral != null -> TyByteString
         else -> TyUnknown
     }
+}
+
+private fun inferIfExprTy(ifExpr: MoveIfExpr): Ty {
+    val ifTy = ifExpr.returningExpr?.inferExprTy() ?: return TyUnknown
+    val elseTy = ifExpr.elseExpr?.inferExprTy() ?: return TyUnknown
+    if (!isCompatible(ifTy, elseTy)) return TyUnknown
+    return ifTy
 }

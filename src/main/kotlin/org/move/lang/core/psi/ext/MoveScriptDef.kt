@@ -8,8 +8,8 @@ fun MoveScriptDef.allFnSignatures(): List<MoveFunctionSignature> {
     return block.functionDefList.mapNotNull { it.functionSignature }
 }
 
-fun MoveScriptDef.consts(): List<MoveConstDef> =
-    scriptBlock?.constDefList.orEmpty()
+fun MoveScriptDef.constBindings(): List<MoveBindingPat> =
+    scriptBlock?.constDefList.orEmpty().mapNotNull { it.bindingPat }
 
 fun MoveScriptDef.builtinScriptFnSignatures(): List<MoveFunctionSignature> {
     return listOfNotNull(

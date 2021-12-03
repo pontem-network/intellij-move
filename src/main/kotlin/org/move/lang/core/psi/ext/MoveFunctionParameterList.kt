@@ -6,6 +6,6 @@ import org.move.utils.SignatureUtils
 val MoveFunctionParameterList.parametersText: String
     get() {
         return SignatureUtils.joinParameters(this.functionParameterList.map {
-            Pair(it.name!!, it.typeAnnotation?.type?.text)
+            Pair(it.bindingPat.name!!, it.typeAnnotation?.type?.text)
         })
     }

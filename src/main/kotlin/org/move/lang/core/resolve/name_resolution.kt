@@ -9,7 +9,6 @@ import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.types.ty.HasType
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
@@ -161,18 +160,19 @@ fun processLexicalDeclarations(
                     scope.allFnSignatures(),
                     scope.builtinFnSignatures(),
                     scope.structSignatures(),
-                    scope.consts(),
+                    scope.constBindings(),
                 ).flatten()
             )
             is MoveScriptDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
-                    scope.consts(),
+                    scope.constBindings(),
                     scope.builtinScriptFnSignatures(),
                 ).flatten(),
             )
-            is MoveFunctionDef -> processor.matchAll(scope.functionSignature?.parameters.orEmpty())
+            is MoveFunctionDef ->
+                processor.matchAll(scope.functionSignature?.parameters.orEmpty().map { it.bindingPat })
             is MoveCodeBlock -> {
                 val precedingLetDecls = scope.letStatements
                     // drops all let-statements after the current position
@@ -183,7 +183,7 @@ fun processLexicalDeclarations(
                 // shadowing support (look at latest first)
                 val namedElements = precedingLetDecls
                     .asReversed()
-                    .flatMap { it.pat?.boundElements.orEmpty() }
+                    .flatMap { it.pat?.bindings.orEmpty() }
 
                 // skip shadowed (already visited) elements
                 val visited = mutableSetOf<String>()
@@ -215,7 +215,7 @@ fun processLexicalDeclarations(
             )
             else -> false
         }
-        Namespace.SCHEMA -> when {
+        Namespace.SPEC -> when {
 //            is MoveModuleDef -> processor.matchAll(scope.schemas())
             else -> false
         }
@@ -245,7 +245,7 @@ fun walkUpThroughScopes(
         if (stopAfter(scope)) break
 
         cameFrom = scope
-        scope = scope.parent as MoveElement?
+        scope = scope.parent as? MoveElement
     }
 
     return false

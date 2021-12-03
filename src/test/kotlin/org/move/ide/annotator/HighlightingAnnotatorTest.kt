@@ -27,7 +27,7 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
 
     fun `test variable names annotated`() = checkHighlighting("""
     module <MODULE_DEF>M</MODULE_DEF> {
-        const <CONSTANT_DEF>MAX_INT</CONSTANT_DEF>: u8 = 255;
+        const <CONSTANT_DEF>MAX_INT</CONSTANT_DEF>: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE> = 255;
 
         fun <FUNCTION_DEF>main</FUNCTION_DEF>() {
             let a = 1;
