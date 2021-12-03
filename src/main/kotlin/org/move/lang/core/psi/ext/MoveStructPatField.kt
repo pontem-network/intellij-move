@@ -3,6 +3,7 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.MoveElementImpl
+import org.move.lang.core.psi.MovePat
 import org.move.lang.core.psi.MoveStructPat
 import org.move.lang.core.psi.MoveStructPatField
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
@@ -11,6 +12,10 @@ import org.move.lang.core.resolve.ref.MoveStructFieldReferenceImpl
 
 val MoveStructPatField.structPat: MoveStructPat
     get() = ancestorStrict()!!
+
+val MoveStructPatField.pat: MovePat? get() {
+    return this.bindingPat ?: this.structPatFieldBinding?.pat
+}
 
 abstract class MoveStructPatFieldMixin(node: ASTNode) : MoveElementImpl(node),
                                                         MoveStructPatField {
