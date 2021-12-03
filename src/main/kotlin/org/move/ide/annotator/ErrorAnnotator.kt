@@ -125,7 +125,7 @@ class ErrorAnnotator : MoveAnnotator() {
             override fun visitStructPat(o: MoveStructPat) {
                 val nameElement = o.path.referenceNameElement ?: return
                 val refStruct = o.path.maybeStruct ?: return
-                val fieldNames = o.providedFields.map { it.referenceName }
+                val fieldNames = o.fields.map { it.referenceName }
                 checkMissingFields(
                     moveHolder, nameElement, fieldNames.toSet(), refStruct
                 )

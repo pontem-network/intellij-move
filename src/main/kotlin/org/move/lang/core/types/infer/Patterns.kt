@@ -2,9 +2,8 @@ package org.move.lang.core.types.infer
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.declaredTy
-import org.move.lang.core.psi.ext.inferTypeTy
 import org.move.lang.core.psi.ext.owner
-import org.move.lang.core.psi.ext.providedFields
+import org.move.lang.core.psi.ext.fields
 import org.move.lang.core.psi.mixins.declaredTy
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyStruct
@@ -24,6 +23,15 @@ fun collectBindings(pattern: MovePat, type: Ty): Map<MoveBindingPat, Ty> {
                     pat.patList.map { bind(it, TyUnknown) }
                 }
             }
+//            is MoveStructPat -> {
+//                if (ty is TyStruct && pat.fields.size == ty.fieldsTy().size) {
+//
+//                } else {
+//                    pat.fields
+//                }
+//                val fields = pat.fields
+//                val tys = ty.
+//            }
         }
     }
     bind(pattern, type)

@@ -183,7 +183,7 @@ fun processLexicalDeclarations(
                 // shadowing support (look at latest first)
                 val namedElements = precedingLetDecls
                     .asReversed()
-                    .flatMap { it.pat?.boundElements.orEmpty() }
+                    .flatMap { it.pat?.bindings.orEmpty() }
 
                 // skip shadowed (already visited) elements
                 val visited = mutableSetOf<String>()

@@ -42,7 +42,7 @@ interface MoveMandatoryReferenceElement: MoveReferenceElement {
     override val referenceNameElement: PsiElement get() = identifier
 
     @JvmDefault
-    override val referenceName: String get() = identifier.text
+    override val referenceName: String get() = referenceNameElement.text
 
     override fun getReference(): MoveReference
 }

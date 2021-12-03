@@ -623,14 +623,24 @@ private StructPatField_with_recover ::= !'}' StructPatField (',' | &'}')
 }
 private StructPatField_recover ::= !('}' | IDENTIFIER)
 
-StructPatField ::= IDENTIFIER StructPatFieldBinding? {
+StructPatField ::= (BindingPat !':') | (IDENTIFIER StructPatFieldBinding)
+{
     pin = 1
     implements = [
-        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
         "org.move.lang.core.psi.MoveStructFieldReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MoveStructPatFieldMixin"
 }
+
+//StructPatField ::= IDENTIFIER StructPatFieldBinding? {
+//    pin = 1
+//    implements = [
+//        "org.move.lang.core.psi.MoveNameIdentifierOwner"
+//        "org.move.lang.core.psi.MoveStructFieldReferenceElement"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MoveStructPatFieldMixin"
+//}
 StructPatFieldBinding ::= ':' Pat { pin = 1 }
 
 //private StructPatField_recovery ::= !(',' | '}' | IDENTIFIER)

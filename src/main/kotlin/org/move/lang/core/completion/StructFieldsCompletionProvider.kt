@@ -7,11 +7,13 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.move.lang.core.MovePsiPatterns.bindingPat
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.withParent
+import org.move.lang.core.withSuperParent
 
 object StructFieldsCompletionProvider : MoveCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
@@ -22,6 +24,8 @@ object StructFieldsCompletionProvider : MoveCompletionProvider() {
             PlatformPatterns
                 .psiElement()
                 .withParent<MoveStructPatField>(),
+            bindingPat()
+                .withSuperParent<MoveStructPatField>(2),
             PlatformPatterns
                 .psiElement()
                 .withParent<MoveStructFieldRef>(),
@@ -33,13 +37,14 @@ object StructFieldsCompletionProvider : MoveCompletionProvider() {
         result: CompletionResultSet,
     ) {
         val pos = parameters.position
-        val element = pos.parent
+        var element = pos.parent
+        if (element is MoveBindingPat) element = element.parent
         when (element) {
             is MoveStructPatField -> {
                 val structPat = element.structPat
                 addFieldsToCompletion(
                     structPat.path.maybeStruct ?: return,
-                    structPat.providedFieldNames,
+                    structPat.fieldNames,
                     result
                 )
             }

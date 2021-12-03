@@ -161,7 +161,8 @@ FILE
                 PsiElement(,)(',')
                 PsiWhiteSpace(' ')
                 MoveStructPatFieldImpl(STRUCT_PAT_FIELD)
-                  PsiElement(IDENTIFIER)('my_field')
+                  MoveBindingPatImpl(BINDING_PAT)
+                    PsiElement(IDENTIFIER)('my_field')
                 PsiWhiteSpace(' ')
                 PsiElement(})('}')
             PsiWhiteSpace(' ')
@@ -230,12 +231,14 @@ FILE
                 PsiElement({)('{')
                 PsiWhiteSpace(' ')
                 MoveStructPatFieldImpl(STRUCT_PAT_FIELD)
-                  PsiElement(IDENTIFIER)('my')
-                PsiErrorElement:',', ':' or '}' expected, got 'myfield'
+                  MoveBindingPatImpl(BINDING_PAT)
+                    PsiElement(IDENTIFIER)('my')
+                PsiErrorElement:',' or '}' expected, got 'myfield'
                   <empty list>
                 PsiWhiteSpace(' ')
                 MoveStructPatFieldImpl(STRUCT_PAT_FIELD)
-                  PsiElement(IDENTIFIER)('myfield')
+                  MoveBindingPatImpl(BINDING_PAT)
+                    PsiElement(IDENTIFIER)('myfield')
                 PsiWhiteSpace(' ')
                 PsiElement(})('}')
             PsiWhiteSpace(' ')
@@ -258,8 +261,9 @@ FILE
                 PsiElement({)('{')
                 PsiWhiteSpace(' ')
                 MoveStructPatFieldImpl(STRUCT_PAT_FIELD)
-                  PsiElement(IDENTIFIER)('my')
-                PsiErrorElement:',', ':' or '}' expected, got 'myfield'
+                  MoveBindingPatImpl(BINDING_PAT)
+                    PsiElement(IDENTIFIER)('my')
+                PsiErrorElement:',' or '}' expected, got 'myfield'
                   <empty list>
                 PsiWhiteSpace(' ')
                 MoveStructPatFieldImpl(STRUCT_PAT_FIELD)
