@@ -11,6 +11,7 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor =
         object : MoveVisitor() {
             override fun visitModuleRef(moduleRef: MoveModuleRef) {
+                if (isSpecElement(moduleRef)) return
 //                 skip this check, as it will be checked in MovePath visitor
                 if (moduleRef.ancestorStrict<MovePath>() != null) return
 
@@ -27,6 +28,7 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
             }
 
             override fun visitPath(path: MovePath) {
+                if (isSpecElement(path)) return
                 if (path.isPrimitiveType()) return
                 val moduleRef = path.pathIdent.moduleRef
                 if (moduleRef != null) {
@@ -55,6 +57,7 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
             }
 
             override fun visitStructPatField(o: MoveStructPatField) {
+                if (isSpecElement(o)) return
                 val resolvedStructDef = o.structPat.path.maybeStruct ?: return
                 if (!resolvedStructDef.fieldNames.any { it == o.referenceName }) {
                     holder.registerProblem(
@@ -66,6 +69,7 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
             }
 
             override fun visitStructLiteralField(o: MoveStructLiteralField) {
+                if (isSpecElement(o)) return
                 if (o.isUnresolved) {
                     val errorMessage =
                         if (o.isShorthand)
@@ -80,4 +84,8 @@ class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
                 }
             }
         }
+
+    private fun isSpecElement(element: MoveElement): Boolean {
+        return element.isInsideSpecBlock()
+    }
 }

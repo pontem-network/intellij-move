@@ -4,6 +4,7 @@ import com.intellij.lexer.Lexer
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
+import org.move.ide.colors.MoveColor
 import org.move.lang.MoveElementTypes.*
 import org.move.lang.MoveParserDefinition.Companion.BLOCK_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
@@ -15,27 +16,29 @@ import com.intellij.openapi.editor.DefaultLanguageHighlighterColors as Default
 class MoveHighlighter : SyntaxHighlighterBase() {
     override fun getHighlightingLexer(): Lexer = createMoveLexer()
 
-    override fun getTokenHighlights(tokenType: IElementType?): Array<TextAttributesKey> {
-        val color = when (tokenType) {
-            BLOCK_COMMENT -> Default.BLOCK_COMMENT
-            EOL_COMMENT, EOL_DOC_COMMENT -> Default.LINE_COMMENT
+    override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> {
+        return pack(map(tokenType)?.textAttributesKey)
+    }
 
-            L_PAREN, R_PAREN -> Default.PARENTHESES
-            L_BRACE, R_BRACE -> Default.BRACES
-            L_BRACK, R_BRACK -> Default.BRACKETS
+    companion object {
+        fun map(tokenType: IElementType): MoveColor? = when (tokenType) {
+            BLOCK_COMMENT -> MoveColor.BLOCK_COMMENT
+            EOL_COMMENT -> MoveColor.EOL_COMMENT
+            EOL_DOC_COMMENT -> MoveColor.DOC_COMMENT
 
-            SEMICOLON -> Default.SEMICOLON
-            DOT -> Default.DOT
-            COMMA -> Default.COMMA
+            L_PAREN, R_PAREN -> MoveColor.PARENTHESES
+            L_BRACE, R_BRACE -> MoveColor.BRACES
+            L_BRACK, R_BRACK -> MoveColor.BRACKETS
 
-            BYTE_STRING_LITERAL -> Default.STRING
-            INTEGER_LITERAL, ADDRESS_LITERAL -> Default.NUMBER
+            SEMICOLON -> MoveColor.SEMICOLON
+            DOT -> MoveColor.DOT
+            COMMA -> MoveColor.COMMA
 
-            in MOVE_KEYWORDS, BOOL_LITERAL -> Default.KEYWORD
-            IDENTIFIER -> Default.IDENTIFIER
+            BYTE_STRING_LITERAL, HEX_STRING_LITERAL -> MoveColor.STRING
+            INTEGER_LITERAL, ADDRESS_LITERAL -> MoveColor.NUMBER
 
+            in MOVE_KEYWORDS, BOOL_LITERAL -> MoveColor.KEYWORD
             else -> null
         }
-        return pack(color)
     }
 }

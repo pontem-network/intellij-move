@@ -437,7 +437,8 @@ private fun getDuplicates(elements: Sequence<MoveNamedElement>): Set<MoveNamedEl
 }
 
 private fun getDuplicatedNamedChildren(namedChildren: Sequence<MoveNamedElement>): Set<MoveNamedElement> {
-    return namedChildren
+    val notNullNamedChildren = namedChildren.filter { it.name != null }
+    return notNullNamedChildren
         .groupBy { it.name }
         .map { it.value }
         .filter { it.size > 1 }

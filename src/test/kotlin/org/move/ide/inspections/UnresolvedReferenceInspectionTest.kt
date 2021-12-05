@@ -159,4 +159,12 @@ class UnresolvedReferenceInspectionTest : InspectionsTestCase(MoveUnresolvedRefe
         }    
         """
     )
+
+    fun `test no unresolved reference inspection inside spec`() = checkByText("""
+    module 0x1::M {
+        spec module {
+            fun m(e: EventHandle) {}
+        }
+    }    
+    """)
 }
