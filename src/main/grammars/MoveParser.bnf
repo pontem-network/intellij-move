@@ -325,7 +325,7 @@ FunctionDef ::= Attr* FunctionSignatureWithOptionalVisibility CodeBlock
     implements = [
         "org.move.lang.core.psi.ext.MoveDocAndAttributeOwner"
     ]
-    mixin = "org.move.lang.core.psi.mixins.MoveFunctionDefMixin"
+//    mixin = "org.move.lang.core.psi.mixins.MoveFunctionDefMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 //    recoverWhile = Item_recover
 }
