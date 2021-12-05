@@ -64,9 +64,14 @@ private val EXAMPLE_MOVE_TOML = """
 [package]
 name = "package"
 version = "0.1.0"
+license = "MIT"
+authors = []
 
 [addresses]
 Std = "_"
+
+[dependencies]
+MoveStdlib = { local = "<some_path>/move-stdlib", addr_subst = { "Std" = "0x1" } }
 
 [dev-addresses]
 Std = "0x1"
