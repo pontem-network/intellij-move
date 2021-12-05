@@ -115,6 +115,11 @@
                          enabledByDefault="false"
                          level="ERROR"
                          implementationClass="org.move.ide.inspections.MoveUnresolvedReferenceInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Field initialization shorthand"
+                         enabledByDefault="true" level="WEAK WARNING"
+                         implementationClass="org.move.ide.inspections.FieldInitShorthandInspection" />
+
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MoveColorSettingsPage"/>

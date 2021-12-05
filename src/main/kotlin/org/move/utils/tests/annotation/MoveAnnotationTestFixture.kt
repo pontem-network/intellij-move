@@ -13,6 +13,7 @@ import com.intellij.testFramework.InspectionTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
 import junit.framework.TestCase
+import org.intellij.lang.annotations.Language
 import org.move.ide.annotator.MoveAnnotator
 import kotlin.reflect.KClass
 
@@ -91,4 +92,54 @@ class MoveAnnotationTestFixture(
         val testSeverityProvider = TestSeverityProvider(severities)
         SeveritiesProvider.EP_NAME.point.registerExtension(testSeverityProvider, testRootDisposable)
     }
+
+    fun checkFixIsUnavailable(
+        fixName: String,
+        @Language("Move") text: String,
+        checkWarn: Boolean,
+        checkInfo: Boolean,
+        checkWeakWarn: Boolean,
+        ignoreExtraHighlighting: Boolean,
+//        configure: (String) -> Unit,
+    ) {
+        check(text, checkWarn, checkInfo, checkWeakWarn, ignoreExtraHighlighting, this::configureByText)
+        check(
+            codeInsightFixture.filterAvailableIntentions(fixName).isEmpty()
+        ) {
+            "Fix $fixName should not be possible to apply."
+        }
+    }
+
+    fun applyQuickFix(name: String) {
+        val action = codeInsightFixture.findSingleIntention(name)
+        codeInsightFixture.launchAction(action)
+    }
+
+    protected fun checkFix(
+        fixName: String,
+        before: String,
+        after: String,
+        configure: (String) -> Unit,
+        checkBefore: () -> Unit,
+        checkAfter: (String) -> Unit,
+    ) {
+        configure(before)
+        checkBefore()
+        applyQuickFix(fixName)
+        checkAfter(after)
+    }
+
+    fun checkFixByText(
+        fixName: String,
+        before: String,
+        after: String,
+        checkWarn: Boolean = true,
+        checkInfo: Boolean = false,
+        checkWeakWarn: Boolean = false,
+    ) = checkFix(
+        fixName, before, after,
+        configure = this::configureByText,
+        checkBefore = { codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn) },
+        checkAfter = this::checkByText
+    )
 }
