@@ -20,5 +20,7 @@ module M {
     fun m() {}
     /// doc comment with outer attribute
     #[test_only]
-    fun main() {}
+    fun main() {
+        let _ = /*caret*/1;
+    }
 }
