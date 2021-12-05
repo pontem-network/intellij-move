@@ -70,6 +70,8 @@
                                 implementationClass="org.move.lang.core.completion.CommonCompletionContributor"/>
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.core.completion.KeywordCompletionContributor"/>
+        <completion.contributor language="TOML"
+                                implementationClass="org.move.toml.completion.MoveTomlCompletionContributor" />
 
         <psi.referenceContributor language="TOML"
                                   implementation="org.move.toml.MoveTomlReferenceContributor"/>

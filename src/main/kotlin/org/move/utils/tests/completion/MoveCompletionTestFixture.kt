@@ -1,7 +1,6 @@
 package org.move.utils.tests.completion
 
 import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
 import org.intellij.lang.annotations.Language
@@ -9,8 +8,9 @@ import org.move.utils.tests.InlineFile
 import org.move.utils.tests.hasCaretMarker
 import org.move.utils.tests.replaceCaretMarker
 
-class CompletionTestFixture(
-    val myFixture: CodeInsightTestFixture
+class MoveCompletionTestFixture(
+    val myFixture: CodeInsightTestFixture,
+    private val defaultFileName: String = "main.move"
 ) : BaseFixture() {
     fun doFirstCompletion(@Language("Move") code: String, @Language("Move") after: String) {
         check(hasCaretMarker(after))
@@ -118,6 +118,6 @@ class CompletionTestFixture(
     }
 
     private fun prepare(code: String) {
-        InlineFile(myFixture, code.trimIndent(), "main.move").withCaret()
+        InlineFile(myFixture, code.trimIndent(), defaultFileName).withCaret()
     }
 }
