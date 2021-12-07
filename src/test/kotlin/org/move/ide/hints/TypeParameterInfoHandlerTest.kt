@@ -4,7 +4,7 @@ import org.move.lang.core.psi.MoveTypeArgumentList
 import org.move.utils.tests.ParameterInfoHandlerTestCase
 
 class TypeParameterInfoHandlerTest :
-    ParameterInfoHandlerTestCase<MoveTypeArgumentList, TypeParametersDescription>(TypeParameterInfoHandler()) {
+    ParameterInfoHandlerTestCase<MoveTypeArgumentList, TypeParamsDescription>(TypeParameterInfoHandler()) {
 
     fun `test struct as type`() = checkByText("""
         module M {

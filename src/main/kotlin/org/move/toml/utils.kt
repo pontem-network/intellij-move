@@ -11,3 +11,12 @@ val TomlKeySegment.isDependencyKey: Boolean
 
 val TomlTableHeader.isDependencyListHeader: Boolean
     get() = key?.segments?.lastOrNull()?.isDependencyKey == true
+
+val TomlKeySegment.isAddressesKey: Boolean
+    get() {
+        val name = name
+        return name == "addresses" || name == "dev-addresses"
+    }
+
+val TomlTableHeader.isAddressesListHeader: Boolean
+    get() = key?.segments?.lastOrNull()?.isDependencyKey == true

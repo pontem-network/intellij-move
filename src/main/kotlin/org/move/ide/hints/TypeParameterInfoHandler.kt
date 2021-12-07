@@ -12,11 +12,11 @@ import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.utils.AsyncParameterInfoHandler
 
 class TypeParameterInfoHandler :
-    AsyncParameterInfoHandler<MoveTypeArgumentList, TypeParametersDescription>() {
+    AsyncParameterInfoHandler<MoveTypeArgumentList, TypeParamsDescription>() {
     override fun findTargetElement(file: PsiFile, offset: Int): MoveTypeArgumentList? =
         file.findElementAt(offset)?.ancestorStrict()
 
-    override fun calculateParameterInfo(element: MoveTypeArgumentList): Array<TypeParametersDescription>? {
+    override fun calculateParameterInfo(element: MoveTypeArgumentList): Array<TypeParamsDescription>? {
         val owner =
             (element.parent as? MovePath)
                 ?.reference?.resolve() ?: return null
@@ -46,7 +46,7 @@ class TypeParameterInfoHandler :
         context.setCurrentParameter(curParam)
     }
 
-    override fun updateUI(p: TypeParametersDescription, context: ParameterInfoUIContext) {
+    override fun updateUI(p: TypeParamsDescription, context: ParameterInfoUIContext) {
         context.setupUIComponentPresentation(
             p.presentText,
             p.getRange(context.currentParameterIndex).startOffset,
@@ -62,7 +62,7 @@ class TypeParameterInfoHandler :
 /**
  * Stores the text representation and ranges for parameters
  */
-class TypeParametersDescription(
+class TypeParamsDescription(
     val presentText: String,
     private val ranges: List<TextRange>,
 ) {
@@ -73,14 +73,14 @@ class TypeParametersDescription(
 /**
  * Calculates the text representation and ranges for parameters
  */
-private fun typeParamsDescription(params: List<MoveTypeParameter>): TypeParametersDescription {
+private fun typeParamsDescription(params: List<MoveTypeParameter>): TypeParamsDescription {
     val parts = params.map {
         val name = it.name ?: "_"
         val bound = it.typeParamBound?.text ?: ""
         name + bound
     }
     val presentText = if (parts.isEmpty()) "<no arguments>" else parts.joinToString(", ")
-    return TypeParametersDescription(
+    return TypeParamsDescription(
         presentText,
         parts.indices.map { parts.calculateRange(it) }
     )

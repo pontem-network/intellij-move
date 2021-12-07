@@ -17,7 +17,8 @@ import java.util.concurrent.Executor
  * This is a hack to make [ParameterInfoHandler] asynchronous. Usual [ParameterInfoHandler] is called from the EDT
  * and so complex computations inside it (e.g. name resolution) can freeze the UI.
  */
-abstract class AsyncParameterInfoHandler<ParameterOwner : PsiElement, ParameterType : Any> : ParameterInfoHandler<ParameterOwner, ParameterType> {
+abstract class AsyncParameterInfoHandler<ParameterOwner : PsiElement, ParameterType : Any> :
+    ParameterInfoHandler<ParameterOwner, ParameterType> {
     abstract fun findTargetElement(file: PsiFile, offset: Int): ParameterOwner?
 
     /**

@@ -4,6 +4,7 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.move.ide.colors.MoveColor
+import org.move.lang.MoveElementTypes.ADDRESS_LITERAL
 import org.move.lang.MoveElementTypes.IDENTIFIER
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -37,6 +38,7 @@ class HighlightingAnnotator : MoveAnnotator() {
             element.elementType == IDENTIFIER -> highlightIdentifier(parent)
             parent is MoveCopyExpr
                     && element.text == "copy" -> MoveColor.KEYWORD
+            element.elementType == ADDRESS_LITERAL -> MoveColor.ADDRESS
             else -> null
         }
     }

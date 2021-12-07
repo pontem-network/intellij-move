@@ -70,6 +70,8 @@
                                 implementationClass="org.move.lang.core.completion.CommonCompletionContributor"/>
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.core.completion.KeywordCompletionContributor"/>
+        <completion.contributor language="TOML"
+                                implementationClass="org.move.toml.completion.MoveTomlCompletionContributor" />
 
         <psi.referenceContributor language="TOML"
                                   implementation="org.move.toml.MoveTomlReferenceContributor"/>
@@ -115,6 +117,23 @@
                          enabledByDefault="false"
                          level="ERROR"
                          implementationClass="org.move.ide.inspections.MoveUnresolvedReferenceInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Field initialization shorthand"
+                         enabledByDefault="true" level="WEAK WARNING"
+                         implementationClass="org.move.ide.inspections.FieldInitShorthandInspection" />
+        <localInspection language="Move" groupName="Move"
+                         displayName="Constant naming convention"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.lints.MoveConstNamingInspection" />
+        <localInspection language="Move" groupName="Move"
+                         displayName="Struct naming convention"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.lints.MoveStructNamingInspection" />
+        <localInspection language="Move" groupName="Move"
+                         displayName="Local variable naming convention"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.lints.MoveLocalBindingNamingInspection" />
+
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MoveColorSettingsPage"/>

@@ -126,4 +126,13 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
         }
     }    
     """)
+
+    fun `test number highlighting`() = checkHighlighting("""
+    module 0x1::M {
+        #[test(acc = <ADDRESS>@0x42</ADDRESS>, acc2 = <ADDRESS>@0x43</ADDRESS>)]
+        fun m() {
+            borrow_global_mut<address>(<ADDRESS>@0x1</ADDRESS>)
+        }
+    }
+    """)
 }
