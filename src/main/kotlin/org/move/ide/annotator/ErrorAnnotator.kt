@@ -120,7 +120,7 @@ class ErrorAnnotator : MvAnnotator() {
                 }
             }
 
-            override fun visitCallArguments(o: MvCallArguments) = checkCallArguments(moveHolder, o)
+            override fun visitCallArgumentList(o: MvCallArgumentList) = checkCallArgumentList(moveHolder, o)
 
             override fun visitStructPat(o: MvStructPat) {
                 val nameElement = o.path.referenceNameElement ?: return
@@ -247,7 +247,7 @@ private fun checkMissingFields(
     }
 }
 
-private fun checkCallArguments(holder: MvAnnotationHolder, arguments: MvCallArguments) {
+private fun checkCallArgumentList(holder: MvAnnotationHolder, arguments: MvCallArgumentList) {
     val callExpr = arguments.parent as? MvCallExpr ?: return
     val signature = callExpr.path.reference?.resolve() as? MvFunctionSignature ?: return
 

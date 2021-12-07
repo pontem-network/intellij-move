@@ -12,7 +12,7 @@ object InlayParameterHints {
         if (elem !is MvCallExpr) return emptyList()
 
         val callInfo = CallInfo.resolve(elem) ?: return emptyList()
-        val arguments = elem.callArguments?.exprList ?: return emptyList()
+        val arguments = elem.callArgumentList?.exprList ?: return emptyList()
 
         return callInfo.parameters
             .map { it.name }

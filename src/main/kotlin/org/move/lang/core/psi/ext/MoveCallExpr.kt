@@ -11,5 +11,5 @@ val MvCallExpr.typeArguments: List<MvTypeArgument>
 
 val MvCallExpr.arguments: List<MvExpr>
     get() {
-        return this.callArguments?.exprList.orEmpty()
+        return this.callArgumentList?.exprList.orEmpty()
     }

@@ -7,10 +7,6 @@ import org.move.lang.core.types.infer.TypeVisitor
 
 typealias Substitution = Map<TyTypeParameter, Ty>
 
-interface HasType : MvElement {
-    fun resolvedType(): Ty
-}
-
 enum class Ability {
     DROP, COPY, STORE, KEY;
 

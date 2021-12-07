@@ -8,7 +8,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IElementType
 import org.move.ide.presentation.fullname
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvCallArguments
+import org.move.lang.core.psi.MvCallArgumentList
 import org.move.lang.core.psi.MvStructLitField
 import org.move.lang.core.psi.MvStructLitFieldsBlock
 import org.move.lang.core.psi.ext.*
@@ -20,7 +20,7 @@ class StructLitFieldsInfoHandler :
     override fun findTargetElement(file: PsiFile, offset: Int): MvStructLitFieldsBlock? {
         val element = file.findElementAt(offset) ?: return null
         val block = element.ancestorStrict<MvStructLitFieldsBlock>() ?: return null
-        val callExpr = element.ancestorStrict<MvCallArguments>()
+        val callExpr = element.ancestorStrict<MvCallArgumentList>()
         if (callExpr != null && block.contains(callExpr)) return null
         return block
     }
