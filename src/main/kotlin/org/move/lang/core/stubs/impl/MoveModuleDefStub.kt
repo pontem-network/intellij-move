@@ -1,35 +1,35 @@
 package org.move.lang.core.stubs.impl
 
-//class MoveModuleDefStub(
+//class MvModuleDefStub(
 //    parent: StubElement<*>?,
 //    elementType: IStubElementType<*, *>,
 //    val address: String,
 //    override val name: String?,
-//) : StubBase<MoveModuleDef>(parent, elementType),
-//    MoveNamedElementStub {
+//) : StubBase<MvModuleDef>(parent, elementType),
+//    MvNamedElementStub {
 //
-//    object Type : MoveStubElementType<MoveModuleDefStub, MoveModuleDef>("MODULE_DEF") {
+//    object Type : MvStubElementType<MvModuleDefStub, MvModuleDef>("MODULE_DEF") {
 //
 //        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
-//            MoveModuleDefStub(
+//            MvModuleDefStub(
 //                parentStub,
 //                this,
 //                dataStream.readNameString()!!,
 //                dataStream.readNameString(),
 //            )
 //
-//        override fun serialize(stub: MoveModuleDefStub, dataStream: StubOutputStream) =
+//        override fun serialize(stub: MvModuleDefStub, dataStream: StubOutputStream) =
 //            with(dataStream) {
 //                writeName(stub.address)
 //                writeName(stub.name)
 //            }
 //
-//        override fun createPsi(stub: MoveModuleDefStub): MoveModuleDef =
-//            MoveModuleDefImpl(stub, this)
+//        override fun createPsi(stub: MvModuleDefStub): MvModuleDef =
+//            MvModuleDefImpl(stub, this)
 //
-//        override fun createStub(psi: MoveModuleDef, parentStub: StubElement<*>?) =
-//            MoveModuleDefStub(parentStub, this, psi.containingAddress.text, psi.name)
+//        override fun createStub(psi: MvModuleDef, parentStub: StubElement<*>?) =
+//            MvModuleDefStub(parentStub, this, psi.containingAddress.text, psi.name)
 //
-//        override fun indexStub(stub: MoveModuleDefStub, sink: IndexSink) = MoveModulesIndex.index(stub, sink)
+//        override fun indexStub(stub: MvModuleDefStub, sink: IndexSink) = MvModulesIndex.index(stub, sink)
 //    }
 //}

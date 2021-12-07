@@ -1,9 +1,9 @@
 package org.move.ide.docs
 
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.MoveDocumentationProviderTestCase
+import org.move.utils.tests.MvDocumentationProviderTestCase
 
-class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
+class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
     fun `test show docs for move_from`() = doTest("""
     module M {
         fun m() {
@@ -124,5 +124,5 @@ class MoveDocumentationProviderTest : MoveDocumentationProviderTestCase() {
     )
 
     private fun doTest(@Language("Move") code: String, @Language("Html") expected: String?) =
-        doTest(code, expected, block = MoveDocumentationProvider::generateDoc)
+        doTest(code, expected, block = MvDocumentationProvider::generateDoc)
 }

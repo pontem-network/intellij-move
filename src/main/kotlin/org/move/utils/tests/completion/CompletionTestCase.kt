@@ -4,11 +4,11 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
 
 abstract class CompletionTestCase : BasePlatformTestCase() {
-    lateinit var completionFixture: MoveCompletionTestFixture
+    lateinit var completionFixture: MvCompletionTestFixture
 
     override fun setUp() {
         super.setUp()
-        completionFixture = MoveCompletionTestFixture(myFixture)
+        completionFixture = MvCompletionTestFixture(myFixture)
         completionFixture.setUp()
     }
 

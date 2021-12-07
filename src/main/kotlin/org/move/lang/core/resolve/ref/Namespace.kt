@@ -1,6 +1,6 @@
 package org.move.lang.core.resolve.ref
 
-import org.move.lang.core.psi.MoveElement
+import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.ext.FunctionVisibility
 import org.move.lang.core.psi.ext.fqModule
 import org.move.lang.core.psi.ext.visibility
@@ -13,7 +13,7 @@ sealed class Visibility {
     class Internal : Visibility()
 
     companion object {
-        fun buildSetOfVisibilities(element: MoveElement): Set<Visibility> {
+        fun buildSetOfVisibilities(element: MvElement): Set<Visibility> {
             val vs = mutableSetOf<Visibility>(Public())
             val containingModule = element.containingModule
             if (containingModule != null) {

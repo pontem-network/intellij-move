@@ -13,7 +13,7 @@ import java.io.File
 import java.io.InputStreamReader
 import java.nio.file.Path
 
-class MoveExecutable(
+class MvExecutable(
     private val project: Project,
     private val moveExecutablePath: Path? = project.moveExecPath
 ) {
@@ -43,14 +43,14 @@ class MoveExecutable(
     }
 
     companion object {
-        private val LOG = logger<MoveExecutable>()
+        private val LOG = logger<MvExecutable>()
     }
 }
 
-val Project.moveExecutable: MoveExecutable?
+val Project.moveExecutable: MvExecutable?
     get() {
         val executablePath = moveExecPath ?: return null
-        val executable = MoveExecutable(this, executablePath)
+        val executable = MvExecutable(this, executablePath)
         if (executable.version() == null) return null
         return executable
     }

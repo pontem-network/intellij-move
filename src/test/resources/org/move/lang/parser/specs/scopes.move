@@ -9,7 +9,7 @@ module M {
         fun uninterpreted(addr: address);
 
         // Native function which is defined in the prover's prelude.
-        native fun serialize<MoveValue>(v: &MoveValue): vector<u8>;
+        native fun serialize<MvValue>(v: &MvValue): vector<u8>;
     }
 
     spec MyStruct {}

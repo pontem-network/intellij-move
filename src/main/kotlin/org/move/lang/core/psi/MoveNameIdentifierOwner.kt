@@ -2,5 +2,5 @@ package org.move.lang.core.psi
 
 import com.intellij.psi.PsiNameIdentifierOwner
 
-interface MoveNameIdentifierOwner : MoveNamedElement,
+interface MvNameIdentifierOwner : MvNamedElement,
                                     PsiNameIdentifierOwner

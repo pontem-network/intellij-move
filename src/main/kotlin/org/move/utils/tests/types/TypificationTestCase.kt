@@ -2,13 +2,13 @@ package org.move.utils.tests.types
 
 import org.intellij.lang.annotations.Language
 import org.move.ide.presentation.shortPresentableText
-import org.move.lang.core.psi.MoveExpr
+import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.psi.ext.inferExprTy
 import org.move.utils.tests.InlineFile
-import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementAndDataInEditor
 
-abstract class TypificationTestCase : MoveTestBase() {
+abstract class TypificationTestCase : MvTestBase() {
     protected fun testExpr(
         @Language("Move") code: String,
 //        allowErrors: Boolean = false
@@ -43,7 +43,7 @@ abstract class TypificationTestCase : MoveTestBase() {
 //    }
 
     private fun check() {
-        val (expr, data) = myFixture.findElementAndDataInEditor<MoveExpr>()
+        val (expr, data) = myFixture.findElementAndDataInEditor<MvExpr>()
 //        val expectedTypes = data.split("|").map(String::trim)
         val expectedType = data.trim()
 

@@ -1,31 +1,31 @@
 package org.move.lang.core.psi
 
-interface MoveImportStatementsOwner : MoveElement {
-    val importStatements: List<MoveImportStatement>
+interface MvImportStatementsOwner : MvElement {
+    val importStatements: List<MvImportStatement>
 
     @JvmDefault
-    private fun _moduleImports(): List<MoveModuleImport> =
+    private fun _moduleImports(): List<MvModuleImport> =
         importStatements.mapNotNull { it.moduleImport }
 
     @JvmDefault
-    fun moduleImports(): List<MoveModuleImport> =
+    fun moduleImports(): List<MvModuleImport> =
         _moduleImports()
             .filter { it.importAlias == null }
 
     @JvmDefault
-    fun selfItemImports(): List<MoveItemImport> =
+    fun selfItemImports(): List<MvItemImport> =
         itemImports()
             .filter { it.importAlias == null && it.text == "Self" }
 //            .map { it.parent }
-//            .filterIsInstance<MoveModuleItemsImport>()
+//            .filterIsInstance<MvModuleItemsImport>()
 //            .map { it.fqModuleRef }
 
     @JvmDefault
-    fun moduleImportAliases(): List<MoveImportAlias> =
+    fun moduleImportAliases(): List<MvImportAlias> =
         _moduleImports().mapNotNull { it.importAlias }
 
     @JvmDefault
-    private fun itemImports(): List<MoveItemImport> =
+    private fun itemImports(): List<MvItemImport> =
         importStatements
             .mapNotNull { it.moduleItemsImport }
             .flatMap {
@@ -37,11 +37,11 @@ interface MoveImportStatementsOwner : MoveElement {
             }
 
     @JvmDefault
-    fun itemImportsWithoutAliases(): List<MoveItemImport> =
+    fun itemImportsWithoutAliases(): List<MvItemImport> =
         itemImports().filter { it.importAlias == null }
 
     @JvmDefault
-    fun itemImportsAliases(): List<MoveImportAlias> =
+    fun itemImportsAliases(): List<MvImportAlias> =
         itemImports().mapNotNull { it.importAlias }
 
 }

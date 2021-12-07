@@ -8,7 +8,7 @@ import org.move.utils.tests.InlineFile
 import org.move.utils.tests.hasCaretMarker
 import org.move.utils.tests.replaceCaretMarker
 
-class MoveCompletionTestFixture(
+class MvCompletionTestFixture(
     val myFixture: CodeInsightTestFixture,
     private val defaultFileName: String = "main.move"
 ) : BaseFixture() {

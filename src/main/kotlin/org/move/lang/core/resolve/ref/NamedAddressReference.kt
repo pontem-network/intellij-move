@@ -4,11 +4,11 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
 import org.move.lang.containingMoveProject
-import org.move.lang.core.psi.MoveNamedAddress
+import org.move.lang.core.psi.MvNamedAddress
 import org.move.utils.doRenameIdentifier
 import org.toml.lang.psi.TomlKeySegment
 
-class NamedAddressReference(element: MoveNamedAddress) : PsiReferenceBase<MoveNamedAddress>(element) {
+class NamedAddressReference(element: MvNamedAddress) : PsiReferenceBase<MvNamedAddress>(element) {
     override fun equals(other: Any?): Boolean =
         other is NamedAddressReference && element === other.element
 

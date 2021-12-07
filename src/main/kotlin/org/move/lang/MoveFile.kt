@@ -8,13 +8,13 @@ import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.cli.MoveConstants
+import org.move.cli.MvConstants
 import org.move.cli.MoveProject
 import org.move.cli.moveProjectsService
-import org.move.lang.core.psi.MoveAddressBlock
-import org.move.lang.core.psi.MoveAddressDef
-import org.move.lang.core.psi.MoveScriptBlock
-import org.move.lang.core.psi.MoveScriptDef
+import org.move.lang.core.psi.MvAddressBlock
+import org.move.lang.core.psi.MvAddressDef
+import org.move.lang.core.psi.MvScriptBlock
+import org.move.lang.core.psi.MvScriptDef
 import org.move.openapiext.resolveAbsPath
 import org.move.openapiext.toPsiFile
 import org.toml.lang.psi.TomlFileType
@@ -23,7 +23,7 @@ import java.nio.file.Path
 fun findMoveTomlPath(currentFilePath: Path): Path? {
     var dir = currentFilePath.parent
     while (dir != null) {
-        val moveTomlPath = dir.resolveAbsPath(MoveConstants.MANIFEST_FILE)
+        val moveTomlPath = dir.resolveAbsPath(MvConstants.MANIFEST_FILE)
         if (moveTomlPath != null) {
             return moveTomlPath
         }
@@ -33,7 +33,7 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
 }
 
 //fun PsiFile.getCorrespondingMoveTomlFile(): TomlFile? {
-//    return project.moveProjects.findMoveProjectForPsiFile(this)?.moveToml?.tomlFile
+//    return project.moveProjects.findMvProjectForPsiFile(this)?.moveToml?.tomlFile
 //    val moveTomlPath =
 //        addressesService.findMoveTomlPathForFile(this.originalFile.virtualFile)
 //            ?: return null
@@ -69,22 +69,22 @@ fun PsiFile.toNioPathOrNull(): Path? {
 //    }
 }
 
-class MoveFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvider, MoveLanguage) {
+class MvFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvider, MvLanguage) {
     override fun getFileType(): FileType = MoveFileType
 
-    fun addressBlocks(): List<MoveAddressBlock> {
-        val defs = PsiTreeUtil.getChildrenOfTypeAsList(this, MoveAddressDef::class.java)
+    fun addressBlocks(): List<MvAddressBlock> {
+        val defs = PsiTreeUtil.getChildrenOfTypeAsList(this, MvAddressDef::class.java)
         return defs.mapNotNull { it.addressBlock }.toList()
     }
 
-    fun scriptBlocks(): List<MoveScriptBlock> {
-        val defs = PsiTreeUtil.getChildrenOfTypeAsList(this, MoveScriptDef::class.java)
+    fun scriptBlocks(): List<MvScriptBlock> {
+        val defs = PsiTreeUtil.getChildrenOfTypeAsList(this, MvScriptDef::class.java)
         return defs.mapNotNull { it.scriptBlock }.toList()
     }
 }
 
-val VirtualFile.isMoveFile: Boolean get() = fileType == MoveFileType
+val VirtualFile.isMvFile: Boolean get() = fileType == MoveFileType
 
 val VirtualFile.isMoveTomlManifestFile: Boolean get() = fileType == TomlFileType && name == "Move.toml"
 
-fun VirtualFile.toMoveFile(project: Project): MoveFile? = this.toPsiFile(project) as? MoveFile
+fun VirtualFile.toMvFile(project: Project): MvFile? = this.toPsiFile(project) as? MvFile

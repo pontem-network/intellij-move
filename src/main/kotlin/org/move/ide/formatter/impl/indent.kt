@@ -2,11 +2,11 @@ package org.move.ide.formatter.impl
 
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
-import org.move.ide.formatter.MoveFormatterBlock
-import org.move.lang.MoveElementTypes.ADDRESS_BLOCK
+import org.move.ide.formatter.MvFormatterBlock
+import org.move.lang.MvElementTypes.ADDRESS_BLOCK
 import org.move.lang.core.psi.*
 
-fun MoveFormatterBlock.computeIndent(child: ASTNode): Indent? {
+fun MvFormatterBlock.computeIndent(child: ASTNode): Indent? {
 //    val parentType = node.elementType
     val parentPsi = node.psi
 //    val childType = child.elementType
@@ -21,23 +21,23 @@ fun MoveFormatterBlock.computeIndent(child: ASTNode): Indent? {
         //     let a =
         //         92;
         // except if RefExpr as lhs of assignment expr
-//        childPsi is MoveExpr
+//        childPsi is MvExpr
 //                && (parentType == LET_EXPR || parentType == ASSIGNMENT_EXPR || parentType == CONST_DEF) -> Indent.getNormalIndent()
-        childPsi is MoveExpr
-                && parentPsi is MoveInitializer -> Indent.getNormalIndent()
+        childPsi is MvExpr
+                && parentPsi is MvInitializer -> Indent.getNormalIndent()
 //        if (true)
 //            create()
 //        else
 //            delete()
-        parentPsi is MoveIfExpr || parentPsi is MoveElseBlock -> when (childPsi) {
-            is MoveInlineBlock -> Indent.getNormalIndent()
+        parentPsi is MvIfExpr || parentPsi is MvElseBlock -> when (childPsi) {
+            is MvInlineBlock -> Indent.getNormalIndent()
             else -> Indent.getNoneIndent()
         }
-        parentPsi is MoveSpecExpr -> Indent.getNormalIndent()
+        parentPsi is MvSpecExpr -> Indent.getNormalIndent()
 
         // binary expressions, chain calls
         // no indent on it's own, use parent indent
-        parentPsi is MoveExpr -> Indent.getIndent(Indent.Type.NONE, true, true)
+        parentPsi is MvExpr -> Indent.getIndent(Indent.Type.NONE, true, true)
 
         else -> Indent.getNoneIndent()
     }

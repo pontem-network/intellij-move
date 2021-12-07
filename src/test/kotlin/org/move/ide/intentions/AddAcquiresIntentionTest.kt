@@ -1,8 +1,8 @@
 package org.move.ide.intentions
 
-import org.move.utils.tests.MoveIntentionTestCase
+import org.move.utils.tests.MvIntentionTestCase
 
-class AddAcquiresIntentionTest: MoveIntentionTestCase(AddAcquiresIntention::class) {
+class AddAcquiresIntentionTest: MvIntentionTestCase(AddAcquiresIntention::class) {
     fun `test unavailable on simple function`() = doUnavailableTest("""
     module 0x1::M {
         fun main() {

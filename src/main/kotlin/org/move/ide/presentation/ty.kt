@@ -1,12 +1,12 @@
 package org.move.ide.presentation
 
-import org.move.lang.MoveFile
-import org.move.lang.core.psi.MoveElement
-import org.move.lang.core.psi.MoveModuleDef
+import org.move.lang.MvFile
+import org.move.lang.core.psi.MvElement
+import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.fqName
 import org.move.lang.core.types.ty.*
 
-fun Ty.getDefiningModule(): MoveModuleDef? =
+fun Ty.getDefiningModule(): MvModuleDef? =
     when (this) {
         is TyReference -> this.referenced.getDefiningModule()
         is TyStruct -> this.item.containingModule
@@ -21,14 +21,14 @@ fun Ty.fullname(): String {
     return shortPresentableText(fq = true)
 }
 
-fun Ty.typeLabel(relativeTo: MoveElement): String {
+fun Ty.typeLabel(relativeTo: MvElement): String {
     val typeModule = this.getDefiningModule()
     if (typeModule != null && typeModule != relativeTo.containingModule) {
         return this.fullname()
     } else {
         return this.name()
     }
-//    val file = relativeTo.containingFile as? MoveFile
+//    val file = relativeTo.containingFile as? MvFile
 //    return shortPresentableText(file)
 }
 

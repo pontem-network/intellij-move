@@ -1,6 +1,6 @@
 package org.move.cli
 
-object MoveConstants {
+object MvConstants {
     const val MANIFEST_FILE = "Move.toml"
     const val ADDR_PLACEHOLDER = "_"
 

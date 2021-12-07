@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.JBColor
 import com.intellij.ui.layout.LayoutBuilder
-import org.move.cli.MoveExecutable
+import org.move.cli.MvExecutable
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathTextField
 import java.awt.BorderLayout
@@ -27,7 +27,7 @@ class VersionLabel: JLabel() {
     }
 }
 
-class MoveProjectSettingsPanel(private val project: Project) : Disposable {
+class MvProjectSettingsPanel(private val project: Project) : Disposable {
     override fun dispose() {}
     private val versionUpdateDebouncer = UiDebouncer(this)
 
@@ -36,7 +36,7 @@ class MoveProjectSettingsPanel(private val project: Project) : Disposable {
             FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
             this,
             "Move CLI executable"
-        ) { updateMoveCLIVersion() }
+        ) { updateMvCLIVersion() }
     private val moveExecVersion = VersionLabel()
 
     init {
@@ -49,9 +49,9 @@ class MoveProjectSettingsPanel(private val project: Project) : Disposable {
         row("Move executable version") { moveExecVersion() }
     }
 
-    fun selectedMoveExecPath(): String = this.moveExecutablePathField.textField.text
+    fun selectedMvExecPath(): String = this.moveExecutablePathField.textField.text
 
-    private fun updateMoveCLIVersion() {
+    private fun updateMvCLIVersion() {
         this.updateVersionField(moveExecutablePathField, moveExecVersion)
     }
 
@@ -60,7 +60,7 @@ class MoveProjectSettingsPanel(private val project: Project) : Disposable {
         val executablePath = executablePathField.text
         versionUpdateDebouncer.run(
             onPooledThread = {
-                MoveExecutable(project, Paths.get(executablePath)).version()
+                MvExecutable(project, Paths.get(executablePath)).version()
             },
             onUiThread = { version -> versionLabel.setVersion(version)}
         )

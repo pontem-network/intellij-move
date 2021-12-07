@@ -6,29 +6,29 @@ import com.intellij.lang.parameterInfo.UpdateParameterInfoContext
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import org.move.ide.utils.CallInfo
-import org.move.lang.MoveElementTypes
-import org.move.lang.core.psi.MoveCallArguments
-import org.move.lang.core.psi.MoveCallExpr
-import org.move.lang.core.psi.MoveStructLiteralFieldsBlock
+import org.move.lang.MvElementTypes
+import org.move.lang.core.psi.MvCallArgumentList
+import org.move.lang.core.psi.MvCallExpr
+import org.move.lang.core.psi.MvStructLitFieldsBlock
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.contains
 import org.move.lang.core.psi.ext.startOffset
 import org.move.utils.AsyncParameterInfoHandler
 
-class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MoveCallArguments, ParamsDescription>() {
+class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MvCallArgumentList, ParamsDescription>() {
 
-    override fun findTargetElement(file: PsiFile, offset: Int): MoveCallArguments? {
+    override fun findTargetElement(file: PsiFile, offset: Int): MvCallArgumentList? {
         val element = file.findElementAt(offset) ?: return null
-        val callExpr = element.ancestorStrict<MoveCallArguments>() ?: return null
-        val block = element.ancestorStrict<MoveStructLiteralFieldsBlock>()
+        val callExpr = element.ancestorStrict<MvCallArgumentList>() ?: return null
+        val block = element.ancestorStrict<MvStructLitFieldsBlock>()
         if (block != null && callExpr.contains(block)) return null
         return callExpr
     }
 
-    override fun calculateParameterInfo(element: MoveCallArguments): Array<ParamsDescription>? =
+    override fun calculateParameterInfo(element: MvCallArgumentList): Array<ParamsDescription>? =
         ParamsDescription.findDescription(element)?.let { arrayOf(it) }
 
-    override fun updateParameterInfo(parameterOwner: MoveCallArguments, context: UpdateParameterInfoContext) {
+    override fun updateParameterInfo(parameterOwner: MvCallArgumentList, context: UpdateParameterInfoContext) {
         if (context.parameterOwner != parameterOwner) {
             context.removeHint()
             return
@@ -39,7 +39,7 @@ class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MoveCallArguments
             ParameterInfoUtils.getCurrentParameterIndex(
                 parameterOwner.node,
                 context.offset,
-                MoveElementTypes.COMMA
+                MvElementTypes.COMMA
             )
         }
         context.setCurrentParameter(currentParameterIndex)
@@ -73,9 +73,9 @@ class ParamsDescription(val parameters: Array<String>) {
         /**
          * Finds declaration of the func/method and creates description of its arguments
          */
-        fun findDescription(args: MoveCallArguments): ParamsDescription? {
+        fun findDescription(args: MvCallArgumentList): ParamsDescription? {
             val call = args.parent
-            val callInfo = (call as? MoveCallExpr)?.let { CallInfo.resolve(it) } ?: return null
+            val callInfo = (call as? MvCallExpr)?.let { CallInfo.resolve(it) } ?: return null
 
             val params = callInfo.parameters.map { "${it.name}: ${it.type}" }
             return ParamsDescription(params.toTypedArray())

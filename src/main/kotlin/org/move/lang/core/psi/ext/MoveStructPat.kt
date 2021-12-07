@@ -1,18 +1,18 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.MoveStructPat
-import org.move.lang.core.psi.MoveStructPatField
+import org.move.lang.core.psi.MvStructPat
+import org.move.lang.core.psi.MvStructPatField
 
-val MoveStructPat.fields: List<MoveStructPatField>
+val MvStructPat.fields: List<MvStructPatField>
     get() =
         structPatFieldsBlock.structPatFieldList
 
-val MoveStructPat.fieldNames: List<String>
+val MvStructPat.fieldNames: List<String>
     get() =
         fields.map { it.referenceName }
 
-//abstract class MoveStructPatMixin(node: ASTNode) : MoveElementImpl(node), MoveStructPat {
+//abstract class MvStructPatMixin(node: ASTNode) : MvElementImpl(node), MvStructPat {
 //    override fun resolvedType(): BaseType? {
-//        val parentPattern = ancestorStrict<MovePat>()
+//        val parentPattern = ancestorStrict<MvPat>()
 //    }
 //}

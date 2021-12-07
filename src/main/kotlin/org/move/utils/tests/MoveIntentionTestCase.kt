@@ -12,14 +12,14 @@ import org.intellij.lang.annotations.Language
 import java.nio.file.Path
 import kotlin.reflect.KClass
 
-abstract class MoveIntentionTestCase(private val intentionClass: KClass<out IntentionAction>) :
-    MoveTestBase() {
+abstract class MvIntentionTestCase(private val intentionClass: KClass<out IntentionAction>) :
+    MvTestBase() {
 
     protected val intention: IntentionAction
         get() = findIntention() ?: error("Failed to find `${intentionClass.simpleName}` intention")
 
 //    fun `test intention has documentation`() {
-//        if (!intentionClass.isSubclassOf(MoveElementBaseIntentionAction::class)) return
+//        if (!intentionClass.isSubclassOf(MvElementBaseIntentionAction::class)) return
 //
 //        val directory = "intentionDescriptions/${intentionClass.simpleName}"
 //        val description = checkFileExists(Paths.get(directory, "description.html"))

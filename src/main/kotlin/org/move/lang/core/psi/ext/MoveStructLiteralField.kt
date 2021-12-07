@@ -1,30 +1,30 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import org.move.lang.core.psi.MoveBindingPat
-import org.move.lang.core.psi.MoveStructLiteralExpr
-import org.move.lang.core.psi.MoveStructLiteralField
-import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
-import org.move.lang.core.resolve.ref.MoveReference
-import org.move.lang.core.resolve.ref.MoveStructFieldReferenceImpl
+import org.move.lang.core.psi.MvBindingPat
+import org.move.lang.core.psi.MvStructLitExpr
+import org.move.lang.core.psi.MvStructLitField
+import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
+import org.move.lang.core.resolve.ref.MvReference
+import org.move.lang.core.resolve.ref.MvStructFieldReferenceImpl
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.OldMoveReferenceImpl
+import org.move.lang.core.resolve.ref.OldMvReferenceImpl
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferExprTy
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
-val MoveStructLiteralField.structLiteral: MoveStructLiteralExpr
+val MvStructLitField.structLit: MvStructLitExpr
     get() = ancestorStrict()!!
 
-val MoveStructLiteralField.isShorthand: Boolean
-    get() = structLiteralFieldAssignment == null
+val MvStructLitField.isShorthand: Boolean
+    get() = structLitFieldAssignment == null
 
-fun MoveStructLiteralField.inferAssignedExprTy(ctx: InferenceContext): Ty {
-    val assignment = this.structLiteralFieldAssignment
+fun MvStructLitField.inferAssignedExprTy(ctx: InferenceContext): Ty {
+    val assignment = this.structLitFieldAssignment
     return if (assignment == null) {
         // find type of binding
-        val resolved = this.reference.resolve() as? MoveBindingPat ?: return TyUnknown
+        val resolved = this.reference.resolve() as? MvBindingPat ?: return TyUnknown
         resolved.inferBindingPatTy()
     } else {
         // find type of expression
@@ -32,12 +32,12 @@ fun MoveStructLiteralField.inferAssignedExprTy(ctx: InferenceContext): Ty {
     }
 }
 
-abstract class MoveStructLiteralFieldMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
-                                                            MoveStructLiteralField {
-    override fun getReference(): MoveReference {
+abstract class MvStructLitFieldMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
+                                                        MvStructLitField {
+    override fun getReference(): MvReference {
         if (this.isShorthand) {
-            return OldMoveReferenceImpl(this, Namespace.NAME)
+            return OldMvReferenceImpl(this, Namespace.NAME)
         }
-        return MoveStructFieldReferenceImpl(this)
+        return MvStructFieldReferenceImpl(this)
     }
 }

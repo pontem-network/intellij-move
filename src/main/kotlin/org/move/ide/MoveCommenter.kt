@@ -2,7 +2,7 @@ package org.move.ide
 
 import com.intellij.lang.Commenter
 
-class MoveCommenter: Commenter {
+class MvCommenter: Commenter {
     override fun getLineCommentPrefix() = "//"
 
     override fun getBlockCommentPrefix() = "/*"

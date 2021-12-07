@@ -6,31 +6,31 @@ import com.intellij.lang.parameterInfo.ParameterInfoUtils
 import com.intellij.lang.parameterInfo.UpdateParameterInfoContext
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
-import org.move.lang.MoveElementTypes
+import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.utils.AsyncParameterInfoHandler
 
 class TypeParameterInfoHandler :
-    AsyncParameterInfoHandler<MoveTypeArgumentList, TypeParamsDescription>() {
-    override fun findTargetElement(file: PsiFile, offset: Int): MoveTypeArgumentList? =
+    AsyncParameterInfoHandler<MvTypeArgumentList, TypeParamsDescription>() {
+    override fun findTargetElement(file: PsiFile, offset: Int): MvTypeArgumentList? =
         file.findElementAt(offset)?.ancestorStrict()
 
-    override fun calculateParameterInfo(element: MoveTypeArgumentList): Array<TypeParamsDescription>? {
+    override fun calculateParameterInfo(element: MvTypeArgumentList): Array<TypeParamsDescription>? {
         val owner =
-            (element.parent as? MovePath)
+            (element.parent as? MvPath)
                 ?.reference?.resolve() ?: return null
-        if (owner !is MoveTypeParametersOwner) return null
+        if (owner !is MvTypeParametersOwner) return null
         return arrayOf(typeParamsDescription(owner.typeParameters))
     }
 
-    override fun showParameterInfo(element: MoveTypeArgumentList, context: CreateParameterInfoContext) {
+    override fun showParameterInfo(element: MvTypeArgumentList, context: CreateParameterInfoContext) {
         context.highlightedElement = null
         super.showParameterInfo(element, context)
     }
 
     override fun updateParameterInfo(
-        parameterOwner: MoveTypeArgumentList,
+        parameterOwner: MvTypeArgumentList,
         context: UpdateParameterInfoContext,
     ) {
         if (context.parameterOwner != parameterOwner) {
@@ -41,7 +41,7 @@ class TypeParameterInfoHandler :
             ParameterInfoUtils.getCurrentParameterIndex(
                 parameterOwner.node,
                 context.offset,
-                MoveElementTypes.COMMA
+                MvElementTypes.COMMA
             )
         context.setCurrentParameter(curParam)
     }
@@ -73,7 +73,7 @@ class TypeParamsDescription(
 /**
  * Calculates the text representation and ranges for parameters
  */
-private fun typeParamsDescription(params: List<MoveTypeParameter>): TypeParamsDescription {
+private fun typeParamsDescription(params: List<MvTypeParameter>): TypeParamsDescription {
     val parts = params.map {
         val name = it.name ?: "_"
         val bound = it.typeParamBound?.text ?: ""

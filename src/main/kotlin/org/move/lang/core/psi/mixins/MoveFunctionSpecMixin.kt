@@ -1,7 +1,7 @@
 package org.move.lang.core.psi.mixins
 
-//abstract class MoveFunctionSpecMixin(node: ASTNode) : MoveReferenceElementImpl(node),
-//                                                      MoveFunctionSpecDef {
+//abstract class MvFunctionSpecMixin(node: ASTNode) : MvReferenceElementImpl(node),
+//                                                      MvFunctionSpecDef {
 //
-//    override fun getReference(): MoveReference = MoveReferenceImpl(this, Namespace.NAME)
+//    override fun getReference(): MvReference = MvReferenceImpl(this, Namespace.NAME)
 //}

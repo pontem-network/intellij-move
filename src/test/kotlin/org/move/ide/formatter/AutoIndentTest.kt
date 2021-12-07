@@ -1,8 +1,8 @@
 package org.move.ide.formatter
 
-import org.move.utils.tests.MoveTypingTestCase
+import org.move.utils.tests.MvTypingTestCase
 
-class AutoIndentTest : MoveTypingTestCase() {
+class AutoIndentTest : MvTypingTestCase() {
     fun `test script`() = doTestByText(
         """
 script {/*caret*/}

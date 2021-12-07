@@ -8,14 +8,14 @@ import com.intellij.testFramework.LexerTestCase
 import com.intellij.testFramework.UsefulTestCase
 import org.jetbrains.annotations.NonNls
 import org.move.lang.core.lexer.createMoveLexer
-import org.move.utils.tests.base.MoveTestCase
+import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
 import org.move.utils.tests.base.pathToGoldTestFile
 import org.move.utils.tests.base.pathToSourceTestFile
 import java.io.IOException
 
 abstract class MoveLexerTestCase : LexerTestCase(),
-                                   MoveTestCase {
+                                   MvTestCase {
     override fun getDirPath(): String = throw UnsupportedOperationException()
 
     override fun getTestDataPath(): String = "org/move/lang/lexer"

@@ -11,7 +11,7 @@ import org.move.lang.core.resolve.resolveItem
 import org.move.lang.core.types.BoundElement
 
 fun processModuleItems(
-    module: MoveModuleDef,
+    module: MvModuleDef,
     visibilities: Set<Visibility>,
     namespaces: Set<Namespace>,
     processor: MatchingProcessor,
@@ -36,12 +36,12 @@ fun processModuleItems(
 }
 
 fun resolveModuleItem(
-    module: MoveModuleDef,
+    module: MvModuleDef,
     refName: String,
     vs: Set<Visibility>,
     ns: Set<Namespace>,
-): MoveNamedElement? {
-    var resolved: MoveNamedElement? = null
+): MvNamedElement? {
+    var resolved: MvNamedElement? = null
     processModuleItems(module, vs, ns) {
         if (it.name == refName && it.element != null) {
             resolved = it.element
@@ -52,19 +52,19 @@ fun resolveModuleItem(
     return resolved
 }
 
-class MovePathReferenceImpl(
-    element: MovePath,
+class MvPathReferenceImpl(
+    element: MvPath,
     private val namespace: Namespace,
-) : MoveReferenceBase<MovePath>(element), MovePathReference {
+) : MvReferenceBase<MvPath>(element), MvPathReference {
 
-    override fun resolve(): MoveNamedElement? {
+    override fun resolve(): MvNamedElement? {
         val vs = Visibility.buildSetOfVisibilities(element)
         val ns = setOf(namespace)
         val refName = element.referenceName ?: return null
 
         val moduleRef = element.pathIdent.moduleRef
         // first, see whether it's a fully qualified path (ADDRESS::MODULE::NAME) and try to resolve those
-        if (moduleRef is MoveFQModuleRef) {
+        if (moduleRef is MvFQModuleRef) {
             val module = moduleRef.reference?.resolve() ?: return null
             return resolveModuleItem(module, refName, vs, ns)
         }
@@ -85,7 +85,7 @@ class MovePathReferenceImpl(
             // try local names
             val item = resolveItem(element, namespace)
             // local name -> return
-            if (item !is MoveItemImport) return item
+            if (item !is MvItemImport) return item
             // find corresponding FQModuleRef from imports and resolve
             val fqModuleRef = item.moduleImport().fqModuleRef
             val module = fqModuleRef.reference?.resolve() ?: return null
@@ -93,7 +93,7 @@ class MovePathReferenceImpl(
         }
     }
 
-    override fun advancedResolve(): BoundElement<MoveNamedElement>? {
+    override fun advancedResolve(): BoundElement<MvNamedElement>? {
         return resolve()?.let { BoundElement(it) }
     }
 }

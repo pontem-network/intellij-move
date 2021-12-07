@@ -34,14 +34,14 @@ const val FIELD_DECL_PRIORITY = 3.0
 //const val MACRO_PRIORITY = -0.1
 //const val DEPRECATED_PRIORITY = -1.0
 
-//open class MoveDefaultInsertHandler : InsertHandler<LookupElement> {
+//open class MvDefaultInsertHandler : InsertHandler<LookupElement> {
 //    final override fun handleInsert(context: InsertionContext, item: LookupElement) {
-//        val element = item.psiElement as? MoveElement ?: return
+//        val element = item.psiElement as? MvElement ?: return
 //        handleInsert(element, context, item)
 //    }
 //
 //    protected open fun handleInsert(
-//        element: MoveElement,
+//        element: MvElement,
 //        context: InsertionContext,
 //        item: LookupElement
 //    ) {
@@ -65,10 +65,10 @@ fun functionInsertHandler(isSpec: Boolean, hasParams: Boolean): InsertHandler<Lo
         }
     }
 
-fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupElement {
+fun MvNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupElement {
     val insertHandler = DefaultInsertHandler(isSpecIdentifier)
     return when (this) {
-        is MoveModuleImport ->
+        is MvModuleImport ->
             LookupElementBuilder
                 .createWithIcon(this)
                 .withLookupString(this.name ?: "")
@@ -84,7 +84,7 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
 //                    }
 //                }
 
-        is MoveFunctionSignatureOwner -> LookupElementBuilder.createWithIcon(this)
+        is MvFunctionSignatureOwner -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTailText(this.functionParameterList?.parametersText ?: "()")
             .withTypeText(this.returnType?.type?.text ?: "()")
@@ -103,15 +103,15 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
 //                }
 //            }
 
-//        is MoveConstDef -> LookupElementBuilder.createWithIcon(this)
+//        is MvConstDef -> LookupElementBuilder.createWithIcon(this)
 //            .withLookupString(this.name ?: "")
 //            .withTypeText(this.typeAnnotation?.type?.text)
 
-        is MoveModuleDef -> LookupElementBuilder.createWithIcon(this)
+        is MvModuleDef -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTypeText(this.containingFile?.name)
 
-        is MoveStructSignature -> LookupElementBuilder.createWithIcon(this)
+        is MvStructSignature -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTailText(" { ... }")
             .withInsertHandler(insertHandler)
@@ -120,16 +120,16 @@ fun MoveNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupEleme
 //                    ctx.addSuffix(" ")
 //            }
 
-        is MoveStructFieldDef -> LookupElementBuilder
+        is MvStructFieldDef -> LookupElementBuilder
             .createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTypeText(this.typeAnnotation?.type?.text)
 
-//        is MoveFunctionParameter -> LookupElementBuilder.createWithIcon(this)
+//        is MvFunctionParameter -> LookupElementBuilder.createWithIcon(this)
 //            .withLookupString(this.name ?: "")
 //            .withTypeText(this.typeAnnotation?.type?.text)
 
-        is MoveBindingPat -> LookupElementBuilder.createWithIcon(this)
+        is MvBindingPat -> LookupElementBuilder.createWithIcon(this)
             .withLookupString(this.name ?: "")
             .withTypeText(this.inferBindingPatTy().shortPresentableText(true))
 
@@ -212,14 +212,14 @@ class AngleBracketsInsertHandler : InsertHandler<LookupElement> {
 class DefaultInsertHandler(private val isSpecIdentifier: Boolean) : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, item: LookupElement) {
         val document = context.document
-        val element = item.psiElement as? MoveElement ?: return
+        val element = item.psiElement as? MvElement ?: return
 
-//        if (element is MoveTypeParametersOwner) {
+//        if (element is MvTypeParametersOwner) {
 //            addGenericTypeCompletion(element, document, context)
 //        }
 
         when (element) {
-            is MoveFunctionSignatureOwner -> {
+            is MvFunctionSignatureOwner -> {
 //                val angleBrackets = element.hasTypeParameters && !isSpecIdentifier
 //                if (angleBrackets) {
 //                    if (!context.alreadyHasAngleBrackets) {
@@ -241,14 +241,14 @@ class DefaultInsertHandler(private val isSpecIdentifier: Boolean) : InsertHandle
 //                    }
                 }
             }
-            is MoveStructSignature -> {
+            is MvStructSignature -> {
                 if (isSpecIdentifier && !context.alreadyHasSpace)
                     context.addSuffix(" ")
 
                 val insideAcquiresType =
                     context.file
                         .findElementAt(context.startOffset)
-                        ?.ancestorStrict<MoveAcquiresType>() != null
+                        ?.ancestorStrict<MvAcquiresType>() != null
                 if (element.hasTypeParameters && !isSpecIdentifier && !insideAcquiresType) {
                     if (!context.alreadyHasAngleBrackets) {
                         document.insertString(context.selectionEndOffset, "<>")
@@ -262,7 +262,7 @@ class DefaultInsertHandler(private val isSpecIdentifier: Boolean) : InsertHandle
 }
 
 //private fun addGenericTypeCompletion(
-//    element: MoveTypeParametersOwner,
+//    element: MvTypeParametersOwner,
 //    document: Document,
 //    context: InsertionContext,
 //) {
@@ -273,7 +273,7 @@ class DefaultInsertHandler(private val isSpecIdentifier: Boolean) : InsertHandle
 //        document.insertString(context.selectionEndOffset, "<>")
 //    }
 //
-//    if (element is MoveFunctionSignatureOwner) {
+//    if (element is MvFunctionSignatureOwner) {
 //        // functions
 //        if (!context.alreadyHasCallParens) {
 //            document.insertString(context.selectionEndOffset, "()")

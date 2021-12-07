@@ -2,9 +2,9 @@ package org.move.ide.hints
 
 import com.intellij.codeInsight.daemon.impl.HintRenderer
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.MvTestBase
 
-class InlayParameterHintsTest : MoveTestBase() {
+class InlayParameterHintsTest : MvTestBase() {
     fun `test fun`() = checkByText(
         """
         module M {

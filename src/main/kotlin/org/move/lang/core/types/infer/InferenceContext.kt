@@ -4,36 +4,36 @@ import com.intellij.psi.util.parentOfType
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.fqName
 import org.move.lang.core.psi.ext.hexIntegerLiteral
-import org.move.lang.core.psi.impl.MoveFunctionDefImpl
+import org.move.lang.core.psi.impl.MvFunctionDefImpl
 import org.move.lang.core.types.ty.*
 
-val MoveExpr.outerFunction
-    get() = (parentOfType<MoveFunctionDef>(true) as? MoveFunctionDefImpl)!!
+val MvExpr.outerFunction
+    get() = (parentOfType<MvFunctionDef>(true) as? MvFunctionDefImpl)!!
 
-fun instantiateItemTy(item: MoveNameIdentifierOwner): Ty {
+fun instantiateItemTy(item: MvNameIdentifierOwner): Ty {
     return when (item) {
-        is MoveStructSignature -> TyStruct(item)
-        is MoveFunctionSignature -> {
+        is MvStructSignature -> TyStruct(item)
+        is MvFunctionSignature -> {
             val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
 
-            fun findTypeVar(parameter: MoveTypeParameter): Ty {
+            fun findTypeVar(parameter: MvTypeParameter): Ty {
                 return typeVars.find { it.origin?.parameter == parameter }!!
             }
 
             val paramTypes = mutableListOf<Ty>()
             for (param in item.parameters) {
                 val paramType = param.typeAnnotation?.type
-                    ?.let { inferMoveTypeTy(it) }
+                    ?.let { inferMvTypeTy(it) }
                     ?.foldTyTypeParameterWith { findTypeVar(it.parameter) } ?: TyUnknown
                 paramTypes.add(paramType)
             }
-            val returnMoveType = item.returnType?.type
+            val returnMvType = item.returnType?.type
             val retType: Ty
-            if (returnMoveType == null) {
+            if (returnMvType == null) {
                 retType = TyUnit
             } else {
                 retType =
-                    inferMoveTypeTy(returnMoveType).foldTyTypeParameterWith { findTypeVar(it.parameter) }
+                    inferMvTypeTy(returnMvType).foldTyTypeParameterWith { findTypeVar(it.parameter) }
             }
             TyFunction(item, typeVars, paramTypes, retType)
         }
@@ -96,7 +96,7 @@ fun isCompatible(expectedTy: Ty, inferredTy: Ty): Boolean {
 }
 
 class InferenceContext {
-    val exprTypes = mutableMapOf<MoveExpr, Ty>()
+    val exprTypes = mutableMapOf<MvExpr, Ty>()
     val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
 
     private val solver = ConstraintSolver(this)
@@ -109,7 +109,7 @@ class InferenceContext {
         return solver.processConstraints()
     }
 
-    fun cacheExprTy(expr: MoveExpr, ty: Ty) {
+    fun cacheExprTy(expr: MvExpr, ty: Ty) {
         this.exprTypes[expr] = ty
     }
 

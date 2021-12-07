@@ -28,11 +28,11 @@ fun processNamedAddresses(
         combinedDepSubst.putAll(addrSubst)
         val depMoveFile =
             dep.absoluteLocalPath
-                .resolve(MoveConstants.MANIFEST_FILE)
+                .resolve(MvConstants.MANIFEST_FILE)
                 .findVirtualFile()
                 ?.toPsiFile(moveProject.project) ?: continue
-        val depMoveProject =
+        val depMvProject =
             project.moveProjectsService.findMoveProjectForPsiFile(depMoveFile) ?: continue
-        processNamedAddresses(depMoveProject, combinedDepSubst, processAddress)
+        processNamedAddresses(depMvProject, combinedDepSubst, processAddress)
     }
 }

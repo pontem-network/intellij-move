@@ -1,14 +1,14 @@
 package org.move.utils.tests
 
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.completion.MoveCompletionTestFixture
+import org.move.utils.tests.completion.MvCompletionTestFixture
 
-abstract class MoveTomlCompletionTestBase: MoveTestBase() {
-    protected lateinit var completionFixture: MoveCompletionTestFixture
+abstract class MoveTomlCompletionTestBase: MvTestBase() {
+    protected lateinit var completionFixture: MvCompletionTestFixture
 
     override fun setUp() {
         super.setUp()
-        completionFixture = MoveCompletionTestFixture(myFixture, "Move.toml")
+        completionFixture = MvCompletionTestFixture(myFixture, "Move.toml")
         completionFixture.setUp()
     }
 

@@ -3,9 +3,9 @@ package org.move.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import org.move.ide.colors.MoveColor
-import org.move.lang.MoveElementTypes.ADDRESS_LITERAL
-import org.move.lang.MoveElementTypes.IDENTIFIER
+import org.move.ide.colors.MvColor
+import org.move.lang.MvElementTypes.ADDRESS_LITERAL
+import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.isNative
@@ -21,7 +21,7 @@ val BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE =
 val BUILTIN_FUNCTIONS =
     BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE + setOf("assert", "move_to")
 
-class HighlightingAnnotator : MoveAnnotator() {
+class HighlightingAnnotator : MvAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val color = when (element) {
             is LeafPsiElement -> highlightLeaf(element)
@@ -31,60 +31,60 @@ class HighlightingAnnotator : MoveAnnotator() {
         holder.newSilentAnnotation(severity).textAttributes(color.textAttributesKey).create()
     }
 
-    private fun highlightLeaf(element: PsiElement): MoveColor? {
-        val parent = element.parent as? MoveElement ?: return null
-        if (element.elementType.toString().endsWith("_kw")) return MoveColor.KEYWORD
+    private fun highlightLeaf(element: PsiElement): MvColor? {
+        val parent = element.parent as? MvElement ?: return null
+        if (element.elementType.toString().endsWith("_kw")) return MvColor.KEYWORD
         return when {
             element.elementType == IDENTIFIER -> highlightIdentifier(parent)
-            parent is MoveCopyExpr
-                    && element.text == "copy" -> MoveColor.KEYWORD
-            element.elementType == ADDRESS_LITERAL -> MoveColor.ADDRESS
+            parent is MvCopyExpr
+                    && element.text == "copy" -> MvColor.KEYWORD
+            element.elementType == ADDRESS_LITERAL -> MvColor.ADDRESS
             else -> null
         }
     }
 
-    private fun highlightIdentifier(element: MoveElement): MoveColor? {
-        if (element is MoveAbility) return MoveColor.ABILITY
-        if (element is MoveTypeParameter) return MoveColor.TYPE_PARAMETER
-        if (element is MoveModuleRef && element.isSelf) return MoveColor.KEYWORD
-        if (element is MoveItemImport && element.text == "Self") return MoveColor.KEYWORD
-        if (element is MoveFunctionSignature) return MoveColor.FUNCTION_DEF
-        if (element is MoveBindingPat && element.owner is MoveConstDef) return MoveColor.CONSTANT_DEF
-        if (element is MoveModuleDef) return MoveColor.MODULE_DEF
+    private fun highlightIdentifier(element: MvElement): MvColor? {
+        if (element is MvAbility) return MvColor.ABILITY
+        if (element is MvTypeParameter) return MvColor.TYPE_PARAMETER
+        if (element is MvModuleRef && element.isSelf) return MvColor.KEYWORD
+        if (element is MvItemImport && element.text == "Self") return MvColor.KEYWORD
+        if (element is MvFunctionSignature) return MvColor.FUNCTION_DEF
+        if (element is MvBindingPat && element.owner is MvConstDef) return MvColor.CONSTANT_DEF
+        if (element is MvModuleDef) return MvColor.MODULE_DEF
 
         // any qual :: access is not highlighted
-        if (element !is MovePathIdent || !element.isIdentifierOnly) return null
+        if (element !is MvPathIdent || !element.isIdentifierOnly) return null
 
-        val path = element.parent as? MovePath ?: return null
+        val path = element.parent as? MvPath ?: return null
         val identifierName = path.identifierName
         val pathContainer = path.parent
         when (pathContainer) {
-            is MovePathType -> {
-                if (identifierName in PRIMITIVE_TYPE_IDENTIFIERS) return MoveColor.PRIMITIVE_TYPE
-                if (identifierName in BUILTIN_TYPE_IDENTIFIERS) return MoveColor.BUILTIN_TYPE
+            is MvPathType -> {
+                if (identifierName in PRIMITIVE_TYPE_IDENTIFIERS) return MvColor.PRIMITIVE_TYPE
+                if (identifierName in BUILTIN_TYPE_IDENTIFIERS) return MvColor.BUILTIN_TYPE
 
                 val resolved = path.reference?.resolve()
-                if (resolved is MoveTypeParameter) {
-                    return MoveColor.TYPE_PARAMETER
+                if (resolved is MvTypeParameter) {
+                    return MvColor.TYPE_PARAMETER
                 }
             }
-            is MoveCallExpr -> {
-                val resolved = path.reference?.resolve() as? MoveFunctionSignature
+            is MvCallExpr -> {
+                val resolved = path.reference?.resolve() as? MvFunctionSignature
                 if (resolved != null) {
                     if (resolved.isNative && identifierName in BUILTIN_FUNCTIONS) {
-                        return MoveColor.BUILTIN_FUNCTION_CALL
+                        return MvColor.BUILTIN_FUNCTION_CALL
                     } else {
-                        return MoveColor.FUNCTION_CALL
+                        return MvColor.FUNCTION_CALL
                     }
                 }
             }
-            is MoveRefExpr -> {
-                val resolved = path.reference?.resolve() as? MoveBindingPat ?: return null
+            is MvRefExpr -> {
+                val resolved = path.reference?.resolve() as? MvBindingPat ?: return null
                 val owner = resolved.owner
                 when (owner) {
-                    is MoveConstDef -> return MoveColor.CONSTANT
-                    is MoveLetStatement,
-                    is MoveFunctionParameter -> return MoveColor.VARIABLE
+                    is MvConstDef -> return MvColor.CONSTANT
+                    is MvLetStatement,
+                    is MvFunctionParameter -> return MvColor.VARIABLE
                 }
             }
         }

@@ -3,28 +3,28 @@ package org.move.ide.intentions
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.MoveImportStatement
-import org.move.lang.core.psi.MoveItemImport
-import org.move.lang.core.psi.MoveMultiItemImport
-import org.move.lang.core.psi.MovePsiFactory
+import org.move.lang.core.psi.MvImportStatement
+import org.move.lang.core.psi.MvItemImport
+import org.move.lang.core.psi.MvMultiItemImport
+import org.move.lang.core.psi.MvPsiFactory
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.startOffset
 
-class RemoveCurlyBracesIntention: MoveElementBaseIntentionAction<RemoveCurlyBracesIntention.Context>() {
+class RemoveCurlyBracesIntention: MvElementBaseIntentionAction<RemoveCurlyBracesIntention.Context>() {
     override fun getText(): String = "Remove curly braces"
     override fun getFamilyName(): String = text
 
     data class Context(
-        val multiItemImport: MoveMultiItemImport,
-        val itemImport: MoveItemImport,
+        val multiItemImport: MvMultiItemImport,
+        val itemImport: MvItemImport,
         val refName: String,
         val aliasName: String?
     )
 
     override fun findApplicableContext(project: Project, editor: Editor, element: PsiElement): Context? {
         val importStatement =
-            element.ancestorStrict<MoveImportStatement>() ?: return null
+            element.ancestorStrict<MvImportStatement>() ?: return null
         val multiItemImport =
             importStatement.moduleItemsImport?.multiItemImport ?: return null
         val itemImport = multiItemImport.itemImportList.singleOrNull() ?: return null
@@ -47,7 +47,7 @@ class RemoveCurlyBracesIntention: MoveElementBaseIntentionAction<RemoveCurlyBrac
         if (aliasName != null) {
             newText += " as $aliasName"
         }
-        val newItemImport = MovePsiFactory(project).createItemImport(newText)
+        val newItemImport = MvPsiFactory(project).createItemImport(newText)
         multiItemImport.replace(newItemImport)
 
         editor.caretModel.moveToOffset(newOffset)

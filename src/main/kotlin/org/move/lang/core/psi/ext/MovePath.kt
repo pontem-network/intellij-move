@@ -5,48 +5,48 @@ import com.intellij.psi.PsiElement
 import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
 import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ref.MovePathReference
-import org.move.lang.core.resolve.ref.MovePathReferenceImpl
+import org.move.lang.core.resolve.ref.MvPathReference
+import org.move.lang.core.resolve.ref.MvPathReferenceImpl
 import org.move.lang.core.resolve.ref.Namespace
 
-//val MoveQualPath.address: Address? get() = (moduleRef as? MoveFQModuleRef)?.addressRef?.address()
+//val MvQualPath.address: Address? get() = (moduleRef as? MvFQModuleRef)?.addressRef?.address()
 //
-//val MoveQualPath.moduleName: String? get() = moduleRef?.identifier?.text
+//val MvQualPath.moduleName: String? get() = moduleRef?.identifier?.text
 //
-fun MovePath.isPrimitiveType(): Boolean =
-    this.parent is MovePathType
+fun MvPath.isPrimitiveType(): Boolean =
+    this.parent is MvPathType
             && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS.union(BUILTIN_TYPE_IDENTIFIERS)
 
-val MovePath.identifierName: String? get() = identifier?.text
+val MvPath.identifierName: String? get() = identifier?.text
 
-val MovePathIdent.isIdentifierOnly: Boolean
+val MvPathIdent.isIdentifierOnly: Boolean
     get() =
         identifier != null && this.moduleRef == null
 
-val MovePath.typeArguments: List<MoveTypeArgument>
+val MvPath.typeArguments: List<MvTypeArgument>
     get() = typeArgumentList?.typeArgumentList.orEmpty()
 
-val MovePath.maybeStructSignature: MoveStructSignature?
+val MvPath.maybeStructSignature: MvStructSignature?
     get() {
-        return reference?.resolve() as? MoveStructSignature
+        return reference?.resolve() as? MvStructSignature
     }
 
-val MovePath.maybeStruct: MoveStructDef?
+val MvPath.maybeStruct: MvStructDef?
     get() {
         return maybeStructSignature?.structDef
     }
 
 
-abstract class MovePathMixin(node: ASTNode) : MoveElementImpl(node), MovePath {
+abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
 
     override val identifier: PsiElement? get() = this.pathIdent.identifier
 
-    override fun getReference(): MovePathReference? {
+    override fun getReference(): MvPathReference? {
         val namespace = when {
             this.isInsideSpecBlock() -> Namespace.SPEC
-            this.parent is MovePathType -> Namespace.TYPE
+            this.parent is MvPathType -> Namespace.TYPE
             else -> Namespace.NAME
         }
-        return MovePathReferenceImpl(this, namespace)
+        return MvPathReferenceImpl(this, namespace)
     }
 }

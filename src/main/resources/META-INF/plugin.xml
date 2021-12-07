@@ -26,41 +26,41 @@
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
 
-        <configurationType implementation="org.move.cli.MoveRunConfigurationType"/>
+        <configurationType implementation="org.move.cli.MvRunConfigurationType"/>
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
         <lang.documentationProvider language="Move"
-                                    implementationClass="org.move.ide.docs.MoveDocumentationProvider"/>
-        <!--        <stubElementTypeHolder class="org.move.lang.MoveElementTypes"/>-->
-        <gotoSymbolContributor implementation="org.move.ide.navigation.MoveSymbolNavigationContributor"/>
-        <gotoClassContributor implementation="org.move.ide.navigation.MoveStructNavigationContributor"/>
+                                    implementationClass="org.move.ide.docs.MvDocumentationProvider"/>
+        <!--        <stubElementTypeHolder class="org.move.lang.MvElementTypes"/>-->
+        <gotoSymbolContributor implementation="org.move.ide.navigation.MvSymbolNavigationContributor"/>
+        <gotoClassContributor implementation="org.move.ide.navigation.MvStructNavigationContributor"/>
 
         <lang.syntaxHighlighter language="Move"
-                                implementationClass="org.move.ide.MoveHighlighter"/>
+                                implementationClass="org.move.ide.MvHighlighter"/>
         <lang.commenter language="Move"
-                        implementationClass="org.move.ide.MoveCommenter"/>
+                        implementationClass="org.move.ide.MvCommenter"/>
         <lang.braceMatcher language="Move"
-                           implementationClass="org.move.ide.typing.MoveBraceMatcher"/>
-        <typedHandler implementation="org.move.ide.typing.MoveAngleBraceTypedHandler"
-                      id="MoveAngleBracketsHandler"/>
-        <enterHandlerDelegate implementation="org.move.ide.typing.MoveEnterInLineCommentHandler"
-                              id="MoveEnterInLineComments"/>
+                           implementationClass="org.move.ide.typing.MvBraceMatcher"/>
+        <typedHandler implementation="org.move.ide.typing.MvAngleBraceTypedHandler"
+                      id="MvAngleBracketsHandler"/>
+        <enterHandlerDelegate implementation="org.move.ide.typing.MvEnterInLineCommentHandler"
+                              id="MvEnterInLineComments"/>
 
         <lang.formatter language="Move"
-                        implementationClass="org.move.ide.formatter.MoveFormattingModelBuilder"/>
+                        implementationClass="org.move.ide.formatter.MvFormattingModelBuilder"/>
         <langCodeStyleSettingsProvider
-                implementation="org.move.ide.formatter.MoveLanguageCodeStyleSettingsProvider"/>
+                implementation="org.move.ide.formatter.MvLanguageCodeStyleSettingsProvider"/>
 
-        <lang.foldingBuilder language="Move" implementationClass="org.move.ide.folding.MoveFoldingBuilder"/>
+        <lang.foldingBuilder language="Move" implementationClass="org.move.ide.folding.MvFoldingBuilder"/>
 
         <lang.namesValidator language="Move"
-                             implementationClass="org.move.ide.refactoring.MoveNamesValidator"/>
+                             implementationClass="org.move.ide.refactoring.MvNamesValidator"/>
         <lang.refactoringSupport language="Move"
-                                 implementationClass="org.move.ide.refactoring.MoveRefactoringSupportProvider"/>
+                                 implementationClass="org.move.ide.refactoring.MvRefactoringSupportProvider"/>
 
         <lang.findUsagesProvider language="Move"
-                                 implementationClass="org.move.ide.search.MoveFindUsagesProvider"/>
+                                 implementationClass="org.move.ide.search.MvFindUsagesProvider"/>
         <usageTypeProvider
                 implementation="org.move.ide.search.NamedAddressUsageTypeProvider"/>
         <findUsagesHandlerFactory
@@ -88,25 +88,25 @@
         <codeInsight.parameterInfo language="Move"
                                    implementationClass="org.move.ide.hints.TypeParameterInfoHandler"/>
         <codeInsight.parameterInfo language="Move"
-                                   implementationClass="org.move.ide.hints.StructLiteralFieldsInfoHandler"/>
+                                   implementationClass="org.move.ide.hints.StructLitFieldsInfoHandler"/>
         <codeInsight.parameterNameHints language="Move"
-                                        implementationClass="org.move.ide.hints.MoveInlayParameterHintsProvider"/>
+                                        implementationClass="org.move.ide.hints.MvInlayParameterHintsProvider"/>
 
         <defaultLiveTemplates file="liveTemplates/Move.xml"/>
-        <liveTemplateContext implementation="org.move.ide.live_templates.MoveContextType$Generic"/>
-        <liveTemplateContext implementation="org.move.ide.live_templates.MoveContextType$Module"/>
-        <liveTemplateContext implementation="org.move.ide.live_templates.MoveContextType$Block"/>
+        <liveTemplateContext implementation="org.move.ide.live_templates.MvContextType$Generic"/>
+        <liveTemplateContext implementation="org.move.ide.live_templates.MvContextType$Module"/>
+        <liveTemplateContext implementation="org.move.ide.live_templates.MvContextType$Block"/>
 
         <lang.psiStructureViewFactory
                 language="Move"
-                implementationClass="org.move.ide.navigation.MoveStructureViewBuilderFactory"/>
+                implementationClass="org.move.ide.navigation.MvStructureViewBuilderFactory"/>
         <declarationRangeHandler
-                key="org.move.lang.core.psi.MoveModuleDef"
+                key="org.move.lang.core.psi.MvModuleDef"
                 implementationClass="org.move.ide.navigation.ModuleDeclarationRangeHandler"/>
         <declarationRangeHandler
-                key="org.move.lang.core.psi.MoveFunctionDef"
+                key="org.move.lang.core.psi.MvFunctionDef"
                 implementationClass="org.move.ide.navigation.FunctionDeclarationRangeHandler"/>
-        <!--        <stubIndex implementation="org.move.lang.core.stubs.index.MoveNamedElementIndex"/>-->
+        <!--        <stubIndex implementation="org.move.lang.core.stubs.index.MvNamedElementIndex"/>-->
 
         <!--        <localInspection language="Move" groupPath="Move" groupName="Naming"-->
         <!--                         displayName="Attempt to override a built-in function"-->
@@ -116,7 +116,7 @@
                          displayName="Unresolved reference"
                          enabledByDefault="false"
                          level="ERROR"
-                         implementationClass="org.move.ide.inspections.MoveUnresolvedReferenceInspection"/>
+                         implementationClass="org.move.ide.inspections.MvUnresolvedReferenceInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Field initialization shorthand"
                          enabledByDefault="true" level="WEAK WARNING"
@@ -124,25 +124,25 @@
         <localInspection language="Move" groupName="Move"
                          displayName="Constant naming convention"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.lints.MoveConstNamingInspection" />
+                         implementationClass="org.move.ide.inspections.lints.MvConstNamingInspection" />
         <localInspection language="Move" groupName="Move"
                          displayName="Struct naming convention"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.lints.MoveStructNamingInspection" />
+                         implementationClass="org.move.ide.inspections.lints.MvStructNamingInspection" />
         <localInspection language="Move" groupName="Move"
                          displayName="Local variable naming convention"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.lints.MoveLocalBindingNamingInspection" />
+                         implementationClass="org.move.ide.inspections.lints.MvLocalBindingNamingInspection" />
 
 
         <!-- Color Settings -->
-        <colorSettingsPage implementation="org.move.ide.colors.MoveColorSettingsPage"/>
+        <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>
 
         <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml"/>
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
-        <projectOpenProcessor id="Move" implementation="org.move.cli.MoveProjectOpenProcessor"/>
-        <projectConfigurable instance="org.move.settings.MoveConfigurable"
+        <projectOpenProcessor id="Move" implementation="org.move.cli.MvProjectOpenProcessor"/>
+        <projectConfigurable instance="org.move.settings.MvConfigurable"
                              displayName="Move"
                              groupId="language"
                              id="language.move"/>
@@ -156,7 +156,7 @@
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>
 
 <!--        <editorNotificationProvider-->
-<!--                implementation="org.move.ide.notifications.InvalidMoveExecutableNotificationsProvider"/>-->
+<!--                implementation="org.move.ide.notifications.InvalidMvExecutableNotificationsProvider"/>-->
 
         <intentionAction>
             <className>org.move.ide.intentions.AddAcquiresIntention</className>
@@ -171,7 +171,7 @@
 
     <projectListeners>
         <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
-                  topic="org.move.settings.MoveSettingsListener"
+                  topic="org.move.settings.MvSettingsListener"
                   activeInTestMode="false"/>
     </projectListeners>
 
@@ -183,7 +183,7 @@
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
         </action>
         <action id="Move.RefreshAllProjects"
-                class="org.move.ide.actions.RefreshMoveProjectsAction"
+                class="org.move.ide.actions.RefreshMvProjectsAction"
                 icon="AllIcons.Actions.Refresh"/>
     </actions>
 </idea-plugin>

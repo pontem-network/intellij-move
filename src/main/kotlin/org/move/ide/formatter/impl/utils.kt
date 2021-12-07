@@ -4,8 +4,8 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet.orSet
-import org.move.lang.MoveElementTypes.*
-import org.move.lang.MoveFile
+import org.move.lang.MvElementTypes.*
+import org.move.lang.MvFile
 import org.move.lang.core.psi.*
 import com.intellij.psi.tree.TokenSet.create as ts
 
@@ -19,12 +19,12 @@ val BINARY_OPS = ts(
 val ONE_LINE_ITEMS = ts(IMPORT_STATEMENT, CONST_DEF)
 
 val PAREN_DELIMITED_BLOCKS = ts(
-    PARENS_EXPR, TUPLE_PAT, TUPLE_TYPE, TUPLE_LITERAL_EXPR,
-    FUNCTION_PARAMETER_LIST, CALL_ARGUMENTS
+    PARENS_EXPR, TUPLE_PAT, TUPLE_TYPE, TUPLE_LIT_EXPR,
+    FUNCTION_PARAMETER_LIST, CALL_ARGUMENT_LIST
 )
 val ANGLE_DELIMITED_BLOCKS = ts(TYPE_PARAMETER_LIST, TYPE_ARGUMENT_LIST)
 
-val STRUCT_LITERAL_BLOCKS = ts(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LITERAL_FIELDS_BLOCK)
+val STRUCT_LITERAL_BLOCKS = ts(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LIT_FIELDS_BLOCK)
 val DEF_BLOCKS = ts(
     SCRIPT_BLOCK, ADDRESS_BLOCK, MODULE_BLOCK, CODE_BLOCK, CODE_BLOCK_EXPR, SPEC_BLOCK, STRUCT_FIELDS_DEF_BLOCK
 )
@@ -35,19 +35,19 @@ val DELIMITED_BLOCKS = orSet(PAREN_DELIMITED_BLOCKS, ANGLE_DELIMITED_BLOCKS, BLO
 fun ASTNode?.isWhitespaceOrEmpty() = this == null || textLength == 0 || elementType == TokenType.WHITE_SPACE
 
 val PsiElement.isTopLevelItem: Boolean
-    get() = (this is MoveModuleDef || this is MoveAddressDef || this is MoveScriptDef) && parent is MoveFile
+    get() = (this is MvModuleDef || this is MvAddressDef || this is MvScriptDef) && parent is MvFile
 
 val PsiElement.isModuleItem: Boolean
-    get() = this is MoveFunctionDef || this is MoveConstDef || this is MoveStructDef || this is MoveImportStatement
+    get() = this is MvFunctionDef || this is MvConstDef || this is MvStructDef || this is MvImportStatement
 
 val PsiElement.isDeclarationItem: Boolean
-    get() = (this is MoveModuleDef && parent is MoveAddressBlock) || this.isModuleItem
+    get() = (this is MvModuleDef && parent is MvAddressBlock) || this.isModuleItem
 
 val PsiElement.isStatement: Boolean
-    get() = this is MoveStatement && parent is MoveCodeBlock
+    get() = this is MvStatement && parent is MvCodeBlock
 
 val PsiElement.isStatementOrExpr: Boolean
-    get() = this is MoveStatement || this is MoveExpr && parent is MoveCodeBlock
+    get() = this is MvStatement || this is MvExpr && parent is MvCodeBlock
 
 val ASTNode.isDelimitedBlock: Boolean
     get() = elementType in DELIMITED_BLOCKS
@@ -80,7 +80,7 @@ fun ASTNode.isDelimiterOfCurrentBlock(parent: ASTNode?): Boolean {
 //
 //        private val ALL = listOf(
 //            CommaList(BLOCK_FIELDS, LBRACE, RBRACE) { it.elementType == NAMED_FIELD_DECL },
-//            CommaList(STRUCT_LITERAL_BODY, LBRACE, RBRACE) { it.elementType == STRUCT_LITERAL_FIELD },
+//            CommaList(STRUCT_LITERAL_BODY, LBRACE, RBRACE) { it.elementType == STRUCT_LIT_FIELD },
 //            CommaList(ENUM_BODY, LBRACE, RBRACE) { it.elementType == ENUM_VARIANT },
 //            CommaList(USE_GROUP, LBRACE, RBRACE) { it.elementType == USE_SPECK },
 //

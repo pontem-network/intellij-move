@@ -15,17 +15,17 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.reflect.KProperty1
 
-data class MoveSettingsChangedEvent(
-    val oldState: MoveProjectSettingsService.State,
-    val newState: MoveProjectSettingsService.State,
+data class MvSettingsChangedEvent(
+    val oldState: MvProjectSettingsService.State,
+    val newState: MvProjectSettingsService.State,
 ) {
     /** Use it like `event.isChanged(State::foo)` to check whether `foo` property is changed or not */
-    fun isChanged(prop: KProperty1<MoveProjectSettingsService.State, *>): Boolean =
+    fun isChanged(prop: KProperty1<MvProjectSettingsService.State, *>): Boolean =
         prop.get(oldState) != prop.get(newState)
 }
 
-interface MoveSettingsListener {
-    fun moveSettingsChanged(e: MoveSettingsChangedEvent)
+interface MvSettingsListener {
+    fun moveSettingsChanged(e: MvSettingsChangedEvent)
 }
 
 private const val serviceName: String = "MoveProjectSettings"
@@ -37,7 +37,7 @@ private const val serviceName: String = "MoveProjectSettings"
         Storage("misc.xml", deprecated = true)
     ]
 )
-class MoveProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
+class MvProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
         var moveExecutablePath: String = "",
@@ -57,15 +57,15 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
             }
         }
 
-    fun showMoveConfigureSettings() {
-        ShowSettingsUtil.getInstance().showSettingsDialog(project, MoveConfigurable::class.java)
+    fun showMvConfigureSettings() {
+        ShowSettingsUtil.getInstance().showSettingsDialog(project, MvConfigurable::class.java)
     }
 
     private fun notifySettingsChanged(
         oldState: State,
         newState: State,
     ) {
-        val event = MoveSettingsChangedEvent(oldState, newState)
+        val event = MvSettingsChangedEvent(oldState, newState)
         project.messageBus.syncPublisher(MOVE_SETTINGS_TOPIC)
             .moveSettingsChanged(event)
 
@@ -105,13 +105,13 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
     companion object {
         val MOVE_SETTINGS_TOPIC = Topic(
             "move settings changes",
-            MoveSettingsListener::class.java
+            MvSettingsListener::class.java
         )
     }
 }
 
-val Project.moveSettings: MoveProjectSettingsService
-    get() = this.getService(MoveProjectSettingsService::class.java)
+val Project.moveSettings: MvProjectSettingsService
+    get() = this.getService(MvProjectSettingsService::class.java)
 
 val Project.moveExecutablePathValue: String
     get() {

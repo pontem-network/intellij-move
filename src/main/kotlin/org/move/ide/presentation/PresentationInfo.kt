@@ -4,22 +4,22 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.owner
 
 class PresentationInfo(
-    val element: MoveNamedElement,
+    val element: MvNamedElement,
     val type: String,
     val name: String
 )
 
-val MoveNamedElement.presentationInfo: PresentationInfo?
+val MvNamedElement.presentationInfo: PresentationInfo?
     get() {
         val elementName = name ?: return null
 
         val type = when (this) {
-            is MoveTypeParameter -> "type parameter"
-            is MoveBindingPat -> {
+            is MvTypeParameter -> "type parameter"
+            is MvBindingPat -> {
                 val owner = this.owner
                 when (owner) {
-                    is MoveFunctionParameter -> "value parameter"
-                    is MoveLetStatement -> "variable"
+                    is MvFunctionParameter -> "value parameter"
+                    is MvLetStatement -> "variable"
                     else -> return null
                 }
             }

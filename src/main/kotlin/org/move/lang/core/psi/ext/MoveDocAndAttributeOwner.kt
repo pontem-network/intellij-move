@@ -4,12 +4,10 @@ import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
-import com.intellij.psi.impl.source.tree.PsiCommentImpl
 import org.move.lang.MoveParserDefinition
-import org.move.lang.core.MOVE_COMMENTS
-import org.move.lang.core.psi.MoveElement
+import org.move.lang.core.psi.MvElement
 
-interface MoveDocAndAttributeOwner: MoveElement, NavigatablePsiElement {
+interface MvDocAndAttributeOwner: MvElement, NavigatablePsiElement {
     @JvmDefault
     fun docComments(): Sequence<PsiElement> {
         return childrenWithLeaves

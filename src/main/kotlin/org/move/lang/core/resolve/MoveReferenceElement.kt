@@ -2,9 +2,9 @@ package org.move.lang.core.psi
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
-import org.move.lang.core.resolve.ref.MoveFQModuleReference
-import org.move.lang.core.resolve.ref.MovePathReference
-import org.move.lang.core.resolve.ref.MoveReference
+import org.move.lang.core.resolve.ref.MvFQModuleReference
+import org.move.lang.core.resolve.ref.MvPathReference
+import org.move.lang.core.resolve.ref.MvReference
 import org.move.lang.core.resolve.ref.NamedAddressReference
 
 interface PsiReferenceElement : PsiElement {
@@ -30,12 +30,12 @@ interface NamedAddressReferenceElement : PsiReferenceElement {
     override fun getReference(): NamedAddressReference
 }
 
-interface MoveReferenceElement : PsiReferenceElement, MoveElement {
+interface MvReferenceElement : PsiReferenceElement, MvElement {
 
-    override fun getReference(): MoveReference?
+    override fun getReference(): MvReference?
 }
 
-interface MoveMandatoryReferenceElement: MoveReferenceElement {
+interface MvMandatoryReferenceElement: MvReferenceElement {
     override val identifier: PsiElement
 
     @JvmDefault
@@ -44,15 +44,15 @@ interface MoveMandatoryReferenceElement: MoveReferenceElement {
     @JvmDefault
     override val referenceName: String get() = referenceNameElement.text
 
-    override fun getReference(): MoveReference
+    override fun getReference(): MvReference
 }
 
-interface MovePathReferenceElement: MoveReferenceElement {
-    override fun getReference(): MovePathReference?
+interface MvPathReferenceElement: MvReferenceElement {
+    override fun getReference(): MvPathReference?
 }
 
-interface MoveFQModuleReferenceElement: MoveReferenceElement {
-    override fun getReference(): MoveFQModuleReference?
+interface MvFQModuleReferenceElement: MvReferenceElement {
+    override fun getReference(): MvFQModuleReference?
 }
 
-interface MoveStructFieldReferenceElement : MoveMandatoryReferenceElement
+interface MvStructFieldReferenceElement : MvMandatoryReferenceElement

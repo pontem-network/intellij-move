@@ -1,10 +1,10 @@
 package org.move.lang.core.psi.ext
 
 import org.move.ide.presentation.name
-import org.move.lang.core.psi.MoveAcquiresType
+import org.move.lang.core.psi.MvAcquiresType
 import org.move.lang.core.types.ty.TyStruct
 
-val MoveAcquiresType.typeFQNames: List<String>?
+val MvAcquiresType.typeFQNames: List<String>?
     get() {
         return pathTypeList
             .map { it.inferTypeTy() }

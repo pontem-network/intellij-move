@@ -5,7 +5,7 @@ import com.intellij.codeInsight.hints.InlayParameterHintsProvider
 import com.intellij.psi.PsiElement
 
 @Suppress("UnstableApiUsage")
-class MoveInlayParameterHintsProvider: InlayParameterHintsProvider {
+class MvInlayParameterHintsProvider: InlayParameterHintsProvider {
 
     override fun getDefaultBlackList(): Set<String> = emptySet()
 

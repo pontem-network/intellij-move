@@ -3,11 +3,11 @@ package org.move.ide.navigation
 import com.intellij.openapi.ui.Queryable
 import com.intellij.testFramework.PlatformTestUtil
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.MvTestBase
 import javax.swing.JTree
 import javax.swing.tree.TreePath
 
-class StructureViewTest : MoveTestBase() {
+class StructureViewTest : MvTestBase() {
     fun `test address`() = doTest(
         """
 address 0x1 {
@@ -72,7 +72,7 @@ address 0x1 {
 
     private fun assertTreeEqual(tree: JTree, expected: String) {
         val printInfo = Queryable.PrintInfo(
-            arrayOf(MoveStructureViewElement.NAME_KEY),
+            arrayOf(MvStructureViewElement.NAME_KEY),
         )
         val treeStringPresentation = PlatformTestUtil.print(tree, TreePath(tree.model.root), printInfo, false)
         assertEquals(expected.trim(), treeStringPresentation.trim())

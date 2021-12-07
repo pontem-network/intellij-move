@@ -7,9 +7,9 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
-import org.move.ide.annotator.MoveAnnotationHolder
+import org.move.ide.annotator.MvAnnotationHolder
 import org.move.ide.presentation.shortPresentableText
-import org.move.lang.MoveFile
+import org.move.lang.MvFile
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.startOffset
 import org.move.lang.core.types.infer.TypeFoldable
@@ -18,7 +18,7 @@ import org.move.lang.core.types.infer.TypeVisitor
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.utils.Severity.*
 
-sealed class MoveDiagnostic(
+sealed class MvDiagnostic(
     val element: PsiElement,
     val endElement: PsiElement? = null
 ) {
@@ -28,7 +28,7 @@ sealed class MoveDiagnostic(
         element: PsiElement,
         private val expectedTy: Ty,
         private val actualTy: Ty,
-    ) : MoveDiagnostic(element), TypeFoldable<TypeError> {
+    ) : MvDiagnostic(element), TypeFoldable<TypeError> {
 
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
@@ -77,7 +77,7 @@ class PreparedAnnotation(
     val textAttributes: TextAttributesKey? = null
 )
 
-fun MoveDiagnostic.addToHolder(moveHolder: MoveAnnotationHolder) {
+fun MvDiagnostic.addToHolder(moveHolder: MvAnnotationHolder) {
     val prepared = prepare()
 
     val textRange = if (endElement != null) {

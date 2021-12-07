@@ -5,18 +5,18 @@ import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.patterns.PsiElementPattern
 import com.intellij.psi.PsiElement
-import org.move.lang.MoveElementTypes.IDENTIFIER
-import org.move.lang.core.MovePsiPatterns
-import org.move.lang.core.MovePsiPatterns.acquiresPlacement
-import org.move.lang.core.MovePsiPatterns.addressBlock
-import org.move.lang.core.MovePsiPatterns.afterSibling
-import org.move.lang.core.MovePsiPatterns.codeStatement
-import org.move.lang.core.MovePsiPatterns.functionDef
-import org.move.lang.core.MovePsiPatterns.moduleBlock
-import org.move.lang.core.MovePsiPatterns.nativeFunctionDef
-import org.move.lang.core.MovePsiPatterns.scriptBlock
-import org.move.lang.core.MovePsiPatterns.toplevel
-import org.move.lang.core.psi.MoveFunctionVisibilityModifier
+import org.move.lang.MvElementTypes.IDENTIFIER
+import org.move.lang.core.MvPsiPatterns
+import org.move.lang.core.MvPsiPatterns.acquiresPlacement
+import org.move.lang.core.MvPsiPatterns.addressBlock
+import org.move.lang.core.MvPsiPatterns.afterSibling
+import org.move.lang.core.MvPsiPatterns.codeStatement
+import org.move.lang.core.MvPsiPatterns.functionDef
+import org.move.lang.core.MvPsiPatterns.moduleBlock
+import org.move.lang.core.MvPsiPatterns.nativeFunctionDef
+import org.move.lang.core.MvPsiPatterns.scriptBlock
+import org.move.lang.core.MvPsiPatterns.toplevel
+import org.move.lang.core.psi.MvFunctionVisibilityModifier
 
 class KeywordCompletionContributor : CompletionContributor() {
     init {
@@ -73,12 +73,12 @@ class KeywordCompletionContributor : CompletionContributor() {
 //        )
         extend(
             CompletionType.BASIC,
-            functionDef().and(afterSibling<MoveFunctionVisibilityModifier>()),
+            functionDef().and(afterSibling<MvFunctionVisibilityModifier>()),
             KeywordCompletionProvider("fun")
         )
         extend(
             CompletionType.BASIC,
-            nativeFunctionDef().and(afterSibling<MoveFunctionVisibilityModifier>()),
+            nativeFunctionDef().and(afterSibling<MvFunctionVisibilityModifier>()),
             KeywordCompletionProvider("fun")
         )
         extend(
@@ -116,10 +116,10 @@ class KeywordCompletionContributor : CompletionContributor() {
     }
 
     private fun onStatementBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
-        psiElement(IDENTIFIER).and(MovePsiPatterns.onStatementBeginning(*startWords))
+        psiElement(IDENTIFIER).and(MvPsiPatterns.onStatementBeginning(*startWords))
 
 //    private fun newCodeStatement(): PsiElementPattern.Capture<PsiElement> =
-//        psiElement().inside(psiElement<MoveCodeBlock>())
+//        psiElement().inside(psiElement<MvCodeBlock>())
 
 //    private fun letStatement(): PsiElementPattern.Capture<PsiElement> =
 //        baseCodeStatement().and(onStatementBeginning("let"))
@@ -127,34 +127,34 @@ class KeywordCompletionContributor : CompletionContributor() {
 //
 //    private fun scriptBodyPattern(): PsiElementPattern.Capture<PsiElement> =
 //        psiElement()
-//            .withSuperParent(2, psiElement<MoveScriptDefBlock>())
+//            .withSuperParent(2, psiElement<MvScriptDefBlock>())
 //
 //    private fun functionBodyPattern(): PsiElementPattern.Capture<PsiElement> =
 //        psiElement()
-//            .withSuperParent(2, psiElement<MoveBlock>())
-//            .and(psiElement().withSuperParent(3, psiElement<MoveFunctionDef>()))
+//            .withSuperParent(2, psiElement<MvBlock>())
+//            .and(psiElement().withSuperParent(3, psiElement<MvFunctionDef>()))
 
     //    private fun statementBeginningPattern(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
 //        PlatformPatterns.psiElement(IDENTIFIER)
-//            .and(MovePsiPatterns.onStatementBeginning(*startWords))
+//            .and(MvPsiPatterns.onStatementBeginning(*startWords))
 //
 //    private fun functionDeclarationPattern(): PsiElementPattern.Capture<PsiElement> =
 //        PlatformPatterns.psiElement()
-//            .withParent(psiElement<MoveBlock>())
+//            .withParent(psiElement<MvBlock>())
 //
 //    private fun moduleDeclarationPattern(): PsiElementPattern.Capture<PsiElement> =
 //        PlatformPatterns.psiElement()
-//            .inside(psiElement<MoveModuleDef>())
+//            .inside(psiElement<MvModuleDef>())
 //            .andNot(functionDeclarationPattern())
 //
 //    private fun scriptDeclarationPattern(): PsiElementPattern.Capture<PsiElement> =
 //        PlatformPatterns.psiElement()
-//            .inside(psiElement<MoveScriptDef>())
+//            .inside(psiElement<MvScriptDef>())
 //            .andNot(functionDeclarationPattern())
 //
 //    private fun addressDeclarationPattern(): PsiElementPattern.Capture<PsiElement> =
 //        PlatformPatterns.psiElement()
-//            .inside(psiElement<MoveAddressDef>())
+//            .inside(psiElement<MvAddressDef>())
 //            .andNot(moduleDeclarationPattern())
 //            .andNot(scriptDeclarationPattern())
 //            .andNot(functionDeclarationPattern())

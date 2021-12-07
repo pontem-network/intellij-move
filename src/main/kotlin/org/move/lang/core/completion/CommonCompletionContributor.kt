@@ -3,8 +3,8 @@ package org.move.lang.core.completion
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.psi.PsiElement
-import org.move.lang.MoveElementTypes.COLON
-import org.move.lang.core.MovePsiPatterns
+import org.move.lang.MvElementTypes.COLON
+import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.psi.ext.elementType
 
 class CommonCompletionContributor : CompletionContributor() {
@@ -17,12 +17,12 @@ class CommonCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, StructFieldsCompletionProvider)
         extend(
             CompletionType.BASIC,
-            MovePsiPatterns.ability(),
+            MvPsiPatterns.ability(),
             TraitsCompletionProvider()
         )
     }
 
-    fun extend(type: CompletionType?, provider: MoveCompletionProvider) {
+    fun extend(type: CompletionType?, provider: MvCompletionProvider) {
         extend(type, provider.elementPattern, provider)
     }
 

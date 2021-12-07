@@ -1,13 +1,13 @@
 package org.move.lang.core.psi
 
-interface MoveTypeParametersOwner : MoveElement {
-    val typeParameterList: MoveTypeParameterList?
+interface MvTypeParametersOwner : MvElement {
+    val typeParameterList: MvTypeParameterList?
 }
 
-val MoveTypeParametersOwner.typeParameters: List<MoveTypeParameter>
+val MvTypeParametersOwner.typeParameters: List<MvTypeParameter>
     get() =
         typeParameterList?.typeParameterList.orEmpty()
 
-val MoveTypeParametersOwner.hasTypeParameters: Boolean
+val MvTypeParametersOwner.hasTypeParameters: Boolean
     get() =
         typeParameters.isNotEmpty()

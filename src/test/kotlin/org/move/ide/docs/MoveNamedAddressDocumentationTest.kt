@@ -1,8 +1,8 @@
 package org.move.ide.docs
 
-import org.move.utils.tests.MoveDocumentationProviderProjectTestCase
+import org.move.utils.tests.MvDocumentationProviderProjectTestCase
 
-class MoveNamedAddressDocumentationTest : MoveDocumentationProviderProjectTestCase() {
+class MvNamedAddressDocumentationTest : MvDocumentationProviderProjectTestCase() {
 //    fun `test value of named address accessible from documentation`() = doTestByFileTree(
 //        """
 //    //- Move.toml
@@ -11,7 +11,7 @@ class MoveNamedAddressDocumentationTest : MoveDocumentationProviderProjectTestCa
 //    //- sources/main.move
 //    module Std::Module {}
 //         //^
-//        """, "0xCOFFEE", block = MoveDocumentationProvider::generateDoc
+//        """, "0xCOFFEE", block = MvDocumentationProvider::generateDoc
 //    )
 
     // TODO: check parsing in different test
@@ -34,6 +34,6 @@ class MoveNamedAddressDocumentationTest : MoveDocumentationProviderProjectTestCa
     //- sources/main.move
     module Std::Module {}       
          //^   
-        """, "0xC0FFEE", block = MoveDocumentationProvider::generateDoc
+        """, "0xC0FFEE", block = MvDocumentationProvider::generateDoc
     )
 }

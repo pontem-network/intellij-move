@@ -15,7 +15,7 @@ import java.nio.file.Paths
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-class MoveExecutableSettingsEditor : SettingsEditor<MoveRunConfiguration>() {
+class MvExecutableSettingsEditor : SettingsEditor<MvRunConfiguration>() {
     private val textField = EditorTextField()
 
     val currentWorkingDirectory: Path?
@@ -24,12 +24,12 @@ class MoveExecutableSettingsEditor : SettingsEditor<MoveRunConfiguration>() {
     val workingDirectory: LabeledComponent<TextFieldWithBrowseButton> =
         WorkingDirectoryComponent()
 
-    override fun resetEditorFrom(configuration: MoveRunConfiguration) {
+    override fun resetEditorFrom(configuration: MvRunConfiguration) {
         textField.text = configuration.command
         workingDirectory.component.text = configuration.workingDirectory?.toString().orEmpty()
     }
 
-    override fun applyEditorTo(configuration: MoveRunConfiguration) {
+    override fun applyEditorTo(configuration: MvRunConfiguration) {
         configuration.command = textField.text
         configuration.workingDirectory = currentWorkingDirectory
     }

@@ -4,11 +4,10 @@ import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiBuilderUtil
 import com.intellij.lang.WhitespacesAndCommentsBinder
 import com.intellij.lang.parser.GeneratedParserUtilBase
-import com.intellij.psi.TokenType
 import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
-import org.move.lang.MoveElementTypes.*
+import org.move.lang.MvElementTypes.*
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 

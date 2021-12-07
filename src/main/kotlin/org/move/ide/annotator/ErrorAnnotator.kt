@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
 import org.move.ide.presentation.name
 import org.move.ide.presentation.typeLabel
-import org.move.lang.MoveElementTypes.R_PAREN
+import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.declaredTy
@@ -15,7 +15,7 @@ import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.*
 
-class ErrorAnnotator : MoveAnnotator() {
+class ErrorAnnotator : MvAnnotator() {
     companion object {
         private fun invalidReturnTypeMessage(expectedType: Ty, actualType: Ty): String {
             return "Invalid return type: " +
@@ -24,11 +24,11 @@ class ErrorAnnotator : MoveAnnotator() {
     }
 
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
-        val moveHolder = MoveAnnotationHolder(holder)
-        val visitor = object : MoveVisitor() {
-            override fun visitConstDef(o: MoveConstDef) = checkConstDef(moveHolder, o)
+        val moveHolder = MvAnnotationHolder(holder)
+        val visitor = object : MvVisitor() {
+            override fun visitConstDef(o: MvConstDef) = checkConstDef(moveHolder, o)
 
-            override fun visitIfExpr(o: MoveIfExpr) {
+            override fun visitIfExpr(o: MvIfExpr) {
                 val ifTy = o.returningExpr?.inferExprTy() ?: return
                 val elseExpr = o.elseExpr ?: return
                 val elseTy = elseExpr.inferExprTy()
@@ -42,7 +42,7 @@ class ErrorAnnotator : MoveAnnotator() {
                 }
             }
 
-            override fun visitCondition(o: MoveCondition) {
+            override fun visitCondition(o: MvCondition) {
                 val expr = o.expr ?: return
                 val exprTy = expr.inferExprTy()
                 if (!isCompatible(exprTy, TyBool)) {
@@ -53,19 +53,19 @@ class ErrorAnnotator : MoveAnnotator() {
                 }
             }
 
-            override fun visitFunctionSignature(o: MoveFunctionSignature) =
+            override fun visitFunctionSignature(o: MvFunctionSignature) =
                 checkFunctionSignature(moveHolder, o)
 
-            override fun visitStructSignature(o: MoveStructSignature) {
+            override fun visitStructSignature(o: MvStructSignature) {
                 checkStructSignature(moveHolder, o)
             }
 
-            override fun visitModuleDef(o: MoveModuleDef) = checkModuleDef(moveHolder, o)
+            override fun visitModuleDef(o: MvModuleDef) = checkModuleDef(moveHolder, o)
 
-            override fun visitStructFieldDef(o: MoveStructFieldDef) = checkStructFieldDef(moveHolder, o)
+            override fun visitStructFieldDef(o: MvStructFieldDef) = checkStructFieldDef(moveHolder, o)
 
-            override fun visitCodeBlock(codeBlock: MoveCodeBlock) {
-                if (codeBlock.parent is MoveFunctionDef) {
+            override fun visitCodeBlock(codeBlock: MvCodeBlock) {
+                if (codeBlock.parent is MvFunctionDef) {
                     val returningExpr = codeBlock.returningExpr
                     val expectedReturnType =
                         codeBlock.containingFunction?.functionSignature?.resolvedReturnType ?: return
@@ -82,7 +82,7 @@ class ErrorAnnotator : MoveAnnotator() {
                 }
             }
 
-            override fun visitReturnExpr(o: MoveReturnExpr) {
+            override fun visitReturnExpr(o: MvReturnExpr) {
                 val outerSignature = o.containingFunction?.functionSignature ?: return
                 val expectedReturnType = outerSignature.resolvedReturnType
                 val actualReturnType = o.expr?.inferExprTy() ?: return
@@ -95,7 +95,7 @@ class ErrorAnnotator : MoveAnnotator() {
                 }
             }
 
-            override fun visitCallExpr(o: MoveCallExpr) {
+            override fun visitCallExpr(o: MvCallExpr) {
                 if (o.path.referenceName !in ACQUIRES_BUILTIN_FUNCTIONS) return
 
                 val paramType =
@@ -120,9 +120,9 @@ class ErrorAnnotator : MoveAnnotator() {
                 }
             }
 
-            override fun visitCallArguments(o: MoveCallArguments) = checkCallArguments(moveHolder, o)
+            override fun visitCallArgumentList(o: MvCallArgumentList) = checkCallArgumentList(moveHolder, o)
 
-            override fun visitStructPat(o: MoveStructPat) {
+            override fun visitStructPat(o: MvStructPat) {
                 val nameElement = o.path.referenceNameElement ?: return
                 val refStruct = o.path.maybeStruct ?: return
                 val fieldNames = o.fields.map { it.referenceName }
@@ -131,7 +131,7 @@ class ErrorAnnotator : MoveAnnotator() {
                 )
             }
 
-            override fun visitStructLiteralExpr(o: MoveStructLiteralExpr) {
+            override fun visitStructLitExpr(o: MvStructLitExpr) {
                 val nameElement = o.path.referenceNameElement ?: return
                 val refStruct = o.path.maybeStruct ?: return
                 checkMissingFields(
@@ -139,8 +139,8 @@ class ErrorAnnotator : MoveAnnotator() {
                 )
 
                 val ctx = InferenceContext()
-                for (field in o.structLiteralFieldsBlock.structLiteralFieldList) {
-                    val assignmentExpr = field.structLiteralFieldAssignment?.expr ?: continue
+                for (field in o.structLitFieldsBlock.structLitFieldList) {
+                    val assignmentExpr = field.structLitFieldAssignment?.expr ?: continue
                     val assignmentType = assignmentExpr.inferExprTy(ctx)
                     if (assignmentType is TyUnknown) continue
 
@@ -161,30 +161,30 @@ class ErrorAnnotator : MoveAnnotator() {
                 }
             }
 
-            override fun visitPath(o: MovePath) = checkPath(moveHolder, o)
-//            override fun visitPathWithTypeArgs(o: MovePathWithTypeArgs) {
+            override fun visitPath(o: MvPath) = checkPath(moveHolder, o)
+//            override fun visitPathWithTypeArgs(o: MvPathWithTypeArgs) {
 //                checkPath(moveHolder, o)
 //            }
-//            override fun visitQualPath(o: MovePathOptTypeArguments) = checkQualPath(moveHolder, o)
+//            override fun visitQualPath(o: MvPathOptTypeArguments) = checkQualPath(moveHolder, o)
         }
         element.accept(visitor)
     }
 
-    private fun checkStructSignature(holder: MoveAnnotationHolder, signature: MoveStructSignature) {
+    private fun checkStructSignature(holder: MvAnnotationHolder, signature: MvStructSignature) {
         checkStructSignatureDuplicates(holder, signature)
     }
 
-    private fun checkFunctionSignature(holder: MoveAnnotationHolder, signature: MoveFunctionSignature) {
+    private fun checkFunctionSignature(holder: MvAnnotationHolder, signature: MvFunctionSignature) {
         checkFunctionSignatureDuplicates(holder, signature)
         warnOnBuiltInFunctionName(holder, signature)
     }
 
-    private fun checkModuleDef(holder: MoveAnnotationHolder, mod: MoveModuleDef) {
-//        val moveProject = mod.containingFile.containingMoveProject() ?: return
+    private fun checkModuleDef(holder: MvAnnotationHolder, mod: MvModuleDef) {
+//        val moveProject = mod.containingFile.containingMvProject() ?: return
         val modIdent = Pair(mod.definedAddressRef()?.toAddress(), mod.name)
         val file = mod.containingFile ?: return
         val duplicateIdents =
-            file.descendantsOfType<MoveModuleDef>()
+            file.descendantsOfType<MvModuleDef>()
                 .filter { it.name != null }
                 .groupBy { Pair(it.definedAddressRef()?.toAddress(), it.name) }
                 .filter { it.value.size > 1 }
@@ -197,12 +197,12 @@ class ErrorAnnotator : MoveAnnotator() {
 
 //        val addressRef = mod.definedAddressRef()
 //        if (addressRef == null) {
-//            val addressDef = (mod.parent as? MoveAddressDef)?.addressRef
+//            val addressDef = (mod.parent as? MvAddressDef)?.addressRef
 //        }
 //        checkDuplicates(holder, mod)
     }
 
-    private fun checkStructFieldDef(holder: MoveAnnotationHolder, structField: MoveStructFieldDef) {
+    private fun checkStructFieldDef(holder: MvAnnotationHolder, structField: MvStructFieldDef) {
         checkDuplicates(holder, structField)
 
         val signature = structField.structDef?.structSignature ?: return
@@ -224,12 +224,12 @@ class ErrorAnnotator : MoveAnnotator() {
         }
     }
 
-    private fun checkConstDef(holder: MoveAnnotationHolder, const: MoveConstDef) {
+    private fun checkConstDef(holder: MvAnnotationHolder, const: MvConstDef) {
         val binding = const.bindingPat ?: return
         val owner = const.parent?.parent ?: return
         val allBindings = when (owner) {
-            is MoveModuleDef -> owner.constBindings()
-            is MoveScriptDef -> owner.constBindings()
+            is MvModuleDef -> owner.constBindings()
+            is MvScriptDef -> owner.constBindings()
             else -> return
         }
         checkDuplicates(holder, binding, allBindings.asSequence())
@@ -237,19 +237,19 @@ class ErrorAnnotator : MoveAnnotator() {
 }
 
 private fun checkMissingFields(
-    holder: MoveAnnotationHolder,
+    holder: MvAnnotationHolder,
     target: PsiElement,
     providedFieldNames: Set<String>,
-    referredStruct: MoveStructDef,
+    referredStruct: MvStructDef,
 ) {
     if ((referredStruct.fieldNames.toSet() - providedFieldNames).isNotEmpty()) {
         holder.createErrorAnnotation(target, "Some fields are missing")
     }
 }
 
-private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCallArguments) {
-    val callExpr = arguments.parent as? MoveCallExpr ?: return
-    val signature = callExpr.path.reference?.resolve() as? MoveFunctionSignature ?: return
+private fun checkCallArgumentList(holder: MvAnnotationHolder, arguments: MvCallArgumentList) {
+    val callExpr = arguments.parent as? MvCallExpr ?: return
+    val signature = callExpr.path.reference?.resolve() as? MvFunctionSignature ?: return
 
     val expectedCount = signature.parameters.size
     val realCount = arguments.exprList.size
@@ -293,7 +293,7 @@ private fun checkCallArguments(holder: MoveAnnotationHolder, arguments: MoveCall
     }
 }
 
-private fun checkPath(holder: MoveAnnotationHolder, path: MovePath) {
+private fun checkPath(holder: MvAnnotationHolder, path: MvPath) {
     val identifier = path.identifier ?: return
 
     val typeArguments = path.typeArguments
@@ -321,13 +321,13 @@ private fun checkPath(holder: MoveAnnotationHolder, path: MovePath) {
 
     val name = referred.name ?: return
     when {
-        referred is MoveFunctionSignature
+        referred is MvFunctionSignature
                 && name in BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE
                 && typeArguments.isEmpty() -> {
             holder.createErrorAnnotation(path, "Missing resource type argument")
             return
         }
-        referred is MoveTypeParametersOwner -> {
+        referred is MvTypeParametersOwner -> {
             val expectedCount = referred.typeParameters.size
             val realCount = typeArguments.size
 
@@ -363,8 +363,8 @@ private fun checkPath(holder: MoveAnnotationHolder, path: MovePath) {
 }
 
 private fun checkHasRequiredAbilities(
-    holder: MoveAnnotationHolder,
-    element: MoveElement,
+    holder: MvAnnotationHolder,
+    element: MvElement,
     elementTy: Ty,
     typeParamType: TyTypeParameter
 ) {
@@ -386,9 +386,9 @@ private fun checkHasRequiredAbilities(
 }
 
 private fun checkDuplicates(
-    holder: MoveAnnotationHolder,
-    element: MoveNameIdentifierOwner,
-    scopeNamedChildren: Sequence<MoveNamedElement> = element.parent.namedChildren(),
+    holder: MvAnnotationHolder,
+    element: MvNameIdentifierOwner,
+    scopeNamedChildren: Sequence<MvNamedElement> = element.parent.namedChildren(),
 ) {
     val duplicateNamedChildren = getDuplicatedNamedChildren(scopeNamedChildren)
     if (element.name !in duplicateNamedChildren.map { it.name }) {
@@ -399,8 +399,8 @@ private fun checkDuplicates(
 }
 
 private fun checkFunctionSignatureDuplicates(
-    holder: MoveAnnotationHolder,
-    fnSignature: MoveFunctionSignature,
+    holder: MvAnnotationHolder,
+    fnSignature: MvFunctionSignature,
 ) {
     val fnSignatures =
         fnSignature.module?.allFnSignatures()
@@ -416,8 +416,8 @@ private fun checkFunctionSignatureDuplicates(
 }
 
 private fun checkStructSignatureDuplicates(
-    holder: MoveAnnotationHolder,
-    structSignature: MoveStructSignature,
+    holder: MvAnnotationHolder,
+    structSignature: MvStructSignature,
 ) {
     val duplicateSignatures = getDuplicates(structSignature.module.structSignatures().asSequence())
     if (structSignature.name !in duplicateSignatures.map { it.name }) {
@@ -427,7 +427,7 @@ private fun checkStructSignatureDuplicates(
     holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${structSignature.name}`")
 }
 
-private fun getDuplicates(elements: Sequence<MoveNamedElement>): Set<MoveNamedElement> {
+private fun getDuplicates(elements: Sequence<MvNamedElement>): Set<MvNamedElement> {
     return elements
         .groupBy { it.name }
         .map { it.value }
@@ -436,7 +436,7 @@ private fun getDuplicates(elements: Sequence<MoveNamedElement>): Set<MoveNamedEl
         .toSet()
 }
 
-private fun getDuplicatedNamedChildren(namedChildren: Sequence<MoveNamedElement>): Set<MoveNamedElement> {
+private fun getDuplicatedNamedChildren(namedChildren: Sequence<MvNamedElement>): Set<MvNamedElement> {
     val notNullNamedChildren = namedChildren.filter { it.name != null }
     return notNullNamedChildren
         .groupBy { it.name }
@@ -446,11 +446,11 @@ private fun getDuplicatedNamedChildren(namedChildren: Sequence<MoveNamedElement>
         .toSet()
 }
 
-private fun PsiElement.namedChildren(): Sequence<MoveNamedElement> {
-    return this.children.filterIsInstance<MoveNamedElement>().asSequence()
+private fun PsiElement.namedChildren(): Sequence<MvNamedElement> {
+    return this.children.filterIsInstance<MvNamedElement>().asSequence()
 }
 
-private fun warnOnBuiltInFunctionName(holder: MoveAnnotationHolder, element: MoveNamedElement) {
+private fun warnOnBuiltInFunctionName(holder: MvAnnotationHolder, element: MvNamedElement) {
     val nameElement = element.nameElement ?: return
     val name = element.name ?: return
     if (name in BUILTIN_FUNCTIONS) {

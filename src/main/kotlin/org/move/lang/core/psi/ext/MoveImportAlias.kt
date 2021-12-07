@@ -1,10 +1,10 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import org.move.lang.core.psi.MoveImportAlias
-import org.move.lang.core.psi.MoveModuleImport
-import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
+import org.move.lang.core.psi.MvImportAlias
+import org.move.lang.core.psi.MvModuleImport
+import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 
-abstract class MoveImportAliasMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
-                                                     MoveImportAlias {
+abstract class MvImportAliasMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
+                                                     MvImportAlias {
 }

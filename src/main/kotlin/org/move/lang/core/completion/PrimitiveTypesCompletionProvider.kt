@@ -8,16 +8,16 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
 import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
-import org.move.lang.core.MovePsiPatterns
+import org.move.lang.core.MvPsiPatterns
 
-object PrimitiveTypesCompletionProvider : MoveCompletionProvider() {
+object PrimitiveTypesCompletionProvider : MvCompletionProvider() {
 
     private val primitives: List<String> =
         PRIMITIVE_TYPE_IDENTIFIERS.toList() + BUILTIN_TYPE_IDENTIFIERS.toList()
 
     override val elementPattern: ElementPattern<out PsiElement>
         get() =
-            MovePsiPatterns.nameTypeIdentifier()
+            MvPsiPatterns.nameTypeIdentifier()
 
     override fun addCompletions(
         parameters: CompletionParameters,

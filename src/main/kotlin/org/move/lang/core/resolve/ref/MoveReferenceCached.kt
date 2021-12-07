@@ -2,14 +2,14 @@ package org.move.lang.core.resolve.ref
 
 import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.impl.source.resolve.ResolveCache
-import org.move.lang.core.psi.MoveNamedElement
-import org.move.lang.core.psi.MoveReferenceElement
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.MvReferenceElement
 
-abstract class MoveReferenceCached<T : MoveReferenceElement>(element: T) : MoveReferenceBase<T>(element) {
-    abstract fun resolveInner(): MoveNamedElement?
+abstract class MvReferenceCached<T : MvReferenceElement>(element: T) : MvReferenceBase<T>(element) {
+    abstract fun resolveInner(): MvNamedElement?
 
-    override fun resolve(): MoveNamedElement? {
-        return resolveWithCache()?.element as? MoveNamedElement
+    override fun resolve(): MvNamedElement? {
+        return resolveWithCache()?.element as? MvNamedElement
     }
 
     private fun resolveWithCache() =
@@ -17,23 +17,23 @@ abstract class MoveReferenceCached<T : MoveReferenceElement>(element: T) : MoveR
             .getInstance(element.project)
             .resolveWithCaching(this, Resolver, true, false)
 
-    private object Resolver : ResolveCache.AbstractResolver<MoveReferenceCached<*>, PsiElementResolveResult> {
+    private object Resolver : ResolveCache.AbstractResolver<MvReferenceCached<*>, PsiElementResolveResult> {
         override fun resolve(
-            ref: MoveReferenceCached<*>,
+            ref: MvReferenceCached<*>,
             incompleteCode: Boolean,
         ): PsiElementResolveResult? = ref.resolveInner()?.let { PsiElementResolveResult(it) }
 
     }
 }
 
-//abstract class MoveReferenceCached<T : MoveReferenceElement>(
+//abstract class MvReferenceCached<T : MvReferenceElement>(
 //    element: T,
-//) : MoveReferenceBase<T>(element) {
+//) : MvReferenceBase<T>(element) {
 //
-//    abstract fun resolveInner(): List<MoveNamedElement>
+//    abstract fun resolveInner(): List<MvNamedElement>
 //
-//    override fun resolve(): MoveNamedElement? {
-//        return cachedMultiResolve().firstOrNull() as MoveNamedElement?
+//    override fun resolve(): MvNamedElement? {
+//        return cachedMultiResolve().firstOrNull() as MvNamedElement?
 //    }
 //
 //    private fun cachedMultiResolve(): List<PsiElementResolveResult> {
@@ -43,9 +43,9 @@ abstract class MoveReferenceCached<T : MoveReferenceElement>(element: T) : MoveR
 //            .orEmpty()
 //    }
 //
-//    private object Resolver : ResolveCache.AbstractResolver<MoveReferenceCached<*>, List<PsiElementResolveResult>> {
+//    private object Resolver : ResolveCache.AbstractResolver<MvReferenceCached<*>, List<PsiElementResolveResult>> {
 //        override fun resolve(
-//            ref: MoveReferenceCached<*>,
+//            ref: MvReferenceCached<*>,
 //            incompleteCode: Boolean,
 //        ): List<PsiElementResolveResult> = ref.resolveInner().map { PsiElementResolveResult(it) }
 //

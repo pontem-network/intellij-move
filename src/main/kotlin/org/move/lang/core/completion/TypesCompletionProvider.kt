@@ -5,18 +5,18 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.MovePsiPatterns
-import org.move.lang.core.psi.MoveModuleDef
-import org.move.lang.core.psi.MovePathType
+import org.move.lang.core.MvPsiPatterns
+import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvPathType
 import org.move.lang.core.psi.ext.isSpecElement
 import org.move.lang.core.resolve.processNestedScopesUpwards
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
 
-object TypesCompletionProvider : MoveCompletionProvider() {
+object TypesCompletionProvider : MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
-        get() = MovePsiPatterns.pathType()
+        get() = MvPsiPatterns.pathType()
 
     override fun addCompletions(
         parameters: CompletionParameters,
@@ -26,14 +26,14 @@ object TypesCompletionProvider : MoveCompletionProvider() {
         val maybePath = parameters.position.parent.parent
         val maybeQualPathType = maybePath.parent
         val refElement =
-            maybeQualPathType as? MovePathType
-                ?: maybeQualPathType.parent as MovePathType
+            maybeQualPathType as? MvPathType
+                ?: maybeQualPathType.parent as MvPathType
 
         if (parameters.position !== refElement.path.referenceNameElement) return
 
         val moduleRef = refElement.path.pathIdent.moduleRef
         if (moduleRef != null) {
-            val module = moduleRef.reference?.resolve() as? MoveModuleDef ?: return
+            val module = moduleRef.reference?.resolve() as? MvModuleDef ?: return
             val vs = setOf(Visibility.Public())
             val ns = setOf(Namespace.TYPE)
             processModuleItems(module, vs, ns) {

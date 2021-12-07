@@ -3,17 +3,17 @@ package org.move.utils.tests
 import com.intellij.codeInsight.documentation.DocumentationManager
 import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
-import org.move.ide.docs.MoveDocumentationProvider
-import org.move.lang.core.psi.MoveElement
+import org.move.ide.docs.MvDocumentationProvider
+import org.move.lang.core.psi.MvElement
 import org.move.openapiext.findVirtualFile
 import org.move.utils.tests.base.findElementAndOffsetInEditor
 
-abstract class MoveDocumentationProviderProjectTestCase: MoveProjectTestCase() {
+abstract class MvDocumentationProviderProjectTestCase: MvProjectTestCase() {
     protected fun doTestByFileTree(
         @Language("Move") code: String,
         @Language("Html") expected: String?,
         findElement: () -> Pair<PsiElement, Int> = { myFixture.findElementAndOffsetInEditor() },
-        block: MoveDocumentationProvider.(PsiElement, PsiElement?) -> String?
+        block: MvDocumentationProvider.(PsiElement, PsiElement?) -> String?
     ) {
         val testProject = testProjectFromFileTree(code)
         val fileWithCaret =
@@ -23,11 +23,11 @@ abstract class MoveDocumentationProviderProjectTestCase: MoveProjectTestCase() {
         myFixture.configureFromExistingVirtualFile(fileWithCaret)
 
 //        val (originalElement, offset) = findElement()
-        val (originalElement, offset) = myFixture.findElementAndOffsetInEditor<MoveElement>()
+        val (originalElement, offset) = myFixture.findElementAndOffsetInEditor<MvElement>()
         val element = DocumentationManager.getInstance(project)
             .findTargetElement(myFixture.editor, offset, myFixture.file, originalElement)!!
 
-        val actual = MoveDocumentationProvider().block(element, originalElement)?.trim()
+        val actual = MvDocumentationProvider().block(element, originalElement)?.trim()
         if (expected == null) {
             check(actual == null) { "Expected null, got `$actual`" }
         } else {
@@ -37,12 +37,12 @@ abstract class MoveDocumentationProviderProjectTestCase: MoveProjectTestCase() {
     }
 }
 
-abstract class MoveDocumentationProviderTestCase : MoveTestBase() {
+abstract class MvDocumentationProviderTestCase : MvTestBase() {
     protected fun doTest(
         @Language("Move") code: String,
         @Language("Html") expected: String?,
         findElement: () -> Pair<PsiElement, Int> = { myFixture.findElementAndOffsetInEditor() },
-        block: MoveDocumentationProvider.(PsiElement, PsiElement?) -> String?
+        block: MvDocumentationProvider.(PsiElement, PsiElement?) -> String?
     ) {
         @Suppress("NAME_SHADOWING")
         doTest(code, expected, findElement, block) { actual, expected ->
@@ -54,7 +54,7 @@ abstract class MoveDocumentationProviderTestCase : MoveTestBase() {
 //        @Language("Move") code: String,
 //        expected: Regex?,
 //        findElement: () -> Pair<PsiElement, Int> = { myFixture.findElementAndOffsetInEditor() },
-//        block: MoveDocumentationProvider.(PsiElement, PsiElement?) -> String?
+//        block: MvDocumentationProvider.(PsiElement, PsiElement?) -> String?
 //    ) {
 //        @Suppress("NAME_SHADOWING")
 //        doTest(code, expected, findElement, block) { actual, expected ->
@@ -66,7 +66,7 @@ abstract class MoveDocumentationProviderTestCase : MoveTestBase() {
         @Language("Move") code: String,
         expected: T?,
         findElement: () -> Pair<PsiElement, Int> = { myFixture.findElementAndOffsetInEditor() },
-        block: MoveDocumentationProvider.(PsiElement, PsiElement?) -> String?,
+        block: MvDocumentationProvider.(PsiElement, PsiElement?) -> String?,
         check: (String, T) -> Unit
     ) {
         InlineFile(myFixture, code, "main.move")
@@ -75,7 +75,7 @@ abstract class MoveDocumentationProviderTestCase : MoveTestBase() {
         val element = DocumentationManager.getInstance(project)
             .findTargetElement(myFixture.editor, offset, myFixture.file, originalElement)!!
 
-        val actual = MoveDocumentationProvider().block(element, originalElement)?.trim()
+        val actual = MvDocumentationProvider().block(element, originalElement)?.trim()
         if (expected == null) {
             check(actual == null) { "Expected null, got `$actual`" }
         } else {

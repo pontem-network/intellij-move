@@ -1,10 +1,10 @@
 package org.move.ide.hints
 
-import org.move.lang.core.psi.MoveTypeArgumentList
+import org.move.lang.core.psi.MvTypeArgumentList
 import org.move.utils.tests.ParameterInfoHandlerTestCase
 
 class TypeParameterInfoHandlerTest :
-    ParameterInfoHandlerTestCase<MoveTypeArgumentList, TypeParamsDescription>(TypeParameterInfoHandler()) {
+    ParameterInfoHandlerTestCase<MvTypeArgumentList, TypeParamsDescription>(TypeParameterInfoHandler()) {
 
     fun `test struct as type`() = checkByText("""
         module M {

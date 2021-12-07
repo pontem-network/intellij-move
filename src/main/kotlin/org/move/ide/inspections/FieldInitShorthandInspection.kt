@@ -2,15 +2,15 @@ package org.move.ide.inspections
 
 import com.intellij.codeInspection.*
 import com.intellij.openapi.project.Project
-import org.move.lang.core.psi.MoveRefExpr
-import org.move.lang.core.psi.MoveStructLiteralField
-import org.move.lang.core.psi.MoveVisitor
+import org.move.lang.core.psi.MvRefExpr
+import org.move.lang.core.psi.MvStructLitField
+import org.move.lang.core.psi.MvVisitor
 
-class FieldInitShorthandInspection : MoveLocalInspectionTool() {
-    override fun buildMoveVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MoveVisitor() {
-        override fun visitStructLiteralField(o: MoveStructLiteralField) {
-            val assignment = o.structLiteralFieldAssignment?.expr ?: return
-            if (!(assignment is MoveRefExpr && assignment.text == o.identifier.text)) return
+class FieldInitShorthandInspection : MvLocalInspectionTool() {
+    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
+        override fun visitStructLitField(o: MvStructLitField) {
+            val assignment = o.structLitFieldAssignment?.expr ?: return
+            if (!(assignment is MvRefExpr && assignment.text == o.identifier.text)) return
             holder.registerProblem(
                 o,
                 "Expression can be simplified",
@@ -19,7 +19,7 @@ class FieldInitShorthandInspection : MoveLocalInspectionTool() {
                     override fun getFamilyName(): String = "Use initialization shorthand"
 
                     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-                        applyShorthandInit(descriptor.psiElement as MoveStructLiteralField)
+                        applyShorthandInit(descriptor.psiElement as MvStructLitField)
                     }
                 }
             )
@@ -27,8 +27,8 @@ class FieldInitShorthandInspection : MoveLocalInspectionTool() {
     }
 
     companion object {
-        fun applyShorthandInit(field: MoveStructLiteralField) {
-            field.structLiteralFieldAssignment?.delete()
+        fun applyShorthandInit(field: MvStructLitField) {
+            field.structLitFieldAssignment?.delete()
         }
     }
 }

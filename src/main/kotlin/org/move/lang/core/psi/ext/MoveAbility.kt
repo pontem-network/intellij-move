@@ -1,9 +1,9 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.MoveAbility
+import org.move.lang.core.psi.MvAbility
 import org.move.lang.core.types.ty.Ability
 
-val MoveAbility.ability: Ability?
+val MvAbility.ability: Ability?
     get() =
         when (this.text) {
             "copy" -> Ability.COPY

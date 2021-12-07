@@ -1,8 +1,8 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.MoveSchemaSpecDef
-import org.move.lang.core.psi.MoveStructDef
-import org.move.lang.core.psi.MoveTypeParameter
+import org.move.lang.core.psi.MvSchemaSpecDef
+import org.move.lang.core.psi.MvStructDef
+import org.move.lang.core.psi.MvTypeParameter
 
-val MoveSchemaSpecDef.typeParams: List<MoveTypeParameter>
+val MvSchemaSpecDef.typeParams: List<MvTypeParameter>
     get() = typeParameterList?.typeParameterList.orEmpty()

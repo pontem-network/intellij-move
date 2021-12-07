@@ -1,8 +1,8 @@
 package org.move.ide.formatter
 
-import org.move.utils.tests.MoveFormatterTestCase
+import org.move.utils.tests.MvFormatterTestCase
 
-class FormatterTest : MoveFormatterTestCase() {
+class FormatterTest : MvFormatterTestCase() {
     fun `test blank lines`() = doTest()
     fun `test address block`() = doTest()
     fun `test structs`() = doTest()

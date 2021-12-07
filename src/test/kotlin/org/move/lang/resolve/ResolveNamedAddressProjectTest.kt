@@ -1,6 +1,6 @@
 package org.move.lang.resolve
 
-import org.move.lang.core.psi.MoveNamedAddress
+import org.move.lang.core.psi.MvNamedAddress
 import org.move.utils.tests.resolve.ResolveProjectTestCase
 import org.toml.lang.psi.TomlKeySegment
 
@@ -15,7 +15,7 @@ class ResolveNamedAddressProjectTest : ResolveProjectTestCase() {
         module Std::Module {}
              //^ 
         """,
-        refClass = MoveNamedAddress::class.java,
+        refClass = MvNamedAddress::class.java,
         targetClass = TomlKeySegment::class.java
     )
 
@@ -32,7 +32,7 @@ class ResolveNamedAddressProjectTest : ResolveProjectTestCase() {
         module Std::Module {}
              //^ 
         """,
-        refClass = MoveNamedAddress::class.java,
+        refClass = MvNamedAddress::class.java,
         targetClass = TomlKeySegment::class.java
     )
 }

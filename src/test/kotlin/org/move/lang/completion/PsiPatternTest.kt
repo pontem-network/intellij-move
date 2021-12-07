@@ -3,20 +3,20 @@ package org.move.lang.completion
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
-import org.move.lang.core.MovePsiPatterns
+import org.move.lang.core.MvPsiPatterns
 import org.move.utils.tests.InlineFile
-import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
 
-class PsiPatternTest : MoveTestBase() {
+class PsiPatternTest : MvTestBase() {
     fun `test on stmt beginning`() = testPattern("""
         //^
-    """, MovePsiPatterns.onStatementBeginning)
+    """, MvPsiPatterns.onStatementBeginning)
 
     fun `test on stmt beginning with words`() = testPattern("""
         word2
             //^
-    """, MovePsiPatterns.onStatementBeginning("word1", "word2"))
+    """, MvPsiPatterns.onStatementBeginning("word1", "word2"))
 
     fun `test on stmt beginning after other statement`() = testPattern("""
         script {
@@ -25,27 +25,27 @@ class PsiPatternTest : MoveTestBase() {
                         //^
             }
         }
-    """, MovePsiPatterns.onStatementBeginning)
+    """, MvPsiPatterns.onStatementBeginning)
 
     fun `test on stmt beginning after block`() = testPattern("""
         module Foo {}
                    //^
-    """, MovePsiPatterns.onStatementBeginning)
+    """, MvPsiPatterns.onStatementBeginning)
 
     fun `test on stmt beginning ignores comments`() = testPattern("""
         script {} /* three */    /* it's greater than two */
                             //^
-    """, MovePsiPatterns.onStatementBeginning)
+    """, MvPsiPatterns.onStatementBeginning)
 
     fun `test on stmt beginning negative in middle of other stmt`() = testPatternNegative("""
         module Abc {}
                 //^
-    """, MovePsiPatterns.onStatementBeginning)
+    """, MvPsiPatterns.onStatementBeginning)
 
     fun `test on stmt beginning negative when not correct startword`() = testPatternNegative("""
         module 
              //^
-    """, MovePsiPatterns.onStatementBeginning("script"))
+    """, MvPsiPatterns.onStatementBeginning("script"))
 
     fun `test code statement`() = testPattern("""
         module M {
@@ -54,7 +54,7 @@ class PsiPatternTest : MoveTestBase() {
                //^    
             }
         }
-    """, MovePsiPatterns.codeStatement())
+    """, MvPsiPatterns.codeStatement())
 
     fun `test code statement nested`() = testPattern("""
         module M {
@@ -65,7 +65,7 @@ class PsiPatternTest : MoveTestBase() {
                 }}}
             }
         }
-    """, MovePsiPatterns.codeStatement())
+    """, MvPsiPatterns.codeStatement())
 
     fun `test borrow type`() = testPattern("""
         script {
@@ -73,7 +73,7 @@ class PsiPatternTest : MoveTestBase() {
                        //^
             }
         }
-    """, MovePsiPatterns.pathType())
+    """, MvPsiPatterns.pathType())
 
     private inline fun <reified T : PsiElement> testPattern(
         @Language("Move") code: String,

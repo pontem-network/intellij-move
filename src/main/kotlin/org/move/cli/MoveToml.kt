@@ -24,7 +24,7 @@ data class MoveTomlPackageTable(
 
 class MoveToml(
     val project: Project,
-    // TODO: change into VirtualFile and move to MoveProject
+    // TODO: change into VirtualFile and move to MvProject
 //    val root: Path,
     val tomlFile: TomlFile?,
     val packageTable: MoveTomlPackageTable?,

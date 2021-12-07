@@ -2,22 +2,22 @@ package org.move.ide.inspections.lints
 
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
-import org.move.ide.inspections.MoveLocalInspectionTool
-import org.move.lang.core.psi.MoveBindingPat
-import org.move.lang.core.psi.MoveConstDef
-import org.move.lang.core.psi.MoveStructSignature
-import org.move.lang.core.psi.MoveVisitor
+import org.move.ide.inspections.MvLocalInspectionTool
+import org.move.lang.core.psi.MvBindingPat
+import org.move.lang.core.psi.MvConstDef
+import org.move.lang.core.psi.MvStructSignature
+import org.move.lang.core.psi.MvVisitor
 
-abstract class MoveNamingInspection(private val elementTitle: String) : MoveLocalInspectionTool() {
+abstract class MvNamingInspection(private val elementTitle: String) : MvLocalInspectionTool() {
 
     override fun getDisplayName() = "$elementTitle naming convention"
 
     override val isSyntaxOnly: Boolean = true
 }
 
-class MoveConstNamingInspection : MoveNamingInspection("Constant") {
-    override fun buildMoveVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MoveVisitor() {
-        override fun visitConstDef(o: MoveConstDef) {
+class MvConstNamingInspection : MvNamingInspection("Constant") {
+    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
+        override fun visitConstDef(o: MvConstDef) {
             val ident = o.bindingPat?.identifier ?: return
             val name = ident.text
             if (!name.startsWithUpperCaseLetter()) {
@@ -30,9 +30,9 @@ class MoveConstNamingInspection : MoveNamingInspection("Constant") {
     }
 }
 
-class MoveStructNamingInspection: MoveNamingInspection("Struct") {
-    override fun buildMoveVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MoveVisitor() {
-        override fun visitStructSignature(o: MoveStructSignature) {
+class MvStructNamingInspection: MvNamingInspection("Struct") {
+    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
+        override fun visitStructSignature(o: MvStructSignature) {
             val ident = o.identifier ?: return
             val name = ident.text
             if (!name.startsWithUpperCaseLetter()) {
@@ -45,11 +45,11 @@ class MoveStructNamingInspection: MoveNamingInspection("Struct") {
     }
 }
 
-class MoveLocalBindingNamingInspection: MoveNamingInspection("Local variable") {
-    override fun buildMoveVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MoveVisitor() {
-        override fun visitBindingPat(o: MoveBindingPat) {
+class MvLocalBindingNamingInspection: MvNamingInspection("Local variable") {
+    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
+        override fun visitBindingPat(o: MvBindingPat) {
             // filter out constants
-            if (o.parent is MoveConstDef) return
+            if (o.parent is MvConstDef) return
 
             val ident = o.identifier
             val name = ident.text

@@ -8,7 +8,7 @@ import org.intellij.lang.annotations.Language
 import org.move.openapiext.findVirtualFile
 import org.move.utils.tests.base.TestCase
 
-abstract class MoveProjectTestCase : CodeInsightFixtureTestCase<ModuleFixtureBuilder<*>>() {
+abstract class MvProjectTestCase : CodeInsightFixtureTestCase<ModuleFixtureBuilder<*>>() {
     override fun getTestName(lowercaseFirstLetter: Boolean): String {
         val camelCase = super.getTestName(lowercaseFirstLetter)
         return TestCase.camelOrWordsToSnake(camelCase)
@@ -18,7 +18,7 @@ abstract class MoveProjectTestCase : CodeInsightFixtureTestCase<ModuleFixtureBui
         val fileTree = fileTreeFromText(code)
         val rootDirectory = myModule.rootManager.contentRoots.first()
         return fileTree.prepareTestProject(myFixture.project, rootDirectory)
-//        MoveExecutable(myFixture.project).build(rootDirectory.toNioPath())
+//        MvExecutable(myFixture.project).build(rootDirectory.toNioPath())
 //        return testProject
     }
 

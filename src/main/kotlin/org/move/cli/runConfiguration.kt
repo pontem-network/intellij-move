@@ -7,23 +7,23 @@ import com.intellij.execution.configurations.SimpleConfigurationType
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NotNullLazyValue
-import org.move.ide.MoveIcons
+import org.move.ide.MvIcons
 import org.move.settings.moveExecutablePathValue
 import javax.swing.Icon
 
-class MoveRunConfigurationType :
+class MvRunConfigurationType :
     SimpleConfigurationType(
         "MoveRunConfiguration",
         "Move",
         "Move command execution",
-        NotNullLazyValue.createConstantValue(MoveIcons.MOVE)
+        NotNullLazyValue.createConstantValue(MvIcons.MOVE)
     ) {
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return MoveRunConfiguration(project, this)
+        return MvRunConfiguration(project, this)
     }
 }
 
-class MoveRunConfiguration(
+class MvRunConfiguration(
     project: Project,
     factory: ConfigurationFactory,
 ) : SubcommandRunConfigurationBase("Move", project, factory) {
@@ -31,6 +31,6 @@ class MoveRunConfiguration(
     override fun pathToExecutable(): String = project.moveExecutablePathValue
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
-        return MoveExecutableSettingsEditor()
+        return MvExecutableSettingsEditor()
     }
 }

@@ -1,8 +1,8 @@
 package org.move.ide
 
-import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.MvTestBase
 
-class FoldingBuilderTest: MoveTestBase() {
+class FoldingBuilderTest: MvTestBase() {
     override val dataPath = "org/move/ide/folding.fixtures"
 
     fun `test script`() = doTest()

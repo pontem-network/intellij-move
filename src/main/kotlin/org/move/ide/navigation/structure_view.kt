@@ -10,15 +10,15 @@ import com.intellij.openapi.ui.Queryable
 import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.lang.MoveFile
-import org.move.lang.core.psi.MoveAddressDef
-import org.move.lang.core.psi.MoveModuleDef
+import org.move.lang.MvFile
+import org.move.lang.core.psi.MvAddressDef
+import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.functionSignatures
 import org.move.lang.core.psi.ext.modules
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.openapiext.common.isUnitTestMode
 
-class MoveStructureViewElement(val element: NavigatablePsiElement) : StructureViewTreeElement, Queryable {
+class MvStructureViewElement(val element: NavigatablePsiElement) : StructureViewTreeElement, Queryable {
     override fun navigate(requestFocus: Boolean) {
         return element.navigate(requestFocus)
     }
@@ -37,10 +37,10 @@ class MoveStructureViewElement(val element: NavigatablePsiElement) : StructureVi
 
     override fun getChildren(): Array<TreeElement> {
         return when (element) {
-            is MoveFile -> {
+            is MvFile -> {
                 val elements =
                     PsiTreeUtil
-                        .getChildrenOfTypeAsList(element, MoveModuleDef::class.java)
+                        .getChildrenOfTypeAsList(element, MvModuleDef::class.java)
                         .toMutableList<NavigatablePsiElement>()
                 for (addressBlock in element.addressBlocks()) {
                     elements.addAll(addressBlock.moduleDefList)
@@ -49,15 +49,15 @@ class MoveStructureViewElement(val element: NavigatablePsiElement) : StructureVi
                     elements.addAll(scriptBlock.functionDefList
                                         .mapNotNull { it.functionSignature })
                 }
-                elements.map { MoveStructureViewElement(it) }.toTypedArray()
+                elements.map { MvStructureViewElement(it) }.toTypedArray()
             }
-            is MoveAddressDef -> {
+            is MvAddressDef -> {
                 val modules = element.modules()
-                modules.map { MoveStructureViewElement(it) }.toTypedArray()
+                modules.map { MvStructureViewElement(it) }.toTypedArray()
             }
-            is MoveModuleDef -> {
+            is MvModuleDef -> {
                 val allFunctions = element.functionSignatures(Visibility.Internal())
-                allFunctions.map { MoveStructureViewElement(it) }.toTypedArray()
+                allFunctions.map { MvStructureViewElement(it) }.toTypedArray()
             }
             else -> emptyArray()
         }
@@ -79,8 +79,8 @@ class MoveStructureViewElement(val element: NavigatablePsiElement) : StructureVi
     }
 }
 
-class MoveStructureViewModel(psiFile: PsiFile) :
-    StructureViewModelBase(psiFile, MoveStructureViewElement(psiFile)),
+class MvStructureViewModel(psiFile: PsiFile) :
+    StructureViewModelBase(psiFile, MvStructureViewElement(psiFile)),
     StructureViewModel.ElementInfoProvider {
 
     override fun isAlwaysShowsPlus(element: StructureViewTreeElement?): Boolean {
@@ -93,11 +93,11 @@ class MoveStructureViewModel(psiFile: PsiFile) :
 
 }
 
-class MoveStructureViewBuilderFactory : PsiStructureViewFactory {
+class MvStructureViewBuilderFactory : PsiStructureViewFactory {
     override fun getStructureViewBuilder(psiFile: PsiFile): StructureViewBuilder {
         return object : TreeBasedStructureViewBuilder() {
             override fun createStructureViewModel(editor: Editor?): StructureViewModel {
-                return MoveStructureViewModel(psiFile)
+                return MvStructureViewModel(psiFile)
             }
         }
     }

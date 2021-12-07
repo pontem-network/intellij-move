@@ -1,8 +1,8 @@
 package org.move.ide.typing
 
-import org.move.utils.tests.MoveTypingTestCase
+import org.move.utils.tests.MvTypingTestCase
 
-class EnterInLineCommentHandlerTest: MoveTypingTestCase() {
+class EnterInLineCommentHandlerTest: MvTypingTestCase() {
     override val dataPath = "org/move/ide/typing/lineComment.fixtures"
 
     fun `test in outer doc comment`() = doTestByText("""

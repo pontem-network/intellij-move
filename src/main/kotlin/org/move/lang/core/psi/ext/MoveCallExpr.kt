@@ -1,15 +1,15 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.MoveCallExpr
-import org.move.lang.core.psi.MoveExpr
-import org.move.lang.core.psi.MoveTypeArgument
+import org.move.lang.core.psi.MvCallExpr
+import org.move.lang.core.psi.MvExpr
+import org.move.lang.core.psi.MvTypeArgument
 
-val MoveCallExpr.typeArguments: List<MoveTypeArgument>
+val MvCallExpr.typeArguments: List<MvTypeArgument>
     get() {
         return this.path.typeArguments
     }
 
-val MoveCallExpr.arguments: List<MoveExpr>
+val MvCallExpr.arguments: List<MvExpr>
     get() {
-        return this.callArguments?.exprList.orEmpty()
+        return this.callArgumentList?.exprList.orEmpty()
     }

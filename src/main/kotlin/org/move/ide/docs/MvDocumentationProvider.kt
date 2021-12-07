@@ -12,38 +12,38 @@ import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.isNative
-import org.move.lang.core.types.infer.inferMoveTypeTy
+import org.move.lang.core.types.infer.inferMvTypeTy
 import org.move.lang.core.types.ty.Ty
 import org.move.stdext.joinToWithBuffer
 
-class MoveDocumentationProvider : AbstractDocumentationProvider() {
+class MvDocumentationProvider : AbstractDocumentationProvider() {
     override fun getCustomDocumentationElement(
         editor: Editor,
         file: PsiFile,
         contextElement: PsiElement?,
         targetOffset: Int
     ): PsiElement? {
-        if (contextElement is MoveNamedAddress) return contextElement
+        if (contextElement is MvNamedAddress) return contextElement
         return super.getCustomDocumentationElement(editor, file, contextElement, targetOffset)
     }
 
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         val buffer = StringBuilder()
         var docElement = element
-        if (docElement is MoveFunctionSignature) docElement = docElement.parent
-        if (docElement is MoveStructSignature) docElement = docElement.parent
-        if (docElement is MoveBindingPat
-            && docElement.owner is MoveConstDef
+        if (docElement is MvFunctionSignature) docElement = docElement.parent
+        if (docElement is MvStructSignature) docElement = docElement.parent
+        if (docElement is MvBindingPat
+            && docElement.owner is MvConstDef
         ) docElement = docElement.owner
         when (docElement) {
             // TODO: add docs for both scopes
-            is MoveNamedAddress -> {
+            is MvNamedAddress -> {
                 val moveProject = docElement.containingFile.containingMoveProject() ?: return null
                 val refName = docElement.referenceName ?: return null
                 return moveProject.getAddresses()[refName]
             }
-            is MoveDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
-            is MoveBindingPat -> {
+            is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
+            is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
                 val type = docElement.inferBindingPatTy().renderForDocs(true)
                 buffer += presentationInfo.type
@@ -52,7 +52,7 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
                 buffer += ": "
                 buffer += type
             }
-            is MoveTypeParameter -> {
+            is MvTypeParameter -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
                 buffer += presentationInfo.type
                 buffer += " "
@@ -66,7 +66,7 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
         return if (buffer.isEmpty()) null else buffer.toString()
     }
 
-    private fun generateOwnerDoc(element: MoveDocAndAttributeOwner, buffer: StringBuilder) {
+    private fun generateOwnerDoc(element: MvDocAndAttributeOwner, buffer: StringBuilder) {
         definition(buffer) {
             element.signature(it)
         }
@@ -76,7 +76,7 @@ class MoveDocumentationProvider : AbstractDocumentationProvider() {
     }
 }
 
-fun MoveDocAndAttributeOwner.documentationAsHtml(): String {
+fun MvDocAndAttributeOwner.documentationAsHtml(): String {
     return docComments()
         .flatMap { it.text.split("\n") }
         .map { it.trimStart('/', ' ') }
@@ -84,7 +84,7 @@ fun MoveDocAndAttributeOwner.documentationAsHtml(): String {
         .joinToString("\n")
 }
 
-fun generateFunctionSignature(signature: MoveFunctionSignature, buffer: StringBuilder) {
+fun generateFunctionSignature(signature: MvFunctionSignature, buffer: StringBuilder) {
     val module = signature.module
     if (module != null) {
         buffer += module.fqName
@@ -98,16 +98,16 @@ fun generateFunctionSignature(signature: MoveFunctionSignature, buffer: StringBu
     signature.returnType?.generateDocumentation(buffer)
 }
 
-fun MoveElement.signature(builder: StringBuilder) {
+fun MvElement.signature(builder: StringBuilder) {
     val buffer = StringBuilder()
     when (this) {
-        is MoveFunctionDef -> this.functionSignature?.let { generateFunctionSignature(it, buffer) }
-        is MoveNativeFunctionDef -> this.functionSignature?.let { generateFunctionSignature(it, buffer) }
-        is MoveModuleDef -> {
+        is MvFunctionDef -> this.functionSignature?.let { generateFunctionSignature(it, buffer) }
+        is MvNativeFunctionDef -> this.functionSignature?.let { generateFunctionSignature(it, buffer) }
+        is MvModuleDef -> {
             buffer += "module "
             buffer += this.fqName
         }
-        is MoveStructDef -> {
+        is MvStructDef -> {
             buffer += this.containingModule!!.fqName
             buffer += "\n"
 
@@ -118,7 +118,7 @@ fun MoveElement.signature(builder: StringBuilder) {
             signature.abilitiesList?.abilityList
                 ?.joinToWithBuffer(buffer, ", ", " has ") { generateDocumentation(it) }
         }
-        is MoveStructFieldDef -> {
+        is MvStructFieldDef -> {
             buffer += this.containingModule!!.fqName
             buffer += "::"
             buffer += this.structDef?.structSignature?.name ?: angleWrapped("anonymous")
@@ -126,7 +126,7 @@ fun MoveElement.signature(builder: StringBuilder) {
             buffer.b { it += this.name }
             buffer += ": ${this.declaredTy.renderForDocs(true)}"
         }
-        is MoveConstDef -> {
+        is MvConstDef -> {
             buffer += this.containingModule!!.fqName
             buffer += "\n"
             buffer += "const "
@@ -146,30 +146,30 @@ private fun PsiElement.generateDocumentation(
 ) {
     buffer += prefix
     when (this) {
-        is MoveType -> {
-            buffer += inferMoveTypeTy(this).typeLabel(this)
+        is MvType -> {
+            buffer += inferMvTypeTy(this).typeLabel(this)
         }
-        is MoveFunctionParameterList ->
+        is MvFunctionParameterList ->
             this.functionParameterList
                 .joinToWithBuffer(buffer, ", ", "(", ")") { generateDocumentation(it) }
-        is MoveFunctionParameter -> {
+        is MvFunctionParameter -> {
             buffer += this.bindingPat.identifier.text
             this.typeAnnotation?.type?.generateDocumentation(buffer, ": ")
         }
-        is MoveTypeParameterList ->
+        is MvTypeParameterList ->
             this.typeParameterList
                 .joinToWithBuffer(buffer, ", ", "&lt;", "&gt;") { generateDocumentation(it) }
-        is MoveTypeParameter -> {
+        is MvTypeParameter -> {
             buffer += this.identifier.text
             val bound = this.typeParamBound
             if (bound != null) {
                 abilities.joinToWithBuffer(buffer, " + ", ": ") { generateDocumentation(it) }
             }
         }
-        is MoveAbility -> {
+        is MvAbility -> {
             buffer += this.text
         }
-        is MoveReturnType -> this.type?.generateDocumentation(buffer, ": ")
+        is MvReturnType -> this.type?.generateDocumentation(buffer, ": ")
     }
     buffer += suffix
 }

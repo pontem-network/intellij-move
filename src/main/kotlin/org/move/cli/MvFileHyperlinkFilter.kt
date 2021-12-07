@@ -11,7 +11,7 @@ import org.move.openapiext.resolveAbsPath
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class MoveFileHyperlinkFilter(
+class MvFileHyperlinkFilter(
     private val project: Project,
     private val moveProjectBasePath: Path,
 ) : Filter, DumbAware {

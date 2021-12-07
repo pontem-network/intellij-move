@@ -24,7 +24,7 @@ import org.move.openapiext.checkWriteAccessAllowed
  *
  * [findApplicableContext] is executed under a read action, and [invoke] under a write action.
  */
-abstract class MoveElementBaseIntentionAction<Ctx> : BaseElementAtCaretIntentionAction() {
+abstract class MvElementBaseIntentionAction<Ctx> : BaseElementAtCaretIntentionAction() {
 
     /**
      * Return `null` if the intention is not applicable, otherwise collect and return

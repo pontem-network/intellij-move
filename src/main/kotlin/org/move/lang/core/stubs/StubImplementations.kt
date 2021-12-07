@@ -5,18 +5,18 @@ package org.move.lang.core.stubs
 //import com.intellij.psi.impl.source.tree.TreeUtil
 //import com.intellij.psi.stubs.*
 //import com.intellij.psi.tree.IStubFileElementType
-//import org.move.lang.MoveFile
-//import org.move.lang.MoveLanguage
-//import org.move.lang.core.psi.MoveAddressDef
-//import org.move.lang.core.psi.MoveModuleDef
-//import org.move.lang.core.psi.impl.MoveAddressDefImpl
-//import org.move.lang.core.psi.impl.MoveModuleDefImpl
+//import org.move.lang.MvFile
+//import org.move.lang.MvLanguage
+//import org.move.lang.core.psi.MvAddressDef
+//import org.move.lang.core.psi.MvModuleDef
+//import org.move.lang.core.psi.impl.MvAddressDefImpl
+//import org.move.lang.core.psi.impl.MvModuleDefImpl
 //
-//class MoveFileStub(file: MoveFile) : PsiFileStubImpl<MoveFile>(file) {
+//class MvFileStub(file: MvFile) : PsiFileStubImpl<MvFile>(file) {
 //
 //    override fun getType() = Type
 //
-//    object Type : IStubFileElementType<MoveFileStub>(MoveLanguage) {
+//    object Type : IStubFileElementType<MvFileStub>(MvLanguage) {
 //        // Bump this number if Stub structure changes
 //        private const val STUB_VERSION = 5002
 //
@@ -25,7 +25,7 @@ package org.move.lang.core.stubs
 //        override fun getBuilder(): StubBuilder = object : DefaultStubBuilder() {
 //            override fun createStubForFile(file: PsiFile): StubElement<*> {
 //                TreeUtil.ensureParsed(file.node)
-//                return MoveFileStub(file as MoveFile)
+//                return MvFileStub(file as MvFile)
 //            }
 //
 ////            override fun skipChildProcessingWhenBuildingStubs(parent: ASTNode, child: ASTNode): Boolean {
@@ -34,104 +34,104 @@ package org.move.lang.core.stubs
 ////            }
 //        }
 //
-//        override fun getExternalId(): String = "Move.file"
+//        override fun getExternalId(): String = "Mv.file"
 //    }
 //}
 //
-//class MoveAddressDefStub(
+//class MvAddressDefStub(
 //    parent: StubElement<*>?,
 //    elementType: IStubElementType<*, *>,
-//) : StubBase<MoveAddressDef>(parent, elementType) {
+//) : StubBase<MvAddressDef>(parent, elementType) {
 //
-//    object Type : MoveStubElementType<MoveAddressDefStub, MoveAddressDef>("ADDRESS_DEF") {
+//    object Type : MvStubElementType<MvAddressDefStub, MvAddressDef>("ADDRESS_DEF") {
 //
 //        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
-//            MoveAddressDefStub(
+//            MvAddressDefStub(
 //                parentStub, this,
 //            )
 //
-//        override fun serialize(stub: MoveAddressDefStub, dataStream: StubOutputStream) {}
+//        override fun serialize(stub: MvAddressDefStub, dataStream: StubOutputStream) {}
 //
-//        override fun createPsi(stub: MoveAddressDefStub): MoveAddressDef =
-//            MoveAddressDefImpl(stub, this)
+//        override fun createPsi(stub: MvAddressDefStub): MvAddressDef =
+//            MvAddressDefImpl(stub, this)
 //
-//        override fun createStub(psi: MoveAddressDef, parentStub: StubElement<*>?) =
-//            MoveAddressDefStub(parentStub, this)
+//        override fun createStub(psi: MvAddressDef, parentStub: StubElement<*>?) =
+//            MvAddressDefStub(parentStub, this)
 //
-////        override fun indexStub(stub: MoveAddressDefStub, sink: IndexSink) = sin
+////        override fun indexStub(stub: MvAddressDefStub, sink: IndexSink) = sin
 //    }
 //}
 //
-//class MoveModuleDefStub(
+//class MvModuleDefStub(
 //    parent: StubElement<*>?,
 //    elementType: IStubElementType<*, *>,
 //    override val name: String?,
-//) : StubBase<MoveModuleDef>(parent, elementType),
-//    MoveNamedStub {
+//) : StubBase<MvModuleDef>(parent, elementType),
+//    MvNamedStub {
 //
-//    object Type : MoveStubElementType<MoveModuleDefStub, MoveModuleDef>("MODULE_DEF") {
+//    object Type : MvStubElementType<MvModuleDefStub, MvModuleDef>("MODULE_DEF") {
 //
 //        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
-//            MoveModuleDefStub(
+//            MvModuleDefStub(
 //                parentStub, this,
 //                dataStream.readNameAsString(),
 //            )
 //
-//        override fun serialize(stub: MoveModuleDefStub, dataStream: StubOutputStream) =
+//        override fun serialize(stub: MvModuleDefStub, dataStream: StubOutputStream) =
 //            with(dataStream) {
 //                writeName(stub.name)
 //            }
 //
-//        override fun createPsi(stub: MoveModuleDefStub): MoveModuleDef =
-//            MoveModuleDefImpl(stub, this)
+//        override fun createPsi(stub: MvModuleDefStub): MvModuleDef =
+//            MvModuleDefImpl(stub, this)
 //
-//        override fun createStub(psi: MoveModuleDef, parentStub: StubElement<*>?) =
-//            MoveModuleDefStub(parentStub, this, psi.name)
+//        override fun createStub(psi: MvModuleDef, parentStub: StubElement<*>?) =
+//            MvModuleDefStub(parentStub, this, psi.name)
 //
-////        override fun indexStub(stub: MoveModuleDefStub, sink: IndexSink) = sink.indexNamedStub(stub)
+////        override fun indexStub(stub: MvModuleDefStub, sink: IndexSink) = sink.indexNamedStub(stub)
 //    }
 //}
 //
 //
-//fun factory(name: String): MoveStubElementType<*, *> = when (name) {
-//    "ADDRESS_DEF" -> MoveAddressDefStub.Type
-//    "MODULE_DEF" -> MoveModuleDefStub.Type
-////    "FUNCTION_DEF" -> MoveFunctionDefStub.Type
+//fun factory(name: String): MvStubElementType<*, *> = when (name) {
+//    "ADDRESS_DEF" -> MvAddressDefStub.Type
+//    "MODULE_DEF" -> MvModuleDefStub.Type
+////    "FUNCTION_DEF" -> MvFunctionDefStub.Type
 ////    "FUNCTION_PARAMETER_LIST" -> PlaceholderStub.Type(
-////        "FUNCTION_PARAMETER_LIST", ::MoveFunctionParameterListImpl)
+////        "FUNCTION_PARAMETER_LIST", ::MvFunctionParameterListImpl)
 //    else -> error("Unknown element $name")
 //}
 ////
-////class MoveFunctionDefStub(
+////class MvFunctionDefStub(
 ////    parent: StubElement<*>?, elementType: IStubElementType<*, *>,
 ////    override val name: String?,
 ////    val isPublic: Boolean,
-////) : StubBase<MoveFunctionDef>(parent, elementType),
-////    MoveNamedStub {
+////) : StubBase<MvFunctionDef>(parent, elementType),
+////    MvNamedStub {
 ////
-////    object Type : MoveStubElementType<MoveFunctionDefStub, MoveFunctionDef>("FUNCTION_DEF") {
+////    object Type : MvStubElementType<MvFunctionDefStub, MvFunctionDef>("FUNCTION_DEF") {
 ////        override fun deserialize(
 ////            dataStream: StubInputStream,
 ////            parentStub: StubElement<*>?,
-////        ): MoveFunctionDefStub =
-////            MoveFunctionDefStub(parentStub, this, dataStream.readName()?.string, dataStream.readBoolean())
+////        ): MvFunctionDefStub =
+////            MvFunctionDefStub(parentStub, this, dataStream.readName()?.string, dataStream.readBoolean())
 ////
-////        override fun serialize(stub: MoveFunctionDefStub, dataStream: StubOutputStream) =
+////        override fun serialize(stub: MvFunctionDefStub, dataStream: StubOutputStream) =
 ////            with(dataStream) {
 ////                writeName(stub.name)
 ////                writeBoolean(stub.isPublic)
 ////            }
 ////
-////        override fun createPsi(stub: MoveFunctionDefStub): MoveFunctionDef =
-////            MoveFunctionDefImpl(stub, this)
+////        override fun createPsi(stub: MvFunctionDefStub): MvFunctionDef =
+////            MvFunctionDefImpl(stub, this)
 ////
-////        override fun createStub(psi: MoveFunctionDef, parentStub: StubElement<*>?): MoveFunctionDefStub =
-////            MoveFunctionDefStub(parentStub, this,
+////        override fun createStub(psi: MvFunctionDef, parentStub: StubElement<*>?): MvFunctionDefStub =
+////            MvFunctionDefStub(parentStub, this,
 ////                name = psi.name,
 ////                isPublic = psi.isPublic
 ////            )
 ////
-////        override fun indexStub(stub: MoveFunctionDefStub, sink: IndexSink) = sink.indexFunctionDef(stub)
+////        override fun indexStub(stub: MvFunctionDefStub, sink: IndexSink) = sink.indexFunctionDef(stub)
 ////    }
 ////}
 //

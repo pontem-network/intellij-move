@@ -3,11 +3,11 @@ package org.move.ide.refactoring
 import com.intellij.lang.refactoring.NamesValidator
 import com.intellij.openapi.project.Project
 import com.intellij.psi.tree.IElementType
-import org.move.lang.MoveElementTypes.IDENTIFIER
+import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.MOVE_KEYWORDS
 import org.move.lang.core.lexer.createMoveLexer
 
-class MoveNamesValidator : NamesValidator {
+class MvNamesValidator : NamesValidator {
     override fun isKeyword(name: String, project: Project?): Boolean {
         return getLexerType(name) in MOVE_KEYWORDS
     }

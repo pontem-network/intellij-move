@@ -2,8 +2,8 @@ package org.move.cli
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.lang.MoveFile
-import org.move.lang.toMoveFile
+import org.move.lang.MvFile
+import org.move.lang.toMvFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
 import org.move.openapiext.findVirtualFile
@@ -15,8 +15,8 @@ enum class GlobalScope {
     MAIN, DEV;
 }
 
-data class MoveModuleFile(
-    val file: MoveFile,
+data class MvModuleFile(
+    val file: MvFile,
     val addressSubst: Map<String, String>,
 )
 
@@ -27,7 +27,7 @@ data class DependencyAddresses(
     val placeholders: List<String>,
 )
 
-fun testEmptyMoveProject(project: Project): MoveProject {
+fun testEmptyMvProject(project: Project): MoveProject {
     val moveToml = MoveToml(
         project, null, null, emptyMap(), emptyMap(), sortedMapOf(), sortedMapOf()
     )
@@ -76,16 +76,16 @@ data class MoveProject(
 
     fun getAddresses(): Map<String, String> {
         // go through every dependency, extract
-        // 1. MoveProject for that
+        // 1. MvProject for that
         // 2. Substitution mapping for the dependency
         val values = mutableMapOf<String, String>()
         for (dependency in this.moveToml.dependencies.values) {
             val moveTomlFile = dependency.absoluteLocalPath.resolve("Move.toml")
                 .findVirtualFile()
                 ?.toPsiFile(this.project) ?: continue
-            val depMoveProject =
+            val depMvProject =
                 this.project.moveProjectsService.findMoveProjectForPsiFile(moveTomlFile) ?: continue
-            val depAddresses = depMoveProject.dependencyAddresses
+            val depAddresses = depMvProject.dependencyAddresses
 
             // apply substitutions
             val substitutions = dependency.addrSubst
@@ -105,12 +105,12 @@ data class MoveProject(
         return values
     }
 
-    fun processModuleFiles(scope: GlobalScope, processFile: (MoveModuleFile) -> Boolean) {
+    fun processModuleFiles(scope: GlobalScope, processFile: (MvModuleFile) -> Boolean) {
         val folders = getModuleFolders(scope)
         for (folder in folders) {
             deepIterateChildrenRecursivery(folder, { it.extension == "move" }) { file ->
-                val moveFile = file.toMoveFile(project) ?: return@deepIterateChildrenRecursivery true
-                val moduleFile = MoveModuleFile(moveFile, emptyMap())
+                val moveFile = file.toMvFile(project) ?: return@deepIterateChildrenRecursivery true
+                val moduleFile = MvModuleFile(moveFile, emptyMap())
                 processFile(moduleFile)
             }
         }

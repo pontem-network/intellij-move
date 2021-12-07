@@ -1,10 +1,10 @@
 package org.move.utils.tests.annotation
 
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.MvTestBase
 
-abstract class MoveAnnotationTestCase : MoveTestBase() {
-    protected lateinit var annotationFixture: MoveAnnotationTestFixture
+abstract class MvAnnotationTestCase : MvTestBase() {
+    protected lateinit var annotationFixture: MvAnnotationTestFixture
 
     override fun setUp() {
         super.setUp()
@@ -17,7 +17,7 @@ abstract class MoveAnnotationTestCase : MoveTestBase() {
         super.tearDown()
     }
 
-    protected abstract fun createAnnotationFixture(): MoveAnnotationTestFixture
+    protected abstract fun createAnnotationFixture(): MvAnnotationTestFixture
 
     fun checkHighlighting(text: String, ignoreExtraHighlighting: Boolean = true) =
         annotationFixture.checkHighlighting(

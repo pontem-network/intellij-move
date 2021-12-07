@@ -3,28 +3,26 @@ package org.move.lang.core.psi.ext
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
-import org.move.lang.containingMoveProject
-import org.move.lang.core.psi.MoveAddressDef
-import org.move.lang.core.psi.MoveElementImpl
-import org.move.lang.core.psi.MoveModuleDef
-import org.move.lang.core.types.Address
+import org.move.lang.core.psi.MvAddressDef
+import org.move.lang.core.psi.MvElementImpl
+import org.move.lang.core.psi.MvModuleDef
 
-//val MoveAddressDef.address: Address?
+//val MvAddressDef.address: Address?
 //    get() =
 //        addressRef?.toAddress()
 
-//val MoveAddressDef.normalizedAddress: Address?
+//val MvAddressDef.normalizedAddress: Address?
 //    get() =
 //        addressRef?.toNormalizedAddress()
 
-fun MoveAddressDef.modules(): List<MoveModuleDef> =
-    addressBlock?.childrenOfType<MoveModuleDef>().orEmpty()
+fun MvAddressDef.modules(): List<MvModuleDef> =
+    addressBlock?.childrenOfType<MvModuleDef>().orEmpty()
 
 
-abstract class MoveAddressDefMixin(node: ASTNode) : MoveElementImpl(node),
-                                                    MoveAddressDef {
+abstract class MvAddressDefMixin(node: ASTNode) : MvElementImpl(node),
+                                                    MvAddressDef {
     override fun getPresentation(): ItemPresentation? {
-//        val moveProject = this.containingFile.containingMoveProject() ?: return null
+//        val moveProject = this.containingFile.containingMvProject() ?: return null
         val addressText = this.addressRef?.toAddress()?.text ?: ""
         return PresentationData(addressText, null, null, null);
     }

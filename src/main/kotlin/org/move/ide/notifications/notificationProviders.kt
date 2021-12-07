@@ -8,27 +8,27 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
-import org.move.cli.MoveExecutable
-import org.move.lang.isMoveFile
+import org.move.cli.MvExecutable
+import org.move.lang.isMvFile
 import org.move.lang.isMoveTomlManifestFile
 import org.move.openapiext.common.isUnitTestMode
-import org.move.settings.MoveSettingsChangedEvent
-import org.move.settings.MoveSettingsListener
+import org.move.settings.MvSettingsChangedEvent
+import org.move.settings.MvSettingsListener
 import org.move.settings.moveSettings
 
 fun updateAllNotifications(project: Project) {
     EditorNotifications.getInstance(project).updateAllNotifications()
 }
 
-class UpdateNotificationsOnSettingsChangeListener(val project: Project) : MoveSettingsListener {
+class UpdateNotificationsOnSettingsChangeListener(val project: Project) : MvSettingsListener {
 
-    override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
+    override fun moveSettingsChanged(e: MvSettingsChangedEvent) {
         updateAllNotifications(project)
     }
 
 }
 
-class InvalidMoveExecutableNotificationsProvider(
+class InvalidMvExecutableNotificationsProvider(
     private val project: Project
 ) : EditorNotifications.Provider<EditorNotificationPanel>(),
     DumbAware {
@@ -52,17 +52,17 @@ class InvalidMoveExecutableNotificationsProvider(
     ): EditorNotificationPanel? {
         if (isUnitTestMode) return null
         if (
-            !(file.isMoveFile || file.isMoveTomlManifestFile)
+            !(file.isMvFile || file.isMoveTomlManifestFile)
             || isNotificationDisabled(file)
         ) return null
 
 //        val moveExecPath = project.moveExecPath ?: return null
-        if (MoveExecutable(project).version() != null) return null
+        if (MvExecutable(project).version() != null) return null
 
         return EditorNotificationPanel().apply {
             text = "Move configured incorrectly"
             createActionLabel("Configure") {
-                project.moveSettings.showMoveConfigureSettings()
+                project.moveSettings.showMvConfigureSettings()
             }
             createActionLabel("Do not show again") {
                 disableNotification(file)
@@ -72,7 +72,7 @@ class InvalidMoveExecutableNotificationsProvider(
     }
 
     companion object {
-        private const val NOTIFICATION_STATUS_KEY = "org.move.hideMoveNotifications"
+        private const val NOTIFICATION_STATUS_KEY = "org.move.hideMvNotifications"
 
         private val PROVIDER_KEY: Key<EditorNotificationPanel> = Key.create("Fix Move.toml file")
     }

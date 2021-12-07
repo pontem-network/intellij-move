@@ -1,12 +1,12 @@
 package org.move.lang
 
 import com.intellij.openapi.fileTypes.LanguageFileType
-import org.move.ide.MoveIcons
+import org.move.ide.MvIcons
 import javax.swing.Icon
 
-object MoveFileType : LanguageFileType(MoveLanguage) {
-    override fun getIcon(): Icon? = MoveIcons.MOVE
-    override fun getName(): String = "Move"
-    override fun getDefaultExtension(): String = "move"
-    override fun getDescription(): String = "Move Language file"
+object MoveFileType : LanguageFileType(MvLanguage) {
+    override fun getIcon() = MvIcons.MOVE
+    override fun getName() = "Move"
+    override fun getDefaultExtension() = "move"
+    override fun getDescription() = "Move Language file"
 }

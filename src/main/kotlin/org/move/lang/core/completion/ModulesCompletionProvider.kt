@@ -5,15 +5,15 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.MovePsiPatterns
-import org.move.lang.core.psi.MovePath
+import org.move.lang.core.MvPsiPatterns
+import org.move.lang.core.psi.MvPath
 import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
 
-object ModulesCompletionProvider : MoveCompletionProvider() {
+object ModulesCompletionProvider : MvCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
-            MovePsiPatterns.pathIdent()
+            MvPsiPatterns.pathIdent()
 
     override fun addCompletions(
         parameters: CompletionParameters,
@@ -23,7 +23,7 @@ object ModulesCompletionProvider : MoveCompletionProvider() {
         val maybePathIdent = parameters.position.parent
         val maybePath = maybePathIdent.parent
         val refElement =
-            maybePath as? MovePath ?: maybePath.parent as MovePath
+            maybePath as? MvPath ?: maybePath.parent as MvPath
 
         if (parameters.position !== refElement.referenceNameElement) return
         if (refElement.pathIdent.moduleRef != null) return

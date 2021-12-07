@@ -4,14 +4,14 @@ import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
 import com.intellij.psi.formatter.common.AbstractBlock
 import org.move.ide.formatter.impl.*
-import org.move.lang.MoveElementTypes.*
+import org.move.lang.MvElementTypes.*
 
-class MoveFormatterBlock(
+class MvFormatterBlock(
     node: ASTNode,
     wrap: Wrap?,
     alignment: Alignment?,
     private val indent: Indent?,
-    val ctx: MoveFmtContext,
+    val ctx: MvFmtContext,
 ) : AbstractBlock(node, wrap, alignment) {
     override fun isLeaf(): Boolean = node.firstChildNode == null
     override fun getIndent(): Indent? = indent
@@ -34,7 +34,7 @@ class MoveFormatterBlock(
             .map { childNode: ASTNode ->
                 val childCtx = ctx.copy(sharedAlignment = sharedAlignment)
                 val indent = computeIndent(childNode)
-                MoveFormatterBlock(
+                MvFormatterBlock(
                     node = childNode,
                     alignment = alignment.getAlignment(childNode, node, childCtx),
                     indent = indent,

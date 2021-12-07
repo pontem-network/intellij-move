@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NonNls
 import org.move.lang.MoveParserDefinition
 import org.move.utils.tests.base.TestCase
 
-abstract class MoveParsingTestCase(@NonNls dataPath: String) : ParsingTestCase(
+abstract class MvParsingTestCase(@NonNls dataPath: String) : ParsingTestCase(
     "org/move/lang/parser/$dataPath",
     "move",
     true,

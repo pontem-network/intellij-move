@@ -7,29 +7,29 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IElementType
 import org.move.ide.presentation.fullname
-import org.move.lang.MoveElementTypes
-import org.move.lang.core.psi.MoveCallArguments
-import org.move.lang.core.psi.MoveStructLiteralField
-import org.move.lang.core.psi.MoveStructLiteralFieldsBlock
+import org.move.lang.MvElementTypes
+import org.move.lang.core.psi.MvCallArgumentList
+import org.move.lang.core.psi.MvStructLitField
+import org.move.lang.core.psi.MvStructLitFieldsBlock
 import org.move.lang.core.psi.ext.*
 import org.move.utils.AsyncParameterInfoHandler
 
-class StructLiteralFieldsInfoHandler :
-    AsyncParameterInfoHandler<MoveStructLiteralFieldsBlock, FieldsDescription>() {
+class StructLitFieldsInfoHandler :
+    AsyncParameterInfoHandler<MvStructLitFieldsBlock, FieldsDescription>() {
 
-    override fun findTargetElement(file: PsiFile, offset: Int): MoveStructLiteralFieldsBlock? {
+    override fun findTargetElement(file: PsiFile, offset: Int): MvStructLitFieldsBlock? {
         val element = file.findElementAt(offset) ?: return null
-        val block = element.ancestorStrict<MoveStructLiteralFieldsBlock>() ?: return null
-        val callExpr = element.ancestorStrict<MoveCallArguments>()
+        val block = element.ancestorStrict<MvStructLitFieldsBlock>() ?: return null
+        val callExpr = element.ancestorStrict<MvCallArgumentList>()
         if (callExpr != null && block.contains(callExpr)) return null
         return block
     }
 
-    override fun calculateParameterInfo(element: MoveStructLiteralFieldsBlock): Array<FieldsDescription>? =
-        FieldsDescription.fromStructLiteralBlock(element)?.let { arrayOf(it) }
+    override fun calculateParameterInfo(element: MvStructLitFieldsBlock): Array<FieldsDescription>? =
+        FieldsDescription.fromStructLitBlock(element)?.let { arrayOf(it) }
 
     override fun updateParameterInfo(
-        block: MoveStructLiteralFieldsBlock,
+        block: MvStructLitFieldsBlock,
         context: UpdateParameterInfoContext
     ) {
         if (context.parameterOwner != block) {
@@ -54,27 +54,27 @@ class StructLiteralFieldsInfoHandler :
     }
 
     private fun findParameterIndex(
-        block: MoveStructLiteralFieldsBlock,
+        block: MvStructLitFieldsBlock,
         context: UpdateParameterInfoContext
     ): Int {
         if (block.startOffset == context.offset) return -1
         var elementAtOffset = context.file.findElementAt(context.offset) ?: return -1
 
-        val selectedField = elementAtOffset.ancestorStrict<MoveStructLiteralField>()
+        val selectedField = elementAtOffset.ancestorStrict<MvStructLitField>()
         if (selectedField != null) {
             elementAtOffset = selectedField
         }
         val chunks = block
             .childrenWithLeaves
-            .splitAround(MoveElementTypes.COMMA)
+            .splitAround(MvElementTypes.COMMA)
         val chunk = chunks.find { it.contains(elementAtOffset) } ?: return -1
         val struct = block.litExpr.path.maybeStruct ?: return -1
 
         val fieldName =
-            chunk.filterIsInstance<MoveStructLiteralField>().firstOrNull()?.referenceName
+            chunk.filterIsInstance<MvStructLitField>().firstOrNull()?.referenceName
         if (fieldName == null) {
             val filledFieldNames = chunks
-                .mapNotNull { it.filterIsInstance<MoveStructLiteralField>().firstOrNull()?.referenceName }
+                .mapNotNull { it.filterIsInstance<MvStructLitField>().firstOrNull()?.referenceName }
                 .toSet()
             if (filledFieldNames.isEmpty()) return 0
             return struct
@@ -96,7 +96,7 @@ class FieldsDescription(val fields: Array<String>) {
     }
 
     companion object {
-        fun fromStructLiteralBlock(block: MoveStructLiteralFieldsBlock): FieldsDescription? {
+        fun fromStructLitBlock(block: MvStructLitFieldsBlock): FieldsDescription? {
             val struct = block.litExpr.path.maybeStruct ?: return null
             val fieldParams =
                 struct.fieldsMap.entries.map { (name, field) ->

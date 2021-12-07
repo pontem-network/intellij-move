@@ -3,7 +3,7 @@ package org.move.ide.annotator.errors
 import org.move.ide.annotator.ErrorAnnotator
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
-class StructLiteralArgumentTypesTest: AnnotatorTestCase(ErrorAnnotator::class) {
+class StructLitArgumentTypesTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test invalid type for field in struct literal`() = checkErrors("""
     module 0x1::M {
         struct Deal { val: u8 }

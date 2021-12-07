@@ -2,10 +2,10 @@ package org.move.cli
 
 import com.intellij.openapi.project.rootManager
 import org.move.openapiext.toPsiFile
-import org.move.utils.tests.MoveProjectTestCase
+import org.move.utils.tests.MvProjectTestCase
 import org.move.utils.tests.fileTree
 
-class ProjectAddressesServiceTest: MoveProjectTestCase() {
+class ProjectAddressesServiceTest: MvProjectTestCase() {
     fun `test directory index cached correctly`() {
         val fileTree = fileTree {
             toml("Move.toml", "")

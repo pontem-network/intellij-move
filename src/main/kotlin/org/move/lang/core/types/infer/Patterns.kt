@@ -11,12 +11,12 @@ import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyTuple
 import org.move.lang.core.types.ty.TyUnknown
 
-fun collectBindings(pattern: MovePat, type: Ty): Map<MoveBindingPat, Ty> {
-    val bindings = mutableMapOf<MoveBindingPat, Ty>()
-    fun bind(pat: MovePat, ty: Ty) {
+fun collectBindings(pattern: MvPat, type: Ty): Map<MvBindingPat, Ty> {
+    val bindings = mutableMapOf<MvBindingPat, Ty>()
+    fun bind(pat: MvPat, ty: Ty) {
         when (pat) {
-            is MoveBindingPat -> bindings += pat to ty
-            is MoveTuplePat -> {
+            is MvBindingPat -> bindings += pat to ty
+            is MvTuplePat -> {
                 if (ty is TyTuple && pat.patList.size == ty.types.size) {
                     pat.patList.zip(ty.types)
                         .forEach { (pat, ty) -> bind(pat, ty) }
@@ -24,7 +24,7 @@ fun collectBindings(pattern: MovePat, type: Ty): Map<MoveBindingPat, Ty> {
                     pat.patList.map { bind(it, TyUnknown) }
                 }
             }
-            is MoveStructPat -> {
+            is MvStructPat -> {
                 if (ty is TyStruct && pat.fields.size == ty.fieldsTy().size) {
                     val fieldsTy = ty.fieldsTy()
                     for (field in pat.fields) {
@@ -43,16 +43,16 @@ fun collectBindings(pattern: MovePat, type: Ty): Map<MoveBindingPat, Ty> {
     return bindings
 }
 
-fun inferBindingTy(bindingPat: MoveBindingPat): Ty {
+fun inferBindingTy(bindingPat: MvBindingPat): Ty {
     val owner = bindingPat.owner
     return when (owner) {
-        is MoveFunctionParameter -> owner.declaredTy
-        is MoveConstDef -> owner.declaredTy
-        is MoveLetStatement -> {
+        is MvFunctionParameter -> owner.declaredTy
+        is MvConstDef -> owner.declaredTy
+        is MvLetStatement -> {
             val pat = owner.pat ?: return TyUnknown
             val explicitType = owner.typeAnnotation?.type
             if (explicitType != null) {
-                val explicitTy = inferMoveTypeTy(explicitType)
+                val explicitTy = inferMvTypeTy(explicitType)
                 return collectBindings(pat, explicitTy)[bindingPat] ?: TyUnknown
             }
 
