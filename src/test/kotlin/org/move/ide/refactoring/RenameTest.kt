@@ -1,9 +1,9 @@
 package org.move.ide.refactoring
 
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.MvTestBase
 
-class RenameTest : MoveTestBase() {
+class RenameTest : MvTestBase() {
     fun `test function argument`() = doTest("spam", """
         script {
             fun main(/*caret*/account: &signer) {

@@ -3,28 +3,28 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.*
 
-fun MoveScriptDef.allFnSignatures(): List<MoveFunctionSignature> {
+fun MvScriptDef.allFnSignatures(): List<MvFunctionSignature> {
     val block = scriptBlock ?: return emptyList()
     return block.functionDefList.mapNotNull { it.functionSignature }
 }
 
-fun MoveScriptDef.constBindings(): List<MoveBindingPat> =
+fun MvScriptDef.constBindings(): List<MvBindingPat> =
     scriptBlock?.constDefList.orEmpty().mapNotNull { it.bindingPat }
 
-fun MoveScriptDef.builtinScriptFnSignatures(): List<MoveFunctionSignature> {
+fun MvScriptDef.builtinScriptFnSignatures(): List<MvFunctionSignature> {
     return listOfNotNull(
         createBuiltinFuncSignature("native fun assert(_: bool, err: u64);", project)
     )
 }
 
-//fun MoveScriptDef.builtinFunctions(): List<MoveNativeFunctionDef> =
+//fun MvScriptDef.builtinFunctions(): List<MvNativeFunctionDef> =
 //    listOf(
 //        createBuiltinFuncSignature("native fun assert(_: bool, err: u64): ();", project)
 //    )
 
-abstract class MoveScriptDefMixin(node: ASTNode) : MoveElementImpl(node),
-                                                   MoveScriptDef {
-    override val importStatements: List<MoveImportStatement>
+abstract class MvScriptDefMixin(node: ASTNode) : MvElementImpl(node),
+                                                   MvScriptDef {
+    override val importStatements: List<MvImportStatement>
         get() =
             this.scriptBlock?.importStatementList.orEmpty()
 }

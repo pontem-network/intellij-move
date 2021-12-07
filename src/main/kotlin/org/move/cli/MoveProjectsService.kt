@@ -3,6 +3,7 @@ package org.move.cli
 import com.intellij.execution.RunManager
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
@@ -22,15 +23,15 @@ import org.move.lang.findMoveTomlPath
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.findVirtualFile
-import org.move.settings.MoveProjectSettingsService
-import org.move.settings.MoveSettingsChangedEvent
-import org.move.settings.MoveSettingsListener
+import org.move.settings.MvProjectSettingsService
+import org.move.settings.MvSettingsChangedEvent
+import org.move.settings.MvSettingsListener
 import org.move.stdext.AsyncValue
 import org.move.stdext.MyLightDirectoryIndex
 import org.move.stdext.deepIterateChildrenRecursivery
 import java.util.concurrent.CompletableFuture
 
-val Project.moveProjectsService: MoveProjectsService get() = this.getService(MoveProjectsService::class.java)
+val Project.moveProjectsService get() = service<MoveProjectsService>()
 
 interface MoveProjectsService {
 //    var initialized: Boolean
@@ -61,8 +62,8 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
                     refreshAllProjects()
                 })
             }
-            subscribe(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC, object : MoveSettingsListener {
-                override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
+            subscribe(MvProjectSettingsService.MOVE_SETTINGS_TOPIC, object : MvSettingsListener {
+                override fun moveSettingsChanged(e: MvSettingsChangedEvent) {
                     refreshAllProjects()
                 }
             })
@@ -114,10 +115,10 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
             file.toNioPathOrNull()
                 ?.let { findMoveTomlPath(it) }
                 ?.findVirtualFile()
-                ?.let { initializeMoveProject(project, it) }
+                ?.let { initializeMvProject(project, it) }
         if (moveProject == null) {
             // this is for light tests, heavy test should always have valid moveProject
-            if (isUnitTestMode) return testEmptyMoveProject(project)
+            if (isUnitTestMode) return testEmptyMvProject(project)
             return null
         }
         this.directoryIndex.putInfo(file, moveProject)
@@ -131,7 +132,7 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
 
     private val directoryIndex: MyLightDirectoryIndex<MoveProject?> =
         MyLightDirectoryIndex(project, null) { index ->
-            processAllMoveFilesOnce(this.projects.currentState) { file, moveProject ->
+            processAllMvFilesOnce(this.projects.currentState) { file, moveProject ->
                 index.putInfo(file, moveProject)
             }
         }
@@ -139,7 +140,7 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
 
 private fun doRefresh(project: Project): CompletableFuture<List<MoveProject>> {
     val result = CompletableFuture<List<MoveProject>>()
-    val syncTask = MoveSyncTask(project, result)
+    val syncTask = MvSyncTask(project, result)
     project.taskQueue.run(syncTask)
     return result.thenApply { updatedProjects ->
         runWithNonLightProject(project) {
@@ -164,7 +165,7 @@ private fun setupProjectRoots(project: Project, moveProjects: List<MoveProject>)
                         addExcludeFolder(
                             FileUtil.join(
                                 contentRoot.url,
-                                MoveConstants.ProjectLayout.build
+                                MvConstants.ProjectLayout.build
                             )
                         )
                     }
@@ -186,7 +187,7 @@ private inline fun runWithNonLightProject(project: Project, action: () -> Unit) 
 val VirtualFile.fsDepth: Int get() = this.path.split("/").count()
 //val String.pathDepth: Int get() = this.split("/").count()
 
-fun processAllMoveFilesOnce(
+fun processAllMvFilesOnce(
     moveProjects: List<MoveProject>,
     processFile: (VirtualFile, MoveProject) -> Unit
 ) {

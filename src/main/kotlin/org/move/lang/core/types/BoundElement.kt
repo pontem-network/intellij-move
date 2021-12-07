@@ -1,9 +1,9 @@
 package org.move.lang.core.types
 
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.MoveElement
-import org.move.lang.core.psi.MoveNameIdentifierOwner
-import org.move.lang.core.psi.MoveNamedElement
+import org.move.lang.core.psi.MvElement
+import org.move.lang.core.psi.MvNameIdentifierOwner
+import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.types.infer.TypeFoldable
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
@@ -18,7 +18,7 @@ val emptySubstitution: Substitution = emptyMap()
  * Represents a potentially generic Psi Element, like `fn make_t<T>() { }`,
  * together with actual type arguments, like `T := i32` ([subst]).
  */
-class BoundElement<E : MoveNamedElement>(
+class BoundElement<E : MvNamedElement>(
     val element: E,
     /**
      * Generic type bindings, e.g. if we have some generic declaration

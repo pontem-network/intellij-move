@@ -8,7 +8,7 @@ import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.util.execution.ParametersListUtil
 
-class MoveCommandLineState(
+class MvCommandLineState(
     environment: ExecutionEnvironment,
     private val runConfiguration: SubcommandRunConfigurationBase,
 ) : CommandLineState(environment) {

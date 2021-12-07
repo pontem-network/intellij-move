@@ -1,9 +1,9 @@
 package org.move.lang.core.psi.ext
 
-//val MoveFunctionDef.params: List<MoveFunctionParameter>
+//val MvFunctionDef.params: List<MvFunctionParameter>
 //    get() =
 //        emptyList()
 //        this.functionParameterList?.functionParameterList.orEmpty()
 
-//val MoveFunctionDef.isPublic: Boolean
-//    get() = isChildExists(MoveElementTypes.PUBLIC)
+//val MvFunctionDef.isPublic: Boolean
+//    get() = isChildExists(MvElementTypes.PUBLIC)

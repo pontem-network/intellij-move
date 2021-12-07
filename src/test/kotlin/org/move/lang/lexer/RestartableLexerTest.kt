@@ -3,10 +3,10 @@ package org.move.lang.lexer
 import com.intellij.openapi.editor.Editor
 import org.intellij.lang.annotations.Language
 import org.move.openapiext.createLexer
-import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.replaceCaretMarker
 
-class RestartableLexerTest : MoveTestBase() {
+class RestartableLexerTest : MvTestBase() {
     fun `test lexer restart closing block comment`() =
         doTestLexerRestart(""" /* module */*caret*/ module M {} """, '/')
 

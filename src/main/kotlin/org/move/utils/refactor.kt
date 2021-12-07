@@ -2,14 +2,14 @@ package org.move.utils
 
 import com.intellij.psi.PsiElement
 import org.move.ide.refactoring.isValidMoveVariableIdentifier
-import org.move.lang.MoveElementTypes
-import org.move.lang.core.psi.MovePsiFactory
+import org.move.lang.MvElementTypes
+import org.move.lang.core.psi.MvPsiFactory
 import org.move.lang.core.psi.ext.elementType
 
 fun doRenameIdentifier(identifier: PsiElement, newName: String) {
-    val factory = MovePsiFactory(identifier.project)
+    val factory = MvPsiFactory(identifier.project)
     val newIdentifier = when (identifier.elementType) {
-        MoveElementTypes.IDENTIFIER -> {
+        MvElementTypes.IDENTIFIER -> {
             if (!isValidMoveVariableIdentifier(newName)) return
             factory.createIdentifier(newName)
         }

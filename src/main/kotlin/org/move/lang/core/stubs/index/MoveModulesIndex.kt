@@ -3,19 +3,19 @@ package org.move.lang.core.stubs.index
 //import com.intellij.psi.stubs.IndexSink
 //import com.intellij.psi.stubs.StringStubIndexExtension
 //import com.intellij.psi.stubs.StubIndexKey
-//import org.move.lang.core.psi.MoveModuleDef
-//import org.move.lang.core.stubs.MoveFileStub
-//import org.move.lang.core.stubs.impl.MoveModuleDefStub
+//import org.move.lang.core.psi.MvModuleDef
+//import org.move.lang.core.stubs.MvFileStub
+//import org.move.lang.core.stubs.impl.MvModuleDefStub
 //
-//class MoveModulesIndex : StringStubIndexExtension<MoveModuleDef>() {
-//    override fun getVersion(): Int = MoveFileStub.Type.stubVersion
-//    override fun getKey(): StubIndexKey<String, MoveModuleDef> = KEY
+//class MvModulesIndex : StringStubIndexExtension<MvModuleDef>() {
+//    override fun getVersion(): Int = MvFileStub.Type.stubVersion
+//    override fun getKey(): StubIndexKey<String, MvModuleDef> = KEY
 //
 //    companion object {
-//        val KEY: StubIndexKey<String, MoveModuleDef> =
-//            StubIndexKey.createIndexKey("org.move.lang.core.stubs.index.MoveModulesIndex")
+//        val KEY: StubIndexKey<String, MvModuleDef> =
+//            StubIndexKey.createIndexKey("org.move.lang.core.stubs.index.MvModulesIndex")
 //
-//        fun index(stub: MoveModuleDefStub, indexSink: IndexSink) {
+//        fun index(stub: MvModuleDefStub, indexSink: IndexSink) {
 //            val address = stub.address
 //            val name = stub.name
 //            if (name != null) {

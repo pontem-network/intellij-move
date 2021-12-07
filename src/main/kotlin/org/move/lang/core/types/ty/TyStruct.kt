@@ -1,14 +1,14 @@
 package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
-import org.move.lang.core.psi.MoveStructSignature
+import org.move.lang.core.psi.MvStructSignature
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 
 data class TyStruct(
-    val item: MoveStructSignature,
+    val item: MvStructSignature,
     val typeArguments: List<Ty> = emptyList()
 ) : Ty {
     val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
@@ -33,7 +33,7 @@ data class TyStruct(
             }
 //        return field.typeAnnotation
 //            ?.type
-//            ?.let { inferMoveTypeTy(it) }
+//            ?.let { inferMvTypeTy(it) }
 //            ?.foldTyTypeParameterWith { typeParam ->
 //                this.typeVars.find { it.origin?.parameter == typeParam.parameter }!!
 //            } ?: TyUnknown

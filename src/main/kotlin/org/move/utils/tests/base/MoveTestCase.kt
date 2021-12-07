@@ -79,6 +79,6 @@ fun <T : PsiElement> CodeInsightTestFixture.findElementsWithDataAndOffsetInEdito
 }
 
 
-interface MoveTestCase : TestCase {
+interface MvTestCase : TestCase {
     override val testFileExtension: String get() = "move"
 }

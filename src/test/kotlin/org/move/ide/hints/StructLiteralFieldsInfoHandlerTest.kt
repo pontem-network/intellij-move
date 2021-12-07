@@ -1,10 +1,10 @@
 package org.move.ide.hints
 
-import org.move.lang.core.psi.MoveStructLitFieldsBlock
+import org.move.lang.core.psi.MvStructLitFieldsBlock
 import org.move.utils.tests.ParameterInfoHandlerTestCase
 
 class StructLitFieldsInfoHandlerTest :
-    ParameterInfoHandlerTestCase<MoveStructLitFieldsBlock,
+    ParameterInfoHandlerTestCase<MvStructLitFieldsBlock,
             FieldsDescription>(StructLitFieldsInfoHandler()) {
 
     fun `test no hint if call expr`() = checkByText("""

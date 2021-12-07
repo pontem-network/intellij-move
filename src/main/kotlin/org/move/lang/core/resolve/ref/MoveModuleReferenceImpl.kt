@@ -5,20 +5,20 @@ import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.moduleImport
 import org.move.lang.core.resolve.resolveItem
 
-class MoveModuleReferenceImpl(
-    element: MoveModuleRef,
-) : MoveReferenceCached<MoveModuleRef>(element) {
+class MvModuleReferenceImpl(
+    element: MvModuleRef,
+) : MvReferenceCached<MvModuleRef>(element) {
 
-    override fun resolveInner(): MoveNamedElement? {
+    override fun resolveInner(): MvNamedElement? {
         if (element.isSelf) return element.containingModule
 
         val resolved = resolveItem(element, Namespace.MODULE)
-        if (resolved is MoveImportAlias) {
+        if (resolved is MvImportAlias) {
             return resolved
         }
         val moduleRef = when {
-            resolved is MoveItemImport && resolved.text == "Self" -> resolved.moduleImport().fqModuleRef
-            resolved is MoveModuleImport -> resolved.fqModuleRef
+            resolved is MvItemImport && resolved.text == "Self" -> resolved.moduleImport().fqModuleRef
+            resolved is MvModuleImport -> resolved.fqModuleRef
             else -> return null
         }
         return moduleRef.reference?.resolve()

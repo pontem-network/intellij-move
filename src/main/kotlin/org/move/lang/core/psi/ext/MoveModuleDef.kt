@@ -4,33 +4,31 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
-import org.move.ide.MoveIcons
-import org.move.lang.containingMoveProject
+import org.move.ide.MvIcons
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
-import org.move.lang.core.psi.mixins.MoveFunctionSignatureMixin
+import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
+import org.move.lang.core.psi.mixins.MvFunctionSignatureMixin
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.FQModule
-import org.move.lang.moveProject
 import javax.swing.Icon
 
-fun MoveModuleDef.definedAddressRef(): MoveAddressRef? =
-    this.addressRef ?: (this.ancestorStrict<MoveAddressDef>())?.addressRef
+fun MvModuleDef.definedAddressRef(): MvAddressRef? =
+    this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
 
-fun MoveModuleDef.fqModule(): FQModule? {
-//    val moveProject = this.containingFile.containingMoveProject() ?: return null
+fun MvModuleDef.fqModule(): FQModule? {
+//    val moveProject = this.containingFile.containingMvProject() ?: return null
     val address = this.containingAddress.normalized()
     val name = this.name ?: return null
     return FQModule(address, name)
 }
 
-val MoveModuleDef.fqName: String? get() {
+val MvModuleDef.fqName: String? get() {
     val address = this.definedAddressRef()?.text?.let { "$it::" } ?: ""
     val module = this.name ?: return null
     return address + module
 }
 
-val MoveModuleDef.friendModules: Set<FQModule>
+val MvModuleDef.friendModules: Set<FQModule>
     get() {
         val block = this.moduleBlock ?: return emptySet()
         val moduleRefs = block.friendStatementList.mapNotNull { it.fqModuleRef }
@@ -45,7 +43,7 @@ val MoveModuleDef.friendModules: Set<FQModule>
         return friends
     }
 
-fun MoveModuleDef.allFnSignatures(): List<MoveFunctionSignature> {
+fun MvModuleDef.allFnSignatures(): List<MvFunctionSignature> {
     val block = moduleBlock ?: return emptyList()
     return listOf(
         block.functionDefList.mapNotNull { it.functionSignature },
@@ -53,7 +51,7 @@ fun MoveModuleDef.allFnSignatures(): List<MoveFunctionSignature> {
     ).flatten()
 }
 
-fun MoveModuleDef.builtinFnSignatures(): List<MoveFunctionSignature> {
+fun MvModuleDef.builtinFnSignatures(): List<MvFunctionSignature> {
     return listOfNotNull(
         createBuiltinFuncSignature("native fun move_from<R: key>(addr: address): R;", project),
         createBuiltinFuncSignature("native fun move_to<R: key>(acc: &signer, res: R);", project),
@@ -68,7 +66,7 @@ fun MoveModuleDef.builtinFnSignatures(): List<MoveFunctionSignature> {
     )
 }
 
-fun MoveModuleDef.functionSignatures(visibility: Visibility): List<MoveFunctionSignature> =
+fun MvModuleDef.functionSignatures(visibility: Visibility): List<MvFunctionSignature> =
     when (visibility) {
         is Visibility.Public ->
             allFnSignatures()
@@ -86,20 +84,20 @@ fun MoveModuleDef.functionSignatures(visibility: Visibility): List<MoveFunctionS
         is Visibility.Internal -> allFnSignatures()
     }
 
-//fun MoveModuleDef.publicFnSignatures(): List<MoveFunctionSignature> {
+//fun MvModuleDef.publicFnSignatures(): List<MvFunctionSignature> {
 //    return allFnSignatures()
 //        .filter { it.visibility == FunctionVisibility.PUBLIC }
 //}
 
-fun createBuiltinFuncSignature(text: String, project: Project): MoveFunctionSignature? {
-    val signature = MovePsiFactory(project)
+fun createBuiltinFuncSignature(text: String, project: Project): MvFunctionSignature? {
+    val signature = MvPsiFactory(project)
         .createNativeFunctionDef(text, moduleName = "builtin_functions")
         .functionSignature ?: return null
-    (signature as MoveFunctionSignatureMixin).builtIn = true
+    (signature as MvFunctionSignatureMixin).builtIn = true
     return signature
 }
 
-//fun MoveModuleDef.builtinFunctions(): List<MoveNativeFunctionDef> =
+//fun MvModuleDef.builtinFunctions(): List<MvNativeFunctionDef> =
 //    listOf(
 //        createBuiltinFuncSignature("native fun move_from<R: resource>(addr: address): R;", project),
 //        createBuiltinFuncSignature("native fun move_to<R: resource>(addr: address, res: R): ();", project),
@@ -113,17 +111,17 @@ fun createBuiltinFuncSignature(text: String, project: Project): MoveFunctionSign
 //        createBuiltinFuncSignature("native fun assert(_: bool, err: u64): ();", project),
 //    )
 
-//fun MoveModuleDef.nativeFunctions(): List<MoveNativeFunctionDef> =
+//fun MvModuleDef.nativeFunctions(): List<MvNativeFunctionDef> =
 //    emptyList()
 //    moduleBlock?.nativeFunctionDefList.orEmpty()
 
-//fun MoveModuleDef.publicNativeFunctions(): List<MoveNativeFunctionDef> =
+//fun MvModuleDef.publicNativeFunctions(): List<MvNativeFunctionDef> =
 //    nativeFunctions().filter { it.isPublic }
 
-//fun MoveModuleDef.structs(): List<MoveStructDef> =
+//fun MvModuleDef.structs(): List<MvStructDef> =
 //    moduleBlock?.structDefList.orEmpty()
 
-fun MoveModuleDef.structSignatures(): List<MoveStructSignature> {
+fun MvModuleDef.structSignatures(): List<MvStructSignature> {
     val block = moduleBlock ?: return emptyList()
     return listOf(
         block.nativeStructDefList.mapNotNull { it.structSignature },
@@ -131,62 +129,62 @@ fun MoveModuleDef.structSignatures(): List<MoveStructSignature> {
     ).flatten()
 }
 
-//fun MoveModuleDef.nativeStructs(): List<MoveStructSignature> {
+//fun MvModuleDef.nativeStructs(): List<MvStructSignature> {
 ////    val block = moduleBlock ?: return emptyList()
 //    return emptyList()
 //}
 
-fun MoveModuleDef.constBindings(): List<MoveBindingPat> =
+fun MvModuleDef.constBindings(): List<MvBindingPat> =
     moduleBlock?.constDefList.orEmpty().mapNotNull { it.bindingPat }
 
-//fun MoveModuleDef.publicConsts(): List<MoveConstDef> =
+//fun MvModuleDef.publicConsts(): List<MvConstDef> =
 //    consts().filter {  }
 
-//fun MoveModuleDef.schemas(): List<MoveSchemaDef> =
+//fun MvModuleDef.schemas(): List<MvSchemaDef> =
 //    moduleBlock?.itemSpecDefList.orEmpty().mapNotNull { it.schemaDef }
 
 
-abstract class MoveModuleDefMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
-                                                   MoveModuleDef {
+abstract class MvModuleDefMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
+                                                   MvModuleDef {
 //    constructor(node: ASTNode) : super(node)
 //
-//    constructor(stub: MoveModuleDefStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+//    constructor(stub: MvModuleDefStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 
-    override fun getIcon(flags: Int): Icon = MoveIcons.MODULE
+    override fun getIcon(flags: Int): Icon = MvIcons.MODULE
 
     override fun getPresentation(): ItemPresentation? {
         val name = this.name ?: return null
-//        val moveProject = this.containingFile.containingMoveProject() ?: return null
+//        val moveProject = this.containingFile.containingMvProject() ?: return null
         val locationString = this.containingAddress.text
         return PresentationData(name,
                                 locationString,
-                                MoveIcons.MODULE,
+                                MvIcons.MODULE,
                                 null)
     }
 
-    override val importStatements: List<MoveImportStatement>
+    override val importStatements: List<MvImportStatement>
         get() =
             moduleBlock?.importStatementList.orEmpty()
 }
 
-//abstract class MoveModuleDefMixin : MoveStubbedNameIdentifierOwnerImpl<MoveModuleDefStub>,
-//                                    MoveModuleDef {
+//abstract class MvModuleDefMixin : MvStubbedNameIdentifierOwnerImpl<MvModuleDefStub>,
+//                                    MvModuleDef {
 //    constructor(node: ASTNode) : super(node)
 //
-//    constructor(stub: MoveModuleDefStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+//    constructor(stub: MvModuleDefStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 //
-//    override val importStatements: List<MoveImportStatement>
+//    override val importStatements: List<MvImportStatement>
 //        get() =
 //            moduleBlock?.importStatementList.orEmpty()
 //}
 
-//abstract class MoveModuleDefMixin : MoveStubbedNameIdentifierOwnerImpl<MoveModuleDefStub>,
-//                                    MoveModuleDef {
+//abstract class MvModuleDefMixin : MvStubbedNameIdentifierOwnerImpl<MvModuleDefStub>,
+//                                    MvModuleDef {
 //    constructor(node: ASTNode) : super(node)
 //
-//    constructor(stub: MoveModuleDefStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+//    constructor(stub: MvModuleDefStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 //
-//    override val importStatements: List<MoveImportStatement>
+//    override val importStatements: List<MvImportStatement>
 //        get() =
 //            moduleBlock?.importStatementList.orEmpty()
 //}

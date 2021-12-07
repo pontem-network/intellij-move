@@ -6,7 +6,6 @@ import com.intellij.build.BuildContentDescriptor
 import com.intellij.build.BuildDescriptor
 import com.intellij.build.DefaultBuildDescriptor
 import com.intellij.build.SyncViewManager
-import com.intellij.build.events.MessageEvent
 import com.intellij.build.progress.BuildProgress
 import com.intellij.build.progress.BuildProgressDescriptor
 import com.intellij.icons.AllIcons
@@ -18,14 +17,12 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
-import org.move.lang.toNioPathOrNull
-import org.move.openapiext.parseToml
 import java.util.concurrent.CompletableFuture
 import javax.swing.JComponent
 
-class MoveSyncTask(
+class MvSyncTask(
     project: Project,
-//    private val moveProjects: List<MoveProject>,
+//    private val moveProjects: List<MvProject>,
     private val result: CompletableFuture<List<MoveProject>>
 ) : Task.Backgroundable(project, "Reloading Cargo projects", true) {
 
@@ -47,8 +44,8 @@ class MoveSyncTask(
             throw e
         }
 
-//        val executable = MoveExecutable(project)
-//        val moveFiles = findMoveFilesDeepestFirst(project).toList()
+//        val executable = MvExecutable(project)
+//        val moveFiles = findMvFilesDeepestFirst(project).toList()
 //        for ((i, moveFile) in moveFiles.withIndex()) {
 //            val moveFileRoot = moveFile.toNioPathOrNull()?.parent ?: continue
 //            executable.build(moveFileRoot)
@@ -56,7 +53,7 @@ class MoveSyncTask(
 //        }
 //
 //        val moveExecPath = project.moveExecPath ?: return
-//        MoveExecutable(project, moveExecPath).version()
+//        MvExecutable(project, moveExecPath).version()
     }
 
     private fun doRun(
@@ -64,19 +61,19 @@ class MoveSyncTask(
         syncProgress: BuildProgress<BuildProgressDescriptor>
     ): List<MoveProject> {
         val moveTomlFiles = findMoveTomlFiles(project)
-        val moveProjects = moveTomlFiles.mapNotNull { initializeMoveProject(project, it) }
+        val moveProjects = moveTomlFiles.mapNotNull { initializeMvProject(project, it) }
         return moveProjects.toList()
 //        val refreshedProjects = if (project.)
 //        val executable = project.moveExecutable
 //        val refreshedProjects = if (executable == null) {
-//            syncProgress.fail(System.currentTimeMillis(), "Move project update failed:\nMove configured incorrectly")
+//            syncProgress.fail(System.currentTimeMillis(), "Mv project update failed:\nMv configured incorrectly")
 //            moveProjects
 //        } else {
 //            moveProjects.map {
 //
 //            }
 //        }
-//        val moveTomlFiles = findMoveFilesDeepestFirst(project).toList()
+//        val moveTomlFiles = findMvFilesDeepestFirst(project).toList()
 //        for ((i, moveTomlFile) in findMoveTomlFilesDeepestFirst(project).withIndex()) {
 //            val moveTomlPath = moveTomlFile.toNioPathOrNull() ?: continue
 //            val tomlFile = parseToml(project, moveTomlPath) ?: continue
@@ -118,7 +115,7 @@ class MoveSyncTask(
     }
 
     companion object {
-        private val LOG = logger<MoveSyncTask>()
+        private val LOG = logger<MvSyncTask>()
     }
 
 //    data class SyncContext(

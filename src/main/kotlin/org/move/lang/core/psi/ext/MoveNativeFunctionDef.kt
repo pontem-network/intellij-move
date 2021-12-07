@@ -1,4 +1,4 @@
 package org.move.lang.core.psi.ext
 
-//val MoveNativeFunctionDef.isPublic: Boolean
-//    get() = isChildExists(MoveElementTypes.PUBLIC)
+//val MvNativeFunctionDef.isPublic: Boolean
+//    get() = isChildExists(MvElementTypes.PUBLIC)

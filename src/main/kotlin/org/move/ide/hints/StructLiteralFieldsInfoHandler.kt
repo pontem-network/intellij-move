@@ -7,29 +7,29 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IElementType
 import org.move.ide.presentation.fullname
-import org.move.lang.MoveElementTypes
-import org.move.lang.core.psi.MoveCallArguments
-import org.move.lang.core.psi.MoveStructLitField
-import org.move.lang.core.psi.MoveStructLitFieldsBlock
+import org.move.lang.MvElementTypes
+import org.move.lang.core.psi.MvCallArguments
+import org.move.lang.core.psi.MvStructLitField
+import org.move.lang.core.psi.MvStructLitFieldsBlock
 import org.move.lang.core.psi.ext.*
 import org.move.utils.AsyncParameterInfoHandler
 
 class StructLitFieldsInfoHandler :
-    AsyncParameterInfoHandler<MoveStructLitFieldsBlock, FieldsDescription>() {
+    AsyncParameterInfoHandler<MvStructLitFieldsBlock, FieldsDescription>() {
 
-    override fun findTargetElement(file: PsiFile, offset: Int): MoveStructLitFieldsBlock? {
+    override fun findTargetElement(file: PsiFile, offset: Int): MvStructLitFieldsBlock? {
         val element = file.findElementAt(offset) ?: return null
-        val block = element.ancestorStrict<MoveStructLitFieldsBlock>() ?: return null
-        val callExpr = element.ancestorStrict<MoveCallArguments>()
+        val block = element.ancestorStrict<MvStructLitFieldsBlock>() ?: return null
+        val callExpr = element.ancestorStrict<MvCallArguments>()
         if (callExpr != null && block.contains(callExpr)) return null
         return block
     }
 
-    override fun calculateParameterInfo(element: MoveStructLitFieldsBlock): Array<FieldsDescription>? =
+    override fun calculateParameterInfo(element: MvStructLitFieldsBlock): Array<FieldsDescription>? =
         FieldsDescription.fromStructLitBlock(element)?.let { arrayOf(it) }
 
     override fun updateParameterInfo(
-        block: MoveStructLitFieldsBlock,
+        block: MvStructLitFieldsBlock,
         context: UpdateParameterInfoContext
     ) {
         if (context.parameterOwner != block) {
@@ -54,27 +54,27 @@ class StructLitFieldsInfoHandler :
     }
 
     private fun findParameterIndex(
-        block: MoveStructLitFieldsBlock,
+        block: MvStructLitFieldsBlock,
         context: UpdateParameterInfoContext
     ): Int {
         if (block.startOffset == context.offset) return -1
         var elementAtOffset = context.file.findElementAt(context.offset) ?: return -1
 
-        val selectedField = elementAtOffset.ancestorStrict<MoveStructLitField>()
+        val selectedField = elementAtOffset.ancestorStrict<MvStructLitField>()
         if (selectedField != null) {
             elementAtOffset = selectedField
         }
         val chunks = block
             .childrenWithLeaves
-            .splitAround(MoveElementTypes.COMMA)
+            .splitAround(MvElementTypes.COMMA)
         val chunk = chunks.find { it.contains(elementAtOffset) } ?: return -1
         val struct = block.litExpr.path.maybeStruct ?: return -1
 
         val fieldName =
-            chunk.filterIsInstance<MoveStructLitField>().firstOrNull()?.referenceName
+            chunk.filterIsInstance<MvStructLitField>().firstOrNull()?.referenceName
         if (fieldName == null) {
             val filledFieldNames = chunks
-                .mapNotNull { it.filterIsInstance<MoveStructLitField>().firstOrNull()?.referenceName }
+                .mapNotNull { it.filterIsInstance<MvStructLitField>().firstOrNull()?.referenceName }
                 .toSet()
             if (filledFieldNames.isEmpty()) return 0
             return struct
@@ -96,7 +96,7 @@ class FieldsDescription(val fields: Array<String>) {
     }
 
     companion object {
-        fun fromStructLitBlock(block: MoveStructLitFieldsBlock): FieldsDescription? {
+        fun fromStructLitBlock(block: MvStructLitFieldsBlock): FieldsDescription? {
             val struct = block.litExpr.path.maybeStruct ?: return null
             val fieldParams =
                 struct.fieldsMap.entries.map { (name, field) ->

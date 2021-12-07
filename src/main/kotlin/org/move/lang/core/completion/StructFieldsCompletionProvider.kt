@@ -7,7 +7,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.MovePsiPatterns.bindingPat
+import org.move.lang.core.MvPsiPatterns.bindingPat
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.processItems
@@ -15,20 +15,20 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.withParent
 import org.move.lang.core.withSuperParent
 
-object StructFieldsCompletionProvider : MoveCompletionProvider() {
+object StructFieldsCompletionProvider : MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = StandardPatterns.or(
             PlatformPatterns
                 .psiElement()
-                .withParent<MoveStructLitField>(),
+                .withParent<MvStructLitField>(),
             PlatformPatterns
                 .psiElement()
-                .withParent<MoveStructPatField>(),
+                .withParent<MvStructPatField>(),
             bindingPat()
-                .withSuperParent<MoveStructPatField>(2),
+                .withSuperParent<MvStructPatField>(2),
             PlatformPatterns
                 .psiElement()
-                .withParent<MoveStructFieldRef>(),
+                .withParent<MvStructFieldRef>(),
         )
 
     override fun addCompletions(
@@ -38,9 +38,9 @@ object StructFieldsCompletionProvider : MoveCompletionProvider() {
     ) {
         val pos = parameters.position
         var element = pos.parent
-        if (element is MoveBindingPat) element = element.parent
+        if (element is MvBindingPat) element = element.parent
         when (element) {
-            is MoveStructPatField -> {
+            is MvStructPatField -> {
                 val structPat = element.structPat
                 addFieldsToCompletion(
                     structPat.path.maybeStruct ?: return,
@@ -48,7 +48,7 @@ object StructFieldsCompletionProvider : MoveCompletionProvider() {
                     result
                 )
             }
-            is MoveStructLitField -> {
+            is MvStructLitField -> {
                 val structLit = element.structLit
                 addFieldsToCompletion(
                     structLit.path.maybeStruct ?: return,
@@ -56,9 +56,9 @@ object StructFieldsCompletionProvider : MoveCompletionProvider() {
                     result
                 )
             }
-            is MoveStructFieldRef -> {
+            is MvStructFieldRef -> {
                 processItems(element, Namespace.DOT_ACCESSED_FIELD) {
-                    val field = it.element as? MoveStructFieldDef
+                    val field = it.element as? MvStructFieldDef
                     if (field != null) {
                         result.addElement(field.createLookupElement(false))
                     }
@@ -69,7 +69,7 @@ object StructFieldsCompletionProvider : MoveCompletionProvider() {
     }
 
     private fun addFieldsToCompletion(
-        referredStruct: MoveStructDef,
+        referredStruct: MvStructDef,
         providedFieldNames: List<String>,
         result: CompletionResultSet,
     ) {

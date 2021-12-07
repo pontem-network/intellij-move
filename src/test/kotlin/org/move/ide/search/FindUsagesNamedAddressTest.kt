@@ -4,11 +4,11 @@ import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.ext.startOffset
-import org.move.utils.tests.MoveProjectTestCase
+import org.move.utils.tests.MvProjectTestCase
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 import org.toml.lang.psi.TomlKeySegment
 
-class FindUsagesNamedAddressTest : MoveProjectTestCase() {
+class FindUsagesNamedAddressTest : MvProjectTestCase() {
     fun `test resolve toml to move usage`() = doTestByText(
         """
         //- Move.toml

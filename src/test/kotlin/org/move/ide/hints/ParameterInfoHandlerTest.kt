@@ -1,10 +1,10 @@
 package org.move.ide.hints
 
-import org.move.lang.core.psi.MoveCallArguments
+import org.move.lang.core.psi.MvCallArguments
 import org.move.utils.tests.ParameterInfoHandlerTestCase
 
 class ParameterInfoHandlerTest
-    : ParameterInfoHandlerTestCase<MoveCallArguments, ParamsDescription>(FunctionParameterInfoHandler()) {
+    : ParameterInfoHandlerTestCase<MvCallArguments, ParamsDescription>(FunctionParameterInfoHandler()) {
 
     fun `test fun no args`() = checkByText("""
         module M {

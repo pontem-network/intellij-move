@@ -1,8 +1,8 @@
 package org.move.lang.parser
 
-import org.move.utils.tests.parser.MoveParsingTestCase
+import org.move.utils.tests.parser.MvParsingTestCase
 
-class PartialParsingTest: MoveParsingTestCase("partial") {
+class PartialParsingTest: MvParsingTestCase("partial") {
     // top level items recovery
     fun `test top level items in script`() = doTest(true)
     fun `test module const`() = doTest(true)

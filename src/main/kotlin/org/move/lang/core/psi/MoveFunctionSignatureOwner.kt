@@ -1,10 +1,10 @@
 package org.move.lang.core.psi
 
-interface MoveFunctionSignatureOwner : MoveTypeParametersOwner {
-    val functionParameterList: MoveFunctionParameterList?
-    val returnType: MoveReturnType?
+interface MvFunctionSignatureOwner : MvTypeParametersOwner {
+    val functionParameterList: MvFunctionParameterList?
+    val returnType: MvReturnType?
 }
 
-val MoveFunctionSignatureOwner.parameters: List<MoveFunctionParameter>
+val MvFunctionSignatureOwner.parameters: List<MvFunctionParameter>
     get() =
         this.functionParameterList?.functionParameterList.orEmpty()

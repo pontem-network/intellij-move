@@ -9,14 +9,14 @@ import com.intellij.openapi.editor.highlighter.HighlighterIterator
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import org.move.lang.MoveElementTypes.*
-import org.move.lang.MoveFile
+import org.move.lang.MvElementTypes.*
+import org.move.lang.MvFile
 import org.move.lang.core.tokenSetOf
 import org.move.openapiext.isValidOffset
 
 private val INVALID_INSIDE_TOKENS = tokenSetOf(L_BRACE, R_BRACE, SEMICOLON)
 
-class MoveAngleBraceTypedHandler : TypedHandlerDelegate() {
+class MvAngleBraceTypedHandler : TypedHandlerDelegate() {
     private var ltTyped = false
 
     override fun beforeCharTyped(
@@ -26,7 +26,7 @@ class MoveAngleBraceTypedHandler : TypedHandlerDelegate() {
         file: PsiFile,
         fileType: FileType
     ): Result {
-        if (file !is MoveFile) return Result.CONTINUE
+        if (file !is MvFile) return Result.CONTINUE
 
         if (CodeInsightSettings.getInstance().AUTOINSERT_PAIR_BRACKET) {
             when (c) {
@@ -46,7 +46,7 @@ class MoveAngleBraceTypedHandler : TypedHandlerDelegate() {
     }
 
     override fun charTyped(c: Char, project: Project, editor: Editor, file: PsiFile): Result {
-        if (file !is MoveFile) return Result.CONTINUE
+        if (file !is MvFile) return Result.CONTINUE
 
         if (ltTyped) {
             ltTyped = false

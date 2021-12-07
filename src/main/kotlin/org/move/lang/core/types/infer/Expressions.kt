@@ -4,61 +4,61 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
 
-fun inferExprTy(expr: MoveExpr, ctx: InferenceContext): Ty {
+fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
     if (ctx.exprTypes.containsKey(expr)) return ctx.exprTypes[expr]!!
 
     val exprTy = when (expr) {
-        is MoveRefExpr -> inferRefExprTy(expr, ctx)
-        is MoveBorrowExpr -> inferBorrowExprTy(expr, ctx)
-        is MoveCallExpr -> inferCallExprTy(expr, ctx)
-        is MoveDotExpr -> inferDotExprTy(expr, ctx)
-        is MoveStructLitExpr -> inferStructLitExpr(expr, ctx)
-        is MoveDerefExpr -> inferDerefExprTy(expr, ctx)
-        is MoveLitExpr -> inferLitExprTy(expr)
+        is MvRefExpr -> inferRefExprTy(expr, ctx)
+        is MvBorrowExpr -> inferBorrowExprTy(expr, ctx)
+        is MvCallExpr -> inferCallExprTy(expr, ctx)
+        is MvDotExpr -> inferDotExprTy(expr, ctx)
+        is MvStructLitExpr -> inferStructLitExpr(expr, ctx)
+        is MvDerefExpr -> inferDerefExprTy(expr, ctx)
+        is MvLitExpr -> inferLitExprTy(expr)
 
-        is MoveMoveExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
-        is MoveCopyExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
+        is MvMoveExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
+        is MvCopyExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
 
-        is MoveCastExpr -> inferMoveTypeTy(expr.type)
-        is MoveParensExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
+        is MvCastExpr -> inferMvTypeTy(expr.type)
+        is MvParensExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
 
-        is MovePlusExpr -> inferBinaryExprTy(expr.exprList, ctx)
-        is MoveMinusExpr -> inferBinaryExprTy(expr.exprList, ctx)
-        is MoveMulExpr -> inferBinaryExprTy(expr.exprList, ctx)
-        is MoveDivExpr -> inferBinaryExprTy(expr.exprList, ctx)
-        is MoveModExpr -> inferBinaryExprTy(expr.exprList, ctx)
+        is MvPlusExpr -> inferBinaryExprTy(expr.exprList, ctx)
+        is MvMinusExpr -> inferBinaryExprTy(expr.exprList, ctx)
+        is MvMulExpr -> inferBinaryExprTy(expr.exprList, ctx)
+        is MvDivExpr -> inferBinaryExprTy(expr.exprList, ctx)
+        is MvModExpr -> inferBinaryExprTy(expr.exprList, ctx)
 
-        is MoveBangExpr -> TyBool
-        is MoveLessExpr -> TyBool
-        is MoveLessEqualsExpr -> TyBool
-        is MoveGreaterExpr -> TyBool
-        is MoveGreaterEqualsExpr -> TyBool
-        is MoveAndExpr -> TyBool
-        is MoveOrExpr -> TyBool
+        is MvBangExpr -> TyBool
+        is MvLessExpr -> TyBool
+        is MvLessEqualsExpr -> TyBool
+        is MvGreaterExpr -> TyBool
+        is MvGreaterEqualsExpr -> TyBool
+        is MvAndExpr -> TyBool
+        is MvOrExpr -> TyBool
 
-        is MoveIfExpr -> inferIfExprTy(expr)
+        is MvIfExpr -> inferIfExprTy(expr)
         else -> TyUnknown
     }
     ctx.cacheExprTy(expr, exprTy)
     return exprTy
 }
 
-private fun inferRefExprTy(refExpr: MoveRefExpr, ctx: InferenceContext): Ty {
+private fun inferRefExprTy(refExpr: MvRefExpr, ctx: InferenceContext): Ty {
     val binding =
-        refExpr.path.reference?.resolve() as? MoveBindingPat ?: return TyUnknown
+        refExpr.path.reference?.resolve() as? MvBindingPat ?: return TyUnknown
     return binding.inferBindingPatTy()
 }
 
-private fun inferBorrowExprTy(borrowExpr: MoveBorrowExpr, ctx: InferenceContext): Ty {
+private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): Ty {
     val innerExpr = borrowExpr.expr ?: return TyUnknown
     val innerExprTy = inferExprTy(innerExpr, ctx)
     val mutability = Mutability.valueOf(borrowExpr.isMut)
     return TyReference(innerExprTy, mutability)
 }
 
-private fun inferCallExprTy(callExpr: MoveCallExpr, ctx: InferenceContext): Ty {
+private fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
     val path = callExpr.path
-    val funcItem = path.reference?.resolve() as? MoveFunctionSignature ?: return TyUnknown
+    val funcItem = path.reference?.resolve() as? MvFunctionSignature ?: return TyUnknown
     val funcTy = instantiateItemTy(funcItem) as? TyFunction ?: return TyUnknown
 
     val inference = InferenceContext()
@@ -66,7 +66,7 @@ private fun inferCallExprTy(callExpr: MoveCallExpr, ctx: InferenceContext): Ty {
     if (path.typeArguments.isNotEmpty()) {
         if (path.typeArguments.size != funcTy.typeVars.size) return TyUnknown
         for ((typeVar, typeArgument) in funcTy.typeVars.zip(path.typeArguments)) {
-            val passedTy = inferMoveTypeTy(typeArgument.type)
+            val passedTy = inferMvTypeTy(typeArgument.type)
             inference.registerConstraint(Constraint.Equate(typeVar, passedTy))
         }
     }
@@ -85,7 +85,7 @@ private fun inferCallExprTy(callExpr: MoveCallExpr, ctx: InferenceContext): Ty {
     return inference.resolveTy(funcTy.retType)
 }
 
-private fun inferDotExprTy(dotExpr: MoveDotExpr, ctx: InferenceContext): Ty {
+private fun inferDotExprTy(dotExpr: MvDotExpr, ctx: InferenceContext): Ty {
     val objectTy = inferExprTy(dotExpr.expr, ctx)
     val structTy =
         when (objectTy) {
@@ -105,7 +105,7 @@ private fun inferDotExprTy(dotExpr: MoveDotExpr, ctx: InferenceContext): Ty {
     return inference.resolveTy(structTy.fieldTy(fieldName))
 }
 
-private fun inferStructLitExpr(litExpr: MoveStructLitExpr, ctx: InferenceContext): Ty {
+private fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext): Ty {
     val structItem = litExpr.path.maybeStructSignature ?: return TyUnknown
     val structTypeVars = structItem.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
 
@@ -135,7 +135,7 @@ private fun inferStructLitExpr(litExpr: MoveStructLitExpr, ctx: InferenceContext
     return inference.resolveTy(structTy)
 }
 
-private fun inferBinaryExprTy(exprList: List<MoveExpr>, ctx: InferenceContext): Ty {
+private fun inferBinaryExprTy(exprList: List<MvExpr>, ctx: InferenceContext): Ty {
     for ((i, expr) in exprList.withIndex()) {
         val exprTy = inferExprTy(expr, ctx)
         if (exprTy is TyInteger && exprTy.kind == TyInteger.DEFAULT_KIND) {
@@ -147,13 +147,13 @@ private fun inferBinaryExprTy(exprList: List<MoveExpr>, ctx: InferenceContext): 
     return TyUnknown
 }
 
-private fun inferDerefExprTy(derefExpr: MoveDerefExpr, ctx: InferenceContext): Ty {
+private fun inferDerefExprTy(derefExpr: MvDerefExpr, ctx: InferenceContext): Ty {
     val exprTy =
         derefExpr.expr?.let { inferExprTy(it, ctx) }
     return (exprTy as? TyReference)?.referenced ?: TyUnknown
 }
 
-private fun inferLitExprTy(litExpr: MoveLitExpr): Ty {
+private fun inferLitExprTy(litExpr: MvLitExpr): Ty {
     return when {
         litExpr.boolLiteral != null -> TyBool
         litExpr.addressLiteral != null
@@ -168,7 +168,7 @@ private fun inferLitExprTy(litExpr: MoveLitExpr): Ty {
     }
 }
 
-private fun inferIfExprTy(ifExpr: MoveIfExpr): Ty {
+private fun inferIfExprTy(ifExpr: MvIfExpr): Ty {
     val ifTy = ifExpr.returningExpr?.inferExprTy() ?: return TyUnknown
     val elseTy = ifExpr.elseExpr?.inferExprTy() ?: return TyUnknown
     if (!isCompatible(ifTy, elseTy)) return TyUnknown

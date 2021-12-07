@@ -5,7 +5,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.MovePsiPatterns
+import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.isSpecElement
@@ -14,11 +14,11 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
 
-object NamesCompletionProvider : MoveCompletionProvider() {
+object NamesCompletionProvider : MvCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
-            MovePsiPatterns.pathIdent()
-                .andNot(MovePsiPatterns.pathType())
+            MvPsiPatterns.pathIdent()
+                .andNot(MvPsiPatterns.pathType())
 
     override fun addCompletions(
         parameters: CompletionParameters,
@@ -27,7 +27,7 @@ object NamesCompletionProvider : MoveCompletionProvider() {
     ) {
         val maybePathIdent = parameters.position.parent
         val maybePath = maybePathIdent.parent
-        val path = maybePath as? MovePath ?: maybePath.parent as MovePath
+        val path = maybePath as? MvPath ?: maybePath.parent as MvPath
 
         if (parameters.position !== path.referenceNameElement) return
 
@@ -35,7 +35,7 @@ object NamesCompletionProvider : MoveCompletionProvider() {
         // if refElement is path with module ref present -> get names from the module and return
         val moduleRef = path.pathIdent.moduleRef
         if (moduleRef != null) {
-            val referredModule = moduleRef.reference?.resolve() as? MoveModuleDef ?: return
+            val referredModule = moduleRef.reference?.resolve() as? MvModuleDef ?: return
             val ns = setOf(namespace)
             val vs = when {
                 moduleRef.isSelf -> setOf(Visibility.Internal())
@@ -62,9 +62,9 @@ object NamesCompletionProvider : MoveCompletionProvider() {
         }
     }
 
-    private fun namespaceOf(refElement: MoveReferenceElement) =
+    private fun namespaceOf(refElement: MvReferenceElement) =
         when (refElement) {
-//            is MoveSchemaReferenceElement -> Namespace.SCHEMA
+//            is MvSchemaReferenceElement -> Namespace.SCHEMA
             else -> Namespace.NAME
         }
 }

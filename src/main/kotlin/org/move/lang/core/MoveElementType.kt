@@ -1,6 +1,6 @@
 package org.move.lang.core
 
 import com.intellij.psi.tree.IElementType
-import org.move.lang.MoveLanguage
+import org.move.lang.MvLanguage
 
-class MoveElementType(debugName: String) : IElementType(debugName, MoveLanguage)
+class MvElementType(debugName: String) : IElementType(debugName, MvLanguage)

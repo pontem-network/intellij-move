@@ -1,12 +1,12 @@
 package org.move.lang.core.resolve.ref
 
-import org.move.lang.core.psi.MoveNamedElement
-import org.move.lang.core.psi.MoveStructFieldReferenceElement
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.MvStructFieldReferenceElement
 import org.move.lang.core.resolve.resolveItem
 
-class MoveStructFieldReferenceImpl(
-    element: MoveStructFieldReferenceElement,
-) : MoveReferenceBase<MoveStructFieldReferenceElement>(element) {
+class MvStructFieldReferenceImpl(
+    element: MvStructFieldReferenceElement,
+) : MvReferenceBase<MvStructFieldReferenceElement>(element) {
 
-    override fun resolve(): MoveNamedElement? = resolveItem(element, Namespace.STRUCT_FIELD)
+    override fun resolve(): MvNamedElement? = resolveItem(element, Namespace.STRUCT_FIELD)
 }

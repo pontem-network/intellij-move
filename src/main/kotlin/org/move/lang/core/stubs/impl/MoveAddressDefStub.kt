@@ -1,25 +1,25 @@
 package org.move.lang.core.stubs.impl
 
-//class MoveAddressDefStub(
+//class MvAddressDefStub(
 //    parent: StubElement<*>?,
 //    elementType: IStubElementType<*, *>,
-//) : StubBase<MoveAddressDef>(parent, elementType) {
+//) : StubBase<MvAddressDef>(parent, elementType) {
 //
-//    object Type : MoveStubElementType<MoveAddressDefStub, MoveAddressDef>("ADDRESS_DEF") {
+//    object Type : MvStubElementType<MvAddressDefStub, MvAddressDef>("ADDRESS_DEF") {
 //
 //        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
-//            MoveAddressDefStub(
+//            MvAddressDefStub(
 //                parentStub, this,
 //            )
 //
-//        override fun serialize(stub: MoveAddressDefStub, dataStream: StubOutputStream) {}
+//        override fun serialize(stub: MvAddressDefStub, dataStream: StubOutputStream) {}
 //
-//        override fun createPsi(stub: MoveAddressDefStub): MoveAddressDef =
-//            MoveAddressDefImpl(stub, this)
+//        override fun createPsi(stub: MvAddressDefStub): MvAddressDef =
+//            MvAddressDefImpl(stub, this)
 //
-//        override fun createStub(psi: MoveAddressDef, parentStub: StubElement<*>?) =
-//            MoveAddressDefStub(parentStub, this)
+//        override fun createStub(psi: MvAddressDef, parentStub: StubElement<*>?) =
+//            MvAddressDefStub(parentStub, this)
 //
-//        override fun indexStub(stub: MoveAddressDefStub, sink: IndexSink) = sink.indexNamedStub()
+//        override fun indexStub(stub: MvAddressDefStub, sink: IndexSink) = sink.indexNamedStub()
 //    }
 //}

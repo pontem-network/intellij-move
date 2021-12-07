@@ -1,19 +1,19 @@
 package org.move.utils.tests.resolve
 
 import org.intellij.lang.annotations.Language
-import org.move.lang.core.psi.MoveNamedElement
-import org.move.lang.core.psi.MoveReferenceElement
-import org.move.utils.tests.MoveTestBase
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.MvReferenceElement
+import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 
-abstract class ResolveTestCase : MoveTestBase() {
+abstract class ResolveTestCase : MvTestBase() {
     protected fun checkByCode(
         @Language("Move") code: String,
     ) {
         inlineFile(code, "main.move")
 
-        val (refElement, data, offset) = myFixture.findElementWithDataAndOffsetInEditor<MoveReferenceElement>(
+        val (refElement, data, offset) = myFixture.findElementWithDataAndOffsetInEditor<MvReferenceElement>(
             "^"
         )
 
@@ -27,7 +27,7 @@ abstract class ResolveTestCase : MoveTestBase() {
 
         val resolved = refElement.checkedResolve(offset)
 
-        val target = myFixture.findElementInEditor(MoveNamedElement::class.java, "X")
+        val target = myFixture.findElementInEditor(MvNamedElement::class.java, "X")
         check(resolved == target) {
             "$refElement `${refElement.text}` should resolve to $target (${target.text}), was $resolved (${resolved.text}) instead"
         }

@@ -5,7 +5,7 @@ import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
 import org.intellij.lang.annotations.Language
 import org.move.utils.tests.FileTree
-import org.move.utils.tests.MoveProjectTestCase
+import org.move.utils.tests.MvProjectTestCase
 import org.move.utils.tests.replaceCaretMarker
 
 class CompletionTestProjectFixture(
@@ -32,7 +32,7 @@ class CompletionTestProjectFixture(
     }
 }
 
-abstract class CompletionProjectTestCase : MoveProjectTestCase() {
+abstract class CompletionProjectTestCase : MvProjectTestCase() {
     lateinit var completionFixture: CompletionTestProjectFixture
 
     override fun setUp() {

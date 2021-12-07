@@ -3,29 +3,29 @@ package org.move.lang.core.psi
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
-import org.move.lang.MoveFile
+import org.move.lang.MvFile
 import org.move.lang.MoveFileType
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
 
-class MovePsiFactory(private val project: Project) {
+class MvPsiFactory(private val project: Project) {
     fun createIdentifier(text: String): PsiElement =
-        createFromText<MoveModuleDef>("module $text {}")?.nameIdentifier
+        createFromText<MvModuleDef>("module $text {}")?.nameIdentifier
             ?: error("Failed to create identifier: `$text`")
 
-//    fun createQualifiedPath(text: String): MoveQualPath =
+//    fun createQualifiedPath(text: String): MvQualPath =
 //        createFromText("script { fun main() { $text; } }") ?: error("Failed to create QualifiedPath")
 
-    fun createFunctionSignature(text: String): MoveFunctionSignature {
+    fun createFunctionSignature(text: String): MvFunctionSignature {
         return createFromText("module _IntellijPreludeDummy { $text {}}")
             ?: error("Failed to create a method member from text: `$text`")
     }
 
-    fun createItemImport(text: String): MoveItemImport {
+    fun createItemImport(text: String): MvItemImport {
         return createFromText("module _IntellijPreludeDummy { use 0x1::Module::$text; }")
             ?: error("Failed to create an item import from text: `$text`")
     }
 
-    fun createAcquiresType(text: String): MoveAcquiresType {
+    fun createAcquiresType(text: String): MvAcquiresType {
         return createFromText("module _IntellijPreludeDummy { fun main() $text {}}")
             ?: error("Failed to create a method member from text: `$text`")
     }
@@ -33,17 +33,17 @@ class MovePsiFactory(private val project: Project) {
     fun createNativeFunctionDef(
         text: String,
         moduleName: String = "_IntellijPreludeDummy"
-    ): MoveNativeFunctionDef =
+    ): MvNativeFunctionDef =
         createFromText("module $moduleName { $text }")
             ?: error("Failed to create a method member from text: `$text`")
 
-    private inline fun <reified T : MoveElement> createFromText(code: CharSequence): T? {
+    private inline fun <reified T : MvElement> createFromText(code: CharSequence): T? {
         val dummyFile = PsiFileFactory.getInstance(project)
             .createFileFromText(
                 "DUMMY.move",
                 MoveFileType,
                 code
-            ) as MoveFile
+            ) as MvFile
         return dummyFile.descendantOfTypeStrict()
     }
 }

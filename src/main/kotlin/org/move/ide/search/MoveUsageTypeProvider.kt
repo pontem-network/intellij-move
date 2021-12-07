@@ -9,10 +9,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.usages.UsageTarget
 import com.intellij.usages.impl.rules.UsageType
 import com.intellij.usages.impl.rules.UsageTypeProviderEx
-import org.move.lang.core.psi.MoveAddressRef
-import org.move.lang.core.psi.MoveExpr
+import org.move.lang.core.psi.MvAddressRef
+import org.move.lang.core.psi.MvExpr
 
-object MoveUsageTypeProvider : UsageTypeProviderEx {
+object MvUsageTypeProvider : UsageTypeProviderEx {
     // Instantiate each UsageType only once, so that the equality check in UsageTypeGroup.equals() works correctly
 //    private val IMPL = UsageType { "impl" }
 
@@ -51,35 +51,35 @@ object MoveUsageTypeProvider : UsageTypeProviderEx {
 //        val refinedElement = element?.findExpansionElements()?.firstOrNull()?.parent ?: element
         val parent = element.parent ?: return null;
         return when (parent) {
-            is MoveExpr -> EXPR
-            is MoveAddressRef -> ADDRESS_REF
+            is MvExpr -> EXPR
+            is MvAddressRef -> ADDRESS_REF
             else -> null
         }
-//        val parent = element?.goUpTillOtherThan<MovePathExpr>() ?: return null
+//        val parent = element?.goUpTillOtherThan<MvPathExpr>() ?: return null
 //        return when (parent) {
 ////            is RsBaseType -> when (parent.parent) {
 ////                is RsImplItem -> IMPL
 ////                else -> TYPE_REFERENCE
 ////            }
-//            is MoveExpr -> when (parent.goUpTillOtherThan<MovePathExpr>()) {
-//                is MoveDotExpr -> DOT_EXPR
-//                is MoveCallExpr -> FUNCTION_CALL
-//                is MoveFunctionParams -> ARGUMENT
+//            is MvExpr -> when (parent.goUpTillOtherThan<MvPathExpr>()) {
+//                is MvDotExpr -> DOT_EXPR
+//                is MvCallExpr -> FUNCTION_CALL
+//                is MvFunctionParams -> ARGUMENT
 ////                is RsFormatMacroArg -> MACRO_ARGUMENT
-//                is MoveExpr -> EXPR
+//                is MvExpr -> EXPR
 //                else -> null
 //            }
 ////            is RsUseSpeck -> USE
-//            is MoveStructLitExpr -> INIT_STRUCT
-//            is MoveStructLitField -> INIT_FIELD
+//            is MvStructLitExpr -> INIT_STRUCT
+//            is MvStructLitField -> INIT_FIELD
 ////            is RsTraitRef -> TRAIT_REFERENCE
 ////            is RsMethodCall -> METHOD_CALL
 ////            is RsMetaItem -> META_ITEM
 ////            is RsFieldLookup -> FIELD
 ////            is RsMacroCall -> MACRO_CALL
-//            is MoveBindingPat -> PAT_BINDING
+//            is MvBindingPat -> PAT_BINDING
 //            else -> when (parent.parent) {
-//                is MoveModuleBlock -> MOD
+//                is MvModuleBlock -> MOD
 //                else -> null
 //            }
 //        }

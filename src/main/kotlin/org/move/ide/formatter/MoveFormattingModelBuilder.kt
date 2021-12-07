@@ -2,14 +2,14 @@ package org.move.ide.formatter
 
 import com.intellij.formatting.*
 
-class MoveFormattingModelBuilder : FormattingModelBuilder {
+class MvFormattingModelBuilder : FormattingModelBuilder {
     override fun createModel(formattingContext: FormattingContext): FormattingModel {
-        val formatterBlock = MoveFormatterBlock(
+        val formatterBlock = MvFormatterBlock(
             formattingContext.psiElement.node,
             null,
             null,
             Indent.getNoneIndent(),
-            MoveFmtContext.create(formattingContext.codeStyleSettings)
+            MvFmtContext.create(formattingContext.codeStyleSettings)
         )
         return FormattingModelProvider.createFormattingModelForPsiFile(formattingContext.containingFile,
                                                                        formatterBlock,

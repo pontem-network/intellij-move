@@ -2,7 +2,7 @@ package org.move.ide.inspections
 
 import org.move.utils.tests.annotation.InspectionsTestCase
 
-class UnresolvedReferenceInspectionTest : InspectionsTestCase(MoveUnresolvedReferenceInspection::class) {
+class UnresolvedReferenceInspectionTest : InspectionsTestCase(MvUnresolvedReferenceInspection::class) {
     fun `test unresolved variable`() = checkByText("""
         module M {
             fun main() {

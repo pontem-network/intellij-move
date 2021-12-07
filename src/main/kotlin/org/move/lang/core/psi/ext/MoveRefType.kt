@@ -1,7 +1,7 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.MoveRefType
+import org.move.lang.core.psi.MvRefType
 
-val MoveRefType.mutable: Boolean
+val MvRefType.mutable: Boolean
     get() =
         "mut" in this.refTypeStart.text

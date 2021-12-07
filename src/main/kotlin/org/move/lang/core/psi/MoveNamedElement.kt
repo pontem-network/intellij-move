@@ -3,20 +3,20 @@ package org.move.lang.core.psi
 import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
-import org.move.lang.MoveElementTypes
+import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.ext.findLastChildByType
 
-interface MoveNamedElement : MoveElement,
+interface MvNamedElement : MvElement,
                              PsiNamedElement,
                              NavigatablePsiElement {
     @JvmDefault
     val nameElement: PsiElement?
-        get() = findLastChildByType(MoveElementTypes.IDENTIFIER)
+        get() = findLastChildByType(MvElementTypes.IDENTIFIER)
 }
 
-//abstract class MoveStubbedNamedElementImpl<StubT> : MoveStubbedElementImpl<StubT>,
-//                                                    MoveNameIdentifierOwner
-//        where StubT : MoveNamedStub, StubT : StubElement<*> {
+//abstract class MvStubbedNamedElementImpl<StubT> : MvStubbedElementImpl<StubT>,
+//                                                    MvNameIdentifierOwner
+//        where StubT : MvNamedStub, StubT : StubElement<*> {
 //
 //    constructor(node: ASTNode) : super(node)
 //
@@ -25,7 +25,7 @@ interface MoveNamedElement : MoveElement,
 //    override fun getName(): String? = nameElement?.text
 //
 //    override fun setName(name: String): PsiElement {
-//        nameElement?.replace(MovePsiFactory(project).createIdentifier(name))
+//        nameElement?.replace(MvPsiFactory(project).createIdentifier(name))
 //        return this
 //    }
 //

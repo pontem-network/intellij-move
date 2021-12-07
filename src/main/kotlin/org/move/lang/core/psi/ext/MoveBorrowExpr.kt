@@ -1,9 +1,9 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.MoveElementTypes
-import org.move.lang.core.psi.MoveBorrowExpr
+import org.move.lang.MvElementTypes
+import org.move.lang.core.psi.MvBorrowExpr
 
-val MoveBorrowExpr.isMut: Boolean
+val MvBorrowExpr.isMut: Boolean
     get() {
-        return childrenByType(MoveElementTypes.MUT).toList().isNotEmpty()
+        return childrenByType(MvElementTypes.MUT).toList().isNotEmpty()
     }

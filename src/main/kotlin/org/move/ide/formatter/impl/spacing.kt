@@ -12,14 +12,14 @@ import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.impl.source.tree.TreeUtil
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
-import org.move.ide.formatter.MoveFmtContext
-import org.move.lang.MoveElementTypes.*
+import org.move.ide.formatter.MvFmtContext
+import org.move.lang.MvElementTypes.*
 import org.move.lang.core.MOVE_COMMENTS
 import org.move.lang.core.MOVE_KEYWORDS
-import org.move.lang.core.psi.MoveAddressBlock
-import org.move.lang.core.psi.MoveAddressDef
-import org.move.lang.core.psi.MoveModuleBlock
-import org.move.lang.core.psi.MoveModuleDef
+import org.move.lang.core.psi.MvAddressBlock
+import org.move.lang.core.psi.MvAddressDef
+import org.move.lang.core.psi.MvModuleBlock
+import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
 import org.move.lang.core.tokenSetOf
@@ -98,7 +98,7 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
 }
 
 
-fun Block.computeSpacing(child1: Block?, child2: Block, ctx: MoveFmtContext): Spacing? {
+fun Block.computeSpacing(child1: Block?, child2: Block, ctx: MvFmtContext): Spacing? {
     if (child1 is ASTBlock && child2 is ASTBlock) SpacingContext.create(child1, child2)?.apply {
         when {
             ncPsi1.isStatement && ncPsi2.isStatementOrExpr
@@ -120,8 +120,8 @@ fun Block.computeSpacing(child1: Block?, child2: Block, ctx: MoveFmtContext): Sp
                 keepBlankLines = ctx.commonSettings.KEEP_BLANK_LINES_IN_DECLARATIONS
             )
 
-            (ncPsi1.text == "{" && ncPsi1.parent is MoveAddressBlock && ncPsi2 is MoveModuleDef)
-                    || (ncPsi1.text == "{" && ncPsi1.parent is MoveModuleBlock && ncPsi2.isModuleItem)
+            (ncPsi1.text == "{" && ncPsi1.parent is MvAddressBlock && ncPsi2 is MvModuleDef)
+                    || (ncPsi1.text == "{" && ncPsi1.parent is MvModuleBlock && ncPsi2.isModuleItem)
             -> return lineBreak(
                 minLineFeeds = if (!needsBlankLineBetweenItems()) 0 else 1,
                 keepLineBreaks = ctx.commonSettings.KEEP_LINE_BREAKS,

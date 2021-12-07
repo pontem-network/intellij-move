@@ -1,9 +1,9 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.MoveFunctionSignature
-import org.move.lang.core.psi.MoveFunctionVisibilityModifier
-import org.move.lang.core.psi.MoveModuleDef
-import org.move.lang.core.psi.MoveScriptDef
+import org.move.lang.core.psi.MvFunctionSignature
+import org.move.lang.core.psi.MvFunctionVisibilityModifier
+import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvScriptDef
 
 enum class FunctionVisibility {
     PRIVATE,
@@ -12,10 +12,10 @@ enum class FunctionVisibility {
     PUBLIC_SCRIPT;
 }
 
-val MoveFunctionSignature.visibility: FunctionVisibility
+val MvFunctionSignature.visibility: FunctionVisibility
     get() {
         val visibility =
-            this.getPrevNonCommentSibling() as? MoveFunctionVisibilityModifier
+            this.getPrevNonCommentSibling() as? MvFunctionVisibilityModifier
                 ?: return FunctionVisibility.PRIVATE
         return when (visibility.node.text) {
             "public" -> FunctionVisibility.PUBLIC
@@ -25,24 +25,24 @@ val MoveFunctionSignature.visibility: FunctionVisibility
         }
     }
 
-//val MoveFunctionSignature.function: MoveFunctionDef?
+//val MvFunctionSignature.function: MvFunctionDef?
 //    get() {
-//        return this.parent as? MoveFunctionDef
+//        return this.parent as? MvFunctionDef
 //    }
 //
-//val MoveFunctionSignature.nativeFunction: MoveNativeDef?
+//val MvFunctionSignature.nativeFunction: MvNativeDef?
 //    get() {
-//        return this.parent as? MoveNativeDef
+//        return this.parent as? MvNativeDef
 //    }
 
-val MoveFunctionSignature.module: MoveModuleDef?
+val MvFunctionSignature.module: MvModuleDef?
     get() {
         val moduleBlock = this.parent.parent
-        return moduleBlock.parent as? MoveModuleDef
+        return moduleBlock.parent as? MvModuleDef
     }
 
-val MoveFunctionSignature.script: MoveScriptDef?
+val MvFunctionSignature.script: MvScriptDef?
     get() {
         val scriptBlock = this.parent.parent
-        return scriptBlock.parent as? MoveScriptDef
+        return scriptBlock.parent as? MvScriptDef
     }

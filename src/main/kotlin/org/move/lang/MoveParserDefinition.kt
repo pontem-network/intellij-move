@@ -1,6 +1,6 @@
 package org.move.lang
 
-//import org.move.lang.core.stubs.MoveFileStub
+//import org.move.lang.core.stubs.MvFileStub
 import com.intellij.lang.ASTNode
 import com.intellij.lang.ParserDefinition
 import com.intellij.lang.PsiParser
@@ -11,7 +11,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
-import org.move.lang.core.MoveTokenType
+import org.move.lang.core.MvTokenType
 import org.move.lang.core.lexer.createMoveLexer
 import org.move.lang.core.tokenSetOf
 
@@ -24,7 +24,7 @@ class MoveParserDefinition : ParserDefinition {
         return MoveParser()
     }
 
-    //    override fun getFileNodeType(): IFileElementType = MoveFileStub.Type
+    //    override fun getFileNodeType(): IFileElementType = MvFileStub.Type
     override fun getFileNodeType(): IFileElementType = FILE
 
     override fun getCommentTokens(): TokenSet {
@@ -33,22 +33,22 @@ class MoveParserDefinition : ParserDefinition {
 
     override fun getStringLiteralElements(): TokenSet {
         // hex string is not included, as it's basically vector<u8> and not string
-        return tokenSetOf(MoveElementTypes.BYTE_STRING_LITERAL)
+        return tokenSetOf(MvElementTypes.BYTE_STRING_LITERAL)
     }
 
     override fun createElement(node: ASTNode): PsiElement {
-        return MoveElementTypes.Factory.createElement(node)
+        return MvElementTypes.Factory.createElement(node)
     }
 
     override fun createFile(viewProvider: FileViewProvider): PsiFile {
-        return MoveFile(viewProvider)
+        return MvFile(viewProvider)
     }
 
     companion object {
-        val FILE = IFileElementType(MoveLanguage)
+        val FILE = IFileElementType(MvLanguage)
 
-        @JvmField val BLOCK_COMMENT = MoveTokenType("BLOCK_COMMENT")
-        @JvmField val EOL_COMMENT = MoveTokenType("EOL_COMMENT")
-        @JvmField val EOL_DOC_COMMENT = MoveTokenType("EOL_DOC_COMMENT")
+        @JvmField val BLOCK_COMMENT = MvTokenType("BLOCK_COMMENT")
+        @JvmField val EOL_COMMENT = MvTokenType("EOL_COMMENT")
+        @JvmField val EOL_DOC_COMMENT = MvTokenType("EOL_DOC_COMMENT")
     }
 }

@@ -1,17 +1,17 @@
 package org.move.lang.core.resolve.ref
 
 import com.intellij.psi.PsiReference
-import org.move.lang.core.psi.MoveNamedElement
-import org.move.lang.core.psi.MoveElement
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.MvElement
 import org.move.lang.core.types.BoundElement
 
-interface MoveReference : PsiReference {
+interface MvReference : PsiReference {
 
-    override fun getElement(): MoveElement
+    override fun getElement(): MvElement
 
-    override fun resolve(): MoveNamedElement?
+    override fun resolve(): MvNamedElement?
 }
 
-interface MovePathReference: MoveReference {
-    fun advancedResolve(): BoundElement<MoveNamedElement>?
+interface MvPathReference: MvReference {
+    fun advancedResolve(): BoundElement<MvNamedElement>?
 }

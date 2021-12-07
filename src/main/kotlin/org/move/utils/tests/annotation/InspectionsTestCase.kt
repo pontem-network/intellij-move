@@ -6,10 +6,10 @@ import kotlin.reflect.KClass
 
 abstract class InspectionsTestCase(
     private val inspectionClass: KClass<out InspectionProfileEntry>
-) : MoveAnnotationTestCase() {
+) : MvAnnotationTestCase() {
 
-    override fun createAnnotationFixture(): MoveAnnotationTestFixture =
-        MoveAnnotationTestFixture(this, myFixture, inspectionClasses = listOf(inspectionClass))
+    override fun createAnnotationFixture(): MvAnnotationTestFixture =
+        MvAnnotationTestFixture(this, myFixture, inspectionClasses = listOf(inspectionClass))
 
     fun checkFixIsUnavailable(
         fixName: String,

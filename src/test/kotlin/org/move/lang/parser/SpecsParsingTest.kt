@@ -1,8 +1,8 @@
 package org.move.lang.parser
 
-import org.move.utils.tests.parser.MoveParsingTestCase
+import org.move.utils.tests.parser.MvParsingTestCase
 
-class SpecsParsingTest: MoveParsingTestCase("specs") {
+class SpecsParsingTest: MvParsingTestCase("specs") {
     fun `test scopes`() = doTest(true)
     fun `test conditions`() = doTest(true)
     fun `test forall exists`() = doTest(true)

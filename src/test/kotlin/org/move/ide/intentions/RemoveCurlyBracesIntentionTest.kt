@@ -1,8 +1,8 @@
 package org.move.ide.intentions
 
-import org.move.utils.tests.MoveIntentionTestCase
+import org.move.utils.tests.MvIntentionTestCase
 
-class RemoveCurlyBracesIntentionTest: MoveIntentionTestCase(RemoveCurlyBracesIntention::class) {
+class RemoveCurlyBracesIntentionTest: MvIntentionTestCase(RemoveCurlyBracesIntention::class) {
     fun `test remove curly braces simple`() = doAvailableTest(
         """
         module M {

@@ -5,9 +5,9 @@ import com.intellij.ide.actions.CreateFileFromTemplateDialog
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDirectory
-import org.move.ide.MoveIcons
+import org.move.ide.MvIcons
 
-class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MoveIcons.MOVE),
+class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MvIcons.MOVE),
                              DumbAware {
     override fun getActionName(directory: PsiDirectory?, newName: String, templateName: String?) = CAPTION
 
@@ -17,8 +17,8 @@ class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MoveIcons
         builder: CreateFileFromTemplateDialog.Builder
     ) {
         builder.setTitle(CAPTION)
-            .addKind("Script", MoveIcons.MOVE, "move_script")
-            .addKind("Module", MoveIcons.MOVE, "move_module")
+            .addKind("Script", MvIcons.MOVE, "move_script")
+            .addKind("Module", MvIcons.MOVE, "move_module")
     }
 
     private companion object {

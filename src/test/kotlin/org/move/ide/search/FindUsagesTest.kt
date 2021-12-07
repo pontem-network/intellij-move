@@ -3,12 +3,12 @@ package org.move.ide.search
 import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
-import org.move.lang.core.psi.MoveNamedElement
+import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.startOffset
-import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 
-class FindUsagesTest : MoveTestBase() {
+class FindUsagesTest : MvTestBase() {
     fun `test let declaration usages`() = doTestByText("""
         script {
             fun main() {
@@ -39,17 +39,17 @@ class FindUsagesTest : MoveTestBase() {
             myFixture.editor,
             TargetElementUtil.ELEMENT_NAME_ACCEPTED,
             offset
-        ) as? MoveNamedElement ?: error("Element not found")
+        ) as? MvNamedElement ?: error("Element not found")
 
         val actual = markersActual(source)
         val expected = markersFrom(code)
         assertEquals(expected.joinToString(COMPARE_SEPARATOR), actual.joinToString(COMPARE_SEPARATOR))
     }
 
-    private fun markersActual(source: MoveNamedElement) =
+    private fun markersActual(source: MvNamedElement) =
         myFixture.findUsages(source)
             .filter { it.element != null }
-            .map { Pair(it.element?.line ?: -1, MoveUsageTypeProvider.getUsageType(it.element!!).toString()) }
+            .map { Pair(it.element?.line ?: -1, MvUsageTypeProvider.getUsageType(it.element!!).toString()) }
             .sortedBy { it.first }
 
     private fun markersFrom(text: String) =

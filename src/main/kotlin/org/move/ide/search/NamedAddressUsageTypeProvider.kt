@@ -5,13 +5,13 @@ import com.intellij.usages.UsageTarget
 import com.intellij.usages.impl.rules.UsageType
 import com.intellij.usages.impl.rules.UsageTypeProvider
 import com.intellij.usages.impl.rules.UsageTypeProviderEx
-import org.move.lang.core.psi.MoveNamedAddress
-import org.move.lang.core.psi.MoveNamedElement
+import org.move.lang.core.psi.MvNamedAddress
+import org.move.lang.core.psi.MvNamedElement
 
 class NamedAddressUsageTypeProvider : UsageTypeProviderEx {
     override fun getUsageType(element: PsiElement?, targets: Array<out UsageTarget>): UsageType? {
         return when (element) {
-            is MoveNamedAddress -> ADDRESS_REF_USAGE_TYPE
+            is MvNamedAddress -> ADDRESS_REF_USAGE_TYPE
             else -> null
         }
     }

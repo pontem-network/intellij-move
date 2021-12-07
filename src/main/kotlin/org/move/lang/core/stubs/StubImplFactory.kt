@@ -1,13 +1,13 @@
 package org.move.lang.core.stubs
 
-//import org.move.lang.core.stubs.impl.MoveModuleDefStub
+//import org.move.lang.core.stubs.impl.MvModuleDefStub
 //
 //
-//fun factory(name: String): MoveStubElementType<*, *> = when (name) {
-////    "ADDRESS_DEF" -> MoveAddressDefStub.Type
-//    "MODULE_DEF" -> MoveModuleDefStub.Type
-////    "FUNCTION_DEF" -> MoveFunctionDefStub.Type
+//fun factory(name: String): MvStubElementType<*, *> = when (name) {
+////    "ADDRESS_DEF" -> MvAddressDefStub.Type
+//    "MODULE_DEF" -> MvModuleDefStub.Type
+////    "FUNCTION_DEF" -> MvFunctionDefStub.Type
 ////    "FUNCTION_PARAMETER_LIST" -> PlaceholderStub.Type(
-////        "FUNCTION_PARAMETER_LIST", ::MoveFunctionParameterListImpl)
+////        "FUNCTION_PARAMETER_LIST", ::MvFunctionParameterListImpl)
 //    else -> error("Unknown element $name")
 //}

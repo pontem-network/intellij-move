@@ -8,7 +8,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 
 @Service
-class MoveProjectTaskQueueService(val project: Project) {
+class MvProjectTaskQueueService(val project: Project) {
     private val queue: BackgroundTaskQueue = BackgroundTaskQueue(project, "Move tasks queue")
 
     fun run(task: Task.Backgroundable) = queue.run(task)
@@ -16,4 +16,4 @@ class MoveProjectTaskQueueService(val project: Project) {
     val isEmpty: Boolean get() = queue.isEmpty
 }
 
-val Project.taskQueue: MoveProjectTaskQueueService get() = service()
+val Project.taskQueue: MvProjectTaskQueueService get() = service()

@@ -7,12 +7,12 @@ import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.ProcessingContext
-import org.move.lang.MoveElementTypes.*
-import org.move.lang.MoveFile
+import org.move.lang.MvElementTypes.*
+import org.move.lang.MvFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.leftLeaves
 
-object MovePsiPatterns {
+object MvPsiPatterns {
     private val STATEMENT_BOUNDARIES = TokenSet.create(SEMICOLON, L_BRACE, R_BRACE)
 
     val whitespace: PsiElementPattern.Capture<PsiElement> = PlatformPatterns.psiElement().whitespace()
@@ -24,29 +24,29 @@ object MovePsiPatterns {
         PlatformPatterns.psiElement().with(OnStatementBeginning(*startWords))
 
     fun toplevel(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MoveFile>()
+        psiElementWithParent<MvFile>()
 
     fun addressBlock(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MoveAddressBlock>()
+        psiElementWithParent<MvAddressBlock>()
 
     fun moduleBlock(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MoveModuleBlock>()
+        psiElementWithParent<MvModuleBlock>()
 
     fun functionDef(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MoveFunctionDef>()
+        psiElementWithParent<MvFunctionDef>()
 
     fun nativeFunctionDef(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MoveNativeFunctionDef>()
+        psiElementWithParent<MvNativeFunctionDef>()
 
     fun scriptBlock(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MoveScriptBlock>()
+        psiElementWithParent<MvScriptBlock>()
 
     fun codeStatement(): PsiElementPattern.Capture<PsiElement> =
-        psiElementInside<MoveCodeBlock>()
+        psiElementInside<MvCodeBlock>()
 
-    fun bindingPat(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MoveBindingPat>()
+    fun bindingPat(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvBindingPat>()
 
-    fun namedAddress(): PsiElementPattern.Capture<MoveNamedAddress> {
+    fun namedAddress(): PsiElementPattern.Capture<MvNamedAddress> {
         return psiElement()
     }
 
@@ -78,63 +78,63 @@ object MovePsiPatterns {
     }
 
     fun acquiresPlacement(): ElementPattern<PsiElement> {
-//        return psiElementWithParent<MoveFunctionSignature>()
+//        return psiElementWithParent<MvFunctionSignature>()
 //            .and(
         return PlatformPatterns.or(
-            psiElementWithParent<MoveFunctionSignature>()
-                .and(afterSibling<MoveFunctionParameterList>()),
-            psiElementWithParent<MoveReturnType>()
+            psiElementWithParent<MvFunctionSignature>()
+                .and(afterSibling<MvFunctionParameterList>()),
+            psiElementWithParent<MvReturnType>()
         )
-//        return psiElementWithParent<MoveFunctionSignature>()
+//        return psiElementWithParent<MvFunctionSignature>()
 //            .and(
 //                PlatformPatterns.or(
-//                    afterSibling<MoveFunctionParameterList>(),
-//                    afterSibling<MoveReturnType>()
+//                    afterSibling<MvFunctionParameterList>(),
+//                    afterSibling<MvReturnType>()
 //                ))
 //               return PlatformPatterns.psiElement().beforeLeafSkipping(
-//                    whitespace(), PlatformPatterns.psiElement(MoveCodeBlock::class.java))
+//                    whitespace(), PlatformPatterns.psiElement(MvCodeBlock::class.java))
 //            )
 //        return PlatformPatterns
 //            .psiElement()
-//            .withParent(MoveFunctionSignature::class.java)
-//            .and(psiElementAfterSiblingSkipping<MoveFunctionParameterList>(whitespace()))
+//            .withParent(MvFunctionSignature::class.java)
+//            .and(psiElementAfterSiblingSkipping<MvFunctionParameterList>(whitespace()))
 //        return psiElement<PsiElement>()
-//            .and(psiElementAfterSiblingSkipping<MoveFunctionParameterList>(whitespace()))
+//            .and(psiElementAfterSiblingSkipping<MvFunctionParameterList>(whitespace()))
 //        return PlatformPatterns
 //            .and(
-//                psiElementAfterSiblingSkipping<MoveFunctionParameterList>(whitespace())
+//                psiElementAfterSiblingSkipping<MvFunctionParameterList>(whitespace())
 //            )
-//        return psiElementWithParent<MoveFunctionSignature>()
+//        return psiElementWithParent<MvFunctionSignature>()
 //            .and(
-//                psiElementAfterSiblingSkipping<MoveFunctionParameterList>(
-//                    PlatformPatterns.or(whitespace(), psiElement<MoveReturnType>())
+//                psiElementAfterSiblingSkipping<MvFunctionParameterList>(
+//                    PlatformPatterns.or(whitespace(), psiElement<MvReturnType>())
 //                )
 //            )
 
     }
 
     fun typeParamBound(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MoveTypeParameter>()
+        psiElementWithParent<MvTypeParameter>()
             .afterLeafSkipping(
                 whitespace(),
                 PlatformPatterns.psiElement(COLON),
             )
 
     fun ability(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MoveAbility>()
+        psiElementWithParent<MvAbility>()
 
     fun pathIdent(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
-            .withParent<MovePathIdent>()
-//            .withSuperParent<MovePath>(2)
+            .withParent<MvPathIdent>()
+//            .withSuperParent<MvPath>(2)
 
     fun path(): PsiElementPattern.Capture<PsiElement> =
         pathIdent()
-            .withSuperParent<MovePath>(2)
+            .withSuperParent<MvPath>(2)
 
     fun pathType(): PsiElementPattern.Capture<PsiElement> =
         pathIdent()
-            .withSuperParent<MovePathType>(3)
+            .withSuperParent<MvPathType>(3)
 
     fun nameTypeIdentifier(): PsiElementPattern.Capture<PsiElement> =
         pathType()
@@ -142,7 +142,7 @@ object MovePsiPatterns {
 
     fun specIdentifier(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
-            .withSuperParent<MoveSpecDef>(2)
+            .withSuperParent<MvSpecDef>(2)
 
     fun whitespace() = PlatformPatterns.psiElement().whitespaceCommentEmptyOrError()
 

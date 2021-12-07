@@ -1,8 +1,8 @@
 package org.move.lang.parser
 
-import org.move.utils.tests.parser.MoveParsingTestCase
+import org.move.utils.tests.parser.MvParsingTestCase
 
-class CompleteParsingTest : MoveParsingTestCase("complete") {
+class CompleteParsingTest : MvParsingTestCase("complete") {
     fun `test comments`() = doTest(true)
     fun `test addresses`() = doTest(true)
     fun `test attributes`() = doTest(true)

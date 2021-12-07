@@ -10,11 +10,11 @@ import com.intellij.openapi.util.io.StreamUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
 import org.move.cli.moveProjectsService
-import org.move.utils.tests.base.MoveTestCase
+import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
 
-abstract class MoveTestBase : BasePlatformTestCase(),
-                              MoveTestCase {
+abstract class MvTestBase : BasePlatformTestCase(),
+                              MvTestCase {
     protected val fileName: String
         get() = "${getTestName(true)}.$testFileExtension"
     open val dataPath: String = ""
@@ -53,7 +53,7 @@ abstract class MoveTestBase : BasePlatformTestCase(),
     companion object {
         @JvmStatic
         fun getResourceAsString(path: String): String? {
-            val stream = MoveTestBase::class.java.classLoader.getResourceAsStream(path)
+            val stream = MvTestBase::class.java.classLoader.getResourceAsStream(path)
                 ?: return null
             return StreamUtil.readText(stream, Charsets.UTF_8)
         }

@@ -5,12 +5,12 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation
 import com.intellij.psi.NavigatablePsiElement
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.completion.createLookupElement
-import org.move.lang.core.psi.MoveElement
-import org.move.lang.core.psi.MoveNamedElement
-import org.move.utils.tests.MoveTestBase
+import org.move.lang.core.psi.MvElement
+import org.move.lang.core.psi.MvNamedElement
+import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
 
-class LookupElementTest : MoveTestBase() {
+class LookupElementTest : MvTestBase() {
     fun `test function param`() = check("""
         module M {
             fun call(a: u8) {
@@ -70,7 +70,7 @@ class LookupElementTest : MoveTestBase() {
         typeText: String? = null,
         isBold: Boolean = false,
         isStrikeout: Boolean = false,
-    ) = checkInner<MoveNamedElement>(code, tailText, typeText, isBold, isStrikeout)
+    ) = checkInner<MvNamedElement>(code, tailText, typeText, isBold, isStrikeout)
 
     private inline fun <reified T> checkInner(
         @Language("Move") code: String,
@@ -78,11 +78,11 @@ class LookupElementTest : MoveTestBase() {
         typeText: String? = null,
         isBold: Boolean = false,
         isStrikeout: Boolean = false,
-    ) where T : NavigatablePsiElement, T : MoveElement {
+    ) where T : NavigatablePsiElement, T : MvElement {
         inlineFile(code)
 
-        val element = myFixture.findElementInEditor<T>() as? MoveNamedElement
-            ?: error("Marker `^` should point to the MoveNamedElement")
+        val element = myFixture.findElementInEditor<T>() as? MvNamedElement
+            ?: error("Marker `^` should point to the MvNamedElement")
 
         val lookup = element.createLookupElement(false)
         checkLookupPresentation(

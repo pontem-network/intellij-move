@@ -4,10 +4,10 @@ import com.intellij.extapi.psi.StubBasedPsiElementBase
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
-import org.move.lang.core.psi.MoveElement
+import org.move.lang.core.psi.MvElement
 
-abstract class MoveStubbedElementImpl<StubT : StubElement<*>> : StubBasedPsiElementBase<StubT>,
-                                                                MoveElement {
+abstract class MvStubbedElementImpl<StubT : StubElement<*>> : StubBasedPsiElementBase<StubT>,
+                                                                MvElement {
 
     constructor(node: ASTNode) : super(node)
 

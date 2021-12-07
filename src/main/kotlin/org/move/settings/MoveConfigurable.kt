@@ -7,12 +7,12 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.layout.panel
 
-class MoveConfigurable(val project: Project) : BoundConfigurable("Move"),
+class MvConfigurable(val project: Project) : BoundConfigurable("Move"),
                                                Configurable.NoScroll {
 
-    private val settingsPanel = MoveProjectSettingsPanel(project)
+    private val settingsPanel = MvProjectSettingsPanel(project)
 
-    private val state: MoveProjectSettingsService.State = project.moveSettings.settingsState
+    private val state: MvProjectSettingsService.State = project.moveSettings.settingsState
 
     override fun createPanel(): DialogPanel {
         return panel {
@@ -24,10 +24,10 @@ class MoveConfigurable(val project: Project) : BoundConfigurable("Move"),
     }
 
     override fun disposeUIResources() {
-        val moveExecutablePath = settingsPanel.selectedMoveExecPath()
+        val moveExecutablePath = settingsPanel.selectedMvExecPath()
         val collapseSpecs = this.state.collapseSpecs
         project.moveSettings.settingsState =
-            MoveProjectSettingsService.State(moveExecutablePath, collapseSpecs)
+            MvProjectSettingsService.State(moveExecutablePath, collapseSpecs)
 
         super.disposeUIResources()
         Disposer.dispose(settingsPanel)

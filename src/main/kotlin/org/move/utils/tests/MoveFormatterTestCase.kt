@@ -4,7 +4,7 @@ import com.intellij.psi.formatter.FormatterTestCase
 import org.intellij.lang.annotations.Language
 import org.move.utils.tests.base.TestCase
 
-abstract class MoveFormatterTestCase : FormatterTestCase() {
+abstract class MvFormatterTestCase : FormatterTestCase() {
     override fun getTestDataPath() = "src/test/resources"
     override fun getBasePath(): String = "org/move/ide/formatter.fixtures"
     override fun getFileExtension() = "move"

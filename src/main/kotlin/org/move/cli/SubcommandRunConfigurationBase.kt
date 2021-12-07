@@ -23,8 +23,8 @@ abstract class SubcommandRunConfigurationBase(
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
         val projectRoot = this.workingDirectory!!
-        return MoveCommandLineState(environment, this)
-            .apply { addConsoleFilters(MoveFileHyperlinkFilter(project, projectRoot)) }
+        return MvCommandLineState(environment, this)
+            .apply { addConsoleFilters(MvFileHyperlinkFilter(project, projectRoot)) }
     }
 
     override fun writeExternal(element: Element) {

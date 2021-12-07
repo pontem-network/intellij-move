@@ -16,13 +16,13 @@ import org.move.lang.core.types.ty.*
 //            val itemTy = moveType.path.typeArguments
 //                .firstOrNull()
 //                ?.type
-//                ?.let { inferMoveTypeTy(it) } ?: TyUnknown
+//                ?.let { inferMvTypeTy(it) } ?: TyUnknown
 //            return TyVector(itemTy)
 //        }
 //        else -> TyUnknown
 //}
 
-fun inferPrimitivePathType(moveType: MovePathType): Ty {
+fun inferPrimitivePathType(moveType: MvPathType): Ty {
     val refName = moveType.path.referenceName ?: return TyUnknown
     return when (refName) {
         in INTEGER_TYPE_IDENTIFIERS -> TyInteger.fromName(refName)!!
@@ -33,35 +33,35 @@ fun inferPrimitivePathType(moveType: MovePathType): Ty {
             val itemTy = moveType.path.typeArguments
                 .firstOrNull()
                 ?.type
-                ?.let { inferMoveTypeTy(it) } ?: TyUnknown
+                ?.let { inferMvTypeTy(it) } ?: TyUnknown
             return TyVector(itemTy)
         }
         else -> TyUnknown
     }
 }
 
-fun inferMoveTypeTy(moveType: MoveType): Ty {
+fun inferMvTypeTy(moveType: MvType): Ty {
     return when (moveType) {
-        is MovePathType -> {
+        is MvPathType -> {
             val referred = moveType.path.reference?.resolve()
             if (referred == null) return inferPrimitivePathType(moveType)
             when (referred) {
-                is MoveTypeParameter -> TyTypeParameter(referred)
-                is MoveStructSignature -> {
-                    val typeArgs = moveType.path.typeArguments.map { inferMoveTypeTy(it.type) }
+                is MvTypeParameter -> TyTypeParameter(referred)
+                is MvStructSignature -> {
+                    val typeArgs = moveType.path.typeArguments.map { inferMvTypeTy(it.type) }
                     TyStruct(referred, typeArgs)
                 }
                 else -> TyUnknown
             }
         }
-        is MoveRefType -> {
+        is MvRefType -> {
             val mutability = Mutability.valueOf(moveType.mutable)
             val innerTypeRef = moveType.type ?: return TyReference(TyUnknown, mutability)
-            val innerTy = inferMoveTypeTy(innerTypeRef)
+            val innerTy = inferMvTypeTy(innerTypeRef)
             TyReference(innerTy, mutability)
         }
-        is MoveTupleType -> {
-            val innerTypes = moveType.typeList.map { inferMoveTypeTy(it) }
+        is MvTupleType -> {
+            val innerTypes = moveType.typeList.map { inferMvTypeTy(it) }
             TyTuple(innerTypes)
         }
         else -> TyUnknown

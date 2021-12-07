@@ -1,7 +1,7 @@
 package org.move.lang.core.psi.mixins
 
-//abstract class MoveDefineFunctionMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
-//                                                        MoveDefineFunction {
+//abstract class MvDefineFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
+//                                                        MvDefineFunction {
 //
-//    override fun getIcon(flags: Int): Icon = MoveIcons.FUNCTION
+//    override fun getIcon(flags: Int): Icon = MvIcons.FUNCTION
 //}

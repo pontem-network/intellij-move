@@ -4,7 +4,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.psi.util.descendantsOfType
 import org.move.cli.GlobalScope
-import org.move.lang.MoveFile
+import org.move.lang.MvFile
 import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -16,13 +16,13 @@ import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 
 fun processItems(
-    element: MoveReferenceElement,
+    element: MvReferenceElement,
     namespace: Namespace,
     processor: MatchingProcessor,
 ): Boolean {
     return walkUpThroughScopes(
         element,
-        stopAfter = { it is MoveModuleDef || it is MoveScriptDef }
+        stopAfter = { it is MvModuleDef || it is MvScriptDef }
     ) { cameFrom, scope ->
         processLexicalDeclarations(
             scope, cameFrom, namespace, processor
@@ -31,8 +31,8 @@ fun processItems(
 }
 
 
-fun resolveItem(element: MoveReferenceElement, namespace: Namespace): MoveNamedElement? {
-    var resolved: MoveNamedElement? = null
+fun resolveItem(element: MvReferenceElement, namespace: Namespace): MvNamedElement? {
+    var resolved: MvNamedElement? = null
     processItems(element, namespace) {
         if (it.name == element.referenceName && it.element != null) {
             resolved = it.element
@@ -43,34 +43,34 @@ fun resolveItem(element: MoveReferenceElement, namespace: Namespace): MoveNamedE
     return resolved
 }
 
-fun resolveIntoFQModuleRef(moduleRef: MoveModuleRef): MoveFQModuleRef? {
-    if (moduleRef is MoveFQModuleRef) {
+fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
+    if (moduleRef is MvFQModuleRef) {
         return moduleRef
     }
     // module refers to ModuleImport
     val resolved = resolveItem(moduleRef, Namespace.MODULE)
-    if (resolved is MoveImportAlias) {
-        return (resolved.parent as MoveModuleImport).fqModuleRef
+    if (resolved is MvImportAlias) {
+        return (resolved.parent as MvModuleImport).fqModuleRef
     }
-    if (resolved is MoveItemImport && resolved.text == "Self") {
+    if (resolved is MvItemImport && resolved.text == "Self") {
         return resolved.moduleImport().fqModuleRef
     }
-    if (resolved !is MoveModuleImport) return null
+    if (resolved !is MvModuleImport) return null
 
     return resolved.fqModuleRef
 }
 
 private fun processQualModuleRefInFile(
-    qualModuleRef: MoveFQModuleRef,
-    file: MoveFile,
+    qualModuleRef: MvFQModuleRef,
+    file: MvFile,
     processor: MatchingProcessor,
 ): Boolean {
     val moveProject = qualModuleRef.moveProject() ?: return false
     val sourceNormalizedAddress = qualModuleRef.addressRef.toNormalizedAddress(moveProject)
 
     var resolved = false
-    val visitor = object : MoveVisitor() {
-        override fun visitModuleDef(o: MoveModuleDef) {
+    val visitor = object : MvVisitor() {
+        override fun visitModuleDef(o: MvModuleDef) {
             if (resolved) return
             val normalizedAddress = o.definedAddressRef()?.toNormalizedAddress(moveProject)
             if (normalizedAddress == sourceNormalizedAddress) {
@@ -78,7 +78,7 @@ private fun processQualModuleRefInFile(
             }
         }
     }
-    val moduleDefs = file.descendantsOfType<MoveModuleDef>()
+    val moduleDefs = file.descendantsOfType<MvModuleDef>()
     for (moduleDef in moduleDefs) {
         moduleDef.accept(visitor)
     }
@@ -86,11 +86,11 @@ private fun processQualModuleRefInFile(
 }
 
 fun processQualModuleRef(
-    qualModuleRef: MoveFQModuleRef,
+    qualModuleRef: MvFQModuleRef,
     processor: MatchingProcessor,
 ) {
     // first search modules in the current file
-    val containingFile = qualModuleRef.containingFile as? MoveFile ?: return
+    val containingFile = qualModuleRef.containingFile as? MvFile ?: return
     var stopped = processQualModuleRefInFile(qualModuleRef, containingFile, processor)
     if (stopped) return
 
@@ -106,13 +106,13 @@ fun processQualModuleRef(
 }
 
 fun processNestedScopesUpwards(
-    startElement: MoveElement,
+    startElement: MvElement,
     namespace: Namespace,
     processor: MatchingProcessor,
 ) {
     walkUpThroughScopes(
         startElement,
-        stopAfter = { it is MoveModuleDef || it is MoveScriptDef }
+        stopAfter = { it is MvModuleDef || it is MvScriptDef }
     ) { cameFrom, scope ->
         processLexicalDeclarations(
             scope, cameFrom, namespace, processor
@@ -121,8 +121,8 @@ fun processNestedScopesUpwards(
 }
 
 fun processLexicalDeclarations(
-    scope: MoveElement,
-    cameFrom: MoveElement,
+    scope: MvElement,
+    cameFrom: MvElement,
     namespace: Namespace,
     processor: MatchingProcessor,
 ): Boolean {
@@ -130,7 +130,7 @@ fun processLexicalDeclarations(
 
     return when (namespace) {
         Namespace.DOT_ACCESSED_FIELD -> {
-            val dotExpr = scope as? MoveDotExpr ?: return false
+            val dotExpr = scope as? MvDotExpr ?: return false
 
             val receiverTy = dotExpr.expr.inferExprTy()
             val innerTy = when (receiverTy) {
@@ -145,15 +145,15 @@ fun processLexicalDeclarations(
         }
         Namespace.STRUCT_FIELD -> {
             val struct = when (scope) {
-                is MoveStructPat -> scope.path.maybeStruct
-                is MoveStructLitExpr -> scope.path.maybeStruct
+                is MvStructPat -> scope.path.maybeStruct
+                is MvStructLitExpr -> scope.path.maybeStruct
                 else -> null
             }
             if (struct != null) return processor.matchAll(struct.fields)
             false
         }
         Namespace.NAME -> when (scope) {
-            is MoveModuleDef -> processor.matchAll(
+            is MvModuleDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
@@ -163,7 +163,7 @@ fun processLexicalDeclarations(
                     scope.constBindings(),
                 ).flatten()
             )
-            is MoveScriptDef -> processor.matchAll(
+            is MvScriptDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
@@ -171,9 +171,9 @@ fun processLexicalDeclarations(
                     scope.builtinScriptFnSignatures(),
                 ).flatten(),
             )
-            is MoveFunctionDef ->
+            is MvFunctionDef ->
                 processor.matchAll(scope.functionSignature?.parameters.orEmpty().map { it.bindingPat })
-            is MoveCodeBlock -> {
+            is MvCodeBlock -> {
                 val precedingLetDecls = scope.letStatements
                     // drops all let-statements after the current position
                     .filter { PsiUtilCore.compareElementsByPosition(it, cameFrom) <= 0 }
@@ -196,18 +196,18 @@ fun processLexicalDeclarations(
             else -> false
         }
         Namespace.TYPE -> when (scope) {
-            is MoveFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
-            is MoveNativeFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
-            is MoveStructDef -> processor.matchAll(scope.structSignature.typeParameters)
-            is MoveSchemaSpecDef -> processor.matchAll(scope.typeParams)
-            is MoveModuleDef -> processor.matchAll(
+            is MvFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
+            is MvNativeFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
+            is MvStructDef -> processor.matchAll(scope.structSignature.typeParameters)
+            is MvSchemaSpecDef -> processor.matchAll(scope.typeParams)
+            is MvModuleDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
                     scope.structSignatures(),
                 ).flatten(),
             )
-            is MoveScriptDef -> processor.matchAll(
+            is MvScriptDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
@@ -216,11 +216,11 @@ fun processLexicalDeclarations(
             else -> false
         }
         Namespace.SPEC -> when {
-//            is MoveModuleDef -> processor.matchAll(scope.schemas())
+//            is MvModuleDef -> processor.matchAll(scope.schemas())
             else -> false
         }
         Namespace.MODULE -> when (scope) {
-            is MoveImportStatementsOwner -> processor.matchAll(
+            is MvImportStatementsOwner -> processor.matchAll(
                 listOf(
                     scope.moduleImports(),
                     scope.moduleImportAliases(),
@@ -233,19 +233,19 @@ fun processLexicalDeclarations(
 }
 
 fun walkUpThroughScopes(
-    start: MoveElement,
-    stopAfter: (MoveElement) -> Boolean,
-    handleScope: (cameFrom: MoveElement, scope: MoveElement) -> Boolean,
+    start: MvElement,
+    stopAfter: (MvElement) -> Boolean,
+    handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean,
 ): Boolean {
 
     var cameFrom = start
-    var scope = start.parent as MoveElement?
+    var scope = start.parent as MvElement?
     while (scope != null) {
         if (handleScope(cameFrom, scope)) return true
         if (stopAfter(scope)) break
 
         cameFrom = scope
-        scope = scope.parent as? MoveElement
+        scope = scope.parent as? MvElement
     }
 
     return false

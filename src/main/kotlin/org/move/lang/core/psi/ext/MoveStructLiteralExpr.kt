@@ -1,16 +1,16 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.MoveStructLitExpr
-import org.move.lang.core.psi.MoveStructLitField
-import org.move.lang.core.psi.MoveStructLitFieldsBlock
+import org.move.lang.core.psi.MvStructLitExpr
+import org.move.lang.core.psi.MvStructLitField
+import org.move.lang.core.psi.MvStructLitFieldsBlock
 
-val MoveStructLitExpr.providedFields: List<MoveStructLitField>
+val MvStructLitExpr.providedFields: List<MvStructLitField>
     get() =
         structLitFieldsBlock.structLitFieldList
 
-val MoveStructLitExpr.providedFieldNames: List<String>
+val MvStructLitExpr.providedFieldNames: List<String>
     get() =
         providedFields.map { it.referenceName }
 
-val MoveStructLitFieldsBlock.litExpr: MoveStructLitExpr
-    get() = this.parent as MoveStructLitExpr
+val MvStructLitFieldsBlock.litExpr: MvStructLitExpr
+    get() = this.parent as MvStructLitExpr

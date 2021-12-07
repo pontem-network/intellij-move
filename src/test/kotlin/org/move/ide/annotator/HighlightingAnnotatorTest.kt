@@ -1,12 +1,12 @@
 package org.move.ide.annotator
 
-import org.move.ide.colors.MoveColor
+import org.move.ide.colors.MvColor
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class) {
     override fun setUp() {
         super.setUp()
-        annotationFixture.registerSeverities(MoveColor.values().map(MoveColor::testSeverity))
+        annotationFixture.registerSeverities(MvColor.values().map(MvColor::testSeverity))
     }
 
     fun `test block comment do not break the highlighting`() = checkHighlighting("""

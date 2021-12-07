@@ -8,15 +8,15 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.lang.MoveElementTypes.SPEC_BLOCK
+import org.move.lang.MvElementTypes.SPEC_BLOCK
 import org.move.lang.core.psi.*
 import org.move.settings.collapseSpecs
 
-class MoveFoldingBuilder : FoldingBuilderEx(),
+class MvFoldingBuilder : FoldingBuilderEx(),
                            DumbAware {
     override fun getPlaceholderText(node: ASTNode): String =
         when (node.psi) {
-            is MoveFunctionParameterList -> "(...)"
+            is MvFunctionParameterList -> "(...)"
             else -> "{...}"
         }
 
@@ -36,17 +36,17 @@ class MoveFoldingBuilder : FoldingBuilderEx(),
                 && node.elementType == SPEC_BLOCK
     }
 
-    private class FoldingVisitor(private val descriptors: MutableList<FoldingDescriptor>) : MoveVisitor() {
-        override fun visitCodeBlock(o: MoveCodeBlock) = fold(o)
-        override fun visitScriptBlock(o: MoveScriptBlock) = fold(o)
-        override fun visitModuleBlock(o: MoveModuleBlock) = fold(o)
-        override fun visitSpecBlock(o: MoveSpecBlock) = fold(o)
+    private class FoldingVisitor(private val descriptors: MutableList<FoldingDescriptor>) : MvVisitor() {
+        override fun visitCodeBlock(o: MvCodeBlock) = fold(o)
+        override fun visitScriptBlock(o: MvScriptBlock) = fold(o)
+        override fun visitModuleBlock(o: MvModuleBlock) = fold(o)
+        override fun visitSpecBlock(o: MvSpecBlock) = fold(o)
 
-        override fun visitFunctionParameterList(o: MoveFunctionParameterList) {
+        override fun visitFunctionParameterList(o: MvFunctionParameterList) {
             if (o.functionParameterList.isNotEmpty())
                 fold(o)
         }
-        override fun visitStructFieldsDefBlock(o: MoveStructFieldsDefBlock) {
+        override fun visitStructFieldsDefBlock(o: MvStructFieldsDefBlock) {
             if (o.structFieldDefList.isNotEmpty())
                 fold(o)
         }

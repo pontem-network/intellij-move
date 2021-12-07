@@ -5,18 +5,18 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.move.ide.annotator.ACQUIRES_BUILTIN_FUNCTIONS
 import org.move.ide.presentation.name
-import org.move.lang.core.psi.MoveCallExpr
-import org.move.lang.core.psi.MoveFunctionSignature
-import org.move.lang.core.psi.MovePsiFactory
+import org.move.lang.core.psi.MvCallExpr
+import org.move.lang.core.psi.MvFunctionSignature
+import org.move.lang.core.psi.MvPsiFactory
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.TyStruct
 
-class AddAcquiresIntention : MoveElementBaseIntentionAction<AddAcquiresIntention.Context>() {
+class AddAcquiresIntention : MvElementBaseIntentionAction<AddAcquiresIntention.Context>() {
     override fun getText(): String = "Add missing 'acquires' declaration"
     override fun getFamilyName(): String = text
 
     data class Context(
-        val functionSignature: MoveFunctionSignature,
+        val functionSignature: MvFunctionSignature,
         val expectedAcquiresType: TyStruct
     )
 
@@ -25,7 +25,7 @@ class AddAcquiresIntention : MoveElementBaseIntentionAction<AddAcquiresIntention
         editor: Editor,
         element: PsiElement
     ): Context? {
-        val callExpr = element.ancestorOrSelf<MoveCallExpr>() ?: return null
+        val callExpr = element.ancestorOrSelf<MvCallExpr>() ?: return null
         if (callExpr.path.referenceName == null
             || callExpr.path.referenceName !in ACQUIRES_BUILTIN_FUNCTIONS
         ) return null
@@ -51,13 +51,13 @@ class AddAcquiresIntention : MoveElementBaseIntentionAction<AddAcquiresIntention
         val expectedAcquiresTypeName = ctx.expectedAcquiresType.item.name!!
         if (acquiresType == null) {
             val newFunctionSignature =
-                MovePsiFactory(project)
+                MvPsiFactory(project)
                     .createFunctionSignature("${ctx.functionSignature.text} " +
                                                      "acquires $expectedAcquiresTypeName")
             ctx.functionSignature.replace(newFunctionSignature)
         } else {
             val acquiresTypeText = acquiresType.text.trimEnd(',')
-            val newAcquiresType = MovePsiFactory(project)
+            val newAcquiresType = MvPsiFactory(project)
                 .createAcquiresType("$acquiresTypeText, $expectedAcquiresTypeName")
             acquiresType.replace(newAcquiresType)
         }

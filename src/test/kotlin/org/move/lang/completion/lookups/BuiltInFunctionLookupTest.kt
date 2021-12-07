@@ -3,12 +3,12 @@ package org.move.lang.completion.lookups
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementPresentation
 import org.move.lang.core.completion.createLookupElement
-import org.move.lang.core.psi.MoveModuleDef
+import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.builtinFnSignatures
-import org.move.utils.tests.MoveTestBase
+import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
 
-class BuiltInFunctionLookupTest : MoveTestBase() {
+class BuiltInFunctionLookupTest : MvTestBase() {
     fun `test move_from`() = checkBuiltinPresentation(
         "move_from",
         tailText = "(addr: address)",
@@ -39,7 +39,7 @@ class BuiltInFunctionLookupTest : MoveTestBase() {
                 //^
         """
         inlineFile(moduleText)
-        val moduleElement = myFixture.findElementInEditor<MoveModuleDef>()
+        val moduleElement = myFixture.findElementInEditor<MvModuleDef>()
         val lookup =
             moduleElement.builtinFnSignatures().find { it.name == name }!!.createLookupElement(false)
         checkLookupPresentation(

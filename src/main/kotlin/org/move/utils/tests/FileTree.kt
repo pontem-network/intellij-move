@@ -15,7 +15,7 @@ import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import org.intellij.lang.annotations.Language
-import org.move.lang.core.psi.MoveReferenceElement
+import org.move.lang.core.psi.MvReferenceElement
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.openapiext.document
 import org.move.openapiext.fullyRefreshDirectory
@@ -134,7 +134,7 @@ class TestProject(
             ?: error("No parent of type ${T::class.java} for ${element.text}")
     }
 
-    inline fun <reified T : MoveReferenceElement> checkReferenceIsResolved(
+    inline fun <reified T : MvReferenceElement> checkReferenceIsResolved(
         path: String,
         shouldNotResolve: Boolean = false,
 //        toCrate: String? = null,

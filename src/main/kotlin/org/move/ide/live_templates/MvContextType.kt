@@ -9,22 +9,22 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
-import org.move.ide.MoveHighlighter
-import org.move.lang.MoveLanguage
-import org.move.lang.core.psi.MoveCodeBlock
-import org.move.lang.core.psi.MoveFunctionDef
-import org.move.lang.core.psi.MoveModuleDef
-import org.move.lang.core.psi.MovePat
+import org.move.ide.MvHighlighter
+import org.move.lang.MvLanguage
+import org.move.lang.core.psi.MvCodeBlock
+import org.move.lang.core.psi.MvFunctionDef
+import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvPat
 import kotlin.reflect.KClass
 
-sealed class MoveContextType(
+sealed class MvContextType(
     id: String,
     presentableName: String,
     baseContextType: KClass<out TemplateContextType>
 ): TemplateContextType(id, presentableName, baseContextType.java) {
 
     final override fun isInContext(context: TemplateActionContext): Boolean {
-        if (!PsiUtilCore.getLanguageAtOffset(context.file, context.startOffset).isKindOf(MoveLanguage)) {
+        if (!PsiUtilCore.getLanguageAtOffset(context.file, context.startOffset).isKindOf(MvLanguage)) {
             return false
         }
 
@@ -38,27 +38,27 @@ sealed class MoveContextType(
 
     protected abstract fun isInContext(element: PsiElement): Boolean
 
-    override fun createHighlighter(): SyntaxHighlighter = MoveHighlighter()
+    override fun createHighlighter(): SyntaxHighlighter = MvHighlighter()
 
-    class Generic: MoveContextType("MOVE_FILE", "Move", EverywhereContextType::class) {
+    class Generic: MvContextType("MOVE_FILE", "Move", EverywhereContextType::class) {
         override fun isInContext(element: PsiElement) = true
     }
 
-    class Module: MoveContextType("MOVE_MODULE", "Module", Generic::class) {
+    class Module: MvContextType("MOVE_MODULE", "Module", Generic::class) {
         override fun isInContext(element: PsiElement): Boolean
-            // inside MoveModuleDef
-            = owner(element) is MoveModuleDef
+            // inside MvModuleDef
+            = owner(element) is MvModuleDef
     }
 
-    class Block: MoveContextType("MOVE_BLOCK", "Block", Generic::class) {
+    class Block: MvContextType("MOVE_BLOCK", "Block", Generic::class) {
         override fun isInContext(element: PsiElement): Boolean
-            // inside MoveCodeBlock
-            = owner(element) is MoveCodeBlock
+            // inside MvCodeBlock
+            = owner(element) is MvCodeBlock
     }
 
     companion object {
         private fun owner(element: PsiElement): PsiElement? = PsiTreeUtil.findFirstParent(element) {
-            it is MoveCodeBlock || it is MoveModuleDef || it is PsiFile
+            it is MvCodeBlock || it is MvModuleDef || it is PsiFile
         }
     }
 }

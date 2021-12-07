@@ -1,6 +1,5 @@
 package org.move.ide.typing
 
-import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegate.Result
 import com.intellij.codeInsight.editorActions.enter.EnterHandlerDelegateAdapter
 import com.intellij.openapi.actionSystem.DataContext
@@ -12,13 +11,13 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.TokenType
 import com.intellij.util.text.CharArrayUtil
-import org.move.lang.MoveFile
+import org.move.lang.MvFile
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.startOffset
 
-class MoveEnterInLineCommentHandler: EnterHandlerDelegateAdapter() {
+class MvEnterInLineCommentHandler: EnterHandlerDelegateAdapter() {
     override fun preprocessEnter(
         file: PsiFile,
         editor: Editor,
@@ -27,7 +26,7 @@ class MoveEnterInLineCommentHandler: EnterHandlerDelegateAdapter() {
         dataContext: DataContext,
         originalHandler: EditorActionHandler?
     ): Result {
-        if (file !is MoveFile) return Result.Continue
+        if (file !is MvFile) return Result.Continue
 
         // get current document and commit any changes, so we'll get latest PSI
         val document = editor.document

@@ -46,7 +46,7 @@ fun findMoveTomlFiles(project: Project): Sequence<VirtualFile> {
     return moveFiles.asSequence()
 }
 
-fun initializeMoveProject(project: Project, fsMoveTomlFile: VirtualFile): MoveProject? {
+fun initializeMvProject(project: Project, fsMoveTomlFile: VirtualFile): MoveProject? {
     return runReadAction {
         val tomlFile = parseTomlFromFile(project, fsMoveTomlFile) ?: return@runReadAction null
         val projectRoot = fsMoveTomlFile.parent!!
@@ -67,7 +67,7 @@ private fun parseDependencyAddresses(moveToml: MoveToml): DependencyAddresses {
     val values = mutableMapOf<String, String>()
     val placeholders = mutableListOf<String>()
     for ((addressName, addressVal) in moveToml.addresses.entries) {
-        if (addressVal == MoveConstants.ADDR_PLACEHOLDER) {
+        if (addressVal == MvConstants.ADDR_PLACEHOLDER) {
             placeholders.add(addressName)
         } else {
             values[addressName] = addressVal

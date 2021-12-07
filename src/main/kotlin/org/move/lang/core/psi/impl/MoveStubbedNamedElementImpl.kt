@@ -4,13 +4,13 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
-import org.move.lang.core.psi.MoveNamedElement
-import org.move.lang.core.psi.MovePsiFactory
-import org.move.lang.core.stubs.MoveNamedElementStub
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.MvPsiFactory
+import org.move.lang.core.stubs.MvNamedElementStub
 
-abstract class MoveStubbedNamedElementImpl<StubT> : MoveStubbedElementImpl<StubT>,
-                                                    MoveNamedElement
-        where StubT : MoveNamedElementStub, StubT : StubElement<*> {
+abstract class MvStubbedNamedElementImpl<StubT> : MvStubbedElementImpl<StubT>,
+                                                    MvNamedElement
+        where StubT : MvNamedElementStub, StubT : StubElement<*> {
 
     constructor(node: ASTNode) : super(node)
 
@@ -22,7 +22,7 @@ abstract class MoveStubbedNamedElementImpl<StubT> : MoveStubbedElementImpl<StubT
     }
 
     override fun setName(name: String): PsiElement {
-        nameElement?.replace(MovePsiFactory(project).createIdentifier(name))
+        nameElement?.replace(MvPsiFactory(project).createIdentifier(name))
         return this
     }
 

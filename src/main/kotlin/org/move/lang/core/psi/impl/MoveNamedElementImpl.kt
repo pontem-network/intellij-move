@@ -2,17 +2,17 @@ package org.move.lang.core.psi.impl
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import org.move.lang.MoveElementTypes
-import org.move.lang.core.psi.MoveElementImpl
-import org.move.lang.core.psi.MoveNamedElement
-import org.move.lang.core.psi.MovePsiFactory
+import org.move.lang.MvElementTypes
+import org.move.lang.core.psi.MvElementImpl
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.MvPsiFactory
 
-abstract class MoveNamedElementImpl(node: ASTNode) : MoveElementImpl(node),
-                                                     MoveNamedElement {
+abstract class MvNamedElementImpl(node: ASTNode) : MvElementImpl(node),
+                                                     MvNamedElement {
     override fun getName(): String? = nameElement?.text
 
     override fun setName(name: String): PsiElement {
-        nameElement?.replace(MovePsiFactory(project).createIdentifier(name))
+        nameElement?.replace(MvPsiFactory(project).createIdentifier(name))
         return this
     }
 

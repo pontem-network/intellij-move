@@ -2,23 +2,23 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.MoveElementImpl
-import org.move.lang.core.psi.MovePat
-import org.move.lang.core.psi.MoveStructPat
-import org.move.lang.core.psi.MoveStructPatField
-import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
-import org.move.lang.core.resolve.ref.MoveReference
-import org.move.lang.core.resolve.ref.MoveStructFieldReferenceImpl
+import org.move.lang.core.psi.MvElementImpl
+import org.move.lang.core.psi.MvPat
+import org.move.lang.core.psi.MvStructPat
+import org.move.lang.core.psi.MvStructPatField
+import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
+import org.move.lang.core.resolve.ref.MvReference
+import org.move.lang.core.resolve.ref.MvStructFieldReferenceImpl
 
-val MoveStructPatField.structPat: MoveStructPat
+val MvStructPatField.structPat: MvStructPat
     get() = ancestorStrict()!!
 
-val MoveStructPatField.pat: MovePat? get() {
+val MvStructPatField.pat: MvPat? get() {
     return this.bindingPat ?: this.structPatFieldBinding?.pat
 }
 
-abstract class MoveStructPatFieldMixin(node: ASTNode) : MoveElementImpl(node),
-                                                        MoveStructPatField {
+abstract class MvStructPatFieldMixin(node: ASTNode) : MvElementImpl(node),
+                                                        MvStructPatField {
     override val referenceNameElement: PsiElement
         get() {
             val bindingPat = this.bindingPat
@@ -29,7 +29,7 @@ abstract class MoveStructPatFieldMixin(node: ASTNode) : MoveElementImpl(node),
             }
         }
 
-    override fun getReference(): MoveReference {
-        return MoveStructFieldReferenceImpl(this)
+    override fun getReference(): MvReference {
+        return MvStructFieldReferenceImpl(this)
     }
 }
