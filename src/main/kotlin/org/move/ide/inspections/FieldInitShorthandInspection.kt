@@ -6,8 +6,8 @@ import org.move.lang.core.psi.MoveRefExpr
 import org.move.lang.core.psi.MoveStructLiteralField
 import org.move.lang.core.psi.MoveVisitor
 
-class FieldInitShorthandInspection : LocalInspectionTool() {
-    override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MoveVisitor() {
+class FieldInitShorthandInspection : MoveLocalInspectionTool() {
+    override fun buildMoveVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MoveVisitor() {
         override fun visitStructLiteralField(o: MoveStructLiteralField) {
             val assignment = o.structLiteralFieldAssignment?.expr ?: return
             if (!(assignment is MoveRefExpr && assignment.text == o.identifier.text)) return

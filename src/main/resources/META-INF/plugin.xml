@@ -121,6 +121,18 @@
                          displayName="Field initialization shorthand"
                          enabledByDefault="true" level="WEAK WARNING"
                          implementationClass="org.move.ide.inspections.FieldInitShorthandInspection" />
+        <localInspection language="Move" groupName="Move"
+                         displayName="Constant naming convention"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.lints.MoveConstNamingInspection" />
+        <localInspection language="Move" groupName="Move"
+                         displayName="Struct naming convention"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.lints.MoveStructNamingInspection" />
+        <localInspection language="Move" groupName="Move"
+                         displayName="Local variable naming convention"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.lints.MoveLocalBindingNamingInspection" />
 
 
         <!-- Color Settings -->

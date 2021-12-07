@@ -6,8 +6,8 @@ import com.intellij.codeInspection.ProblemsHolder
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 
-class MoveUnresolvedReferenceInspection : LocalInspectionTool() {
-    override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MoveVisitor() {
+class MoveUnresolvedReferenceInspection : MoveLocalInspectionTool() {
+    override fun buildMoveVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MoveVisitor() {
         override fun visitModuleRef(moduleRef: MoveModuleRef) {
             if (isSpecElement(moduleRef)) return
             // skip this check, as it will be checked in MovePath visitor
