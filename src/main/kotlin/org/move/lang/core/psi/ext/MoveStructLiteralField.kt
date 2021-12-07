@@ -2,8 +2,8 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.MoveBindingPat
-import org.move.lang.core.psi.MoveStructLiteralExpr
-import org.move.lang.core.psi.MoveStructLiteralField
+import org.move.lang.core.psi.MoveStructLitExpr
+import org.move.lang.core.psi.MoveStructLitField
 import org.move.lang.core.psi.impl.MoveNameIdentifierOwnerImpl
 import org.move.lang.core.resolve.ref.MoveReference
 import org.move.lang.core.resolve.ref.MoveStructFieldReferenceImpl
@@ -14,14 +14,14 @@ import org.move.lang.core.types.infer.inferExprTy
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
-val MoveStructLiteralField.structLiteral: MoveStructLiteralExpr
+val MoveStructLitField.structLit: MoveStructLitExpr
     get() = ancestorStrict()!!
 
-val MoveStructLiteralField.isShorthand: Boolean
-    get() = structLiteralFieldAssignment == null
+val MoveStructLitField.isShorthand: Boolean
+    get() = structLitFieldAssignment == null
 
-fun MoveStructLiteralField.inferAssignedExprTy(ctx: InferenceContext): Ty {
-    val assignment = this.structLiteralFieldAssignment
+fun MoveStructLitField.inferAssignedExprTy(ctx: InferenceContext): Ty {
+    val assignment = this.structLitFieldAssignment
     return if (assignment == null) {
         // find type of binding
         val resolved = this.reference.resolve() as? MoveBindingPat ?: return TyUnknown
@@ -32,8 +32,8 @@ fun MoveStructLiteralField.inferAssignedExprTy(ctx: InferenceContext): Ty {
     }
 }
 
-abstract class MoveStructLiteralFieldMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
-                                                            MoveStructLiteralField {
+abstract class MoveStructLitFieldMixin(node: ASTNode) : MoveNameIdentifierOwnerImpl(node),
+                                                        MoveStructLitField {
     override fun getReference(): MoveReference {
         if (this.isShorthand) {
             return OldMoveReferenceImpl(this, Namespace.NAME)

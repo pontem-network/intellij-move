@@ -1,21 +1,16 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.lang.ASTNode
-import org.move.lang.core.psi.MoveElementImpl
-import org.move.lang.core.psi.MoveStructLiteralExpr
-import org.move.lang.core.psi.MoveStructLiteralField
-import org.move.lang.core.psi.MoveStructLiteralFieldsBlock
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.inferExprTy
-import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.psi.MoveStructLitExpr
+import org.move.lang.core.psi.MoveStructLitField
+import org.move.lang.core.psi.MoveStructLitFieldsBlock
 
-val MoveStructLiteralExpr.providedFields: List<MoveStructLiteralField>
+val MoveStructLitExpr.providedFields: List<MoveStructLitField>
     get() =
-        structLiteralFieldsBlock.structLiteralFieldList
+        structLitFieldsBlock.structLitFieldList
 
-val MoveStructLiteralExpr.providedFieldNames: List<String>
+val MoveStructLitExpr.providedFieldNames: List<String>
     get() =
         providedFields.map { it.referenceName }
 
-val MoveStructLiteralFieldsBlock.litExpr: MoveStructLiteralExpr
-    get() = this.parent as MoveStructLiteralExpr
+val MoveStructLitFieldsBlock.litExpr: MoveStructLitExpr
+    get() = this.parent as MoveStructLitExpr

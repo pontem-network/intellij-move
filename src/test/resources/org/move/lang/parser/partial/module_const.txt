@@ -74,7 +74,7 @@ FILE
         MoveInitializerImpl(INITIALIZER)
           PsiElement(=)('=')
           PsiWhiteSpace(' ')
-          MoveLiteralExprImpl(LITERAL_EXPR)
+          MoveLitExprImpl(LIT_EXPR)
             PsiElement(INTEGER_LITERAL)('1')
         PsiErrorElement:';', '=' or '[' expected, got 'fun'
           <empty list>

@@ -157,7 +157,7 @@ File ::= (NamedAddressDef | ScriptDef | AddressDef | ModuleDef)*
 Attr ::= '#' '[' <<comma_sep_items AttrItem>> ']' { pin = 1 }
 AttrItem ::= IDENTIFIER AttrItemArguments?
 AttrItemArguments ::= '(' <<comma_sep_items AttrItemArgument>> ')'
-AttrItemArgument ::= IDENTIFIER '=' LiteralExpr
+AttrItemArgument ::= IDENTIFIER '=' LitExpr
 
 NamedAddressDef ::= address IDENTIFIER '=' AddressRef ';' { pin = 3 }
 
@@ -729,17 +729,17 @@ private AtomExpr ::=
 //                    | WhileExpr
 //                    | LetExpr
                     AnnotatedExpr
-                    | TupleLiteralExpr
+                    | TupleLitExpr
                     | ParensExpr
 //                    | AssignmentExpr
-                    | StructLiteralExpr
+                    | StructLitExpr
                     | DotExpr
                     | IndexExpr
                     | CallExpr
                     | RefExpr
                     | LambdaExpr
 //                    | RangeExpr
-                    | LiteralExpr
+                    | LitExpr
                     | CodeBlockExpr
 
 EqualsExpr ::= Expr (!eqeq_gt '==') Expr
@@ -786,28 +786,26 @@ AbortExpr ::= abort Expr
 BreakExpr ::= break
 ContinueExpr ::= continue
 
-StructLiteralExpr ::= Path StructLiteralFieldsBlock
-StructLiteralFieldsBlock ::= '{' StructLiteralField_with_recover* '}' { pin = 1 }
+StructLitExpr ::= Path StructLitFieldsBlock
+StructLitFieldsBlock ::= '{' StructLitField_with_recover* '}' { pin = 1 }
 
-private StructLiteralField_with_recover ::= !'}' StructLiteralField (',' | &'}')
+private StructLitField_with_recover ::= !'}' StructLitField (',' | &'}')
 {
     pin = 1
-    recoverWhile = StructLiteralField_recover
+    recoverWhile = StructLitField_recover
 }
-private StructLiteralField_recover ::= !('}' | IDENTIFIER)
+private StructLitField_recover ::= !('}' | IDENTIFIER)
 
-StructLiteralField ::= IDENTIFIER StructLiteralFieldAssignment?
+StructLitField ::= IDENTIFIER StructLitFieldAssignment?
 {
     pin = 1
     implements = [
         "org.move.lang.core.psi.MoveStructFieldReferenceElement"
     ]
-    mixin = "org.move.lang.core.psi.ext.MoveStructLiteralFieldMixin"
-//    recoverWhile = StructLiteralExprField_recover
+    mixin = "org.move.lang.core.psi.ext.MoveStructLitFieldMixin"
 }
 
-//private StructLiteralExprField_recover ::= !(',' | '}')
-StructLiteralFieldAssignment ::= ':' Expr { pin = 1 }
+StructLitFieldAssignment ::= ':' Expr { pin = 1 }
 
 ParensExpr ::= '(' Expr ')'
 
@@ -816,18 +814,15 @@ ParensExpr ::= '(' Expr ')'
 //private ParensExprBody ::= Expr { recoverWhile = "ParensExprBody_recover"}
 //private ParensExprBody_recover ::= !(':'|')')
 
-//TupleLiteralExpr ::= '('
-//TupleLiteralExpr ::= '(' TupleLiteralExpr? ')' { pin = 2 }
-//private TupleLiteralExpr_body ::= (Expr ',' (Expr ','?)*)?
 LambdaExpr ::= '|' <<comma_sep_items IDENTIFIER>> '|' Expr { pin = 1 }
 RangeExpr ::= Expr '..' Expr
 
-TupleLiteralExpr ::= EmptyTupleExpr | TupleExpr
+TupleLitExpr ::= EmptyTupleExpr | TupleExpr
 private EmptyTupleExpr ::= '(' ')'
 private TupleExpr ::= '(' Expr ',' <<comma_sep_items Expr>>? ')' { pin = 3 }
 
 private HEX_INTEGER_LITERAL ::= <<hexIntegerLiteral>>
-LiteralExpr ::= HEX_INTEGER_LITERAL
+LitExpr ::= HEX_INTEGER_LITERAL
                 | BOOL_LITERAL
                 | INTEGER_LITERAL
                 | HEX_STRING_LITERAL

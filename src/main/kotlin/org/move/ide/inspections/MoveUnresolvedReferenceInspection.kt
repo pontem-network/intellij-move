@@ -1,6 +1,5 @@
 package org.move.ide.inspections
 
-import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import org.move.lang.core.psi.*
@@ -66,7 +65,7 @@ class MoveUnresolvedReferenceInspection : MoveLocalInspectionTool() {
             }
         }
 
-        override fun visitStructLiteralField(o: MoveStructLiteralField) {
+        override fun visitStructLitField(o: MoveStructLitField) {
             if (isSpecElement(o)) return
             if (o.isUnresolved) {
                 val errorMessage =

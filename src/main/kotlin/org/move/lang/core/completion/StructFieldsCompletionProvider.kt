@@ -20,7 +20,7 @@ object StructFieldsCompletionProvider : MoveCompletionProvider() {
         get() = StandardPatterns.or(
             PlatformPatterns
                 .psiElement()
-                .withParent<MoveStructLiteralField>(),
+                .withParent<MoveStructLitField>(),
             PlatformPatterns
                 .psiElement()
                 .withParent<MoveStructPatField>(),
@@ -48,11 +48,11 @@ object StructFieldsCompletionProvider : MoveCompletionProvider() {
                     result
                 )
             }
-            is MoveStructLiteralField -> {
-                val structLiteral = element.structLiteral
+            is MoveStructLitField -> {
+                val structLit = element.structLit
                 addFieldsToCompletion(
-                    structLiteral.path.maybeStruct ?: return,
-                    structLiteral.providedFieldNames,
+                    structLit.path.maybeStruct ?: return,
+                    structLit.providedFieldNames,
                     result
                 )
             }

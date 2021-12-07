@@ -58,11 +58,11 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .afterInside(L_BRACE, BLOCK_LIKE).parentDependentLFSpacing(1, 1, true, 0)
         .beforeInside(R_BRACE, BLOCK_LIKE).parentDependentLFSpacing(1, 1, true, 0)
 //        .withinPairInside(L_BRACE, R_BRACE, STRUCT_PAT).spacing(1, 1, 0, true, 0)
-//        .withinPairInside(L_BRACE, R_BRACE, STRUCT_LITERAL_EXPR).spacing(1, 1, 0, true, 0)
+//        .withinPairInside(L_BRACE, R_BRACE, STRUCT_LIT_EXPR).spacing(1, 1, 0, true, 0)
 
-//        .afterInside(L_BRACE, tokenSetOf(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LITERAL_FIELDS_BLOCK)).spaces(1)
-//        .beforeInside(R_BRACE, tokenSetOf(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LITERAL_FIELDS_BLOCK)).spaces(1)
-//        .beforeInside(L_BRACE, tokenSetOf(STRUCT_PAT, STRUCT_LITERAL_EXPR)).spaces(1)
+//        .afterInside(L_BRACE, tokenSetOf(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LIT_FIELDS_BLOCK)).spaces(1)
+//        .beforeInside(R_BRACE, tokenSetOf(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LIT_FIELDS_BLOCK)).spaces(1)
+//        .beforeInside(L_BRACE, tokenSetOf(STRUCT_PAT, STRUCT_LIT_EXPR)).spaces(1)
 
         //== items
         .between(FUNCTION_PARAMETER_LIST, RETURN_TYPE).spaceIf(false)
@@ -72,8 +72,8 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .between(IDENTIFIER, TYPE_PARAMETER_LIST).spaceIf(false)
         .between(IDENTIFIER, TYPE_ARGUMENT_LIST).spaceIf(false)
 
-//        .between(IDENTIFIER, STRUCT_LITERAL_FIELDS_BLOCK).spaceIf(true)
-//        .between(IDENTIFIER, STRUCT_LITERAL_FIELDS_BLOCK).spaceIf(true)
+//        .between(IDENTIFIER, STRUCT_LIT_FIELDS_BLOCK).spaceIf(true)
+//        .between(IDENTIFIER, STRUCT_LIT_FIELDS_BLOCK).spaceIf(true)
 
         .between(TYPE_PARAMETER_LIST, FUNCTION_PARAMETER_LIST).spaceIf(false)
         .before(CALL_ARGUMENTS).spaceIf(false)

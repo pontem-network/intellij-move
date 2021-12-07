@@ -146,7 +146,7 @@ fun processLexicalDeclarations(
         Namespace.STRUCT_FIELD -> {
             val struct = when (scope) {
                 is MoveStructPat -> scope.path.maybeStruct
-                is MoveStructLiteralExpr -> scope.path.maybeStruct
+                is MoveStructLitExpr -> scope.path.maybeStruct
                 else -> null
             }
             if (struct != null) return processor.matchAll(struct.fields)

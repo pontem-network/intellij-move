@@ -88,7 +88,7 @@
         <codeInsight.parameterInfo language="Move"
                                    implementationClass="org.move.ide.hints.TypeParameterInfoHandler"/>
         <codeInsight.parameterInfo language="Move"
-                                   implementationClass="org.move.ide.hints.StructLiteralFieldsInfoHandler"/>
+                                   implementationClass="org.move.ide.hints.StructLitFieldsInfoHandler"/>
         <codeInsight.parameterNameHints language="Move"
                                         implementationClass="org.move.ide.hints.MoveInlayParameterHintsProvider"/>
 

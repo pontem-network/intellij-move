@@ -131,7 +131,7 @@ class ErrorAnnotator : MoveAnnotator() {
                 )
             }
 
-            override fun visitStructLiteralExpr(o: MoveStructLiteralExpr) {
+            override fun visitStructLitExpr(o: MoveStructLitExpr) {
                 val nameElement = o.path.referenceNameElement ?: return
                 val refStruct = o.path.maybeStruct ?: return
                 checkMissingFields(
@@ -139,8 +139,8 @@ class ErrorAnnotator : MoveAnnotator() {
                 )
 
                 val ctx = InferenceContext()
-                for (field in o.structLiteralFieldsBlock.structLiteralFieldList) {
-                    val assignmentExpr = field.structLiteralFieldAssignment?.expr ?: continue
+                for (field in o.structLitFieldsBlock.structLitFieldList) {
+                    val assignmentExpr = field.structLitFieldAssignment?.expr ?: continue
                     val assignmentType = assignmentExpr.inferExprTy(ctx)
                     if (assignmentType is TyUnknown) continue
 

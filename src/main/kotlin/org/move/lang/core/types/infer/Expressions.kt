@@ -1,6 +1,5 @@
 package org.move.lang.core.types.infer
 
-import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
@@ -13,9 +12,9 @@ fun inferExprTy(expr: MoveExpr, ctx: InferenceContext): Ty {
         is MoveBorrowExpr -> inferBorrowExprTy(expr, ctx)
         is MoveCallExpr -> inferCallExprTy(expr, ctx)
         is MoveDotExpr -> inferDotExprTy(expr, ctx)
-        is MoveStructLiteralExpr -> inferStructLiteralExpr(expr, ctx)
+        is MoveStructLitExpr -> inferStructLitExpr(expr, ctx)
         is MoveDerefExpr -> inferDerefExprTy(expr, ctx)
-        is MoveLiteralExpr -> inferLiteralExprTy(expr)
+        is MoveLitExpr -> inferLitExprTy(expr)
 
         is MoveMoveExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
         is MoveCopyExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
@@ -106,7 +105,7 @@ private fun inferDotExprTy(dotExpr: MoveDotExpr, ctx: InferenceContext): Ty {
     return inference.resolveTy(structTy.fieldTy(fieldName))
 }
 
-private fun inferStructLiteralExpr(litExpr: MoveStructLiteralExpr, ctx: InferenceContext): Ty {
+private fun inferStructLitExpr(litExpr: MoveStructLitExpr, ctx: InferenceContext): Ty {
     val structItem = litExpr.path.maybeStructSignature ?: return TyUnknown
     val structTypeVars = structItem.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
 
@@ -154,17 +153,17 @@ private fun inferDerefExprTy(derefExpr: MoveDerefExpr, ctx: InferenceContext): T
     return (exprTy as? TyReference)?.referenced ?: TyUnknown
 }
 
-private fun inferLiteralExprTy(literalExpr: MoveLiteralExpr): Ty {
+private fun inferLitExprTy(litExpr: MoveLitExpr): Ty {
     return when {
-        literalExpr.boolLiteral != null -> TyBool
-        literalExpr.addressLiteral != null
-                || literalExpr.bech32AddressLiteral != null
-                || literalExpr.polkadotAddressLiteral != null -> TyAddress
-        literalExpr.integerLiteral != null || literalExpr.hexIntegerLiteral != null -> {
-            val literal = (literalExpr.integerLiteral ?: literalExpr.hexIntegerLiteral)!!
+        litExpr.boolLiteral != null -> TyBool
+        litExpr.addressLiteral != null
+                || litExpr.bech32AddressLiteral != null
+                || litExpr.polkadotAddressLiteral != null -> TyAddress
+        litExpr.integerLiteral != null || litExpr.hexIntegerLiteral != null -> {
+            val literal = (litExpr.integerLiteral ?: litExpr.hexIntegerLiteral)!!
             return TyInteger.fromSuffixedLiteral(literal) ?: TyInteger(TyInteger.DEFAULT_KIND)
         }
-        literalExpr.byteStringLiteral != null -> TyByteString
+        litExpr.byteStringLiteral != null -> TyByteString
         else -> TyUnknown
     }
 }

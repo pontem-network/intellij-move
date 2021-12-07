@@ -9,7 +9,7 @@ import org.move.ide.utils.CallInfo
 import org.move.lang.MoveElementTypes
 import org.move.lang.core.psi.MoveCallArguments
 import org.move.lang.core.psi.MoveCallExpr
-import org.move.lang.core.psi.MoveStructLiteralFieldsBlock
+import org.move.lang.core.psi.MoveStructLitFieldsBlock
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.contains
 import org.move.lang.core.psi.ext.startOffset
@@ -20,7 +20,7 @@ class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MoveCallArguments
     override fun findTargetElement(file: PsiFile, offset: Int): MoveCallArguments? {
         val element = file.findElementAt(offset) ?: return null
         val callExpr = element.ancestorStrict<MoveCallArguments>() ?: return null
-        val block = element.ancestorStrict<MoveStructLiteralFieldsBlock>()
+        val block = element.ancestorStrict<MoveStructLitFieldsBlock>()
         if (block != null && callExpr.contains(block)) return null
         return callExpr
     }
