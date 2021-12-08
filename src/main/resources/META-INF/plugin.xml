@@ -26,7 +26,10 @@
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
 
-        <configurationType implementation="org.move.cli.MvRunConfigurationType"/>
+        <configurationType
+                implementation="org.move.cli.runconfig.MoveRunConfigurationType"/>
+        <runConfigurationProducer
+                implementation="org.move.cli.runconfig.MoveTestRunConfigurationProducer"/>
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
@@ -71,7 +74,7 @@
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.core.completion.KeywordCompletionContributor"/>
         <completion.contributor language="TOML"
-                                implementationClass="org.move.toml.completion.MoveTomlCompletionContributor" />
+                                implementationClass="org.move.toml.completion.MoveTomlCompletionContributor"/>
 
         <psi.referenceContributor language="TOML"
                                   implementation="org.move.toml.MoveTomlReferenceContributor"/>
@@ -120,19 +123,19 @@
         <localInspection language="Move" groupName="Move"
                          displayName="Field initialization shorthand"
                          enabledByDefault="true" level="WEAK WARNING"
-                         implementationClass="org.move.ide.inspections.FieldInitShorthandInspection" />
+                         implementationClass="org.move.ide.inspections.FieldInitShorthandInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Constant naming convention"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.lints.MvConstNamingInspection" />
+                         implementationClass="org.move.ide.inspections.lints.MvConstNamingInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Struct naming convention"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.lints.MvStructNamingInspection" />
+                         implementationClass="org.move.ide.inspections.lints.MvStructNamingInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Local variable naming convention"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.lints.MvLocalBindingNamingInspection" />
+                         implementationClass="org.move.ide.inspections.lints.MvLocalBindingNamingInspection"/>
 
 
         <!-- Color Settings -->
@@ -150,13 +153,13 @@
                         serviceImplementation="org.move.utils.ProjectRootServiceImpl"
                         testServiceImplementation="org.move.utils.TestProjectRootServiceImpl"/>
         <projectService serviceInterface="org.move.cli.MoveProjectsService"
-                        serviceImplementation="org.move.cli.MoveProjectsServiceImpl" />
+                        serviceImplementation="org.move.cli.MoveProjectsServiceImpl"/>
 
         <!-- Notifications -->
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>
 
-<!--        <editorNotificationProvider-->
-<!--                implementation="org.move.ide.notifications.InvalidMvExecutableNotificationsProvider"/>-->
+        <!--        <editorNotificationProvider-->
+        <!--                implementation="org.move.ide.notifications.InvalidMvExecutableNotificationsProvider"/>-->
 
         <intentionAction>
             <className>org.move.ide.intentions.AddAcquiresIntention</className>

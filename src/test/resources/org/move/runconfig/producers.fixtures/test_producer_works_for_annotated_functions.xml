@@ -1,0 +1,6 @@
+<configurations>
+  <configuration name="Test MoveTests::test_add" class="MoveRunConfiguration">
+    <option name="command" value="package test --filter test_add" />
+    <option name="workingDirectory" value="file:///my-package/code" />
+  </configuration>
+</configurations>

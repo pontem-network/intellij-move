@@ -1,4 +1,4 @@
-package org.move.cli
+package org.move.cli.runconfig
 
 import com.intellij.execution.ExecutionBundle
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -15,7 +15,7 @@ import java.nio.file.Paths
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-class MvExecutableSettingsEditor : SettingsEditor<MvRunConfiguration>() {
+class MoveRunConfigurationEditor : SettingsEditor<MoveRunConfiguration>() {
     private val textField = EditorTextField()
 
     val currentWorkingDirectory: Path?
@@ -24,14 +24,14 @@ class MvExecutableSettingsEditor : SettingsEditor<MvRunConfiguration>() {
     val workingDirectory: LabeledComponent<TextFieldWithBrowseButton> =
         WorkingDirectoryComponent()
 
-    override fun resetEditorFrom(configuration: MvRunConfiguration) {
-        textField.text = configuration.command
-        workingDirectory.component.text = configuration.workingDirectory?.toString().orEmpty()
+    override fun resetEditorFrom(configuration: MoveRunConfiguration) {
+        textField.text = configuration.cmd.command
+        workingDirectory.component.text = configuration.cmd.workingDirectory?.toString().orEmpty()
     }
 
-    override fun applyEditorTo(configuration: MvRunConfiguration) {
-        configuration.command = textField.text
-        configuration.workingDirectory = currentWorkingDirectory
+    override fun applyEditorTo(configuration: MoveRunConfiguration) {
+        val command = textField.text
+        configuration.cmd = MoveCommandLine(command, this.currentWorkingDirectory)
     }
 
     override fun createEditor(): JComponent {

@@ -7,18 +7,21 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.util.execution.ParametersListUtil
+import org.move.cli.runconfig.MoveCommandLine
+import org.move.cli.runconfig.MoveRunConfiguration
 
-class MvCommandLineState(
+class MoveCommandLineState(
     environment: ExecutionEnvironment,
-    private val runConfiguration: SubcommandRunConfigurationBase,
+    private val executable: String,
+    private val cmd: MoveCommandLine
 ) : CommandLineState(environment) {
 
     override fun startProcess(): ProcessHandler {
-        val pathToExecutable = runConfiguration.pathToExecutable()
-        val params = ParametersListUtil.parse(runConfiguration.command).toTypedArray()
+        val params =
+            ParametersListUtil.parse(this.cmd.command).toTypedArray()
         val commandLine =
-            GeneralCommandLine(pathToExecutable, *params)
-                .withWorkDirectory(runConfiguration.workingDirectory.toString())
+            GeneralCommandLine(this.executable, *params)
+                .withWorkDirectory(this.cmd.workingDirectory?.toString().orEmpty())
                 .withCharset(Charsets.UTF_8)
 
         val handler = OSProcessHandler(commandLine)
