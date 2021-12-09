@@ -31,8 +31,8 @@ fun processNamedAddresses(
                 .resolve(MvConstants.MANIFEST_FILE)
                 .findVirtualFile()
                 ?.toPsiFile(moveProject.project) ?: continue
-        val depMvProject =
-            project.moveProjectsService.findMoveProjectForPsiFile(depMoveFile) ?: continue
-        processNamedAddresses(depMvProject, combinedDepSubst, processAddress)
+        val depMoveProject =
+            project.moveProjects.findProjectForPsiElement(depMoveFile) ?: continue
+        processNamedAddresses(depMoveProject, combinedDepSubst, processAddress)
     }
 }

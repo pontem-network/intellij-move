@@ -10,6 +10,7 @@ import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.MvCallArgumentList
 import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvStructLitFieldsBlock
+import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.contains
 import org.move.lang.core.psi.ext.startOffset
@@ -19,10 +20,11 @@ class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MvCallArgumentLis
 
     override fun findTargetElement(file: PsiFile, offset: Int): MvCallArgumentList? {
         val element = file.findElementAt(offset) ?: return null
-        val callExpr = element.ancestorStrict<MvCallArgumentList>() ?: return null
-        val block = element.ancestorStrict<MvStructLitFieldsBlock>()
-        if (block != null && callExpr.contains(block)) return null
-        return callExpr
+//        val callExpr = element.ancestorStrict<MvCallArgumentList>() ?: return null
+//        val block = element.ancestorStrict<MvStructLitFieldsBlock>()
+//        if (block != null && callExpr.contains(block)) return null
+        return element.ancestorOrSelf(stopAt = MvStructLitFieldsBlock::class.java)
+//        return callExpr
     }
 
     override fun calculateParameterInfo(element: MvCallArgumentList): Array<ParamsDescription>? =

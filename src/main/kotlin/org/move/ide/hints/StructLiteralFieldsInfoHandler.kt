@@ -19,10 +19,10 @@ class StructLitFieldsInfoHandler :
 
     override fun findTargetElement(file: PsiFile, offset: Int): MvStructLitFieldsBlock? {
         val element = file.findElementAt(offset) ?: return null
-        val block = element.ancestorStrict<MvStructLitFieldsBlock>() ?: return null
-        val callExpr = element.ancestorStrict<MvCallArgumentList>()
-        if (callExpr != null && block.contains(callExpr)) return null
-        return block
+//        val block = element.ancestorStrict<MvStructLitFieldsBlock>() ?: return null
+        //        val callExpr = element.ancestorStrict<MvCallArgumentList>()
+//        if (callExpr != null && block.contains(callExpr)) return null
+        return element.ancestorOrSelf(stopAt = MvCallArgumentList::class.java)
     }
 
     override fun calculateParameterInfo(element: MvStructLitFieldsBlock): Array<FieldsDescription>? =

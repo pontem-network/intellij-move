@@ -21,7 +21,7 @@ class ProjectAddressesServiceTest: MvProjectTestCase() {
         }
         val rootDirectory = myModule.rootManager.contentRoots.first()
         val testProject = fileTree.prepareTestProject(myFixture.project, rootDirectory)
-        val addressesService = project.moveProjectsService
+        val addressesService = project.moveProjects
 //        addressesService.refreshProjectAddresses()
 
         val moveFiles = findMoveTomlFilesDeepestFirst(myFixture.project).toList()
@@ -30,8 +30,8 @@ class ProjectAddressesServiceTest: MvProjectTestCase() {
         check(moveFiles[1].path.endsWith("Move.toml")) { moveFiles[1].path }
 
         val vfile = testProject.psiFile("stdlib/sources/module2.move").virtualFile.toPsiFile(project)!!
-        println("moveTomlPath: ${addressesService.findMoveProjectForPsiFile(vfile)?.root}")
-        println("moveTomlPath: ${addressesService.findMoveProjectForPsiFile(vfile)?.root}")
-        println("moveTomlPath: ${addressesService.findMoveProjectForPsiFile(vfile)?.root}")
+        println("moveTomlPath: ${addressesService.findProjectForPsiElement(vfile)?.root}")
+        println("moveTomlPath: ${addressesService.findProjectForPsiElement(vfile)?.root}")
+        println("moveTomlPath: ${addressesService.findProjectForPsiElement(vfile)?.root}")
     }
 }

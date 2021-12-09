@@ -6,7 +6,8 @@ object MvConstants {
 
     object ProjectLayout {
         val sources = listOf("sources", "examples")
-        val tests = listOf("tests")
+        val tests_dir = "tests"
+        val tests = listOf(tests_dir)
         const val build = "build"
     }
 }

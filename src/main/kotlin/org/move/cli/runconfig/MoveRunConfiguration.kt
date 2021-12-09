@@ -1,6 +1,7 @@
 package org.move.cli.runconfig
 
 import com.intellij.execution.Executor
+import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
@@ -58,4 +59,9 @@ class MoveRunConfiguration(
         val path = element.readPath("workingDirectory") ?: return
         this.cmd = MoveCommandLine(command, path)
     }
+}
+
+abstract class MoveRunConfigurationProducer: LazyRunConfigurationProducer<MoveRunConfiguration>() {
+
+    override fun getConfigurationFactory() = MoveRunConfigurationType.getInstance()
 }
