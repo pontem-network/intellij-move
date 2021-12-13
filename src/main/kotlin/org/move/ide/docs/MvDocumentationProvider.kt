@@ -23,7 +23,8 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
         contextElement: PsiElement?,
         targetOffset: Int
     ): PsiElement? {
-        if (contextElement is MvNamedAddress) return contextElement
+        val namedAddress = contextElement?.ancestorOrSelf<MvNamedAddress>()
+        if (namedAddress != null) return namedAddress
         return super.getCustomDocumentationElement(editor, file, contextElement, targetOffset)
     }
 
@@ -40,7 +41,8 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
             is MvNamedAddress -> {
                 val moveProject = docElement.moveProject ?: return null
                 val refName = docElement.referenceName ?: return null
-                return moveProject.getAddressValue(refName)
+                val value = moveProject.getAddressValue(refName)
+                return "$refName = \"$value\""
             }
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvBindingPat -> {
