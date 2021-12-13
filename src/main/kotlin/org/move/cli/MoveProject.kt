@@ -3,6 +3,7 @@ package org.move.cli
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.lang.MvFile
+import org.move.lang.moveProject
 import org.move.lang.toMvFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
@@ -10,6 +11,7 @@ import org.move.openapiext.findVirtualFile
 import org.move.openapiext.toPsiFile
 import org.move.stdext.deepIterateChildrenRecursivery
 import org.toml.lang.psi.TomlKeySegment
+import java.nio.file.Path
 
 enum class GlobalScope {
     MAIN, DEV;
@@ -42,6 +44,11 @@ data class MoveProject(
     val root: VirtualFile,
     val dependencyAddresses: DependencyAddresses,
 ) {
+    val packageName: String? get() = moveToml.packageTable?.name
+    val rootPath: Path get() = root.toNioPath()
+
+    fun projectDirPath(name: String) = rootPath.resolve(name)
+
     fun getModuleFolders(scope: GlobalScope): List<VirtualFile> {
         // TODO: add support for git folders
         val deps = when (scope) {
@@ -79,16 +86,14 @@ data class MoveProject(
         // 1. MvProject for that
         // 2. Substitution mapping for the dependency
         val values = mutableMapOf<String, String>()
-        for (dependency in this.moveToml.dependencies.values) {
-            val moveTomlFile = dependency.absoluteLocalPath.resolve("Move.toml")
+        for (dep in this.moveToml.dependencies.values) {
+            val moveTomlFile = dep.absoluteLocalPath.resolve("Move.toml")
                 .findVirtualFile()
                 ?.toPsiFile(this.project) ?: continue
-            val depMvProject =
-                this.project.moveProjectsService.findMoveProjectForPsiFile(moveTomlFile) ?: continue
-            val depAddresses = depMvProject.dependencyAddresses
+            val depAddresses = moveTomlFile.moveProject?.dependencyAddresses ?: continue
 
             // apply substitutions
-            val substitutions = dependency.addrSubst
+            val substitutions = dep.addrSubst
             val newPlaceholders = mutableListOf<String>()
             val newValues = depAddresses.values.toMutableMap()
             for (placeholder in depAddresses.placeholders) {

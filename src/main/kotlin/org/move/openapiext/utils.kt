@@ -15,11 +15,14 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.openapi.util.JDOMUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import org.jdom.Element
+import org.jdom.input.SAXBuilder
 import org.move.openapiext.common.isUnitTestMode
 
 fun fullyRefreshDirectory(directory: VirtualFile) {
@@ -81,3 +84,7 @@ val Project.modules: Collection<Module>
 val Project.contentRoots: Sequence<VirtualFile>
     get() = this.modules.asSequence()
         .flatMap { ModuleRootManager.getInstance(it).contentRoots.asSequence() }
+
+fun Element.toXmlString() = JDOMUtil.writeElement(this)
+fun elementFromXmlString(xml: String): org.jdom.Element =
+    SAXBuilder().build(xml.byteInputStream()).rootElement

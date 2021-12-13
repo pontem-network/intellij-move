@@ -3,8 +3,8 @@ package org.move.lang.core.resolve.ref
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
-import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.MvNamedAddress
+import org.move.lang.moveProject
 import org.move.utils.doRenameIdentifier
 import org.toml.lang.psi.TomlKeySegment
 
@@ -31,8 +31,7 @@ class NamedAddressReference(element: MvNamedAddress) : PsiReferenceBase<MvNamedA
     override fun resolve(): TomlKeySegment? {
         val addressName = element.referenceName ?: return null
         return element
-            .containingFile
-            .containingMoveProject()
+            .moveProject
             ?.getAddressTomlKeySegment(addressName)
     }
 }

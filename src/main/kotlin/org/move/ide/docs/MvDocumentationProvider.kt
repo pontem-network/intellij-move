@@ -8,12 +8,12 @@ import com.intellij.psi.PsiFile
 import org.move.ide.presentation.presentationInfo
 import org.move.ide.presentation.shortPresentableText
 import org.move.ide.presentation.typeLabel
-import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.isNative
 import org.move.lang.core.types.infer.inferMvTypeTy
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.moveProject
 import org.move.stdext.joinToWithBuffer
 
 class MvDocumentationProvider : AbstractDocumentationProvider() {
@@ -38,7 +38,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
         when (docElement) {
             // TODO: add docs for both scopes
             is MvNamedAddress -> {
-                val moveProject = docElement.containingFile.containingMoveProject() ?: return null
+                val moveProject = docElement.moveProject ?: return null
                 val refName = docElement.referenceName ?: return null
                 return moveProject.getAddresses()[refName]
             }

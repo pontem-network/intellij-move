@@ -10,7 +10,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.MvConstants
 import org.move.cli.MoveProject
-import org.move.cli.moveProjectsService
+import org.move.cli.moveProjects
 import org.move.lang.core.psi.MvAddressBlock
 import org.move.lang.core.psi.MvAddressDef
 import org.move.lang.core.psi.MvScriptBlock
@@ -46,11 +46,11 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
 //    return MoveToml.fromTomlFile(tomlFile)
 //}
 
-fun PsiElement.moveProject(): MoveProject? = this.containingFile.containingMoveProject()
-
-fun PsiFile.containingMoveProject(): MoveProject? {
-    return project.moveProjectsService.findMoveProjectForPsiFile(this)
-}
+//fun PsiDirectory.moveProject(): MoveProject? {
+//    project.moveProjectsService.findMoveProjectForPsiFile()
+//}
+val PsiElement.moveProject: MoveProject?
+    get() = project.moveProjects.findProjectForPsiElement(this)
 
 fun VirtualFile.toNioPathOrNull(): Path? {
     try {

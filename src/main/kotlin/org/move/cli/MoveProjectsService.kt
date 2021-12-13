@@ -16,10 +16,14 @@ import com.intellij.openapi.util.EmptyRunnable
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.psi.PsiDirectory
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiFileSystemItem
 import com.intellij.util.messages.Topic
 import org.jetbrains.rpc.LOG
 import org.move.lang.findMoveTomlPath
+import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.findVirtualFile
@@ -31,14 +35,14 @@ import org.move.stdext.MyLightDirectoryIndex
 import org.move.stdext.deepIterateChildrenRecursivery
 import java.util.concurrent.CompletableFuture
 
-val Project.moveProjectsService get() = service<MoveProjectsService>()
+val Project.moveProjects get() = service<MoveProjectsService>()
 
 interface MoveProjectsService {
 //    var initialized: Boolean
 
     fun refreshAllProjects()
 
-    fun findMoveProjectForPsiFile(psiFile: PsiFile): MoveProject?
+    fun findProjectForPsiElement(psiElement: PsiElement): MoveProject?
 //    fun findNamedAddressesForFile(scope: GlobalScope, file: VirtualFile): AddressesMap
 //    fun findNamedAddressValueForFile(scope: GlobalScope, file: VirtualFile, name: String): String
 
@@ -102,10 +106,15 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
                 projects
             }
 
-    override fun findMoveProjectForPsiFile(psiFile: PsiFile): MoveProject? {
-        val file = psiFile.originalFile.virtualFile
+    override fun findProjectForPsiElement(psiElement: PsiElement): MoveProject? {
+        val file = when (psiElement) {
+            is PsiDirectory -> psiElement.virtualFile
+            is PsiFile -> psiElement.originalFile.virtualFile
+            else -> psiElement.containingFile.originalFile.virtualFile
+        }
         // in-memory file
         if (file == null) return null
+//        val file = fsElement.originalFile.virtualFile
 
         val cachedProject = this.directoryIndex.getInfoForFile(file)
         if (cachedProject != null) return cachedProject

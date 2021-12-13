@@ -28,7 +28,7 @@ class MvProjectOpenProcessor : ProjectOpenProcessor() {
             forceOpenInNewFrame
         )?.also {
             StartupManager.getInstance(it).runWhenProjectIsInitialized {
-                it.moveProjectsService.refreshAllProjects()
+                it.moveProjects.refreshAllProjects()
             }
         }
     }

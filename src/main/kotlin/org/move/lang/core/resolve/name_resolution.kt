@@ -5,7 +5,6 @@ import com.intellij.psi.util.PsiUtilCore
 import com.intellij.psi.util.descendantsOfType
 import org.move.cli.GlobalScope
 import org.move.lang.MvFile
-import org.move.lang.containingMoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
@@ -65,7 +64,7 @@ private fun processQualModuleRefInFile(
     file: MvFile,
     processor: MatchingProcessor,
 ): Boolean {
-    val moveProject = qualModuleRef.moveProject() ?: return false
+    val moveProject = qualModuleRef.moveProject ?: return false
     val sourceNormalizedAddress = qualModuleRef.addressRef.toNormalizedAddress(moveProject)
 
     var resolved = false
@@ -94,7 +93,7 @@ fun processQualModuleRef(
     var stopped = processQualModuleRefInFile(qualModuleRef, containingFile, processor)
     if (stopped) return
 
-    val moveProject = containingFile.containingMoveProject() ?: return
+    val moveProject = containingFile.moveProject ?: return
     moveProject.processModuleFiles(GlobalScope.MAIN) { moduleFile ->
         // skip current file as it's processed already
         if (moduleFile.file.toNioPathOrNull() == containingFile.toNioPathOrNull())

@@ -12,6 +12,14 @@ import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.FQModule
 import javax.swing.Icon
 
+fun List<MvAttr>.findSingleItemAttr(name: String): MvAttr? =
+    this.find {
+        it.attrItemList.size == 1
+                && it.attrItemList.first().identifier.text == name
+    }
+
+val MvModuleDef.isTestOnly: Boolean get() = this.attrList.findSingleItemAttr("test_only") != null
+
 fun MvModuleDef.definedAddressRef(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
 
@@ -22,11 +30,12 @@ fun MvModuleDef.fqModule(): FQModule? {
     return FQModule(address, name)
 }
 
-val MvModuleDef.fqName: String? get() {
-    val address = this.definedAddressRef()?.text?.let { "$it::" } ?: ""
-    val module = this.name ?: return null
-    return address + module
-}
+val MvModuleDef.fqName: String?
+    get() {
+        val address = this.definedAddressRef()?.text?.let { "$it::" } ?: ""
+        val module = this.name ?: return null
+        return address + module
+    }
 
 val MvModuleDef.friendModules: Set<FQModule>
     get() {
@@ -145,7 +154,7 @@ fun MvModuleDef.constBindings(): List<MvBindingPat> =
 
 
 abstract class MvModuleDefMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
-                                                   MvModuleDef {
+                                                 MvModuleDef {
 //    constructor(node: ASTNode) : super(node)
 //
 //    constructor(stub: MvModuleDefStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
@@ -156,10 +165,12 @@ abstract class MvModuleDefMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node)
         val name = this.name ?: return null
 //        val moveProject = this.containingFile.containingMvProject() ?: return null
         val locationString = this.containingAddress.text
-        return PresentationData(name,
-                                locationString,
-                                MvIcons.MODULE,
-                                null)
+        return PresentationData(
+            name,
+            locationString,
+            MvIcons.MODULE,
+            null
+        )
     }
 
     override val importStatements: List<MvImportStatement>
