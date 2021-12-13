@@ -117,13 +117,18 @@
         <!--                         implementationClass="org.move.ide.inspections.lints.FunctionNamingInspection"/>-->
         <localInspection language="Move" groupName="Move"
                          displayName="Unresolved reference"
+                         shortName="MoveUnresolvedReference"
                          enabledByDefault="false"
                          level="ERROR"
-                         implementationClass="org.move.ide.inspections.MvUnresolvedReferenceInspection"/>
+                         implementationClass="org.move.ide.inspections.UnresolvedReferenceInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Field initialization shorthand"
                          enabledByDefault="true" level="WEAK WARNING"
                          implementationClass="org.move.ide.inspections.FieldInitShorthandInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Invalid module declaration"
+                         enabledByDefault="true" level="ERROR"
+                         implementationClass="org.move.ide.inspections.InvalidModuleDeclarationInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Constant naming convention"
                          enabledByDefault="true" level="WARNING"
