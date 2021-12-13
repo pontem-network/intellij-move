@@ -23,6 +23,10 @@ fun TomlTable.namedEntries(): List<Pair<String, TomlValue?>> {
     return this.entries.map { Pair(it.key.text, it.value) }
 }
 
+fun TomlInlineTable.namedEntries(): List<Pair<String, TomlValue?>> {
+    return this.entries.map { it.key.text.trim('"') to it.value }
+}
+
 fun TomlTable.findKeyValue(key: String): TomlKeyValue? =
     this.entries.findLast { it.key.text == key }
 
@@ -59,6 +63,8 @@ fun TomlValue.stringValue(): String? {
 fun TomlValue.arrayValue(): List<TomlValue> = (this as? TomlArray)?.elements.orEmpty()
 
 fun TomlValue.inlineTableValue(): TomlInlineTable? = this as? TomlInlineTable
+
+val TomlValue.keyValue: TomlKeyValue get() = this.parent as TomlKeyValue
 
 fun TomlFile.getRootKey(key: String): TomlValue? {
     val keyValue = this.children.filterIsInstance<TomlKeyValue>().find { it.key.text == key }

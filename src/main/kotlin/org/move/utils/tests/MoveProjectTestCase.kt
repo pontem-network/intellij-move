@@ -18,8 +18,12 @@ abstract class MvProjectTestCase : CodeInsightFixtureTestCase<ModuleFixtureBuild
         val fileTree = fileTreeFromText(code)
         val rootDirectory = myModule.rootManager.contentRoots.first()
         return fileTree.prepareTestProject(myFixture.project, rootDirectory)
-//        MvExecutable(myFixture.project).build(rootDirectory.toNioPath())
-//        return testProject
+    }
+
+    protected fun testProjectFromFileTree(builder: FileTreeBuilder.() -> Unit): TestProject {
+        val fileTree = fileTree(builder)
+        val rootDirectory = myModule.rootManager.contentRoots.first()
+        return fileTree.prepareTestProject(myFixture.project, rootDirectory)
     }
 
     protected fun CodeInsightTestFixture.configureFromFileWithCaret(testProject: TestProject) {

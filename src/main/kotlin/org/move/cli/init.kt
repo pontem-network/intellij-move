@@ -3,9 +3,13 @@ package org.move.cli
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import org.move.lang.moveProject
 import org.move.openapiext.contentRoots
+import org.move.openapiext.findVirtualFile
 import org.move.openapiext.parseTomlFromFile
+import org.move.openapiext.toPsiFile
 import org.move.stdext.deepIterateChildrenRecursivery
+import org.toml.lang.psi.TomlKeyValue
 
 sealed class InitResult {
     class Ok(val moveProject: MoveProject) : InitResult()
@@ -46,7 +50,7 @@ fun findMoveTomlFiles(project: Project): Sequence<VirtualFile> {
     return moveFiles.asSequence()
 }
 
-fun initializeMvProject(project: Project, fsMoveTomlFile: VirtualFile): MoveProject? {
+fun initializeMoveProject(project: Project, fsMoveTomlFile: VirtualFile): MoveProject? {
     return runReadAction {
         val tomlFile = parseTomlFromFile(project, fsMoveTomlFile) ?: return@runReadAction null
         val projectRoot = fsMoveTomlFile.parent!!
@@ -54,23 +58,17 @@ fun initializeMvProject(project: Project, fsMoveTomlFile: VirtualFile): MoveProj
         val dependencyAddresses = parseDependencyAddresses(moveToml)
         MoveProject(project, moveToml, projectRoot, dependencyAddresses)
     }
-//    val (moveToml, projectRoot) = runReadAction {
-//        val tomlFile = parseTomlFromFile(project, fsMoveTomlFile) ?: return@runReadAction null
-//        val projectRoot = fsMoveTomlFile.parent!!
-//        val moveToml = MoveToml.fromTomlFile(tomlFile, projectRoot.toNioPath())
-//        Pair(moveToml, projectRoot)
-//    } ?: return null
-
 }
 
 private fun parseDependencyAddresses(moveToml: MoveToml): DependencyAddresses {
-    val values = mutableMapOf<String, String>()
-    val placeholders = mutableListOf<String>()
+    val values = mutableAddressMap()
+    val placeholders = mutableMapOf<String, TomlKeyValue>()
     for ((addressName, addressVal) in moveToml.addresses.entries) {
-        if (addressVal == MvConstants.ADDR_PLACEHOLDER) {
-            placeholders.add(addressName)
+        val (value, tomlKeyValue) = addressVal
+        if (addressVal.first == MvConstants.ADDR_PLACEHOLDER) {
+            placeholders[addressName] = tomlKeyValue
         } else {
-            values[addressName] = addressVal
+            values[addressName] = AddressVal(value, tomlKeyValue, null)
         }
     }
     return DependencyAddresses(values, placeholders)

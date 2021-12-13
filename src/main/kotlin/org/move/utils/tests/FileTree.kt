@@ -67,8 +67,12 @@ interface FileTreeBuilder {
     fun dir(name: String, tree: FileTree)
     fun file(name: String, code: String)
 
-    fun move(name: String, @Language("Move") code: String) = file(name, code)
-    fun toml(name: String, @Language("TOML") code: String) = file(name, code)
+    fun move(name: String, @Language("Move") code: String = "") = file(name, code)
+    fun toml(name: String, @Language("TOML") code: String = "") = file(name, code)
+
+    fun moveToml(@Language("TOML") code: String = "") = file("Move.toml", code)
+    fun sources(builder: FileTreeBuilder.() -> Unit) = dir("sources", builder)
+    fun tests(builder: FileTreeBuilder.() -> Unit) = dir("tests", builder)
 }
 
 class FileTree(val rootDirInfo: FilesystemEntry.Directory) {

@@ -1,18 +1,35 @@
 package org.move.cli
 
 import com.intellij.openapi.project.Project
-import org.move.lang.toNioPathOrNull
 import org.move.openapiext.*
 import org.toml.lang.psi.TomlFile
 import org.toml.lang.psi.TomlInlineTable
+import org.toml.lang.psi.TomlKeyValue
 import java.nio.file.Path
 import java.util.*
 
+typealias RawAddressVal = Pair<String, TomlKeyValue>
+
+data class AddressVal(
+    val value: String,
+    val keyValue: TomlKeyValue?,
+    val placeholderKeyValue: TomlKeyValue?)
+
+typealias RawAddressMap = MutableMap<String, RawAddressVal>
+typealias AddressMap = MutableMap<String, AddressVal>
+typealias PlaceholderMap = MutableMap<String, TomlKeyValue>
+
 typealias DependenciesMap = SortedMap<String, Dependency>
+
+fun mutableRawAddressMap(): RawAddressMap = mutableMapOf()
+fun mutableAddressMap(): AddressMap = mutableMapOf()
+fun placeholderMap(): PlaceholderMap = mutableMapOf()
+
+fun AddressMap.copyMap(): AddressMap = this.toMutableMap()
 
 data class Dependency(
     val absoluteLocalPath: Path,
-    val addrSubst: Map<String, String>,
+    val subst: RawAddressMap,
 )
 
 data class MoveTomlPackageTable(
@@ -24,19 +41,15 @@ data class MoveTomlPackageTable(
 
 class MoveToml(
     val project: Project,
-    // TODO: change into VirtualFile and move to MvProject
-//    val root: Path,
-    val tomlFile: TomlFile?,
-    val packageTable: MoveTomlPackageTable?,
-    val addresses: AddressesMap,
-    val dev_addresses: AddressesMap,
-    val dependencies: DependenciesMap,
-    val dev_dependencies: DependenciesMap,
+    val tomlFile: TomlFile? = null,
+    val packageTable: MoveTomlPackageTable? = null,
+    val addresses: RawAddressMap = mutableRawAddressMap(),
+    val dev_addresses: RawAddressMap = mutableRawAddressMap(),
+    val dependencies: DependenciesMap = sortedMapOf(),
+    val dev_dependencies: DependenciesMap = sortedMapOf(),
 ) {
     companion object {
         fun fromTomlFile(tomlFile: TomlFile, projectRoot: Path): MoveToml {
-//            val tomlFileRoot = tomlFile.toNioPathOrNull()?.parent ?: return null
-
             val packageTomlTable = tomlFile.getTable("package")
             var packageTable: MoveTomlPackageTable? = null
             if (packageTomlTable != null) {
@@ -58,7 +71,6 @@ class MoveToml(
 
             return MoveToml(
                 tomlFile.project,
-//                tomlFileRoot,
                 tomlFile,
                 packageTable,
                 addresses,
@@ -68,11 +80,12 @@ class MoveToml(
             )
         }
 
-        private fun parseAddresses(tableKey: String, tomlFile: TomlFile): AddressesMap {
-            val addresses = mutableMapOf<String, String>()
+        private fun parseAddresses(tableKey: String, tomlFile: TomlFile): RawAddressMap {
+            val addresses = mutableMapOf<String, RawAddressVal>()
             val tomlAddresses = tomlFile.getTable(tableKey)?.namedEntries().orEmpty()
             for ((addressName, tomlValue) in tomlAddresses) {
-                addresses[addressName] = tomlValue?.stringValue() ?: continue
+                val value = tomlValue?.stringValue() ?: continue
+                addresses[addressName] = Pair(value, tomlValue.keyValue)
             }
             return addresses
         }
@@ -84,18 +97,20 @@ class MoveToml(
         ): DependenciesMap {
             val dependencies = sortedMapOf<String, Dependency>()
             val tomlDeps = tomlFile.getTable(tableKey)?.namedEntries().orEmpty()
-            for ((depName, tomlValue) in tomlDeps) {
-                val depTable = (tomlValue as? TomlInlineTable) ?: continue
+            for ((depName, tomlTableValue) in tomlDeps) {
+                val depTable = (tomlTableValue as? TomlInlineTable) ?: continue
                 val localPathValue = depTable.findValue("local")?.stringValue() ?: continue
                 val localPath =
                     projectRoot.resolve(localPathValue).toAbsolutePath().normalize()
-                val subst = depTable.findValue("addr_subst")
-                    ?.inlineTableValue()
-                    ?.entries.orEmpty()
-                    .map { Pair(it.singleSegmentOrNull()?.name?.trim('"'), it.value?.stringValue()) }
-                    .filter { it.first != null && it.second != null }
-                    .map { Pair(it.first!!, it.second!!) }
-                    .toMap()
+                val substEntries =
+                    depTable.findValue("addr_subst")?.inlineTableValue()?.namedEntries().orEmpty()
+                val subst = mutableRawAddressMap()
+                for ((name, tomlValue) in substEntries) {
+                    if (tomlValue == null) continue
+                    val value = tomlValue.stringValue() ?: continue
+                    val keyValue = tomlValue.keyValue
+                    subst[name] = Pair(value, keyValue)
+                }
                 dependencies[depName] = Dependency(localPath, subst)
             }
             return dependencies

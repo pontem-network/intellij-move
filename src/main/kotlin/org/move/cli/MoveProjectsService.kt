@@ -19,11 +19,9 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiFileSystemItem
 import com.intellij.util.messages.Topic
 import org.jetbrains.rpc.LOG
 import org.move.lang.findMoveTomlPath
-import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.findVirtualFile
@@ -124,7 +122,7 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
             file.toNioPathOrNull()
                 ?.let { findMoveTomlPath(it) }
                 ?.findVirtualFile()
-                ?.let { initializeMvProject(project, it) }
+                ?.let { initializeMoveProject(project, it) }
         if (moveProject == null) {
             // this is for light tests, heavy test should always have valid moveProject
             if (isUnitTestMode) return testEmptyMvProject(project)
