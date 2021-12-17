@@ -258,12 +258,12 @@ class KeywordCompletionTest : CompletionTestCase() {
     """)
 
     fun `test acquires keyword`() = doSingleCompletion("""
-        module M {
-            fun main() acq/*caret*/ {}
+        module 0x1::M {
+            fun main() acq/*caret*/{}
         }
     """, """
-        module M {
-            fun main() acquires /*caret*/ {}
+        module 0x1::M {
+            fun main() acquires /*caret*/{}
         }
     """)
 //

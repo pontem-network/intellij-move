@@ -1,19 +1,15 @@
 package org.move.lang.core.types.infer
 
-import com.intellij.psi.util.parentOfType
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.fqName
-import org.move.lang.core.psi.ext.hexIntegerLiteral
-import org.move.lang.core.psi.impl.MvFunctionDefImpl
+import org.move.lang.core.psi.ext.parameters
+import org.move.lang.core.psi.ext.typeParameters
 import org.move.lang.core.types.ty.*
-
-val MvExpr.outerFunction
-    get() = (parentOfType<MvFunctionDef>(true) as? MvFunctionDefImpl)!!
 
 fun instantiateItemTy(item: MvNameIdentifierOwner): Ty {
     return when (item) {
-        is MvStructSignature -> TyStruct(item)
-        is MvFunctionSignature -> {
+        is MvStruct_ -> TyStruct(item)
+        is MvFunction -> {
             val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
 
             fun findTypeVar(parameter: MvTypeParameter): Ty {
@@ -40,14 +36,6 @@ fun instantiateItemTy(item: MvNameIdentifierOwner): Ty {
         else -> TyUnknown
     }
 }
-
-//sealed class TypesCompatibility {
-//    object Ok : TypesCompatibility()
-//    class Mismatch(val ty1: Ty, ty2: Ty) : TypesCompatibility()
-//    class AbilitiesMismatch(val ty1: Ty, ty2: Ty) : TypesCompatibility()
-//
-//    val isOk: Boolean get() = this is Ok
-//}
 
 fun isCompatibleMutability(from: Mutability, to: Mutability): Boolean =
     from == to || from.isMut && !to.isMut

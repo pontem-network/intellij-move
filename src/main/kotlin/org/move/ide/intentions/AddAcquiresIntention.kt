@@ -4,11 +4,12 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.move.ide.annotator.ACQUIRES_BUILTIN_FUNCTIONS
-import org.move.ide.presentation.name
+import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.MvCallExpr
-import org.move.lang.core.psi.MvFunctionSignature
+import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvPsiFactory
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.psiFactory
 import org.move.lang.core.types.ty.TyStruct
 
 class AddAcquiresIntention : MvElementBaseIntentionAction<AddAcquiresIntention.Context>() {
@@ -16,7 +17,7 @@ class AddAcquiresIntention : MvElementBaseIntentionAction<AddAcquiresIntention.C
     override fun getFamilyName(): String = text
 
     data class Context(
-        val functionSignature: MvFunctionSignature,
+        val function: MvFunction,
         val expectedAcquiresType: TyStruct
     )
 
@@ -35,10 +36,9 @@ class AddAcquiresIntention : MvElementBaseIntentionAction<AddAcquiresIntention.C
                 .getOrNull(0)?.type?.inferTypeTy() as? TyStruct ?: return null
 
         val outFunction = callExpr.containingFunction ?: return null
-        val outFunctionSignature = outFunction.functionSignature ?: return null
-        val acquiresType = outFunctionSignature.acquiresType
+        val acquiresType = outFunction.acquiresType
 
-        val context = Context(outFunctionSignature, expectedAcquiresType)
+        val context = Context(outFunction, expectedAcquiresType)
         if (acquiresType == null) return context
 
         val acquiresTypeFQNames = acquiresType.typeFQNames ?: return null
@@ -47,14 +47,12 @@ class AddAcquiresIntention : MvElementBaseIntentionAction<AddAcquiresIntention.C
     }
 
     override fun invoke(project: Project, editor: Editor, ctx: Context) {
-        val acquiresType = ctx.functionSignature.acquiresType
+        val acquiresType = ctx.function.acquiresType
         val expectedAcquiresTypeName = ctx.expectedAcquiresType.item.name!!
         if (acquiresType == null) {
-            val newFunctionSignature =
-                MvPsiFactory(project)
-                    .createFunctionSignature("${ctx.functionSignature.text} " +
-                                                     "acquires $expectedAcquiresTypeName")
-            ctx.functionSignature.replace(newFunctionSignature)
+            // is not a native function
+            val newAcquiresType = project.psiFactory.createAcquiresType("acquires $expectedAcquiresTypeName")
+            ctx.function.addBefore(newAcquiresType, ctx.function.codeBlock)
         } else {
             val acquiresTypeText = acquiresType.text.trimEnd(',')
             val newAcquiresType = MvPsiFactory(project)

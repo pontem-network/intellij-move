@@ -23,6 +23,7 @@ module M {
     native fun native_fn(a: vector<u8>): u8;
 
     native public fun native_fn(a: vector<u8>): u8;
+    public native fun native_fn(a: vector<u8>): u8;
 
     native public(script) fun native_fn(a: vector<u8>): u8;
 

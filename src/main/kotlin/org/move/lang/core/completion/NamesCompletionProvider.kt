@@ -38,7 +38,7 @@ object NamesCompletionProvider : MvCompletionProvider() {
             val referredModule = moduleRef.reference?.resolve() as? MvModuleDef ?: return
             val ns = setOf(namespace)
             val vs = when {
-                moduleRef.isSelf -> setOf(Visibility.Internal())
+                moduleRef.isSelf -> setOf(Visibility.Internal)
                 else -> Visibility.buildSetOfVisibilities(path)
             }
             processModuleItems(referredModule, vs, ns) {

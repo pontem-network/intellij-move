@@ -1,11 +1,10 @@
 package org.move.ide.inspections.lints
 
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.psi.PsiElement
 import org.move.ide.inspections.MvLocalInspectionTool
 import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvConstDef
-import org.move.lang.core.psi.MvStructSignature
+import org.move.lang.core.psi.MvStruct_
 import org.move.lang.core.psi.MvVisitor
 
 abstract class MvNamingInspection(private val elementTitle: String) : MvLocalInspectionTool() {
@@ -32,7 +31,7 @@ class MvConstNamingInspection : MvNamingInspection("Constant") {
 
 class MvStructNamingInspection: MvNamingInspection("Struct") {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
-        override fun visitStructSignature(o: MvStructSignature) {
+        override fun visitStruct_(o: MvStruct_) {
             val ident = o.identifier ?: return
             val name = ident.text
             if (!name.startsWithUpperCaseLetter()) {

@@ -3,8 +3,8 @@ package org.move.ide.navigation
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiRecursiveVisitor
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.functionSignatures
-import org.move.lang.core.psi.ext.structSignatures
+import org.move.lang.core.psi.ext.functions
+import org.move.lang.core.psi.ext.structs
 import org.move.lang.core.resolve.ref.Visibility
 
 abstract class MvNamedElementsVisitor : MvVisitor(), PsiRecursiveVisitor {
@@ -19,20 +19,16 @@ abstract class MvNamedElementsVisitor : MvVisitor(), PsiRecursiveVisitor {
     override fun visitModuleDef(o: MvModuleDef) {
         processNamedElement(o)
 
-        val functionSignatures = o.functionSignatures(Visibility.Internal())
+        val functionSignatures = o.functions(Visibility.Internal)
         functionSignatures.map { it.accept(this) }
 
-        val structSignatures = o.structSignatures()
+        val structSignatures = o.structs()
         structSignatures.map { it.accept(this) }
     }
 
-    override fun visitFunctionSignature(o: MvFunctionSignature) {
-        processNamedElement(o)
-    }
+    override fun visitFunction(o: MvFunction) = processNamedElement(o)
 
-    override fun visitStructSignature(o: MvStructSignature) {
-        processNamedElement(o)
-    }
+    override fun visitStruct_(o: MvStruct_) = processNamedElement(o)
 
     abstract fun processNamedElement(element: MvNamedElement)
 }

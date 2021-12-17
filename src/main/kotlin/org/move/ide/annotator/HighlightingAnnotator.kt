@@ -4,11 +4,9 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.move.ide.colors.MvColor
-import org.move.lang.MvElementTypes.ADDRESS_LITERAL
 import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.mixins.isNative
 
 val INTEGER_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128")
 val PRIMITIVE_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("bool")
@@ -48,7 +46,7 @@ class HighlightingAnnotator : MvAnnotator() {
         if (element is MvTypeParameter) return MvColor.TYPE_PARAMETER
         if (element is MvModuleRef && element.isSelf) return MvColor.KEYWORD
         if (element is MvItemImport && element.text == "Self") return MvColor.KEYWORD
-        if (element is MvFunctionSignature) return MvColor.FUNCTION_DEF
+        if (element is MvFunction) return MvColor.FUNCTION_DEF
         if (element is MvBindingPat && element.owner is MvConstDef) return MvColor.CONSTANT_DEF
         if (element is MvModuleDef) return MvColor.MODULE_DEF
 
@@ -69,7 +67,7 @@ class HighlightingAnnotator : MvAnnotator() {
                 }
             }
             is MvCallExpr -> {
-                val resolved = path.reference?.resolve() as? MvFunctionSignature
+                val resolved = path.reference?.resolve() as? MvFunction
                 if (resolved != null) {
                     if (resolved.isNative && identifierName in BUILTIN_FUNCTIONS) {
                         return MvColor.BUILTIN_FUNCTION_CALL

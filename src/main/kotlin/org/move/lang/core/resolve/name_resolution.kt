@@ -139,7 +139,7 @@ fun processLexicalDeclarations(
             }
             if (innerTy !is TyStruct) return false
 
-            val fields = innerTy.item.structDef.fields.orEmpty()
+            val fields = innerTy.item.fields
             return processor.matchAll(fields)
         }
         Namespace.STRUCT_FIELD -> {
@@ -156,9 +156,9 @@ fun processLexicalDeclarations(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
-                    scope.allFnSignatures(),
-                    scope.builtinFnSignatures(),
-                    scope.structSignatures(),
+                    scope.allFunctions(),
+                    scope.builtinFunctions(),
+                    scope.structs(),
                     scope.constBindings(),
                 ).flatten()
             )
@@ -167,11 +167,10 @@ fun processLexicalDeclarations(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
                     scope.constBindings(),
-                    scope.builtinScriptFnSignatures(),
+                    scope.builtinFunctions(),
                 ).flatten(),
             )
-            is MvFunctionDef ->
-                processor.matchAll(scope.functionSignature?.parameters.orEmpty().map { it.bindingPat })
+            is MvFunction -> processor.matchAll(scope.parameters.map { it.bindingPat })
             is MvCodeBlock -> {
                 val precedingLetDecls = scope.letStatements
                     // drops all let-statements after the current position
@@ -195,15 +194,14 @@ fun processLexicalDeclarations(
             else -> false
         }
         Namespace.TYPE -> when (scope) {
-            is MvFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
-            is MvNativeFunctionDef -> processor.matchAll(scope.functionSignature?.typeParameters.orEmpty())
-            is MvStructDef -> processor.matchAll(scope.structSignature.typeParameters)
+            is MvFunction -> processor.matchAll(scope.typeParameters)
+            is MvStruct_ -> processor.matchAll(scope.typeParameters)
             is MvSchemaSpecDef -> processor.matchAll(scope.typeParams)
             is MvModuleDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
-                    scope.structSignatures(),
+                    scope.structs(),
                 ).flatten(),
             )
             is MvScriptDef -> processor.matchAll(

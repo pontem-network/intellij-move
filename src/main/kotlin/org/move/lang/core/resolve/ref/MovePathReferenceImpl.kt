@@ -1,10 +1,10 @@
 package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.functionSignatures
+import org.move.lang.core.psi.ext.functions
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.moduleImport
-import org.move.lang.core.psi.ext.structSignatures
+import org.move.lang.core.psi.ext.structs
 import org.move.lang.core.resolve.MatchingProcessor
 import org.move.lang.core.resolve.resolveIntoFQModuleRef
 import org.move.lang.core.resolve.resolveItem
@@ -19,14 +19,14 @@ fun processModuleItems(
     for (namespace in namespaces) {
         val found = when (namespace) {
             Namespace.NAME -> processor.matchAll(
-                visibilities.flatMap { module.functionSignatures(it) }
+                visibilities.flatMap { module.functions(it) }
 //                listOf(
 //                    visibilities.flatMap { module.functionSignatures(it) },
 ////                    module.structSignatures(),
 ////                    module.consts(),
 //                ).flatten()
             )
-            Namespace.TYPE -> processor.matchAll(module.structSignatures())
+            Namespace.TYPE -> processor.matchAll(module.structs())
 //            Namespace.SCHEMA -> processor.matchAll(module.schemas())
             else -> false
         }
@@ -74,7 +74,7 @@ class MvPathReferenceImpl(
             if (moduleRef.isSelf) {
                 val containingModule = moduleRef.containingModule ?: return null
                 return resolveModuleItem(
-                    containingModule, refName, setOf(Visibility.Internal()), ns
+                    containingModule, refName, setOf(Visibility.Internal), ns
                 )
             }
             val fqModuleRef = resolveIntoFQModuleRef(moduleRef) ?: return null

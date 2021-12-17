@@ -1,0 +1,50 @@
+FILE
+  MvModuleDefImpl(MODULE_DEF)
+    PsiElement(module)('module')
+    PsiWhiteSpace(' ')
+    MvAddressRefImpl(ADDRESS_REF)
+      PsiElement(ADDRESS_IDENT)('0x1')
+    PsiElement(::)('::')
+    PsiElement(IDENTIFIER)('M')
+    PsiWhiteSpace(' ')
+    MvModuleBlockImpl(MODULE_BLOCK)
+      PsiElement({)('{')
+      PsiWhiteSpace('\n    ')
+      MvStruct_Impl(STRUCT_)
+        PsiElement(struct)('struct')
+        PsiErrorElement:IDENTIFIER expected, got 'native'
+          <empty list>
+      PsiWhiteSpace('\n    ')
+      MvStruct_Impl(STRUCT_)
+        PsiElement(native)('native')
+        PsiWhiteSpace(' ')
+        PsiElement(struct)('struct')
+        PsiErrorElement:IDENTIFIER expected, got 'struct'
+          <empty list>
+      PsiWhiteSpace('\n    ')
+      MvStruct_Impl(STRUCT_)
+        PsiElement(struct)('struct')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('S')
+        PsiErrorElement:<, has or '{' expected, got 'struct'
+          <empty list>
+      PsiWhiteSpace('\n    ')
+      MvStruct_Impl(STRUCT_)
+        PsiElement(struct)('struct')
+        PsiErrorElement:IDENTIFIER expected, got '{'
+          <empty list>
+        PsiWhiteSpace(' ')
+        MvStructFieldsDefBlockImpl(STRUCT_FIELDS_DEF_BLOCK)
+          PsiElement({)('{')
+          PsiElement(})('}')
+      PsiWhiteSpace('\n    ')
+      MvStruct_Impl(STRUCT_)
+        PsiElement(native)('native')
+        PsiWhiteSpace(' ')
+        PsiElement(struct)('struct')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('S1')
+        PsiErrorElement:';', < or has expected, got '}'
+          <empty list>
+      PsiWhiteSpace('\n')
+      PsiElement(})('}')

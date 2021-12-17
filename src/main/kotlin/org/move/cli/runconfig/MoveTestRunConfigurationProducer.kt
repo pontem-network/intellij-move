@@ -6,8 +6,7 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.move.cli.MvConstants
-import org.move.lang.core.psi.MvElement
-import org.move.lang.core.psi.MvFunctionDef
+import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.*
 import org.move.lang.moveProject
@@ -88,9 +87,9 @@ sealed interface TestConfig {
                 else -> {
                     for (ans in location.ancestors) {
                         when (ans) {
-                            is MvFunctionDef -> {
+                            is MvFunction -> {
                                 if (!ans.isTest) continue
-                                val functionName = ans.functionSignature?.name ?: return null
+                                val functionName = ans.name ?: return null
                                 val modName = ans.containingModule?.name ?: return null
                                 val path = moveProject.root.toNioPathOrNull() ?: return null
                                 return Function(packageName, functionName, modName, path)

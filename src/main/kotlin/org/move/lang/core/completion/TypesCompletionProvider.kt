@@ -34,7 +34,7 @@ object TypesCompletionProvider : MvCompletionProvider() {
         val moduleRef = refElement.path.pathIdent.moduleRef
         if (moduleRef != null) {
             val module = moduleRef.reference?.resolve() as? MvModuleDef ?: return
-            val vs = setOf(Visibility.Public())
+            val vs = setOf(Visibility.Public)
             val ns = setOf(Namespace.TYPE)
             processModuleItems(module, vs, ns) {
                 if (it.element != null) {

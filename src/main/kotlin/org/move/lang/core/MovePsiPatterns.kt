@@ -5,12 +5,15 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.ProcessingContext
 import org.move.lang.MvElementTypes.*
 import org.move.lang.MvFile
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.leftLeaves
+import kotlin.reflect.KClass
 
 object MvPsiPatterns {
     private val STATEMENT_BOUNDARIES = TokenSet.create(SEMICOLON, L_BRACE, R_BRACE)
@@ -22,7 +25,7 @@ object MvPsiPatterns {
 
     fun onStatementBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement().with(OnStatementBeginning(*startWords))
-
+    
     fun toplevel(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvFile>()
 
@@ -32,11 +35,12 @@ object MvPsiPatterns {
     fun moduleBlock(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvModuleBlock>()
 
-    fun functionDef(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvFunctionDef>()
+    fun function(): PsiElementPattern.Capture<PsiElement> =
+        psiElementWithParent<MvFunction>()
 
-    fun nativeFunctionDef(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvNativeFunctionDef>()
+    fun nativeFunction(): PsiElementPattern.Capture<PsiElement> =
+        psiElementWithParent<MvFunction>()
+//            .afterSibling(PlatformPatterns.psiElement(NATIVE))
 
     fun scriptBlock(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvScriptBlock>()
@@ -50,14 +54,14 @@ object MvPsiPatterns {
         return psiElement()
     }
 
-    inline fun <reified I : PsiElement> afterSibling(): ElementPattern<PsiElement> {
-        val afterSibling = PlatformPatterns
-            .psiElement()
-            .afterSiblingSkipping(whitespace(), psiElement<I>())
-        val afterSiblingWithError = PlatformPatterns
-            .psiElement()
-            .withParent(psiElement<PsiErrorElement>().afterSiblingSkipping(whitespace(), psiElement<I>()))
-        return PlatformPatterns.or(afterSibling, afterSiblingWithError)
+//    inline fun <reified I : PsiElement> afterSibling(): ElementPattern<PsiElement> {
+//        val afterSibling = PlatformPatterns
+//            .psiElement()
+//            .afterSiblingSkipping(whitespaceAndErrors(), psiElement<I>())
+//        val afterSiblingWithError = PlatformPatterns
+//            .psiElement()
+//            .withParent(psiElement<PsiErrorElement>().afterSiblingSkipping(whitespaceAndErrors(), psiElement<I>()))
+//        return PlatformPatterns.or(afterSibling, afterSiblingWithError)
 //        val errorIdentifier = PlatformPatterns
 //            .psiElement()
 //            .withParent(PsiErrorElement::class.java)
@@ -75,16 +79,13 @@ object MvPsiPatterns {
 //                psiElement<PsiErrorElement>().withParent(psiElement<I>())
 //            )
 //        )
-    }
+//    }
 
-    fun acquiresPlacement(): ElementPattern<PsiElement> {
-//        return psiElementWithParent<MvFunctionSignature>()
-//            .and(
-        return PlatformPatterns.or(
-            psiElementWithParent<MvFunctionSignature>()
-                .and(afterSibling<MvFunctionParameterList>()),
-            psiElementWithParent<MvReturnType>()
-        )
+//    fun acquiresPlacement(): ElementPattern<PsiElement> {
+//        return PlatformPatterns.or(
+//            psiElementWithParent<MvFunction>().with(AfterSibling(FUNCTION_PARAMETER_LIST)),
+//            psiElementWithParent<MvReturnType>()
+//        )
 //        return psiElementWithParent<MvFunctionSignature>()
 //            .and(
 //                PlatformPatterns.or(
@@ -111,12 +112,12 @@ object MvPsiPatterns {
 //                )
 //            )
 
-    }
+//    }
 
     fun typeParamBound(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvTypeParameter>()
             .afterLeafSkipping(
-                whitespace(),
+                whitespaceAndErrors(),
                 PlatformPatterns.psiElement(COLON),
             )
 
@@ -144,7 +145,7 @@ object MvPsiPatterns {
         PlatformPatterns.psiElement()
             .withSuperParent<MvSpecDef>(2)
 
-    fun whitespace() = PlatformPatterns.psiElement().whitespaceCommentEmptyOrError()
+    fun whitespaceAndErrors() = PlatformPatterns.psiElement().whitespaceCommentEmptyOrError()
 
     inline fun <reified I : PsiElement> psiElementWithParent() =
         PlatformPatterns.psiElement().withParent(
@@ -154,7 +155,7 @@ object MvPsiPatterns {
             )
         )
 
-    private inline fun <reified I : PsiElement> psiElementAfterSiblingSkipping(
+    inline fun <reified I : PsiElement> psiElementAfterSiblingSkipping(
         skip: ElementPattern<*>,
     ) =
         StandardPatterns.or(
@@ -178,6 +179,22 @@ object MvPsiPatterns {
                 psiElement<PsiErrorElement>().withParent(psiElement<I>())
             )
         )
+
+    class AfterSibling(val sibling: IElementType, val withPossibleError: Boolean = true)
+        : PatternCondition<PsiElement>("afterSiblingKeywords") {
+        override fun accepts(t: PsiElement, context: ProcessingContext?): Boolean {
+            var element = t
+            if (withPossibleError) {
+                if (element.parent is PsiErrorElement) element = element.parent
+            }
+            var prevSibling = element.prevSibling
+            while (prevSibling != null) {
+                if (prevSibling.elementType == sibling) { return true }
+                prevSibling = prevSibling.prevSibling
+            }
+            return false
+        }
+    }
 
     private class OnStatementBeginning(vararg startWords: String) :
         PatternCondition<PsiElement>("on statement beginning") {

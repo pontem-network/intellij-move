@@ -47,7 +47,7 @@ fun inferMvTypeTy(moveType: MvType): Ty {
             if (referred == null) return inferPrimitivePathType(moveType)
             when (referred) {
                 is MvTypeParameter -> TyTypeParameter(referred)
-                is MvStructSignature -> {
+                is MvStruct_ -> {
                     val typeArgs = moveType.path.typeArguments.map { inferMvTypeTy(it.type) }
                     TyStruct(referred, typeArgs)
                 }

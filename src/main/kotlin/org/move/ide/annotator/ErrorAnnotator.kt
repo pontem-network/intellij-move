@@ -9,7 +9,6 @@ import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.declaredTy
-import org.move.lang.core.psi.mixins.resolvedReturnType
 import org.move.lang.core.psi.mixins.ty
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.isCompatible
@@ -53,11 +52,12 @@ class ErrorAnnotator : MvAnnotator() {
                 }
             }
 
-            override fun visitFunctionSignature(o: MvFunctionSignature) =
-                checkFunctionSignature(moveHolder, o)
+            override fun visitFunction(o: MvFunction) {
+                checkFunction(moveHolder, o)
+            }
 
-            override fun visitStructSignature(o: MvStructSignature) {
-                checkStructSignature(moveHolder, o)
+            override fun visitStruct_(o: MvStruct_) {
+                checkStruct(moveHolder, o)
             }
 
             override fun visitModuleDef(o: MvModuleDef) = checkModuleDef(moveHolder, o)
@@ -65,32 +65,30 @@ class ErrorAnnotator : MvAnnotator() {
             override fun visitStructFieldDef(o: MvStructFieldDef) = checkStructFieldDef(moveHolder, o)
 
             override fun visitCodeBlock(codeBlock: MvCodeBlock) {
-                if (codeBlock.parent is MvFunctionDef) {
-                    val returningExpr = codeBlock.returningExpr
-                    val expectedReturnType =
-                        codeBlock.containingFunction?.functionSignature?.resolvedReturnType ?: return
-                    val actualReturnType = returningExpr?.inferExprTy() ?: TyUnit
-                    if (!isCompatible(expectedReturnType, actualReturnType)) {
-                        val annotatedElement = returningExpr as? PsiElement
-                            ?: codeBlock.rightBrace
-                            ?: codeBlock
-                        moveHolder.createErrorAnnotation(
-                            annotatedElement,
-                            invalidReturnTypeMessage(expectedReturnType, actualReturnType)
-                        )
-                    }
+                val fn = codeBlock.parent as? MvFunction ?: return
+                val returningExpr = codeBlock.returningExpr
+
+                val expectedReturnTy = fn.resolvedReturnTy
+                val actualReturnTy = returningExpr?.inferExprTy() ?: TyUnit
+                if (!isCompatible(expectedReturnTy, actualReturnTy)) {
+                    val annotatedElement = returningExpr as? PsiElement
+                        ?: codeBlock.rightBrace
+                        ?: codeBlock
+                    moveHolder.createErrorAnnotation(
+                        annotatedElement,
+                        invalidReturnTypeMessage(expectedReturnTy, actualReturnTy)
+                    )
                 }
             }
 
             override fun visitReturnExpr(o: MvReturnExpr) {
-                val outerSignature = o.containingFunction?.functionSignature ?: return
-                val expectedReturnType = outerSignature.resolvedReturnType
-                val actualReturnType = o.expr?.inferExprTy() ?: return
-//                if (!expectedReturnType.compatibleWith(actualReturnType)) {
-                if (!isCompatible(expectedReturnType, actualReturnType)) {
+                val outerFn = o.containingFunction ?: return
+                val expectedReturnTy = outerFn.resolvedReturnTy
+                val actualReturnTy = o.expr?.inferExprTy() ?: return
+                if (!isCompatible(expectedReturnTy, actualReturnTy)) {
                     moveHolder.createErrorAnnotation(
                         o,
-                        invalidReturnTypeMessage(expectedReturnType, actualReturnType)
+                        invalidReturnTypeMessage(expectedReturnTy, actualReturnTy)
                     )
                 }
             }
@@ -105,11 +103,10 @@ class ErrorAnnotator : MvAnnotator() {
                 val paramTypeName = paramType.item.name ?: return
 
                 val containingFunction = o.containingFunction ?: return
-                val signature = containingFunction.functionSignature ?: return
 
-                val name = signature.name ?: return
+                val name = containingFunction.name ?: return
                 val errorMessage = "Function '$name' is not marked as 'acquires $paramTypeName'"
-                val acquiresType = signature.acquiresType
+                val acquiresType = containingFunction.acquiresType
                 if (acquiresType == null) {
                     moveHolder.createErrorAnnotation(o, errorMessage)
                     return
@@ -170,17 +167,16 @@ class ErrorAnnotator : MvAnnotator() {
         element.accept(visitor)
     }
 
-    private fun checkStructSignature(holder: MvAnnotationHolder, signature: MvStructSignature) {
-        checkStructSignatureDuplicates(holder, signature)
+    private fun checkStruct(holder: MvAnnotationHolder, struct: MvStruct_) {
+        checkStructDuplicates(holder, struct)
     }
 
-    private fun checkFunctionSignature(holder: MvAnnotationHolder, signature: MvFunctionSignature) {
-        checkFunctionSignatureDuplicates(holder, signature)
-        warnOnBuiltInFunctionName(holder, signature)
+    private fun checkFunction(holder: MvAnnotationHolder, function: MvFunction) {
+        checkFunctionSignatureDuplicates(holder, function)
+        warnOnBuiltInFunctionName(holder, function)
     }
 
     private fun checkModuleDef(holder: MvAnnotationHolder, mod: MvModuleDef) {
-//        val moveProject = mod.containingFile.containingMvProject() ?: return
         val modIdent = Pair(mod.definedAddressRef()?.toAddress(), mod.name)
         val file = mod.containingFile ?: return
         val duplicateIdents =
@@ -194,19 +190,12 @@ class ErrorAnnotator : MvAnnotator() {
 
         val identifier = mod.nameIdentifier ?: mod
         holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${mod.name}`")
-
-//        val addressRef = mod.definedAddressRef()
-//        if (addressRef == null) {
-//            val addressDef = (mod.parent as? MvAddressDef)?.addressRef
-//        }
-//        checkDuplicates(holder, mod)
     }
 
     private fun checkStructFieldDef(holder: MvAnnotationHolder, structField: MvStructFieldDef) {
         checkDuplicates(holder, structField)
 
-        val signature = structField.structDef?.structSignature ?: return
-        val structTy = TyStruct(signature)
+        val structTy = TyStruct(structField.struct)
         val structAbilities = structTy.abilities()
         if (structAbilities.isEmpty()) return
 
@@ -240,7 +229,7 @@ private fun checkMissingFields(
     holder: MvAnnotationHolder,
     target: PsiElement,
     providedFieldNames: Set<String>,
-    referredStruct: MvStructDef,
+    referredStruct: MvStruct_,
 ) {
     if ((referredStruct.fieldNames.toSet() - providedFieldNames).isNotEmpty()) {
         holder.createErrorAnnotation(target, "Some fields are missing")
@@ -249,9 +238,9 @@ private fun checkMissingFields(
 
 private fun checkCallArgumentList(holder: MvAnnotationHolder, arguments: MvCallArgumentList) {
     val callExpr = arguments.parent as? MvCallExpr ?: return
-    val signature = callExpr.path.reference?.resolve() as? MvFunctionSignature ?: return
+    val function = callExpr.path.reference?.resolve() as? MvFunction ?: return
 
-    val expectedCount = signature.parameters.size
+    val expectedCount = function.parameters.size
     val realCount = arguments.exprList.size
     val errorMessage =
         "This function takes $expectedCount ${pluralise(expectedCount, "parameter", "parameters")} " +
@@ -273,7 +262,7 @@ private fun checkCallArgumentList(holder: MvAnnotationHolder, arguments: MvCallA
 
     val ctx = InferenceContext()
     for ((i, expr) in arguments.exprList.withIndex()) {
-        val parameter = signature.parameters[i]
+        val parameter = function.parameters[i]
         val expectedTy = parameter.declaredTy
         val exprTy = expr.inferExprTy(ctx)
         if (expectedTy is TyTypeParameter) {
@@ -321,7 +310,7 @@ private fun checkPath(holder: MvAnnotationHolder, path: MvPath) {
 
     val name = referred.name ?: return
     when {
-        referred is MvFunctionSignature
+        referred is MvFunction
                 && name in BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE
                 && typeArguments.isEmpty() -> {
             holder.createErrorAnnotation(path, "Missing resource type argument")
@@ -400,31 +389,31 @@ private fun checkDuplicates(
 
 private fun checkFunctionSignatureDuplicates(
     holder: MvAnnotationHolder,
-    fnSignature: MvFunctionSignature,
+    fn: MvFunction,
 ) {
     val fnSignatures =
-        fnSignature.module?.allFnSignatures()
-            ?: fnSignature.script?.allFnSignatures()
+        fn.module?.allFunctions()
+            ?: fn.script?.allFunctions()
             ?: emptyList()
     val duplicateSignatures = getDuplicates(fnSignatures.asSequence())
 
-    if (fnSignature.name !in duplicateSignatures.map { it.name }) {
+    if (fn.name !in duplicateSignatures.map { it.name }) {
         return
     }
-    val identifier = fnSignature.nameIdentifier ?: fnSignature
-    holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${fnSignature.name}`")
+    val identifier = fn.nameIdentifier ?: fn
+    holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${fn.name}`")
 }
 
-private fun checkStructSignatureDuplicates(
+private fun checkStructDuplicates(
     holder: MvAnnotationHolder,
-    structSignature: MvStructSignature,
+    struct: MvStruct_,
 ) {
-    val duplicateSignatures = getDuplicates(structSignature.module.structSignatures().asSequence())
-    if (structSignature.name !in duplicateSignatures.map { it.name }) {
+    val duplicateSignatures = getDuplicates(struct.module.structs().asSequence())
+    if (struct.name !in duplicateSignatures.map { it.name }) {
         return
     }
-    val identifier = structSignature.nameIdentifier ?: structSignature
-    holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${structSignature.name}`")
+    val identifier = struct.nameIdentifier ?: struct
+    holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${struct.name}`")
 }
 
 private fun getDuplicates(elements: Sequence<MvNamedElement>): Set<MvNamedElement> {

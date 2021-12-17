@@ -26,14 +26,9 @@ val MvPathIdent.isIdentifierOnly: Boolean
 val MvPath.typeArguments: List<MvTypeArgument>
     get() = typeArgumentList?.typeArgumentList.orEmpty()
 
-val MvPath.maybeStructSignature: MvStructSignature?
+val MvPath.maybeStruct: MvStruct_?
     get() {
-        return reference?.resolve() as? MvStructSignature
-    }
-
-val MvPath.maybeStruct: MvStructDef?
-    get() {
-        return maybeStructSignature?.structDef
+        return reference?.resolve() as? MvStruct_
     }
 
 

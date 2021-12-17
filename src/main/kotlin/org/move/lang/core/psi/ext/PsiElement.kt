@@ -6,6 +6,9 @@ import com.intellij.psi.impl.source.PsiFileImpl
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
+import org.move.lang.MvElementTypes
+
+fun PsiElement.hasChild(tokenType: IElementType): Boolean = childrenByType(tokenType).toList().isNotEmpty()
 
 inline fun <reified T : PsiElement> PsiElement.childOfType(): T? =
     PsiTreeUtil.getChildOfType(this, T::class.java)
