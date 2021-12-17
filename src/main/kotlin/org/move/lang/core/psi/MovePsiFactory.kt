@@ -7,6 +7,8 @@ import org.move.lang.MvFile
 import org.move.lang.MoveFileType
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
 
+val Project.psiFactory get() = MvPsiFactory(this)
+
 class MvPsiFactory(private val project: Project) {
     fun createIdentifier(text: String): PsiElement =
         createFromText<MvModuleDef>("module $text {}")?.nameIdentifier
@@ -30,12 +32,16 @@ class MvPsiFactory(private val project: Project) {
             ?: error("Failed to create a method member from text: `$text`")
     }
 
-    fun createNativeFunctionDef(
-        text: String,
-        moduleName: String = "_IntellijPreludeDummy"
-    ): MvNativeFunctionDef =
-        createFromText("module $moduleName { $text }")
-            ?: error("Failed to create a method member from text: `$text`")
+    fun createFunction(text: String, moduleName: String = "_Dummy"): MvFunction =
+        createFromText("module $moduleName { $text } ")
+            ?: error("Failed to create a function from text: `$text`")
+
+//    fun createNativeFunctionDef(
+//        text: String,
+//        moduleName: String = "_IntellijPreludeDummy"
+//    ): MvNativeFunctionDef =
+//        createFromText("module $moduleName { $text }")
+//            ?: error("Failed to create a method member from text: `$text`")
 
     private inline fun <reified T : MvElement> createFromText(code: CharSequence): T? {
         val dummyFile = PsiFileFactory.getInstance(project)

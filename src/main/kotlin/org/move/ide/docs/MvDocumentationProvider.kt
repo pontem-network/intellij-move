@@ -10,7 +10,6 @@ import org.move.ide.presentation.shortPresentableText
 import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.mixins.isNative
 import org.move.lang.core.types.infer.inferMvTypeTy
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.moveProject
@@ -31,8 +30,8 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         val buffer = StringBuilder()
         var docElement = element
-        if (docElement is MvFunctionSignature) docElement = docElement.parent
-        if (docElement is MvStructSignature) docElement = docElement.parent
+//        if (docElement is MvFunctionSignature) docElement = docElement.parent
+//        if (docElement is MvStructSignature) docElement = docElement.parent
         if (docElement is MvBindingPat
             && docElement.owner is MvConstDef
         ) docElement = docElement.owner
@@ -86,44 +85,42 @@ fun MvDocAndAttributeOwner.documentationAsHtml(): String {
         .joinToString("\n")
 }
 
-fun generateFunctionSignature(signature: MvFunctionSignature, buffer: StringBuilder) {
-    val module = signature.module
+fun generateFunction(function: MvFunction, buffer: StringBuilder) {
+    val module = function.module
     if (module != null) {
         buffer += module.fqName
         buffer += "\n"
     }
-    if (signature.isNative) buffer += "native "
+    if (function.isNative) buffer += "native "
     buffer += "fun "
-    buffer.b { it += signature.name }
-    signature.typeParameterList?.generateDocumentation(buffer)
-    signature.functionParameterList?.generateDocumentation(buffer)
-    signature.returnType?.generateDocumentation(buffer)
+    buffer.b { it += function.name }
+    function.typeParameterList?.generateDocumentation(buffer)
+    function.functionParameterList?.generateDocumentation(buffer)
+    function.returnType?.generateDocumentation(buffer)
 }
 
 fun MvElement.signature(builder: StringBuilder) {
     val buffer = StringBuilder()
     when (this) {
-        is MvFunctionDef -> this.functionSignature?.let { generateFunctionSignature(it, buffer) }
-        is MvNativeFunctionDef -> this.functionSignature?.let { generateFunctionSignature(it, buffer) }
+        is MvFunction -> generateFunction(this, buffer)
         is MvModuleDef -> {
             buffer += "module "
             buffer += this.fqName
         }
-        is MvStructDef -> {
+        is MvStruct_ -> {
             buffer += this.containingModule!!.fqName
             buffer += "\n"
 
-            val signature = this.structSignature
             buffer += "struct "
-            buffer.b { it += signature.name }
-            signature.typeParameterList?.generateDocumentation(buffer)
-            signature.abilitiesList?.abilityList
+            buffer.b { it += this.name }
+            this.typeParameterList?.generateDocumentation(buffer)
+            this.abilitiesList?.abilityList
                 ?.joinToWithBuffer(buffer, ", ", " has ") { generateDocumentation(it) }
         }
         is MvStructFieldDef -> {
             buffer += this.containingModule!!.fqName
             buffer += "::"
-            buffer += this.structDef?.structSignature?.name ?: angleWrapped("anonymous")
+            buffer += this.struct.name ?: angleWrapped("anonymous")
             buffer += "\n"
             buffer.b { it += this.name }
             buffer += ": ${this.declaredTy.renderForDocs(true)}"

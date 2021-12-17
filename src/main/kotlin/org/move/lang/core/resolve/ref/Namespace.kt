@@ -7,14 +7,14 @@ import org.move.lang.core.psi.ext.visibility
 import org.move.lang.core.types.FQModule
 
 sealed class Visibility {
-    class Public : Visibility()
-    class PublicScript : Visibility()
+    object Public : Visibility()
+    object PublicScript : Visibility()
     class PublicFriend(val currentModule: FQModule) : Visibility()
-    class Internal : Visibility()
+    object Internal : Visibility()
 
     companion object {
         fun buildSetOfVisibilities(element: MvElement): Set<Visibility> {
-            val vs = mutableSetOf<Visibility>(Public())
+            val vs = mutableSetOf<Visibility>(Public)
             val containingModule = element.containingModule
             if (containingModule != null) {
                 val asFriendModule = containingModule.fqModule()
@@ -23,11 +23,11 @@ sealed class Visibility {
                 }
             }
 
-            val containingFunSignature = element.containingFunction?.functionSignature
+            val containingFun = element.containingFunction
             if (containingModule == null
-                || (containingFunSignature?.visibility == FunctionVisibility.PUBLIC_SCRIPT)
+                || (containingFun?.visibility == FunctionVisibility.PUBLIC_SCRIPT)
             ) {
-                vs.add(PublicScript())
+                vs.add(PublicScript)
             }
             return vs
         }

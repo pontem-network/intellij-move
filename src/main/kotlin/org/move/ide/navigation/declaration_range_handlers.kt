@@ -2,7 +2,7 @@ package org.move.ide.navigation
 
 import com.intellij.codeInsight.hint.DeclarationRangeHandler
 import com.intellij.openapi.util.TextRange
-import org.move.lang.core.psi.MvFunctionDef
+import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.startOffset
@@ -15,8 +15,8 @@ class ModuleDeclarationRangeHandler : DeclarationRangeHandler<MvModuleDef> {
     }
 }
 
-class FunctionDeclarationRangeHandler: DeclarationRangeHandler<MvFunctionDef> {
-    override fun getDeclarationRange(container: MvFunctionDef): TextRange {
+class FunctionDeclarationRangeHandler: DeclarationRangeHandler<MvFunction> {
+    override fun getDeclarationRange(container: MvFunction): TextRange {
         return TextRange(container.startOffset,
                          container.codeBlock?.endOffset ?: container.endOffset)
     }

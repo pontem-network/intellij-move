@@ -178,7 +178,7 @@ private ScriptItem ::= !('}' | <<eof>>) ScriptItem_item
 private ScriptItemFirst ::= use | const | fun
 private ScriptItem_recover ::= !('}' | <<eof>> | ScriptItemFirst)
 
-private ScriptItem_item ::= ImportStatement | ConstDef | FunctionDef
+private ScriptItem_item ::= ImportStatement | ConstDef | FunctionInner
 
 private address ::= <<addressKeyword>>
 
@@ -220,8 +220,9 @@ private Item_first ::= use | public | native | fun | const | struct | spec | fri
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= ImportStatement | FriendStatement
-                            | StructDef | FunctionDef
-                            | NativeStructDef | NativeFunctionDef
+                            | StructItem
+//                            | StructDef | NativeStructDef
+                            | FunctionItem
                             | SpecFunctionDef | SpecNativeFunctionDef | UninterpretedSpecFunctionDef
                             | ConstDef
                             | SpecDef
@@ -246,43 +247,116 @@ FunctionDefSpecStatement ::= FunctionSignature SpecBlock
 NativeFunctionDefSpecStatement ::= native FunctionSignature ';' { pin = 1 }
 UninterpretedFunctionDefSpecStatement ::= FunctionSignature ';'
 
-NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';'
+fake Struct_ ::= Attr* native? struct IDENTIFIER? TypeParameterList? AbilitiesList?
+                        (';' | StructFieldsDefBlock)?
 {
-    pin = 2
-    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+    implements = [
+        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.move.lang.core.psi.MvTypeParametersOwner"
+        "org.move.lang.core.psi.MvNameIdentifierOwner"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvStructMixin"
+}
+
+private StructInnerFirst ::= struct
+StructInner ::= Attr* StructInnerFirst IDENTIFIER TypeParameterList? AbilitiesList?
+                            StructFieldsDefBlock
+{
+    pin = StructInnerFirst
+    elementType = Struct_
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
-NativeStructDef ::= native StructSignature ';'
+private NativeStructInnerFirst ::= native struct
+NativeStructInner ::= Attr* NativeStructInnerFirst IDENTIFIER TypeParameterList? AbilitiesList? ';'
 {
-    pin = 2
-    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+    pin = NativeStructInnerFirst
+    elementType = Struct_
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+private StructItem ::= StructInner | NativeStructInner
+
+//NativeStructDef ::= native StructSignature ';'
+//{
+//    pin = 2
+//    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+//    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+//}
+
+fake Function ::= Attr* native? FunctionVisibilityModifier? native?
+                    fun? IDENTIFIER? TypeParameterList? FunctionParameterList?
+                        ReturnType? AcquiresType?
+                        (';' | CodeBlock)?
+{
+    implements = [
+        "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.move.lang.core.psi.MvTypeParametersOwner"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvFunctionMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
-private FunctionSignatureWithOptionalVisibility ::= FunctionSignatureVisibility | FunctionSignature
-private FunctionSignatureVisibility ::= FunctionVisibilityModifier FunctionSignature { pin = 1 }
+private FunctionInnerNoVisFirst ::= fun { pin = FunctionVisibilityModifier }
+private FunctionInnerVisFirst ::= FunctionVisibilityModifier fun { pin = 1 }
+private FunctionInnerFirst ::= FunctionInnerVisFirst | FunctionInnerNoVisFirst
+
+FunctionInner ::= Attr* FunctionInnerFirst FunctionSignatureInner CodeBlock
+{
+    pin = FunctionInnerFirst
+    elementType = Function
+    recoverWhile = "FunctionSignature__recover"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+
+private NativeFunctionInnerNoVisFirst ::= native fun
+private NativeFunctionInnerVisFirst ::= ((native FunctionVisibilityModifier)
+                                        | (FunctionVisibilityModifier native)) fun { pin = 1 }
+private NativeFunctionInnerFirst ::= NativeFunctionInnerNoVisFirst | NativeFunctionInnerVisFirst
+
+//private NativeFunctionInnerFirst ::= ((native FunctionVisibilityModifier?)
+//                                        | (FunctionVisibilityModifier? native) ) fun
+//                                        { pin = FunctionVisibilityModifier }
+NativeFunctionInner ::= Attr* NativeFunctionInnerFirst FunctionSignatureInner ';'
+{
+    pin = NativeFunctionInnerFirst
+    elementType = Function
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+
+private FunctionItem ::= NativeFunctionInner | FunctionInner
+
+private FunctionSignatureInner ::= IDENTIFIER TypeParameterList? FunctionParameterList ReturnType? AcquiresType?
+{
+    recoverWhile = "FunctionSignature__recover"
+}
+
+//private FunctionSignatureWithOptionalVisibility ::= FunctionSignatureVisibility | FunctionSignature
+//private FunctionSignatureVisibility ::= FunctionVisibilityModifier FunctionSignature { pin = 1 }
 FunctionSignature ::= fun IDENTIFIER TypeParameterList?
                           FunctionParameterList
                           ReturnType? AcquiresType?
 {
     pin = "fun"
-    implements = [
-        "org.move.lang.core.psi.MvNameIdentifierOwner"
-        "org.move.lang.core.psi.MvFunctionSignatureOwner"
-    ]
-    mixin = "org.move.lang.core.psi.mixins.MvFunctionSignatureMixin"
     recoverWhile = "FunctionSignature__recover"
 }
 private FunctionSignature__recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
 
-FunctionDef ::= Attr* FunctionSignatureWithOptionalVisibility CodeBlock
-{
-    pin = 2
-    implements = [
-        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
-    ]
-    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
-}
+//FunctionDef ::= Attr* native? FunctionVisibilityModifier native?
+//NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';'
+//{
+//    pin = 2
+//    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+//    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+//}
+
+//FunctionDef ::= Attr* FunctionSignatureWithOptionalVisibility CodeBlock
+//{
+//    pin = 2
+//    implements = [
+//        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+//    ]
+//    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+//}
 
 private friend ::= <<friendKeyword>>
 FunctionVisibilityModifier ::= public ('(' (script | friend) ')')?
@@ -318,22 +392,22 @@ private AcquiresType_items_recover ::= !(';' | '{')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-StructSignature ::= struct IDENTIFIER TypeParameterList? AbilitiesList?
-{
-    pin = "struct"
-    implements = [
-        "org.move.lang.core.psi.MvTypeParametersOwner"
-        "org.move.lang.core.psi.MvNameIdentifierOwner"
-    ]
-    mixin = "org.move.lang.core.psi.mixins.MvStructSignatureMixin"
-}
+//StructSignature ::= struct IDENTIFIER TypeParameterList? AbilitiesList?
+//{
+//    pin = "struct"
+//    implements = [
+//        "org.move.lang.core.psi.MvTypeParametersOwner"
+//        "org.move.lang.core.psi.MvNameIdentifierOwner"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MvStructMixin"
+//}
 
-StructDef ::= Attr* StructSignature StructFieldsDefBlock
-{
-    pin = 2
-    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
-    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
-}
+//StructDef ::= Attr* StructSignature StructFieldsDefBlock
+//{
+//    pin = 2
+//    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+//    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+//}
 
 AbilitiesList ::= has <<comma_sep_items Ability>> { pin = 1 }
 Ability ::= copy | IDENTIFIER

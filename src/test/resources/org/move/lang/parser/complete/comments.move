@@ -15,7 +15,7 @@ multiline comment
 
 /// doc comment
 /// another doc comment
-module M {
+module 0x1::M {
     /// function doc comment
     fun m() {}
     /// doc comment with outer attribute
@@ -23,4 +23,10 @@ module M {
     fun main() {
         let _ = /*caret*/1;
     }
+
+    /// docs
+    native fun native_m();
+
+    /// docs
+    native struct NatS;
 }

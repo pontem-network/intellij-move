@@ -21,7 +21,7 @@ interface MvElement : PsiElement {
             ancestorStrict()
 
     @JvmDefault
-    val containingFunction: MvFunctionDef?
+    val containingFunction: MvFunction?
         get() =
             ancestorStrict()
 }

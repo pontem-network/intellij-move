@@ -13,7 +13,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.MvFile
 import org.move.lang.core.psi.MvAddressDef
 import org.move.lang.core.psi.MvModuleDef
-import org.move.lang.core.psi.ext.functionSignatures
+import org.move.lang.core.psi.ext.functions
 import org.move.lang.core.psi.ext.modules
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.openapiext.common.isUnitTestMode
@@ -46,8 +46,7 @@ class MvStructureViewElement(val element: NavigatablePsiElement) : StructureView
                     elements.addAll(addressBlock.moduleDefList)
                 }
                 for (scriptBlock in element.scriptBlocks()) {
-                    elements.addAll(scriptBlock.functionDefList
-                                        .mapNotNull { it.functionSignature })
+                    elements.addAll(scriptBlock.functionList)
                 }
                 elements.map { MvStructureViewElement(it) }.toTypedArray()
             }
@@ -56,7 +55,7 @@ class MvStructureViewElement(val element: NavigatablePsiElement) : StructureView
                 modules.map { MvStructureViewElement(it) }.toTypedArray()
             }
             is MvModuleDef -> {
-                val allFunctions = element.functionSignatures(Visibility.Internal())
+                val allFunctions = element.functions(Visibility.Internal)
                 allFunctions.map { MvStructureViewElement(it) }.toTypedArray()
             }
             else -> emptyArray()

@@ -15,6 +15,7 @@ class PartialParsingTest: MvParsingTestCase("partial") {
     fun `test function calls`() = doTest(true)
 
     // structs
+    fun `test struct decls`() = doTest(true)
     fun `test struct fields`() = doTest(true)
 
     // expressions

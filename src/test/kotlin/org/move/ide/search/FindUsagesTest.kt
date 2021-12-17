@@ -31,6 +31,16 @@ class FindUsagesTest : MvTestBase() {
         }    
     """)
 
+    fun `test const`() = doTestByText("""
+    module 0x1::M {
+        const MY_CONST: u8 = 1;
+            //^
+        fun m() {
+            MY_CONST;// - expr
+        }
+    }    
+    """)
+
     private fun doTestByText(@Language("Move") code: String) {
         inlineFile(code)
 

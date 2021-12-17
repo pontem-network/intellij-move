@@ -2,21 +2,21 @@ package org.move.lang.core.completion
 
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionType
+import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.patterns.PsiElementPattern
 import com.intellij.psi.PsiElement
-import org.move.lang.MvElementTypes.IDENTIFIER
+import org.move.lang.MvElementTypes.*
 import org.move.lang.core.MvPsiPatterns
-import org.move.lang.core.MvPsiPatterns.acquiresPlacement
 import org.move.lang.core.MvPsiPatterns.addressBlock
-import org.move.lang.core.MvPsiPatterns.afterSibling
 import org.move.lang.core.MvPsiPatterns.codeStatement
-import org.move.lang.core.MvPsiPatterns.functionDef
+import org.move.lang.core.MvPsiPatterns.function
 import org.move.lang.core.MvPsiPatterns.moduleBlock
-import org.move.lang.core.MvPsiPatterns.nativeFunctionDef
 import org.move.lang.core.MvPsiPatterns.scriptBlock
 import org.move.lang.core.MvPsiPatterns.toplevel
+import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvFunctionVisibilityModifier
+import org.move.lang.core.psi.MvReturnType
 
 class KeywordCompletionContributor : CompletionContributor() {
     init {
@@ -73,12 +73,16 @@ class KeywordCompletionContributor : CompletionContributor() {
 //        )
         extend(
             CompletionType.BASIC,
-            functionDef().and(afterSibling<MvFunctionVisibilityModifier>()),
+            function().with(MvPsiPatterns.AfterSibling(FUNCTION_VISIBILITY_MODIFIER)),
+//            psiElement<PsiErrorElement>().afterSiblingSkipping(MvPsiPatterns.whitespace, psiElement()),
+//            function().and(psiElement()
+//                               .afterSiblingSkipping(MvPsiPatterns.whitespace, psiElement())),
+//            function().and(afterSibling<PsiElement>()),
             KeywordCompletionProvider("fun")
         )
         extend(
             CompletionType.BASIC,
-            nativeFunctionDef().and(afterSibling<MvFunctionVisibilityModifier>()),
+            function().with(MvPsiPatterns.AfterSibling(NATIVE)),
             KeywordCompletionProvider("fun")
         )
         extend(
@@ -108,7 +112,11 @@ class KeywordCompletionContributor : CompletionContributor() {
 //        )
         extend(
             CompletionType.BASIC,
-            acquiresPlacement(),
+            PlatformPatterns.or(
+                psiElement()
+                    .with(MvPsiPatterns.AfterSibling(FUNCTION_PARAMETER_LIST)),
+                psiElement().with(MvPsiPatterns.AfterSibling(PATH_TYPE))
+            ),
             KeywordCompletionProvider(
                 "acquires",
             )

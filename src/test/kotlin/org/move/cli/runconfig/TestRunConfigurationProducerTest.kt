@@ -5,10 +5,9 @@ import com.intellij.execution.actions.RunConfigurationProducer
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import org.jdom.Element
-import org.move.lang.core.psi.MvFunctionDef
+import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.ancestorOrSelf
-import org.move.lang.toNioPathOrNull
 import org.move.openapiext.toXmlString
 import org.move.utils.tests.MvProjectTestCase
 import org.move.utils.tests.base.TestCase
@@ -34,7 +33,7 @@ class TestRunConfigurationProducerTest : MvProjectTestCase() {
 
         val element = myFixture.file
             .findElementAt(myFixture.caretOffset)
-            ?.ancestorOrSelf<MvFunctionDef>() ?: error("No function at caret position")
+            ?.ancestorOrSelf<MvFunction>() ?: error("No function at caret position")
 
         val context = ConfigurationContext(element)
         val configurations = context.configurationsFromContext.orEmpty().map { it.configuration }
@@ -82,7 +81,7 @@ class TestRunConfigurationProducerTest : MvProjectTestCase() {
 
         val element = myFixture.file
             .findElementAt(myFixture.caretOffset)
-            ?.ancestorOrSelf<MvFunctionDef>() ?: error("No function at caret position")
+            ?.ancestorOrSelf<MvFunction>() ?: error("No function at caret position")
         val dir = element.containingFile.parent as PsiDirectory
 
         val context = ConfigurationContext(dir)

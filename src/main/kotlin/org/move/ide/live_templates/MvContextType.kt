@@ -12,9 +12,7 @@ import com.intellij.psi.util.PsiUtilCore
 import org.move.ide.MvHighlighter
 import org.move.lang.MvLanguage
 import org.move.lang.core.psi.MvCodeBlock
-import org.move.lang.core.psi.MvFunctionDef
 import org.move.lang.core.psi.MvModuleDef
-import org.move.lang.core.psi.MvPat
 import kotlin.reflect.KClass
 
 sealed class MvContextType(

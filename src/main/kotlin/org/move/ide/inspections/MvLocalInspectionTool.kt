@@ -23,7 +23,7 @@ abstract class MvLocalInspectionTool: LocalInspectionTool() {
     }
 
     final override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor =
-        buildMvVisitor(holder, isOnTheFly) ?: super.buildVisitor(holder, isOnTheFly)
+        buildMvVisitor(holder, isOnTheFly)
 
     abstract fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor
 

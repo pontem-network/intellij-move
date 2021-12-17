@@ -69,7 +69,7 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
     }
 
     private fun addFieldsToCompletion(
-        referredStruct: MvStructDef,
+        referredStruct: MvStruct_,
         providedFieldNames: List<String>,
         result: CompletionResultSet,
     ) {

@@ -6,8 +6,8 @@
 package org.move.ide.utils
 
 import org.move.lang.core.psi.MvCallExpr
-import org.move.lang.core.psi.MvFunctionSignatureOwner
-import org.move.lang.core.psi.parameters
+import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.ext.parameters
 
 class CallInfo(
     val name: String,
@@ -18,11 +18,10 @@ class CallInfo(
 
     companion object {
         fun resolve(callExpr: MvCallExpr): CallInfo? {
-            val resolved = callExpr.path.reference?.resolve() ?: return null
-            val name = resolved.name ?: return null
+            val function = callExpr.path.reference?.resolve() as? MvFunction ?: return null
+            val name = function.name ?: return null
 
-            val signature = resolved as? MvFunctionSignatureOwner ?: return null
-            val parameters = signature.parameters.map {
+            val parameters = function.parameters.map {
                 val paramName = it.bindingPat.name
                 val paramType = it.typeAnnotation?.type
                 if (paramName == null || paramType == null) {
@@ -30,7 +29,7 @@ class CallInfo(
                 }
                 Parameter(paramName, paramType.text)
             }
-            val returnType = signature.returnType?.type?.text
+            val returnType = function.returnType?.type?.text
 
             return CallInfo(name, parameters, returnType)
         }
