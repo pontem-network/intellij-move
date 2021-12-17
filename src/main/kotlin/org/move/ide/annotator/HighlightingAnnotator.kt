@@ -23,8 +23,9 @@ val BUILTIN_FUNCTIONS =
 
 class HighlightingAnnotator : MvAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
-        val color = when (element) {
-            is LeafPsiElement -> highlightLeaf(element)
+        val color = when {
+            element is LeafPsiElement -> highlightLeaf(element)
+            element is MvLitExpr && element.text.startsWith("@") -> MvColor.ADDRESS
             else -> null
         } ?: return
         val severity = color.testSeverity
@@ -38,7 +39,6 @@ class HighlightingAnnotator : MvAnnotator() {
             element.elementType == IDENTIFIER -> highlightIdentifier(parent)
             parent is MvCopyExpr
                     && element.text == "copy" -> MvColor.KEYWORD
-            element.elementType == ADDRESS_LITERAL -> MvColor.ADDRESS
             else -> null
         }
     }

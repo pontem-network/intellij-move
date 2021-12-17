@@ -64,19 +64,19 @@ class MoveToml(
             }
 
             val addresses = parseAddresses("addresses", tomlFile)
-            val dev_addresses = parseAddresses("dev_addresses", tomlFile)
+            val devAddresses = parseAddresses("dev-addresses", tomlFile)
 
             val dependencies = parseDependencies("dependencies", tomlFile, projectRoot)
-            val dev_dependencies = parseDependencies("dev_dependencies", tomlFile, projectRoot)
+            val devDependencies = parseDependencies("dev-dependencies", tomlFile, projectRoot)
 
             return MoveToml(
                 tomlFile.project,
                 tomlFile,
                 packageTable,
                 addresses,
-                dev_addresses,
+                devAddresses,
                 dependencies,
-                dev_dependencies
+                devDependencies
             )
         }
 

@@ -6,10 +6,7 @@ import org.move.lang.MvFile
 import org.move.lang.moveProject
 import org.move.lang.toMvFile
 import org.move.lang.toNioPathOrNull
-import org.move.openapiext.contentRoots
-import org.move.openapiext.findVirtualFile
-import org.move.openapiext.singleSegmentOrNull
-import org.move.openapiext.toPsiFile
+import org.move.openapiext.*
 import org.move.stdext.deepIterateChildrenRecursivery
 import org.toml.lang.psi.TomlKeySegment
 import java.nio.file.Path
@@ -23,10 +20,19 @@ data class MvModuleFile(
     val addressSubst: Map<String, String>,
 )
 
-data class DependencyAddresses(
+data class DeclaredAddresses(
     val values: AddressMap,
     val placeholders: PlaceholderMap,
 ) {
+    fun placeholdersAsValues(): AddressMap {
+        val values = mutableAddressMap()
+        for (ph in placeholders) {
+            val value = ph.value.value?.stringValue() ?: continue
+            values[ph.key] = AddressVal(value, ph.value, ph.value)
+        }
+        return values
+    }
+
     fun get(name: String): AddressVal? {
         if (name in this.values) return this.values[name]
         if (name in this.placeholders) {
@@ -40,15 +46,16 @@ data class DependencyAddresses(
 fun testEmptyMvProject(project: Project): MoveProject {
     val moveToml = MoveToml(project)
     val rootFile = project.contentRoots.first()
-    val dependencies = DependencyAddresses(mutableAddressMap(), placeholderMap())
-    return MoveProject(project, moveToml, rootFile, dependencies)
+    val addresses = DeclaredAddresses(mutableAddressMap(), placeholderMap())
+    return MoveProject(project, moveToml, rootFile, addresses, addresses.copy())
 }
 
 data class MoveProject(
     val project: Project,
     val moveToml: MoveToml,
     val root: VirtualFile,
-    val dependencyAddresses: DependencyAddresses,
+    val declaredAddresses: DeclaredAddresses,
+    val declaredDevAddresses: DeclaredAddresses,
 ) {
     val packageName: String? get() = moveToml.packageTable?.name
     val rootPath: Path get() = root.toNioPath()
@@ -95,13 +102,13 @@ data class MoveProject(
             val moveTomlFile = dep.absoluteLocalPath.resolve("Move.toml")
                 .findVirtualFile()
                 ?.toPsiFile(this.project) ?: continue
-            val depAddresses = moveTomlFile.moveProject?.dependencyAddresses ?: continue
+            val depDeclaredAddrs = moveTomlFile.moveProject?.declaredAddresses ?: continue
 
             // apply substitutions
             val newPlaceholders = placeholderMap()
-            val newAddresses = depAddresses.values.copyMap()
+            val newAddresses = depDeclaredAddrs.values.copyMap()
 
-            for ((placeholderName, placeholderKeyValue) in depAddresses.placeholders.entries) {
+            for ((placeholderName, placeholderKeyValue) in depDeclaredAddrs.placeholders.entries) {
                 val placeholderSubst = dep.subst[placeholderName]
                 if (placeholderSubst == null) {
                     newPlaceholders[placeholderName] = placeholderKeyValue
@@ -113,7 +120,7 @@ data class MoveProject(
             // renames
             for ((renamedName, originalVal) in dep.subst.entries) {
                 val (originalName, keyVal) = originalVal
-                val addressVal = depAddresses.get(originalName)
+                val addressVal = depDeclaredAddrs.get(originalName)
                 if (addressVal != null) {
                     addresses[renamedName] =
                         AddressVal(addressVal.value, keyVal, null)
@@ -121,7 +128,9 @@ data class MoveProject(
             }
             addresses.putAll(newAddresses)
         }
-        addresses.putAll(this.dependencyAddresses.values)
+        addresses.putAll(this.declaredAddresses.values)
+        addresses.putAll(this.declaredAddresses.placeholdersAsValues())
+        addresses.putAll(this.declaredDevAddresses.values)
         return addresses
     }
 

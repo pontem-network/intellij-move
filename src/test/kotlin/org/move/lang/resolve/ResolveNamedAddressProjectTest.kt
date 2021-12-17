@@ -6,9 +6,37 @@ import org.move.utils.tests.resolve.ResolveProjectTestCase
 import org.toml.lang.psi.TomlKeySegment
 
 class ResolveNamedAddressProjectTest : ResolveProjectTestCase() {
-    fun `test resolve named address to toml key`() = checkByFileTree {
+    fun `test resolve named address to address`() = checkByFileTree {
         moveToml("""
         [addresses]
+        Std = "0x1"
+        #X    
+        """)
+        sources {
+            move("main.move", """
+            module Std::Module {}
+                  //^
+            """)
+        }
+    }
+
+    fun `test resolve named address to toml key defined with placeholder`() = checkByFileTree {
+        moveToml("""
+        [addresses]
+        Std = "_"
+        #X    
+        """)
+        sources {
+            move("main.move", """
+            module Std::Module {}
+                  //^
+            """)
+        }
+    }
+
+    fun `test resolve named address to dev address`() = checkByFileTree {
+        moveToml("""
+        [dev-addresses]
         Std = "0x1"
         #X    
         """)

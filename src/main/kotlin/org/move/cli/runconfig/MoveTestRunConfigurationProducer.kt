@@ -79,11 +79,11 @@ sealed interface TestConfig {
                     ) {
                         return Package(packageName, moveProject.rootPath)
                     }
-                    return null
+                    null
                 }
                 is PsiFile -> {
                     val module = location.childOfType<MvModuleDef>() ?: return null
-                    return fromLocation(module)
+                    fromLocation(module)
                 }
                 else -> {
                     for (ans in location.ancestors) {
@@ -104,9 +104,8 @@ sealed interface TestConfig {
                             else -> continue
                         }
                     }
-                    return null
+                    null
                 }
-//                else -> null
             }
         }
     }
