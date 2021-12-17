@@ -7,22 +7,19 @@ import org.move.utils.tests.fileTree
 
 class ProjectAddressesServiceTest: MvProjectTestCase() {
     fun `test directory index cached correctly`() {
-        val fileTree = fileTree {
-            toml("Move.toml", "")
-            dir("sources") {
-                move("module.move", "")
+        val testProject = testProjectFromFileTree {
+            moveToml()
+            sources {
+                move("module.move")
             }
             dir("stdlib") {
-                toml("Move.toml", "")
-                dir("sources") {
-                    move("module2.move", "")
+                moveToml()
+                sources {
+                    move("module2.move")
                 }
             }
         }
-        val rootDirectory = myModule.rootManager.contentRoots.first()
-        val testProject = fileTree.prepareTestProject(myFixture.project, rootDirectory)
         val addressesService = project.moveProjects
-//        addressesService.refreshProjectAddresses()
 
         val moveFiles = findMoveTomlFilesDeepestFirst(myFixture.project).toList()
         check(moveFiles.size == 2)

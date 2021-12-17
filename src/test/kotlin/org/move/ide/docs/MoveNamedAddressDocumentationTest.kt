@@ -3,16 +3,16 @@ package org.move.ide.docs
 import org.move.utils.tests.MvDocumentationProviderProjectTestCase
 
 class MvNamedAddressDocumentationTest : MvDocumentationProviderProjectTestCase() {
-//    fun `test value of named address accessible from documentation`() = doTestByFileTree(
-//        """
-//    //- Move.toml
-//    [addresses]
-//    Std = "0xCOFFEE"
-//    //- sources/main.move
-//    module Std::Module {}
-//         //^
-//        """, "0xCOFFEE", block = MvDocumentationProvider::generateDoc
-//    )
+    fun `test value of named address accessible from documentation`() = doTestByFileTree(
+        """
+    //- Move.toml
+    [addresses]
+    Std = "0xCOFFEE"
+    //- sources/main.move
+    module Std::Module {}
+          //^
+        """, "Std = \"0xCOFFEE\"", block = MvDocumentationProvider::generateDoc
+    )
 
     // TODO: check parsing in different test
     fun `test value of named address for imported and substituted`() = doTestByFileTree(
@@ -33,7 +33,7 @@ class MvNamedAddressDocumentationTest : MvDocumentationProviderProjectTestCase()
     //- stdlib/sources/module.move
     //- sources/main.move
     module Std::Module {}       
-         //^   
-        """, "0xC0FFEE", block = MvDocumentationProvider::generateDoc
+          //^   
+        """, "Std = \"0xC0FFEE\"", block = MvDocumentationProvider::generateDoc
     )
 }

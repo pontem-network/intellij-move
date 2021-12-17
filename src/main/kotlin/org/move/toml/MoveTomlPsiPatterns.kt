@@ -17,6 +17,11 @@ object MoveTomlPsiPatterns {
             VirtualFilePattern().withName(MvConstants.MANIFEST_FILE))
     }
 
+    /** Any element inside any TomlKey in Move.toml */
+    val inKey: PsiElementPattern.Capture<PsiElement> =
+        moveTomlPsiElement<PsiElement>()
+            .withParent(TomlKeySegment::class.java)
+
     fun dependencyProperty(name: String): PsiElementPattern.Capture<TomlKeyValue> = psiElement<TomlKeyValue>()
         .withCond("name") { e -> e.key.name == name }
         .withParent(

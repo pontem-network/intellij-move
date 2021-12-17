@@ -22,8 +22,8 @@ class MoveTomlTest : MvTestBase() {
         check(moveToml.packageTable?.license == null)
 
         check(moveToml.addresses.size == 2)
-        check(moveToml.addresses["Std"] == "0x1")
-        check(moveToml.addresses["DiemFramework"] == "0xB1E55ED")
+        check(moveToml.addresses["Std"]!!.first == "0x1")
+        check(moveToml.addresses["DiemFramework"]!!.first == "0xB1E55ED")
 
         check(moveToml.dependencies.size == 1)
         check(

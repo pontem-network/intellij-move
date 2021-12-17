@@ -2,22 +2,23 @@ package org.move.lang.resolve
 
 import org.move.utils.tests.resolve.ResolveProjectTestCase
 
-class ResolveMoveProjectModulesTest : ResolveProjectTestCase() {
-    fun `test resolve module from other file in sources folder`() = checkByFileTree(
-        """
-        //- Move.toml
-        //- sources/module.move
-        address 0x1 {
-            module Module {}
-                 //X
-        }    
-        //- sources/main.move
-        script {
-            use 0x1::Module;
-                   //^
-        }    
-    """
-    )
+class ResolveModulesProjectTest : ResolveProjectTestCase() {
+
+    fun `test resolve module from other file in sources folder`() = checkByFileTree {
+        moveToml()
+        sources {
+            move("module.move", """
+            module 0x1::Module {}
+                      //X
+            """)
+            move("main.move", """
+            script {
+                use 0x1::Module;
+                       //^
+            }    
+            """)
+        }
+    }
 
     fun `test resolve module from file in local dependency`() = checkByFileTree(
         """

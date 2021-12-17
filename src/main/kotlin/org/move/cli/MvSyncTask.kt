@@ -61,7 +61,7 @@ class MvSyncTask(
         syncProgress: BuildProgress<BuildProgressDescriptor>
     ): List<MoveProject> {
         val moveTomlFiles = findMoveTomlFiles(project)
-        val moveProjects = moveTomlFiles.mapNotNull { initializeMvProject(project, it) }
+        val moveProjects = moveTomlFiles.mapNotNull { initializeMoveProject(project, it) }
         return moveProjects.toList()
 //        val refreshedProjects = if (project.)
 //        val executable = project.moveExecutable

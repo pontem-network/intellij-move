@@ -14,19 +14,6 @@ import org.toml.lang.psi.TomlTableHeader
 
 val TomlTableHeader.isAddressesHeader: Boolean get() = text in setOf("[addresses]")
 
-val MvNamedAddress.addressTomlKeyValue: TomlKeyValue? get() {
-    val segment = this.reference.resolve() ?: return null
-    return segment.ancestorStrict()
-}
-
-//fun MvNamedAddress.addressValue(): String? {
-//    val moveProject = this.containingFile.containingMvProject() ?: return null
-//    moveProject.getAddressValue()
-//}
-//val MvNamedAddress.addressValue: String? get() {
-//    return this.addressTomlKeyValue?.value?.stringValue()
-//}
-
 fun TomlKeySegment.isNamedAddressDef(): Boolean {
     val key = this.parent as? TomlKey ?: return false
     val tomlTable = (key.parent as? TomlKeyValue)?.parentTable ?: return false

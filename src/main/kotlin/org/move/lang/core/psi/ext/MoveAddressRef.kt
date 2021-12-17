@@ -9,7 +9,7 @@ fun MvAddressRef.toAddress(contextProject: MoveProject? = this.moveProject): Add
     val namedAddress = this.namedAddress
     if (namedAddress != null) {
         val refName = namedAddress.referenceName ?: return null
-        return contextProject?.getAddresses()?.get(refName)?.let { Address(it) }
+        return contextProject?.getAddressValue(refName)?.let { Address(it) }
     }
     val addressLit = addressIdent?.text ?: bech32AddressIdent?.text ?: return null
     return Address(addressLit)

@@ -5,7 +5,9 @@ import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvReferenceElement
 import org.move.openapiext.findVirtualFile
+import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestCase
+import org.move.utils.tests.TestProject
 import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 
@@ -18,18 +20,38 @@ abstract class ResolveProjectTestCase : MvProjectTestCase() {
         )
     }
 
+    open fun checkByFileTree(fileTree: FileTreeBuilder.() -> Unit) {
+        checkByFileTree(
+            MvReferenceElement::class.java,
+            MvNamedElement::class.java,
+            fileTree
+        )
+    }
+
     protected fun <T : PsiElement, R : PsiElement> checkByFileTree(
         @Language("Move") code: String,
         refClass: Class<R>,
         targetClass: Class<T>
     ) {
         val testProject = testProjectFromFileTree(code)
+        checkByTestProject(testProject, refClass, targetClass)
+    }
+
+    protected fun <T : PsiElement, R : PsiElement> checkByFileTree(
+        refClass: Class<R>,
+        targetClass: Class<T>,
+        fileTree: FileTreeBuilder.() -> Unit
+    ) {
+        val testProject = testProjectFromFileTree(fileTree)
+        checkByTestProject(testProject, refClass, targetClass)
+    }
+
+    private fun <T : PsiElement, R : PsiElement> checkByTestProject(
+        testProject: TestProject,
+        refClass: Class<R>,
+        targetClass: Class<T>
+    ) {
         myFixture.configureFromFileWithCaret(testProject)
-//        val fileWithCaret =
-//            testProject.rootDirectory.toNioPath()
-//                .resolve(testProject.fileWithCaret).findVirtualFile()
-//                ?: error("No file with //^ caret")
-//        myFixture.configureFromExistingVirtualFile(fileWithCaret)
 
         val (refElement, data, offset) =
             myFixture.findElementWithDataAndOffsetInEditor(refClass, "^")
