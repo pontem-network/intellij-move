@@ -697,7 +697,7 @@ ModExpr ::= Expr '%' Expr
 LeftShiftExpr ::= Expr ltlt Expr
 RightShiftExpr ::= Expr gtgt Expr
 
-private ImplyOperatorsExprItem ::= ImplyOperatorExpr | PartialImplyOperatorExpr
+private ImplyOperatorsExprItem ::= ImplyOperatorExpr | PartialImplyOperatorExpr | AggregateExpr
 ImplyOperatorExpr ::= Expr eqeq_gt Expr
 PartialImplyOperatorExpr ::= Expr lt_eqeq_gt Expr
 
@@ -876,6 +876,10 @@ private to ::= <<toKeyword>>
 private apply ::= <<applyKeyword>>
 private except ::= <<exceptKeyword>>
 
+private SpecItem_first ::= assert | assume | modifies | requires | ensures | aborts_if | include | choose | axiom
+                         | invariant | pragma | local | global | emits
+private SpecItem_recover ::= !('}' | <<eof>> | SpecItem_first)
+
 SpecDef ::= NameSpecDef | ModuleSpecDef | SchemaSpecDef
 
 NameSpecDef ::= (spec IDENTIFIER) SpecBlock
@@ -905,6 +909,13 @@ SpecBlock ::= '{'
     pin = 1
 }
 
+private SpecItem ::= !('}' | <<eof>>) SpecStatement
+{
+//    pin = 1
+//    recoverWhile = SpecItem_recover
+}
+
+//private SpecItemExpr ::= SpecBlockFinishingExpr
 private SpecBlockStatement_with_recover ::= !('}' | <<eof>>) SpecStatement
 private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinishingExpr
 
@@ -916,22 +927,31 @@ SpecStatement ::= ImportStatement
                                | NativeFunctionDefSpecStatement
                                | UninterpretedFunctionDefSpecStatement
                                | PragmaSpecStatement
-                               | AssumeSpecStatement
-                               | AssertSpecStatement
-                               | AbortsIfSpecStatement
-                               | RequiresSpecStatement
-                               | EnsuresSpecStatement
-                               | ModifiesSpecStatement
+//                               | AssumeSpecStatement
+//                               | AssertSpecStatement
+//                               | AbortsIfSpecStatement
+//                               | RequiresSpecStatement
+//                               | EnsuresSpecStatement
+//                               | ModifiesSpecStatement
                                | IncludeSpecStatement
-                               | InvariantSpecStatement
-                               | AxiomSpecStatement
+//                               | InvariantSpecStatement
+//                               | AxiomSpecStatement
                                | ApplySpecStatement
                                | EmitsSpecStatement
-                               | AggregatePredicateSpecStatement
-                               | SpecBlockSpecStatement
+//                               | AggregatePredicateSpecStatement
+//                               | SpecBlockSpecStatement
                                | LetSpecStatement
                                | ChooseSpecStatement
+                               | ExprSpecStatement
                                | Statement
+//{
+//    recoverWhile = SpecStatement_recover
+//}
+//private SpecStatement_recover ::= !'}'
+
+ExprSpecStatement ::= (ExprSpecStatement_items !('}')) ';' { pin = 1 }
+private ExprSpecStatement_items ::= SpecExpr | AggregateExpr | Expr
+
 private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
 
 VariableSpecStatement ::= IDENTIFIER TypeAnnotation ';' { pin = 2 }
@@ -965,6 +985,8 @@ RequiresSpecStatement ::= RequiresSpecExpr ';'
 RequiresSpecExpr ::= requires module? Predicate { pin = 1 }
 
 EnsuresSpecStatement ::= EnsuresSpecExpr ';'
+//private EnsuresSpecExpr_body ::= EnsuresSpecExpr
+
 EnsuresSpecExpr ::= ensures Predicate { pin = 1 }
 
 ModifiesSpecStatement ::= ModifiesSpecExpr ';'
@@ -1015,6 +1037,7 @@ ApplySchemaName ::= Path
 ApplySchemaNameAttribute ::= IDENTIFIER ':' Expr
 
 Predicate ::= SpecVisibility? (AggregateExpr | Expr)
+//private Predicate_recover ::= !('}' | <<eof>> | SpecItem_first)
 
 AggregatePredicateSpecStatement ::= AggregateExpr ';'
 AggregateExpr ::= QuantifierExpr (':' Expr)?
