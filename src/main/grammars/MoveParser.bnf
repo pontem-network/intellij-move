@@ -593,7 +593,7 @@ StructPatFieldBinding ::= ':' Pat { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Statements
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Statement ::= LetStatement | MacroCallStatement | ExprStatement
+Statement ::= LetStatement | ExprStatement
 
 LetStatement ::= let Pat TypeAnnotation? Initializer? ';' { pin = 1 }
 
@@ -662,7 +662,7 @@ private AtomExpr ::=
                     | StructLitExpr
                     | DotExpr
                     | IndexExpr
-                    | CallExpr
+                    | (CallExpr | MacroCallExpr)
                     | RefExpr
                     | LambdaExpr
                     | LitExpr
@@ -845,7 +845,8 @@ NamedAddress ::= IDENTIFIER
 }
 
 /// Macros
-MacroCallStatement ::= IDENTIFIER '!' CallArgumentList ';' { pin = 2 }
+MacroCallExpr ::= MacroIdent CallArgumentList { pin = 1 }
+MacroIdent ::= IDENTIFIER '!'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Specs

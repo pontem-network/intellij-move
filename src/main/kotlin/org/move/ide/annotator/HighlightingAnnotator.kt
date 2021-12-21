@@ -23,6 +23,7 @@ class HighlightingAnnotator : MvAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val color = when {
             element is LeafPsiElement -> highlightLeaf(element)
+            element is MvMacroIdent -> MvColor.MACRO
             element is MvLitExpr && element.text.startsWith("@") -> MvColor.ADDRESS
             else -> null
         } ?: return

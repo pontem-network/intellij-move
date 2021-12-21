@@ -11,6 +11,7 @@ module M {
         // this is comment
         let local_val = val;
 
-        let myresource = <BUILTIN_FUNCTION_CALL>move_from</BUILTIN_FUNCTION_CALL>(signer)
+        let myresource = <BUILTIN_FUNCTION_CALL>move_from</BUILTIN_FUNCTION_CALL>(signer);
+        <MACRO>assert!</MACRO>(true, 1);
     }
 }
