@@ -18,17 +18,17 @@ val MvStructLitField.structLit: MvStructLitExpr
     get() = ancestorStrict()!!
 
 val MvStructLitField.isShorthand: Boolean
-    get() = structLitFieldAssignment == null
+    get() = fieldInit == null
 
-fun MvStructLitField.inferAssignedExprTy(ctx: InferenceContext): Ty {
-    val assignment = this.structLitFieldAssignment
-    return if (assignment == null) {
+fun MvStructLitField.inferInitExprTy(ctx: InferenceContext): Ty {
+    val init = this.fieldInit
+    return if (init == null) {
         // find type of binding
         val resolved = this.reference.resolve() as? MvBindingPat ?: return TyUnknown
         resolved.inferBindingPatTy()
     } else {
         // find type of expression
-        assignment.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
+        init.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
     }
 }
 

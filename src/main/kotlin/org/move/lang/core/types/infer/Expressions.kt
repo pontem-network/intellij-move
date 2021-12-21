@@ -118,14 +118,14 @@ private fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext):
             inference.registerConstraint(Constraint.Equate(tyVar, typeArg.type.inferTypeTy()))
         }
     }
-    for (field in litExpr.providedFields) {
+    for (field in litExpr.fields) {
         val fieldName = field.referenceName
         val declaredFieldTy = structItem
             .fieldsMap[fieldName]
             ?.declaredTy
             ?.foldTyTypeParameterWith { param -> structTypeVars.find { it.origin?.parameter == param.parameter }!! }
             ?: TyUnknown
-        val fieldExprTy = field.inferAssignedExprTy(ctx)
+        val fieldExprTy = field.inferInitExprTy(ctx)
         inference.registerConstraint(Constraint.Equate(declaredFieldTy, fieldExprTy))
     }
     // solve constraints, return TyUnknown if cannot
