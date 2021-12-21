@@ -79,10 +79,9 @@ BOOL_LITERAL=(true)|(false)
 HEX_INTEGER_LITERAL=0x[0-9a-fA-F]+((u8)|(u64)|(u128))?
 INTEGER_LITERAL=[0-9]+((u8)|(u64)|(u128))?
 HEX_STRING_LITERAL=x\"([A-F0-9a-f]*)\"
-BYTE_STRING_LITERAL=b\"(.*)\"
+BYTE_STRING_LITERAL=b\" ( [^\"] )* \"
 
 IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
-//FUNCTION_PATTERN_NAME=[*_a-zA-Z][*_a-zA-Z0-9]*
 
 %%
 <YYINITIAL> {

@@ -2,6 +2,10 @@ script {
     fun main() {
         call();
         call(1, 2);
+        call(b"", b"");
+        call(b"", x"");
+        call(x"", b"");
+        call(x"", x"");
         call(1, 2,);
         call(0, 0u8, 0u64, 1u8, 1u64,);
         call(a, a.b, &a, &mut a);
