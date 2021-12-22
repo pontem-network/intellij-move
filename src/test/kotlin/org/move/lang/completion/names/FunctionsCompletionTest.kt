@@ -224,22 +224,38 @@ class FunctionsCompletionTest : CompletionTestCase() {
         }
     """, listOf("create", "create_script", "create_friend", "create_private"))
 
-    fun `test fq completion for use`() = checkContainsCompletion("call", """
+    fun `test fq completion for use`() = doSingleCompletion("""
     module 0x1::M1 {
         public fun call() {}
     }
     module 0x1::M2 {
-        use 0x1::M1::c/*caret*/;
+        use 0x1::M1::c/*caret*/
+    }
+    """, """
+    module 0x1::M1 {
+        public fun call() {}
+    }
+    module 0x1::M2 {
+        use 0x1::M1::call/*caret*/
     }
     """)
 
-    fun `test fq completion for reference expr`() = checkContainsCompletion("call", """
+    fun `test fq completion for reference expr`() = doSingleCompletion("""
     module 0x1::M1 {
         public fun call() {}
     }
     module 0x1::M2 {
         fun m() {
-            0x1::M1::c/*caret*/;
+            0x1::M1::c/*caret*/
+        }
+    }
+    """, """
+    module 0x1::M1 {
+        public fun call() {}
+    }
+    module 0x1::M2 {
+        fun m() {
+            0x1::M1::call()/*caret*/
         }
     }
     """)

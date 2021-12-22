@@ -1,5 +1,6 @@
 package org.move.lang.core.completion
 
+import com.intellij.codeInsight.completion.BasicInsertHandler
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
@@ -43,8 +44,13 @@ fun functionInsertHandler(isSpec: Boolean, hasParams: Boolean): InsertHandler<Lo
         }
     }
 
-fun MvNamedElement.createLookupElement(isSpecIdentifier: Boolean): LookupElement {
-    val insertHandler = DefaultInsertHandler(isSpecIdentifier)
+fun MvNamedElement.createLookupElement(isSpecIdentifier: Boolean, import: Boolean = false): LookupElement {
+    val insertHandler = if (import) {
+        BasicInsertHandler()
+    } else {
+        DefaultInsertHandler(isSpecIdentifier)
+    }
+//    val insertHandler = DefaultInsertHandler(isSpecIdentifier) if (!import) else
     return when (this) {
         is MvModuleImport ->
             LookupElementBuilder
