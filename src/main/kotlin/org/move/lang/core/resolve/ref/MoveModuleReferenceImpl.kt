@@ -21,6 +21,6 @@ class MvModuleReferenceImpl(
             resolved is MvModuleImport -> resolved.fqModuleRef
             else -> return null
         }
-        return moduleRef.reference?.resolve()
+        return moduleRef?.reference?.resolve()
     }
 }

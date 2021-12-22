@@ -183,7 +183,7 @@ class FunctionsCompletionTest : CompletionTestCase() {
         }
         }
         
-        module M {
+        module 0x1::M {
             fun main() {
                 0x1::Transaction::cr/*caret*/
             }
@@ -223,4 +223,24 @@ class FunctionsCompletionTest : CompletionTestCase() {
         }
         }
     """, listOf("create", "create_script", "create_friend", "create_private"))
+
+    fun `test fq completion for use`() = checkContainsCompletion("call", """
+    module 0x1::M1 {
+        public fun call() {}
+    }
+    module 0x1::M2 {
+        use 0x1::M1::c/*caret*/;
+    }
+    """)
+
+    fun `test fq completion for reference expr`() = checkContainsCompletion("call", """
+    module 0x1::M1 {
+        public fun call() {}
+    }
+    module 0x1::M2 {
+        fun m() {
+            0x1::M1::c/*caret*/;
+        }
+    }
+    """)
 }

@@ -445,9 +445,9 @@ ImportStatement ::= Attr* use (ModuleItemsImport | ModuleImport) ';'
 {
     pin = "use"
 }
-ModuleImport ::= FQModuleRef ImportAlias?
+ModuleImport ::= (AddressRef !'::') | FQModuleRef ImportAlias?
 {
-    name = "qual path to imported item"
+    name = "qual path to module"
     implements = [
         "org.move.lang.core.psi.MvNamedElement"
     ]
@@ -748,11 +748,13 @@ LitExpr ::= HEX_INTEGER_LITERAL
                 | INTEGER_LITERAL
                 | HEX_STRING_LITERAL
                 | BYTE_STRING_LITERAL
-                | PLACEHOLDER_ADDRESS_LITERAL
-                | ADDRESS_LITERAL
-                | BECH32_ADDRESS_LITERAL
-                | POLKADOT_ADDRESS_LITERAL
-                | ('@' NamedAddress)
+//                | PLACEHOLDER_ADDRESS_LITERAL
+//                | ADDRESS_LITERAL
+//                | BECH32_ADDRESS_LITERAL
+//                | POLKADOT_ADDRESS_LITERAL
+//                | ('@' NamedAddress)
+                | AddressLit
+AddressLit ::= '@' AddressRef { pin = 1 }
 
 CallExpr ::= (Path &'(') CallArgumentList { pin = 1 }
 CallArgumentList ::= '(' <<comma_sep_items (Expr &(','|')'))>>? ')' { pin = 1 }
@@ -824,6 +826,7 @@ ModuleRef ::= IDENTIFIER | FQModuleRef
 }
 
 FQModuleRef ::= AddressRef '::' IDENTIFIER
+//FQModuleRef ::= (FQModuleRefUseStart | FQModuleRefStart) IDENTIFIER
 {
     pin = 2
     extends = ModuleRef
@@ -832,9 +835,11 @@ FQModuleRef ::= AddressRef '::' IDENTIFIER
     ]
     mixin = "org.move.lang.core.psi.ext.MvFQModuleRefMixin"
 }
+private FQModuleRefUseStart ::= AddressRef '::' { pin = 2 }
+private FQModuleRefStart ::= AddressRef '::'
 
 AddressRef ::= NamedAddress
-                | PLACEHOLDER_ADDRESS_IDENT
+//                | PLACEHOLDER_ADDRESS_IDENT
                 | BECH32_ADDRESS_IDENT
                 | POLKADOT_ADDRESS_IDENT
                 | ADDRESS_IDENT

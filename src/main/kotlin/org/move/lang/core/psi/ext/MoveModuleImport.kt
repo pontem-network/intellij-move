@@ -11,7 +11,7 @@ abstract class MvModuleImportMixin(node: ASTNode) : MvNamedElementImpl(node),
                                                       MvModuleImport {
     override val nameElement: PsiElement?
         get() =
-            importAlias?.identifier ?: fqModuleRef.identifier
+            importAlias?.identifier ?: fqModuleRef?.identifier
 
     override fun getIcon(flags: Int): Icon = MvIcons.MODULE
 

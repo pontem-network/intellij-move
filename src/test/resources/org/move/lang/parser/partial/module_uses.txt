@@ -2,6 +2,9 @@ FILE
   MvModuleDefImpl(MODULE_DEF)
     PsiElement(module)('module')
     PsiWhiteSpace(' ')
+    MvAddressRefImpl(ADDRESS_REF)
+      PsiElement(ADDRESS_IDENT)('0x1')
+    PsiElement(::)('::')
     PsiElement(IDENTIFIER)('M')
     PsiWhiteSpace(' ')
     MvModuleBlockImpl(MODULE_BLOCK)
@@ -9,15 +12,39 @@ FILE
       PsiWhiteSpace('\n    ')
       MvImportStatementImpl(IMPORT_STATEMENT)
         PsiElement(use)('use')
-        PsiErrorElement:<address ref> expected, got 'use'
+        PsiErrorElement:<address ref> or <qual path to module> expected, got 'use'
           <empty list>
       PsiWhiteSpace('\n    ')
       MvImportStatementImpl(IMPORT_STATEMENT)
         PsiElement(use)('use')
-      PsiWhiteSpace(' ')
-      PsiElement(ADDRESS_IDENT)('0x0')
-      PsiErrorElement:'::' expected, got 'use'
-        <empty list>
+        PsiWhiteSpace(' ')
+        MvModuleImportImpl(MODULE_IMPORT)
+          MvAddressRefImpl(ADDRESS_REF)
+            PsiElement(ADDRESS_IDENT)('0x0')
+        PsiErrorElement:'::' or ';' expected, got 'use'
+          <empty list>
+      PsiWhiteSpace('\n    ')
+      MvImportStatementImpl(IMPORT_STATEMENT)
+        PsiElement(use)('use')
+        PsiWhiteSpace(' ')
+        MvModuleImportImpl(MODULE_IMPORT)
+          MvAddressRefImpl(ADDRESS_REF)
+            MvNamedAddressImpl(NAMED_ADDRESS)
+              PsiElement(IDENTIFIER)('Std')
+        PsiErrorElement:'::' or ';' expected, got 'use'
+          <empty list>
+      PsiWhiteSpace('\n    ')
+      MvImportStatementImpl(IMPORT_STATEMENT)
+        PsiElement(use)('use')
+        PsiWhiteSpace(' ')
+        MvModuleImportImpl(MODULE_IMPORT)
+          MvFQModuleRefImpl(FQ_MODULE_REF)
+            MvAddressRefImpl(ADDRESS_REF)
+              MvNamedAddressImpl(NAMED_ADDRESS)
+                PsiElement(IDENTIFIER)('Std')
+            PsiElement(::)('::')
+            PsiErrorElement:'::' or IDENTIFIER expected, got 'use'
+              <empty list>
       PsiWhiteSpace('\n    ')
       MvImportStatementImpl(IMPORT_STATEMENT)
         PsiElement(use)('use')
