@@ -15,7 +15,8 @@ enum class MvColor(humanName: String, default: TextAttributesKey? = null) {
 
     FUNCTION_DEF("Functions//Function declaration", Default.FUNCTION_DECLARATION),
     FUNCTION_CALL("Functions//Function call", Default.FUNCTION_CALL),
-    BUILTIN_FUNCTION_CALL("Functions//Builtins", Default.IDENTIFIER),
+    BUILTIN_FUNCTION_CALL("Functions//Builtins", Default.FUNCTION_CALL),
+    MACRO("Functions//Macro", Default.IDENTIFIER),
 
     KEYWORD("Keywords//Keyword", Default.KEYWORD),
 

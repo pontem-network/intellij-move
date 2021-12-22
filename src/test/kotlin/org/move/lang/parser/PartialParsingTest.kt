@@ -8,7 +8,7 @@ class PartialParsingTest: MvParsingTestCase("partial") {
     fun `test module const`() = doTest(true)
     fun `test module uses`() = doTest(true)
 
-//    fun `test module spec`() = doTest(true)
+    fun `test spec`() = doTest(true)
 
     // functions
     fun `test function signatures`() = doTest(true)

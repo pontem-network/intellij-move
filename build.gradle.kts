@@ -16,7 +16,7 @@ file(properties).inputStream().let { props.load(it) }
 fun prop(key: String): String = props[key].toString()
 
 //val intellijVersion = prop("intellijVersion", "2021.2")
-val kotlinVersion = "1.6.0"
+val kotlinVersion = "1.6.10"
 
 val pluginJarName = "intellij-move-$propsVersion"
 val pluginVersion = "1.2.0"
@@ -27,7 +27,7 @@ version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.6.0"
+    kotlin("jvm") version "1.6.10"
     id("org.jetbrains.intellij") version "1.3.0"
     id("org.jetbrains.grammarkit") version "2021.2.1"
 }

@@ -45,6 +45,8 @@
                         implementationClass="org.move.ide.MvCommenter"/>
         <lang.braceMatcher language="Move"
                            implementationClass="org.move.ide.typing.MvBraceMatcher"/>
+        <lang.quoteHandler language="Move"
+                           implementationClass="org.move.ide.typing.MvQuoteHandler" />
         <typedHandler implementation="org.move.ide.typing.MvAngleBraceTypedHandler"
                       id="MvAngleBracketsHandler"/>
         <enterHandlerDelegate implementation="org.move.ide.typing.MvEnterInLineCommentHandler"

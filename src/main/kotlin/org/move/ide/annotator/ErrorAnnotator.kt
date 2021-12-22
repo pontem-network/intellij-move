@@ -52,13 +52,9 @@ class ErrorAnnotator : MvAnnotator() {
                 }
             }
 
-            override fun visitFunction(o: MvFunction) {
-                checkFunction(moveHolder, o)
-            }
+            override fun visitFunction(o: MvFunction) = checkFunction(moveHolder, o)
 
-            override fun visitStruct_(o: MvStruct_) {
-                checkStruct(moveHolder, o)
-            }
+            override fun visitStruct_(o: MvStruct_) = checkStruct(moveHolder, o)
 
             override fun visitModuleDef(o: MvModuleDef) = checkModuleDef(moveHolder, o)
 
@@ -117,6 +113,8 @@ class ErrorAnnotator : MvAnnotator() {
                 }
             }
 
+            override fun visitPath(o: MvPath) = checkPath(moveHolder, o)
+
             override fun visitCallArgumentList(o: MvCallArgumentList) = checkCallArgumentList(moveHolder, o)
 
             override fun visitStructPat(o: MvStructPat) {
@@ -130,39 +128,31 @@ class ErrorAnnotator : MvAnnotator() {
 
             override fun visitStructLitExpr(o: MvStructLitExpr) {
                 val nameElement = o.path.referenceNameElement ?: return
-                val refStruct = o.path.maybeStruct ?: return
+                val struct = o.path.maybeStruct ?: return
                 checkMissingFields(
-                    moveHolder, nameElement, o.providedFieldNames.toSet(), refStruct
+                    moveHolder, nameElement, o.fieldNames.toSet(), struct
                 )
 
                 val ctx = InferenceContext()
-                for (field in o.structLitFieldsBlock.structLitFieldList) {
-                    val assignmentExpr = field.structLitFieldAssignment?.expr ?: continue
-                    val assignmentType = assignmentExpr.inferExprTy(ctx)
-                    if (assignmentType is TyUnknown) continue
+                for (field in o.fields) {
+                    val initExprTy = field.inferInitExprTy(ctx)
 
                     val fieldName = field.referenceName
-                    val fieldDef = refStruct.getField(fieldName) ?: continue
+                    val fieldDef = struct.getField(fieldName) ?: continue
                     val expectedFieldTy = fieldDef.declaredTy
-                    val exprTy = assignmentExpr.inferExprTy(ctx)
 
-                    if (!isCompatible(expectedFieldTy, exprTy)) {
-                        val exprTypeName = exprTy.typeLabel(relativeTo = o)
+                    if (!isCompatible(expectedFieldTy, initExprTy)) {
+                        val exprTypeName = initExprTy.typeLabel(relativeTo = o)
                         val expectedTypeName = expectedFieldTy.typeLabel(relativeTo = o)
 
                         val message =
                             "Invalid argument for field '$fieldName': " +
                                     "type '$exprTypeName' is not compatible with '$expectedTypeName'"
-                        moveHolder.createErrorAnnotation(assignmentExpr, message)
+                        val initExpr = field.fieldInit?.expr ?: field
+                        moveHolder.createErrorAnnotation(initExpr, message)
                     }
                 }
             }
-
-            override fun visitPath(o: MvPath) = checkPath(moveHolder, o)
-//            override fun visitPathWithTypeArgs(o: MvPathWithTypeArgs) {
-//                checkPath(moveHolder, o)
-//            }
-//            override fun visitQualPath(o: MvPathOptTypeArguments) = checkQualPath(moveHolder, o)
         }
         element.accept(visitor)
     }

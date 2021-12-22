@@ -4,9 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.FileTree
-import org.move.utils.tests.MvProjectTestCase
-import org.move.utils.tests.replaceCaretMarker
+import org.move.utils.tests.*
 
 class CompletionTestProjectFixture(
     val codeInsightFixture: CodeInsightTestFixture
@@ -50,6 +48,17 @@ abstract class CompletionProjectTestCase : MvProjectTestCase() {
         @Language("Move") code: String, expected: List<String>
     ) {
         val testProject = testProjectFromFileTree(code.trimIndent())
+        checkContainsCompletionsExact(testProject, expected)
+    }
+
+    protected fun checkContainsCompletionsExact(
+        builder: FileTreeBuilder.() -> Unit, expected: List<String>
+    ) {
+        val testProject = testProjectFromFileTree(builder)
+        checkContainsCompletionsExact(testProject, expected)
+    }
+
+    private fun checkContainsCompletionsExact(testProject: TestProject, expected: List<String>) {
         completionFixture.codeInsightFixture.configureFromFileWithCaret(testProject)
 
         val lookups =

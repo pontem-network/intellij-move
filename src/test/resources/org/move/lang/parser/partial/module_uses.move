@@ -1,6 +1,8 @@
-module M {
+module 0x1::M {
     use
     use 0x0
+    use Std
+    use Std::
     use 0x0::
     use 0x0::Transaction
     use 0x0::Transaction::

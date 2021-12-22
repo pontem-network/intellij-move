@@ -9,8 +9,8 @@ import org.move.lang.core.psi.MvVisitor
 class FieldInitShorthandInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitStructLitField(o: MvStructLitField) {
-            val assignment = o.structLitFieldAssignment?.expr ?: return
-            if (!(assignment is MvRefExpr && assignment.text == o.identifier.text)) return
+            val initExpr = o.fieldInit?.expr ?: return
+            if (!(initExpr is MvRefExpr && initExpr.text == o.identifier.text)) return
             holder.registerProblem(
                 o,
                 "Expression can be simplified",
@@ -28,7 +28,7 @@ class FieldInitShorthandInspection : MvLocalInspectionTool() {
 
     companion object {
         fun applyShorthandInit(field: MvStructLitField) {
-            field.structLitFieldAssignment?.delete()
+            field.fieldInit?.delete()
         }
     }
 }

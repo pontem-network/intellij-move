@@ -19,5 +19,7 @@ module M {
 
         invariant exists x in 1..10, y in 8..12 : x == y;
         invariant exists x in 1..10, y in 8..12 : x == y;
+
+        ensures result ==> (forall j in 0..100: true);
     }
 }

@@ -8,7 +8,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
     if (ctx.exprTypes.containsKey(expr)) return ctx.exprTypes[expr]!!
 
     val exprTy = when (expr) {
-        is MvRefExpr -> inferRefExprTy(expr, ctx)
+        is MvRefExpr -> inferRefExprTy(expr)
         is MvBorrowExpr -> inferBorrowExprTy(expr, ctx)
         is MvCallExpr -> inferCallExprTy(expr, ctx)
         is MvDotExpr -> inferDotExprTy(expr, ctx)
@@ -43,7 +43,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
     return exprTy
 }
 
-private fun inferRefExprTy(refExpr: MvRefExpr, ctx: InferenceContext): Ty {
+private fun inferRefExprTy(refExpr: MvRefExpr): Ty {
     val binding =
         refExpr.path.reference?.resolve() as? MvBindingPat ?: return TyUnknown
     return binding.inferBindingPatTy()
@@ -118,14 +118,14 @@ private fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext):
             inference.registerConstraint(Constraint.Equate(tyVar, typeArg.type.inferTypeTy()))
         }
     }
-    for (field in litExpr.providedFields) {
+    for (field in litExpr.fields) {
         val fieldName = field.referenceName
         val declaredFieldTy = structItem
             .fieldsMap[fieldName]
             ?.declaredTy
             ?.foldTyTypeParameterWith { param -> structTypeVars.find { it.origin?.parameter == param.parameter }!! }
             ?: TyUnknown
-        val fieldExprTy = field.inferAssignedExprTy(ctx)
+        val fieldExprTy = field.inferInitExprTy(ctx)
         inference.registerConstraint(Constraint.Equate(declaredFieldTy, fieldExprTy))
     }
     // solve constraints, return TyUnknown if cannot
@@ -156,9 +156,10 @@ private fun inferDerefExprTy(derefExpr: MvDerefExpr, ctx: InferenceContext): Ty 
 private fun inferLitExprTy(litExpr: MvLitExpr): Ty {
     return when {
         litExpr.boolLiteral != null -> TyBool
-        litExpr.addressLiteral != null
-                || litExpr.bech32AddressLiteral != null
-                || litExpr.polkadotAddressLiteral != null -> TyAddress
+        litExpr.addressLit != null
+//                || litExpr.bech32AddressLiteral != null
+//                || litExpr.polkadotAddressLiteral != null
+        -> TyAddress
         litExpr.integerLiteral != null || litExpr.hexIntegerLiteral != null -> {
             val literal = (litExpr.integerLiteral ?: litExpr.hexIntegerLiteral)!!
             return TyInteger.fromSuffixedLiteral(literal) ?: TyInteger(TyInteger.DEFAULT_KIND)

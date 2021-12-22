@@ -10,8 +10,10 @@ import org.move.lang.core.psi.ext.elementType
 class CommonCompletionContributor : CompletionContributor() {
     init {
         extend(CompletionType.BASIC, PrimitiveTypesCompletionProvider)
+        extend(CompletionType.BASIC, AddressesCompletionProvider)
         extend(CompletionType.BASIC, NamesCompletionProvider)
         extend(CompletionType.BASIC, TypesCompletionProvider)
+        extend(CompletionType.BASIC, ImportsCompletionProvider)
         extend(CompletionType.BASIC, ModulesCompletionProvider)
         extend(CompletionType.BASIC, QualModulesCompletionProvider)
         extend(CompletionType.BASIC, StructFieldsCompletionProvider)

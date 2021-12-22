@@ -49,4 +49,14 @@ class StructLitArgumentTypesTest: AnnotatorTestCase(ErrorAnnotator::class) {
         }
     }    
     """)
+
+    fun `test type error in struct literal field shorthand`() = checkErrors("""
+    module 0x1::M {
+        struct S { a: u8 }
+        fun m() {
+            let a = true;
+            S { <error descr="Invalid argument for field 'a': type 'bool' is not compatible with 'u8'">a</error> };
+        }
+    }    
+    """)
 }

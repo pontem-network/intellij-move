@@ -53,14 +53,25 @@ fun MvModuleDef.allFunctions() = moduleBlock?.functionList.orEmpty()
 
 fun MvModuleDef.builtinFunctions(): List<MvFunction> {
     return listOf(
-        createBuiltinFunction("native fun move_from<R: key>(addr: address): R;", project),
-        createBuiltinFunction("native fun move_to<R: key>(acc: &signer, res: R);", project),
+        createBuiltinFunction("""
+            /// Removes `T` from address and returns it. 
+            /// Aborts if address does not hold a `T`.
+            native fun move_from<T: key>(addr: address): T;
+            """, project),
+        createBuiltinFunction("""
+            /// Publishes `T` under `signer.address`. 
+            /// Aborts if `signer.address` already holds a `T`.
+            native fun move_to<T: key>(acc: &signer, res: T);
+            """, project),
         createBuiltinFunction("native fun borrow_global<R: key>(addr: address): &R;", project),
         createBuiltinFunction(
             "native fun borrow_global_mut<R: key>(addr: address): &mut R;",
             project
         ),
-        createBuiltinFunction("native fun exists<R: key>(addr: address): bool;", project),
+        createBuiltinFunction("""
+            /// Returns `true` if a `T` is stored under address
+            native fun exists<T: key>(addr: address): bool;
+            """, project),
         createBuiltinFunction("native fun freeze<S>(mut_ref: &mut S): &S;", project),
         createBuiltinFunction("native fun assert(_: bool, err: u64);", project),
     )
@@ -85,7 +96,8 @@ fun MvModuleDef.functions(visibility: Visibility): List<MvFunction> =
     }
 
 fun createBuiltinFunction(text: String, project: Project): MvFunction {
-    val function = project.psiFactory.createFunction(text, moduleName = "builtin_functions")
+    val trimmedText = text.trimIndent()
+    val function = project.psiFactory.createFunction(trimmedText, moduleName = "builtin_functions")
     (function as MvFunctionMixin).builtIn = true
     return function
 }

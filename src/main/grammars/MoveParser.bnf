@@ -445,9 +445,9 @@ ImportStatement ::= Attr* use (ModuleItemsImport | ModuleImport) ';'
 {
     pin = "use"
 }
-ModuleImport ::= FQModuleRef ImportAlias?
+ModuleImport ::= (AddressRef !'::') | FQModuleRef ImportAlias?
 {
-    name = "qual path to imported item"
+    name = "qual path to module"
     implements = [
         "org.move.lang.core.psi.MvNamedElement"
     ]
@@ -593,7 +593,7 @@ StructPatFieldBinding ::= ':' Pat { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Statements
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Statement ::= LetStatement | MacroCallStatement | ExprStatement
+Statement ::= LetStatement | ExprStatement
 
 LetStatement ::= let Pat TypeAnnotation? Initializer? ';' { pin = 1 }
 
@@ -662,7 +662,7 @@ private AtomExpr ::=
                     | StructLitExpr
                     | DotExpr
                     | IndexExpr
-                    | CallExpr
+                    | (CallExpr | MacroCallExpr)
                     | RefExpr
                     | LambdaExpr
                     | LitExpr
@@ -697,7 +697,7 @@ ModExpr ::= Expr '%' Expr
 LeftShiftExpr ::= Expr ltlt Expr
 RightShiftExpr ::= Expr gtgt Expr
 
-private ImplyOperatorsExprItem ::= ImplyOperatorExpr | PartialImplyOperatorExpr
+private ImplyOperatorsExprItem ::= ImplyOperatorExpr | PartialImplyOperatorExpr | AggregateExpr
 ImplyOperatorExpr ::= Expr eqeq_gt Expr
 PartialImplyOperatorExpr ::= Expr lt_eqeq_gt Expr
 
@@ -722,7 +722,7 @@ private StructLitField_with_recover ::= !'}' StructLitField (',' | &'}')
 }
 private StructLitField_recover ::= !('}' | IDENTIFIER)
 
-StructLitField ::= IDENTIFIER StructLitFieldAssignment?
+StructLitField ::= IDENTIFIER FieldInit?
 {
     pin = 1
     implements = [
@@ -731,7 +731,7 @@ StructLitField ::= IDENTIFIER StructLitFieldAssignment?
     mixin = "org.move.lang.core.psi.ext.MvStructLitFieldMixin"
 }
 
-StructLitFieldAssignment ::= ':' Expr { pin = 1 }
+FieldInit ::= ':' Expr { pin = 1 }
 
 ParensExpr ::= '(' Expr ')'
 
@@ -748,11 +748,13 @@ LitExpr ::= HEX_INTEGER_LITERAL
                 | INTEGER_LITERAL
                 | HEX_STRING_LITERAL
                 | BYTE_STRING_LITERAL
-                | PLACEHOLDER_ADDRESS_LITERAL
-                | ADDRESS_LITERAL
-                | BECH32_ADDRESS_LITERAL
-                | POLKADOT_ADDRESS_LITERAL
-                | ('@' NamedAddress)
+//                | PLACEHOLDER_ADDRESS_LITERAL
+//                | ADDRESS_LITERAL
+//                | BECH32_ADDRESS_LITERAL
+//                | POLKADOT_ADDRESS_LITERAL
+//                | ('@' NamedAddress)
+                | AddressLit
+AddressLit ::= '@' AddressRef { pin = 1 }
 
 CallExpr ::= (Path &'(') CallArgumentList { pin = 1 }
 CallArgumentList ::= '(' <<comma_sep_items (Expr &(','|')'))>>? ')' { pin = 1 }
@@ -824,6 +826,7 @@ ModuleRef ::= IDENTIFIER | FQModuleRef
 }
 
 FQModuleRef ::= AddressRef '::' IDENTIFIER
+//FQModuleRef ::= (FQModuleRefUseStart | FQModuleRefStart) IDENTIFIER
 {
     pin = 2
     extends = ModuleRef
@@ -832,9 +835,11 @@ FQModuleRef ::= AddressRef '::' IDENTIFIER
     ]
     mixin = "org.move.lang.core.psi.ext.MvFQModuleRefMixin"
 }
+private FQModuleRefUseStart ::= AddressRef '::' { pin = 2 }
+private FQModuleRefStart ::= AddressRef '::'
 
 AddressRef ::= NamedAddress
-                | PLACEHOLDER_ADDRESS_IDENT
+//                | PLACEHOLDER_ADDRESS_IDENT
                 | BECH32_ADDRESS_IDENT
                 | POLKADOT_ADDRESS_IDENT
                 | ADDRESS_IDENT
@@ -845,7 +850,8 @@ NamedAddress ::= IDENTIFIER
 }
 
 /// Macros
-MacroCallStatement ::= IDENTIFIER '!' CallArgumentList ';' { pin = 2 }
+MacroCallExpr ::= MacroIdent CallArgumentList { pin = 1 }
+MacroIdent ::= IDENTIFIER '!'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Specs
@@ -876,6 +882,10 @@ private to ::= <<toKeyword>>
 private apply ::= <<applyKeyword>>
 private except ::= <<exceptKeyword>>
 
+private SpecItem_first ::= assert | assume | modifies | requires | ensures | aborts_if | include | choose | axiom
+                         | invariant | pragma | local | global | emits
+private SpecItem_recover ::= !('}' | <<eof>> | SpecItem_first)
+
 SpecDef ::= NameSpecDef | ModuleSpecDef | SchemaSpecDef
 
 NameSpecDef ::= (spec IDENTIFIER) SpecBlock
@@ -905,6 +915,13 @@ SpecBlock ::= '{'
     pin = 1
 }
 
+private SpecItem ::= !('}' | <<eof>>) SpecStatement
+{
+//    pin = 1
+//    recoverWhile = SpecItem_recover
+}
+
+//private SpecItemExpr ::= SpecBlockFinishingExpr
 private SpecBlockStatement_with_recover ::= !('}' | <<eof>>) SpecStatement
 private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinishingExpr
 
@@ -916,22 +933,31 @@ SpecStatement ::= ImportStatement
                                | NativeFunctionDefSpecStatement
                                | UninterpretedFunctionDefSpecStatement
                                | PragmaSpecStatement
-                               | AssumeSpecStatement
-                               | AssertSpecStatement
-                               | AbortsIfSpecStatement
-                               | RequiresSpecStatement
-                               | EnsuresSpecStatement
-                               | ModifiesSpecStatement
+//                               | AssumeSpecStatement
+//                               | AssertSpecStatement
+//                               | AbortsIfSpecStatement
+//                               | RequiresSpecStatement
+//                               | EnsuresSpecStatement
+//                               | ModifiesSpecStatement
                                | IncludeSpecStatement
-                               | InvariantSpecStatement
-                               | AxiomSpecStatement
+//                               | InvariantSpecStatement
+//                               | AxiomSpecStatement
                                | ApplySpecStatement
                                | EmitsSpecStatement
-                               | AggregatePredicateSpecStatement
-                               | SpecBlockSpecStatement
+//                               | AggregatePredicateSpecStatement
+//                               | SpecBlockSpecStatement
                                | LetSpecStatement
                                | ChooseSpecStatement
+                               | ExprSpecStatement
                                | Statement
+//{
+//    recoverWhile = SpecStatement_recover
+//}
+//private SpecStatement_recover ::= !'}'
+
+ExprSpecStatement ::= (ExprSpecStatement_items !('}')) ';' { pin = 1 }
+private ExprSpecStatement_items ::= SpecExpr | AggregateExpr | Expr
+
 private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
 
 VariableSpecStatement ::= IDENTIFIER TypeAnnotation ';' { pin = 2 }
@@ -965,6 +991,8 @@ RequiresSpecStatement ::= RequiresSpecExpr ';'
 RequiresSpecExpr ::= requires module? Predicate { pin = 1 }
 
 EnsuresSpecStatement ::= EnsuresSpecExpr ';'
+//private EnsuresSpecExpr_body ::= EnsuresSpecExpr
+
 EnsuresSpecExpr ::= ensures Predicate { pin = 1 }
 
 ModifiesSpecStatement ::= ModifiesSpecExpr ';'
@@ -1015,6 +1043,7 @@ ApplySchemaName ::= Path
 ApplySchemaNameAttribute ::= IDENTIFIER ':' Expr
 
 Predicate ::= SpecVisibility? (AggregateExpr | Expr)
+//private Predicate_recover ::= !('}' | <<eof>> | SpecItem_first)
 
 AggregatePredicateSpecStatement ::= AggregateExpr ';'
 AggregateExpr ::= QuantifierExpr (':' Expr)?

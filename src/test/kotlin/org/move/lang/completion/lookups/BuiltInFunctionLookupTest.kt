@@ -12,12 +12,12 @@ class BuiltInFunctionLookupTest : MvTestBase() {
     fun `test move_from`() = checkBuiltinPresentation(
         "move_from",
         tailText = "(addr: address)",
-        typeText = "R"
+        typeText = "T"
     )
 
     fun `test move_to`() = checkBuiltinPresentation(
         "move_to",
-        tailText = "(acc: &signer, res: R)",
+        tailText = "(acc: &signer, res: T)",
         typeText = "()"
     )
 

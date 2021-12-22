@@ -1,18 +1,13 @@
 address named = 0x1;
-address named = {{alice}};
 
 /* my module */
-module M {
+module 0x1::M {
     fun main() {
         @0x0;
         @0x0000;
         @0x00001111;
         @wallet1pxqfjvnu0utauj8fctw2s7j4mfyvrsjd59c2u8;
         @5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty;
-        @{{sender}};
-        @{{default}};
-        @{{alice}};
-        @{{bob}};
         @Std;
         @DiemFramework;
     }
@@ -30,17 +25,11 @@ address 5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty {
 module M {}
 }
 
-address {{sender}} {
-module M {
-
-}
-}
-
 address DiemFramework {
-module M {
+module M1 {
 
 }
 }
 
-module 0x111::M {}
-module DiemFramework::M {}
+module 0x111::M2 {}
+module DiemFramework::M2 {}

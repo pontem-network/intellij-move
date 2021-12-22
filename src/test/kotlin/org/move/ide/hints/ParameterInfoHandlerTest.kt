@@ -41,6 +41,15 @@ class ParameterInfoHandlerTest
         }
     """, "arg: u8, s: &signer, v: vector<u8>", 0)
 
+    fun `test fun many args vector u8`() = checkByText("""
+        module 0x1::M {
+            fun call(a: u8, b: vector<u8>, c: vector<u8>) {}
+            fun m() {
+                call(1, b"11", b"22"/*caret*/);
+            }
+        }    
+    """, "a: u8, b: vector<u8>, c: vector<u8>", 2)
+
     fun `test fun poorly formatted args`() = checkByText("""
         module M {
             fun foo(arg:          u8,     s:    &signer,    v   : vector<u8>) {}

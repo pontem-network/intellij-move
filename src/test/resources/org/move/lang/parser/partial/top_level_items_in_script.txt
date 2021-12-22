@@ -38,7 +38,7 @@ FILE
       PsiWhiteSpace('\n    ')
       MvImportStatementImpl(IMPORT_STATEMENT)
         PsiElement(use)('use')
-        PsiErrorElement:<address ref> expected, got 'fun'
+        PsiErrorElement:<address ref> or <qual path to module> expected, got 'fun'
           <empty list>
       PsiWhiteSpace('\n    ')
       MvFunctionImpl(FUNCTION)

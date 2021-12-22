@@ -5,7 +5,7 @@ import org.move.utils.tests.MvDocumentationProviderTestCase
 
 class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
     fun `test show docs for move_from`() = doTest("""
-    module M {
+    module 0x1::M {
         fun m() {
             move_from();
           //^  
@@ -13,8 +13,9 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
     }
     """, expected = """
         <div class='definition'><pre>builtin_functions
-        native fun <b>move_from</b>&lt;R: key&gt;(addr: address): R</pre></div>
-        <div class='content'></div>
+        native fun <b>move_from</b>&lt;T: key&gt;(addr: address): T</pre></div>
+        <div class='content'><p>Removes `T` from address and returns it. </p>
+        <p>Aborts if address does not hold a `T`.</p></div>
         """)
 
     fun `test show doc comment for module`() = doTest("""
