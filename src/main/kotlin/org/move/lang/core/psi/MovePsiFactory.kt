@@ -32,6 +32,11 @@ class MvPsiFactory(private val project: Project) {
             ?: error("Failed to create a method member from text: `$text`")
     }
 
+    fun createPathIdent(text: String): MvPathIdent {
+        return createFromText("module _IntellijPreludeDummy { fun main() { $text(); } } ")
+            ?: error("`$text`")
+    }
+
     fun createFunction(text: String, moduleName: String = "_Dummy"): MvFunction =
         createFromText("module $moduleName { $text } ")
             ?: error("Failed to create a function from text: `$text`")

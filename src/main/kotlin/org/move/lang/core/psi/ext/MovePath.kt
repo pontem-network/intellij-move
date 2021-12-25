@@ -4,6 +4,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
 import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
+import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvPathReference
 import org.move.lang.core.resolve.ref.MvPathReferenceImpl
@@ -18,6 +19,8 @@ fun MvPath.isPrimitiveType(): Boolean =
             && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS.union(BUILTIN_TYPE_IDENTIFIERS)
 
 val MvPath.identifierName: String? get() = identifier?.text
+
+val MvPathIdent.colonColon get() = this.findFirstChildByType(MvElementTypes.COLON_COLON)
 
 val MvPathIdent.isIdentifierOnly: Boolean
     get() =

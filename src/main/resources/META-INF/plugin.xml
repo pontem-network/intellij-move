@@ -143,6 +143,10 @@
                          displayName="Local variable naming convention"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.move.ide.inspections.lints.MvLocalBindingNamingInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Redundant qualifier"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.RedundantQualifiedPathInspection"/>
 
 
         <!-- Color Settings -->
