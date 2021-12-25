@@ -11,8 +11,12 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
         is MvRefExpr -> inferRefExprTy(expr)
         is MvBorrowExpr -> inferBorrowExprTy(expr, ctx)
         is MvCallExpr -> {
-            val funcTy = inferCallExprTy(expr, ctx)
-            (funcTy as? TyFunction)?.retType ?: TyUnknown
+            val funcTy = inferCallExprTy(expr, ctx) as? TyFunction
+            if (funcTy == null || !funcTy.solvable) {
+                TyUnknown
+            } else {
+                funcTy.retType
+            }
         }
         is MvDotExpr -> inferDotExprTy(expr, ctx)
         is MvStructLitExpr -> inferStructLitExpr(expr, ctx)
@@ -80,11 +84,13 @@ fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
             inference.registerConstraint(Constraint.Equate(paramTy, argumentTy))
         }
     }
-    // solve constraints, return TyUnknown if cannot
-    if (!inference.processConstraints()) return TyUnknown
+    // solve constraints
+    val solvable = inference.processConstraints()
 
     // see whether every arg is coerceable with those vars having those values
-    return inference.resolveTy(funcTy)
+    val resolvedFuncTy = inference.resolveTy(funcTy) as TyFunction
+    resolvedFuncTy.solvable = solvable
+    return resolvedFuncTy
 }
 
 private fun inferDotExprTy(dotExpr: MvDotExpr, ctx: InferenceContext): Ty {
@@ -158,10 +164,7 @@ private fun inferDerefExprTy(derefExpr: MvDerefExpr, ctx: InferenceContext): Ty 
 private fun inferLitExprTy(litExpr: MvLitExpr): Ty {
     return when {
         litExpr.boolLiteral != null -> TyBool
-        litExpr.addressLit != null
-//                || litExpr.bech32AddressLiteral != null
-//                || litExpr.polkadotAddressLiteral != null
-        -> TyAddress
+        litExpr.addressLit != null -> TyAddress
         litExpr.integerLiteral != null || litExpr.hexIntegerLiteral != null -> {
             val literal = (litExpr.integerLiteral ?: litExpr.hexIntegerLiteral)!!
             return TyInteger.fromSuffixedLiteral(literal) ?: TyInteger(TyInteger.DEFAULT_KIND)

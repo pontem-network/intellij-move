@@ -106,9 +106,9 @@ class TypeSubstitutionTest: TypificationTestCase() {
         
         fun m() {
             let s = S { id: Option { element: 1u64 } };
-            let b = borrow(&s.id);
+            let b = *borrow(&s.id);
             b;
-          //^ &u64 
+          //^ u64  
         }
     }    
     """)
@@ -121,6 +121,30 @@ class TypeSubstitutionTest: TypificationTestCase() {
         public fun new<Content: store>(owner: &signer,  content: Content) {
             Vault { content };
           //^ 0x1::M::Vault<Content>  
+        }
+    }    
+    """)
+
+    fun `test unknown type if cannot solve constraints for function`() = testExpr("""
+    module 0x1::M {
+        struct C {}
+        struct D {}
+        fun new<Content>(a: Content, b: Content): Content {}
+        fun m() {
+            let a = new(C{}, D{});
+            a;
+          //^ <unknown>  
+        }
+    }    
+    """)
+
+    fun `test unknown type if cannot solve constraints for struct literal`() = testExpr("""
+    module 0x1::M {
+        struct S<Num> { a: Num, b: Num }
+        fun m() {
+            let s = S { a: true, b: 1u64 };
+            s;
+          //^ <unknown>  
         }
     }    
     """)

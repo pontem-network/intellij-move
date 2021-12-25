@@ -9,8 +9,10 @@ class TyFunction(
     val typeVars: List<TyInfer.TyVar>,
     val paramTypes: List<Ty>,
     val retType: Ty,
-    val acquiresTypes: List<Ty>
+    val acquiresTypes: List<Ty>,
 ) : Ty {
+    var solvable: Boolean = true
+
     override fun innerFoldWith(folder: TypeFolder): Ty {
         return TyFunction(
             item,
