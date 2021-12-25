@@ -56,16 +56,16 @@ fun MvModuleDef.builtinFunctions(): List<MvFunction> {
         createBuiltinFunction("""
             /// Removes `T` from address and returns it. 
             /// Aborts if address does not hold a `T`.
-            native fun move_from<T: key>(addr: address): T;
+            native fun move_from<T: key>(addr: address): T acquires T;
             """, project),
         createBuiltinFunction("""
             /// Publishes `T` under `signer.address`. 
             /// Aborts if `signer.address` already holds a `T`.
             native fun move_to<T: key>(acc: &signer, res: T);
             """, project),
-        createBuiltinFunction("native fun borrow_global<R: key>(addr: address): &R;", project),
+        createBuiltinFunction("native fun borrow_global<T: key>(addr: address): &T acquires T;", project),
         createBuiltinFunction(
-            "native fun borrow_global_mut<R: key>(addr: address): &mut R;",
+            "native fun borrow_global_mut<T: key>(addr: address): &mut T acquires T;",
             project
         ),
         createBuiltinFunction("""

@@ -282,4 +282,18 @@ address 0x1 {
         }
     }    
     """)
+
+    fun `test error if resolved type requires a reference`() = checkErrors(
+        """
+    module 0x1::M {
+        fun index_of<Element>(v: &vector<Element>, e: &Element): (bool, u64) {
+            (false, 0)
+        }
+        fun m() {
+            let ids: vector<u64>;
+            index_of(&ids, <error descr="Invalid argument for parameter 'e': type 'u64' is not compatible with '&u64'">1u64</error>);
+        }
+    }    
+    """
+    )
 }

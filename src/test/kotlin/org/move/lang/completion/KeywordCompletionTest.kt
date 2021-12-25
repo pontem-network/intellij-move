@@ -47,14 +47,14 @@ class KeywordCompletionTest : CompletionTestCase() {
     )
 
     fun `test top level module declarations`() = completionFixture.checkContainsCompletion(
-        """module M { /*caret*/ }""",
+        """module 0x1::M { /*caret*/ }""",
         listOf("resource", "struct", "public", "fun", "const", "use", "friend", "native", "spec")
     )
 
     fun `test space after declaration`() = doSingleCompletion("""
-            module M { fu/*caret*/ }
+            module 0x1::M { fu/*caret*/ }
         """, """
-            module M { fun /*caret*/ }
+            module 0x1::M { fun /*caret*/ }
         """)
 
     fun `test no completion in address literal`() = checkNoCompletion(
@@ -90,169 +90,176 @@ class KeywordCompletionTest : CompletionTestCase() {
         """)
 
     fun `test spec`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             sp/*caret*/
         }
     """, """
-        module M {
+        module 0x1::M {
             spec /*caret*/
         }
     """)
 
 //    fun `test spec fun`() = doSingleCompletion("""
-//        module M {
+//        module 0x1::M {
 //            spec f/*caret*/
 //        }
 //    """, """
-//        module M {
+//        module 0x1::M {
 //            spec fun /*caret*/
 //        }
 //    """)
 
 //    fun `test spec module`() = doSingleCompletion("""
-//        module M {
+//        module 0x1::M {
 //            spec mod/*caret*/
 //        }
 //    """, """
-//        module M {
+//        module 0x1::M {
 //            spec module /*caret*/
 //        }
 //    """)
 
 //    fun `test spec schema`() = doSingleCompletion("""
-//        module M {
+//        module 0x1::M {
 //            spec sch/*caret*/
 //        }
 //    """, """
-//        module M {
+//        module 0x1::M {
 //            spec schema /*caret*/
 //        }
 //    """)
 
     fun `test public`() = completionFixture.checkContainsCompletion("""
-        module M {
+        module 0x1::M {
             pub/*caret*/
         }
     """, listOf("public", "public(script)", "public(friend)"))
 
     fun `test public with other function`() = checkContainsCompletion("public","""
-        module M {
+        module 0x1::M {
             pub/*caret*/
             
             public fun main() {}
         }
     """)
 
+    fun `test public after function`() = checkContainsCompletion("public","""
+        module 0x1::M { 
+            public fun main() {}
+            pub/*caret*/
+        }
+    """)
+
     fun `test public before fun`() = checkContainsCompletion("public", """
-        module M {
+        module 0x1::M {
             pub/*caret*/ fun main() {}
         }
     """)
 
     fun `test native before fun`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             nat/*caret*/ fun main() {}
         }
     """, """
-        module M {
+        module 0x1::M {
             native/*caret*/ fun main() {}
         }
     """)
 
     fun `test native fun to public`() = checkContainsCompletion("public","""
-        module M {
+        module 0x1::M {
             native pub/*caret*/ fun main();
         }
     """)
 
     fun `test public fun`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             public f/*caret*/
         }
     """, """
-        module M {
+        module 0x1::M {
             public fun /*caret*/
         }
     """)
 
     fun `test public(script) fun`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             public(script) f/*caret*/
         }
     """, """
-        module M {
+        module 0x1::M {
             public(script) fun /*caret*/
         }
     """)
 
     fun `test native fun`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             native fu/*caret*/
         }
     """, """
-        module M {
+        module 0x1::M {
             native fun /*caret*/
         }
     """)
 
     fun `test native public fun`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             native public f/*caret*/
         }
     """, """
-        module M {
+        module 0x1::M {
             native public fun /*caret*/
         }
     """)
 
     fun `test resource`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             reso/*caret*/
         }
     """, """
-        module M {
+        module 0x1::M {
             resource /*caret*/
         }
     """)
 
     fun `test resource struct`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             resource st/*caret*/
         }
     """, """
-        module M {
+        module 0x1::M {
             resource struct /*caret*/
         }
     """)
 
     fun `test no completion in bound if no colon`() = checkNoCompletion("""
-        module M {
+        module 0x1::M {
             struct MyStruct<T cop/*caret*/> {}
         }
     """)
 
     fun `test copy bound`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             struct MyStruct<T: cop/*caret*/> {}
         }
     """, """
-        module M {
+        module 0x1::M {
             struct MyStruct<T: copy/*caret*/> {}
         }
     """)
 
     fun `test store bound`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             struct MyStruct<T: st/*caret*/> {}
         }
     """, """
-        module M {
+        module 0x1::M {
             struct MyStruct<T: store/*caret*/> {}
         }
     """)
 
     fun `test resource bound`() = checkNoCompletion("""
-        module M {
+        module 0x1::M {
             struct MyStruct<T: res/*caret*/> {}
         }
     """)
@@ -263,76 +270,86 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """, """
         module 0x1::M {
-            fun main() acquires /*caret*/{}
+            fun main() acquires /*caret*/ {}
         }
     """)
 //
     fun `test acquires after return type`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             fun main(): u8 acq/*caret*/ {}
         }
     """, """
-        module M {
+        module 0x1::M {
             fun main(): u8 acquires /*caret*/ {}
         }
     """)
 
+    fun `test acquires after reference return type`() = doSingleCompletion("""
+        module 0x1::M {
+            fun main(): &u8 acq/*caret*/ {}
+        }
+    """, """
+        module 0x1::M {
+            fun main(): &u8 acquires /*caret*/ {}
+        }
+    """)
+
     fun `test no acquires after colon`() = checkNoCompletion("""
-        module M {
+        module 0x1::M {
             fun call(): acq/*caret*/ {}
         }
     """)
 
     fun `test no acquires after fun keyword`() = checkNoCompletion("""
-        module M {
+        module 0x1::M {
             fun acq/*caret*/ {}
         }
     """)
 
     fun `test no acquires inside param list`() = checkNoCompletion("""
-        module M {
+        module 0x1::M {
             fun main(acq/*caret*/ {}
         }
     """)
 
     fun `test no acquires inside return type`() = checkNoCompletion("""
-        module M {
+        module 0x1::M {
             fun main(): acq/*caret*/ {}
         }
     """)
 
     fun `test native struct`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             native stru/*caret*/
         }
     """, """
-        module M {
+        module 0x1::M {
             native struct /*caret*/
         }
     """)
 
     fun `test visibility modifiers`() = completionFixture.checkContainsCompletion("""
-       module M {
+       module 0x1::M {
         pub/*caret*/ fun main() {}
        }    
     """, listOf("public", "public(script)", "public(friend)"))
 
 //    fun `test public(script) without leading fun adds fun`() = doSingleCompletion("""
-//    module M {
+//    module 0x1::M {
 //        public(scr/*caret*/
 //    }
 //    """, """
-//    module M {
+//    module 0x1::M {
 //        public(script) fun /*caret*/
 //    }
 //    """)
 //
 //    fun `test public(script) with leading fun adds just modifier`() = doSingleCompletion("""
-//    module M {
+//    module 0x1::M {
 //        public(scr/*caret*/ fun
 //    }
 //    """, """
-//    module M {
+//    module 0x1::M {
 //        public(script)/*caret*/ fun
 //    }
 //    """)

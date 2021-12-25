@@ -85,7 +85,7 @@ class TypeSubstitutionTest: TypificationTestCase() {
     )
 
     fun `test return type of generic function parametrized by the vector of types`() = testExpr("""
-    module M {
+    module 0x1::M {
         native public fun borrow<Element>(v: &vector<Element>, i: u64): &Element;
         
         fun m() {
@@ -93,6 +93,22 @@ class TypeSubstitutionTest: TypificationTestCase() {
             let b = borrow(&a, 0);
             b;
           //^ &u8 
+        }
+    }    
+    """)
+
+    fun `test return type of generic function parametrized by field`() = testExpr("""
+    module 0x1::M {
+        struct Option<Element> { element: Element } 
+        struct S { id: Option<u64> }
+
+        native public fun borrow<Element>(v: &Option<Element>): &Element;
+        
+        fun m() {
+            let s = S { id: Option { element: 1u64 } };
+            let b = borrow(&s.id);
+            b;
+          //^ &u64 
         }
     }    
     """)
