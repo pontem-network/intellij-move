@@ -1,9 +1,11 @@
 package org.move.lang.core.types.infer
 
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.acquiresPathTypes
 import org.move.lang.core.psi.ext.fqName
 import org.move.lang.core.psi.ext.parameters
 import org.move.lang.core.psi.ext.typeParameters
+import org.move.lang.core.psi.mixins.ty
 import org.move.lang.core.types.ty.*
 
 fun instantiateItemTy(item: MvNameIdentifierOwner): Ty {
@@ -24,15 +26,20 @@ fun instantiateItemTy(item: MvNameIdentifierOwner): Ty {
                 paramTypes.add(paramType)
             }
             val returnMvType = item.returnType?.type
-            val retType: Ty
-            if (returnMvType == null) {
-                retType = TyUnit
+            val retTy = if (returnMvType == null) {
+                TyUnit
             } else {
-                retType =
-                    inferMvTypeTy(returnMvType).foldTyTypeParameterWith { findTypeVar(it.parameter) }
+                inferMvTypeTy(returnMvType).foldTyTypeParameterWith { findTypeVar(it.parameter) }
             }
-            TyFunction(item, typeVars, paramTypes, retType)
+            val acqTys = item.acquiresPathTypes.map {
+                val acqItem =
+                    it.path.reference?.resolve() as? MvNameIdentifierOwner ?: return@map TyUnknown
+                instantiateItemTy(acqItem)
+                    .foldTyTypeParameterWith { tp -> findTypeVar(tp.parameter) }
+            }
+            TyFunction(item, typeVars, paramTypes, retTy, acqTys)
         }
+        is MvTypeParameter -> item.ty()
         else -> TyUnknown
     }
 }

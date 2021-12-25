@@ -24,13 +24,13 @@ class BuiltInFunctionLookupTest : MvTestBase() {
     fun `test borrow_global`() = checkBuiltinPresentation(
         "borrow_global",
         tailText = "(addr: address)",
-        typeText = "&R"
+        typeText = "&T"
     )
 
     fun `test borrow_global_mut`() = checkBuiltinPresentation(
         "borrow_global_mut",
         tailText = "(addr: address)",
-        typeText = "&mut R"
+        typeText = "&mut T"
     )
 
     private fun checkBuiltinPresentation(name: String, tailText: String, typeText: String) {

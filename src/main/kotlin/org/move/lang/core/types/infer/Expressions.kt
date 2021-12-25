@@ -10,7 +10,10 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
     val exprTy = when (expr) {
         is MvRefExpr -> inferRefExprTy(expr)
         is MvBorrowExpr -> inferBorrowExprTy(expr, ctx)
-        is MvCallExpr -> inferCallExprTy(expr, ctx)
+        is MvCallExpr -> {
+            val funcTy = inferCallExprTy(expr, ctx)
+            (funcTy as? TyFunction)?.retType ?: TyUnknown
+        }
         is MvDotExpr -> inferDotExprTy(expr, ctx)
         is MvStructLitExpr -> inferStructLitExpr(expr, ctx)
         is MvDerefExpr -> inferDerefExprTy(expr, ctx)
@@ -56,7 +59,7 @@ private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): 
     return TyReference(innerExprTy, mutability)
 }
 
-private fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
+fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
     val path = callExpr.path
     val funcItem = path.reference?.resolve() as? MvFunction ?: return TyUnknown
     val funcTy = instantiateItemTy(funcItem) as? TyFunction ?: return TyUnknown
@@ -81,8 +84,7 @@ private fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
     if (!inference.processConstraints()) return TyUnknown
 
     // see whether every arg is coerceable with those vars having those values
-    // resolve return type with those vars
-    return inference.resolveTy(funcTy.retType)
+    return inference.resolveTy(funcTy)
 }
 
 private fun inferDotExprTy(dotExpr: MvDotExpr, ctx: InferenceContext): Ty {

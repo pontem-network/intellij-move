@@ -18,7 +18,7 @@ module M {
     fun fn_with_arguments(a: vector<T>, b: u8, c: Transaction::Sender): 0x1::Transaction::Sender {}
 
     fun fn_with_acquires()
-        acquires vector<T>, T, Transaction::Sender, 0x1::Transaction::Sender, Std::Transaction::Sender {}
+        acquires vector<T>, T, Transaction::Sender, 0x1::Transaction::Sender, Std::Transaction::Sender, Loans::Loan {}
 
     native fun native_fn(a: vector<u8>): u8;
 
