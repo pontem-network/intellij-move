@@ -6,7 +6,7 @@ import org.move.lang.core.resolve.resolveItem
 
 class MvStructFieldReferenceImpl(
     element: MvStructFieldReferenceElement,
-) : MvReferenceBase<MvStructFieldReferenceElement>(element) {
+) : MvReferenceCached<MvStructFieldReferenceElement>(element) {
 
-    override fun resolve(): MvNamedElement? = resolveItem(element, Namespace.STRUCT_FIELD)
+    override fun resolveInner(): MvNamedElement? = resolveItem(element, Namespace.STRUCT_FIELD)
 }

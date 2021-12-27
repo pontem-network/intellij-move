@@ -7,9 +7,9 @@ import org.move.lang.core.resolve.resolveItem
 class OldMvReferenceImpl(
     element: MvReferenceElement,
     private val namespace: Namespace,
-) : MvReferenceBase<MvReferenceElement>(element) {
+) : MvReferenceCached<MvReferenceElement>(element) {
 
-    override fun resolve(): MvNamedElement? {
+    override fun resolveInner(): MvNamedElement? {
         return resolveItem(element, namespace)
     }
 }

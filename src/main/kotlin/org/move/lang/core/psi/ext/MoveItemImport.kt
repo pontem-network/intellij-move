@@ -25,8 +25,8 @@ abstract class MvItemImportMixin(node: ASTNode) : MvNamedElementImpl(node),
     override fun getReference(): MvReference {
         val moduleRef = moduleImport().fqModuleRef
         val itemImport = this
-        return object : MvReferenceBase<MvItemImport>(itemImport) {
-            override fun resolve(): MvNamedElement? {
+        return object : MvReferenceCached<MvItemImport>(itemImport) {
+            override fun resolveInner(): MvNamedElement? {
                 val module = moduleRef.reference?.resolve() as? MvModuleDef ?: return null
                 val vs = Visibility.buildSetOfVisibilities(moduleRef)
                 return resolveModuleItem(
