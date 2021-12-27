@@ -48,7 +48,7 @@ class KeywordCompletionTest : CompletionTestCase() {
 
     fun `test top level module declarations`() = completionFixture.checkContainsCompletion(
         """module 0x1::M { /*caret*/ }""",
-        listOf("resource", "struct", "public", "fun", "const", "use", "friend", "native", "spec")
+        listOf("struct", "public", "fun", "const", "use", "friend", "native", "spec")
     )
 
     fun `test space after declaration`() = doSingleCompletion("""
@@ -143,7 +143,7 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
-    fun `test public after function`() = checkContainsCompletion("public","""
+    fun `test public after end of function`() = checkContainsCompletion("public","""
         module 0x1::M { 
             public fun main() {}
             pub/*caret*/
@@ -212,26 +212,6 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """)
 
-    fun `test resource`() = doSingleCompletion("""
-        module 0x1::M {
-            reso/*caret*/
-        }
-    """, """
-        module 0x1::M {
-            resource /*caret*/
-        }
-    """)
-
-    fun `test resource struct`() = doSingleCompletion("""
-        module 0x1::M {
-            resource st/*caret*/
-        }
-    """, """
-        module 0x1::M {
-            resource struct /*caret*/
-        }
-    """)
-
     fun `test no completion in bound if no colon`() = checkNoCompletion("""
         module 0x1::M {
             struct MyStruct<T cop/*caret*/> {}
@@ -270,7 +250,7 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """, """
         module 0x1::M {
-            fun main() acquires /*caret*/ {}
+            fun main() acquires /*caret*/{}
         }
     """)
 //

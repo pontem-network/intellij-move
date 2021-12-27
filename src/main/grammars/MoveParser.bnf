@@ -221,7 +221,6 @@ private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= ImportStatement | FriendStatement
                             | StructItem
-//                            | StructDef | NativeStructDef
                             | FunctionItem
                             | SpecFunctionDef | SpecNativeFunctionDef | UninterpretedSpecFunctionDef
                             | ConstDef
@@ -304,7 +303,7 @@ FunctionInner ::= Attr* FunctionInnerFirst FunctionSignatureInner CodeBlock
 {
     pin = FunctionInnerFirst
     elementType = Function
-    recoverWhile = "FunctionSignature__recover"
+//    recoverWhile = "FunctionSignature__recover"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 

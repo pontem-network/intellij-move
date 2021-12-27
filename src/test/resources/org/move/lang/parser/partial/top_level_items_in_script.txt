@@ -25,8 +25,8 @@ FILE
         MvFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')
           PsiElement())(')')
-      PsiErrorElement:'{' expected, got '}'
-        <empty list>
+        PsiErrorElement:'{' expected, got '}'
+          <empty list>
       PsiWhiteSpace('\n')
       PsiElement(})('}')
   PsiWhiteSpace('\n\n')

@@ -3,6 +3,7 @@ module M {
     fun main(a: u8, b) {}
     fun main(a: u8, b:) {}
 
+    pub
     public
     public(friend)
     public(script)

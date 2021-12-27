@@ -85,6 +85,9 @@ FILE
           PsiElement({)('{')
           PsiElement(})('}')
       PsiWhiteSpace('\n\n    ')
+      PsiErrorElement:'pub' unexpected
+        PsiElement(IDENTIFIER)('pub')
+      PsiWhiteSpace('\n    ')
       MvFunctionImpl(FUNCTION)
         MvFunctionVisibilityModifierImpl(FUNCTION_VISIBILITY_MODIFIER)
           PsiElement(public)('public')

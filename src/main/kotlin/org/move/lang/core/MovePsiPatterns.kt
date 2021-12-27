@@ -196,6 +196,22 @@ object MvPsiPatterns {
         }
     }
 
+    class AfterAnySibling(val siblings: TokenSet, val withPossibleError: Boolean = true)
+        : PatternCondition<PsiElement>("afterSiblingKeywords") {
+        override fun accepts(t: PsiElement, context: ProcessingContext?): Boolean {
+            var element = t
+            if (withPossibleError) {
+                if (element.parent is PsiErrorElement) element = element.parent
+            }
+            var prevSibling = element.prevSibling
+            while (prevSibling != null) {
+                if (prevSibling.elementType in siblings) { return true }
+                prevSibling = prevSibling.prevSibling
+            }
+            return false
+        }
+    }
+
     private class OnStatementBeginning(vararg startWords: String) :
         PatternCondition<PsiElement>("on statement beginning") {
         val myStartWords = startWords
