@@ -8,6 +8,7 @@ import com.intellij.psi.PsiFile
 import org.move.cli.MvConstants
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.*
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull

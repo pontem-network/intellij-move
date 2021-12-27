@@ -55,9 +55,9 @@ fun resolveModuleItem(
 class MvPathReferenceImpl(
     element: MvPath,
     private val namespace: Namespace,
-) : MvReferenceBase<MvPath>(element), MvPathReference {
+) : MvReferenceCached<MvPath>(element), MvPathReference {
 
-    override fun resolve(): MvNamedElement? {
+    override fun resolveInner(): MvNamedElement? {
         val vs = Visibility.buildSetOfVisibilities(element)
         val ns = setOf(namespace)
         val refName = element.referenceName ?: return null
@@ -65,7 +65,7 @@ class MvPathReferenceImpl(
         val moduleRef = element.pathIdent.moduleRef
         // first, see whether it's a fully qualified path (ADDRESS::MODULE::NAME) and try to resolve those
         if (moduleRef is MvFQModuleRef) {
-            val module = moduleRef.reference?.resolve() ?: return null
+            val module = moduleRef.reference?.resolve() as? MvModuleDef ?: return null
             return resolveModuleItem(module, refName, vs, ns)
         }
         // second,
@@ -78,7 +78,7 @@ class MvPathReferenceImpl(
                 )
             }
             val fqModuleRef = resolveIntoFQModuleRef(moduleRef) ?: return null
-            val module = fqModuleRef.reference?.resolve() ?: return null
+            val module = fqModuleRef.reference?.resolve() as? MvModuleDef ?: return null
             return resolveModuleItem(module, refName, vs, ns)
         } else {
             // if it's NAME
@@ -88,7 +88,7 @@ class MvPathReferenceImpl(
             if (item !is MvItemImport) return item
             // find corresponding FQModuleRef from imports and resolve
             val fqModuleRef = item.moduleImport().fqModuleRef
-            val module = fqModuleRef.reference?.resolve() ?: return null
+            val module = fqModuleRef.reference?.resolve() as? MvModuleDef ?: return null
             return resolveModuleItem(module, refName, vs, ns)
         }
     }

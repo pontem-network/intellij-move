@@ -8,31 +8,22 @@ import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.toAddress
 import org.move.lang.core.types.Address
 
-interface MvElement : PsiElement {
-    @JvmDefault
-    val containingAddress: Address get() {
+interface MvElement : PsiElement
+
+abstract class MvElementImpl(node: ASTNode) : ASTWrapperPsiElement(node),
+                                              MvElement
+
+val MvElement.containingAddress: Address
+    get() {
         return ancestorStrict<MvAddressDef>()
             ?.addressRef
             ?.toAddress() ?: Address.default()
     }
 
-    @JvmDefault
-    val containingModule: MvModuleDef?
-        get() =
-            ancestorStrict()
+val MvElement.containingScript: MvScriptDef? get() = ancestorStrict()
 
-    @JvmDefault
-    val containingScript: MvScriptDef?
-        get() =
-            ancestorStrict()
+val MvElement.containingFunction: MvFunction? get() = ancestorStrict()
 
-    @JvmDefault
-    val containingFunction: MvFunction?
-        get() =
-            ancestorStrict()
-}
+val MvElement.containingModule: MvModuleDef? get() = ancestorStrict()
 
 val MvElement.containingImportsOwner get() = ancestorOrSelf<MvImportStatementsOwner>()
-
-abstract class MvElementImpl(node: ASTNode) : ASTWrapperPsiElement(node),
-                                                MvElement

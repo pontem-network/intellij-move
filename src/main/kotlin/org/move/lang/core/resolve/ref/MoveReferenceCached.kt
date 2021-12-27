@@ -8,7 +8,7 @@ import org.move.lang.core.psi.MvReferenceElement
 abstract class MvReferenceCached<T : MvReferenceElement>(element: T) : MvReferenceBase<T>(element) {
     abstract fun resolveInner(): MvNamedElement?
 
-    override fun resolve(): MvNamedElement? {
+    final override fun resolve(): MvNamedElement? {
         return resolveWithCache()?.element as? MvNamedElement
     }
 

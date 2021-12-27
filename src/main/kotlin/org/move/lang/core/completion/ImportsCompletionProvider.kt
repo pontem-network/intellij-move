@@ -8,6 +8,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.psi.MvItemImport
+import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.moduleImport
 import org.move.lang.core.resolve.ref.Namespace
@@ -30,7 +31,7 @@ object ImportsCompletionProvider : MvCompletionProvider() {
         val namespaces = setOf(Namespace.NAME, Namespace.TYPE)
 
         if (parameters.position !== itemImport.referenceNameElement) return
-        val referredModule = moduleRef.reference?.resolve() ?: return
+        val referredModule = moduleRef.reference?.resolve() as? MvModuleDef ?: return
         val vs = when {
             moduleRef.isSelf -> setOf(Visibility.Internal)
             else -> Visibility.buildSetOfVisibilities(itemImport)

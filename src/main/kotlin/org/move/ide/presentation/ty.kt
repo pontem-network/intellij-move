@@ -3,6 +3,7 @@ package org.move.ide.presentation
 import org.move.lang.MvFile
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.acquiresPathTypes
 import org.move.lang.core.psi.ext.fqName
 import org.move.lang.core.types.ty.*

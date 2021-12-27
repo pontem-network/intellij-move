@@ -12,6 +12,7 @@ import com.intellij.util.ProcessingContext
 import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvLetStatement
 import org.move.lang.core.psi.MvStruct_
+import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.fields
 import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.ref.Namespace

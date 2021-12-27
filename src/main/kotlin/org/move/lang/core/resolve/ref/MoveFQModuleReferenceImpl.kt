@@ -2,17 +2,18 @@ package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.resolve.processQualModuleRef
 
 interface MvFQModuleReference : MvReference {
-    override fun resolve(): MvModuleDef?
+    override fun resolve(): MvNamedElement?
 }
 
 class MvFQModuleReferenceImpl(
     element: MvFQModuleRef,
-) : MvReferenceBase<MvFQModuleRef>(element), MvFQModuleReference {
+) : MvReferenceCached<MvFQModuleRef>(element), MvFQModuleReference {
 
-    override fun resolve(): MvModuleDef? {
+    override fun resolveInner(): MvNamedElement? {
         val referenceName = element.referenceName
         var resolved: MvModuleDef? = null
         processQualModuleRef(element) {
