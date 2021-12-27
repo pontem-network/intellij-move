@@ -60,7 +60,7 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
                 processItems(element, Namespace.DOT_ACCESSED_FIELD) {
                     val field = it.element as? MvStructFieldDef
                     if (field != null) {
-                        result.addElement(field.createLookupElement(false))
+                        result.addElement(field.createLookupElement())
                     }
                     false
                 }
@@ -74,7 +74,7 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
         result: CompletionResultSet,
     ) {
         for (field in referredStruct.fields.filter { it.name !in providedFieldNames }) {
-            result.addElement(field.createLookupElement(false))
+            result.addElement(field.createLookupElement())
         }
     }
 }

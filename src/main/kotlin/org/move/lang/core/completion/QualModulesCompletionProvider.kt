@@ -29,7 +29,7 @@ object QualModulesCompletionProvider : MvCompletionProvider() {
 
         processQualModuleRef(fqModuleRef) {
             if (it.element != null) {
-                val lookup = it.element.createLookupElement(false)
+                val lookup = it.element.createLookupElement()
                 result.addElement(lookup)
             }
             false

@@ -1,5 +1,6 @@
 package org.move.lang.core.completion
 
+import com.intellij.codeInsight.completion.BasicInsertHandler
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
@@ -36,7 +37,7 @@ object ImportsCompletionProvider : MvCompletionProvider() {
         }
         processModuleItems(referredModule, vs, namespaces) {
             if (it.element != null) {
-                val lookup = it.element.createLookupElement(false, true)
+                val lookup = it.element.createLookupElement(BasicInsertHandler())
                 result.addElement(lookup)
             }
             false

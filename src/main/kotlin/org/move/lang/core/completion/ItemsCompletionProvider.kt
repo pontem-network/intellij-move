@@ -8,7 +8,6 @@ import com.intellij.util.ProcessingContext
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isSelf
-import org.move.lang.core.psi.ext.isSpecElement
 import org.move.lang.core.resolve.processNestedScopesUpwards
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
@@ -34,7 +33,7 @@ abstract class ItemsCompletionProvider: MvCompletionProvider() {
             }
             processModuleItems(referredModule, vs, setOf(namespace)) {
                 if (it.element != null) {
-                    val lookup = it.element.createLookupElement(false)
+                    val lookup = it.element.createLookupElement()
                     result.addElement(lookup)
                 }
                 false
@@ -46,7 +45,7 @@ abstract class ItemsCompletionProvider: MvCompletionProvider() {
         processNestedScopesUpwards(element, namespace) {
             if (it.element != null && !visited.contains(it.name)) {
                 visited.add(it.name)
-                val lookup = it.element.createLookupElement(element.isSpecElement())
+                val lookup = it.element.createLookupElement()
                 result.addElement(lookup)
             }
             false

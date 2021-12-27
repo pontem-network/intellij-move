@@ -84,7 +84,7 @@ class LookupElementTest : MvTestBase() {
         val element = myFixture.findElementInEditor<T>() as? MvNamedElement
             ?: error("Marker `^` should point to the MvNamedElement")
 
-        val lookup = element.createLookupElement(false)
+        val lookup = element.createLookupElement()
         checkLookupPresentation(
             lookup,
             tailText = tailText,

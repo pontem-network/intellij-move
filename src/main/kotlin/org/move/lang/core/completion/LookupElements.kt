@@ -1,6 +1,5 @@
 package org.move.lang.core.completion
 
-import com.intellij.codeInsight.completion.BasicInsertHandler
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
@@ -44,13 +43,9 @@ fun functionInsertHandler(isSpec: Boolean, hasParams: Boolean): InsertHandler<Lo
         }
     }
 
-fun MvNamedElement.createLookupElement(isSpecIdentifier: Boolean, import: Boolean = false): LookupElement {
-    val insertHandler = if (import) {
-        BasicInsertHandler()
-    } else {
-        DefaultInsertHandler(isSpecIdentifier)
-    }
-//    val insertHandler = DefaultInsertHandler(isSpecIdentifier) if (!import) else
+fun MvNamedElement.createLookupElement(
+    insertHandler: InsertHandler<LookupElement> = MvInsertHandler()
+): LookupElement {
     return when (this) {
         is MvModuleImport ->
             LookupElementBuilder
@@ -129,37 +124,27 @@ class AngleBracketsInsertHandler : InsertHandler<LookupElement> {
     }
 }
 
-
-class DefaultInsertHandler(private val isSpecIdentifier: Boolean) : InsertHandler<LookupElement> {
+class MvInsertHandler : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, item: LookupElement) {
         val document = context.document
         val element = item.psiElement as? MvElement ?: return
 
         when (element) {
             is MvFunction -> {
-                if (isSpecIdentifier) {
-                    if (!context.alreadyHasSpace) context.addSuffix(" ")
-                } else {
-                    if (!context.alreadyHasCallParens) {
-                        document.insertString(context.selectionEndOffset, "()")
-                    }
-//                    if (!angleBrackets) {
-                    EditorModificationUtil.moveCaretRelatively(
-                        context.editor,
-                        if (element.parameters.isEmpty()) 2 else 1
-                    )
-//                    }
+                if (!context.alreadyHasCallParens) {
+                    document.insertString(context.selectionEndOffset, "()")
                 }
+                EditorModificationUtil.moveCaretRelatively(
+                    context.editor,
+                    if (element.parameters.isEmpty()) 2 else 1
+                )
             }
             is MvStruct_ -> {
-                if (isSpecIdentifier && !context.alreadyHasSpace)
-                    context.addSuffix(" ")
-
                 val insideAcquiresType =
                     context.file
                         .findElementAt(context.startOffset)
-                        ?.ancestorStrict<MvAcquiresType>() != null
-                if (element.hasTypeParameters && !isSpecIdentifier && !insideAcquiresType) {
+                        ?.ancestorOrSelf<MvAcquiresType>() != null
+                if (element.hasTypeParameters && !insideAcquiresType) {
                     if (!context.alreadyHasAngleBrackets) {
                         document.insertString(context.selectionEndOffset, "<>")
                     }
@@ -168,5 +153,4 @@ class DefaultInsertHandler(private val isSpecIdentifier: Boolean) : InsertHandle
             }
         }
     }
-
 }

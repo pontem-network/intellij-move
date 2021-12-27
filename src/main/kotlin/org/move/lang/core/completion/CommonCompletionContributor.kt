@@ -17,6 +17,7 @@ class CommonCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, ModulesCompletionProvider)
         extend(CompletionType.BASIC, QualModulesCompletionProvider)
         extend(CompletionType.BASIC, StructFieldsCompletionProvider)
+        extend(CompletionType.BASIC, StructPatCompletionProvider)
         extend(
             CompletionType.BASIC,
             MvPsiPatterns.ability(),

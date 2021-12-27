@@ -143,7 +143,28 @@ class StructsCompletionTest: CompletionTestCase() {
         module 0x1::M {
             struct Res { my_field: u8 }
             fun main() {
-                let Res {/*caret*/}
+                let Res/*caret*/
+            }
+        }        
+    """)
+
+    fun `test no struct name completion if lower case name`() = checkNoCompletion("""
+        module 0x1::M {
+            struct Res { my_field: u8 }
+            fun main() {
+                let r/*caret*/
+            }
+        }        
+    """)
+
+    fun `test no struct name completion if imported from a different module`() = checkNoCompletion("""
+        module 0x1::Ss {
+            struct Res { my_field: u8 }
+        }
+        module 0x1::M {
+            use 0x1::Ss::Res;
+            fun main() {
+                let Re/*caret*/
             }
         }        
     """)
