@@ -4,6 +4,7 @@ import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.MvElementImpl
 import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.psi.MvModuleRef
+import org.move.lang.core.psi.containingModule
 import org.move.lang.core.resolve.ref.MvModuleReferenceImpl
 import org.move.lang.core.resolve.ref.MvReference
 

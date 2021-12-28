@@ -3,6 +3,8 @@ package org.move.ide.presentation
 import org.move.lang.MvFile
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.containingModule
+import org.move.lang.core.psi.ext.acquiresPathTypes
 import org.move.lang.core.psi.ext.fqName
 import org.move.lang.core.types.ty.*
 
@@ -81,7 +83,11 @@ private fun render(
     return when (ty) {
         is TyFunction -> {
             val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
-            return if (ty.retType is TyUnit) params else "$params -> ${ty.retType}"
+            var s = if (ty.retType is TyUnit) params else "$params -> ${ty.retType}"
+            if (ty.acquiresTypes.isNotEmpty()) {
+                s += ty.acquiresTypes.joinToString(", ", " acquires ", transform = r)
+            }
+            s
         }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
         is TyVector -> "vector<${render(ty.item, level, unknown, anonymous, integer, fq)}>"

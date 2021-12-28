@@ -8,9 +8,9 @@ import org.move.ide.presentation.typeLabel
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.mixins.declaredTy
 import org.move.lang.core.psi.mixins.ty
 import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.inferCallExprTy
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.*
 
@@ -251,18 +251,21 @@ private fun checkCallArgumentList(holder: MvAnnotationHolder, arguments: MvCallA
     }
 
     val ctx = InferenceContext()
+    val inferredFuncTy = inferCallExprTy(callExpr, ctx)
+    if (inferredFuncTy !is TyFunction) return
+
     for ((i, expr) in arguments.exprList.withIndex()) {
         val parameter = function.parameters[i]
-        val expectedTy = parameter.declaredTy
+        val paramTy = inferredFuncTy.paramTypes[i]
         val exprTy = expr.inferExprTy(ctx)
-        if (expectedTy is TyTypeParameter) {
-            checkHasRequiredAbilities(holder, expr, exprTy, expectedTy)
-            return
-        }
-        if (!isCompatible(expectedTy, exprTy)) {
+
+        val abilitiesErrorCreated = checkHasRequiredAbilities(holder, expr, exprTy, paramTy)
+        if (abilitiesErrorCreated) continue
+
+        if (!isCompatible(paramTy, exprTy)) {
             val paramName = parameter.bindingPat.name ?: continue
             val exprTypeName = exprTy.typeLabel(relativeTo = arguments)
-            val expectedTypeName = expectedTy.typeLabel(relativeTo = arguments)
+            val expectedTypeName = paramTy.typeLabel(relativeTo = arguments)
 
             val message =
                 "Invalid argument for parameter '$paramName': " +
@@ -344,24 +347,25 @@ private fun checkPath(holder: MvAnnotationHolder, path: MvPath) {
 private fun checkHasRequiredAbilities(
     holder: MvAnnotationHolder,
     element: MvElement,
-    elementTy: Ty,
-    typeParamType: TyTypeParameter
-) {
+    actualTy: Ty,
+    expectedTy: Ty
+): Boolean {
     // do not check for specs
-    if (element.isInsideSpecBlock()) return
+    if (element.isInsideSpecBlock()) return false
 
-    val abilities = elementTy.abilities()
-    for (ability in typeParamType.abilities()) {
+    val abilities = actualTy.abilities()
+    for (ability in expectedTy.abilities()) {
         if (ability !in abilities) {
-            val typeName = elementTy.typeLabel(relativeTo = element)
+            val typeName = actualTy.typeLabel(relativeTo = element)
             holder.createErrorAnnotation(
                 element,
                 "The type '$typeName' " +
                         "does not have required ability '${ability.label()}'"
             )
-            return
+            return true
         }
     }
+    return false
 }
 
 private fun checkDuplicates(

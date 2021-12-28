@@ -1,6 +1,8 @@
 package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.MvElement
+import org.move.lang.core.psi.containingFunction
+import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.FunctionVisibility
 import org.move.lang.core.psi.ext.fqModule
 import org.move.lang.core.psi.ext.visibility

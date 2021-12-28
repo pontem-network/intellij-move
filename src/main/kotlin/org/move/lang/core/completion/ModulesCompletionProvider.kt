@@ -30,7 +30,7 @@ object ModulesCompletionProvider : MvCompletionProvider() {
 
         processItems(refElement, Namespace.MODULE) {
             if (it.element != null) {
-                val lookup = it.element.createLookupElement(false)
+                val lookup = it.element.createLookupElement()
                 result.addElement(lookup)
             }
             false

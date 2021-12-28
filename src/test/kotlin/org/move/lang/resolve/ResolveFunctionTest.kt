@@ -350,4 +350,16 @@ class ResolveFunctionTest : ResolveTestCase() {
         }
     """
     )
+
+    fun `test resolve fully qualified path from the same module`() = checkByCode("""
+    module 0x1::M {
+        struct Loan {}
+        public fun call() acquires Loan {}
+                 //X
+        fun main() {
+            0x1::M::call();
+                    //^  
+        }
+    }
+    """)
 }

@@ -221,7 +221,6 @@ private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= ImportStatement | FriendStatement
                             | StructItem
-//                            | StructDef | NativeStructDef
                             | FunctionItem
                             | SpecFunctionDef | SpecNativeFunctionDef | UninterpretedSpecFunctionDef
                             | ConstDef
@@ -304,7 +303,7 @@ FunctionInner ::= Attr* FunctionInnerFirst FunctionSignatureInner CodeBlock
 {
     pin = FunctionInnerFirst
     elementType = Function
-    recoverWhile = "FunctionSignature__recover"
+//    recoverWhile = "FunctionSignature__recover"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
@@ -798,7 +797,6 @@ RefExpr ::= Path
 //LocalPath ::= IDENTIFIER TypeArgumentList? { pin = 1 elementType = Path }
 //QualPath ::= ModuleRef '::' IDENTIFIER TypeArgumentList? { pin = 1 elementType = Path }
 
-// TODO: add NamedAddress parsing with Move.toml info and switch FQModulePathIdent and ModulePathIdent
 Path ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList?
 {
     implements = ["org.move.lang.core.psi.MvPathReferenceElement"]
@@ -808,7 +806,7 @@ Path ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList
 fake PathIdent ::= ((FQModuleRef | ModuleRef) '::')? IDENTIFIER?
 
 LocalPathIdent ::= IDENTIFIER { elementType = PathIdent }
-ModulePathIdent ::= ModuleRef '::' IDENTIFIER
+ModulePathIdent ::= ModuleRef ('::' !(IDENTIFIER '::')) IDENTIFIER
 {
     pin = 2
     elementType = PathIdent

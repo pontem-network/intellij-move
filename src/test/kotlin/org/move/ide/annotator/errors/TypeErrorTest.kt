@@ -106,7 +106,7 @@ class TypeErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test incorrect type of argument with call expression`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct A {}
         struct B {}
         
@@ -272,14 +272,28 @@ address 0x1 {
     """
     )
 
-    fun `test type checking disabled if constraints are incompatible`() = checkErrors("""
+    fun `test type check incompatible constraints`() = checkErrors("""
     module 0x1::M {
         struct C {}
         struct D {}
-        fun new<Content>(content: Content, content2: Content): Content {}
+        fun new<Content>(a: Content, b: Content): Content {}
         fun m() {
-            new(C {}, D {})
+            new(C {}, <error descr="Invalid argument for parameter 'b': type 'D' is not compatible with 'C'">D {}</error>)
         }
     }    
     """)
+
+    fun `test error if resolved type requires a reference`() = checkErrors(
+        """
+    module 0x1::M {
+        fun index_of<Element>(v: &vector<Element>, e: &Element): (bool, u64) {
+            (false, 0)
+        }
+        fun m() {
+            let ids: vector<u64>;
+            index_of(&ids, <error descr="Invalid argument for parameter 'e': type 'u64' is not compatible with '&u64'">1u64</error>);
+        }
+    }    
+    """
+    )
 }

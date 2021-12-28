@@ -1,5 +1,9 @@
 package org.move.lang.core.psi
 
+import org.move.lang.core.psi.ext.definedAddressRef
+import org.move.lang.core.psi.ext.fqName
+import org.move.lang.core.psi.ext.toAddress
+
 interface MvImportStatementsOwner : MvElement {
     val importStatements: List<MvImportStatement>
 
@@ -43,5 +47,27 @@ interface MvImportStatementsOwner : MvElement {
     @JvmDefault
     fun itemImportsAliases(): List<MvImportAlias> =
         itemImports().mapNotNull { it.importAlias }
+}
 
+fun MvImportStatementsOwner.shortestPathIdentText(item: MvNamedElement): String? {
+    val itemName = item.name ?: return null
+    // local
+    if (this == item.containingImportsOwner) return itemName
+
+    for (itemImport in this.itemImportsWithoutAliases()) {
+        val importedItem = itemImport.reference.resolve() ?: continue
+        if (importedItem == item) {
+            return itemName
+        }
+    }
+    val module = item.containingModule ?: return null
+    val moduleName = module.name ?: return null
+    for (moduleImport in this.moduleImports()) {
+        val importedModule = moduleImport.fqModuleRef?.reference?.resolve() ?: continue
+        if (importedModule == module) {
+            return "$moduleName::$itemName"
+        }
+    }
+    val addressName = module.definedAddressRef()?.text ?: return null
+    return "$addressName::$moduleName::$itemName"
 }

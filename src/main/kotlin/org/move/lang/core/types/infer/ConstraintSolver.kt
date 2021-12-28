@@ -1,10 +1,7 @@
 package org.move.lang.core.types.infer
 
 import org.move.ide.presentation.fullname
-import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyInfer
-import org.move.lang.core.types.ty.TyReference
-import org.move.lang.core.types.ty.TyVector
+import org.move.lang.core.types.ty.*
 
 sealed class Constraint: TypeFoldable<Constraint> {
     /** `T1 == T2` */
@@ -77,12 +74,13 @@ class ConstraintSolver(val ctx: InferenceContext) {
     }
 
     fun processConstraints(): Boolean {
+        var solvable = true
         while (constraints.isNotEmpty()) {
             val constraint = constraints.removeFirst()
             val isSuccessful = processConstraint(constraint)
-            if (!isSuccessful) return false
+            if (!isSuccessful) solvable = false
         }
-        return true
+        return solvable
     }
 
     private fun processConstraint(rawConstraint: Constraint): Boolean {
@@ -93,21 +91,31 @@ class ConstraintSolver(val ctx: InferenceContext) {
                 val ty2 = constraint.ty2
                 when {
                     ty1 is TyInfer.TyVar && ty2 is TyInfer.TyVar -> {
+                        if ((ty1.abilities() - ty2.abilities()).isNotEmpty()) return false
                         ctx.unificationTable.unifyVarVar(ty1, ty2)
                     }
                     ty1 is TyInfer.TyVar && ty2 !is TyInfer.TyVar -> {
+                        if ((ty1.abilities() - ty2.abilities()).isNotEmpty()) return false
                         ctx.unificationTable.unifyVarValue(ty1, ty2)
                     }
                     ty2 is TyInfer.TyVar && ty1 !is TyInfer.TyVar -> {
+                        if ((ty2.abilities() - ty1.abilities()).isNotEmpty()) return false
                         ctx.unificationTable.unifyVarValue(ty2, ty1)
                     }
                     else -> {
                         when {
                             ty1 is TyVector && ty2 is TyVector -> {
-                                registerConstraint(Constraint.Equate(ty1.item, ty2.item))
+                                constraints.add(0, Constraint.Equate(ty1.item, ty2.item))
                             }
                             ty1 is TyReference && ty2 is TyReference -> {
-                                registerConstraint(Constraint.Equate(ty1.referenced, ty2.referenced))
+                                constraints.add(0, Constraint.Equate(ty1.referenced, ty2.referenced))
+                            }
+                            ty1 is TyStruct && ty2 is TyStruct && ty1.item == ty2.item -> {
+                                if (ty1.typeArguments.size != ty2.typeArguments.size) return false
+                                val cs =
+                                    ty1.typeArguments.zip(ty2.typeArguments)
+                                        .map { (t1, t2) -> Constraint.Equate(t1, t2) }
+                                constraints.addAll(0, cs)
                             }
                             else -> {
                                 // if types are not compatible, constraints are unsolvable

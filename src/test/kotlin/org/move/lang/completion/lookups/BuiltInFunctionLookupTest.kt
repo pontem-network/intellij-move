@@ -24,13 +24,13 @@ class BuiltInFunctionLookupTest : MvTestBase() {
     fun `test borrow_global`() = checkBuiltinPresentation(
         "borrow_global",
         tailText = "(addr: address)",
-        typeText = "&R"
+        typeText = "&T"
     )
 
     fun `test borrow_global_mut`() = checkBuiltinPresentation(
         "borrow_global_mut",
         tailText = "(addr: address)",
-        typeText = "&mut R"
+        typeText = "&mut T"
     )
 
     private fun checkBuiltinPresentation(name: String, tailText: String, typeText: String) {
@@ -41,7 +41,7 @@ class BuiltInFunctionLookupTest : MvTestBase() {
         inlineFile(moduleText)
         val moduleElement = myFixture.findElementInEditor<MvModuleDef>()
         val lookup =
-            moduleElement.builtinFunctions().find { it.name == name }!!.createLookupElement(false)
+            moduleElement.builtinFunctions().find { it.name == name }!!.createLookupElement()
         checkLookupPresentation(
             lookup,
             tailText = tailText,

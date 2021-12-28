@@ -11,6 +11,8 @@ script {
         call(a, a.b, &a, &mut a);
 
         call<u8>();
+        call<0x1::Mod::S>();
+        call<Sender::Mod::S>();
         call<u8,>();
         call<u8, vector<u8>>();
         call<u8, vector<u8>>(Transaction::new<Sender<u8>>());

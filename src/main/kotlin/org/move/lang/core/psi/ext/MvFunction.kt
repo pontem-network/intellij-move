@@ -55,6 +55,8 @@ val MvFunction.parameters get() = this.functionParameterList?.functionParameterL
 
 val MvFunction.typeParameters get() = this.typeParameterList?.typeParameterList.orEmpty()
 
+val MvFunction.acquiresPathTypes: List<MvPathType> get() = this.acquiresType?.pathTypeList.orEmpty()
+
 val MvFunction.resolvedReturnTy: Ty
     get() {
         val returnTypeElement = this.returnType

@@ -5,5 +5,4 @@ import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferExprTy
 import org.move.lang.core.types.ty.Ty
 
-fun MvExpr.inferExprTy(ctx: InferenceContext = InferenceContext()): Ty =
-    inferExprTy(this, ctx)
+fun MvExpr.inferExprTy(ctx: InferenceContext = InferenceContext()) = inferExprTy(this, ctx)
