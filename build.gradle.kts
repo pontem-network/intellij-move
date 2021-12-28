@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
 val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "212"
+val publishingToken = System.getenv("JB_PUB_TOKEN")
 
 val baseProperties = "base-gradle.properties"
 val properties = "gradle-$propsVersion.properties"
@@ -120,6 +121,10 @@ allprojects {
                     )
                 )
             )
+        }
+
+        publishPlugin {
+            token.set(publishingToken)
         }
 
         withType<KotlinCompile> {
