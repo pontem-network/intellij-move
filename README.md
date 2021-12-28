@@ -8,34 +8,12 @@ https://plugins.jetbrains.com/plugin/14721-move-language
 * Code formatting
 * Go-to-definition
 * Rename refactoring
-* Move CLI integration
-
-![img.png](images/run_configurations.png)
+* Type inference
+* `Move.toml` and `move` binary integration
 
 ## Installation
 
 Open `Settings > Plugins > Marketplace` in your IDE, search for _Move Language_ and install the plugin.
-
-To enable multi-file support you need to set up Dove. For that you need to:
-
-1. Download the latest binary for your platform from the Dove
-   repository [https://github.com/pontem-network/move-tools/releases](https://github.com/pontem-network/move-tools/releases)
-   .
-2. Add its filesystem path to the `Settings -> Languages & Frameworks -> Move -> Dove executable`.
-
-![img.png](images/settings.png)   
-
-3. Initialize your project root with `dove init`. This will create the following file structure:
-
-```
-    /scripts
-    /modules
-    /tests
-    Dove.toml
-```
-
-For more information of Dove and Dove.toml file
-see [https://docs.pontem.network/03.-move-vm/compiler_and_toolset#dove](https://docs.pontem.network/03.-move-vm/compiler_and_toolset#dove)
 
 ## Compatible IDEs
 
