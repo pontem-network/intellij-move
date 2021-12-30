@@ -44,7 +44,37 @@ FILE
         PsiElement(struct)('struct')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('S1')
-        PsiErrorElement:';', < or has expected, got '}'
+        PsiErrorElement:';', < or has expected, got 'struct'
           <empty list>
+      PsiWhiteSpace('\n    ')
+      MvStruct_Impl(STRUCT_)
+        PsiElement(struct)('struct')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('S')
+        MvTypeParameterListImpl(TYPE_PARAMETER_LIST)
+          PsiElement(<)('<')
+          MvTypeParameterImpl(TYPE_PARAMETER)
+            PsiElement(phantom)('phantom')
+            PsiErrorElement:IDENTIFIER expected, got '>'
+              <empty list>
+          PsiElement(>)('>')
+      PsiWhiteSpace('\n    ')
+      MvStruct_Impl(STRUCT_)
+        PsiElement(struct)('struct')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('S')
+        MvTypeParameterListImpl(TYPE_PARAMETER_LIST)
+          PsiElement(<)('<')
+          MvTypeParameterImpl(TYPE_PARAMETER)
+            PsiElement(phantom)('phantom')
+            PsiWhiteSpace(' ')
+            PsiElement(IDENTIFIER)('Type')
+          PsiElement(,)(',')
+          PsiWhiteSpace(' ')
+          MvTypeParameterImpl(TYPE_PARAMETER)
+            PsiElement(phantom)('phantom')
+            PsiErrorElement:IDENTIFIER expected, got '>'
+              <empty list>
+          PsiElement(>)('>')
       PsiWhiteSpace('\n')
       PsiElement(})('}')

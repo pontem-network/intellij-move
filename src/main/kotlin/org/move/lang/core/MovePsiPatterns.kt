@@ -114,8 +114,11 @@ object MvPsiPatterns {
 
 //    }
 
-    fun typeParamBound(): PsiElementPattern.Capture<PsiElement> =
+    fun typeParameter(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvTypeParameter>()
+
+    fun typeParamBound(): PsiElementPattern.Capture<PsiElement> =
+        typeParameter()
             .afterLeafSkipping(
                 whitespaceAndErrors(),
                 PlatformPatterns.psiElement(COLON),

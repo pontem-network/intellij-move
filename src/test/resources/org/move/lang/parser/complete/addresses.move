@@ -1,4 +1,5 @@
 address named = 0x1;
+address alice = {{alice}};
 
 /* my module */
 module 0x1::M {
@@ -9,6 +10,7 @@ module 0x1::M {
         @wallet1pxqfjvnu0utauj8fctw2s7j4mfyvrsjd59c2u8;
         @5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty;
         @Std;
+        @{{alice}};
         @DiemFramework;
     }
 }

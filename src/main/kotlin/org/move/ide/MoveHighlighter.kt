@@ -34,7 +34,7 @@ class MvHighlighter : SyntaxHighlighterBase() {
             COMMA -> MvColor.COMMA
 
             BYTE_STRING_LITERAL, HEX_STRING_LITERAL -> MvColor.STRING
-            INTEGER_LITERAL, ADDRESS_LITERAL -> MvColor.NUMBER
+            INTEGER_LITERAL-> MvColor.NUMBER
 
             in MOVE_KEYWORDS, BOOL_LITERAL -> MvColor.KEYWORD
             else -> null

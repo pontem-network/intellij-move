@@ -35,16 +35,16 @@
 //        BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
 
         PLACEHOLDER_ADDRESS_IDENT='regexp:\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
-        PLACEHOLDER_ADDRESS_LITERAL='regexp:@\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
+//        PLACEHOLDER_ADDRESS_LITERAL='regexp:@\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
 
         ADDRESS_IDENT='regexp:0x[0-9a-fA-F]{1,40}'
-        ADDRESS_LITERAL='regexp:@0x[0-9a-fA-F]{1,40}'
+//        ADDRESS_LITERAL='regexp:@0x[0-9a-fA-F]{1,40}'
 
         BECH32_ADDRESS_IDENT='regexp:wallet1[A-Z0-9a-z&&[^boi1]]{6,83}'
-        BECH32_ADDRESS_LITERAL='regexp:@wallet1[A-Z0-9a-z&&[^boi1]]{6,83}'
+//        BECH32_ADDRESS_LITERAL='regexp:@wallet1[A-Z0-9a-z&&[^boi1]]{6,83}'
 
         POLKADOT_ADDRESS_IDENT='regexp:[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
-        POLKADOT_ADDRESS_LITERAL='regexp:@[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
+//        POLKADOT_ADDRESS_LITERAL='regexp:@[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
 
         BOOL_LITERAL='regexp:(true)|(false)'
 
@@ -516,20 +516,25 @@ TypeParameterList ::= '<' TypeParameter_with_recover* '>'
 {
     pin = 1
 }
-private TypeParameter_with_recover ::= !'>' TypeParameter (',' | &'>')
+private TypeParameter_with_recover ::= !'>' TypeParameterImpl (',' | &'>')
 {
     pin = 1
     recoverWhile = TypeParameter_recover
 }
-private TypeParameter_recover ::= !('>' | '(' | '{' | IDENTIFIER)
+private TypeParameter_recover ::= !('>' | '(' | '{' | phantom | IDENTIFIER)
 
-TypeParameter ::= phantom? IDENTIFIER TypeParamBound? {
+fake TypeParameter ::= phantom? IDENTIFIER? TypeParamBound? {
     pin = 2
     implements = [
         "org.move.lang.core.psi.MvNameIdentifierOwner"
     ]
     mixin = "org.move.lang.core.psi.mixins.MvTypeParameterMixin"
 }
+
+private TypeParameterImpl ::= PlainTypeParameter | PhantomTypeParameter
+PlainTypeParameter ::= IDENTIFIER TypeParamBound? { pin = 1 elementType = TypeParameter }
+PhantomTypeParameter ::= phantom IDENTIFIER TypeParamBound? { pin = 1 elementType = TypeParameter }
+
 TypeParamBound ::= ':' TypeParamBound_items
 {
     pin = 1
@@ -837,7 +842,7 @@ private FQModuleRefUseStart ::= AddressRef '::' { pin = 2 }
 private FQModuleRefStart ::= AddressRef '::'
 
 AddressRef ::= NamedAddress
-//                | PLACEHOLDER_ADDRESS_IDENT
+                | PLACEHOLDER_ADDRESS_IDENT
                 | BECH32_ADDRESS_IDENT
                 | POLKADOT_ADDRESS_IDENT
                 | ADDRESS_IDENT

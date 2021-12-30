@@ -5,7 +5,7 @@ import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class TypeErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test incorrect type address passed where &signer is expected`() = checkErrors("""
-        module M {
+        module 0x1::M {
             fun send(account: &signer) {}
             
             fun main(addr: address) {
@@ -15,7 +15,7 @@ class TypeErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test incorrect type u8 passed where &signer is expected`() = checkErrors("""
-        module M {
+        module 0x1::M {
             fun send(account: &signer) {}
             
             fun main(addr: u8) {
@@ -25,7 +25,7 @@ class TypeErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test no errors if same type`() = checkErrors("""
-        module M {
+        module 0x1::M {
             fun send(account: &signer) {}
             
             fun main(acc: &signer) {
@@ -35,7 +35,7 @@ class TypeErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test mutable reference compatible with immutable reference`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct Option<Element> {
             vec: vector<Element>
         }
@@ -51,7 +51,7 @@ class TypeErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
 
     fun `test different generic types`() = checkErrors(
         """
-    module M {
+    module 0x1::M {
         struct Option<Element> {}
         fun is_none<Elem>(t: Option<u64>): bool {
             true
@@ -66,7 +66,7 @@ class TypeErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
 
     fun `test different generic types for references`() = checkErrors(
         """
-    module M {
+    module 0x1::M {
         struct Option<Element> {}
         fun is_none<Elem>(t: &Option<u64>): bool {
             true
@@ -80,7 +80,7 @@ class TypeErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     )
 
     fun `test immutable reference is not compatible with mutable reference`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct Option<Element> {
             vec: vector<Element>
         }
@@ -94,7 +94,7 @@ class TypeErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test incorrect type of argument with struct literal`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct A {}
         struct B {}
         
@@ -125,7 +125,7 @@ address 0x1 {
         struct B {}
         public fun get_b(): B { B {} }
     }
-    module M {
+    module 0x1::M {
         use 0x1::Other::get_b;
         
         struct A {}
@@ -139,7 +139,7 @@ address 0x1 {
     """)
 
     fun `test bytearray is vector of u8`() = checkErrors("""
-        module M {
+        module 0x1::M {
             fun send(a: vector<u8>) {}
             fun main() {
                 let a = b"deadbeef";
@@ -149,7 +149,7 @@ address 0x1 {
     """)
 
     fun `test no error for compatible generic with explicit parameter`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct Diem<CoinType> has store { val: u64 }
         struct Balance<Token> has key {
             coin: Diem<Token>
@@ -166,7 +166,7 @@ address 0x1 {
     """)
 
     fun `test no error for compatible generic with inferred parameter`() = checkErrors("""
-    module M {
+    module 0x1::M {
         struct Diem<CoinType> has store { val: u64 }
         struct Balance<Token> has key {
             coin: Diem<Token>
@@ -183,7 +183,7 @@ address 0x1 {
     """)
 
     fun `test no return type but returns u8`() = checkErrors("""
-    module M {
+    module 0x1::M {
         fun call() {
             <error descr="Invalid return type: expected '()', found 'integer'">return 1</error>;
         }
@@ -191,7 +191,7 @@ address 0x1 {
     """)
 
     fun `test no return type but returns u8 with expression`() = checkErrors("""
-    module M {
+    module 0x1::M {
         fun call() {
             <error descr="Invalid return type: expected '()', found 'integer'">1</error>
         }
@@ -199,7 +199,7 @@ address 0x1 {
     """)
 
     fun `test if statement returns ()`() = checkErrors("""
-    module M {
+    module 0x1::M {
         fun m() {
             if (true) {1} else {2};
         }
@@ -207,7 +207,7 @@ address 0x1 {
     """)
 
     fun `test block expr returns ()`() = checkErrors("""
-    module M {
+    module 0x1::M {
         fun m() {
             {1};
         }
@@ -216,7 +216,7 @@ address 0x1 {
 
     fun `test error on code block if empty block and return type`() = checkErrors(
         """
-    module M {
+    module 0x1::M {
         fun call(): u8 {<error descr="Invalid return type: expected 'u8', found '()'">}</error>
     }    
         """
@@ -235,7 +235,7 @@ address 0x1 {
     )
 
     fun `test if condition should be boolean`() = checkErrors("""
-    module M {
+    module 0x1::M {
         fun m() {
             if (<error descr="Incompatible type 'integer', expected 'bool'">1</error>) 1;
         }
@@ -243,7 +243,7 @@ address 0x1 {
     """)
 
     fun `test incompatible types from branches`() = checkErrors("""
-    module M {
+    module 0x1::M {
         fun m() {
             if (true) {1} else {<error descr="Incompatible type 'bool', expected 'integer'">true</error>};
         }
@@ -293,6 +293,40 @@ address 0x1 {
             let ids: vector<u64>;
             index_of(&ids, <error descr="Invalid argument for parameter 'e': type 'u64' is not compatible with '&u64'">1u64</error>);
         }
+    }    
+    """
+    )
+
+    fun `test return generic tuple from nested callable`() = checkErrors("""
+    module 0x1::M {
+        struct MintCapability<phantom CoinType> has key, store {}
+        struct BurnCapability<phantom CoinType> has key, store {}
+
+        public fun register_native_currency<CoinType>(): (MintCapability<CoinType>, BurnCapability<CoinType>) {
+            register_currency<CoinType>()
+        }
+        public fun register_currency<CoinType>(): (MintCapability<CoinType>, BurnCapability<CoinType>) {
+            return (MintCapability<CoinType>{}, BurnCapability<CoinType>{})
+        }
+    }    
+    """)
+
+    fun `test emit event requires mutable reference error`() = checkErrors(
+        """
+    module 0x1::M {
+        struct EventHandle<phantom T: drop + store> has store {
+            counter: u64,
+            guid: vector<u8>,
+        }
+        struct Account has key {
+            handle: EventHandle<Event>
+        }
+        struct Event has store, drop {}
+        fun emit_event<T: drop + store>(handler_ref: &mut EventHandle<T>, msg: T) {}
+        fun m<Type: store + drop>() acquires Account {
+            emit_event(<error descr="Invalid argument for parameter 'handler_ref': type 'EventHandle<Event>' is not compatible with '&mut EventHandle<T>'">borrow_global_mut<Account>(@0x1).handle</error>, Event {});
+        }
+        
     }    
     """
     )

@@ -333,4 +333,43 @@ class KeywordCompletionTest : CompletionTestCase() {
 //        public(script)/*caret*/ fun
 //    }
 //    """)
+
+    fun `test no expression keywords at field name position in struct literal`() = checkNoCompletion("""
+    module 0x1::M {
+        struct S { field: u8 }
+        fun m() {
+            let s = S { ret/*caret*/ };
+        }
+    }    
+    """)
+
+    fun `test phantom keyword in struct generic`() = doSingleCompletion("""
+    module 0x1::M {
+        struct S<ph/*caret*/>
+    }    
+    """, """
+    module 0x1::M {
+        struct S<phantom /*caret*/>
+    }    
+    """)
+
+    fun `test phantom keyword in struct generic second param`() = doSingleCompletion("""
+    module 0x1::M {
+        struct S<Type, ph/*caret*/>
+    }    
+    """, """
+    module 0x1::M {
+        struct S<Type, phantom /*caret*/>
+    }    
+    """)
+
+    fun `test phantom keyword in struct generic before existing type`() = doSingleCompletion("""
+    module 0x1::M {
+        struct S<ph/*caret*/CoinType>
+    }    
+    """, """
+    module 0x1::M {
+        struct S<phantom /*caret*/CoinType>
+    }    
+    """)
 }
