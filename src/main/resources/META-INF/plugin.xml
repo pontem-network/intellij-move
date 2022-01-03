@@ -104,6 +104,9 @@
         <liveTemplateContext implementation="org.move.ide.live_templates.MvContextType$Module"/>
         <liveTemplateContext implementation="org.move.ide.live_templates.MvContextType$Block"/>
 
+        <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameProcessor"
+                                   order="first"
+                                   id="mvRenameProcessor"/>
         <lang.psiStructureViewFactory
                 language="Move"
                 implementationClass="org.move.ide.navigation.MvStructureViewBuilderFactory"/>

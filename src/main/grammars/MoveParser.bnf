@@ -726,16 +726,15 @@ private StructLitField_with_recover ::= !'}' StructLitField (',' | &'}')
 }
 private StructLitField_recover ::= !('}' | IDENTIFIER)
 
-StructLitField ::= IDENTIFIER FieldInit?
+StructLitField ::= IDENTIFIER StructLitFieldInit?
 {
-    pin = 1
     implements = [
-        "org.move.lang.core.psi.MvStructFieldReferenceElement"
+        "org.move.lang.core.psi.MvStructFieldLitReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructLitFieldMixin"
 }
 
-FieldInit ::= ':' Expr { pin = 1 }
+private StructLitFieldInit ::= ':' Expr { pin = 1 }
 
 ParensExpr ::= '(' Expr ')'
 

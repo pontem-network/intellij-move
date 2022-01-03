@@ -5,15 +5,45 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import org.move.lang.MvFile
 import org.move.lang.MoveFileType
+import org.move.lang.MvElementTypes
+import org.move.lang.core.psi.ext.childOfType
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
+import org.move.lang.core.psi.ext.getChild
+import org.move.lang.core.psi.ext.hasChild
 
 val Project.psiFactory get() = MvPsiFactory(this)
 
 class MvPsiFactory(private val project: Project) {
+    fun createStructLitField(name: String, value: String): MvStructLitField =
+        createFromText("module _M { fun m() { S { $name: $value }; }}")
+            ?: error("Failed to create MvStructLitField")
+
+    fun createStructPatField(name: String, alias: String): MvStructPatField =
+        createFromText("module _M { fun m() { let S { $name: $alias } = 1; }}")
+            ?: error("Failed to create MvStructPatField")
+
+//    fun createFieldInit(text: String): MvFieldInit =
+//        createFromText("module _M { fun m() { S { myfield $text }; }}") ?: error("")
+
     fun createIdentifier(text: String): PsiElement =
         createFromText<MvModuleDef>("module $text {}")?.nameIdentifier
             ?: error("Failed to create identifier: `$text`")
 
+    fun createColon(): PsiElement =
+        createConst("const C: u8 = 1;")
+            .descendantOfTypeStrict<MvTypeAnnotation>()!!
+            .getChild(MvElementTypes.COLON)!!
+
+    fun createExpression(text: String): MvExpr =
+        tryCreateExpression(text)
+            ?: error("Failed to create expression from text: `$text`")
+
+    fun tryCreateExpression(text: CharSequence): MvExpr? =
+        createFromText("module _IntellijPreludeDummy { fun m() { let _ = $text; } }")
+
+    fun createConst(text: String): MvConstDef =
+        createFromText("module _IntellijPreludeDummy { $text }")
+            ?: error("")
 //    fun createQualifiedPath(text: String): MvQualPath =
 //        createFromText("script { fun main() { $text; } }") ?: error("Failed to create QualifiedPath")
 

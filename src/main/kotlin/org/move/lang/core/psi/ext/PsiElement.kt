@@ -8,7 +8,11 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.MvElementTypes
 
+fun <T: PsiElement> T?.wrapWithList(): List<T> = this?.let { listOf(it) }.orEmpty()
+
 fun PsiElement.hasChild(tokenType: IElementType): Boolean = childrenByType(tokenType).toList().isNotEmpty()
+
+fun PsiElement.getChild(tokenType: IElementType): PsiElement? = childrenByType(tokenType).firstOrNull()
 
 inline fun <reified T : PsiElement> PsiElement.childOfType(): T? =
     PsiTreeUtil.getChildOfType(this, T::class.java)

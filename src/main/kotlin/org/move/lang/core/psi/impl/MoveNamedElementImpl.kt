@@ -8,7 +8,7 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvPsiFactory
 
 abstract class MvNamedElementImpl(node: ASTNode) : MvElementImpl(node),
-                                                     MvNamedElement {
+                                                   MvNamedElement {
     override fun getName(): String? = nameElement?.text
 
     override fun setName(name: String): PsiElement {

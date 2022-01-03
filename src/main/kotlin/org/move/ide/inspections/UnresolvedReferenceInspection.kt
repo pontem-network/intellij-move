@@ -65,19 +65,34 @@ class UnresolvedReferenceInspection : MvLocalInspectionTool() {
             }
         }
 
-        override fun visitStructLitField(o: MvStructLitField) {
-            if (isSpecElement(o)) return
-            if (o.isUnresolved) {
-                val errorMessage =
-                    if (o.isShorthand)
-                        "Unresolved reference: `${o.referenceName}`"
-                    else
-                        "Unresolved field: `${o.referenceName}`"
-                holder.registerProblem(
-                    o.referenceNameElement,
-                    errorMessage,
-                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
-                )
+        override fun visitStructLitField(litField: MvStructLitField) {
+            if (isSpecElement(litField)) return
+            if (litField.isShorthand) {
+                val resolvedItems = litField.reference.multiResolve()
+                val resolvedStructField = resolvedItems.find { it is MvStructFieldDef }
+                if (resolvedStructField == null) {
+                    holder.registerProblem(
+                        litField.referenceNameElement,
+                        "Unresolved field: `${litField.referenceName}`",
+                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                    )
+                }
+                val resolvedBinding = resolvedItems.find { it is MvBindingPat }
+                if (resolvedBinding == null) {
+                    holder.registerProblem(
+                        litField.referenceNameElement,
+                        "Unresolved reference: `${litField.referenceName}`",
+                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                    )
+                }
+            } else {
+                if (litField.reference.resolve() == null) {
+                    holder.registerProblem(
+                        litField.referenceNameElement,
+                        "Unresolved field: `${litField.referenceName}`",
+                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                    )
+                }
             }
         }
     }

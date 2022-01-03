@@ -148,7 +148,7 @@ class ErrorAnnotator : MvAnnotator() {
                         val message =
                             "Invalid argument for field '$fieldName': " +
                                     "type '$exprTypeName' is not compatible with '$expectedTypeName'"
-                        val initExpr = field.fieldInit?.expr ?: field
+                        val initExpr = field.expr ?: field
                         moveHolder.createErrorAnnotation(initExpr, message)
                     }
                 }
