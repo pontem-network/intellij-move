@@ -10,9 +10,12 @@ import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
+import org.move.lang.core.psi.mixins.declaredTy
+import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
 import org.move.lang.core.types.ty.TyUnknown
+import org.move.stdext.chain
 import javax.swing.Icon
 
 enum class FunctionVisibility {
@@ -66,6 +69,16 @@ val MvFunction.resolvedReturnTy: Ty
             returnTypeElement.type?.inferTypeTy() ?: TyUnknown
         }
     }
+
+val MvFunction.requiredTypeParams: List<MvTypeParameter> get() {
+    val declaredTys = this.parameters.map { it.declaredTy }
+        .chain(this.returnType?.type?.inferTypeTy().wrapWithList())
+    val usedTypeParams = mutableSetOf<MvTypeParameter>()
+    declaredTys.forEach {
+        it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.parameter); paramTy }
+    }
+    return this.typeParameters.filter { it !in usedTypeParams }
+}
 
 abstract class MvFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                                 MvFunction {

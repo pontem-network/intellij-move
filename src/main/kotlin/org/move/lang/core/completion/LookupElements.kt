@@ -131,13 +131,20 @@ class MvInsertHandler : InsertHandler<LookupElement> {
 
         when (element) {
             is MvFunction -> {
-                if (!context.alreadyHasCallParens) {
-                    document.insertString(context.selectionEndOffset, "()")
+                val reqTypeParams = element.requiredTypeParams
+                var suffix = ""
+                if (!context.alreadyHasAngleBrackets && reqTypeParams.isNotEmpty()) {
+                    suffix += "<>"
                 }
-                EditorModificationUtil.moveCaretRelatively(
-                    context.editor,
-                    if (element.parameters.isEmpty()) 2 else 1
-                )
+                if (!context.alreadyHasCallParens) {
+                    suffix += "()"
+                }
+                document.insertString(context.selectionEndOffset, suffix)
+                val offset = when {
+                    reqTypeParams.isNotEmpty() || element.parameters.isNotEmpty() -> 1
+                    else -> 2
+                }
+                EditorModificationUtil.moveCaretRelatively(context.editor, offset)
             }
             is MvStruct_ -> {
                 val insideAcquiresType =

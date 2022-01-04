@@ -4,10 +4,10 @@ import org.move.utils.tests.types.TypificationTestCase
 
 class TypeSubstitutionTest: TypificationTestCase() {
     fun `test return type of callable`() = testExpr("""
-    module M {
+    module 0x1::M {
         fun call<R>(): R {}
         fun main() {
-            call<u8>()
+            call<u8>();
           //^ u8  
         }
     }    
@@ -65,7 +65,7 @@ class TypeSubstitutionTest: TypificationTestCase() {
         struct MyToken<Num> has key {}
         fun call<Token>(): Token {}
         fun main() {
-            call<MyToken<u8>>()
+            call<MyToken<u8>>();
           //^ 0x1::M::MyToken<u8>
         }
     }    
@@ -119,7 +119,8 @@ class TypeSubstitutionTest: TypificationTestCase() {
             content: VaultContent
         }
         public fun new<Content: store>(owner: &signer,  content: Content) {
-            Vault { content };
+            let v = Vault { content };
+            v;
           //^ 0x1::M::Vault<Content>  
         }
     }    

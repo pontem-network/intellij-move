@@ -8,7 +8,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.MvElementTypes
 
-fun <T: PsiElement> T?.wrapWithList(): List<T> = this?.let { listOf(it) }.orEmpty()
+fun <T> T?.wrapWithList(): List<T> = this?.let { listOf(it) }.orEmpty()
 
 fun PsiElement.hasChild(tokenType: IElementType): Boolean = childrenByType(tokenType).toList().isNotEmpty()
 
