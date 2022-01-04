@@ -302,11 +302,11 @@ address 0x1 {
         struct MintCapability<phantom CoinType> has key, store {}
         struct BurnCapability<phantom CoinType> has key, store {}
 
-        public fun register_native_currency<CoinType>(): (MintCapability<CoinType>, BurnCapability<CoinType>) {
-            register_currency<CoinType>()
+        public fun register_native_currency<FCoinType>(): (MintCapability<FCoinType>, BurnCapability<FCoinType>) {
+            register_currency<FCoinType>()
         }
-        public fun register_currency<CoinType>(): (MintCapability<CoinType>, BurnCapability<CoinType>) {
-            return (MintCapability<CoinType>{}, BurnCapability<CoinType>{})
+        public fun register_currency<FCoinType>(): (MintCapability<FCoinType>, BurnCapability<FCoinType>) {
+            return (MintCapability<FCoinType>{}, BurnCapability<FCoinType>{})
         }
     }    
     """)

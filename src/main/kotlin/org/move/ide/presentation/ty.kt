@@ -1,10 +1,8 @@
 package org.move.ide.presentation
 
-import org.move.lang.MvFile
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.containingModule
-import org.move.lang.core.psi.ext.acquiresPathTypes
 import org.move.lang.core.psi.ext.fqName
 import org.move.lang.core.types.ty.*
 
@@ -99,8 +97,8 @@ private fun render(
         is TyStruct -> {
             val name = if (fq) ty.item.fqName else (ty.item.name ?: anonymous)
             val args =
-                if (ty.typeArguments.isEmpty()) ""
-                else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
+                if (ty.typeArgs.isEmpty()) ""
+                else ty.typeArgs.joinToString(", ", "<", ">", transform = r)
             name + args
         }
         is TyInfer -> when (ty) {

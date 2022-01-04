@@ -1,6 +1,5 @@
 package org.move.lang.core.types.infer
 
-import org.move.ide.presentation.fullname
 import org.move.lang.core.types.ty.*
 
 sealed class Constraint: TypeFoldable<Constraint> {
@@ -111,9 +110,9 @@ class ConstraintSolver(val ctx: InferenceContext) {
                                 constraints.add(0, Constraint.Equate(ty1.referenced, ty2.referenced))
                             }
                             ty1 is TyStruct && ty2 is TyStruct && ty1.item == ty2.item -> {
-                                if (ty1.typeArguments.size != ty2.typeArguments.size) return false
+                                if (ty1.typeArgs.size != ty2.typeArgs.size) return false
                                 val cs =
-                                    ty1.typeArguments.zip(ty2.typeArguments)
+                                    ty1.typeArgs.zip(ty2.typeArgs)
                                         .map { (t1, t2) -> Constraint.Equate(t1, t2) }
                                 constraints.addAll(0, cs)
                             }

@@ -9,7 +9,7 @@ import org.move.lang.core.types.infer.foldTyTypeParameterWith
 
 data class TyStruct(
     val item: MvStruct_,
-    val typeArguments: List<Ty> = emptyList()
+    val typeArgs: List<Ty> = emptyList()
 ) : Ty {
     val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
 
@@ -17,7 +17,7 @@ data class TyStruct(
         return this.item.abilities.mapNotNull { it.ability }.toSet()
     }
 
-    override fun innerFoldWith(folder: TypeFolder): Ty = TyStruct(item, typeArguments.map(folder))
+    override fun innerFoldWith(folder: TypeFolder): Ty = TyStruct(item, typeArgs.map(folder))
 
     override fun toString(): String = tyToString(this)
 

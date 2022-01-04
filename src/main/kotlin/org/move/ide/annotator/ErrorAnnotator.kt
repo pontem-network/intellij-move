@@ -16,9 +16,9 @@ import org.move.lang.core.types.ty.*
 
 class ErrorAnnotator : MvAnnotator() {
     companion object {
-        private fun invalidReturnTypeMessage(expectedType: Ty, actualType: Ty): String {
+        private fun invalidReturnTypeMessage(expectedTy: Ty, actualTy: Ty): String {
             return "Invalid return type: " +
-                    "expected '${expectedType.name()}', found '${actualType.name()}'"
+                    "expected '${expectedTy.name()}', found '${actualTy.name()}'"
         }
     }
 

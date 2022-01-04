@@ -103,7 +103,7 @@ private fun inferDotExprTy(dotExpr: MvDotExpr, ctx: InferenceContext): Ty {
         } ?: return TyUnknown
 
     val inference = InferenceContext()
-    for ((tyVar, tyArg) in structTy.typeVars.zip(structTy.typeArguments)) {
+    for ((tyVar, tyArg) in structTy.typeVars.zip(structTy.typeArgs)) {
         inference.registerConstraint(Constraint.Equate(tyVar, tyArg))
     }
     // solve constraints, return TyUnknown if cannot
