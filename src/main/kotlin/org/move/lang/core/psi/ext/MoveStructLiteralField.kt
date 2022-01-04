@@ -25,11 +25,12 @@ fun MvStructLitField.inferInitExprTy(ctx: InferenceContext): Ty {
     val initExpr = this.expr
     return if (initExpr == null) {
         // find type of binding
-        val resolved = this.reference.resolve() as? MvBindingPat ?: return TyUnknown
+        val resolved =
+            this.reference.multiResolve().filterIsInstance<MvBindingPat>().firstOrNull() ?: return TyUnknown
         resolved.inferBindingPatTy()
     } else {
         // find type of expression
-        initExpr.let { inferExprTy(it, ctx) } ?: TyUnknown
+        initExpr.inferExprTy(ctx)
     }
 }
 
