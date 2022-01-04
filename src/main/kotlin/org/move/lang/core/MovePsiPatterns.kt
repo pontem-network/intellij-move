@@ -12,8 +12,8 @@ import org.move.lang.MvElementTypes.*
 import org.move.lang.MvFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.elementType
+import org.move.lang.core.psi.ext.hasAncestorOrSelf
 import org.move.lang.core.psi.ext.leftLeaves
-import kotlin.reflect.KClass
 
 object MvPsiPatterns {
     private val STATEMENT_BOUNDARIES = TokenSet.create(SEMICOLON, L_BRACE, R_BRACE)
@@ -25,7 +25,7 @@ object MvPsiPatterns {
 
     fun onStatementBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement().with(OnStatementBeginning(*startWords))
-    
+
     fun toplevel(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvFile>()
 
@@ -183,8 +183,8 @@ object MvPsiPatterns {
             )
         )
 
-    class AfterSibling(val sibling: IElementType, val withPossibleError: Boolean = true)
-        : PatternCondition<PsiElement>("afterSiblingKeywords") {
+    class AfterSibling(val sibling: IElementType, val withPossibleError: Boolean = true) :
+        PatternCondition<PsiElement>("afterSiblingKeywords") {
         override fun accepts(t: PsiElement, context: ProcessingContext?): Boolean {
             var element = t
             if (withPossibleError) {
@@ -192,15 +192,17 @@ object MvPsiPatterns {
             }
             var prevSibling = element.prevSibling
             while (prevSibling != null) {
-                if (prevSibling.elementType == sibling) { return true }
+                if (prevSibling.elementType == sibling) {
+                    return true
+                }
                 prevSibling = prevSibling.prevSibling
             }
             return false
         }
     }
 
-    class AfterAnySibling(val siblings: TokenSet, val withPossibleError: Boolean = true)
-        : PatternCondition<PsiElement>("afterSiblingKeywords") {
+    class AfterAnySibling(val siblings: TokenSet, val withPossibleError: Boolean = true) :
+        PatternCondition<PsiElement>("afterSiblingKeywords") {
         override fun accepts(t: PsiElement, context: ProcessingContext?): Boolean {
             var element = t
             if (withPossibleError) {
@@ -208,21 +210,27 @@ object MvPsiPatterns {
             }
             var prevSibling = element.prevSibling
             while (prevSibling != null) {
-                if (prevSibling.elementType in siblings) { return true }
+                if (prevSibling.elementType in siblings) {
+                    return true
+                }
                 prevSibling = prevSibling.prevSibling
             }
             return false
         }
     }
 
-    private class OnStatementBeginning(vararg startWords: String) :
-        PatternCondition<PsiElement>("on statement beginning") {
+    private class OnStatementBeginning(
+        vararg startWords: String
+    ) : PatternCondition<PsiElement>("on statement beginning") {
         val myStartWords = startWords
         override fun accepts(t: PsiElement, context: ProcessingContext?): Boolean {
             val prev = t.prevVisibleOrNewLine
-            return if (myStartWords.isEmpty())
-                prev == null || prev is PsiWhiteSpace || prev.node.elementType in STATEMENT_BOUNDARIES
-            else {
+            return if (myStartWords.isEmpty()) {
+                val onBoundary =
+                    prev == null || prev is PsiWhiteSpace || prev.node.elementType in STATEMENT_BOUNDARIES
+                onBoundary &&
+                        !(t.hasAncestorOrSelf<MvStructPat>() || t.hasAncestorOrSelf<MvStructLitExpr>())
+            } else {
                 prev != null && prev.node.text in myStartWords
             }
         }
@@ -250,12 +258,18 @@ inline fun <reified I : PsiElement> PsiElementPattern.Capture<PsiElement>.withSu
     return this.withSuperParent(level, I::class.java)
 }
 
-fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCond(name: String, cond: (T) -> Boolean): Self =
+fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCond(
+    name: String,
+    cond: (T) -> Boolean
+): Self =
     with(object : PatternCondition<T>(name) {
         override fun accepts(t: T, context: ProcessingContext?): Boolean = cond(t)
     })
 
-fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCondContext(name: String, cond: (T, ProcessingContext?) -> Boolean): Self =
+fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCondContext(
+    name: String,
+    cond: (T, ProcessingContext?) -> Boolean
+): Self =
     with(object : PatternCondition<T>(name) {
         override fun accepts(t: T, context: ProcessingContext?): Boolean = cond(t, context)
     })
