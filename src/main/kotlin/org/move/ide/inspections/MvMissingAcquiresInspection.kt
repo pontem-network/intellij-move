@@ -30,12 +30,12 @@ class MvMissingAcquiresInspection: MvLocalInspectionTool() {
                 val errorMessage = "Function '$name' is not marked as 'acquires $paramTypeName'"
                 val acquiresType = containingFunction.acquiresType
                 if (acquiresType == null) {
-                    holder.registerProblem(o, errorMessage, ProblemHighlightType.ERROR)
+                    holder.registerProblem(o, errorMessage, ProblemHighlightType.GENERIC_ERROR)
                     return
                 }
                 val acquiresTypeNames = acquiresType.typeFQNames ?: return
                 if (paramTypeFQName !in acquiresTypeNames) {
-                    holder.registerProblem(o, errorMessage, ProblemHighlightType.ERROR)
+                    holder.registerProblem(o, errorMessage, ProblemHighlightType.GENERIC_ERROR)
                 }
             }
         }
