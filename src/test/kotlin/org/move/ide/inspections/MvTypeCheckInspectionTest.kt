@@ -477,7 +477,7 @@ address 0x1 {
     module 0x1::M {
         fun count(val: u8) {}
         fun balance<Token: key>(k: Token) {
-            count(<error descr="The type 'Token' does not have required ability 'drop'">@0x1</error>);
+            count(<error descr="The type 'Token' does not have required ability 'drop'">k</error>);
         }
     }    
     """)

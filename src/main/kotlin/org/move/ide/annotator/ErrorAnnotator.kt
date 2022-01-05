@@ -1,19 +1,11 @@
 package org.move.ide.annotator
 
-import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
-import org.move.ide.presentation.name
-import org.move.ide.presentation.typeLabel
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.mixins.ty
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.inferCallExprTy
-import org.move.lang.core.types.infer.isCompatible
-import org.move.lang.core.types.ty.*
 
 class ErrorAnnotator : MvAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
@@ -84,7 +76,13 @@ class ErrorAnnotator : MvAnnotator() {
                 val expectedCount = function.parameters.size
                 val realCount = arguments.exprList.size
                 val errorMessage =
-                    "This function takes $expectedCount ${pluralise(expectedCount, "parameter", "parameters")} " +
+                    "This function takes $expectedCount ${
+                        pluralise(
+                            expectedCount,
+                            "parameter",
+                            "parameters"
+                        )
+                    } " +
                             "but $realCount ${pluralise(realCount, "parameter", "parameters")} " +
                             "${pluralise(realCount, "was", "were")} supplied"
                 when {

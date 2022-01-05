@@ -6,7 +6,7 @@ import org.move.utils.tests.completion.CompletionTestCase
 
 class BuiltInsCompletionTest : CompletionTestCase() {
     fun `test autocompletion for built-in functions in expr position`() = doTest("""
-        module M {
+        module 0x1::M {
             fun main() {
                 /*caret*/
             }
@@ -22,41 +22,41 @@ class BuiltInsCompletionTest : CompletionTestCase() {
     """)
 
     fun `test parens added`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             fun main() {
-                borrow_global_m/*caret*/
+                move_t/*caret*/
             }
         }    
     """, """
-        module M {
+        module 0x1::M {
             fun main() {
-                borrow_global_mut(/*caret*/)
+                move_to(/*caret*/)
             }
         }    
     """)
 
     fun `test parens existed`() = doSingleCompletion("""
-        module M {
+        module 0x1::M {
             fun main() {
-                borrow_global_m/*caret*/()
+                move_t/*caret*/()
             }
         }    
     """, """
-        module M {
+        module 0x1::M {
             fun main() {
-                borrow_global_mut(/*caret*/)
+                move_to(/*caret*/)
             }
         }    
     """)
 
     fun `test no builtins in type position`() = checkNoCompletion("""
-        module M {
+        module 0x1::M {
             fun main(a: borrow/*caret*/) {}
         }    
     """)
 
     fun `test no builtins in qualified path`() = checkNoCompletion("""
-        module M {
+        module 0x1::M {
             fun main() {
                 let a = Libra::borrow/*caret*/
             }

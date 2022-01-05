@@ -51,4 +51,4 @@ interface Ty : TypeFoldable<Ty> {
     fun abilities(): Set<Ability>
 }
 
-val Ty.isAbilitiesType: Boolean get() = this is TyInfer || this is TyTypeParameter || this is TyStruct
+val Ty.isTypeParam: Boolean get() = this is TyInfer || this is TyTypeParameter

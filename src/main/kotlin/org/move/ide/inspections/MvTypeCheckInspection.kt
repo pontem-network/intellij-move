@@ -139,7 +139,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                     val paramTy = inferredFuncTy.paramTypes[i]
                     val exprTy = expr.inferExprTy(ctx)
 
-                    if (paramTy.isAbilitiesType && exprTy.isAbilitiesType) {
+                    if (paramTy.isTypeParam || exprTy.isTypeParam) {
                         val abilitiesErrorCreated = checkHasRequiredAbilities(holder, expr, exprTy, paramTy)
                         if (abilitiesErrorCreated) continue
                     }

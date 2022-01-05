@@ -22,9 +22,6 @@ class MvPsiFactory(private val project: Project) {
         createFromText("module _M { fun m() { let S { $name: $alias } = 1; }}")
             ?: error("Failed to create MvStructPatField")
 
-//    fun createFieldInit(text: String): MvFieldInit =
-//        createFromText("module _M { fun m() { S { myfield $text }; }}") ?: error("")
-
     fun createIdentifier(text: String): PsiElement =
         createFromText<MvModuleDef>("module $text {}")?.nameIdentifier
             ?: error("Failed to create identifier: `$text`")
@@ -44,13 +41,6 @@ class MvPsiFactory(private val project: Project) {
     fun createConst(text: String): MvConstDef =
         createFromText("module _IntellijPreludeDummy { $text }")
             ?: error("")
-//    fun createQualifiedPath(text: String): MvQualPath =
-//        createFromText("script { fun main() { $text; } }") ?: error("Failed to create QualifiedPath")
-
-    fun createFunctionSignature(text: String): MvFunctionSignature {
-        return createFromText("module _IntellijPreludeDummy { $text {}}")
-            ?: error("Failed to create a method member from text: `$text`")
-    }
 
     fun createItemImport(text: String): MvItemImport {
         return createFromText("module _IntellijPreludeDummy { use 0x1::Module::$text; }")
@@ -70,13 +60,6 @@ class MvPsiFactory(private val project: Project) {
     fun createFunction(text: String, moduleName: String = "_Dummy"): MvFunction =
         createFromText("module $moduleName { $text } ")
             ?: error("Failed to create a function from text: `$text`")
-
-//    fun createNativeFunctionDef(
-//        text: String,
-//        moduleName: String = "_IntellijPreludeDummy"
-//    ): MvNativeFunctionDef =
-//        createFromText("module $moduleName { $text }")
-//            ?: error("Failed to create a method member from text: `$text`")
 
     private inline fun <reified T : MvElement> createFromText(code: CharSequence): T? {
         val dummyFile = PsiFileFactory.getInstance(project)

@@ -15,7 +15,6 @@ import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
 import org.move.lang.core.types.ty.TyUnknown
-import org.move.stdext.chain
 import javax.swing.Icon
 
 enum class FunctionVisibility {
@@ -70,15 +69,16 @@ val MvFunction.resolvedReturnTy: Ty
         }
     }
 
-val MvFunction.requiredTypeParams: List<MvTypeParameter> get() {
-    val declaredTys = this.parameters.map { it.declaredTy }
-        .chain(this.returnType?.type?.inferTypeTy().wrapWithList())
-    val usedTypeParams = mutableSetOf<MvTypeParameter>()
-    declaredTys.forEach {
-        it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.parameter); paramTy }
+val MvFunction.retTypeOnlyTypeParams: List<MvTypeParameter>
+    get() {
+        val usedTypeParams = mutableSetOf<MvTypeParameter>()
+        this.parameters
+            .map { it.declaredTy }
+            .forEach {
+                it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.parameter); paramTy }
+            }
+        return this.typeParameters.filter { it !in usedTypeParams }
     }
-    return this.typeParameters.filter { it !in usedTypeParams }
-}
 
 abstract class MvFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                                 MvFunction {
