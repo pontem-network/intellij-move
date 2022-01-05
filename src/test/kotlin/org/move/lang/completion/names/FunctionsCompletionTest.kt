@@ -207,4 +207,33 @@ class FunctionsCompletionTest : CompletionTestCase() {
         }
     }
     """)
+
+    fun `test insert angle brackets for borrow_global if not inferrable from context`() = doSingleCompletion("""
+    module 0x1::M {
+        fun m() {
+            let a = borrow_global_/*caret*/
+        }
+    }    
+    """, """
+    module 0x1::M {
+        fun m() {
+            let a = borrow_global_mut</*caret*/>()
+        }
+    }    
+    """)
+
+    fun `test no angle brackets for borrow_global if inferrable`() = doSingleCompletion("""
+    module 0x1::M {
+        struct R {}
+        fun m() {
+            let a: &mut R = borrow_global_/*caret*/
+        }
+    }    
+    """, """
+    module 0x1::M {
+        fun m() {
+            let a: &mut R = borrow_global_mut(/*caret*/)
+        }
+    }    
+    """)
 }

@@ -1,9 +1,8 @@
-package org.move.ide.annotator.errors
+package org.move.ide.inspections
 
-import org.move.ide.annotator.ErrorAnnotator
-import org.move.utils.tests.annotation.AnnotatorTestCase
+import org.move.utils.tests.annotation.InspectionsTestCase
 
-class TypeErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
+class MvTypeCheckInspectionTest: InspectionsTestCase(MvTypeCheckInspection::class) {
     fun `test incorrect type address passed where &signer is expected`() = checkErrors("""
         module 0x1::M {
             fun send(account: &signer) {}
@@ -88,7 +87,7 @@ class TypeErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
             true
         }
         fun main<Element>(opt: &Option<Element>) {
-            is_none(<error descr="Invalid argument for parameter 't': type '&Option<Element>' is not compatible with '&mut Option<Element>'">opt</error>)
+            is_none(<error descr="Invalid argument for parameter 't': type '&Option<Element>' is not compatible with '&mut Option<Element>'">opt</error>);
         } 
     }    
     """)
@@ -324,10 +323,218 @@ address 0x1 {
         struct Event has store, drop {}
         fun emit_event<T: drop + store>(handler_ref: &mut EventHandle<T>, msg: T) {}
         fun m<Type: store + drop>() acquires Account {
-            emit_event(<error descr="Invalid argument for parameter 'handler_ref': type 'EventHandle<Event>' is not compatible with '&mut EventHandle<T>'">borrow_global_mut<Account>(@0x1).handle</error>, Event {});
+            emit_event(<error descr="Invalid argument for parameter 'handler_ref': type 'EventHandle<Event>' is not compatible with '&mut EventHandle<Event>'">borrow_global_mut<Account>(@0x1).handle</error>, Event {});
         }
         
     }    
     """
     )
+
+    fun `test fields of struct should have abilities of struct`() = checkErrors("""
+    module 0x1::M {
+        struct A {}
+        
+        struct B has copy {
+            <error descr="The type 'A' does not have the ability 'copy' required by the declared ability 'copy' of the struct 'B'">a: A</error>
+        }
+    }    
+    """)
+
+    fun `test key struct requires store fields`() = checkErrors("""
+    module 0x1::M {
+        struct A {}
+        
+        struct B has key {
+            <error descr="The type 'A' does not have the ability 'store' required by the declared ability 'key' of the struct 'B'">a: A</error>
+        }
+    }    
+    """)
+
+    fun `test store struct requires store fields`() = checkErrors("""
+    module 0x1::M {
+        struct A {}
+        
+        struct B has store {
+            <error descr="The type 'A' does not have the ability 'store' required by the declared ability 'store' of the struct 'B'">a: A</error>
+        }
+    }    
+    """)
+
+    fun `test copy struct requires copy fields`() = checkErrors("""
+    module 0x1::M {
+        struct A {}
+        
+        struct B has copy {
+            <error descr="The type 'A' does not have the ability 'copy' required by the declared ability 'copy' of the struct 'B'">a: A</error>
+        }
+    }    
+    """)
+
+    fun `test drop struct requires drop fields`() = checkErrors("""
+    module 0x1::M {
+        struct A {}
+        
+        struct B has drop {
+            <error descr="The type 'A' does not have the ability 'drop' required by the declared ability 'drop' of the struct 'B'">a: A</error>
+        }
+    }    
+    """)
+
+    fun `test function invocation with explicitly provided generic type`() = checkErrors("""
+    module Event {
+        struct Message has drop {}
+        
+        public fun emit_event<T: store + drop>() {}
+        
+        public fun main() {
+            emit_event<<error descr="The type 'Message' does not have required ability 'store'">Message</error>>()
+        }
+    }    
+    """)
+
+    fun `test struct constructor with explicitly provided generic type`() = checkErrors("""
+    module Event {
+        struct Message has drop {}
+        
+        struct Event<Message: store + drop> {}
+        
+        public fun main() {
+            Event<<error descr="The type 'Message' does not have required ability 'store'">Message</error>> {};
+        }
+    }    
+    """)
+
+    fun `test type param`() = checkErrors("""
+    module 0x1::Event {
+        struct Message has drop {}
+        
+        public fun emit_event<T: store + drop>() {}
+        
+        public fun main<M: drop>() {
+            emit_event<<error descr="The type 'M' does not have required ability 'store'">M</error>>()
+        }
+    }    
+    """)
+
+
+    fun `test no required ability 'key' for move_to argument`() = checkErrors("""
+    module 0x1::M {
+        struct Res {}
+        fun main(s: &signer, r: Res) {
+            move_to(s, <error descr="The type 'Res' does not have required ability 'key'">r</error>)
+        }
+    }    
+    """)
+
+    fun `test no error in move_to with resource`() = checkErrors("""
+    module 0x1::M {
+        struct Res has key {}
+        fun main(s: &signer, r: Res) {
+            move_to<Res>(s, r)
+        }
+    }    
+    """)
+
+    fun `test no required ability for struct for type param`() = checkErrors("""
+    module 0x1::M {
+        struct Res {}
+        fun save<T: key>(r: T) {}
+        fun main(r: Res) {
+            save(<error descr="The type 'Res' does not have required ability 'key'">r</error>)
+        }
+    }    
+    """)
+
+    fun `test no error in type param if structure has required abilities`() = checkErrors("""
+    module 0x1::M {
+        struct Res has key {}
+        fun save<T: key>(r: T) {}
+        fun main(r: Res) {
+            save(r)
+        }
+    }    
+    """)
+
+    fun `test no error in specs`() = checkErrors("""
+    module 0x1::M {
+        fun balance<Token: store>() {}
+        spec schema PayFromEnsures<Token> {
+            ensures balance<Token>();
+        }
+    }    
+    """)
+
+    fun `test pass primitive type to generic with required abilities`() = checkErrors("""
+    module 0x1::M {
+        fun balance<Token: key>(k: Token) {}
+        fun m() {
+            balance(<error descr="The type 'address' does not have required ability 'key'">@0x1</error>);
+        }
+    }    
+    """)
+
+    fun `test pass generic with abilities when primitive type is expected`() = checkErrors("""
+    module 0x1::M {
+        fun count(val: u8) {}
+        fun balance<Token: key>(k: Token) {
+            count(<error descr="The type 'Token' does not have required ability 'drop'">@0x1</error>);
+        }
+    }    
+    """)
+
+    fun `test invalid type for field in struct literal`() = checkErrors("""
+    module 0x1::M {
+        struct Deal { val: u8 }
+        fun main() {
+            Deal { val: <error descr="Invalid argument for field 'val': type 'bool' is not compatible with 'u8'">false</error> };
+        }
+    }    
+    """)
+
+    fun `test valid type for field`() = checkErrors("""
+    module 0x1::M {
+        struct Deal { val: u8 }
+        fun main() {
+            Deal { val: 10 };
+            Deal { val: 10u8 };
+        }
+    }    
+    """)
+
+    fun `test no need for explicit type parameter if inferrable from context`() = checkErrors("""
+    module 0x1::M {
+        struct Option<Element> has copy, drop, store {}
+        public fun none<Element>(): Option<Element> {
+            Option {}
+        }
+        struct S { field: Option<address> }
+        fun m(): S {
+            S { field: none() }
+        }
+        
+    }
+    """)
+
+    fun `test no need for vector empty() generic`() = checkErrors("""
+    module 0x1::M {
+        /// Create an empty vector.
+        native public fun empty<Element>(): vector<Element>;
+        struct CapState<phantom Feature> has key {
+            delegates: vector<address>
+        }
+        fun m() {
+            CapState { delegates: empty() };
+        }
+    }    
+    """)
+
+    fun `test type error in struct literal field shorthand`() = checkErrors("""
+    module 0x1::M {
+        struct S { a: u8 }
+        fun m() {
+            let a = true;
+            S { <error descr="Invalid argument for field 'a': type 'bool' is not compatible with 'u8'">a</error> };
+        }
+    }    
+    """)
 }

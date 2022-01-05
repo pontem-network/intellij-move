@@ -1,9 +1,8 @@
-package org.move.ide.annotator.errors
+package org.move.ide.inspections
 
-import org.move.ide.annotator.ErrorAnnotator
-import org.move.utils.tests.annotation.AnnotatorTestCase
+import org.move.utils.tests.annotation.InspectionsTestCase
 
-class AbsentAcquiresErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
+class MvMissingAcquiresInspectionTest: InspectionsTestCase(MvMissingAcquiresInspection::class) {
     fun `test move_from called and no acquires present`() = checkErrors("""
     module 0x1::M {
         struct Loan has key {}

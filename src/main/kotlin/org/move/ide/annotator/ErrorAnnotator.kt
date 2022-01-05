@@ -1,5 +1,6 @@
 package org.move.ide.annotator
 
+import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
@@ -15,42 +16,10 @@ import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.*
 
 class ErrorAnnotator : MvAnnotator() {
-    companion object {
-        private fun invalidReturnTypeMessage(expectedTy: Ty, actualTy: Ty): String {
-            return "Invalid return type: " +
-                    "expected '${expectedTy.name()}', found '${actualTy.name()}'"
-        }
-    }
-
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val moveHolder = MvAnnotationHolder(holder)
         val visitor = object : MvVisitor() {
             override fun visitConstDef(o: MvConstDef) = checkConstDef(moveHolder, o)
-
-            override fun visitIfExpr(o: MvIfExpr) {
-                val ifTy = o.returningExpr?.inferExprTy() ?: return
-                val elseExpr = o.elseExpr ?: return
-                val elseTy = elseExpr.inferExprTy()
-
-                if (!isCompatible(ifTy, elseTy)) {
-                    moveHolder.createErrorAnnotation(
-                        elseExpr,
-                        "Incompatible type '${elseTy.typeLabel(o)}'" +
-                                ", expected '${ifTy.typeLabel(o)}'"
-                    )
-                }
-            }
-
-            override fun visitCondition(o: MvCondition) {
-                val expr = o.expr ?: return
-                val exprTy = expr.inferExprTy()
-                if (!isCompatible(exprTy, TyBool)) {
-                    moveHolder.createErrorAnnotation(
-                        expr,
-                        "Incompatible type '${exprTy.typeLabel(o)}', expected 'bool'"
-                    )
-                }
-            }
 
             override fun visitFunction(o: MvFunction) = checkFunction(moveHolder, o)
 
@@ -58,64 +27,80 @@ class ErrorAnnotator : MvAnnotator() {
 
             override fun visitModuleDef(o: MvModuleDef) = checkModuleDef(moveHolder, o)
 
-            override fun visitStructFieldDef(o: MvStructFieldDef) = checkStructFieldDef(moveHolder, o)
+            override fun visitStructFieldDef(o: MvStructFieldDef) = checkDuplicates(moveHolder, o)
 
-            override fun visitCodeBlock(codeBlock: MvCodeBlock) {
-                val fn = codeBlock.parent as? MvFunction ?: return
-                val returningExpr = codeBlock.returningExpr
+            override fun visitPath(path: MvPath) {
+                val identifier = path.identifier ?: return
 
-                val expectedReturnTy = fn.resolvedReturnTy
-                val actualReturnTy = returningExpr?.inferExprTy() ?: TyUnit
-                if (!isCompatible(expectedReturnTy, actualReturnTy)) {
-                    val annotatedElement = returningExpr as? PsiElement
-                        ?: codeBlock.rightBrace
-                        ?: codeBlock
-                    moveHolder.createErrorAnnotation(
-                        annotatedElement,
-                        invalidReturnTypeMessage(expectedReturnTy, actualReturnTy)
-                    )
-                }
-            }
+                val typeArguments = path.typeArguments
+                val referred = path.reference?.resolve()
 
-            override fun visitReturnExpr(o: MvReturnExpr) {
-                val outerFn = o.containingFunction ?: return
-                val expectedReturnTy = outerFn.resolvedReturnTy
-                val actualReturnTy = o.expr?.inferExprTy() ?: return
-                if (!isCompatible(expectedReturnTy, actualReturnTy)) {
-                    moveHolder.createErrorAnnotation(
-                        o,
-                        invalidReturnTypeMessage(expectedReturnTy, actualReturnTy)
-                    )
-                }
-            }
-
-            override fun visitCallExpr(o: MvCallExpr) {
-                if (o.path.referenceName !in ACQUIRES_BUILTIN_FUNCTIONS) return
-
-                val paramType =
-                    o.typeArguments.getOrNull(0)
-                        ?.type?.inferTypeTy() as? TyStruct ?: return
-                val paramTypeFQName = paramType.item.fqName
-                val paramTypeName = paramType.item.name ?: return
-
-                val containingFunction = o.containingFunction ?: return
-
-                val name = containingFunction.name ?: return
-                val errorMessage = "Function '$name' is not marked as 'acquires $paramTypeName'"
-                val acquiresType = containingFunction.acquiresType
-                if (acquiresType == null) {
-                    moveHolder.createErrorAnnotation(o, errorMessage)
+                if (referred == null) {
+                    if (path.identifierName == "vector") {
+                        if (typeArguments.isEmpty()) {
+                            holder.createErrorAnnotation(identifier, "Missing item type argument")
+                            return
+                        }
+                        val realCount = typeArguments.size
+                        if (realCount > 1) {
+                            typeArguments.drop(1).forEach {
+                                holder.createErrorAnnotation(
+                                    it,
+                                    "Wrong number of type arguments: expected 1, found $realCount"
+                                )
+                            }
+                            return
+                        }
+                    }
                     return
                 }
-                val acquiresTypeNames = acquiresType.typeFQNames ?: return
-                if (paramTypeFQName !in acquiresTypeNames) {
-                    moveHolder.createErrorAnnotation(o, errorMessage)
+
+                val typeParamsOwner = referred as? MvTypeParametersOwner ?: return
+                val expectedCount = typeParamsOwner.typeParameters.size
+                val realCount = typeArguments.size
+
+                if (expectedCount == 0 && realCount != 0) {
+                    holder.createErrorAnnotation(
+                        path.typeArgumentList!!,
+                        "No type arguments expected",
+                    )
+                    return
+                }
+                if (realCount > expectedCount) {
+                    typeArguments.drop(expectedCount).forEach {
+                        holder.createErrorAnnotation(
+                            it,
+                            "Wrong number of type arguments: expected $expectedCount, found $realCount",
+                        )
+                    }
+                    return
                 }
             }
 
-            override fun visitPath(o: MvPath) = checkPath(moveHolder, o)
+            override fun visitCallArgumentList(arguments: MvCallArgumentList) {
+                val callExpr = arguments.parent as? MvCallExpr ?: return
+                val function = callExpr.path.reference?.resolve() as? MvFunction ?: return
 
-            override fun visitCallArgumentList(o: MvCallArgumentList) = checkCallArgumentList(moveHolder, o)
+                val expectedCount = function.parameters.size
+                val realCount = arguments.exprList.size
+                val errorMessage =
+                    "This function takes $expectedCount ${pluralise(expectedCount, "parameter", "parameters")} " +
+                            "but $realCount ${pluralise(realCount, "parameter", "parameters")} " +
+                            "${pluralise(realCount, "was", "were")} supplied"
+                when {
+                    realCount < expectedCount -> {
+                        val target = arguments.findFirstChildByType(R_PAREN) ?: arguments
+                        holder.createErrorAnnotation(target, errorMessage)
+                        return
+                    }
+                    realCount > expectedCount -> {
+                        arguments.exprList.drop(expectedCount).forEach {
+                            holder.createErrorAnnotation(it, errorMessage)
+                        }
+                        return
+                    }
+                }
+            }
 
             override fun visitStructPat(o: MvStructPat) {
                 val nameElement = o.path.referenceNameElement ?: return
@@ -132,26 +117,6 @@ class ErrorAnnotator : MvAnnotator() {
                 checkMissingFields(
                     moveHolder, nameElement, o.fieldNames.toSet(), struct
                 )
-
-                val ctx = InferenceContext()
-                for (field in o.fields) {
-                    val initExprTy = field.inferInitExprTy(ctx)
-
-                    val fieldName = field.referenceName
-                    val fieldDef = struct.getField(fieldName) ?: continue
-                    val expectedFieldTy = fieldDef.declaredTy
-
-                    if (!isCompatible(expectedFieldTy, initExprTy)) {
-                        val exprTypeName = initExprTy.typeLabel(relativeTo = o)
-                        val expectedTypeName = expectedFieldTy.typeLabel(relativeTo = o)
-
-                        val message =
-                            "Invalid argument for field '$fieldName': " +
-                                    "type '$exprTypeName' is not compatible with '$expectedTypeName'"
-                        val initExpr = field.expr ?: field
-                        moveHolder.createErrorAnnotation(initExpr, message)
-                    }
-                }
             }
         }
         element.accept(visitor)
@@ -182,27 +147,6 @@ class ErrorAnnotator : MvAnnotator() {
         holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${mod.name}`")
     }
 
-    private fun checkStructFieldDef(holder: MvAnnotationHolder, structField: MvStructFieldDef) {
-        checkDuplicates(holder, structField)
-
-        val structTy = TyStruct(structField.struct)
-        val structAbilities = structTy.abilities()
-        if (structAbilities.isEmpty()) return
-
-        val fieldTy = structField.declaredTy as? TyStruct ?: return
-        for (ability in structAbilities) {
-            val requiredAbility = ability.requires()
-            if (requiredAbility !in fieldTy.abilities()) {
-                val message =
-                    "The type '${fieldTy.name()}' does not have the ability '${requiredAbility.label()}' " +
-                            "required by the declared ability '${ability.label()}' " +
-                            "of the struct '${structTy.name()}'"
-                holder.createErrorAnnotation(structField, message)
-                return
-            }
-        }
-    }
-
     private fun checkConstDef(holder: MvAnnotationHolder, const: MvConstDef) {
         val binding = const.bindingPat ?: return
         val owner = const.parent?.parent ?: return
@@ -224,148 +168,6 @@ private fun checkMissingFields(
     if ((referredStruct.fieldNames.toSet() - providedFieldNames).isNotEmpty()) {
         holder.createErrorAnnotation(target, "Some fields are missing")
     }
-}
-
-private fun checkCallArgumentList(holder: MvAnnotationHolder, arguments: MvCallArgumentList) {
-    val callExpr = arguments.parent as? MvCallExpr ?: return
-    val function = callExpr.path.reference?.resolve() as? MvFunction ?: return
-
-    val expectedCount = function.parameters.size
-    val realCount = arguments.exprList.size
-    val errorMessage =
-        "This function takes $expectedCount ${pluralise(expectedCount, "parameter", "parameters")} " +
-                "but $realCount ${pluralise(realCount, "parameter", "parameters")} " +
-                "${pluralise(realCount, "was", "were")} supplied"
-    when {
-        realCount < expectedCount -> {
-            val target = arguments.findFirstChildByType(R_PAREN) ?: arguments
-            holder.createErrorAnnotation(target, errorMessage)
-            return
-        }
-        realCount > expectedCount -> {
-            arguments.exprList.drop(expectedCount).forEach {
-                holder.createErrorAnnotation(it, errorMessage)
-            }
-            return
-        }
-    }
-
-    val ctx = InferenceContext()
-    val inferredFuncTy = inferCallExprTy(callExpr, ctx)
-    if (inferredFuncTy !is TyFunction) return
-
-    for ((i, expr) in arguments.exprList.withIndex()) {
-        val parameter = function.parameters[i]
-        val paramTy = inferredFuncTy.paramTypes[i]
-        val exprTy = expr.inferExprTy(ctx)
-
-        val abilitiesErrorCreated = checkHasRequiredAbilities(holder, expr, exprTy, paramTy)
-        if (abilitiesErrorCreated) continue
-
-        if (!isCompatible(paramTy, exprTy)) {
-            val paramName = parameter.bindingPat.name ?: continue
-            val exprTypeName = exprTy.typeLabel(relativeTo = arguments)
-            val expectedTypeName = paramTy.typeLabel(relativeTo = arguments)
-
-            val message =
-                "Invalid argument for parameter '$paramName': " +
-                        "type '$exprTypeName' is not compatible with '$expectedTypeName'"
-            holder.createErrorAnnotation(expr, message)
-        }
-    }
-}
-
-private fun checkPath(holder: MvAnnotationHolder, path: MvPath) {
-    val identifier = path.identifier ?: return
-
-    val typeArguments = path.typeArguments
-    val referred = path.reference?.resolve()
-
-    if (referred == null) {
-        if (path.identifierName == "vector") {
-            if (typeArguments.isEmpty()) {
-                holder.createErrorAnnotation(identifier, "Missing item type argument")
-                return
-            }
-            val realCount = typeArguments.size
-            if (realCount > 1) {
-                typeArguments.drop(1).forEach {
-                    holder.createErrorAnnotation(
-                        it,
-                        "Wrong number of type arguments: expected 1, found $realCount"
-                    )
-                }
-                return
-            }
-        }
-        return
-    }
-
-    val name = referred.name ?: return
-    when {
-        referred is MvFunction
-                && name in BUILTIN_FUNCTIONS_WITH_REQUIRED_RESOURCE_TYPE
-                && typeArguments.isEmpty() -> {
-            holder.createErrorAnnotation(path, "Missing resource type argument")
-            return
-        }
-        referred is MvTypeParametersOwner -> {
-            val expectedCount = referred.typeParameters.size
-            val realCount = typeArguments.size
-
-            if (expectedCount == 0 && realCount != 0) {
-                holder.createErrorAnnotation(
-                    path.typeArgumentList!!,
-                    "No type arguments expected"
-                )
-                return
-            }
-            if (realCount > expectedCount) {
-                typeArguments.drop(expectedCount).forEach {
-                    holder.createErrorAnnotation(
-                        it,
-                        "Wrong number of type arguments: expected $expectedCount, found $realCount"
-                    )
-                }
-                return
-            }
-
-            for ((i, typeArgument) in typeArguments.withIndex()) {
-                val typeParam = referred.typeParameters[i]
-                val argumentTy = typeArgument.type.inferTypeTy()
-                checkHasRequiredAbilities(
-                    holder,
-                    typeArgument.type,
-                    argumentTy,
-                    typeParam.ty()
-                )
-            }
-        }
-    }
-}
-
-private fun checkHasRequiredAbilities(
-    holder: MvAnnotationHolder,
-    element: MvElement,
-    actualTy: Ty,
-    expectedTy: Ty
-): Boolean {
-    // do not check for specs
-    if (element.isInsideSpecBlock()) return false
-
-    val abilities = actualTy.abilities()
-    for (ability in expectedTy.abilities()) {
-        if (ability !in abilities) {
-            val typeName = actualTy.typeLabel(relativeTo = element)
-            holder.createErrorAnnotation(
-                element,
-                "The type '$typeName' " +
-                        "does not have required ability '${ability.label()}'"
-            )
-            return true
-        }
-    }
-    return false
 }
 
 private fun checkDuplicates(

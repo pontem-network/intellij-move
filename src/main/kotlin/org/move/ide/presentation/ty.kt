@@ -28,8 +28,6 @@ fun Ty.typeLabel(relativeTo: MvElement): String {
     } else {
         return this.name()
     }
-//    val file = relativeTo.containingFile as? MvFile
-//    return shortPresentableText(file)
 }
 
 fun Ty.shortPresentableText(fq: Boolean = false): String =

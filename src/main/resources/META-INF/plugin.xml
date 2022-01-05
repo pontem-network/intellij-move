@@ -124,10 +124,9 @@
         <!--                         implementationClass="org.move.ide.inspections.lints.FunctionNamingInspection"/>-->
         <localInspection language="Move" groupName="Move"
                          displayName="Unresolved reference"
-                         shortName="MoveUnresolvedReference"
                          enabledByDefault="false"
                          level="ERROR"
-                         implementationClass="org.move.ide.inspections.UnresolvedReferenceInspection"/>
+                         implementationClass="org.move.ide.inspections.MvUnresolvedReferenceInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Field initialization shorthand"
                          enabledByDefault="true" level="WEAK WARNING"
@@ -152,7 +151,14 @@
                          displayName="Redundant qualifier"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.move.ide.inspections.RedundantQualifiedPathInspection"/>
-
+        <localInspection language="Move" groupName="Move"
+                         displayName="Type checking"
+                         enabledByDefault="true" level="ERROR"
+                         implementationClass="org.move.ide.inspections.MvTypeCheckInspection" />
+        <localInspection language="Move" groupName="Move"
+                         displayName="Missing acquires"
+                         enabledByDefault="true" level="ERROR"
+                         implementationClass="org.move.ide.inspections.MvMissingAcquiresInspection" />
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>

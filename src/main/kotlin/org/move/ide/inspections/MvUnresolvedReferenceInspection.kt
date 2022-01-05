@@ -5,7 +5,7 @@ import com.intellij.codeInspection.ProblemsHolder
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 
-class UnresolvedReferenceInspection : MvLocalInspectionTool() {
+class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitModuleRef(moduleRef: MvModuleRef) {
             if (isSpecElement(moduleRef)) return
