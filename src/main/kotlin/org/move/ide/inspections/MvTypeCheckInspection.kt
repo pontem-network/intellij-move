@@ -20,7 +20,7 @@ fun ProblemsHolder.registerTypeError(
     @InspectionMessage message: String,
     vararg fixes: LocalQuickFix
 ) {
-    this.registerProblem(element, message, ProblemHighlightType.ERROR, *fixes)
+    this.registerProblem(element, message, ProblemHighlightType.GENERIC_ERROR, *fixes)
 }
 
 class MvTypeCheckInspection : MvLocalInspectionTool() {

@@ -13,8 +13,16 @@ fun Ty.getDefiningModule(): MvModuleDef? =
         else -> null
     }
 
+fun Ty.nameNoArgs(): String {
+    return this.name().replace(Regex("<.*>"), "")
+}
+
 fun Ty.name(): String {
     return shortPresentableText(fq = false)
+}
+
+fun Ty.fullnameNoArgs(): String {
+    return this.fullname().replace(Regex("<.*>"), "")
 }
 
 fun Ty.fullname(): String {

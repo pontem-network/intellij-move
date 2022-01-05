@@ -47,7 +47,7 @@ class MvPsiFactory(private val project: Project) {
             ?: error("Failed to create an item import from text: `$text`")
     }
 
-    fun createAcquiresType(text: String): MvAcquiresType {
+    fun createAcquires(text: String): MvAcquiresType {
         return createFromText("module _IntellijPreludeDummy { fun main() $text {}}")
             ?: error("Failed to create a method member from text: `$text`")
     }
