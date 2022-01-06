@@ -12,8 +12,13 @@ import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.util.Consumer
+import org.move.cli.MoveProject
 import java.util.concurrent.ConcurrentHashMap
 
+sealed class MoveProjectEntry {
+    object Missing : MoveProjectEntry()
+    data class Present(val project: MoveProject?): MoveProjectEntry()
+}
 /**
  * This is a light version of DirectoryIndexImpl
  *
