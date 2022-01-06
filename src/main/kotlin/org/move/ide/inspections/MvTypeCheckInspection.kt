@@ -11,6 +11,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.ty
 import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.TypeFoldable
 import org.move.lang.core.types.infer.inferCallExprTy
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.*

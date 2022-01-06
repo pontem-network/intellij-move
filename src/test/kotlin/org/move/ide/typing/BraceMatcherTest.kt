@@ -4,10 +4,10 @@ import com.intellij.codeInsight.highlighting.BraceMatchingUtil
 import com.intellij.openapi.editor.ex.EditorEx
 import org.intellij.lang.annotations.Language
 import org.move.lang.MoveFileType
-import org.move.utils.tests.MvTestBase
+import org.move.utils.tests.MvTypingTestCase
 import org.move.utils.tests.replaceCaretMarker
 
-class BraceMatcherTest : MvTestBase() {
+class BraceMatcherTest : MvTypingTestCase() {
     fun `test don't pair parenthesis before identifier`() = doTest(
         "script { fun main() { let _ = /*caret*/typing }}",
         '(',
@@ -26,24 +26,6 @@ class BraceMatcherTest : MvTestBase() {
         "script { fun main(/*caret*/) {}}"
     )
 
-    fun `test add second pair of angle brackets`() = doTest(
-        "script { fun main<NFT/*caret*/>() {}}",
-        '<',
-        "script { fun main<NFT</*caret*/>>() {}}",
-    )
-
-    fun `test dont pair braces inside identifier`() = doTest(
-        "script { fun main<NF/*caret*/T>() {}}",
-        '<',
-        "script { fun main<NF</*caret*/T>() {}}",
-    )
-
-    fun `test add pair of angle brackets for struct field`() = doTest(
-        "module M { struct Col { a: Option/*caret*/ } }",
-        '<',
-        "module M { struct Col { a: Option</*caret*/> } }",
-    )
-
     fun `test match parens`() = doMatch("script { fun main/*caret*/(x: u8) {}}", ")")
 
     fun `test match angle brackets`() = doMatch("script { fun main/*caret*/<T>(x: u8) {}}", ">")
@@ -60,10 +42,12 @@ class BraceMatcherTest : MvTestBase() {
         myFixture.configureByText(MoveFileType, sourceText)
         val editorHighlighter = (myFixture.editor as EditorEx).highlighter
         val iterator = editorHighlighter.createIterator(myFixture.editor.caretModel.offset)
-        val matched = BraceMatchingUtil.matchBrace(myFixture.editor.document.charsSequence,
+        val matched = BraceMatchingUtil.matchBrace(
+            myFixture.editor.document.charsSequence,
             myFixture.file.fileType,
             iterator,
-            true)
+            true
+        )
         check(!matched)
     }
 
@@ -75,12 +59,12 @@ class BraceMatcherTest : MvTestBase() {
         check(BraceMatchingUtil.getMatchedBraceOffset(myFixture.editor, true, myFixture.file) == expected)
     }
 
-    private fun doTest(@Language("Move") before: String, type: Char, @Language("Move") after: String) {
-        val beforeText = replaceCaretMarker(before)
-        val afterText = replaceCaretMarker(after)
-
-        myFixture.configureByText(MoveFileType, beforeText)
-        myFixture.type(type)
-        myFixture.checkResult(afterText)
-    }
+//    private fun doTest(@Language("Move") before: String, type: Char, @Language("Move") after: String) {
+//        val beforeText = replaceCaretMarker(before)
+//        val afterText = replaceCaretMarker(after)
+//
+//        myFixture.configureByText(MoveFileType, beforeText)
+//        myFixture.type(type)
+//        myFixture.checkResult(afterText)
+//    }
 }
