@@ -1,6 +1,7 @@
 package org.move.ide.typing
 
 import com.intellij.codeInsight.CodeInsightSettings
+import com.intellij.codeInsight.editorActions.BackspaceHandlerDelegate
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorModificationUtil
@@ -58,6 +59,47 @@ class MvAngleBraceTypedHandler : TypedHandlerDelegate() {
         }
 
         return super.charTyped(c, project, editor, file)
+    }
+}
+
+class MvAngleBracketsBackspaceHandler: BackspaceHandlerDelegate() {
+    private var enabled: Boolean = false
+
+    override fun beforeCharDeleted(c: Char, file: PsiFile, editor: Editor) {
+        enabled = deleting(c, file, editor)
+    }
+
+    override fun charDeleted(c: Char, file: PsiFile, editor: Editor): Boolean {
+        if (!enabled) return false
+        return deleted(c, file, editor)
+    }
+
+    /**
+     * Determine whether this handler applies to given context and perform necessary actions before deleting [c].
+     */
+    fun deleting(c: Char, file: PsiFile, editor: Editor): Boolean {
+        if (c == '<' && file is MvFile) {
+            val offset = editor.caretModel.offset
+            val iterator = (editor as EditorEx).highlighter.createIterator(offset)
+            return iterator.tokenType == GT
+        }
+        return false
+    }
+
+    /**
+     * Perform action after char [c] was deleted.
+     *
+     * @return true whether this handler succeeded and the IDE should stop evaluating
+     *         remaining handlers; otherwise, false
+     */
+    fun deleted(c: Char, file: PsiFile, editor: Editor): Boolean {
+        val balance = calculateBalance(editor)
+        if (balance < 0) {
+            val offset = editor.caretModel.offset
+            editor.document.deleteString(offset, offset + 1)
+            return true
+        }
+        return true
     }
 }
 

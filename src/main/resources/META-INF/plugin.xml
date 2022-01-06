@@ -51,6 +51,8 @@
                       id="MvAngleBracketsHandler"/>
         <enterHandlerDelegate implementation="org.move.ide.typing.MvEnterInLineCommentHandler"
                               id="MvEnterInLineComments"/>
+        <backspaceHandlerDelegate implementation="org.move.ide.typing.MvAngleBracketsBackspaceHandler"
+                                  id="MvAngleBracketsBackspaceHandler" />
 
         <lang.formatter language="Move"
                         implementationClass="org.move.ide.formatter.MvFormattingModelBuilder"/>
@@ -114,7 +116,7 @@
                 key="org.move.lang.core.psi.MvModuleDef"
                 implementationClass="org.move.ide.navigation.ModuleDeclarationRangeHandler"/>
         <declarationRangeHandler
-                key="org.move.lang.core.psi.MvFunctionDef"
+                key="org.move.lang.core.psi.MvFunction"
                 implementationClass="org.move.ide.navigation.FunctionDeclarationRangeHandler"/>
         <!--        <stubIndex implementation="org.move.lang.core.stubs.index.MvNamedElementIndex"/>-->
 

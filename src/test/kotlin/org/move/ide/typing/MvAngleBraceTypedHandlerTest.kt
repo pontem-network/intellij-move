@@ -41,11 +41,17 @@ class MvAngleBraceTypedHandlerTest : MvTypingTestCase() {
             "module 0x1::M { fun m() { Res<E, X>>/*caret*/; } }"
         )
 
+    fun `test remove right GT on backspace`() =
+        doTest(
+            "module 0x1::M { fun m() { Res</*caret*/>; } }",
+            '\b',
+            "module 0x1::M { fun m() { Res/*caret*/; } }"
+        )
+
     fun `test don't remove next GT if braces aren't balanced`() =
         doTest(
             "module 0x1::M { fun m() { Res<</*caret*/>; } }",
             '\b',
             "module 0x1::M { fun m() { Res</*caret*/>; } }"
         )
-
 }
