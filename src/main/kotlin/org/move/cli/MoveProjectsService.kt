@@ -112,7 +112,6 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
         }
         // in-memory file
         if (file == null) return null
-//        val file = fsElement.originalFile.virtualFile
 
         val cachedProject = this.directoryIndex.getInfoForFile(file)
         if (cachedProject != null) return cachedProject
@@ -123,6 +122,7 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
                 ?.let { findMoveTomlPath(it) }
                 ?.findVirtualFile()
                 ?.let { initializeMoveProject(project, it) }
+
         if (moveProject == null) {
             // this is for light tests, heavy test should always have valid moveProject
             if (isUnitTestMode) return testEmptyMvProject(project)
