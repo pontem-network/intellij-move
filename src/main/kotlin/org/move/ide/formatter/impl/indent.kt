@@ -33,7 +33,7 @@ fun MvFormatterBlock.computeIndent(child: ASTNode): Indent? {
             is MvInlineBlock -> Indent.getNormalIndent()
             else -> Indent.getNoneIndent()
         }
-        parentPsi is MvSpecExpr -> Indent.getNormalIndent()
+//        parentPsi is MvSpecExpr -> Indent.getNormalIndent()
 
         // binary expressions, chain calls
         // no indent on it's own, use parent indent

@@ -31,9 +31,9 @@ module M {
         ensures RET == x + 1;
         ensures RET == x/y;
         ensures x/y == RET;
-        ensures RET = {let y = x; y + 1};
+        ensures RET == {let y = x; y + 1};
         ensures all(x, |y, z| x + y + z);
-        ensures RET = x[1] && x[0..3];
+        ensures RET == x[1] && x[0..3];
         ensures x > 0 ==> RET == x - 1;
         ensures x == 0 ==> RET == x;
 

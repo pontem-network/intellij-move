@@ -10,5 +10,9 @@ module M {
         a < b && b > 2;
 
         v1[1+1];
+        return
+    }
+    fun m() {
+        return 1
     }
 }

@@ -18,7 +18,7 @@ FILE
         MvCodeBlockImpl(CODE_BLOCK)
           PsiElement({)('{')
           PsiWhiteSpace('\n        ')
-          MvSpecBlockSpecStatementImpl(SPEC_BLOCK_SPEC_STATEMENT)
+          MvExprStatementImpl(EXPR_STATEMENT)
             MvSpecBlockExprImpl(SPEC_BLOCK_EXPR)
               PsiElement(spec)('spec')
               PsiWhiteSpace(' ')

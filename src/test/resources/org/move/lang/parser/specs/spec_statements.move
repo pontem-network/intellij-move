@@ -1,13 +1,16 @@
-module M {
+module 0x1::M {
     fun main() {
         let apply = 1;
         let emits = 1;
         let to = 1;
         let except = 1;
+
+        1 ==> 2;
     }
     spec main {
         let post new_a = 1;
         let a = 1..1+1;
+        1 ==> 2;
 
         fun inner_spec_fun() {}
         emits msg to handle if !is_synthetic;
@@ -17,5 +20,9 @@ module M {
         apply ModuleInvariant to bar;
         aborts_if exists(Signer::spec_address_of(to_limit));
         aborts_if exists<Window>(Signer::spec_address_of(to_limit));
+    }
+
+    fun main2() {
+        1 ==> 2;
     }
 }
