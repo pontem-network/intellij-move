@@ -8,6 +8,7 @@ import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvPathReference
 import org.move.lang.core.resolve.ref.MvPathReferenceImpl
+import org.move.lang.core.resolve.ref.MvReference
 import org.move.lang.core.resolve.ref.Namespace
 
 //val MvQualPath.address: Address? get() = (moduleRef as? MvFQModuleRef)?.addressRef?.address()

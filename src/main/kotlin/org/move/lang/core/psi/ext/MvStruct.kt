@@ -5,6 +5,9 @@ import com.intellij.psi.util.descendantsOfType
 import org.move.ide.MvIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
+import org.move.lang.core.psi.mixins.declaredTy
+import org.move.lang.core.types.infer.foldTyTypeParameterWith
+import org.move.stdext.chain
 import javax.swing.Icon
 
 val MvStruct_.fields: List<MvStructFieldDef>
@@ -38,6 +41,8 @@ val MvStruct_.abilities: List<MvAbility>
     get() {
         return this.abilitiesList?.abilityList ?: emptyList()
     }
+
+val MvStruct_.hasPhantomTypeParameters get() = this.typeParameters.any { it.isPhantom }
 
 abstract class MvStructMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                               MvStruct_ {

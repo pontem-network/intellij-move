@@ -9,7 +9,6 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import org.move.ide.annotator.MvAnnotationHolder
 import org.move.ide.presentation.shortPresentableText
-import org.move.lang.MvFile
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.startOffset
 import org.move.lang.core.types.infer.TypeFoldable
@@ -49,6 +48,32 @@ sealed class MvDiagnostic(
                     ", found `${actualTy.shortPresentableText(true)}`"
         }
     }
+
+    class TypeArgumentsNumberMismatch(
+        element: PsiElement,
+        private val label: String,
+        private val expectedCount: Int,
+        private val realCount: Int,
+    ) : MvDiagnostic(element) {
+        override fun prepare(): PreparedAnnotation {
+            val errorText = "Invalid instantiation of '$label'. " +
+                    "Expected $expectedCount type argument(s) but got $realCount"
+            return PreparedAnnotation(
+                ERROR,
+                errorText,
+            )
+        }
+    }
+
+    class CannotInferType(element: PsiElement) : MvDiagnostic(element) {
+        override fun prepare(): PreparedAnnotation {
+            return PreparedAnnotation(
+                ERROR,
+                "Could not infer this type. Try adding an annotation",
+            )
+        }
+
+    }
 }
 
 enum class Severity {
@@ -71,7 +96,7 @@ private fun Severity.toHighlightSeverity(): HighlightSeverity = when (this) {
 
 class PreparedAnnotation(
     val severity: Severity,
-    @Suppress("UnstableApiUsage") @InspectionMessage val header: String,
+    @InspectionMessage val header: String,
     @Suppress("UnstableApiUsage") @NlsContexts.Tooltip val description: String = "",
 //    val fixes: List<LocalQuickFix> = emptyList(),
     val textAttributes: TextAttributesKey? = null
@@ -90,11 +115,14 @@ fun MvDiagnostic.addToHolder(moveHolder: MvAnnotationHolder) {
     }
 
     val holder = moveHolder.holder
-    holder.newAnnotation(
+    var ann = holder.newAnnotation(
         prepared.severity.toHighlightSeverity(),
         prepared.header
     )
-        .tooltip(prepared.description)
+    if (prepared.description.isNotBlank()) {
+        ann = ann.tooltip(prepared.description)
+    }
+    ann
         .highlightType(prepared.severity.toProblemHighlightType())
         .range(textRange)
         .create()

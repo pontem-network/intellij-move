@@ -6,9 +6,9 @@ import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.fqName
 import org.move.lang.core.types.ty.*
 
-fun Ty.getDefiningModule(): MvModuleDef? =
-    when (this) {
-        is TyReference -> this.referenced.getDefiningModule()
+val Ty.declaringModule: MvModuleDef?
+    get() = when (this) {
+        is TyReference -> this.referenced.declaringModule
         is TyStruct -> this.item.containingModule
         else -> null
     }
@@ -30,7 +30,7 @@ fun Ty.fullname(): String {
 }
 
 fun Ty.typeLabel(relativeTo: MvElement): String {
-    val typeModule = this.getDefiningModule()
+    val typeModule = this.declaringModule
     if (typeModule != null && typeModule != relativeTo.containingModule) {
         return this.fullname()
     } else {

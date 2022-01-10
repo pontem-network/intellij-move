@@ -11,7 +11,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.ty
 import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.TypeFoldable
 import org.move.lang.core.types.infer.inferCallExprTy
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.*
@@ -113,11 +112,12 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
             override fun visitPath(path: MvPath) {
                 val typeArguments = path.typeArguments
-                val referred = path.reference?.resolve() as? MvTypeParametersOwner ?: return
+                val item = path.reference?.resolve() as? MvTypeParametersOwner ?: return
+                if (item.typeParameters.size != typeArguments.size) return
 
                 for ((i, typeArgument) in typeArguments.withIndex()) {
-                    val typeParam = referred.typeParameters[i]
-                    val argumentTy = typeArgument.type.inferTypeTy()
+                    val typeParam = item.typeParameters[i]
+                    val argumentTy = typeArgument.type.ty()
                     checkHasRequiredAbilities(
                         holder,
                         typeArgument.type,

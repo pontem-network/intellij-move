@@ -4,9 +4,13 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
+import org.move.ide.presentation.declaringModule
+import org.move.ide.presentation.fullname
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.utils.MvDiagnostic
+import org.move.lang.utils.addToHolder
 
 class ErrorAnnotator : MvAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
@@ -23,66 +27,82 @@ class ErrorAnnotator : MvAnnotator() {
             override fun visitStructFieldDef(o: MvStructFieldDef) = checkDuplicates(moveHolder, o)
 
             override fun visitPath(path: MvPath) {
-                val identifier = path.identifier ?: return
+                val item = path.reference?.resolve()
+                val realCount = path.typeArguments.size
+                val parent = path.parent
+                when {
+                    item == null && path.identifierName == "vector" -> {
+                        MvDiagnostic
+                            .TypeArgumentsNumberMismatch(path, "vector", 1, realCount)
+                            .addToHolder(moveHolder)
+                    }
+                    item is MvStruct_ && parent is MvPathType -> {
+                        val expectedCount = item.typeParameters.size
+                        val label = item.fqName
 
-                val typeArguments = path.typeArguments
-                val referred = path.reference?.resolve()
-
-                if (referred == null) {
-                    if (path.identifierName == "vector") {
-                        if (typeArguments.isEmpty()) {
-                            holder.newAnnotation(HighlightSeverity.ERROR, "Missing item type argument")
-                                .range(identifier)
-                                .create()
-//                            holder.createErrorAnnotation(identifier, "Missing item type argument")
-                            return
+                        if (expectedCount != realCount) {
+                            MvDiagnostic
+                                .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
+                                .addToHolder(moveHolder)
                         }
-                        val realCount = typeArguments.size
-                        if (realCount > 1) {
-                            typeArguments.drop(1).forEach {
-                                holder.newAnnotation(
-                                    HighlightSeverity.ERROR,
-                                    "Wrong number of type arguments: expected 1, found $realCount"
-                                )
-                                    .range(it)
-                                    .create()
-//                                holder.createErrorAnnotation(
-//                                    it,
-//                                    "Wrong number of type arguments: expected 1, found $realCount"
-//                                )
+                    }
+                    item is MvStruct_ && parent is MvStructLitExpr -> {
+                        // phantom type params
+                        val expectedCount = item.typeParameters.size
+                        if (realCount != 0) {
+                            // if any type param is passed, inference is disabled, so check fully
+                            if (realCount != expectedCount) {
+                                val label = item.fqName
+                                MvDiagnostic
+                                    .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
+                                    .addToHolder(moveHolder)
                             }
-                            return
+                        } else {
+                            if (item.hasPhantomTypeParameters && realCount != expectedCount) {
+                                MvDiagnostic.CannotInferType(path)
+                                    .addToHolder(moveHolder)
+                            }
                         }
                     }
-                    return
-                }
-
-                val typeParamsOwner = referred as? MvTypeParametersOwner ?: return
-                val expectedCount = typeParamsOwner.typeParameters.size
-                val realCount = typeArguments.size
-
-                if (expectedCount == 0 && realCount != 0) {
-                    val target = path.typeArgumentList!!
-                    holder.newAnnotation(HighlightSeverity.ERROR, "No type arguments expected")
-                        .range(target)
-                        .create()
-//                    holder.createErrorAnnotation(
-//                        path.typeArgumentList!!,
-//                        "No type arguments expected",
-//                    )
-                    return
-                }
-                if (realCount > expectedCount) {
-                    typeArguments.drop(expectedCount).forEach {
-                        holder.newAnnotation(HighlightSeverity.ERROR, "Wrong number of type arguments: expected $expectedCount, found $realCount")
-                            .range(it)
-                            .create()
-//                        holder.createErrorAnnotation(
-//                            it,
-//                            "Wrong number of type arguments: expected $expectedCount, found $realCount",
-//                        )
+                    item is MvFunction && parent is MvCallExpr -> {
+                        val expectedCount = item.typeParameters.size
+                        if (realCount != 0) {
+                            // if any type param is passed, inference is disabled, so check fully
+                            if (realCount != expectedCount) {
+                                val label = item.fqName
+                                MvDiagnostic
+                                    .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
+                                    .addToHolder(moveHolder)
+                            }
+                        } else {
+                            // if no type args are passed, check whether all type params are inferrable
+                            if (item.requiredTypeParams.isNotEmpty() && realCount != expectedCount) {
+                                MvDiagnostic.CannotInferType(path)
+                                    .addToHolder(moveHolder)
+                            }
+                        }
                     }
-                    return
+                }
+            }
+
+            override fun visitCallExpr(o: MvCallExpr) {
+                if (o.path.referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
+                    val explicitTypeArgs = o.typeArguments
+                    val currentModule = o.containingModule ?: return
+                    for (typeArg in explicitTypeArgs) {
+                        val ty = typeArg.type.ty()
+                        val mod = ty.declaringModule ?: continue
+                        if (mod != currentModule) {
+                            val typeName = ty.fullname()
+                            holder.newAnnotation(
+                                HighlightSeverity.ERROR,
+                                "The type '$typeName' was not declared in the current module. " +
+                                        "Global storage access is internal to the module"
+                            )
+                                .range(o.path)
+                                .create()
+                        }
+                    }
                 }
             }
 
@@ -108,7 +128,6 @@ class ErrorAnnotator : MvAnnotator() {
                         holder.newAnnotation(HighlightSeverity.ERROR, errorMessage)
                             .range(target)
                             .create()
-//                        holder.createErrorAnnotation(target, errorMessage)
                         return
                     }
                     realCount > expectedCount -> {
@@ -116,7 +135,6 @@ class ErrorAnnotator : MvAnnotator() {
                             holder.newAnnotation(HighlightSeverity.ERROR, errorMessage)
                                 .range(it)
                                 .create()
-//                            holder.createErrorAnnotation(it, errorMessage)
                         }
                         return
                     }
