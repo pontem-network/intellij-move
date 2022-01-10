@@ -11,6 +11,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.utils.MvDiagnostic
 import org.move.lang.utils.addToHolder
+import kotlin.math.exp
 
 class ErrorAnnotator : MvAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
@@ -32,14 +33,18 @@ class ErrorAnnotator : MvAnnotator() {
                 val parent = path.parent
                 when {
                     item == null && path.identifierName == "vector" -> {
-                        MvDiagnostic
-                            .TypeArgumentsNumberMismatch(path, "vector", 1, realCount)
-                            .addToHolder(moveHolder)
+                        val expectedCount = 1
+                        if (realCount != expectedCount) {
+                            MvDiagnostic
+                                .TypeArgumentsNumberMismatch(path, "vector", expectedCount, realCount)
+                                .addToHolder(moveHolder)
+                        }
                     }
                     item is MvStruct_ && parent is MvPathType -> {
+                        if (parent.ancestorStrict<MvAcquiresType>() != null) return
+
                         val expectedCount = item.typeParameters.size
                         val label = item.fqName
-
                         if (expectedCount != realCount) {
                             MvDiagnostic
                                 .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)

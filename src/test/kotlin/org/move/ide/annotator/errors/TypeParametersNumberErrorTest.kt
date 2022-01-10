@@ -6,14 +6,10 @@ import org.move.utils.tests.annotation.AnnotatorTestCase
 class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test missing type argument for vector`() = checkErrors("""
         module 0x1::M {
-            fun main(val: <error descr="Invalid instantiation of 'vector'. Expected 1 type argument(s) but got 0">vector</error> ) {}
-        }    
-    """)
-
-    fun `test too many type arguments for vector`() = checkErrors("""
-        module 0x1::M {
             fun m() {
-                let a: <error descr="Invalid instantiation of 'vector'. Expected 1 type argument(s) but got 3">vector<u8, u8, u8></error>;
+            let a: vector<address>;
+            let b: <error descr="Invalid instantiation of 'vector'. Expected 1 type argument(s) but got 0">vector</error>;
+            let c: <error descr="Invalid instantiation of 'vector'. Expected 1 type argument(s) but got 3">vector<u8, u8, u8></error>;
             }
         }    
     """)
@@ -95,6 +91,17 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
         }
     }    
     """)
+
+    fun `test no need for generic parameters inside acquires`() = checkErrors(
+        """
+    module 0x1::M {
+        struct S<phantom R> has key {}
+        fun m() acquires S {
+            borrow_global_mut<S<u8>>(@0x1);
+        }
+    }    
+    """
+    )
 
     fun `test wrong number of type params for struct`() = checkErrors("""
     module 0x1::M {
