@@ -5,7 +5,7 @@ import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class StructFieldsNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test missing fields for struct`() = checkErrors("""
-        module M {
+        module 0x1::M {
             struct T {
                 field: u8
             }

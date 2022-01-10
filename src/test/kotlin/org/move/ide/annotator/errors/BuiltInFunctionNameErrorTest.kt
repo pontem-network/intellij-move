@@ -5,13 +5,13 @@ import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class BuiltInFunctionNameErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test function`() = checkErrors("""
-        module M {
+        module 0x1::M {
             fun <error descr="Invalid function name: `assert` is a built-in function">assert</error>() {}
         }
     """)
 
     fun `test native function`() = checkErrors("""
-        module M {
+        module 0x1::M {
             native fun <error descr="Invalid function name: `assert` is a built-in function">assert</error>();
         }
     """)
