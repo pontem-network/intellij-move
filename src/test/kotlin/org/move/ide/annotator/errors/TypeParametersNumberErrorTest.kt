@@ -5,30 +5,21 @@ import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test missing type argument for vector`() = checkErrors("""
-        module M {
-            fun main(val: <error descr="Missing item type argument">vector</error> ) {}
+        module 0x1::M {
+            fun main(val: <error descr="Invalid instantiation of 'vector'. Expected 1 type argument(s) but got 0">vector</error> ) {}
         }    
     """)
 
     fun `test too many type arguments for vector`() = checkErrors("""
-        module M {
-            fun main(val: vector<
-                u8, 
-                <error descr="Wrong number of type arguments: expected 1, found 3">u8</error>, 
-                <error descr="Wrong number of type arguments: expected 1, found 3">u8</error>> ) {}
-        }    
-    """)
-
-    fun `test type params could be inferred for struct as type`() = checkErrors("""
-        module M {
-            struct MyStruct<T> { field: T }
-            
-            fun main(val: MyStruct ) {}
+        module 0x1::M {
+            fun m() {
+                let a: <error descr="Invalid instantiation of 'vector'. Expected 1 type argument(s) but got 3">vector<u8, u8, u8></error>;
+            }
         }    
     """)
 
     fun `test type params could be inferred for struct literal`() = checkErrors("""
-        module M {
+        module 0x1::M {
             struct MyStruct<T> { field: T }
             
             fun main() {
@@ -38,26 +29,17 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test no type arguments expected`() = checkErrors("""
-        module M {
+        module 0x1::M {
             struct MyStruct { field: u8 }
             
-            fun main(val: MyStruct<error descr="No type arguments expected"><u8></error> ) {}
+            fun m() {
+                let a: <error descr="Invalid instantiation of '0x1::M::MyStruct'. Expected 0 type argument(s) but got 1">MyStruct<u8></error>;
+            }
         }    
     """)
 
-//    fun `test missing resource argument for builtins`() = checkErrors("""
-//        module M {
-//            fun main() {
-//                let a = <error descr="Missing resource type argument">move_from</error>(@0x0);
-//                let a = <error descr="Missing resource type argument">borrow_global</error>(@0x0);
-//                let a = <error descr="Missing resource type argument">borrow_global_mut</error>(@0x0);
-//                let a = <error descr="Missing resource type argument">exists</error>(@0x0);
-//            }
-//        }
-//    """)
-
     fun `test resource could be inferred for move_to`() = checkErrors("""
-        module M {
+        module 0x1::M {
             fun main(s: signer) {
                 let a = move_to(&s, 1);
             }
@@ -68,7 +50,7 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
         module 0x1::M {
             fun call() {}
             fun main() {
-                let a = call<error descr="No type arguments expected"><u8></error>();
+                let a = <error descr="Invalid instantiation of '0x1::M::call'. Expected 0 type argument(s) but got 1">call<u8></error>();
             }
         }    
     """)
@@ -83,13 +65,52 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test too many type arguments for function`() = checkErrors("""
-        module M {
+        module 0x1::M {
             fun call<T>() {}
             fun main() {
-                let a = call<u8, 
-                    <error descr="Wrong number of type arguments: expected 1, found 3">u8</error>, 
-                    <error descr="Wrong number of type arguments: expected 1, found 3">u8</error>>();
+                let a = <error descr="Invalid instantiation of '0x1::M::call'. Expected 1 type argument(s) but got 2">call<u8, u8></error>();
             }
         }    
+    """)
+
+    fun `test missing generic params for type`() = checkErrors("""
+    module 0x1::M {
+        struct S<R> { r: R }
+        struct Event { val: <error descr="Invalid instantiation of '0x1::M::S'. Expected 1 type argument(s) but got 0">S</error> }
+    }    
+    """)
+
+    fun `test too many generic params for type`() = checkErrors("""
+    module 0x1::M {
+        struct S<R> { r: R }
+        struct Event { val: <error descr="Invalid instantiation of '0x1::M::S'. Expected 1 type argument(s) but got 2">S<u8, u8></error> }
+    }    
+    """)
+
+    fun `test explicit generic always required for phantom types`() = checkErrors("""
+    module 0x1::M {
+        struct S<phantom R> {}
+        fun m() {
+            let a = <error descr="Could not infer this type. Try adding an annotation">S</error> {};
+        }
+    }    
+    """)
+
+    fun `test wrong number of type params for struct`() = checkErrors("""
+    module 0x1::M {
+        struct S<R, RR> {}
+        fun m() {
+            let a = <error descr="Invalid instantiation of '0x1::M::S'. Expected 2 type argument(s) but got 1">S<u8></error> {};
+        }
+    }    
+    """)
+
+    fun `test explicit generic required for uninferrable type params`() = checkErrors("""
+    module 0x1::M {
+        fun call<R>() {}
+        fun m() {
+            <error descr="Could not infer this type. Try adding an annotation">call</error>();
+        }
+    }    
     """)
 }

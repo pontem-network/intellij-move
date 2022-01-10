@@ -537,4 +537,13 @@ address 0x1 {
         }
     }    
     """)
+
+    fun `test do not crash type checking invalid number of type params`() = checkErrors("""
+    module 0x1::M {
+        struct S<R: key> { val: R }
+        fun m() {
+            let s = S<u8, u8>{};
+        }
+    }    
+    """)
 }

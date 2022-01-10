@@ -126,7 +126,7 @@ private fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext):
     if (typeArgs.isNotEmpty()) {
         if (typeArgs.size < structItem.typeParameters.size) return TyUnknown
         for ((tyVar, typeArg) in structTypeVars.zip(typeArgs)) {
-            inference.registerConstraint(Constraint.Equate(tyVar, typeArg.type.inferTypeTy()))
+            inference.registerConstraint(Constraint.Equate(tyVar, typeArg.type.ty()))
         }
     }
     for (field in litExpr.fields) {

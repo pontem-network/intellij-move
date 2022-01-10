@@ -15,7 +15,7 @@ class DuplicateMembersErrorTest : AnnotatorTestCase(ErrorAnnotator::class) {
 
     fun `test duplicate function in module`() = checkErrors(
         """
-        module M {
+        module 0x1::M {
             fun <error descr="Duplicate definitions with name `main`">main</error>() {}
             fun <error descr="Duplicate definitions with name `main`">main</error>() {}
             native fun <error descr="Duplicate definitions with name `main`">main</error>();
@@ -41,7 +41,7 @@ class DuplicateMembersErrorTest : AnnotatorTestCase(ErrorAnnotator::class) {
 
     fun `test duplicate struct`() = checkErrors(
         """
-        module M {
+        module 0x1::M {
             struct <error descr="Duplicate definitions with name `MyStruct`">MyStruct</error> {}
             struct <error descr="Duplicate definitions with name `MyStruct`">MyStruct</error> {}
         }
@@ -50,7 +50,7 @@ class DuplicateMembersErrorTest : AnnotatorTestCase(ErrorAnnotator::class) {
 
     fun `test duplicate struct field`() = checkErrors(
         """
-        module M {
+        module 0x1::M {
             struct MyStruct {
                 <error descr="Duplicate definitions with name `field`">field</error>: u8,
                 <error descr="Duplicate definitions with name `field`">field</error>: u8,
@@ -61,7 +61,7 @@ class DuplicateMembersErrorTest : AnnotatorTestCase(ErrorAnnotator::class) {
 
 //    fun `test duplicate acquires`() = checkErrors(
 //        """
-//        module M {
+//        module 0x1::M {
 //            fun main<T>() acquires
 //                <error descr="Duplicate definitions with name `T`">T</error>,
 //                <error descr="Duplicate definitions with name `T`">T</error> {}
@@ -71,7 +71,7 @@ class DuplicateMembersErrorTest : AnnotatorTestCase(ErrorAnnotator::class) {
 
     fun `test duplicate consts`() = checkErrors(
         """
-        module M {
+        module 0x1::M {
             const <error descr="Duplicate definitions with name `MY_CONST`">MY_CONST</error>: u8 = 1;
             const <error descr="Duplicate definitions with name `MY_CONST`">MY_CONST</error>: u8 = 1;
         }

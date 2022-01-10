@@ -15,6 +15,7 @@ import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
 import org.move.lang.core.types.ty.TyUnknown
+import org.move.stdext.chain
 import javax.swing.Icon
 
 enum class FunctionVisibility {
@@ -47,6 +48,12 @@ val MvFunction.script: MvScriptDef?
         return scriptBlock.parent as? MvScriptDef
     }
 
+val MvFunction.fqName: String get() {
+    val moduleFqName = this.module?.fqName?.let { "$it::" }
+    val name = this.name ?: "<unknown>"
+    return moduleFqName + name
+}
+
 val MvFunction.isTest: Boolean get() = this.attrList.findSingleItemAttr("test") != null
 
 val MvFunction.isNative get() = hasChild(MvElementTypes.NATIVE)
@@ -60,7 +67,7 @@ val MvFunction.typeParameters get() = this.typeParameterList?.typeParameterList.
 val MvFunction.acquiresPathTypes: List<MvPathType> get() = this.acquiresType?.pathTypeList.orEmpty()
 
 val MvFunction.acquiresTys: List<Ty> get() =
-    this.acquiresType?.pathTypeList.orEmpty().map { it.inferTypeTy() }
+    this.acquiresType?.pathTypeList.orEmpty().map { it.ty() }
 
 val MvFunction.resolvedReturnTy: Ty
     get() {
@@ -68,7 +75,7 @@ val MvFunction.resolvedReturnTy: Ty
         return if (returnTypeElement == null) {
             TyUnit
         } else {
-            returnTypeElement.type?.inferTypeTy() ?: TyUnknown
+            returnTypeElement.type?.ty() ?: TyUnknown
         }
     }
 
@@ -77,6 +84,18 @@ val MvFunction.retTypeOnlyTypeParams: List<MvTypeParameter>
         val usedTypeParams = mutableSetOf<MvTypeParameter>()
         this.parameters
             .map { it.declaredTy }
+            .forEach {
+                it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.parameter); paramTy }
+            }
+        return this.typeParameters.filter { it !in usedTypeParams }
+    }
+
+val MvFunction.requiredTypeParams: List<MvTypeParameter>
+    get() {
+        val usedTypeParams = mutableSetOf<MvTypeParameter>()
+        this.parameters
+            .map { it.declaredTy }
+            .chain(this.returnType?.type?.ty().wrapWithList())
             .forEach {
                 it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.parameter); paramTy }
             }

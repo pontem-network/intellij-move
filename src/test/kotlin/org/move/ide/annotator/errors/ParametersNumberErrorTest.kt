@@ -5,7 +5,7 @@ import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class ParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test valid number of parameters`() = checkErrors("""
-        module M {
+        module 0x1::M {
             fun params_0() {}
             fun params_1(val: u8) {}
             fun params_3(val: u8, val2: u64, s: bool) {}
@@ -19,7 +19,7 @@ class ParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test invalid number of parameters`() = checkErrors("""
-        module M {
+        module 0x1::M {
             fun params_0() {}
             fun params_1(val: u8) {}
             fun params_3(val: u8, val2: u64, s: &signer) {}
