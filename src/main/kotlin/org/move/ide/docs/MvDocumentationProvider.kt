@@ -160,7 +160,8 @@ private fun PsiElement.generateDocumentation(
                 .joinToWithBuffer(buffer, ", ", "&lt;", "&gt;") { generateDocumentation(it) }
         is MvTypeParameter -> {
             if (this.isPhantom) {
-                buffer.b { it += "phantom" }
+                buffer += "phantom"
+                buffer += " "
             }
             buffer += this.identifier?.text
             val bound = this.typeParamBound

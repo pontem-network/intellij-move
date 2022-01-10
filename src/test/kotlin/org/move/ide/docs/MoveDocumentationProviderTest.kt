@@ -92,7 +92,7 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
     fun `test struct docstring`() = doTest("""
     module 0x1::M {
         /// docstring
-        struct S<R: store> has copy, drop, store {}
+        struct S<R: store, phantom PH> has copy, drop, store {}
         fun m() {
             S { };
           //^  
@@ -100,7 +100,7 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
     }    
     """, expected = """
         <div class='definition'><pre>0x1::M
-        struct <b>S</b>&lt;R: store&gt; has copy, drop, store</pre></div>
+        struct <b>S</b>&lt;R: store, phantom PH&gt; has copy, drop, store</pre></div>
         <div class='content'><p>docstring</p></div>
     """)
 
