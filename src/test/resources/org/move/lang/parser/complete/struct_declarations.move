@@ -1,5 +1,5 @@
 module M {
-    struct Coin<phantom CoinType> {}
+    struct Coin<phantom CoinType, phantom CoinType2> {}
 
     struct ValidatorConfig<T> has store, drop {
         val1: u8,

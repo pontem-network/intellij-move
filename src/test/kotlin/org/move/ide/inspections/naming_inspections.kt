@@ -47,4 +47,13 @@ module 0x1::M {
     }
 }
     """)
+
+    fun `test let variable can be underscored`() = checkByText("""
+module 0x1::M {
+    fun m(_param: u8, _: u8) {
+        let _ = 1;
+        let _s = 2;
+    }
+}        
+    """)
 }

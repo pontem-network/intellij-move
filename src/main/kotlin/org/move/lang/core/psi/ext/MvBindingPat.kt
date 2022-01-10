@@ -4,10 +4,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.MvIcons
-import org.move.lang.core.psi.MvBindingPat
-import org.move.lang.core.psi.MvConstDef
-import org.move.lang.core.psi.MvFunctionParameter
-import org.move.lang.core.psi.MvLetStatement
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.types.infer.inferBindingTy
 import org.move.lang.core.types.ty.Ty
@@ -21,7 +18,7 @@ val MvBindingPat.owner: PsiElement?
 fun MvBindingPat.inferBindingPatTy(): Ty = inferBindingTy(this)
 
 abstract class MvBindingPatMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
-                                                    MvBindingPat {
+                                                  MvBindingPat {
 
     override fun getIcon(flags: Int): Icon =
         when (this.owner) {

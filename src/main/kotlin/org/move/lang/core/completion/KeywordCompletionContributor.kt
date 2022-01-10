@@ -16,6 +16,8 @@ import org.move.lang.core.MvPsiPatterns.function
 import org.move.lang.core.MvPsiPatterns.moduleBlock
 import org.move.lang.core.MvPsiPatterns.scriptBlock
 import org.move.lang.core.MvPsiPatterns.toplevel
+import org.move.lang.core.MvPsiPatterns.typeParamBound
+import org.move.lang.core.MvPsiPatterns.typeParameter
 import org.move.lang.core.TYPES
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvFunctionVisibilityModifier
@@ -101,6 +103,11 @@ class KeywordCompletionContributor : CompletionContributor() {
             ),
             KeywordCompletionProvider("acquires")
         )
+        extend(
+            CompletionType.BASIC,
+            typeParameter(),
+            KeywordCompletionProvider("phantom")
+        )
     }
 
     private fun onStatementBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
@@ -109,6 +116,4 @@ class KeywordCompletionContributor : CompletionContributor() {
     companion object {
         private val VISIBILITY_MODIFIERS = arrayOf("public", "public(script)", "public(friend)")
     }
-
-
 }

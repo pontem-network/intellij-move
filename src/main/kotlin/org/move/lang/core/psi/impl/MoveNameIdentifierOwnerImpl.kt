@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.MvNameIdentifierOwner
 
 abstract class MvNameIdentifierOwnerImpl(node: ASTNode) : MvNamedElementImpl(node),
-                                                            MvNameIdentifierOwner {
+                                                          MvNameIdentifierOwner {
     override fun getNameIdentifier(): PsiElement? = nameElement
 
 }

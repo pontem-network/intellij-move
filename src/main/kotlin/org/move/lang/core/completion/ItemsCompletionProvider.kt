@@ -45,6 +45,7 @@ abstract class ItemsCompletionProvider: MvCompletionProvider() {
         processNestedScopesUpwards(element, namespace) {
             if (it.element != null && !visited.contains(it.name)) {
                 visited.add(it.name)
+
                 val lookup = it.element.createLookupElement()
                 result.addElement(lookup)
             }

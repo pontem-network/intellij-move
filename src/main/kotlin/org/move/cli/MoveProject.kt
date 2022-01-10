@@ -55,7 +55,7 @@ data class MoveProject(
     val moveToml: MoveToml,
     val root: VirtualFile,
     val declaredAddresses: DeclaredAddresses,
-    val declaredDevAddresses: DeclaredAddresses,
+    val declaredDevAddresses: DeclaredAddresses
 ) {
     val packageName: String? get() = moveToml.packageTable?.name
     val rootPath: Path get() = root.toNioPath()

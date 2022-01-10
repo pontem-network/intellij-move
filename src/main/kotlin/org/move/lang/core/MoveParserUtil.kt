@@ -4,18 +4,18 @@ import com.intellij.lang.PsiBuilder
 import com.intellij.lang.PsiBuilderUtil
 import com.intellij.lang.WhitespacesAndCommentsBinder
 import com.intellij.lang.parser.GeneratedParserUtilBase
+import com.intellij.openapi.util.Key
 import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
+import com.intellij.util.BitUtil
 import org.move.lang.MvElementTypes.*
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
+import org.move.stdext.makeBitMask
 
 @Suppress("UNUSED_PARAMETER")
 object MoveParserUtil : GeneratedParserUtilBase() {
-//    @JvmStatic
-//    fun gtgteqImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, GTGTEQ, GT, GT, EQ)
-
     @JvmField
     val ADJACENT_LINE_COMMENTS = WhitespacesAndCommentsBinder { tokens, _, getter ->
         var candidate = tokens.size
@@ -40,9 +40,6 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun gteqImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, GT_EQ, GT, EQ)
-
-//    @JvmStatic
-//    fun ltlteqImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, LTLTEQ, LT, LT, EQ)
 
     @JvmStatic
     fun ltltImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, LT_LT, LT, LT)
@@ -79,7 +76,7 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun hexIntegerLiteral(b: PsiBuilder, level: Int): Boolean {
         if (b.tokenType == HEX_INTEGER_LITERAL) {
-            b.advanceLexer();
+            b.advanceLexer()
             return true
         }
         if (b.tokenType != ADDRESS_IDENT) return false
@@ -119,24 +116,38 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun patternVisibility(b: PsiBuilder, level: Int): Boolean {
         if (b.tokenType in tokenSetOf(PUBLIC, INTERNAL)) {
-            b.advanceLexer();
-            return true;
-        };
-        if (b.tokenType == IDENTIFIER && b.tokenText == "internal") {
-            b.remapCurrentToken(INTERNAL);
-            b.advanceLexer();
-            return true;
+            b.advanceLexer()
+            return true
         }
-        return false;
+        if (b.tokenType == IDENTIFIER && b.tokenText == "internal") {
+            b.remapCurrentToken(INTERNAL)
+            b.advanceLexer()
+            return true
+        }
+        return false
+    }
+
+    @JvmStatic
+    fun spec(b: PsiBuilder, level: Int, parser: Parser): Boolean {
+        b.flags = SPEC_ALLOWED
+        val result = parser.parse(b, level)
+        b.flags = DEFAULT_FLAGS
+        return result
+    }
+
+    @JvmStatic
+    fun specOnly(b: PsiBuilder, level: Int, parser: Parser): Boolean {
+        if (!BitUtil.isSet(b.flags, SPEC_ALLOWED)) return false
+        return parser.parse(b, level)
     }
 
     @JvmStatic
     fun invariantModifierKeyword(b: PsiBuilder, level: Int): Boolean {
         if (b.tokenType in tokenSetOf(PACK, UNPACK, UPDATE)) {
-            b.advanceLexer();
-            return true;
-        };
-        if (b.tokenType != IDENTIFIER) return false;
+            b.advanceLexer()
+            return true
+        }
+        if (b.tokenType != IDENTIFIER) return false
 
         val tokenType = when (b.tokenText) {
             "pack" -> PACK
@@ -146,9 +157,9 @@ object MoveParserUtil : GeneratedParserUtilBase() {
                 return false
             }
         }
-        b.remapCurrentToken(tokenType);
-        b.advanceLexer();
-        return true;
+        b.remapCurrentToken(tokenType)
+        b.advanceLexer()
+        return true
     }
 
     @JvmStatic
@@ -234,6 +245,15 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun toKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "to", TO)
 
+    private val SPEC_ALLOWED: Int = makeBitMask(1)
+
+    private val FLAGS: Key<Int> = Key("MoveParserUtil.FLAGS")
+    private val DEFAULT_FLAGS: Int = makeBitMask(0)
+
+    private var PsiBuilder.flags: Int
+        get() = getUserData(FLAGS) ?: DEFAULT_FLAGS
+        set(value) = putUserData(FLAGS, value)
+
     private fun contextualKeyword(
         b: PsiBuilder,
         keyword: String,
@@ -244,7 +264,7 @@ object MoveParserUtil : GeneratedParserUtilBase() {
             b.tokenType == IDENTIFIER && b.tokenText == keyword && nextElementPredicate(b.lookAhead(1))
         ) {
             b.remapCurrentToken(elementType)
-            b.advanceLexer();
+            b.advanceLexer()
             return true
         }
         return false

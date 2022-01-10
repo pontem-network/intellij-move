@@ -53,9 +53,13 @@ fun isCompatibleReferences(expectedTy: TyReference, inferredTy: TyReference): Bo
 
 fun isCompatibleStructs(expectedTy: TyStruct, inferredTy: TyStruct): Boolean {
     return expectedTy.item.fqName == inferredTy.item.fqName
-            && expectedTy.typeArguments.size == inferredTy.typeArguments.size
-            && expectedTy.typeArguments.zip(inferredTy.typeArguments)
-        .all { isCompatible(it.first, it.second) }
+            && expectedTy.typeArgs.size == inferredTy.typeArgs.size
+            && expectedTy.typeArgs.zip(inferredTy.typeArgs).all { isCompatible(it.first, it.second) }
+}
+
+fun isCompatibleTuples(expectedTy: TyTuple, inferredTy: TyTuple): Boolean {
+    return expectedTy.types.size == inferredTy.types.size
+            && expectedTy.types.zip(inferredTy.types).all { isCompatible(it.first, it.second) }
 }
 
 fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean {
@@ -86,6 +90,7 @@ fun isCompatible(expectedTy: Ty, inferredTy: Ty): Boolean {
             isCompatibleReferences(expectedTy, inferredTy)
 
         expectedTy is TyStruct && inferredTy is TyStruct -> isCompatibleStructs(expectedTy, inferredTy)
+        expectedTy is TyTuple && inferredTy is TyTuple -> isCompatibleTuples(expectedTy, inferredTy)
         else -> false
     }
 }

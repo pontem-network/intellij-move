@@ -4,7 +4,6 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.MvImportStatement
-import org.move.lang.core.psi.MvItemImport
 import org.move.lang.core.psi.MvMultiItemImport
 import org.move.lang.core.psi.MvPsiFactory
 import org.move.lang.core.psi.ext.ancestorStrict
@@ -17,7 +16,6 @@ class RemoveCurlyBracesIntention: MvElementBaseIntentionAction<RemoveCurlyBraces
 
     data class Context(
         val multiItemImport: MvMultiItemImport,
-        val itemImport: MvItemImport,
         val refName: String,
         val aliasName: String?
     )
@@ -30,11 +28,11 @@ class RemoveCurlyBracesIntention: MvElementBaseIntentionAction<RemoveCurlyBraces
         val itemImport = multiItemImport.itemImportList.singleOrNull() ?: return null
         val refName = itemImport.referenceName
         val aliasName = itemImport.importAlias?.name
-        return Context(multiItemImport, itemImport, refName, aliasName)
+        return Context(multiItemImport, refName, aliasName)
     }
 
     override fun invoke(project: Project, editor: Editor, ctx: Context) {
-        val (multiItemImport, itemImport, refName, aliasName) = ctx
+        val (multiItemImport, refName, aliasName) = ctx
         // Save the cursor position, adjusting for curly brace removal
         val caret = editor.caretModel.offset
         val newOffset = when {

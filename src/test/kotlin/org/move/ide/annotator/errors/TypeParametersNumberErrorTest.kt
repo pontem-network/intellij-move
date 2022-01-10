@@ -45,16 +45,16 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
         }    
     """)
 
-    fun `test missing resource argument for builtins`() = checkErrors("""
-        module M {
-            fun main() {
-                let a = <error descr="Missing resource type argument">move_from</error>(@0x0);
-                let a = <error descr="Missing resource type argument">borrow_global</error>(@0x0);
-                let a = <error descr="Missing resource type argument">borrow_global_mut</error>(@0x0);
-                let a = <error descr="Missing resource type argument">exists</error>(@0x0);
-            }
-        }    
-    """)
+//    fun `test missing resource argument for builtins`() = checkErrors("""
+//        module M {
+//            fun main() {
+//                let a = <error descr="Missing resource type argument">move_from</error>(@0x0);
+//                let a = <error descr="Missing resource type argument">borrow_global</error>(@0x0);
+//                let a = <error descr="Missing resource type argument">borrow_global_mut</error>(@0x0);
+//                let a = <error descr="Missing resource type argument">exists</error>(@0x0);
+//            }
+//        }
+//    """)
 
     fun `test resource could be inferred for move_to`() = checkErrors("""
         module M {
@@ -65,7 +65,7 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test no type arguments expected for function`() = checkErrors("""
-        module M {
+        module 0x1::M {
             fun call() {}
             fun main() {
                 let a = call<error descr="No type arguments expected"><u8></error>();
@@ -74,7 +74,7 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     """)
 
     fun `test generic argument type could be inferred`() = checkErrors("""
-        module M {
+        module 0x1::M {
             fun call<T>(val: T) {}
             fun main() {
                 let a = call(1);

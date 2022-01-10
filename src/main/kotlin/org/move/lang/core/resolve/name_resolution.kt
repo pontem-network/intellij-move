@@ -29,8 +29,11 @@ fun processItems(
     }
 }
 
+fun resolveSingleItem(element: MvReferenceElement, namespace: Namespace): MvNamedElement? {
+    return resolveItem(element, namespace).firstOrNull()
+}
 
-fun resolveItem(element: MvReferenceElement, namespace: Namespace): MvNamedElement? {
+fun resolveItem(element: MvReferenceElement, namespace: Namespace): List<MvNamedElement> {
     var resolved: MvNamedElement? = null
     processItems(element, namespace) {
         if (it.name == element.referenceName && it.element != null) {
@@ -39,7 +42,7 @@ fun resolveItem(element: MvReferenceElement, namespace: Namespace): MvNamedEleme
         }
         return@processItems false
     }
-    return resolved
+    return resolved.wrapWithList()
 }
 
 fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
@@ -47,7 +50,7 @@ fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
         return moduleRef
     }
     // module refers to ModuleImport
-    val resolved = resolveItem(moduleRef, Namespace.MODULE)
+    val resolved = resolveSingleItem(moduleRef, Namespace.MODULE)
     if (resolved is MvImportAlias) {
         return (resolved.parent as MvModuleImport).fqModuleRef
     }

@@ -52,7 +52,8 @@ class MvLocalBindingNamingInspection: MvNamingInspection("Local variable") {
 
             val ident = o.identifier
             val name = ident.text
-            if (!name.startsWithLowerCaseLetter()) {
+            val trimmed = name.trimStart('_')
+            if (trimmed.isNotBlank() && !trimmed.startsWithLowerCaseLetter()) {
                 holder.registerProblem(
                     ident,
                     "Invalid local variable name `$name`. Local variable names must start with 'a'..'z'"

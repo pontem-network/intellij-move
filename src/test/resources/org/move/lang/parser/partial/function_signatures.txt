@@ -443,7 +443,7 @@ FILE
         PsiElement(IDENTIFIER)('main')
         MvTypeParameterListImpl(TYPE_PARAMETER_LIST)
           PsiElement(<)('<')
-          PsiErrorElement:<type parameter> expected, got '('
+          PsiErrorElement:IDENTIFIER or phantom expected, got '('
             <empty list>
         MvFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')
@@ -483,7 +483,7 @@ FILE
           MvTypeParameterImpl(TYPE_PARAMETER)
             PsiElement(IDENTIFIER)('V')
           PsiElement(,)(',')
-          PsiErrorElement:<type parameter> expected, got '('
+          PsiErrorElement:IDENTIFIER or phantom expected, got '('
             <empty list>
         MvFunctionParameterListImpl(FUNCTION_PARAMETER_LIST)
           PsiElement(()('(')

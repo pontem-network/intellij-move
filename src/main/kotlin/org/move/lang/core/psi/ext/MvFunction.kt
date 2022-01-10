@@ -10,6 +10,8 @@ import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
+import org.move.lang.core.psi.mixins.declaredTy
+import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
 import org.move.lang.core.types.ty.TyUnknown
@@ -57,6 +59,9 @@ val MvFunction.typeParameters get() = this.typeParameterList?.typeParameterList.
 
 val MvFunction.acquiresPathTypes: List<MvPathType> get() = this.acquiresType?.pathTypeList.orEmpty()
 
+val MvFunction.acquiresTys: List<Ty> get() =
+    this.acquiresType?.pathTypeList.orEmpty().map { it.inferTypeTy() }
+
 val MvFunction.resolvedReturnTy: Ty
     get() {
         val returnTypeElement = this.returnType
@@ -65,6 +70,17 @@ val MvFunction.resolvedReturnTy: Ty
         } else {
             returnTypeElement.type?.inferTypeTy() ?: TyUnknown
         }
+    }
+
+val MvFunction.retTypeOnlyTypeParams: List<MvTypeParameter>
+    get() {
+        val usedTypeParams = mutableSetOf<MvTypeParameter>()
+        this.parameters
+            .map { it.declaredTy }
+            .forEach {
+                it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.parameter); paramTy }
+            }
+        return this.typeParameters.filter { it !in usedTypeParams }
     }
 
 abstract class MvFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),

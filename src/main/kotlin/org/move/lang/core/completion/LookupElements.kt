@@ -6,6 +6,8 @@ import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
+import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.presentation.shortPresentableText
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -131,13 +133,18 @@ class MvInsertHandler : InsertHandler<LookupElement> {
 
         when (element) {
             is MvFunction -> {
-                if (!context.alreadyHasCallParens) {
-                    document.insertString(context.selectionEndOffset, "()")
+                val reqTypeParams = element.retTypeOnlyTypeParams
+                var suffix = ""
+                if (!context.alreadyHasAngleBrackets && reqTypeParams.isNotEmpty()) {
+                    suffix += "<>"
                 }
+                if (!context.alreadyHasCallParens) {
+                    suffix += "()"
+                }
+                document.insertString(context.selectionEndOffset, suffix)
                 EditorModificationUtil.moveCaretRelatively(
                     context.editor,
-                    if (element.parameters.isEmpty()) 2 else 1
-                )
+                    if (element.parameters.isNotEmpty() || reqTypeParams.isNotEmpty()) 1 else 2)
             }
             is MvStruct_ -> {
                 val insideAcquiresType =
@@ -154,3 +161,6 @@ class MvInsertHandler : InsertHandler<LookupElement> {
         }
     }
 }
+
+inline fun <reified T : PsiElement> InsertionContext.getElementOfType(strict: Boolean = false): T? =
+    PsiTreeUtil.findElementOfClassAtOffset(file, tailOffset - 1, T::class.java, strict)

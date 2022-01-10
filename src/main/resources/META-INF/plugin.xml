@@ -51,6 +51,8 @@
                       id="MvAngleBracketsHandler"/>
         <enterHandlerDelegate implementation="org.move.ide.typing.MvEnterInLineCommentHandler"
                               id="MvEnterInLineComments"/>
+        <backspaceHandlerDelegate implementation="org.move.ide.typing.MvAngleBracketsBackspaceHandler"
+                                  id="MvAngleBracketsBackspaceHandler" />
 
         <lang.formatter language="Move"
                         implementationClass="org.move.ide.formatter.MvFormattingModelBuilder"/>
@@ -104,6 +106,9 @@
         <liveTemplateContext implementation="org.move.ide.live_templates.MvContextType$Module"/>
         <liveTemplateContext implementation="org.move.ide.live_templates.MvContextType$Block"/>
 
+        <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameProcessor"
+                                   order="first"
+                                   id="mvRenameProcessor"/>
         <lang.psiStructureViewFactory
                 language="Move"
                 implementationClass="org.move.ide.navigation.MvStructureViewBuilderFactory"/>
@@ -111,7 +116,7 @@
                 key="org.move.lang.core.psi.MvModuleDef"
                 implementationClass="org.move.ide.navigation.ModuleDeclarationRangeHandler"/>
         <declarationRangeHandler
-                key="org.move.lang.core.psi.MvFunctionDef"
+                key="org.move.lang.core.psi.MvFunction"
                 implementationClass="org.move.ide.navigation.FunctionDeclarationRangeHandler"/>
         <!--        <stubIndex implementation="org.move.lang.core.stubs.index.MvNamedElementIndex"/>-->
 
@@ -121,10 +126,9 @@
         <!--                         implementationClass="org.move.ide.inspections.lints.FunctionNamingInspection"/>-->
         <localInspection language="Move" groupName="Move"
                          displayName="Unresolved reference"
-                         shortName="MoveUnresolvedReference"
                          enabledByDefault="false"
                          level="ERROR"
-                         implementationClass="org.move.ide.inspections.UnresolvedReferenceInspection"/>
+                         implementationClass="org.move.ide.inspections.MvUnresolvedReferenceInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Field initialization shorthand"
                          enabledByDefault="true" level="WEAK WARNING"
@@ -149,7 +153,14 @@
                          displayName="Redundant qualifier"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.move.ide.inspections.RedundantQualifiedPathInspection"/>
-
+        <localInspection language="Move" groupName="Move"
+                         displayName="Type checking"
+                         enabledByDefault="true" level="ERROR"
+                         implementationClass="org.move.ide.inspections.MvTypeCheckInspection" />
+        <localInspection language="Move" groupName="Move"
+                         displayName="Missing acquires"
+                         enabledByDefault="true" level="ERROR"
+                         implementationClass="org.move.ide.inspections.MvMissingAcquiresInspection" />
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>
@@ -174,10 +185,6 @@
         <!--        <editorNotificationProvider-->
         <!--                implementation="org.move.ide.notifications.InvalidMvExecutableNotificationsProvider"/>-->
 
-        <intentionAction>
-            <className>org.move.ide.intentions.AddAcquiresIntention</className>
-            <category>Move</category>
-        </intentionAction>
         <intentionAction>
             <className>org.move.ide.intentions.RemoveCurlyBracesIntention</className>
             <category>Move</category>

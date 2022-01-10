@@ -2,10 +2,7 @@ package org.move.lang.core.psi
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
-import org.move.lang.core.resolve.ref.MvFQModuleReference
-import org.move.lang.core.resolve.ref.MvPathReference
-import org.move.lang.core.resolve.ref.MvReference
-import org.move.lang.core.resolve.ref.NamedAddressReference
+import org.move.lang.core.resolve.ref.*
 
 interface PsiReferenceElement : PsiElement {
     val identifier: PsiElement?
@@ -47,6 +44,18 @@ interface MvMandatoryReferenceElement: MvReferenceElement {
     override fun getReference(): MvReference
 }
 
+//interface MvPolyVariantReferenceElement: PsiReferenceElement, MvElement {
+//    override val identifier: PsiElement
+//
+//    @JvmDefault
+//    override val referenceNameElement: PsiElement get() = identifier
+//
+//    @JvmDefault
+//    override val referenceName: String get() = referenceNameElement.text
+//
+//    override fun getReference(): MvReference
+//}
+
 interface MvPathReferenceElement: MvReferenceElement {
     override fun getReference(): MvPathReference?
 }
@@ -56,3 +65,5 @@ interface MvFQModuleReferenceElement: MvReferenceElement {
 }
 
 interface MvStructFieldReferenceElement : MvMandatoryReferenceElement
+
+interface MvStructFieldLitReferenceElement: MvMandatoryReferenceElement

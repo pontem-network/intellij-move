@@ -66,14 +66,14 @@ OUTER_EOL_DOC = ({EOL_DOC_LINE}{EOL_WS})*{EOL_DOC_LINE}
 // Literals
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 PLACEHOLDER_ADDRESS_IDENT=\{\{[_a-zA-Z][_a-zA-Z0-9]*\}\}
-PLACEHOLDER_ADDRESS_LITERAL=@\{\{[_a-zA-Z][_a-zA-Z0-9]*\}\}
+//PLACEHOLDER_ADDRESS_LITERAL=@\{\{[_a-zA-Z][_a-zA-Z0-9]*\}\}
 
 ADDRESS_IDENT=0x[0-9a-fA-F]{1,40}
-ADDRESS_LITERAL=@0x[0-9a-fA-F]{1,40}
+//ADDRESS_LITERAL=@0x[0-9a-fA-F]{1,40}
 BECH32_ADDRESS_IDENT=wallet1[A-Z0-9a-z&&[^boi1]]{6,83}
-BECH32_ADDRESS_LITERAL=@wallet1[A-Z0-9a-z&&[^boi1]]{6,83}
+//BECH32_ADDRESS_LITERAL=@wallet1[A-Z0-9a-z&&[^boi1]]{6,83}
 POLKADOT_ADDRESS_IDENT=[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*
-POLKADOT_ADDRESS_LITERAL=@[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*
+//POLKADOT_ADDRESS_LITERAL=@[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*
 
 BOOL_LITERAL=(true)|(false)
 HEX_INTEGER_LITERAL=0x[0-9a-fA-F]+((u8)|(u64)|(u128))?
@@ -154,7 +154,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "schema"         { return SCHEMA; }
       "spec"           { return SPEC; }
 
-//  {PLACEHOLDER_ADDRESS_IDENT}          { return PLACEHOLDER_ADDRESS_IDENT; }
+  {PLACEHOLDER_ADDRESS_IDENT}          { return PLACEHOLDER_ADDRESS_IDENT; }
 //  {PLACEHOLDER_ADDRESS_LITERAL}          { return PLACEHOLDER_ADDRESS_LITERAL; }
 //  {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
 //  {BECH32_ADDRESS_LITERAL}          { return BECH32_ADDRESS_LITERAL; }

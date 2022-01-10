@@ -10,9 +10,3 @@ val MvStructPat.fields: List<MvStructPatField>
 val MvStructPat.fieldNames: List<String>
     get() =
         fields.map { it.referenceName }
-
-//abstract class MvStructPatMixin(node: ASTNode) : MvElementImpl(node), MvStructPat {
-//    override fun resolvedType(): BaseType? {
-//        val parentPattern = ancestorStrict<MvPat>()
-//    }
-//}

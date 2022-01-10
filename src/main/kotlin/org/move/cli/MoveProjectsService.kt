@@ -29,6 +29,7 @@ import org.move.settings.MvProjectSettingsService
 import org.move.settings.MvSettingsChangedEvent
 import org.move.settings.MvSettingsListener
 import org.move.stdext.AsyncValue
+import org.move.stdext.MoveProjectEntry
 import org.move.stdext.MyLightDirectoryIndex
 import org.move.stdext.deepIterateChildrenRecursivery
 import java.util.concurrent.CompletableFuture
@@ -112,23 +113,31 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
         }
         // in-memory file
         if (file == null) return null
-//        val file = fsElement.originalFile.virtualFile
 
-        val cachedProject = this.directoryIndex.getInfoForFile(file)
-        if (cachedProject != null) return cachedProject
+        val cachedProjectEntry = this.directoryIndex.getInfoForFile(file)
+        if (cachedProjectEntry is MoveProjectEntry.Present) {
+            return cachedProjectEntry.project
+        }
+//        if (this.directoryIndex.hasInfoForFile(file)) {
+//            return this.directoryIndex.getInfoForFile(file)
+//        }
+//        val cachedProject = this.directoryIndex.getInfoForFile(file)
+//        if (cachedProject != null) return cachedProject
 
         LOG.warn("MoveProject is not found in cache")
-        val moveProject =
+        var moveProject =
             file.toNioPathOrNull()
                 ?.let { findMoveTomlPath(it) }
                 ?.findVirtualFile()
                 ?.let { initializeMoveProject(project, it) }
+
         if (moveProject == null) {
             // this is for light tests, heavy test should always have valid moveProject
-            if (isUnitTestMode) return testEmptyMvProject(project)
-            return null
+            if (isUnitTestMode)
+                moveProject = testEmptyMvProject(project)
+//            return null
         }
-        this.directoryIndex.putInfo(file, moveProject)
+        this.directoryIndex.putInfo(file, MoveProjectEntry.Present(moveProject))
         return moveProject
     }
 
@@ -137,10 +146,10 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
         modifyProjects { doRefresh(project) }
     }
 
-    private val directoryIndex: MyLightDirectoryIndex<MoveProject?> =
-        MyLightDirectoryIndex(project, null) { index ->
+    private val directoryIndex: MyLightDirectoryIndex<MoveProjectEntry> =
+        MyLightDirectoryIndex(project, MoveProjectEntry.Missing) { index ->
             processAllMvFilesOnce(this.projects.currentState) { file, moveProject ->
-                index.putInfo(file, moveProject)
+                index.putInfo(file, MoveProjectEntry.Present(moveProject))
             }
         }
 }

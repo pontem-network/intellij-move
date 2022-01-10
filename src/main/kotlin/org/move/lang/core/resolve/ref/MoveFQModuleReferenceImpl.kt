@@ -3,6 +3,7 @@ package org.move.lang.core.resolve.ref
 import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.ext.wrapWithList
 import org.move.lang.core.resolve.processQualModuleRef
 
 interface MvFQModuleReference : MvReference {
@@ -13,7 +14,7 @@ class MvFQModuleReferenceImpl(
     element: MvFQModuleRef,
 ) : MvReferenceCached<MvFQModuleRef>(element), MvFQModuleReference {
 
-    override fun resolveInner(): MvNamedElement? {
+    override fun resolveInner(): List<MvNamedElement> {
         val referenceName = element.referenceName
         var resolved: MvModuleDef? = null
         processQualModuleRef(element) {
@@ -25,6 +26,7 @@ class MvFQModuleReferenceImpl(
                 false
             }
         }
-        return resolved
+        return resolved.wrapWithList()
+//        return resolved?.let { listOf(it) }.orEmpty()
     }
 }

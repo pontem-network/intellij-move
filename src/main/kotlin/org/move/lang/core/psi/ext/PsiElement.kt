@@ -8,7 +8,11 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.MvElementTypes
 
+fun <T> T?.wrapWithList(): List<T> = this?.let { listOf(it) }.orEmpty()
+
 fun PsiElement.hasChild(tokenType: IElementType): Boolean = childrenByType(tokenType).toList().isNotEmpty()
+
+fun PsiElement.getChild(tokenType: IElementType): PsiElement? = childrenByType(tokenType).firstOrNull()
 
 inline fun <reified T : PsiElement> PsiElement.childOfType(): T? =
     PsiTreeUtil.getChildOfType(this, T::class.java)
@@ -37,6 +41,9 @@ inline fun <reified T : PsiElement> PsiElement.ancestorStrict(stopAt: Class<out 
 
 inline fun <reified T : PsiElement> PsiElement.ancestorOrSelf(): T? =
     PsiTreeUtil.getParentOfType(this, T::class.java, false)
+
+inline fun <reified T : PsiElement> PsiElement.hasAncestorOrSelf(): Boolean =
+    ancestorOrSelf<T>() != null
 
 inline fun <reified T : PsiElement> PsiElement.ancestorOrSelf(stopAt: Class<out PsiElement>): T? =
     PsiTreeUtil.getParentOfType(this, T::class.java, false, stopAt)

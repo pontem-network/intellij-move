@@ -12,8 +12,13 @@ import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.util.Consumer
+import org.move.cli.MoveProject
 import java.util.concurrent.ConcurrentHashMap
 
+sealed class MoveProjectEntry {
+    object Missing : MoveProjectEntry()
+    data class Present(val project: MoveProject?): MoveProjectEntry()
+}
 /**
  * This is a light version of DirectoryIndexImpl
  *
@@ -35,17 +40,9 @@ class MyLightDirectoryIndex<T>(
         myRootInfos[file] = value
     }
 
-    fun getInfoForFile(file: VirtualFile?): T {
+    fun getInfoForFile(file: VirtualFile): T {
         if (file !is VirtualFileWithId || !file.isValid) return myDefValue
-        var each = file
-        while (each != null) {
-            val info = myRootInfos[each]
-            if (info != null) {
-                return info
-            }
-            each = each.parent
-        }
-        return myDefValue
+        return myRootInfos.getOrDefault(file, myDefValue)
     }
 
     companion object {

@@ -85,7 +85,7 @@ class ResolveVariablesTest : ResolveTestCase() {
 
     fun `test destructuring of struct`() = checkByCode(
         """
-        module M {
+        module 0x1::M {
             struct MyStruct {
                 val: u8
             }
@@ -102,7 +102,7 @@ class ResolveVariablesTest : ResolveTestCase() {
 
     fun `test destructuring of struct with variable rename`() = checkByCode(
         """
-        module M {
+        module 0x1::M {
             struct MyStruct {
                 val: u8
             }
@@ -119,7 +119,7 @@ class ResolveVariablesTest : ResolveTestCase() {
 
     fun `test type params used in as statement`() = checkByCode(
         """
-        module M {
+        module 0x1::M {
             fun convert<T>() {
                       //X
                 1 as T
@@ -131,7 +131,7 @@ class ResolveVariablesTest : ResolveTestCase() {
 
     fun `test consts`() = checkByCode(
         """
-        module M {
+        module 0x1::M {
             const ENOT_GENESIS: u64 = 0;
                 //X
             fun main() {
@@ -144,7 +144,7 @@ class ResolveVariablesTest : ResolveTestCase() {
 
     fun `test tuple destructuring`() = checkByCode(
         """
-        module M {
+        module 0x1::M {
             fun main() {
                 let (a, b) = call();
                    //X
@@ -156,7 +156,7 @@ class ResolveVariablesTest : ResolveTestCase() {
     )
 
     fun `test variable defined in nested block`() = checkByCode("""
-        module M {
+        module 0x1::M {
             fun main() {
                 let a = {
                     let b = 1;
@@ -164,19 +164,6 @@ class ResolveVariablesTest : ResolveTestCase() {
                     b + 1
                   //^  
                 };
-            }
-        }        
-    """)
-
-    fun `test resolve variable in struct field shorthand`() = checkByCode("""
-        module M {
-            struct S { myfield: u8 }
-            
-            fun main() {
-                let myfield = 1;
-                  //X
-                S { myfield }
-                  //^
             }
         }        
     """)

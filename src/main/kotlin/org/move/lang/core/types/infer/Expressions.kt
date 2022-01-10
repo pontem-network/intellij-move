@@ -63,7 +63,7 @@ private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): 
     return TyReference(innerExprTy, mutability)
 }
 
-fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
+fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext, expectedTy: Ty? = null): Ty {
     val path = callExpr.path
     val funcItem = path.reference?.resolve() as? MvFunction ?: return TyUnknown
     val funcTy = instantiateItemTy(funcItem) as? TyFunction ?: return TyUnknown
@@ -84,6 +84,9 @@ fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
             inference.registerConstraint(Constraint.Equate(paramTy, argumentTy))
         }
     }
+    if (expectedTy != null) {
+        inference.registerConstraint(Constraint.Equate(funcTy.retType, expectedTy))
+    }
     // solve constraints
     val solvable = inference.processConstraints()
 
@@ -103,7 +106,7 @@ private fun inferDotExprTy(dotExpr: MvDotExpr, ctx: InferenceContext): Ty {
         } ?: return TyUnknown
 
     val inference = InferenceContext()
-    for ((tyVar, tyArg) in structTy.typeVars.zip(structTy.typeArguments)) {
+    for ((tyVar, tyArg) in structTy.typeVars.zip(structTy.typeArgs)) {
         inference.registerConstraint(Constraint.Equate(tyVar, tyArg))
     }
     // solve constraints, return TyUnknown if cannot

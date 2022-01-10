@@ -92,23 +92,85 @@ class RenameTest : MvTestBase() {
         }
     """)
 
-//    fun `test rename removes shorthand notation`() = doTest("myval", """
-//        module M {
-//            struct MyStruct { val: u8 }
-//            fun main() {
-//                let MyStruct { val } = get_struct();
-//                /*caret*/val;
-//            }
-//        }
-//    """, """
-//        module M {
-//            struct MyStruct { val: u8 }
-//            fun main() {
-//                let MyStruct { val: myval } = get_struct();
-//                myval;
-//            }
-//        }
-//    """)
+    fun `test rename val with shorthand struct literal`() = doTest("myval", """
+        module 0x1::M {
+            struct MyStruct { val: u8 }
+            fun main() {
+                let val = 1;
+                MyStruct { val };
+                /*caret*/val;
+            }
+        }
+    """, """
+        module 0x1::M {
+            struct MyStruct { val: u8 }
+            fun main() {
+                let myval = 1;
+                MyStruct { val: myval };
+                myval;
+            }
+        }
+    """)
+
+    fun `test rename field from shorthand struct literal`() = doTest("myval", """
+        module 0x1::M {
+            struct MyStruct { /*caret*/val: u8 }
+            fun main() {
+                let val = 1;
+                MyStruct { val };
+                val;
+            }
+        }
+    """, """
+        module 0x1::M {
+            struct MyStruct { myval: u8 }
+            fun main() {
+                let val = 1;
+                MyStruct { myval: val };
+                val;
+            }
+        }
+    """)
+
+    fun `test rename val from shorthand struct pattern`() = doTest("myval", """
+        module 0x1::M {
+            struct MyStruct { val: u8 }
+            fun get_s(): MyStruct { MyStruct { val: 1 } }
+            fun main() {
+                let MyStruct { val } = get_s();
+                /*caret*/val;
+            }
+        }
+    """, """
+        module 0x1::M {
+            struct MyStruct { val: u8 }
+            fun get_s(): MyStruct { MyStruct { val: 1 } }
+            fun main() {
+                let MyStruct { val: myval } = get_s();
+                myval;
+            }
+        }
+    """)
+
+    fun `test rename field from shorthand struct pattern`() = doTest("myval", """
+        module 0x1::M {
+            struct MyStruct { /*caret*/val: u8 }
+            fun get_s(): MyStruct { MyStruct { val: 1 } }
+            fun main() {
+                let MyStruct { val } = get_s();
+                val;
+            }
+        }
+    """, """
+        module 0x1::M {
+            struct MyStruct { myval: u8 }
+            fun get_s(): MyStruct { MyStruct { myval: 1 } }
+            fun main() {
+                let MyStruct { myval: val } = get_s();
+                val;
+            }
+        }
+    """)
 
     fun `test struct`() = doTest("RenamedStruct", """
         module M {
