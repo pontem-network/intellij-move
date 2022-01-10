@@ -129,6 +129,7 @@
         ENSURES     = 'ensures_kw'
         REQUIRES     = 'requires_kw'
         ABORTS_IF     = 'aborts_if_kw'
+        ABORTS_WITH     = 'aborts_with_kw'
 
         CHOOSE     = 'choose_kw'
         MIN     = 'min_kw'
@@ -423,12 +424,9 @@ StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // 'use 0x0::Transaction as MyTransaction;'
 
-FriendStatement ::= friend FQModuleRef ';' { pin = 1 }
+FriendStatement ::= Attr* friend FQModuleRef ';' { pin = "friend" }
 
-ImportStatement ::= Attr* use (ModuleItemsImport | ModuleImport) ';'
-{
-    pin = "use"
-}
+ImportStatement ::= Attr* use (ModuleItemsImport | ModuleImport) ';' { pin = "use" }
 ModuleImport ::= (AddressRef !'::') | FQModuleRef ImportAlias?
 {
     name = "qual path to module"
@@ -488,13 +486,14 @@ PathType ::= Path
     name = "type"
 }
 
-TupleType ::= ('(' !')') TupleTypeItem_with_recover+ ')' { pin = 1 }
-private TupleTypeItem_with_recover ::= !')' Type (',' | &')')
-{
-    pin = 1
-    recoverWhile = TupleTypeItem_recover
-}
-private TupleTypeItem_recover ::= !(')' | '{' | IDENTIFIER)
+TupleType ::= '(' Type ',' (Type ','?)* ')' { pin = 2 }
+//TupleType ::= ('(' !')') TupleTypeItem_with_recover+ ')' { pin = 1 }
+//private TupleTypeItem_with_recover ::= !')' Type (',' | &')')
+//{
+//    pin = 1
+//    recoverWhile = TupleTypeItem_recover
+//}
+//private TupleTypeItem_recover ::= !(')' | '{' | IDENTIFIER)
 
 LambdaType ::= <<specOnly '|'>> <<comma_sep_items Type>>? <<specOnly '|'>> Type { pin = 1 }
 
@@ -586,6 +585,7 @@ StructPatFieldBinding ::= ':' Pat { pin = 1 }
 Statement ::= LetStatement | ExprStatement
 
 SpecExprStatement ::= (SpecExpr_item !'}') ';' { pin = 1 }
+private SpecExpr ::= SpecExprStatement_items | Expr
 private SpecExpr_item ::= SpecExprStatement_items | ExprStatement_items
 {
     recoverWhile = SpecExprStatement_recover
@@ -593,9 +593,11 @@ private SpecExpr_item ::= SpecExprStatement_items | ExprStatement_items
 private SpecExprStatement_recover ::= !(';' | '}' | SpecExprStatement_first)
 private SpecExprStatement_first ::= let | if | while
                                     | include | apply | pragma | emits | choose | assume | assert | ensures
+                                    | axiom | modifies | aborts_if | aborts_with | requires | invariant
 
-private SpecExprStatement_items ::= AssumeSpecExpr | AssertSpecExpr | AbortsIfSpecExpr
+private SpecExprStatement_items ::= AssumeSpecExpr | AssertSpecExpr | AbortsIfSpecExpr | AbortsWithSpecExpr
                 | RequiresSpecExpr | EnsuresSpecExpr | ModifiesSpecExpr | InvariantSpecExpr | AxiomSpecExpr
+                | ChooseSpecExpr | EmitsSpecExpr
 //{
 //    recoverWhile = ExprStatement_recover
 //}
@@ -879,6 +881,7 @@ private modifies ::= <<modifiesKeyword>>
 private requires ::= <<requiresKeyword>>
 private ensures ::= <<ensuresKeyword>>
 private aborts_if ::= <<abortsIfKeyword>>
+private aborts_with ::= <<abortsWithKeyword>>
 private include ::= <<includeKeyword>>
 private choose ::= <<chooseKeyword>>
 private min ::= <<minKeyword>>
@@ -962,11 +965,11 @@ private SpecStatement ::= ImportStatement
 //                               | InvariantSpecStatement
 //                               | AxiomSpecStatement
                                | ApplySpecStatement
-                               | EmitsSpecStatement
+//                               | EmitsSpecStatement
 //                               | AggregatePredicateSpecStatement
 //                               | SpecBlockSpecStatement
                                | LetSpecStatement
-                               | ChooseSpecStatement
+//                               | ChooseSpecStatement
 //                               | ExprSpecStatement
                                | SpecExprStatement
 //{
@@ -993,16 +996,14 @@ PragmaAttribute ::= IDENTIFIER ('=' Expr)?
 //    extends = Expr
 //}
 
-//AssumeSpecStatement ::= AssumeSpecExpr ';'
 AssumeSpecExpr ::= assume Expr { pin = 1 }
 
-//AssertSpecStatement ::= AssertSpecExpr ';'
 AssertSpecExpr ::= assert Expr { pin = 1 }
 
-//AbortsIfSpecStatement ::= AbortsIfSpecExpr ';'
-//noinspection BnfSuspiciousToken
-AbortsIfSpecExpr ::= aborts_if Expr AbortsWith? { pin = 1 }
-AbortsWith ::= with Expr { pin = 1 }
+AbortsIfSpecExpr ::= aborts_if Expr AbortsIfWith? { pin = 1 }
+AbortsIfWith ::= with Expr { pin = 1 }
+
+AbortsWithSpecExpr ::= aborts_with <<comma_sep_items Expr>> { pin = 1 }
 
 //private SpecExpr_first ::= aborts_if
 
@@ -1012,7 +1013,7 @@ RequiresSpecExpr ::= requires module? Expr { pin = 1 }
 //EnsuresSpecStatement ::= EnsuresSpecExpr ';'
 //private EnsuresSpecExpr_body ::= EnsuresSpecExpr
 
-EnsuresSpecExpr ::= ensures Expr { pin = 1 }
+EnsuresSpecExpr ::= ensures SpecExpr { pin = 1 }
 
 //ModifiesSpecStatement ::= ModifiesSpecExpr ';'
 ModifiesSpecExpr ::= modifies Expr { pin = 1 }
@@ -1046,10 +1047,11 @@ SpecVisibilityModifier ::= IDENTIFIER
 //                                | concrete | abstract
 //                                | assert | assume
 
-EmitsSpecStatement ::= emits Expr to Expr EmitsCondition? ';'
-{
-    pin = 1
-}
+EmitsSpecExpr ::= emits SpecExpr to SpecExpr EmitsCondition? { pin = 1 }
+//EmitsSpecStatement ::= emits Expr to Expr EmitsCondition? ';'
+//{
+//    pin = 1
+//}
 //private EmitsStatement_body ::= Expr to Expr EmitsCondition?
 //{ recoverWhile = ExprStatement_recover }
 
@@ -1092,12 +1094,15 @@ ForallQuantifier ::= <<specOnly forall>> QuantifierBindings
 ExistsQuantifier ::= <<specOnly exists>> QuantifierBindings
                         (QuantifierWhere)? (':' Quantifier_items)? { pin = 1 }
 
-ChooseSpecStatement ::= choose min? QuantifierBindings
-                        (QuantifierWhere)?
-                        (':' Quantifier_items)? ';'
-{
-    pin = 1
-}
+ChooseSpecExpr ::= choose min? QuantifierBindings
+                           (QuantifierWhere)?
+                           (':' Quantifier_items)? { pin = 1 }
+//ChooseSpecStatement ::= choose min? QuantifierBindings
+//                        (QuantifierWhere)?
+//                        (':' Quantifier_items)? ';'
+//{
+//    pin = 1
+//}
 
 QuantifierBindings ::= <<comma_sep_items QuantifierBind>>
 QuantifierBind ::= RangeQuantifierBind | TypeQuantifierBind

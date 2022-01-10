@@ -225,6 +225,9 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     fun abortsIfKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "aborts_if", ABORTS_IF)
 
     @JvmStatic
+    fun abortsWithKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "aborts_with", ABORTS_WITH)
+
+    @JvmStatic
     fun assertKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "assert", ASSERT)
 
     @JvmStatic

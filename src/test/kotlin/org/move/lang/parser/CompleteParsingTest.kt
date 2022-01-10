@@ -12,6 +12,7 @@ class CompleteParsingTest : MvParsingTestCase("complete") {
     fun `test function calls`() = doTest(true)
 
     //expressions
+    fun `test strings`() = doTest(true)
     fun `test expressions`() = doTest(true)
     fun `test expressions assignments`() = doTest(true)
     fun `test expressions if else as`() = doTest(true)

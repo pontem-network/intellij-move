@@ -7,8 +7,5 @@ script {
         (10000: u64);
         (true: bool);
         (false: bool);
-        b"(false: bool);";
-        x"0101";
-        x"";
     }
 }
