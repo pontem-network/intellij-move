@@ -1,6 +1,7 @@
 package org.move.ide.annotator
 
 import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
 import org.move.lang.MvElementTypes.R_PAREN
@@ -30,16 +31,25 @@ class ErrorAnnotator : MvAnnotator() {
                 if (referred == null) {
                     if (path.identifierName == "vector") {
                         if (typeArguments.isEmpty()) {
-                            holder.createErrorAnnotation(identifier, "Missing item type argument")
+                            holder.newAnnotation(HighlightSeverity.ERROR, "Missing item type argument")
+                                .range(identifier)
+                                .create()
+//                            holder.createErrorAnnotation(identifier, "Missing item type argument")
                             return
                         }
                         val realCount = typeArguments.size
                         if (realCount > 1) {
                             typeArguments.drop(1).forEach {
-                                holder.createErrorAnnotation(
-                                    it,
+                                holder.newAnnotation(
+                                    HighlightSeverity.ERROR,
                                     "Wrong number of type arguments: expected 1, found $realCount"
                                 )
+                                    .range(it)
+                                    .create()
+//                                holder.createErrorAnnotation(
+//                                    it,
+//                                    "Wrong number of type arguments: expected 1, found $realCount"
+//                                )
                             }
                             return
                         }
@@ -52,18 +62,25 @@ class ErrorAnnotator : MvAnnotator() {
                 val realCount = typeArguments.size
 
                 if (expectedCount == 0 && realCount != 0) {
-                    holder.createErrorAnnotation(
-                        path.typeArgumentList!!,
-                        "No type arguments expected",
-                    )
+                    val target = path.typeArgumentList!!
+                    holder.newAnnotation(HighlightSeverity.ERROR, "No type arguments expected")
+                        .range(target)
+                        .create()
+//                    holder.createErrorAnnotation(
+//                        path.typeArgumentList!!,
+//                        "No type arguments expected",
+//                    )
                     return
                 }
                 if (realCount > expectedCount) {
                     typeArguments.drop(expectedCount).forEach {
-                        holder.createErrorAnnotation(
-                            it,
-                            "Wrong number of type arguments: expected $expectedCount, found $realCount",
-                        )
+                        holder.newAnnotation(HighlightSeverity.ERROR, "Wrong number of type arguments: expected $expectedCount, found $realCount")
+                            .range(it)
+                            .create()
+//                        holder.createErrorAnnotation(
+//                            it,
+//                            "Wrong number of type arguments: expected $expectedCount, found $realCount",
+//                        )
                     }
                     return
                 }
@@ -88,12 +105,18 @@ class ErrorAnnotator : MvAnnotator() {
                 when {
                     realCount < expectedCount -> {
                         val target = arguments.findFirstChildByType(R_PAREN) ?: arguments
-                        holder.createErrorAnnotation(target, errorMessage)
+                        holder.newAnnotation(HighlightSeverity.ERROR, errorMessage)
+                            .range(target)
+                            .create()
+//                        holder.createErrorAnnotation(target, errorMessage)
                         return
                     }
                     realCount > expectedCount -> {
                         arguments.exprList.drop(expectedCount).forEach {
-                            holder.createErrorAnnotation(it, errorMessage)
+                            holder.newAnnotation(HighlightSeverity.ERROR, errorMessage)
+                                .range(it)
+                                .create()
+//                            holder.createErrorAnnotation(it, errorMessage)
                         }
                         return
                     }
