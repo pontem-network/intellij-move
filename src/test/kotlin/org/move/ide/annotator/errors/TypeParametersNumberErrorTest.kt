@@ -83,15 +83,6 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     }    
     """)
 
-    fun `test explicit generic always required for phantom types`() = checkErrors("""
-    module 0x1::M {
-        struct S<phantom R> {}
-        fun m() {
-            let a = <error descr="Could not infer this type. Try adding an annotation">S</error> {};
-        }
-    }    
-    """)
-
     fun `test no need for generic parameters inside acquires`() = checkErrors(
         """
     module 0x1::M {
@@ -117,6 +108,25 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
         fun call<R>() {}
         fun m() {
             <error descr="Could not infer this type. Try adding an annotation">call</error>();
+        }
+    }    
+    """)
+
+    fun `test phantom type can be inferred from explicitly passed generic`() = checkErrors("""
+    module 0x1::M {
+        struct CapState<phantom Feature> has key {}
+        fun m<Feature>(acc: &signer) {
+            move_to<CapState<Feature>>(acc, CapState{})
+        }
+    }    
+    """)
+
+    fun `test phantom type can be inferred from another struct with phantom type`() = checkErrors("""
+    module 0x1::M {
+        struct Slot<phantom Feature> has store {}
+        struct Container<phantom Feature> has key { slot: Slot<Feature> }
+        fun m<Feature>(acc: &signer) {
+            Container{ slot: Slot<Feature> {} };
         }
     }    
     """)

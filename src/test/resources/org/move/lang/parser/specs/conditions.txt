@@ -946,7 +946,7 @@ FILE
       MvSchemaSpecDefImpl(SCHEMA_SPEC_DEF)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
-        PsiElement(schema)('schema')
+        PsiElement(schema_kw)('schema')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('ModuleInvariant')
         MvTypeParameterListImpl(TYPE_PARAMETER_LIST)

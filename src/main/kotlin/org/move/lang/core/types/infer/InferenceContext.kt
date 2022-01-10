@@ -68,6 +68,23 @@ fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean 
             || expectedTy.kind == inferredTy.kind
 }
 
+/// find common denominator for both types
+fun combineTys(ty1: Ty, ty2: Ty): Ty {
+    if (!isCompatible(ty1, ty2) && !isCompatible(ty2, ty1)) return TyUnknown
+    return when {
+        ty1 is TyReference && ty2 is TyReference
+                && isCompatible(ty1.referenced, ty2.referenced) -> {
+            val combinedMutability = if (ty1.mutability.isMut && ty2.mutability.isMut) {
+                Mutability.MUTABLE
+            } else {
+                Mutability.IMMUTABLE
+            }
+            TyReference(ty1.referenced, combinedMutability)
+        }
+        else -> ty1
+    }
+}
+
 fun isCompatible(expectedTy: Ty, inferredTy: Ty): Boolean {
     return when {
         expectedTy is TyUnknown || inferredTy is TyUnknown -> true
@@ -79,6 +96,7 @@ fun isCompatible(expectedTy: Ty, inferredTy: Ty): Boolean {
             // check abilities
             true
         }
+        expectedTy is TyUnit && inferredTy is TyUnit -> true
         expectedTy is TyInteger && inferredTy is TyInteger -> isCompatibleIntegers(expectedTy, inferredTy)
         expectedTy is TyPrimitive && inferredTy is TyPrimitive
                 && expectedTy.name == inferredTy.name -> true

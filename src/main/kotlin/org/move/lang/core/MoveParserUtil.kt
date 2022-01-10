@@ -79,7 +79,7 @@ object MoveParserUtil : GeneratedParserUtilBase() {
             b.advanceLexer()
             return true
         }
-        if (b.tokenType != ADDRESS_IDENT) return false
+        if (b.tokenType != DIEM_ADDRESS) return false
         // should not be :: next, it's an address then
         if (b.lookAhead(1) == COLON_COLON) return false
 
@@ -164,6 +164,12 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun addressKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "address", ADDRESS)
+
+    @JvmStatic
+    fun hasKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "has", HAS)
+
+    @JvmStatic
+    fun schemaKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "schema", SCHEMA)
 
     @JvmStatic
     fun friendKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "friend", FRIEND)

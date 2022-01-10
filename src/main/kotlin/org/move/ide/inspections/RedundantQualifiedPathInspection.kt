@@ -19,6 +19,7 @@ class RedundantQualifiedPathInspection : MvLocalInspectionTool() {
                 val shortestPathIdentText = importsOwner.shortestPathIdentText(item) ?: return
                 val diff = pathIdentText.length - shortestPathIdentText.length
                 if (diff > 0) {
+                    if (pathIdentText.substring(0, diff) == "Self::") return
                     val range = TextRange.from(0, diff)
                     holder.registerProblem(
                         pathIdent,

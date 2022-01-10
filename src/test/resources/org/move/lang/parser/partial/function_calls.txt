@@ -23,7 +23,7 @@ FILE
                   PsiElement(IDENTIFIER)('call')
               MvCallArgumentListImpl(CALL_ARGUMENT_LIST)
                 PsiElement(()('(')
-              PsiErrorElement:')', <expression> or <path> expected, got '1'
+              PsiErrorElement:')', <expression>, BECH32_ADDRESS, DIEM_ADDRESS, IDENTIFIER, INTEGER_LITERAL, PLACEHOLDER_ADDRESS or POLKADOT_ADDRESS expected, got '1'
                 <empty list>
             PsiElement(INTEGER_LITERAL)('1')
             PsiElement(;)(';')

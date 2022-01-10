@@ -1,6 +1,8 @@
 module M {
     fun fn(): u8 {}
 
+    fun void_fn(): () {}
+
     public fun fn(): u8 {}
 
     public(script) fun fn(): u8 {}

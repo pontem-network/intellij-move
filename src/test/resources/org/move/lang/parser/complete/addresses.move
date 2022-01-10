@@ -4,6 +4,8 @@ address alice = {{alice}};
 /* my module */
 module 0x1::M {
     fun main() {
+        @0;
+        @01;
         @0x0;
         @0x0000;
         @0x00001111;

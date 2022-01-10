@@ -250,4 +250,24 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test return type of unit returning function`() = testExpr("""
+    module 0x1::M {
+        fun call(): () {}
+        fun m() {
+            call();
+          //^ ()
+        }
+    }    
+    """)
+
+    fun `test if else with references coerced to less specific one`() = testExpr("""
+    module 0x1::M {
+        struct S {}
+        fun m(s: &S, s_mut: &mut S) {
+            (if (cond) s_mut else s);
+          //^ &0x1::M::S  
+        }
+    }    
+    """)
 }

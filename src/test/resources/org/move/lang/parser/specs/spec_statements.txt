@@ -3,7 +3,7 @@ FILE
     PsiElement(module)('module')
     PsiWhiteSpace(' ')
     MvAddressRefImpl(ADDRESS_REF)
-      PsiElement(ADDRESS_IDENT)('0x1')
+      PsiElement(DIEM_ADDRESS)('0x1')
     PsiElement(::)('::')
     PsiElement(IDENTIFIER)('M')
     PsiWhiteSpace(' ')
@@ -77,7 +77,7 @@ FILE
             MvLitExprImpl(LIT_EXPR)
               PsiElement(INTEGER_LITERAL)('1')
             PsiWhiteSpace(' ')
-            PsiErrorElement:'=' or '[' expected, got '=='
+            PsiErrorElement:'::', '=' or '[' expected, got '=='
               PsiElement(==)('==')
             PsiElement(>)('>')
             PsiWhiteSpace(' ')
@@ -320,7 +320,7 @@ FILE
             MvLitExprImpl(LIT_EXPR)
               PsiElement(INTEGER_LITERAL)('1')
             PsiWhiteSpace(' ')
-            PsiErrorElement:'=' or '[' expected, got '=='
+            PsiErrorElement:'::', '=' or '[' expected, got '=='
               PsiElement(==)('==')
             PsiElement(>)('>')
             PsiWhiteSpace(' ')

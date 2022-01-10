@@ -3,7 +3,7 @@ FILE
     PsiElement(module)('module')
     PsiWhiteSpace(' ')
     MvAddressRefImpl(ADDRESS_REF)
-      PsiElement(ADDRESS_IDENT)('0x1')
+      PsiElement(DIEM_ADDRESS)('0x1')
     PsiElement(::)('::')
     PsiElement(IDENTIFIER)('M')
     PsiWhiteSpace(' ')
@@ -26,7 +26,7 @@ FILE
         PsiElement(struct)('struct')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('S')
-        PsiErrorElement:<, has or '{' expected, got 'struct'
+        PsiErrorElement:< or '{' expected, got 'struct'
           <empty list>
       PsiWhiteSpace('\n    ')
       MvStruct_Impl(STRUCT_)
@@ -44,7 +44,7 @@ FILE
         PsiElement(struct)('struct')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('S1')
-        PsiErrorElement:';', < or has expected, got 'struct'
+        PsiErrorElement:';' or < expected, got 'struct'
           <empty list>
       PsiWhiteSpace('\n    ')
       MvStruct_Impl(STRUCT_)

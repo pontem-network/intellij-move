@@ -43,7 +43,7 @@ FILE
                 MvPathIdentImpl(PATH_IDENT)
                   MvFQModuleRefImpl(FQ_MODULE_REF)
                     MvAddressRefImpl(ADDRESS_REF)
-                      PsiElement(ADDRESS_IDENT)('0x1')
+                      PsiElement(DIEM_ADDRESS)('0x1')
                     PsiElement(::)('::')
                     PsiErrorElement:'::', <, IDENTIFIER or '{' expected, got ';'
                       <empty list>
@@ -56,7 +56,7 @@ FILE
                 MvPathIdentImpl(PATH_IDENT)
                   MvFQModuleRefImpl(FQ_MODULE_REF)
                     MvAddressRefImpl(ADDRESS_REF)
-                      PsiElement(ADDRESS_IDENT)('0x1')
+                      PsiElement(DIEM_ADDRESS)('0x1')
                     PsiElement(::)('::')
                     PsiElement(IDENTIFIER)('RMRK')
                   PsiElement(::)('::')

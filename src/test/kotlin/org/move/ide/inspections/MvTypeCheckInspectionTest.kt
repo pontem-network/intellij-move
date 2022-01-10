@@ -538,11 +538,28 @@ address 0x1 {
     }    
     """)
 
-    fun `test do not crash type checking invalid number of type params`() = checkErrors("""
+    fun `test do not crash type checking invalid number of type params or call params`() = checkErrors("""
     module 0x1::M {
         struct S<R: key> { val: R }
+        fun call(a: u8) {}
         fun m() {
             let s = S<u8, u8>{};
+            call(1, 2, 3);
+        }
+    }    
+    """)
+
+    fun `test explicit unit return`() = checkErrors("""
+    module 0x1::M {
+        fun m(): () {}
+    }    
+    """)
+
+    fun `test if else with references no error if coerceable`() = checkErrors("""
+    module 0x1::M {
+        struct S {}
+        fun m(s: &S, s_mut: &mut S) {
+            (if (cond) s_mut else s);
         }
     }    
     """)

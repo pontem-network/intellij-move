@@ -19,10 +19,9 @@
     extends(".*Expr")=Expr
     extends(".*Pat")=Pat
 //    extends(".*Predicate")=Predicate_item
-    extends("(Lambda|Ref|Path|Tuple)Type")=Type
+    extends("(Lambda|Ref|Path|Tuple|Unit)Type")=Type
     extends(".*SpecDef")=SpecDef
 
-//    extends(".*SpecStatement")=SpecStatement
     extends(".*Statement")=Statement
 
     name(".*Expr")="expression"
@@ -34,20 +33,12 @@
 //        EOL_COMMENT='regexp:(//.*\n)|(//.*\R)'
 //        BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
 
-        PLACEHOLDER_ADDRESS_IDENT='regexp:\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
-//        PLACEHOLDER_ADDRESS_LITERAL='regexp:@\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
-
-        ADDRESS_IDENT='regexp:0x[0-9a-fA-F]{1,40}'
-//        ADDRESS_LITERAL='regexp:@0x[0-9a-fA-F]{1,40}'
-
-        BECH32_ADDRESS_IDENT='regexp:wallet1[A-Z0-9a-z&&[^boi1]]{6,83}'
-//        BECH32_ADDRESS_LITERAL='regexp:@wallet1[A-Z0-9a-z&&[^boi1]]{6,83}'
-
-        POLKADOT_ADDRESS_IDENT='regexp:[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
-//        POLKADOT_ADDRESS_LITERAL='regexp:@[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
+        PLACEHOLDER_ADDRESS='regexp:\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
+        DIEM_ADDRESS='regexp:0x[0-9a-fA-F]{1,40}'
+        BECH32_ADDRESS='regexp:wallet1[A-Z0-9a-z&&[^boi1]]{6,83}'
+        POLKADOT_ADDRESS='regexp:[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
 
         BOOL_LITERAL='regexp:(true)|(false)'
-
         INTEGER_LITERAL='regexp:[0-9]+((u8)|(u64)|(u128))?'
         HEX_INTEGER_LITERAL='regexp:0x[0-9a-fA-F]+((u8)|(u64)|(u128))?'
 
@@ -110,7 +101,9 @@
         LT_EQ_EQ_GT     = '<==>'
 
         ADDRESS     = 'address_kw'
+        HAS     = 'has_kw'
         FRIEND     = 'friend_kw'
+        SCHEMA     = 'schema_kw'
 
         LOCAL     = 'local_kw'
         GLOBAL     = 'global_kw'
@@ -181,6 +174,8 @@ private ScriptItem_recover ::= !('}' | <<eof>> | ScriptItemFirst)
 private ScriptItem_item ::= ImportStatement | ConstDef | FunctionInner
 
 private address ::= <<addressKeyword>>
+private has ::= <<hasKeyword>>
+private schema ::= <<schemaKeyword>>
 
 AddressDef ::= address AddressRef AddressBlock {
     pin = 1
@@ -274,13 +269,6 @@ NativeStructInner ::= Attr* NativeStructInnerFirst IDENTIFIER TypeParameterList?
 }
 private StructItem ::= StructInner | NativeStructInner
 
-//NativeStructDef ::= native StructSignature ';'
-//{
-//    pin = 2
-//    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
-//    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
-//}
-
 fake Function ::= Attr* native? FunctionVisibilityModifier? native?
                     fun? IDENTIFIER? TypeParameterList? FunctionParameterList?
                         ReturnType? AcquiresType?
@@ -312,9 +300,6 @@ private NativeFunctionInnerVisFirst ::= ((native FunctionVisibilityModifier)
                                         | (FunctionVisibilityModifier native)) fun { pin = 1 }
 private NativeFunctionInnerFirst ::= NativeFunctionInnerNoVisFirst | NativeFunctionInnerVisFirst
 
-//private NativeFunctionInnerFirst ::= ((native FunctionVisibilityModifier?)
-//                                        | (FunctionVisibilityModifier? native) ) fun
-//                                        { pin = FunctionVisibilityModifier }
 NativeFunctionInner ::= Attr* NativeFunctionInnerFirst FunctionSignatureInner ';'
 {
     pin = NativeFunctionInnerFirst
@@ -489,8 +474,9 @@ ImportAlias ::= as IDENTIFIER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 TypeAnnotation ::= ':' Type { pin = 1 }
 
-Type ::= RefType | PathType | TupleType | LambdaType
+Type ::= RefType | PathType | TupleType | LambdaType | UnitType
 
+UnitType ::= '(' ')'
 RefType ::= RefTypeStart Type
 {
     pin = 1
@@ -502,7 +488,7 @@ PathType ::= Path
     name = "type"
 }
 
-TupleType ::= '(' TupleTypeItem_with_recover* ')' { pin = 1 }
+TupleType ::= ('(' !')') TupleTypeItem_with_recover+ ')' { pin = 1 }
 private TupleTypeItem_with_recover ::= !')' Type (',' | &')')
 {
     pin = 1
@@ -510,7 +496,7 @@ private TupleTypeItem_with_recover ::= !')' Type (',' | &')')
 }
 private TupleTypeItem_recover ::= !(')' | '{' | IDENTIFIER)
 
-LambdaType ::= '|' <<comma_sep_items Type>>? '|' Type { pin = 1 }
+LambdaType ::= <<specOnly '|'>> <<comma_sep_items Type>>? <<specOnly '|'>> Type { pin = 1 }
 
 TypeParameterList ::= '<' TypeParameter_with_recover* '>'
 {
@@ -771,9 +757,7 @@ ParensExpr ::= '(' Expr !':' ')'
 LambdaExpr ::= '|' <<comma_sep_items IDENTIFIER>> '|' Expr { pin = 1 }
 RangeExpr ::= Expr '..' Expr
 
-TupleLitExpr ::= EmptyTupleExpr | TupleExpr
-private EmptyTupleExpr ::= '(' ')'
-private TupleExpr ::= '(' Expr ',' <<comma_sep_items Expr>>? ')' { pin = 3 }
+TupleLitExpr ::= '(' Expr ',' <<comma_sep_items Expr>>? ')' { pin = 3 }
 
 private HEX_INTEGER_LITERAL ::= <<hexIntegerLiteral>>
 LitExpr ::= HEX_INTEGER_LITERAL
@@ -871,10 +855,11 @@ private FQModuleRefUseStart ::= AddressRef '::' { pin = 2 }
 private FQModuleRefStart ::= AddressRef '::'
 
 AddressRef ::= NamedAddress
-                | PLACEHOLDER_ADDRESS_IDENT
-                | BECH32_ADDRESS_IDENT
-                | POLKADOT_ADDRESS_IDENT
-                | ADDRESS_IDENT
+                | PLACEHOLDER_ADDRESS
+                | BECH32_ADDRESS
+                | POLKADOT_ADDRESS
+                | DIEM_ADDRESS
+                | INTEGER_LITERAL
 NamedAddress ::= IDENTIFIER
 {
     implements = ["org.move.lang.core.psi.NamedAddressReferenceElement"]

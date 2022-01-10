@@ -62,11 +62,6 @@ class ErrorAnnotator : MvAnnotator() {
                                     .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
                                     .addToHolder(moveHolder)
                             }
-                        } else {
-                            if (item.hasPhantomTypeParameters && realCount != expectedCount) {
-                                MvDiagnostic.CannotInferType(path)
-                                    .addToHolder(moveHolder)
-                            }
                         }
                     }
                     item is MvFunction && parent is MvCallExpr -> {
