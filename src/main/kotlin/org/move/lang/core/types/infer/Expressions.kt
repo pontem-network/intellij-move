@@ -180,6 +180,5 @@ private fun inferLitExprTy(litExpr: MvLitExpr): Ty {
 private fun inferIfExprTy(ifExpr: MvIfExpr): Ty {
     val ifTy = ifExpr.returningExpr?.inferExprTy() ?: return TyUnknown
     val elseTy = ifExpr.elseExpr?.inferExprTy() ?: return TyUnknown
-    if (!isCompatible(ifTy, elseTy)) return TyUnknown
-    return ifTy
+    return combineTys(ifTy, elseTy)
 }

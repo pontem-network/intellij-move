@@ -20,6 +20,11 @@ module 0x1::M {
         apply ModuleInvariant to bar;
         aborts_if exists(Signer::spec_address_of(to_limit));
         aborts_if exists<Window>(Signer::spec_address_of(to_limit));
+
+        aborts_with [check] 1;
+        aborts_with 1, error, Errors::NOT_PUBLISHED;
+
+        ensures result == TRACE(choose x: u64 where x >= 4 && x <= 5);
     }
 
     fun main2() {

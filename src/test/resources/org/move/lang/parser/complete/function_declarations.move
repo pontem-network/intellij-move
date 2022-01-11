@@ -1,6 +1,9 @@
 module M {
     fun fn(): u8 {}
 
+    fun void_fn(): () {}
+    fun tuple_fn(): (&u64, &u64, &mut u64) {}
+
     public fun fn(): u8 {}
 
     public(script) fun fn(): u8 {}

@@ -64,6 +64,7 @@ fun inferMvTypeTy(moveType: MvType): Ty {
             val innerTypes = moveType.typeList.map { inferMvTypeTy(it) }
             TyTuple(innerTypes)
         }
+        is MvUnitType -> TyUnit
         else -> TyUnknown
     }
 }

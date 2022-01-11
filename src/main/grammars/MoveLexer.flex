@@ -65,15 +65,10 @@ OUTER_EOL_DOC = ({EOL_DOC_LINE}{EOL_WS})*{EOL_DOC_LINE}
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Literals
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-PLACEHOLDER_ADDRESS_IDENT=\{\{[_a-zA-Z][_a-zA-Z0-9]*\}\}
-//PLACEHOLDER_ADDRESS_LITERAL=@\{\{[_a-zA-Z][_a-zA-Z0-9]*\}\}
-
-ADDRESS_IDENT=0x[0-9a-fA-F]{1,40}
-//ADDRESS_LITERAL=@0x[0-9a-fA-F]{1,40}
-BECH32_ADDRESS_IDENT=wallet1[A-Z0-9a-z&&[^boi1]]{6,83}
-//BECH32_ADDRESS_LITERAL=@wallet1[A-Z0-9a-z&&[^boi1]]{6,83}
-POLKADOT_ADDRESS_IDENT=[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*
-//POLKADOT_ADDRESS_LITERAL=@[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*
+PLACEHOLDER_ADDRESS=\{\{[_a-zA-Z][_a-zA-Z0-9]*\}\}
+DIEM_ADDRESS=0x[0-9a-fA-F]{1,40}
+BECH32_ADDRESS=wallet1[A-Z0-9a-z&&[^boi1]]{6,83}
+POLKADOT_ADDRESS=[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*
 
 BOOL_LITERAL=(true)|(false)
 HEX_INTEGER_LITERAL=0x[0-9a-fA-F]+((u8)|(u64)|(u128))?
@@ -137,7 +132,6 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "struct"         { return STRUCT; }
       "use"            { return USE; }
       "as"             { return AS; }
-      "has"             { return HAS; }
       "mut"            { return MUT; }
       "copy"           { return COPY; }
       "move"           { return MOVE; }
@@ -151,17 +145,12 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "while"          { return WHILE; }
       "let"            { return LET; }
       "phantom"            { return PHANTOM; }
-      "schema"         { return SCHEMA; }
       "spec"           { return SPEC; }
 
-  {PLACEHOLDER_ADDRESS_IDENT}          { return PLACEHOLDER_ADDRESS_IDENT; }
-//  {PLACEHOLDER_ADDRESS_LITERAL}          { return PLACEHOLDER_ADDRESS_LITERAL; }
-//  {ADDRESS_LITERAL}          { return ADDRESS_LITERAL; }
-//  {BECH32_ADDRESS_LITERAL}          { return BECH32_ADDRESS_LITERAL; }
-//  {POLKADOT_ADDRESS_LITERAL}          { return POLKADOT_ADDRESS_LITERAL; }
-  {ADDRESS_IDENT}          { return ADDRESS_IDENT; }
-  {BECH32_ADDRESS_IDENT}          { return BECH32_ADDRESS_IDENT; }
-  {POLKADOT_ADDRESS_IDENT}          { return POLKADOT_ADDRESS_IDENT; }
+  {PLACEHOLDER_ADDRESS}          { return PLACEHOLDER_ADDRESS; }
+  {DIEM_ADDRESS}          { return DIEM_ADDRESS; }
+  {BECH32_ADDRESS}          { return BECH32_ADDRESS; }
+  {POLKADOT_ADDRESS}          { return POLKADOT_ADDRESS; }
 
   {BOOL_LITERAL}             { return BOOL_LITERAL; }
   {HEX_INTEGER_LITERAL}          { return HEX_INTEGER_LITERAL; }

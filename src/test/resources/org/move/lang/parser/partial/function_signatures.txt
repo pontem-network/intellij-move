@@ -276,7 +276,7 @@ FILE
               MvPathImpl(PATH)
                 MvPathIdentImpl(PATH_IDENT)
                   PsiElement(IDENTIFIER)('u8')
-            PsiErrorElement:')', ',', '::' or < expected, got '{'
+            PsiErrorElement:',', '::' or < expected, got '{'
               <empty list>
         PsiWhiteSpace(' ')
         MvCodeBlockImpl(CODE_BLOCK)
@@ -300,7 +300,7 @@ FILE
                 MvPathIdentImpl(PATH_IDENT)
                   PsiElement(IDENTIFIER)('u8')
             PsiElement(,)(',')
-            PsiErrorElement:<type> expected, got '{'
+            PsiErrorElement:')' or <type> expected, got '{'
               <empty list>
         PsiWhiteSpace(' ')
         MvCodeBlockImpl(CODE_BLOCK)
@@ -329,7 +329,7 @@ FILE
               MvPathImpl(PATH)
                 MvPathIdentImpl(PATH_IDENT)
                   PsiElement(IDENTIFIER)('u8')
-            PsiErrorElement:')', ',', '::' or < expected, got '{'
+            PsiErrorElement:')', ',', '::', < or <type> expected, got '{'
               <empty list>
         PsiWhiteSpace(' ')
         MvCodeBlockImpl(CODE_BLOCK)
@@ -352,7 +352,7 @@ FILE
               MvPathImpl(PATH)
                 MvPathIdentImpl(PATH_IDENT)
                   PsiElement(IDENTIFIER)('u')
-            PsiErrorElement:')', ',', '::' or < expected, got 'u8'
+            PsiErrorElement:',', '::' or < expected, got 'u8'
               <empty list>
             PsiWhiteSpace(' ')
             MvPathTypeImpl(PATH_TYPE)

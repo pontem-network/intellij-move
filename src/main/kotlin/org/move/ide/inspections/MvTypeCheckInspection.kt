@@ -11,6 +11,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.ty
 import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.combineTys
 import org.move.lang.core.types.infer.inferCallExprTy
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.*
@@ -38,7 +39,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 val elseExpr = o.elseExpr ?: return
                 val elseTy = elseExpr.inferExprTy()
 
-                if (!isCompatible(ifTy, elseTy)) {
+                if (!isCompatible(ifTy, elseTy) && !isCompatible(elseTy, ifTy)) {
                     holder.registerTypeError(
                         elseExpr, "Incompatible type '${elseTy.typeLabel(o)}'" +
                                 ", expected '${ifTy.typeLabel(o)}'"
@@ -130,6 +131,8 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             override fun visitCallArgumentList(arguments: MvCallArgumentList) {
                 val callExpr = arguments.parent as? MvCallExpr ?: return
                 val function = callExpr.path.reference?.resolve() as? MvFunction ?: return
+
+                if (function.parameters.size != arguments.exprList.size) return
 
                 val ctx = InferenceContext()
                 val inferredFuncTy = inferCallExprTy(callExpr, ctx)

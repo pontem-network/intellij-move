@@ -1,4 +1,4 @@
-module M {
+module 0x1::M {
     struct Coin<phantom CoinType, phantom CoinType2> {}
 
     struct ValidatorConfig<T> has store, drop {

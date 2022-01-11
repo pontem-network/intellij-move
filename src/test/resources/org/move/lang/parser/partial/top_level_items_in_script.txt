@@ -67,7 +67,7 @@ FILE
         MvModuleImportImpl(MODULE_IMPORT)
           MvFQModuleRefImpl(FQ_MODULE_REF)
             MvAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_IDENT)('0x0')
+              PsiElement(DIEM_ADDRESS)('0x0')
             PsiElement(::)('::')
             PsiErrorElement:'::' or IDENTIFIER expected, got '}'
               <empty list>
@@ -86,7 +86,7 @@ FILE
         MvModuleImportImpl(MODULE_IMPORT)
           MvFQModuleRefImpl(FQ_MODULE_REF)
             MvAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_IDENT)('0x0')
+              PsiElement(DIEM_ADDRESS)('0x0')
             PsiElement(::)('::')
             PsiErrorElement:'::' or IDENTIFIER expected, got 'fun'
               <empty list>
@@ -108,7 +108,7 @@ FILE
             MvModuleImportImpl(MODULE_IMPORT)
               MvFQModuleRefImpl(FQ_MODULE_REF)
                 MvAddressRefImpl(ADDRESS_REF)
-                  PsiElement(ADDRESS_IDENT)('0x0')
+                  PsiElement(DIEM_ADDRESS)('0x0')
                 PsiElement(::)('::')
                 PsiErrorElement:'::' or IDENTIFIER expected, got '}'
                   <empty list>
@@ -129,7 +129,7 @@ FILE
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
           MvFQModuleRefImpl(FQ_MODULE_REF)
             MvAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_IDENT)('0x0')
+              PsiElement(DIEM_ADDRESS)('0x0')
             PsiElement(::)('::')
             PsiElement(IDENTIFIER)('Transaction')
           PsiElement(::)('::')
@@ -162,7 +162,7 @@ FILE
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
           MvFQModuleRefImpl(FQ_MODULE_REF)
             MvAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_IDENT)('0x0')
+              PsiElement(DIEM_ADDRESS)('0x0')
             PsiElement(::)('::')
             PsiElement(IDENTIFIER)('Transaction')
           PsiElement(::)('::')
@@ -197,7 +197,7 @@ FILE
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
           MvFQModuleRefImpl(FQ_MODULE_REF)
             MvAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_IDENT)('0x0')
+              PsiElement(DIEM_ADDRESS)('0x0')
             PsiElement(::)('::')
             PsiElement(IDENTIFIER)('Transaction')
           PsiElement(::)('::')
@@ -231,7 +231,7 @@ FILE
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
           MvFQModuleRefImpl(FQ_MODULE_REF)
             MvAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_IDENT)('0x0')
+              PsiElement(DIEM_ADDRESS)('0x0')
             PsiElement(::)('::')
             PsiElement(IDENTIFIER)('Transaction')
           PsiElement(::)('::')
@@ -246,7 +246,7 @@ FILE
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
           MvFQModuleRefImpl(FQ_MODULE_REF)
             MvAddressRefImpl(ADDRESS_REF)
-              PsiElement(ADDRESS_IDENT)('0x0')
+              PsiElement(DIEM_ADDRESS)('0x0')
             PsiElement(::)('::')
             PsiElement(IDENTIFIER)('Transaction')
           PsiElement(::)('::')

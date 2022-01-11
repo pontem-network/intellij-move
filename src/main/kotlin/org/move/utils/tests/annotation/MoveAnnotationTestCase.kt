@@ -26,6 +26,7 @@ abstract class MvAnnotationTestCase : MvTestBase() {
         )
 
     fun checkErrors(@Language("Move") text: String) = annotationFixture.checkErrors(text)
+    fun checkWarnings(@Language("Move") text: String) = annotationFixture.checkWarnings(text)
 
     protected fun checkByText(
         @Language("Move") text: String,

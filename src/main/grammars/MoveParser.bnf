@@ -19,10 +19,9 @@
     extends(".*Expr")=Expr
     extends(".*Pat")=Pat
 //    extends(".*Predicate")=Predicate_item
-    extends("(Lambda|Ref|Path|Tuple)Type")=Type
+    extends("(Lambda|Ref|Path|Tuple|Unit)Type")=Type
     extends(".*SpecDef")=SpecDef
 
-//    extends(".*SpecStatement")=SpecStatement
     extends(".*Statement")=Statement
 
     name(".*Expr")="expression"
@@ -34,20 +33,12 @@
 //        EOL_COMMENT='regexp:(//.*\n)|(//.*\R)'
 //        BLOCK_COMMENT='regexp:/\*(.|\s)*\*/'
 
-        PLACEHOLDER_ADDRESS_IDENT='regexp:\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
-//        PLACEHOLDER_ADDRESS_LITERAL='regexp:@\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
-
-        ADDRESS_IDENT='regexp:0x[0-9a-fA-F]{1,40}'
-//        ADDRESS_LITERAL='regexp:@0x[0-9a-fA-F]{1,40}'
-
-        BECH32_ADDRESS_IDENT='regexp:wallet1[A-Z0-9a-z&&[^boi1]]{6,83}'
-//        BECH32_ADDRESS_LITERAL='regexp:@wallet1[A-Z0-9a-z&&[^boi1]]{6,83}'
-
-        POLKADOT_ADDRESS_IDENT='regexp:[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
-//        POLKADOT_ADDRESS_LITERAL='regexp:@[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
+        PLACEHOLDER_ADDRESS='regexp:\{\{[_a-zA-Z][_a-zA-Z0-9]*}}'
+        DIEM_ADDRESS='regexp:0x[0-9a-fA-F]{1,40}'
+        BECH32_ADDRESS='regexp:wallet1[A-Z0-9a-z&&[^boi1]]{6,83}'
+        POLKADOT_ADDRESS='regexp:[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
 
         BOOL_LITERAL='regexp:(true)|(false)'
-
         INTEGER_LITERAL='regexp:[0-9]+((u8)|(u64)|(u128))?'
         HEX_INTEGER_LITERAL='regexp:0x[0-9a-fA-F]+((u8)|(u64)|(u128))?'
 
@@ -110,7 +101,9 @@
         LT_EQ_EQ_GT     = '<==>'
 
         ADDRESS     = 'address_kw'
+        HAS     = 'has_kw'
         FRIEND     = 'friend_kw'
+        SCHEMA     = 'schema_kw'
 
         LOCAL     = 'local_kw'
         GLOBAL     = 'global_kw'
@@ -136,6 +129,7 @@
         ENSURES     = 'ensures_kw'
         REQUIRES     = 'requires_kw'
         ABORTS_IF     = 'aborts_if_kw'
+        ABORTS_WITH     = 'aborts_with_kw'
 
         CHOOSE     = 'choose_kw'
         MIN     = 'min_kw'
@@ -181,6 +175,8 @@ private ScriptItem_recover ::= !('}' | <<eof>> | ScriptItemFirst)
 private ScriptItem_item ::= ImportStatement | ConstDef | FunctionInner
 
 private address ::= <<addressKeyword>>
+private has ::= <<hasKeyword>>
+private schema ::= <<schemaKeyword>>
 
 AddressDef ::= address AddressRef AddressBlock {
     pin = 1
@@ -274,13 +270,6 @@ NativeStructInner ::= Attr* NativeStructInnerFirst IDENTIFIER TypeParameterList?
 }
 private StructItem ::= StructInner | NativeStructInner
 
-//NativeStructDef ::= native StructSignature ';'
-//{
-//    pin = 2
-//    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
-//    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
-//}
-
 fake Function ::= Attr* native? FunctionVisibilityModifier? native?
                     fun? IDENTIFIER? TypeParameterList? FunctionParameterList?
                         ReturnType? AcquiresType?
@@ -312,9 +301,6 @@ private NativeFunctionInnerVisFirst ::= ((native FunctionVisibilityModifier)
                                         | (FunctionVisibilityModifier native)) fun { pin = 1 }
 private NativeFunctionInnerFirst ::= NativeFunctionInnerNoVisFirst | NativeFunctionInnerVisFirst
 
-//private NativeFunctionInnerFirst ::= ((native FunctionVisibilityModifier?)
-//                                        | (FunctionVisibilityModifier? native) ) fun
-//                                        { pin = FunctionVisibilityModifier }
 NativeFunctionInner ::= Attr* NativeFunctionInnerFirst FunctionSignatureInner ';'
 {
     pin = NativeFunctionInnerFirst
@@ -438,12 +424,9 @@ StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // 'use 0x0::Transaction as MyTransaction;'
 
-FriendStatement ::= friend FQModuleRef ';' { pin = 1 }
+FriendStatement ::= Attr* friend FQModuleRef ';' { pin = "friend" }
 
-ImportStatement ::= Attr* use (ModuleItemsImport | ModuleImport) ';'
-{
-    pin = "use"
-}
+ImportStatement ::= Attr* use (ModuleItemsImport | ModuleImport) ';' { pin = "use" }
 ModuleImport ::= (AddressRef !'::') | FQModuleRef ImportAlias?
 {
     name = "qual path to module"
@@ -489,8 +472,9 @@ ImportAlias ::= as IDENTIFIER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 TypeAnnotation ::= ':' Type { pin = 1 }
 
-Type ::= RefType | PathType | TupleType | LambdaType
+Type ::= RefType | PathType | TupleType | LambdaType | UnitType
 
+UnitType ::= '(' ')'
 RefType ::= RefTypeStart Type
 {
     pin = 1
@@ -502,15 +486,16 @@ PathType ::= Path
     name = "type"
 }
 
-TupleType ::= '(' TupleTypeItem_with_recover* ')' { pin = 1 }
-private TupleTypeItem_with_recover ::= !')' Type (',' | &')')
-{
-    pin = 1
-    recoverWhile = TupleTypeItem_recover
-}
-private TupleTypeItem_recover ::= !(')' | '{' | IDENTIFIER)
+TupleType ::= '(' Type ',' (Type ','?)* ')' { pin = 2 }
+//TupleType ::= ('(' !')') TupleTypeItem_with_recover+ ')' { pin = 1 }
+//private TupleTypeItem_with_recover ::= !')' Type (',' | &')')
+//{
+//    pin = 1
+//    recoverWhile = TupleTypeItem_recover
+//}
+//private TupleTypeItem_recover ::= !(')' | '{' | IDENTIFIER)
 
-LambdaType ::= '|' <<comma_sep_items Type>>? '|' Type { pin = 1 }
+LambdaType ::= <<specOnly '|'>> <<comma_sep_items Type>>? <<specOnly '|'>> Type { pin = 1 }
 
 TypeParameterList ::= '<' TypeParameter_with_recover* '>'
 {
@@ -600,6 +585,7 @@ StructPatFieldBinding ::= ':' Pat { pin = 1 }
 Statement ::= LetStatement | ExprStatement
 
 SpecExprStatement ::= (SpecExpr_item !'}') ';' { pin = 1 }
+private SpecExpr ::= SpecExprStatement_items | Expr
 private SpecExpr_item ::= SpecExprStatement_items | ExprStatement_items
 {
     recoverWhile = SpecExprStatement_recover
@@ -607,9 +593,11 @@ private SpecExpr_item ::= SpecExprStatement_items | ExprStatement_items
 private SpecExprStatement_recover ::= !(';' | '}' | SpecExprStatement_first)
 private SpecExprStatement_first ::= let | if | while
                                     | include | apply | pragma | emits | choose | assume | assert | ensures
+                                    | axiom | modifies | aborts_if | aborts_with | requires | invariant
 
-private SpecExprStatement_items ::= AssumeSpecExpr | AssertSpecExpr | AbortsIfSpecExpr
+private SpecExprStatement_items ::= AssumeSpecExpr | AssertSpecExpr | AbortsIfSpecExpr | AbortsWithSpecExpr
                 | RequiresSpecExpr | EnsuresSpecExpr | ModifiesSpecExpr | InvariantSpecExpr | AxiomSpecExpr
+                | ChooseSpecExpr | EmitsSpecExpr
 //{
 //    recoverWhile = ExprStatement_recover
 //}
@@ -771,9 +759,7 @@ ParensExpr ::= '(' Expr !':' ')'
 LambdaExpr ::= '|' <<comma_sep_items IDENTIFIER>> '|' Expr { pin = 1 }
 RangeExpr ::= Expr '..' Expr
 
-TupleLitExpr ::= EmptyTupleExpr | TupleExpr
-private EmptyTupleExpr ::= '(' ')'
-private TupleExpr ::= '(' Expr ',' <<comma_sep_items Expr>>? ')' { pin = 3 }
+TupleLitExpr ::= '(' Expr ',' <<comma_sep_items Expr>>? ')' { pin = 3 }
 
 private HEX_INTEGER_LITERAL ::= <<hexIntegerLiteral>>
 LitExpr ::= HEX_INTEGER_LITERAL
@@ -871,10 +857,11 @@ private FQModuleRefUseStart ::= AddressRef '::' { pin = 2 }
 private FQModuleRefStart ::= AddressRef '::'
 
 AddressRef ::= NamedAddress
-                | PLACEHOLDER_ADDRESS_IDENT
-                | BECH32_ADDRESS_IDENT
-                | POLKADOT_ADDRESS_IDENT
-                | ADDRESS_IDENT
+                | PLACEHOLDER_ADDRESS
+                | BECH32_ADDRESS
+                | POLKADOT_ADDRESS
+                | DIEM_ADDRESS
+                | INTEGER_LITERAL
 NamedAddress ::= IDENTIFIER
 {
     implements = ["org.move.lang.core.psi.NamedAddressReferenceElement"]
@@ -894,6 +881,7 @@ private modifies ::= <<modifiesKeyword>>
 private requires ::= <<requiresKeyword>>
 private ensures ::= <<ensuresKeyword>>
 private aborts_if ::= <<abortsIfKeyword>>
+private aborts_with ::= <<abortsWithKeyword>>
 private include ::= <<includeKeyword>>
 private choose ::= <<chooseKeyword>>
 private min ::= <<minKeyword>>
@@ -977,11 +965,11 @@ private SpecStatement ::= ImportStatement
 //                               | InvariantSpecStatement
 //                               | AxiomSpecStatement
                                | ApplySpecStatement
-                               | EmitsSpecStatement
+//                               | EmitsSpecStatement
 //                               | AggregatePredicateSpecStatement
 //                               | SpecBlockSpecStatement
                                | LetSpecStatement
-                               | ChooseSpecStatement
+//                               | ChooseSpecStatement
 //                               | ExprSpecStatement
                                | SpecExprStatement
 //{
@@ -1008,16 +996,14 @@ PragmaAttribute ::= IDENTIFIER ('=' Expr)?
 //    extends = Expr
 //}
 
-//AssumeSpecStatement ::= AssumeSpecExpr ';'
 AssumeSpecExpr ::= assume Expr { pin = 1 }
 
-//AssertSpecStatement ::= AssertSpecExpr ';'
 AssertSpecExpr ::= assert Expr { pin = 1 }
 
-//AbortsIfSpecStatement ::= AbortsIfSpecExpr ';'
-//noinspection BnfSuspiciousToken
-AbortsIfSpecExpr ::= aborts_if Expr AbortsWith? { pin = 1 }
-AbortsWith ::= with Expr { pin = 1 }
+AbortsIfSpecExpr ::= aborts_if Expr AbortsIfWith? { pin = 1 }
+AbortsIfWith ::= with Expr { pin = 1 }
+
+AbortsWithSpecExpr ::= aborts_with <<comma_sep_items Expr>> { pin = 1 }
 
 //private SpecExpr_first ::= aborts_if
 
@@ -1027,7 +1013,7 @@ RequiresSpecExpr ::= requires module? Expr { pin = 1 }
 //EnsuresSpecStatement ::= EnsuresSpecExpr ';'
 //private EnsuresSpecExpr_body ::= EnsuresSpecExpr
 
-EnsuresSpecExpr ::= ensures Expr { pin = 1 }
+EnsuresSpecExpr ::= ensures SpecExpr { pin = 1 }
 
 //ModifiesSpecStatement ::= ModifiesSpecExpr ';'
 ModifiesSpecExpr ::= modifies Expr { pin = 1 }
@@ -1061,10 +1047,11 @@ SpecVisibilityModifier ::= IDENTIFIER
 //                                | concrete | abstract
 //                                | assert | assume
 
-EmitsSpecStatement ::= emits Expr to Expr EmitsCondition? ';'
-{
-    pin = 1
-}
+EmitsSpecExpr ::= emits SpecExpr to SpecExpr EmitsCondition? { pin = 1 }
+//EmitsSpecStatement ::= emits Expr to Expr EmitsCondition? ';'
+//{
+//    pin = 1
+//}
 //private EmitsStatement_body ::= Expr to Expr EmitsCondition?
 //{ recoverWhile = ExprStatement_recover }
 
@@ -1107,12 +1094,15 @@ ForallQuantifier ::= <<specOnly forall>> QuantifierBindings
 ExistsQuantifier ::= <<specOnly exists>> QuantifierBindings
                         (QuantifierWhere)? (':' Quantifier_items)? { pin = 1 }
 
-ChooseSpecStatement ::= choose min? QuantifierBindings
-                        (QuantifierWhere)?
-                        (':' Quantifier_items)? ';'
-{
-    pin = 1
-}
+ChooseSpecExpr ::= choose min? QuantifierBindings
+                           (QuantifierWhere)?
+                           (':' Quantifier_items)? { pin = 1 }
+//ChooseSpecStatement ::= choose min? QuantifierBindings
+//                        (QuantifierWhere)?
+//                        (':' Quantifier_items)? ';'
+//{
+//    pin = 1
+//}
 
 QuantifierBindings ::= <<comma_sep_items QuantifierBind>>
 QuantifierBind ::= RangeQuantifierBind | TypeQuantifierBind

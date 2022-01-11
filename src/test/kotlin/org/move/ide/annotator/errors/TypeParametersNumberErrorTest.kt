@@ -6,14 +6,10 @@ import org.move.utils.tests.annotation.AnnotatorTestCase
 class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     fun `test missing type argument for vector`() = checkErrors("""
         module 0x1::M {
-            fun main(val: <error descr="Invalid instantiation of 'vector'. Expected 1 type argument(s) but got 0">vector</error> ) {}
-        }    
-    """)
-
-    fun `test too many type arguments for vector`() = checkErrors("""
-        module 0x1::M {
             fun m() {
-                let a: <error descr="Invalid instantiation of 'vector'. Expected 1 type argument(s) but got 3">vector<u8, u8, u8></error>;
+            let a: vector<address>;
+            let b: <error descr="Invalid instantiation of 'vector'. Expected 1 type argument(s) but got 0">vector</error>;
+            let c: <error descr="Invalid instantiation of 'vector'. Expected 1 type argument(s) but got 3">vector<u8, u8, u8></error>;
             }
         }    
     """)
@@ -87,14 +83,16 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     }    
     """)
 
-    fun `test explicit generic always required for phantom types`() = checkErrors("""
+    fun `test no need for generic parameters inside acquires`() = checkErrors(
+        """
     module 0x1::M {
-        struct S<phantom R> {}
-        fun m() {
-            let a = <error descr="Could not infer this type. Try adding an annotation">S</error> {};
+        struct S<phantom R> has key {}
+        fun m() acquires S {
+            borrow_global_mut<S<u8>>(@0x1);
         }
     }    
-    """)
+    """
+    )
 
     fun `test wrong number of type params for struct`() = checkErrors("""
     module 0x1::M {
@@ -110,6 +108,25 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
         fun call<R>() {}
         fun m() {
             <error descr="Could not infer this type. Try adding an annotation">call</error>();
+        }
+    }    
+    """)
+
+    fun `test phantom type can be inferred from explicitly passed generic`() = checkErrors("""
+    module 0x1::M {
+        struct CapState<phantom Feature> has key {}
+        fun m<Feature>(acc: &signer) {
+            move_to<CapState<Feature>>(acc, CapState{})
+        }
+    }    
+    """)
+
+    fun `test phantom type can be inferred from another struct with phantom type`() = checkErrors("""
+    module 0x1::M {
+        struct Slot<phantom Feature> has store {}
+        struct Container<phantom Feature> has key { slot: Slot<Feature> }
+        fun m<Feature>(acc: &signer) {
+            Container{ slot: Slot<Feature> {} };
         }
     }    
     """)

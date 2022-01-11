@@ -3,7 +3,7 @@ package org.move.ide.inspections
 import org.move.utils.tests.annotation.InspectionsTestCase
 
 class RedundantQualifiedPathInspectionTest : InspectionsTestCase(RedundantQualifiedPathInspection::class) {
-    fun `test no error if fully qualified without imports`() = checkErrors(
+    fun `test no error if fully qualified without imports`() = checkWarnings(
         """
     module 0x1::M {
         public fun call() {}        
@@ -16,7 +16,7 @@ class RedundantQualifiedPathInspectionTest : InspectionsTestCase(RedundantQualif
     """
     )
 
-    fun `test no error if qualified with module import`() = checkErrors(
+    fun `test no error if qualified with module import`() = checkWarnings(
         """
     module 0x1::M {
         public fun call() {}        
@@ -30,7 +30,7 @@ class RedundantQualifiedPathInspectionTest : InspectionsTestCase(RedundantQualif
     """
     )
 
-    fun `test no error if local name or import`() = checkErrors(
+    fun `test no error if local name or import`() = checkWarnings(
         """
     module 0x1::M {
         public fun call() {}        
@@ -145,4 +145,14 @@ class RedundantQualifiedPathInspectionTest : InspectionsTestCase(RedundantQualif
     }    
     """
     )
+
+    fun `test no redundant qual with Self path`() = checkWarnings("""
+    module 0x1::M {
+        struct S {}
+        fun call() {}
+        fun m(a: Self::S) acquires Self::S {
+            Self::call();
+        }
+    }    
+    """)
 }
