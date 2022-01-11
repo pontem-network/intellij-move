@@ -4,6 +4,7 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
+import org.move.cli.moveProjects
 import org.move.lang.MvFile
 import org.move.lang.core.psi.MvVisitor
 import org.move.openapiext.common.isUnitTestMode
@@ -22,7 +23,7 @@ abstract class MvLocalInspectionTool: LocalInspectionTool() {
         }
     }
 
-    final override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor =
+    final override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         buildMvVisitor(holder, isOnTheFly)
 
     abstract fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor
@@ -40,9 +41,6 @@ abstract class MvLocalInspectionTool: LocalInspectionTool() {
     private fun isApplicableTo(file: MvFile): Boolean {
         if (isUnitTestMode) return true
         if (isSyntaxOnly) return true
-        return true
-//        return file.cargoWorkspace != null
-//                && file.crateRoot != null
-//                && file.project.toolchain?.looksLikeValidToolchain() == true
+        return file.project.moveProjects.findProjectForPsiElement(file) != null
     }
 }

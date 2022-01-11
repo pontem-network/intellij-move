@@ -7,6 +7,8 @@ import org.move.lang.core.psi.MvVisitor
 import org.move.lang.core.psi.ext.definedAddressRef
 
 class InvalidModuleDeclarationInspection : MvLocalInspectionTool() {
+    override val isSyntaxOnly: Boolean get() = true
+
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
         return object : MvVisitor() {
             override fun visitModuleDef(mod: MvModuleDef) {

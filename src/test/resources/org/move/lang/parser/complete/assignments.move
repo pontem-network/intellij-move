@@ -7,5 +7,8 @@ script {
 
         call().operator = 11;
         call().operator.main = 11;
+
+        Coin { value: val } = 1;
+        Coin { value: _ } = 1;
     }
 }

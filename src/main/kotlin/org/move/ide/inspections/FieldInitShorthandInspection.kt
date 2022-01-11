@@ -9,6 +9,8 @@ import org.move.lang.core.psi.MvVisitor
 import org.move.lang.core.psi.ext.getChild
 
 class FieldInitShorthandInspection : MvLocalInspectionTool() {
+    override val isSyntaxOnly: Boolean get() = true
+
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitStructLitField(o: MvStructLitField) {
             val initExpr = o.expr ?: return

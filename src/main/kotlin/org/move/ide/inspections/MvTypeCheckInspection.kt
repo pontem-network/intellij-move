@@ -11,7 +11,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.ty
 import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.combineTys
 import org.move.lang.core.types.infer.inferCallExprTy
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.*
@@ -31,6 +30,8 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                     "expected '${expectedTy.name()}', found '${actualTy.name()}'"
         }
     }
+
+    override val isSyntaxOnly: Boolean get() = true
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
@@ -189,7 +190,7 @@ private fun checkHasRequiredAbilities(
     expectedTy: Ty
 ): Boolean {
     // do not check for specs
-    if (element.isInsideSpecBlock()) return false
+    if (element.isInsideSpec()) return false
 
     val abilities = actualTy.abilities()
     for (ability in expectedTy.abilities()) {
