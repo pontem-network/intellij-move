@@ -63,7 +63,6 @@ data class MoveProject(
     fun projectDirPath(name: String): Path = rootPath.resolve(name)
 
     fun getModuleFolders(scope: GlobalScope): List<VirtualFile> {
-        // TODO: add support for git folders
         val deps = when (scope) {
             GlobalScope.MAIN -> moveToml.dependencies
             GlobalScope.DEV -> moveToml.dependencies + moveToml.dev_dependencies
@@ -74,10 +73,18 @@ data class MoveProject(
             folders.add(sourcesFolder)
         }
         for (dep in deps.values) {
-            // TODO: make them absolute paths
-            val folder = dep.absoluteLocalPath.resolve("sources").findVirtualFile() ?: continue
-            if (folder.isDirectory)
-                folders.add(folder)
+            when (dep) {
+                is Dependency.Local -> {
+                    val folder = dep.absoluteLocalPath.resolve("sources").findVirtualFile() ?: continue
+                    if (folder.isDirectory)
+                        folders.add(folder)
+                }
+                is Dependency.Git -> {
+                    val folder = dep.dirPath.resolve("sources").findVirtualFile() ?: continue
+                    if (folder.isDirectory)
+                        folders.add(folder)
+                }
+            }
         }
         return folders
     }
@@ -99,34 +106,36 @@ data class MoveProject(
         // 2. Substitution mapping for the dependency
         val addresses = mutableAddressMap()
         for (dep in this.moveToml.dependencies.values) {
-            val moveTomlFile = dep.absoluteLocalPath.resolve("Move.toml")
-                .findVirtualFile()
-                ?.toPsiFile(this.project) ?: continue
-            val depDeclaredAddrs = moveTomlFile.moveProject?.declaredAddresses ?: continue
+            if (dep is Dependency.Local) {
+                val moveTomlFile = dep.absoluteLocalPath.resolve("Move.toml")
+                    .findVirtualFile()
+                    ?.toPsiFile(this.project) ?: continue
+                val depDeclaredAddrs = moveTomlFile.moveProject?.declaredAddresses ?: continue
 
-            // apply substitutions
-            val newPlaceholders = placeholderMap()
-            val newAddresses = depDeclaredAddrs.values.copyMap()
+                // apply substitutions
+                val newPlaceholders = placeholderMap()
+                val newAddresses = depDeclaredAddrs.values.copyMap()
 
-            for ((placeholderName, placeholderKeyValue) in depDeclaredAddrs.placeholders.entries) {
-                val placeholderSubst = dep.subst[placeholderName]
-                if (placeholderSubst == null) {
-                    newPlaceholders[placeholderName] = placeholderKeyValue
-                    continue
+                for ((placeholderName, placeholderKeyValue) in depDeclaredAddrs.placeholders.entries) {
+                    val placeholderSubst = dep.subst[placeholderName]
+                    if (placeholderSubst == null) {
+                        newPlaceholders[placeholderName] = placeholderKeyValue
+                        continue
+                    }
+                    val (value, keyValue) = placeholderSubst
+                    newAddresses[placeholderName] = AddressVal(value, keyValue, placeholderKeyValue)
                 }
-                val (value, keyValue) = placeholderSubst
-                newAddresses[placeholderName] = AddressVal(value, keyValue, placeholderKeyValue)
-            }
-            // renames
-            for ((renamedName, originalVal) in dep.subst.entries) {
-                val (originalName, keyVal) = originalVal
-                val addressVal = depDeclaredAddrs.get(originalName)
-                if (addressVal != null) {
-                    addresses[renamedName] =
-                        AddressVal(addressVal.value, keyVal, null)
+                // renames
+                for ((renamedName, originalVal) in dep.subst.entries) {
+                    val (originalName, keyVal) = originalVal
+                    val addressVal = depDeclaredAddrs.get(originalName)
+                    if (addressVal != null) {
+                        addresses[renamedName] =
+                            AddressVal(addressVal.value, keyVal, null)
+                    }
                 }
+                addresses.putAll(newAddresses)
             }
-            addresses.putAll(newAddresses)
         }
         addresses.putAll(this.declaredAddresses.values)
         addresses.putAll(this.declaredAddresses.placeholdersAsValues())

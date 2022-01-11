@@ -83,4 +83,43 @@ class ResolveModulesProjectTest : ResolveProjectTestCase() {
                    //^
         }    
     """)
+
+    fun `test resolve module to one inside build directory if git dependency and present`() = checkByFileTree {
+        build {
+            dir("MoveStdlib") {
+                sources {
+                    move("Vector.move", """
+                    module Std::Vector {}
+                              //X
+                    """)
+                }
+                buildInfo("""
+                ---
+                compiled_package_info: 
+                  package_name: MoveStdlib
+                  address_alias_instantiation:
+                    Std: "0000000000000000000000000000000000000000000000000000000000000001"
+                  module_resolution_metadata:
+                    ? address: "0000000000000000000000000000000000000000000000000000000000000001"
+                      name: Vector
+                    : Std
+                  source_digest: AF352E5D4EBF95696119D21119B997C20F6F988E791CC058B7C7D4FAFA2B7CEF
+                dependencies: []    
+                """)
+            }
+        }
+        moveToml("""
+        [dependencies]
+        MoveStdlib = { git = "git@github.com:pontem-network/move-stdlib.git", rev = "fdeb555c2157a1d68ca64eaf2a2e2cfe2a64efa2" }
+        """)
+        sources {
+            move("main.move", """
+            script {
+                use Std::Vector;
+                       //^
+                fun main() {}
+            }    
+            """)
+        }
+    }
 }
