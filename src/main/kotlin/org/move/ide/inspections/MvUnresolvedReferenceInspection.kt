@@ -6,9 +6,12 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 
 class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
+    override val isSyntaxOnly get() = false
+
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitModuleRef(moduleRef: MvModuleRef) {
-            if (isSpecElement(moduleRef)) return
+            if (moduleRef.isInsideSpec()) return
+
             // skip this check, as it will be checked in MvPath visitor
             if (moduleRef.ancestorStrict<MvPath>() != null) return
 
@@ -25,8 +28,10 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitPath(path: MvPath) {
-            if (isSpecElement(path)) return
+            if (path.isInsideSpec()) return
             if (path.isPrimitiveType()) return
+            if (path.isInsideAssignmentLeft()) return
+
             val moduleRef = path.pathIdent.moduleRef
             if (moduleRef != null) {
                 if (moduleRef is MvFQModuleRef) return
@@ -54,7 +59,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitStructPatField(o: MvStructPatField) {
-            if (isSpecElement(o)) return
+            if (o.isInsideSpec()) return
             val resolvedStructDef = o.structPat.path.maybeStruct ?: return
             if (!resolvedStructDef.fieldNames.any { it == o.referenceName }) {
                 holder.registerProblem(
@@ -66,7 +71,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitStructLitField(litField: MvStructLitField) {
-            if (isSpecElement(litField)) return
+            if (litField.isInsideSpec()) return
             if (litField.isShorthand) {
                 val resolvedItems = litField.reference.multiResolve()
                 val resolvedStructField = resolvedItems.find { it is MvStructFieldDef }
@@ -95,9 +100,5 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
                 }
             }
         }
-    }
-
-    private fun isSpecElement(element: MvElement): Boolean {
-        return element.isInsideSpecBlock()
     }
 }

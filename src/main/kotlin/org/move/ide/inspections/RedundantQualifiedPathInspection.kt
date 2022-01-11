@@ -9,6 +9,9 @@ import com.intellij.openapi.util.TextRange
 import org.move.lang.core.psi.*
 
 class RedundantQualifiedPathInspection : MvLocalInspectionTool() {
+
+    override val isSyntaxOnly: Boolean get() = true
+
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor =
         object : MvVisitor() {
             override fun visitPathIdent(pathIdent: MvPathIdent) {

@@ -8,7 +8,6 @@ import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvPathReference
 import org.move.lang.core.resolve.ref.MvPathReferenceImpl
-import org.move.lang.core.resolve.ref.MvReference
 import org.move.lang.core.resolve.ref.Namespace
 
 //val MvQualPath.address: Address? get() = (moduleRef as? MvFQModuleRef)?.addressRef?.address()
@@ -42,7 +41,7 @@ abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
 
     override fun getReference(): MvPathReference? {
         val namespace = when {
-            this.isInsideSpecBlock() -> Namespace.SPEC
+            this.isInsideSpec() -> Namespace.SPEC
             this.parent is MvPathType -> Namespace.TYPE
             else -> Namespace.NAME
         }

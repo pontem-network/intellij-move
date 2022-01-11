@@ -16,6 +16,9 @@ import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
 
 class MvMissingAcquiresInspection : MvLocalInspectionTool() {
+
+    override val isSyntaxOnly: Boolean get() = true
+
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
             override fun visitCallExpr(callExpr: MvCallExpr) {
