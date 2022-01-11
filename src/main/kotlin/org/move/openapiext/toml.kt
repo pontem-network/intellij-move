@@ -1,7 +1,5 @@
 package org.move.openapiext
 
-import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
@@ -71,7 +69,12 @@ fun TomlFile.getRootKey(key: String): TomlValue? {
     return keyValue?.value
 }
 
-fun TomlFile.getTable(headerText: String): TomlTable? {
-    val tables = this.children.filterIsInstance<TomlTable>()
-    return tables.find { it.header.key?.text == headerText }
-}
+fun TomlFile.tables() = this.children.filterIsInstance<TomlTable>()
+
+fun TomlFile.getTable(headerText: String) =
+    this.tables().find { it.header.key?.text == headerText }
+
+fun TomlFile.getTablesByFirstSegment(segmentText: String) =
+    this.tables()
+        .filter { it.header.key?.segments.orEmpty().size == 2 }
+        .filter { it.header.key?.segments?.get(0)?.text == segmentText }

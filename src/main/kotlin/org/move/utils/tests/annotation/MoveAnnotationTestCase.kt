@@ -41,6 +41,4 @@ abstract class MvAnnotationTestCase : MvTestBase() {
         checkWeakWarn,
         ignoreExtraHighlighting,
     )
-
-
 }
