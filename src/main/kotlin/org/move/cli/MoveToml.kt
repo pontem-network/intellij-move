@@ -2,9 +2,8 @@ package org.move.cli
 
 import com.intellij.openapi.project.Project
 import org.move.openapiext.*
-import org.toml.lang.psi.TomlFile
-import org.toml.lang.psi.TomlInlineTable
-import org.toml.lang.psi.TomlKeyValue
+import org.move.stdext.chain
+import org.toml.lang.psi.*
 import java.nio.file.Path
 import java.util.*
 
@@ -13,7 +12,8 @@ typealias RawAddressVal = Pair<String, TomlKeyValue>
 data class AddressVal(
     val value: String,
     val keyValue: TomlKeyValue?,
-    val placeholderKeyValue: TomlKeyValue?)
+    val placeholderKeyValue: TomlKeyValue?
+)
 
 typealias RawAddressMap = MutableMap<String, RawAddressVal>
 typealias AddressMap = MutableMap<String, AddressVal>
@@ -27,10 +27,21 @@ fun placeholderMap(): PlaceholderMap = mutableMapOf()
 
 fun AddressMap.copyMap(): AddressMap = this.toMutableMap()
 
-data class Dependency(
-    val absoluteLocalPath: Path,
-    val subst: RawAddressMap,
-)
+sealed class Dependency {
+    data class Local(val absoluteLocalPath: Path, val subst: RawAddressMap) : Dependency()
+    data class Git(val dirPath: Path, val subst: RawAddressMap) : Dependency()
+}
+
+typealias TomlElementMap = Map<String, TomlValue?>
+
+fun TomlElement.toMap(): TomlElementMap {
+    val namedEntries = when (this) {
+        is TomlTable -> this.namedEntries()
+        is TomlInlineTable -> this.namedEntries()
+        else -> null
+    }
+    return namedEntries.orEmpty().associate { Pair(it.first, it.second) }
+}
 
 data class MoveTomlPackageTable(
     val name: String?,
@@ -95,25 +106,54 @@ class MoveToml(
             tomlFile: TomlFile,
             projectRoot: Path
         ): DependenciesMap {
+            val tomlInlineTableDeps = tomlFile.getTable(tableKey)
+                ?.namedEntries().orEmpty()
+                .map { Pair(it.first, it.second?.toMap().orEmpty()) }
+            val tomlTableDeps = tomlFile
+                .getTablesByFirstSegment(tableKey)
+                .map { Pair(it.header.key?.segments?.get(1)!!.text, it.toMap()) }
+
             val dependencies = sortedMapOf<String, Dependency>()
-            val tomlDeps = tomlFile.getTable(tableKey)?.namedEntries().orEmpty()
-            for ((depName, tomlTableValue) in tomlDeps) {
-                val depTable = (tomlTableValue as? TomlInlineTable) ?: continue
-                val localPathValue = depTable.findValue("local")?.stringValue() ?: continue
-                val localPath =
-                    projectRoot.resolve(localPathValue).toAbsolutePath().normalize()
-                val substEntries =
-                    depTable.findValue("addr_subst")?.inlineTableValue()?.namedEntries().orEmpty()
-                val subst = mutableRawAddressMap()
-                for ((name, tomlValue) in substEntries) {
-                    if (tomlValue == null) continue
-                    val value = tomlValue.stringValue() ?: continue
-                    val keyValue = tomlValue.keyValue
-                    subst[name] = Pair(value, keyValue)
+            for ((depName, depMap) in tomlInlineTableDeps.chain(tomlTableDeps)) {
+                val dep = when {
+                    depMap.containsKey("local") -> parseLocalDependency(depMap, projectRoot)
+                    depMap.containsKey("git") -> parseGitDependency(depName, depMap, projectRoot)
+                    else -> null
                 }
-                dependencies[depName] = Dependency(localPath, subst)
+                dependencies[depName] = dep
             }
             return dependencies
+        }
+
+        private fun parseLocalDependency(depTable: TomlElementMap, projectRoot: Path): Dependency.Local? {
+            val localPathValue = depTable["local"]?.stringValue() ?: return null
+            val localPath =
+                projectRoot.resolve(localPathValue).toAbsolutePath().normalize()
+            val subst = parseAddrSubst(depTable)
+            return Dependency.Local(localPath, subst)
+        }
+
+        private fun parseGitDependency(
+            depName: String,
+            depTable: TomlElementMap,
+            projectRoot: Path
+        ): Dependency.Git {
+            val dirPath = projectRoot.resolve("build").resolve(depName)
+            val subst = parseAddrSubst(depTable)
+            return Dependency.Git(dirPath, subst)
+        }
+
+        private fun parseAddrSubst(depTable: TomlElementMap): RawAddressMap {
+            val substEntries =
+                depTable["addr_subst"]?.inlineTableValue()?.namedEntries().orEmpty()
+            val subst = mutableRawAddressMap()
+            for ((name, tomlValue) in substEntries) {
+                if (tomlValue == null) continue
+                val value = tomlValue.stringValue() ?: continue
+                val keyValue = tomlValue.keyValue
+                subst[name] = Pair(value, keyValue)
+            }
+            return subst
         }
     }
 }

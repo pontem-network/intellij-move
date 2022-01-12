@@ -83,4 +83,57 @@ class ResolveModulesProjectTest : ResolveProjectTestCase() {
                    //^
         }    
     """)
+
+    fun `test resolve module git dependency as inline table`() = checkByFileTree {
+        build {
+            dir("MoveStdlib") {
+                sources {
+                    move("Vector.move", """
+                    module Std::Vector {}
+                              //X
+                    """)
+                }
+            }
+        }
+        moveToml("""
+        [dependencies]
+        MoveStdlib = { git = "git@github.com:pontem-network/move-stdlib.git", rev = "fdeb555c2157a1d68ca64eaf2a2e2cfe2a64efa2" }
+        """)
+        sources {
+            move("main.move", """
+            script {
+                use Std::Vector;
+                       //^
+                fun main() {}
+            }    
+            """)
+        }
+    }
+
+    fun `test resolve module git dependency as table`() = checkByFileTree {
+        build {
+            dir("MoveStdlib") {
+                sources {
+                    move("Vector.move", """
+                    module Std::Vector {}
+                              //X
+                    """)
+                }
+            }
+        }
+        moveToml("""
+        [dependencies.MoveStdlib]
+        git = "https://github.com/pontem-network/move-stdlib.git"
+        rev = "main"
+        """)
+        sources {
+            move("main.move", """
+            script {
+                use Std::Vector;
+                       //^
+                fun main() {}
+            }    
+            """)
+        }
+    }
 }
