@@ -1007,7 +1007,7 @@ private SpecBlock_items_recover ::= !('}' | <<eof>>)
 //}
 
 //private SpecItemExpr ::= SpecBlockFinishingExpr
-private SpecBlockStatement_with_recover ::= SpecStatement
+//private SpecBlockStatement_with_recover ::= SpecStatement
 //private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinishingExpr
 
 private SpecStatement ::= ImportStatement
@@ -1045,7 +1045,12 @@ private SpecStatement ::= ImportStatement
 //
 //private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
 
-SchemaVarDeclStatement ::= IDENTIFIER TypeAnnotation ';' { pin = 2 }
+SchemaVarDeclStatement ::= IDENTIFIER TypeAnnotation ';'
+{
+    pin = 2
+    implements = [ "org.move.lang.core.psi.MvNameIdentifierOwner" ]
+    mixin = "org.move.lang.core.psi.ext.MvSchemaVarDeclStatementMixin"
+}
 
 LocalVariableSpecStatement ::= local IDENTIFIER TypeAnnotation ';' { pin = 1 }
 GlobalVariableSpecStatement ::= global IDENTIFIER TypeAnnotation ';' { pin = 1 }

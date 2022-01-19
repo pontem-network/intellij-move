@@ -1,14 +1,8 @@
 package org.move.lang.core.resolve.ref
 
-import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.functions
-import org.move.lang.core.psi.ext.isSelf
-import org.move.lang.core.psi.ext.moduleImport
-import org.move.lang.core.psi.ext.structs
-import org.move.lang.core.resolve.MatchingProcessor
-import org.move.lang.core.resolve.resolveIntoFQModuleRef
-import org.move.lang.core.resolve.resolveItem
+import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.*
 import org.move.lang.core.types.BoundElement
 
 fun processModuleItems(
@@ -21,14 +15,10 @@ fun processModuleItems(
         val found = when (namespace) {
             Namespace.NAME -> processor.matchAll(
                 visibilities.flatMap { module.functions(it) }
-//                listOf(
-//                    visibilities.flatMap { module.functionSignatures(it) },
-////                    module.structSignatures(),
-////                    module.consts(),
-//                ).flatten()
             )
             Namespace.TYPE -> processor.matchAll(module.structs())
-//            Namespace.SCHEMA -> processor.matchAll(module.schemas())
+            Namespace.SCHEMA -> processor.matchAll(module.schemas())
+            Namespace.SPEC_FUNC_NAME -> processor.matchAll(module.specFunctions())
             else -> false
         }
         if (found) return true
@@ -42,7 +32,6 @@ fun resolveModuleItem(
     vs: Set<Visibility>,
     ns: Set<Namespace>,
 ): List<MvNamedElement> {
-//    var resolved: MvNamedElement? = null
     val resolved = mutableListOf<MvNamedElement>()
     processModuleItems(module, vs, ns) {
         if (it.name == refName && it.element != null) {
@@ -61,7 +50,11 @@ class MvPathReferenceImpl(
 
     override fun resolveInner(): List<MvNamedElement> {
         val vs = Visibility.buildSetOfVisibilities(element)
-        val ns = setOf(namespace)
+        val ns = mutableSetOf(namespace)
+        // hack to add spec functions to the processable items in case of spec blocks
+        if (ns.contains(Namespace.NAME) && element.isMsl) {
+            ns.add(Namespace.SPEC_FUNC_NAME)
+        }
         val refName = element.referenceName ?: return emptyList()
 
         val moduleRef = element.pathIdent.moduleRef

@@ -148,6 +148,42 @@ class ResolveSpecsTest: ResolveTestCase() {
     }
     """)
 
+    fun `test resolve let post sees pre`() = checkByCode("""
+    module 0x1::M {
+        fun call() {}
+        spec call {
+            let count = 1;
+               //X
+            let post count2 = count + 1;
+                             //^ 
+        }
+    }
+    """)
+
+    fun `test resolve let post sees post`() = checkByCode("""
+    module 0x1::M {
+        fun call() {}
+        spec call {
+            let post count = 1;
+                    //X
+            let post count2 = count + 1;
+                             //^ 
+        }
+    }
+    """)
+
+
+    fun `test resolve let pre does not see let post`() = checkByCode("""
+    module 0x1::M {
+        fun call() {}
+        spec call {
+            let post count = 1;
+            let count2 = count + 1;
+                          //^ unresolved
+        }
+    }
+    """)
+
     fun `test unresolved if let declared after the first let`() = checkByCode("""
     module 0x1::M {
         fun call() {}
@@ -179,5 +215,34 @@ class ResolveSpecsTest: ResolveTestCase() {
             //X
         }
     }    
+    """)
+
+    fun `test resolve schema from another module`() = checkByCode("""
+    module 0x1::M {
+        spec schema MySchema {}
+                   //X
+    }
+    module 0x1::M2 {
+        use 0x1::M;
+        
+        spec module {
+            include M::MySchema;
+                      //^
+        }
+    }
+    """)
+
+    fun `test resolve spec fun from another module`() = checkByCode("""
+    module 0x1::M {
+        spec fun myfun(): bool { true }
+               //X
+    }
+    module 0x1::M2 {
+        use 0x1::M;
+        spec module {
+            M::myfun();
+              //^
+        }
+    }
     """)
 }

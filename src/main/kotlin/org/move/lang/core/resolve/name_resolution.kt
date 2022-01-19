@@ -18,13 +18,17 @@ enum class MslScope {
     NONE, EXPR, LET, LET_POST;
 }
 
-val MvElement.mslScope: MslScope get() {
-    return if (this.isMslEnabled()) {
-        MslScope.EXPR
-    } else {
-        MslScope.NONE
+val MvElement.mslScope: MslScope
+    get() {
+        if (!this.isMslEnabled()) return MslScope.NONE
+        val letSpecStatement = this.ancestorOrSelf<MvLetSpecStatement>()
+        return when {
+            letSpecStatement == null -> MslScope.EXPR
+            letSpecStatement.isPost -> MslScope.LET_POST
+            else -> MslScope.LET
+        }
     }
-}
+val MvElement.isMsl: Boolean get() = this.mslScope != MslScope.NONE
 
 fun processItems(
     element: MvReferenceElement,
@@ -139,7 +143,7 @@ fun processLexicalDeclarations(
     scope: MvElement,
     cameFrom: MvElement,
     namespace: Namespace,
-    msl: MslScope,
+    mslScope: MslScope,
     processor: MatchingProcessor,
 ): Boolean {
     check(cameFrom.parent == scope)
@@ -177,7 +181,11 @@ fun processLexicalDeclarations(
                     scope.builtinFunctions(),
                     scope.structs(),
                     scope.constBindings(),
-                    if (msl != MslScope.NONE) { scope.specFunctions() } else { emptyList() }
+                    if (mslScope != MslScope.NONE) {
+                        scope.specFunctions()
+                    } else {
+                        emptyList()
+                    }
                 )
             }
             is MvScriptDef -> processor.matchAll(
@@ -216,6 +224,37 @@ fun processLexicalDeclarations(
                     is MvFunction -> processor.matchAll(item.parameterBindings)
                     else -> false
                 }
+            }
+            is MvSpecSchema -> processor.matchAll(scope.specBlock?.schemaVars().orEmpty())
+            is MvSpecBlock -> {
+                val visibleLetDecls = when (mslScope) {
+                    MslScope.EXPR -> scope.letStatements()
+                    MslScope.LET, MslScope.LET_POST -> {
+                        val letDecls = if (mslScope == MslScope.LET_POST) {
+                            scope.letStatements()
+                        } else {
+                            scope.letStatements(false)
+                        }
+                        letDecls
+                            // drops all let-statements after the current position
+                            .filter { PsiUtilCore.compareElementsByPosition(it, cameFrom) <= 0 }
+                            // drops let-statement that is ancestors of ref (on the same statement, at most one)
+                            .filter { cameFrom != it && !PsiTreeUtil.isAncestor(cameFrom, it, true) }
+                    }
+                    MslScope.NONE -> emptyList()
+                }
+                // shadowing support (look at latest first)
+                val namedElements = visibleLetDecls
+                    .asReversed()
+                    .flatMap { it.pat?.bindings.orEmpty() }
+
+                // skip shadowed (already visited) elements
+                val visited = mutableSetOf<String>()
+                val processorWithShadowing = MatchingProcessor { entry ->
+                    ((entry.name !in visited)
+                            && processor.match(entry).also { visited += entry.name })
+                }
+                return processorWithShadowing.matchAll(namedElements)
             }
             else -> false
         }
@@ -270,6 +309,7 @@ fun processLexicalDeclarations(
             )
             else -> false
         }
+        else -> false
     }
 }
 
