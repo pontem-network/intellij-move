@@ -53,25 +53,31 @@ fun MvModuleDef.allFunctions() = moduleBlock?.functionList.orEmpty()
 
 fun MvModuleDef.builtinFunctions(): List<MvFunction> {
     return listOf(
-        createBuiltinFunction("""
+        createBuiltinFunction(
+            """
             /// Removes `T` from address and returns it. 
             /// Aborts if address does not hold a `T`.
             native fun move_from<T: key>(addr: address): T acquires T;
-            """, project),
-        createBuiltinFunction("""
+            """, project
+        ),
+        createBuiltinFunction(
+            """
             /// Publishes `T` under `signer.address`. 
             /// Aborts if `signer.address` already holds a `T`.
             native fun move_to<T: key>(acc: &signer, res: T);
-            """, project),
+            """, project
+        ),
         createBuiltinFunction("native fun borrow_global<T: key>(addr: address): &T acquires T;", project),
         createBuiltinFunction(
             "native fun borrow_global_mut<T: key>(addr: address): &mut T acquires T;",
             project
         ),
-        createBuiltinFunction("""
+        createBuiltinFunction(
+            """
             /// Returns `true` if a `T` is stored under address
             native fun exists<T: key>(addr: address): bool;
-            """, project),
+            """, project
+        ),
         createBuiltinFunction("native fun freeze<S>(mut_ref: &mut S): &S;", project),
         createBuiltinFunction("native fun assert(_: bool, err: u64);", project),
     )
@@ -103,6 +109,10 @@ fun createBuiltinFunction(text: String, project: Project): MvFunction {
 }
 
 fun MvModuleDef.structs(): List<MvStruct_> = moduleBlock?.struct_List.orEmpty()
+
+fun MvModuleDef.schemas(): List<MvSpecSchema> = moduleBlock?.specSchemaList.orEmpty()
+
+fun MvModuleDef.specFunctions(): List<MvSpecFunction> = moduleBlock?.specFunctionList.orEmpty()
 
 fun MvModuleDef.constBindings(): List<MvBindingPat> =
     moduleBlock?.constDefList.orEmpty().mapNotNull { it.bindingPat }

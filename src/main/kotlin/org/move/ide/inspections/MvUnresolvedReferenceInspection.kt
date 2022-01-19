@@ -10,7 +10,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitModuleRef(moduleRef: MvModuleRef) {
-            if (moduleRef.isInsideSpec()) return
+            if (moduleRef.isMslEnabled()) return
 
             // skip this check, as it will be checked in MvPath visitor
             if (moduleRef.ancestorStrict<MvPath>() != null) return
@@ -28,7 +28,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitPath(path: MvPath) {
-            if (path.isInsideSpec()) return
+            if (path.isMslEnabled()) return
             if (path.isPrimitiveType()) return
             if (path.isInsideAssignmentLeft()) return
 
@@ -59,7 +59,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitStructPatField(o: MvStructPatField) {
-            if (o.isInsideSpec()) return
+            if (o.isMslEnabled()) return
             val resolvedStructDef = o.structPat.path.maybeStruct ?: return
             if (!resolvedStructDef.fieldNames.any { it == o.referenceName }) {
                 holder.registerProblem(
@@ -71,7 +71,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitStructLitField(litField: MvStructLitField) {
-            if (litField.isInsideSpec()) return
+            if (litField.isMslEnabled()) return
             if (litField.isShorthand) {
                 val resolvedItems = litField.reference.multiResolve()
                 val resolvedStructField = resolvedItems.find { it is MvStructFieldDef }

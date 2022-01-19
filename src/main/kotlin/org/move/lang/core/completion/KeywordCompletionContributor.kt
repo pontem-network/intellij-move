@@ -15,6 +15,7 @@ import org.move.lang.core.MvPsiPatterns.codeStatement
 import org.move.lang.core.MvPsiPatterns.function
 import org.move.lang.core.MvPsiPatterns.moduleBlock
 import org.move.lang.core.MvPsiPatterns.scriptBlock
+import org.move.lang.core.MvPsiPatterns.specStatement
 import org.move.lang.core.MvPsiPatterns.toplevel
 import org.move.lang.core.MvPsiPatterns.typeParamBound
 import org.move.lang.core.MvPsiPatterns.typeParameter
@@ -91,6 +92,25 @@ class KeywordCompletionContributor : CompletionContributor() {
                 "while",
                 "abort",
                 "return",
+            )
+        )
+        extend(
+            CompletionType.BASIC,
+            specStatement().and(onStatementBeginning()),
+            KeywordCompletionProvider(
+                "pragma",
+                "let",
+                "use",
+                "include",
+                "apply",
+                "requires",
+                "ensures",
+                "invariant",
+                "modifies",
+                "aborts_if",
+                "aborts_with",
+                "assume",
+                "assert",
             )
         )
         extend(

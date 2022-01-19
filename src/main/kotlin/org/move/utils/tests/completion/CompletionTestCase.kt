@@ -32,6 +32,11 @@ abstract class CompletionTestCase : BasePlatformTestCase() {
         @Language("Move") code: String
     ) = completionFixture.checkContainsCompletion(code, variant)
 
+    protected fun checkContainsCompletion(
+        variants: List<String>,
+        @Language("Move") code: String
+    ) = completionFixture.checkContainsCompletion(code, variants)
+
     protected fun checkCompletion(
         lookupString: String,
         @Language("Move") before: String,

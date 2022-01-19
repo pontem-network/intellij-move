@@ -33,7 +33,7 @@ abstract class MvItemImportMixin(node: ASTNode) : MvNamedElementImpl(node),
                     module,
                     referenceName,
                     vs,
-                    setOf(Namespace.TYPE, Namespace.NAME, Namespace.SPEC)
+                    setOf(Namespace.TYPE, Namespace.NAME, Namespace.SCHEMA)
                 )
             }
         }

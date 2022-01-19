@@ -20,7 +20,7 @@ fun prop(key: String): String = props[key].toString()
 val kotlinVersion = "1.6.10"
 
 val pluginJarName = "intellij-move-$propsVersion"
-val pluginVersion = "1.3.0"
+val pluginVersion = "1.4.0"
 val pluginGroup = "org.move"
 
 group = pluginGroup
@@ -29,7 +29,7 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "1.6.10"
-    id("org.jetbrains.intellij") version "1.3.0"
+    id("org.jetbrains.intellij") version "1.3.1"
     id("org.jetbrains.grammarkit") version "2021.2.1"
 }
 
@@ -133,7 +133,7 @@ allprojects {
                 jvmTarget = "11"
                 languageVersion = "1.6"
                 apiVersion = "1.6"
-                freeCompilerArgs = listOf("-Xjvm-default=compatibility")
+                freeCompilerArgs = listOf("-Xjvm-default=all")
             }
         }
 

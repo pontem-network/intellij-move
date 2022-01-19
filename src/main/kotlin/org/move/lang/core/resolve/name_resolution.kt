@@ -14,17 +14,30 @@ import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 
+enum class MslScope {
+    NONE, EXPR, LET, LET_POST;
+}
+
+val MvElement.mslScope: MslScope get() {
+    return if (this.isMslEnabled()) {
+        MslScope.EXPR
+    } else {
+        MslScope.NONE
+    }
+}
+
 fun processItems(
     element: MvReferenceElement,
     namespace: Namespace,
     processor: MatchingProcessor,
 ): Boolean {
+    val mslScope = element.mslScope
     return walkUpThroughScopes(
         element,
         stopAfter = { it is MvModuleDef || it is MvScriptDef }
     ) { cameFrom, scope ->
         processLexicalDeclarations(
-            scope, cameFrom, namespace, processor
+            scope, cameFrom, namespace, mslScope, processor
         )
     }
 }
@@ -117,7 +130,7 @@ fun processNestedScopesUpwards(
         stopAfter = { it is MvModuleDef || it is MvScriptDef }
     ) { cameFrom, scope ->
         processLexicalDeclarations(
-            scope, cameFrom, namespace, processor
+            scope, cameFrom, namespace, MslScope.NONE, processor
         )
     }
 }
@@ -126,6 +139,7 @@ fun processLexicalDeclarations(
     scope: MvElement,
     cameFrom: MvElement,
     namespace: Namespace,
+    msl: MslScope,
     processor: MatchingProcessor,
 ): Boolean {
     check(cameFrom.parent == scope)
@@ -155,16 +169,17 @@ fun processLexicalDeclarations(
             false
         }
         Namespace.NAME -> when (scope) {
-            is MvModuleDef -> processor.matchAll(
-                listOf(
+            is MvModuleDef -> {
+                processor.matchAll(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
                     scope.allFunctions(),
                     scope.builtinFunctions(),
                     scope.structs(),
                     scope.constBindings(),
-                ).flatten()
-            )
+                    if (msl != MslScope.NONE) { scope.specFunctions() } else { emptyList() }
+                )
+            }
             is MvScriptDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
@@ -173,7 +188,8 @@ fun processLexicalDeclarations(
                     scope.builtinFunctions(),
                 ).flatten(),
             )
-            is MvFunction -> processor.matchAll(scope.parameters.map { it.bindingPat })
+            is MvFunction -> processor.matchAll(scope.parameterBindings)
+            is MvSpecFunction -> processor.matchAll(scope.parameterBindings)
             is MvCodeBlock -> {
                 val precedingLetDecls = scope.letStatements
                     // drops all let-statements after the current position
@@ -194,12 +210,28 @@ fun processLexicalDeclarations(
                 }
                 return processorWithShadowing.matchAll(namedElements)
             }
+            is MvNameSpecDef -> {
+                val item = scope.item
+                when (item) {
+                    is MvFunction -> processor.matchAll(item.parameterBindings)
+                    else -> false
+                }
+            }
             else -> false
         }
         Namespace.TYPE -> when (scope) {
             is MvFunction -> processor.matchAll(scope.typeParameters)
+            is MvSpecFunction -> processor.matchAll(scope.typeParameters)
             is MvStruct_ -> processor.matchAll(scope.typeParameters)
-            is MvSchemaSpecDef -> processor.matchAll(scope.typeParams)
+            is MvSpecSchema -> processor.matchAll(scope.typeParams)
+            is MvNameSpecDef -> {
+                val funcItem = scope.funcItem
+                if (funcItem != null) {
+                    processor.matchAll(funcItem.typeParameters)
+                } else {
+                    false
+                }
+            }
             is MvModuleDef -> processor.matchAll(
                 listOf(
                     scope.itemImportsWithoutAliases(),
@@ -215,8 +247,17 @@ fun processLexicalDeclarations(
             )
             else -> false
         }
-        Namespace.SPEC -> when {
-//            is MvModuleDef -> processor.matchAll(scope.schemas())
+        Namespace.SPEC_ITEM -> when (scope) {
+            is MvModuleDef -> processor.matchAll(
+                listOf(
+                    scope.allFunctions(),
+                    scope.structs(),
+                ).flatten()
+            )
+            else -> false
+        }
+        Namespace.SCHEMA -> when (scope) {
+            is MvModuleDef -> processor.matchAll(scope.schemas())
             else -> false
         }
         Namespace.MODULE -> when (scope) {

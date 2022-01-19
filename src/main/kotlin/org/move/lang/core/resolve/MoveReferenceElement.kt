@@ -7,17 +7,14 @@ import org.move.lang.core.resolve.ref.*
 interface PsiReferenceElement : PsiElement {
     val identifier: PsiElement?
 
-    @JvmDefault
     val referenceNameElement: PsiElement?
         get() = identifier
 
-    @JvmDefault
     val referenceName: String?
         get() = identifier?.text
 
     override fun getReference(): PsiReference?
 
-    @JvmDefault
     val isUnresolved: Boolean
         get() = reference?.resolve() == null
 }
@@ -35,10 +32,8 @@ interface MvReferenceElement : PsiReferenceElement, MvElement {
 interface MvMandatoryReferenceElement: MvReferenceElement {
     override val identifier: PsiElement
 
-    @JvmDefault
     override val referenceNameElement: PsiElement get() = identifier
 
-    @JvmDefault
     override val referenceName: String get() = referenceNameElement.text
 
     override fun getReference(): MvReference
@@ -47,11 +42,9 @@ interface MvMandatoryReferenceElement: MvReferenceElement {
 //interface MvPolyVariantReferenceElement: PsiReferenceElement, MvElement {
 //    override val identifier: PsiElement
 //
-//    @JvmDefault
-//    override val referenceNameElement: PsiElement get() = identifier
+////    override val referenceNameElement: PsiElement get() = identifier
 //
-//    @JvmDefault
-//    override val referenceName: String get() = referenceNameElement.text
+////    override val referenceName: String get() = referenceNameElement.text
 //
 //    override fun getReference(): MvReference
 //}

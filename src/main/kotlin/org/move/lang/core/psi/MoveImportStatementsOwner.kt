@@ -7,16 +7,13 @@ import org.move.lang.core.psi.ext.toAddress
 interface MvImportStatementsOwner : MvElement {
     val importStatements: List<MvImportStatement>
 
-    @JvmDefault
     private fun _moduleImports(): List<MvModuleImport> =
         importStatements.mapNotNull { it.moduleImport }
 
-    @JvmDefault
     fun moduleImports(): List<MvModuleImport> =
         _moduleImports()
             .filter { it.importAlias == null }
 
-    @JvmDefault
     fun selfItemImports(): List<MvItemImport> =
         itemImports()
             .filter { it.importAlias == null && it.text == "Self" }
@@ -24,11 +21,9 @@ interface MvImportStatementsOwner : MvElement {
 //            .filterIsInstance<MvModuleItemsImport>()
 //            .map { it.fqModuleRef }
 
-    @JvmDefault
     fun moduleImportAliases(): List<MvImportAlias> =
         _moduleImports().mapNotNull { it.importAlias }
 
-    @JvmDefault
     private fun itemImports(): List<MvItemImport> =
         importStatements
             .mapNotNull { it.moduleItemsImport }
@@ -40,11 +35,9 @@ interface MvImportStatementsOwner : MvElement {
                     it.multiItemImport?.itemImportList.orEmpty()
             }
 
-    @JvmDefault
     fun itemImportsWithoutAliases(): List<MvItemImport> =
         itemImports().filter { it.importAlias == null }
 
-    @JvmDefault
     fun itemImportsAliases(): List<MvImportAlias> =
         itemImports().mapNotNull { it.importAlias }
 }

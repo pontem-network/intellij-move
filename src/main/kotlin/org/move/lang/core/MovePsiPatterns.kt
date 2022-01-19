@@ -48,6 +48,9 @@ object MvPsiPatterns {
     fun codeStatement(): PsiElementPattern.Capture<PsiElement> =
         psiElementInside<MvCodeBlock>()
 
+    fun specStatement(): PsiElementPattern.Capture<PsiElement> =
+        psiElementInside<MvSpecBlock>()
+
     fun bindingPat(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvBindingPat>()
 
     fun namedAddress(): PsiElementPattern.Capture<MvNamedAddress> {

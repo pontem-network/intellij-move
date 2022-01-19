@@ -40,9 +40,9 @@ abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
     override val identifier: PsiElement? get() = this.pathIdent.identifier
 
     override fun getReference(): MvPathReference? {
-        val namespace = when {
-            this.isInsideSpec() -> Namespace.SPEC
-            this.parent is MvPathType -> Namespace.TYPE
+        val namespace = when (this.parent) {
+            is MvSchemaRef -> Namespace.SCHEMA
+            is MvPathType -> Namespace.TYPE
             else -> Namespace.NAME
         }
         return MvPathReferenceImpl(this, namespace)

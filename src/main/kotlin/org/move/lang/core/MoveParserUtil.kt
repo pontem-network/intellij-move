@@ -136,7 +136,7 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun specOnly(b: PsiBuilder, level: Int, parser: Parser): Boolean {
+    fun mslOnly(b: PsiBuilder, level: Int, parser: Parser): Boolean {
         if (!BitUtil.isSet(b.flags, SPEC_ALLOWED)) return false
         return parser.parse(b, level)
     }

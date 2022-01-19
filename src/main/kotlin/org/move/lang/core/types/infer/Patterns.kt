@@ -28,8 +28,8 @@ fun collectBindings(pattern: MvPat, type: Ty): Map<MvBindingPat, Ty> {
                 if (ty is TyStruct && pat.fields.size == ty.fieldsTy().size) {
                     val fieldsTy = ty.fieldsTy()
                     for (field in pat.fields) {
-                        val ty = fieldsTy[field.referenceName] ?: TyUnknown
-                        field.pat?.let { bind(it, ty) }
+                        val fieldTy = fieldsTy[field.referenceName] ?: TyUnknown
+                        field.pat?.let { bind(it, fieldTy) }
                     }
                 } else {
                     pat.fields.map {
