@@ -1,6 +1,5 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.MvElementTypes.POST
 import org.move.lang.core.psi.MvLetSpecStatement
 import org.move.lang.core.psi.MvSchemaVarDeclStatement
 import org.move.lang.core.psi.MvSpecBlock
