@@ -17,8 +17,9 @@ class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MvIcons.M
         builder: CreateFileFromTemplateDialog.Builder
     ) {
         builder.setTitle(CAPTION)
-            .addKind("Script", MvIcons.MOVE, "move_script")
-            .addKind("Module", MvIcons.MOVE, "move_module")
+            .addKind("Script", MvIcons.MOVE, "Move Script")
+            .addKind("Module", MvIcons.MOVE, "Move Module")
+            .addKind("Test", MvIcons.MOVE, "Move Test Module")
     }
 
     private companion object {

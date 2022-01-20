@@ -52,6 +52,7 @@ class MvPathReferenceImpl(
         val vs = Visibility.buildSetOfVisibilities(element)
         val ns = mutableSetOf(namespace)
         // hack to add spec functions to the processable items in case of spec blocks
+        // TODO: ns, vs and msl should be made into NameScope object and passed around
         if (ns.contains(Namespace.NAME) && element.isMsl) {
             ns.add(Namespace.SPEC_FUNC_NAME)
         }
