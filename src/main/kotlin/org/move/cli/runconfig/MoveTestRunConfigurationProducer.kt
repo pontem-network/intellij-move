@@ -6,6 +6,7 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.move.cli.MvConstants
+import org.move.cli.MvProjectLayout
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.containingModule
@@ -75,7 +76,7 @@ sealed interface TestConfig {
                 is PsiDirectory -> {
                     val locationPath = location.virtualFile.toNioPathOrNull() ?: return null
                     if (locationPath == moveProject.rootPath
-                        || locationPath == moveProject.projectDirPath(MvConstants.ProjectLayout.tests_dir)
+                        || locationPath == moveProject.projectDirPath(MvProjectLayout.testsDir)
                     ) {
                         return Package(packageName, moveProject.rootPath)
                     }
