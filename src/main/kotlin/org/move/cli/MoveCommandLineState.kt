@@ -23,6 +23,7 @@ class MoveCommandLineState(
             GeneralCommandLine(this.executable, *params)
                 .withWorkDirectory(this.cmd.workingDirectory?.toString().orEmpty())
                 .withCharset(Charsets.UTF_8)
+        this.cmd.environmentVariables.configureCommandLine(commandLine, true)
 
         val handler = OSProcessHandler(commandLine)
         consoleBuilder.console.attachToProcess(handler)
