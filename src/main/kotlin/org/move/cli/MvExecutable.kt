@@ -24,7 +24,7 @@ class MvExecutable(
 
             val (out, err) = runExecutable(execPath, cwd.toFile(), "--version")
             if (err.isNotEmpty()) return null
-            return out.split(' ').last()
+            return out
         } catch (e: ProcessNotCreatedException) {
             return null
         }
