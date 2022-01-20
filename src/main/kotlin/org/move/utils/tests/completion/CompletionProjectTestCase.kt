@@ -81,4 +81,14 @@ abstract class CompletionProjectTestCase : MvProjectTestCase() {
         myFixture.checkResult(replaceCaretMarker(after))
     }
 
+    protected fun doSingleCompletion(
+        before: FileTreeBuilder.() -> Unit, @Language("Move") after: String
+    ) {
+        val testProject = testProjectFromFileTree(before)
+        completionFixture.codeInsightFixture.configureFromFileWithCaret(testProject)
+
+        completionFixture.executeSoloCompletion()
+        myFixture.checkResult(replaceCaretMarker(after.trimIndent()))
+    }
+
 }

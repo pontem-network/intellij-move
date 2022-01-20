@@ -1,17 +1,20 @@
 package org.move.lang.core.completion
 
 import com.intellij.codeInsight.completion.CompletionContributor
+import com.intellij.codeInsight.completion.CompletionInitializationContext
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.psi.PsiElement
-import org.move.lang.MvElementTypes.COLON
+import org.move.lang.MvElementTypes
 import org.move.lang.core.MvPsiPatterns
+import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.elementType
 
 class CommonCompletionContributor : CompletionContributor() {
     init {
         extend(CompletionType.BASIC, PrimitiveTypesCompletionProvider)
-        extend(CompletionType.BASIC, AddressesCompletionProvider)
         extend(CompletionType.BASIC, NamesCompletionProvider)
+        extend(CompletionType.BASIC, AddressesCompletionProvider)
+        extend(CompletionType.BASIC, ModuleDeclarationAddressCompletionProvider)
         extend(CompletionType.BASIC, TypesCompletionProvider)
         extend(CompletionType.BASIC, ImportsCompletionProvider)
         extend(CompletionType.BASIC, ModulesCompletionProvider)
@@ -29,6 +32,14 @@ class CommonCompletionContributor : CompletionContributor() {
         extend(type, provider.elementPattern, provider)
     }
 
+    override fun beforeCompletion(context: CompletionInitializationContext) {
+        val offset = context.startOffset
+        val element = context.file.findElementAt(offset) ?: return
+        if (element.parent is MvModuleDef) {
+            context.dummyIdentifier = "DummyAddress::"
+        }
+    }
+
     override fun invokeAutoPopup(position: PsiElement, typeChar: Char): Boolean =
-        typeChar == ':' && position.elementType == COLON
+        typeChar == ':' && position.elementType == MvElementTypes.COLON
 }

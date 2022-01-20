@@ -4,7 +4,7 @@ import org.move.utils.tests.parser.MvParsingTestCase
 
 class PartialParsingTest: MvParsingTestCase("partial") {
     // top level items recovery
-    fun `test top level items in script`() = doTest(true)
+    fun `test top level items`() = doTest(true)
     fun `test module const`() = doTest(true)
     fun `test module uses`() = doTest(true)
 

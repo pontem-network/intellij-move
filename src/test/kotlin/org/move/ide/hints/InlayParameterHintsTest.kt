@@ -18,7 +18,7 @@ class InlayParameterHintsTest : MvTestBase() {
 
     fun `test too many arguments`() = checkByText(
         """
-        module M {
+        module 0x1::M {
             fun call(val: u8) {}
             fun main() {
                 call(/*hint="val:"*/1, 2)
@@ -29,7 +29,7 @@ class InlayParameterHintsTest : MvTestBase() {
 
     fun `test no hint for first argument of assert`() = checkByText(
         """
-        module M {
+        module 0x1::M {
             fun main() {
                 assert(true, /*hint="err:"*/2)
             }    
@@ -37,20 +37,14 @@ class InlayParameterHintsTest : MvTestBase() {
     """
     )
 
-    fun `test no hint if variable name is the same as parameter name or superset case insensitive`() =
+    fun `test no hint if reference`() =
         checkByText(
             """
-        module M {
-            fun call(account: address, param: address) {}
+        module 0x1::M {
+            fun call(root_acc: address, param: address) {}
             fun main() {
-                let account = 0x1;
-                call(account, /*hint="param:"*/0x1);
-                
-                let account_wanted = 0x1;
-                call(account_wanted, /*hint="param:"*/0x1);
-
-                let ACCOUNT_WANTED = 0x1;
-                call(ACCOUNT_WANTED, /*hint="param:"*/0x1);
+                let myval = @0x1;
+                call(myval, /*hint="param:"*/@0x1);
             }    
         }    
     """

@@ -201,6 +201,7 @@ ModuleDef ::= Attr* module (AddressRef '::')? IDENTIFIER ModuleBlock
     mixin = "org.move.lang.core.psi.ext.MvModuleDefMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
+
 ModuleBlock ::= '{' ModuleBlockItems '}'
 {
     pin = 1

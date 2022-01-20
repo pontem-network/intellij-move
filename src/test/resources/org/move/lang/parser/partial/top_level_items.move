@@ -1,3 +1,6 @@
+module
+module Std::
+
 script {
     fun
 }

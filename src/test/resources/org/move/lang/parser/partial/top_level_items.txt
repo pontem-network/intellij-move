@@ -1,4 +1,19 @@
 FILE
+  MvModuleDefImpl(MODULE_DEF)
+    PsiElement(module)('module')
+    PsiErrorElement:<address ref> or IDENTIFIER expected, got 'module'
+      <empty list>
+  PsiWhiteSpace('\n')
+  MvModuleDefImpl(MODULE_DEF)
+    PsiElement(module)('module')
+    PsiWhiteSpace(' ')
+    MvAddressRefImpl(ADDRESS_REF)
+      MvNamedAddressImpl(NAMED_ADDRESS)
+        PsiElement(IDENTIFIER)('Std')
+    PsiElement(::)('::')
+    PsiErrorElement:IDENTIFIER expected, got 'script'
+      <empty list>
+  PsiWhiteSpace('\n\n')
   MvScriptDefImpl(SCRIPT_DEF)
     PsiElement(script)('script')
     PsiWhiteSpace(' ')

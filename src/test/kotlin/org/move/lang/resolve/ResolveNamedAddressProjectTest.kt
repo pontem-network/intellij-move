@@ -88,20 +88,35 @@ class ResolveNamedAddressProjectTest : ResolveProjectTestCase() {
         }
     }
 
-//    fun `test renamed dep address to dep declaration`() = checkByFileTree {
-//        moveToml("""
-//        [dependencies]
-//        Stdlib = { local = "./stdlib", addr_subst = { "StdX" = "Std" } }
-//                                                                #^
-//        """)
-//        dir("stdlib") {
-//            moveToml("""
-//            [addresses]
-//            Std = "0x1"
-//            #X
-//            """)
-//        }
-//    }
+    fun `test resolve address from dependency of dependency`() = checkByFileTree {
+        moveToml(
+            """
+        [dependencies]
+        PontStdlib = { local = "./pont-stdlib" }
+        """
+        )
+        sources {
+            move("main.move", """
+            module 0x1::M {
+                use Std::Reflect;
+                    //^
+            }     
+            """)
+        }
+        dir("pont-stdlib", {
+            moveToml("""
+            [dependencies]
+            MoveStdlib = { local = "./move-stdlib" }    
+            """)
+            dir("move-stdlib", {
+                moveToml("""
+                [addresses]
+                Std = "0x1"    
+                #X  
+                """)
+            })
+        })
+    }
 
     override fun checkByFileTree(fileTree: FileTreeBuilder.() -> Unit) {
         checkByFileTree(MvNamedAddress::class.java,
