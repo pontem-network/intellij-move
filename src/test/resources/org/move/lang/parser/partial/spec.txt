@@ -10,6 +10,49 @@ FILE
     MvModuleBlockImpl(MODULE_BLOCK)
       PsiElement({)('{')
       PsiWhiteSpace('\n    ')
+      PsiElement(spec)('spec')
+      PsiErrorElement:IDENTIFIER, fun, module or native expected, got 'spec'
+        <empty list>
+      PsiWhiteSpace('\n    ')
+      MvModuleSpecDefImpl(MODULE_SPEC_DEF)
+        PsiElement(spec)('spec')
+        PsiWhiteSpace(' ')
+        PsiElement(module)('module')
+        PsiErrorElement:'{' expected, got 'spec'
+          <empty list>
+      PsiWhiteSpace('\n    ')
+      MvSpecFunctionImpl(SPEC_FUNCTION)
+        PsiElement(spec)('spec')
+        PsiWhiteSpace(' ')
+        PsiElement(fun)('fun')
+        PsiErrorElement:IDENTIFIER expected, got 'spec'
+          <empty list>
+      PsiWhiteSpace('\n    ')
+      MvSpecFunctionImpl(SPEC_FUNCTION)
+        PsiElement(spec)('spec')
+        PsiWhiteSpace(' ')
+        PsiElement(fun)('fun')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('myfun')
+        PsiErrorElement:'(' or < expected, got 'spec'
+          <empty list>
+      PsiWhiteSpace('\n    ')
+      MvSpecSchemaImpl(SPEC_SCHEMA)
+        PsiElement(spec)('spec')
+        PsiWhiteSpace(' ')
+        PsiElement(schema_kw)('schema')
+        PsiErrorElement:IDENTIFIER expected, got 'spec'
+          <empty list>
+      PsiWhiteSpace('\n    ')
+      MvSpecSchemaImpl(SPEC_SCHEMA)
+        PsiElement(spec)('spec')
+        PsiWhiteSpace(' ')
+        PsiElement(schema_kw)('schema')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('MySchema')
+        PsiErrorElement:< or '{' expected, got 'fun'
+          <empty list>
+      PsiWhiteSpace('\n\n    ')
       MvFunctionImpl(FUNCTION)
         PsiElement(fun)('fun')
         PsiWhiteSpace(' ')
@@ -64,6 +107,16 @@ FILE
         MvSpecBlockImpl(SPEC_BLOCK)
           PsiElement({)('{')
           PsiWhiteSpace('\n        ')
+          MvIncludeSpecStatementImpl(INCLUDE_SPEC_STATEMENT)
+            PsiElement(include_kw)('include')
+            PsiWhiteSpace(' ')
+            MvSchemaRefImpl(SCHEMA_REF)
+              MvPathImpl(PATH)
+                MvPathIdentImpl(PATH_IDENT)
+                  PsiElement(IDENTIFIER)('Schema')
+            PsiErrorElement:'::', ';', < or '{' expected, got 'assert'
+              <empty list>
+          PsiWhiteSpace('\n\n        ')
           MvSpecExprStatementImpl(SPEC_EXPR_STATEMENT)
             MvAssertSpecExprImpl(ASSERT_SPEC_EXPR)
               PsiElement(assert_kw)('assert')

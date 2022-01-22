@@ -8,6 +8,7 @@ import org.move.lang.MvFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
@@ -20,7 +21,7 @@ enum class MslScope {
 
 val MvElement.mslScope: MslScope
     get() {
-        if (!this.isMslEnabled()) return MslScope.NONE
+        if (!this.isMslAvailable()) return MslScope.NONE
         val letSpecStatement = this.ancestorOrSelf<MvLetSpecStatement>()
         return when {
             letSpecStatement == null -> MslScope.EXPR
@@ -28,20 +29,34 @@ val MvElement.mslScope: MslScope
             else -> MslScope.LET
         }
     }
-val MvElement.isMsl: Boolean get() = this.mslScope != MslScope.NONE
 
-fun processItems(
-    element: MvReferenceElement,
-    namespace: Namespace,
+data class ItemVis(
+    val namespaces: Set<Namespace> = emptySet(),
+    val visibilities: Set<Visibility> = emptySet(),
+    val msl: MslScope = MslScope.NONE
+) {
+    val isMsl get() = msl != MslScope.NONE
+
+    fun replace(
+        ns: Set<Namespace> = this.namespaces,
+        vs: Set<Visibility> = this.visibilities,
+        msl: MslScope = this.msl
+    ): ItemVis {
+        return ItemVis(ns, vs, msl)
+    }
+}
+
+fun processItemsInScopesBottomUp(
+    element: MvElement,
+    itemVis: ItemVis,
     processor: MatchingProcessor,
 ): Boolean {
-    val mslScope = element.mslScope
     return walkUpThroughScopes(
         element,
         stopAfter = { it is MvModuleDef || it is MvScriptDef }
     ) { cameFrom, scope ->
         processLexicalDeclarations(
-            scope, cameFrom, namespace, mslScope, processor
+            scope, cameFrom, itemVis, processor
         )
     }
 }
@@ -51,13 +66,14 @@ fun resolveSingleItem(element: MvReferenceElement, namespace: Namespace): MvName
 }
 
 fun resolveItem(element: MvReferenceElement, namespace: Namespace): List<MvNamedElement> {
+    val itemVis = ItemVis(setOf(namespace), msl = element.mslScope)
     var resolved: MvNamedElement? = null
-    processItems(element, namespace) {
-        if (it.name == element.referenceName && it.element != null) {
+    processItemsInScopesBottomUp(element, itemVis) {
+        if (it.name == element.referenceName) {
             resolved = it.element
-            return@processItems true
+            return@processItemsInScopesBottomUp true
         }
-        return@processItems false
+        return@processItemsInScopesBottomUp false
     }
     return resolved.wrapWithList()
 }
@@ -124,31 +140,30 @@ fun processQualModuleRef(
     }
 }
 
-fun processNestedScopesUpwards(
-    startElement: MvElement,
-    namespace: Namespace,
-    processor: MatchingProcessor,
-) {
-    walkUpThroughScopes(
-        startElement,
-        stopAfter = { it is MvModuleDef || it is MvScriptDef }
-    ) { cameFrom, scope ->
-        processLexicalDeclarations(
-            scope, cameFrom, namespace, MslScope.NONE, processor
-        )
-    }
-}
+//fun processNestedScopesUpwards(
+//    startElement: MvElement,
+//    itemVis: ItemVis,
+//    processor: MatchingProcessor,
+//) {
+//    walkUpThroughScopes(
+//        startElement,
+//        stopAfter = { it is MvModuleDef || it is MvScriptDef }
+//    ) { cameFrom, scope ->
+//        processLexicalDeclarations(
+//            scope, cameFrom, itemVis, processor
+//        )
+//    }
+//}
 
 fun processLexicalDeclarations(
     scope: MvElement,
     cameFrom: MvElement,
-    namespace: Namespace,
-    mslScope: MslScope,
+    itemVis: ItemVis,
     processor: MatchingProcessor,
 ): Boolean {
     check(cameFrom.parent == scope)
 
-    return when (namespace) {
+    return when (itemVis.namespaces.single()) {
         Namespace.DOT_ACCESSED_FIELD -> {
             val dotExpr = scope as? MvDotExpr ?: return false
 
@@ -181,7 +196,7 @@ fun processLexicalDeclarations(
                     scope.builtinFunctions(),
                     scope.structs(),
                     scope.constBindings(),
-                    if (mslScope != MslScope.NONE) {
+                    if (itemVis.msl != MslScope.NONE) {
                         scope.specFunctions()
                     } else {
                         emptyList()
@@ -227,10 +242,10 @@ fun processLexicalDeclarations(
             }
             is MvSpecSchema -> processor.matchAll(scope.specBlock?.schemaVars().orEmpty())
             is MvSpecBlock -> {
-                val visibleLetDecls = when (mslScope) {
+                val visibleLetDecls = when (itemVis.msl) {
                     MslScope.EXPR -> scope.letStatements()
                     MslScope.LET, MslScope.LET_POST -> {
-                        val letDecls = if (mslScope == MslScope.LET_POST) {
+                        val letDecls = if (itemVis.msl == MslScope.LET_POST) {
                             scope.letStatements()
                         } else {
                             scope.letStatements(false)
@@ -309,7 +324,6 @@ fun processLexicalDeclarations(
             )
             else -> false
         }
-        else -> false
     }
 }
 

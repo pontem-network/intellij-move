@@ -4,7 +4,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.MslScope
 
-fun MvElement.isMslEnabled(): Boolean {
+fun MvElement.isMslAvailable(): Boolean {
     return PsiTreeUtil.findFirstParent(this, false) {
         it is MvSpecFunction
                 || it is MvSpecBlockExpr

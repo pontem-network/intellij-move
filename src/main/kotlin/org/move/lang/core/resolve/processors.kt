@@ -6,10 +6,8 @@ import org.move.lang.core.psi.MvNamedElement
 
 data class SimpleScopeEntry(
     val name: String,
-    val element: MvNamedElement?
+    val element: MvNamedElement
 )
-
-//class Stop: Resolution()
 
 fun interface MatchingProcessor {
     fun match(entry: SimpleScopeEntry): Boolean

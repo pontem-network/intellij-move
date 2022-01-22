@@ -20,6 +20,8 @@ fun MvPath.isPrimitiveType(): Boolean =
 
 val MvPath.identifierName: String? get() = identifier?.text
 
+val MvPath.moduleRef: MvModuleRef? get() = pathIdent.moduleRef
+
 val MvPathIdent.colonColon get() = this.findFirstChildByType(MvElementTypes.COLON_COLON)
 
 val MvPathIdent.isIdentifierOnly: Boolean

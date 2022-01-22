@@ -249,11 +249,12 @@ fake SpecFunction ::= spec native? fun IDENTIFIER? TypeParameterList?
 }
 private SpecFunctionImpl ::= SpecFunctionInner
                             | NativeSpecFunctionInner
-                            | UninterpretedSpecFunctionInner
+//                            | UninterpretedSpecFunctionInner
 
 SpecFunctionInner ::= spec fun IDENTIFIER TypeParameterList?
-                       FunctionParameterList ReturnType? CodeBlock
+                       FunctionParameterList ReturnType? (CodeBlock | ';')
 {
+    pin = 2
     elementType = SpecFunction
 }
 NativeSpecFunctionInner ::= spec (native fun) IDENTIFIER TypeParameterList?
@@ -262,15 +263,15 @@ NativeSpecFunctionInner ::= spec (native fun) IDENTIFIER TypeParameterList?
     elementType = SpecFunction
     pin = 2
 }
-UninterpretedSpecFunctionInner ::= spec fun IDENTIFIER TypeParameterList?
-                                    FunctionParameterList ReturnType? ';'
-{
-    elementType = SpecFunction
-}
+//UninterpretedSpecFunctionInner ::= spec fun IDENTIFIER TypeParameterList?
+//                                    FunctionParameterList ReturnType? ';'
+//{
+//    elementType = SpecFunction
+//}
 
 fake SpecInlineFunction ::= native? fun IDENTIFIER? TypeParameterList?
                                 FunctionParameterList? ReturnType?
-                                (';' | CodeBlock)?
+                                (CodeBlock | ';')?
 {
 //    implements = [
 //        "org.move.lang.core.psi.MvNameIdentifierOwner"
@@ -280,11 +281,12 @@ fake SpecInlineFunction ::= native? fun IDENTIFIER? TypeParameterList?
 }
 private SpecInlineFunctionImpl ::= SpecInlineFunctionInner
                                     | NativeSpecInlineFunctionInner
-                                    | UninterpretedSpecInlineFunctionInner
+//                                    | UninterpretedSpecInlineFunctionInner
 
 SpecInlineFunctionInner ::= fun IDENTIFIER TypeParameterList?
-                             FunctionParameterList ReturnType? CodeBlock
+                             FunctionParameterList ReturnType? (CodeBlock | ';')
 {
+    pin = 1
     elementType = SpecInlineFunction
 }
 NativeSpecInlineFunctionInner ::= (native fun) IDENTIFIER TypeParameterList?
@@ -293,11 +295,11 @@ NativeSpecInlineFunctionInner ::= (native fun) IDENTIFIER TypeParameterList?
     elementType = SpecInlineFunction
     pin = 1
 }
-UninterpretedSpecInlineFunctionInner ::= fun IDENTIFIER TypeParameterList?
-                                         FunctionParameterList ReturnType? ';'
-{
-    elementType = SpecInlineFunction
-}
+//UninterpretedSpecInlineFunctionInner ::= fun IDENTIFIER TypeParameterList?
+//                                         FunctionParameterList ReturnType? ';'
+//{
+//    elementType = SpecInlineFunction
+//}
 
 SpecInlineFunctionStatement ::= SpecInlineFunctionImpl
 //FunctionDefSpecStatement ::= FunctionSignature SpecBlock

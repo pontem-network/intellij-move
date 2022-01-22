@@ -11,6 +11,7 @@ import org.move.lang.core.psi.MvItemImport
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.moduleImport
+import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
@@ -28,19 +29,19 @@ object ImportsCompletionProvider : MvCompletionProvider() {
     ) {
         val itemImport = parameters.position.parent as MvItemImport
         val moduleRef = itemImport.moduleImport().fqModuleRef
-        val namespaces = setOf(Namespace.NAME, Namespace.TYPE)
 
         if (parameters.position !== itemImport.referenceNameElement) return
         val referredModule = moduleRef.reference?.resolve() as? MvModuleDef ?: return
+
         val vs = when {
             moduleRef.isSelf -> setOf(Visibility.Internal)
             else -> Visibility.buildSetOfVisibilities(itemImport)
         }
-        processModuleItems(referredModule, vs, namespaces) {
-            if (it.element != null) {
-                val lookup = it.element.createLookupElement(BasicInsertHandler())
-                result.addElement(lookup)
-            }
+        val ns = setOf(Namespace.NAME, Namespace.TYPE)
+        val itemVis = ItemVis(ns, vs)
+        processModuleItems(referredModule, itemVis) {
+            val lookup = it.element.createLookupElement(BasicInsertHandler())
+            result.addElement(lookup)
             false
         }
     }

@@ -38,7 +38,6 @@ sealed class Visibility {
 
 enum class Namespace {
     NAME,
-    SPEC_FUNC_NAME,
     TYPE,
     SPEC_ITEM,
     SCHEMA,

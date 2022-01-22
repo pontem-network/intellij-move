@@ -14,7 +14,7 @@ import org.move.lang.core.psiElement
 import org.move.lang.core.withParent
 import org.move.lang.moveProject
 
-object ModuleDeclarationAddressCompletionProvider : MvCompletionProvider() {
+object AddressInModuleDeclCompletionProvider : MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = PlatformPatterns
             .psiElement()

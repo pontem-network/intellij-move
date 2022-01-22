@@ -13,8 +13,10 @@ class CommonCompletionContributor : CompletionContributor() {
     init {
         extend(CompletionType.BASIC, PrimitiveTypesCompletionProvider)
         extend(CompletionType.BASIC, NamesCompletionProvider)
+        extend(CompletionType.BASIC, SchemasCompletionProvider)
+        extend(CompletionType.BASIC, SpecItemCompletionProvider)
         extend(CompletionType.BASIC, AddressesCompletionProvider)
-        extend(CompletionType.BASIC, ModuleDeclarationAddressCompletionProvider)
+        extend(CompletionType.BASIC, AddressInModuleDeclCompletionProvider)
         extend(CompletionType.BASIC, TypesCompletionProvider)
         extend(CompletionType.BASIC, ImportsCompletionProvider)
         extend(CompletionType.BASIC, ModulesCompletionProvider)
