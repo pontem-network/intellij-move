@@ -75,7 +75,7 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
                 else -> Visibility.buildSetOfVisibilities(element)
             }
             processModuleItems(module, itemVis.replace(vs = vs)) {
-                val lookup = it.element.createLookupElement()
+                val lookup = it.element.createCompletionLookupElement()
                 result.addElement(lookup)
                 false
             }
@@ -83,7 +83,7 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
         }
 
         handleItemsWithShadowing(element, itemVis) {
-            val lookupElement = it.createLookupElement()
+            val lookupElement = it.createCompletionLookupElement()
             result.addElement(lookupElement)
         }
     }
@@ -108,7 +108,7 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
                 else -> Visibility.buildSetOfVisibilities(element)
             }
             processModuleItems(module, itemVis.replace(vs = vs)) {
-                val lookup = it.element.createLookupElement()
+                val lookup = it.element.createCompletionLookupElement()
                 result.addElement(lookup)
                 false
             }
@@ -116,7 +116,7 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
         }
 
         handleItemsWithShadowing(element, itemVis) {
-            val lookup = it.createLookupElement()
+            val lookup = it.createCompletionLookupElement()
             result.addElement(lookup)
         }
     }
@@ -142,7 +142,7 @@ object SchemasCompletionProvider : MvPathCompletionProvider() {
                 else -> Visibility.buildSetOfVisibilities(element)
             }
             processModuleItems(module, itemVis.replace(vs = vs)) {
-                val lookup = it.element.createLookupElement()
+                val lookup = it.element.createCompletionLookupElement()
                 result.addElement(lookup)
                 false
             }
@@ -150,7 +150,7 @@ object SchemasCompletionProvider : MvPathCompletionProvider() {
         }
 
         handleItemsWithShadowing(element, itemVis) {
-            val lookup = it.createLookupElement()
+            val lookup = it.createCompletionLookupElement()
             result.addElement(lookup)
         }
     }

@@ -22,12 +22,11 @@ object SpecItemCompletionProvider : MvCompletionProvider() {
 
         val itemVis = ItemVis(setOf(Namespace.SPEC_ITEM), msl = MslScope.NONE)
         processItemsInScopesBottomUp(specItem, itemVis) {
-            if (it.element != null) {
-                val lookup = it.element.createLookupElement { ctx, _ ->
+            val lookup = it.element.createLookupElement()
+                .withInsertHandler { ctx, _ ->
                     if (!ctx.alreadyHasSpace) ctx.addSuffix(" ")
                 }
-                result.addElement(lookup)
-            }
+            result.addElement(lookup)
             false
         }
     }

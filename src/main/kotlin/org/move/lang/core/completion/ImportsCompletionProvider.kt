@@ -40,7 +40,7 @@ object ImportsCompletionProvider : MvCompletionProvider() {
         val ns = setOf(Namespace.NAME, Namespace.TYPE)
         val itemVis = ItemVis(ns, vs)
         processModuleItems(referredModule, itemVis) {
-            val lookup = it.element.createLookupElement(BasicInsertHandler())
+            val lookup = it.element.createCompletionLookupElement(BasicInsertHandler())
             result.addElement(lookup)
             false
         }

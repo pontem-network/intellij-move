@@ -34,7 +34,7 @@ object StructPatCompletionProvider : MvCompletionProvider() {
 
         val itemVis = ItemVis(setOf(Namespace.TYPE), setOf(Visibility.Internal), MslScope.NONE)
         processModuleItems(module, itemVis) {
-            val lookup = it.element.createLookupElement()
+            val lookup = it.element.createCompletionLookupElement()
             result.addElement(lookup)
             false
 

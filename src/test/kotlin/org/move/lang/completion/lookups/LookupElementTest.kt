@@ -4,7 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementPresentation
 import com.intellij.psi.NavigatablePsiElement
 import org.intellij.lang.annotations.Language
-import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.completion.createCompletionLookupElement
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.utils.tests.MvTestBase
@@ -84,7 +84,7 @@ class LookupElementTest : MvTestBase() {
         val element = myFixture.findElementInEditor<T>() as? MvNamedElement
             ?: error("Marker `^` should point to the MvNamedElement")
 
-        val lookup = element.createLookupElement()
+        val lookup = element.createCompletionLookupElement()
         checkLookupPresentation(
             lookup,
             tailText = tailText,

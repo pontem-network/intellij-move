@@ -8,7 +8,6 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.cli.AddressVal
 import org.move.ide.presentation.shortPresentableText
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -46,37 +45,35 @@ fun functionInsertHandler(isSpec: Boolean, hasParams: Boolean): InsertHandler<Lo
         }
     }
 
-fun MvNamedElement.createLookupElement(
+fun MvNamedElement.createLookupElement(): LookupElementBuilder {
+    return LookupElementBuilder
+        .createWithIcon(this)
+        .withLookupString(this.name ?: "")
+}
+
+fun MvNamedElement.createCompletionLookupElement(
     insertHandler: InsertHandler<LookupElement> = MvInsertHandler()
 ): LookupElement {
     return when (this) {
         is MvModuleImport ->
-            LookupElementBuilder
-                .createWithIcon(this)
-                .withLookupString(this.name ?: "")
+            this.createLookupElement()
 
-        is MvFunction -> LookupElementBuilder.createWithIcon(this)
-            .withLookupString(this.name ?: "")
+        is MvFunction -> this.createLookupElement()
             .withTailText(this.functionParameterList?.parametersText ?: "()")
             .withTypeText(this.returnType?.type?.text ?: "()")
             .withInsertHandler(insertHandler)
 
-        is MvModuleDef -> LookupElementBuilder.createWithIcon(this)
-            .withLookupString(this.name ?: "")
+        is MvModuleDef -> this.createLookupElement()
             .withTypeText(this.containingFile?.name)
 
-        is MvStruct_ -> LookupElementBuilder.createWithIcon(this)
-            .withLookupString(this.name ?: "")
+        is MvStruct_ -> this.createLookupElement()
             .withTailText(" { ... }")
             .withInsertHandler(insertHandler)
 
-        is MvStructFieldDef -> LookupElementBuilder
-            .createWithIcon(this)
-            .withLookupString(this.name ?: "")
+        is MvStructFieldDef -> this.createLookupElement()
             .withTypeText(this.typeAnnotation?.type?.text)
 
-        is MvBindingPat -> LookupElementBuilder.createWithIcon(this)
-            .withLookupString(this.name ?: "")
+        is MvBindingPat -> this.createLookupElement()
             .withTypeText(this.inferBindingPatTy().shortPresentableText(true))
 
         else -> LookupElementBuilder.create(this).withLookupString(name ?: "")
@@ -145,7 +142,8 @@ class MvInsertHandler : InsertHandler<LookupElement> {
                 document.insertString(context.selectionEndOffset, suffix)
                 EditorModificationUtil.moveCaretRelatively(
                     context.editor,
-                    if (element.parameters.isNotEmpty() || reqTypeParams.isNotEmpty()) 1 else 2)
+                    if (element.parameters.isNotEmpty() || reqTypeParams.isNotEmpty()) 1 else 2
+                )
             }
             is MvStruct_ -> {
                 val insideAcquiresType =

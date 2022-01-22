@@ -28,10 +28,8 @@ object QualModulesCompletionProvider : MvCompletionProvider() {
         if (parameters.position !== fqModuleRef.referenceNameElement) return
 
         processQualModuleRef(fqModuleRef) {
-            if (it.element != null) {
-                val lookup = it.element.createLookupElement()
-                result.addElement(lookup)
-            }
+            val lookup = it.element.createCompletionLookupElement()
+            result.addElement(lookup)
             false
         }
     }

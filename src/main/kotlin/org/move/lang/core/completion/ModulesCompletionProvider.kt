@@ -32,10 +32,8 @@ object ModulesCompletionProvider : MvCompletionProvider() {
 
         val itemVis = ItemVis(setOf(Namespace.MODULE), emptySet(), refElement.mslScope)
         processItemsInScopesBottomUp(refElement, itemVis) {
-            if (it.element != null) {
-                val lookup = it.element.createLookupElement()
-                result.addElement(lookup)
-            }
+            val lookup = it.element.createCompletionLookupElement()
+            result.addElement(lookup)
             false
         }
     }
