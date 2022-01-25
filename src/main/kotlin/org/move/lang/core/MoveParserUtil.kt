@@ -169,7 +169,7 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     fun hasKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "has", HAS)
 
     @JvmStatic
-    fun schemaKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "schema", SCHEMA)
+    fun schemaKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "schema", SCHEMA_KW)
 
     @JvmStatic
     fun friendKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "friend", FRIEND)

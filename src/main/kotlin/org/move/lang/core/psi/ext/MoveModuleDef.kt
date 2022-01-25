@@ -115,9 +115,9 @@ fun createBuiltinSpecFunction(text: String, project: Project): MvSpecFunction {
     return function
 }
 
-fun MvModuleDef.structs(): List<MvStruct_> = moduleBlock?.struct_List.orEmpty()
+fun MvModuleDef.structs(): List<MvStruct> = moduleBlock?.structList.orEmpty()
 
-fun MvModuleDef.schemas(): List<MvSpecSchema> = moduleBlock?.specSchemaList.orEmpty()
+fun MvModuleDef.schemas(): List<MvSchema> = moduleBlock?.schemaList.orEmpty()
 
 fun MvModuleDef.builtinSpecFunctions(): List<MvSpecFunction> {
     return listOf(

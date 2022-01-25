@@ -1,7 +1,7 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.MvSpecSchema
+import org.move.lang.core.psi.MvSchema
 
-val MvSpecSchema.typeParams get() = typeParameterList?.typeParameterList.orEmpty()
+val MvSchema.typeParams get() = typeParameterList?.typeParameterList.orEmpty()
 
-val MvSpecSchema.declaredVars get() = this.specBlock?.schemaVars().orEmpty()
+val MvSchema.declaredVars get() = this.specBlock?.schemaVars().orEmpty()

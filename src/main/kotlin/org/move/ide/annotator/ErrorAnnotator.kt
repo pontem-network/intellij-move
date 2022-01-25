@@ -11,7 +11,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.utils.MvDiagnostic
 import org.move.lang.utils.addToHolder
-import kotlin.math.exp
 
 class ErrorAnnotator : MvAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
@@ -21,7 +20,7 @@ class ErrorAnnotator : MvAnnotator() {
 
             override fun visitFunction(o: MvFunction) = checkFunction(moveHolder, o)
 
-            override fun visitStruct_(o: MvStruct_) = checkStruct(moveHolder, o)
+            override fun visitStruct(o: MvStruct) = checkStruct(moveHolder, o)
 
             override fun visitModuleDef(o: MvModuleDef) = checkModuleDef(moveHolder, o)
 
@@ -40,7 +39,7 @@ class ErrorAnnotator : MvAnnotator() {
                                 .addToHolder(moveHolder)
                         }
                     }
-                    item is MvStruct_ && parent is MvPathType -> {
+                    item is MvStruct && parent is MvPathType -> {
                         if (parent.ancestorStrict<MvAcquiresType>() != null) return
 
                         val expectedCount = item.typeParameters.size
@@ -51,7 +50,7 @@ class ErrorAnnotator : MvAnnotator() {
                                 .addToHolder(moveHolder)
                         }
                     }
-                    item is MvStruct_ && parent is MvStructLitExpr -> {
+                    item is MvStruct && parent is MvStructLitExpr -> {
                         // phantom type params
                         val expectedCount = item.typeParameters.size
                         if (realCount != 0) {
@@ -161,7 +160,7 @@ class ErrorAnnotator : MvAnnotator() {
         element.accept(visitor)
     }
 
-    private fun checkStruct(holder: MvAnnotationHolder, struct: MvStruct_) {
+    private fun checkStruct(holder: MvAnnotationHolder, struct: MvStruct) {
         checkStructDuplicates(holder, struct)
     }
 
@@ -202,7 +201,7 @@ private fun checkMissingFields(
     holder: MvAnnotationHolder,
     target: PsiElement,
     providedFieldNames: Set<String>,
-    referredStruct: MvStruct_,
+    referredStruct: MvStruct,
 ) {
     if ((referredStruct.fieldNames.toSet() - providedFieldNames).isNotEmpty()) {
         holder.createErrorAnnotation(target, "Some fields are missing")
@@ -241,7 +240,7 @@ private fun checkFunctionSignatureDuplicates(
 
 private fun checkStructDuplicates(
     holder: MvAnnotationHolder,
-    struct: MvStruct_,
+    struct: MvStruct,
 ) {
     val duplicateSignatures = getDuplicates(struct.module.structs().asSequence())
     if (struct.name !in duplicateSignatures.map { it.name }) {

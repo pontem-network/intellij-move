@@ -247,7 +247,7 @@ fun processLexicalDeclarations(
                     else -> false
                 }
             }
-            is MvSpecSchema -> processor.matchAll(scope.specBlock?.schemaVars().orEmpty())
+            is MvSchema -> processor.matchAll(scope.specBlock?.schemaVars().orEmpty())
             is MvSpecBlock -> {
                 val visibleLetDecls = when (itemVis.msl) {
                     MslScope.EXPR -> scope.letStatements()
@@ -283,8 +283,8 @@ fun processLexicalDeclarations(
         Namespace.TYPE -> when (scope) {
             is MvFunction -> processor.matchAll(scope.typeParameters)
             is MvSpecFunction -> processor.matchAll(scope.typeParameters)
-            is MvStruct_ -> processor.matchAll(scope.typeParameters)
-            is MvSpecSchema -> processor.matchAll(scope.typeParams)
+            is MvStruct -> processor.matchAll(scope.typeParameters)
+            is MvSchema -> processor.matchAll(scope.typeParams)
             is MvNameSpecDef -> {
                 val funcItem = scope.funcItem
                 if (funcItem != null) {

@@ -7,7 +7,7 @@ import com.intellij.util.Processor
 import com.intellij.util.indexing.FindSymbolParameters
 import com.intellij.util.indexing.IdFilter
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.MvStruct_
+import org.move.lang.core.psi.MvStruct
 import org.move.openapiext.allMoveFilesForContentRoots
 
 class MvStructNavigationContributor : ChooseByNameContributorEx {
@@ -16,7 +16,7 @@ class MvStructNavigationContributor : ChooseByNameContributorEx {
         val project = scope.project ?: return
         val visitor = object : MvNamedElementsVisitor() {
             override fun processNamedElement(element: MvNamedElement) {
-                if (element is MvStruct_) {
+                if (element is MvStruct) {
                     val elementName = element.name ?: return
                     processor.process(elementName)
                 }
@@ -33,7 +33,7 @@ class MvStructNavigationContributor : ChooseByNameContributorEx {
         val project = parameters.project
         val visitor = object : MvNamedElementsVisitor() {
             override fun processNamedElement(element: MvNamedElement) {
-                if (element is MvStruct_) {
+                if (element is MvStruct) {
                     val elementName = element.name ?: return
                     if (elementName == name) processor.process(element)
                 }

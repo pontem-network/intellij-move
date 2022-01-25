@@ -8,7 +8,7 @@ fun MvElement.isMslAvailable(): Boolean {
     return PsiTreeUtil.findFirstParent(this, false) {
         it is MvSpecFunction
                 || it is MvSpecBlockExpr
-                || it is MvSpecSchema
+                || it is MvSchema
                 || it is MvSpecDef
     } != null
 }

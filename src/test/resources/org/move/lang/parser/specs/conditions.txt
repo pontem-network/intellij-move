@@ -948,7 +948,7 @@ FILE
           PsiWhiteSpace('\n')
           PsiElement(})('}')
       PsiWhiteSpace('\n\n    ')
-      MvSpecSchemaImpl(SPEC_SCHEMA)
+      MvSchemaImpl(SCHEMA)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
         PsiElement(schema_kw)('schema')

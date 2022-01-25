@@ -1,14 +1,14 @@
 package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
-import org.move.lang.core.psi.MvStruct_
+import org.move.lang.core.psi.MvStruct
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 
 data class TyStruct(
-    val item: MvStruct_,
+    val item: MvStruct,
     val typeArgs: List<Ty> = emptyList()
 ) : Ty {
     val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }

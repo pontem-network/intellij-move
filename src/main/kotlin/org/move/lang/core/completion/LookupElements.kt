@@ -71,7 +71,7 @@ fun MvNamedElement.createCompletionLookupElement(
         is MvModuleDef -> this.createLookupElement()
             .withTypeText(this.containingFile?.name)
 
-        is MvStruct_ -> this.createLookupElement()
+        is MvStruct -> this.createLookupElement()
             .withTailText(" { ... }")
             .withInsertHandler(insertHandler)
 
@@ -167,7 +167,7 @@ class MvInsertHandler : InsertHandler<LookupElement> {
                 document.insertString(context.selectionEndOffset, suffix)
                 EditorModificationUtil.moveCaretRelatively(context.editor, offset)
             }
-            is MvStruct_ -> {
+            is MvStruct -> {
                 val insideAcquiresType =
                     context.file
                         .findElementAt(context.startOffset)

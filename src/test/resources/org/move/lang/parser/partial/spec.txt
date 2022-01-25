@@ -37,14 +37,14 @@ FILE
         PsiErrorElement:'(' or < expected, got 'spec'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MvSpecSchemaImpl(SPEC_SCHEMA)
+      MvSchemaImpl(SCHEMA)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
         PsiElement(schema_kw)('schema')
         PsiErrorElement:IDENTIFIER expected, got 'spec'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MvSpecSchemaImpl(SPEC_SCHEMA)
+      MvSchemaImpl(SCHEMA)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
         PsiElement(schema_kw)('schema')

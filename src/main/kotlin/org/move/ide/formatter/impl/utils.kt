@@ -38,7 +38,7 @@ val PsiElement.isTopLevelItem: Boolean
     get() = (this is MvModuleDef || this is MvAddressDef || this is MvScriptDef) && parent is MvFile
 
 val PsiElement.isModuleItem: Boolean
-    get() = this is MvFunction || this is MvConstDef || this is MvStruct_ || this is MvImportStatement
+    get() = this is MvFunction || this is MvConstDef || this is MvStruct || this is MvImportStatement
 
 val PsiElement.isDeclarationItem: Boolean
     get() = (this is MvModuleDef && parent is MvAddressBlock) || this.isModuleItem

@@ -103,7 +103,9 @@
         ADDRESS     = 'address_kw'
         HAS     = 'has_kw'
         FRIEND     = 'friend_kw'
-        SCHEMA     = 'schema_kw'
+
+        STRUCT_KW     = 'struct'
+        SCHEMA_KW     = 'schema_kw'
 
         LOCAL     = 'local_kw'
         GLOBAL     = 'global_kw'
@@ -213,7 +215,7 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
     recoverWhile = Item_recover
 }
 // top-level recovery
-private Item_first ::= use | public | native | fun | const | struct | spec | friend | Attr
+private Item_first ::= use | public | native | fun | const | STRUCT_KW | spec | friend | Attr
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= ImportStatement | FriendStatement
@@ -221,7 +223,7 @@ private ModuleItem_item ::= ImportStatement | FriendStatement
                             | FunctionItem
                             | SpecFunctionImpl
                             | ConstDef
-                            | SpecSchema
+                            | Schema
                             | SpecDef
 
 ConstDef ::= Attr* const BindingPat TypeAnnotation Initializer ';'
@@ -306,7 +308,7 @@ SpecInlineFunctionStatement ::= SpecInlineFunctionImpl
 //NativeFunctionDefSpecStatement ::= native FunctionSignature ';' { pin = 1 }
 //UninterpretedFunctionDefSpecStatement ::= FunctionSignature ';'
 
-fake Struct_ ::= Attr* native? struct IDENTIFIER? TypeParameterList? AbilitiesList?
+fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? AbilitiesList?
                         (';' | StructFieldsDefBlock)?
 {
     implements = [
@@ -317,19 +319,19 @@ fake Struct_ ::= Attr* native? struct IDENTIFIER? TypeParameterList? AbilitiesLi
     mixin = "org.move.lang.core.psi.ext.MvStructMixin"
 }
 
-private StructInnerFirst ::= struct
+private StructInnerFirst ::= STRUCT_KW
 StructInner ::= Attr* StructInnerFirst IDENTIFIER TypeParameterList? AbilitiesList?
                             StructFieldsDefBlock
 {
     pin = StructInnerFirst
-    elementType = Struct_
+    elementType = Struct
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
-private NativeStructInnerFirst ::= native struct
+private NativeStructInnerFirst ::= native STRUCT_KW
 NativeStructInner ::= Attr* NativeStructInnerFirst IDENTIFIER TypeParameterList? AbilitiesList? ';'
 {
     pin = NativeStructInnerFirst
-    elementType = Struct_
+    elementType = Struct
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 private StructItem ::= StructInner | NativeStructInner
@@ -442,7 +444,7 @@ private AcquiresType_items_recover ::= !(';' | '{')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//StructSignature ::= struct IDENTIFIER TypeParameterList? AbilitiesList?
+//StructSignature ::= STRUCT_KW IDENTIFIER TypeParameterList? AbilitiesList?
 //{
 //    pin = "struct"
 //    implements = [
@@ -981,13 +983,13 @@ NameSpecDef ::= (spec IDENTIFIER) SpecBlock
 }
 ModuleSpecDef ::= (spec module) SpecBlock { pin = 1 }
 
-SpecSchema ::= (spec schema) IDENTIFIER TypeParameterList? SpecBlock {
+Schema ::= (spec schema) IDENTIFIER TypeParameterList? SpecBlock {
     pin = 1
     implements = [
         "org.move.lang.core.psi.MvTypeParametersOwner"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
     ]
-    mixin = "org.move.lang.core.psi.mixins.MvSpecSchemaMixin"
+    mixin = "org.move.lang.core.psi.mixins.MvSchemaMixin"
 }
 
 SpecBlockExpr ::= spec SpecBlock

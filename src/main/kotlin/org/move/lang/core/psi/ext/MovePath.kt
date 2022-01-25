@@ -31,9 +31,9 @@ val MvPathIdent.isIdentifierOnly: Boolean
 val MvPath.typeArguments: List<MvTypeArgument>
     get() = typeArgumentList?.typeArgumentList.orEmpty()
 
-val MvPath.maybeStruct get() = reference?.resolve() as? MvStruct_
+val MvPath.maybeStruct get() = reference?.resolve() as? MvStruct
 
-val MvPath.maybeSchema get() = reference?.resolve() as? MvSpecSchema
+val MvPath.maybeSchema get() = reference?.resolve() as? MvSchema
 
 
 abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
