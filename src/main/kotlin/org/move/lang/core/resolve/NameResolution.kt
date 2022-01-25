@@ -46,7 +46,7 @@ data class ItemVis(
     }
 }
 
-fun processItemsInScopesBottomUp(
+fun processItems(
     element: MvElement,
     itemVis: ItemVis,
     processor: MatchingProcessor,
@@ -68,12 +68,12 @@ fun resolveSingleItem(element: MvReferenceElement, namespace: Namespace): MvName
 fun resolveItem(element: MvReferenceElement, namespace: Namespace): List<MvNamedElement> {
     val itemVis = ItemVis(setOf(namespace), msl = element.mslScope)
     var resolved: MvNamedElement? = null
-    processItemsInScopesBottomUp(element, itemVis) {
+    processItems(element, itemVis) {
         if (it.name == element.referenceName) {
             resolved = it.element
-            return@processItemsInScopesBottomUp true
+            return@processItems true
         }
-        return@processItemsInScopesBottomUp false
+        return@processItems false
     }
     return resolved.wrapWithList()
 }
@@ -187,6 +187,13 @@ fun processLexicalDeclarations(
             if (struct != null) return processor.matchAll(struct.fields)
             false
         }
+        Namespace.SCHEMA_FIELD -> {
+            val schema = (scope as? MvSchemaLit)?.path?.maybeSchema
+            if (schema != null) {
+                return processor.matchAll(schema.declaredVars)
+            }
+            false
+        }
         Namespace.NAME -> when (scope) {
             is MvModuleDef -> {
                 processor.matchAll(
@@ -196,8 +203,8 @@ fun processLexicalDeclarations(
                     scope.builtinFunctions(),
                     scope.structs(),
                     scope.constBindings(),
-                    if (itemVis.msl != MslScope.NONE) {
-                        scope.specFunctions()
+                    if (itemVis.isMsl) {
+                        listOf(scope.specFunctions(), scope.builtinSpecFunctions()).flatten()
                     } else {
                         emptyList()
                     }

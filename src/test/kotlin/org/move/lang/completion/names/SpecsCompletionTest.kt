@@ -162,4 +162,28 @@ class SpecsCompletionTest: CompletionTestCase() {
         }
     }    
     """)
+
+    fun `test complete consts from another module`() = doSingleCompletion("""
+    module 0x1::M {
+        const MY_CONST: u8 = 1;
+              //X
+    }    
+    module 0x1::M2 {
+        use 0x1::M;
+        spec module {
+            M::MY_/*caret*/;
+        }
+    }        
+    """, """
+    module 0x1::M {
+        const MY_CONST: u8 = 1;
+              //X
+    }    
+    module 0x1::M2 {
+        use 0x1::M;
+        spec module {
+            M::MY_CONST/*caret*/;
+        }
+    }        
+    """)
 }

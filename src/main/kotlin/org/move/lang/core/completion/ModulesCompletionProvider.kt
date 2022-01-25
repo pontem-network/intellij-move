@@ -9,7 +9,7 @@ import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslScope
-import org.move.lang.core.resolve.processItemsInScopesBottomUp
+import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
 
 object ModulesCompletionProvider : MvCompletionProvider() {
@@ -31,7 +31,7 @@ object ModulesCompletionProvider : MvCompletionProvider() {
         if (refElement.pathIdent.moduleRef != null) return
 
         val itemVis = ItemVis(setOf(Namespace.MODULE), emptySet(), refElement.mslScope)
-        processItemsInScopesBottomUp(refElement, itemVis) {
+        processItems(refElement, itemVis) {
             val lookup = it.element.createCompletionLookupElement()
             result.addElement(lookup)
             false

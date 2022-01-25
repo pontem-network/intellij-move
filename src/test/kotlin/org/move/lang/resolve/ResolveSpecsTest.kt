@@ -245,4 +245,33 @@ class ResolveSpecsTest: ResolveTestCase() {
         }
     }
     """)
+
+    fun `test another module consts are accessible from msl`() = checkByCode("""
+    module 0x1::M {
+        const MY_CONST: u8 = 1;
+              //X
+    }    
+    module 0x1::M2 {
+        use 0x1::M;
+        spec module {
+            M::MY_CONST;
+                 //^            
+        }
+    }
+    """)
+
+    fun `test resolve schema parameters`() = checkByCode("""
+    module 0x1::M {
+        spec module {
+            let a = @0x1;
+            include MySchema { addr: a };
+                              //^
+        }
+        
+        spec schema MySchema {
+            addr: address;
+            //X
+        }
+    }    
+    """)
 }

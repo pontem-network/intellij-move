@@ -110,7 +110,7 @@ FILE
           MvIncludeSpecStatementImpl(INCLUDE_SPEC_STATEMENT)
             PsiElement(include_kw)('include')
             PsiWhiteSpace(' ')
-            MvSchemaRefImpl(SCHEMA_REF)
+            MvSchemaLitImpl(SCHEMA_LIT)
               MvPathImpl(PATH)
                 MvPathIdentImpl(PATH_IDENT)
                   PsiElement(IDENTIFIER)('Schema')

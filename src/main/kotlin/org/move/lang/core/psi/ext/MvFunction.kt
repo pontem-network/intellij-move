@@ -81,7 +81,7 @@ val MvFunction.resolvedReturnTy: Ty
         }
     }
 
-val MvFunction.retTypeOnlyTypeParams: List<MvTypeParameter>
+val MvFunction.typeParamsUsedOnlyInReturnType: List<MvTypeParameter>
     get() {
         val usedTypeParams = mutableSetOf<MvTypeParameter>()
         this.parameters

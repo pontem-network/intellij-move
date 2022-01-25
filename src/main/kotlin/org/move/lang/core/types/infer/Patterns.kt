@@ -2,8 +2,8 @@ package org.move.lang.core.types.infer
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.declaredTy
-import org.move.lang.core.psi.ext.owner
 import org.move.lang.core.psi.ext.fields
+import org.move.lang.core.psi.ext.owner
 import org.move.lang.core.psi.ext.pat
 import org.move.lang.core.psi.mixins.declaredTy
 import org.move.lang.core.types.ty.Ty

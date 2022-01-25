@@ -14,15 +14,15 @@ import org.move.lang.core.psi.ext.moduleRef
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslScope
 import org.move.lang.core.resolve.mslScope
-import org.move.lang.core.resolve.processItemsInScopesBottomUp
+import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
 
 fun handleItemsWithShadowing(element: MvPath, itemVis: ItemVis, handle: (MvNamedElement) -> Unit) {
     val visited = mutableSetOf<String>()
-    processItemsInScopesBottomUp(element, itemVis) {
-        if (visited.contains(it.name)) return@processItemsInScopesBottomUp false
+    processItems(element, itemVis) {
+        if (visited.contains(it.name)) return@processItems false
         visited.add(it.name)
 
         handle(it.element)

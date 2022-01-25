@@ -63,6 +63,20 @@ class BuiltInsCompletionTest : CompletionTestCase() {
         }    
     """)
 
+    fun `test builtin spec functions in specs`() = doFirstCompletion("""
+    module 0x1::M {
+        spec module {
+            ensures globa/*caret*/
+        }
+    }    
+    """, """
+    module 0x1::M {
+        spec module {
+            ensures global</*caret*/>()
+        }
+    }    
+    """)
+
     private fun doTest(@Language("Move") text: String) {
         val functionNames = BUILTIN_FUNCTIONS
         for (name in functionNames) {

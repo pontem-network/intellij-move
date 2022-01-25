@@ -1089,25 +1089,25 @@ EnsuresSpecExpr ::= ensures SpecExpr { pin = 1 }
 //ModifiesSpecStatement ::= ModifiesSpecExpr ';'
 ModifiesSpecExpr ::= modifies Expr { pin = 1 }
 
-IncludeSpecStatement ::= include SpecVisibility? SchemaRef ';' { pin = 1 }
-SchemaRef ::= Path SchemaRefFieldsBlock?
+IncludeSpecStatement ::= include SpecVisibility? SchemaLit ';' { pin = 1 }
+SchemaLit ::= Path SchemaFieldsBlock?
 
-SchemaRefFieldsBlock ::= '{' SchemaRefField_with_recover* '}' { pin = 1 }
-private SchemaRefField_with_recover ::= !'}' SchemaRefField (',' | &'}')
+SchemaFieldsBlock ::= '{' SchemaField_with_recover* '}' { pin = 1 }
+private SchemaField_with_recover ::= !'}' SchemaField (',' | &'}')
 {
     pin = 1
-    recoverWhile = SchemaRefField_recover
+    recoverWhile = SchemaField_recover
 }
-private SchemaRefField_recover ::= !('}' | IDENTIFIER)
+private SchemaField_recover ::= !('}' | IDENTIFIER)
 
-SchemaRefField ::= IDENTIFIER SchemaRefFieldInit?
+SchemaField ::= IDENTIFIER SchemaFieldInit?
 {
-//    implements = [
-//        "org.move.lang.core.psi.MvStructFieldLitReferenceElement"
-//    ]
-//    mixin = "org.move.lang.core.psi.ext.MvStructLitFieldMixin"
+    implements = [
+        "org.move.lang.core.psi.MvSchemaRefFieldReferenceElement"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvSchemaRefFieldMixin"
 }
-private SchemaRefFieldInit ::= ':' Expr { pin = 1 }
+private SchemaFieldInit ::= ':' Expr { pin = 1 }
 
 private PatternVis ::= <<patternVisibility>>
 private PatternIdent ::= <<patternIdent>>

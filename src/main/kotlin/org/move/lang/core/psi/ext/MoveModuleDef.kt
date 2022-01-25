@@ -108,9 +108,24 @@ fun createBuiltinFunction(text: String, project: Project): MvFunction {
     return function
 }
 
+fun createBuiltinSpecFunction(text: String, project: Project): MvSpecFunction {
+    val trimmedText = text.trimIndent()
+    val function = project.psiFactory.createSpecFunction(trimmedText, moduleName = "builtin_spec_functions")
+//    (function as MvFunctionMixin).builtIn = true
+    return function
+}
+
 fun MvModuleDef.structs(): List<MvStruct_> = moduleBlock?.struct_List.orEmpty()
 
 fun MvModuleDef.schemas(): List<MvSpecSchema> = moduleBlock?.specSchemaList.orEmpty()
+
+fun MvModuleDef.builtinSpecFunctions(): List<MvSpecFunction> {
+    return listOf(
+        createBuiltinSpecFunction("spec native fun global<T: key>(addr: address): T;", project),
+        createBuiltinSpecFunction("spec native fun old<T>(_: T): T;", project),
+        createBuiltinSpecFunction("spec native fun TRACE<T>(_: T): T;", project),
+    )
+}
 
 fun MvModuleDef.specFunctions(): List<MvSpecFunction> = moduleBlock?.specFunctionList.orEmpty()
 

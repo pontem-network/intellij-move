@@ -18,6 +18,20 @@ module 0x1::M {
 }
     """)
 
+    fun `test schema parameter shorthand`() = doTest("""
+    module 0x1::M {
+        spec module {
+            let addr = @0x1;
+            include MySchema { addr };
+                                //^
+        }
+        
+        spec schema MySchema {
+            addr: address;
+        }
+    }    
+    """)
+
     private fun doTest(@Language("Move") code: String) {
         InlineFile(myFixture, code, "main.move")
         val element = myFixture.findElementInEditor<MvReferenceElement>()

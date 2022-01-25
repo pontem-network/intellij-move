@@ -63,6 +63,11 @@ fun MvNamedElement.createCompletionLookupElement(
             .withTypeText(this.returnType?.type?.text ?: "()")
             .withInsertHandler(insertHandler)
 
+        is MvSpecFunction -> this.createLookupElement()
+            .withTailText(this.functionParameterList?.parametersText ?: "()")
+            .withTypeText(this.returnType?.type?.text ?: "()")
+            .withInsertHandler(insertHandler)
+
         is MvModuleDef -> this.createLookupElement()
             .withTypeText(this.containingFile?.name)
 
@@ -124,6 +129,24 @@ class AngleBracketsInsertHandler : InsertHandler<LookupElement> {
     }
 }
 
+private fun InsertionContext.functionSuffixAndOffset(
+    requiredTypeParams: List<MvTypeParameter>,
+    parameters: List<MvFunctionParameter>
+): Pair<String, Int> {
+    var suffix = ""
+    if (!this.alreadyHasAngleBrackets && requiredTypeParams.isNotEmpty()) {
+        suffix += "<>"
+    }
+    if (!this.alreadyHasAngleBrackets && !this.alreadyHasCallParens) {
+        suffix += "()"
+    }
+    val offset = when {
+        parameters.isNotEmpty() || requiredTypeParams.isNotEmpty() -> 1
+        else -> 2
+    }
+    return Pair(suffix, offset)
+}
+
 class MvInsertHandler : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, item: LookupElement) {
         val document = context.document
@@ -131,19 +154,18 @@ class MvInsertHandler : InsertHandler<LookupElement> {
 
         when (element) {
             is MvFunction -> {
-                val reqTypeParams = element.retTypeOnlyTypeParams
-                var suffix = ""
-                if (!context.alreadyHasAngleBrackets && reqTypeParams.isNotEmpty()) {
-                    suffix += "<>"
-                }
-                if (!context.alreadyHasCallParens) {
-                    suffix += "()"
-                }
+                val requiredTypeParams = element.typeParamsUsedOnlyInReturnType
+                val (suffix, offset) = context.functionSuffixAndOffset(requiredTypeParams, element.parameters)
+
                 document.insertString(context.selectionEndOffset, suffix)
-                EditorModificationUtil.moveCaretRelatively(
-                    context.editor,
-                    if (element.parameters.isNotEmpty() || reqTypeParams.isNotEmpty()) 1 else 2
-                )
+                EditorModificationUtil.moveCaretRelatively(context.editor, offset)
+            }
+            is MvSpecFunction -> {
+                val requiredTypeParams = element.typeParamsUsedOnlyInReturnType
+                val (suffix, offset) = context.functionSuffixAndOffset(requiredTypeParams, element.parameters)
+
+                document.insertString(context.selectionEndOffset, suffix)
+                EditorModificationUtil.moveCaretRelatively(context.editor, offset)
             }
             is MvStruct_ -> {
                 val insideAcquiresType =

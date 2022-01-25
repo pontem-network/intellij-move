@@ -12,7 +12,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslScope
-import org.move.lang.core.resolve.processItemsInScopesBottomUp
+import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.withParent
 import org.move.lang.core.withSuperParent
@@ -61,7 +61,7 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
             }
             is MvStructFieldRef -> {
                 val itemVis = ItemVis(setOf(Namespace.DOT_ACCESSED_FIELD), msl = element.mslScope)
-                processItemsInScopesBottomUp(element, itemVis) {
+                processItems(element, itemVis) {
                     val field = it.element as? MvStructFieldDef
                     if (field != null) {
                         result.addElement(field.createCompletionLookupElement())

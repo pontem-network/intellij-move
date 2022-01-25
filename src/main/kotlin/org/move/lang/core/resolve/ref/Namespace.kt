@@ -41,6 +41,7 @@ enum class Namespace {
     TYPE,
     SPEC_ITEM,
     SCHEMA,
+    SCHEMA_FIELD,
     MODULE,
     STRUCT_FIELD,
     DOT_ACCESSED_FIELD;

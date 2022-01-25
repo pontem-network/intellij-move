@@ -362,28 +362,6 @@ class RenameTest : MvTestBase() {
         }
     """)
 
-//    fun `test define inside spec module`() = doTest("renamed_reserve_exists", """
-//        module M {
-//            spec module {
-//                define /*caret*/reserve_exists(): bool {
-//                   exists<Reserve>(CoreAddresses::CURRENCY_INFO_ADDRESS())
-//                }
-//
-//                invariant [global] LibraTimestamp::is_operating() ==> reserve_exists()
-//            }
-//        }
-//    """, """
-//        module M {
-//            spec module {
-//                define renamed_reserve_exists(): bool {
-//                   exists<Reserve>(CoreAddresses::CURRENCY_INFO_ADDRESS())
-//                }
-//
-//                invariant [global] LibraTimestamp::is_operating() ==> renamed_reserve_exists()
-//            }
-//        }
-//    """)
-
     private fun doTest(
         newName: String,
         @Language("Move") before: String,

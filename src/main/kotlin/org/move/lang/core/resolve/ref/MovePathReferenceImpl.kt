@@ -13,7 +13,8 @@ fun processModuleItems(
         val found = when (namespace) {
             Namespace.NAME -> processor.matchAll(
                 itemVis.visibilities.flatMap { module.functions(it) },
-                if (itemVis.isMsl) module.specFunctions() else emptyList()
+                if (itemVis.isMsl) module.specFunctions() else emptyList(),
+                if (itemVis.isMsl) module.constBindings() else emptyList()
             )
             Namespace.TYPE -> processor.matchAll(module.structs())
             Namespace.SCHEMA -> processor.matchAll(module.schemas())

@@ -60,3 +60,5 @@ interface MvFQModuleReferenceElement: MvReferenceElement {
 interface MvStructFieldReferenceElement : MvMandatoryReferenceElement
 
 interface MvStructFieldLitReferenceElement: MvMandatoryReferenceElement
+
+interface MvSchemaRefFieldReferenceElement: MvMandatoryReferenceElement

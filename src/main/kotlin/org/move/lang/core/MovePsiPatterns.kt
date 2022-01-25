@@ -147,7 +147,7 @@ object MvPsiPatterns {
 
     fun schemaRef(): PsiElementPattern.Capture<PsiElement> =
         pathIdent()
-            .withSuperParent<MvSchemaRef>(3)
+            .withSuperParent<MvSchemaLit>(3)
 
     fun nameTypeIdentifier(): PsiElementPattern.Capture<PsiElement> =
         pathType()
