@@ -28,7 +28,7 @@ object AddressInModuleDeclCompletionProvider : MvCompletionProvider() {
     ) {
         val element = parameters.position
         val moveProject = element.moveProject ?: return
-        val addresses = moveProject.getAddresses()
+        val addresses = moveProject.addresses()
         for ((name, value) in addresses.entries.sortedBy { it.key }) {
             val lookup = LookupElementBuilder
                 .create(name)
@@ -61,7 +61,7 @@ object AddressesCompletionProvider : MvCompletionProvider() {
     ) {
         val element = parameters.position
         val moveProject = element.moveProject ?: return
-        val addresses = moveProject.getAddresses()
+        val addresses = moveProject.addresses()
         for ((name, value) in addresses.entries.sortedBy { it.key }) {
             val lookup = LookupElementBuilder
                 .create(name)

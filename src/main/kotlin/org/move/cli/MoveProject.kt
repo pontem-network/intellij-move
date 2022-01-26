@@ -3,13 +3,13 @@ package org.move.cli
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.lang.MvFile
-import org.move.lang.moveProject
 import org.move.lang.toMvFile
 import org.move.lang.toNioPathOrNull
-import org.move.openapiext.*
+import org.move.openapiext.contentRoots
+import org.move.openapiext.stringValue
 import org.move.stdext.deepIterateChildrenRecursivery
-import org.toml.lang.psi.TomlKeySegment
 import java.nio.file.Path
+import java.util.*
 
 enum class GlobalScope {
     MAIN, DEV;
@@ -50,101 +50,99 @@ fun testEmptyMvProject(project: Project): MoveProject {
     return MoveProject(project, moveToml, rootFile, addresses, addresses.copy())
 }
 
+fun applyAddressSubstitutions(
+    addresses: DeclaredAddresses,
+    subst: RawAddressMap
+): Pair<AddressMap, PlaceholderMap> {
+    val newDepAddresses = addresses.values.copyMap()
+    val newDepPlaceholders = placeholderMap()
+
+    for ((placeholderName, placeholderKeyValue) in addresses.placeholders.entries) {
+        val placeholderSubst = subst[placeholderName]
+        if (placeholderSubst == null) {
+            newDepPlaceholders[placeholderName] = placeholderKeyValue
+            continue
+        }
+        val (value, keyValue) = placeholderSubst
+        newDepAddresses[placeholderName] = AddressVal(value, keyValue, placeholderKeyValue)
+    }
+    return Pair(newDepAddresses, newDepPlaceholders)
+}
+
 data class MoveProject(
     val project: Project,
     val moveToml: MoveToml,
     val root: VirtualFile,
-    val declaredAddresses: DeclaredAddresses,
+    val declaredAddrs: DeclaredAddresses,
     val declaredDevAddresses: DeclaredAddresses
 ) {
     val packageName: String? get() = moveToml.packageTable?.name
-    val rootPath: Path get() = root.toNioPath()
 
-    fun projectDirPath(name: String): Path = rootPath.resolve(name)
+    val rootPath: Path? get() = root.toNioPathOrNull()
+    fun projectDirPath(name: String): Path? = rootPath?.resolve(name)
 
-    fun getModuleFolders(scope: GlobalScope): List<VirtualFile> {
-        val deps = when (scope) {
-            GlobalScope.MAIN -> moveToml.dependencies
-            GlobalScope.DEV -> moveToml.dependencies + moveToml.dev_dependencies
-        }
+    fun moduleFolders(scope: GlobalScope): List<VirtualFile> {
+        val q = ArrayDeque<ProjectInfo>()
         val folders = mutableListOf<VirtualFile>()
-        val sourcesFolder = root.toNioPathOrNull()?.resolve("sources")?.findVirtualFile()
-        if (sourcesFolder != null) {
-            folders.add(sourcesFolder)
+        val projectInfo = this.projectInfo ?: return emptyList()
+        val s = projectInfo.sourcesFolder
+        if (s != null) {
+            folders.add(s)
         }
-        for (dep in deps.values) {
-            when (dep) {
-                is Dependency.Local -> {
-                    val folder = dep.absoluteLocalPath.resolve("sources").findVirtualFile() ?: continue
-                    if (folder.isDirectory)
-                        folders.add(folder)
-                }
-                is Dependency.Git -> {
-                    val folder = dep.dirPath.resolve("sources").findVirtualFile() ?: continue
-                    if (folder.isDirectory)
-                        folders.add(folder)
-                }
-            }
+        q.add(projectInfo)
+        while (q.isNotEmpty()) {
+            val info = q.pop()
+            val depInfos = info.deps(scope).values.mapNotNull { it.projectInfo(project) }
+            q.addAll(depInfos)
+            folders.addAll(depInfos.mapNotNull { it.sourcesFolder })
         }
         return folders
     }
 
-    fun getAddressTomlKeySegment(addressName: String): TomlKeySegment? {
-        val addressVal = getAddresses()[addressName] ?: return null
-        return addressVal.placeholderKeyValue?.singleSegmentOrNull()
-            ?: addressVal.keyValue?.singleSegmentOrNull()
+    fun declaredAddresses(): DeclaredAddresses {
+        val addresses = mutableAddressMap()
+        val placeholders = placeholderMap()
+        for ((dep, subst) in this.moveToml.dependencies.values) {
+            val depDeclaredAddrs = dep.declaredAddresses(project) ?: continue
+
+            val (newDepAddresses, newDepPlaceholders) = applyAddressSubstitutions(depDeclaredAddrs, subst)
+
+            // renames
+            for ((renamedName, originalVal) in subst.entries) {
+                val (originalName, keyVal) = originalVal
+                val addressVal = depDeclaredAddrs.get(originalName)
+                if (addressVal != null) {
+                    newDepAddresses[renamedName] =
+                        AddressVal(addressVal.value, keyVal, null)
+                }
+            }
+            addresses.putAll(newDepAddresses)
+            placeholders.putAll(newDepPlaceholders)
+        }
+        // add addresses defined in this package
+        addresses.putAll(this.declaredAddrs.values)
+        // add placeholders defined in this package as address values
+        addresses.putAll(this.declaredAddrs.placeholdersAsValues())
+        // add dev-addresses
+        addresses.putAll(this.declaredDevAddresses.values)
+
+        // add placeholders that weren't filled
+        placeholders.putAll(this.declaredAddrs.placeholders)
+
+        return DeclaredAddresses(addresses, placeholders)
+    }
+
+    fun addresses(): AddressMap {
+        return declaredAddresses().values
     }
 
     fun getAddressValue(name: String): String? {
-        val addressVal = getAddresses()[name] ?: return null
+        val addressVal = addresses()[name] ?: return null
         return addressVal.value
     }
 
-    fun getAddresses(): AddressMap {
-        // go through every dependency, extract
-        // 1. MoveProject for that
-        // 2. Substitution mapping for the dependency
-        val addresses = mutableAddressMap()
-        for (dep in this.moveToml.dependencies.values) {
-            if (dep is Dependency.Local) {
-                val moveTomlFile = dep.absoluteLocalPath.resolve("Move.toml")
-                    .findVirtualFile()
-                    ?.toPsiFile(this.project) ?: continue
-                val depDeclaredAddrs = moveTomlFile.moveProject?.declaredAddresses ?: continue
-
-                // apply substitutions
-                val newPlaceholders = placeholderMap()
-                val newAddresses = depDeclaredAddrs.values.copyMap()
-
-                for ((placeholderName, placeholderKeyValue) in depDeclaredAddrs.placeholders.entries) {
-                    val placeholderSubst = dep.subst[placeholderName]
-                    if (placeholderSubst == null) {
-                        newPlaceholders[placeholderName] = placeholderKeyValue
-                        continue
-                    }
-                    val (value, keyValue) = placeholderSubst
-                    newAddresses[placeholderName] = AddressVal(value, keyValue, placeholderKeyValue)
-                }
-                // renames
-                for ((renamedName, originalVal) in dep.subst.entries) {
-                    val (originalName, keyVal) = originalVal
-                    val addressVal = depDeclaredAddrs.get(originalName)
-                    if (addressVal != null) {
-                        addresses[renamedName] =
-                            AddressVal(addressVal.value, keyVal, null)
-                    }
-                }
-                addresses.putAll(newAddresses)
-            }
-        }
-        addresses.putAll(this.declaredAddresses.values)
-        addresses.putAll(this.declaredAddresses.placeholdersAsValues())
-        addresses.putAll(this.declaredDevAddresses.values)
-        return addresses
-    }
-
     fun processModuleFiles(scope: GlobalScope, processFile: (MvModuleFile) -> Boolean) {
-        val folders = getModuleFolders(scope)
+        val folders = moduleFolders(scope)
         for (folder in folders) {
             deepIterateChildrenRecursivery(folder, { it.extension == "move" }) { file ->
                 val moveFile = file.toMvFile(project) ?: return@deepIterateChildrenRecursivery true

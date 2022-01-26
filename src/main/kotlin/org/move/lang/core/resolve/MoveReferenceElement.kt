@@ -2,7 +2,10 @@ package org.move.lang.core.psi
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
-import org.move.lang.core.resolve.ref.*
+import org.move.lang.core.resolve.ref.MvFQModuleReference
+import org.move.lang.core.resolve.ref.MvPathReference
+import org.move.lang.core.resolve.ref.MvReference
+import org.move.lang.core.resolve.ref.NamedAddressReference
 
 interface PsiReferenceElement : PsiElement {
     val identifier: PsiElement?
@@ -19,7 +22,22 @@ interface PsiReferenceElement : PsiElement {
         get() = reference?.resolve() == null
 }
 
-interface NamedAddressReferenceElement : PsiReferenceElement {
+interface PsiMandatoryReferenceElement : PsiElement {
+    val identifier: PsiElement
+
+    val referenceNameElement: PsiElement
+        get() = identifier
+
+    val referenceName: String
+        get() = identifier.text
+
+    override fun getReference(): PsiReference
+
+    val isUnresolved: Boolean
+        get() = reference.resolve() == null
+}
+
+interface NamedAddressReferenceElement : PsiMandatoryReferenceElement {
 
     override fun getReference(): NamedAddressReference
 }
@@ -29,7 +47,7 @@ interface MvReferenceElement : PsiReferenceElement, MvElement {
     override fun getReference(): MvReference?
 }
 
-interface MvMandatoryReferenceElement: MvReferenceElement {
+interface MvMandatoryReferenceElement : MvReferenceElement {
     override val identifier: PsiElement
 
     override val referenceNameElement: PsiElement get() = identifier
@@ -49,16 +67,16 @@ interface MvMandatoryReferenceElement: MvReferenceElement {
 //    override fun getReference(): MvReference
 //}
 
-interface MvPathReferenceElement: MvReferenceElement {
+interface MvPathReferenceElement : MvReferenceElement {
     override fun getReference(): MvPathReference?
 }
 
-interface MvFQModuleReferenceElement: MvReferenceElement {
+interface MvFQModuleReferenceElement : MvReferenceElement {
     override fun getReference(): MvFQModuleReference?
 }
 
 interface MvStructFieldReferenceElement : MvMandatoryReferenceElement
 
-interface MvStructFieldLitReferenceElement: MvMandatoryReferenceElement
+interface MvStructFieldLitReferenceElement : MvMandatoryReferenceElement
 
-interface MvSchemaRefFieldReferenceElement: MvMandatoryReferenceElement
+interface MvSchemaRefFieldReferenceElement : MvMandatoryReferenceElement

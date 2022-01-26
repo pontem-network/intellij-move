@@ -78,10 +78,11 @@ sealed interface TestConfig {
             return when (location) {
                 is PsiDirectory -> {
                     val locationPath = location.virtualFile.toNioPathOrNull() ?: return null
-                    if (locationPath == moveProject.rootPath
+                    val rootPath = moveProject.rootPath ?: return null
+                    if (locationPath == rootPath
                         || locationPath == moveProject.projectDirPath(MvProjectLayout.testsDir)
                     ) {
-                        return Package(packageName, moveProject.rootPath)
+                        return Package(packageName, rootPath)
                     }
                     null
                 }

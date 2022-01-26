@@ -29,9 +29,8 @@ class NamedAddressReference(element: MvNamedAddress) : PsiReferenceBase<MvNamedA
     }
 
     override fun resolve(): TomlKeySegment? {
-        val addressName = element.referenceName ?: return null
-        return element
-            .moveProject
-            ?.getAddressTomlKeySegment(addressName)
+        val addressName = element.referenceName
+        val addressVal = element.moveProject?.addresses()?.get(addressName) ?: return null
+        return addressVal.tomlKeySegment
     }
 }

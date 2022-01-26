@@ -95,13 +95,13 @@ fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
     return resolved.fqModuleRef
 }
 
-private fun processQualModuleRefInFile(
-    qualModuleRef: MvFQModuleRef,
+private fun processModules(
+    fqModuleRef: MvFQModuleRef,
     file: MvFile,
     processor: MatchingProcessor,
 ): Boolean {
-    val moveProject = qualModuleRef.moveProject ?: return false
-    val sourceNormalizedAddress = qualModuleRef.addressRef.toNormalizedAddress(moveProject)
+    val moveProject = fqModuleRef.moveProject ?: return false
+    val sourceNormalizedAddress = fqModuleRef.addressRef.toNormalizedAddress(moveProject)
 
     var resolved = false
     val visitor = object : MvVisitor() {
@@ -120,21 +120,21 @@ private fun processQualModuleRefInFile(
     return resolved
 }
 
-fun processQualModuleRef(
-    qualModuleRef: MvFQModuleRef,
+fun processFQModuleRef(
+    fqModuleRef: MvFQModuleRef,
     processor: MatchingProcessor,
 ) {
     // first search modules in the current file
-    val containingFile = qualModuleRef.containingFile as? MvFile ?: return
-    var stopped = processQualModuleRefInFile(qualModuleRef, containingFile, processor)
+    val currentFile = fqModuleRef.containingMoveFile ?: return
+    var stopped = processModules(fqModuleRef, currentFile, processor)
     if (stopped) return
 
-    val moveProject = containingFile.moveProject ?: return
+    val moveProject = currentFile.moveProject ?: return
     moveProject.processModuleFiles(GlobalScope.MAIN) { moduleFile ->
         // skip current file as it's processed already
-        if (moduleFile.file.toNioPathOrNull() == containingFile.toNioPathOrNull())
+        if (moduleFile.file.toNioPathOrNull() == currentFile.toNioPathOrNull())
             return@processModuleFiles true
-        stopped = processQualModuleRefInFile(qualModuleRef, moduleFile.file, processor)
+        stopped = processModules(fqModuleRef, moduleFile.file, processor)
         // if not resolved, returns true to indicate that next file should be tried
         !stopped
     }

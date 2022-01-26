@@ -3,6 +3,9 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiReference
 import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry
+import org.move.cli.AddressVal
+import org.move.cli.MoveProject
+import org.move.cli.moveProjects
 import org.move.lang.core.psi.MvElementImpl
 import org.move.lang.core.psi.MvNamedAddress
 import org.move.lang.core.resolve.ref.NamedAddressReference
@@ -21,7 +24,7 @@ fun TomlKeySegment.isNamedAddressDef(): Boolean {
 }
 
 abstract class MvNamedAddressMixin(node: ASTNode) : MvElementImpl(node),
-                                                      MvNamedAddress {
+                                                    MvNamedAddress {
     override fun getReferences(): Array<PsiReference> {
         return ReferenceProvidersRegistry.getReferencesFromProviders(this)
     }
