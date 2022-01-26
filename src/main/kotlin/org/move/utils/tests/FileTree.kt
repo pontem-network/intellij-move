@@ -71,7 +71,7 @@ interface FileTreeBuilder {
     fun toml(name: String, @Language("TOML") code: String = "") = file(name, code)
 
     fun moveToml(@Language("TOML") code: String = "") = file("Move.toml", code)
-    fun buildInfo(@Language("yaml") code: String = "") = file("BuildInfo.yaml", code)
+    fun buildInfoYaml(@Language("yaml") code: String = "") = file("BuildInfo.yaml", code)
 
     fun sources(builder: FileTreeBuilder.() -> Unit) = dir("sources", builder)
     fun build(builder: FileTreeBuilder.() -> Unit) = dir("build", builder)

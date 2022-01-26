@@ -151,6 +151,31 @@ class NamedAddressValuesTest : MvProjectTestCase() {
         })
     }
 
+    fun `test named address from git dependency`() = checkByFileTree {
+        build {
+            dir("Stdlib") {
+                buildInfoYaml("""
+---
+compiled_package_info:
+  package_name: Stdlib
+  address_alias_instantiation:
+    Std: "0000000000000000000000000000000000000000000000000000000000000002"
+dependencies: []
+                """)
+            }
+        }
+        moveToml("""
+    [dependencies]
+    Stdlib = { git = "https://github.com/pontem-network/move-stdlib.git", rev = "12c5488729b8377b90f247537459f16ef1383d43"}          
+        """)
+        sources {
+            move("main.move", """
+            module Std::Module {}
+                  //^ 0x2
+            """)
+        }
+    }
+
     private fun checkByFileTree(
         fileTree: FileTreeBuilder.() -> Unit,
     ) {

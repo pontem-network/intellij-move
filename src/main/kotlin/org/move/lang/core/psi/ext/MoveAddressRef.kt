@@ -11,8 +11,8 @@ fun MvAddressRef.toAddress(contextProject: MoveProject? = this.moveProject): Add
         val refName = namedAddress.referenceName
         return contextProject?.getAddressValue(refName)?.let { Address(it) }
     }
-    val addressLit = diemAddress?.text ?: bech32Address?.text ?: return null
-    return Address(addressLit)
+    val addressLitText = diemAddress?.text ?: bech32Address?.text ?: return null
+    return Address(addressLitText)
 }
 
 fun MvAddressRef.toNormalizedAddress(contextProject: MoveProject = this.moveProject!!): Address? =

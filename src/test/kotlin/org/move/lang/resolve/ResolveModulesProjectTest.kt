@@ -137,6 +137,14 @@ class ResolveModulesProjectTest : ResolveProjectTestCase() {
                     """
                     )
                 }
+                buildInfoYaml("""
+---
+compiled_package_info:
+  package_name: Stdlib
+  address_alias_instantiation:
+    Std: "0000000000000000000000000000000000000000000000000000000000000002"
+dependencies: []
+                """)
             }
         }
         moveToml(
@@ -169,6 +177,14 @@ class ResolveModulesProjectTest : ResolveProjectTestCase() {
                     """
                     )
                 }
+                buildInfoYaml("""
+---
+compiled_package_info:
+  package_name: Stdlib
+  address_alias_instantiation:
+    Std: "0000000000000000000000000000000000000000000000000000000000000002"
+dependencies: []
+                """)
             }
         }
         moveToml(
@@ -188,6 +204,70 @@ class ResolveModulesProjectTest : ResolveProjectTestCase() {
             }    
             """
             )
+        }
+    }
+
+    fun `test resolve module from git transitive dependency`() = checkByFileTree {
+        build {
+            dir("MoveStdlib") {
+                buildInfoYaml("""
+---
+compiled_package_info:
+  package_name: MoveStdlib
+  address_alias_instantiation:
+    Std: "0000000000000000000000000000000000000000000000000000000000000002"
+  module_resolution_metadata:
+  source_digest: 2C309D3225F22451CD0BCB9C2D6655FB3CADCEB5091983160E9FF3573BBF7797
+  build_flags:
+    dev_mode: false
+    test_mode: false
+    generate_docs: false
+    generate_abis: false
+    install_dir: ~
+    force_recompilation: false
+    additional_named_addresses: {}
+dependencies: []
+                """)
+                sources {
+                    move("module.move", """
+                    module Std::Module {}    
+                                //X
+                    """)
+                }
+            }
+            dir("PontStdlib") {
+                buildInfoYaml("""
+---
+compiled_package_info:
+  package_name: PontStdlib
+  address_alias_instantiation:
+    Std: "0000000000000000000000000000000000000000000000000000000000000002"  
+  module_resolution_metadata:
+  source_digest: 2C309D3225F22451CD0BCB9C2D6655FB3CADCEB5091983160E9FF3573BBF7797
+  build_flags:
+    dev_mode: false
+    test_mode: false
+    generate_docs: false
+    generate_abis: false
+    install_dir: ~
+    force_recompilation: false
+    additional_named_addresses: {}
+dependencies: 
+  - MoveStdlib
+                """)
+            }
+        }
+        moveToml("""
+        [dependencies]
+        PontStdlib = { git = "", rev = "" }    
+        """)
+        sources {
+            move("main.move", """
+            module Std::M {
+                use Std::Module;
+                        //^
+            }    
+            """)
         }
     }
 }

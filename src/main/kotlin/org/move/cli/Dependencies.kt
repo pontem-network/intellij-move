@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.lang.moveProject
 import org.move.openapiext.findVirtualFile
+import org.move.openapiext.resolveExisting
 import org.move.openapiext.toPsiFile
 import java.nio.file.Path
 
@@ -12,7 +13,7 @@ data class ProjectInfo(
     val dependencies: DependenciesMap,
     val dev_dependencies: DependenciesMap,
 ) {
-    val sourcesFolder: VirtualFile? get() = rootPath.resolve("sources").findVirtualFile()
+    val sourcesFolder: VirtualFile? get() = rootPath.resolveExisting("sources")?.findVirtualFile()
 
     fun deps(scope: GlobalScope): DependenciesMap {
         return when (scope) {
@@ -46,7 +47,7 @@ sealed class Dependency {
         }
 
         override fun projectInfo(project: Project): ProjectInfo? {
-            val moveTomlPath = absoluteLocalPath.resolve("Move.toml") ?: return null
+            val moveTomlPath = absoluteLocalPath.resolve("Move.toml")
             val p = project.moveProjects.findProjectForPath(moveTomlPath) ?: return null
             return p.projectInfo
         }
@@ -54,15 +55,26 @@ sealed class Dependency {
 
     data class Git(val dirPath: Path) : Dependency() {
         override fun projectInfo(project: Project): ProjectInfo? {
-            return ProjectInfo(
-                dirPath,
-                mutableMapOf(),
-                mutableMapOf(),
-            )
+            val buildInfo = BuildInfo.fromRootPath(dirPath) ?: return null
+            val buildDir = dirPath.parent
+
+            val dependencies = dependenciesMap()
+            for (depName in buildInfo.dependencies) {
+                val depDir = buildDir.resolveExisting(depName) ?: continue
+                dependencies[depName] = Git(depDir)
+            }
+            return ProjectInfo(dirPath, dependencies, dependencies)
         }
 
         override fun declaredAddresses(project: Project): DeclaredAddresses? {
-            return DeclaredAddresses(mutableAddressMap(), mutableMapOf())
+            val buildInfo = BuildInfo.fromRootPath(dirPath) ?: return null
+            val addresses = buildInfo
+                .compiledPackageInfo.address_alias_instantiation
+                .mapValues {
+                    AddressVal.fromYamlAddress(it.value)
+                }
+                .toMutableMap()
+            return DeclaredAddresses(addresses, mutableMapOf())
         }
     }
 }

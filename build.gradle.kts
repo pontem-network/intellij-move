@@ -37,6 +37,8 @@ dependencies {
     // kotlin stdlib source code
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    // https://mvnrepository.com/artifact/org.yaml/snakeyaml
+    implementation("org.yaml:snakeyaml:1.29")
     testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
 }
 

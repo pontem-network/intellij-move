@@ -15,7 +15,7 @@ class NamedAddressReference(element: MvNamedAddress) : PsiReferenceBase<MvNamedA
     override fun hashCode(): Int = element.hashCode()
 
     override fun calculateDefaultRangeInElement(): TextRange {
-        val anchor = element.referenceNameElement ?: return TextRange.EMPTY_RANGE
+        val anchor = element.referenceNameElement
         return TextRange.from(
             anchor.startOffsetInParent,
             anchor.textLength

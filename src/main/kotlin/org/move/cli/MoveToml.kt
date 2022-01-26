@@ -1,6 +1,7 @@
 package org.move.cli
 
 import com.intellij.openapi.project.Project
+import org.move.lang.core.types.Address
 import org.move.openapiext.*
 import org.move.stdext.chain
 import org.toml.lang.psi.*
@@ -18,6 +19,12 @@ data class AddressVal(
             return this.placeholderKeyValue?.singleSegmentOrNull()
                 ?: this.keyValue?.singleSegmentOrNull()
         }
+
+    companion object {
+        fun fromYamlAddress(text: String): AddressVal {
+            return AddressVal(text, null, null)
+        }
+    }
 }
 
 typealias RawAddressMap = MutableMap<String, RawAddressVal>
@@ -33,6 +40,7 @@ fun DepsSubstMap.asDependenciesMap(): DependenciesMap {
 
 fun mutableRawAddressMap(): RawAddressMap = mutableMapOf()
 fun mutableAddressMap(): AddressMap = mutableMapOf()
+fun dependenciesMap(): DependenciesMap = mutableMapOf()
 fun placeholderMap(): PlaceholderMap = mutableMapOf()
 
 fun AddressMap.copyMap(): AddressMap = this.toMutableMap()

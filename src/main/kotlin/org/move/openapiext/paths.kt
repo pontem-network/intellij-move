@@ -6,6 +6,11 @@ import com.intellij.util.io.exists
 import java.nio.file.Path
 import java.nio.file.Paths
 
+fun Path.resolveExisting(other: String): Path? {
+    val path = resolve(other)
+    return if (path.exists()) path else null
+}
+
 fun Path.resolveAbsPath(other: String): Path? {
     val rawPath = Paths.get(other)
     if (rawPath.isAbsolute && rawPath.exists()) return rawPath

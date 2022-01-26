@@ -3,6 +3,7 @@ package org.move.cli
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.lang.MvFile
+import org.move.lang.core.types.Address
 import org.move.lang.toMvFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
@@ -138,7 +139,8 @@ data class MoveProject(
 
     fun getAddressValue(name: String): String? {
         val addressVal = addresses()[name] ?: return null
-        return addressVal.value
+        val address = Address(addressVal.value)
+        return address.normalized().shortText()
     }
 
     fun processModuleFiles(scope: GlobalScope, processFile: (MvModuleFile) -> Boolean) {
