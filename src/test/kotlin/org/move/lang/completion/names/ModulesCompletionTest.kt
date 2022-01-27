@@ -50,4 +50,30 @@ class ModulesCompletionTest : CompletionTestCase() {
         }
         """
     )
+
+    fun `test complete Self item`() = doSingleCompletion("""
+    module 0x1::Signer {} 
+    module 0x1::M {
+        use 0x1::Signer::{Se/*caret*/};
+    }    
+    """, """
+    module 0x1::Signer {} 
+    module 0x1::M {
+        use 0x1::Signer::{Self/*caret*/};
+    }    
+    """)
+
+    fun `test no Self completion if already imported in this block`() = checkNoCompletion("""
+    module 0x1::Signer {} 
+    module 0x1::M {
+        use 0x1::Signer::{Self, Se/*caret*/};
+    }    
+    """)
+
+    fun `test no Self completion without block`() = checkNoCompletion("""
+    module 0x1::Signer {} 
+    module 0x1::M {
+        use 0x1::Signer::Se/*caret*/;
+    }    
+    """)
 }

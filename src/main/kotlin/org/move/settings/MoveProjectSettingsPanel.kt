@@ -21,7 +21,10 @@ class VersionLabel: JLabel() {
             this.text = "N/A"
             this.foreground = JBColor.RED
         } else {
+            // preformat version in case of multiline string
             this.text = version
+                .split("\n")
+                .joinToString("<br>", "<html>", "</html>")
             this.foreground = JBColor.foreground()
         }
     }

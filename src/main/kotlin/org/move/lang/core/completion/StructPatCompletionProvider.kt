@@ -2,19 +2,16 @@ package org.move.lang.core.completion
 
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
-import com.intellij.codeInsight.completion.InsertHandler
-import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvLetStatement
-import org.move.lang.core.psi.MvStruct_
 import org.move.lang.core.psi.containingModule
-import org.move.lang.core.psi.ext.fields
 import org.move.lang.core.psiElement
+import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.MslScope
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
@@ -35,11 +32,10 @@ object StructPatCompletionProvider : MvCompletionProvider() {
         val bindingPat = parameters.position.parent as MvBindingPat
         val module = bindingPat.containingModule ?: return
 
-        processModuleItems(module, setOf(Visibility.Internal), setOf(Namespace.TYPE)) {
-            if (it.element != null) {
-                val lookup = it.element.createLookupElement()
-                result.addElement(lookup)
-            }
+        val itemVis = ItemVis(setOf(Namespace.TYPE), setOf(Visibility.Internal), MslScope.NONE)
+        processModuleItems(module, itemVis) {
+            val lookup = it.element.createCompletionLookupElement()
+            result.addElement(lookup)
             false
 
         }

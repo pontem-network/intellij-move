@@ -1,5 +1,6 @@
 package org.move.lang.core.resolve.ref
 
+import com.intellij.openapi.util.TextRange
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.wrapWithList
 import org.move.lang.core.psi.ext.isSelf

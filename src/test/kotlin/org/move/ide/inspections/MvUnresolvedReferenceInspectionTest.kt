@@ -182,4 +182,13 @@ class MvUnresolvedReferenceInspectionTest : InspectionsTestCase(MvUnresolvedRefe
         }
     }    
     """)
+
+    fun `test no unresolved reference for result variable in specs`() = checkByText("""
+    module 0x1::M {
+        fun call(): u8 { 1 }
+        spec call {
+            ensures result >= 1;
+        }
+    }    
+    """)
 }

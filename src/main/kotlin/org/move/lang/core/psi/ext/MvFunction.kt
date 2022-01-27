@@ -62,6 +62,8 @@ val MvFunction.isBuiltinFunc get() = this.isNative && this.name in BUILTIN_FUNCT
 
 val MvFunction.parameters get() = this.functionParameterList?.functionParameterList.orEmpty()
 
+val MvFunction.parameterBindings get() = this.parameters.map { it.bindingPat }
+
 val MvFunction.typeParameters get() = this.typeParameterList?.typeParameterList.orEmpty()
 
 val MvFunction.acquiresPathTypes: List<MvPathType> get() = this.acquiresType?.pathTypeList.orEmpty()
@@ -79,7 +81,7 @@ val MvFunction.resolvedReturnTy: Ty
         }
     }
 
-val MvFunction.retTypeOnlyTypeParams: List<MvTypeParameter>
+val MvFunction.typeParamsUsedOnlyInReturnType: List<MvTypeParameter>
     get() {
         val usedTypeParams = mutableSetOf<MvTypeParameter>()
         this.parameters

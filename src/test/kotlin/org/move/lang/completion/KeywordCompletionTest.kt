@@ -3,17 +3,21 @@ package org.move.lang.completion
 import org.move.utils.tests.completion.CompletionTestCase
 
 class KeywordCompletionTest : CompletionTestCase() {
-    fun `test address`() = doSingleCompletion("""
+    fun `test address`() = doSingleCompletion(
+        """
         addr/*caret*/    
     """, """
         address /*caret*/    
-    """)
+    """
+    )
 
-    fun `test top level module`() = doSingleCompletion("""
+    fun `test top level module`() = doSingleCompletion(
+        """
         mod/*caret*/    
     """, """
         module /*caret*/    
-    """)
+    """
+    )
 
 //    fun `test script keyword completion if brace is present`() = doSingleCompletion("""
 //        scr/*caret*/ {}
@@ -21,17 +25,22 @@ class KeywordCompletionTest : CompletionTestCase() {
 //        script/*caret*/ {}
 //    """)
 
-    fun `test fun cannot be top-level`() = checkNoCompletion("""
+    fun `test fun cannot be top-level`() = checkNoCompletion(
+        """
         fu/*caret*/    
-    """)
+    """
+    )
 
-    fun `test fun cannot be in address`() = checkNoCompletion("""
+    fun `test fun cannot be in address`() = checkNoCompletion(
+        """
         address 0x0 {
             fu/*caret*/
         }
-    """)
+    """
+    )
 
-    fun `test module in address`() = doSingleCompletion("""
+    fun `test module in address`() = doSingleCompletion(
+        """
        address 0x0 {
            mod/*caret*/     
        } 
@@ -39,7 +48,8 @@ class KeywordCompletionTest : CompletionTestCase() {
        address 0x0 {
            module /*caret*/     
        } 
-    """)
+    """
+    )
 
     fun `test only module keyword in address`() = completionFixture.checkNotContainsCompletion(
         """ address 0x0 { /*caret*/ }""",
@@ -51,21 +61,26 @@ class KeywordCompletionTest : CompletionTestCase() {
         listOf("struct", "public", "fun", "const", "use", "friend", "native", "spec")
     )
 
-    fun `test space after declaration`() = doSingleCompletion("""
+    fun `test space after declaration`() = doSingleCompletion(
+        """
             module 0x1::M { fu/*caret*/ }
         """, """
             module 0x1::M { fun /*caret*/ }
-        """)
+        """
+    )
 
     fun `test no completion in address literal`() = checkNoCompletion(
         " address /*caret*/ {} "
     )
 
-    fun `test no completion in module name`() = checkNoCompletion("""
+    fun `test no completion in module name`() = checkNoCompletion(
+        """
             module /*caret*/ {} 
-        """)
+        """
+    )
 
-    fun `test function let completion`() = doFirstCompletion("""
+    fun `test function let completion`() = doFirstCompletion(
+        """
             script { 
                 fun main() {
                     le/*caret*/ 
@@ -80,16 +95,19 @@ class KeywordCompletionTest : CompletionTestCase() {
         """
     )
 
-    fun `test no completion in let name`() = checkNoCompletion("""
+    fun `test no completion in let name`() = checkNoCompletion(
+        """
             script { 
                 fun main() {
                     let name = 1;
                     let n/*caret*/ 
                 }
             } 
-        """)
+        """
+    )
 
-    fun `test spec`() = doSingleCompletion("""
+    fun `test spec`() = doSingleCompletion(
+        """
         module 0x1::M {
             sp/*caret*/
         }
@@ -97,66 +115,76 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             spec /*caret*/
         }
+    """
+    )
+
+    fun `test spec fun`() = doSingleCompletion("""
+        module 0x1::M {
+            spec f/*caret*/
+        }
+    """, """
+        module 0x1::M {
+            spec fun /*caret*/
+        }
     """)
 
-//    fun `test spec fun`() = doSingleCompletion("""
-//        module 0x1::M {
-//            spec f/*caret*/
-//        }
-//    """, """
-//        module 0x1::M {
-//            spec fun /*caret*/
-//        }
-//    """)
+    fun `test spec module`() = doSingleCompletion("""
+        module 0x1::M {
+            spec mod/*caret*/
+        }
+    """, """
+        module 0x1::M {
+            spec module /*caret*/
+        }
+    """)
 
-//    fun `test spec module`() = doSingleCompletion("""
-//        module 0x1::M {
-//            spec mod/*caret*/
-//        }
-//    """, """
-//        module 0x1::M {
-//            spec module /*caret*/
-//        }
-//    """)
+    fun `test spec schema`() = doSingleCompletion("""
+        module 0x1::M {
+            spec sch/*caret*/
+        }
+    """, """
+        module 0x1::M {
+            spec schema /*caret*/
+        }
+    """)
 
-//    fun `test spec schema`() = doSingleCompletion("""
-//        module 0x1::M {
-//            spec sch/*caret*/
-//        }
-//    """, """
-//        module 0x1::M {
-//            spec schema /*caret*/
-//        }
-//    """)
-
-    fun `test public`() = completionFixture.checkContainsCompletion("""
+    fun `test public`() = completionFixture.checkContainsCompletion(
+        """
         module 0x1::M {
             pub/*caret*/
         }
-    """, listOf("public", "public(script)", "public(friend)"))
+    """, listOf("public", "public(script)", "public(friend)")
+    )
 
-    fun `test public with other function`() = checkContainsCompletion("public","""
+    fun `test public with other function`() = checkContainsCompletion(
+        "public", """
         module 0x1::M {
             pub/*caret*/
             
             public fun main() {}
         }
-    """)
+    """
+    )
 
-    fun `test public after end of function`() = checkContainsCompletion("public","""
+    fun `test public after end of function`() = checkContainsCompletion(
+        "public", """
         module 0x1::M { 
             public fun main() {}
             pub/*caret*/
         }
-    """)
+    """
+    )
 
-    fun `test public before fun`() = checkContainsCompletion("public", """
+    fun `test public before fun`() = checkContainsCompletion(
+        "public", """
         module 0x1::M {
             pub/*caret*/ fun main() {}
         }
-    """)
+    """
+    )
 
-    fun `test native before fun`() = doSingleCompletion("""
+    fun `test native before fun`() = doSingleCompletion(
+        """
         module 0x1::M {
             nat/*caret*/ fun main() {}
         }
@@ -164,15 +192,19 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             native/*caret*/ fun main() {}
         }
-    """)
+    """
+    )
 
-    fun `test native fun to public`() = checkContainsCompletion("public","""
+    fun `test native fun to public`() = checkContainsCompletion(
+        "public", """
         module 0x1::M {
             native pub/*caret*/ fun main();
         }
-    """)
+    """
+    )
 
-    fun `test public fun`() = doSingleCompletion("""
+    fun `test public fun`() = doSingleCompletion(
+        """
         module 0x1::M {
             public f/*caret*/
         }
@@ -180,9 +212,11 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             public fun /*caret*/
         }
-    """)
+    """
+    )
 
-    fun `test public(script) fun`() = doSingleCompletion("""
+    fun `test public(script) fun`() = doSingleCompletion(
+        """
         module 0x1::M {
             public(script) f/*caret*/
         }
@@ -190,9 +224,11 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             public(script) fun /*caret*/
         }
-    """)
+    """
+    )
 
-    fun `test native fun`() = doSingleCompletion("""
+    fun `test native fun`() = doSingleCompletion(
+        """
         module 0x1::M {
             native fu/*caret*/
         }
@@ -200,9 +236,11 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             native fun /*caret*/
         }
-    """)
+    """
+    )
 
-    fun `test native public fun`() = doSingleCompletion("""
+    fun `test native public fun`() = doSingleCompletion(
+        """
         module 0x1::M {
             native public f/*caret*/
         }
@@ -210,15 +248,19 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             native public fun /*caret*/
         }
-    """)
+    """
+    )
 
-    fun `test no completion in bound if no colon`() = checkNoCompletion("""
+    fun `test no completion in bound if no colon`() = checkNoCompletion(
+        """
         module 0x1::M {
             struct MyStruct<T cop/*caret*/> {}
         }
-    """)
+    """
+    )
 
-    fun `test copy bound`() = doSingleCompletion("""
+    fun `test copy bound`() = doSingleCompletion(
+        """
         module 0x1::M {
             struct MyStruct<T: cop/*caret*/> {}
         }
@@ -226,9 +268,11 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             struct MyStruct<T: copy/*caret*/> {}
         }
-    """)
+    """
+    )
 
-    fun `test store bound`() = doSingleCompletion("""
+    fun `test store bound`() = doSingleCompletion(
+        """
         module 0x1::M {
             struct MyStruct<T: st/*caret*/> {}
         }
@@ -236,15 +280,19 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             struct MyStruct<T: store/*caret*/> {}
         }
-    """)
+    """
+    )
 
-    fun `test resource bound`() = checkNoCompletion("""
+    fun `test resource bound`() = checkNoCompletion(
+        """
         module 0x1::M {
             struct MyStruct<T: res/*caret*/> {}
         }
-    """)
+    """
+    )
 
-    fun `test acquires keyword`() = doSingleCompletion("""
+    fun `test acquires keyword`() = doSingleCompletion(
+        """
         module 0x1::M {
             fun main() acq/*caret*/{}
         }
@@ -252,9 +300,12 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             fun main() acquires /*caret*/{}
         }
-    """)
-//
-    fun `test acquires after return type`() = doSingleCompletion("""
+    """
+    )
+
+    //
+    fun `test acquires after return type`() = doSingleCompletion(
+        """
         module 0x1::M {
             fun main(): u8 acq/*caret*/ {}
         }
@@ -262,9 +313,11 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             fun main(): u8 acquires /*caret*/ {}
         }
-    """)
+    """
+    )
 
-    fun `test acquires after reference return type`() = doSingleCompletion("""
+    fun `test acquires after reference return type`() = doSingleCompletion(
+        """
         module 0x1::M {
             fun main(): &u8 acq/*caret*/ {}
         }
@@ -272,33 +325,43 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             fun main(): &u8 acquires /*caret*/ {}
         }
-    """)
+    """
+    )
 
-    fun `test no acquires after colon`() = checkNoCompletion("""
+    fun `test no acquires after colon`() = checkNoCompletion(
+        """
         module 0x1::M {
             fun call(): acq/*caret*/ {}
         }
-    """)
+    """
+    )
 
-    fun `test no acquires after fun keyword`() = checkNoCompletion("""
+    fun `test no acquires after fun keyword`() = checkNoCompletion(
+        """
         module 0x1::M {
             fun acq/*caret*/ {}
         }
-    """)
+    """
+    )
 
-    fun `test no acquires inside param list`() = checkNoCompletion("""
+    fun `test no acquires inside param list`() = checkNoCompletion(
+        """
         module 0x1::M {
             fun main(acq/*caret*/ {}
         }
-    """)
+    """
+    )
 
-    fun `test no acquires inside return type`() = checkNoCompletion("""
+    fun `test no acquires inside return type`() = checkNoCompletion(
+        """
         module 0x1::M {
             fun main(): acq/*caret*/ {}
         }
-    """)
+    """
+    )
 
-    fun `test native struct`() = doSingleCompletion("""
+    fun `test native struct`() = doSingleCompletion(
+        """
         module 0x1::M {
             native stru/*caret*/
         }
@@ -306,13 +369,16 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             native struct /*caret*/
         }
-    """)
+    """
+    )
 
-    fun `test visibility modifiers`() = completionFixture.checkContainsCompletion("""
+    fun `test visibility modifiers`() = completionFixture.checkContainsCompletion(
+        """
        module 0x1::M {
         pub/*caret*/ fun main() {}
        }    
-    """, listOf("public", "public(script)", "public(friend)"))
+    """, listOf("public", "public(script)", "public(friend)")
+    )
 
 //    fun `test public(script) without leading fun adds fun`() = doSingleCompletion("""
 //    module 0x1::M {
@@ -334,16 +400,19 @@ class KeywordCompletionTest : CompletionTestCase() {
 //    }
 //    """)
 
-    fun `test no expression keywords at field name position in struct literal`() = checkNoCompletion("""
+    fun `test no expression keywords at field name position in struct literal`() = checkNoCompletion(
+        """
     module 0x1::M {
         struct S { field: u8 }
         fun m() {
             let s = S { ret/*caret*/ };
         }
     }    
-    """)
+    """
+    )
 
-    fun `test phantom keyword in struct generic`() = doSingleCompletion("""
+    fun `test phantom keyword in struct generic`() = doSingleCompletion(
+        """
     module 0x1::M {
         struct S<ph/*caret*/>
     }    
@@ -351,9 +420,11 @@ class KeywordCompletionTest : CompletionTestCase() {
     module 0x1::M {
         struct S<phantom /*caret*/>
     }    
-    """)
+    """
+    )
 
-    fun `test phantom keyword in struct generic second param`() = doSingleCompletion("""
+    fun `test phantom keyword in struct generic second param`() = doSingleCompletion(
+        """
     module 0x1::M {
         struct S<Type, ph/*caret*/>
     }    
@@ -361,9 +432,11 @@ class KeywordCompletionTest : CompletionTestCase() {
     module 0x1::M {
         struct S<Type, phantom /*caret*/>
     }    
-    """)
+    """
+    )
 
-    fun `test phantom keyword in struct generic before existing type`() = doSingleCompletion("""
+    fun `test phantom keyword in struct generic before existing type`() = doSingleCompletion(
+        """
     module 0x1::M {
         struct S<ph/*caret*/CoinType>
     }    
@@ -371,5 +444,36 @@ class KeywordCompletionTest : CompletionTestCase() {
     module 0x1::M {
         struct S<phantom /*caret*/CoinType>
     }    
-    """)
+    """
+    )
+
+    fun `test spec keywords completion`() = doSingleCompletion(
+        """
+    module 0x1::M {
+        spec module {
+            incl/*caret*/
+        }
+    }    
+    """, """
+    module 0x1::M {
+        spec module {
+            include /*caret*/
+        }
+    }    
+    """
+    )
+
+    fun `test spec keywords completion all`() = checkContainsCompletion(
+        listOf(
+            "include", "assume", "assert", "requires", "modifies", "ensures", "aborts_if", "aborts_with",
+            "invariant", "apply", "let", "use"
+        ),
+        """
+    module 0x1::M {
+        spec module {
+            /*caret*/
+        }
+    }    
+    """
+    )
 }

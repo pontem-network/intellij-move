@@ -103,7 +103,9 @@
         ADDRESS     = 'address_kw'
         HAS     = 'has_kw'
         FRIEND     = 'friend_kw'
-        SCHEMA     = 'schema_kw'
+
+        STRUCT_KW     = 'struct'
+        SCHEMA_KW     = 'schema_kw'
 
         LOCAL     = 'local_kw'
         GLOBAL     = 'global_kw'
@@ -201,6 +203,7 @@ ModuleDef ::= Attr* module (AddressRef '::')? IDENTIFIER ModuleBlock
     mixin = "org.move.lang.core.psi.ext.MvModuleDefMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
+
 ModuleBlock ::= '{' ModuleBlockItems '}'
 {
     pin = 1
@@ -212,19 +215,20 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
     recoverWhile = Item_recover
 }
 // top-level recovery
-private Item_first ::= use | public | native | fun | const | struct | spec | friend | Attr
+private Item_first ::= use | public | native | fun | const | STRUCT_KW | spec | friend | Attr
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= ImportStatement | FriendStatement
                             | StructItem
                             | FunctionItem
-                            | SpecFunctionDef | SpecNativeFunctionDef | UninterpretedSpecFunctionDef
+                            | SpecFunctionImpl
                             | ConstDef
+                            | Schema
                             | SpecDef
 
-ConstDef ::= const BindingPat TypeAnnotation Initializer ';'
+ConstDef ::= Attr* const BindingPat TypeAnnotation Initializer ';'
 {
-    pin = 1
+    pin = "const"
     implements = [
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
     ]
@@ -234,15 +238,77 @@ ConstDef ::= const BindingPat TypeAnnotation Initializer ';'
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-SpecFunctionDef ::= (spec FunctionSignature) SpecBlock
-SpecNativeFunctionDef ::= (spec native) FunctionSignature ';' { pin = 1 }
-UninterpretedSpecFunctionDef ::= spec FunctionSignature ';'
+fake SpecFunction ::= spec native? fun IDENTIFIER? TypeParameterList?
+                        FunctionParameterList? ReturnType?
+                        (';' | CodeBlock)?
+{
+    implements = [
+        "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.psi.MvTypeParametersOwner"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvSpecFunctionMixin"
 
-FunctionDefSpecStatement ::= FunctionSignature SpecBlock
-NativeFunctionDefSpecStatement ::= native FunctionSignature ';' { pin = 1 }
-UninterpretedFunctionDefSpecStatement ::= FunctionSignature ';'
+}
+private SpecFunctionImpl ::= SpecFunctionInner
+                            | NativeSpecFunctionInner
+//                            | UninterpretedSpecFunctionInner
 
-fake Struct_ ::= Attr* native? struct IDENTIFIER? TypeParameterList? AbilitiesList?
+SpecFunctionInner ::= spec fun IDENTIFIER TypeParameterList?
+                       FunctionParameterList ReturnType? (CodeBlock | ';')
+{
+    pin = 2
+    elementType = SpecFunction
+}
+NativeSpecFunctionInner ::= spec (native fun) IDENTIFIER TypeParameterList?
+                             FunctionParameterList ReturnType? ';'
+{
+    elementType = SpecFunction
+    pin = 2
+}
+//UninterpretedSpecFunctionInner ::= spec fun IDENTIFIER TypeParameterList?
+//                                    FunctionParameterList ReturnType? ';'
+//{
+//    elementType = SpecFunction
+//}
+
+fake SpecInlineFunction ::= native? fun IDENTIFIER? TypeParameterList?
+                                FunctionParameterList? ReturnType?
+                                (CodeBlock | ';')?
+{
+//    implements = [
+//        "org.move.lang.core.psi.MvNameIdentifierOwner"
+//        "org.move.lang.core.psi.MvTypeParametersOwner"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MvSpecFunctionMixin"
+}
+private SpecInlineFunctionImpl ::= SpecInlineFunctionInner
+                                    | NativeSpecInlineFunctionInner
+//                                    | UninterpretedSpecInlineFunctionInner
+
+SpecInlineFunctionInner ::= fun IDENTIFIER TypeParameterList?
+                             FunctionParameterList ReturnType? (CodeBlock | ';')
+{
+    pin = 1
+    elementType = SpecInlineFunction
+}
+NativeSpecInlineFunctionInner ::= (native fun) IDENTIFIER TypeParameterList?
+                                  FunctionParameterList ReturnType? ';'
+{
+    elementType = SpecInlineFunction
+    pin = 1
+}
+//UninterpretedSpecInlineFunctionInner ::= fun IDENTIFIER TypeParameterList?
+//                                         FunctionParameterList ReturnType? ';'
+//{
+//    elementType = SpecInlineFunction
+//}
+
+SpecInlineFunctionStatement ::= SpecInlineFunctionImpl
+//FunctionDefSpecStatement ::= FunctionSignature SpecBlock
+//NativeFunctionDefSpecStatement ::= native FunctionSignature ';' { pin = 1 }
+//UninterpretedFunctionDefSpecStatement ::= FunctionSignature ';'
+
+fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? AbilitiesList?
                         (';' | StructFieldsDefBlock)?
 {
     implements = [
@@ -253,19 +319,19 @@ fake Struct_ ::= Attr* native? struct IDENTIFIER? TypeParameterList? AbilitiesLi
     mixin = "org.move.lang.core.psi.ext.MvStructMixin"
 }
 
-private StructInnerFirst ::= struct
+private StructInnerFirst ::= STRUCT_KW
 StructInner ::= Attr* StructInnerFirst IDENTIFIER TypeParameterList? AbilitiesList?
                             StructFieldsDefBlock
 {
     pin = StructInnerFirst
-    elementType = Struct_
+    elementType = Struct
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
-private NativeStructInnerFirst ::= native struct
+private NativeStructInnerFirst ::= native STRUCT_KW
 NativeStructInner ::= Attr* NativeStructInnerFirst IDENTIFIER TypeParameterList? AbilitiesList? ';'
 {
     pin = NativeStructInnerFirst
-    elementType = Struct_
+    elementType = Struct
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 private StructItem ::= StructInner | NativeStructInner
@@ -310,21 +376,22 @@ NativeFunctionInner ::= Attr* NativeFunctionInnerFirst FunctionSignatureInner ';
 
 private FunctionItem ::= NativeFunctionInner | FunctionInner
 
-private FunctionSignatureInner ::= IDENTIFIER TypeParameterList? FunctionParameterList ReturnType? AcquiresType?
+private FunctionSignatureInner ::= IDENTIFIER TypeParameterList?
+                                    FunctionParameterList ReturnType? AcquiresType?
 {
-    recoverWhile = "FunctionSignature__recover"
+    recoverWhile = "FunctionSignatureInner_recover"
 }
+private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
 
 //private FunctionSignatureWithOptionalVisibility ::= FunctionSignatureVisibility | FunctionSignature
 //private FunctionSignatureVisibility ::= FunctionVisibilityModifier FunctionSignature { pin = 1 }
-FunctionSignature ::= fun IDENTIFIER TypeParameterList?
-                          FunctionParameterList
-                          ReturnType? AcquiresType?
-{
-    pin = "fun"
-    recoverWhile = "FunctionSignature__recover"
-}
-private FunctionSignature__recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
+//FunctionSignature ::= fun IDENTIFIER TypeParameterList?
+//                          FunctionParameterList
+//                          ReturnType? AcquiresType?
+//{
+//    pin = "fun"
+//    recoverWhile = "FunctionSignature__recover"
+//}
 
 //FunctionDef ::= Attr* native? FunctionVisibilityModifier native?
 //NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';'
@@ -377,7 +444,7 @@ private AcquiresType_items_recover ::= !(';' | '{')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Structs
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//StructSignature ::= struct IDENTIFIER TypeParameterList? AbilitiesList?
+//StructSignature ::= STRUCT_KW IDENTIFIER TypeParameterList? AbilitiesList?
 //{
 //    pin = "struct"
 //    implements = [
@@ -479,7 +546,7 @@ RefType ::= RefTypeStart Type
 {
     pin = 1
 }
-RefTypeStart ::= ('&' mut?)
+RefTypeStart ::= '&' mut?
 
 PathType ::= Path
 {
@@ -495,7 +562,7 @@ TupleType ::= '(' Type ',' (Type ','?)* ')' { pin = 2 }
 //}
 //private TupleTypeItem_recover ::= !(')' | '{' | IDENTIFIER)
 
-LambdaType ::= <<specOnly '|'>> <<comma_sep_items Type>>? <<specOnly '|'>> Type { pin = 1 }
+LambdaType ::= <<mslOnly '|'>> <<comma_sep_items Type>>? <<mslOnly '|'>> Type { pin = 1 }
 
 TypeParameterList ::= '<' TypeParameter_with_recover* '>'
 {
@@ -716,8 +783,8 @@ LeftShiftExpr ::= Expr ltlt Expr
 RightShiftExpr ::= Expr gtgt Expr
 
 private ImplyOperatorsExpr_items ::= ImplyOperatorExpr | PartialImplyOperatorExpr
-ImplyOperatorExpr ::= Expr <<specOnly eqeq_gt>> Expr
-PartialImplyOperatorExpr ::= Expr <<specOnly lt_eqeq_gt>> Expr
+ImplyOperatorExpr ::= Expr <<mslOnly eqeq_gt>> Expr
+PartialImplyOperatorExpr ::= Expr <<mslOnly lt_eqeq_gt>> Expr
 
 BangExpr ::= '!' Expr
 DerefExpr ::= '*' Expr
@@ -906,22 +973,23 @@ private SpecItem_first ::= assert | assume | modifies | requires | ensures | abo
                          | invariant | pragma | local | global | emits
 private SpecItem_recover ::= !('}' | <<eof>> | SpecItem_first)
 
-SpecDef ::= NameSpecDef | ModuleSpecDef | SchemaSpecDef
+SpecDef ::= NameSpecDef | ModuleSpecDef
 
 NameSpecDef ::= (spec IDENTIFIER) SpecBlock
-//{
-//    pin = 1
-//    implements = ["org.move.lang.core.psi.MvReferenceElement"]
-//    mixin = "org.move.lang.core.psi.ext.MvNameSpecDefMixin"
-//}
+{
+    pin = 1
+    implements = ["org.move.lang.core.psi.MvMandatoryReferenceElement"]
+    mixin = "org.move.lang.core.psi.ext.MvNameSpecDefMixin"
+}
 ModuleSpecDef ::= (spec module) SpecBlock { pin = 1 }
 
-SchemaSpecDef ::= (spec schema) IDENTIFIER TypeParameterList? SpecBlock {
-  pin = 1
-  implements = [
-    "org.move.lang.core.psi.MvTypeParametersOwner"
-    "org.move.lang.core.psi.MvNameIdentifierOwner" ]
-  mixin = "org.move.lang.core.psi.mixins.MvSchemaDefMixin"
+Schema ::= (spec schema) IDENTIFIER TypeParameterList? SpecBlock {
+    pin = 1
+    implements = [
+        "org.move.lang.core.psi.MvTypeParametersOwner"
+        "org.move.lang.core.psi.MvNameIdentifierOwner"
+    ]
+    mixin = "org.move.lang.core.psi.mixins.MvSchemaMixin"
 }
 
 SpecBlockExpr ::= spec SpecBlock
@@ -944,16 +1012,16 @@ private SpecBlock_items_recover ::= !('}' | <<eof>>)
 //}
 
 //private SpecItemExpr ::= SpecBlockFinishingExpr
-private SpecBlockStatement_with_recover ::= SpecStatement
+//private SpecBlockStatement_with_recover ::= SpecStatement
 //private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinishingExpr
 
 private SpecStatement ::= ImportStatement
-                       | VariableSpecStatement
+                       | SchemaVarDeclStatement
                        | LocalVariableSpecStatement
                        | GlobalVariableSpecStatement
-                       | FunctionDefSpecStatement
-                       | NativeFunctionDefSpecStatement
-                       | UninterpretedFunctionDefSpecStatement
+                       | SpecInlineFunctionStatement
+//                       | NativeFunctionDefSpecStatement
+//                       | UninterpretedFunctionDefSpecStatement
                        | PragmaSpecStatement
 //                               | AssumeSpecStatement
 //                               | AssertSpecStatement
@@ -982,7 +1050,12 @@ private SpecStatement ::= ImportStatement
 //
 //private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
 
-VariableSpecStatement ::= IDENTIFIER TypeAnnotation ';' { pin = 2 }
+SchemaVarDeclStatement ::= IDENTIFIER TypeAnnotation ';'
+{
+    pin = 2
+    implements = [ "org.move.lang.core.psi.MvNameIdentifierOwner" ]
+    mixin = "org.move.lang.core.psi.ext.MvSchemaVarDeclStatementMixin"
+}
 
 LocalVariableSpecStatement ::= local IDENTIFIER TypeAnnotation ';' { pin = 1 }
 GlobalVariableSpecStatement ::= global IDENTIFIER TypeAnnotation ';' { pin = 1 }
@@ -1018,7 +1091,25 @@ EnsuresSpecExpr ::= ensures SpecExpr { pin = 1 }
 //ModifiesSpecStatement ::= ModifiesSpecExpr ';'
 ModifiesSpecExpr ::= modifies Expr { pin = 1 }
 
-IncludeSpecStatement ::= include SpecVisibility? Expr ';' { pin = 1 }
+IncludeSpecStatement ::= include SpecVisibility? SchemaLit ';' { pin = 1 }
+SchemaLit ::= Path SchemaFieldsBlock?
+
+SchemaFieldsBlock ::= '{' SchemaField_with_recover* '}' { pin = 1 }
+private SchemaField_with_recover ::= !'}' SchemaField (',' | &'}')
+{
+    pin = 1
+    recoverWhile = SchemaField_recover
+}
+private SchemaField_recover ::= !('}' | IDENTIFIER)
+
+SchemaField ::= IDENTIFIER SchemaFieldInit?
+{
+    implements = [
+        "org.move.lang.core.psi.MvSchemaRefFieldReferenceElement"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvSchemaRefFieldMixin"
+}
+private SchemaFieldInit ::= ':' Expr { pin = 1 }
 
 private PatternVis ::= <<patternVisibility>>
 private PatternIdent ::= <<patternIdent>>
@@ -1089,9 +1180,9 @@ QuantifierWhere ::= where Expr
 }
 
 private Quantifier_items ::= ForallQuantifier | ExistsQuantifier
-ForallQuantifier ::= <<specOnly forall>> QuantifierBindings
+ForallQuantifier ::= <<mslOnly forall>> QuantifierBindings
                         (QuantifierWhere)? (':' Quantifier_items)? { pin = 1 }
-ExistsQuantifier ::= <<specOnly exists>> QuantifierBindings
+ExistsQuantifier ::= <<mslOnly exists>> QuantifierBindings
                         (QuantifierWhere)? (':' Quantifier_items)? { pin = 1 }
 
 ChooseSpecExpr ::= choose min? QuantifierBindings

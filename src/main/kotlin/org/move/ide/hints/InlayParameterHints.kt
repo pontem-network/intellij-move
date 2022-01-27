@@ -4,6 +4,8 @@ import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.psi.PsiElement
 import org.move.ide.utils.CallInfo
 import org.move.lang.core.psi.MvCallExpr
+import org.move.lang.core.psi.MvRefExpr
+import org.move.lang.core.psi.MvStructLitExpr
 import org.move.lang.core.psi.ext.startOffset
 
 @Suppress("UnstableApiUsage")
@@ -17,6 +19,9 @@ object InlayParameterHints {
         return callInfo.parameters
             .map { it.name }
             .zip(arguments)
+            .filter { (_, arg) ->
+                arg !is MvRefExpr && arg !is MvCallExpr && arg !is MvStructLitExpr
+            }
             .filter { (hint, arg) -> !isSimilar(hint, arg.text) }
             .filter { (hint, _) -> hint != "_" }
             .map { (hint, arg) -> InlayInfo("$hint:", arg.startOffset) }
@@ -25,6 +30,6 @@ object InlayParameterHints {
     private fun isSimilar(hint: String, argumentText: String): Boolean {
         val argText = argumentText.lowercase()
         val hintText = hint.lowercase()
-        return argText.endsWith(hintText) || argText.startsWith(hintText)
+        return argText.startsWith(hintText) || argText.endsWith(hintText)
     }
 }

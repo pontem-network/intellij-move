@@ -36,6 +36,8 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
             override fun visitIfExpr(o: MvIfExpr) {
+                if (o.isMslAvailable()) return
+
                 val ifTy = o.returningExpr?.inferExprTy() ?: return
                 val elseExpr = o.elseExpr ?: return
                 val elseTy = elseExpr.inferExprTy()
@@ -49,6 +51,8 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitCondition(o: MvCondition) {
+                if (o.isMslAvailable()) return
+
                 val expr = o.expr ?: return
                 val exprTy = expr.inferExprTy()
                 if (!isCompatible(exprTy, TyBool)) {
@@ -60,6 +64,8 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitCodeBlock(codeBlock: MvCodeBlock) {
+                if (codeBlock.isMslAvailable()) return
+
                 val fn = codeBlock.parent as? MvFunction ?: return
                 val returningExpr = codeBlock.returningExpr
 
@@ -77,6 +83,8 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitReturnExpr(o: MvReturnExpr) {
+                if (o.isMslAvailable()) return
+
                 val outerFn = o.containingFunction ?: return
                 val expectedReturnTy = outerFn.resolvedReturnTy
                 val actualReturnTy = o.expr?.inferExprTy() ?: return
@@ -89,6 +97,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitStructLitExpr(o: MvStructLitExpr) {
+                if (o.isMslAvailable()) return
                 val struct = o.path.maybeStruct ?: return
 
                 val ctx = InferenceContext()
@@ -113,6 +122,8 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitPath(path: MvPath) {
+                if (path.isMslAvailable()) return
+
                 val typeArguments = path.typeArguments
                 val item = path.reference?.resolve() as? MvTypeParametersOwner ?: return
                 if (item.typeParameters.size != typeArguments.size) return
@@ -129,17 +140,19 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 }
             }
 
-            override fun visitCallArgumentList(arguments: MvCallArgumentList) {
-                val callExpr = arguments.parent as? MvCallExpr ?: return
+            override fun visitCallArgumentList(callArgs: MvCallArgumentList) {
+                if (callArgs.isMslAvailable()) return
+
+                val callExpr = callArgs.parent as? MvCallExpr ?: return
                 val function = callExpr.path.reference?.resolve() as? MvFunction ?: return
 
-                if (function.parameters.size != arguments.exprList.size) return
+                if (function.parameters.size != callArgs.exprList.size) return
 
                 val ctx = InferenceContext()
                 val inferredFuncTy = inferCallExprTy(callExpr, ctx)
                 if (inferredFuncTy !is TyFunction) return
 
-                for ((i, expr) in arguments.exprList.withIndex()) {
+                for ((i, expr) in callArgs.exprList.withIndex()) {
                     val parameter = function.parameters[i]
                     val paramTy = inferredFuncTy.paramTypes[i]
                     val exprTy = expr.inferExprTy(ctx)
@@ -151,8 +164,8 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
                     if (!isCompatible(paramTy, exprTy)) {
                         val paramName = parameter.bindingPat.name ?: continue
-                        val exprTypeName = exprTy.typeLabel(relativeTo = arguments)
-                        val expectedTypeName = paramTy.typeLabel(relativeTo = arguments)
+                        val exprTypeName = exprTy.typeLabel(relativeTo = callArgs)
+                        val expectedTypeName = paramTy.typeLabel(relativeTo = callArgs)
 
                         val message =
                             "Invalid argument for parameter '$paramName': " +
@@ -162,12 +175,14 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 }
             }
 
-            override fun visitStructFieldDef(structField: MvStructFieldDef) {
-                val structTy = TyStruct(structField.struct)
+            override fun visitStructFieldDef(field: MvStructFieldDef) {
+                if (field.isMslAvailable()) return
+
+                val structTy = TyStruct(field.struct)
                 val structAbilities = structTy.abilities()
                 if (structAbilities.isEmpty()) return
 
-                val fieldTy = structField.declaredTy as? TyStruct ?: return
+                val fieldTy = field.declaredTy as? TyStruct ?: return
                 for (ability in structAbilities) {
                     val requiredAbility = ability.requires()
                     if (requiredAbility !in fieldTy.abilities()) {
@@ -175,7 +190,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                             "The type '${fieldTy.name()}' does not have the ability '${requiredAbility.label()}' " +
                                     "required by the declared ability '${ability.label()}' " +
                                     "of the struct '${structTy.name()}'"
-                        holder.registerTypeError(structField, message)
+                        holder.registerTypeError(field, message)
                         return
                     }
                 }
@@ -190,7 +205,7 @@ private fun checkHasRequiredAbilities(
     expectedTy: Ty
 ): Boolean {
     // do not check for specs
-    if (element.isInsideSpec()) return false
+    if (element.isMslAvailable()) return false
 
     val abilities = actualTy.abilities()
     for (ability in expectedTy.abilities()) {

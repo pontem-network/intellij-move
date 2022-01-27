@@ -28,7 +28,7 @@ abstract class MvNamedElementsVisitor : MvVisitor(), PsiRecursiveVisitor {
 
     override fun visitFunction(o: MvFunction) = processNamedElement(o)
 
-    override fun visitStruct_(o: MvStruct_) = processNamedElement(o)
+    override fun visitStruct(o: MvStruct) = processNamedElement(o)
 
     abstract fun processNamedElement(element: MvNamedElement)
 }

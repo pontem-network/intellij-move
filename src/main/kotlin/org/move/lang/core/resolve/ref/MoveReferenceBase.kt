@@ -6,38 +6,6 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvReferenceElement
 import org.move.utils.doRenameIdentifier
 
-//interface MvPolyVariantReference : PsiPolyVariantReference {
-//    override fun getElement(): MvElement
-//}
-//
-//abstract class MvPolyVariantReferenceBase<T : MvPolyVariantReferenceElement>(element: T) :
-//    PsiPolyVariantReferenceBase<T>(element),
-//    MvPolyVariantReference {
-//
-//    override fun equals(other: Any?): Boolean =
-//        other is MvPolyVariantReferenceBase<*> && element === other.element
-//
-//    override fun hashCode(): Int = element.hashCode()
-//
-//    final override fun getRangeInElement(): TextRange = super.getRangeInElement()
-//
-//    final override fun calculateDefaultRangeInElement(): TextRange {
-//        val anchor = element.referenceNameElement ?: return TextRange.EMPTY_RANGE
-//        return TextRange.from(
-//            anchor.startOffsetInParent,
-//            anchor.textLength
-//        )
-//    }
-//
-//    override fun handleElementRename(newName: String): PsiElement {
-//        val refNameElement = element.referenceNameElement
-//        if (refNameElement != null) {
-//            doRenameIdentifier(refNameElement, newName)
-//        }
-//        return element
-//    }
-//}
-
 abstract class MvReferenceBase<T : MvReferenceElement>(element: T) : PsiPolyVariantReferenceBase<T>(element),
                                                                      MvReference {
 
@@ -51,7 +19,9 @@ abstract class MvReferenceBase<T : MvReferenceElement>(element: T) : PsiPolyVari
 
     override fun hashCode(): Int = element.hashCode()
 
-    final override fun getRangeInElement(): TextRange = super.getRangeInElement()
+    override fun getRangeInElement(): TextRange {
+        return super.getRangeInElement()
+    }
 
     final override fun calculateDefaultRangeInElement(): TextRange {
         val anchor = element.referenceNameElement ?: return TextRange.EMPTY_RANGE

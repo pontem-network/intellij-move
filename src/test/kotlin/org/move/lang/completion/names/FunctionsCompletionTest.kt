@@ -221,4 +221,18 @@ class FunctionsCompletionTest : CompletionTestCase() {
         }
     }    
     """)
+
+    fun `test do not insert () if completed before angle brackets`() = doSingleCompletion("""
+    module 0x1::M {
+        fun m() {
+            borrow_global_m/*caret*/<u8>(@0x1);
+        }
+    }    
+    """, """
+    module 0x1::M {
+        fun m() {
+            borrow_global_mut</*caret*/u8>(@0x1);
+        }
+    }    
+    """)
 }

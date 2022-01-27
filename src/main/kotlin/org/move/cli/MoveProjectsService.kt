@@ -22,6 +22,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.util.messages.Topic
 import org.jetbrains.rpc.LOG
 import org.move.lang.findMoveTomlPath
+import org.move.lang.isMvFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.findVirtualFile
@@ -32,18 +33,16 @@ import org.move.stdext.AsyncValue
 import org.move.stdext.MoveProjectEntry
 import org.move.stdext.MyLightDirectoryIndex
 import org.move.stdext.deepIterateChildrenRecursivery
+import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
 val Project.moveProjects get() = service<MoveProjectsService>()
 
 interface MoveProjectsService {
-//    var initialized: Boolean
-
     fun refreshAllProjects()
 
     fun findProjectForPsiElement(psiElement: PsiElement): MoveProject?
-//    fun findNamedAddressesForFile(scope: GlobalScope, file: VirtualFile): AddressesMap
-//    fun findNamedAddressValueForFile(scope: GlobalScope, file: VirtualFile, name: String): String
+    fun findProjectForPath(path: Path): MoveProject?
 
     companion object {
         val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic(
@@ -105,12 +104,26 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
                 projects
             }
 
+    override fun refreshAllProjects() {
+        LOG.info("Project state refresh started")
+        modifyProjects { doRefresh(project) }
+    }
+
     override fun findProjectForPsiElement(psiElement: PsiElement): MoveProject? {
         val file = when (psiElement) {
             is PsiDirectory -> psiElement.virtualFile
             is PsiFile -> psiElement.originalFile.virtualFile
             else -> psiElement.containingFile.originalFile.virtualFile
         }
+        return findMoveProject(file)
+    }
+
+    override fun findProjectForPath(path: Path): MoveProject? {
+        val file = path.findVirtualFile() ?: return null
+        return findMoveProject(file)
+    }
+
+    private fun findMoveProject(file: VirtualFile?): MoveProject? {
         // in-memory file
         if (file == null) return null
 
@@ -118,32 +131,26 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
         if (cachedProjectEntry is MoveProjectEntry.Present) {
             return cachedProjectEntry.project
         }
-//        if (this.directoryIndex.hasInfoForFile(file)) {
-//            return this.directoryIndex.getInfoForFile(file)
-//        }
-//        val cachedProject = this.directoryIndex.getInfoForFile(file)
-//        if (cachedProject != null) return cachedProject
-
         LOG.warn("MoveProject is not found in cache")
-        var moveProject =
-            file.toNioPathOrNull()
-                ?.let { findMoveTomlPath(it) }
-                ?.findVirtualFile()
-                ?.let { initializeMoveProject(project, it) }
 
-        if (moveProject == null) {
+        var moveProject = fun(): MoveProject? {
+            val filePath = file.toNioPathOrNull() ?: return null
+            val moveTomlPath = findMoveTomlPath(filePath) ?: return null
+
+            if (file.isMvFile) {
+                val dirs = MvProjectLayout.dirs(moveTomlPath.parent)
+                if (!dirs.any { filePath.startsWith(it) }) {
+                    return null
+                }
+            }
+            return moveTomlPath.findVirtualFile()?.let { initializeMoveProject(project, it) }
+        }.invoke()
+        if (moveProject == null && isUnitTestMode) {
             // this is for light tests, heavy test should always have valid moveProject
-            if (isUnitTestMode)
-                moveProject = testEmptyMvProject(project)
-//            return null
+            moveProject = testEmptyMvProject(project)
         }
         this.directoryIndex.putInfo(file, MoveProjectEntry.Present(moveProject))
         return moveProject
-    }
-
-    override fun refreshAllProjects() {
-        LOG.info("Project state refresh started")
-        modifyProjects { doRefresh(project) }
     }
 
     private val directoryIndex: MyLightDirectoryIndex<MoveProjectEntry> =
@@ -181,7 +188,7 @@ private fun setupProjectRoots(project: Project, moveProjects: List<MoveProject>)
                         addExcludeFolder(
                             FileUtil.join(
                                 contentRoot.url,
-                                MvConstants.ProjectLayout.build
+                                MvProjectLayout.buildDir
                             )
                         )
                     }

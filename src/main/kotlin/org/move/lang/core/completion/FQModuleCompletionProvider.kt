@@ -7,10 +7,10 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.psi.MvFQModuleRef
-import org.move.lang.core.resolve.processQualModuleRef
+import org.move.lang.core.resolve.processFQModuleRef
 import org.move.lang.core.withParent
 
-object QualModulesCompletionProvider : MvCompletionProvider() {
+object FQModuleCompletionProvider : MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() =
             PlatformPatterns.psiElement()
@@ -27,11 +27,9 @@ object QualModulesCompletionProvider : MvCompletionProvider() {
                 ?: directParent.parent as MvFQModuleRef
         if (parameters.position !== fqModuleRef.referenceNameElement) return
 
-        processQualModuleRef(fqModuleRef) {
-            if (it.element != null) {
-                val lookup = it.element.createLookupElement()
-                result.addElement(lookup)
-            }
+        processFQModuleRef(fqModuleRef) {
+            val lookup = it.element.createCompletionLookupElement()
+            result.addElement(lookup)
             false
         }
     }

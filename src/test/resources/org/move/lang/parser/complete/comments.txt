@@ -107,7 +107,7 @@ FILE
           PsiElement())(')')
         PsiElement(;)(';')
       PsiWhiteSpace('\n\n    ')
-      MvStruct_Impl(STRUCT_)
+      MvStructImpl(STRUCT)
         PsiComment(EOL_DOC_COMMENT)('/// docs')
         PsiWhiteSpace('\n    ')
         PsiElement(native)('native')

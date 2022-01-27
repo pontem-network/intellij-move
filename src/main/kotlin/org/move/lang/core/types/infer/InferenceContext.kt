@@ -10,7 +10,7 @@ import org.move.lang.core.types.ty.*
 
 fun instantiateItemTy(item: MvNameIdentifierOwner): Ty {
     return when (item) {
-        is MvStruct_ -> TyStruct(item)
+        is MvStruct -> TyStruct(item)
         is MvFunction -> {
             val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
 

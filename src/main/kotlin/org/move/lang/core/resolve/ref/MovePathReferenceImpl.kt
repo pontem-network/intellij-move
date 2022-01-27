@@ -1,34 +1,23 @@
 package org.move.lang.core.resolve.ref
 
-import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.functions
-import org.move.lang.core.psi.ext.isSelf
-import org.move.lang.core.psi.ext.moduleImport
-import org.move.lang.core.psi.ext.structs
-import org.move.lang.core.resolve.MatchingProcessor
-import org.move.lang.core.resolve.resolveIntoFQModuleRef
-import org.move.lang.core.resolve.resolveItem
-import org.move.lang.core.types.BoundElement
+import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.*
 
 fun processModuleItems(
     module: MvModuleDef,
-    visibilities: Set<Visibility>,
-    namespaces: Set<Namespace>,
+    itemVis: ItemVis,
     processor: MatchingProcessor,
 ): Boolean {
-    for (namespace in namespaces) {
+    for (namespace in itemVis.namespaces) {
         val found = when (namespace) {
             Namespace.NAME -> processor.matchAll(
-                visibilities.flatMap { module.functions(it) }
-//                listOf(
-//                    visibilities.flatMap { module.functionSignatures(it) },
-////                    module.structSignatures(),
-////                    module.consts(),
-//                ).flatten()
+                itemVis.visibilities.flatMap { module.functions(it) },
+                if (itemVis.isMsl) module.specFunctions() else emptyList(),
+                if (itemVis.isMsl) module.constBindings() else emptyList()
             )
             Namespace.TYPE -> processor.matchAll(module.structs())
-//            Namespace.SCHEMA -> processor.matchAll(module.schemas())
+            Namespace.SCHEMA -> processor.matchAll(module.schemas())
             else -> false
         }
         if (found) return true
@@ -38,14 +27,12 @@ fun processModuleItems(
 
 fun resolveModuleItem(
     module: MvModuleDef,
-    refName: String,
-    vs: Set<Visibility>,
-    ns: Set<Namespace>,
+    name: String,
+    itemVis: ItemVis,
 ): List<MvNamedElement> {
-//    var resolved: MvNamedElement? = null
     val resolved = mutableListOf<MvNamedElement>()
-    processModuleItems(module, vs, ns) {
-        if (it.name == refName && it.element != null) {
+    processModuleItems(module, itemVis) {
+        if (it.name == name) {
             resolved.add(it.element)
             return@processModuleItems true
         }
@@ -60,15 +47,16 @@ class MvPathReferenceImpl(
 ) : MvReferenceCached<MvPath>(element), MvPathReference {
 
     override fun resolveInner(): List<MvNamedElement> {
+        val ns = mutableSetOf(namespace)
         val vs = Visibility.buildSetOfVisibilities(element)
-        val ns = setOf(namespace)
-        val refName = element.referenceName ?: return emptyList()
+        val itemVis = ItemVis(ns, vs, element.mslScope)
 
+        val refName = element.referenceName ?: return emptyList()
         val moduleRef = element.pathIdent.moduleRef
         // first, see whether it's a fully qualified path (ADDRESS::MODULE::NAME) and try to resolve those
         if (moduleRef is MvFQModuleRef) {
             val module = moduleRef.reference?.resolve() as? MvModuleDef ?: return emptyList()
-            return resolveModuleItem(module, refName, vs, ns)
+            return resolveModuleItem(module, refName, itemVis)
         }
         // second,
         // if it's MODULE::NAME -> resolve MODULE into corresponding FQModuleRef using imports
@@ -76,12 +64,12 @@ class MvPathReferenceImpl(
             if (moduleRef.isSelf) {
                 val containingModule = moduleRef.containingModule ?: return emptyList()
                 return resolveModuleItem(
-                    containingModule, refName, setOf(Visibility.Internal), ns
+                    containingModule, refName, itemVis.replace(vs = setOf(Visibility.Internal))
                 )
             }
             val fqModuleRef = resolveIntoFQModuleRef(moduleRef) ?: return emptyList()
             val module = fqModuleRef.reference?.resolve() as? MvModuleDef ?: return emptyList()
-            return resolveModuleItem(module, refName, vs, ns)
+            return resolveModuleItem(module, refName, itemVis)
         } else {
             // if it's NAME
             // try local names
@@ -91,16 +79,7 @@ class MvPathReferenceImpl(
             // find corresponding FQModuleRef from imports and resolve
             val fqModuleRef = item.moduleImport().fqModuleRef
             val module = fqModuleRef.reference?.resolve() as? MvModuleDef ?: return emptyList()
-            return resolveModuleItem(module, refName, vs, ns)
+            return resolveModuleItem(module, refName, itemVis)
         }
     }
-
-    override fun advancedResolve(): BoundElement<MvNamedElement>? {
-        return resolve()?.let { BoundElement(it) }
-    }
-
-//    override fun handleElementRename(newElementName: String): PsiElement? {
-//        val newElement = super.handleElementRename(newElementName)
-//        return newElement
-//    }
 }

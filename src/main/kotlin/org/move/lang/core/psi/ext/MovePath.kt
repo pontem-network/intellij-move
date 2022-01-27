@@ -20,6 +20,8 @@ fun MvPath.isPrimitiveType(): Boolean =
 
 val MvPath.identifierName: String? get() = identifier?.text
 
+val MvPath.moduleRef: MvModuleRef? get() = pathIdent.moduleRef
+
 val MvPathIdent.colonColon get() = this.findFirstChildByType(MvElementTypes.COLON_COLON)
 
 val MvPathIdent.isIdentifierOnly: Boolean
@@ -29,10 +31,9 @@ val MvPathIdent.isIdentifierOnly: Boolean
 val MvPath.typeArguments: List<MvTypeArgument>
     get() = typeArgumentList?.typeArgumentList.orEmpty()
 
-val MvPath.maybeStruct: MvStruct_?
-    get() {
-        return reference?.resolve() as? MvStruct_
-    }
+val MvPath.maybeStruct get() = reference?.resolve() as? MvStruct
+
+val MvPath.maybeSchema get() = reference?.resolve() as? MvSchema
 
 
 abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
@@ -40,9 +41,9 @@ abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
     override val identifier: PsiElement? get() = this.pathIdent.identifier
 
     override fun getReference(): MvPathReference? {
-        val namespace = when {
-            this.isInsideSpec() -> Namespace.SPEC
-            this.parent is MvPathType -> Namespace.TYPE
+        val namespace = when (this.parent) {
+            is MvSchemaLit -> Namespace.SCHEMA
+            is MvPathType -> Namespace.TYPE
             else -> Namespace.NAME
         }
         return MvPathReferenceImpl(this, namespace)

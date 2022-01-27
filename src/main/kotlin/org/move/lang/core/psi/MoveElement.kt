@@ -3,6 +3,7 @@ package org.move.lang.core.psi
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import org.move.lang.MvFile
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.toAddress
@@ -12,6 +13,8 @@ interface MvElement : PsiElement
 
 abstract class MvElementImpl(node: ASTNode) : ASTWrapperPsiElement(node),
                                               MvElement
+
+val MvElement.containingMoveFile: MvFile? get() = this.containingFile as? MvFile
 
 val MvElement.containingAddress: Address
     get() {

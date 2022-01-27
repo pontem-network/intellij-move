@@ -107,7 +107,7 @@ fun MvElement.signature(builder: StringBuilder) {
             buffer += "module "
             buffer += this.fqName
         }
-        is MvStruct_ -> {
+        is MvStruct -> {
             buffer += this.containingModule!!.fqName
             buffer += "\n"
 

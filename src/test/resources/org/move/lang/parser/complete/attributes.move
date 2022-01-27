@@ -4,6 +4,9 @@ module 0x1::M {
     use 0x1::SomeOtherModule;
 
     #[test_only]
+    const MY_CONST: u8 = 1;
+
+    #[test_only]
     struct SomeStruct {}
 
     #[test_only]

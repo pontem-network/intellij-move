@@ -24,7 +24,13 @@ module 0x1::M {
         aborts_with [check] 1;
         aborts_with 1, error, Errors::NOT_PUBLISHED;
 
+        ensures exists<CoinType>(@0x1);
         ensures result == TRACE(choose x: u64 where x >= 4 && x <= 5);
+
+        include MySchema;
+        include MySchema{ amount };
+        include MySchema<MyType>{ amount };
+        include MySchema{ address: Signer::address_of(acc) };
     }
 
     fun main2() {

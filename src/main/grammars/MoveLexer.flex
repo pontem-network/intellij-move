@@ -129,7 +129,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "public"         { return PUBLIC; }
       "fun"            { return FUN; }
       "acquires"       { return ACQUIRES; }
-      "struct"         { return STRUCT; }
+      "struct"         { return STRUCT_KW; }
       "use"            { return USE; }
       "as"             { return AS; }
       "mut"            { return MUT; }

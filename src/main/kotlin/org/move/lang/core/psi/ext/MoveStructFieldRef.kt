@@ -6,7 +6,6 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvStructFieldRef
 import org.move.lang.core.psi.MvStructFieldReferenceElement
 import org.move.lang.core.resolve.ref.MvReference
-import org.move.lang.core.resolve.ref.MvReferenceBase
 import org.move.lang.core.resolve.ref.MvReferenceCached
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.resolveItem
@@ -19,7 +18,7 @@ class MvDotStructFieldAccessReferenceImpl(
 }
 
 abstract class MvStructFieldRefMixin(node: ASTNode) : MvElementImpl(node),
-                                                        MvStructFieldRef {
+                                                      MvStructFieldRef {
     override fun getReference(): MvReference {
         return MvDotStructFieldAccessReferenceImpl(this)
     }

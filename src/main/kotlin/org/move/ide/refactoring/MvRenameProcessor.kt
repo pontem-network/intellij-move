@@ -4,11 +4,9 @@ import com.intellij.psi.PsiElement
 import com.intellij.refactoring.listeners.RefactoringElementListener
 import com.intellij.refactoring.rename.RenamePsiElementProcessor
 import com.intellij.usageView.UsageInfo
-import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
-import org.move.lang.core.psi.ext.hasChild
 import org.move.lang.core.psi.ext.isShorthand
 
 class MvRenameProcessor: RenamePsiElementProcessor() {

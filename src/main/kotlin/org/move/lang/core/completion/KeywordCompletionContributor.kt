@@ -6,8 +6,6 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.patterns.PsiElementPattern
 import com.intellij.psi.PsiElement
-import org.move.ide.annotator.BUILTIN_FUNCTIONS
-import org.move.lang.MvElementTypes
 import org.move.lang.MvElementTypes.*
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.MvPsiPatterns.addressBlock
@@ -15,15 +13,11 @@ import org.move.lang.core.MvPsiPatterns.codeStatement
 import org.move.lang.core.MvPsiPatterns.function
 import org.move.lang.core.MvPsiPatterns.moduleBlock
 import org.move.lang.core.MvPsiPatterns.scriptBlock
+import org.move.lang.core.MvPsiPatterns.itemSpecLabel
+import org.move.lang.core.MvPsiPatterns.specStatement
 import org.move.lang.core.MvPsiPatterns.toplevel
-import org.move.lang.core.MvPsiPatterns.typeParamBound
 import org.move.lang.core.MvPsiPatterns.typeParameter
 import org.move.lang.core.TYPES
-import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.MvFunctionVisibilityModifier
-import org.move.lang.core.psi.MvModuleBlock
-import org.move.lang.core.psi.MvReturnType
-import org.move.lang.core.withParent
 
 class KeywordCompletionContributor : CompletionContributor() {
     init {
@@ -63,11 +57,6 @@ class KeywordCompletionContributor : CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            moduleBlock().and(onStatementBeginning("spec")),
-            KeywordCompletionProvider("module", "fun", "schema")
-        )
-        extend(
-            CompletionType.BASIC,
             function().with(MvPsiPatterns.AfterSibling(FUNCTION_VISIBILITY_MODIFIER)),
             KeywordCompletionProvider("fun")
         )
@@ -95,6 +84,25 @@ class KeywordCompletionContributor : CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
+            specStatement().and(onStatementBeginning()),
+            KeywordCompletionProvider(
+                "pragma",
+                "let",
+                "use",
+                "include",
+                "apply",
+                "requires",
+                "ensures",
+                "invariant",
+                "modifies",
+                "aborts_if",
+                "aborts_with",
+                "assume",
+                "assert",
+            )
+        )
+        extend(
+            CompletionType.BASIC,
             PlatformPatterns.or(
                 psiElement()
                     .with(MvPsiPatterns.AfterSibling(FUNCTION_PARAMETER_LIST)),
@@ -107,6 +115,11 @@ class KeywordCompletionContributor : CompletionContributor() {
             CompletionType.BASIC,
             typeParameter(),
             KeywordCompletionProvider("phantom")
+        )
+        extend(
+            CompletionType.BASIC,
+            itemSpecLabel(),
+            KeywordCompletionProvider("module", "fun", "schema")
         )
     }
 

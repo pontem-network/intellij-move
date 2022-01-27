@@ -10,26 +10,26 @@ FILE
     MvModuleBlockImpl(MODULE_BLOCK)
       PsiElement({)('{')
       PsiWhiteSpace('\n    ')
-      MvStruct_Impl(STRUCT_)
+      MvStructImpl(STRUCT)
         PsiElement(struct)('struct')
         PsiErrorElement:IDENTIFIER expected, got 'native'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MvStruct_Impl(STRUCT_)
+      MvStructImpl(STRUCT)
         PsiElement(native)('native')
         PsiWhiteSpace(' ')
         PsiElement(struct)('struct')
         PsiErrorElement:IDENTIFIER expected, got 'struct'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MvStruct_Impl(STRUCT_)
+      MvStructImpl(STRUCT)
         PsiElement(struct)('struct')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('S')
         PsiErrorElement:< or '{' expected, got 'struct'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MvStruct_Impl(STRUCT_)
+      MvStructImpl(STRUCT)
         PsiElement(struct)('struct')
         PsiErrorElement:IDENTIFIER expected, got '{'
           <empty list>
@@ -38,7 +38,7 @@ FILE
           PsiElement({)('{')
           PsiElement(})('}')
       PsiWhiteSpace('\n    ')
-      MvStruct_Impl(STRUCT_)
+      MvStructImpl(STRUCT)
         PsiElement(native)('native')
         PsiWhiteSpace(' ')
         PsiElement(struct)('struct')
@@ -47,7 +47,7 @@ FILE
         PsiErrorElement:';' or < expected, got 'struct'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MvStruct_Impl(STRUCT_)
+      MvStructImpl(STRUCT)
         PsiElement(struct)('struct')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('S')
@@ -59,7 +59,7 @@ FILE
               <empty list>
           PsiElement(>)('>')
       PsiWhiteSpace('\n    ')
-      MvStruct_Impl(STRUCT_)
+      MvStructImpl(STRUCT)
         PsiElement(struct)('struct')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('S')

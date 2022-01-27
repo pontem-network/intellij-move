@@ -48,6 +48,11 @@ object MvPsiPatterns {
     fun codeStatement(): PsiElementPattern.Capture<PsiElement> =
         psiElementInside<MvCodeBlock>()
 
+    fun itemSpecLabel() = psiElementInside<MvNameSpecDef>().and(onStatementBeginning("spec"))
+
+    fun specStatement(): PsiElementPattern.Capture<PsiElement> =
+        psiElementInside<MvSpecBlock>()
+
     fun bindingPat(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvBindingPat>()
 
     fun namedAddress(): PsiElementPattern.Capture<MvNamedAddress> {
@@ -139,6 +144,10 @@ object MvPsiPatterns {
     fun pathType(): PsiElementPattern.Capture<PsiElement> =
         pathIdent()
             .withSuperParent<MvPathType>(3)
+
+    fun schemaRef(): PsiElementPattern.Capture<PsiElement> =
+        pathIdent()
+            .withSuperParent<MvSchemaLit>(3)
 
     fun nameTypeIdentifier(): PsiElementPattern.Capture<PsiElement> =
         pathType()

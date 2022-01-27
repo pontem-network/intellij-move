@@ -1,15 +1,19 @@
 package org.move.cli.runconfig
 
 import com.intellij.execution.actions.ConfigurationContext
+import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import org.move.cli.MvConstants
+import org.move.cli.MvProjectLayout
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.containingModule
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.ancestors
+import org.move.lang.core.psi.ext.childOfType
+import org.move.lang.core.psi.ext.isTest
+import org.move.lang.core.psi.ext.isTestOnly
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import java.nio.file.Path
@@ -74,10 +78,11 @@ sealed interface TestConfig {
             return when (location) {
                 is PsiDirectory -> {
                     val locationPath = location.virtualFile.toNioPathOrNull() ?: return null
-                    if (locationPath == moveProject.rootPath
-                        || locationPath == moveProject.projectDirPath(MvConstants.ProjectLayout.tests_dir)
+                    val rootPath = moveProject.rootPath ?: return null
+                    if (locationPath == rootPath
+                        || locationPath == moveProject.projectDirPath(MvProjectLayout.testsDir)
                     ) {
-                        return Package(packageName, moveProject.rootPath)
+                        return Package(packageName, rootPath)
                     }
                     null
                 }
@@ -111,4 +116,8 @@ sealed interface TestConfig {
     }
 }
 
-data class MoveCommandLine(val command: String, val workingDirectory: Path?)
+data class MoveCommandLine(
+    val command: String,
+    val workingDirectory: Path?,
+    val environmentVariables: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
+)

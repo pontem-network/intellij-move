@@ -7,6 +7,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.psi.MvPath
+import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.mslScope
 import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
 
@@ -28,11 +30,10 @@ object ModulesCompletionProvider : MvCompletionProvider() {
         if (parameters.position !== refElement.referenceNameElement) return
         if (refElement.pathIdent.moduleRef != null) return
 
-        processItems(refElement, Namespace.MODULE) {
-            if (it.element != null) {
-                val lookup = it.element.createLookupElement()
-                result.addElement(lookup)
-            }
+        val itemVis = ItemVis(setOf(Namespace.MODULE), emptySet(), refElement.mslScope)
+        processItems(refElement, itemVis) {
+            val lookup = it.element.createCompletionLookupElement()
+            result.addElement(lookup)
             false
         }
     }

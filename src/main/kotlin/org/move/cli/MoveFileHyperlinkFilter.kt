@@ -9,7 +9,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import org.move.openapiext.resolveAbsPath
 import java.nio.file.Path
-import java.nio.file.Paths
 
 class MoveFileHyperlinkFilter(
     private val project: Project,
@@ -18,21 +17,28 @@ class MoveFileHyperlinkFilter(
 
     companion object {
         val FILE_POSITION_RE =
-            Regex("""(?<file>(?:\p{Alpha}:)?[0-9 a-z_A-Z\-\\./]+):(?<line>[0-9]+):(?<column>[0-9]+)""")
+            Regex("""(?<file>(?:\p{Alpha}:)?[0-9a-z_A-Z\-\\./]+):(?<line>[0-9]+):(?<column>[0-9]+)""")
+        val FILE_POSITION_LINE_RE =
+            Regex("""(?<file>(?:\p{Alpha}:)?[0-9a-z_A-Z\-\\./]+):(?<line>[0-9]+):""")
     }
 
     override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
-        val match = FILE_POSITION_RE.find(line) ?: return null
+        val match = FILE_POSITION_RE.find(line) ?: FILE_POSITION_LINE_RE.find(line) ?: return null
 
-        val fileGroup = match.groups[1]!!
+        val filePath = match.groups[1]!!
         val lineNumber = match.groups[2]!!
-        val columnNumber = match.groups[3]!!
+        val columnNumber =
+            if (match.groups.size == 4) {
+                match.groups[3]!!
+            } else {
+                MatchGroup("1", IntRange(lineNumber.range.last, lineNumber.range.last))
+            }
 
         val lineStart = entireLength - line.length
-        val startInd = lineStart + fileGroup.range.first + 1
+        val startInd = lineStart + filePath.range.first + 1
         val endInd = lineStart + columnNumber.range.last + 1
 
-        val file = resolveFilePath(fileGroup.value) ?: return null
+        val file = resolveFilePath(filePath.value) ?: return null
         val row = lineNumber.value.toInt() - 1
         val column = columnNumber.value.toInt() - 1
 
@@ -42,8 +48,7 @@ class MoveFileHyperlinkFilter(
 
     private fun resolveFilePath(fileName: String): VirtualFile? {
         val portablePath = FileUtil.toSystemIndependentName(fileName).trim()
-        val absPath =
-            moveProjectBasePath.resolveAbsPath(portablePath) ?: return null
+        val absPath = moveProjectBasePath.resolveAbsPath(portablePath) ?: return null
         return VirtualFileManager.getInstance().findFileByNioPath(absPath)
     }
 }

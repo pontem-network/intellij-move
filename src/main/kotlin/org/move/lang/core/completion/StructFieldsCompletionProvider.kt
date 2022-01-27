@@ -10,6 +10,8 @@ import com.intellij.util.ProcessingContext
 import org.move.lang.core.MvPsiPatterns.bindingPat
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.mslScope
 import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.withParent
@@ -39,6 +41,7 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
         val pos = parameters.position
         var element = pos.parent
         if (element is MvBindingPat) element = element.parent
+
         when (element) {
             is MvStructPatField -> {
                 val structPat = element.structPat
@@ -57,10 +60,11 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
                 )
             }
             is MvStructFieldRef -> {
-                processItems(element, Namespace.DOT_ACCESSED_FIELD) {
+                val itemVis = ItemVis(setOf(Namespace.DOT_ACCESSED_FIELD), msl = element.mslScope)
+                processItems(element, itemVis) {
                     val field = it.element as? MvStructFieldDef
                     if (field != null) {
-                        result.addElement(field.createLookupElement())
+                        result.addElement(field.createCompletionLookupElement())
                     }
                     false
                 }
@@ -69,12 +73,12 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
     }
 
     private fun addFieldsToCompletion(
-        referredStruct: MvStruct_,
+        referredStruct: MvStruct,
         providedFieldNames: List<String>,
         result: CompletionResultSet,
     ) {
         for (field in referredStruct.fields.filter { it.name !in providedFieldNames }) {
-            result.addElement(field.createLookupElement())
+            result.addElement(field.createCompletionLookupElement())
         }
     }
 }

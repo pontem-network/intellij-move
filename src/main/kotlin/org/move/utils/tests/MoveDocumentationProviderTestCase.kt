@@ -16,13 +16,8 @@ abstract class MvDocumentationProviderProjectTestCase: MvProjectTestCase() {
         block: MvDocumentationProvider.(PsiElement, PsiElement?) -> String?
     ) {
         val testProject = testProjectFromFileTree(code)
-        val fileWithCaret =
-            testProject.rootDirectory.toNioPath()
-                .resolve(testProject.fileWithCaret).findVirtualFile()
-                ?: error("No file with //^ caret")
-        myFixture.configureFromExistingVirtualFile(fileWithCaret)
+        myFixture.configureFromFileWithCaret(testProject)
 
-//        val (originalElement, offset) = findElement()
         val (originalElement, offset) = myFixture.findElementAndOffsetInEditor<MvElement>()
         val element = DocumentationManager.getInstance(project)
             .findTargetElement(myFixture.editor, offset, myFixture.file, originalElement)!!

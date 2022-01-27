@@ -8,7 +8,7 @@ import org.move.lang.core.psi.impl.MvNamedElementImpl
 import javax.swing.Icon
 
 abstract class MvModuleImportMixin(node: ASTNode) : MvNamedElementImpl(node),
-                                                      MvModuleImport {
+                                                    MvModuleImport {
     override val nameElement: PsiElement?
         get() =
             importAlias?.identifier ?: fqModuleRef?.identifier

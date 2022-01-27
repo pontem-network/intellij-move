@@ -9,7 +9,6 @@ import org.move.lang.core.psi.ext.findLastChildByType
 interface MvNamedElement : MvElement,
                              PsiNamedElement,
                              NavigatablePsiElement {
-    @JvmDefault
     val nameElement: PsiElement?
         get() = findLastChildByType(MvElementTypes.IDENTIFIER)
 }

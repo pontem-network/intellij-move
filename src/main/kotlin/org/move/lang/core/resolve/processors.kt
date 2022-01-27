@@ -6,10 +6,8 @@ import org.move.lang.core.psi.MvNamedElement
 
 data class SimpleScopeEntry(
     val name: String,
-    val element: MvNamedElement?
+    val element: MvNamedElement
 )
-
-//class Stop: Resolution()
 
 fun interface MatchingProcessor {
     fun match(entry: SimpleScopeEntry): Boolean
@@ -24,9 +22,6 @@ fun interface MatchingProcessor {
         return match(name, element)
     }
 
-    fun matchAll(elements: Collection<MvNamedElement>): Boolean =
-        elements.any { match(it) }
-
-    fun matchAllScopeEntriess(scopeEntries: Collection<SimpleScopeEntry>): Boolean =
-        scopeEntries.any { match(it) }
+    fun matchAll(vararg collections: Collection<MvNamedElement>): Boolean =
+        listOf(*collections).flatten().any { match(it) }
 }

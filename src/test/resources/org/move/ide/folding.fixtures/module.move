@@ -1,4 +1,4 @@
-module M <fold text='{...}'>{
+module 0x1::M <fold text='{...}'>{
     fun main() <fold text='{...}'>{
         let a = 1;
     }</fold>
@@ -11,5 +11,7 @@ module M <fold text='{...}'>{
         assert true;
     }</fold>
 
-    resource struct R <fold text='{...}'>{ val: u8 }</fold>
+    spec module {}
+
+    struct R <fold text='{...}'>{ val: u8 }</fold>
 }</fold>

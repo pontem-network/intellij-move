@@ -8,7 +8,6 @@ import org.move.lang.MoveParserDefinition
 import org.move.lang.core.psi.MvElement
 
 interface MvDocAndAttributeOwner: MvElement, NavigatablePsiElement {
-    @JvmDefault
     fun docComments(): Sequence<PsiElement> {
         return childrenWithLeaves
             // All these outer elements have been edge bound; if we reach something that isn't one
