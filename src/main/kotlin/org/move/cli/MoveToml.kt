@@ -1,7 +1,9 @@
 package org.move.cli
 
 import com.intellij.openapi.project.Project
-import org.move.lang.core.types.Address
+import com.intellij.ui.navigation.Place
+import org.move.lang.core.psi.MvNamedAddress
+import org.move.lang.core.types.shortenYamlAddress
 import org.move.openapiext.*
 import org.move.stdext.chain
 import org.toml.lang.psi.*
@@ -12,24 +14,25 @@ typealias RawAddressVal = Pair<String, TomlKeyValue>
 data class AddressVal(
     val value: String,
     val keyValue: TomlKeyValue?,
-    val placeholderKeyValue: TomlKeyValue?
+    val placeholderKeyValue: TomlKeyValue?,
+    val packageName: String
 ) {
     val tomlKeySegment: TomlKeySegment?
         get() {
             return this.placeholderKeyValue?.singleSegmentOrNull()
                 ?: this.keyValue?.singleSegmentOrNull()
         }
-
-    companion object {
-        fun fromYamlAddress(text: String): AddressVal {
-            return AddressVal(text, null, null)
-        }
-    }
 }
 
+data class PlaceholderVal(
+    val keyValue: TomlKeyValue,
+    val packageName: String,
+)
+
 typealias RawAddressMap = MutableMap<String, RawAddressVal>
+
 typealias AddressMap = MutableMap<String, AddressVal>
-typealias PlaceholderMap = MutableMap<String, TomlKeyValue>
+typealias PlaceholderMap = MutableMap<String, PlaceholderVal>
 
 typealias DependenciesMap = MutableMap<String, Dependency>
 typealias DepsSubstMap = MutableMap<String, Pair<Dependency, RawAddressMap>>
@@ -72,6 +75,8 @@ class MoveToml(
     val dependencies: DepsSubstMap = mutableMapOf(),
     val dev_dependencies: DepsSubstMap = mutableMapOf(),
 ) {
+    val packageName: String? get() = packageTable?.name
+
     companion object {
         fun fromTomlFile(tomlFile: TomlFile, projectRoot: Path): MoveToml {
             val packageTomlTable = tomlFile.getTable("package")

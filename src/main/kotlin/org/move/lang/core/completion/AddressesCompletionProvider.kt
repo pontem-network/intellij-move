@@ -62,10 +62,8 @@ object AddressesCompletionProvider : MvCompletionProvider() {
         val element = parameters.position
         val moveProject = element.moveProject ?: return
         val addresses = moveProject.addresses()
-        for ((name, value) in addresses.entries.sortedBy { it.key }) {
-            val lookup = LookupElementBuilder
-                .create(name)
-                .withTypeText(value.value)
+        for ((name, addressVal) in addresses.entries.sortedBy { it.key }) {
+            val lookup = addressVal.createCompletionLookupElement(name)
             result.addElement(lookup)
         }
     }

@@ -12,7 +12,7 @@ import org.move.utils.tests.base.findElementInEditor
 
 class LookupElementTest : MvTestBase() {
     fun `test function param`() = check("""
-        module M {
+        module 0x1::M {
             fun call(a: u8) {
                    //^
             }
@@ -20,14 +20,14 @@ class LookupElementTest : MvTestBase() {
     """, typeText = "u8")
 
     fun `test function`() = check("""
-        module M {
+        module 0x1::M {
             fun call(x: u64, account: &signer): u8 {}
               //^
         }
     """, tailText = "(x: u64, account: &signer)", typeText = "u8")
 
     fun `test multiline params function`() = check("""
-        module M {
+        module 0x1::M {
             fun call(x: u64, 
                      account: &signer): u8 {}
               //^
@@ -35,14 +35,14 @@ class LookupElementTest : MvTestBase() {
     """, tailText = "(x: u64, account: &signer)", typeText = "u8")
 
     fun `test const item`() = check("""
-        module M {
+        module 0x1::M {
             const MY_CONST: u8 = 1;
                 //^
         }
     """, typeText = "u8")
 
     fun `test struct`() = check("""
-        module M {
+        module 0x1::M {
             struct MyStruct { val: u8 }
                  //^
         }
@@ -55,14 +55,10 @@ class LookupElementTest : MvTestBase() {
         }
     """, typeText = "main.move")
 
-//    fun `test define`() = check("""
-//        module M {
-//            spec module {
-//                define renamed_reserve_exists(val: u8): bool {}
-//                     //^
-//            }
-//        }
-//    """, tailText = "(val: u8)", typeText = "bool")
+    fun `test module with named address`() = check("""
+        module Std::M {}
+                  //^
+    """, typeText = "main.move")
 
     private fun check(
         @Language("Move") code: String,

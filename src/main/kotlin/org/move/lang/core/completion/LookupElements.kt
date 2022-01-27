@@ -8,6 +8,8 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import org.move.cli.AddressVal
+import org.move.ide.MvIcons
 import org.move.ide.presentation.shortPresentableText
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -30,33 +32,30 @@ const val FIELD_DECL_PRIORITY = 3.0
 //const val MACRO_PRIORITY = -0.1
 //const val DEPRECATED_PRIORITY = -1.0
 
-fun functionInsertHandler(isSpec: Boolean, hasParams: Boolean): InsertHandler<LookupElement> =
-    InsertHandler<LookupElement> { ctx, _ ->
-        if (isSpec) {
-            if (!ctx.alreadyHasSpace) ctx.addSuffix(" ")
-        } else {
-            if (!ctx.alreadyHasCallParens) {
-                ctx.document.insertString(ctx.selectionEndOffset, "()")
-            }
-            EditorModificationUtil.moveCaretRelatively(
-                ctx.editor,
-                if (hasParams) 1 else 2
-            )
-        }
-    }
-
 fun MvNamedElement.createLookupElement(): LookupElementBuilder {
     return LookupElementBuilder
         .createWithIcon(this)
         .withLookupString(this.name ?: "")
 }
 
+fun MvModuleDef.createSelfLookup(): LookupElement {
+    return LookupElementBuilder
+        .create("Self")
+        .withBoldness(true)
+}
+
+fun AddressVal.createCompletionLookupElement(lookupString: String): LookupElement {
+    return LookupElementBuilder
+        .create(lookupString)
+        .withIcon(MvIcons.ADDRESS)
+        .withTypeText(packageName)
+}
+
 fun MvNamedElement.createCompletionLookupElement(
     insertHandler: InsertHandler<LookupElement> = MvInsertHandler()
 ): LookupElement {
     return when (this) {
-        is MvModuleImport ->
-            this.createLookupElement()
+        is MvModuleImport -> this.createLookupElement()
 
         is MvFunction -> this.createLookupElement()
             .withTailText(this.functionParameterList?.parametersText ?: "()")
@@ -81,7 +80,7 @@ fun MvNamedElement.createCompletionLookupElement(
         is MvBindingPat -> this.createLookupElement()
             .withTypeText(this.inferBindingPatTy().shortPresentableText(true))
 
-        else -> LookupElementBuilder.create(this).withLookupString(name ?: "")
+        else -> LookupElementBuilder.create(this)
     }
 }
 

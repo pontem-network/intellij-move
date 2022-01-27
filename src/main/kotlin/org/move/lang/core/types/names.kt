@@ -1,7 +1,16 @@
 package org.move.lang.core.types
 
+fun String.shortenYamlAddress(): String {
+    if (!this.startsWith("0")) return this
+    val trimmed = if (!this.startsWith("0x")) {
+        this.substring(1 until this.length)
+    } else {
+        this.substring(2 until this.length)
+    }.trimStart('0')
+    return "0x$trimmed"
+}
+
 data class Address(val text: String) {
-    // TODO: extract address string handling
     fun normalized(): Address {
         if (!text.startsWith("0")) return this
         val trimmed = if (!text.startsWith("0x")) {

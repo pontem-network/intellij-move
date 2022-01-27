@@ -27,20 +27,19 @@ data class DeclaredAddresses(
 ) {
     fun placeholdersAsValues(): AddressMap {
         val values = mutableAddressMap()
-        for (ph in placeholders) {
-            val value = ph.value.value?.stringValue() ?: continue
-            values[ph.key] = AddressVal(value, ph.value, ph.value)
+        for ((name, pVal) in placeholders.entries) {
+            val value = pVal.keyValue.value?.stringValue() ?: continue
+            values[name] = AddressVal(value, pVal.keyValue, pVal.keyValue, pVal.packageName)
         }
         return values
     }
 
     fun get(name: String): AddressVal? {
         if (name in this.values) return this.values[name]
-        if (name in this.placeholders) {
-            val placeholderKeyVal = this.placeholders[name]
-            return AddressVal(MvConstants.ADDR_PLACEHOLDER, null, placeholderKeyVal)
-        }
-        return null
+        return this.placeholders[name]
+            ?.let {
+                AddressVal(MvConstants.ADDR_PLACEHOLDER, null, it.keyValue, it.packageName)
+            }
     }
 }
 
@@ -53,19 +52,20 @@ fun testEmptyMvProject(project: Project): MoveProject {
 
 fun applyAddressSubstitutions(
     addresses: DeclaredAddresses,
-    subst: RawAddressMap
+    subst: RawAddressMap,
+    packageName: String
 ): Pair<AddressMap, PlaceholderMap> {
     val newDepAddresses = addresses.values.copyMap()
     val newDepPlaceholders = placeholderMap()
 
-    for ((placeholderName, placeholderKeyValue) in addresses.placeholders.entries) {
-        val placeholderSubst = subst[placeholderName]
+    for ((pName, pVal) in addresses.placeholders.entries) {
+        val placeholderSubst = subst[pName]
         if (placeholderSubst == null) {
-            newDepPlaceholders[placeholderName] = placeholderKeyValue
+            newDepPlaceholders[pName] = pVal
             continue
         }
         val (value, keyValue) = placeholderSubst
-        newDepAddresses[placeholderName] = AddressVal(value, keyValue, placeholderKeyValue)
+        newDepAddresses[pName] = AddressVal(value, keyValue, pVal.keyValue, packageName)
     }
     return Pair(newDepAddresses, newDepPlaceholders)
 }
@@ -77,7 +77,7 @@ data class MoveProject(
     val declaredAddrs: DeclaredAddresses,
     val declaredDevAddresses: DeclaredAddresses
 ) {
-    val packageName: String? get() = moveToml.packageTable?.name
+    val packageName: String? get() = moveToml.packageName
 
     val rootPath: Path? get() = root.toNioPathOrNull()
     fun projectDirPath(name: String): Path? = rootPath?.resolve(name)
@@ -106,15 +106,19 @@ data class MoveProject(
         for ((dep, subst) in this.moveToml.dependencies.values) {
             val depDeclaredAddrs = dep.declaredAddresses(project) ?: continue
 
-            val (newDepAddresses, newDepPlaceholders) = applyAddressSubstitutions(depDeclaredAddrs, subst)
+            val (newDepAddresses, newDepPlaceholders) = applyAddressSubstitutions(
+                depDeclaredAddrs,
+                subst,
+                packageName ?: ""
+            )
 
             // renames
             for ((renamedName, originalVal) in subst.entries) {
                 val (originalName, keyVal) = originalVal
-                val addressVal = depDeclaredAddrs.get(originalName)
-                if (addressVal != null) {
+                val origVal = depDeclaredAddrs.get(originalName)
+                if (origVal != null) {
                     newDepAddresses[renamedName] =
-                        AddressVal(addressVal.value, keyVal, null)
+                        AddressVal(origVal.value, keyVal, null, packageName ?: "")
                 }
             }
             addresses.putAll(newDepAddresses)

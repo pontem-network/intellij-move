@@ -8,9 +8,10 @@ object MvIcons {
     val MOVE = load("/icons/move.svg")
     val MOVE_BYTECODE = load("/icons/mv.svg")
 
+    val ADDRESS = AllIcons.Nodes.Annotationtype
     val MODULE = AllIcons.Nodes.Method
 
-    val STRUCT = AllIcons.Nodes.Class
+    val STRUCT = AllIcons.Nodes.AbstractClass
     val STRUCT_FIELD = AllIcons.Nodes.Field
 
     val CONST = AllIcons.Nodes.Constant

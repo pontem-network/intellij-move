@@ -10,7 +10,7 @@ import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.resolve.processFQModuleRef
 import org.move.lang.core.withParent
 
-object QualModulesCompletionProvider : MvCompletionProvider() {
+object FQModuleCompletionProvider : MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() =
             PlatformPatterns.psiElement()

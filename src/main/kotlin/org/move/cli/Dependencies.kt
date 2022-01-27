@@ -68,12 +68,7 @@ sealed class Dependency {
 
         override fun declaredAddresses(project: Project): DeclaredAddresses? {
             val buildInfo = BuildInfo.fromRootPath(dirPath) ?: return null
-            val addresses = buildInfo
-                .compiledPackageInfo.address_alias_instantiation
-                .mapValues {
-                    AddressVal.fromYamlAddress(it.value)
-                }
-                .toMutableMap()
+            val addresses = buildInfo.addresses()
             return DeclaredAddresses(addresses, mutableMapOf())
         }
     }

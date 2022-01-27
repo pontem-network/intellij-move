@@ -3,14 +3,19 @@ package org.move.lang.core.completion
 import com.intellij.codeInsight.completion.BasicInsertHandler
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.lookup.Lookup
+import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.move.ide.MvIcons
 import org.move.lang.core.psi.MvItemImport
 import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvMultiItemImport
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.moduleImport
+import org.move.lang.core.psi.ext.names
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
@@ -32,6 +37,11 @@ object ImportsCompletionProvider : MvCompletionProvider() {
 
         if (parameters.position !== itemImport.referenceNameElement) return
         val referredModule = moduleRef.reference?.resolve() as? MvModuleDef ?: return
+
+        val p = itemImport.parent
+        if (p is MvMultiItemImport && "Self" !in p.names) {
+            result.addElement(referredModule.createSelfLookup())
+        }
 
         val vs = when {
             moduleRef.isSelf -> setOf(Visibility.Internal)

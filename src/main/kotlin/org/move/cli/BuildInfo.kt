@@ -1,6 +1,7 @@
 package org.move.cli
 
 import com.intellij.util.io.readText
+import org.move.lang.core.types.shortenYamlAddress
 import org.move.openapiext.resolveExisting
 import org.yaml.snakeyaml.Yaml
 import java.nio.file.Path
@@ -14,6 +15,18 @@ data class BuildInfo(
     val compiledPackageInfo: CompiledPackageInfo,
     val dependencies: List<String>
 ) {
+    fun addresses(): AddressMap {
+        val packageName = compiledPackageInfo.package_name ?: ""
+        val addresses = this
+            .compiledPackageInfo.address_alias_instantiation
+            .mapValues {
+                val shortAddress = it.value.shortenYamlAddress()
+                AddressVal(shortAddress, null, null, packageName)
+            }
+            .toMutableMap()
+        return addresses
+    }
+
     companion object {
         fun fromRootPath(rootDirPath: Path): BuildInfo? {
             val yamlFilePath = rootDirPath.resolveExisting("BuildInfo.yaml") ?: return null
