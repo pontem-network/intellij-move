@@ -13,7 +13,16 @@
             <p>We'd appreciate if you click the "Star" button or leave some feedback so we'd know plugin is useful to the community!</p>
         ]]>
     </description>
-
+    <change-notes>
+        <![CDATA[
+    <h3>Version 1.4.0</h3>
+    <ul>
+    <li>Add name resolution and completion support to MSL(spec blocks).
+    <li>Add environment variables to Move Run Configuration. This allows running Move Prover from IDE.</li>
+    <li>Add better support for git dependencies.</li>
+    <li>Lots of minor fixes and improvements.</li>
+    </ul>]]>
+    </change-notes>
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
@@ -46,13 +55,13 @@
         <lang.braceMatcher language="Move"
                            implementationClass="org.move.ide.typing.MvBraceMatcher"/>
         <lang.quoteHandler language="Move"
-                           implementationClass="org.move.ide.typing.MvQuoteHandler" />
+                           implementationClass="org.move.ide.typing.MvQuoteHandler"/>
         <typedHandler implementation="org.move.ide.typing.MvAngleBraceTypedHandler"
                       id="MvAngleBracketsHandler"/>
         <enterHandlerDelegate implementation="org.move.ide.typing.MvEnterInLineCommentHandler"
                               id="MvEnterInLineComments"/>
         <backspaceHandlerDelegate implementation="org.move.ide.typing.MvAngleBracketsBackspaceHandler"
-                                  id="MvAngleBracketsBackspaceHandler" />
+                                  id="MvAngleBracketsBackspaceHandler"/>
 
         <lang.formatter language="Move"
                         implementationClass="org.move.ide.formatter.MvFormattingModelBuilder"/>
@@ -74,7 +83,7 @@
                 implementation="org.move.ide.search.NamedAddressFindUsagesHandlerFactory"/>
 
         <completion.confidence language="Move"
-                               implementationClass="org.move.lang.core.completion.MvCompletionConfidence" />
+                               implementationClass="org.move.lang.core.completion.MvCompletionConfidence"/>
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.core.completion.CommonCompletionContributor"/>
         <completion.contributor language="Move"
@@ -156,11 +165,11 @@
         <localInspection language="Move" groupName="Move"
                          displayName="Type checking"
                          enabledByDefault="true" level="ERROR"
-                         implementationClass="org.move.ide.inspections.MvTypeCheckInspection" />
+                         implementationClass="org.move.ide.inspections.MvTypeCheckInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Missing acquires"
                          enabledByDefault="true" level="ERROR"
-                         implementationClass="org.move.ide.inspections.MvMissingAcquiresInspection" />
+                         implementationClass="org.move.ide.inspections.MvMissingAcquiresInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>
