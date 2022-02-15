@@ -5,7 +5,7 @@ import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.utils.tests.completion.CompletionTestCase
 
 class BuiltInsCompletionTest : CompletionTestCase() {
-    fun `test autocompletion for built-in functions in expr position`() = doTest("""
+    fun `test autocompletion for built-in functions in expr position`() = checkContainsBuiltins("""
         module 0x1::M {
             fun main() {
                 /*caret*/
@@ -77,7 +77,35 @@ class BuiltInsCompletionTest : CompletionTestCase() {
     }    
     """)
 
-    private fun doTest(@Language("Move") text: String) {
+    fun `test autocomplete assert! in module`() = doSingleCompletion("""
+    module 0x1::M {
+        fun m() {
+            ass/*caret*/
+        }
+    }    
+    """, """
+    module 0x1::M {
+        fun m() {
+            assert!(/*caret*/)
+        }
+    }    
+    """)
+
+    fun `test autocomplete assert! in script`() = doSingleCompletion("""
+    script {
+        fun m() {
+            ass/*caret*/
+        }
+    }    
+    """, """
+    script {
+        fun m() {
+            assert!(/*caret*/)
+        }
+    }    
+    """)
+
+    private fun checkContainsBuiltins(@Language("Move") text: String) {
         val functionNames = BUILTIN_FUNCTIONS
         for (name in functionNames) {
             checkContainsCompletion(name, text)

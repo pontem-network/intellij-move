@@ -79,7 +79,6 @@ fun MvModuleDef.builtinFunctions(): List<MvFunction> {
             """, project
         ),
         createBuiltinFunction("native fun freeze<S>(mut_ref: &mut S): &S;", project),
-        createBuiltinFunction("native fun assert(_: bool, err: u64);", project),
     )
 }
 

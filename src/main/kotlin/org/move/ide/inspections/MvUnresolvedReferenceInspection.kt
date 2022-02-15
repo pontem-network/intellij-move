@@ -31,6 +31,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             if (path.isMslAvailable()) return
             if (path.isPrimitiveType()) return
             if (path.isInsideAssignmentLeft()) return
+            if (path.text == "assert") return
 
             val moduleRef = path.pathIdent.moduleRef
             if (moduleRef != null) {

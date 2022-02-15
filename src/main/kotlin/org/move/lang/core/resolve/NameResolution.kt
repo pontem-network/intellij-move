@@ -215,7 +215,7 @@ fun processLexicalDeclarations(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
                     scope.constBindings(),
-                    scope.builtinFunctions(),
+//                    scope.builtinFunctions(),
                 ).flatten(),
             )
             is MvFunction -> processor.matchAll(scope.parameterBindings)

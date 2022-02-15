@@ -16,7 +16,7 @@ val BUILTIN_TYPE_IDENTIFIERS = PRIMITIVE_BUILTIN_TYPE_IDENTIFIERS + setOf("vecto
 val GLOBAL_STORAGE_ACCESS_FUNCTIONS =
     setOf("move_from", "borrow_global", "borrow_global_mut", "exists", "freeze")
 val BUILTIN_FUNCTIONS =
-    GLOBAL_STORAGE_ACCESS_FUNCTIONS + setOf("assert", "move_to")
+    GLOBAL_STORAGE_ACCESS_FUNCTIONS + setOf("move_to")
 
 class HighlightingAnnotator : MvAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {

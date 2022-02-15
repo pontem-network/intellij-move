@@ -26,8 +26,9 @@ class CommonCompletionContributor : CompletionContributor() {
         extend(
             CompletionType.BASIC,
             MvPsiPatterns.ability(),
-            TraitsCompletionProvider()
+            TraitsCompletionProvider
         )
+        extend(CompletionType.BASIC, MacrosCompletionProvider)
     }
 
     fun extend(type: CompletionType?, provider: MvCompletionProvider) {
