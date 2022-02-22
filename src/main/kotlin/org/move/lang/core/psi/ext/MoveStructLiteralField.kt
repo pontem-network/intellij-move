@@ -6,12 +6,10 @@ import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvElementImpl
 import org.move.lang.core.psi.MvStructLitExpr
 import org.move.lang.core.psi.MvStructLitField
-import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.resolve.ref.MvReference
 import org.move.lang.core.resolve.ref.MvStructFieldReferenceImpl
 import org.move.lang.core.resolve.ref.MvStructLitShorthandFieldReferenceImpl
 import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.inferExprTy
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -27,7 +25,7 @@ fun MvStructLitField.inferInitExprTy(ctx: InferenceContext): Ty {
         // find type of binding
         val resolved =
             this.reference.multiResolve().filterIsInstance<MvBindingPat>().firstOrNull() ?: return TyUnknown
-        resolved.inferBindingPatTy()
+        resolved.ty()
     } else {
         // find type of expression
         initExpr.inferExprTy(ctx)

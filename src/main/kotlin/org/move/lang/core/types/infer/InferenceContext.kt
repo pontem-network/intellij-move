@@ -113,7 +113,7 @@ fun isCompatible(expectedTy: Ty, inferredTy: Ty): Boolean {
     }
 }
 
-class InferenceContext {
+class InferenceContext(val msl: Boolean = false) {
     val exprTypes = mutableMapOf<MvExpr, Ty>()
     val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
 

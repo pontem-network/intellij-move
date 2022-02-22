@@ -109,6 +109,8 @@
                                    implementationClass="org.move.ide.hints.StructLitFieldsInfoHandler"/>
         <codeInsight.parameterNameHints language="Move"
                                         implementationClass="org.move.ide.hints.MvInlayParameterHintsProvider"/>
+        <codeInsight.inlayProvider language="Move"
+                                   implementationClass="org.move.ide.hints.type.MvInlayTypeHintsProvider"/>
 
         <defaultLiveTemplates file="liveTemplates/Move.xml"/>
         <liveTemplateContext implementation="org.move.ide.live_templates.MvContextType$Generic"/>

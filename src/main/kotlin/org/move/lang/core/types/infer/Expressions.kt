@@ -21,7 +21,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
         is MvDotExpr -> inferDotExprTy(expr, ctx)
         is MvStructLitExpr -> inferStructLitExpr(expr, ctx)
         is MvDerefExpr -> inferDerefExprTy(expr, ctx)
-        is MvLitExpr -> inferLitExprTy(expr)
+        is MvLitExpr -> inferLitExprTy(expr, ctx)
 
         is MvMoveExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
         is MvCopyExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
@@ -53,7 +53,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
 private fun inferRefExprTy(refExpr: MvRefExpr): Ty {
     val binding =
         refExpr.path.reference?.resolve() as? MvBindingPat ?: return TyUnknown
-    return binding.inferBindingPatTy()
+    return binding.ty()
 }
 
 private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): Ty {
@@ -164,15 +164,17 @@ private fun inferDerefExprTy(derefExpr: MvDerefExpr, ctx: InferenceContext): Ty 
     return (exprTy as? TyReference)?.referenced ?: TyUnknown
 }
 
-private fun inferLitExprTy(litExpr: MvLitExpr): Ty {
+private fun inferLitExprTy(litExpr: MvLitExpr, ctx: InferenceContext): Ty {
     return when {
         litExpr.boolLiteral != null -> TyBool
         litExpr.addressLit != null -> TyAddress
         litExpr.integerLiteral != null || litExpr.hexIntegerLiteral != null -> {
+            if (ctx.msl) return TyNum
             val literal = (litExpr.integerLiteral ?: litExpr.hexIntegerLiteral)!!
             return TyInteger.fromSuffixedLiteral(literal) ?: TyInteger(TyInteger.DEFAULT_KIND)
         }
         litExpr.byteStringLiteral != null -> TyByteString
+        litExpr.hexStringLiteral != null -> TyHexString
         else -> TyUnknown
     }
 }

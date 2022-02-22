@@ -12,10 +12,11 @@ import javax.swing.Icon
 
 val MvBindingPat.owner: PsiElement?
     get() = PsiTreeUtil.findFirstParent(this) {
-        it is MvLetStatement || it is MvFunctionParameter || it is MvConstDef
+        it is MvLetStatement
+                || it is MvFunctionParameter || it is MvConstDef
     }
 
-fun MvBindingPat.inferBindingPatTy(): Ty = inferBindingTy(this)
+fun MvBindingPat.ty(): Ty = inferBindingTy(this)
 
 abstract class MvBindingPatMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                                   MvBindingPat {

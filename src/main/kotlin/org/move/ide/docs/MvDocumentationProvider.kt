@@ -46,7 +46,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
-                val type = docElement.inferBindingPatTy().renderForDocs(true)
+                val type = docElement.ty().renderForDocs(true)
                 buffer += presentationInfo.type
                 buffer += " "
                 buffer.b { it += presentationInfo.name }

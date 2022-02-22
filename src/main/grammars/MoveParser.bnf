@@ -649,7 +649,7 @@ StructPatFieldBinding ::= ':' Pat { pin = 1 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Statements
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Statement ::= LetStatement | ExprStatement
+Statement ::= LetMoveStatement | ExprStatement
 
 SpecExprStatement ::= (SpecExpr_item !'}') ';' { pin = 1 }
 private SpecExpr ::= SpecExprStatement_items | Expr
@@ -669,7 +669,19 @@ private SpecExprStatement_items ::= AssumeSpecExpr | AssertSpecExpr | AbortsIfSp
 //    recoverWhile = ExprStatement_recover
 //}
 
-LetStatement ::= let Pat TypeAnnotation? Initializer? ';' { pin = 1 }
+private post ::= <<postKeyword>>
+fake LetStatement ::= let post? Pat? TypeAnnotation? Initializer? ';'?
+
+LetMoveStatement ::= let Pat TypeAnnotation? Initializer? ';'
+{
+    pin = 1
+    elementType = LetStatement
+}
+LetMslStatement ::= (let post?) Pat TypeAnnotation? Initializer? ';'
+{
+    pin = 1
+    elementType = LetStatement
+}
 
 ExprStatement ::= (ExprStatement_items !('}')) ';' { pin = 1 }
 private ExprStatement_items ::= IfExpr
@@ -1036,7 +1048,7 @@ private SpecStatement ::= ImportStatement
 //                               | EmitsSpecStatement
 //                               | AggregatePredicateSpecStatement
 //                               | SpecBlockSpecStatement
-                               | LetSpecStatement
+                               | LetMslStatement
 //                               | ChooseSpecStatement
 //                               | ExprSpecStatement
                                | SpecExprStatement
@@ -1060,8 +1072,8 @@ SchemaVarDeclStatement ::= IDENTIFIER TypeAnnotation ';'
 LocalVariableSpecStatement ::= local IDENTIFIER TypeAnnotation ';' { pin = 1 }
 GlobalVariableSpecStatement ::= global IDENTIFIER TypeAnnotation ';' { pin = 1 }
 
-private post ::= <<postKeyword>>
-LetSpecStatement ::= (let post?) Pat TypeAnnotation? Initializer? ';' { pin = 1 }
+//private post ::= <<postKeyword>>
+//LetSpecStatement ::= (let post?) Pat TypeAnnotation? Initializer? ';' { pin = 1 }
 PragmaSpecStatement ::= pragma <<comma_sep_items PragmaAttribute>> ';' { pin = 1 }
 PragmaAttribute ::= IDENTIFIER ('=' Expr)?
 

@@ -1,10 +1,7 @@
 package org.move.lang.core.types.infer
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.declaredTy
-import org.move.lang.core.psi.ext.fields
-import org.move.lang.core.psi.ext.owner
-import org.move.lang.core.psi.ext.pat
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.declaredTy
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyStruct
@@ -56,7 +53,7 @@ fun inferBindingTy(bindingPat: MvBindingPat): Ty {
                 return collectBindings(pat, explicitTy)[bindingPat] ?: TyUnknown
             }
 
-            val inference = InferenceContext()
+            val inference = InferenceContext(msl = bindingPat.isMslAvailable())
             val inferredTy = owner.initializer?.expr?.let { inferExprTy(it, inference) } ?: TyUnknown
             return collectBindings(pat, inferredTy)[bindingPat] ?: TyUnknown
         }

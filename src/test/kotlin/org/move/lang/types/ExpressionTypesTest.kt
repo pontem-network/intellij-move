@@ -270,4 +270,22 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test x string`() = testExpr("""
+    module 0x1::M {
+        fun m() {
+            x"1234";
+            //^ vector<u8>
+        }
+    }    
+    """)
+
+    fun `test msl num`() = testExpr("""
+    module 0x1::M {
+        spec module {
+            1;
+          //^ num  
+        }
+    }    
+    """)
 }

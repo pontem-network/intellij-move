@@ -44,8 +44,8 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
                 if (!isCompatible(ifTy, elseTy) && !isCompatible(elseTy, ifTy)) {
                     holder.registerTypeError(
-                        elseExpr, "Incompatible type '${elseTy.typeLabel(o)}'" +
-                                ", expected '${ifTy.typeLabel(o)}'"
+                        elseExpr, "Incompatible type '${elseTy.name()}'" +
+                                ", expected '${ifTy.name()}'"
                     )
                 }
             }
@@ -58,7 +58,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 if (!isCompatible(exprTy, TyBool)) {
                     holder.registerTypeError(
                         expr,
-                        "Incompatible type '${exprTy.typeLabel(o)}', expected 'bool'"
+                        "Incompatible type '${exprTy.name()}', expected 'bool'"
                     )
                 }
             }
@@ -109,9 +109,8 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                     val expectedFieldTy = fieldDef.declaredTy
 
                     if (!isCompatible(expectedFieldTy, initExprTy)) {
-                        val exprTypeName = initExprTy.typeLabel(relativeTo = o)
-                        val expectedTypeName = expectedFieldTy.typeLabel(relativeTo = o)
-
+                        val exprTypeName = initExprTy.name()
+                        val expectedTypeName = expectedFieldTy.name()
                         val message =
                             "Invalid argument for field '$fieldName': " +
                                     "type '$exprTypeName' is not compatible with '$expectedTypeName'"
@@ -164,8 +163,10 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
                     if (!isCompatible(paramTy, exprTy)) {
                         val paramName = parameter.bindingPat.name ?: continue
-                        val exprTypeName = exprTy.typeLabel(relativeTo = callArgs)
-                        val expectedTypeName = paramTy.typeLabel(relativeTo = callArgs)
+                        val exprTypeName = exprTy.name()
+                        val expectedTypeName = paramTy.name()
+//                        val exprTypeName = exprTy.typeLabel(relativeTo = callArgs)
+//                        val expectedTypeName = paramTy.typeLabel(relativeTo = callArgs)
 
                         val message =
                             "Invalid argument for parameter '$paramName': " +

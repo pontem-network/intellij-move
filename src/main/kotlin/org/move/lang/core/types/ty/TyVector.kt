@@ -18,3 +18,4 @@ open class TyVector(val item: Ty): Ty {
 }
 
 object TyByteString: TyVector(TyInteger(TyInteger.Kind.u8))
+object TyHexString: TyVector(TyInteger(TyInteger.Kind.u8))
