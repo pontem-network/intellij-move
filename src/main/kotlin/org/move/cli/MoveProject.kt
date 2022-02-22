@@ -1,7 +1,11 @@
 package org.move.cli
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 import org.move.lang.MvFile
 import org.move.lang.core.types.Address
 import org.move.lang.toMvFile
@@ -75,8 +79,8 @@ data class MoveProject(
     val moveToml: MoveToml,
     val root: VirtualFile,
     val declaredAddrs: DeclaredAddresses,
-    val declaredDevAddresses: DeclaredAddresses
-) {
+    val declaredDevAddresses: DeclaredAddresses,
+) : UserDataHolderBase() {
     val packageName: String? get() = moveToml.packageName
 
     val rootPath: Path? get() = root.toNioPathOrNull()
@@ -101,40 +105,43 @@ data class MoveProject(
     }
 
     fun declaredAddresses(): DeclaredAddresses {
-        val addresses = mutableAddressMap()
-        val placeholders = placeholderMap()
-        for ((dep, subst) in this.moveToml.dependencies.values) {
-            val depDeclaredAddrs = dep.declaredAddresses(project) ?: continue
+        return CachedValuesManager.getManager(this.project).getCachedValue(this) {
+            val addresses = mutableAddressMap()
+            val placeholders = placeholderMap()
+            for ((dep, subst) in this.moveToml.dependencies.values) {
+                val depDeclaredAddrs = dep.declaredAddresses(project) ?: continue
 
-            val (newDepAddresses, newDepPlaceholders) = applyAddressSubstitutions(
-                depDeclaredAddrs,
-                subst,
-                packageName ?: ""
-            )
+                val (newDepAddresses, newDepPlaceholders) = applyAddressSubstitutions(
+                    depDeclaredAddrs,
+                    subst,
+                    packageName ?: ""
+                )
 
-            // renames
-            for ((renamedName, originalVal) in subst.entries) {
-                val (originalName, keyVal) = originalVal
-                val origVal = depDeclaredAddrs.get(originalName)
-                if (origVal != null) {
-                    newDepAddresses[renamedName] =
-                        AddressVal(origVal.value, keyVal, null, packageName ?: "")
+                // renames
+                for ((renamedName, originalVal) in subst.entries) {
+                    val (originalName, keyVal) = originalVal
+                    val origVal = depDeclaredAddrs.get(originalName)
+                    if (origVal != null) {
+                        newDepAddresses[renamedName] =
+                            AddressVal(origVal.value, keyVal, null, packageName ?: "")
+                    }
                 }
+                addresses.putAll(newDepAddresses)
+                placeholders.putAll(newDepPlaceholders)
             }
-            addresses.putAll(newDepAddresses)
-            placeholders.putAll(newDepPlaceholders)
+            // add addresses defined in this package
+            addresses.putAll(this.declaredAddrs.values)
+            // add placeholders defined in this package as address values
+            addresses.putAll(this.declaredAddrs.placeholdersAsValues())
+            // add dev-addresses
+            addresses.putAll(this.declaredDevAddresses.values)
+
+            // add placeholders that weren't filled
+            placeholders.putAll(this.declaredAddrs.placeholders)
+
+            val res = DeclaredAddresses(addresses, placeholders)
+            CachedValueProvider.Result.create(res, PsiModificationTracker.MODIFICATION_COUNT)
         }
-        // add addresses defined in this package
-        addresses.putAll(this.declaredAddrs.values)
-        // add placeholders defined in this package as address values
-        addresses.putAll(this.declaredAddrs.placeholdersAsValues())
-        // add dev-addresses
-        addresses.putAll(this.declaredDevAddresses.values)
-
-        // add placeholders that weren't filled
-        placeholders.putAll(this.declaredAddrs.placeholders)
-
-        return DeclaredAddresses(addresses, placeholders)
     }
 
     fun addresses(): AddressMap {
