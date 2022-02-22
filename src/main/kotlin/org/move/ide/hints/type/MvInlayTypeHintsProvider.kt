@@ -67,6 +67,7 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
 
             private fun presentLetStatement(element: MvLetStatement) {
                 val pat = element.pat ?: return
+                if (element.typeAnnotation != null) return
                 presentTypeForPat(pat)
             }
 
