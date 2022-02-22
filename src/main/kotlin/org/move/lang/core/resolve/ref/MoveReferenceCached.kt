@@ -22,23 +22,6 @@ abstract class MvReferenceCached<T : MvReferenceElement>(element: T) : MvReferen
             .orEmpty()
     }
 
-//    final override fun resolve(): MvNamedElement? {
-//        return resolveWithCache()?.element as? MvNamedElement
-//    }
-
-//    private fun resolveWithCache() =
-//        ResolveCache
-//            .getInstance(element.project)
-//            .resolveWithCaching(this, Resolver, true, false)
-
-//    private object Resolver : ResolveCache.AbstractResolver<MvReferenceCached<*>, PsiElementResolveResult> {
-//        override fun resolve(
-//            ref: MvReferenceCached<*>,
-//            incompleteCode: Boolean,
-//        ): PsiElementResolveResult = ref.resolveInner().let { PsiElementResolveResult(it) }
-//
-//    }
-
     private object Resolver :
         ResolveCache.AbstractResolver<MvReferenceCached<*>, List<PsiElementResolveResult>> {
         override fun resolve(

@@ -8,8 +8,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.cachedTy
 import org.move.lang.core.psi.ext.endOffset
-import org.move.lang.core.psi.ext.ty
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -71,14 +71,14 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
             private fun presentTypeForPat(pat: MvPat) {
                 for (binding in pat.descendantsOfType<MvBindingPat>()) {
                     if (binding.identifier.text.startsWith("_")) continue
-                    if (binding.ty() is TyUnknown) continue
+                    if (binding.cachedTy() is TyUnknown) continue
 
                     presentTypeForBinding(binding)
                 }
             }
 
             private fun presentTypeForBinding(binding: MvBindingPat) {
-                val presentation = typeHintsFactory.typeHint(binding.ty())
+                val presentation = typeHintsFactory.typeHint(binding.cachedTy())
                 sink.addInlineElement(binding.endOffset, false, presentation, false)
             }
         }

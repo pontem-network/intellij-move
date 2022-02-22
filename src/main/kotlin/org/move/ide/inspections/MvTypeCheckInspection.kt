@@ -10,8 +10,8 @@ import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.ty
-import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferCallExprTy
+import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.*
 
@@ -35,12 +35,13 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
-            override fun visitIfExpr(o: MvIfExpr) {
-                if (o.isMslAvailable()) return
+            override fun visitIfExpr(ifExpr: MvIfExpr) {
+                if (ifExpr.isMslAvailable()) return
 
-                val ifTy = o.returningExpr?.inferExprTy() ?: return
-                val elseExpr = o.elseExpr ?: return
-                val elseTy = elseExpr.inferExprTy()
+                val ctx = ifExpr.inference
+                val ifTy = ifExpr.returningExpr?.inferExprTy(ctx) ?: return
+                val elseExpr = ifExpr.elseExpr ?: return
+                val elseTy = elseExpr.inferExprTy(ctx)
 
                 if (!isCompatible(ifTy, elseTy) && !isCompatible(elseTy, ifTy)) {
                     holder.registerTypeError(
@@ -50,11 +51,11 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 }
             }
 
-            override fun visitCondition(o: MvCondition) {
-                if (o.isMslAvailable()) return
+            override fun visitCondition(cond: MvCondition) {
+                if (cond.isMslAvailable()) return
 
-                val expr = o.expr ?: return
-                val exprTy = expr.inferExprTy()
+                val expr = cond.expr ?: return
+                val exprTy = expr.inferExprTy(cond.inference)
                 if (!isCompatible(exprTy, TyBool)) {
                     holder.registerTypeError(
                         expr,
@@ -70,7 +71,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 val returningExpr = codeBlock.returningExpr
 
                 val expectedReturnTy = fn.resolvedReturnTy
-                val actualReturnTy = returningExpr?.inferExprTy() ?: TyUnit
+                val actualReturnTy = returningExpr?.inferExprTy(fn.inference) ?: TyUnit
                 if (!isCompatible(expectedReturnTy, actualReturnTy)) {
                     val annotatedElement = returningExpr as? PsiElement
                         ?: codeBlock.rightBrace
@@ -86,8 +87,9 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 if (o.isMslAvailable()) return
 
                 val outerFn = o.containingFunction ?: return
+                val ctx = outerFn.inference
                 val expectedReturnTy = outerFn.resolvedReturnTy
-                val actualReturnTy = o.expr?.inferExprTy() ?: return
+                val actualReturnTy = o.expr?.inferExprTy(ctx) ?: return
                 if (!isCompatible(expectedReturnTy, actualReturnTy)) {
                     holder.registerTypeError(
                         o,
@@ -96,12 +98,13 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 }
             }
 
-            override fun visitStructLitExpr(o: MvStructLitExpr) {
-                if (o.isMslAvailable()) return
-                val struct = o.path.maybeStruct ?: return
+            override fun visitStructLitExpr(litExpr: MvStructLitExpr) {
+                if (litExpr.isMslAvailable()) return
+                val struct = litExpr.path.maybeStruct ?: return
 
-                val ctx = InferenceContext()
-                for (field in o.fields) {
+//                val ctx = InferenceContext()
+                val ctx = litExpr.inference
+                for (field in litExpr.fields) {
                     val initExprTy = field.inferInitExprTy(ctx)
 
                     val fieldName = field.referenceName
@@ -147,7 +150,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
                 if (function.parameters.size != callArgs.exprList.size) return
 
-                val ctx = InferenceContext()
+                val ctx = callArgs.inference
                 val inferredFuncTy = inferCallExprTy(callExpr, ctx)
                 if (inferredFuncTy !is TyFunction) return
 
@@ -165,9 +168,6 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                         val paramName = parameter.bindingPat.name ?: continue
                         val exprTypeName = exprTy.name()
                         val expectedTypeName = paramTy.name()
-//                        val exprTypeName = exprTy.typeLabel(relativeTo = callArgs)
-//                        val expectedTypeName = paramTy.typeLabel(relativeTo = callArgs)
-
                         val message =
                             "Invalid argument for parameter '$paramName': " +
                                     "type '$exprTypeName' is not compatible with '$expectedTypeName'"

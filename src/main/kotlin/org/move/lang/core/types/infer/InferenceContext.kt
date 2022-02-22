@@ -115,6 +115,8 @@ fun isCompatible(expectedTy: Ty, inferredTy: Ty): Boolean {
 
 class InferenceContext(val msl: Boolean = false) {
     val exprTypes = mutableMapOf<MvExpr, Ty>()
+    val callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
+    val bindingTypes = mutableMapOf<MvBindingPat, Ty>()
     val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
 
     private val solver = ConstraintSolver(this)
@@ -129,6 +131,10 @@ class InferenceContext(val msl: Boolean = false) {
 
     fun cacheExprTy(expr: MvExpr, ty: Ty) {
         this.exprTypes[expr] = ty
+    }
+
+    fun cacheCallExprTy(expr: MvCallExpr, ty: TyFunction) {
+        this.callExprTypes[expr] = ty
     }
 
     fun resolveTy(ty: Ty): Ty {

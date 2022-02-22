@@ -9,6 +9,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
@@ -152,7 +153,7 @@ fun processLexicalDeclarations(
         Namespace.DOT_ACCESSED_FIELD -> {
             val dotExpr = scope as? MvDotExpr ?: return false
 
-            val receiverTy = dotExpr.expr.inferExprTy()
+            val receiverTy = dotExpr.expr.inferExprTy(dotExpr.inference)
             val innerTy = when (receiverTy) {
                 is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
                 is TyStruct -> receiverTy

@@ -79,7 +79,7 @@ fun MvNamedElement.createCompletionLookupElement(
             .withTypeText(this.typeAnnotation?.type?.text)
 
         is MvBindingPat -> this.createLookupElement()
-            .withTypeText(this.ty().shortPresentableText(true))
+            .withTypeText(this.cachedTy().shortPresentableText(true))
 
         else -> LookupElementBuilder.create(this)
     }

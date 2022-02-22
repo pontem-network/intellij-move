@@ -43,7 +43,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
         is MvAndExpr -> TyBool
         is MvOrExpr -> TyBool
 
-        is MvIfExpr -> inferIfExprTy(expr)
+        is MvIfExpr -> inferIfExprTy(expr, ctx)
         else -> TyUnknown
     }
     ctx.cacheExprTy(expr, exprTy)
@@ -63,7 +63,9 @@ private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): 
     return TyReference(innerExprTy, mutability)
 }
 
-fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext, expectedTy: Ty? = null): Ty {
+fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
+    if (ctx.callExprTypes.containsKey(callExpr)) return ctx.callExprTypes[callExpr]!!
+
     val path = callExpr.path
     val funcItem = path.reference?.resolve() as? MvFunction ?: return TyUnknown
     val funcTy = instantiateItemTy(funcItem) as? TyFunction ?: return TyUnknown
@@ -84,15 +86,17 @@ fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext, expectedTy: Ty?
             inference.registerConstraint(Constraint.Equate(paramTy, argumentTy))
         }
     }
-    if (expectedTy != null) {
-        inference.registerConstraint(Constraint.Equate(funcTy.retType, expectedTy))
-    }
+//    if (expectedTy != null) {
+//        inference.registerConstraint(Constraint.Equate(funcTy.retType, expectedTy))
+//    }
     // solve constraints
     val solvable = inference.processConstraints()
 
     // see whether every arg is coerceable with those vars having those values
     val resolvedFuncTy = inference.resolveTy(funcTy) as TyFunction
     resolvedFuncTy.solvable = solvable
+    ctx.cacheCallExprTy(callExpr, resolvedFuncTy)
+
     return resolvedFuncTy
 }
 
@@ -179,8 +183,8 @@ private fun inferLitExprTy(litExpr: MvLitExpr, ctx: InferenceContext): Ty {
     }
 }
 
-private fun inferIfExprTy(ifExpr: MvIfExpr): Ty {
-    val ifTy = ifExpr.returningExpr?.inferExprTy() ?: return TyUnknown
-    val elseTy = ifExpr.elseExpr?.inferExprTy() ?: return TyUnknown
+private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext): Ty {
+    val ifTy = ifExpr.returningExpr?.inferExprTy(ctx) ?: return TyUnknown
+    val elseTy = ifExpr.elseExpr?.inferExprTy(ctx) ?: return TyUnknown
     return combineTys(ifTy, elseTy)
 }
