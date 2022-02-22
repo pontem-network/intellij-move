@@ -9,6 +9,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.FQModule
+import org.move.lang.moveProject
 import javax.swing.Icon
 
 fun List<MvAttr>.findSingleItemAttr(name: String): MvAttr? =
@@ -23,7 +24,8 @@ fun MvModuleDef.definedAddressRef(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
 
 fun MvModuleDef.fqModule(): FQModule? {
-    val address = this.containingAddress.normalized()
+    val address = this.definedAddressRef()?.toAddress() ?: return null
+//    val address = this.containingAddress ?: return null
     val name = this.name ?: return null
     return FQModule(address, name)
 }
@@ -42,7 +44,8 @@ val MvModuleDef.friendModules: Set<FQModule>
 
         val friends = mutableSetOf<FQModule>()
         for (moduleRef in moduleRefs) {
-            val address = moduleRef.addressRef.toNormalizedAddress() ?: continue
+            val proj = moduleRef.moveProject ?: continue
+            val address = moduleRef.addressRef.toAddress(proj) ?: continue
             val identifier = moduleRef.identifier?.text ?: continue
             friends.add(FQModule(address, identifier))
         }
@@ -138,7 +141,7 @@ abstract class MvModuleDefMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node)
 
     override fun getPresentation(): ItemPresentation? {
         val name = this.name ?: return null
-        val locationString = this.containingAddress.text
+        val locationString = this.definedAddressRef()?.toAddress()?.text() ?: ""
         return PresentationData(
             name,
             locationString,

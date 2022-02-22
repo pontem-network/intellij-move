@@ -34,8 +34,8 @@ class DuplicateMembersErrorTest : AnnotatorTestCase(ErrorAnnotator::class) {
 
     fun `test duplicate module definition at the toplevel`() = checkErrors(
         """
-        module <error descr="Duplicate definitions with name `MyModule`">MyModule</error> {}
-        module <error descr="Duplicate definitions with name `MyModule`">MyModule</error> {}
+        module 0x1::<error descr="Duplicate definitions with name `MyModule`">MyModule</error> {}
+        module 0x1::<error descr="Duplicate definitions with name `MyModule`">MyModule</error> {}
     """
     )
 

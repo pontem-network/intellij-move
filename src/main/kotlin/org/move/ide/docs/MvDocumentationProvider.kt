@@ -39,9 +39,9 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
             // TODO: add docs for both scopes
             is MvNamedAddress -> {
                 val moveProject = docElement.moveProject ?: return null
-                val refName = docElement.referenceName ?: return null
-                val value = moveProject.getAddressValue(refName)
-                return "$refName = \"$value\""
+                val refName = docElement.referenceName
+                val named = moveProject.getNamedAddress(refName) ?: return null
+                return "$refName = \"${named.value}\""
             }
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvBindingPat -> {

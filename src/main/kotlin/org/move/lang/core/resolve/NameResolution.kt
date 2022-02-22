@@ -101,15 +101,15 @@ private fun processModules(
     processor: MatchingProcessor,
 ): Boolean {
     val moveProject = fqModuleRef.moveProject ?: return false
-    val sourceNormalizedAddress = fqModuleRef.addressRef.toNormalizedAddress(moveProject)
+    val sourceAddress = fqModuleRef.addressRef.toAddress(moveProject)
 
-    var resolved = false
+    var stop = false
     val visitor = object : MvVisitor() {
-        override fun visitModuleDef(o: MvModuleDef) {
-            if (resolved) return
-            val normalizedAddress = o.definedAddressRef()?.toNormalizedAddress(moveProject)
-            if (normalizedAddress == sourceNormalizedAddress) {
-                resolved = processor.match(o)
+        override fun visitModuleDef(mod: MvModuleDef) {
+            if (stop) return
+            val modAddress = mod.definedAddressRef()?.toAddress(moveProject)
+            if (modAddress == sourceAddress) {
+                stop = processor.match(mod)
             }
         }
     }
@@ -117,7 +117,7 @@ private fun processModules(
     for (moduleDef in moduleDefs) {
         moduleDef.accept(visitor)
     }
-    return resolved
+    return stop
 }
 
 fun processFQModuleRef(
@@ -139,21 +139,6 @@ fun processFQModuleRef(
         !stopped
     }
 }
-
-//fun processNestedScopesUpwards(
-//    startElement: MvElement,
-//    itemVis: ItemVis,
-//    processor: MatchingProcessor,
-//) {
-//    walkUpThroughScopes(
-//        startElement,
-//        stopAfter = { it is MvModuleDef || it is MvScriptDef }
-//    ) { cameFrom, scope ->
-//        processLexicalDeclarations(
-//            scope, cameFrom, itemVis, processor
-//        )
-//    }
-//}
 
 fun processLexicalDeclarations(
     scope: MvElement,

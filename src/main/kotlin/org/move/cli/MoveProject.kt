@@ -141,10 +141,9 @@ data class MoveProject(
         return declaredAddresses().values
     }
 
-    fun getAddressValue(name: String): String? {
+    fun getNamedAddress(name: String): Address.Named? {
         val addressVal = addresses()[name] ?: return null
-        val address = Address(addressVal.value)
-        return address.normalized().shortText()
+        return Address.Named(name, addressVal.value)
     }
 
     fun processModuleFiles(scope: GlobalScope, processFile: (MvModuleFile) -> Boolean) {

@@ -5,10 +5,11 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.patterns.ElementPattern
+import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.move.lang.MvElementTypes
 import org.move.lang.core.MvPsiPatterns
-import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvPath
 
 object MacrosCompletionProvider : MvCompletionProvider() {
@@ -16,6 +17,10 @@ object MacrosCompletionProvider : MvCompletionProvider() {
         get() = MvPsiPatterns.pathIdent()
             .andNot(MvPsiPatterns.pathType())
             .andNot(MvPsiPatterns.schemaRef())
+            .andNot(
+                PlatformPatterns.psiElement()
+                    .afterLeaf(PlatformPatterns.psiElement(MvElementTypes.COLON_COLON))
+            )
 
 
     override fun addCompletions(

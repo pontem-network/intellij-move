@@ -72,4 +72,44 @@ class ModulesCompletionProjectTest : CompletionProjectTestCase() {
         }    
     """
     )
+
+    fun `test named address is identified always with name even for same address`() = checkNoCompletion {
+        moveToml("""
+        [package]
+        name = "package"
+
+        [addresses]
+        Std = "0x1"
+        Pontem = "0x1"
+        """)
+        sources {
+            move("mod.move", """
+            module Std::StdMod {}
+            module Pontem::PontemMod {}
+            module 0x1::MyMod {
+                use Std::Pont/*caret*/
+            }    
+            """)
+        }
+    }
+
+    fun `test named address is identified only with name`() = checkNoCompletion {
+        moveToml("""
+        [package]
+        name = "package"
+
+        [addresses]
+        Std = "0x1"
+        Pontem = "0x1"
+        """)
+        sources {
+            move("mod.move", """
+            module Std::StdMod {}
+            module Pontem::PontemMod {}
+            module 0x1::MyMod {
+                use 0x1::Pont/*caret*/
+            }    
+            """)
+        }
+    }
 }
