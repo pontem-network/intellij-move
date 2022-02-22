@@ -11,7 +11,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.ty
 import org.move.lang.core.types.infer.inferCallExprTy
-import org.move.lang.core.types.infer.inference
+import org.move.lang.core.types.infer.inferenceCtx
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.*
 
@@ -38,7 +38,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             override fun visitIfExpr(ifExpr: MvIfExpr) {
                 if (ifExpr.isMslAvailable()) return
 
-                val ctx = ifExpr.inference
+                val ctx = ifExpr.inferenceCtx
                 val ifTy = ifExpr.returningExpr?.inferExprTy(ctx) ?: return
                 val elseExpr = ifExpr.elseExpr ?: return
                 val elseTy = elseExpr.inferExprTy(ctx)
@@ -55,7 +55,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 if (cond.isMslAvailable()) return
 
                 val expr = cond.expr ?: return
-                val exprTy = expr.inferExprTy(cond.inference)
+                val exprTy = expr.inferExprTy(cond.inferenceCtx)
                 if (!isCompatible(exprTy, TyBool)) {
                     holder.registerTypeError(
                         expr,
@@ -71,7 +71,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 val returningExpr = codeBlock.returningExpr
 
                 val expectedReturnTy = fn.resolvedReturnTy
-                val actualReturnTy = returningExpr?.inferExprTy(fn.inference) ?: TyUnit
+                val actualReturnTy = returningExpr?.inferExprTy(fn.inferenceCtx) ?: TyUnit
                 if (!isCompatible(expectedReturnTy, actualReturnTy)) {
                     val annotatedElement = returningExpr as? PsiElement
                         ?: codeBlock.rightBrace
@@ -87,7 +87,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 if (o.isMslAvailable()) return
 
                 val outerFn = o.containingFunction ?: return
-                val ctx = outerFn.inference
+                val ctx = outerFn.inferenceCtx
                 val expectedReturnTy = outerFn.resolvedReturnTy
                 val actualReturnTy = o.expr?.inferExprTy(ctx) ?: return
                 if (!isCompatible(expectedReturnTy, actualReturnTy)) {
@@ -103,7 +103,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 val struct = litExpr.path.maybeStruct ?: return
 
 //                val ctx = InferenceContext()
-                val ctx = litExpr.inference
+                val ctx = litExpr.inferenceCtx
                 for (field in litExpr.fields) {
                     val initExprTy = field.inferInitExprTy(ctx)
 
@@ -150,7 +150,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
                 if (function.parameters.size != callArgs.exprList.size) return
 
-                val ctx = callArgs.inference
+                val ctx = callArgs.inferenceCtx
                 val inferredFuncTy = inferCallExprTy(callExpr, ctx)
                 if (inferredFuncTy !is TyFunction) return
 

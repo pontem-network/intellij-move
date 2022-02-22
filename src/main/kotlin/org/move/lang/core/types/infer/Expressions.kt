@@ -8,7 +8,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
     if (ctx.exprTypes.containsKey(expr)) return ctx.exprTypes[expr]!!
 
     val exprTy = when (expr) {
-        is MvRefExpr -> inferRefExprTy(expr)
+        is MvRefExpr -> inferRefExprTy(expr, ctx)
         is MvBorrowExpr -> inferBorrowExprTy(expr, ctx)
         is MvCallExpr -> {
             val funcTy = inferCallExprTy(expr, ctx) as? TyFunction
@@ -50,10 +50,10 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
     return exprTy
 }
 
-private fun inferRefExprTy(refExpr: MvRefExpr): Ty {
+private fun inferRefExprTy(refExpr: MvRefExpr, ctx: InferenceContext): Ty {
     val binding =
         refExpr.path.reference?.resolve() as? MvBindingPat ?: return TyUnknown
-    return binding.ty()
+    return binding.cachedTy(ctx)
 }
 
 private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): Ty {

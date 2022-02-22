@@ -10,6 +10,8 @@ import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.cachedTy
 import org.move.lang.core.psi.ext.endOffset
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.inferenceCtx
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -69,16 +71,16 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
             }
 
             private fun presentTypeForPat(pat: MvPat) {
+                val ctx = pat.inferenceCtx
                 for (binding in pat.descendantsOfType<MvBindingPat>()) {
                     if (binding.identifier.text.startsWith("_")) continue
-                    if (binding.cachedTy() is TyUnknown) continue
-
-                    presentTypeForBinding(binding)
+                    if (binding.cachedTy(ctx) is TyUnknown) continue
+                    presentTypeForBinding(binding, ctx)
                 }
             }
 
-            private fun presentTypeForBinding(binding: MvBindingPat) {
-                val presentation = typeHintsFactory.typeHint(binding.cachedTy())
+            private fun presentTypeForBinding(binding: MvBindingPat, ctx: InferenceContext) {
+                val presentation = typeHintsFactory.typeHint(binding.cachedTy(ctx))
                 sink.addInlineElement(binding.endOffset, false, presentation, false)
             }
         }

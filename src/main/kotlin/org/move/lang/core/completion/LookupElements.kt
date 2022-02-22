@@ -13,6 +13,7 @@ import org.move.ide.MvIcons
 import org.move.ide.presentation.shortPresentableText
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.types.infer.inferenceCtx
 
 const val DEFAULT_PRIORITY = 0.0
 
@@ -79,7 +80,7 @@ fun MvNamedElement.createCompletionLookupElement(
             .withTypeText(this.typeAnnotation?.type?.text)
 
         is MvBindingPat -> this.createLookupElement()
-            .withTypeText(this.cachedTy().shortPresentableText(true))
+            .withTypeText(this.cachedTy(this.inferenceCtx).shortPresentableText(true))
 
         else -> LookupElementBuilder.create(this)
     }
