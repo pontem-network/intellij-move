@@ -137,6 +137,11 @@ object MvPsiPatterns {
             .withParent<MvPathIdent>()
 //            .withSuperParent<MvPath>(2)
 
+//    fun fqPathIdent(): PsiElementPattern.Capture<PsiElement> =
+//        PlatformPatterns.psiElement()
+//            .withParent<MvPathIdent>()
+////            .withSuperParent<MvPath>(2)
+
     fun path(): PsiElementPattern.Capture<PsiElement> =
         pathIdent()
             .withSuperParent<MvPath>(2)

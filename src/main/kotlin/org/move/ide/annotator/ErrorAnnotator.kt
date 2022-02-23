@@ -9,6 +9,8 @@ import org.move.ide.presentation.fullname
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.types.Address
+import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
 import org.move.lang.utils.addToHolder
 
@@ -170,7 +172,9 @@ class ErrorAnnotator : MvAnnotator() {
     }
 
     private fun checkModuleDef(holder: MvAnnotationHolder, mod: MvModuleDef) {
-        val modIdent = Pair(mod.definedAddressRef()?.toAddress(), mod.name)
+        val moveProj = mod.moveProject ?: return
+        val addressIdent = mod.definedAddressRef()?.toAddress(moveProj) ?: return
+        val modIdent = Pair(addressIdent, mod.name)
         val file = mod.containingFile ?: return
         val duplicateIdents =
             file.descendantsOfType<MvModuleDef>()

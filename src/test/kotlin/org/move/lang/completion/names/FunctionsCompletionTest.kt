@@ -235,4 +235,14 @@ class FunctionsCompletionTest : CompletionTestCase() {
         }
     }    
     """)
+
+    fun `test no assert completion from module`() = checkNoCompletion("""
+    module 0x1::M {}
+    module 0x1::M2 {
+        use 0x1::M;
+        fun m() {
+            M::asse/*caret*/
+        }
+    }
+    """)
 }

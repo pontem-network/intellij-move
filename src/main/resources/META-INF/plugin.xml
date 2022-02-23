@@ -15,13 +15,20 @@
     </description>
     <change-notes>
         <![CDATA[
+    <h3>Version 1.5.0</h3>
+    <ul>
+    <li>Add type hints for let statement bindings</li>
+    <li>Fix some bugs around named addresses scoping</li>
+    <li>Improve analysis performance significantly</li>
+    </ul>
     <h3>Version 1.4.0</h3>
     <ul>
     <li>Add name resolution and completion support to MSL(spec blocks).
     <li>Add environment variables to Move Run Configuration. This allows running Move Prover from IDE.</li>
     <li>Add better support for git dependencies.</li>
     <li>Lots of minor fixes and improvements.</li>
-    </ul>]]>
+    </ul>
+]]>
     </change-notes>
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
@@ -109,6 +116,8 @@
                                    implementationClass="org.move.ide.hints.StructLitFieldsInfoHandler"/>
         <codeInsight.parameterNameHints language="Move"
                                         implementationClass="org.move.ide.hints.MvInlayParameterHintsProvider"/>
+        <codeInsight.inlayProvider language="Move"
+                                   implementationClass="org.move.ide.hints.type.MvInlayTypeHintsProvider"/>
 
         <defaultLiveTemplates file="liveTemplates/Move.xml"/>
         <liveTemplateContext implementation="org.move.ide.live_templates.MvContextType$Generic"/>

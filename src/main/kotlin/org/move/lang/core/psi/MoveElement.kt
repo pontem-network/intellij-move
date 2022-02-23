@@ -16,12 +16,12 @@ abstract class MvElementImpl(node: ASTNode) : ASTWrapperPsiElement(node),
 
 val MvElement.containingMoveFile: MvFile? get() = this.containingFile as? MvFile
 
-val MvElement.containingAddress: Address
-    get() {
-        return ancestorStrict<MvAddressDef>()
-            ?.addressRef
-            ?.toAddress() ?: Address.default()
-    }
+//val MvElement.containingAddress: Address
+//    get() {
+//        return ancestorStrict<MvAddressDef>()
+//            ?.addressRef
+//            ?.toAddress() ?: Address.default()
+//    }
 
 val MvElement.containingScript: MvScriptDef? get() = ancestorStrict()
 

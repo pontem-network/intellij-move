@@ -30,6 +30,14 @@ class MvUnresolvedReferenceInspectionTest : InspectionsTestCase(MvUnresolvedRefe
     """)
 
     fun `test test no unresolved reference for builtin`() = checkByText("""
+        module 0x1::M {
+            fun main() {
+                move_from<u8>(@0x1);
+            }
+        }
+    """)
+
+    fun `test test no unresolved reference for assert in script`() = checkByText("""
         script {
             fun main() {
                 assert(false, 1);

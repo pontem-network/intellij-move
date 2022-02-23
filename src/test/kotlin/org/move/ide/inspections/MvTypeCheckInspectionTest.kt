@@ -119,20 +119,18 @@ class MvTypeCheckInspectionTest: InspectionsTestCase(MvTypeCheckInspection::clas
     """)
 
     fun `test incorrect type of argument with call expression from different module`() = checkErrors("""
-address 0x1 {
-    module Other {
-        struct B {}
-        public fun get_b(): B { B {} }
-    }
-    module 0x1::M {
-        use 0x1::Other::get_b;
-        
-        struct A {}
-        fun use_a(a: A) {}
-        
-        fun main() {
-            use_a(<error descr="Invalid argument for parameter 'a': type '0x1::Other::B' is not compatible with 'A'">get_b()</error>)            
-        }
+module 0x1::Other {
+    struct B {}
+    public fun get_b(): B { B {} }
+}
+module 0x1::M {
+    use 0x1::Other::get_b;
+    
+    struct A {}
+    fun use_a(a: A) {}
+    
+    fun main() {
+        use_a(<error descr="Invalid argument for parameter 'a': type 'B' is not compatible with 'A'">get_b()</error>)            
     }
 }
     """)

@@ -8,11 +8,11 @@ fun MvScriptDef.allFunctions(): List<MvFunction> = scriptBlock?.functionList.orE
 fun MvScriptDef.constBindings(): List<MvBindingPat> =
     scriptBlock?.constDefList.orEmpty().mapNotNull { it.bindingPat }
 
-fun MvScriptDef.builtinFunctions(): List<MvFunction> {
-    return listOf(
-        createBuiltinFunction("native fun assert(_: bool, err: u64);", project)
-    )
-}
+//fun MvScriptDef.builtinFunctions(): List<MvFunction> {
+//    return listOf(
+//        createBuiltinFunction("native fun assert(_: bool, err: u64);", project)
+//    )
+//}
 
 abstract class MvScriptDefMixin(node: ASTNode) : MvElementImpl(node),
                                                  MvScriptDef {

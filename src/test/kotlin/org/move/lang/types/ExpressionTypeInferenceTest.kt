@@ -4,7 +4,7 @@ import org.move.utils.tests.types.TypificationTestCase
 
 class ExpressionTypeInferenceTest: TypificationTestCase() {
     fun `test bool`() = testExpr("""
-    module M {
+    module 0x1::M {
         fun main() {
             let b = false;
             b;
@@ -14,7 +14,7 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
     """)
 
     fun `test function parameter`() = testExpr("""
-    module M {
+    module 0x1::M {
         fun main(a: u8) {
             let b = a;
             b;
@@ -25,7 +25,7 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
 
     fun `test function call`() = testExpr(
         """
-    module M {
+    module 0x1::M {
         fun call(): u8 { 1 }
         fun main() {
             let b = call();
@@ -37,7 +37,7 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
     )
 
     fun `test type parameter`() = testExpr("""
-    module M {
+    module 0x1::M {
         fun main<F>(a: F) {
             let b = a;
             b;
@@ -47,7 +47,7 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
     """)
 
     fun `test const type`() = testExpr("""
-    module M {
+    module 0x1::M {
         const NUM: u8 = 1;
         
         fun main() {
@@ -58,7 +58,7 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
     """)
 
     fun `test function parameter constraint`() = testExpr("""
-    module M {
+    module 0x1::M {
         fun main<Coin: copy + store>(coin: Coin) {
             coin;
           //^ Coin
@@ -97,5 +97,15 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
           //^ u8
         }
     }
+    """)
+
+    fun `test let inference in msl`() = testExpr("""
+    module 0x1::M {
+        spec module {
+            let post a = 1;
+            a;
+          //^ num 
+        }
+    }    
     """)
 }

@@ -11,6 +11,7 @@ import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.infer.inferMvTypeTy
+import org.move.lang.core.types.infer.inferenceCtx
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.moveProject
 import org.move.stdext.joinToWithBuffer
@@ -39,14 +40,15 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
             // TODO: add docs for both scopes
             is MvNamedAddress -> {
                 val moveProject = docElement.moveProject ?: return null
-                val refName = docElement.referenceName ?: return null
-                val value = moveProject.getAddressValue(refName)
-                return "$refName = \"$value\""
+                val refName = docElement.referenceName
+                val named = moveProject.getNamedAddress(refName) ?: return null
+                return "$refName = \"${named.value}\""
             }
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
-                val type = docElement.inferBindingPatTy().renderForDocs(true)
+                val ctx = docElement.inferenceCtx
+                val type = docElement.cachedTy(ctx).renderForDocs(true)
                 buffer += presentationInfo.type
                 buffer += " "
                 buffer.b { it += presentationInfo.name }

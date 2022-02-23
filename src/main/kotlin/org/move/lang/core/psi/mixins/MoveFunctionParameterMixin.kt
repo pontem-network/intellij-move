@@ -12,7 +12,7 @@ import javax.swing.Icon
 val MvFunctionParameter.declaredTy: Ty get() = this.typeAnnotation?.type?.ty() ?: TyUnknown
 
 abstract class MvFunctionParameterMixin(node: ASTNode) : MvElementImpl(node),
-                                                           MvFunctionParameter {
+                                                         MvFunctionParameter {
 
     override fun getIcon(flags: Int): Icon = MvIcons.PARAMETER
 

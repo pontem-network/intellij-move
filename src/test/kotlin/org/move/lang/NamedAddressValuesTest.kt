@@ -15,7 +15,7 @@ class NamedAddressValuesTest : MvProjectTestCase() {
         sources {
             move("main.move", """
             module Std::Module {}
-                   //^ 0x1
+                   //^ Std = 0x1
             """)
         }
     }
@@ -28,7 +28,7 @@ class NamedAddressValuesTest : MvProjectTestCase() {
         sources {
             move("main.move", """
             module Std::Module {}
-                   //^ _
+                   //^ Std = _
             """)
         }
     }
@@ -47,7 +47,7 @@ class NamedAddressValuesTest : MvProjectTestCase() {
         sources {
             move("main.move", """
             module Std::Module {}
-                   //^ 0x1
+                   //^ Std = 0x1
             """)
         }
     }
@@ -67,7 +67,7 @@ class NamedAddressValuesTest : MvProjectTestCase() {
             move(
                 "main.move", """
         module Std::Module {}       
-             //^ 0xC0FFEE                  
+             //^ Std = 0xC0FFEE                  
             """
             )
         }
@@ -99,7 +99,7 @@ class NamedAddressValuesTest : MvProjectTestCase() {
             move(
                 "main.move", """
         module Std::Module {}       
-             //^ 0x1                 
+             //^ Std = 0x1                 
             """
             )
         }
@@ -128,7 +128,7 @@ class NamedAddressValuesTest : MvProjectTestCase() {
                 "main.move", """
             module 0x1::M {
                 use Std::Reflect;
-                    //^ 0x2
+                    //^ Std = 0x2
             }     
             """
             )
@@ -171,7 +171,7 @@ dependencies: []
         sources {
             move("main.move", """
             module Std::Module {}
-                  //^ 0x2
+                  //^ Std = 0x2
             """)
         }
     }
@@ -186,7 +186,7 @@ dependencies: []
         val expectedValue = data.trim()
 
         val moveProject = project.moveProjects.findProjectForPsiElement(address)!!
-        val actualValue = moveProject.getAddressValue(address.referenceName)
+        val actualValue = moveProject.getNamedAddress(address.referenceName)!!.text()
 
         check(actualValue == expectedValue) {
             "Value mismatch. Expected $expectedValue, found: $actualValue"

@@ -9,6 +9,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.types.infer.inferenceCtx
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
@@ -22,10 +23,10 @@ enum class MslScope {
 val MvElement.mslScope: MslScope
     get() {
         if (!this.isMslAvailable()) return MslScope.NONE
-        val letSpecStatement = this.ancestorOrSelf<MvLetSpecStatement>()
+        val letStatement = this.ancestorOrSelf<MvLetStatement>()
         return when {
-            letSpecStatement == null -> MslScope.EXPR
-            letSpecStatement.isPost -> MslScope.LET_POST
+            letStatement == null -> MslScope.EXPR
+            letStatement.isPost -> MslScope.LET_POST
             else -> MslScope.LET
         }
     }
@@ -101,23 +102,23 @@ private fun processModules(
     processor: MatchingProcessor,
 ): Boolean {
     val moveProject = fqModuleRef.moveProject ?: return false
-    val sourceNormalizedAddress = fqModuleRef.addressRef.toNormalizedAddress(moveProject)
+    val sourceAddress = fqModuleRef.addressRef.toAddress(moveProject)
 
-    var resolved = false
+    var stop = false
     val visitor = object : MvVisitor() {
-        override fun visitModuleDef(o: MvModuleDef) {
-            if (resolved) return
-            val normalizedAddress = o.definedAddressRef()?.toNormalizedAddress(moveProject)
-            if (normalizedAddress == sourceNormalizedAddress) {
-                resolved = processor.match(o)
+        override fun visitModuleDef(mod: MvModuleDef) {
+            if (stop) return
+            val modAddress = mod.definedAddressRef()?.toAddress(moveProject)
+            if (modAddress == sourceAddress) {
+                stop = processor.match(mod)
             }
         }
     }
-    val moduleDefs = file.descendantsOfType<MvModuleDef>()
-    for (moduleDef in moduleDefs) {
-        moduleDef.accept(visitor)
+    val modules = file.descendantsOfType<MvModuleDef>()
+    for (module in modules) {
+        module.accept(visitor)
     }
-    return resolved
+    return stop
 }
 
 fun processFQModuleRef(
@@ -140,21 +141,6 @@ fun processFQModuleRef(
     }
 }
 
-//fun processNestedScopesUpwards(
-//    startElement: MvElement,
-//    itemVis: ItemVis,
-//    processor: MatchingProcessor,
-//) {
-//    walkUpThroughScopes(
-//        startElement,
-//        stopAfter = { it is MvModuleDef || it is MvScriptDef }
-//    ) { cameFrom, scope ->
-//        processLexicalDeclarations(
-//            scope, cameFrom, itemVis, processor
-//        )
-//    }
-//}
-
 fun processLexicalDeclarations(
     scope: MvElement,
     cameFrom: MvElement,
@@ -167,7 +153,8 @@ fun processLexicalDeclarations(
         Namespace.DOT_ACCESSED_FIELD -> {
             val dotExpr = scope as? MvDotExpr ?: return false
 
-            val receiverTy = dotExpr.expr.inferExprTy()
+            val ctx = dotExpr.inferenceCtx
+            val receiverTy = dotExpr.expr.inferExprTy(ctx)
             val innerTy = when (receiverTy) {
                 is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
                 is TyStruct -> receiverTy
@@ -215,7 +202,7 @@ fun processLexicalDeclarations(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
                     scope.constBindings(),
-                    scope.builtinFunctions(),
+//                    scope.builtinFunctions(),
                 ).flatten(),
             )
             is MvFunction -> processor.matchAll(scope.parameterBindings)

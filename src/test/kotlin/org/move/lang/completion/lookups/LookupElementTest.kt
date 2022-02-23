@@ -53,12 +53,12 @@ class LookupElementTest : MvTestBase() {
             module M {}
                 //^
         }
-    """, typeText = "main.move")
+    """, tailText = " 0x1", typeText = "main.move")
 
     fun `test module with named address`() = check("""
         module Std::M {}
                   //^
-    """, typeText = "main.move")
+    """, tailText = " Std", typeText = "main.move")
 
     private fun check(
         @Language("Move") code: String,

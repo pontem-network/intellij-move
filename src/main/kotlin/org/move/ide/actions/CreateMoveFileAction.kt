@@ -17,8 +17,9 @@ class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MvIcons.M
         builder: CreateFileFromTemplateDialog.Builder
     ) {
         builder.setTitle(CAPTION)
-            .addKind("Script", MvIcons.MOVE, "Move Script")
+            .addKind("Empty", MvIcons.MOVE, "Move File")
             .addKind("Module", MvIcons.MOVE, "Move Module")
+            .addKind("Script", MvIcons.MOVE, "Move Script")
             .addKind("Test", MvIcons.MOVE, "Move Test Module")
     }
 

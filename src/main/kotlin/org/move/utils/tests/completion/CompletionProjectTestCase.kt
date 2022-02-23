@@ -28,6 +28,17 @@ class CompletionTestProjectFixture(
                           + lookups.joinToString("\n") { it.debug() })
         }
     }
+
+    fun checkNoCompletion() {
+        val lookups = codeInsightFixture.completeBasic()
+        checkNotNull(lookups) {
+            val element = codeInsightFixture.file.findElementAt(codeInsightFixture.caretOffset - 1)
+            "Expected zero completions, but one completion was auto inserted: `${element?.text}`."
+        }
+        check(lookups.isEmpty()) {
+            "Expected zero completions, got ${lookups.map { it.lookupString }}."
+        }
+    }
 }
 
 abstract class CompletionProjectTestCase : MvProjectTestCase() {
@@ -89,6 +100,12 @@ abstract class CompletionProjectTestCase : MvProjectTestCase() {
 
         completionFixture.executeSoloCompletion()
         myFixture.checkResult(replaceCaretMarker(after.trimIndent()))
+    }
+
+    protected fun checkNoCompletion(builder: FileTreeBuilder.() -> Unit) {
+        val testProject = testProjectFromFileTree(builder)
+        completionFixture.codeInsightFixture.configureFromFileWithCaret(testProject)
+        completionFixture.checkNoCompletion()
     }
 
 }

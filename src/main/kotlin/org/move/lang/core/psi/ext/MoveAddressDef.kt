@@ -23,7 +23,7 @@ abstract class MvAddressDefMixin(node: ASTNode) : MvElementImpl(node),
                                                     MvAddressDef {
     override fun getPresentation(): ItemPresentation? {
 //        val moveProject = this.containingFile.containingMvProject() ?: return null
-        val addressText = this.addressRef?.toAddress()?.text ?: ""
+        val addressText = this.addressRef?.toAddress()?.text() ?: ""
         return PresentationData(addressText, null, null, null);
     }
 
