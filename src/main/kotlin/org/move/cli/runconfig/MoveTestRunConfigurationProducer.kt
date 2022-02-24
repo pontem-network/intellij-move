@@ -80,7 +80,7 @@ sealed interface TestConfig {
                     val locationPath = location.virtualFile.toNioPathOrNull() ?: return null
                     val rootPath = moveProject.rootPath ?: return null
                     if (locationPath == rootPath
-                        || locationPath == moveProject.projectDirPath(MvProjectLayout.testsDir)
+                        || locationPath == moveProject.testsDir()
                     ) {
                         return Package(packageName, rootPath)
                     }

@@ -86,6 +86,12 @@ data class MoveProject(
     val rootPath: Path? get() = root.toNioPathOrNull()
     fun projectDirPath(name: String): Path? = rootPath?.resolve(name)
 
+    fun buildDir(): Path? = projectDirPath("build")
+    fun packageInBuildDir(): Path? = projectDirPath("build")?.resolve(packageName)
+    fun sourcesDir(): Path? = projectDirPath("sources")
+    fun testsDir(): Path? = projectDirPath("tests")
+    fun scriptsDir(): Path? = projectDirPath("scripts")
+
     fun moduleFolders(scope: GlobalScope): List<VirtualFile> {
         val q = ArrayDeque<ProjectInfo>()
         val folders = mutableListOf<VirtualFile>()

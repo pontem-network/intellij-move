@@ -84,6 +84,7 @@
 
         <lang.findUsagesProvider language="Move"
                                  implementationClass="org.move.ide.search.MvFindUsagesProvider"/>
+        <useScopeEnlarger implementation="org.move.ide.search.MvUseScopeEnlarger" />
         <usageTypeProvider
                 implementation="org.move.ide.search.NamedAddressUsageTypeProvider"/>
         <findUsagesHandlerFactory

@@ -24,11 +24,15 @@ abstract class MvReferenceBase<T : MvReferenceElement>(element: T) : PsiPolyVari
     }
 
     final override fun calculateDefaultRangeInElement(): TextRange {
-        val anchor = element.referenceNameElement ?: return TextRange.EMPTY_RANGE
-        return TextRange.from(
+        val anchor = element.referenceNameElement
+        if (anchor == null) {
+            return TextRange.EMPTY_RANGE
+        }
+        val textRange = TextRange.from(
             anchor.startOffsetInParent,
             anchor.textLength
         )
+        return textRange
     }
 
     override fun handleElementRename(newName: String): PsiElement {

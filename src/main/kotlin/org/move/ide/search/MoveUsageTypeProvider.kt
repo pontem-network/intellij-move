@@ -11,6 +11,8 @@ import com.intellij.usages.impl.rules.UsageType
 import com.intellij.usages.impl.rules.UsageTypeProviderEx
 import org.move.lang.core.psi.MvAddressRef
 import org.move.lang.core.psi.MvExpr
+import org.move.lang.core.psi.MvFQModuleRef
+import org.move.lang.core.psi.MvModuleImport
 
 object MvUsageTypeProvider : UsageTypeProviderEx {
     // Instantiate each UsageType only once, so that the equality check in UsageTypeGroup.equals() works correctly
@@ -41,7 +43,7 @@ object MvUsageTypeProvider : UsageTypeProviderEx {
 //    private val META_ITEM = UsageType { "meta item" }
 
     //    private val USE = UsageType { "use" }
-    private val MOD = UsageType { "mod" }
+    private val MODULE = UsageType { "module" }
 
     override fun getUsageType(element: PsiElement): UsageType? {
         return getUsageType(element, UsageTarget.EMPTY_ARRAY)
@@ -49,7 +51,8 @@ object MvUsageTypeProvider : UsageTypeProviderEx {
 
     override fun getUsageType(element: PsiElement, targets: Array<out UsageTarget>): UsageType? {
 //        val refinedElement = element?.findExpansionElements()?.firstOrNull()?.parent ?: element
-        val parent = element.parent ?: return null;
+        val parent = element.parent ?: return null
+        if (element is MvFQModuleRef) return MODULE
         return when (parent) {
             is MvExpr -> EXPR
             is MvAddressRef -> ADDRESS_REF
