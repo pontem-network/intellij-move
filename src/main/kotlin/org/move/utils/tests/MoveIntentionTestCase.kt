@@ -29,9 +29,6 @@ abstract class MvIntentionTestCase(private val intentionClass: KClass<out Intent
 //        checkFileExists(Paths.get(directory, "after.rs.template"))
 //    }
 
-    private fun checkFileExists(path: Path): String = getResourceAsString(path.toString())
-        ?: error("No ${path.fileName} found for $intentionClass ($path)")
-
     protected fun doAvailableTest(
         @Language("Move") before: String,
         @Language("Move") after: String,
