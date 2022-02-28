@@ -180,6 +180,10 @@
                          displayName="Missing acquires"
                          enabledByDefault="true" level="ERROR"
                          implementationClass="org.move.ide.inspections.MvMissingAcquiresInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Unused struct type parameter"
+                         enabledByDefault="true" level="ERROR"
+                         implementationClass="org.move.ide.inspections.PhantomTypeParameterInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>

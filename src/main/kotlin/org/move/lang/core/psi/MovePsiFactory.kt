@@ -52,6 +52,11 @@ class MvPsiFactory(private val project: Project) {
             ?: error("Failed to create a method member from text: `$text`")
     }
 
+    fun createTypeParameter(text: String): MvTypeParameter {
+        return createFromText("module _IntellijPreludeDummy { struct S<$text> {}}")
+            ?: error("Failed to create a type parameter from text: `$text`")
+    }
+
     fun createPathIdent(text: String): MvPathIdent {
         return createFromText("module _IntellijPreludeDummy { fun main() { $text(); } } ")
             ?: error("`$text`")
