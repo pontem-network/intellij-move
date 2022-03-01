@@ -36,7 +36,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
             override fun visitIfExpr(ifExpr: MvIfExpr) {
-                if (ifExpr.isMslAvailable()) return
+                if (ifExpr.isMsl()) return
 
                 val ctx = ifExpr.inferenceCtx
                 val ifTy = ifExpr.returningExpr?.inferExprTy(ctx) ?: return
@@ -52,7 +52,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitCondition(cond: MvCondition) {
-                if (cond.isMslAvailable()) return
+                if (cond.isMsl()) return
 
                 val expr = cond.expr ?: return
                 val exprTy = expr.inferExprTy(cond.inferenceCtx)
@@ -65,7 +65,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitCodeBlock(codeBlock: MvCodeBlock) {
-                if (codeBlock.isMslAvailable()) return
+                if (codeBlock.isMsl()) return
 
                 val fn = codeBlock.parent as? MvFunction ?: return
                 val returningExpr = codeBlock.returningExpr
@@ -84,7 +84,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitReturnExpr(o: MvReturnExpr) {
-                if (o.isMslAvailable()) return
+                if (o.isMsl()) return
 
                 val outerFn = o.containingFunction ?: return
                 val ctx = outerFn.inferenceCtx
@@ -99,7 +99,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitStructLitExpr(litExpr: MvStructLitExpr) {
-                if (litExpr.isMslAvailable()) return
+                if (litExpr.isMsl()) return
                 val struct = litExpr.path.maybeStruct ?: return
 
 //                val ctx = InferenceContext()
@@ -124,7 +124,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitPath(path: MvPath) {
-                if (path.isMslAvailable()) return
+                if (path.isMsl()) return
 
                 val typeArguments = path.typeArguments
                 val item = path.reference?.resolve() as? MvTypeParametersOwner ?: return
@@ -143,7 +143,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitCallArgumentList(callArgs: MvCallArgumentList) {
-                if (callArgs.isMslAvailable()) return
+                if (callArgs.isMsl()) return
 
                 val callExpr = callArgs.parent as? MvCallExpr ?: return
                 val function = callExpr.path.reference?.resolve() as? MvFunction ?: return
@@ -177,7 +177,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitStructFieldDef(field: MvStructFieldDef) {
-                if (field.isMslAvailable()) return
+                if (field.isMsl()) return
 
                 val structTy = TyStruct(field.struct)
                 val structAbilities = structTy.abilities()
@@ -206,7 +206,7 @@ private fun checkHasRequiredAbilities(
     expectedTy: Ty
 ): Boolean {
     // do not check for specs
-    if (element.isMslAvailable()) return false
+    if (element.isMsl()) return false
 
     val abilities = actualTy.abilities()
     for (ability in expectedTy.abilities()) {

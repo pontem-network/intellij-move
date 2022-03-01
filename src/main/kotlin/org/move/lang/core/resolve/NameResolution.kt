@@ -22,7 +22,7 @@ enum class MslScope {
 
 val MvElement.mslScope: MslScope
     get() {
-        if (!this.isMslAvailable()) return MslScope.NONE
+        if (!this.isMsl()) return MslScope.NONE
         val letStatement = this.ancestorOrSelf<MvLetStatement>()
         return when {
             letStatement == null -> MslScope.EXPR

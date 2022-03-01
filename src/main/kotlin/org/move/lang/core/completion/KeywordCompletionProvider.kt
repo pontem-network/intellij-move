@@ -10,6 +10,8 @@ import org.move.lang.core.psi.ext.isErrorElement
 import org.move.lang.core.psi.ext.isWhitespace
 import org.move.lang.core.psi.ext.rightSiblings
 
+val ALWAYS_NEEDS_SPACE = setOf("module")
+
 class KeywordCompletionProvider(
     private vararg val keywords: String,
 ) : CompletionProvider<CompletionParameters>() {
@@ -22,13 +24,19 @@ class KeywordCompletionProvider(
         for (keyword in keywords) {
             var element =
                 LookupElementBuilder.create(keyword).bold()
-            val nextSibling = parameters.position.parent
-                .rightSiblings
+            val posParent = parameters.position.parent
+            val posRightSiblings = posParent.rightSiblings
                 .filter { !it.isWhitespace() && !it.isErrorElement() }
-                .firstOrNull()?.firstChild
+            val posParentNextSibling = posRightSiblings.firstOrNull()?.firstChild
 
             element = element.withInsertHandler { ctx, _ ->
-                if (nextSibling == null || !ctx.alreadyHasSpace) ctx.addSuffix(" ")
+                val elemSibling = parameters.position.nextSibling
+                val suffix = when {
+                    elemSibling != null && elemSibling.isWhitespace() -> ""
+                    posParentNextSibling == null || !ctx.alreadyHasSpace -> " "
+                    else -> ""
+                }
+                ctx.addSuffix(suffix)
             }
             result.addElement(PrioritizedLookupElement.withPriority(element, KEYWORD_PRIORITY))
         }

@@ -4,7 +4,7 @@ import org.intellij.lang.annotations.Language
 import org.move.ide.presentation.shortPresentableText
 import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.psi.ext.inferExprTy
-import org.move.lang.core.psi.ext.isMslAvailable
+import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.MvTestBase
@@ -49,7 +49,7 @@ abstract class TypificationTestCase : MvTestBase() {
 //        val expectedTypes = data.split("|").map(String::trim)
         val expectedType = data.trim()
 
-        val ctx = InferenceContext(expr.isMslAvailable())
+        val ctx = InferenceContext(expr.isMsl())
         val type = expr.inferExprTy(ctx).shortPresentableText(true)
         check(type == expectedType) {
             "Type mismatch. Expected $expectedType, found: $type"

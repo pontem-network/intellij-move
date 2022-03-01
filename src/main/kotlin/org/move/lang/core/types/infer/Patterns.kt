@@ -53,7 +53,7 @@ fun inferBindingTy(bindingPat: MvBindingPat): Ty {
                 return collectBindings(pat, explicitTy)[bindingPat] ?: TyUnknown
             }
 
-            val inference = InferenceContext(msl = bindingPat.isMslAvailable())
+            val inference = InferenceContext(msl = bindingPat.isMsl())
             val inferredTy = owner.initializer?.expr?.let { inferExprTy(it, inference) } ?: TyUnknown
             return collectBindings(pat, inferredTy)[bindingPat] ?: TyUnknown
         }

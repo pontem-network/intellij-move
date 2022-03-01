@@ -7,7 +7,7 @@ import org.move.lang.core.types.ty.*
 fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
     if (ctx.exprTypes.containsKey(expr)) return ctx.exprTypes[expr]!!
 
-    val exprTy = when (expr) {
+    var exprTy = when (expr) {
         is MvRefExpr -> inferRefExprTy(expr, ctx)
         is MvBorrowExpr -> inferBorrowExprTy(expr, ctx)
         is MvCallExpr -> {
@@ -45,6 +45,12 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
 
         is MvIfExpr -> inferIfExprTy(expr, ctx)
         else -> TyUnknown
+    }
+    if (exprTy is TyReference && expr.isMsl()) {
+        exprTy = exprTy.innermostTy()
+    }
+    if (exprTy is TyInteger && expr.isMsl()) {
+        exprTy = TyNum
     }
     ctx.cacheExprTy(expr, exprTy)
     return exprTy

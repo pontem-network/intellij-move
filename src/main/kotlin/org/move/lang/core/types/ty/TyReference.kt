@@ -33,6 +33,14 @@ data class TyReference(val referenced: Ty, val mutability: Mutability) : Ty {
         }
     }
 
+    fun innermostTy(): Ty {
+        var ty: Ty = this
+        while (ty is TyReference) {
+            ty = ty.innerTy()
+        }
+        return ty
+    }
+
     override fun innerFoldWith(folder: TypeFolder): Ty =
         TyReference(referenced.foldWith(folder), mutability)
 

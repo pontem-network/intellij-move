@@ -476,4 +476,14 @@ class KeywordCompletionTest : CompletionTestCase() {
     }    
     """
     )
+
+    fun `test spec module space exists`() = doSingleCompletion("""
+    module 0x1::M {
+        spec mo/*caret*/ {}
+    }    
+    """, """
+    module 0x1::M {
+        spec module/*caret*/ {}
+    }    
+    """)
 }

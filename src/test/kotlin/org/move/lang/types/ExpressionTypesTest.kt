@@ -288,4 +288,38 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test msl callable num`() = testExpr("""
+    module 0x1::M {
+        fun call(): u8 { 1 }
+        spec module {
+            call();
+            //^ num
+        }
+    }    
+    """)
+
+    fun `test msl ref is type`() = testExpr("""
+    module 0x1::M {
+        struct S {}
+        fun ref(): &S {}
+        spec module {
+            let a = ref();
+            a;
+          //^ 0x1::M::S
+        }
+    }    
+    """)
+
+    fun `test msl mut ref is type`() = testExpr("""
+    module 0x1::M {
+        struct S {}
+        fun ref_mut(): &mut S {}
+        spec module {
+            let a = ref_mut();
+            a;
+          //^ 0x1::M::S
+        }
+    }    
+    """)
 }

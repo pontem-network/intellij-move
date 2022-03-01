@@ -5,7 +5,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.MslScope
 
 // TODO: cache
-fun MvElement.isMslAvailable(): Boolean {
+fun MvElement.isMsl(): Boolean {
     return PsiTreeUtil.findFirstParent(this, false) {
         it is MvSpecFunction
                 || it is MvSpecBlockExpr

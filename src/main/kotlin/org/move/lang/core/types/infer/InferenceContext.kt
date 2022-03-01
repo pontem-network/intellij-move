@@ -14,13 +14,13 @@ private val TYPE_INFERENCE_KEY: Key<CachedValue<InferenceContext>> = Key.create(
 
 val MvElement.inferenceCtx: InferenceContext
     get() {
-        return this.containingFunction?.inferenceCtx ?: InferenceContext(msl = this.isMslAvailable())
+        return this.containingFunction?.inferenceCtx ?: InferenceContext(msl = this.isMsl())
     }
 
 val MvFunction.inferenceCtx: InferenceContext
     get() {
         return CachedValuesManager.getCachedValue(this, TYPE_INFERENCE_KEY) {
-            val fctx = InferenceContext(msl = this.isMslAvailable())
+            val fctx = InferenceContext(msl = this.isMsl())
             for (param in this.parameterBindings) {
                 fctx.bindingTypes[param] = inferBindingTy(param)
             }
