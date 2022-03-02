@@ -9,7 +9,7 @@ import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
 import org.move.lang.core.psi.ext.isShorthand
 
-class MvRenameProcessor: RenamePsiElementProcessor() {
+class MvRenameProcessor : RenamePsiElementProcessor() {
     override fun canProcessElement(element: PsiElement) = element is MvNamedElement
 
     override fun renameElement(
@@ -19,16 +19,30 @@ class MvRenameProcessor: RenamePsiElementProcessor() {
         listener: RefactoringElementListener?
     ) {
         val psiFactory = element.project.psiFactory
-        if (element is MvBindingPat) {
-            usages.forEach {
-                val field =
-                    it.element?.ancestorOrSelf<MvStructLitField>(MvModuleBlock::class.java) ?: return@forEach
-                if (field.isShorthand) {
-                    val newField = psiFactory.createStructLitField(field.referenceName, newName)
-                    field.replace(newField)
+        when (element) {
+            is MvBindingPat -> {
+                usages.forEach {
+                    val field =
+                        it.element?.ancestorOrSelf<MvStructLitField>(MvStructLitExpr::class.java) ?: return@forEach
+                    if (field.isShorthand) {
+                        val newField = psiFactory.createStructLitField(field.referenceName, newName)
+                        field.replace(newField)
+                    }
+                }
+            }
+            is MvSchemaVarDeclStatement -> {
+                usages.forEach {
+                    val field =
+                        it.element?.ancestorOrSelf<MvSchemaField>(MvSchemaLit::class.java) ?: return@forEach
+                    if (field.isShorthand) {
+                        val newField = psiFactory.createSchemaLitField(field.referenceName, newName)
+                        field.replace(newField)
+                    }
                 }
             }
         }
+
+
 
         val newRenameElement = if (element is MvBindingPat && element.parent is MvStructPatField) {
             val newPatField = psiFactory.createStructPatField(element.identifier.text, element.text)

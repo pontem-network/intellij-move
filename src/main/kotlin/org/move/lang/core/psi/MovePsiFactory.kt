@@ -22,6 +22,10 @@ class MvPsiFactory(private val project: Project) {
         createFromText("module _M { fun m() { let S { $name: $alias } = 1; }}")
             ?: error("Failed to create MvStructPatField")
 
+    fun createSchemaLitField(name: String, alias: String): MvSchemaField =
+        createFromText("module _M { spec module { include Schema { $name: $alias } }}")
+            ?: error("Failed to create MvSchemaField")
+
     fun createIdentifier(text: String): PsiElement =
         createFromText<MvModuleDef>("module $text {}")?.nameIdentifier
             ?: error("Failed to create identifier: `$text`")

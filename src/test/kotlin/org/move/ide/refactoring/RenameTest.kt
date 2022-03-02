@@ -362,6 +362,29 @@ class RenameTest : MvTestBase() {
         }
     """)
 
+    fun `test rename schema field with shorthand`() = doTest("root_account", """
+    module 0x1::M {
+        spec schema Schema {
+            /*caret*/account: address;
+        }
+        spec module {
+            let account = @0x1;
+            include Schema { account };
+        }
+    }    
+    """, """
+    module 0x1::M {
+        spec schema Schema {
+            root_account: address;
+        }
+        spec module {
+            let account = @0x1;
+            include Schema { account: root_account };
+        }
+    }    
+    """
+    )
+
     private fun doTest(
         newName: String,
         @Language("Move") before: String,
