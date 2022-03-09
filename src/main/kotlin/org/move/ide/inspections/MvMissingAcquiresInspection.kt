@@ -26,7 +26,7 @@ class MvMissingAcquiresInspection : MvLocalInspectionTool() {
                 val module = callExpr.containingModule ?: return
                 val declaredTyFullnames = function.acquiresTys.map { it.fullnameNoArgs() }
 
-                val ctx = function.inferenceCtx
+                val ctx = function.inferenceCtx(callExpr.isMsl())
                 val callTy = inferCallExprTy(callExpr, ctx) as? TyFunction ?: return
                 val missingTys = callTy.acquiresTypes
                     .filter { it.fullnameNoArgs() !in declaredTyFullnames }

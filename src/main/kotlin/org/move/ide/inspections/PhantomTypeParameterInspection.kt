@@ -19,7 +19,7 @@ class PhantomTypeParameterInspection: MvLocalInspectionTool() {
                 val fields = struct.fields
                 val usedParamNames = mutableListOf<String>()
                 for (field in fields) {
-                    field.declaredTy.foldTyTypeParameterWith { param ->
+                    field.declaredTy(false).foldTyTypeParameterWith { param ->
                         val name = param.parameter.name
                         if (name != null) {
                             usedParamNames.add(name)

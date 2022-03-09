@@ -22,7 +22,7 @@ enum class Mutability {
     }
 }
 
-data class TyReference(val referenced: Ty, val mutability: Mutability) : Ty {
+data class TyReference(val referenced: Ty, val mutability: Mutability, val msl: Boolean) : Ty {
     override fun abilities() = setOf(Ability.COPY, Ability.DROP)
 
     fun innerTy(): Ty {
@@ -42,7 +42,7 @@ data class TyReference(val referenced: Ty, val mutability: Mutability) : Ty {
     }
 
     override fun innerFoldWith(folder: TypeFolder): Ty =
-        TyReference(referenced.foldWith(folder), mutability)
+        TyReference(referenced.foldWith(folder), mutability, msl)
 
     override fun innerVisitWith(visitor: TypeVisitor): Boolean =
         referenced.visitWith(visitor)

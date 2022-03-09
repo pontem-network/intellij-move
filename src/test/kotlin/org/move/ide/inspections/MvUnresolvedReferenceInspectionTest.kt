@@ -167,18 +167,18 @@ class MvUnresolvedReferenceInspectionTest : InspectionsTestCase(MvUnresolvedRefe
         }    
         """
     )
-
-    fun `test no unresolved reference for spec elements`() = checkByText("""
-    module 0x1::M {
-        spec module {
-            fun m(e: EventHandle) {}
-        }
-        spec fun spec_multiply_u64(val: num, multiplier: num): num {
-            (val * multiplier) >> 32
-        }
-        spec fun spec_none<Element>() {}
-    }    
-    """)
+//
+//    fun `test no unresolved reference for spec elements`() = checkByText("""
+//    module 0x1::M {
+//        spec module {
+//            fun m(e: EventHandle) {}
+//        }
+//        spec fun spec_multiply_u64(val: num, multiplier: num): num {
+//            (val * multiplier) >> 32
+//        }
+//        spec fun spec_none<Element>() {}
+//    }
+//    """)
 
     fun `test no unresolved reference for _ in destructuring pattern`() = checkByText("""
     module 0x1::M {
@@ -196,6 +196,65 @@ class MvUnresolvedReferenceInspectionTest : InspectionsTestCase(MvUnresolvedRefe
         fun call(): u8 { 1 }
         spec call {
             ensures result >= 1;
+        }
+    }    
+    """)
+
+    fun `test unresolved reference for schema field`() = checkByText("""
+    module 0x1::M {
+        spec schema Schema {}
+        spec module {
+            include Schema { <error descr="Unresolved field: `addr`">addr</error>: @0x1 };
+        }
+    }
+    """)
+
+    fun `test unresolved reference for schema field shorthand`() = checkByText("""
+    module 0x1::M {
+        spec schema Schema {}
+        spec module {
+            let addr = @0x1;
+            include Schema { <error descr="Unresolved field: `addr`">addr</error> };
+        }
+    }        
+    """)
+
+    fun `test no unresolved reference for schema field and function param`() = checkByText("""
+    module 0x1::M {
+        spec schema Schema { 
+            root_account: signer;
+        }
+        fun call(root_account: &signer) {}
+        spec call {
+            include Schema { root_account };
+        }
+    }        
+    """)
+
+    fun `test result is special variable that is available for fun spec`() = checkByText("""
+    module 0x1::M {
+        fun call(): u8 { 1 }
+        spec call {
+            ensures result == 1;
+        }
+    }    
+    """)
+
+    fun `test result_1 result_2 is special variables for tuple return type`() = checkByText("""
+    module 0x1::M {
+        fun call(): (u8, u8) { (1, 1) }
+        spec call {
+            ensures result_1 == result_2
+        }
+    }    
+    """)
+
+    fun `test second argument to update field`() = checkByText("""
+    module 0x1::M {
+        struct S { val: u8 }
+        spec module {
+            let s = S { val: 1 };
+            ensures update_field(s, val, s.val + 1) == 1; 
         }
     }    
     """)

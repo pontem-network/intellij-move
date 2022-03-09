@@ -561,4 +561,24 @@ module 0x1::M {
         }
     }    
     """)
+
+    fun `test incorrect type address passed where &signer is expected in spec`() = checkErrors("""
+        module 0x1::M {
+            fun send(account: &signer) {}
+            
+            spec send {
+                send(<error descr="Invalid argument for parameter 'account': type 'address' is not compatible with '&signer'">@0x1</error>)
+            }
+        }        
+    """)
+
+    fun `test signer compatibility in spec`() = checkErrors("""
+    module 0x1::M {
+        fun address_of(account: &signer): address { @0x1 }
+        fun send(account: &signer) {}
+        spec send {
+            address_of(account);
+        }
+    }    
+    """)
 }

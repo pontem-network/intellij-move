@@ -322,4 +322,66 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test type of fun param in spec`() = testExpr("""
+    module 0x1::M {
+        fun call(addr: address) {}
+        spec call {
+            addr;
+            //^ address
+        }
+    }    
+    """)
+
+    fun `test type of u8 fun param in spec`() = testExpr("""
+    module 0x1::M {
+        fun call(n: u8) {}
+        spec call {
+            n;
+          //^ num  
+        }
+    }    
+    """)
+
+//    fun `test type of result variable in fun spec is return type`() = testExpr("""
+//    module 0x1::M {
+//        fun call(): address { @0x1 }
+//        spec call {
+//            result;
+//            //^ address
+//        }
+//    }
+//    """)
+
+    fun `test old function type for spec`() = testExpr("""
+    module 0x1::M {
+        struct S {}
+        fun call(a: S) {}
+        spec call {
+            old(a);
+          //^ 0x1::M::S 
+        }
+    }    
+    """)
+
+    fun `test global function type for spec`() = testExpr("""
+    module 0x1::M {
+        struct S has key {}
+        spec module {
+            let a = global<S>(@0x1);
+            a;
+          //^ 0x1::M::S 
+        }
+    }    
+    """)
+
+    fun `test const int in spec`() = testExpr("""
+    module 0x1::M {
+        const MY_INT: u8 = 1;
+        spec module {
+            MY_INT;
+            //^ num
+        }
+    }    
+    """)
 }

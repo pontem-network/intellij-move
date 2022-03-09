@@ -28,7 +28,8 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitPath(path: MvPath) {
-            if (path.isMsl()) return
+            if (path.isMsl() && path.isResult) return
+            if (path.isUpdateFieldArg2) return
             if (path.isPrimitiveType()) return
             if (path.isInsideAssignmentLeft()) return
             if (path.text == "assert") return
@@ -96,6 +97,36 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
                     holder.registerProblem(
                         litField.referenceNameElement,
                         "Unresolved field: `${litField.referenceName}`",
+                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                    )
+                }
+            }
+        }
+
+        override fun visitSchemaField(field: MvSchemaField) {
+            if (field.isShorthand) {
+                val resolvedItems = field.reference.multiResolve()
+                val varDecl = resolvedItems.find { it is MvSchemaVarDeclStatement }
+                if (varDecl == null) {
+                    holder.registerProblem(
+                        field.referenceNameElement,
+                        "Unresolved field: `${field.referenceName}`",
+                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                    )
+                }
+                val resolvedBinding = resolvedItems.find { it is MvBindingPat }
+                if (resolvedBinding == null) {
+                    holder.registerProblem(
+                        field.referenceNameElement,
+                        "Unresolved reference: `${field.referenceName}`",
+                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                    )
+                }
+            } else {
+                if (field.reference.resolve() == null) {
+                    holder.registerProblem(
+                        field.referenceNameElement,
+                        "Unresolved field: `${field.referenceName}`",
                         ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
                     )
                 }

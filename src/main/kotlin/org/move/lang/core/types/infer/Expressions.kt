@@ -26,7 +26,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
         is MvMoveExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
         is MvCopyExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
 
-        is MvCastExpr -> inferMvTypeTy(expr.type)
+        is MvCastExpr -> inferMvTypeTy(expr.type, ctx.msl)
         is MvParensExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
 
         is MvPlusExpr -> inferBinaryExprTy(expr.exprList, ctx)
@@ -66,22 +66,24 @@ private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): 
     val innerExpr = borrowExpr.expr ?: return TyUnknown
     val innerExprTy = inferExprTy(innerExpr, ctx)
     val mutability = Mutability.valueOf(borrowExpr.isMut)
-    return TyReference(innerExprTy, mutability)
+    return TyReference(innerExprTy, mutability, ctx.msl)
 }
 
 fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
-    if (ctx.callExprTypes.containsKey(callExpr)) return ctx.callExprTypes[callExpr]!!
+    if (ctx.callExprTypes.containsKey(callExpr)) {
+        return ctx.callExprTypes[callExpr] ?: error("CallExpr ${callExpr.text} has null type")
+    }
 
     val path = callExpr.path
-    val funcItem = path.reference?.resolve() as? MvFunction ?: return TyUnknown
-    val funcTy = instantiateItemTy(funcItem) as? TyFunction ?: return TyUnknown
+    val funcItem = path.reference?.resolve() as? MvFunctionLike ?: return TyUnknown
+    val funcTy = instantiateItemTy(funcItem, ctx.msl) as? TyFunction ?: return TyUnknown
 
     val inference = InferenceContext()
     // find all types passed as explicit type parameters, create constraints with those
     if (path.typeArguments.isNotEmpty()) {
         if (path.typeArguments.size != funcTy.typeVars.size) return TyUnknown
         for ((typeVar, typeArgument) in funcTy.typeVars.zip(path.typeArguments)) {
-            val passedTy = inferMvTypeTy(typeArgument.type)
+            val passedTy = inferMvTypeTy(typeArgument.type, ctx.msl)
             inference.registerConstraint(Constraint.Equate(typeVar, passedTy))
         }
     }
@@ -143,7 +145,7 @@ private fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext):
         val fieldName = field.referenceName
         val declaredFieldTy = structItem
             .fieldsMap[fieldName]
-            ?.declaredTy
+            ?.declaredTy(ctx.msl)
             ?.foldTyTypeParameterWith { param -> structTypeVars.find { it.origin?.parameter == param.parameter }!! }
             ?: TyUnknown
         val fieldExprTy = field.inferInitExprTy(ctx)

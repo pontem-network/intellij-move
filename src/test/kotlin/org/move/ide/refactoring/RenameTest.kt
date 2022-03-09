@@ -379,6 +379,28 @@ class RenameTest : MvTestBase() {
         }
         spec module {
             let account = @0x1;
+            include Schema { root_account: account };
+        }
+    }    
+    """)
+
+    fun `test rename schema expr binding with shorthand`() = doTest("root_account", """
+    module 0x1::M {
+        spec schema Schema {
+            account: address;
+        }
+        spec module {
+            let /*caret*/account = @0x1;
+            include Schema { account };
+        }
+    }    
+    """, """
+    module 0x1::M {
+        spec schema Schema {
+            account: address;
+        }
+        spec module {
+            let root_account = @0x1;
             include Schema { account: root_account };
         }
     }    

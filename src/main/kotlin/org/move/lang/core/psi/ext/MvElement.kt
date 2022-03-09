@@ -1,17 +1,28 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.openapi.util.Key
+import com.intellij.psi.util.*
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.MslScope
 
-// TODO: cache
 fun MvElement.isMsl(): Boolean {
-    return PsiTreeUtil.findFirstParent(this, false) {
-        it is MvSpecFunction
-                || it is MvSpecBlockExpr
-                || it is MvSchema
-                || it is MvSpecDef
-    } != null
+    return CachedValuesManager.getCachedValue(this) {
+        val specElement = PsiTreeUtil.findFirstParent(this, false) {
+            it is MvSpecFunction
+                    || it is MvSpecBlockExpr
+                    || it is MvSchema
+                    || it is MvSpecDef
+        }
+        CachedValueProvider.Result(specElement != null, PsiModificationTracker.MODIFICATION_COUNT)
+    }
+//    return CachedValuesManager.getCachedValue(this, IS_MSL_KEY) {
+//        val specElement = PsiTreeUtil.findFirstParent(this, false) {
+//            it is MvSpecFunction
+//                    || it is MvSpecBlockExpr
+//                    || it is MvSchema
+//                    || it is MvSpecDef
+//        }
+//        CachedValueProvider.Result(specElement != null, PsiModificationTracker.MODIFICATION_COUNT)
+//    }
 }
 
 fun MvElement.isInsideAssignmentLeft(): Boolean {

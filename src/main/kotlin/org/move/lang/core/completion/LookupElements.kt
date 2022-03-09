@@ -80,7 +80,7 @@ fun MvNamedElement.createCompletionLookupElement(
             .withTypeText(this.typeAnnotation?.type?.text)
 
         is MvBindingPat -> this.createLookupElement()
-            .withTypeText(this.cachedTy(this.inferenceCtx).shortPresentableText(true))
+            .withTypeText(this.cachedTy(this.inferenceCtx(this.isMsl())).shortPresentableText(true))
 
         else -> LookupElementBuilder.create(this)
     }
@@ -154,20 +154,20 @@ class MvInsertHandler : InsertHandler<LookupElement> {
         val element = item.psiElement as? MvElement ?: return
 
         when (element) {
-            is MvFunction -> {
+            is MvFunctionLike -> {
                 val requiredTypeParams = element.typeParamsUsedOnlyInReturnType
                 val (suffix, offset) = context.functionSuffixAndOffset(requiredTypeParams, element.parameters)
 
                 document.insertString(context.selectionEndOffset, suffix)
                 EditorModificationUtil.moveCaretRelatively(context.editor, offset)
             }
-            is MvSpecFunction -> {
-                val requiredTypeParams = element.typeParamsUsedOnlyInReturnType
-                val (suffix, offset) = context.functionSuffixAndOffset(requiredTypeParams, element.parameters)
-
-                document.insertString(context.selectionEndOffset, suffix)
-                EditorModificationUtil.moveCaretRelatively(context.editor, offset)
-            }
+//            is MvSpecFunction -> {
+//                val requiredTypeParams = element.typeParamsUsedOnlyInReturnType
+//                val (suffix, offset) = context.functionSuffixAndOffset(requiredTypeParams, element.parameters)
+//
+//                document.insertString(context.selectionEndOffset, suffix)
+//                EditorModificationUtil.moveCaretRelatively(context.editor, offset)
+//            }
             is MvStruct -> {
                 val insideAcquiresType =
                     context.file

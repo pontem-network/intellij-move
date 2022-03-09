@@ -27,6 +27,8 @@ val MvElement.containingScript: MvScriptDef? get() = ancestorStrict()
 
 val MvElement.containingFunction: MvFunction? get() = ancestorStrict()
 
+val MvElement.containingFunctionLike: MvFunctionLike? get() = ancestorStrict()
+
 val MvElement.containingModule: MvModuleDef? get() = ancestorStrict()
 
 val MvElement.containingImportsOwner get() = ancestorOrSelf<MvImportStatementsOwner>()

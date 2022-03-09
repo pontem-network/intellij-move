@@ -47,7 +47,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
-                val ctx = docElement.inferenceCtx
+                val ctx = docElement.inferenceCtx(false)
                 val type = docElement.cachedTy(ctx).renderForDocs(true)
                 buffer += presentationInfo.type
                 buffer += " "
@@ -125,14 +125,14 @@ fun MvElement.signature(builder: StringBuilder) {
             buffer += this.struct.name ?: angleWrapped("anonymous")
             buffer += "\n"
             buffer.b { it += this.name }
-            buffer += ": ${this.declaredTy.renderForDocs(true)}"
+            buffer += ": ${this.declaredTy(false).renderForDocs(true)}"
         }
         is MvConstDef -> {
             buffer += this.containingModule!!.fqName
             buffer += "\n"
             buffer += "const "
             buffer.b { it += this.bindingPat?.name ?: angleWrapped("unknown") }
-            buffer += ": ${this.declaredTy.renderForDocs(false)}"
+            buffer += ": ${this.declaredTy(false).renderForDocs(false)}"
             this.initializer?.let { buffer += " ${it.text}" }
         }
         else -> return
@@ -148,7 +148,7 @@ private fun PsiElement.generateDocumentation(
     buffer += prefix
     when (this) {
         is MvType -> {
-            buffer += inferMvTypeTy(this).typeLabel(this)
+            buffer += inferMvTypeTy(this, this.isMsl()).typeLabel(this)
         }
         is MvFunctionParameterList ->
             this.functionParameterList

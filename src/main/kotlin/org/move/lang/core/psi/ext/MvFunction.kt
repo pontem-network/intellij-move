@@ -10,12 +10,7 @@ import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
-import org.move.lang.core.psi.mixins.declaredTy
-import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyUnit
-import org.move.lang.core.types.ty.TyUnknown
-import org.move.stdext.chain
 import javax.swing.Icon
 
 enum class FunctionVisibility {
@@ -36,73 +31,14 @@ val MvFunction.visibility: FunctionVisibility
         }
     }
 
-val MvFunction.module: MvModuleDef?
-    get() {
-        val moduleBlock = this.parent
-        return moduleBlock.parent as? MvModuleDef
-    }
-
-val MvFunction.script: MvScriptDef?
-    get() {
-        val scriptBlock = this.parent
-        return scriptBlock.parent as? MvScriptDef
-    }
-
-val MvFunction.fqName: String get() {
-    val moduleFqName = this.module?.fqName?.let { "$it::" }
-    val name = this.name ?: "<unknown>"
-    return moduleFqName + name
-}
-
 val MvFunction.isTest: Boolean get() = this.attrList.findSingleItemAttr("test") != null
 
 val MvFunction.isNative get() = hasChild(MvElementTypes.NATIVE)
 
 val MvFunction.isBuiltinFunc get() = this.isNative && this.name in BUILTIN_FUNCTIONS
 
-val MvFunction.parameters get() = this.functionParameterList?.functionParameterList.orEmpty()
-
-val MvFunction.parameterBindings get() = this.parameters.map { it.bindingPat }
-
-val MvFunction.typeParameters get() = this.typeParameterList?.typeParameterList.orEmpty()
-
-val MvFunction.acquiresPathTypes: List<MvPathType> get() = this.acquiresType?.pathTypeList.orEmpty()
-
 val MvFunction.acquiresTys: List<Ty> get() =
     this.acquiresType?.pathTypeList.orEmpty().map { it.ty() }
-
-val MvFunction.resolvedReturnTy: Ty
-    get() {
-        val returnTypeElement = this.returnType
-        return if (returnTypeElement == null) {
-            TyUnit
-        } else {
-            returnTypeElement.type?.ty() ?: TyUnknown
-        }
-    }
-
-val MvFunction.typeParamsUsedOnlyInReturnType: List<MvTypeParameter>
-    get() {
-        val usedTypeParams = mutableSetOf<MvTypeParameter>()
-        this.parameters
-            .map { it.declaredTy }
-            .forEach {
-                it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.parameter); paramTy }
-            }
-        return this.typeParameters.filter { it !in usedTypeParams }
-    }
-
-val MvFunction.requiredTypeParams: List<MvTypeParameter>
-    get() {
-        val usedTypeParams = mutableSetOf<MvTypeParameter>()
-        this.parameters
-            .map { it.declaredTy }
-            .chain(this.returnType?.type?.ty().wrapWithList())
-            .forEach {
-                it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.parameter); paramTy }
-            }
-        return this.typeParameters.filter { it !in usedTypeParams }
-    }
 
 abstract class MvFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                                 MvFunction {

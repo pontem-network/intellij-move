@@ -112,7 +112,7 @@ class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
         val file = when (psiElement) {
             is PsiDirectory -> psiElement.virtualFile
             is PsiFile -> psiElement.originalFile.virtualFile
-            else -> psiElement.containingFile.originalFile.virtualFile
+            else -> psiElement.containingFile?.originalFile?.virtualFile
         }
         return findMoveProject(file)
     }

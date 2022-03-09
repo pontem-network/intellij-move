@@ -221,7 +221,7 @@ private Item_recover ::= !('}' | <<eof>> | Item_first)
 private ModuleItem_item ::= ImportStatement | FriendStatement
                             | StructItem
                             | FunctionItem
-                            | SpecFunctionImpl
+                            | SpecFunctionItem
                             | ConstDef
                             | Schema
                             | SpecDef
@@ -243,13 +243,12 @@ fake SpecFunction ::= spec native? fun IDENTIFIER? TypeParameterList?
                         (';' | CodeBlock)?
 {
     implements = [
-        "org.move.lang.core.psi.MvNameIdentifierOwner"
-        "org.move.lang.core.psi.MvTypeParametersOwner"
+        "org.move.lang.core.psi.MvFunctionLike"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSpecFunctionMixin"
 
 }
-private SpecFunctionImpl ::= SpecFunctionInner
+private SpecFunctionItem ::= SpecFunctionInner
                             | NativeSpecFunctionInner
 //                            | UninterpretedSpecFunctionInner
 
@@ -342,9 +341,9 @@ fake Function ::= Attr* native? FunctionVisibilityModifier? native?
                         (';' | CodeBlock)?
 {
     implements = [
-        "org.move.lang.core.psi.MvNameIdentifierOwner"
-        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
-        "org.move.lang.core.psi.MvTypeParametersOwner"
+//        "org.move.lang.core.psi.MvNameIdentifierOwner"
+//        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.move.lang.core.psi.MvFunctionLike"
     ]
     mixin = "org.move.lang.core.psi.ext.MvFunctionMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]

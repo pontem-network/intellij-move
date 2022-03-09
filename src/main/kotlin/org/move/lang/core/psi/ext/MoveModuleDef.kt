@@ -123,8 +123,12 @@ fun MvModuleDef.schemas(): List<MvSchema> = moduleBlock?.schemaList.orEmpty()
 
 fun MvModuleDef.builtinSpecFunctions(): List<MvSpecFunction> {
     return listOf(
+        createBuiltinSpecFunction("spec native fun max_u8(): u8;", project),
+        createBuiltinSpecFunction("spec native fun max_u64(): u64;", project),
+        createBuiltinSpecFunction("spec native fun max_u128(): u128;", project),
         createBuiltinSpecFunction("spec native fun global<T: key>(addr: address): T;", project),
         createBuiltinSpecFunction("spec native fun old<T>(_: T): T;", project),
+        createBuiltinSpecFunction("spec native fun update_field<S, F, V>(s: S, fname: F, val: V): S;", project),
         createBuiltinSpecFunction("spec native fun TRACE<T>(_: T): T;", project),
     )
 }

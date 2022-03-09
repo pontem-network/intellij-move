@@ -10,13 +10,24 @@ import org.move.lang.core.resolve.ref.MvPathReference
 import org.move.lang.core.resolve.ref.MvPathReferenceImpl
 import org.move.lang.core.resolve.ref.Namespace
 
-//val MvQualPath.address: Address? get() = (moduleRef as? MvFQModuleRef)?.addressRef?.address()
-//
-//val MvQualPath.moduleName: String? get() = moduleRef?.identifier?.text
-//
 fun MvPath.isPrimitiveType(): Boolean =
     this.parent is MvPathType
             && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS.union(BUILTIN_TYPE_IDENTIFIERS)
+
+val MvPath.isResult: Boolean get() = this.textMatches("result") || this.text.startsWith("result_")
+
+val MvPath.isUpdateFieldArg2: Boolean
+    get() {
+        if (!this.isMsl()) return false
+        val ind = this
+            .ancestorStrict<MvCallExpr>()
+            ?.let { if (it.path.textMatches("update_field")) it else null }
+            ?.let {
+                val expr = this.ancestorStrict<MvRefExpr>() ?: return@let -1
+                it.arguments.indexOf(expr)
+            }
+        return ind == 1
+    }
 
 val MvPath.identifierName: String? get() = identifier?.text
 

@@ -18,20 +18,20 @@ val MvBindingPat.owner: PsiElement?
                 || it is MvFunctionParameter || it is MvConstDef
     }
 
-fun MvBindingPat.ty(): Ty = inferBindingTy(this)
+fun MvBindingPat.ty(msl: Boolean): Ty = inferBindingTy(this, msl)
 
 fun MvBindingPat.cachedTy(ctx: InferenceContext): Ty {
     val owner = this.owner
     return when (owner) {
-        is MvFunctionParameter -> owner.declaredTy
-        is MvConstDef -> owner.declaredTy
+        is MvFunctionParameter -> owner.declaredTy(ctx.msl)
+        is MvConstDef -> owner.declaredTy(ctx.msl)
         is MvLetStatement -> {
             if (ctx.bindingTypes.containsKey(this)) return ctx.bindingTypes[this]!!
 
             val pat = owner.pat ?: return TyUnknown
             val explicitType = owner.typeAnnotation?.type
             if (explicitType != null) {
-                val explicitTy = inferMvTypeTy(explicitType)
+                val explicitTy = inferMvTypeTy(explicitType, ctx.msl)
                 return collectBindings(pat, explicitTy)[this] ?: TyUnknown
             }
             val inferredTy = owner.initializer?.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown

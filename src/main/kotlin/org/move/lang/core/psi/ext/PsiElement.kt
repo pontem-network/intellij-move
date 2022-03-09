@@ -1,12 +1,12 @@
 package org.move.lang.core.psi.ext
 
+import com.intellij.openapi.util.Condition
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiFileImpl
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
-import org.move.lang.MvElementTypes
 
 fun <T> T?.wrapWithList(): List<T> = this?.let { listOf(it) }.orEmpty()
 fun <T> T?.wrapWithMutableList(): MutableList<T> = this?.let { listOf(it) }.orEmpty().toMutableList()

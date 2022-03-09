@@ -104,13 +104,13 @@ private fun processModules(
     val moveProject = fqModuleRef.moveProject ?: return false
     val sourceAddress = fqModuleRef.addressRef.toAddress(moveProject)
 
-    var stop = false
+    var resolved = false
     val visitor = object : MvVisitor() {
         override fun visitModuleDef(mod: MvModuleDef) {
-            if (stop) return
+            if (resolved) return
             val modAddress = mod.definedAddressRef()?.toAddress(moveProject)
             if (modAddress == sourceAddress) {
-                stop = processor.match(mod)
+                resolved = processor.match(mod)
             }
         }
     }
@@ -118,7 +118,7 @@ private fun processModules(
     for (module in modules) {
         module.accept(visitor)
     }
-    return stop
+    return resolved
 }
 
 fun processFQModuleRef(
@@ -153,7 +153,7 @@ fun processLexicalDeclarations(
         Namespace.DOT_ACCESSED_FIELD -> {
             val dotExpr = scope as? MvDotExpr ?: return false
 
-            val ctx = dotExpr.inferenceCtx
+            val ctx = dotExpr.inferenceCtx(dotExpr.isMsl())
             val receiverTy = dotExpr.expr.inferExprTy(ctx)
             val innerTy = when (receiverTy) {
                 is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
@@ -205,8 +205,7 @@ fun processLexicalDeclarations(
 //                    scope.builtinFunctions(),
                 ).flatten(),
             )
-            is MvFunction -> processor.matchAll(scope.parameterBindings)
-            is MvSpecFunction -> processor.matchAll(scope.parameterBindings)
+            is MvFunctionLike -> processor.matchAll(scope.parameterBindings)
             is MvCodeBlock -> {
                 val precedingLetDecls = scope.letStatements
                     // drops all let-statements after the current position
@@ -268,8 +267,7 @@ fun processLexicalDeclarations(
             else -> false
         }
         Namespace.TYPE -> when (scope) {
-            is MvFunction -> processor.matchAll(scope.typeParameters)
-            is MvSpecFunction -> processor.matchAll(scope.typeParameters)
+            is MvFunctionLike -> processor.matchAll(scope.typeParameters)
             is MvStruct -> processor.matchAll(scope.typeParameters)
             is MvSchema -> processor.matchAll(scope.typeParams)
             is MvNameSpecDef -> {

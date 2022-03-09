@@ -6,10 +6,8 @@ import com.intellij.psi.PsiFileFactory
 import org.move.lang.MvFile
 import org.move.lang.MoveFileType
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.ext.childOfType
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
 import org.move.lang.core.psi.ext.getChild
-import org.move.lang.core.psi.ext.hasChild
 
 val Project.psiFactory get() = MvPsiFactory(this)
 
@@ -22,8 +20,8 @@ class MvPsiFactory(private val project: Project) {
         createFromText("module _M { fun m() { let S { $name: $alias } = 1; }}")
             ?: error("Failed to create MvStructPatField")
 
-    fun createSchemaLitField(name: String, alias: String): MvSchemaField =
-        createFromText("module _M { spec module { include Schema { $name: $alias } }}")
+    fun createSchemaLitField(fieldName: String, expr: String): MvSchemaField =
+        createFromText("module _M { spec module { include Schema { $fieldName: $expr } }}")
             ?: error("Failed to create MvSchemaField")
 
     fun createIdentifier(text: String): PsiElement =
