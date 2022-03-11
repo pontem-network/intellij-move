@@ -59,14 +59,14 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
             override fun collect(element: PsiElement, editor: Editor, sink: InlayHintsSink): Boolean {
                 if (file.project.service<DumbService>().isDumb) return true
                 when {
-                    settings.showForVariables && element is MvLetStatement -> {
+                    settings.showForVariables && element is MvLetStmt -> {
                         val pat = element.pat ?: return true
                         if (element.typeAnnotation != null) return true
                         presentTypeForPat(pat)
                     }
                 }
 //                when (element) {
-//                    is MvLetStatement -> {
+//                    is MvLetStmt -> {
 //                        val pat = element.pat ?: return true
 //                        if (element.typeAnnotation != null) return true
 //                        presentTypeForPat(pat)
@@ -82,7 +82,7 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
 //                return true
             }
 
-//            private fun presentLetStatement(element: MvLetStatement) {
+//            private fun presentLetStmt(element: MvLetStmt) {
 //                val pat = element.pat ?: return
 //                if (element.typeAnnotation != null) return
 //                presentTypeForPat(pat)

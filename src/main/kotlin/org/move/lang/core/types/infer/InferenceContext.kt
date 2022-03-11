@@ -24,12 +24,12 @@ fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
         }
         when (this) {
             is MvFunction -> {
-                for (stmt in this.codeBlock?.statementList.orEmpty()) {
+                for (stmt in this.codeBlock?.stmtList.orEmpty()) {
                     when (stmt) {
-                        is MvExprStatement -> {
+                        is MvExprStmt -> {
                             inferExprTy(stmt.expr, fctx)
                         }
-                        is MvLetStatement -> {
+                        is MvLetStmt -> {
                             val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, fctx) }
                             val patTy = stmt.declaredTy ?: initializerTy ?: TyUnknown
                             val pat = stmt.pat ?: continue

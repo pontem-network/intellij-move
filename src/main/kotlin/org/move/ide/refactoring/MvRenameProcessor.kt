@@ -48,7 +48,7 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
 //                    }
                 }
             }
-//            is MvSchemaVarDeclStatement -> {
+//            is SchemaFieldStmt -> {
 //                usages.forEach {
 //                    val field =
 //                        it.element?.ancestorOrSelf<MvSchemaField>(MvSchemaLit::class.java) ?: return@forEach

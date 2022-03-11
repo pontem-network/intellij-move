@@ -87,7 +87,7 @@ class HighlightingAnnotator : MvAnnotator() {
                 val owner = resolved.owner
                 when (owner) {
                     is MvConstDef -> return MvColor.CONSTANT
-                    is MvLetStatement,
+                    is MvLetStmt,
                     is MvFunctionParameter -> return MvColor.VARIABLE
                 }
             }

@@ -11,12 +11,12 @@ import org.move.utils.tests.base.findElementInEditor
 class PsiPatternTest : MvTestBase() {
     fun `test on stmt beginning`() = testPattern("""
         //^
-    """, MvPsiPatterns.onStatementBeginning)
+    """, MvPsiPatterns.onStmtBeginning)
 
     fun `test on stmt beginning with words`() = testPattern("""
         word2
             //^
-    """, MvPsiPatterns.onStatementBeginning("word1", "word2"))
+    """, MvPsiPatterns.onStmtBeginning("word1", "word2"))
 
     fun `test on stmt beginning after other statement`() = testPattern("""
         script {
@@ -25,27 +25,27 @@ class PsiPatternTest : MvTestBase() {
                         //^
             }
         }
-    """, MvPsiPatterns.onStatementBeginning)
+    """, MvPsiPatterns.onStmtBeginning)
 
     fun `test on stmt beginning after block`() = testPattern("""
         module Foo {}
                    //^
-    """, MvPsiPatterns.onStatementBeginning)
+    """, MvPsiPatterns.onStmtBeginning)
 
     fun `test on stmt beginning ignores comments`() = testPattern("""
         script {} /* three */    /* it's greater than two */
                             //^
-    """, MvPsiPatterns.onStatementBeginning)
+    """, MvPsiPatterns.onStmtBeginning)
 
     fun `test on stmt beginning negative in middle of other stmt`() = testPatternNegative("""
         module Abc {}
                 //^
-    """, MvPsiPatterns.onStatementBeginning)
+    """, MvPsiPatterns.onStmtBeginning)
 
     fun `test on stmt beginning negative when not correct startword`() = testPatternNegative("""
         module 
              //^
-    """, MvPsiPatterns.onStatementBeginning("script"))
+    """, MvPsiPatterns.onStmtBeginning("script"))
 
     fun `test code statement`() = testPattern("""
         module M {
@@ -54,7 +54,7 @@ class PsiPatternTest : MvTestBase() {
                //^    
             }
         }
-    """, MvPsiPatterns.codeStatement())
+    """, MvPsiPatterns.codeStmt())
 
     fun `test code statement nested`() = testPattern("""
         module M {
@@ -65,7 +65,7 @@ class PsiPatternTest : MvTestBase() {
                 }}}
             }
         }
-    """, MvPsiPatterns.codeStatement())
+    """, MvPsiPatterns.codeStmt())
 
     fun `test borrow type`() = testPattern("""
         script {

@@ -17,7 +17,7 @@ FILE
     MvModuleBlockImpl(MODULE_BLOCK)
       PsiElement({)('{')
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         MvAttrImpl(ATTR)
           PsiElement(#)('#')
           PsiElement([)('[')

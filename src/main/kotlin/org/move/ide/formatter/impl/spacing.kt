@@ -101,7 +101,7 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
 fun Block.computeSpacing(child1: Block?, child2: Block, ctx: MvFmtContext): Spacing? {
     if (child1 is ASTBlock && child2 is ASTBlock) SpacingContext.create(child1, child2)?.apply {
         when {
-            ncPsi1.isStatement && ncPsi2.isStatementOrExpr
+            ncPsi1.isStmt && ncPsi2.isStmtOrExpr
             -> return lineBreak(
                 keepLineBreaks = ctx.commonSettings.KEEP_LINE_BREAKS,
                 keepBlankLines = ctx.commonSettings.KEEP_BLANK_LINES_IN_CODE

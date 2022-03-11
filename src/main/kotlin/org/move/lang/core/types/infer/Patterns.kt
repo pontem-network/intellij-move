@@ -45,7 +45,7 @@ fun inferBindingTy(bindingPat: MvBindingPat, msl: Boolean): Ty {
     return when (owner) {
         is MvFunctionParameter -> owner.declaredTy(msl)
         is MvConstDef -> owner.declaredTy(msl)
-        is MvLetStatement -> {
+        is MvLetStmt -> {
             val pat = owner.pat ?: return TyUnknown
             val explicitType = owner.typeAnnotation?.type
             if (explicitType != null) {

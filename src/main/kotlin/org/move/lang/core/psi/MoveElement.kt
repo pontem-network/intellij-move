@@ -6,8 +6,6 @@ import com.intellij.psi.PsiElement
 import org.move.lang.MvFile
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.ancestorStrict
-import org.move.lang.core.psi.ext.toAddress
-import org.move.lang.core.types.Address
 
 interface MvElement : PsiElement
 
@@ -31,4 +29,4 @@ val MvElement.containingFunctionLike: MvFunctionLike? get() = ancestorStrict()
 
 val MvElement.containingModule: MvModuleDef? get() = ancestorStrict()
 
-val MvElement.containingImportsOwner get() = ancestorOrSelf<MvImportStatementsOwner>()
+val MvElement.containingImportsOwner get() = ancestorOrSelf<MvImportsOwner>()

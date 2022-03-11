@@ -16,15 +16,15 @@ import org.move.lang.core.psi.ext.hasAncestorOrSelf
 import org.move.lang.core.psi.ext.leftLeaves
 
 object MvPsiPatterns {
-    private val STATEMENT_BOUNDARIES = TokenSet.create(SEMICOLON, L_BRACE, R_BRACE)
+    private val STMT_BOUNDARIES = TokenSet.create(SEMICOLON, L_BRACE, R_BRACE)
 
     val whitespace: PsiElementPattern.Capture<PsiElement> = PlatformPatterns.psiElement().whitespace()
 
-    val onStatementBeginning: PsiElementPattern.Capture<PsiElement> =
-        PlatformPatterns.psiElement().with(OnStatementBeginning())
+    val onStmtBeginning: PsiElementPattern.Capture<PsiElement> =
+        PlatformPatterns.psiElement().with(OnStmtBeginning())
 
-    fun onStatementBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
-        PlatformPatterns.psiElement().with(OnStatementBeginning(*startWords))
+    fun onStmtBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
+        PlatformPatterns.psiElement().with(OnStmtBeginning(*startWords))
 
     fun toplevel(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvFile>()
@@ -45,12 +45,12 @@ object MvPsiPatterns {
     fun scriptBlock(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvScriptBlock>()
 
-    fun codeStatement(): PsiElementPattern.Capture<PsiElement> =
+    fun codeStmt(): PsiElementPattern.Capture<PsiElement> =
         psiElementInside<MvCodeBlock>()
 
-    fun itemSpecLabel() = psiElementInside<MvNameSpecDef>().and(onStatementBeginning("spec"))
+    fun itemSpecLabel() = psiElementInside<MvNameSpecDef>().and(onStmtBeginning("spec"))
 
-    fun specStatement(): PsiElementPattern.Capture<PsiElement> =
+    fun specStmt(): PsiElementPattern.Capture<PsiElement> =
         psiElementInside<MvSpecBlock>()
 
     fun bindingPat(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvBindingPat>()
@@ -233,7 +233,7 @@ object MvPsiPatterns {
         }
     }
 
-    private class OnStatementBeginning(
+    private class OnStmtBeginning(
         vararg startWords: String
     ) : PatternCondition<PsiElement>("on statement beginning") {
         val myStartWords = startWords
@@ -241,7 +241,7 @@ object MvPsiPatterns {
             val prev = t.prevVisibleOrNewLine
             return if (myStartWords.isEmpty()) {
                 val onBoundary =
-                    prev == null || prev is PsiWhiteSpace || prev.node.elementType in STATEMENT_BOUNDARIES
+                    prev == null || prev is PsiWhiteSpace || prev.node.elementType in STMT_BOUNDARIES
                 onBoundary &&
                         !(t.hasAncestorOrSelf<MvStructPat>() || t.hasAncestorOrSelf<MvStructLitExpr>())
             } else {

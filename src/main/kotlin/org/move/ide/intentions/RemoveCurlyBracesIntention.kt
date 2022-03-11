@@ -3,7 +3,7 @@ package org.move.ide.intentions
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.MvImportStatement
+import org.move.lang.core.psi.MvImportStmt
 import org.move.lang.core.psi.MvMultiItemImport
 import org.move.lang.core.psi.MvPsiFactory
 import org.move.lang.core.psi.ext.ancestorStrict
@@ -21,10 +21,10 @@ class RemoveCurlyBracesIntention: MvElementBaseIntentionAction<RemoveCurlyBraces
     )
 
     override fun findApplicableContext(project: Project, editor: Editor, element: PsiElement): Context? {
-        val importStatement =
-            element.ancestorStrict<MvImportStatement>() ?: return null
+        val importStmt =
+            element.ancestorStrict<MvImportStmt>() ?: return null
         val multiItemImport =
-            importStatement.moduleItemsImport?.multiItemImport ?: return null
+            importStmt.moduleItemsImport?.multiItemImport ?: return null
         val itemImport = multiItemImport.itemImportList.singleOrNull() ?: return null
         val refName = itemImport.referenceName
         val aliasName = itemImport.importAlias?.name

@@ -14,7 +14,7 @@ import javax.swing.Icon
 
 val MvBindingPat.owner: PsiElement?
     get() = PsiTreeUtil.findFirstParent(this) {
-        it is MvLetStatement
+        it is MvLetStmt
                 || it is MvFunctionParameter || it is MvConstDef
     }
 
@@ -25,7 +25,7 @@ fun MvBindingPat.cachedTy(ctx: InferenceContext): Ty {
     return when (owner) {
         is MvFunctionParameter -> owner.declaredTy(ctx.msl)
         is MvConstDef -> owner.declaredTy(ctx.msl)
-        is MvLetStatement -> {
+        is MvLetStmt -> {
             if (ctx.bindingTypes.containsKey(this)) return ctx.bindingTypes[this]!!
 
             val pat = owner.pat ?: return TyUnknown

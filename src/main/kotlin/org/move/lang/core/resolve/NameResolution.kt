@@ -23,10 +23,10 @@ enum class MslScope {
 val MvElement.mslScope: MslScope
     get() {
         if (!this.isMsl()) return MslScope.NONE
-        val letStatement = this.ancestorOrSelf<MvLetStatement>()
+        val letStmt = this.ancestorOrSelf<MvLetStmt>()
         return when {
-            letStatement == null -> MslScope.EXPR
-            letStatement.isPost -> MslScope.LET_POST
+            letStmt == null -> MslScope.EXPR
+            letStmt.isPost -> MslScope.LET_POST
             else -> MslScope.LET
         }
     }
@@ -207,7 +207,7 @@ fun processLexicalDeclarations(
             )
             is MvFunctionLike -> processor.matchAll(scope.parameterBindings)
             is MvCodeBlock -> {
-                val precedingLetDecls = scope.letStatements
+                val precedingLetDecls = scope.letStmts
                     // drops all let-statements after the current position
                     .filter { PsiUtilCore.compareElementsByPosition(it, cameFrom) <= 0 }
                     // drops let-statement that is ancestors of ref (on the same statement, at most one)
@@ -236,12 +236,12 @@ fun processLexicalDeclarations(
             is MvSchema -> processor.matchAll(scope.specBlock?.schemaFields().orEmpty())
             is MvSpecBlock -> {
                 val visibleLetDecls = when (itemVis.msl) {
-                    MslScope.EXPR -> scope.letStatements()
+                    MslScope.EXPR -> scope.letStmts()
                     MslScope.LET, MslScope.LET_POST -> {
                         val letDecls = if (itemVis.msl == MslScope.LET_POST) {
-                            scope.letStatements()
+                            scope.letStmts()
                         } else {
-                            scope.letStatements(false)
+                            scope.letStmts(false)
                         }
                         letDecls
                             // drops all let-statements after the current position
@@ -307,7 +307,7 @@ fun processLexicalDeclarations(
             else -> false
         }
         Namespace.MODULE -> when (scope) {
-            is MvImportStatementsOwner -> processor.matchAll(
+            is MvImportsOwner -> processor.matchAll(
                 listOf(
                     scope.moduleImports(),
                     scope.moduleImportAliases(),

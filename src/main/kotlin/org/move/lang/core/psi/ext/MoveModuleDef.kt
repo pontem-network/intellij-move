@@ -40,7 +40,7 @@ val MvModuleDef.fqName: String?
 val MvModuleDef.friendModules: Set<FQModule>
     get() {
         val block = this.moduleBlock ?: return emptySet()
-        val moduleRefs = block.friendStatementList.mapNotNull { it.fqModuleRef }
+        val moduleRefs = block.friendStmtList.mapNotNull { it.fqModuleRef }
 
         val friends = mutableSetOf<FQModule>()
         for (moduleRef in moduleRefs) {
@@ -154,7 +154,7 @@ abstract class MvModuleDefMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node)
         )
     }
 
-    override val importStatements: List<MvImportStatement>
+    override val importStmts: List<MvImportStmt>
         get() =
-            moduleBlock?.importStatementList.orEmpty()
+            moduleBlock?.importStmtList.orEmpty()
 }

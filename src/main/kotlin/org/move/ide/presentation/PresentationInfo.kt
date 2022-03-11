@@ -19,7 +19,7 @@ val MvNamedElement.presentationInfo: PresentationInfo?
                 val owner = this.owner
                 when (owner) {
                     is MvFunctionParameter -> "value parameter"
-                    is MvLetStatement -> "variable"
+                    is MvLetStmt -> "variable"
                     else -> return null
                 }
             }

@@ -15,7 +15,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             // skip this check, as it will be checked in MvPath visitor
             if (moduleRef.ancestorStrict<MvPath>() != null) return
 
-            if (moduleRef.ancestorStrict<MvImportStatement>() != null) return
+            if (moduleRef.ancestorStrict<MvImportStmt>() != null) return
             if (moduleRef is MvFQModuleRef) return
 
             if (moduleRef.isUnresolved) {
@@ -106,7 +106,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         override fun visitSchemaLitField(field: MvSchemaLitField) {
             if (field.isShorthand) {
                 val resolvedItems = field.reference.multiResolve()
-                val varDecl = resolvedItems.find { it is MvSchemaFieldStatement }
+                val varDecl = resolvedItems.find { it is MvSchemaFieldStmt }
                 if (varDecl == null) {
                     holder.registerProblem(
                         field.referenceNameElement,
