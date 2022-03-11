@@ -33,8 +33,6 @@ val MvFunction.visibility: FunctionVisibility
 
 val MvFunction.isTest: Boolean get() = this.attrList.findSingleItemAttr("test") != null
 
-val MvFunction.isNative get() = hasChild(MvElementTypes.NATIVE)
-
 val MvFunction.isBuiltinFunc get() = this.isNative && this.name in BUILTIN_FUNCTIONS
 
 val MvFunction.acquiresTys: List<Ty> get() =

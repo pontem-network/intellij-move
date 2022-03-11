@@ -13,6 +13,7 @@ object MvIcons {
 
     val STRUCT = AllIcons.Nodes.AbstractClass
     val STRUCT_FIELD = AllIcons.Nodes.Field
+    val SCHEMA = AllIcons.Nodes.Static
 
     val CONST = AllIcons.Nodes.Constant
     val FUNCTION = AllIcons.Nodes.Function

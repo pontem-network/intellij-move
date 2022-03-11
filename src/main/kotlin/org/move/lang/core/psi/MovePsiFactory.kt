@@ -20,7 +20,7 @@ class MvPsiFactory(private val project: Project) {
         createFromText("module _M { fun m() { let S { $name: $alias } = 1; }}")
             ?: error("Failed to create MvStructPatField")
 
-    fun createSchemaLitField(fieldName: String, expr: String): MvSchemaField =
+    fun createSchemaLitField(fieldName: String, expr: String): MvSchemaLitField =
         createFromText("module _M { spec module { include Schema { $fieldName: $expr } }}")
             ?: error("Failed to create MvSchemaField")
 

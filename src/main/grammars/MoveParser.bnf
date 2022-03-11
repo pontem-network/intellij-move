@@ -1027,7 +1027,7 @@ private SpecBlock_items_recover ::= !('}' | <<eof>>)
 //private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinishingExpr
 
 private SpecStatement ::= ImportStatement
-                       | SchemaVarDeclStatement
+                       | SchemaFieldStatement
                        | LocalVariableSpecStatement
                        | GlobalVariableSpecStatement
                        | SpecInlineFunctionStatement
@@ -1061,11 +1061,11 @@ private SpecStatement ::= ImportStatement
 //
 //private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
 
-SchemaVarDeclStatement ::= IDENTIFIER TypeAnnotation ';'
+SchemaFieldStatement ::= IDENTIFIER TypeAnnotation ';'
 {
     pin = 2
     implements = [ "org.move.lang.core.psi.MvNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.ext.MvSchemaVarDeclStatementMixin"
+    mixin = "org.move.lang.core.psi.ext.MvSchemaFieldStatementMixin"
 }
 
 LocalVariableSpecStatement ::= local IDENTIFIER TypeAnnotation ';' { pin = 1 }
@@ -1106,21 +1106,21 @@ IncludeSpecStatement ::= include SpecVisibility? SchemaLit ';' { pin = 1 }
 SchemaLit ::= Path SchemaFieldsBlock?
 
 SchemaFieldsBlock ::= '{' SchemaField_with_recover* '}' { pin = 1 }
-private SchemaField_with_recover ::= !'}' SchemaField (',' | &'}')
+private SchemaField_with_recover ::= !'}' SchemaLitField (',' | &'}')
 {
     pin = 1
     recoverWhile = SchemaField_recover
 }
 private SchemaField_recover ::= !('}' | IDENTIFIER)
 
-SchemaField ::= IDENTIFIER SchemaFieldInit?
+SchemaLitField ::= IDENTIFIER SchemaLitFieldInit?
 {
     implements = [
         "org.move.lang.core.psi.MvSchemaRefFieldReferenceElement"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvSchemaRefFieldMixin"
+    mixin = "org.move.lang.core.psi.ext.MvSchemaLitFieldMixin"
 }
-private SchemaFieldInit ::= ':' Expr { pin = 1 }
+private SchemaLitFieldInit ::= ':' Expr { pin = 1 }
 
 private PatternVis ::= <<patternVisibility>>
 private PatternIdent ::= <<patternIdent>>

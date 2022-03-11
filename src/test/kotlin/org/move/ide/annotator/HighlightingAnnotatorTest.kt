@@ -66,6 +66,9 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
                 <BUILTIN_FUNCTION_CALL>exists</BUILTIN_FUNCTION_CALL>();
                 <BUILTIN_FUNCTION_CALL>freeze</BUILTIN_FUNCTION_CALL>();
             }
+            spec move_to {
+                <BUILTIN_FUNCTION_CALL>global</BUILTIN_FUNCTION_CALL>();
+            }
         }
     """
     )

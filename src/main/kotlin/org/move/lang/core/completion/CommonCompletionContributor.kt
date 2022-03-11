@@ -23,6 +23,7 @@ class CommonCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, FQModuleCompletionProvider)
         extend(CompletionType.BASIC, StructFieldsCompletionProvider)
         extend(CompletionType.BASIC, StructPatCompletionProvider)
+        extend(CompletionType.BASIC, SchemaFieldsCompletionProvider)
         extend(
             CompletionType.BASIC,
             MvPsiPatterns.ability(),

@@ -82,6 +82,11 @@ fun MvNamedElement.createCompletionLookupElement(
         is MvBindingPat -> this.createLookupElement()
             .withTypeText(this.cachedTy(this.inferenceCtx(this.isMsl())).shortPresentableText(true))
 
+        is MvSchema -> this.createLookupElement()
+            .withInsertHandler(insertHandler)
+
+//        is MvSchemaFieldStatement -> this.createLookupElement()
+
         else -> LookupElementBuilder.create(this)
     }
 }
@@ -161,13 +166,14 @@ class MvInsertHandler : InsertHandler<LookupElement> {
                 document.insertString(context.selectionEndOffset, suffix)
                 EditorModificationUtil.moveCaretRelatively(context.editor, offset)
             }
-//            is MvSpecFunction -> {
-//                val requiredTypeParams = element.typeParamsUsedOnlyInReturnType
-//                val (suffix, offset) = context.functionSuffixAndOffset(requiredTypeParams, element.parameters)
-//
-//                document.insertString(context.selectionEndOffset, suffix)
-//                EditorModificationUtil.moveCaretRelatively(context.editor, offset)
-//            }
+            is MvSchema -> {
+                if (element.hasTypeParameters) {
+                    if (!context.alreadyHasAngleBrackets) {
+                        document.insertString(context.selectionEndOffset, "<>")
+                    }
+                    EditorModificationUtil.moveCaretRelatively(context.editor, 1)
+                }
+            }
             is MvStruct -> {
                 val insideAcquiresType =
                     context.file

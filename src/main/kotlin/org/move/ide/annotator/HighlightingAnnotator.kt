@@ -17,6 +17,8 @@ val GLOBAL_STORAGE_ACCESS_FUNCTIONS =
     setOf("move_from", "borrow_global", "borrow_global_mut", "exists", "freeze")
 val BUILTIN_FUNCTIONS =
     GLOBAL_STORAGE_ACCESS_FUNCTIONS + setOf("move_to")
+val SPEC_BUILTIN_FUNCTIONS = setOf("global", "len", "vec", "concat", "contains", "index_of", "range",
+                                   "in_range", "update_field", "old", "TRACE")
 
 class HighlightingAnnotator : MvAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
@@ -67,12 +69,16 @@ class HighlightingAnnotator : MvAnnotator() {
                 }
             }
             is MvCallExpr -> {
-                val resolved = path.reference?.resolve() as? MvFunction
+                val resolved = path.reference?.resolve() as? MvFunctionLike
                 if (resolved != null) {
-                    if (resolved.isNative && identifierName in BUILTIN_FUNCTIONS) {
-                        return MvColor.BUILTIN_FUNCTION_CALL
-                    } else {
-                        return MvColor.FUNCTION_CALL
+                    return when {
+                        resolved is MvSpecFunction
+                                && resolved.isNative
+                                && identifierName in SPEC_BUILTIN_FUNCTIONS -> MvColor.BUILTIN_FUNCTION_CALL
+                        resolved is MvFunction
+                                && resolved.isNative
+                                && identifierName in BUILTIN_FUNCTIONS -> MvColor.BUILTIN_FUNCTION_CALL
+                        else -> MvColor.FUNCTION_CALL
                     }
                 }
             }

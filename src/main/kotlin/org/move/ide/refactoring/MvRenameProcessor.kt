@@ -23,7 +23,7 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
             is MvBindingPat -> {
                 usages.forEach {
                     val field = PsiTreeUtil.findFirstParent(it.element) {
-                        it is MvStructLitField || it is MvSchemaField
+                        it is MvStructLitField || it is MvSchemaLitField
                     }
                     when (field) {
                         is MvStructLitField -> {
@@ -32,7 +32,7 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
                                 field.replace(newField)
                             }
                         }
-                        is MvSchemaField -> {
+                        is MvSchemaLitField -> {
                             if (field.isShorthand) {
                                 val newField = psiFactory.createSchemaLitField(field.referenceName, newName)
                                 field.replace(newField)

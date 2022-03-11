@@ -1,9 +1,7 @@
 package org.move.lang.core.psi
 
-import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
-import org.move.lang.core.psi.ext.fqName
-import org.move.lang.core.psi.ext.ty
-import org.move.lang.core.psi.ext.wrapWithList
+import org.move.lang.MvElementTypes
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.declaredTy
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
@@ -19,6 +17,8 @@ interface MvFunctionLike : MvTypeParametersOwner,
 
     val returnType: MvReturnType?
 }
+
+val MvFunctionLike.isNative get() = hasChild(MvElementTypes.NATIVE)
 
 val MvFunctionLike.parameters get() = this.functionParameterList?.functionParameterList.orEmpty()
 

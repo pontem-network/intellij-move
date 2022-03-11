@@ -54,7 +54,7 @@ class FieldInitShorthandInspection : MvLocalInspectionTool() {
             }
         }
 
-        override fun visitSchemaField(o: MvSchemaField) {
+        override fun visitSchemaLitField(o: MvSchemaLitField) {
             val initExpr = o.expr ?: return
             if (!(initExpr is MvRefExpr && initExpr.text == o.identifier.text)) return
             holder.registerProblem(
@@ -65,7 +65,8 @@ class FieldInitShorthandInspection : MvLocalInspectionTool() {
                     override fun getFamilyName() = "Use initialization shorthand"
 
                     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-                        val field = descriptor.psiElement as? MvSchemaField ?: return
+                        val field = descriptor.psiElement as? MvSchemaLitField
+                            ?: return
                         field.getChild(MvElementTypes.COLON)?.delete()
                         field.expr?.delete()
                     }

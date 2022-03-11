@@ -1,10 +1,10 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.MvLetStatement
-import org.move.lang.core.psi.MvSchemaVarDeclStatement
+import org.move.lang.core.psi.MvSchemaFieldStatement
 import org.move.lang.core.psi.MvSpecBlock
 
-fun MvSpecBlock.schemaVars(): List<MvSchemaVarDeclStatement> = childrenOfType()
+fun MvSpecBlock.schemaFields(): List<MvSchemaFieldStatement> = childrenOfType()
 
 fun MvSpecBlock.letStatements(): List<MvLetStatement> = this.childrenOfType()
 

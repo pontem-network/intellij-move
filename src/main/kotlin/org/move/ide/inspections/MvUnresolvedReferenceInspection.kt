@@ -103,10 +103,10 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             }
         }
 
-        override fun visitSchemaField(field: MvSchemaField) {
+        override fun visitSchemaLitField(field: MvSchemaLitField) {
             if (field.isShorthand) {
                 val resolvedItems = field.reference.multiResolve()
-                val varDecl = resolvedItems.find { it is MvSchemaVarDeclStatement }
+                val varDecl = resolvedItems.find { it is MvSchemaFieldStatement }
                 if (varDecl == null) {
                     holder.registerProblem(
                         field.referenceNameElement,
