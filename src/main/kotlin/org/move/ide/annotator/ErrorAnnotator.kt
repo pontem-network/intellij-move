@@ -83,6 +83,25 @@ class ErrorAnnotator : MvAnnotator() {
                             }
                         }
                     }
+                    item is MvSchema && parent is MvSchemaLit -> {
+                        val expectedCount = item.typeParameters.size
+                        if (realCount != 0) {
+                            // if any type param is passed, inference is disabled, so check fully
+                            if (realCount != expectedCount) {
+                                val label = item.fqName
+                                MvDiagnostic
+                                    .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
+                                    .addToHolder(moveHolder)
+                            }
+                        } else {
+                            // if no type args are passed, check whether all type params are inferrable
+                            if (item.requiredTypeParams.isNotEmpty() && realCount != expectedCount) {
+                                MvDiagnostic
+                                    .TypeArgumentsNumberMismatch(path, item.fqName, expectedCount, realCount)
+                                    .addToHolder(moveHolder)
+                            }
+                        }
+                    }
                 }
             }
 
