@@ -161,11 +161,15 @@ data class MoveProject(
 
     fun processModuleFiles(scope: GlobalScope, processFile: (MvModuleFile) -> Boolean) {
         val folders = moduleFolders(scope)
+        var stopped = false;
         for (folder in folders) {
+            if (stopped) break
             deepIterateChildrenRecursivery(folder, { it.extension == "move" }) { file ->
                 val moveFile = file.toMvFile(project) ?: return@deepIterateChildrenRecursivery true
                 val moduleFile = MvModuleFile(moveFile, emptyMap())
-                processFile(moduleFile)
+                val continueForward = processFile(moduleFile)
+                stopped = !continueForward
+                continueForward
             }
         }
     }

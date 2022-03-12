@@ -246,11 +246,10 @@ fake SpecFunction ::= spec native? fun IDENTIFIER? TypeParameterList?
         "org.move.lang.core.psi.MvFunctionLike"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSpecFunctionMixin"
-
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 private SpecFunctionItem ::= SpecFunctionInner
                             | NativeSpecFunctionInner
-//                            | UninterpretedSpecFunctionInner
 
 SpecFunctionInner ::= spec fun IDENTIFIER TypeParameterList?
                        FunctionParameterList ReturnType? (CodeBlock | ';')
@@ -264,11 +263,6 @@ NativeSpecFunctionInner ::= spec (native fun) IDENTIFIER TypeParameterList?
     elementType = SpecFunction
     pin = 2
 }
-//UninterpretedSpecFunctionInner ::= spec fun IDENTIFIER TypeParameterList?
-//                                    FunctionParameterList ReturnType? ';'
-//{
-//    elementType = SpecFunction
-//}
 
 fake SpecInlineFunction ::= native? fun IDENTIFIER? TypeParameterList?
                                 FunctionParameterList? ReturnType?
@@ -296,16 +290,8 @@ NativeSpecInlineFunctionInner ::= (native fun) IDENTIFIER TypeParameterList?
     elementType = SpecInlineFunction
     pin = 1
 }
-//UninterpretedSpecInlineFunctionInner ::= fun IDENTIFIER TypeParameterList?
-//                                         FunctionParameterList ReturnType? ';'
-//{
-//    elementType = SpecInlineFunction
-//}
 
 SpecInlineFunctionStmt ::= SpecInlineFunctionImpl
-//FunctionDefSpecStmt ::= FunctionSignature SpecBlock
-//NativeFunctionDefSpecStmt ::= native FunctionSignature ';' { pin = 1 }
-//UninterpretedFunctionDefSpecStmt ::= FunctionSignature ';'
 
 fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? AbilitiesList?
                         (';' | StructFieldsDefBlock)?

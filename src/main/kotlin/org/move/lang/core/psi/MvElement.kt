@@ -12,14 +12,7 @@ interface MvElement : PsiElement
 abstract class MvElementImpl(node: ASTNode) : ASTWrapperPsiElement(node),
                                               MvElement
 
-val MvElement.containingMoveFile: MvFile? get() = this.containingFile as? MvFile
-
-//val MvElement.containingAddress: Address
-//    get() {
-//        return ancestorStrict<MvAddressDef>()
-//            ?.addressRef
-//            ?.toAddress() ?: Address.default()
-//    }
+val MvElement.containingMvFile: MvFile? get() = this.containingFile as? MvFile
 
 val MvElement.containingScript: MvScriptDef? get() = ancestorStrict()
 

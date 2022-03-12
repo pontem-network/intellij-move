@@ -2,8 +2,6 @@ package org.move.lang.core.resolve
 
 import org.move.lang.core.psi.MvNamedElement
 
-//sealed class Resolution
-
 data class SimpleScopeEntry(
     val name: String,
     val element: MvNamedElement

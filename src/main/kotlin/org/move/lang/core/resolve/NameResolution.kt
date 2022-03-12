@@ -2,7 +2,6 @@ package org.move.lang.core.resolve
 
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
-import com.intellij.psi.util.descendantsOfType
 import org.move.cli.GlobalScope
 import org.move.lang.MvFile
 import org.move.lang.core.psi.*
@@ -13,6 +12,7 @@ import org.move.lang.core.types.infer.inferenceCtx
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.modules
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 
@@ -114,8 +114,9 @@ private fun processModules(
             }
         }
     }
-    val modules = file.descendantsOfType<MvModuleDef>()
+    val modules = file.modules()
     for (module in modules) {
+        if (resolved) break
         module.accept(visitor)
     }
     return resolved
@@ -126,7 +127,7 @@ fun processFQModuleRef(
     processor: MatchingProcessor,
 ) {
     // first search modules in the current file
-    val currentFile = fqModuleRef.containingMoveFile ?: return
+    val currentFile = fqModuleRef.containingMvFile ?: return
     var stopped = processModules(fqModuleRef, currentFile, processor)
     if (stopped) return
 
@@ -202,7 +203,6 @@ fun processLexicalDeclarations(
                     scope.itemImportsWithoutAliases(),
                     scope.itemImportsAliases(),
                     scope.constBindings(),
-//                    scope.builtinFunctions(),
                 ).flatten(),
             )
             is MvFunctionLike -> processor.matchAll(scope.parameterBindings)

@@ -8,15 +8,15 @@ import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.cli.MvConstants
 import org.move.cli.MoveProject
+import org.move.cli.MvConstants
 import org.move.cli.moveProjects
-import org.move.lang.core.psi.MvAddressBlock
-import org.move.lang.core.psi.MvAddressDef
-import org.move.lang.core.psi.MvScriptBlock
-import org.move.lang.core.psi.MvScriptDef
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.childrenOfType
+import org.move.lang.core.psi.ext.modules
 import org.move.openapiext.resolveAbsPath
 import org.move.openapiext.toPsiFile
+import org.move.stdext.chain
 import org.toml.lang.psi.TomlFileType
 import java.nio.file.Path
 
@@ -62,11 +62,6 @@ fun VirtualFile.toNioPathOrNull(): Path? {
 
 fun PsiFile.toNioPathOrNull(): Path? {
     return this.originalFile.virtualFile.toNioPathOrNull()
-//    try {
-//        return this.originalFile.virtualFile.toNioPath()
-//    } catch (e: UnsupportedOperationException) {
-//        return null
-//    }
 }
 
 class MvFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvider, MvLanguage) {
@@ -88,3 +83,8 @@ val VirtualFile.isMvFile: Boolean get() = fileType == MoveFileType
 val VirtualFile.isMoveTomlManifestFile: Boolean get() = fileType == TomlFileType && name == "Move.toml"
 
 fun VirtualFile.toMvFile(project: Project): MvFile? = this.toPsiFile(project) as? MvFile
+
+fun MvFile.modules(): Sequence<MvModuleDef> {
+    return this.childrenOfType<MvModuleDef>()
+        .chain(this.childrenOfType<MvAddressDef>().flatMap { it.modules() })
+}

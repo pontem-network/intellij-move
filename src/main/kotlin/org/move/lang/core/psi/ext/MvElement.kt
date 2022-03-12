@@ -4,8 +4,10 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.util.*
 import org.move.lang.core.psi.*
 
+private val IS_MSL_KEY: Key<CachedValue<Boolean>> = Key.create("IS_MSL_KEY")
+
 fun MvElement.isMsl(): Boolean {
-    return CachedValuesManager.getCachedValue(this) {
+    return CachedValuesManager.getCachedValue(this, IS_MSL_KEY) {
         val specElement = PsiTreeUtil.findFirstParent(this, false) {
             it is MvSpecFunction
                     || it is MvSpecBlockExpr
@@ -14,15 +16,6 @@ fun MvElement.isMsl(): Boolean {
         }
         CachedValueProvider.Result(specElement != null, PsiModificationTracker.MODIFICATION_COUNT)
     }
-//    return CachedValuesManager.getCachedValue(this, IS_MSL_KEY) {
-//        val specElement = PsiTreeUtil.findFirstParent(this, false) {
-//            it is MvSpecFunction
-//                    || it is MvSpecBlockExpr
-//                    || it is MvSchema
-//                    || it is MvSpecDef
-//        }
-//        CachedValueProvider.Result(specElement != null, PsiModificationTracker.MODIFICATION_COUNT)
-//    }
 }
 
 fun MvElement.isInsideAssignmentLeft(): Boolean {
