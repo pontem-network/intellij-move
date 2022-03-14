@@ -7,10 +7,10 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import javax.swing.Icon
 
-val MvStruct.fields: List<MvStructFieldDef>
-    get() = structFieldsDefBlock?.structFieldDefList.orEmpty()
+val MvStruct.fields: List<MvStructField>
+    get() = structBlock?.structFieldList.orEmpty()
 
-val MvStruct.fieldsMap: Map<String, MvStructFieldDef>
+val MvStruct.fieldsMap: Map<String, MvStructField>
     get() {
         return fields.associateBy { it.identifier.text }
     }
@@ -18,8 +18,8 @@ val MvStruct.fieldsMap: Map<String, MvStructFieldDef>
 val MvStruct.fieldNames: List<String>
     get() = fields.mapNotNull { it.name }
 
-fun MvStruct.getField(fieldName: String): MvStructFieldDef? =
-    this.descendantsOfType<MvStructFieldDef>()
+fun MvStruct.getField(fieldName: String): MvStructField? =
+    this.descendantsOfType<MvStructField>()
         .find { it.name == fieldName }
 
 val MvStruct.fqName: String get() {

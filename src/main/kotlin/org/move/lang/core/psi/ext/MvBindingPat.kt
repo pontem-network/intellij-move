@@ -15,10 +15,10 @@ import javax.swing.Icon
 val MvBindingPat.owner: PsiElement?
     get() = PsiTreeUtil.findFirstParent(this) {
         it is MvLetStmt
-                || it is MvFunctionParameter || it is MvConstDef
+                || it is MvFunctionParameter
+                || it is MvConstDef
+                || it is MvSchemaFieldStmt
     }
-
-fun MvBindingPat.ty(msl: Boolean): Ty = inferBindingTy(this, msl)
 
 fun MvBindingPat.cachedTy(ctx: InferenceContext): Ty {
     val owner = this.owner
@@ -39,6 +39,7 @@ fun MvBindingPat.cachedTy(ctx: InferenceContext): Ty {
             ctx.bindingTypes.putAll(bindings)
             return bindings[this] ?: TyUnknown
         }
+        is MvSchemaFieldStmt -> owner.declaredTy(ctx.msl)
         else -> TyUnknown
     }
 }

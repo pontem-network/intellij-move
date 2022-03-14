@@ -9,6 +9,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 
 val INTEGER_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128")
+val SPEC_INTEGER_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("num")
 val PRIMITIVE_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("bool")
 val PRIMITIVE_BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer")
 val BUILTIN_TYPE_IDENTIFIERS = PRIMITIVE_BUILTIN_TYPE_IDENTIFIERS + setOf("vector")

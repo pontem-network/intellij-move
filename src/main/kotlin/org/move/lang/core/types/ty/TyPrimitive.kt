@@ -35,8 +35,8 @@ data class TyInteger(val kind: Kind): TyPrimitive(kind.name.lowercase()) {
     override fun abilities() = Ability.all()
 
     companion object {
-        fun fromName(name: String): TyInteger? =
-            Kind.values().find { it.name == name }?.let(::TyInteger)
+        fun fromName(name: String): TyInteger =
+            Kind.values().find { it.name == name }?.let(::TyInteger)!!
 
         fun fromSuffixedLiteral(literal: PsiElement): TyInteger? =
             Kind.values().find { literal.text.endsWith(it.name) }?.let(::TyInteger)
@@ -45,7 +45,7 @@ data class TyInteger(val kind: Kind): TyPrimitive(kind.name.lowercase()) {
     }
 
     enum class Kind {
-        NoPrecision, u8, u64, u128
+        NoPrecision, u8, u64, u128, num
     }
 
     override fun toString(): String = tyToString(this)

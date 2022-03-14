@@ -178,7 +178,7 @@ fun processLexicalDeclarations(
         Namespace.SCHEMA_FIELD -> {
             val schema = (scope as? MvSchemaLit)?.path?.maybeSchema
             if (schema != null) {
-                return processor.matchAll(schema.fieldStmts)
+                return processor.matchAll(schema.fieldBindings)
             }
             false
         }
@@ -233,7 +233,7 @@ fun processLexicalDeclarations(
                     else -> false
                 }
             }
-            is MvSchema -> processor.matchAll(scope.specBlock?.schemaFields().orEmpty())
+            is MvSchema -> processor.matchAll(scope.fieldBindings)
             is MvSpecBlock -> {
                 val visibleLetDecls = when (itemVis.msl) {
                     MslScope.EXPR -> scope.letStmts()

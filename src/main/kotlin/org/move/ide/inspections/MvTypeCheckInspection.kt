@@ -169,7 +169,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 }
             }
 
-            override fun visitStructFieldDef(field: MvStructFieldDef) {
+            override fun visitStructField(field: MvStructField) {
                 val msl = field.isMsl()
                 val structTy = TyStruct(field.struct)
                 val structAbilities = structTy.abilities()

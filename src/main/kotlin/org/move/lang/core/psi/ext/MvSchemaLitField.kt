@@ -30,13 +30,6 @@ class MvSchemaFieldShorthandReferenceImpl(
             resolveItem(element, Namespace.NAME)
         ).flatten()
     }
-
-    override fun handleElementRename(newName: String): PsiElement {
-        val psiFactory = element.project.psiFactory
-        val newField = psiFactory.createSchemaLitField(newName, element.referenceName)
-        element.replace(newField)
-        return element
-    }
 }
 
 abstract class MvSchemaLitFieldMixin(node: ASTNode) : MvElementImpl(node),

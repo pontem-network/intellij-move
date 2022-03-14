@@ -25,7 +25,7 @@ class ErrorAnnotator : MvAnnotator() {
 
             override fun visitModuleDef(o: MvModuleDef) = checkModuleDef(moveHolder, o)
 
-            override fun visitStructFieldDef(o: MvStructFieldDef) = checkDuplicates(moveHolder, o)
+            override fun visitStructField(o: MvStructField) = checkDuplicates(moveHolder, o)
 
             override fun visitPath(path: MvPath) {
                 val item = path.reference?.resolve()

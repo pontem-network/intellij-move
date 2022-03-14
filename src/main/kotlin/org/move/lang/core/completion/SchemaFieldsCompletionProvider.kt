@@ -7,10 +7,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.psi.MvSchemaLitField
-import org.move.lang.core.psi.ext.fieldNames
-import org.move.lang.core.psi.ext.fieldStmts
-import org.move.lang.core.psi.ext.schema
-import org.move.lang.core.psi.ext.schemaLit
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.withParent
 
 object SchemaFieldsCompletionProvider: MvCompletionProvider() {
@@ -30,8 +27,8 @@ object SchemaFieldsCompletionProvider: MvCompletionProvider() {
         val schema = schemaLit.schema ?: return
         val providedFieldNames = schemaLit.fieldNames
 
-        for (fieldStmt in schema.fieldStmts.filter { it.name !in providedFieldNames }) {
-            result.addElement(fieldStmt.createCompletionLookupElement())
+        for (fieldBinding in schema.fieldBindings.filter { it.name !in providedFieldNames }) {
+            result.addElement(fieldBinding.createCompletionLookupElement())
         }
     }
 }

@@ -249,7 +249,7 @@ class RenameTest : MvTestBase() {
     """)
 
     fun `test const`() = doTest("RENAMED_CONST", """
-        module M {
+        module 0x1::M {
             const /*caret*/MY_CONST: u8 = 1;
             
             fun main(): u8 {
@@ -257,7 +257,7 @@ class RenameTest : MvTestBase() {
             }
         }
     """, """
-        module M {
+        module 0x1::M {
             const RENAMED_CONST: u8 = 1;
             
             fun main(): u8 {

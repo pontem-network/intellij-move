@@ -32,3 +32,5 @@ val MvSchema.requiredTypeParams: List<MvTypeParameter>
     }
 
 val MvSchema.fieldStmts get() = this.specBlock?.schemaFields().orEmpty()
+
+val MvSchema.fieldBindings get() = this.fieldStmts.map { it.bindingPat }

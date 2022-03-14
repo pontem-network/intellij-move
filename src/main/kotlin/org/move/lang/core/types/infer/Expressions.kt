@@ -124,7 +124,7 @@ private fun inferDotExprTy(dotExpr: MvDotExpr, ctx: InferenceContext): Ty {
     // solve constraints, return TyUnknown if cannot
     if (!inference.processConstraints()) return TyUnknown
 
-    val fieldName = dotExpr.structFieldRef.referenceName
+    val fieldName = dotExpr.structDotField.referenceName
     return inference.resolveTy(structTy.fieldTy(fieldName))
 }
 

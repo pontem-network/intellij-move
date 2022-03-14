@@ -12,12 +12,12 @@ import org.move.lang.core.psi.ext.getChild
 val Project.psiFactory get() = MvPsiFactory(this)
 
 class MvPsiFactory(private val project: Project) {
-    fun createStructLitField(name: String, value: String): MvStructLitField =
-        createFromText("module _M { fun m() { S { $name: $value }; }}")
+    fun createStructLitField(fieldName: String, expr: String): MvStructLitField =
+        createFromText("module _M { fun m() { S { $fieldName: $expr }; }}")
             ?: error("Failed to create MvStructLitField")
 
-    fun createStructPatField(name: String, alias: String): MvStructPatField =
-        createFromText("module _M { fun m() { let S { $name: $alias } = 1; }}")
+    fun createStructPatField(fieldName: String, alias: String): MvStructPatField =
+        createFromText("module _M { fun m() { let S { $fieldName: $alias } = 1; }}")
             ?: error("Failed to create MvStructPatField")
 
     fun createSchemaLitField(fieldName: String, expr: String): MvSchemaLitField =

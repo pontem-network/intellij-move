@@ -76,7 +76,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             if (litField.isMsl()) return
             if (litField.isShorthand) {
                 val resolvedItems = litField.reference.multiResolve()
-                val resolvedStructField = resolvedItems.find { it is MvStructFieldDef }
+                val resolvedStructField = resolvedItems.find { it is MvStructField }
                 if (resolvedStructField == null) {
                     holder.registerProblem(
                         litField.referenceNameElement,
@@ -106,16 +106,16 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         override fun visitSchemaLitField(field: MvSchemaLitField) {
             if (field.isShorthand) {
                 val resolvedItems = field.reference.multiResolve()
-                val varDecl = resolvedItems.find { it is MvSchemaFieldStmt }
-                if (varDecl == null) {
+                val fieldBinding = resolvedItems.find { it is MvBindingPat && it.owner is MvSchemaFieldStmt }
+                if (fieldBinding == null) {
                     holder.registerProblem(
                         field.referenceNameElement,
                         "Unresolved field: `${field.referenceName}`",
                         ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
                     )
                 }
-                val resolvedBinding = resolvedItems.find { it is MvBindingPat }
-                if (resolvedBinding == null) {
+                val letBinding = resolvedItems.find { it is MvBindingPat }
+                if (letBinding == null) {
                     holder.registerProblem(
                         field.referenceNameElement,
                         "Unresolved reference: `${field.referenceName}`",

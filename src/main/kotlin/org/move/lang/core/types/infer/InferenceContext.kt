@@ -20,7 +20,7 @@ fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
     return CachedValuesManager.getCachedValue(this, TYPE_INFERENCE_KEY) {
         val fctx = InferenceContext(msl)
         for (param in this.parameterBindings) {
-            fctx.bindingTypes[param] = inferBindingTy(param, msl)
+            fctx.bindingTypes[param] = param.cachedTy(fctx)
         }
         when (this) {
             is MvFunction -> {

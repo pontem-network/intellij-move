@@ -119,7 +119,7 @@ fun MvElement.signature(builder: StringBuilder) {
             this.abilitiesList?.abilityList
                 ?.joinToWithBuffer(buffer, ", ", " has ") { generateDocumentation(it) }
         }
-        is MvStructFieldDef -> {
+        is MvStructField -> {
             buffer += this.containingModule!!.fqName
             buffer += "::"
             buffer += this.struct.name ?: angleWrapped("anonymous")

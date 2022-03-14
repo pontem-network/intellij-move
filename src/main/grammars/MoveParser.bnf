@@ -294,7 +294,7 @@ NativeSpecInlineFunctionInner ::= (native fun) IDENTIFIER TypeParameterList?
 SpecInlineFunctionStmt ::= SpecInlineFunctionImpl
 
 fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? AbilitiesList?
-                        (';' | StructFieldsDefBlock)?
+                        (';' | StructBlock)?
 {
     implements = [
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
@@ -306,7 +306,7 @@ fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? Abilities
 
 private StructInnerFirst ::= STRUCT_KW
 StructInner ::= Attr* StructInnerFirst IDENTIFIER TypeParameterList? AbilitiesList?
-                            StructFieldsDefBlock
+                            StructBlock
 {
     pin = StructInnerFirst
     elementType = Struct
@@ -452,22 +452,22 @@ Ability ::= copy | IDENTIFIER
     name = "ability"
 }
 
-StructFieldsDefBlock ::= '{' StructFieldDef_with_recover* '}' { pin = 1 }
-private StructFieldDef_with_recover ::= !'}' StructFieldDef (',' | &'}')
+StructBlock ::= '{' StructField_with_recover* '}' { pin = 1 }
+private StructField_with_recover ::= !'}' StructField (',' | &'}')
 {
     pin = 1
-    recoverWhile = StructFieldDef_recover
+    recoverWhile = StructField_recover
 }
-private StructFieldDef_recover ::= !('}' | IDENTIFIER)
+private StructField_recover ::= !('}' | IDENTIFIER)
 
-StructFieldDef ::= IDENTIFIER TypeAnnotation &(',' | '}')
+StructField ::= IDENTIFIER TypeAnnotation &(',' | '}')
 {
     pin = 1
     implements = [
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvStructFieldDefMixin"
+    mixin = "org.move.lang.core.psi.ext.MvStructFieldMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
@@ -857,12 +857,12 @@ AssignmentExpr ::= Expr Initializer { rightAssociative = true }
 Initializer ::= '=' Expr { pin = 1 }
 
 BorrowExpr ::= '&' mut? Expr
-DotExpr ::= Expr '.' StructFieldRef
+DotExpr ::= Expr '.' StructDotField
 
-StructFieldRef ::= IDENTIFIER
+StructDotField ::= IDENTIFIER
 {
     implements = ["org.move.lang.core.psi.MvStructFieldReferenceElement"]
-    mixin = "org.move.lang.core.psi.ext.MvStructFieldRefMixin"
+    mixin = "org.move.lang.core.psi.ext.MvStructDotMixin"
 }
 
 IndexExpr ::= Expr IndexArg
@@ -1047,11 +1047,11 @@ private SpecStmt ::= ImportStmt
 //
 //private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
 
-SchemaFieldStmt ::= IDENTIFIER TypeAnnotation ';'
+SchemaFieldStmt ::= BindingPat TypeAnnotation ';'
 {
     pin = 2
-    implements = [ "org.move.lang.core.psi.MvNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.ext.MvSchemaFieldStmtMixin"
+//    implements = [ "org.move.lang.core.psi.MvNameIdentifierOwner" ]
+//    mixin = "org.move.lang.core.psi.ext.MvSchemaFieldStmtMixin"
 }
 
 LocalVariableSpecStmt ::= local IDENTIFIER TypeAnnotation ';' { pin = 1 }

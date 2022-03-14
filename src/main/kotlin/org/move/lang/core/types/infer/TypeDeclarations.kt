@@ -1,6 +1,7 @@
 package org.move.lang.core.types.infer
 
 import org.move.ide.annotator.INTEGER_TYPE_IDENTIFIERS
+import org.move.ide.annotator.SPEC_INTEGER_TYPE_IDENTIFIERS
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.mutable
 import org.move.lang.core.psi.ext.typeArguments
@@ -24,8 +25,9 @@ import org.move.lang.core.types.ty.*
 
 fun inferPrimitiveTypeTy(moveType: MvPathType, msl: Boolean): Ty {
     val refName = moveType.path.referenceName ?: return TyUnknown
+    if (msl && refName in SPEC_INTEGER_TYPE_IDENTIFIERS) return TyInteger.fromName("num")
     return when (refName) {
-        in INTEGER_TYPE_IDENTIFIERS -> TyInteger.fromName(refName)!!
+        in INTEGER_TYPE_IDENTIFIERS -> TyInteger.fromName(refName)
         "bool" -> TyBool
         "address" -> TyAddress
         "signer" -> TySigner

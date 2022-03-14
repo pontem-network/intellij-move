@@ -76,7 +76,7 @@ fun MvNamedElement.createCompletionLookupElement(
             .withTailText(" { ... }")
             .withInsertHandler(insertHandler)
 
-        is MvStructFieldDef -> this.createLookupElement()
+        is MvStructField -> this.createLookupElement()
             .withTypeText(this.typeAnnotation?.type?.text)
 
         is MvBindingPat -> this.createLookupElement()
