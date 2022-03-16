@@ -31,6 +31,8 @@ module 0x1::M {
         include MySchema{ amount };
         include MySchema<MyType>{ amount };
         include MySchema{ address: Signer::address_of(acc) };
+
+        native fun serialize<MoveValue>(v: &MoveValue): vector<u8>;
     }
 
     fun main2() {

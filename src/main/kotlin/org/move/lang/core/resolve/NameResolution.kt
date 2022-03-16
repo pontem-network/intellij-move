@@ -2,6 +2,7 @@ package org.move.lang.core.resolve
 
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
+import com.intellij.psi.util.descendantsOfType
 import org.move.cli.GlobalScope
 import org.move.lang.MvFile
 import org.move.lang.core.psi.*
@@ -230,10 +231,25 @@ fun processLexicalDeclarations(
                 val item = scope.item
                 when (item) {
                     is MvFunction -> processor.matchAll(item.parameterBindings)
+                    is MvStruct -> processor.matchAll(item.fields)
                     else -> false
                 }
             }
             is MvSchema -> processor.matchAll(scope.fieldBindings)
+            is MvAggregateExpr -> {
+                val forallQuantifier = scope.forallQuantifier
+                when {
+                    forallQuantifier != null -> {
+                        val bindings =
+                            forallQuantifier.quantifierBindings
+                                ?.descendantsOfType<MvBindingPat>()
+                                .orEmpty()
+                                .toList()
+                        processor.matchAll(bindings)
+                    }
+                }
+                false
+            }
             is MvSpecBlock -> {
                 val visibleLetDecls = when (itemVis.msl) {
                     MslScope.EXPR -> scope.letStmts()

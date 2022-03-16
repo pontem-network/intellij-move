@@ -268,11 +268,11 @@ fake SpecInlineFunction ::= native? fun IDENTIFIER? TypeParameterList?
                                 FunctionParameterList? ReturnType?
                                 (CodeBlock | ';')?
 {
-//    implements = [
-//        "org.move.lang.core.psi.MvNameIdentifierOwner"
-//        "org.move.lang.core.psi.MvTypeParametersOwner"
-//    ]
-//    mixin = "org.move.lang.core.psi.ext.MvSpecFunctionMixin"
+    implements = [
+        "org.move.lang.core.psi.MvFunctionLike"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvSpecInlineFunctionMixin"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 private SpecInlineFunctionImpl ::= SpecInlineFunctionInner
                                     | NativeSpecInlineFunctionInner
@@ -1195,11 +1195,11 @@ ChooseSpecExpr ::= choose min? QuantifierBindings
 QuantifierBindings ::= <<comma_sep_items QuantifierBind>>
 QuantifierBind ::= RangeQuantifierBind | TypeQuantifierBind
 
-RangeQuantifierBind ::= IDENTIFIER in RangeExpr {
+RangeQuantifierBind ::= BindingPat in RangeExpr {
     pin = 2
     extends = QuantifierBind
 }
-TypeQuantifierBind ::= IDENTIFIER ':' Type {
+TypeQuantifierBind ::= BindingPat ':' Type {
     pin = 2
     extends = QuantifierBind
 }

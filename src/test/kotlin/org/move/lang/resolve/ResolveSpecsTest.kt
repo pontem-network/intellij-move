@@ -286,4 +286,26 @@ class ResolveSpecsTest: ResolveTestCase() {
         }
     }    
     """)
+
+    fun `test spec struct resolves to field`() = checkByCode("""
+    module 0x1::M {
+        struct S { val: u8 }
+                  //X
+        spec S {
+            invariant val > 1;
+                     //^ 
+        }
+    }    
+    """)
+
+    fun `test forall index`() = checkByCode("""
+    module 0x1::M {
+        spec module {
+            invariant forall ind in 0..len(bytes)
+                           //X
+                : ind != 0;
+                //^
+        }
+    }    
+    """)
 }

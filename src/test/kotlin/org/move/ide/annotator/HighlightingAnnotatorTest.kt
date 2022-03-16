@@ -97,6 +97,9 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
             acquires <TYPE_PARAMETER>U</TYPE_PARAMETER> {
                 let a: <TYPE_PARAMETER>U</TYPE_PARAMETER> = 1;
             }
+            spec module {
+                native fun serialize<<TYPE_PARAMETER>U</TYPE_PARAMETER>>(v: &<TYPE_PARAMETER>U</TYPE_PARAMETER>): vector<u8>;
+            }
         }
     """
     )

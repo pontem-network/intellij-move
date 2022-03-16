@@ -258,4 +258,12 @@ class MvUnresolvedReferenceInspectionTest : InspectionsTestCase(MvUnresolvedRefe
         }
     }    
     """)
+
+    fun `test num type`() = checkByText("""
+    module 0x1::M {
+        spec schema SS {
+            val: num;
+        }
+    }    
+    """)
 }

@@ -4,6 +4,8 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
 import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
+import org.move.ide.annotator.SPEC_INTEGER_TYPE_IDENTIFIERS
+import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvPathReference
@@ -13,6 +15,12 @@ import org.move.lang.core.resolve.ref.Namespace
 fun MvPath.isPrimitiveType(): Boolean =
     this.parent is MvPathType
             && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS.union(BUILTIN_TYPE_IDENTIFIERS)
+
+fun MvPath.isSpecPrimitiveType(): Boolean =
+    this.parent is MvPathType
+            && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS
+        .union(BUILTIN_TYPE_IDENTIFIERS)
+        .union(SPEC_ONLY_PRIMITIVE_TYPES)
 
 val MvPath.isResult: Boolean get() = this.textMatches("result") || this.text.startsWith("result_")
 

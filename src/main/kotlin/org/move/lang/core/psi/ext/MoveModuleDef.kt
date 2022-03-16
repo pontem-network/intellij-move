@@ -130,6 +130,8 @@ fun MvModuleDef.builtinSpecFunctions(): List<MvSpecFunction> {
         createBuiltinSpecFunction("spec native fun old<T>(_: T): T;", project),
         createBuiltinSpecFunction("spec native fun update_field<S, F, V>(s: S, fname: F, val: V): S;", project),
         createBuiltinSpecFunction("spec native fun TRACE<T>(_: T): T;", project),
+        // vector functions
+        createBuiltinSpecFunction("spec native fun len<T>(_: vector<T>): u64;", project),
     )
 }
 
