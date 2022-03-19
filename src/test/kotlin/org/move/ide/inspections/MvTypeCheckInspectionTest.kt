@@ -581,4 +581,15 @@ module 0x1::M {
         }
     }    
     """)
+
+    fun `test vector_u8 is compatible with vector_num inside spec`() = checkErrors("""
+    module 0x1::M {
+        struct S { 
+            val: vector<u8> 
+        }       
+        spec module {
+            S { val: b"" };
+        }
+    }    
+    """)
 }

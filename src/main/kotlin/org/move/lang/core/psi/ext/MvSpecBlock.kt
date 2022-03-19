@@ -1,8 +1,6 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.MvLetStmt
-import org.move.lang.core.psi.MvSchemaFieldStmt
-import org.move.lang.core.psi.MvSpecBlock
+import org.move.lang.core.psi.*
 
 fun MvSpecBlock.schemaFields(): List<MvSchemaFieldStmt> = childrenOfType()
 
@@ -15,4 +13,9 @@ fun MvSpecBlock.letStmts(post: Boolean): List<MvLetStmt> {
     } else {
         statements.filter { !it.isPost }
     }
+}
+
+fun MvSpecBlock.inlineFunctions(): List<MvSpecInlineFunction> {
+    return this.childrenOfType<MvSpecInlineFunctionStmt>()
+        .map { it.specInlineFunction }
 }

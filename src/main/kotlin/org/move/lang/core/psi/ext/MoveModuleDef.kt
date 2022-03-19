@@ -128,7 +128,10 @@ fun MvModuleDef.builtinSpecFunctions(): List<MvSpecFunction> {
         createBuiltinSpecFunction("spec native fun max_u128(): u128;", project),
         createBuiltinSpecFunction("spec native fun global<T: key>(addr: address): T;", project),
         createBuiltinSpecFunction("spec native fun old<T>(_: T): T;", project),
-        createBuiltinSpecFunction("spec native fun update_field<S, F, V>(s: S, fname: F, val: V): S;", project),
+        createBuiltinSpecFunction(
+            "spec native fun update_field<S, F, V>(s: S, fname: F, val: V): S;",
+            project
+        ),
         createBuiltinSpecFunction("spec native fun TRACE<T>(_: T): T;", project),
         // vector functions
         createBuiltinSpecFunction("spec native fun len<T>(_: vector<T>): u64;", project),
@@ -140,6 +143,8 @@ fun MvModuleDef.specFunctions(): List<MvSpecFunction> = moduleBlock?.specFunctio
 fun MvModuleDef.constBindings(): List<MvBindingPat> =
     moduleBlock?.constDefList.orEmpty().mapNotNull { it.bindingPat }
 
+fun MvModuleDef.moduleSpecs() =
+    this.moduleBlock?.childrenOfType<MvModuleSpecDef>().orEmpty()
 
 abstract class MvModuleDefMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                                  MvModuleDef {

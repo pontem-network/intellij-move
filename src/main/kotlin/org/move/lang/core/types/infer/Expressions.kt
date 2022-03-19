@@ -185,8 +185,8 @@ private fun inferLitExprTy(litExpr: MvLitExpr, ctx: InferenceContext): Ty {
             val literal = (litExpr.integerLiteral ?: litExpr.hexIntegerLiteral)!!
             return TyInteger.fromSuffixedLiteral(literal) ?: TyInteger(TyInteger.DEFAULT_KIND)
         }
-        litExpr.byteStringLiteral != null -> TyByteString
-        litExpr.hexStringLiteral != null -> TyHexString
+        litExpr.byteStringLiteral != null -> TyByteString(ctx.msl)
+        litExpr.hexStringLiteral != null -> TyHexString(ctx.msl)
         else -> TyUnknown
     }
 }

@@ -2,7 +2,7 @@ package org.move.lang.core.psi
 
 import org.move.lang.core.psi.ext.definedAddressRef
 
-interface MvImportsOwner : MvElement {
+interface MvUseStmtOwner : MvElement {
     val importStmts: List<MvImportStmt>
 
     private fun _moduleImports(): List<MvModuleImport> =
@@ -40,7 +40,7 @@ interface MvImportsOwner : MvElement {
         itemImports().mapNotNull { it.importAlias }
 }
 
-fun MvImportsOwner.shortestPathIdentText(item: MvNamedElement): String? {
+fun MvUseStmtOwner.shortestPathIdentText(item: MvNamedElement): String? {
     val itemName = item.name ?: return null
     // local
     if (this == item.containingImportsOwner) return itemName

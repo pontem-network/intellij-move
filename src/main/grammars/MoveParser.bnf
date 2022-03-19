@@ -159,7 +159,7 @@ NamedAddressDef ::= address IDENTIFIER '=' AddressRef ';' { pin = 3 }
 
 ScriptDef ::= script ScriptBlock {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvImportsOwner" ]
+    implements = [ "org.move.lang.core.psi.MvUseStmtOwner" ]
     mixin = "org.move.lang.core.psi.ext.MvScriptDefMixin"
 }
 ScriptBlock ::= '{' ScriptBlockItems '}' { pin = 1 }
@@ -197,7 +197,7 @@ ModuleDef ::= Attr* module (AddressRef '::')? IDENTIFIER ModuleBlock
     name = "module declaration"
     implements = [
         "org.move.lang.core.psi.MvNameIdentifierOwner"
-        "org.move.lang.core.psi.MvImportsOwner"
+        "org.move.lang.core.psi.MvUseStmtOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvModuleDefMixin"
@@ -696,7 +696,12 @@ private AnyBlock ::= CodeBlock | InlineBlock
 InlineBlock ::= Expr
 
 CodeBlockExpr ::= CodeBlock
-CodeBlock ::= '{' CodeBlock_items '}' { pin = 1 }
+CodeBlock ::= '{' CodeBlock_items '}'
+{
+    pin = 1
+    implements = [ "org.move.lang.core.psi.MvUseStmtOwner" ]
+    mixin = "org.move.lang.core.psi.ext.MvCodeBlockMixin"
+}
 
 private CodeBlock_items ::= ImportStmt*
                             Stmt*
@@ -1029,7 +1034,7 @@ private SpecStmt ::= ImportStmt
                                | IncludeSpecStmt
 //                               | InvariantSpecStmt
 //                               | AxiomSpecStmt
-                               | ApplySpecStmt
+                               | ApplySchemaStmt
 //                               | EmitsSpecStmt
 //                               | AggregatePredicateSpecStmt
 //                               | SpecBlockSpecStmt
@@ -1112,7 +1117,10 @@ private PatternVis ::= <<patternVisibility>>
 private PatternIdent ::= <<patternIdent>>
 
 //fake FunctionPatternIdent ::= ('*' | IDENTIFIER)+
-FunctionPattern ::= PatternVis? PatternIdent TypeArgumentList? { pin = 2 }
+FunctionPattern ::= PatternVis? PatternIdent TypeParameterList? {
+    pin = 2
+    implements = [ "org.move.lang.core.psi.MvTypeParametersOwner" ]
+}
 //FunctionPattern ::= (public | internal)? IDENTIFIER TypeArgumentList? { pin = 2 }
 
 private InvariantModifier ::= <<invariantModifierKeyword>>
@@ -1145,15 +1153,11 @@ EmitsSpecExpr ::= emits SpecExpr to SpecExpr EmitsCondition? { pin = 1 }
 
 EmitsCondition ::= if Expr { pin = 1 }
 
-ApplySpecStmt ::= apply ApplySchemaName
-                        to <<comma_sep_items FunctionPattern>>
-                         ( except <<comma_sep_items FunctionPattern>> )? ';'
-{
-    pin = 1
-}
+ApplySchemaStmt ::= apply SchemaRef ApplyTo ApplyExcept? ';' { pin = 1 }
+ApplyTo ::= to <<comma_sep_items FunctionPattern>> { pin = 1 }
+ApplyExcept ::= except <<comma_sep_items FunctionPattern>> { pin = 1 }
 
-ApplySchemaName ::= Path
-                    ('{' <<comma_sep_items ApplySchemaNameAttribute>> '}')?
+SchemaRef ::= Path ('{' <<comma_sep_items ApplySchemaNameAttribute>> '}')?
 //{
 //    implements = [
 //        "org.move.lang.core.psi.MvQualSchemaReferenceElement"

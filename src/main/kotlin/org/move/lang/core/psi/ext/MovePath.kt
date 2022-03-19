@@ -61,7 +61,7 @@ abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
 
     override fun getReference(): MvPathReference? {
         val namespace = when (this.parent) {
-            is MvSchemaLit -> Namespace.SCHEMA
+            is MvSchemaLit, is MvSchemaRef -> Namespace.SCHEMA
             is MvPathType -> Namespace.TYPE
             else -> Namespace.NAME
         }

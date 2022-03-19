@@ -22,4 +22,4 @@ val MvElement.containingFunctionLike: MvFunctionLike? get() = ancestorStrict()
 
 val MvElement.containingModule: MvModuleDef? get() = ancestorStrict()
 
-val MvElement.containingImportsOwner get() = ancestorOrSelf<MvImportsOwner>()
+val MvElement.containingImportsOwner get() = ancestorOrSelf<MvUseStmtOwner>()

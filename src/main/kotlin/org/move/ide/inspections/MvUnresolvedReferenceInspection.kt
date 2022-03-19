@@ -28,6 +28,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitPath(path: MvPath) {
+            if (path.isMsl()) return
             if (path.isMsl() && path.isResult) return
             if (path.isUpdateFieldArg2) return
             if (path.isPrimitiveType()) return

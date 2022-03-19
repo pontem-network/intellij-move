@@ -63,6 +63,7 @@ class HighlightingAnnotator : MvAnnotator() {
         when (pathContainer) {
             is MvPathType -> {
                 if (identifierName in PRIMITIVE_TYPE_IDENTIFIERS) return MvColor.PRIMITIVE_TYPE
+                if (identifierName in SPEC_ONLY_PRIMITIVE_TYPES && path.isMsl()) return MvColor.PRIMITIVE_TYPE
                 if (identifierName in BUILTIN_TYPE_IDENTIFIERS) return MvColor.BUILTIN_TYPE
 
                 val resolved = path.reference?.resolve()
