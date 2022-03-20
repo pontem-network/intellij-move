@@ -125,7 +125,7 @@ private fun inferDotExprTy(dotExpr: MvDotExpr, ctx: InferenceContext): Ty {
     if (!inference.processConstraints()) return TyUnknown
 
     val fieldName = dotExpr.structDotField.referenceName
-    return inference.resolveTy(structTy.fieldTy(fieldName))
+    return inference.resolveTy(structTy.fieldTy(fieldName, ctx.msl))
 }
 
 private fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext): Ty {

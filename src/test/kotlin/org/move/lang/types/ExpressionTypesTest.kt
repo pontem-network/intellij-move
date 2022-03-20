@@ -394,4 +394,15 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test struct field vector_u8 in spec`() = testExpr("""
+    module 0x1::M {
+        struct S { vec: vector<u8> } 
+        spec module {
+            let s = S { vec: b"" };
+            s.vec
+            //^ vector<num>
+        }
+    }    
+    """)
 }
