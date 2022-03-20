@@ -48,7 +48,7 @@ object MvPsiPatterns {
     fun codeStmt(): PsiElementPattern.Capture<PsiElement> =
         psiElementInside<MvCodeBlock>()
 
-    fun itemSpecLabel() = psiElementInside<MvNameSpecDef>().and(onStmtBeginning("spec"))
+    fun itemSpecLabel() = psiElementInside<MvItemSpec>().and(onStmtBeginning("spec"))
 
     fun specStmt(): PsiElementPattern.Capture<PsiElement> =
         psiElementInside<MvSpecBlock>()
@@ -160,7 +160,7 @@ object MvPsiPatterns {
 
     fun specIdentifier(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
-            .withSuperParent<MvSpecDef>(2)
+            .withSuperParent<MvAnySpec>(2)
 
     fun whitespaceAndErrors() = PlatformPatterns.psiElement().whitespaceCommentEmptyOrError()
 

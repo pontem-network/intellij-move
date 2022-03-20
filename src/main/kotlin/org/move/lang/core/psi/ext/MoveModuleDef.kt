@@ -4,6 +4,9 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
+import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 import org.move.ide.MvIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
@@ -56,32 +59,32 @@ fun MvModuleDef.allFunctions() = moduleBlock?.functionList.orEmpty()
 
 fun MvModuleDef.builtinFunctions(): List<MvFunction> {
     return listOf(
-        createBuiltinFunction(
+        builtinFunction(
             """
             /// Removes `T` from address and returns it. 
             /// Aborts if address does not hold a `T`.
             native fun move_from<T: key>(addr: address): T acquires T;
             """, project
         ),
-        createBuiltinFunction(
+        builtinFunction(
             """
             /// Publishes `T` under `signer.address`. 
             /// Aborts if `signer.address` already holds a `T`.
             native fun move_to<T: key>(acc: &signer, res: T);
             """, project
         ),
-        createBuiltinFunction("native fun borrow_global<T: key>(addr: address): &T acquires T;", project),
-        createBuiltinFunction(
+        builtinFunction("native fun borrow_global<T: key>(addr: address): &T acquires T;", project),
+        builtinFunction(
             "native fun borrow_global_mut<T: key>(addr: address): &mut T acquires T;",
             project
         ),
-        createBuiltinFunction(
+        builtinFunction(
             """
             /// Returns `true` if a `T` is stored under address
             native fun exists<T: key>(addr: address): bool;
             """, project
         ),
-        createBuiltinFunction("native fun freeze<S>(mut_ref: &mut S): &S;", project),
+        builtinFunction("native fun freeze<S>(mut_ref: &mut S): &S;", project),
     )
 }
 
@@ -103,18 +106,16 @@ fun MvModuleDef.functions(visibility: Visibility): List<MvFunction> =
         is Visibility.Internal -> allFunctions()
     }
 
-fun createBuiltinFunction(text: String, project: Project): MvFunction {
+fun builtinFunction(text: String, project: Project): MvFunction {
     val trimmedText = text.trimIndent()
-    val function = project.psiFactory.createFunction(trimmedText, moduleName = "builtin_functions")
+    val function = project.psiFactory.function(trimmedText, moduleName = "builtin_functions")
     (function as MvFunctionMixin).builtIn = true
     return function
 }
 
-fun createBuiltinSpecFunction(text: String, project: Project): MvSpecFunction {
+fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
     val trimmedText = text.trimIndent()
-    val function = project.psiFactory.createSpecFunction(trimmedText, moduleName = "builtin_spec_functions")
-//    (function as MvFunctionMixin).builtIn = true
-    return function
+    return project.psiFactory.specFunction(trimmedText, moduleName = "builtin_spec_functions")
 }
 
 fun MvModuleDef.structs(): List<MvStruct> = moduleBlock?.structList.orEmpty()
@@ -122,20 +123,31 @@ fun MvModuleDef.structs(): List<MvStruct> = moduleBlock?.structList.orEmpty()
 fun MvModuleDef.schemas(): List<MvSchema> = moduleBlock?.schemaList.orEmpty()
 
 fun MvModuleDef.builtinSpecFunctions(): List<MvSpecFunction> {
-    return listOf(
-        createBuiltinSpecFunction("spec native fun max_u8(): u8;", project),
-        createBuiltinSpecFunction("spec native fun max_u64(): u64;", project),
-        createBuiltinSpecFunction("spec native fun max_u128(): u128;", project),
-        createBuiltinSpecFunction("spec native fun global<T: key>(addr: address): T;", project),
-        createBuiltinSpecFunction("spec native fun old<T>(_: T): T;", project),
-        createBuiltinSpecFunction(
-            "spec native fun update_field<S, F, V>(s: S, fname: F, val: V): S;",
-            project
-        ),
-        createBuiltinSpecFunction("spec native fun TRACE<T>(_: T): T;", project),
-        // vector functions
-        createBuiltinSpecFunction("spec native fun len<T>(_: vector<T>): u64;", project),
-    )
+    return CachedValuesManager.getCachedValue(this) {
+        val funcs = listOf(
+            builtinSpecFunction("spec native fun max_u8(): num;", project),
+            builtinSpecFunction("spec native fun max_u64(): num;", project),
+            builtinSpecFunction("spec native fun max_u128(): num;", project),
+            builtinSpecFunction("spec native fun global<T: key>(addr: address): T;", project),
+            builtinSpecFunction("spec native fun old<T>(_: T): T;", project),
+            builtinSpecFunction(
+                "spec native fun update_field<S, F, V>(s: S, fname: F, val: V): S;",
+                project
+            ),
+            builtinSpecFunction("spec native fun TRACE<T>(_: T): T;", project),
+            // vector functions
+            builtinSpecFunction("spec native fun len<T>(_: vector<T>): num;", project),
+            builtinSpecFunction(
+                "spec native fun concat<T>(v1: vector<T>, v2: vector<T>): vector<T>;",
+                project
+            ),
+            builtinSpecFunction("spec native fun contains<T>(v: vector<T>, e: T): bool;", project),
+            builtinSpecFunction("spec native fun index_of<T>(_: vector<T>, _: T): num;", project),
+            builtinSpecFunction("spec native fun range<T>(_: vector<T>): range;", project),
+            builtinSpecFunction("spec native fun in_range<T>(_: vector<T>, _: num): bool;", project),
+        )
+        CachedValueProvider.Result(funcs, PsiModificationTracker.MODIFICATION_COUNT)
+    }
 }
 
 fun MvModuleDef.specFunctions(): List<MvSpecFunction> = moduleBlock?.specFunctionList.orEmpty()
@@ -144,7 +156,7 @@ fun MvModuleDef.constBindings(): List<MvBindingPat> =
     moduleBlock?.constDefList.orEmpty().mapNotNull { it.bindingPat }
 
 fun MvModuleDef.moduleSpecs() =
-    this.moduleBlock?.childrenOfType<MvModuleSpecDef>().orEmpty()
+    this.moduleBlock?.childrenOfType<MvModuleSpec>().orEmpty()
 
 abstract class MvModuleDefMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                                  MvModuleDef {

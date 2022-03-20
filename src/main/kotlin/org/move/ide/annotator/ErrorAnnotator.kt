@@ -105,6 +105,7 @@ class ErrorAnnotator : MvAnnotator() {
             }
 
             override fun visitCallExpr(o: MvCallExpr) {
+                if (o.isMsl()) return
                 if (o.path.referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
                     val explicitTypeArgs = o.typeArguments
                     val currentModule = o.containingModule ?: return

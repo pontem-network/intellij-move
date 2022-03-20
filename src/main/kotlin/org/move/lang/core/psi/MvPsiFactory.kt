@@ -69,11 +69,11 @@ class MvPsiFactory(private val project: Project) {
             ?: error("`$text`")
     }
 
-    fun createFunction(text: String, moduleName: String = "_Dummy"): MvFunction =
+    fun function(text: String, moduleName: String = "_Dummy"): MvFunction =
         createFromText("module $moduleName { $text } ")
             ?: error("Failed to create a function from text: `$text`")
 
-    fun createSpecFunction(text: String, moduleName: String = "_Dummy"): MvSpecFunction =
+    fun specFunction(text: String, moduleName: String = "_Dummy"): MvSpecFunction =
         createFromText("module $moduleName { $text } ")
             ?: error("Failed to create a function from text: `$text`")
 

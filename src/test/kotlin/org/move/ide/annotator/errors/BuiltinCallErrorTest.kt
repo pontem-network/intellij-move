@@ -17,4 +17,16 @@ class BuiltinCallErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
         }
     }
     """)
+
+    fun `test no global storage access error in spec`() = checkErrors("""
+    module 0x1::M {
+        struct S1 has key {}
+    }   
+    module 0x1::Main {
+        use 0x1::M::S1;
+        spec module {
+            borrow_global_mut<S1>(@0x1);
+        }
+    }
+    """)
 }

@@ -18,7 +18,7 @@ module 0x1::M {
         ensures [global] result == 1;
 
         apply ModuleInvariant to bar;
-        aborts_if exists(Signer::spec_address_of(to_limit));
+        aborts_if exists<Window>(Signer::spec_address_of(to_limit));
         aborts_if exists<Window>(Signer::spec_address_of(to_limit));
 
         aborts_with [check] 1;

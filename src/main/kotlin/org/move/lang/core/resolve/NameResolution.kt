@@ -225,7 +225,7 @@ fun processLexicalDeclarations(
                 }
                 return processorWithShadowing.matchAll(namedElements)
             }
-            is MvNameSpecDef -> {
+            is MvItemSpec -> {
                 val item = scope.item
                 when (item) {
                     is MvFunction -> processor.matchAll(item.parameterBindings)
@@ -234,15 +234,7 @@ fun processLexicalDeclarations(
                 }
             }
             is MvSchema -> processor.matchAll(scope.fieldBindings)
-            is MvAggregateExpr -> {
-                val forallQuantifier = scope.forallQuantifier
-                val existsQuantifier = scope.existsQuantifier
-                when {
-                    forallQuantifier != null -> processor.matchAll(forallQuantifier.bindings)
-                    existsQuantifier != null -> processor.matchAll(existsQuantifier.bindings)
-                    else -> false
-                }
-            }
+            is MvQuantBindingsOwner -> processor.matchAll(scope.bindings)
             is MvSpecBlock -> {
                 val visibleLetDecls = when (itemVis.msl) {
                     MslScope.EXPR -> scope.letStmts()
@@ -282,7 +274,7 @@ fun processLexicalDeclarations(
             is MvFunctionLike -> processor.matchAll(scope.typeParameters)
             is MvStruct -> processor.matchAll(scope.typeParameters)
             is MvSchema -> processor.matchAll(scope.typeParams)
-            is MvNameSpecDef -> {
+            is MvItemSpec -> {
                 val funcItem = scope.funcItem
                 if (funcItem != null) {
                     processor.matchAll(funcItem.typeParameters)
@@ -346,7 +338,7 @@ fun walkUpThroughScopes(
     var scope = start.parent as MvElement?
     while (scope != null) {
         // walk all `spec module {}` clauses
-        if (cameFrom is MvSpecDef && scope is MvModuleBlock) {
+        if (cameFrom is MvAnySpec && scope is MvModuleBlock) {
             val moduleSpecs = (scope.parent as MvModuleDef)
                 .moduleSpecs()
                 .filter { it != cameFrom }

@@ -42,7 +42,12 @@ module 0x1::M {
 
         choose a: address where exists<R>(a) && global<R>(a).value > 0;
         choose min i: num where in_range(v, i) && v[i] == 2;
-}
+        let a = choose min i in range(gallery) where gallery[i].id == id;
+    }
+
+    spec fun find_token_index_by_id<TokenType>(): u64 {
+        choose i in range(gallery) where gallery[i].id == id
+    }
 
     spec schema ModuleInvariant<X, Y> {
         requires global<X>(0x0).f == global<X>(0x1).f;

@@ -14,7 +14,7 @@ FILE
       PsiErrorElement:IDENTIFIER, fun, module or native expected, got 'spec'
         <empty list>
       PsiWhiteSpace('\n    ')
-      MvModuleSpecDefImpl(MODULE_SPEC_DEF)
+      MvModuleSpecImpl(MODULE_SPEC)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
         PsiElement(module)('module')
@@ -99,7 +99,7 @@ FILE
           PsiWhiteSpace('\n    ')
           PsiElement(})('}')
       PsiWhiteSpace('\n    ')
-      MvModuleSpecDefImpl(MODULE_SPEC_DEF)
+      MvModuleSpecImpl(MODULE_SPEC)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
         PsiElement(module)('module')
@@ -135,13 +135,13 @@ FILE
             MvAssumeSpecExprImpl(ASSUME_SPEC_EXPR)
               PsiElement(assume_kw)('assume')
               PsiWhiteSpace(' ')
-              MvAggregateExprImpl(AGGREGATE_EXPR)
-                MvExistsQuantifierImpl(EXISTS_QUANTIFIER)
-                  PsiElement(exists_kw)('exists')
-                  PsiErrorElement:IDENTIFIER expected, got '1'
-                    <empty list>
-            PsiWhiteSpace(' ')
-            PsiElement(INTEGER_LITERAL)('1')
+              MvExistsQuantExprImpl(EXISTS_QUANT_EXPR)
+                PsiElement(exists_kw)('exists')
+                PsiErrorElement:IDENTIFIER expected, got '1'
+                  <empty list>
+                PsiWhiteSpace(' ')
+                MvLitExprImpl(LIT_EXPR)
+                  PsiElement(INTEGER_LITERAL)('1')
             PsiElement(;)(';')
           PsiWhiteSpace('\n\n        ')
           MvSpecExprStmtImpl(SPEC_EXPR_STMT)

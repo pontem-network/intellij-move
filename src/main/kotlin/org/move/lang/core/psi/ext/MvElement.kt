@@ -14,7 +14,7 @@ fun PsiElement.isMsl(): Boolean {
             it is MvSpecFunction
                     || it is MvSpecBlockExpr
                     || it is MvSchema
-                    || it is MvSpecDef
+                    || it is MvAnySpec
         }
         CachedValueProvider.Result(specElement != null, PsiModificationTracker.MODIFICATION_COUNT)
     }
