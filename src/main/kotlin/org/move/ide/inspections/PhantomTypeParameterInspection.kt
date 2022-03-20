@@ -38,7 +38,7 @@ class PhantomTypeParameterInspection: MvLocalInspectionTool() {
                                 override fun getFamilyName() = "Declare phantom"
 
                                 override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-                                    val newParam = project.psiFactory.createTypeParameter("phantom $name")
+                                    val newParam = project.psiFactory.typeParameter("phantom $name")
                                     typeParam.replace(newParam)
                                 }
                             }

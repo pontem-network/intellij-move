@@ -12,59 +12,59 @@ import org.move.lang.core.psi.ext.getChild
 val Project.psiFactory get() = MvPsiFactory(this)
 
 class MvPsiFactory(private val project: Project) {
-    fun createStructLitField(fieldName: String, expr: String): MvStructLitField =
+    fun structLitField(fieldName: String, expr: String): MvStructLitField =
         createFromText("module _M { fun m() { S { $fieldName: $expr }; }}")
             ?: error("Failed to create MvStructLitField")
 
-    fun createStructPatField(fieldName: String, alias: String): MvStructPatField =
+    fun structPatField(fieldName: String, alias: String): MvStructPatField =
         createFromText("module _M { fun m() { let S { $fieldName: $alias } = 1; }}")
             ?: error("Failed to create MvStructPatField")
 
-    fun createSchemaLitField(fieldName: String, expr: String): MvSchemaLitField =
+    fun schemaLitField(fieldName: String, expr: String): MvSchemaLitField =
         createFromText("module _M { spec module { include Schema { $fieldName: $expr } }}")
             ?: error("Failed to create MvSchemaField")
 
-    fun createIdentifier(text: String): PsiElement =
+    fun identifier(text: String): PsiElement =
         createFromText<MvModuleDef>("module $text {}")?.nameIdentifier
             ?: error("Failed to create identifier: `$text`")
 
-    fun createColon(): PsiElement =
-        createConst("const C: u8 = 1;")
-            .descendantOfTypeStrict<MvTypeAnnotation>()!!
-            .getChild(MvElementTypes.COLON)!!
+//    fun createColon(): PsiElement =
+//        const("const C: u8 = 1;")
+//            .descendantOfTypeStrict<MvTypeAnnotation>()!!
+//            .getChild(MvElementTypes.COLON)!!
 
-    fun createExpression(text: String): MvExpr =
-        tryCreateExpression(text)
-            ?: error("Failed to create expression from text: `$text`")
+//    fun createExpression(text: String): MvExpr =
+//        tryCreateExpression(text)
+//            ?: error("Failed to create expression from text: `$text`")
+//
+//    fun tryCreateExpression(text: CharSequence): MvExpr? =
+//        createFromText("module _IntellijPreludeDummy { fun m() { let _ = $text; } }")
 
-    fun tryCreateExpression(text: CharSequence): MvExpr? =
-        createFromText("module _IntellijPreludeDummy { fun m() { let _ = $text; } }")
-
-    fun createConst(text: String): MvConstDef =
+    fun const(text: String): MvConstDef =
         createFromText("module _IntellijPreludeDummy { $text }")
             ?: error("")
 
-    fun createItemImport(text: String): MvItemImport {
+    fun itemImport(text: String): MvItemImport {
         return createFromText("module _IntellijPreludeDummy { use 0x1::Module::$text; }")
             ?: error("Failed to create an item import from text: `$text`")
     }
 
-    fun createAcquires(text: String): MvAcquiresType {
+    fun acquires(text: String): MvAcquiresType {
         return createFromText("module _IntellijPreludeDummy { fun main() $text {}}")
             ?: error("Failed to create a method member from text: `$text`")
     }
 
-    fun createBindingPat(text: String): MvBindingPat {
+    fun bindingPat(text: String): MvBindingPat {
         return createFromText("module _IntellijPreludeDummy { fun main() { let S { $text } = 1; }}")
             ?: error("Failed to create a MvBindingPat from text: `$text`")
     }
 
-    fun createTypeParameter(text: String): MvTypeParameter {
+    fun typeParameter(text: String): MvTypeParameter {
         return createFromText("module _IntellijPreludeDummy { struct S<$text> {}}")
             ?: error("Failed to create a type parameter from text: `$text`")
     }
 
-    fun createPathIdent(text: String): MvPathIdent {
+    fun pathIdent(text: String): MvPathIdent {
         return createFromText("module _IntellijPreludeDummy { fun main() { $text(); } } ")
             ?: error("`$text`")
     }

@@ -33,12 +33,12 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
                     when {
                         usage is MvStructLitField && usage.isShorthand -> {
                             // NEW_FIELD_NAME: OLD_VARIABLE_NAME
-                            val newLitField = psiFactory.createStructLitField(newName, usage.referenceName)
+                            val newLitField = psiFactory.structLitField(newName, usage.referenceName)
                             usage.replace(newLitField)
                         }
                         usage is MvStructPatField && usage.isShorthand -> {
                             // NEW_PAT_FIELD_NAME: OLD_VARIABLE_NAME
-                            val newPatField = psiFactory.createStructPatField(newName, usage.referenceName)
+                            val newPatField = psiFactory.structPatField(newName, usage.referenceName)
                             usage.replace(newPatField)
                         }
                     }
@@ -54,12 +54,12 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
                             when {
                                 field is MvStructLitField && field.isShorthand -> {
                                     val newField =
-                                        psiFactory.createStructLitField(field.referenceName, newName)
+                                        psiFactory.structLitField(field.referenceName, newName)
                                     field.replace(newField)
                                 }
                                 field is MvSchemaLitField && field.isShorthand -> {
                                     val newField =
-                                        psiFactory.createSchemaLitField(field.referenceName, newName)
+                                        psiFactory.schemaLitField(field.referenceName, newName)
                                     field.replace(newField)
                                 }
                             }
@@ -68,7 +68,7 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
                             // NEW_SCHEMA_FIELD_NAME: OLD_VARIABLE_NAME
                             val schemaLitField = it.element as? MvSchemaLitField ?: return@forEach
                             val newSchemaLitField =
-                                psiFactory.createSchemaLitField(newName, schemaLitField.referenceName)
+                                psiFactory.schemaLitField(newName, schemaLitField.referenceName)
                             schemaLitField.replace(newSchemaLitField)
                         }
                     }
@@ -78,7 +78,7 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
 
         val elementToRename = when {
             element is MvBindingPat && element.parent is MvStructPatField -> {
-                val newPatField = psiFactory.createStructPatField(element.identifier.text, element.text)
+                val newPatField = psiFactory.structPatField(element.identifier.text, element.text)
                 element.replace(newPatField).descendantOfTypeStrict<MvBindingPat>()!!
             }
             else -> element

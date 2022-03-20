@@ -36,7 +36,7 @@ class RedundantQualifiedPathInspection : MvLocalInspectionTool() {
                                 project: Project,
                                 descriptor: ProblemDescriptor
                             ) {
-                                val newPathIdent = project.psiFactory.createPathIdent(
+                                val newPathIdent = project.psiFactory.pathIdent(
                                     shortestPathIdentText
                                 )
                                 descriptor.psiElement.replace(newPathIdent)

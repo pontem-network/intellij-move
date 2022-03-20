@@ -45,11 +45,11 @@ class MvMissingAcquiresInspection : MvLocalInspectionTool() {
                                 val psiFactory = project.psiFactory
                                 if (acquiresType != null) {
                                     val acquires =
-                                        psiFactory.createAcquires(acquiresType.text + ", " + missingTyNames)
+                                        psiFactory.acquires(acquiresType.text + ", " + missingTyNames)
                                     acquiresType.replace(acquires)
                                 } else {
                                     val acquires =
-                                        psiFactory.createAcquires("acquires $missingTyNames")
+                                        psiFactory.acquires("acquires $missingTyNames")
                                     function.addBefore(acquires, function.codeBlock)
                                 }
                             }

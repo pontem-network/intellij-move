@@ -11,7 +11,7 @@ fun doRenameIdentifier(identifier: PsiElement, newName: String) {
     val newIdentifier = when (identifier.elementType) {
         MvElementTypes.IDENTIFIER -> {
             if (!isValidMoveVariableIdentifier(newName)) return
-            factory.createIdentifier(newName)
+            factory.identifier(newName)
         }
         else -> error("Unsupported identifier type for `$newName` (${identifier.elementType})")
     }

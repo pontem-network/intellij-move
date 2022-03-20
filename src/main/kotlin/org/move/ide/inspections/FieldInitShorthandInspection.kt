@@ -47,7 +47,7 @@ class FieldInitShorthandInspection : MvLocalInspectionTool() {
                             val field = descriptor.psiElement as? MvStructPatField ?: return
                             val fieldIdent = field.identifier ?: return
                             field.structPatFieldBinding?.delete()
-                            fieldIdent.replace(project.psiFactory.createBindingPat(fieldIdent.text))
+                            fieldIdent.replace(project.psiFactory.bindingPat(fieldIdent.text))
                         }
                     }
                 )

@@ -45,7 +45,7 @@ class RemoveCurlyBracesIntention: MvElementBaseIntentionAction<RemoveCurlyBraces
         if (aliasName != null) {
             newText += " as $aliasName"
         }
-        val newItemImport = MvPsiFactory(project).createItemImport(newText)
+        val newItemImport = MvPsiFactory(project).itemImport(newText)
         multiItemImport.replace(newItemImport)
 
         editor.caretModel.moveToOffset(newOffset)
