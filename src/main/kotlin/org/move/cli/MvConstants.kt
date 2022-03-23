@@ -9,7 +9,7 @@ object MvProjectLayout {
     const val buildDir = "build"
 
     fun dirs(root: Path): List<Path> {
-        val names = listOf(*sourcesDirs, testsDir)
+        val names = listOf(*sourcesDirs, testsDir, buildDir)
         return names.map { root.resolve(it) }.filter { it.exists() }
     }
 }

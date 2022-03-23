@@ -255,4 +255,17 @@ class ResolveTypesTest : ResolveTestCase() {
             }
         }
     """)
+
+    fun `test resolve type param in native function in spec`() = checkByCode("""
+    module 0x1::M {
+        spec module {
+            /// Native function which is defined in the prover's prelude.
+            native fun serialize<MoveValue>(
+                                    //X
+                v: &MoveValue
+                    //^
+            ): vector<u8>;
+        }
+    }    
+    """)
 }

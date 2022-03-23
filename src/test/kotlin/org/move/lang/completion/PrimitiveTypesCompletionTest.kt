@@ -84,6 +84,20 @@ class PrimitiveTypesCompletionTest: CompletionTestCase() {
         }
     """)
 
+    fun `test num type completion`() = doSingleCompletion("""
+    module 0x1::M {
+        spec schema SS {
+            val: nu/*caret*/
+        }
+    }    
+    """, """
+    module 0x1::M {
+        spec schema SS {
+            val: num/*caret*/
+        }
+    }    
+    """)
+
     private fun doTest(@Language("Move") text: String) {
         val typeNames = PRIMITIVE_TYPE_IDENTIFIERS + BUILTIN_TYPE_IDENTIFIERS
         for (typeName in typeNames) {

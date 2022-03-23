@@ -186,4 +186,44 @@ class SpecsCompletionTest: CompletionTestCase() {
         }
     }        
     """)
+
+    fun `test include schema angle brackets completion`() = doSingleCompletion("""
+    module 0x1::M {
+        fun call() {}
+        spec call {
+            include MySche/*caret*/
+        }
+        spec schema MySchema<Type> {}
+    }    
+    """, """
+    module 0x1::M {
+        fun call() {}
+        spec call {
+            include MySchema</*caret*/>
+        }
+        spec schema MySchema<Type> {}
+    }    
+    """)
+
+    fun `test autocomplete fields in include schema`() = doSingleCompletion("""
+    module 0x1::M {
+        fun call() {}
+        spec call {
+            include MySchema { ad/*caret*/ }
+        }
+        spec schema MySchema {
+            addr: address;
+        }
+    }
+    """, """
+    module 0x1::M {
+        fun call() {}
+        spec call {
+            include MySchema { addr/*caret*/ }
+        }
+        spec schema MySchema {
+            addr: address;
+        }
+    }
+    """)
 }

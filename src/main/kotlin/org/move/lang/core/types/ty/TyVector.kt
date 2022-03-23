@@ -4,7 +4,7 @@ import org.move.ide.presentation.tyToString
 
 import org.move.lang.core.types.infer.TypeFolder
 
-open class TyVector(val item: Ty): Ty {
+open class TyVector(val item: Ty) : Ty {
     override fun abilities() = item.abilities()
 
     override fun innerFoldWith(folder: TypeFolder): Ty =
@@ -17,5 +17,8 @@ open class TyVector(val item: Ty): Ty {
     override fun hashCode(): Int = item.hashCode()
 }
 
-object TyByteString: TyVector(TyInteger(TyInteger.Kind.u8))
-object TyHexString: TyVector(TyInteger(TyInteger.Kind.u8))
+data class TyByteString(val msl: Boolean) :
+    TyVector(TyInteger(if (msl) TyInteger.Kind.num else TyInteger.Kind.u8))
+
+data class TyHexString(val msl: Boolean) :
+    TyVector(TyInteger(if (msl) TyInteger.Kind.num else TyInteger.Kind.u8))

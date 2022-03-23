@@ -78,7 +78,7 @@ FILE
         MvCodeBlockImpl(CODE_BLOCK)
           PsiElement({)('{')
           PsiWhiteSpace('\n        ')
-          MvLetStatementImpl(LET_STATEMENT)
+          MvLetStmtImpl(LET_STMT)
             PsiElement(let)('let')
             PsiWhiteSpace(' ')
             MvWildPatImpl(WILD_PAT)

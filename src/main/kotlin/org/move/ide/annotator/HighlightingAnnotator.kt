@@ -9,6 +9,8 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 
 val INTEGER_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128")
+val SPEC_INTEGER_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("num")
+val SPEC_ONLY_PRIMITIVE_TYPES = setOf("num")
 val PRIMITIVE_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("bool")
 val PRIMITIVE_BUILTIN_TYPE_IDENTIFIERS = setOf("address", "signer")
 val BUILTIN_TYPE_IDENTIFIERS = PRIMITIVE_BUILTIN_TYPE_IDENTIFIERS + setOf("vector")
@@ -17,6 +19,8 @@ val GLOBAL_STORAGE_ACCESS_FUNCTIONS =
     setOf("move_from", "borrow_global", "borrow_global_mut", "exists", "freeze")
 val BUILTIN_FUNCTIONS =
     GLOBAL_STORAGE_ACCESS_FUNCTIONS + setOf("move_to")
+val SPEC_BUILTIN_FUNCTIONS = setOf("global", "len", "vec", "concat", "contains", "index_of", "range",
+                                   "in_range", "update_field", "old", "TRACE")
 
 class HighlightingAnnotator : MvAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
@@ -59,6 +63,7 @@ class HighlightingAnnotator : MvAnnotator() {
         when (pathContainer) {
             is MvPathType -> {
                 if (identifierName in PRIMITIVE_TYPE_IDENTIFIERS) return MvColor.PRIMITIVE_TYPE
+                if (identifierName in SPEC_ONLY_PRIMITIVE_TYPES && path.isMsl()) return MvColor.PRIMITIVE_TYPE
                 if (identifierName in BUILTIN_TYPE_IDENTIFIERS) return MvColor.BUILTIN_TYPE
 
                 val resolved = path.reference?.resolve()
@@ -67,12 +72,16 @@ class HighlightingAnnotator : MvAnnotator() {
                 }
             }
             is MvCallExpr -> {
-                val resolved = path.reference?.resolve() as? MvFunction
+                val resolved = path.reference?.resolve() as? MvFunctionLike
                 if (resolved != null) {
-                    if (resolved.isNative && identifierName in BUILTIN_FUNCTIONS) {
-                        return MvColor.BUILTIN_FUNCTION_CALL
-                    } else {
-                        return MvColor.FUNCTION_CALL
+                    return when {
+                        resolved is MvSpecFunction
+                                && resolved.isNative
+                                && identifierName in SPEC_BUILTIN_FUNCTIONS -> MvColor.BUILTIN_FUNCTION_CALL
+                        resolved is MvFunction
+                                && resolved.isNative
+                                && identifierName in BUILTIN_FUNCTIONS -> MvColor.BUILTIN_FUNCTION_CALL
+                        else -> MvColor.FUNCTION_CALL
                     }
                 }
             }
@@ -81,7 +90,7 @@ class HighlightingAnnotator : MvAnnotator() {
                 val owner = resolved.owner
                 when (owner) {
                     is MvConstDef -> return MvColor.CONSTANT
-                    is MvLetStatement,
+                    is MvLetStmt,
                     is MvFunctionParameter -> return MvColor.VARIABLE
                 }
             }

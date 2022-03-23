@@ -22,9 +22,8 @@ class NamedAddressReference(element: MvNamedAddress) : PsiReferenceBase<MvNamedA
         )
     }
 
-    override fun handleElementRename(newElementName: String): PsiElement? {
-        val refNameElement = element.referenceNameElement ?: return null
-        doRenameIdentifier(refNameElement, newElementName)
+    override fun handleElementRename(newElementName: String): PsiElement {
+        doRenameIdentifier(element.referenceNameElement, newElementName)
         return element
     }
 

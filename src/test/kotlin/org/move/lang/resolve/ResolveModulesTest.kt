@@ -231,4 +231,16 @@ class ResolveModulesTest : ResolveTestCase() {
         }
     """
     )
+
+    fun `test resolve module use inline`() = checkByCode("""
+    module 0x1::M { fun call() {} }
+              //X
+    module 0x1::M2 {
+        fun m() {
+            use 0x1::M;
+            M::call();
+          //^  
+        }
+    }    
+    """)
 }

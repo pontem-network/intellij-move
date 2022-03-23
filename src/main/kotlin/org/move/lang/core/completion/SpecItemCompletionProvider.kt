@@ -4,7 +4,7 @@ import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.MvPsiPatterns
-import org.move.lang.core.psi.MvNameSpecDef
+import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslScope
 import org.move.lang.core.resolve.processItems
@@ -18,7 +18,7 @@ object SpecItemCompletionProvider : MvCompletionProvider() {
         context: ProcessingContext,
         result: CompletionResultSet
     ) {
-        val specItem = parameters.position.parent as? MvNameSpecDef ?: return
+        val specItem = parameters.position.parent as? MvItemSpec ?: return
 
         val itemVis = ItemVis(setOf(Namespace.SPEC_ITEM), msl = MslScope.NONE)
         processItems(specItem, itemVis) {

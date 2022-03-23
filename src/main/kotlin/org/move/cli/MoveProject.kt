@@ -86,6 +86,12 @@ data class MoveProject(
     val rootPath: Path? get() = root.toNioPathOrNull()
     fun projectDirPath(name: String): Path? = rootPath?.resolve(name)
 
+    fun buildDir(): Path? = projectDirPath("build")
+    fun packageInBuildDir(): Path? = projectDirPath("build")?.resolve(packageName)
+    fun sourcesDir(): Path? = projectDirPath("sources")
+    fun testsDir(): Path? = projectDirPath("tests")
+    fun scriptsDir(): Path? = projectDirPath("scripts")
+
     fun moduleFolders(scope: GlobalScope): List<VirtualFile> {
         val q = ArrayDeque<ProjectInfo>()
         val folders = mutableListOf<VirtualFile>()
@@ -155,11 +161,15 @@ data class MoveProject(
 
     fun processModuleFiles(scope: GlobalScope, processFile: (MvModuleFile) -> Boolean) {
         val folders = moduleFolders(scope)
+        var stopped = false;
         for (folder in folders) {
+            if (stopped) break
             deepIterateChildrenRecursivery(folder, { it.extension == "move" }) { file ->
                 val moveFile = file.toMvFile(project) ?: return@deepIterateChildrenRecursivery true
                 val moduleFile = MvModuleFile(moveFile, emptyMap())
-                processFile(moduleFile)
+                val continueForward = processFile(moduleFile)
+                stopped = !continueForward
+                continueForward
             }
         }
     }

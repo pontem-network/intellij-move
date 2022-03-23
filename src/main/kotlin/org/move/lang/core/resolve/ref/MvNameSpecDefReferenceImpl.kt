@@ -1,10 +1,10 @@
 package org.move.lang.core.resolve.ref
 
-import org.move.lang.core.psi.MvNameSpecDef
+import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.resolve.resolveItem
 
-class MvNameSpecDefReferenceImpl(element: MvNameSpecDef): MvReferenceCached<MvNameSpecDef>(element) {
+class MvNameSpecDefReferenceImpl(element: MvItemSpec): MvReferenceCached<MvItemSpec>(element) {
 
     override fun resolveInner(): List<MvNamedElement> = resolveItem(element, Namespace.SPEC_ITEM)
 

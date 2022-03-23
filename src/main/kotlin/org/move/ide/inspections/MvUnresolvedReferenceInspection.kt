@@ -10,12 +10,12 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitModuleRef(moduleRef: MvModuleRef) {
-            if (moduleRef.isMslAvailable()) return
+            if (moduleRef.isMsl()) return
 
             // skip this check, as it will be checked in MvPath visitor
             if (moduleRef.ancestorStrict<MvPath>() != null) return
 
-            if (moduleRef.ancestorStrict<MvImportStatement>() != null) return
+            if (moduleRef.ancestorStrict<MvImportStmt>() != null) return
             if (moduleRef is MvFQModuleRef) return
 
             if (moduleRef.isUnresolved) {
@@ -28,8 +28,11 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitPath(path: MvPath) {
-            if (path.isMslAvailable()) return
+            if (path.isMsl()) return
+            if (path.isMsl() && path.isResult) return
+            if (path.isUpdateFieldArg2) return
             if (path.isPrimitiveType()) return
+            if (path.isMsl() && path.isSpecPrimitiveType()) return
             if (path.isInsideAssignmentLeft()) return
             if (path.text == "assert") return
 
@@ -60,7 +63,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitStructPatField(o: MvStructPatField) {
-            if (o.isMslAvailable()) return
+            if (o.isMsl()) return
             val resolvedStructDef = o.structPat.path.maybeStruct ?: return
             if (!resolvedStructDef.fieldNames.any { it == o.referenceName }) {
                 holder.registerProblem(
@@ -72,10 +75,10 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitStructLitField(litField: MvStructLitField) {
-            if (litField.isMslAvailable()) return
+            if (litField.isMsl()) return
             if (litField.isShorthand) {
                 val resolvedItems = litField.reference.multiResolve()
-                val resolvedStructField = resolvedItems.find { it is MvStructFieldDef }
+                val resolvedStructField = resolvedItems.find { it is MvStructField }
                 if (resolvedStructField == null) {
                     holder.registerProblem(
                         litField.referenceNameElement,
@@ -96,6 +99,36 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
                     holder.registerProblem(
                         litField.referenceNameElement,
                         "Unresolved field: `${litField.referenceName}`",
+                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                    )
+                }
+            }
+        }
+
+        override fun visitSchemaLitField(field: MvSchemaLitField) {
+            if (field.isShorthand) {
+                val resolvedItems = field.reference.multiResolve()
+                val fieldBinding = resolvedItems.find { it is MvBindingPat && it.owner is MvSchemaFieldStmt }
+                if (fieldBinding == null) {
+                    holder.registerProblem(
+                        field.referenceNameElement,
+                        "Unresolved field: `${field.referenceName}`",
+                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                    )
+                }
+                val letBinding = resolvedItems.find { it is MvBindingPat }
+                if (letBinding == null) {
+                    holder.registerProblem(
+                        field.referenceNameElement,
+                        "Unresolved reference: `${field.referenceName}`",
+                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                    )
+                }
+            } else {
+                if (field.reference.resolve() == null) {
+                    holder.registerProblem(
+                        field.referenceNameElement,
+                        "Unresolved field: `${field.referenceName}`",
                         ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
                     )
                 }

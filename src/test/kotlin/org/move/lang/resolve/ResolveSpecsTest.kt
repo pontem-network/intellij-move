@@ -274,4 +274,113 @@ class ResolveSpecsTest: ResolveTestCase() {
         }
     }    
     """)
+
+    fun `test dot access resolution for spec parameters`() = checkByCode("""
+    module 0x1::M {
+        struct S { val: u8 }
+                 //X
+        spec schema SS {
+            s: S;
+            s.val;
+            //^
+        }
+    }    
+    """)
+
+    fun `test spec struct resolves to field`() = checkByCode("""
+    module 0x1::M {
+        struct S { val: u8 }
+                  //X
+        spec S {
+            invariant val > 1;
+                     //^ 
+        }
+    }    
+    """)
+
+    fun `test forall binding`() = checkByCode("""
+    module 0x1::M {
+        spec module {
+            invariant forall ind in 0..len(bytes)
+                           //X
+                : ind != 0;
+                //^
+        }
+    }    
+    """)
+
+    fun `test exists binding`() = checkByCode("""
+    module 0x1::M {
+        spec module {
+            invariant exists addr: address
+                           //X
+                : addr != @0x1;
+                //^
+        }
+    }    
+    """)
+
+    fun `test resolve schema in apply`() = checkByCode("""
+    module 0x1::M {
+        spec schema MySchema {}
+                    //X
+        spec module {
+            apply MySchema to *;
+                  //^
+        }
+    }    
+    """)
+
+    fun `test resolve schema type parameter in apply`() = checkByCode("""
+    module 0x1::M {
+        spec schema SS<Type> {}
+        spec module {
+            apply SS<Type>
+                     //^
+                to *<Type>;
+                     //X
+        }
+    }    
+    """)
+
+    fun `test fun can be defined right in spec`() = checkByCode(
+        """
+    module 0x1::M {
+        fun m() {}
+        spec m {
+            fun call() {}
+               //X
+            call();
+            //^
+        }
+    }    
+    """
+    )
+
+    fun `test fun can be defined in spec module`() = checkByCode("""
+    module 0x1::M {
+        fun call() {}
+        spec call {
+            spec_fun()
+            //^
+        }
+        spec module {
+            fun spec_fun() {}
+               //X
+        }
+    }    
+    """)
+
+    fun `test spec fun from spec module reachable in spec module`() = checkByCode("""
+    module 0x1::M {
+        spec module {
+            fun call() {}
+               //X
+            fun m() {
+                call();
+                //^
+            }
+        }
+    }    
+    """)
 }

@@ -288,4 +288,121 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test msl callable num`() = testExpr("""
+    module 0x1::M {
+        fun call(): u8 { 1 }
+        spec module {
+            call();
+            //^ num
+        }
+    }    
+    """)
+
+    fun `test msl ref is type`() = testExpr("""
+    module 0x1::M {
+        struct S {}
+        fun ref(): &S {}
+        spec module {
+            let a = ref();
+            a;
+          //^ 0x1::M::S
+        }
+    }    
+    """)
+
+    fun `test msl mut ref is type`() = testExpr("""
+    module 0x1::M {
+        struct S {}
+        fun ref_mut(): &mut S {}
+        spec module {
+            let a = ref_mut();
+            a;
+          //^ 0x1::M::S
+        }
+    }    
+    """)
+
+    fun `test type of fun param in spec`() = testExpr("""
+    module 0x1::M {
+        fun call(addr: address) {}
+        spec call {
+            addr;
+            //^ address
+        }
+    }    
+    """)
+
+    fun `test type of u8 fun param in spec`() = testExpr("""
+    module 0x1::M {
+        fun call(n: u8) {}
+        spec call {
+            n;
+          //^ num  
+        }
+    }    
+    """)
+
+//    fun `test type of result variable in fun spec is return type`() = testExpr("""
+//    module 0x1::M {
+//        fun call(): address { @0x1 }
+//        spec call {
+//            result;
+//            //^ address
+//        }
+//    }
+//    """)
+
+    fun `test old function type for spec`() = testExpr("""
+    module 0x1::M {
+        struct S {}
+        fun call(a: S) {}
+        spec call {
+            old(a);
+          //^ 0x1::M::S 
+        }
+    }    
+    """)
+
+    fun `test global function type for spec`() = testExpr("""
+    module 0x1::M {
+        struct S has key {}
+        spec module {
+            let a = global<S>(@0x1);
+            a;
+          //^ 0x1::M::S 
+        }
+    }    
+    """)
+
+    fun `test const int in spec`() = testExpr("""
+    module 0x1::M {
+        const MY_INT: u8 = 1;
+        spec module {
+            MY_INT;
+            //^ num
+        }
+    }    
+    """)
+
+    fun `test schema field type`() = testExpr("""
+    module 0x1::M {
+        spec schema SS {
+            val: num;
+            val;
+            //^ num
+        }
+    }    
+    """)
+
+    fun `test struct field vector_u8 in spec`() = testExpr("""
+    module 0x1::M {
+        struct S { vec: vector<u8> } 
+        spec module {
+            let s = S { vec: b"" };
+            s.vec
+            //^ vector<num>
+        }
+    }    
+    """)
 }

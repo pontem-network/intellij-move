@@ -17,7 +17,6 @@ import org.move.lang.MvElementTypes.*
 import org.move.lang.core.MOVE_COMMENTS
 import org.move.lang.core.MOVE_KEYWORDS
 import org.move.lang.core.psi.MvAddressBlock
-import org.move.lang.core.psi.MvAddressDef
 import org.move.lang.core.psi.MvModuleBlock
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
@@ -26,7 +25,7 @@ import org.move.lang.core.tokenSetOf
 
 fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilder {
     return SpacingBuilder(commonSettings)
-        .afterInside(COMMA, STRUCT_FIELDS_DEF_BLOCK).parentDependentLFSpacing(1, 1, true, 1)
+        .afterInside(COMMA, STRUCT_BLOCK).parentDependentLFSpacing(1, 1, true, 1)
         .after(COMMA).spacing(1, 1, 0, true, 0)
         .before(COMMA).spaceIf(false)
         .after(COLON).spaceIf(true)
@@ -101,7 +100,7 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
 fun Block.computeSpacing(child1: Block?, child2: Block, ctx: MvFmtContext): Spacing? {
     if (child1 is ASTBlock && child2 is ASTBlock) SpacingContext.create(child1, child2)?.apply {
         when {
-            ncPsi1.isStatement && ncPsi2.isStatementOrExpr
+            ncPsi1.isStmt && ncPsi2.isStmtOrExpr
             -> return lineBreak(
                 keepLineBreaks = ctx.commonSettings.KEEP_LINE_BREAKS,
                 keepBlankLines = ctx.commonSettings.KEEP_BLANK_LINES_IN_CODE

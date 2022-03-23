@@ -94,11 +94,13 @@ class FileTree(val rootDirInfo: FilesystemEntry.Directory) {
                     is FilesystemEntry.File -> {
                         val vFile = root.findChild(name) ?: root.createChildData(root, name)
                         VfsUtil.saveText(vFile, replaceCaretMarker(fsEntry.text))
+
+                        val filePath = pathComponents.joinToString(separator = "/")
                         if (hasCaretMarker(fsEntry.text) || "//^" in fsEntry.text || "#^" in fsEntry.text) {
-                            filesWithCaret += pathComponents.joinToString(separator = "/")
+                            filesWithCaret += filePath
                         }
                         if ("//X" in fsEntry.text || "#X" in fsEntry.text) {
-                            filesWithNamedElement += pathComponents.joinToString(separator = "/")
+                            filesWithNamedElement += filePath
                         }
                     }
                     is FilesystemEntry.Directory -> {

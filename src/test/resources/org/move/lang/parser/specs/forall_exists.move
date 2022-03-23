@@ -1,8 +1,10 @@
-module M {
+module 0x1::M {
+    spec fun spec_call() {
+        exists i in 1..100: i == 3
+    }
     spec module {
         invariant
-            forall addr1: address
-            where old(exists(addr1));
+            forall addr1: address where old(exists<u8>(addr1)): true;
 
         invariant
             forall x: num, y: num, z: num
@@ -21,5 +23,6 @@ module M {
         invariant exists x in 1..10, y in 8..12 : x == y;
 
         ensures result ==> (forall j in 0..100: true);
+        ensures exists x in 1..10 : x == 1;
     }
 }

@@ -51,8 +51,8 @@ class MvFoldingBuilder : FoldingBuilderEx(),
                 fold(o)
         }
 
-        override fun visitStructFieldsDefBlock(o: MvStructFieldsDefBlock) {
-            if (o.structFieldDefList.isNotEmpty())
+        override fun visitStructBlock(o: MvStructBlock) {
+            if (o.structFieldList.isNotEmpty())
                 fold(o)
         }
 

@@ -36,9 +36,8 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
             override fun visitIfExpr(ifExpr: MvIfExpr) {
-                if (ifExpr.isMslAvailable()) return
-
-                val ctx = ifExpr.inferenceCtx
+                val msl = ifExpr.isMsl()
+                val ctx = ifExpr.inferenceCtx(msl)
                 val ifTy = ifExpr.returningExpr?.inferExprTy(ctx) ?: return
                 val elseExpr = ifExpr.elseExpr ?: return
                 val elseTy = elseExpr.inferExprTy(ctx)
@@ -52,10 +51,9 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitCondition(cond: MvCondition) {
-                if (cond.isMslAvailable()) return
-
+                val msl = cond.isMsl()
                 val expr = cond.expr ?: return
-                val exprTy = expr.inferExprTy(cond.inferenceCtx)
+                val exprTy = expr.inferExprTy(cond.inferenceCtx(msl))
                 if (!isCompatible(exprTy, TyBool)) {
                     holder.registerTypeError(
                         expr,
@@ -65,13 +63,12 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitCodeBlock(codeBlock: MvCodeBlock) {
-                if (codeBlock.isMslAvailable()) return
-
+                val msl = codeBlock.isMsl()
                 val fn = codeBlock.parent as? MvFunction ?: return
                 val returningExpr = codeBlock.returningExpr
 
                 val expectedReturnTy = fn.resolvedReturnTy
-                val actualReturnTy = returningExpr?.inferExprTy(fn.inferenceCtx) ?: TyUnit
+                val actualReturnTy = returningExpr?.inferExprTy(fn.inferenceCtx(msl)) ?: TyUnit
                 if (!isCompatible(expectedReturnTy, actualReturnTy)) {
                     val annotatedElement = returningExpr as? PsiElement
                         ?: codeBlock.rightBrace
@@ -83,33 +80,32 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 }
             }
 
-            override fun visitReturnExpr(o: MvReturnExpr) {
-                if (o.isMslAvailable()) return
+            override fun visitReturnExpr(returnExpr: MvReturnExpr) {
+                val msl = returnExpr.isMsl()
+                val outerFn = returnExpr.containingFunction ?: return
 
-                val outerFn = o.containingFunction ?: return
-                val ctx = outerFn.inferenceCtx
+                val ctx = outerFn.inferenceCtx(msl)
                 val expectedReturnTy = outerFn.resolvedReturnTy
-                val actualReturnTy = o.expr?.inferExprTy(ctx) ?: return
+                val actualReturnTy = returnExpr.expr?.inferExprTy(ctx) ?: return
                 if (!isCompatible(expectedReturnTy, actualReturnTy)) {
                     holder.registerTypeError(
-                        o,
+                        returnExpr,
                         invalidReturnTypeMessage(expectedReturnTy, actualReturnTy)
                     )
                 }
             }
 
             override fun visitStructLitExpr(litExpr: MvStructLitExpr) {
-                if (litExpr.isMslAvailable()) return
                 val struct = litExpr.path.maybeStruct ?: return
 
-//                val ctx = InferenceContext()
-                val ctx = litExpr.inferenceCtx
+                val msl = litExpr.isMsl()
+                val ctx = litExpr.inferenceCtx(msl)
                 for (field in litExpr.fields) {
                     val initExprTy = field.inferInitExprTy(ctx)
 
                     val fieldName = field.referenceName
                     val fieldDef = struct.getField(fieldName) ?: continue
-                    val expectedFieldTy = fieldDef.declaredTy
+                    val expectedFieldTy = fieldDef.declaredTy(msl)
 
                     if (!isCompatible(expectedFieldTy, initExprTy)) {
                         val exprTypeName = initExprTy.name()
@@ -124,8 +120,6 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitPath(path: MvPath) {
-                if (path.isMslAvailable()) return
-
                 val typeArguments = path.typeArguments
                 val item = path.reference?.resolve() as? MvTypeParametersOwner ?: return
                 if (item.typeParameters.size != typeArguments.size) return
@@ -143,14 +137,13 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitCallArgumentList(callArgs: MvCallArgumentList) {
-                if (callArgs.isMslAvailable()) return
-
                 val callExpr = callArgs.parent as? MvCallExpr ?: return
-                val function = callExpr.path.reference?.resolve() as? MvFunction ?: return
+                val function = callExpr.path.reference?.resolve() as? MvFunctionLike ?: return
 
                 if (function.parameters.size != callArgs.exprList.size) return
 
-                val ctx = callArgs.inferenceCtx
+                val msl = callArgs.isMsl()
+                val ctx = callArgs.inferenceCtx(msl)
                 val inferredFuncTy = inferCallExprTy(callExpr, ctx)
                 if (inferredFuncTy !is TyFunction) return
 
@@ -176,14 +169,13 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 }
             }
 
-            override fun visitStructFieldDef(field: MvStructFieldDef) {
-                if (field.isMslAvailable()) return
-
+            override fun visitStructField(field: MvStructField) {
+                val msl = field.isMsl()
                 val structTy = TyStruct(field.struct)
                 val structAbilities = structTy.abilities()
                 if (structAbilities.isEmpty()) return
 
-                val fieldTy = field.declaredTy as? TyStruct ?: return
+                val fieldTy = field.declaredTy(msl) as? TyStruct ?: return
                 for (ability in structAbilities) {
                     val requiredAbility = ability.requires()
                     if (requiredAbility !in fieldTy.abilities()) {
@@ -206,7 +198,7 @@ private fun checkHasRequiredAbilities(
     expectedTy: Ty
 ): Boolean {
     // do not check for specs
-    if (element.isMslAvailable()) return false
+    if (element.isMsl()) return false
 
     val abilities = actualTy.abilities()
     for (ability in expectedTy.abilities()) {

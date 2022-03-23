@@ -9,12 +9,12 @@ import com.intellij.psi.PsiElement
 import org.move.lang.MvElementTypes.*
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.MvPsiPatterns.addressBlock
-import org.move.lang.core.MvPsiPatterns.codeStatement
+import org.move.lang.core.MvPsiPatterns.codeStmt
 import org.move.lang.core.MvPsiPatterns.function
 import org.move.lang.core.MvPsiPatterns.moduleBlock
 import org.move.lang.core.MvPsiPatterns.scriptBlock
 import org.move.lang.core.MvPsiPatterns.itemSpecLabel
-import org.move.lang.core.MvPsiPatterns.specStatement
+import org.move.lang.core.MvPsiPatterns.specStmt
 import org.move.lang.core.MvPsiPatterns.toplevel
 import org.move.lang.core.MvPsiPatterns.typeParameter
 import org.move.lang.core.TYPES
@@ -23,17 +23,17 @@ class KeywordCompletionContributor : CompletionContributor() {
     init {
         extend(
             CompletionType.BASIC,
-            toplevel().and(onStatementBeginning()),
+            toplevel().and(onStmtBeginning()),
             KeywordCompletionProvider("address", "module", "script")
         )
         extend(
             CompletionType.BASIC,
-            addressBlock().and(onStatementBeginning()),
+            addressBlock().and(onStmtBeginning()),
             KeywordCompletionProvider("module")
         )
         extend(
             CompletionType.BASIC,
-            scriptBlock().and(onStatementBeginning()),
+            scriptBlock().and(onStmtBeginning()),
             KeywordCompletionProvider(
                 "public",
                 "fun",
@@ -43,7 +43,7 @@ class KeywordCompletionContributor : CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            moduleBlock().and(onStatementBeginning()),
+            moduleBlock().and(onStmtBeginning()),
             KeywordCompletionProvider(
                 *VISIBILITY_MODIFIERS,
                 "native",
@@ -67,12 +67,12 @@ class KeywordCompletionContributor : CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            moduleBlock().and(onStatementBeginning("native")),
+            moduleBlock().and(onStmtBeginning("native")),
             KeywordCompletionProvider(*VISIBILITY_MODIFIERS, "fun", "struct")
         )
         extend(
             CompletionType.BASIC,
-            codeStatement().and(onStatementBeginning()),
+            codeStmt().and(onStmtBeginning()),
             KeywordCompletionProvider(
                 "let",
                 "loop",
@@ -84,7 +84,7 @@ class KeywordCompletionContributor : CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            specStatement().and(onStatementBeginning()),
+            specStmt().and(onStmtBeginning()),
             KeywordCompletionProvider(
                 "pragma",
                 "let",
@@ -123,8 +123,8 @@ class KeywordCompletionContributor : CompletionContributor() {
         )
     }
 
-    private fun onStatementBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
-        psiElement(IDENTIFIER).and(MvPsiPatterns.onStatementBeginning(*startWords))
+    private fun onStmtBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
+        psiElement(IDENTIFIER).and(MvPsiPatterns.onStmtBeginning(*startWords))
 
     companion object {
         private val VISIBILITY_MODIFIERS = arrayOf("public", "public(script)", "public(friend)")

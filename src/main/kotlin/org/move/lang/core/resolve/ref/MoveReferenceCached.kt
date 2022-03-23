@@ -10,15 +10,15 @@ abstract class MvReferenceCached<T : MvReferenceElement>(element: T) : MvReferen
     abstract fun resolveInner(): List<MvNamedElement>
 
     final override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> =
-        cachedMultiResolve().toTypedArray()
+        cachedMultiResolve(incompleteCode).toTypedArray()
 
     final override fun multiResolve(): List<MvNamedElement> =
-        cachedMultiResolve().mapNotNull { it.element as? MvNamedElement }
+        cachedMultiResolve(false).mapNotNull { it.element as? MvNamedElement }
 
-    private fun cachedMultiResolve(): List<PsiElementResolveResult> {
+    private fun cachedMultiResolve(incompleteCode: Boolean): List<PsiElementResolveResult> {
         return ResolveCache
             .getInstance(element.project)
-            .resolveWithCaching(this, Resolver, true, false)
+            .resolveWithCaching(this, Resolver, true, incompleteCode)
             .orEmpty()
     }
 

@@ -10,6 +10,7 @@ import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.cachedTy
 import org.move.lang.core.psi.ext.endOffset
+import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferenceCtx
 import org.move.lang.core.types.ty.TyUnknown
@@ -57,22 +58,38 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
 
             override fun collect(element: PsiElement, editor: Editor, sink: InlayHintsSink): Boolean {
                 if (file.project.service<DumbService>().isDumb) return true
-                if (element !is MvLetStatement) return true
-
-                if (settings.showForVariables) {
-                    presentLetStatement(element)
+                when {
+                    settings.showForVariables && element is MvLetStmt -> {
+                        val pat = element.pat ?: return true
+                        if (element.typeAnnotation != null) return true
+                        presentTypeForPat(pat)
+                    }
                 }
+//                when (element) {
+//                    is MvLetStmt -> {
+//                        val pat = element.pat ?: return true
+//                        if (element.typeAnnotation != null) return true
+//                        presentTypeForPat(pat)
+//                    }
+//                }
                 return true
+
+//                if (settings.showForVariables) {
+//                    val pat = element.pat ?: return true
+//                    if (element.typeAnnotation != null) return true
+//                    presentTypeForPat(pat)
+//                }
+//                return true
             }
 
-            private fun presentLetStatement(element: MvLetStatement) {
-                val pat = element.pat ?: return
-                if (element.typeAnnotation != null) return
-                presentTypeForPat(pat)
-            }
+//            private fun presentLetStmt(element: MvLetStmt) {
+//                val pat = element.pat ?: return
+//                if (element.typeAnnotation != null) return
+//                presentTypeForPat(pat)
+//            }
 
             private fun presentTypeForPat(pat: MvPat) {
-                val ctx = pat.inferenceCtx
+                val ctx = pat.inferenceCtx(pat.isMsl())
                 for (binding in pat.descendantsOfType<MvBindingPat>()) {
                     if (binding.identifier.text.startsWith("_")) continue
                     if (binding.cachedTy(ctx) is TyUnknown) continue

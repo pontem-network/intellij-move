@@ -3,13 +3,12 @@ package org.move.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.descendantsOfType
 import org.move.ide.presentation.declaringModule
 import org.move.ide.presentation.fullname
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.Address
+import org.move.lang.modules
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
 import org.move.lang.utils.addToHolder
@@ -26,7 +25,7 @@ class ErrorAnnotator : MvAnnotator() {
 
             override fun visitModuleDef(o: MvModuleDef) = checkModuleDef(moveHolder, o)
 
-            override fun visitStructFieldDef(o: MvStructFieldDef) = checkDuplicates(moveHolder, o)
+            override fun visitStructField(o: MvStructField) = checkDuplicates(moveHolder, o)
 
             override fun visitPath(path: MvPath) {
                 val item = path.reference?.resolve()
@@ -83,10 +82,30 @@ class ErrorAnnotator : MvAnnotator() {
                             }
                         }
                     }
+                    item is MvSchema && parent is MvSchemaLit -> {
+                        val expectedCount = item.typeParameters.size
+                        if (realCount != 0) {
+                            // if any type param is passed, inference is disabled, so check fully
+                            if (realCount != expectedCount) {
+                                val label = item.fqName
+                                MvDiagnostic
+                                    .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
+                                    .addToHolder(moveHolder)
+                            }
+                        } else {
+                            // if no type args are passed, check whether all type params are inferrable
+                            if (item.requiredTypeParams.isNotEmpty() && realCount != expectedCount) {
+                                MvDiagnostic
+                                    .TypeArgumentsNumberMismatch(path, item.fqName, expectedCount, realCount)
+                                    .addToHolder(moveHolder)
+                            }
+                        }
+                    }
                 }
             }
 
             override fun visitCallExpr(o: MvCallExpr) {
+                if (o.isMsl()) return
                 if (o.path.referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
                     val explicitTypeArgs = o.typeArguments
                     val currentModule = o.containingModule ?: return
@@ -175,9 +194,9 @@ class ErrorAnnotator : MvAnnotator() {
         val moveProj = mod.moveProject ?: return
         val addressIdent = mod.definedAddressRef()?.toAddress(moveProj) ?: return
         val modIdent = Pair(addressIdent, mod.name)
-        val file = mod.containingFile ?: return
+        val file = mod.containingMvFile ?: return
         val duplicateIdents =
-            file.descendantsOfType<MvModuleDef>()
+            file.modules()
                 .filter { it.name != null }
                 .groupBy { Pair(it.definedAddressRef()?.toAddress(), it.name) }
                 .filter { it.value.size > 1 }

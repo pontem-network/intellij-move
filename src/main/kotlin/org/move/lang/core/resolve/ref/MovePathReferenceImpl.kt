@@ -72,6 +72,9 @@ class MvPathReferenceImpl(
             return resolveModuleItem(module, refName, itemVis)
         } else {
             // if it's NAME
+            // special case second argument of update_field function in specs
+            if (element.isUpdateFieldArg2) return emptyList()
+
             // try local names
             val item = resolveItem(element, namespace).firstOrNull() ?: return emptyList()
             // local name -> return

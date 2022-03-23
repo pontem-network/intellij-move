@@ -37,7 +37,7 @@ class MoveRunConfiguration(
 ) : LocatableConfigurationBase<RunProfileState>(project, factory, "Move"),
     RunConfigurationWithSuppressedDefaultDebugAction {
 
-    var cmd = MoveCommandLine("", project.contentRoots.first().toNioPathOrNull())
+    var cmd = MoveCommandLine("", project.contentRoots.firstOrNull()?.toNioPathOrNull())
     var env: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
 
     override fun getConfigurationEditor() = MoveRunConfigurationEditor()

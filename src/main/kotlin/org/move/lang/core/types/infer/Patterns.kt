@@ -40,23 +40,23 @@ fun collectBindings(pattern: MvPat, type: Ty): Map<MvBindingPat, Ty> {
     return bindings
 }
 
-fun inferBindingTy(bindingPat: MvBindingPat): Ty {
-    val owner = bindingPat.owner
-    return when (owner) {
-        is MvFunctionParameter -> owner.declaredTy
-        is MvConstDef -> owner.declaredTy
-        is MvLetStatement -> {
-            val pat = owner.pat ?: return TyUnknown
-            val explicitType = owner.typeAnnotation?.type
-            if (explicitType != null) {
-                val explicitTy = inferMvTypeTy(explicitType)
-                return collectBindings(pat, explicitTy)[bindingPat] ?: TyUnknown
-            }
-
-            val inference = InferenceContext(msl = bindingPat.isMslAvailable())
-            val inferredTy = owner.initializer?.expr?.let { inferExprTy(it, inference) } ?: TyUnknown
-            return collectBindings(pat, inferredTy)[bindingPat] ?: TyUnknown
-        }
-        else -> TyUnknown
-    }
-}
+//fun inferBindingTy(bindingPat: MvBindingPat, msl: Boolean): Ty {
+//    val owner = bindingPat.owner
+//    return when (owner) {
+//        is MvFunctionParameter -> owner.declaredTy(msl)
+//        is MvConstDef -> owner.declaredTy(msl)
+//        is MvLetStmt -> {
+//            val pat = owner.pat ?: return TyUnknown
+//            val explicitType = owner.typeAnnotation?.type
+//            if (explicitType != null) {
+//                val explicitTy = inferMvTypeTy(explicitType, msl)
+//                return collectBindings(pat, explicitTy)[bindingPat] ?: TyUnknown
+//            }
+//
+//            val inference = InferenceContext(msl = bindingPat.isMsl())
+//            val inferredTy = owner.initializer?.expr?.let { inferExprTy(it, inference) } ?: TyUnknown
+//            return collectBindings(pat, inferredTy)[bindingPat] ?: TyUnknown
+//        }
+//        else -> TyUnknown
+//    }
+//}

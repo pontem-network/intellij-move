@@ -22,12 +22,12 @@ data class TyStruct(
     override fun toString(): String = tyToString(this)
 
     fun fieldsTy(): Map<String, Ty> {
-        return this.item.fieldsMap.mapValues { (_, field) -> field.declaredTy }
+        return this.item.fieldsMap.mapValues { (_, field) -> field.declaredTy(false) }
     }
 
-    fun fieldTy(name: String): Ty {
+    fun fieldTy(name: String, msl: Boolean): Ty {
         val field = this.item.fieldsMap[name] ?: return TyUnknown
-        return field.declaredTy
+        return field.declaredTy(msl)
             .foldTyTypeParameterWith { typeParam ->
                 this.typeVars.find { it.origin?.parameter == typeParam.parameter }!!
             }

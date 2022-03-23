@@ -18,7 +18,7 @@ module 0x1::M {
         ensures [global] result == 1;
 
         apply ModuleInvariant to bar;
-        aborts_if exists(Signer::spec_address_of(to_limit));
+        aborts_if exists<Window>(Signer::spec_address_of(to_limit));
         aborts_if exists<Window>(Signer::spec_address_of(to_limit));
 
         aborts_with [check] 1;
@@ -31,6 +31,8 @@ module 0x1::M {
         include MySchema{ amount };
         include MySchema<MyType>{ amount };
         include MySchema{ address: Signer::address_of(acc) };
+
+        native fun serialize<MoveValue>(v: &MoveValue): vector<u8>;
     }
 
     fun main2() {

@@ -7,7 +7,7 @@ import org.move.lang.core.types.ty.*
 fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
     if (ctx.exprTypes.containsKey(expr)) return ctx.exprTypes[expr]!!
 
-    val exprTy = when (expr) {
+    var exprTy = when (expr) {
         is MvRefExpr -> inferRefExprTy(expr, ctx)
         is MvBorrowExpr -> inferBorrowExprTy(expr, ctx)
         is MvCallExpr -> {
@@ -26,7 +26,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
         is MvMoveExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
         is MvCopyExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
 
-        is MvCastExpr -> inferMvTypeTy(expr.type)
+        is MvCastExpr -> inferMvTypeTy(expr.type, ctx.msl)
         is MvParensExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
 
         is MvPlusExpr -> inferBinaryExprTy(expr.exprList, ctx)
@@ -46,6 +46,12 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
         is MvIfExpr -> inferIfExprTy(expr, ctx)
         else -> TyUnknown
     }
+    if (exprTy is TyReference && expr.isMsl()) {
+        exprTy = exprTy.innermostTy()
+    }
+    if (exprTy is TyInteger && expr.isMsl()) {
+        exprTy = TyNum
+    }
     ctx.cacheExprTy(expr, exprTy)
     return exprTy
 }
@@ -60,22 +66,24 @@ private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): 
     val innerExpr = borrowExpr.expr ?: return TyUnknown
     val innerExprTy = inferExprTy(innerExpr, ctx)
     val mutability = Mutability.valueOf(borrowExpr.isMut)
-    return TyReference(innerExprTy, mutability)
+    return TyReference(innerExprTy, mutability, ctx.msl)
 }
 
 fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
-    if (ctx.callExprTypes.containsKey(callExpr)) return ctx.callExprTypes[callExpr]!!
+    if (ctx.callExprTypes.containsKey(callExpr)) {
+        return ctx.callExprTypes[callExpr] ?: error("CallExpr ${callExpr.text} has null type")
+    }
 
     val path = callExpr.path
-    val funcItem = path.reference?.resolve() as? MvFunction ?: return TyUnknown
-    val funcTy = instantiateItemTy(funcItem) as? TyFunction ?: return TyUnknown
+    val funcItem = path.reference?.resolve() as? MvFunctionLike ?: return TyUnknown
+    val funcTy = instantiateItemTy(funcItem, ctx.msl) as? TyFunction ?: return TyUnknown
 
     val inference = InferenceContext()
     // find all types passed as explicit type parameters, create constraints with those
     if (path.typeArguments.isNotEmpty()) {
         if (path.typeArguments.size != funcTy.typeVars.size) return TyUnknown
         for ((typeVar, typeArgument) in funcTy.typeVars.zip(path.typeArguments)) {
-            val passedTy = inferMvTypeTy(typeArgument.type)
+            val passedTy = inferMvTypeTy(typeArgument.type, ctx.msl)
             inference.registerConstraint(Constraint.Equate(typeVar, passedTy))
         }
     }
@@ -116,8 +124,8 @@ private fun inferDotExprTy(dotExpr: MvDotExpr, ctx: InferenceContext): Ty {
     // solve constraints, return TyUnknown if cannot
     if (!inference.processConstraints()) return TyUnknown
 
-    val fieldName = dotExpr.structFieldRef.referenceName
-    return inference.resolveTy(structTy.fieldTy(fieldName))
+    val fieldName = dotExpr.structDotField.referenceName
+    return inference.resolveTy(structTy.fieldTy(fieldName, ctx.msl))
 }
 
 private fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext): Ty {
@@ -137,7 +145,7 @@ private fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext):
         val fieldName = field.referenceName
         val declaredFieldTy = structItem
             .fieldsMap[fieldName]
-            ?.declaredTy
+            ?.declaredTy(ctx.msl)
             ?.foldTyTypeParameterWith { param -> structTypeVars.find { it.origin?.parameter == param.parameter }!! }
             ?: TyUnknown
         val fieldExprTy = field.inferInitExprTy(ctx)
@@ -177,8 +185,8 @@ private fun inferLitExprTy(litExpr: MvLitExpr, ctx: InferenceContext): Ty {
             val literal = (litExpr.integerLiteral ?: litExpr.hexIntegerLiteral)!!
             return TyInteger.fromSuffixedLiteral(literal) ?: TyInteger(TyInteger.DEFAULT_KIND)
         }
-        litExpr.byteStringLiteral != null -> TyByteString
-        litExpr.hexStringLiteral != null -> TyHexString
+        litExpr.byteStringLiteral != null -> TyByteString(ctx.msl)
+        litExpr.hexStringLiteral != null -> TyHexString(ctx.msl)
         else -> TyUnknown
     }
 }

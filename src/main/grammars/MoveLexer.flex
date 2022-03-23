@@ -66,7 +66,7 @@ OUTER_EOL_DOC = ({EOL_DOC_LINE}{EOL_WS})*{EOL_DOC_LINE}
 // Literals
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 PLACEHOLDER_ADDRESS=\{\{[_a-zA-Z][_a-zA-Z0-9]*\}\}
-DIEM_ADDRESS=0x[0-9a-fA-F]{1,40}
+DIEM_ADDRESS=0x[0-9a-fA-F]{1,64}
 BECH32_ADDRESS=wallet1[A-Z0-9a-z&&[^boi1]]{6,83}
 POLKADOT_ADDRESS=[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*
 

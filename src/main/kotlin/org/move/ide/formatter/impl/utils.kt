@@ -16,7 +16,7 @@ val BINARY_OPS = ts(
     OR, AND, OR_OR, AND_AND,
     EQ, EQ_EQ, NOT_EQ,
 )
-val ONE_LINE_ITEMS = ts(IMPORT_STATEMENT, CONST_DEF)
+val ONE_LINE_ITEMS = ts(IMPORT_STMT, CONST_DEF)
 
 val PAREN_DELIMITED_BLOCKS = ts(
     PARENS_EXPR, TUPLE_PAT, TUPLE_TYPE, TUPLE_LIT_EXPR,
@@ -26,7 +26,8 @@ val ANGLE_DELIMITED_BLOCKS = ts(TYPE_PARAMETER_LIST, TYPE_ARGUMENT_LIST)
 
 val STRUCT_LITERAL_BLOCKS = ts(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LIT_FIELDS_BLOCK)
 val DEF_BLOCKS = ts(
-    SCRIPT_BLOCK, ADDRESS_BLOCK, MODULE_BLOCK, CODE_BLOCK, CODE_BLOCK_EXPR, SPEC_BLOCK, STRUCT_FIELDS_DEF_BLOCK
+    SCRIPT_BLOCK, ADDRESS_BLOCK, MODULE_BLOCK, CODE_BLOCK, CODE_BLOCK_EXPR, SPEC_BLOCK, STRUCT_BLOCK,
+    SCHEMA_FIELDS_BLOCK
 )
 val BLOCK_LIKE = orSet(STRUCT_LITERAL_BLOCKS, DEF_BLOCKS)
 
@@ -38,16 +39,16 @@ val PsiElement.isTopLevelItem: Boolean
     get() = (this is MvModuleDef || this is MvAddressDef || this is MvScriptDef) && parent is MvFile
 
 val PsiElement.isModuleItem: Boolean
-    get() = this is MvFunction || this is MvConstDef || this is MvStruct || this is MvImportStatement
+    get() = this is MvFunction || this is MvConstDef || this is MvStruct || this is MvImportStmt
 
 val PsiElement.isDeclarationItem: Boolean
     get() = (this is MvModuleDef && parent is MvAddressBlock) || this.isModuleItem
 
-val PsiElement.isStatement: Boolean
-    get() = this is MvStatement && parent is MvCodeBlock
+val PsiElement.isStmt: Boolean
+    get() = this is MvStmt && parent is MvCodeBlock
 
-val PsiElement.isStatementOrExpr: Boolean
-    get() = this is MvStatement || this is MvExpr && parent is MvCodeBlock
+val PsiElement.isStmtOrExpr: Boolean
+    get() = this is MvStmt || this is MvExpr && parent is MvCodeBlock
 
 val ASTNode.isDelimitedBlock: Boolean
     get() = elementType in DELIMITED_BLOCKS

@@ -10,12 +10,12 @@ FILE
     MvModuleBlockImpl(MODULE_BLOCK)
       PsiElement({)('{')
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiErrorElement:<address ref> or <qual path to module> expected, got 'use'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleImportImpl(MODULE_IMPORT)
@@ -24,7 +24,7 @@ FILE
         PsiErrorElement:'::' or ';' expected, got 'use'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleImportImpl(MODULE_IMPORT)
@@ -34,7 +34,7 @@ FILE
         PsiErrorElement:'::' or ';' expected, got 'use'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleImportImpl(MODULE_IMPORT)
@@ -46,7 +46,7 @@ FILE
             PsiErrorElement:'::' or IDENTIFIER expected, got 'use'
               <empty list>
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleImportImpl(MODULE_IMPORT)
@@ -57,7 +57,7 @@ FILE
             PsiErrorElement:'::' or IDENTIFIER expected, got 'use'
               <empty list>
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleImportImpl(MODULE_IMPORT)
@@ -69,7 +69,7 @@ FILE
         PsiErrorElement:'::', ';' or as expected, got 'use'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
@@ -82,7 +82,7 @@ FILE
           PsiErrorElement:<item name> or '{' expected, got 'use'
             <empty list>
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
@@ -96,7 +96,7 @@ FILE
             <empty list>
         PsiElement(;)(';')
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
@@ -111,7 +111,7 @@ FILE
         PsiErrorElement:';' or as expected, got 'use'
           <empty list>
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
@@ -126,7 +126,7 @@ FILE
             PsiErrorElement:<item name> expected, got 'use'
               <empty list>
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
@@ -142,7 +142,7 @@ FILE
               <empty list>
         PsiElement(;)(';')
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
@@ -159,7 +159,7 @@ FILE
             PsiElement(})('}')
         PsiElement(;)(';')
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
@@ -177,7 +177,7 @@ FILE
             PsiErrorElement:<item name> expected, got 'use'
               <empty list>
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
@@ -196,7 +196,7 @@ FILE
               <empty list>
         PsiElement(;)(';')
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)
@@ -220,7 +220,7 @@ FILE
             PsiElement(,)(',')
             PsiElement(})('}')
       PsiWhiteSpace('\n    ')
-      MvImportStatementImpl(IMPORT_STATEMENT)
+      MvImportStmtImpl(IMPORT_STMT)
         PsiElement(use)('use')
         PsiWhiteSpace(' ')
         MvModuleItemsImportImpl(MODULE_ITEMS_IMPORT)

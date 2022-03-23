@@ -4,7 +4,6 @@ import com.intellij.execution.RunManager
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
-import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectEx
@@ -56,7 +55,7 @@ interface MoveProjectsService {
     }
 }
 
-class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
+class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
     init {
         with(project.messageBus.connect()) {
             if (!isUnitTestMode) {
@@ -113,7 +112,7 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
         val file = when (psiElement) {
             is PsiDirectory -> psiElement.virtualFile
             is PsiFile -> psiElement.originalFile.virtualFile
-            else -> psiElement.containingFile.originalFile.virtualFile
+            else -> psiElement.containingFile?.originalFile?.virtualFile
         }
         return findMoveProject(file)
     }
@@ -138,7 +137,8 @@ class MoveProjectsServiceImpl(val project: Project): MoveProjectsService {
             val moveTomlPath = findMoveTomlPath(filePath) ?: return null
 
             if (file.isMvFile) {
-                val dirs = MvProjectLayout.dirs(moveTomlPath.parent)
+                val expectedRoot = moveTomlPath.parent
+                val dirs = MvProjectLayout.dirs(expectedRoot)
                 if (!dirs.any { filePath.startsWith(it) }) {
                     return null
                 }
@@ -184,11 +184,11 @@ private fun setupProjectRoots(project: Project, moveProjects: List<MoveProject>)
             if (project.isDisposed) return@runWriteAction
             ProjectRootManagerEx.getInstanceEx(project).mergeRootsChangesDuring {
                 for (moveProject in moveProjects) {
-                    moveProject.root.setupContentRoots(project) { contentRoot ->
+                    moveProject.setupContentRoots(project) { contentRoot ->
                         addExcludeFolder(
                             FileUtil.join(
                                 contentRoot.url,
-                                MvProjectLayout.buildDir
+                                "build"
                             )
                         )
                     }
@@ -229,13 +229,9 @@ fun processAllMvFilesOnce(
         }
 }
 
-private fun VirtualFile.setupContentRoots(project: Project, setup: ContentEntry.(VirtualFile) -> Unit) {
-    val packageModule = ModuleUtilCore.findModuleForFile(this, project) ?: return
-    setupContentRoots(packageModule, setup)
-}
-
-private fun VirtualFile.setupContentRoots(packageModule: Module, setup: ContentEntry.(VirtualFile) -> Unit) {
+private fun MoveProject.setupContentRoots(project: Project, setup: ContentEntry.(VirtualFile) -> Unit) {
+    val packageModule = ModuleUtilCore.findModuleForFile(this.root, project) ?: return
     ModuleRootModificationUtil.updateModel(packageModule) { rootModel ->
-        rootModel.contentEntries.singleOrNull()?.setup(this)
+        rootModel.contentEntries.singleOrNull()?.setup(this.root)
     }
 }

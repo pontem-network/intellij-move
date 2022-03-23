@@ -128,8 +128,8 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun spec(b: PsiBuilder, level: Int, parser: Parser): Boolean {
-        b.flags = SPEC_ALLOWED
+    fun msl(b: PsiBuilder, level: Int, parser: Parser): Boolean {
+        b.flags = MSL_ALLOWED
         val result = parser.parse(b, level)
         b.flags = DEFAULT_FLAGS
         return result
@@ -137,7 +137,7 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun mslOnly(b: PsiBuilder, level: Int, parser: Parser): Boolean {
-        if (!BitUtil.isSet(b.flags, SPEC_ALLOWED)) return false
+        if (!BitUtil.isSet(b.flags, MSL_ALLOWED)) return false
         return parser.parse(b, level)
     }
 
@@ -254,7 +254,7 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun toKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "to", TO)
 
-    private val SPEC_ALLOWED: Int = makeBitMask(1)
+    private val MSL_ALLOWED: Int = makeBitMask(1)
 
     private val FLAGS: Key<Int> = Key("MoveParserUtil.FLAGS")
     private val DEFAULT_FLAGS: Int = makeBitMask(0)

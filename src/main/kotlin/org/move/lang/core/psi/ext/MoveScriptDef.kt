@@ -16,7 +16,7 @@ fun MvScriptDef.constBindings(): List<MvBindingPat> =
 
 abstract class MvScriptDefMixin(node: ASTNode) : MvElementImpl(node),
                                                  MvScriptDef {
-    override val importStatements: List<MvImportStatement>
+    override val importStmts: List<MvImportStmt>
         get() =
-            this.scriptBlock?.importStatementList.orEmpty()
+            this.scriptBlock?.importStmtList.orEmpty()
 }

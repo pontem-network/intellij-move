@@ -130,4 +130,37 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
         }
     }    
     """)
+
+    fun `test not enough type params for schema`() = checkErrors("""
+    module 0x1::M {
+        spec schema MySchema<Type1, Type2> {}
+        fun call() {}
+        spec call {
+            include <error descr="Invalid instantiation of '0x1::M::MySchema'. Expected 2 type argument(s) but got 1">MySchema<u8></error>;
+        }
+    }    
+    """)
+
+    fun `test no error if schema params are inferrable`() = checkErrors("""
+    module 0x1::M {
+        struct Token<Type> {}
+        spec schema MySchema<Type> {
+            token: Token<Type>;
+        }
+        fun call() {}
+        spec call {
+            include MySchema { token: Token<u8> };
+        }
+    }        
+    """)
+
+    fun `test missing type params if uninferrable`() = checkErrors("""
+    module 0x1::M {
+        spec schema MySchema<Type> {}
+        fun call() {}
+        spec call {
+            include <error descr="Invalid instantiation of '0x1::M::MySchema'. Expected 1 type argument(s) but got 0">MySchema</error>;
+        }
+    }        
+    """)
 }

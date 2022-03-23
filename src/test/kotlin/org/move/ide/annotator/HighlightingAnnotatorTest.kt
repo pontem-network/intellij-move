@@ -39,6 +39,11 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
 
     fun `test types highlighed`() = checkHighlighting(
         """
+        module 0x1::M {
+            spec schema SS {
+                val: <PRIMITIVE_TYPE>num</PRIMITIVE_TYPE>;    
+            }
+        }
         script {
             fun main(s: &<BUILTIN_TYPE>signer</BUILTIN_TYPE>,
                      val: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>,
@@ -65,6 +70,9 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
                 <BUILTIN_FUNCTION_CALL>borrow_global_mut</BUILTIN_FUNCTION_CALL>();
                 <BUILTIN_FUNCTION_CALL>exists</BUILTIN_FUNCTION_CALL>();
                 <BUILTIN_FUNCTION_CALL>freeze</BUILTIN_FUNCTION_CALL>();
+            }
+            spec move_to {
+                <BUILTIN_FUNCTION_CALL>global</BUILTIN_FUNCTION_CALL>();
             }
         }
     """
@@ -93,6 +101,11 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
             ): <TYPE_PARAMETER>U</TYPE_PARAMETER>
             acquires <TYPE_PARAMETER>U</TYPE_PARAMETER> {
                 let a: <TYPE_PARAMETER>U</TYPE_PARAMETER> = 1;
+            }
+            spec schema MySchema<<TYPE_PARAMETER>Type</TYPE_PARAMETER>> {}
+            spec module {
+                apply MySchema<<TYPE_PARAMETER>Type</TYPE_PARAMETER>> to *<<TYPE_PARAMETER>Type</TYPE_PARAMETER>>;
+                native fun serialize<<TYPE_PARAMETER>U</TYPE_PARAMETER>>(v: &<TYPE_PARAMETER>U</TYPE_PARAMETER>): vector<u8>;
             }
         }
     """

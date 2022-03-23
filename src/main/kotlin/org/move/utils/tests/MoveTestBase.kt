@@ -5,14 +5,13 @@
 
 package org.move.utils.tests
 
-import com.intellij.openapi.util.io.StreamUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
 import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
 
 abstract class MvTestBase : BasePlatformTestCase(),
-                              MvTestCase {
+                            MvTestCase {
     protected val fileName: String
         get() = "${getTestName(true)}.$testFileExtension"
     open val dataPath: String = ""
@@ -47,13 +46,4 @@ abstract class MvTestBase : BasePlatformTestCase(),
     protected fun FileTree.prepareTestProjectFromFixture(): TestProject = prepareTestProject(myFixture)
     protected fun FileTree.createAndOpenFileWithCaretMarker(): TestProject =
         createAndOpenFileWithCaretMarker(myFixture)
-
-    companion object {
-        @JvmStatic
-        fun getResourceAsString(path: String): String? {
-            val stream = MvTestBase::class.java.classLoader.getResourceAsStream(path)
-                ?: return null
-            return StreamUtil.readText(stream, Charsets.UTF_8)
-        }
-    }
 }
