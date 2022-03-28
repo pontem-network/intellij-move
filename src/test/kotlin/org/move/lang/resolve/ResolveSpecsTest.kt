@@ -383,4 +383,15 @@ class ResolveSpecsTest: ResolveTestCase() {
         }
     }    
     """)
+
+    fun `test schema lit with imply operator`() = checkByCode("""
+    module 0x1::M {
+        spec schema MySchema {}
+                     //X
+        spec module {
+            include true ==> MySchema;
+                              //^
+        }
+    }    
+    """)
 }

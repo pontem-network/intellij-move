@@ -32,7 +32,14 @@ module 0x1::M {
         include MySchema<MyType>{ amount };
         include MySchema{ address: Signer::address_of(acc) };
 
+        include true ==> MySchema;
+        include vote.agree != agree ==> CheckChangeVote<TokenT, ActionT>{vote, proposer_address};
+
         native fun serialize<MoveValue>(v: &MoveValue): vector<u8>;
+    }
+
+    spec module {
+        include true ==> MySchema;
     }
 
     fun main2() {
