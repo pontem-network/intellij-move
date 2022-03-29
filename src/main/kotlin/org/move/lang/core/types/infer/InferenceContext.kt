@@ -17,7 +17,7 @@ fun MvElement.inferenceCtx(msl: Boolean): InferenceContext {
 }
 
 fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
-    return CachedValuesManager.getCachedValue(this, TYPE_INFERENCE_KEY) {
+    val ctx = CachedValuesManager.getCachedValue(this, TYPE_INFERENCE_KEY) {
         val fctx = InferenceContext(msl)
         for (param in this.parameterBindings) {
             fctx.bindingTypes[param] = param.cachedTy(fctx)
@@ -41,6 +41,8 @@ fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
         }
         CachedValueProvider.Result(fctx, PsiModificationTracker.MODIFICATION_COUNT)
     }
+    ctx.msl = msl
+    return ctx
 }
 
 fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
@@ -121,8 +123,8 @@ fun combineTys(ty1: Ty, ty2: Ty): Ty {
 }
 
 fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
-    val expectedTy = rawExpectedTy.toMslTy()
-    val inferredTy = rawInferredTy.toMslTy()
+    val expectedTy = rawExpectedTy.mslTy()
+    val inferredTy = rawInferredTy.mslTy()
     return when {
         expectedTy is TyUnknown || inferredTy is TyUnknown -> true
         expectedTy is TyInfer.TyVar || inferredTy is TyInfer.TyVar -> {
@@ -150,7 +152,7 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
     }
 }
 
-class InferenceContext(val msl: Boolean = false) {
+class InferenceContext(var msl: Boolean) {
     val exprTypes = mutableMapOf<MvExpr, Ty>()
     val callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
     val bindingTypes = mutableMapOf<MvBindingPat, Ty>()

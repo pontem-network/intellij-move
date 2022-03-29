@@ -592,4 +592,16 @@ module 0x1::M {
         }
     }    
     """)
+
+    fun `test ref equality for generics in call expr`() = checkErrors("""
+    module 0x1::M {
+        struct Token<TokenT> {}
+        fun call<TokenT>(ref: &Token<TokenT>) {
+            let token = Token<TokenT> {};    
+            spec {
+                call(token);
+            }
+        }
+    }    
+    """)
 }

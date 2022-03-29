@@ -129,15 +129,29 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun msl(b: PsiBuilder, level: Int, parser: Parser): Boolean {
-        b.flags = MSL_ALLOWED
+        b.mslLevel = b.mslLevel + 1
         val result = parser.parse(b, level)
-        b.flags = DEFAULT_FLAGS
+        b.mslLevel = b.mslLevel - 1
         return result
     }
 
     @JvmStatic
     fun mslOnly(b: PsiBuilder, level: Int, parser: Parser): Boolean {
-        if (!BitUtil.isSet(b.flags, MSL_ALLOWED)) return false
+        if (b.mslLevel == 0) return false
+        return parser.parse(b, level)
+    }
+
+    @JvmStatic
+    fun noImply(b: PsiBuilder, level: Int, parser: Parser): Boolean {
+        b.noImply = ENABLED
+        val result = parser.parse(b, level)
+        b.noImply = DISABLED
+        return result
+    }
+
+    @JvmStatic
+    fun implyMslOnly(b: PsiBuilder, level: Int, parser: Parser): Boolean {
+        if (b.mslLevel == 0 || BitUtil.isSet(b.noImply, ENABLED)) return false
         return parser.parse(b, level)
     }
 
@@ -254,13 +268,17 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     @JvmStatic
     fun toKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "to", TO)
 
-    private val MSL_ALLOWED: Int = makeBitMask(1)
-
     private val FLAGS: Key<Int> = Key("MoveParserUtil.FLAGS")
-    private val DEFAULT_FLAGS: Int = makeBitMask(0)
 
-    private var PsiBuilder.flags: Int
-        get() = getUserData(FLAGS) ?: DEFAULT_FLAGS
+    private val ENABLED: Int = makeBitMask(1)
+    private val DISABLED: Int = makeBitMask(0)
+
+    private var PsiBuilder.mslLevel: Int
+        get() = getUserData(FLAGS) ?: 0
+        set(value) = putUserData(FLAGS, value)
+
+    private var PsiBuilder.noImply: Int
+        get() = getUserData(FLAGS) ?: DISABLED
         set(value) = putUserData(FLAGS, value)
 
     private fun contextualKeyword(

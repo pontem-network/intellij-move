@@ -19,7 +19,7 @@
     extends(".*Pat")=Pat
 //    extends(".*Predicate")=Predicate_item
     extends("(Lambda|Ref|Path|Tuple|Unit)Type")=Type
-    extends(".*SpecDef")=AnySpec
+//    extends(".*SpecDef")=AnySpec
 
     extends(".*Stmt")=Stmt
 
@@ -785,8 +785,8 @@ LeftShiftExpr ::= Expr ltlt Expr
 RightShiftExpr ::= Expr gtgt Expr
 
 private ImplyOperatorsExpr_items ::= ImplyOperatorExpr | PartialImplyOperatorExpr
-ImplyOperatorExpr ::= Expr <<mslOnly eqeq_gt>> Expr
-PartialImplyOperatorExpr ::= Expr <<mslOnly lt_eqeq_gt>> Expr
+ImplyOperatorExpr ::= Expr <<implyMslOnly eqeq_gt>> Expr
+PartialImplyOperatorExpr ::= Expr <<implyMslOnly lt_eqeq_gt>> Expr
 
 BangExpr ::= '!' Expr
 DerefExpr ::= '*' Expr
@@ -1036,7 +1036,8 @@ private SpecStmt ::= ImportStmt
 //                               | RequiresSpecStmt
 //                               | EnsuresSpecStmt
 //                               | ModifiesSpecStmt
-                               | IncludeSpecStmt
+                               | IncludeStmts
+//                               | IncludeStmts
 //                               | InvariantSpecStmt
 //                               | AxiomSpecStmt
                                | ApplySchemaStmt
@@ -1076,29 +1077,47 @@ PragmaAttribute ::= IDENTIFIER ('=' Expr)?
 //    extends = Expr
 //}
 
-AssumeSpecExpr ::= assume Expr { pin = 1 }
 
-AssertSpecExpr ::= assert Expr { pin = 1 }
 
 AbortsIfSpecExpr ::= aborts_if Expr AbortsIfWith? { pin = 1 }
 AbortsIfWith ::= with Expr { pin = 1 }
 
 AbortsWithSpecExpr ::= aborts_with <<comma_sep_items Expr>> { pin = 1 }
 
-//private SpecExpr_first ::= aborts_if
-
-//RequiresSpecStmt ::= RequiresSpecExpr ';'
+AssertSpecExpr ::= assert Expr { pin = 1 }
+AssumeSpecExpr ::= assume Expr { pin = 1 }
 RequiresSpecExpr ::= requires module? Expr { pin = 1 }
-
-//EnsuresSpecStmt ::= EnsuresSpecExpr ';'
-//private EnsuresSpecExpr_body ::= EnsuresSpecExpr
-
 EnsuresSpecExpr ::= ensures SpecExpr { pin = 1 }
-
-//ModifiesSpecStmt ::= ModifiesSpecExpr ';'
 ModifiesSpecExpr ::= modifies Expr { pin = 1 }
 
-IncludeSpecStmt ::= include SpecVisibility? SchemaLit ';' { pin = 1 }
+//IncludeStmt ::= include SpecVisibility? IncludeStmtTail ';'
+//private IncludeStmtTail ::= (Expr eqeq_gt)? SchemaLit
+
+//IncludeStmt ::= include SpecVisibility? (ImplySchemaLit | SchemaLit) ';'
+//{
+//    pin = 1
+//}
+//ImplySchemaLit ::= <<noImply Expr>> <<mslOnly eqeq_gt>> SchemaLit
+
+fake IncludeStmt ::= include SpecVisibility? Expr? eqeq_gt? SchemaLit? ';'?
+
+private IncludeStmts ::= IncludeImplySchemaStmt | IncludeSchemaStmt
+IncludeSchemaStmt ::= include SpecVisibility? SchemaLit ';'
+//IncludeSchemaStmt ::= include SpecVisibility? SchemaLit ';'
+{
+    pin = 1
+//    rightAssociative = true
+    elementType = IncludeStmt
+//    recoverWhile = IncludeSchemaStmt_recover
+}
+//private IncludeSchemaStmt_recover ::= !SpecExprStmt_first
+IncludeImplySchemaStmt ::= include SpecVisibility? <<noImply Expr>> <<mslOnly eqeq_gt>> SchemaLit ';'
+{
+    pin = 4
+    elementType = IncludeStmt
+//    recoverWhile = SpecExprStmt_recover
+}
+//ImplyExprFirst ::= Expr
 SchemaLit ::= Path SchemaFieldsBlock?
 
 SchemaFieldsBlock ::= '{' SchemaField_with_recover* '}' { pin = 1 }

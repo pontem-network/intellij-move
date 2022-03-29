@@ -107,14 +107,14 @@ FILE
         MvSpecBlockImpl(SPEC_BLOCK)
           PsiElement({)('{')
           PsiWhiteSpace('\n        ')
-          MvIncludeSpecStmtImpl(INCLUDE_SPEC_STMT)
+          MvIncludeStmtImpl(INCLUDE_STMT)
             PsiElement(include_kw)('include')
             PsiWhiteSpace(' ')
             MvSchemaLitImpl(SCHEMA_LIT)
               MvPathImpl(PATH)
                 MvPathIdentImpl(PATH_IDENT)
                   PsiElement(IDENTIFIER)('Schema')
-            PsiErrorElement:'::', ';', < or '{' expected, got 'assert'
+            PsiErrorElement:'!', '::', ';', <, '=', '[' or '{' expected, got 'assert'
               <empty list>
           PsiWhiteSpace('\n\n        ')
           MvSpecExprStmtImpl(SPEC_EXPR_STMT)

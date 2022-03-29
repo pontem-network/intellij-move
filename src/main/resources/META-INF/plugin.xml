@@ -15,6 +15,12 @@
     </description>
     <change-notes>
         <![CDATA[
+    <h3>Version 1.6.1</h3>
+    <ul>
+    <li>Parser fix for include schema</li>
+    <li>Minor fixes for types in MSL</li>
+    <li>Disable Unresolved Reference inspection by default, again</li>
+    </ul>
     <h3>Version 1.6.0</h3>
     <ul>
     <li>Specifications support improvements</li>
@@ -150,7 +156,7 @@
         <!--                         implementationClass="org.move.ide.inspections.lints.FunctionNamingInspection"/>-->
         <localInspection language="Move" groupName="Move"
                          displayName="Unresolved reference"
-                         enabledByDefault="true"
+                         enabledByDefault="false"
                          level="ERROR"
                          implementationClass="org.move.ide.inspections.MvUnresolvedReferenceInspection"/>
         <localInspection language="Move" groupName="Move"

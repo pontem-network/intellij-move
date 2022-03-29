@@ -13,9 +13,7 @@ abstract class ResolveTestCase : MvTestBase() {
     ) {
         inlineFile(code, "main.move")
 
-        val (refElement, data, offset) = myFixture.findElementWithDataAndOffsetInEditor<MvReferenceElement>(
-            "^"
-        )
+        val (refElement, data, offset) = myFixture.findElementWithDataAndOffsetInEditor<MvReferenceElement>("^")
 
         if (data == "unresolved") {
             val resolved = refElement.reference?.resolve()
