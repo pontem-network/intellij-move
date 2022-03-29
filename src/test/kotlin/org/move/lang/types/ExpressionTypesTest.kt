@@ -405,14 +405,4 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }    
     """)
-
-    fun `test cast integer multiplication`() = testExpr("""
-    module 0x1::M {
-        fun call(txn_gas_price: u64) {
-            let price = txn_gas_price * txn_gas_price as u128;
-            price;
-            //^ u128
-        }
-    }    
-    """)
 }

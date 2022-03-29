@@ -53,4 +53,4 @@ interface Ty : TypeFoldable<Ty> {
 
 val Ty.isTypeParam: Boolean get() = this is TyInfer || this is TyTypeParameter
 
-fun Ty.toMslTy(): Ty = if (this is TyReference && this.msl) this.innermostTy() else this
+fun Ty.mslTy(): Ty = if (this is TyReference && this.msl) this.innermostTy() else this

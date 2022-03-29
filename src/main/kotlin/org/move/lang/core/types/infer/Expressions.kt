@@ -78,7 +78,7 @@ fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
     val funcItem = path.reference?.resolve() as? MvFunctionLike ?: return TyUnknown
     val funcTy = instantiateItemTy(funcItem, ctx.msl) as? TyFunction ?: return TyUnknown
 
-    val inference = InferenceContext()
+    val inference = InferenceContext(ctx.msl)
     // find all types passed as explicit type parameters, create constraints with those
     if (path.typeArguments.isNotEmpty()) {
         if (path.typeArguments.size != funcTy.typeVars.size) return TyUnknown
@@ -117,7 +117,7 @@ private fun inferDotExprTy(dotExpr: MvDotExpr, ctx: InferenceContext): Ty {
             else -> null
         } ?: return TyUnknown
 
-    val inference = InferenceContext()
+    val inference = InferenceContext(ctx.msl)
     for ((tyVar, tyArg) in structTy.typeVars.zip(structTy.typeArgs)) {
         inference.registerConstraint(Constraint.Equate(tyVar, tyArg))
     }
@@ -132,7 +132,7 @@ private fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext):
     val structItem = litExpr.path.maybeStruct ?: return TyUnknown
     val structTypeVars = structItem.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
 
-    val inference = InferenceContext()
+    val inference = InferenceContext(ctx.msl)
     // TODO: combine it with TyStruct constructor
     val typeArgs = litExpr.path.typeArguments
     if (typeArgs.isNotEmpty()) {

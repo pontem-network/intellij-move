@@ -86,8 +86,12 @@ class ConstraintSolver(val ctx: InferenceContext) {
         val constraint = rawConstraint.foldTyInferWith(ctx::resolveTyInferFromContext)
         when (constraint) {
             is Constraint.Equate -> {
-                val ty1 = constraint.ty1
-                val ty2 = constraint.ty2
+                var ty1 = constraint.ty1
+                var ty2 = constraint.ty2
+                if (ctx.msl) {
+                    ty1 = ty1.mslTy()
+                    ty2 = ty2.mslTy()
+                }
                 when {
                     ty1 is TyInfer.TyVar && ty2 is TyInfer.TyVar -> {
                         if ((ty1.abilities() - ty2.abilities()).isNotEmpty()) return false
