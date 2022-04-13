@@ -19,4 +19,20 @@ class MoveTomlCompletionContributorTest: MoveTomlCompletionTestBase() {
     [package]
     name/*caret*/    
     """)
+
+    fun `test complete dependencies keys inline table`() = doSingleCompletion("""
+    [dependencies]
+    AptosFramework = { gi/*caret*/ }    
+    """, """
+    [dependencies]
+    AptosFramework = { git = "/*caret*/" }    
+    """)
+
+    fun `test complete dependencies keys table`() = doSingleCompletion("""
+    [dependencies.AptosFramework]
+    gi/*caret*/
+    """, """
+    [dependencies.AptosFramework]
+    git = "/*caret*/"
+    """)
 }
