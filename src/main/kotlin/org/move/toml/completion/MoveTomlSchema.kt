@@ -13,18 +13,23 @@ import org.toml.lang.psi.TomlFileType
 import org.toml.lang.psi.TomlKeyValueOwner
 import org.toml.lang.psi.TomlTable
 
-class TomlSchema private constructor(
+class MoveTomlSchema private constructor(
     private val tables: List<TomlTableSchema>
 ) {
 
     fun topLevelKeys(isArray: Boolean): Collection<String> =
         tables.filter { it.isArray == isArray }.map { it.name }
 
+    fun tableHeaderKeys() = topLevelKeys(false)
+
     fun keysForTable(tableName: String): Collection<String> =
         tables.find { it.name == tableName }?.keys.orEmpty()
 
+    fun keysForDependency(): Collection<String> =
+        listOf("git", "local", "addr_subst", "rev", "branch", "subdir")
+
     companion object {
-        fun parse(project: Project, @Language("TOML") example: String): TomlSchema {
+        fun parse(project: Project, @Language("TOML") example: String): MoveTomlSchema {
             val toml = PsiFileFactory.getInstance(project)
                 .createFileFromText("Cargo.toml", TomlFileType, example)
 
@@ -32,7 +37,7 @@ class TomlSchema private constructor(
                 .filterIsInstance<TomlKeyValueOwner>()
                 .mapNotNull { it.schema }
 
-            return TomlSchema(tables)
+            return MoveTomlSchema(tables)
         }
     }
 }

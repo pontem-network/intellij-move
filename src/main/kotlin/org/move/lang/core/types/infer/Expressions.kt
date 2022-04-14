@@ -5,7 +5,10 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
 
 fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
-    if (ctx.exprTypes.containsKey(expr)) return ctx.exprTypes[expr]!!
+    val existingTy = ctx.exprTypes[expr]
+    if (existingTy != null) {
+        return existingTy
+    }
 
     var exprTy = when (expr) {
         is MvRefExpr -> inferRefExprTy(expr, ctx)
@@ -70,8 +73,9 @@ private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): 
 }
 
 fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
-    if (ctx.callExprTypes.containsKey(callExpr)) {
-        return ctx.callExprTypes[callExpr] ?: error("CallExpr ${callExpr.text} has null type")
+    val existingTy = ctx.callExprTypes[callExpr]
+    if (existingTy != null) {
+        return existingTy
     }
 
     val path = callExpr.path

@@ -5,9 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import org.move.lang.MvFile
 import org.move.lang.MoveFileType
-import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
-import org.move.lang.core.psi.ext.getChild
 
 val Project.psiFactory get() = MvPsiFactory(this)
 
@@ -23,6 +21,9 @@ class MvPsiFactory(private val project: Project) {
     fun schemaLitField(fieldName: String, expr: String): MvSchemaLitField =
         createFromText("module _M { spec module { include Schema { $fieldName: $expr } }}")
             ?: error("Failed to create MvSchemaField")
+
+    fun inlineModule(address: String, name: String, blockText: String): MvModuleDef =
+        createFromText("module $address::$name $blockText") ?: error("failed to create module")
 
     fun identifier(text: String): PsiElement =
         createFromText<MvModuleDef>("module $text {}")?.nameIdentifier
