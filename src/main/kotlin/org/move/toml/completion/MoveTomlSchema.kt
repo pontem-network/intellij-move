@@ -26,7 +26,7 @@ class MoveTomlSchema private constructor(
         tables.find { it.name == tableName }?.keys.orEmpty()
 
     fun keysForDependency(): Collection<String> =
-        listOf("git", "local", "addr_subst", "rev", "branch")
+        listOf("git", "local", "addr_subst", "rev", "branch", "subdir")
 
     companion object {
         fun parse(project: Project, @Language("TOML") example: String): MoveTomlSchema {

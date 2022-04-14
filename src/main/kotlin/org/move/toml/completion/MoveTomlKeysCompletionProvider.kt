@@ -88,4 +88,8 @@ Std = "_"
 
 [dev-addresses]
 Std = "0x1"
+
+[dependencies]
+[dev-dependencies]
+[build]
 """
