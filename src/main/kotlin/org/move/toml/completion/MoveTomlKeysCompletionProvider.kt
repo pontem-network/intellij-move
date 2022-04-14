@@ -52,6 +52,8 @@ class MoveTomlKeysCompletionProvider : CompletionProvider<CompletionParameters>(
             val inlineTable = key.ancestorStrict<TomlInlineTable>()
             if (inlineTable != null) {
                 // inline table dependency
+                val keyValue = inlineTable.parent as? TomlKeyValue ?: return
+                if (keyValue.key.segments.firstOrNull()?.text.orEmpty() == "addr_subst") return
                 result.addNames(schema.keysForDependency())
             } else {
                 // table dependency
@@ -63,16 +65,6 @@ class MoveTomlKeysCompletionProvider : CompletionProvider<CompletionParameters>(
 
 fun TomlElement.topTable(): TomlTable? =
     this.ancestors.filterIsInstance<TomlTable>().filter { it.parent is TomlFile }.firstOrNull()
-
-private val TomlKeySegment.topLevelTable: TomlKeyValueOwner?
-    get() {
-        val table = ancestorStrict<TomlKeyValueOwner>() ?: return null
-        if (table.parent !is TomlFile) return null
-        return table
-    }
-
-private val TomlHeaderOwner.name: String?
-    get() = header.key?.segments?.firstOrNull()?.name
 
 @Language("TOML")
 private val EXAMPLE_MOVE_TOML = """

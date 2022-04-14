@@ -13,26 +13,31 @@ class MoveTomlCompletionContributorTest: MoveTomlCompletionTestBase() {
     }
 
     fun `test complete package name`() = doSingleCompletion("""
-    [package]
-    na/*caret*/    
+[package]
+na/*caret*/    
     """, """
-    [package]
-    name/*caret*/    
+[package]
+name/*caret*/    
     """)
 
     fun `test complete dependencies keys inline table`() = doSingleCompletion("""
-    [dependencies]
-    AptosFramework = { gi/*caret*/ }    
+[dependencies]
+AptosFramework = { gi/*caret*/ }    
     """, """
-    [dependencies]
-    AptosFramework = { git/*caret*/ }    
+[dependencies]
+AptosFramework = { git/*caret*/ }    
     """)
 
     fun `test complete dependencies keys table`() = doSingleCompletion("""
-    [dependencies.AptosFramework]
-    gi/*caret*/
+[dependencies.AptosFramework]
+gi/*caret*/
     """, """
-    [dependencies.AptosFramework]
-    git/*caret*/
+[dependencies.AptosFramework]
+git/*caret*/
+    """)
+
+    fun `test no keys completion in addr_subst`() = checkNoCompletion("""
+[dependencies.MoveStdlib]
+addr_subst = { gi/*caret*/ }    
     """)
 }
