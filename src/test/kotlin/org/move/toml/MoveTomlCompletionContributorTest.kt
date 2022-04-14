@@ -25,7 +25,7 @@ class MoveTomlCompletionContributorTest: MoveTomlCompletionTestBase() {
     AptosFramework = { gi/*caret*/ }    
     """, """
     [dependencies]
-    AptosFramework = { git = "/*caret*/" }    
+    AptosFramework = { git/*caret*/ }    
     """)
 
     fun `test complete dependencies keys table`() = doSingleCompletion("""
@@ -33,6 +33,6 @@ class MoveTomlCompletionContributorTest: MoveTomlCompletionTestBase() {
     gi/*caret*/
     """, """
     [dependencies.AptosFramework]
-    git = "/*caret*/"
+    git/*caret*/
     """)
 }
