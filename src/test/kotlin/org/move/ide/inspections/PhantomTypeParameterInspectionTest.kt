@@ -25,7 +25,17 @@ class PhantomTypeParameterInspectionTest: InspectionsTestCase(PhantomTypeParamet
     }    
     """, """
     module 0x1::M {
-        struct S<phantom /*caret*/T> { val: u8 }
+        struct S</*caret*/phantom T> { val: u8 }
+    }    
+    """)
+
+    fun `test make phantom with abilities`() = checkFixByText("Declare phantom", """
+    module 0x1::M {
+        struct S<<error descr="Unused type parameter. Consider declaring it as phantom">/*caret*/T: store</error>> { val: u8 }
+    }    
+    """, """
+    module 0x1::M {
+        struct S</*caret*/phantom T: store> { val: u8 }
     }    
     """)
 

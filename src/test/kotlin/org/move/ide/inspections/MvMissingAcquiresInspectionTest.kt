@@ -45,7 +45,7 @@ class MvMissingAcquiresInspectionTest: InspectionsTestCase(MvMissingAcquiresInsp
             move_from<Deal>(@0x1);
         }
         fun main() {
-            <error descr="Function 'main' is not marked as 'acquires Deal, Loan'">call/*caret*/()</error>;   
+            <error descr="Function 'main' is not marked as 'acquires Deal, Loan'">call/*caret*/()</error>;
         }
     }    
     """, """

@@ -5,13 +5,10 @@ import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.ancestorStrict
-import org.move.lang.core.psi.ext.declaredTy
-import org.move.lang.core.psi.ext.fields
-import org.move.lang.core.psi.ext.isPhantom
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 
-class PhantomTypeParameterInspection: MvLocalInspectionTool() {
+class PhantomTypeParameterInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
         return object : MvVisitor() {
             override fun visitTypeParameterList(o: MvTypeParameterList) {
@@ -34,11 +31,15 @@ class PhantomTypeParameterInspection: MvLocalInspectionTool() {
                         holder.registerProblem(
                             typeParam,
                             "Unused type parameter. Consider declaring it as phantom",
-                            object: LocalQuickFix {
+                            object : LocalQuickFix {
                                 override fun getFamilyName() = "Declare phantom"
 
                                 override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-                                    val newParam = project.psiFactory.typeParameter("phantom $name")
+                                    var paramText = "phantom $name"
+                                    if (typeParam.abilities.isNotEmpty()) {
+                                        paramText += ": " + typeParam.abilities.joinToString(", ") { it.text }
+                                    }
+                                    val newParam = project.psiFactory.typeParameter(paramText)
                                     typeParam.replace(newParam)
                                 }
                             }

@@ -115,19 +115,19 @@ class MvAnnotationTestFixture(
         codeInsightFixture.launchAction(action)
     }
 
-    protected fun checkFix(
-        fixName: String,
-        before: String,
-        after: String,
-        configure: (String) -> Unit,
-        checkBefore: () -> Unit,
-        checkAfter: (String) -> Unit,
-    ) {
-        configure(before)
-        checkBefore()
-        applyQuickFix(fixName)
-        checkAfter(after)
-    }
+//    protected fun checkFix(
+//        fixName: String,
+//        before: String,
+//        after: String,
+//        configure: (String) -> Unit,
+//        checkBefore: () -> Unit,
+//        checkAfter: (String) -> Unit,
+//    ) {
+//        configure(before)
+//        checkBefore()
+//        applyQuickFix(fixName)
+//        checkAfter(after)
+//    }
 
     fun checkFixByText(
         fixName: String,
@@ -136,10 +136,13 @@ class MvAnnotationTestFixture(
         checkWarn: Boolean = true,
         checkInfo: Boolean = false,
         checkWeakWarn: Boolean = false,
-    ) = checkFix(
-        fixName, before, after,
-        configure = this::configureByText,
-        checkBefore = { codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn) },
-        checkAfter = this::checkByText
-    )
+    ) {
+        configureByText(before)
+        codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
+        applyQuickFix(fixName)
+
+//        configureByText(after)
+        codeInsightFixture.checkResult(replaceCaretMarker(after.trimIndent()))
+//        codeInsightFixture.checkHighlighting(true, false, false, false)
+    }
 }
