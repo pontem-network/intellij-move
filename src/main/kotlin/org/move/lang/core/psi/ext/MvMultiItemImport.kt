@@ -1,5 +1,5 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.MvMultiItemImport
+import org.move.lang.core.psi.MvMultiItemUse
 
-val MvMultiItemImport.names get() = this.itemImportList.mapNotNull { it.identifier.text }.toSet()
+val MvMultiItemUse.names get() = this.itemUseList.mapNotNull { it.identifier.text }.toSet()

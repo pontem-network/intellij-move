@@ -12,7 +12,6 @@ import com.intellij.usages.impl.rules.UsageTypeProviderEx
 import org.move.lang.core.psi.MvAddressRef
 import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.psi.MvFQModuleRef
-import org.move.lang.core.psi.MvModuleImport
 
 object MvUsageTypeProvider : UsageTypeProviderEx {
     // Instantiate each UsageType only once, so that the equality check in UsageTypeGroup.equals() works correctly

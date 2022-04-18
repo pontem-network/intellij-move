@@ -78,7 +78,7 @@ class MvPathReferenceImpl(
             // try local names
             val item = resolveItem(element, namespace).firstOrNull() ?: return emptyList()
             // local name -> return
-            if (item !is MvItemImport) return listOf(item)
+            if (item !is MvItemUse) return listOf(item)
             // find corresponding FQModuleRef from imports and resolve
             val fqModuleRef = item.moduleImport().fqModuleRef
             val module = fqModuleRef.reference?.resolve() as? MvModuleDef ?: return emptyList()

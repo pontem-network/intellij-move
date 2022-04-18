@@ -173,7 +173,7 @@ private ScriptItem ::= !('}' | <<eof>>) ScriptItem_item
 private ScriptItemFirst ::= use | const | fun
 private ScriptItem_recover ::= !('}' | <<eof>> | ScriptItemFirst)
 
-private ScriptItem_item ::= ImportStmt | ConstDef | FunctionInner
+private ScriptItem_item ::= UseStmt | ConstDef | FunctionInner
 
 private address ::= <<addressKeyword>>
 private has ::= <<hasKeyword>>
@@ -217,7 +217,7 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
 private Item_first ::= use | public | native | fun | const | STRUCT_KW | spec | friend | Attr
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
-private ModuleItem_item ::= ImportStmt
+private ModuleItem_item ::= UseStmt
                             | FriendStmt
                             | StructItem
                             | FunctionItem
@@ -478,31 +478,31 @@ StructField ::= IDENTIFIER TypeAnnotation &(',' | '}')
 
 FriendStmt ::= Attr* friend FQModuleRef ';' { pin = "friend" }
 
-ImportStmt ::= Attr* use (ModuleItemsImport | ModuleImport) ';' { pin = "use" }
-ModuleImport ::= (AddressRef !'::') | FQModuleRef ImportAlias?
+UseStmt ::= Attr* use (ModuleItemUse | ModuleUse) ';' { pin = "use" }
+ModuleUse ::= (AddressRef !'::') | FQModuleRef UseAlias?
 {
     name = "qual path to module"
     implements = [
         "org.move.lang.core.psi.MvNamedElement"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvModuleImportMixin"
+    mixin = "org.move.lang.core.psi.ext.MvModuleUseMixin"
 }
-ModuleItemsImport ::= FQModuleRef '::' (ItemImport | MultiItemImport)
+ModuleItemUse ::= FQModuleRef '::' (ItemUse | MultiItemUse)
 {
     pin = 2
     name = "qual path to imported item"
 }
 
-MultiItemImport ::= '{' <<comma_sep_items MultiItemImport_member_with_recovery>> '}'
+MultiItemUse ::= '{' <<comma_sep_items MultiItemUse_member_with_recovery>> '}'
 {
     pin = 1
 }
-private MultiItemImport_member_with_recovery ::= !('}' | ';' | <<eof>>) ItemImport
+private MultiItemUse_member_with_recovery ::= !('}' | ';' | <<eof>>) ItemUse
 {
     pin = 1
 }
 
-ItemImport ::= IDENTIFIER ImportAlias?
+ItemUse ::= IDENTIFIER UseAlias?
 {
     pin = 1
     name = "item name"
@@ -510,13 +510,13 @@ ItemImport ::= IDENTIFIER ImportAlias?
         "org.move.lang.core.psi.MvNamedElement"
         "org.move.lang.core.psi.MvMandatoryReferenceElement"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvItemImportMixin"
+    mixin = "org.move.lang.core.psi.ext.MvItemUseMixin"
 }
-ImportAlias ::= as IDENTIFIER
+UseAlias ::= as IDENTIFIER
 {
     pin = 1
     implements = [ "org.move.lang.core.psi.MvNameIdentifierOwner" ]
-    mixin = "org.move.lang.core.psi.ext.MvImportAliasMixin"
+    mixin = "org.move.lang.core.psi.ext.MvUseAliasMixin"
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -703,7 +703,7 @@ CodeBlock ::= '{' CodeBlock_items '}'
     mixin = "org.move.lang.core.psi.ext.MvCodeBlockMixin"
 }
 
-private CodeBlock_items ::= ImportStmt*
+private CodeBlock_items ::= UseStmt*
                             Stmt*
                             ExprStmt_items?
 {
@@ -1022,7 +1022,7 @@ private SpecBlock_items_recover ::= !('}' | <<eof>>)
 //private SpecBlockStmt_with_recover ::= SpecStmt
 //private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinishingExpr
 
-private SpecStmt ::= ImportStmt
+private SpecStmt ::= UseStmt
                        | SchemaFieldStmt
                        | LocalVariableSpecStmt
                        | GlobalVariableSpecStmt

@@ -56,7 +56,7 @@ fun MvNamedElement.createCompletionLookupElement(
     insertHandler: InsertHandler<LookupElement> = MvInsertHandler()
 ): LookupElement {
     return when (this) {
-        is MvModuleImport -> this.createLookupElement()
+        is MvModuleUse -> this.createLookupElement()
 
         is MvFunction -> this.createLookupElement()
             .withTailText(this.functionParameterList?.parametersText ?: "()")

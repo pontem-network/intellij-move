@@ -3,8 +3,8 @@ package org.move.ide.intentions
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.MvImportStmt
-import org.move.lang.core.psi.MvMultiItemImport
+import org.move.lang.core.psi.MvUseStmt
+import org.move.lang.core.psi.MvMultiItemUse
 import org.move.lang.core.psi.MvPsiFactory
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.endOffset
@@ -15,20 +15,19 @@ class RemoveCurlyBracesIntention: MvElementBaseIntentionAction<RemoveCurlyBraces
     override fun getFamilyName(): String = text
 
     data class Context(
-        val multiItemImport: MvMultiItemImport,
+        val multiItemImport: MvMultiItemUse,
         val refName: String,
         val aliasName: String?
     )
 
     override fun findApplicableContext(project: Project, editor: Editor, element: PsiElement): Context? {
-        val importStmt =
-            element.ancestorStrict<MvImportStmt>() ?: return null
-        val multiItemImport =
-            importStmt.moduleItemsImport?.multiItemImport ?: return null
-        val itemImport = multiItemImport.itemImportList.singleOrNull() ?: return null
+        val useStmt = element.ancestorStrict<MvUseStmt>() ?: return null
+        val multiUse = useStmt.moduleItemUse?.multiItemUse ?: return null
+        val itemImport = multiUse.itemUseList.singleOrNull() ?: return null
+
         val refName = itemImport.referenceName
-        val aliasName = itemImport.importAlias?.name
-        return Context(multiItemImport, refName, aliasName)
+        val aliasName = itemImport.useAlias?.name
+        return Context(multiUse, refName, aliasName)
     }
 
     override fun invoke(project: Project, editor: Editor, ctx: Context) {

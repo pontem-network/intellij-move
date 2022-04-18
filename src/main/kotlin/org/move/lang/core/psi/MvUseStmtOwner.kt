@@ -3,41 +3,38 @@ package org.move.lang.core.psi
 import org.move.lang.core.psi.ext.definedAddressRef
 
 interface MvUseStmtOwner : MvElement {
-    val importStmts: List<MvImportStmt>
+    val useStmts: List<MvUseStmt>
 
-    private fun _moduleImports(): List<MvModuleImport> =
-        importStmts.mapNotNull { it.moduleImport }
+    private fun moduleImportsInner(): List<MvModuleUse> =
+        useStmts.mapNotNull { it.moduleUse }
 
-    fun moduleImports(): List<MvModuleImport> =
-        _moduleImports()
-            .filter { it.importAlias == null }
+    fun moduleImports(): List<MvModuleUse> =
+        moduleImportsInner()
+            .filter { it.useAlias == null }
 
-    fun selfItemImports(): List<MvItemImport> =
+    fun selfItemImports(): List<MvItemUse> =
         itemImports()
-            .filter { it.importAlias == null && it.text == "Self" }
-//            .map { it.parent }
-//            .filterIsInstance<MvModuleItemsImport>()
-//            .map { it.fqModuleRef }
+            .filter { it.useAlias == null && it.text == "Self" }
 
-    fun moduleImportAliases(): List<MvImportAlias> =
-        _moduleImports().mapNotNull { it.importAlias }
+    fun moduleImportAliases(): List<MvUseAlias> =
+        moduleImportsInner().mapNotNull { it.useAlias }
 
-    private fun itemImports(): List<MvItemImport> =
-        importStmts
-            .mapNotNull { it.moduleItemsImport }
+    private fun itemImports(): List<MvItemUse> =
+        useStmts
+            .mapNotNull { it.moduleItemUse }
             .flatMap {
-                val item = it.itemImport
+                val item = it.itemUse
                 if (item != null) {
                     listOf(item)
                 } else
-                    it.multiItemImport?.itemImportList.orEmpty()
+                    it.multiItemUse?.itemUseList.orEmpty()
             }
 
-    fun itemImportsWithoutAliases(): List<MvItemImport> =
-        itemImports().filter { it.importAlias == null }
+    fun itemImportsWithoutAliases(): List<MvItemUse> =
+        itemImports().filter { it.useAlias == null }
 
-    fun itemImportsAliases(): List<MvImportAlias> =
-        itemImports().mapNotNull { it.importAlias }
+    fun itemImportsAliases(): List<MvUseAlias> =
+        itemImports().mapNotNull { it.useAlias }
 }
 
 fun MvUseStmtOwner.shortestPathIdentText(item: MvNamedElement): String? {

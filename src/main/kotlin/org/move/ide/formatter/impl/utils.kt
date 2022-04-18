@@ -10,13 +10,12 @@ import org.move.lang.core.psi.*
 import com.intellij.psi.tree.TokenSet.create as ts
 
 
-val UNARY_OPS = ts(MINUS, MUL, EXCL, AND)
 val BINARY_OPS = ts(
     PLUS, MINUS, MUL, DIV, MODULO,
     OR, AND, OR_OR, AND_AND,
     EQ, EQ_EQ, NOT_EQ,
 )
-val ONE_LINE_ITEMS = ts(IMPORT_STMT, CONST_DEF)
+val ONE_LINE_ITEMS = ts(USE_STMT, CONST_DEF)
 
 val PAREN_DELIMITED_BLOCKS = ts(
     PARENS_EXPR, TUPLE_PAT, TUPLE_TYPE, TUPLE_LIT_EXPR,
@@ -39,7 +38,7 @@ val PsiElement.isTopLevelItem: Boolean
     get() = (this is MvModuleDef || this is MvAddressDef || this is MvScriptDef) && parent is MvFile
 
 val PsiElement.isModuleItem: Boolean
-    get() = this is MvFunction || this is MvConstDef || this is MvStruct || this is MvImportStmt
+    get() = this is MvFunction || this is MvConstDef || this is MvStruct || this is MvUseStmt
 
 val PsiElement.isDeclarationItem: Boolean
     get() = (this is MvModuleDef && parent is MvAddressBlock) || this.isModuleItem

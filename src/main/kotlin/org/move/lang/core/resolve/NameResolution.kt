@@ -86,13 +86,13 @@ fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
     }
     // module refers to ModuleImport
     val resolved = resolveSingleItem(moduleRef, Namespace.MODULE)
-    if (resolved is MvImportAlias) {
-        return (resolved.parent as MvModuleImport).fqModuleRef
+    if (resolved is MvUseAlias) {
+        return (resolved.parent as MvModuleUse).fqModuleRef
     }
-    if (resolved is MvItemImport && resolved.text == "Self") {
+    if (resolved is MvItemUse && resolved.text == "Self") {
         return resolved.moduleImport().fqModuleRef
     }
-    if (resolved !is MvModuleImport) return null
+    if (resolved !is MvModuleUse) return null
 
     return resolved.fqModuleRef
 }
