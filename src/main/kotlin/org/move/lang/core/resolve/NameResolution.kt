@@ -182,10 +182,15 @@ fun processLexicalDeclarations(
             false
         }
         Namespace.NAME -> when (scope) {
+            is MvModuleBlock -> {
+                processor.matchAll(
+                    scope.itemImportNames(),
+                )
+            }
             is MvModuleDef -> {
                 processor.matchAll(
-                    scope.itemImportsWithoutAliases(),
-                    scope.itemImportsAliases(),
+//                    scope.itemImportsWithoutAliases(),
+//                    scope.itemImportsAliases(),
                     scope.allFunctions(),
                     scope.builtinFunctions(),
                     scope.structs(),
@@ -197,10 +202,12 @@ fun processLexicalDeclarations(
                     }
                 )
             }
+            is MvScriptBlock -> processor.matchAll(scope.itemImportNames())
             is MvScriptDef -> processor.matchAll(
                 listOf(
-                    scope.itemImportsWithoutAliases(),
-                    scope.itemImportsAliases(),
+//                    scope.itemImports(),
+//                    scope.itemImportsWithoutAliases(),
+//                    scope.itemImportsAliases(),
                     scope.constBindings(),
                 ).flatten(),
             )
@@ -282,19 +289,23 @@ fun processLexicalDeclarations(
                     false
                 }
             }
+            is MvModuleBlock -> processor.matchAll(scope.itemImportNames())
             is MvModuleDef -> processor.matchAll(
                 listOf(
-                    scope.itemImportsWithoutAliases(),
-                    scope.itemImportsAliases(),
+//                    scope.itemImports(),
+//                    scope.itemImportsWithoutAliases(),
+//                    scope.itemImportsAliases(),
                     scope.structs(),
                 ).flatten(),
             )
-            is MvScriptDef -> processor.matchAll(
-                listOf(
-                    scope.itemImportsWithoutAliases(),
-                    scope.itemImportsAliases(),
-                ).flatten(),
-            )
+            is MvScriptBlock -> processor.matchAll(scope.itemImportNames())
+//            is MvScriptDef -> processor.matchAll(
+//                listOf(
+////                    scope.itemImports(),
+////                    scope.itemImportsWithoutAliases(),
+////                    scope.itemImportsAliases(),
+//                ).flatten(),
+//            )
             is MvApplySchemaStmt -> {
                 val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
                 val patternTypeParams = toPatterns.flatMap { it.typeParameters }
@@ -318,8 +329,9 @@ fun processLexicalDeclarations(
         Namespace.MODULE -> when (scope) {
             is MvUseStmtOwner -> processor.matchAll(
                 listOf(
-                    scope.moduleImports(),
-                    scope.moduleImportAliases(),
+                    scope.moduleImportNames(),
+//                    scope.moduleImportsWithoutAliases(),
+//                    scope.moduleImportAliases(),
                     scope.selfItemImports(),
                 ).flatten(),
             )

@@ -46,4 +46,17 @@ abstract class MvTestBase : BasePlatformTestCase(),
     protected fun FileTree.prepareTestProjectFromFixture(): TestProject = prepareTestProject(myFixture)
     protected fun FileTree.createAndOpenFileWithCaretMarker(): TestProject =
         createAndOpenFileWithCaretMarker(myFixture)
+
+    protected open fun checkEditorAction(
+        @Language("Rust") before: String,
+        @Language("Rust") after: String,
+        actionId: String,
+        trimIndent: Boolean = true,
+    ) {
+        fun String.trimIndentIfNeeded(): String = if (trimIndent) trimIndent() else this
+
+        checkByText(before.trimIndentIfNeeded(), after.trimIndentIfNeeded()) {
+            myFixture.performEditorAction(actionId)
+        }
+    }
 }

@@ -45,7 +45,7 @@ class MvPsiFactory(private val project: Project) {
         createFromText("module _IntellijPreludeDummy { $text }")
             ?: error("")
 
-    fun itemImport(text: String): MvItemUse {
+    fun itemUse(text: String): MvItemUse {
         return createFromText("module _IntellijPreludeDummy { use 0x1::Module::$text; }")
             ?: error("Failed to create an item import from text: `$text`")
     }

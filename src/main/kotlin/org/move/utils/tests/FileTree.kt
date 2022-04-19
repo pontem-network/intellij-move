@@ -15,7 +15,7 @@ import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import org.intellij.lang.annotations.Language
-import org.move.lang.core.psi.MvReferenceElement
+import org.move.lang.core.resolve.MvReferenceElement
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.openapiext.document
 import org.move.openapiext.fullyRefreshDirectory

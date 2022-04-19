@@ -173,7 +173,7 @@ abstract class MvModuleDefMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node)
         )
     }
 
-    override val useStmts: List<MvUseStmt>
-        get() =
-            moduleBlock?.useStmtList.orEmpty()
+//    override val useStmts: List<MvUseStmt>
+//        get() =
+//            moduleBlock?.useStmtList.orEmpty()
 }

@@ -4,7 +4,7 @@ import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "212"
+val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "221"
 val publishingToken = System.getenv("JB_PUB_TOKEN")
 
 val baseProperties = "base-gradle.properties"
@@ -20,7 +20,7 @@ fun prop(key: String): String = props[key].toString()
 val kotlinVersion = "1.6.20"
 
 val pluginJarName = "intellij-move-$propsVersion"
-val pluginVersion = "1.6.2"
+val pluginVersion = "1.7.0"
 val pluginGroup = "org.move"
 
 group = pluginGroup

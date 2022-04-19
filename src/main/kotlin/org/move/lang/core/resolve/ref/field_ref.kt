@@ -1,6 +1,6 @@
 package org.move.lang.core.resolve.ref
 
-import org.move.lang.core.psi.MvMandatoryReferenceElement
+import org.move.lang.core.resolve.MvMandatoryReferenceElement
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvStructLitField
 import org.move.lang.core.psi.MvStructPatField

@@ -67,6 +67,9 @@
                                implementationClass="org.move.lang.MoveParserDefinition"/>
         <lang.documentationProvider language="Move"
                                     implementationClass="org.move.ide.docs.MvDocumentationProvider"/>
+
+        <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.MvImportOptimizer"/>
+
         <!--        <stubElementTypeHolder class="org.move.lang.MvElementTypes"/>-->
         <gotoSymbolContributor implementation="org.move.ide.navigation.MvSymbolNavigationContributor"/>
         <gotoClassContributor implementation="org.move.ide.navigation.MvStructNavigationContributor"/>
@@ -200,6 +203,10 @@
                          displayName="Unused struct type parameter"
                          enabledByDefault="true" level="ERROR"
                          implementationClass="org.move.ide.inspections.PhantomTypeParameterInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Unused import"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.MvUnusedImportInspection" />
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>

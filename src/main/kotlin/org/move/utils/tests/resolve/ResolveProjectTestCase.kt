@@ -3,7 +3,7 @@ package org.move.utils.tests.resolve
 import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.MvReferenceElement
+import org.move.lang.core.resolve.MvReferenceElement
 import org.move.openapiext.findVirtualFile
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestCase
