@@ -109,7 +109,7 @@ private fun processModules(
     val visitor = object : MvVisitor() {
         override fun visitModuleDef(mod: MvModuleDef) {
             if (resolved) return
-            val modAddress = mod.definedAddressRef()?.toAddress(moveProject)
+            val modAddress = mod.address()?.toAddress(moveProject)
             if (modAddress == sourceAddress) {
                 resolved = processor.match(mod)
             }
@@ -327,7 +327,7 @@ fun processLexicalDeclarations(
             else -> false
         }
         Namespace.MODULE -> when (scope) {
-            is MvUseStmtOwner -> processor.matchAll(
+            is MvItemsOwner -> processor.matchAll(
                 listOf(
                     scope.moduleImportNames(),
 //                    scope.moduleImportsWithoutAliases(),

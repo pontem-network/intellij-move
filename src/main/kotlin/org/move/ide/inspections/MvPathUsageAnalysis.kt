@@ -11,13 +11,13 @@ data class PathUsageMap(
 
 private val PATH_USAGE_KEY: Key<CachedValue<PathUsageMap>> = Key.create("PATH_USAGE_KEY")
 
-val MvUseStmtOwner.pathUsageMap: PathUsageMap
+val MvItemsOwner.pathUsageMap: PathUsageMap
     get() = CachedValuesManager.getCachedValue(this, PATH_USAGE_KEY) {
         val usages = calculatePathUsages(this)
         CachedValueProvider.Result.create(usages, PsiModificationTracker.MODIFICATION_COUNT)
     }
 
-private fun calculatePathUsages(owner: MvUseStmtOwner): PathUsageMap {
+private fun calculatePathUsages(owner: MvItemsOwner): PathUsageMap {
     val usages = hashMapOf<String, MutableSet<MvNamedElement>>()
 
     for (child in owner.children) {

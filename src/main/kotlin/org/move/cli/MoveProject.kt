@@ -1,8 +1,10 @@
 package org.move.cli
 
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
@@ -157,6 +159,15 @@ data class MoveProject(
     fun getNamedAddress(name: String): Address.Named? {
         val addressVal = addresses()[name] ?: return null
         return Address.Named(name, addressVal.value)
+    }
+
+    fun searchScope(scope: GlobalScope = GlobalScope.MAIN): GlobalSearchScope {
+        val folders = moduleFolders(scope).toSet()
+        return object : GlobalSearchScope(project) {
+            override fun contains(file: VirtualFile) = file in folders
+            override fun isSearchInModuleContent(aModule: Module) = true
+            override fun isSearchInLibraries() = true
+        }
     }
 
     fun processModuleFiles(scope: GlobalScope, processFile: (MvModuleFile) -> Boolean) {

@@ -57,6 +57,7 @@
                   extensions="move"
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
+        <fileBasedIndex implementation="org.move.ide.inspections.imports.MvNamedElementIndex" />
 
         <configurationType
                 implementation="org.move.cli.runconfig.MoveRunConfigurationType"/>
@@ -156,7 +157,6 @@
         <declarationRangeHandler
                 key="org.move.lang.core.psi.MvFunction"
                 implementationClass="org.move.ide.navigation.FunctionDeclarationRangeHandler"/>
-        <!--        <stubIndex implementation="org.move.lang.core.stubs.index.MvNamedElementIndex"/>-->
 
         <!--        <localInspection language="Move" groupPath="Move" groupName="Naming"-->
         <!--                         displayName="Attempt to override a built-in function"-->

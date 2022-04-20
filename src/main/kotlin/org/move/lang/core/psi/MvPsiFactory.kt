@@ -3,6 +3,7 @@ package org.move.lang.core.psi
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
+import com.intellij.psi.PsiParserFacade
 import org.move.lang.MvFile
 import org.move.lang.MoveFileType
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
@@ -45,7 +46,12 @@ class MvPsiFactory(private val project: Project) {
         createFromText("module _IntellijPreludeDummy { $text }")
             ?: error("")
 
-    fun itemUse(text: String): MvItemUse {
+    fun useStmt(text: String): MvUseStmt {
+        return createFromText("module _IntellijPreludeDummy { use $text; }")
+            ?: error("Failed to create an item import from text: `$text`")
+    }
+
+    fun useItem(text: String): MvItemUse {
         return createFromText("module _IntellijPreludeDummy { use 0x1::Module::$text; }")
             ?: error("Failed to create an item import from text: `$text`")
     }
@@ -77,6 +83,11 @@ class MvPsiFactory(private val project: Project) {
     fun specFunction(text: String, moduleName: String = "_Dummy"): MvSpecFunction =
         createFromText("module $moduleName { $text } ")
             ?: error("Failed to create a function from text: `$text`")
+
+    fun createWhitespace(ws: String): PsiElement =
+        PsiParserFacade.SERVICE.getInstance(project).createWhiteSpaceFromText(ws)
+
+    fun createNewline(): PsiElement = createWhitespace("\n")
 
     private inline fun <reified T : MvElement> createFromText(code: CharSequence): T? {
         val dummyFile = PsiFileFactory.getInstance(project)

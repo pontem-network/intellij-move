@@ -6,8 +6,7 @@ import com.intellij.psi.PsiFile
 import org.move.ide.inspections.isUsed
 import org.move.ide.intentions.removeCurlyBraces
 import org.move.lang.MvFile
-import org.move.lang.core.psi.MvUseStmtOwner
-import org.move.lang.core.psi.psiFactory
+import org.move.lang.core.psi.MvItemsOwner
 import org.move.lang.modules
 
 class MvImportOptimizer: ImportOptimizer {
@@ -29,7 +28,7 @@ class MvImportOptimizer: ImportOptimizer {
         }
     }
 
-    fun optimizeImports(useStmtOwner: MvUseStmtOwner) {
+    fun optimizeImports(useStmtOwner: MvItemsOwner) {
         val useStmts = useStmtOwner.useStmtList
         for (useStmt in useStmts) {
             val moduleUse = useStmt.moduleUse

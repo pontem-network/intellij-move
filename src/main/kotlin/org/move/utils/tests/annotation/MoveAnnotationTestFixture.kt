@@ -140,9 +140,21 @@ class MvAnnotationTestFixture(
         configureByText(before)
         codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
         applyQuickFix(fixName)
-
-//        configureByText(after)
         codeInsightFixture.checkResult(replaceCaretMarker(after.trimIndent()))
-//        codeInsightFixture.checkHighlighting(true, false, false, false)
     }
+
+//    fun checkFixByFileTree(
+//        fixName: String,
+//        before: FileTreeBuilder.() -> Unit,
+//        after: FileTreeBuilder.() -> Unit,
+//        checkWarn: Boolean = true,
+//        checkInfo: Boolean = false,
+//        checkWeakWarn: Boolean = false,
+//    ) {
+//        codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
+//        applyQuickFix(fixName)
+//        codeInsightFixture.checkResult(replaceCaretMarker(after.trimIndent()))
+//    }
+
+
 }

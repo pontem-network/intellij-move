@@ -50,7 +50,7 @@ class MvUnusedImportInspection: MvLocalInspectionTool() {
 
 fun MvItemUse.isUsed(): Boolean {
     if (!this.resolvable) return true
-    val owner = this.ancestorStrict<MvUseStmtOwner>() ?: return true
+    val owner = this.ancestorStrict<MvItemsOwner>() ?: return true
     val usageMap = owner.pathUsageMap
     return isItemUseUsed(this, usageMap)
 }
@@ -58,7 +58,7 @@ fun MvItemUse.isUsed(): Boolean {
 fun MvModuleUse.isUsed(): Boolean {
     if (this.fqModuleRef?.resolvable != true) return true
 
-    val owner = this.parentOfType<MvUseStmt>()?.parentOfType<MvUseStmtOwner>() ?: return true
+    val owner = this.parentOfType<MvUseStmt>()?.parentOfType<MvItemsOwner>() ?: return true
     val usageMap = owner.pathUsageMap
     return isModuleUseItemUsed(this, usageMap)
 }
@@ -66,7 +66,7 @@ fun MvModuleUse.isUsed(): Boolean {
 fun MvModuleItemUse.isUsed(): Boolean {
     if (this.itemUse?.resolvable != true) return true
 
-    val owner = this.parentOfType<MvUseStmt>()?.parentOfType<MvUseStmtOwner>() ?: return true
+    val owner = this.parentOfType<MvUseStmt>()?.parentOfType<MvItemsOwner>() ?: return true
     val usageMap = owner.pathUsageMap
     return isUseItemUsed(this, usageMap)
 }

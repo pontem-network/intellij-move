@@ -47,6 +47,6 @@ fun MvMultiItemUse.removeCurlyBraces() {
     if (aliasName != null) {
         newText += " as $aliasName"
     }
-    val newItemUse = psiFactory.itemUse(newText)
+    val newItemUse = psiFactory.useItem(newText)
     this.replace(newItemUse)
 }

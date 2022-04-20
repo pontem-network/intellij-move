@@ -4,7 +4,7 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.MvVisitor
-import org.move.lang.core.psi.ext.definedAddressRef
+import org.move.lang.core.psi.ext.address
 
 class InvalidModuleDeclarationInspection : MvLocalInspectionTool() {
     override val isSyntaxOnly: Boolean get() = true
@@ -13,7 +13,7 @@ class InvalidModuleDeclarationInspection : MvLocalInspectionTool() {
         return object : MvVisitor() {
             override fun visitModuleDef(mod: MvModuleDef) {
                 val identifier = mod.identifier ?: return
-                if (mod.definedAddressRef() == null) {
+                if (mod.address() == null) {
                     holder.registerProblem(
                         identifier,
                         "Invalid module declaration. The module does not have a specified address / address block.",

@@ -1,11 +1,17 @@
 package org.move.ide.inspections
 
+import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.Project
+import org.move.ide.inspections.imports.AutoImportFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 
 class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
+    var ignoreWithoutQuickFix: Boolean = true
+
     override val isSyntaxOnly get() = false
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
@@ -22,7 +28,8 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
                 holder.registerProblem(
                     moduleRef,
                     "Unresolved module reference: `${moduleRef.referenceName}`",
-                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL,
+                    AutoImportFix(moduleRef)
                 )
             }
         }
@@ -43,7 +50,8 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
                     holder.registerProblem(
                         moduleRef,
                         "Unresolved module reference: `${moduleRef.referenceName}`",
-                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL,
+                        AutoImportFix(moduleRef)
                     )
                     return
                 }
@@ -57,7 +65,8 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
                 holder.registerProblem(
                     highlightedElement,
                     description,
-                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL,
+                    AutoImportFix(path)
                 )
             }
         }

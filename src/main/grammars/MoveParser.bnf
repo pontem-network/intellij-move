@@ -164,7 +164,7 @@ ScriptDef ::= script ScriptBlock {
 ScriptBlock ::= '{' ScriptBlockItems '}' {
     pin = 1
     implements = [
-        "org.move.lang.core.psi.MvUseStmtOwner"
+        "org.move.lang.core.psi.MvItemsOwner"
     ]
 }
 private ScriptBlockItems ::= ScriptItem*
@@ -200,6 +200,7 @@ ModuleDef ::= Attr* module (AddressRef '::')? IDENTIFIER ModuleBlock
     pin = "module"
     name = "module declaration"
     implements = [
+        "org.move.lang.core.psi.MvQualifiedNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
     ]
@@ -211,7 +212,7 @@ ModuleBlock ::= '{' ModuleBlockItems '}'
 {
     pin = 1
     implements = [
-        "org.move.lang.core.psi.MvUseStmtOwner"
+        "org.move.lang.core.psi.MvItemsOwner"
     ]
 }
 private ModuleBlockItems ::= ModuleItem*
@@ -334,8 +335,7 @@ fake Function ::= Attr* native? FunctionVisibilityModifier? native?
                         (';' | CodeBlock)?
 {
     implements = [
-//        "org.move.lang.core.psi.MvNameIdentifierOwner"
-//        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.move.lang.core.psi.MvQualifiedNamedElement"
         "org.move.lang.core.psi.MvFunctionLike"
     ]
     mixin = "org.move.lang.core.psi.ext.MvFunctionMixin"
@@ -706,7 +706,7 @@ CodeBlockExpr ::= CodeBlock
 CodeBlock ::= '{' CodeBlock_items '}'
 {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvUseStmtOwner" ]
+    implements = [ "org.move.lang.core.psi.MvItemsOwner" ]
     mixin = "org.move.lang.core.psi.ext.MvCodeBlockMixin"
 }
 

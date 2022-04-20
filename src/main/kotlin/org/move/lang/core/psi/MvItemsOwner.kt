@@ -1,28 +1,34 @@
 package org.move.lang.core.psi
 
-import org.move.lang.core.psi.ext.definedAddressRef
+import org.move.lang.core.psi.ext.address
 
-interface MvUseStmtOwner : MvElement {
+interface MvItemsOwner : MvElement {
     val useStmtList: List<MvUseStmt>
 }
 
-fun MvUseStmtOwner.moduleImports(): List<MvModuleUse> =
+fun MvItemsOwner.items(): Sequence<MvElement> {
+    return generateSequence(firstChild) { it.nextSibling }
+        .filterIsInstance<MvElement>()
+        .filter { it !is MvAttr }
+}
+
+fun MvItemsOwner.moduleImports(): List<MvModuleUse> =
     useStmtList.mapNotNull { it.moduleUse }
 
-fun MvUseStmtOwner.moduleImportNames(): List<MvNamedElement> =
+fun MvItemsOwner.moduleImportNames(): List<MvNamedElement> =
     listOf(
         moduleImportsNoAliases(),
         moduleImportsAliases(),
     ).flatten()
 
-fun MvUseStmtOwner.moduleImportsNoAliases(): List<MvModuleUse> =
+fun MvItemsOwner.moduleImportsNoAliases(): List<MvModuleUse> =
     moduleImports()
         .filter { it.useAlias == null }
 
-fun MvUseStmtOwner.moduleImportsAliases(): List<MvUseAlias> =
+fun MvItemsOwner.moduleImportsAliases(): List<MvUseAlias> =
     moduleImports().mapNotNull { it.useAlias }
 
-fun MvUseStmtOwner.itemImports(): List<MvItemUse> =
+fun MvItemsOwner.itemImports(): List<MvItemUse> =
     useStmtList
         .mapNotNull { it.moduleItemUse }
         .flatMap {
@@ -33,27 +39,26 @@ fun MvUseStmtOwner.itemImports(): List<MvItemUse> =
                 it.multiItemUse?.itemUseList.orEmpty()
         }
 
-fun MvUseStmtOwner.itemImportNames(): List<MvNamedElement> =
+fun MvItemsOwner.itemImportNames(): List<MvNamedElement> =
     listOf(
         itemImportsNoAliases(),
         itemImportsAliases(),
     ).flatten()
 
-fun MvUseStmtOwner.itemImportsNoAliases(): List<MvItemUse> =
+fun MvItemsOwner.itemImportsNoAliases(): List<MvItemUse> =
     itemImports().filter { it.useAlias == null }
 
-fun MvUseStmtOwner.itemImportsAliases(): List<MvUseAlias>
-    = itemImports().mapNotNull { it.useAlias }
+fun MvItemsOwner.itemImportsAliases(): List<MvUseAlias> = itemImports().mapNotNull { it.useAlias }
 
-fun MvUseStmtOwner.selfItemImports(): List<MvItemUse> =
+fun MvItemsOwner.selfItemImports(): List<MvItemUse> =
     itemImports()
         .filter { it.useAlias == null && it.text == "Self" }
 
-fun MvUseStmtOwner.itemImportsWithoutAliases(): List<MvItemUse> =
+fun MvItemsOwner.itemImportsWithoutAliases(): List<MvItemUse> =
     itemImports().filter { it.useAlias == null }
 
 
-fun MvUseStmtOwner.shortestPathIdentText(item: MvNamedElement): String? {
+fun MvItemsOwner.shortestPathIdentText(item: MvNamedElement): String? {
     val itemName = item.name ?: return null
     // local
     if (this == item.containingImportsOwner) return itemName
@@ -72,6 +77,6 @@ fun MvUseStmtOwner.shortestPathIdentText(item: MvNamedElement): String? {
             return "$moduleName::$itemName"
         }
     }
-    val addressName = module.definedAddressRef()?.text ?: return null
+    val addressName = module.address()?.text ?: return null
     return "$addressName::$moduleName::$itemName"
 }
