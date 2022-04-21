@@ -1,8 +1,8 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.annotation.InspectionsTestCase
+import org.move.utils.tests.annotation.InspectionTestBase
 
-class MvUnusedImportInspectionTest: InspectionsTestCase(MvUnusedImportInspection::class) {
+class MvUnusedImportInspectionTest: InspectionTestBase(MvUnusedImportInspection::class) {
     fun `test no error`() = checkWarnings("""
 module 0x1::M {
     struct MyItem {}

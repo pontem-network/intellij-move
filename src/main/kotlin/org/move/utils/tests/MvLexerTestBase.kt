@@ -14,8 +14,8 @@ import org.move.utils.tests.base.pathToGoldTestFile
 import org.move.utils.tests.base.pathToSourceTestFile
 import java.io.IOException
 
-abstract class MoveLexerTestCase : LexerTestCase(),
-                                   MvTestCase {
+abstract class MvLexerTestBase : LexerTestCase(),
+                                 MvTestCase {
     override fun getDirPath(): String = throw UnsupportedOperationException()
 
     override fun getTestDataPath(): String = "org/move/lang/lexer"

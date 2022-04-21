@@ -9,10 +9,10 @@ import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.openapiext.toXmlString
-import org.move.utils.tests.MvProjectTestCase
+import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.base.TestCase
 
-class TestRunConfigurationProducerTest : MvProjectTestCase() {
+class TestRunConfigurationProducerTest : MvProjectTestBase() {
     fun `test test producer works for annotated functions`() {
         val testProject = testProjectFromFileTree(
             """

@@ -20,6 +20,7 @@ import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.JDOMUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
@@ -42,6 +43,9 @@ fun fullyRefreshDirectory(directory: VirtualFile) {
 
 fun VirtualFile.toPsiFile(project: Project): PsiFile? =
     PsiManager.getInstance(project).findFile(this)
+
+fun VirtualFile.toPsiDirectory(project: Project): PsiDirectory? =
+    PsiManager.getInstance(project).findDirectory(this)
 
 val PsiFile.document: Document?
     get() = PsiDocumentManager.getInstance(project).getDocument(this)

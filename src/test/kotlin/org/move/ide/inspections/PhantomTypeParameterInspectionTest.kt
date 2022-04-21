@@ -1,8 +1,8 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.annotation.InspectionsTestCase
+import org.move.utils.tests.annotation.InspectionTestBase
 
-class PhantomTypeParameterInspectionTest: InspectionsTestCase(PhantomTypeParameterInspection::class) {
+class PhantomTypeParameterInspectionTest: InspectionTestBase(PhantomTypeParameterInspection::class) {
     fun `test no inspection if type parameter is used`() = checkErrors("""
     module 0x1::M {
         struct S<T> {

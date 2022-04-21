@@ -1,9 +1,9 @@
 package org.move.cli
 
 import org.move.openapiext.toPsiFile
-import org.move.utils.tests.MvProjectTestCase
+import org.move.utils.tests.MvProjectTestBase
 
-class ProjectAddressesServiceTest: MvProjectTestCase() {
+class ProjectAddressesServiceTest: MvProjectTestBase() {
     fun `test directory index cached correctly`() {
         val testProject = testProjectFromFileTree {
             moveToml()

@@ -15,6 +15,9 @@ import com.intellij.testFramework.fixtures.impl.BaseFixture
 import junit.framework.TestCase
 import org.intellij.lang.annotations.Language
 import org.move.ide.annotator.MvAnnotator
+import org.move.utils.tests.FileTreeBuilder
+import org.move.utils.tests.createAndOpenFileWithCaretMarker
+import org.move.utils.tests.fileTree
 import kotlin.reflect.KClass
 
 class MvAnnotationTestFixture(
@@ -40,16 +43,13 @@ class MvAnnotationTestFixture(
 
     private fun replaceCaretMarker(text: String) = text.replace("/*caret*/", "<caret>")
 
-    fun checkHighlighting(text: String, ignoreExtraHighlighting: Boolean) = checkByText(
+    fun checkHighlighting(text: String) = checkByText(
         text,
         checkWarn = false,
         checkWeakWarn = false,
         checkInfo = false,
-        ignoreExtraHighlighting = ignoreExtraHighlighting
+        ignoreExtraHighlighting = true
     )
-
-    fun checkInfo(text: String) =
-        checkByText(text, checkWarn = false, checkWeakWarn = false, checkInfo = true)
 
     fun checkWarnings(text: String) =
         checkByText(text, checkWarn = true, checkWeakWarn = true, checkInfo = false)
@@ -59,6 +59,21 @@ class MvAnnotationTestFixture(
 
     private fun configureByText(text: String) {
         codeInsightFixture.configureByText("main.move", replaceCaretMarker(text.trimIndent()))
+    }
+
+    fun checkFixByFileTree(
+        fixName: String,
+        before: FileTreeBuilder.() -> Unit,
+        after: String,
+        checkWarn: Boolean = true,
+        checkInfo: Boolean = false,
+        checkWeakWarn: Boolean = false,
+    ) {
+        fileTree(before).createAndOpenFileWithCaretMarker(codeInsightFixture)
+
+        codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
+        applyQuickFix(fixName)
+        codeInsightFixture.checkResult(replaceCaretMarker(after.trimIndent()))
     }
 
     fun checkByText(
@@ -100,7 +115,6 @@ class MvAnnotationTestFixture(
         checkInfo: Boolean,
         checkWeakWarn: Boolean,
         ignoreExtraHighlighting: Boolean,
-//        configure: (String) -> Unit,
     ) {
         check(text, checkWarn, checkInfo, checkWeakWarn, ignoreExtraHighlighting, this::configureByText)
         check(
@@ -115,20 +129,6 @@ class MvAnnotationTestFixture(
         codeInsightFixture.launchAction(action)
     }
 
-//    protected fun checkFix(
-//        fixName: String,
-//        before: String,
-//        after: String,
-//        configure: (String) -> Unit,
-//        checkBefore: () -> Unit,
-//        checkAfter: (String) -> Unit,
-//    ) {
-//        configure(before)
-//        checkBefore()
-//        applyQuickFix(fixName)
-//        checkAfter(after)
-//    }
-
     fun checkFixByText(
         fixName: String,
         before: String,
@@ -142,19 +142,4 @@ class MvAnnotationTestFixture(
         applyQuickFix(fixName)
         codeInsightFixture.checkResult(replaceCaretMarker(after.trimIndent()))
     }
-
-//    fun checkFixByFileTree(
-//        fixName: String,
-//        before: FileTreeBuilder.() -> Unit,
-//        after: FileTreeBuilder.() -> Unit,
-//        checkWarn: Boolean = true,
-//        checkInfo: Boolean = false,
-//        checkWeakWarn: Boolean = false,
-//    ) {
-//        codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
-//        applyQuickFix(fixName)
-//        codeInsightFixture.checkResult(replaceCaretMarker(after.trimIndent()))
-//    }
-
-
 }

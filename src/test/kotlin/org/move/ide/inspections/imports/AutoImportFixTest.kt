@@ -2,9 +2,9 @@ package org.move.ide.inspections.imports
 
 import org.intellij.lang.annotations.Language
 import org.move.ide.inspections.MvUnresolvedReferenceInspection
-import org.move.utils.tests.annotation.InspectionsTestCase
+import org.move.utils.tests.annotation.InspectionTestBase
 
-class AutoImportFixTest : InspectionsTestCase(MvUnresolvedReferenceInspection::class) {
+class AutoImportFixTest : InspectionTestBase(MvUnresolvedReferenceInspection::class) {
     fun `test method`() = checkAutoImportFixByText(
         """
 module 0x1::M {
@@ -54,6 +54,17 @@ script {
 }
     """
     )
+
+    fun `test unavailable if unresolved member`() = checkAutoImportFixIsUnavailable("""
+module 0x1::M {}
+module 0x1::Main {
+    use 0x1::M;
+    
+    fun main() {
+        M::<error descr="Unresolved reference: `value`">/*caret*/value</error>();
+    }
+}        
+    """)
 
     private fun checkAutoImportFixByText(
         @Language("Move") before: String,

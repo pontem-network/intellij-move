@@ -2,10 +2,9 @@ package org.move.utils.tests.annotation
 
 import com.intellij.codeInspection.InspectionProfileEntry
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.FileTreeBuilder
 import kotlin.reflect.KClass
 
-abstract class InspectionsTestCase(
+abstract class InspectionTestBase(
     private val inspectionClass: KClass<out InspectionProfileEntry>
 ) : MvAnnotationTestCase() {
 
@@ -39,30 +38,4 @@ abstract class InspectionsTestCase(
         checkWeakWarn: Boolean = false,
     ) =
         annotationFixture.checkFixByText(fixName, before, after, checkWarn, checkInfo, checkWeakWarn)
-
-//    protected fun checkFixByFileTree(
-//        fixName: String,
-//        before: FileTreeBuilder.() -> Unit,
-//        after: FileTreeBuilder.() -> Unit,
-//        checkWarn: Boolean = true,
-//        checkInfo: Boolean = false,
-//        checkWeakWarn: Boolean = false,
-//    ) =
-//        annotationFixture.checkFixByFileTree(fixName, before, after, checkWarn, checkInfo, checkWeakWarn)
-
-
-
-//    protected lateinit var inspection: InspectionProfileEntry
-
-//    override fun setUp() {
-//        super.setUp()
-//        inspection = annotationFixture.enabledInspections[0]
-//    }
-
-//    private fun enableInspection() = myFixture.enableInspections(inspection)
-//
-//    override fun configureByText(text: String) {
-//        super.configureByText(text)
-//        enableInspection()
-//    }
 }

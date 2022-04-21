@@ -1,8 +1,8 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.annotation.InspectionsTestCase
+import org.move.utils.tests.annotation.InspectionTestBase
 
-class MvMissingAcquiresInspectionTest: InspectionsTestCase(MvMissingAcquiresInspection::class) {
+class MvMissingAcquiresInspectionTest: InspectionTestBase(MvMissingAcquiresInspection::class) {
     fun `test no error when acquired type cannot be inferred`() = checkErrors("""
     module 0x1::M {
         struct Loan has key {}

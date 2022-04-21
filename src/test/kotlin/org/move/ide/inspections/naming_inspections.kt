@@ -1,12 +1,11 @@
 package org.move.ide.inspections
 
-import org.move.ide.inspections.FieldInitShorthandInspection
 import org.move.ide.inspections.lints.MvConstNamingInspection
 import org.move.ide.inspections.lints.MvLocalBindingNamingInspection
 import org.move.ide.inspections.lints.MvStructNamingInspection
-import org.move.utils.tests.annotation.InspectionsTestCase
+import org.move.utils.tests.annotation.InspectionTestBase
 
-class MvConstNamingInspectionTest: InspectionsTestCase(MvConstNamingInspection::class) {
+class MvConstNamingInspectionTest: InspectionTestBase(MvConstNamingInspection::class) {
     fun `test constants`() = checkByText("""
 module 0x1::M {
     const CONST_OK: u8 = 1;
@@ -15,7 +14,7 @@ module 0x1::M {
     """)
 }
 
-class MvStructNamingInspectionTest: InspectionsTestCase(MvStructNamingInspection::class) {
+class MvStructNamingInspectionTest: InspectionTestBase(MvStructNamingInspection::class) {
     fun `test structs`() = checkByText("""
 module 0x1::M {
     struct S {}
@@ -24,7 +23,7 @@ module 0x1::M {
     """)
 }
 
-class MvLocalBindingNamingInspectionTest: InspectionsTestCase(MvLocalBindingNamingInspection::class) {
+class MvLocalBindingNamingInspectionTest: InspectionTestBase(MvLocalBindingNamingInspection::class) {
     fun `test function parameter`() = checkByText("""
 module 0x1::M {
     fun m(<warning descr="Invalid local variable name `COLL`. Local variable names must start with 'a'..'z'">COLL</warning>: u8) {}

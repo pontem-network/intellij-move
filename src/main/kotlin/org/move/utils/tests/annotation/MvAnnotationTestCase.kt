@@ -19,11 +19,7 @@ abstract class MvAnnotationTestCase : MvTestBase() {
 
     protected abstract fun createAnnotationFixture(): MvAnnotationTestFixture
 
-    fun checkHighlighting(text: String, ignoreExtraHighlighting: Boolean = true) =
-        annotationFixture.checkHighlighting(
-            text,
-            ignoreExtraHighlighting
-        )
+    fun checkHighlighting(text: String) = annotationFixture.checkHighlighting(text)
 
     fun checkErrors(@Language("Move") text: String) = annotationFixture.checkErrors(text)
     fun checkWarnings(@Language("Move") text: String) = annotationFixture.checkWarnings(text)

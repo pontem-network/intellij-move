@@ -1,8 +1,8 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.annotation.InspectionsTestCase
+import org.move.utils.tests.annotation.InspectionTestBase
 
-class MvUnresolvedReferenceInspectionTest : InspectionsTestCase(MvUnresolvedReferenceInspection::class) {
+class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedReferenceInspection::class) {
     fun `test unresolved variable`() = checkByText("""
         module 0x1::M {
             fun main() {

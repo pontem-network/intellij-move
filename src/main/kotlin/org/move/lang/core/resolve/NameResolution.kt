@@ -2,7 +2,7 @@ package org.move.lang.core.resolve
 
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
-import org.move.cli.GlobalScope
+import org.move.cli.MoveScope
 import org.move.lang.MvFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -133,7 +133,7 @@ fun processFQModuleRef(
     if (stopped) return
 
     val moveProject = currentFile.moveProject ?: return
-    moveProject.processModuleFiles(GlobalScope.MAIN) { moduleFile ->
+    moveProject.processModuleFiles(MoveScope.MAIN) { moduleFile ->
         // skip current file as it's processed already
         if (moduleFile.file.toNioPathOrNull() == currentFile.toNioPathOrNull())
             return@processModuleFiles true

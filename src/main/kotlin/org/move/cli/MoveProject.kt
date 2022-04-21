@@ -1,10 +1,10 @@
 package org.move.cli
 
-import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
@@ -14,11 +14,12 @@ import org.move.lang.toMvFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
 import org.move.openapiext.stringValue
+import org.move.openapiext.toPsiDirectory
 import org.move.stdext.deepIterateChildrenRecursivery
 import java.nio.file.Path
 import java.util.*
 
-enum class GlobalScope {
+enum class MoveScope {
     MAIN, DEV;
 }
 
@@ -94,7 +95,7 @@ data class MoveProject(
     fun testsDir(): Path? = projectDirPath("tests")
     fun scriptsDir(): Path? = projectDirPath("scripts")
 
-    fun moduleFolders(scope: GlobalScope): List<VirtualFile> {
+    fun moduleFolders(scope: MoveScope): List<VirtualFile> {
         val q = ArrayDeque<ProjectInfo>()
         val folders = mutableListOf<VirtualFile>()
         val projectInfo = this.projectInfo ?: return emptyList()
@@ -161,16 +162,17 @@ data class MoveProject(
         return Address.Named(name, addressVal.value)
     }
 
-    fun searchScope(scope: GlobalScope = GlobalScope.MAIN): GlobalSearchScope {
-        val folders = moduleFolders(scope).toSet()
-        return object : GlobalSearchScope(project) {
-            override fun contains(file: VirtualFile) = file in folders
-            override fun isSearchInModuleContent(aModule: Module) = true
-            override fun isSearchInLibraries() = true
+    fun searchScope(moveScope: MoveScope = MoveScope.MAIN): GlobalSearchScope {
+        var searchScope = GlobalSearchScope.EMPTY_SCOPE
+        for (folder in moduleFolders(moveScope)) {
+            val dir = folder.toPsiDirectory(project) ?: continue
+            val dirScope = GlobalSearchScopes.directoryScope(dir, true)
+            searchScope = searchScope.uniteWith(dirScope)
         }
+        return searchScope
     }
 
-    fun processModuleFiles(scope: GlobalScope, processFile: (MvModuleFile) -> Boolean) {
+    fun processModuleFiles(scope: MoveScope, processFile: (MvModuleFile) -> Boolean) {
         val folders = moduleFolders(scope)
         var stopped = false;
         for (folder in folders) {
