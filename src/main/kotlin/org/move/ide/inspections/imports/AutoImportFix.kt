@@ -9,11 +9,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.move.lang.MvFile
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.ancestorStrict
-import org.move.lang.core.psi.ext.childrenOfType
-import org.move.lang.core.psi.ext.hasAncestor
-import org.move.lang.core.psi.ext.names
+import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.MslScope
 import org.move.lang.core.resolve.MvReferenceElement
+import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.moveProject
 import org.move.openapiext.checkWriteAccessAllowed
 import org.move.openapiext.common.isUnitTestMode
@@ -34,37 +34,21 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
     data class Context(val candidates: List<ImportCandidate>)
 
     fun invoke(project: Project) {
-        val element = startElement as? MvReferenceElement ?: return
-        if (element.reference == null) return
-        if (element.hasAncestor<MvUseStmt>()) return
+        val refElement = startElement as? MvReferenceElement ?: return
+        if (refElement.reference == null) return
+        if (refElement.hasAncestor<MvUseStmt>()) return
 
-        val name = element.referenceName ?: return
-        val candidates = getImportCandidates(element, name)
+        val name = refElement.referenceName ?: return
+        val candidates = getImportCandidates(ImportContext.from(refElement), name)
         if (candidates.isEmpty()) return
-
-//        val moveProject = element.moveProject ?: return
-//        val searchScope = moveProject.searchScope()
-//        val files = MvNamedElementIndex
-//            .findFilesByElementName(project, name, searchScope)
-//            .toMutableList()
-//        if (isUnitTestMode) {
-//            // always add current file in tests
-//            val currentFile = element.containingFile as? MvFile ?: return
-//            files.add(0, currentFile)
-//        }
-//        val candidates = files
-//            .flatMap { it.qualifiedItems() }
-//            .filter { it.name == name }
-//            .mapNotNull { el -> el.usePath?.let { ImportCandidate(el, it) } }
-//        if (candidates.isEmpty()) return
 
         if (candidates.size == 1) {
             project.runWriteCommandAction {
-                candidates.first().import(element)
+                candidates.first().import(refElement)
             }
         } else {
             DataManager.getInstance().dataContextFromFocusAsync.onSuccess {
-                chooseItemAndImport(project, it, candidates, element)
+                chooseItemAndImport(project, it, candidates, refElement)
             }
         }
     }
@@ -92,21 +76,13 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
 
             // TODO: no auto-import if name in scope, but cannot be resolved
 
-            val candidates = when (refElement) {
-                is MvModuleRef -> {
-                    val refName = refElement.referenceName ?: return null
-                    getImportCandidates(refElement, refName)
-                }
-                is MvPath -> {
-                    val refName = refElement.referenceName ?: return null
-                    getImportCandidates(refElement, refName)
-                }
-                else -> return null
-            }
-            return Context(candidates.toList())
+            val refName = refElement.referenceName ?: return null
+            val candidates = getImportCandidates(ImportContext.from(refElement), refName)
+            return Context(candidates)
         }
 
-        fun getImportCandidates(contextElement: MvReferenceElement, target: String): List<ImportCandidate> {
+        fun getImportCandidates(context: ImportContext, targetName: String): List<ImportCandidate> {
+            val (contextElement, itemVis) = context
             val name = contextElement.referenceName ?: return emptyList()
             val moveProject = contextElement.moveProject ?: return emptyList()
             val searchScope = moveProject.searchScope()
@@ -118,11 +94,31 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
                 val currentFile = contextElement.containingFile as? MvFile ?: return emptyList()
                 files.add(0, currentFile)
             }
-            val candidates = files
-                .flatMap { it.qualifiedItems() }
-                .filter { it.name == target }
+            return files
+                .flatMap { it.qualifiedItems(targetName, itemVis) }
                 .mapNotNull { el -> el.usePath?.let { ImportCandidate(el, it) } }
-            return candidates
+        }
+    }
+}
+
+@Suppress("DataClassPrivateConstructor")
+data class ImportContext private constructor(
+    val contextElement: MvReferenceElement,
+    val itemVis: ItemVis,
+) {
+    companion object {
+        fun from(contextElement: MvReferenceElement): ImportContext {
+            var itemVis = ItemVis(visibilities = setOf(Visibility.Public))
+            if (contextElement.containingScript != null) {
+                itemVis = itemVis.replace(vs = itemVis.visibilities + Visibility.PublicScript)
+            }
+            val namespaces = contextElement.namespaces()
+            itemVis = itemVis.replace(ns = namespaces)
+
+            if (contextElement.isMsl()) {
+                itemVis = itemVis.replace(msl = MslScope.EXPR)
+            }
+            return ImportContext(contextElement, itemVis)
         }
     }
 }

@@ -60,16 +60,6 @@ interface MvMandatoryReferenceElement : MvReferenceElement {
     override fun getReference(): MvReference
 }
 
-//interface MvPolyVariantReferenceElement: PsiReferenceElement, MvElement {
-//    override val identifier: PsiElement
-//
-////    override val referenceNameElement: PsiElement get() = identifier
-//
-////    override val referenceName: String get() = referenceNameElement.text
-//
-//    override fun getReference(): MvReference
-//}
-
 interface MvPathReferenceElement : MvReferenceElement {
     override fun getReference(): MvPathReference?
 }

@@ -43,7 +43,7 @@ fun resolveModuleItem(
 
 class MvPathReferenceImpl(
     element: MvPath,
-    private val namespace: Namespace,
+    val namespace: Namespace,
 ) : MvReferenceCached<MvPath>(element), MvPathReference {
 
     override fun resolveInner(): List<MvNamedElement> {

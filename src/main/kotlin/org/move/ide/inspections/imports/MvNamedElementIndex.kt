@@ -9,11 +9,11 @@ import com.intellij.util.io.KeyDescriptor
 import org.move.lang.MoveFileType
 import org.move.lang.MvFile
 import org.move.lang.core.psi.MvQualifiedNamedElement
-import org.move.lang.core.psi.ext.functions
-import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.processModuleItems
 import org.move.lang.modules
 import org.move.lang.toMvFile
-import org.toml.lang.psi.TomlFileType
 
 class MvNamedElementIndex : ScalarIndexExtension<String>() {
     override fun getName() = KEY
@@ -47,21 +47,25 @@ class MvNamedElementIndex : ScalarIndexExtension<String>() {
             val files = fileIndex.getContainingFiles(KEY, target, searchScope)
             return files.mapNotNull { it.toMvFile(project) }
         }
-
-//        fun findElementsByName(
-//            project: Project,
-//            target: String,
-//            searchScope: GlobalSearchScope
-//        ): List<MvQualifiedNamedElement> {
-//            val files = findFilesByElementName(project, target, searchScope)
-//            return files.flatMap { it.qualifiedItems() }
-//        }
     }
 }
 
-fun MvFile.qualifiedItems(): Sequence<MvQualifiedNamedElement> {
-    return sequenceOf(
-        this.modules(),
-        this.modules().flatMap { it.functions(Visibility.Public) }
-    ).flatten()
+fun MvFile.qualifiedItems(target: String, itemVis: ItemVis): List<MvQualifiedNamedElement> {
+    val elements = mutableListOf<MvQualifiedNamedElement>()
+    val modules = this.modules()
+    for (module in modules) {
+        if (Namespace.MODULE in itemVis.namespaces) {
+            if (module.name == target) {
+                elements.add(module)
+            }
+        }
+        processModuleItems(module, itemVis) {
+            val element = it.element
+            if (element is MvQualifiedNamedElement && element.name == target) {
+                elements.add(element)
+            }
+            false
+        }
+    }
+    return elements
 }

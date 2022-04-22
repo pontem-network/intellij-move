@@ -120,6 +120,33 @@ module 0x1::Main {
 }
     """)
 
+    fun `test struct same name as module import`() = checkAutoImportFixByText("""
+module 0x1::Token {
+    struct Token {}
+    public fun call() {}
+}
+module 0x1::Main {
+    use 0x1::Token;
+    
+    fun main(a: <error descr="Unresolved reference: `Token`">/*caret*/Token</error>) {
+        Token::call();
+    }
+}
+    """, """
+module 0x1::Token {
+    struct Token {}
+    public fun call() {}
+}
+module 0x1::Main {
+    use 0x1::Token;
+    use 0x1::Token::Token;
+
+    fun main(a: Token) {
+        Token::call();
+    }
+}
+    """)
+
     private fun checkAutoImportFixByText(
         @Language("Move") before: String,
         @Language("Move") after: String,

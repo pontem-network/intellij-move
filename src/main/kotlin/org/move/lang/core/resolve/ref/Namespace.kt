@@ -45,4 +45,10 @@ enum class Namespace {
     MODULE,
     STRUCT_FIELD,
     DOT_ACCESSED_FIELD;
+
+    companion object {
+        fun allNames(): Set<Namespace> {
+            return setOf(NAME, TYPE, SCHEMA, MODULE)
+        }
+    }
 }

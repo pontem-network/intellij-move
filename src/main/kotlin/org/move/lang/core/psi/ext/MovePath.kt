@@ -8,6 +8,7 @@ import org.move.ide.annotator.SPEC_INTEGER_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
+import org.move.lang.core.resolve.MvReferenceElement
 import org.move.lang.core.resolve.ref.MvPathReference
 import org.move.lang.core.resolve.ref.MvPathReferenceImpl
 import org.move.lang.core.resolve.ref.Namespace
@@ -54,7 +55,6 @@ val MvPath.maybeStruct get() = reference?.resolve() as? MvStruct
 
 val MvPath.maybeSchema get() = reference?.resolve() as? MvSchema
 
-
 abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
 
     override val identifier: PsiElement? get() = this.pathIdent.identifier
@@ -66,5 +66,15 @@ abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
             else -> Namespace.NAME
         }
         return MvPathReferenceImpl(this, namespace)
+    }
+}
+
+fun MvReferenceElement.namespaces(): Set<Namespace> {
+    val parent = this.parent
+    return when (parent) {
+        is MvPathType -> setOf(Namespace.TYPE)
+        is MvSchemaLit, is MvSchemaRef -> setOf(Namespace.SCHEMA)
+        else ->
+            if (this is MvPath) setOf(Namespace.NAME) else Namespace.allNames()
     }
 }
