@@ -66,7 +66,7 @@ private class PopupImportItemUi(private val project: Project, private val dataCo
                 return doFinalStep { callback(selectedValue) }
             }
 
-            override fun getTextFor(value: ImportCandidate): String = value.usePath
+            override fun getTextFor(value: ImportCandidate): String = value.fqPath.toString()
             override fun getIconFor(value: ImportCandidate): Icon = value.element.getIcon(0)
         }
         val popup = object : ListPopupImpl(project, step) {
@@ -127,16 +127,13 @@ private class RsElementCellRenderer : DefaultPsiElementCellRenderer() {
         ?: super.getElementText(element)
 
     override fun getContainerText(element: PsiElement, name: String): String? {
-        val importCandidate = importCandidate
-        return if (importCandidate != null) {
-//            val crateName = (importCandidate.info as? ImportInfo.ExternCrateImportInfo)?.externCrateName
-            val crateName = "crateName"
-//            val parentPath = importCandidate.element.parentCrateRelativePath ?: return null
-            val parentPath = "parentPath"
-            val container = when {
-                crateName == null -> parentPath
-                parentPath.isEmpty() -> crateName
-                else -> "$crateName::$parentPath"
+        val candidate = importCandidate
+        return if (candidate != null) {
+            val fqPath = candidate.fqPath
+            val container = if (fqPath.item == null) {
+                fqPath.address
+            } else {
+                "${fqPath.address}::${fqPath.module}"
             }
             "($container)"
         } else {

@@ -96,7 +96,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
             }
             return files
                 .flatMap { it.qualifiedItems(targetName, itemVis) }
-                .mapNotNull { el -> el.usePath?.let { ImportCandidate(el, it) } }
+                .mapNotNull { el -> el.fqPath?.let { ImportCandidate(el, it) } }
         }
     }
 }
@@ -123,7 +123,7 @@ data class ImportContext private constructor(
     }
 }
 
-data class ImportCandidate(val element: MvQualifiedNamedElement, val usePath: String)
+data class ImportCandidate(val element: MvQualifiedNamedElement, val fqPath: FqPath)
 
 private fun ImportCandidate.import(context: MvElement) {
     checkWriteAccessAllowed()
@@ -131,11 +131,11 @@ private fun ImportCandidate.import(context: MvElement) {
     val insertionScope = context.containingModule?.moduleBlock
         ?: context.containingScript?.scriptBlock
         ?: return
-    insertionScope.insertUseItem(psiFactory, usePath)
+    insertionScope.insertUseItem(psiFactory, fqPath)
 }
 
-private fun MvItemsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: String) {
-    val newUseStmt = psiFactory.useStmt(usePath)
+private fun MvItemsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: FqPath) {
+    val newUseStmt = psiFactory.useStmt(usePath.toString())
     if (this.tryGroupWithOtherUseItems(psiFactory, newUseStmt)) return
 
     val anchor = childrenOfType<MvUseStmt>().lastElement

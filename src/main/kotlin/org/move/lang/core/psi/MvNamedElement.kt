@@ -16,19 +16,29 @@ interface MvNamedElement : MvElement,
 
 interface MvQualifiedNamedElement: MvNamedElement
 
-val MvQualifiedNamedElement.usePath: String? get() {
+data class FqPath(val address: String, val module: String, val item: String?) {
+    override fun toString(): String {
+        return if (item == null) {
+            "$address::$module"
+        } else {
+            "$address::$module::$item"
+        }
+    }
+}
+
+val MvQualifiedNamedElement.fqPath: FqPath? get() {
     return when (this) {
         is MvModuleDef -> {
             val address = this.address()?.text ?: return null
             val moduleName = this.name ?: return null
-            "$address::$moduleName"
+            FqPath(address, moduleName, null)
         }
         else -> {
             val module = this.containingModule ?: return null
             val address = module.address()?.text ?: return null
             val moduleName = module.name ?: return null
             val elementName = this.name ?: return null
-            "$address::${moduleName}::$elementName"
+            FqPath(address, moduleName, elementName)
         }
     }
 }

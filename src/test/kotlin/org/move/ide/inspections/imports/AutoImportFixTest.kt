@@ -120,6 +120,26 @@ module 0x1::Main {
 }
     """)
 
+    fun `test no module in type context`() = checkAutoImportFixByText("""
+module 0x1::Token {
+    struct Token {}
+    public fun call() {}
+}
+module 0x1::Main {
+    fun main(a: <error descr="Unresolved reference: `Token`">/*caret*/Token</error>) {}
+}
+    """, """
+module 0x1::Token {
+    struct Token {}
+    public fun call() {}
+}
+module 0x1::Main {
+    use 0x1::Token::Token;
+
+    fun main(a: Token) {}
+}
+    """)
+
     fun `test struct same name as module import`() = checkAutoImportFixByText("""
 module 0x1::Token {
     struct Token {}
@@ -166,9 +186,9 @@ module 0x1::Main {
         withMockImportItemUi(object : ImportItemUi {
             override fun chooseItem(items: List<ImportCandidate>, callback: (ImportCandidate) -> Unit) {
                 chooseItemWasCalled = true
-                val actualItems = items.mapTo(HashSet()) { it.usePath }
+                val actualItems = items.mapTo(HashSet()) { it.fqPath }
                 assertEquals(expectedElements, actualItems)
-                val selectedValue = items.find { it.usePath == choice }
+                val selectedValue = items.find { it.fqPath.toString() == choice }
                     ?: error("Can't find `$choice` in `$actualItems`")
                 callback(selectedValue)
             }
