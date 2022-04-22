@@ -75,6 +75,10 @@ fun MvReferenceElement.namespaces(): Set<Namespace> {
         is MvPathType -> setOf(Namespace.TYPE)
         is MvSchemaLit, is MvSchemaRef -> setOf(Namespace.SCHEMA)
         else ->
-            if (this is MvPath) setOf(Namespace.NAME) else Namespace.allNames()
+            when (this) {
+                is MvModuleRef -> setOf(Namespace.MODULE)
+                is MvPath -> setOf(Namespace.NAME)
+                else -> Namespace.allNames()
+            }
     }
 }
