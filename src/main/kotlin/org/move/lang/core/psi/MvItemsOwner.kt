@@ -12,8 +12,8 @@ fun MvItemsOwner.items(): Sequence<MvElement> {
         .filter { it !is MvAttr }
 }
 
-fun MvItemsOwner.moduleImports(): List<MvModuleUse> =
-    useStmtList.mapNotNull { it.moduleUse }
+fun MvItemsOwner.moduleImports(): List<MvModuleUseSpeck> =
+    useStmtList.mapNotNull { it.moduleUseSpeck }
 
 fun MvItemsOwner.moduleImportNames(): List<MvNamedElement> =
     listOf(
@@ -21,22 +21,22 @@ fun MvItemsOwner.moduleImportNames(): List<MvNamedElement> =
         moduleImportsAliases(),
     ).flatten()
 
-fun MvItemsOwner.moduleImportsNoAliases(): List<MvModuleUse> =
+fun MvItemsOwner.moduleImportsNoAliases(): List<MvModuleUseSpeck> =
     moduleImports()
         .filter { it.useAlias == null }
 
 fun MvItemsOwner.moduleImportsAliases(): List<MvUseAlias> =
     moduleImports().mapNotNull { it.useAlias }
 
-fun MvItemsOwner.itemImports(): List<MvItemUse> =
+fun MvItemsOwner.itemImports(): List<MvUseItem> =
     useStmtList
-        .mapNotNull { it.moduleItemUse }
+        .mapNotNull { it.itemUseSpeck }
         .flatMap {
-            val item = it.itemUse
+            val item = it.useItem
             if (item != null) {
                 listOf(item)
             } else
-                it.multiItemUse?.itemUseList.orEmpty()
+                it.useItemGroup?.useItemList.orEmpty()
         }
 
 fun MvItemsOwner.itemImportNames(): List<MvNamedElement> =
@@ -45,16 +45,16 @@ fun MvItemsOwner.itemImportNames(): List<MvNamedElement> =
         itemImportsAliases(),
     ).flatten()
 
-fun MvItemsOwner.itemImportsNoAliases(): List<MvItemUse> =
+fun MvItemsOwner.itemImportsNoAliases(): List<MvUseItem> =
     itemImports().filter { it.useAlias == null }
 
 fun MvItemsOwner.itemImportsAliases(): List<MvUseAlias> = itemImports().mapNotNull { it.useAlias }
 
-fun MvItemsOwner.selfItemImports(): List<MvItemUse> =
+fun MvItemsOwner.selfItemImports(): List<MvUseItem> =
     itemImports()
         .filter { it.useAlias == null && it.text == "Self" }
 
-fun MvItemsOwner.itemImportsWithoutAliases(): List<MvItemUse> =
+fun MvItemsOwner.itemImportsWithoutAliases(): List<MvUseItem> =
     itemImports().filter { it.useAlias == null }
 
 

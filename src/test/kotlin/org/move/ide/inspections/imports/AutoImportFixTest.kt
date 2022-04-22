@@ -37,7 +37,7 @@ module 0x1::Signer {
 }
 script {
     fun main() {
-        <error descr="Unresolved module reference: `Signer`">/*caret*/Signer</error>::address_of();
+        <error descr="Unresolved reference: `Signer`">/*caret*/Signer</error>::address_of();
     }
 }
     """,
@@ -66,15 +66,64 @@ module 0x1::Main {
 }        
     """)
 
+    fun `test auto import to the same group`() = checkAutoImportFixByText("""
+module 0x1::M {
+    struct S {}
+    public fun call() {}
+}
+module 0x1::Main {
+    use 0x1::M::S;
+    
+    fun main() {
+        <error descr="Unresolved reference: `call`">/*caret*/call</error>();
+    }
+}
+    """, """
+module 0x1::M {
+    struct S {}
+    public fun call() {}
+}
+module 0x1::Main {
+    use 0x1::M::{S, call};
+    
+    fun main() {
+        call();
+    }
+}
+    """)
+
+    fun `test multiple import candidates`() = checkAutoImportFixByTextWithMultipleChoice("""
+module 0x1::M1 {
+    public fun call() {}
+}
+module 0x1::M2 {
+    public fun call() {}
+}
+module 0x1::Main {
+    public fun main() {
+        <error descr="Unresolved reference: `call`">/*caret*/call</error>();
+    }
+}
+    """, setOf("0x1::M1::call", "0x1::M2::call"), "0x1::M1::call", """
+module 0x1::M1 {
+    public fun call() {}
+}
+module 0x1::M2 {
+    public fun call() {}
+}
+module 0x1::Main {
+    use 0x1::M1::call;
+
+    public fun main() {
+        call();
+    }
+}
+    """)
+
     private fun checkAutoImportFixByText(
         @Language("Move") before: String,
         @Language("Move") after: String,
     ) = doTest { checkFixByText(AutoImportFix.NAME, before, after) }
-
-//    protected fun checkAutoImportFixByFileTree(
-//        before: FileTreeBuilder.() -> Unit,
-//        after: FileTreeBuilder.() -> Unit,
-//    ) = doTest { checkFixByFileTree(AutoImportFix.NAME, before, after) }
 
     private fun checkAutoImportFixIsUnavailable(@Language("Move") text: String) =
         doTest { checkFixIsUnavailable(AutoImportFix.NAME, text) }

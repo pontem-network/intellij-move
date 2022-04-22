@@ -485,31 +485,31 @@ StructField ::= IDENTIFIER TypeAnnotation &(',' | '}')
 
 FriendStmt ::= Attr* friend FQModuleRef ';' { pin = "friend" }
 
-UseStmt ::= Attr* use (ModuleItemUse | ModuleUse) ';' { pin = "use" }
-ModuleUse ::= (AddressRef !'::') | FQModuleRef UseAlias?
+UseStmt ::= Attr* use (ItemUseSpeck | ModuleUseSpeck) ';' { pin = "use" }
+ModuleUseSpeck ::= (AddressRef !'::') | FQModuleRef UseAlias?
 {
     name = "qual path to module"
     implements = [
         "org.move.lang.core.psi.MvNamedElement"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvModuleUseMixin"
+    mixin = "org.move.lang.core.psi.ext.MvModuleUseSpeckMixin"
 }
-ModuleItemUse ::= FQModuleRef '::' (ItemUse | MultiItemUse)
+ItemUseSpeck ::= FQModuleRef '::' (UseItem | UseItemGroup)
 {
     pin = 2
     name = "qual path to imported item"
 }
 
-MultiItemUse ::= '{' <<comma_sep_items MultiItemUse_member_with_recovery>> '}'
+UseItemGroup ::= '{' <<comma_sep_items MultiItemUse_member_with_recovery>> '}'
 {
     pin = 1
 }
-private MultiItemUse_member_with_recovery ::= !('}' | ';' | <<eof>>) ItemUse
+private MultiItemUse_member_with_recovery ::= !('}' | ';' | <<eof>>) UseItem
 {
     pin = 1
 }
 
-ItemUse ::= IDENTIFIER UseAlias?
+UseItem ::= IDENTIFIER UseAlias?
 {
     pin = 1
     name = "item name"
@@ -517,7 +517,7 @@ ItemUse ::= IDENTIFIER UseAlias?
         "org.move.lang.core.psi.MvNamedElement"
         "org.move.lang.core.resolve.MvMandatoryReferenceElement"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvItemUseMixin"
+    mixin = "org.move.lang.core.psi.ext.MvUseItemMixin"
 }
 UseAlias ::= as IDENTIFIER
 {

@@ -4,8 +4,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiParserFacade
-import org.move.lang.MvFile
 import org.move.lang.MoveFileType
+import org.move.lang.MvFile
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
 
 val Project.psiFactory get() = MvPsiFactory(this)
@@ -51,7 +51,25 @@ class MvPsiFactory(private val project: Project) {
             ?: error("Failed to create an item import from text: `$text`")
     }
 
-    fun useItem(text: String): MvItemUse {
+    fun itemUseSpeck(fqModuleText: String, names: List<String>): MvItemUseSpeck {
+        assert(names.isNotEmpty())
+        return if (names.size == 1) {
+            createFromText("module _IntellijPreludeDummy { use $fqModuleText::${names.first()}; }")
+                ?: error("")
+        } else {
+            val namesText = names.joinToString(", ", "{", "}")
+            createFromText("module _IntellijPreludeDummy { use $fqModuleText::$namesText; }")
+                ?: error("")
+        }
+    }
+
+    fun useItemGroup(names: List<String>): MvUseItemGroup {
+        val namesText = names.joinToString(", ")
+        return createFromText("module _IntellijPreludeDummy { use 0x1::Module::{$namesText}; }")
+            ?: error("Failed to create an item import from text: `$namesText`")
+    }
+
+    fun useItem(text: String): MvUseItem {
         return createFromText("module _IntellijPreludeDummy { use 0x1::Module::$text; }")
             ?: error("Failed to create an item import from text: `$text`")
     }

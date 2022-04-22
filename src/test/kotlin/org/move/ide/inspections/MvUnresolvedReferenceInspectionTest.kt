@@ -126,7 +126,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
         """
         module 0x1::M {
             fun main() {
-                let t = <error descr="Unresolved module reference: `Transaction`">Transaction</error>::create();
+                let t = <error descr="Unresolved reference: `Transaction`">Transaction</error>::create();
             }
         }
     """
@@ -162,7 +162,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
             fun deposit<Token> () {}
 
             fun main() {
-                deposit<<error descr="Unresolved type: `PONT`">PONT</error>>()
+                deposit<<error descr="Unresolved reference: `PONT`">PONT</error>>()
             }
         }    
         """

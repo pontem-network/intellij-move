@@ -78,7 +78,7 @@ class MvFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvider,
     }
 }
 
-val VirtualFile.isMvFile: Boolean get() = fileType == MoveFileType
+val VirtualFile.isMoveFile: Boolean get() = fileType == MoveFileType
 
 val VirtualFile.isMoveTomlManifestFile: Boolean get() = fileType == TomlFileType && name == "Move.toml"
 

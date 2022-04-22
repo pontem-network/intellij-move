@@ -9,8 +9,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.move.lang.MvFile
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.childrenOfType
 import org.move.lang.core.psi.ext.hasAncestor
+import org.move.lang.core.psi.ext.names
 import org.move.lang.core.resolve.MvReferenceElement
 import org.move.lang.moveProject
 import org.move.openapiext.checkWriteAccessAllowed
@@ -29,29 +31,32 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
         invoke(project)
     }
 
+    data class Context(val candidates: List<ImportCandidate>)
+
     fun invoke(project: Project) {
         val element = startElement as? MvReferenceElement ?: return
         if (element.reference == null) return
         if (element.hasAncestor<MvUseStmt>()) return
 
-        // TODO: no auto-import if name in scope, but cannot be resolved
-
         val name = element.referenceName ?: return
-        val moveProject = element.moveProject ?: return
-        val searchScope = moveProject.searchScope()
-        val files = MvNamedElementIndex
-            .findFilesByElementName(project, name, searchScope)
-            .toMutableList()
-        if (isUnitTestMode) {
-            // always add current file in tests
-            val currentFile = element.containingFile as? MvFile ?: return
-            files.add(0, currentFile)
-        }
-        val candidates = files
-            .flatMap { it.qualifiedItems() }
-            .filter { it.name == name }
-            .mapNotNull { el -> el.usePath?.let { ImportCandidate(el, it) } }
+        val candidates = getImportCandidates(element, name)
         if (candidates.isEmpty()) return
+
+//        val moveProject = element.moveProject ?: return
+//        val searchScope = moveProject.searchScope()
+//        val files = MvNamedElementIndex
+//            .findFilesByElementName(project, name, searchScope)
+//            .toMutableList()
+//        if (isUnitTestMode) {
+//            // always add current file in tests
+//            val currentFile = element.containingFile as? MvFile ?: return
+//            files.add(0, currentFile)
+//        }
+//        val candidates = files
+//            .flatMap { it.qualifiedItems() }
+//            .filter { it.name == name }
+//            .mapNotNull { el -> el.usePath?.let { ImportCandidate(el, it) } }
+//        if (candidates.isEmpty()) return
 
         if (candidates.size == 1) {
             project.runWriteCommandAction {
@@ -79,6 +84,46 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
 
     companion object {
         const val NAME = "Import"
+
+        fun findApplicableContext(refElement: MvReferenceElement): Context? {
+            if (refElement.reference == null) return null
+            if (refElement.resolvable) return null
+            if (refElement.ancestorStrict<MvUseStmt>() != null) return null
+
+            // TODO: no auto-import if name in scope, but cannot be resolved
+
+            val candidates = when (refElement) {
+                is MvModuleRef -> {
+                    val refName = refElement.referenceName ?: return null
+                    getImportCandidates(refElement, refName)
+                }
+                is MvPath -> {
+                    val refName = refElement.referenceName ?: return null
+                    getImportCandidates(refElement, refName)
+                }
+                else -> return null
+            }
+            return Context(candidates.toList())
+        }
+
+        fun getImportCandidates(contextElement: MvReferenceElement, target: String): List<ImportCandidate> {
+            val name = contextElement.referenceName ?: return emptyList()
+            val moveProject = contextElement.moveProject ?: return emptyList()
+            val searchScope = moveProject.searchScope()
+            val files = MvNamedElementIndex
+                .findFilesByElementName(contextElement.project, name, searchScope)
+                .toMutableList()
+            if (isUnitTestMode) {
+                // always add current file in tests
+                val currentFile = contextElement.containingFile as? MvFile ?: return emptyList()
+                files.add(0, currentFile)
+            }
+            val candidates = files
+                .flatMap { it.qualifiedItems() }
+                .filter { it.name == target }
+                .mapNotNull { el -> el.usePath?.let { ImportCandidate(el, it) } }
+            return candidates
+        }
     }
 }
 
@@ -94,15 +139,38 @@ private fun ImportCandidate.import(context: MvElement) {
 }
 
 private fun MvItemsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: String) {
-    val useStmt = psiFactory.useStmt(usePath)
+    val newUseStmt = psiFactory.useStmt(usePath)
+    if (this.tryGroupWithOtherUseItems(psiFactory, newUseStmt)) return
+
     val anchor = childrenOfType<MvUseStmt>().lastElement
     if (anchor != null) {
-        addAfter(useStmt, anchor)
+        addAfter(newUseStmt, anchor)
     } else {
         val firstItem = this.items().first()
-        addBefore(useStmt, firstItem)
+        addBefore(newUseStmt, firstItem)
         addAfter(psiFactory.createNewline(), firstItem)
     }
+}
+
+private fun MvItemsOwner.tryGroupWithOtherUseItems(psiFactory: MvPsiFactory, newUseStmt: MvUseStmt): Boolean {
+    val newUseSpeck = newUseStmt.itemUseSpeck ?: return false
+    val newName = newUseSpeck.names().singleOrNull() ?: return false
+    val newFqModule = newUseSpeck.fqModuleRef
+    return useStmtList
+        .mapNotNull { it.itemUseSpeck }
+        .any { it.tryGroupWith(psiFactory, newFqModule, newName) }
+}
+
+private fun MvItemUseSpeck.tryGroupWith(
+    psiFactory: MvPsiFactory,
+    newFqModule: MvFQModuleRef,
+    newName: String
+): Boolean {
+    if (!this.fqModuleRef.textMatches(newFqModule)) return false
+    if (newName in this.names()) return true
+    val speck = psiFactory.itemUseSpeck(newFqModule.text, this.names() + newName)
+    this.replace(speck)
+    return true
 }
 
 private val <T : MvElement> List<T>.lastElement: T? get() = maxByOrNull { it.textOffset }

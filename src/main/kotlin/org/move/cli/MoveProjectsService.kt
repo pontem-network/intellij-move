@@ -21,7 +21,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.util.messages.Topic
 import org.jetbrains.rpc.LOG
 import org.move.lang.findMoveTomlPath
-import org.move.lang.isMvFile
+import org.move.lang.isMoveFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.findVirtualFile
@@ -136,7 +136,7 @@ class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
             val filePath = file.toNioPathOrNull() ?: return null
             val moveTomlPath = findMoveTomlPath(filePath) ?: return null
 
-            if (file.isMvFile) {
+            if (file.isMoveFile) {
                 val expectedRoot = moveTomlPath.parent
                 val dirs = MvProjectLayout.dirs(expectedRoot)
                 if (!dirs.any { filePath.startsWith(it) }) {

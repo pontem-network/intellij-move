@@ -8,7 +8,6 @@ import com.intellij.openapi.project.Project
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
 import org.move.settings.moveExecPath
-import org.move.settings.moveExecutablePathValue
 import java.io.File
 import java.io.InputStreamReader
 import java.nio.file.Path

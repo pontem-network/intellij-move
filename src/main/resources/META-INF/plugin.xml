@@ -57,7 +57,7 @@
                   extensions="move"
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
-        <fileBasedIndex implementation="org.move.ide.inspections.imports.MvNamedElementIndex" />
+        <fileBasedIndex implementation="org.move.ide.inspections.imports.MvNamedElementIndex"/>
 
         <configurationType
                 implementation="org.move.cli.runconfig.MoveRunConfigurationType"/>
@@ -104,7 +104,7 @@
 
         <lang.findUsagesProvider language="Move"
                                  implementationClass="org.move.ide.search.MvFindUsagesProvider"/>
-        <useScopeEnlarger implementation="org.move.ide.search.MvUseScopeEnlarger" />
+        <useScopeEnlarger implementation="org.move.ide.search.MvUseScopeEnlarger"/>
         <usageTypeProvider
                 implementation="org.move.ide.search.NamedAddressUsageTypeProvider"/>
         <findUsagesHandlerFactory
@@ -206,7 +206,7 @@
         <localInspection language="Move" groupName="Move"
                          displayName="Unused import"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.MvUnusedImportInspection" />
+                         implementationClass="org.move.ide.inspections.MvUnusedImportInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>
@@ -227,9 +227,8 @@
 
         <!-- Notifications -->
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>
-
-        <!--        <editorNotificationProvider-->
-        <!--                implementation="org.move.ide.notifications.InvalidMvExecutableNotificationsProvider"/>-->
+        <editorNotificationProvider
+                implementation="org.move.ide.notifications.UnconfiguredDoveNotification"/>
 
         <intentionAction>
             <className>org.move.ide.intentions.RemoveCurlyBracesIntention</className>

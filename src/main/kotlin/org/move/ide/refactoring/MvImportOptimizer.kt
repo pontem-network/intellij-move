@@ -31,34 +31,34 @@ class MvImportOptimizer: ImportOptimizer {
     fun optimizeImports(useStmtOwner: MvItemsOwner) {
         val useStmts = useStmtOwner.useStmtList
         for (useStmt in useStmts) {
-            val moduleUse = useStmt.moduleUse
-            if (moduleUse != null) {
-                if (!moduleUse.isUsed()) {
+            val moduleSpeck = useStmt.moduleUseSpeck
+            if (moduleSpeck != null) {
+                if (!moduleSpeck.isUsed()) {
                     useStmt.delete()
                     return
                 }
             }
-            val useItem = useStmt.moduleItemUse
-            if (useItem != null) {
-                val multiUseItem = useStmt.moduleItemUse?.multiItemUse
-                if (multiUseItem != null) {
-                    if (multiUseItem.itemUseList.size == 1) {
-                        if (multiUseItem.itemUseList.first().isUsed()) {
+            val useSpeck = useStmt.itemUseSpeck
+            if (useSpeck != null) {
+                val itemGroup = useSpeck.useItemGroup
+                if (itemGroup != null) {
+                    if (itemGroup.useItemList.size == 1) {
+                        if (itemGroup.useItemList.first().isUsed()) {
                             // used 0x1::M::{call};
-                            multiUseItem.removeCurlyBraces()
+                            itemGroup.removeCurlyBraces()
                         } else {
                             // unused 0x1::M::{call};
                             useStmt.delete()
                         }
                     } else {
-                        val items = multiUseItem.itemUseList.filter { it.isUsed() }
+                        val items = itemGroup.useItemList.filter { it.isUsed() }
                         if (items.size == 1) {
                             // 0x1::M::{Used, unused} -> 0x1::M::Used;
-                            multiUseItem.replace(items.first())
+                            itemGroup.replace(items.first())
                         }
                     }
                 }
-                if (!useItem.isUsed()) {
+                if (!useSpeck.isUsed()) {
                     // single unused import 0x1::M::call;
                     useStmt.delete()
                 }
