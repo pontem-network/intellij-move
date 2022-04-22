@@ -1,7 +1,6 @@
 package org.move.cli.runconfig
 
 import com.intellij.execution.Executor
-import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
@@ -13,23 +12,6 @@ import org.move.ide.MvIcons
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
 import org.move.settings.moveExecutablePathValue
-
-class MoveRunConfigurationType :
-    SimpleConfigurationType(
-        "MoveRunConfiguration",
-        "Move",
-        "Move command execution",
-        NotNullLazyValue.createConstantValue(MvIcons.MOVE)
-    ) {
-    override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return MoveRunConfiguration(project, this)
-    }
-
-    companion object {
-        fun getInstance() =
-            ConfigurationTypeUtil.findConfigurationType(MoveRunConfigurationType::class.java)
-    }
-}
 
 class MoveRunConfiguration(
     project: Project,
@@ -63,9 +45,4 @@ class MoveRunConfiguration(
         this.cmd = MoveCommandLine(command, path)
         env = EnvironmentVariablesData.readExternal(element)
     }
-}
-
-abstract class MoveRunConfigurationProducer: LazyRunConfigurationProducer<MoveRunConfiguration>() {
-
-    override fun getConfigurationFactory() = MoveRunConfigurationType.getInstance()
 }

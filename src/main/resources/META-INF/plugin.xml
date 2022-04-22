@@ -62,7 +62,7 @@
         <configurationType
                 implementation="org.move.cli.runconfig.MoveRunConfigurationType"/>
         <runConfigurationProducer
-                implementation="org.move.cli.runconfig.MoveTestRunConfigurationProducer"/>
+                implementation="org.move.cli.runconfig.test.TestRunConfigurationProducer"/>
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>

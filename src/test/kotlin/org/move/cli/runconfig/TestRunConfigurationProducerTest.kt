@@ -5,6 +5,7 @@ import com.intellij.execution.actions.RunConfigurationProducer
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import org.jdom.Element
+import org.move.cli.runconfig.test.TestRunConfigurationProducer
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.ancestorOrSelf
@@ -58,7 +59,7 @@ class TestRunConfigurationProducerTest : MvProjectTestBase() {
 
         val ctx1 = myFixture.findElementByText("+", PsiElement::class.java)
         val ctx2 = myFixture.findElementByText("*", PsiElement::class.java)
-        doTestRemembersContext(MoveTestRunConfigurationProducer(), ctx1, ctx2)
+        doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
     }
 
     fun `test test producer works for annotated functions direcotry`() {
@@ -107,7 +108,7 @@ class TestRunConfigurationProducerTest : MvProjectTestBase() {
 
         val ctx1 = myFixture.findElementByText("+", PsiElement::class.java)
         val ctx2 = myFixture.findElementByText("*", PsiElement::class.java)
-        doTestRemembersContext(MoveTestRunConfigurationProducer(), ctx1, ctx2)
+        doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
     }
 
     fun `test test producer works for annotated functions file`() {
@@ -155,7 +156,7 @@ class TestRunConfigurationProducerTest : MvProjectTestBase() {
 
         val ctx1 = myFixture.findElementByText("+", PsiElement::class.java)
         val ctx2 = myFixture.findElementByText("*", PsiElement::class.java)
-        doTestRemembersContext(MoveTestRunConfigurationProducer(), ctx1, ctx2)
+        doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
     }
 
     fun `test test producer works for annotated functions module`() {
@@ -203,7 +204,7 @@ class TestRunConfigurationProducerTest : MvProjectTestBase() {
 
         val ctx1 = myFixture.findElementByText("+", PsiElement::class.java)
         val ctx2 = myFixture.findElementByText("*", PsiElement::class.java)
-        doTestRemembersContext(MoveTestRunConfigurationProducer(), ctx1, ctx2)
+        doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
     }
 
     protected fun doTestRemembersContext(
