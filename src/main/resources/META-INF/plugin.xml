@@ -104,7 +104,7 @@
 
         <lang.findUsagesProvider language="Move"
                                  implementationClass="org.move.ide.search.MvFindUsagesProvider"/>
-        <useScopeEnlarger implementation="org.move.ide.search.MvUseScopeEnlarger"/>
+<!--        <useScopeEnlarger implementation="org.move.ide.search.MvUseScopeEnlarger"/>-->
         <usageTypeProvider
                 implementation="org.move.ide.search.NamedAddressUsageTypeProvider"/>
         <findUsagesHandlerFactory
@@ -164,7 +164,7 @@
         <!--                         implementationClass="org.move.ide.inspections.lints.FunctionNamingInspection"/>-->
         <localInspection language="Move" groupName="Move"
                          displayName="Unresolved reference"
-                         enabledByDefault="false"
+                         enabledByDefault="true"
                          level="ERROR"
                          implementationClass="org.move.ide.inspections.MvUnresolvedReferenceInspection"/>
         <localInspection language="Move" groupName="Move"
@@ -224,6 +224,11 @@
                         testServiceImplementation="org.move.utils.TestProjectRootServiceImpl"/>
         <projectService serviceInterface="org.move.cli.MoveProjectsService"
                         serviceImplementation="org.move.cli.MoveProjectsServiceImpl"/>
+
+<!--        <indexedRootsProvider implementation="org.move.ide.inspections.imports.MoveIndexableSetContributor" />-->
+
+        <additionalLibraryRootsProvider
+                implementation="org.move.cli.project.BuildLibraryRootsProvider"/>
 
         <!-- Notifications -->
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>

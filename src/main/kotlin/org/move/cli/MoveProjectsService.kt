@@ -4,14 +4,14 @@ import com.intellij.execution.RunManager
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectEx
-import com.intellij.openapi.roots.ContentEntry
-import com.intellij.openapi.roots.ModuleRootModificationUtil
-import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.roots.*
 import com.intellij.openapi.roots.ex.ProjectRootManagerEx
 import com.intellij.openapi.util.EmptyRunnable
+import com.intellij.openapi.util.io.FileSystemUtil
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -23,6 +23,7 @@ import org.jetbrains.rpc.LOG
 import org.move.lang.findMoveTomlPath
 import org.move.lang.isMoveFile
 import org.move.lang.toNioPathOrNull
+import org.move.openapiext.checkReadAccessAllowed
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.findVirtualFile
 import org.move.settings.MvProjectSettingsService
@@ -173,7 +174,7 @@ private fun doRefresh(project: Project): CompletableFuture<List<MoveProject>> {
     }
 }
 
-private fun setupProjectRoots(project: Project, moveProjects: List<MoveProject>) {
+fun setupProjectRoots(project: Project, moveProjects: List<MoveProject>) {
     invokeAndWaitIfNeeded {
         // Initialize services that we use (probably indirectly) in write action below.
         // Otherwise, they can be initialized in write action that may lead to deadlock
@@ -184,13 +185,8 @@ private fun setupProjectRoots(project: Project, moveProjects: List<MoveProject>)
             if (project.isDisposed) return@runWriteAction
             ProjectRootManagerEx.getInstanceEx(project).mergeRootsChangesDuring {
                 for (moveProject in moveProjects) {
-                    moveProject.setupContentRoots(project) { contentRoot ->
-                        addExcludeFolder(
-                            FileUtil.join(
-                                contentRoot.url,
-                                "build"
-                            )
-                        )
+                    moveProject.setupContentRoots(project) { _, contentRoot ->
+                        addExcludeFolder(FileUtil.join(contentRoot.url, "build"))
                     }
                 }
             }
@@ -229,9 +225,12 @@ fun processAllMvFilesOnce(
         }
 }
 
-private fun MoveProject.setupContentRoots(project: Project, setup: ContentEntry.(VirtualFile) -> Unit) {
+private fun MoveProject.setupContentRoots(
+    project: Project,
+    setup: ContentEntry.(ModifiableRootModel, VirtualFile) -> Unit
+) {
     val packageModule = ModuleUtilCore.findModuleForFile(this.root, project) ?: return
     ModuleRootModificationUtil.updateModel(packageModule) { rootModel ->
-        rootModel.contentEntries.singleOrNull()?.setup(this.root)
+        rootModel.contentEntries.singleOrNull()?.setup(rootModel, this.root)
     }
 }

@@ -10,8 +10,8 @@ import org.move.ide.MvIcons
 import javax.swing.Icon
 
 class MvProjectOpenProcessor : ProjectOpenProcessor() {
-    override fun getName(): String = "Move"
-    override fun getIcon(): Icon = MvIcons.MOVE
+    override fun getName() = "Move"
+    override fun getIcon() = MvIcons.MOVE
 
     override fun canOpenProject(file: VirtualFile): Boolean =
         FileUtil.namesEqual(file.name, MvConstants.MANIFEST_FILE)

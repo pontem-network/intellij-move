@@ -165,8 +165,7 @@ data class MoveProject(
     fun searchScope(moveScope: MoveScope = MoveScope.MAIN): GlobalSearchScope {
         var searchScope = GlobalSearchScope.EMPTY_SCOPE
         for (folder in moduleFolders(moveScope)) {
-            val dir = folder.toPsiDirectory(project) ?: continue
-            val dirScope = GlobalSearchScopes.directoryScope(dir, true)
+            val dirScope = GlobalSearchScopes.directoryScope(project, folder, true)
             searchScope = searchScope.uniteWith(dirScope)
         }
         return searchScope

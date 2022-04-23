@@ -1,7 +1,5 @@
 package org.move.ide.inspections.imports
 
-import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.util.indexing.FileBasedIndex
 import org.intellij.lang.annotations.Language
 import org.move.ide.inspections.MvUnresolvedReferenceInspection
 import org.move.utils.tests.FileTreeBuilder
@@ -93,7 +91,8 @@ class AutoImportFixProjectTest : InspectionProjectTestBase(MvUnresolvedReference
         {
             build {
                 dir("MoveStdlib") {
-                    buildInfoYaml("""
+                    buildInfoYaml(
+                        """
 compiled_package_info:
   package_name: MoveStdlib
   address_alias_instantiation:
@@ -113,7 +112,8 @@ compiled_package_info:
     additional_named_addresses: {}
     language_flavor: ~
 dependencies: []
-""")
+"""
+                    )
                     sources {
                         move(
                             "Mod.move",
@@ -161,9 +161,6 @@ dependencies: []
     ) = doTest { checkFixByFileTree(AutoImportFix.NAME, before, after) }
 
     private inline fun doTest(action: () -> Unit) {
-        val fileIndex = FileBasedIndex.getInstance()
-        fileIndex.ensureUpToDate(MvNamedElementIndex.KEY, project, GlobalSearchScope.allScope(project))
-
         val inspection = inspection as MvUnresolvedReferenceInspection
         val defaultValue = inspection.ignoreWithoutQuickFix
         try {

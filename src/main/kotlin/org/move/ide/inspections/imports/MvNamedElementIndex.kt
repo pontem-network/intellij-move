@@ -36,7 +36,7 @@ class MvNamedElementIndex : ScalarIndexExtension<String>() {
     companion object {
         const val INDEX_VERSION = 1
 
-        val KEY = ID.create<String, Void>("ModulesIndex")
+        val KEY = ID.create<String, Void>("MvNamedElementIndex")
 
         fun findFilesByElementName(
             project: Project,
