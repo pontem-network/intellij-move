@@ -7,13 +7,12 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.util.execution.ParametersListUtil
-import org.move.cli.runconfig.MoveCommandLine
-import org.move.cli.runconfig.MoveRunConfiguration
+import org.move.cli.runconfig.MoveCmd
 
 class MoveCommandLineState(
     environment: ExecutionEnvironment,
     private val executable: String,
-    private val cmd: MoveCommandLine
+    private val cmd: MoveCmd
 ) : CommandLineState(environment) {
 
     override fun startProcess(): ProcessHandler {

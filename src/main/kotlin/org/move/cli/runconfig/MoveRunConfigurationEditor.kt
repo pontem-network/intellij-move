@@ -31,7 +31,7 @@ class MoveRunConfigurationEditor : SettingsEditor<MoveRunConfiguration>() {
 
     override fun applyEditorTo(configuration: MoveRunConfiguration) {
         val command = textField.text
-        configuration.cmd = MoveCommandLine(command, this.currentWorkingDirectory)
+        configuration.cmd = MoveCmd(command, this.currentWorkingDirectory)
         configuration.env = environmentVariables.envData
     }
 

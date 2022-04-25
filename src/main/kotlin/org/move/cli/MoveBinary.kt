@@ -7,18 +7,18 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
-import org.move.settings.moveExecPath
+import org.move.settings.moveBinaryPath
 import java.io.File
 import java.io.InputStreamReader
 import java.nio.file.Path
 
-class MvExecutable(
+class MoveBinary(
     private val project: Project,
-    private val moveExecutablePath: Path? = project.moveExecPath
+    private val path: Path? = project.moveBinaryPath
 ) {
     fun version(): String? {
         try {
-            val execPath = moveExecutablePath ?: return null
+            val execPath = path ?: return null
             val cwd = project.contentRoots.firstOrNull()?.toNioPathOrNull() ?: return null
 
             val (out, err) = runExecutable(execPath, cwd.toFile(), "--version")
@@ -42,14 +42,6 @@ class MvExecutable(
     }
 
     companion object {
-        private val LOG = logger<MvExecutable>()
+        private val LOG = logger<MoveBinary>()
     }
 }
-
-val Project.moveExecutable: MvExecutable?
-    get() {
-        val executablePath = moveExecPath ?: return null
-        val executable = MvExecutable(this, executablePath)
-        if (executable.version() == null) return null
-        return executable
-    }

@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.JBColor
 import com.intellij.ui.layout.LayoutBuilder
-import org.move.cli.MvExecutable
+import org.move.cli.MoveBinary
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathTextField
 import java.awt.BorderLayout
@@ -30,40 +30,40 @@ class VersionLabel: JLabel() {
     }
 }
 
-class MvProjectSettingsPanel(private val project: Project) : Disposable {
+class MoveBinaryPathPanel(private val project: Project) : Disposable {
     override fun dispose() {}
     private val versionUpdateDebouncer = UiDebouncer(this)
 
-    private val moveExecutablePathField =
+    private val moveBinaryPathField =
         pathTextField(
             FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
             this,
-            "Move CLI executable"
-        ) { updateMvCLIVersion() }
-    private val moveExecVersion = VersionLabel()
+            "Move CLI binary"
+        ) { updateMoveBinaryVersion() }
+    private val moveBinaryVersion = VersionLabel()
 
     init {
-        moveExecutablePathField.textField.text =
+        moveBinaryPathField.textField.text =
             project.moveSettings.settingsState.moveExecutablePath
     }
 
     fun attachTo(layout: LayoutBuilder) = with(layout) {
-        row("Move executable:") { wrapComponent(moveExecutablePathField)(growX, pushX) }
-        row("Move executable version") { moveExecVersion() }
+        row("Move binary:") { wrapComponent(moveBinaryPathField)(growX, pushX) }
+        row("Move version") { moveBinaryVersion() }
     }
 
-    fun selectedMvExecPath(): String = this.moveExecutablePathField.textField.text
+    fun selectedMoveBinaryPath(): String = this.moveBinaryPathField.textField.text
 
-    private fun updateMvCLIVersion() {
-        this.updateVersionField(moveExecutablePathField, moveExecVersion)
+    private fun updateMoveBinaryVersion() {
+        this.updateVersionField(moveBinaryPathField, moveBinaryVersion)
     }
 
     private fun updateVersionField(executablePathField: TextFieldWithBrowseButton,
                                    versionLabel: VersionLabel) {
-        val executablePath = executablePathField.text
+        val binPath = executablePathField.text
         versionUpdateDebouncer.run(
             onPooledThread = {
-                MvExecutable(project, Paths.get(executablePath)).version()
+                MoveBinary(project, Paths.get(binPath)).version()
             },
             onUiThread = { version -> versionLabel.setVersion(version)}
         )

@@ -62,7 +62,9 @@
         <configurationType
                 implementation="org.move.cli.runconfig.MoveRunConfigurationType"/>
         <runConfigurationProducer
-                implementation="org.move.cli.runconfig.test.TestRunConfigurationProducer"/>
+                implementation="org.move.cli.runconfig.producers.TestRunConfigurationProducer"/>
+        <runConfigurationProducer
+                implementation="org.move.cli.runconfig.producers.PublishModuleRunConfigurationProducer"/>
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
@@ -215,7 +217,7 @@
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
         <projectOpenProcessor id="Move" implementation="org.move.cli.MvProjectOpenProcessor"/>
-        <projectConfigurable instance="org.move.settings.MvConfigurable"
+        <projectConfigurable instance="org.move.settings.MoveConfigurable"
                              displayName="Move"
                              groupId="language"
                              id="language.move"/>

@@ -1,9 +1,10 @@
-package org.move.cli.runconfig.test
+package org.move.cli.runconfig.producers
 
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.move.cli.runconfig.MoveBinaryRunConfigurationProducer
+import org.move.cli.runconfig.MoveCmdConf
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.containingModule
@@ -13,20 +14,27 @@ import org.move.lang.core.psi.ext.isTest
 import org.move.lang.core.psi.ext.isTestOnly
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
+import org.move.settings.ProjectKind
+import org.move.settings.kind
 
 class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
-    override fun configFromLocation(location: PsiElement): TestConfig? {
+    override fun configFromLocation(location: PsiElement): MoveCmdConf? {
         val moveProject = location.moveProject ?: return null
         val packageName = moveProject.packageName ?: return null
-
+        val project = location.project
+        val rootPath = moveProject.rootPath ?: return null
         return when (location) {
             is PsiDirectory -> {
                 val locationPath = location.virtualFile.toNioPathOrNull() ?: return null
-                val rootPath = moveProject.rootPath ?: return null
                 if (locationPath == rootPath
                     || locationPath == moveProject.testsDir()
                 ) {
-                    return TestConfig.Package(packageName, rootPath)
+                    val confName = "Test $packageName"
+                    val command = when (project.kind) {
+                        ProjectKind.APTOS -> "move test --package-dir ."
+                        ProjectKind.DOVE -> "package test"
+                    }
+                    return MoveCmdConf(confName, command, rootPath)
                 }
                 null
             }
@@ -41,14 +49,26 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
                             if (!ans.isTest) continue
                             val functionName = ans.name ?: return null
                             val modName = ans.containingModule?.name ?: return null
-                            val path = moveProject.root.toNioPathOrNull() ?: return null
-                            return TestConfig.Function(packageName, functionName, modName, path)
+                            val confName = "Test $packageName: $modName::$functionName"
+                            val command = when (project.kind) {
+                                ProjectKind.DOVE -> "package test --filter ${functionName}"
+                                ProjectKind.APTOS -> {
+                                    return null
+                                }
+                            }
+                            return MoveCmdConf(confName, command, rootPath)
                         }
                         is MvModuleDef -> {
                             if (!ans.isTestOnly) continue
                             val modName = ans.name ?: return null
-                            val path = moveProject.root.toNioPathOrNull() ?: return null
-                            return TestConfig.Module(packageName, modName, path)
+                            val confName = "Test $packageName: $modName"
+                            val command = when (project.kind) {
+                                ProjectKind.DOVE -> "package test --filter $modName"
+                                ProjectKind.APTOS -> {
+                                    return null
+                                }
+                            }
+                            return MoveCmdConf(confName, command, rootPath)
                         }
                         else -> continue
                     }

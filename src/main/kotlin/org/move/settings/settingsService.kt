@@ -40,6 +40,8 @@ private const val serviceName: String = "MoveProjectSettings"
 class MvProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
+        var isAptos: Boolean = true,
+        var isDove: Boolean = false,
         var moveExecutablePath: String = "",
         var collapseSpecs: Boolean = false,
     )
@@ -58,7 +60,7 @@ class MvProjectSettingsService(private val project: Project) : PersistentStateCo
         }
 
     fun showMvConfigureSettings() {
-        ShowSettingsUtil.getInstance().showSettingsDialog(project, MvConfigurable::class.java)
+        ShowSettingsUtil.getInstance().showSettingsDialog(project, MoveConfigurable::class.java)
     }
 
     private fun notifySettingsChanged(
@@ -113,6 +115,18 @@ class MvProjectSettingsService(private val project: Project) : PersistentStateCo
 val Project.moveSettings: MvProjectSettingsService
     get() = this.getService(MvProjectSettingsService::class.java)
 
+enum class ProjectKind {
+    DOVE, APTOS;
+}
+
+val Project.kind: ProjectKind get() {
+    return if (this.moveSettings.settingsState.isAptos) {
+        ProjectKind.APTOS
+    } else {
+        ProjectKind.DOVE
+    }
+}
+
 val Project.moveExecutablePathValue: String
     get() {
         return this.moveSettings.settingsState.moveExecutablePath
@@ -123,7 +137,7 @@ val Project.collapseSpecs: Boolean
         return this.moveSettings.settingsState.collapseSpecs
     }
 
-val Project.moveExecPath: Path?
+val Project.moveBinaryPath: Path?
     get() {
         val value = this.moveExecutablePathValue
         if (value.isBlank()) return null

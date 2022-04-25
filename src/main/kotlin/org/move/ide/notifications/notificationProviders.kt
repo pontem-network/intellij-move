@@ -8,7 +8,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
-import org.move.cli.MvExecutable
+import org.move.cli.MoveBinary
 import org.move.lang.isMoveTomlManifestFile
 import org.move.lang.isMoveFile
 import org.move.openapiext.common.isUnitTestMode
@@ -55,7 +55,7 @@ class UnconfiguredDoveNotification(
             || isNotificationDisabled(file)
         ) return null
 
-        if (MvExecutable(project).version() != null) return null
+        if (MoveBinary(project).version() != null) return null
 
         return EditorNotificationPanel().apply {
             text = "Move configured incorrectly"

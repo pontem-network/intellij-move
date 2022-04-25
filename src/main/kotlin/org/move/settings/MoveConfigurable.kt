@@ -7,16 +7,22 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.layout.panel
 
-class MvConfigurable(val project: Project) : BoundConfigurable("Move"),
+class MoveConfigurable(val project: Project) : BoundConfigurable("Move Language"),
                                                Configurable.NoScroll {
 
-    private val settingsPanel = MvProjectSettingsPanel(project)
+    private val moveBinaryPathPanel = MoveBinaryPathPanel(project)
 
     private val state: MvProjectSettingsService.State = project.moveSettings.settingsState
 
     override fun createPanel(): DialogPanel {
         return panel {
-            settingsPanel.attachTo(this)
+            moveBinaryPathPanel.attachTo(this)
+            row {
+                buttonGroup("Project type") {
+                    row { radioButton("Aptos", state::isAptos) }
+                    row { radioButton("Dove", state::isDove) }
+                }
+            }
             row {
                 checkBox("Collapse specs by default", state::collapseSpecs)
             }
@@ -24,12 +30,17 @@ class MvConfigurable(val project: Project) : BoundConfigurable("Move"),
     }
 
     override fun disposeUIResources() {
-        val moveExecutablePath = settingsPanel.selectedMvExecPath()
+        val isAptos = this.state.isAptos
+        val isDove = this.state.isDove
+        val moveExecutablePath = moveBinaryPathPanel.selectedMoveBinaryPath()
         val collapseSpecs = this.state.collapseSpecs
-        project.moveSettings.settingsState =
-            MvProjectSettingsService.State(moveExecutablePath, collapseSpecs)
-
+        project.moveSettings.settingsState = MvProjectSettingsService.State(
+            isAptos,
+            isDove,
+            moveExecutablePath,
+            collapseSpecs
+        )
         super.disposeUIResources()
-        Disposer.dispose(settingsPanel)
+        Disposer.dispose(moveBinaryPathPanel)
     }
 }

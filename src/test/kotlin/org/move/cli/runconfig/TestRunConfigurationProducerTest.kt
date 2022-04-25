@@ -5,7 +5,7 @@ import com.intellij.execution.actions.RunConfigurationProducer
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import org.jdom.Element
-import org.move.cli.runconfig.test.TestRunConfigurationProducer
+import org.move.cli.runconfig.producers.TestRunConfigurationProducer
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.ancestorOrSelf
