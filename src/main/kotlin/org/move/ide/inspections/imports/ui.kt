@@ -15,10 +15,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.FakePsiElement
 import com.intellij.ui.popup.list.ListPopupImpl
 import com.intellij.ui.popup.list.PopupListElementRenderer
-import com.intellij.util.TextWithIcon
 import org.jetbrains.annotations.TestOnly
-import org.move.ide.MvIcons
-import org.move.lang.moveProject
 import org.move.openapiext.common.isUnitTestMode
 import java.awt.BorderLayout
 import javax.swing.Icon
@@ -141,10 +138,10 @@ private class RsImportCandidateCellRenderer : DefaultPsiElementCellRenderer() {
         }
     }
 
-    override fun getItemLocation(value: Any?): TextWithIcon? {
-        // TODO: change into proper package name
-        val moveProject = value?.importCandidate?.element?.moveProject ?: return null
-        val packageName = moveProject.packageName ?: return null
-        return TextWithIcon(packageName, MvIcons.MOVE)
-    }
+//    override fun getItemLocation(value: Any?): TextWithIcon? {
+//        // TODO: change into proper package name
+//        val moveProject = value?.importCandidate?.element?.moveProject ?: return null
+//        val packageName = moveProject.packageName ?: return null
+//        return TextWithIcon(packageName, MvIcons.MOVE)
+//    }
 }
