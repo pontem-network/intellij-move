@@ -12,14 +12,18 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.PopupStep
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep
 import com.intellij.psi.PsiElement
+import com.intellij.psi.impl.FakePsiElement
 import com.intellij.ui.popup.list.ListPopupImpl
 import com.intellij.ui.popup.list.PopupListElementRenderer
-import com.intellij.util.ui.UIUtil
+import com.intellij.util.TextWithIcon
 import org.jetbrains.annotations.TestOnly
+import org.move.ide.MvIcons
+import org.move.lang.moveProject
 import org.move.openapiext.common.isUnitTestMode
 import java.awt.BorderLayout
-import java.awt.Component
-import javax.swing.*
+import javax.swing.Icon
+import javax.swing.JPanel
+import javax.swing.ListCellRenderer
 
 private var MOCK: ImportItemUi? = null
 
@@ -30,7 +34,9 @@ fun showItemsToImportChooser(
     callback: (ImportCandidate) -> Unit
 ) {
     val itemImportUi = if (isUnitTestMode) {
-        MOCK ?: error("You should set mock ui via `withMockImportItemUi`")
+        MOCK
+            ?: error("Multiple items: ${items.map { it.fqPath.toString() }}. " +
+                             "You should set mock ui via `withMockImportItemUi`")
     } else {
         PopupImportItemUi(project, dataContext)
     }
@@ -55,33 +61,43 @@ private class PopupImportItemUi(private val project: Project, private val dataCo
     ImportItemUi {
 
     override fun chooseItem(items: List<ImportCandidate>, callback: (ImportCandidate) -> Unit) {
+        val candidatePsiItems = items.map(::ImportCandidatePsiElement)
+
         // TODO: sort items in popup
-        val step = object : BaseListPopupStep<ImportCandidate>("Item to Import", items) {
-            override fun isAutoSelectionEnabled(): Boolean = false
-            override fun isSpeedSearchEnabled(): Boolean = true
-            override fun hasSubstep(selectedValue: ImportCandidate?): Boolean = false
+        val step =
+            object : BaseListPopupStep<ImportCandidatePsiElement>("Item to Import", candidatePsiItems) {
+                override fun isAutoSelectionEnabled(): Boolean = false
+                override fun isSpeedSearchEnabled(): Boolean = true
+                override fun hasSubstep(selectedValue: ImportCandidatePsiElement?): Boolean = false
 
-            override fun onChosen(selectedValue: ImportCandidate?, finalChoice: Boolean): PopupStep<*>? {
-                if (selectedValue == null) return PopupStep.FINAL_CHOICE
-                return doFinalStep { callback(selectedValue) }
+                override fun onChosen(
+                    selectedValue: ImportCandidatePsiElement?,
+                    finalChoice: Boolean
+                ): PopupStep<*>? {
+                    if (selectedValue == null) return PopupStep.FINAL_CHOICE
+                    return doFinalStep { callback(selectedValue.importCandidate) }
+                }
+
+                override fun getTextFor(value: ImportCandidatePsiElement): String =
+                    value.importCandidate.fqPath.toString()
+
+                override fun getIconFor(value: ImportCandidatePsiElement): Icon =
+                    value.importCandidate.element.getIcon(0)
             }
-
-            override fun getTextFor(value: ImportCandidate): String = value.fqPath.toString()
-            override fun getIconFor(value: ImportCandidate): Icon = value.element.getIcon(0)
-        }
+        @Suppress("UNCHECKED_CAST")
         val popup = object : ListPopupImpl(project, step) {
             override fun getListElementRenderer(): ListCellRenderer<*> {
                 val baseRenderer = super.getListElementRenderer() as PopupListElementRenderer<Any>
-                val psiRenderer = RsElementCellRenderer()
+                val psiRenderer = RsImportCandidateCellRenderer()
                 return ListCellRenderer<Any> { list, value, index, isSelected, cellHasFocus ->
+                    @Suppress("MissingAccessibleContext")
                     val panel = JPanel(BorderLayout())
                     baseRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
                     panel.add(baseRenderer.nextStepLabel, BorderLayout.EAST)
-                    val importCandidate = value as? ImportCandidate
                     panel.add(
                         psiRenderer.getListCellRendererComponent(
                             list,
-                            importCandidate,
+                            value,
                             index,
                             isSelected,
                             cellHasFocus
@@ -96,40 +112,24 @@ private class PopupImportItemUi(private val project: Project, private val dataCo
     }
 }
 
-private class RsElementCellRenderer : DefaultPsiElementCellRenderer() {
+private class ImportCandidatePsiElement(val importCandidate: ImportCandidate) : FakePsiElement() {
+    override fun getParent(): PsiElement? = importCandidate.element.parent
+}
 
-    private val rightRender: LibraryCellRender = LibraryCellRender()
+private class RsImportCandidateCellRenderer : DefaultPsiElementCellRenderer() {
 
-    private var importCandidate: ImportCandidate? = null
+    private val Any.importCandidate: ImportCandidate? get() = (this as? ImportCandidatePsiElement)?.importCandidate
 
-    override fun getRightCellRenderer(value: Any?): DefaultListCellRenderer? = rightRender
+    override fun getIcon(element: PsiElement): Icon =
+        element.importCandidate?.element?.getIcon(iconFlags) ?: super.getIcon(element)
 
-    override fun getListCellRendererComponent(
-        list: JList<*>?,
-        value: Any?,
-        index: Int,
-        isSelected: Boolean,
-        cellHasFocus: Boolean
-    ): Component {
-        val realValue = if (value is ImportCandidate) {
-            // Generally, it's rather hacky but I don't know another way
-            // how to use functionality of `PsiElementListCellRenderer`
-            // and pass additional info with psi element at same time
-            importCandidate = value
-            value.element
-        } else {
-            value
-        }
-        return super.getListCellRendererComponent(list, realValue, index, isSelected, cellHasFocus)
-    }
-
-    override fun getElementText(element: PsiElement): String = importCandidate?.element?.name
-        ?: super.getElementText(element)
+    override fun getElementText(element: PsiElement): String =
+        element.importCandidate?.element?.name ?: super.getElementText(element)
 
     override fun getContainerText(element: PsiElement, name: String): String? {
-        val candidate = importCandidate
-        return if (candidate != null) {
-            val fqPath = candidate.fqPath
+        val importCandidate = element.importCandidate
+        return if (importCandidate != null) {
+            val fqPath = importCandidate.fqPath
             val container = if (fqPath.item == null) {
                 fqPath.address
             } else {
@@ -141,32 +141,10 @@ private class RsElementCellRenderer : DefaultPsiElementCellRenderer() {
         }
     }
 
-    private inner class LibraryCellRender : DefaultListCellRenderer() {
-        override fun getListCellRendererComponent(
-            list: JList<*>, value: Any?, index: Int,
-            isSelected: Boolean, cellHasFocus: Boolean
-        ): Component {
-            val component = super.getListCellRendererComponent(list, null, index, isSelected, cellHasFocus)
-//            val textWithIcon = textWithIcon()
-//            if (textWithIcon != null) {
-//                text = textWithIcon.first
-//                icon = textWithIcon.second
-//            }
-
-            border = BorderFactory.createEmptyBorder(0, 0, 0, 2)
-            horizontalTextPosition = SwingConstants.LEFT
-            background = UIUtil.getListBackground(isSelected, cellHasFocus)
-            foreground = UIUtil.getListForeground(isSelected, cellHasFocus)
-            return component
-        }
-
-//        private fun textWithIcon(): Pair<String, Icon>? {
-//            val pkg = importCandidate?.element?.containingCargoTarget?.pkg ?: return null
-//            return when (pkg.origin) {
-//                PackageOrigin.STDLIB -> pkg.normName to RsIcons.RUST
-//                PackageOrigin.DEPENDENCY, PackageOrigin.TRANSITIVE_DEPENDENCY -> pkg.normName to CargoIcons.ICON
-//                else -> null
-//            }
-//        }
+    override fun getItemLocation(value: Any?): TextWithIcon? {
+        // TODO: change into proper package name
+        val moveProject = value?.importCandidate?.element?.moveProject ?: return null
+        val packageName = moveProject.packageName ?: return null
+        return TextWithIcon(packageName, MvIcons.MOVE)
     }
 }
