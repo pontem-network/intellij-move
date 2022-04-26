@@ -71,7 +71,7 @@ class FilePathWithVersionField(private val project: Project) : Disposable {
     }
 }
 
-private fun wrapComponent(component: JComponent): JComponent =
+fun wrapComponent(component: JComponent): JComponent =
     JPanel(BorderLayout()).apply {
         add(component, BorderLayout.NORTH)
     }

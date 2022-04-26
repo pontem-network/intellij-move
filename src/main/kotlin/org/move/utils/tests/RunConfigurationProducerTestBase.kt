@@ -57,16 +57,16 @@ abstract class RunConfigurationProducerTestBase(val testDir: String) : MvProject
         checkOnElement<PsiElement>()
     }
 
-    protected fun checkOnFiles(vararg files: PsiElement) {
-        TestApplicationManager.getInstance().setDataProvider(object : TestDataProvider(project) {
-            override fun getData(dataId: String): Any? =
-                if (LangDataKeys.PSI_ELEMENT_ARRAY.`is`(dataId)) files else super.getData(dataId)
-        }, testRootDisposable)
-
-        val dataContext = DataManager.getInstance().getDataContext(myFixture.editor.component)
-        val configurationContext = ConfigurationContext.getFromContext(dataContext, ActionPlaces.UNKNOWN)
-        check(configurationContext)
-    }
+//    protected fun checkOnFiles(vararg files: PsiElement) {
+//        TestApplicationManager.getInstance().setDataProvider(object : TestDataProvider(project) {
+//            override fun getData(dataId: String): Any? =
+//                if (LangDataKeys.PSI_ELEMENT_ARRAY.`is`(dataId)) files else super.getData(dataId)
+//        }, testRootDisposable)
+//
+//        val dataContext = DataManager.getInstance().getDataContext(myFixture.editor.component)
+//        val configurationContext = ConfigurationContext.getFromContext(dataContext, ActionPlaces.UNKNOWN)
+//        check(configurationContext)
+//    }
 
     protected inline fun <reified T : PsiElement> checkOnElement() {
         val element = myFixture.file.findElementAt(myFixture.caretOffset)
