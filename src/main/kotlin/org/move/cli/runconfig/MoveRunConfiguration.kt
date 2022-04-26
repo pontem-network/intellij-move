@@ -9,7 +9,7 @@ import org.jdom.Element
 import org.move.cli.*
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
-import org.move.settings.moveExecutablePathValue
+import org.move.cli.settings.moveExecutablePathValue
 
 class MoveRunConfiguration(
     project: Project,

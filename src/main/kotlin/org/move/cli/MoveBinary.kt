@@ -7,7 +7,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
-import org.move.settings.moveBinaryPath
+import org.move.cli.settings.moveBinaryPath
 import java.io.File
 import java.io.InputStreamReader
 import java.nio.file.Path

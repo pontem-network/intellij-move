@@ -7,8 +7,9 @@ import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.isTestOnly
 import org.move.lang.moveProject
-import org.move.settings.ProjectKind
-import org.move.settings.kind
+import org.move.cli.settings.ProjectType
+import org.move.cli.settings.type
+import org.move.cli.settings.moveSettings
 
 class PublishModuleRunConfigurationProducer: MoveBinaryRunConfigurationProducer() {
     override fun configFromLocation(location: PsiElement): MoveCmdConf? {
@@ -19,9 +20,10 @@ class PublishModuleRunConfigurationProducer: MoveBinaryRunConfigurationProducer(
         if (mod.isTestOnly) return null
         val modName = mod.name ?: return null
 
-        val command = when (location.project.kind) {
-            ProjectKind.APTOS -> "move publish --package-dir ."
-            ProjectKind.DOVE -> {
+        val privateKey = location.project.moveSettings.settingsState.privateKey
+        val command = when (location.project.type) {
+            ProjectType.APTOS -> "move publish --package-dir . --private-key $privateKey"
+            ProjectType.DOVE -> {
                 "deploy"
             }
         }

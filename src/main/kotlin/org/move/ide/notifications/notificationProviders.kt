@@ -12,9 +12,9 @@ import org.move.cli.MoveBinary
 import org.move.lang.isMoveTomlManifestFile
 import org.move.lang.isMoveFile
 import org.move.openapiext.common.isUnitTestMode
-import org.move.settings.MvSettingsChangedEvent
-import org.move.settings.MvSettingsListener
-import org.move.settings.moveSettings
+import org.move.cli.settings.MvSettingsChangedEvent
+import org.move.cli.settings.MvSettingsListener
+import org.move.cli.settings.moveSettings
 
 fun updateAllNotifications(project: Project) {
     EditorNotifications.getInstance(project).updateAllNotifications()

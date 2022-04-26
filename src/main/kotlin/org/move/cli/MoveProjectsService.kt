@@ -26,9 +26,9 @@ import org.move.lang.toNioPathOrNull
 import org.move.openapiext.checkReadAccessAllowed
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.findVirtualFile
-import org.move.settings.MvProjectSettingsService
-import org.move.settings.MvSettingsChangedEvent
-import org.move.settings.MvSettingsListener
+import org.move.cli.settings.MvProjectSettingsService
+import org.move.cli.settings.MvSettingsChangedEvent
+import org.move.cli.settings.MvSettingsListener
 import org.move.stdext.AsyncValue
 import org.move.stdext.MoveProjectEntry
 import org.move.stdext.MyLightDirectoryIndex

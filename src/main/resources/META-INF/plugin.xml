@@ -217,8 +217,8 @@
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
         <projectOpenProcessor id="Move" implementation="org.move.cli.MvProjectOpenProcessor"/>
-        <projectConfigurable instance="org.move.settings.MoveConfigurable"
-                             displayName="Move"
+        <projectConfigurable instance="org.move.cli.settings.PerProjectMoveConfigurable"
+                             displayName="Move Language"
                              groupId="language"
                              id="language.move"/>
         <projectService serviceInterface="org.move.utils.ProjectRootService"
@@ -250,7 +250,7 @@
 
     <projectListeners>
         <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
-                  topic="org.move.settings.MvSettingsListener"
+                  topic="org.move.cli.settings.MvSettingsListener"
                   activeInTestMode="false"/>
     </projectListeners>
 

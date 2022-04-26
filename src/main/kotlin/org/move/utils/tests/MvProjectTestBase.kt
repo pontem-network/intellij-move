@@ -5,8 +5,8 @@ import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import org.intellij.lang.annotations.Language
+import org.move.cli.settings.moveSettings
 import org.move.openapiext.findVirtualFile
-import org.move.settings.setKind
 import org.move.utils.tests.base.TestCase
 
 abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuilder<*>>() {
@@ -14,9 +14,11 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
 
     override fun setUp() {
         super.setUp()
-        val projectKind = this.findAnnotationInstance<SettingsProjectKind>()?.kind
-        if (projectKind != null) {
-            this.project.setKind(projectKind, testRootDisposable)
+        val type = this.findAnnotationInstance<SettingsProjectType>()?.type
+        if (type != null) {
+            project.moveSettings.modifyTemporary(testRootDisposable) {
+                it.projectType = type
+            }
         }
     }
 

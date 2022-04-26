@@ -4,7 +4,7 @@ import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "212"
+val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "221"
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
 
 val baseProperties = "base-gradle.properties"
@@ -97,11 +97,11 @@ allprojects {
 
     tasks {
         // workaround for gradle not seeing tests in 2021.3+
-//        val test by getting(Test::class) {
-//            setScanForTestClasses(false)
-//            // Only run tests from classes that end with "Test"
-//            include("**/*Test.class")
-//        }
+        val test by getting(Test::class) {
+            setScanForTestClasses(false)
+            // Only run tests from classes that end with "Test"
+            include("**/*Test.class")
+        }
 
         patchPluginXml {
             version.set("$pluginVersion.$propsVersion")

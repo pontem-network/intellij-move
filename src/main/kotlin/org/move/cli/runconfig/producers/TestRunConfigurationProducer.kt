@@ -14,8 +14,8 @@ import org.move.lang.core.psi.ext.isTest
 import org.move.lang.core.psi.ext.isTestOnly
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
-import org.move.settings.ProjectKind
-import org.move.settings.kind
+import org.move.cli.settings.ProjectType
+import org.move.cli.settings.type
 
 class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
     override fun configFromLocation(location: PsiElement): MoveCmdConf? {
@@ -30,9 +30,9 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
                     || locationPath == moveProject.testsDir()
                 ) {
                     val confName = "Test $packageName"
-                    val command = when (project.kind) {
-                        ProjectKind.APTOS -> "move test --package-dir ."
-                        ProjectKind.DOVE -> "package test"
+                    val command = when (project.type) {
+                        ProjectType.APTOS -> "move test --package-dir ."
+                        ProjectType.DOVE -> "package test"
                     }
                     return MoveCmdConf(confName, command, rootPath)
                 }
@@ -50,9 +50,9 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
                             val functionName = ans.name ?: return null
                             val modName = ans.containingModule?.name ?: return null
                             val confName = "Test $packageName: $modName::$functionName"
-                            val command = when (project.kind) {
-                                ProjectKind.DOVE -> "package test --filter ${functionName}"
-                                ProjectKind.APTOS -> {
+                            val command = when (project.type) {
+                                ProjectType.DOVE -> "package test --filter ${functionName}"
+                                ProjectType.APTOS -> {
                                     return null
                                 }
                             }
@@ -62,9 +62,9 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
                             if (!ans.isTestOnly) continue
                             val modName = ans.name ?: return null
                             val confName = "Test $packageName: $modName"
-                            val command = when (project.kind) {
-                                ProjectKind.DOVE -> "package test --filter $modName"
-                                ProjectKind.APTOS -> {
+                            val command = when (project.type) {
+                                ProjectType.DOVE -> "package test --filter $modName"
+                                ProjectType.APTOS -> {
                                     return null
                                 }
                             }

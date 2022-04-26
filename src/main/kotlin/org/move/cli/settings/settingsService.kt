@@ -1,4 +1,4 @@
-package org.move.settings
+package org.move.cli.settings
 
 import com.intellij.configurationStore.serializeObjectInto
 import com.intellij.openapi.Disposable
@@ -40,9 +40,9 @@ private const val serviceName: String = "MoveProjectSettings"
 class MvProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
-        var isDove: Boolean = true,
-        var isAptos: Boolean = false,
+        var projectType: ProjectType = ProjectType.APTOS,
         var moveExecutablePath: String = "",
+        var privateKey: String = "",
         var collapseSpecs: Boolean = false,
     )
 
@@ -60,7 +60,7 @@ class MvProjectSettingsService(private val project: Project) : PersistentStateCo
         }
 
     fun showMvConfigureSettings() {
-        ShowSettingsUtil.getInstance().showSettingsDialog(project, MoveConfigurable::class.java)
+        ShowSettingsUtil.getInstance().showSettingsDialog(project, PerProjectMoveConfigurable::class.java)
     }
 
     private fun notifySettingsChanged(
@@ -115,36 +115,14 @@ class MvProjectSettingsService(private val project: Project) : PersistentStateCo
 val Project.moveSettings: MvProjectSettingsService
     get() = this.getService(MvProjectSettingsService::class.java)
 
-enum class ProjectKind {
+
+enum class ProjectType {
     DOVE, APTOS;
 }
 
-val Project.kind: ProjectKind
-    get() {
-        return if (this.moveSettings.settingsState.isAptos) {
-            ProjectKind.APTOS
-        } else {
-            ProjectKind.DOVE
-        }
-    }
+val Project.type: ProjectType
+    get() = this.moveSettings.settingsState.projectType
 
-@TestOnly
-fun Project.setKind(kind: ProjectKind, disposable: Disposable) {
-    when (kind) {
-        ProjectKind.DOVE -> {
-            this.moveSettings.modifyTemporary(disposable) {
-                it.isAptos = false
-                it.isDove = true
-            }
-        }
-        ProjectKind.APTOS -> {
-            this.moveSettings.modifyTemporary(disposable) {
-                it.isAptos = true
-                it.isDove = false
-            }
-        }
-    }
-}
 
 val Project.moveExecutablePathValue: String
     get() {

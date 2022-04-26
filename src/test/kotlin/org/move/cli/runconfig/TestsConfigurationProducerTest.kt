@@ -3,12 +3,12 @@ package org.move.cli.runconfig
 import com.intellij.psi.PsiElement
 import org.move.cli.runconfig.producers.TestRunConfigurationProducer
 import org.move.lang.core.psi.MvFunction
-import org.move.settings.ProjectKind
+import org.move.cli.settings.ProjectType
 import org.move.utils.tests.RunConfigurationProducerTestBase
-import org.move.utils.tests.SettingsProjectKind
+import org.move.utils.tests.SettingsProjectType
 
 class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") {
-    @SettingsProjectKind(ProjectKind.DOVE)
+    @SettingsProjectType(ProjectType.DOVE)
     fun `test producer works for annotated functions`() {
         testProject {
             moveToml(
