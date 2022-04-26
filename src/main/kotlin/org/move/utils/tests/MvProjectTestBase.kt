@@ -6,9 +6,25 @@ import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import org.intellij.lang.annotations.Language
 import org.move.openapiext.findVirtualFile
+import org.move.settings.setKind
 import org.move.utils.tests.base.TestCase
 
 abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuilder<*>>() {
+    var testProject: TestProject? = null
+
+    override fun setUp() {
+        super.setUp()
+        val projectKind = this.findAnnotationInstance<SettingsProjectKind>()?.kind
+        if (projectKind != null) {
+            this.project.setKind(projectKind, testRootDisposable)
+        }
+    }
+
+    override fun tearDown() {
+        testProject = null
+        super.tearDown()
+    }
+
     override fun getTestName(lowercaseFirstLetter: Boolean): String {
         val camelCase = super.getTestName(lowercaseFirstLetter)
         return TestCase.camelOrWordsToSnake(camelCase)
@@ -26,6 +42,12 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
         return fileTree.prepareTestProject(myFixture.project, rootDirectory)
     }
 
+    fun testProject(builder: FileTreeBuilder.() -> Unit) {
+        val testProject = testProjectFromFileTree(builder)
+        this.testProject = testProject
+        myFixture.configureFromFileWithCaret(testProject)
+    }
+
     protected fun CodeInsightTestFixture.configureFromFileWithCaret(testProject: TestProject) {
         val fileWithCaret =
             testProject.rootDirectory.toNioPath()
@@ -33,7 +55,7 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
                 ?: error("No file with //^ caret")
         this.configureFromExistingVirtualFile(fileWithCaret)
     }
-    
+
     protected fun CodeInsightTestFixture.configureFromFileWithNamedElement(testProject: TestProject) {
         val fileWithNamedElement =
             testProject.rootDirectory.toNioPath()
@@ -42,5 +64,5 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
         this.configureFromExistingVirtualFile(fileWithNamedElement)
     }
 
-    
+
 }

@@ -40,8 +40,8 @@ private const val serviceName: String = "MoveProjectSettings"
 class MvProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
-        var isAptos: Boolean = true,
-        var isDove: Boolean = false,
+        var isDove: Boolean = true,
+        var isAptos: Boolean = false,
         var moveExecutablePath: String = "",
         var collapseSpecs: Boolean = false,
     )
@@ -119,11 +119,30 @@ enum class ProjectKind {
     DOVE, APTOS;
 }
 
-val Project.kind: ProjectKind get() {
-    return if (this.moveSettings.settingsState.isAptos) {
-        ProjectKind.APTOS
-    } else {
-        ProjectKind.DOVE
+val Project.kind: ProjectKind
+    get() {
+        return if (this.moveSettings.settingsState.isAptos) {
+            ProjectKind.APTOS
+        } else {
+            ProjectKind.DOVE
+        }
+    }
+
+@TestOnly
+fun Project.setKind(kind: ProjectKind, disposable: Disposable) {
+    when (kind) {
+        ProjectKind.DOVE -> {
+            this.moveSettings.modifyTemporary(disposable) {
+                it.isAptos = false
+                it.isDove = true
+            }
+        }
+        ProjectKind.APTOS -> {
+            this.moveSettings.modifyTemporary(disposable) {
+                it.isAptos = true
+                it.isDove = false
+            }
+        }
     }
 }
 

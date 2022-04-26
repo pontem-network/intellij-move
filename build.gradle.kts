@@ -4,7 +4,7 @@ import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "221"
+val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "212"
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
 
 val baseProperties = "base-gradle.properties"
@@ -17,7 +17,7 @@ file(properties).inputStream().let { props.load(it) }
 fun prop(key: String): String = props[key].toString()
 
 //val intellijVersion = prop("intellijVersion", "2021.2")
-val kotlinVersion = "1.6.21"
+val kotlinVersion = "1.6.20"
 
 val pluginJarName = "intellij-move-$propsVersion"
 val pluginVersion = "1.7.0"
@@ -28,8 +28,8 @@ version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.6.21"
-    id("org.jetbrains.intellij") version "1.5.3"
+    kotlin("jvm") version "1.6.20"
+    id("org.jetbrains.intellij") version "1.5.2"
     id("org.jetbrains.grammarkit") version "2021.2.2"
 }
 
@@ -38,7 +38,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     // https://mvnrepository.com/artifact/org.yaml/snakeyaml
-    implementation("org.yaml:snakeyaml:1.29")
+    implementation("org.yaml:snakeyaml:1.30")
     testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
 }
 
@@ -96,12 +96,12 @@ allprojects {
     }
 
     tasks {
-        // workaround for gradle not seeing tests in 2021.3
-        val test by getting(Test::class) {
-            setScanForTestClasses(false)
-            // Only run tests from classes that end with "Test"
-            include("**/*Test.class")
-        }
+        // workaround for gradle not seeing tests in 2021.3+
+//        val test by getting(Test::class) {
+//            setScanForTestClasses(false)
+//            // Only run tests from classes that end with "Test"
+//            include("**/*Test.class")
+//        }
 
         patchPluginXml {
             version.set("$pluginVersion.$propsVersion")

@@ -1,7 +1,0 @@
-<configurations>
-  <configuration name="Test package" class="MoveRunConfiguration">
-    <option name="command" value="package test" />
-    <option name="workingDirectory" value="file:///my-package/code" />
-    <envs />
-  </configuration>
-</configurations>

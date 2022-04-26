@@ -59,4 +59,28 @@ abstract class MvTestBase : BasePlatformTestCase(),
             myFixture.performEditorAction(actionId)
         }
     }
+
+    companion object {
+        @JvmStatic
+        fun checkHtmlStyle(html: String) {
+            // http://stackoverflow.com/a/1732454
+            val re = "<body>(.*)</body>".toRegex(RegexOption.DOT_MATCHES_ALL)
+            val body = (re.find(html)?.let { it.groups[1]!!.value } ?: html).trim()
+            check(body[0].isUpperCase()) {
+                "Please start description with the capital latter"
+            }
+
+            check(body.last() == '.') {
+                "Please end description with a period"
+            }
+        }
+
+        @JvmStatic
+        fun getResourceAsString(path: String): String? {
+            val stream = MvTestBase::class.java.classLoader.getResourceAsStream(path)
+                ?: return null
+
+            return stream.bufferedReader().use { it.readText() }
+        }
+    }
 }
