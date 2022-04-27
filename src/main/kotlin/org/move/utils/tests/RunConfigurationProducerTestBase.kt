@@ -3,12 +3,7 @@ package org.move.utils.tests
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.RunConfigurationProducer
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
-import com.intellij.ide.DataManager
-import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.LangDataKeys
 import com.intellij.psi.PsiElement
-import com.intellij.testFramework.TestApplicationManager
-import com.intellij.testFramework.TestDataProvider
 import org.jdom.Element
 import org.move.cli.runconfig.MoveRunConfiguration
 import org.move.lang.core.psi.ext.ancestorOrSelf
@@ -76,9 +71,19 @@ abstract class RunConfigurationProducerTestBase(val testDir: String) : MvProject
         check(configurationContext)
     }
 
+    protected inline fun <reified T : PsiElement> checkNoConfigurationOnElement() {
+        val element = myFixture.file.findElementAt(myFixture.caretOffset)
+            ?.ancestorOrSelf<T>()
+            ?: error("Failed to find element of `${T::class.simpleName}` class at caret")
+        val configurationContext = ConfigurationContext(element)
+        val configurations = configurationContext.configurationsFromContext.orEmpty()
+        check(configurations.isEmpty()) { "Found unexpected run configurations" }
+    }
+
     protected fun check(configurationContext: ConfigurationContext) {
         val configurations =
             configurationContext.configurationsFromContext.orEmpty().map { it.configurationSettings }
+        check(configurations.isNotEmpty()) { "No configurations found" }
 
         val root = Element("configurations")
         configurations.forEach {

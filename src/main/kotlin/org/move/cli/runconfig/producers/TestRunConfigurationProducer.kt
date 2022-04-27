@@ -3,7 +3,6 @@ package org.move.cli.runconfig.producers
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.parentOfType
 import org.move.cli.runconfig.MoveBinaryRunConfigurationProducer
 import org.move.cli.runconfig.MoveCmd
 import org.move.cli.runconfig.MoveCmdConfig
@@ -14,7 +13,7 @@ import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.childOfType
 import org.move.lang.core.psi.ext.isTest
-import org.move.lang.core.psi.ext.isTestOnly
+import org.move.lang.core.psi.items
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 
@@ -24,7 +23,7 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
     companion object {
         fun fromLocation(location: PsiElement, climbUp: Boolean = true): MoveCmdConfig? {
             val moveProject = location.moveProject ?: return null
-            val packageName = moveProject.packageName ?: return null
+            val packageName = moveProject.packageName ?: ""
             val project = location.project
             val rootPath = moveProject.rootPath ?: return null
             return when (location) {
@@ -68,7 +67,8 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
 
         private fun findTestModule(psi: PsiElement, climbUp: Boolean): MoveCmdConfig? {
             val mod = findElement<MvModuleDef>(psi, climbUp) ?: return null
-            if (!mod.isTestOnly) return null
+            if (!hasTestFunction(mod)) return null
+
             val modName = mod.name ?: return null
             val confName = "Test $modName"
             val command = when (psi.project.type) {
@@ -81,10 +81,11 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
             return MoveCmdConfig(psi, confName, MoveCmd(command, rootPath))
         }
 
-        private inline fun <reified T : PsiElement> findElement(base: PsiElement, climbUp: Boolean): T? {
-            if (base is T) return base
-            if (!climbUp) return null
-            return base.parentOfType(withSelf = false)
+        private fun hasTestFunction(mod: MvModuleDef): Boolean {
+            val items = mod.moduleBlock?.items().orEmpty()
+            return items
+                .filterIsInstance<MvFunction>()
+                .any { it.isTest }
         }
     }
 }

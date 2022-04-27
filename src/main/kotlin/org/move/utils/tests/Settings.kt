@@ -1,6 +1,7 @@
 package org.move.utils.tests
 
 import junit.framework.TestCase
+import org.move.cli.settings.MvProjectSettingsService
 import org.move.cli.settings.ProjectType
 
 /** Tries to find the specified annotation on the current test method and then on the current class */
@@ -11,3 +12,4 @@ inline fun <reified T : Annotation> MvProjectTestBase.findAnnotationInstance(): 
     javaClass.getMethod(name).getAnnotation(T::class.java) ?: javaClass.getAnnotation(T::class.java)
 
 annotation class SettingsProjectType(val type: ProjectType)
+annotation class SettingsPrivateKey(val privateKey: String)

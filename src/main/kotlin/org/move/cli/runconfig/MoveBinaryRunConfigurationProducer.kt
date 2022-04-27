@@ -4,6 +4,7 @@ import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.parentOfType
 
 
 abstract class MoveBinaryRunConfigurationProducer : LazyRunConfigurationProducer<MoveRunConfiguration>() {
@@ -32,4 +33,12 @@ abstract class MoveBinaryRunConfigurationProducer : LazyRunConfigurationProducer
     }
 
     abstract fun configFromLocation(location: PsiElement): MoveCmdConfig?
+
+    companion object {
+        inline fun <reified T : PsiElement> findElement(base: PsiElement, climbUp: Boolean): T? {
+            if (base is T) return base
+            if (!climbUp) return null
+            return base.parentOfType(withSelf = false)
+        }
+    }
 }

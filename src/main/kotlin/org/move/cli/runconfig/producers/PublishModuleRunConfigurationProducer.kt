@@ -14,11 +14,10 @@ import org.move.lang.moveProject
 
 class PublishModuleRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
     override fun configFromLocation(location: PsiElement): MoveCmdConfig? {
-        val moveProject = location.moveProject ?: return null
-        val rootPath = moveProject.rootPath ?: return null
-
-        val mod = location.ancestorOrSelf<MvModuleDef>() ?: return null
+        val mod = findElement<MvModuleDef>(location, true) ?: return null
         if (mod.isTestOnly) return null
+
+        val rootPath = location.moveProject?.rootPath ?: return null
         val modName = mod.name ?: return null
 
         val privateKey = location.project.moveSettings.settingsState.privateKey

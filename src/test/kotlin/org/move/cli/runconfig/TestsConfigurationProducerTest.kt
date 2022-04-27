@@ -4,12 +4,13 @@ import com.intellij.psi.PsiElement
 import org.move.cli.runconfig.producers.TestRunConfigurationProducer
 import org.move.lang.core.psi.MvFunction
 import org.move.cli.settings.ProjectType
+import org.move.lang.core.psi.MvModuleDef
 import org.move.utils.tests.RunConfigurationProducerTestBase
 import org.move.utils.tests.SettingsProjectType
 
 class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") {
     @SettingsProjectType(ProjectType.DOVE)
-    fun `test producer works for annotated functions`() {
+    fun `test dove test run for function`() {
         testProject {
             moveToml(
                 """
@@ -40,6 +41,42 @@ class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") 
         val ctx1 = myFixture.findElementByText("+", PsiElement::class.java)
         val ctx2 = myFixture.findElementByText("*", PsiElement::class.java)
         doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
+    }
+
+    @SettingsProjectType(ProjectType.DOVE)
+    fun `test dove no test run if no test functions`() {
+        testProject {
+            moveToml("""""")
+            sources {
+                move("main.move", """
+                #[test_only]    
+                module 0x1::/*caret*/M {
+                    fun call() {}
+                }    
+                """)
+            }
+        }
+        checkNoConfigurationOnElement<MvModuleDef>()
+    }
+
+    @SettingsProjectType(ProjectType.DOVE)
+    fun `test dove test run for module with test functions inside sources`() {
+        testProject {
+            moveToml("""
+            [package]
+            name = "MyPackage"    
+            """)
+            sources {
+                move("main.move", """
+                #[test_only]    
+                module 0x1::/*caret*/Main {
+                    #[test]
+                    fun test_some_action() {}
+                }    
+                """)
+            }
+        }
+        checkOnElement<MvModuleDef>()
     }
 }
 //    }
