@@ -40,7 +40,7 @@ private const val serviceName: String = "MoveProjectSettings"
 class MvProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
-        var projectType: ProjectType = ProjectType.APTOS,
+        var projectType: ProjectType = ProjectType.DOVE,
         var moveExecutablePath: String = "",
         var privateKey: String = "",
         var collapseSpecs: Boolean = false,
