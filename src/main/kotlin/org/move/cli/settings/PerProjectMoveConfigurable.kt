@@ -5,7 +5,8 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.layout.panel
+import com.intellij.ui.components.JBRadioButton
+import com.intellij.ui.layout.*
 
 class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move Language"),
                                                          Configurable.NoScroll {
@@ -15,25 +16,30 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
     private val state: MvProjectSettingsService.State = project.moveSettings.settingsState
 
     override fun createPanel(): DialogPanel {
+        val aptosRadio = JBRadioButton("Aptos")
         return panel {
-            row("Move binary:") {
-                binaryPathField.field()
-            }
-            row("Version") {
-                binaryPathField.versionLabel()
-            }
-            buttonGroup {
-                row {
-                    radioButton("Aptos",
-                                { state.projectType == ProjectType.APTOS },
-                                { if (it) state.projectType = ProjectType.APTOS })
+            row("Project type") {
+                buttonGroup {
+                    aptosRadio().withSelectedBinding(
+                        PropertyBinding({ state.projectType == ProjectType.APTOS },
+                                        { if (it) state.projectType = ProjectType.APTOS })
+                    )
                     radioButton("Dove",
                                 { state.projectType == ProjectType.DOVE },
                                 { if (it) state.projectType = ProjectType.DOVE })
                 }
             }
+            titledRow("") {
+                row("CLI") { binaryPathField.field() }
+                row("Version") {
+                    binaryPathField.versionLabel()
+                }
+            }
             row("Aptos private key") { textField(state::privateKey) }
-            row { checkBox("Collapse specs by default", state::collapseSpecs) }
+                .enableIf(aptosRadio.selected)
+            titledRow("") {
+                row { checkBox("Collapse specs by default", state::collapseSpecs) }
+            }
         }
     }
 //    override fun createPanel(): DialogPanel {
