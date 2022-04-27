@@ -1,17 +1,14 @@
 package org.move.cli.runconfig
 
 import com.intellij.execution.configuration.EnvironmentVariablesData
+import com.intellij.psi.PsiElement
 import java.nio.file.Path
 
-data class MoveCmdConf(
-    val name: String,
-    val command: String,
-    val workingDirectory: Path,
-    val env: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
+data class MoveCmdConfig(
+    val sourceElement: PsiElement,
+    val configurationName: String,
+    val cmd: MoveCmd
 ) {
-    fun commandLine(): MoveCmd {
-        return MoveCmd(command, workingDirectory, env)
-    }
 }
 
 data class MoveCmd(

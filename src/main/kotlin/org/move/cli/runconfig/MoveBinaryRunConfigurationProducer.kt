@@ -16,9 +16,8 @@ abstract class MoveBinaryRunConfigurationProducer : LazyRunConfigurationProducer
         sourceElement: Ref<PsiElement>
     ): Boolean {
         val cmdConf = configFromLocation(sourceElement.get()) ?: return false
-        templateConfiguration.name = cmdConf.name
-        templateConfiguration.cmd =
-            MoveCmd(cmdConf.command, cmdConf.workingDirectory, cmdConf.env)
+        templateConfiguration.name = cmdConf.configurationName
+        templateConfiguration.cmd = cmdConf.cmd
         return true
     }
 
@@ -28,9 +27,9 @@ abstract class MoveBinaryRunConfigurationProducer : LazyRunConfigurationProducer
     ): Boolean {
         val location = context.psiLocation ?: return false
         val cmdConf = configFromLocation(location) ?: return false
-        return configuration.name == cmdConf.name
-                && configuration.cmd == cmdConf.commandLine()
+        return configuration.name == cmdConf.configurationName
+                && configuration.cmd == cmdConf.cmd
     }
 
-    abstract fun configFromLocation(location: PsiElement): MoveCmdConf?
+    abstract fun configFromLocation(location: PsiElement): MoveCmdConfig?
 }

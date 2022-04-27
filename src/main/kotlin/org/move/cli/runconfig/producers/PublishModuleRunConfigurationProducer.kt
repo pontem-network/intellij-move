@@ -2,17 +2,18 @@ package org.move.cli.runconfig.producers
 
 import com.intellij.psi.PsiElement
 import org.move.cli.runconfig.MoveBinaryRunConfigurationProducer
-import org.move.cli.runconfig.MoveCmdConf
+import org.move.cli.runconfig.MoveCmd
+import org.move.cli.runconfig.MoveCmdConfig
+import org.move.cli.settings.ProjectType
+import org.move.cli.settings.moveSettings
+import org.move.cli.settings.type
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.isTestOnly
 import org.move.lang.moveProject
-import org.move.cli.settings.ProjectType
-import org.move.cli.settings.type
-import org.move.cli.settings.moveSettings
 
-class PublishModuleRunConfigurationProducer: MoveBinaryRunConfigurationProducer() {
-    override fun configFromLocation(location: PsiElement): MoveCmdConf? {
+class PublishModuleRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
+    override fun configFromLocation(location: PsiElement): MoveCmdConfig? {
         val moveProject = location.moveProject ?: return null
         val rootPath = moveProject.rootPath ?: return null
 
@@ -27,6 +28,10 @@ class PublishModuleRunConfigurationProducer: MoveBinaryRunConfigurationProducer(
                 "deploy"
             }
         }
-        return MoveCmdConf("Publish module $modName", command, rootPath)
+        return MoveCmdConfig(
+            location,
+            "Publish module $modName",
+            MoveCmd(command, rootPath)
+        )
     }
 }
