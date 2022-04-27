@@ -9,7 +9,7 @@ import org.move.lang.core.resolve.MvReferenceElement
 
 class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
-    var ignoreWithoutQuickFix: Boolean = false
+    var ignoreWithoutQuickFix: Boolean = true
 
     override val isSyntaxOnly get() = false
 
