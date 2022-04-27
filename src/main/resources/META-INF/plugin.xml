@@ -236,8 +236,8 @@
 
         <!-- Notifications -->
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>
-        <editorNotificationProvider
-                implementation="org.move.ide.notifications.UnconfiguredDoveNotification"/>
+<!--        <editorNotificationProvider-->
+<!--                implementation="org.move.ide.notifications.UnconfiguredDoveNotification"/>-->
 
         <intentionAction>
             <className>org.move.ide.intentions.RemoveCurlyBracesIntention</className>
