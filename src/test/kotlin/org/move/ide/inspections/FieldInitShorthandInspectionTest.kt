@@ -1,8 +1,8 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.annotation.InspectionsTestCase
+import org.move.utils.tests.annotation.InspectionTestBase
 
-class FieldInitShorthandInspectionTest : InspectionsTestCase(FieldInitShorthandInspection::class) {
+class FieldInitShorthandInspectionTest : InspectionTestBase(FieldInitShorthandInspection::class) {
 
     fun `test not applicable`() = checkFixIsUnavailable(
         "Use initialization shorthand", """

@@ -15,10 +15,10 @@ data class ProjectInfo(
 ) {
     val sourcesFolder: VirtualFile? get() = rootPath.resolveExisting("sources")?.findVirtualFile()
 
-    fun deps(scope: GlobalScope): DependenciesMap {
+    fun deps(scope: MoveScope): DependenciesMap {
         return when (scope) {
-            GlobalScope.MAIN -> this.dependencies
-            GlobalScope.DEV -> (this.dependencies + this.dev_dependencies) as DependenciesMap
+            MoveScope.MAIN -> this.dependencies
+            MoveScope.DEV -> (this.dependencies + this.dev_dependencies) as DependenciesMap
         }
     }
 }

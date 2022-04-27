@@ -192,13 +192,13 @@ class ErrorAnnotator : MvAnnotator() {
 
     private fun checkModuleDef(holder: MvAnnotationHolder, mod: MvModuleDef) {
         val moveProj = mod.moveProject ?: return
-        val addressIdent = mod.definedAddressRef()?.toAddress(moveProj) ?: return
+        val addressIdent = mod.address()?.toAddress(moveProj) ?: return
         val modIdent = Pair(addressIdent, mod.name)
         val file = mod.containingMvFile ?: return
         val duplicateIdents =
             file.modules()
                 .filter { it.name != null }
-                .groupBy { Pair(it.definedAddressRef()?.toAddress(), it.name) }
+                .groupBy { Pair(it.address()?.toAddress(), it.name) }
                 .filter { it.value.size > 1 }
                 .map { it.key }
                 .toSet()

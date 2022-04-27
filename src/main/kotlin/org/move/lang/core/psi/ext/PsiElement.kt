@@ -34,6 +34,9 @@ val PsiElement.ancestors: Sequence<PsiElement>
         if (it is PsiFile) null else it.parent
     }
 
+fun PsiElement.findFirstParent(strict: Boolean = true, cond: Condition<in PsiElement>) =
+    PsiTreeUtil.findFirstParent(this, strict, cond)
+
 inline fun <reified T : PsiElement> PsiElement.ancestorStrict(): T? =
     PsiTreeUtil.getParentOfType(this, T::class.java, true)
 
@@ -42,6 +45,9 @@ inline fun <reified T : PsiElement> PsiElement.ancestorStrict(stopAt: Class<out 
 
 inline fun <reified T : PsiElement> PsiElement.ancestorOrSelf(): T? =
     PsiTreeUtil.getParentOfType(this, T::class.java, false)
+
+fun <T: PsiElement> PsiElement.ancestorOfClass(psiClass: Class<T>, strict: Boolean = false): T? =
+    PsiTreeUtil.getParentOfType(this, psiClass, strict)
 
 inline fun <reified T : PsiElement> PsiElement.hasAncestor(): Boolean =
     ancestorStrict<T>() != null

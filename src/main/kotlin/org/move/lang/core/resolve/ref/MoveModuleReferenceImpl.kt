@@ -1,6 +1,5 @@
 package org.move.lang.core.resolve.ref
 
-import com.intellij.openapi.util.TextRange
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.wrapWithList
 import org.move.lang.core.psi.ext.isSelf
@@ -15,12 +14,12 @@ class MvModuleReferenceImpl(
         if (element.isSelf) return element.containingModule.wrapWithList()
 
         val resolved = resolveSingleItem(element, Namespace.MODULE)
-        if (resolved is MvImportAlias) {
+        if (resolved is MvUseAlias) {
             return resolved.wrapWithList()
         }
         val moduleRef = when {
-            resolved is MvItemImport && resolved.text == "Self" -> resolved.moduleImport().fqModuleRef
-            resolved is MvModuleImport -> resolved.fqModuleRef
+            resolved is MvUseItem && resolved.text == "Self" -> resolved.moduleImport().fqModuleRef
+            resolved is MvModuleUseSpeck -> resolved.fqModuleRef
             else -> return emptyList()
         }
         return moduleRef?.reference?.resolve().wrapWithList()

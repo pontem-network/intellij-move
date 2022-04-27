@@ -9,8 +9,11 @@ import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.IntentionActionDelegate
 import com.intellij.util.ui.UIUtil
 import org.intellij.lang.annotations.Language
+import org.move.ide.intentions.MvElementBaseIntentionAction
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 abstract class MvIntentionTestCase(private val intentionClass: KClass<out IntentionAction>) :
     MvTestBase() {
@@ -18,16 +21,17 @@ abstract class MvIntentionTestCase(private val intentionClass: KClass<out Intent
     protected val intention: IntentionAction
         get() = findIntention() ?: error("Failed to find `${intentionClass.simpleName}` intention")
 
-//    fun `test intention has documentation`() {
-//        if (!intentionClass.isSubclassOf(MvElementBaseIntentionAction::class)) return
-//
-//        val directory = "intentionDescriptions/${intentionClass.simpleName}"
-//        val description = checkFileExists(Paths.get(directory, "description.html"))
-//        checkHtmlStyle(description)
-//
-//        checkFileExists(Paths.get(directory, "before.rs.template"))
-//        checkFileExists(Paths.get(directory, "after.rs.template"))
-//    }
+    @Suppress("FunctionName")
+    fun `test intention has documentation`() {
+        if (!intentionClass.isSubclassOf(MvElementBaseIntentionAction::class)) return
+
+        val directory = "intentionDescriptions/${intentionClass.simpleName}"
+        val description = checkFileExists(Paths.get(directory, "description.html"))
+        checkHtmlStyle(description)
+    }
+
+    private fun checkFileExists(path: Path): String = getResourceAsString(path.toString())
+        ?: error("No ${path.fileName} found for $intentionClass ($path)")
 
     protected fun doAvailableTest(
         @Language("Move") before: String,

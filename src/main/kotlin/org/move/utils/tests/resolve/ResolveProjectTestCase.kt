@@ -3,15 +3,15 @@ package org.move.utils.tests.resolve
 import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.MvReferenceElement
+import org.move.lang.core.resolve.MvReferenceElement
 import org.move.openapiext.findVirtualFile
 import org.move.utils.tests.FileTreeBuilder
-import org.move.utils.tests.MvProjectTestCase
+import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.TestProject
 import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 
-abstract class ResolveProjectTestCase : MvProjectTestCase() {
+abstract class ResolveProjectTestCase : MvProjectTestBase() {
     protected fun checkByFileTree(@Language("Move") code: String) {
         checkByFileTree(
             code,

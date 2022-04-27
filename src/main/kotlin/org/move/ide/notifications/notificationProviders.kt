@@ -8,13 +8,13 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
-import org.move.cli.MvExecutable
-import org.move.lang.isMvFile
+import org.move.cli.MoveBinary
 import org.move.lang.isMoveTomlManifestFile
+import org.move.lang.isMoveFile
 import org.move.openapiext.common.isUnitTestMode
-import org.move.settings.MvSettingsChangedEvent
-import org.move.settings.MvSettingsListener
-import org.move.settings.moveSettings
+import org.move.cli.settings.MvSettingsChangedEvent
+import org.move.cli.settings.MvSettingsListener
+import org.move.cli.settings.moveSettings
 
 fun updateAllNotifications(project: Project) {
     EditorNotifications.getInstance(project).updateAllNotifications()
@@ -25,10 +25,9 @@ class UpdateNotificationsOnSettingsChangeListener(val project: Project) : MvSett
     override fun moveSettingsChanged(e: MvSettingsChangedEvent) {
         updateAllNotifications(project)
     }
-
 }
 
-class InvalidMvExecutableNotificationsProvider(
+class UnconfiguredDoveNotification(
     private val project: Project
 ) : EditorNotifications.Provider<EditorNotificationPanel>(),
     DumbAware {
@@ -52,12 +51,11 @@ class InvalidMvExecutableNotificationsProvider(
     ): EditorNotificationPanel? {
         if (isUnitTestMode) return null
         if (
-            !(file.isMvFile || file.isMoveTomlManifestFile)
+            !(file.isMoveFile || file.isMoveTomlManifestFile)
             || isNotificationDisabled(file)
         ) return null
 
-//        val moveExecPath = project.moveExecPath ?: return null
-        if (MvExecutable(project).version() != null) return null
+        if (MoveBinary(project).version() != null) return null
 
         return EditorNotificationPanel().apply {
             text = "Move configured incorrectly"
@@ -72,7 +70,7 @@ class InvalidMvExecutableNotificationsProvider(
     }
 
     companion object {
-        private const val NOTIFICATION_STATUS_KEY = "org.move.hideMvNotifications"
+        private const val NOTIFICATION_STATUS_KEY = "org.move.hideMoveNotifications"
 
         private val PROVIDER_KEY: Key<EditorNotificationPanel> = Key.create("Fix Move.toml file")
     }

@@ -2,11 +2,35 @@ package org.move.ide.inspections
 
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
+import org.move.ide.inspections.imports.AutoImportFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.MvReferenceElement
 
 class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
+
+    var ignoreWithoutQuickFix: Boolean = false
+
     override val isSyntaxOnly get() = false
+
+    private fun ProblemsHolder.registerProblem(
+        element: MvReferenceElement
+    ) {
+        val candidates = AutoImportFix.findApplicableContext(element)?.candidates.orEmpty()
+        if (candidates.isEmpty() && ignoreWithoutQuickFix) return
+
+        val referenceName = element.referenceName
+        val description =
+            if (referenceName == null) "Unresolved reference" else "Unresolved reference: `$referenceName`"
+        val highlightedElement = element.referenceNameElement ?: element
+        val fix = if (candidates.isNotEmpty()) AutoImportFix(element) else null
+        registerProblem(
+            highlightedElement,
+            description,
+            ProblemHighlightType.LIKE_UNKNOWN_SYMBOL,
+            *listOfNotNull(fix).toTypedArray()
+        )
+    }
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitModuleRef(moduleRef: MvModuleRef) {
@@ -15,15 +39,17 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             // skip this check, as it will be checked in MvPath visitor
             if (moduleRef.ancestorStrict<MvPath>() != null) return
 
-            if (moduleRef.ancestorStrict<MvImportStmt>() != null) return
+            if (moduleRef.ancestorStrict<MvUseStmt>() != null) return
             if (moduleRef is MvFQModuleRef) return
 
             if (moduleRef.isUnresolved) {
-                holder.registerProblem(
-                    moduleRef,
-                    "Unresolved module reference: `${moduleRef.referenceName}`",
-                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
-                )
+                holder.registerProblem(moduleRef)
+//                holder.registerProblem(
+//                    moduleRef,
+//                    "Unresolved module reference: `${moduleRef.referenceName}`",
+//                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL,
+//                    AutoImportFix(moduleRef)
+//                )
             }
         }
 
@@ -40,25 +66,29 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             if (moduleRef != null) {
                 if (moduleRef is MvFQModuleRef) return
                 if (moduleRef.isUnresolved) {
-                    holder.registerProblem(
-                        moduleRef,
-                        "Unresolved module reference: `${moduleRef.referenceName}`",
-                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
-                    )
+                    holder.registerProblem(moduleRef)
+//                    holder.registerProblem(
+//                        moduleRef,
+//                        "Unresolved module reference: `${moduleRef.referenceName}`",
+//                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL,
+//                        AutoImportFix(moduleRef)
+//                    )
                     return
                 }
             }
             if (path.isUnresolved) {
-                val description = when (path.parent) {
-                    is MvPathType -> "Unresolved type: `${path.referenceName}`"
-                    else -> "Unresolved reference: `${path.referenceName}`"
-                }
-                val highlightedElement = path.referenceNameElement ?: return
-                holder.registerProblem(
-                    highlightedElement,
-                    description,
-                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
-                )
+                holder.registerProblem(path)
+//                val description = when (path.parent) {
+//                    is MvPathType -> "Unresolved type: `${path.referenceName}`"
+//                    else -> "Unresolved reference: `${path.referenceName}`"
+//                }
+//                val highlightedElement = path.referenceNameElement ?: return
+//                holder.registerProblem(
+//                    highlightedElement,
+//                    description,
+//                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL,
+//                    AutoImportFix(path)
+//                )
             }
         }
 

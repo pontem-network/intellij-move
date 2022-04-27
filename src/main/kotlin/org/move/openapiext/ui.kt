@@ -8,8 +8,10 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.ui.TextComponentAccessor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.NlsContexts
 import com.intellij.ui.DocumentAdapter
 import com.intellij.util.Alarm
+import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
 
 class UiDebouncer(
@@ -36,10 +38,11 @@ class UiDebouncer(
     }
 }
 
+@Suppress("UnstableApiUsage")
 fun pathToDirectoryTextField(
     disposable: Disposable,
-    title: String,
-    onTextChanged: () -> Unit = {},
+    @NlsContexts.DialogTitle title: String,
+    onTextChanged: () -> Unit = {}
 ): TextFieldWithBrowseButton =
     pathTextField(
         FileChooserDescriptorFactory.createSingleFolderDescriptor(),
@@ -48,23 +51,30 @@ fun pathToDirectoryTextField(
         onTextChanged
     )
 
+
+@Suppress("UnstableApiUsage")
 fun pathTextField(
     fileChooserDescriptor: FileChooserDescriptor,
     disposable: Disposable,
-    title: String,
-    onTextChanged: () -> Unit = {},
+    @NlsContexts.DialogTitle title: String,
+    onTextChanged: () -> Unit = {}
 ): TextFieldWithBrowseButton {
-
     val component = TextFieldWithBrowseButton(null, disposable)
-    component.addBrowseFolderListener(title, null, null,
+    component.addBrowseFolderListener(
+        title, null, null,
         fileChooserDescriptor,
         TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT
     )
-    component.childComponent.document.addDocumentListener(object : DocumentAdapter() {
-        override fun textChanged(e: DocumentEvent) {
-            onTextChanged()
-        }
-    })
-
+    component.childComponent.addTextChangeListener { onTextChanged() }
     return component
+}
+
+fun JTextField.addTextChangeListener(listener: (DocumentEvent) -> Unit) {
+    document.addDocumentListener(
+        object : DocumentAdapter() {
+            override fun textChanged(e: DocumentEvent) {
+                listener(e)
+            }
+        }
+    )
 }

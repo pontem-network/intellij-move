@@ -3,10 +3,10 @@ package org.move.lang
 import org.move.cli.moveProjects
 import org.move.lang.core.psi.MvNamedAddress
 import org.move.utils.tests.FileTreeBuilder
-import org.move.utils.tests.MvProjectTestCase
+import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.base.findElementAndDataInEditor
 
-class NamedAddressValuesTest : MvProjectTestCase() {
+class NamedAddressValuesTest : MvProjectTestBase() {
     fun `test named address`() = checkByFileTree {
         moveToml("""
         [addresses]

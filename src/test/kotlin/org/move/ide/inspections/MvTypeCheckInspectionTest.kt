@@ -1,8 +1,8 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.annotation.InspectionsTestCase
+import org.move.utils.tests.annotation.InspectionTestBase
 
-class MvTypeCheckInspectionTest: InspectionsTestCase(MvTypeCheckInspection::class) {
+class MvTypeCheckInspectionTest: InspectionTestBase(MvTypeCheckInspection::class) {
     fun `test incorrect type address passed where &signer is expected`() = checkErrors("""
         module 0x1::M {
             fun send(account: &signer) {}

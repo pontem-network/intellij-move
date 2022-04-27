@@ -1,8 +1,5 @@
 package org.move.lang.core.resolve.ref
 
-import org.move.lang.core.psi.MvItemImport
-import org.move.lang.core.psi.MvNamedElement
-
 //class MvItemImportReferenceImpl(element: MvItemImport) : MvReferenceBase<MvItemImport>(element) {
 //    override fun resolveVerbose(): ResolveEngine.ResolveResult {
 //        val candidates = resolveItemImport(element)

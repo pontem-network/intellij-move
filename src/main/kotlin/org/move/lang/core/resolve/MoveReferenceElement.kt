@@ -1,7 +1,8 @@
-package org.move.lang.core.psi
+package org.move.lang.core.resolve
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
+import org.move.lang.core.psi.MvElement
 import org.move.lang.core.resolve.ref.MvFQModuleReference
 import org.move.lang.core.resolve.ref.MvPathReference
 import org.move.lang.core.resolve.ref.MvReference
@@ -20,6 +21,8 @@ interface PsiReferenceElement : PsiElement {
 
     val isUnresolved: Boolean
         get() = reference?.resolve() == null
+
+    val resolvable: Boolean get() = !this.isUnresolved
 }
 
 interface PsiMandatoryReferenceElement : PsiElement {
@@ -56,16 +59,6 @@ interface MvMandatoryReferenceElement : MvReferenceElement {
 
     override fun getReference(): MvReference
 }
-
-//interface MvPolyVariantReferenceElement: PsiReferenceElement, MvElement {
-//    override val identifier: PsiElement
-//
-////    override val referenceNameElement: PsiElement get() = identifier
-//
-////    override val referenceName: String get() = referenceNameElement.text
-//
-//    override fun getReference(): MvReference
-//}
 
 interface MvPathReferenceElement : MvReferenceElement {
     override fun getReference(): MvPathReference?

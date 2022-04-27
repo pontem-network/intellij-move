@@ -2,7 +2,7 @@ package org.move.lang.core.resolve
 
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
-import org.move.cli.GlobalScope
+import org.move.cli.MoveScope
 import org.move.lang.MvFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -86,13 +86,13 @@ fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
     }
     // module refers to ModuleImport
     val resolved = resolveSingleItem(moduleRef, Namespace.MODULE)
-    if (resolved is MvImportAlias) {
-        return (resolved.parent as MvModuleImport).fqModuleRef
+    if (resolved is MvUseAlias) {
+        return (resolved.parent as MvModuleUseSpeck).fqModuleRef
     }
-    if (resolved is MvItemImport && resolved.text == "Self") {
+    if (resolved is MvUseItem && resolved.text == "Self") {
         return resolved.moduleImport().fqModuleRef
     }
-    if (resolved !is MvModuleImport) return null
+    if (resolved !is MvModuleUseSpeck) return null
 
     return resolved.fqModuleRef
 }
@@ -109,7 +109,7 @@ private fun processModules(
     val visitor = object : MvVisitor() {
         override fun visitModuleDef(mod: MvModuleDef) {
             if (resolved) return
-            val modAddress = mod.definedAddressRef()?.toAddress(moveProject)
+            val modAddress = mod.address()?.toAddress(moveProject)
             if (modAddress == sourceAddress) {
                 resolved = processor.match(mod)
             }
@@ -133,7 +133,7 @@ fun processFQModuleRef(
     if (stopped) return
 
     val moveProject = currentFile.moveProject ?: return
-    moveProject.processModuleFiles(GlobalScope.MAIN) { moduleFile ->
+    moveProject.processModuleFiles(MoveScope.MAIN) { moduleFile ->
         // skip current file as it's processed already
         if (moduleFile.file.toNioPathOrNull() == currentFile.toNioPathOrNull())
             return@processModuleFiles true
@@ -182,10 +182,15 @@ fun processLexicalDeclarations(
             false
         }
         Namespace.NAME -> when (scope) {
+            is MvModuleBlock -> {
+                processor.matchAll(
+                    scope.itemImportNames(),
+                )
+            }
             is MvModuleDef -> {
                 processor.matchAll(
-                    scope.itemImportsWithoutAliases(),
-                    scope.itemImportsAliases(),
+//                    scope.itemImportsWithoutAliases(),
+//                    scope.itemImportsAliases(),
                     scope.allFunctions(),
                     scope.builtinFunctions(),
                     scope.structs(),
@@ -197,10 +202,12 @@ fun processLexicalDeclarations(
                     }
                 )
             }
+            is MvScriptBlock -> processor.matchAll(scope.itemImportNames())
             is MvScriptDef -> processor.matchAll(
                 listOf(
-                    scope.itemImportsWithoutAliases(),
-                    scope.itemImportsAliases(),
+//                    scope.itemImports(),
+//                    scope.itemImportsWithoutAliases(),
+//                    scope.itemImportsAliases(),
                     scope.constBindings(),
                 ).flatten(),
             )
@@ -282,19 +289,23 @@ fun processLexicalDeclarations(
                     false
                 }
             }
+            is MvModuleBlock -> processor.matchAll(scope.itemImportNames())
             is MvModuleDef -> processor.matchAll(
                 listOf(
-                    scope.itemImportsWithoutAliases(),
-                    scope.itemImportsAliases(),
+//                    scope.itemImports(),
+//                    scope.itemImportsWithoutAliases(),
+//                    scope.itemImportsAliases(),
                     scope.structs(),
                 ).flatten(),
             )
-            is MvScriptDef -> processor.matchAll(
-                listOf(
-                    scope.itemImportsWithoutAliases(),
-                    scope.itemImportsAliases(),
-                ).flatten(),
-            )
+            is MvScriptBlock -> processor.matchAll(scope.itemImportNames())
+//            is MvScriptDef -> processor.matchAll(
+//                listOf(
+////                    scope.itemImports(),
+////                    scope.itemImportsWithoutAliases(),
+////                    scope.itemImportsAliases(),
+//                ).flatten(),
+//            )
             is MvApplySchemaStmt -> {
                 val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
                 val patternTypeParams = toPatterns.flatMap { it.typeParameters }
@@ -316,10 +327,11 @@ fun processLexicalDeclarations(
             else -> false
         }
         Namespace.MODULE -> when (scope) {
-            is MvUseStmtOwner -> processor.matchAll(
+            is MvItemsOwner -> processor.matchAll(
                 listOf(
-                    scope.moduleImports(),
-                    scope.moduleImportAliases(),
+                    scope.moduleImportNames(),
+//                    scope.moduleImportsWithoutAliases(),
+//                    scope.moduleImportAliases(),
                     scope.selfItemImports(),
                 ).flatten(),
             )

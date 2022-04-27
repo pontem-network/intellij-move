@@ -23,11 +23,11 @@ fun List<MvAttr>.findSingleItemAttr(name: String): MvAttr? =
 
 val MvModuleDef.isTestOnly: Boolean get() = this.attrList.findSingleItemAttr("test_only") != null
 
-fun MvModuleDef.definedAddressRef(): MvAddressRef? =
+fun MvModuleDef.address(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
 
 fun MvModuleDef.fqModule(): FQModule? {
-    val address = this.definedAddressRef()?.toAddress() ?: return null
+    val address = this.address()?.toAddress() ?: return null
 //    val address = this.containingAddress ?: return null
     val name = this.name ?: return null
     return FQModule(address, name)
@@ -35,7 +35,7 @@ fun MvModuleDef.fqModule(): FQModule? {
 
 val MvModuleDef.fqName: String?
     get() {
-        val address = this.definedAddressRef()?.text?.let { "$it::" } ?: ""
+        val address = this.address()?.text?.let { "$it::" } ?: ""
         val module = this.name ?: return null
         return address + module
     }
@@ -164,7 +164,7 @@ abstract class MvModuleDefMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node)
 
     override fun getPresentation(): ItemPresentation? {
         val name = this.name ?: return null
-        val locationString = this.definedAddressRef()?.toAddress()?.text() ?: ""
+        val locationString = this.address()?.toAddress()?.text() ?: ""
         return PresentationData(
             name,
             locationString,
@@ -173,7 +173,7 @@ abstract class MvModuleDefMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node)
         )
     }
 
-    override val importStmts: List<MvImportStmt>
-        get() =
-            moduleBlock?.importStmtList.orEmpty()
+//    override val useStmts: List<MvUseStmt>
+//        get() =
+//            moduleBlock?.useStmtList.orEmpty()
 }

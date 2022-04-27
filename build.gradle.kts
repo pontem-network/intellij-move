@@ -4,8 +4,8 @@ import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "212"
-val publishingToken = System.getenv("JB_PUB_TOKEN")
+val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "221"
+val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
 
 val baseProperties = "base-gradle.properties"
 val properties = "gradle-$propsVersion.properties"
@@ -20,7 +20,7 @@ fun prop(key: String): String = props[key].toString()
 val kotlinVersion = "1.6.20"
 
 val pluginJarName = "intellij-move-$propsVersion"
-val pluginVersion = "1.6.2"
+val pluginVersion = "1.7.0"
 val pluginGroup = "org.move"
 
 group = pluginGroup
@@ -38,7 +38,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     // https://mvnrepository.com/artifact/org.yaml/snakeyaml
-    implementation("org.yaml:snakeyaml:1.29")
+    implementation("org.yaml:snakeyaml:1.30")
     testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
 }
 
@@ -96,7 +96,7 @@ allprojects {
     }
 
     tasks {
-        // workaround for gradle not seeing tests in 2021.3
+        // workaround for gradle not seeing tests in 2021.3+
         val test by getting(Test::class) {
             setScanForTestClasses(false)
             // Only run tests from classes that end with "Test"

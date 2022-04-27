@@ -1,8 +1,8 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.annotation.InspectionsTestCase
+import org.move.utils.tests.annotation.InspectionTestBase
 
-class InvalidModuleDeclarationInspectionTest: InspectionsTestCase(InvalidModuleDeclarationInspection::class) {
+class InvalidModuleDeclarationInspectionTest: InspectionTestBase(InvalidModuleDeclarationInspection::class) {
     fun `test module in address block - no error`() = checkByText("""
     address 0x1 { module M {} }    
     """)

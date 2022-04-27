@@ -7,14 +7,11 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.ui.LabeledComponent
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.EditorTextField
-import com.intellij.ui.TextAccessor
 import com.intellij.ui.layout.panel
 import com.intellij.util.text.nullize
-import java.awt.BorderLayout
 import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.JComponent
-import javax.swing.JPanel
 
 class MoveRunConfigurationEditor : SettingsEditor<MoveRunConfiguration>() {
     private val textField = EditorTextField()
@@ -34,7 +31,7 @@ class MoveRunConfigurationEditor : SettingsEditor<MoveRunConfiguration>() {
 
     override fun applyEditorTo(configuration: MoveRunConfiguration) {
         val command = textField.text
-        configuration.cmd = MoveCommandLine(command, this.currentWorkingDirectory)
+        configuration.cmd = MoveCmd(command, this.currentWorkingDirectory)
         configuration.env = environmentVariables.envData
     }
 
@@ -51,30 +48,16 @@ class MoveRunConfigurationEditor : SettingsEditor<MoveRunConfiguration>() {
             }
         }
     }
-}
 
-private class WorkingDirectoryComponent : LabeledComponent<TextFieldWithBrowseButton>() {
-    init {
-        component = TextFieldWithBrowseButton().apply {
-            val fileChooser = FileChooserDescriptorFactory.createSingleFolderDescriptor().apply {
-                title = ExecutionBundle.message("select.working.directory.message")
+    private class WorkingDirectoryComponent : LabeledComponent<TextFieldWithBrowseButton>() {
+        init {
+            component = TextFieldWithBrowseButton().apply {
+                val fileChooser = FileChooserDescriptorFactory.createSingleFolderDescriptor().apply {
+                    title = ExecutionBundle.message("select.working.directory.message")
+                }
+                addBrowseFolderListener(null, null, null, fileChooser)
             }
-            addBrowseFolderListener(null, null, null, fileChooser)
+            text = ExecutionBundle.message("run.configuration.working.directory.label")
         }
-        text = ExecutionBundle.message("run.configuration.working.directory.label")
     }
-}
-
-private class CommandLineEditor : JPanel(BorderLayout()), TextAccessor {
-    private val textField = EditorTextField("")
-
-    init {
-        add(textField, BorderLayout.CENTER)
-    }
-
-    override fun setText(text: String?) {
-        textField.setText(text)
-    }
-
-    override fun getText(): String = textField.text
 }

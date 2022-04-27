@@ -56,7 +56,7 @@ fun MvNamedElement.createCompletionLookupElement(
     insertHandler: InsertHandler<LookupElement> = MvInsertHandler()
 ): LookupElement {
     return when (this) {
-        is MvModuleImport -> this.createLookupElement()
+        is MvModuleUseSpeck -> this.createLookupElement()
 
         is MvFunction -> this.createLookupElement()
             .withTailText(this.functionParameterList?.parametersText ?: "()")
@@ -69,7 +69,7 @@ fun MvNamedElement.createCompletionLookupElement(
             .withInsertHandler(insertHandler)
 
         is MvModuleDef -> this.createLookupElement()
-            .withTailText(this.definedAddressRef()?.let { " ${it.text}" } ?: "")
+            .withTailText(this.address()?.let { " ${it.text}" } ?: "")
             .withTypeText(this.containingFile?.name)
 
         is MvStruct -> this.createLookupElement()

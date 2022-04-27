@@ -8,6 +8,7 @@ package org.move.openapiext
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -15,15 +16,21 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.JDOMUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import org.jdom.Element
 import org.jdom.input.SAXBuilder
 import org.move.openapiext.common.isUnitTestMode
+
+fun <T> Project.runWriteCommandAction(command: () -> T): T {
+    return WriteCommandAction.runWriteCommandAction(this, Computable<T> { command() })
+}
 
 fun fullyRefreshDirectory(directory: VirtualFile) {
     VfsUtil.markDirtyAndRefresh(
@@ -36,6 +43,9 @@ fun fullyRefreshDirectory(directory: VirtualFile) {
 
 fun VirtualFile.toPsiFile(project: Project): PsiFile? =
     PsiManager.getInstance(project).findFile(this)
+
+fun VirtualFile.toPsiDirectory(project: Project): PsiDirectory? =
+    PsiManager.getInstance(project).findDirectory(this)
 
 val PsiFile.document: Document?
     get() = PsiDocumentManager.getInstance(project).getDocument(this)

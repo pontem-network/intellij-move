@@ -1,8 +1,8 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.annotation.InspectionsTestCase
+import org.move.utils.tests.annotation.InspectionTestBase
 
-class RedundantQualifiedPathInspectionTest : InspectionsTestCase(RedundantQualifiedPathInspection::class) {
+class RedundantQualifiedPathInspectionTest : InspectionTestBase(RedundantQualifiedPathInspection::class) {
     fun `test no error if fully qualified without imports`() = checkWarnings(
         """
     module 0x1::M {

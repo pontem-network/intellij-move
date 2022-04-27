@@ -3,7 +3,7 @@ package org.move.lang.core.resolve.ref
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.MvReferenceElement
+import org.move.lang.core.resolve.MvReferenceElement
 import org.move.utils.doRenameIdentifier
 
 abstract class MvReferenceBase<T : MvReferenceElement>(element: T) : PsiPolyVariantReferenceBase<T>(element),

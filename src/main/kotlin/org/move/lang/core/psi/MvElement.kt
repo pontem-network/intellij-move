@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElement
 import org.move.lang.MvFile
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ext.findFirstParent
 
 interface MvElement : PsiElement
 
@@ -22,4 +23,10 @@ val MvElement.containingFunctionLike: MvFunctionLike? get() = ancestorStrict()
 
 val MvElement.containingModule: MvModuleDef? get() = ancestorStrict()
 
-val MvElement.containingImportsOwner get() = ancestorOrSelf<MvUseStmtOwner>()
+val MvElement.containingImportsOwner get() = ancestorOrSelf<MvItemsOwner>()
+
+val MvElement.containingModuleOrScript: MvElement?
+    get() {
+        return this.findFirstParent(false) { it is MvScriptDef || it is MvModuleDef }
+                as? MvElement
+    }

@@ -13,9 +13,14 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
+import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
+import com.intellij.util.indexing.FileBasedIndex
 import org.intellij.lang.annotations.Language
-import org.move.lang.core.psi.MvReferenceElement
+import org.move.cli.MvSyncTask
+import org.move.cli.setupProjectRoots
+import org.move.ide.inspections.imports.MvNamedElementIndex
+import org.move.lang.core.resolve.MvReferenceElement
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.openapiext.document
 import org.move.openapiext.fullyRefreshDirectory
@@ -71,6 +76,10 @@ interface FileTreeBuilder {
     fun toml(name: String, @Language("TOML") code: String = "") = file(name, code)
 
     fun moveToml(@Language("TOML") code: String = "") = file("Move.toml", code)
+    fun moveTomlWithName(name: String) = moveToml("""
+    [package]
+    name = "$name"    
+    """)
     fun buildInfoYaml(@Language("yaml") code: String = "") = file("BuildInfo.yaml", code)
 
     fun sources(builder: FileTreeBuilder.() -> Unit) = dir("sources", builder)
@@ -124,6 +133,13 @@ fun FileTree.prepareTestProject(fixture: CodeInsightTestFixture): TestProject =
 fun FileTree.createAndOpenFileWithCaretMarker(fixture: CodeInsightTestFixture): TestProject {
     val testProject = prepareTestProject(fixture)
     fixture.configureFromTempProjectFile(testProject.fileWithCaret)
+
+    val moveProjects = MvSyncTask.doSync(fixture.project)
+    setupProjectRoots(fixture.project, moveProjects)
+
+    FileBasedIndex.getInstance().requestRebuild(MvNamedElementIndex.KEY)
+    PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+
     return testProject
 }
 

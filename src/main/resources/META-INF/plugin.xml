@@ -15,29 +15,35 @@
     </description>
     <change-notes>
         <![CDATA[
-    <h3>Version 1.6.2</h3>
+    <h3>1.7.0</h3>
+    <ul>
+    <li>Optimize imports support: unused import inspection, optimize imports action</li>
+    <li>Auto-import quickfix for unresolved reference</li>
+    <li>Make build/ directory read-only</li>
+    </ul>
+    <h3>1.6.2</h3>
     <ul>
     <li>2022.1 version</li>
     <li>Improve keys completion for Move.toml</li>
     </ul>
-    <h3>Version 1.6.1</h3>
+    <h3>1.6.1</h3>
     <ul>
     <li>Parser fix for include schema</li>
     <li>Minor fixes for types in MSL</li>
     <li>Disable Unresolved Reference inspection by default, again</li>
     </ul>
-    <h3>Version 1.6.0</h3>
+    <h3>1.6.0</h3>
     <ul>
     <li>Specifications support improvements</li>
     <li>Improve performance of dependencies name resolution</li>
     </ul>
-    <h3>Version 1.5.0</h3>
+    <h3>1.5.0</h3>
     <ul>
     <li>Add type hints for let statement bindings</li>
     <li>Fix some bugs around named addresses scoping</li>
     <li>Improve analysis performance significantly</li>
     </ul>
-    <h3>Version 1.4.0</h3>
+    <h3>1.4.0</h3>
     <ul>
     <li>Add name resolution and completion support to MSL(spec blocks).
     <li>Add environment variables to Move Run Configuration. This allows running Move Prover from IDE.</li>
@@ -57,16 +63,24 @@
                   extensions="move"
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
+        <fileBasedIndex implementation="org.move.ide.inspections.imports.MvNamedElementIndex"/>
 
         <configurationType
                 implementation="org.move.cli.runconfig.MoveRunConfigurationType"/>
         <runConfigurationProducer
-                implementation="org.move.cli.runconfig.MoveTestRunConfigurationProducer"/>
+                implementation="org.move.cli.runconfig.producers.TestRunConfigurationProducer"/>
+        <runConfigurationProducer
+                implementation="org.move.cli.runconfig.producers.PublishModuleRunConfigurationProducer"/>
+        <runLineMarkerContributor language="Move"
+                                  implementationClass="org.move.ide.lineMarkers.TestRunLineMarkerContributor"/>
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>
         <lang.documentationProvider language="Move"
                                     implementationClass="org.move.ide.docs.MvDocumentationProvider"/>
+
+        <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.MvImportOptimizer"/>
+
         <!--        <stubElementTypeHolder class="org.move.lang.MvElementTypes"/>-->
         <gotoSymbolContributor implementation="org.move.ide.navigation.MvSymbolNavigationContributor"/>
         <gotoClassContributor implementation="org.move.ide.navigation.MvStructNavigationContributor"/>
@@ -100,7 +114,7 @@
 
         <lang.findUsagesProvider language="Move"
                                  implementationClass="org.move.ide.search.MvFindUsagesProvider"/>
-        <useScopeEnlarger implementation="org.move.ide.search.MvUseScopeEnlarger" />
+<!--        <useScopeEnlarger implementation="org.move.ide.search.MvUseScopeEnlarger"/>-->
         <usageTypeProvider
                 implementation="org.move.ide.search.NamedAddressUsageTypeProvider"/>
         <findUsagesHandlerFactory
@@ -153,7 +167,6 @@
         <declarationRangeHandler
                 key="org.move.lang.core.psi.MvFunction"
                 implementationClass="org.move.ide.navigation.FunctionDeclarationRangeHandler"/>
-        <!--        <stubIndex implementation="org.move.lang.core.stubs.index.MvNamedElementIndex"/>-->
 
         <!--        <localInspection language="Move" groupPath="Move" groupName="Naming"-->
         <!--                         displayName="Attempt to override a built-in function"-->
@@ -200,6 +213,10 @@
                          displayName="Unused struct type parameter"
                          enabledByDefault="true" level="ERROR"
                          implementationClass="org.move.ide.inspections.PhantomTypeParameterInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Unused import"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.MvUnusedImportInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>
@@ -208,8 +225,8 @@
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
         <projectOpenProcessor id="Move" implementation="org.move.cli.MvProjectOpenProcessor"/>
-        <projectConfigurable instance="org.move.settings.MvConfigurable"
-                             displayName="Move"
+        <projectConfigurable instance="org.move.cli.settings.PerProjectMoveConfigurable"
+                             displayName="Move Language"
                              groupId="language"
                              id="language.move"/>
         <projectService serviceInterface="org.move.utils.ProjectRootService"
@@ -218,11 +235,15 @@
         <projectService serviceInterface="org.move.cli.MoveProjectsService"
                         serviceImplementation="org.move.cli.MoveProjectsServiceImpl"/>
 
+<!--        <indexedRootsProvider implementation="org.move.ide.inspections.imports.MoveIndexableSetContributor" />-->
+
+        <additionalLibraryRootsProvider
+                implementation="org.move.cli.project.BuildLibraryRootsProvider"/>
+
         <!-- Notifications -->
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>
-
-        <!--        <editorNotificationProvider-->
-        <!--                implementation="org.move.ide.notifications.InvalidMvExecutableNotificationsProvider"/>-->
+<!--        <editorNotificationProvider-->
+<!--                implementation="org.move.ide.notifications.UnconfiguredDoveNotification"/>-->
 
         <intentionAction>
             <className>org.move.ide.intentions.RemoveCurlyBracesIntention</className>
@@ -237,7 +258,7 @@
 
     <projectListeners>
         <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
-                  topic="org.move.settings.MvSettingsListener"
+                  topic="org.move.cli.settings.MvSettingsListener"
                   activeInTestMode="false"/>
     </projectListeners>
 

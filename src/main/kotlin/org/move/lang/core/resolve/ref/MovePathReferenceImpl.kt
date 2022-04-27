@@ -43,7 +43,7 @@ fun resolveModuleItem(
 
 class MvPathReferenceImpl(
     element: MvPath,
-    private val namespace: Namespace,
+    val namespace: Namespace,
 ) : MvReferenceCached<MvPath>(element), MvPathReference {
 
     override fun resolveInner(): List<MvNamedElement> {
@@ -78,7 +78,7 @@ class MvPathReferenceImpl(
             // try local names
             val item = resolveItem(element, namespace).firstOrNull() ?: return emptyList()
             // local name -> return
-            if (item !is MvItemImport) return listOf(item)
+            if (item !is MvUseItem) return listOf(item)
             // find corresponding FQModuleRef from imports and resolve
             val fqModuleRef = item.moduleImport().fqModuleRef
             val module = fqModuleRef.reference?.resolve() as? MvModuleDef ?: return emptyList()

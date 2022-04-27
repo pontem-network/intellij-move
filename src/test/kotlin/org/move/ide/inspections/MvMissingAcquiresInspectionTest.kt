@@ -1,8 +1,8 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.annotation.InspectionsTestCase
+import org.move.utils.tests.annotation.InspectionTestBase
 
-class MvMissingAcquiresInspectionTest: InspectionsTestCase(MvMissingAcquiresInspection::class) {
+class MvMissingAcquiresInspectionTest: InspectionTestBase(MvMissingAcquiresInspection::class) {
     fun `test no error when acquired type cannot be inferred`() = checkErrors("""
     module 0x1::M {
         struct Loan has key {}
@@ -45,7 +45,7 @@ class MvMissingAcquiresInspectionTest: InspectionsTestCase(MvMissingAcquiresInsp
             move_from<Deal>(@0x1);
         }
         fun main() {
-            <error descr="Function 'main' is not marked as 'acquires Deal, Loan'">call/*caret*/()</error>;   
+            <error descr="Function 'main' is not marked as 'acquires Deal, Loan'">call/*caret*/()</error>;
         }
     }    
     """, """

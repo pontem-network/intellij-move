@@ -25,7 +25,7 @@ fun findMoveTomlFiles(project: Project): Sequence<VirtualFile> {
     val moveFiles = mutableSetOf<VirtualFile>()
     for (contentRoot in contentRoots) {
         deepIterateChildrenRecursivery(
-            contentRoot, { it.name == "Move.toml" })
+            contentRoot, { it.name == MvConstants.MANIFEST_FILE })
         {
             moveFiles.add(it)
             true

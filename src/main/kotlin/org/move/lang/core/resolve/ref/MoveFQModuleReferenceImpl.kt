@@ -1,6 +1,5 @@
 package org.move.lang.core.resolve.ref
 
-import com.intellij.openapi.util.TextRange
 import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.MvNamedElement

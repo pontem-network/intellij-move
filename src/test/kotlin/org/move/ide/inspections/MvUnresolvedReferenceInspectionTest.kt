@@ -1,8 +1,8 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.annotation.InspectionsTestCase
+import org.move.utils.tests.annotation.InspectionTestBase
 
-class MvUnresolvedReferenceInspectionTest : InspectionsTestCase(MvUnresolvedReferenceInspection::class) {
+class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedReferenceInspection::class) {
     fun `test unresolved variable`() = checkByText("""
         module 0x1::M {
             fun main() {
@@ -126,7 +126,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionsTestCase(MvUnresolvedRefe
         """
         module 0x1::M {
             fun main() {
-                let t = <error descr="Unresolved module reference: `Transaction`">Transaction</error>::create();
+                let t = <error descr="Unresolved reference: `Transaction`">Transaction</error>::create();
             }
         }
     """
@@ -162,7 +162,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionsTestCase(MvUnresolvedRefe
             fun deposit<Token> () {}
 
             fun main() {
-                deposit<<error descr="Unresolved type: `PONT`">PONT</error>>()
+                deposit<<error descr="Unresolved reference: `PONT`">PONT</error>>()
             }
         }    
         """

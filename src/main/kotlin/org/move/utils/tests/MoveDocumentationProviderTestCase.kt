@@ -5,10 +5,9 @@ import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
 import org.move.ide.docs.MvDocumentationProvider
 import org.move.lang.core.psi.MvElement
-import org.move.openapiext.findVirtualFile
 import org.move.utils.tests.base.findElementAndOffsetInEditor
 
-abstract class MvDocumentationProviderProjectTestCase: MvProjectTestCase() {
+abstract class MvDocumentationProviderProjectTestCase: MvProjectTestBase() {
     protected fun doTestByFileTree(
         @Language("Move") code: String,
         @Language("Html") expected: String?,

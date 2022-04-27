@@ -18,7 +18,9 @@ class RedundantQualifiedPathInspection : MvLocalInspectionTool() {
                 val pathIdentText = pathIdent.text
                 val item = pathIdent.parent.reference?.resolve() as? MvNamedElement ?: return
 
-                val importsOwner = (pathIdent.containingScript ?: pathIdent.containingModule) ?: return
+                val importsOwner = pathIdent.containingScript?.scriptBlock
+                    ?: pathIdent.containingModule?.moduleBlock
+                    ?: return
                 val shortestPathIdentText = importsOwner.shortestPathIdentText(item) ?: return
                 val diff = pathIdentText.length - shortestPathIdentText.length
                 if (diff > 0) {

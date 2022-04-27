@@ -41,7 +41,7 @@ class CompletionTestProjectFixture(
     }
 }
 
-abstract class CompletionProjectTestCase : MvProjectTestCase() {
+abstract class CompletionProjectTestCase : MvProjectTestBase() {
     lateinit var completionFixture: CompletionTestProjectFixture
 
     override fun setUp() {

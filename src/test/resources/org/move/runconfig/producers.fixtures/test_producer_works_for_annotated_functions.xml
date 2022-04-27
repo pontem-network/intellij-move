@@ -1,7 +1,0 @@
-<configurations>
-  <configuration name="Test package: MoveTests::test_add" class="MoveRunConfiguration">
-    <option name="command" value="package test --filter test_add" />
-    <option name="workingDirectory" value="file:///my-package/code" />
-    <envs />
-  </configuration>
-</configurations>

@@ -9,7 +9,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.MvElementTypes.SPEC_BLOCK
 import org.move.lang.core.psi.*
-import org.move.settings.collapseSpecs
+import org.move.cli.settings.collapseSpecs
 
 class MvFoldingBuilder : FoldingBuilderEx(),
                          DumbAware {

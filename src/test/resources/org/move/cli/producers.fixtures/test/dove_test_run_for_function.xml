@@ -1,0 +1,8 @@
+<configurations>
+  <configuration name="Test MoveTests::test_add" type="MoveRunConfiguration">
+    <option name="command" value="package test --filter test_add" />
+    <option name="workingDirectory" value="file://$PROJECT_DIR$/../unitTest_ID" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</configurations>
