@@ -11,26 +11,31 @@ import com.intellij.ui.layout.*
 class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move Language"),
                                                          Configurable.NoScroll {
 
-    private val binaryPathField = FilePathWithVersionField(project)
-
     private val state: MvProjectSettingsService.State = project.moveSettings.settingsState
+
+    private val binaryPathField = FilePathWithVersionField(project)
 
     override fun createPanel(): DialogPanel {
         val aptosRadio = JBRadioButton("Aptos")
         return panel {
             row("Project type") {
                 buttonGroup {
-                    aptosRadio().withSelectedBinding(
-                        PropertyBinding({ state.projectType == ProjectType.APTOS },
-                                        { if (it) state.projectType = ProjectType.APTOS })
-                    )
-                    radioButton("Dove",
-                                { state.projectType == ProjectType.DOVE },
-                                { if (it) state.projectType = ProjectType.DOVE })
+                    cell(true) {
+                        aptosRadio().withSelectedBinding(
+                            PropertyBinding({ state.projectType == ProjectType.APTOS },
+                                            { if (it) state.projectType = ProjectType.APTOS })
+                        )
+                        radioButton("Dove",
+                                    { state.projectType == ProjectType.DOVE },
+                                    { if (it) state.projectType = ProjectType.DOVE })
+                    }
                 }
             }
             titledRow("") {
-                row("CLI") { binaryPathField.field() }
+                row("CLI") {
+                    binaryPathField.field()
+                    comment("Required").visibleIf(binaryPathField.valid.not())
+                }
                 row("Version") {
                     binaryPathField.versionLabel()
                 }

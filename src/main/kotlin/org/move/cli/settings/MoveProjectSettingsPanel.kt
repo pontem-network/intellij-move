@@ -5,6 +5,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.JBColor
+import com.intellij.ui.layout.enteredTextSatisfies
 import org.move.cli.MoveBinary
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathTextField
@@ -37,7 +38,7 @@ class FilePathWithVersionField(private val project: Project) : Disposable {
         pathTextField(
             FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
             this,
-            "Move CLI binary"
+            "CLI binary"
         ) { updateVersion() }
     val versionLabel = VersionLabel()
 
@@ -46,12 +47,9 @@ class FilePathWithVersionField(private val project: Project) : Disposable {
             project.moveSettings.settingsState.moveExecutablePath
     }
 
-//    fun attachTo(panel: Panel) = with(panel) {
-//        row("Move binary:") { field }
-//        row("Move version") { versionLabel }
-//    }
-
     fun selectedMoveBinaryPath(): String = this.field.textField.text
+
+    val valid = field.textField.enteredTextSatisfies { it.isNotBlank() }
 
     private fun updateVersion() {
         this.updateVersionField(field, versionLabel)
