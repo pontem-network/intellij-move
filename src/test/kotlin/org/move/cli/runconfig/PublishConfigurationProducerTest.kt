@@ -11,7 +11,7 @@ class PublishConfigurationProducerTest: RunConfigurationProducerTestBase("publis
     @SettingsPrivateKey("@0x1122")
     fun `test aptos publish module`() {
         testProject {
-            moveTomlWithName("MyPackage")
+            namedMoveToml("MyPackage")
             sources {
                 move("main.move", """
                 module 0x1::/*caret*/Main {}                    
@@ -24,7 +24,7 @@ class PublishConfigurationProducerTest: RunConfigurationProducerTestBase("publis
     @SettingsProjectType(ProjectType.APTOS)
     fun `test aptos no publish action if test_only`() {
         testProject {
-            moveTomlWithName("MyPackage")
+            namedMoveToml("MyPackage")
             sources {
                 move("main.move", """
                 #[test_only]    

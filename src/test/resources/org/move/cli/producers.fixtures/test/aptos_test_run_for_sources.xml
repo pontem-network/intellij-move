@@ -1,0 +1,8 @@
+<configurations>
+  <configuration name="Test MyPackage" type="MoveRunConfiguration">
+    <option name="command" value="move test --package-dir ." />
+    <option name="workingDirectory" value="file://$PROJECT_DIR$/../unitTest_ID" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</configurations>

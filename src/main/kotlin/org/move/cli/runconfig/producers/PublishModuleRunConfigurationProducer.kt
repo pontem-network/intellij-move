@@ -8,7 +8,6 @@ import org.move.cli.settings.ProjectType
 import org.move.cli.settings.moveSettings
 import org.move.cli.settings.type
 import org.move.lang.core.psi.MvModuleDef
-import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.isTestOnly
 import org.move.lang.moveProject
 

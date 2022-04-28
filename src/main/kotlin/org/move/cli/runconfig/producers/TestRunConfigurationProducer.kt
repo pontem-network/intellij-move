@@ -1,8 +1,7 @@
 package org.move.cli.runconfig.producers
 
-import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.runconfig.MoveBinaryRunConfigurationProducer
 import org.move.cli.runconfig.MoveCmd
 import org.move.cli.runconfig.MoveCmdConfig
@@ -11,39 +10,29 @@ import org.move.cli.settings.type
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModuleDef
 import org.move.lang.core.psi.containingModule
-import org.move.lang.core.psi.ext.childOfType
+import org.move.lang.core.psi.ext.findMoveProject
 import org.move.lang.core.psi.ext.isTest
 import org.move.lang.core.psi.items
 import org.move.lang.moveProject
-import org.move.lang.toNioPathOrNull
 
 class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
     override fun configFromLocation(location: PsiElement) = fromLocation(location)
 
     companion object {
         fun fromLocation(location: PsiElement, climbUp: Boolean = true): MoveCmdConfig? {
-            val moveProject = location.moveProject ?: return null
-            val packageName = moveProject.packageName ?: ""
             val project = location.project
-            val rootPath = moveProject.rootPath ?: return null
             return when (location) {
-                is PsiDirectory -> {
-                    val locationPath = location.virtualFile.toNioPathOrNull() ?: return null
-                    if (locationPath == rootPath
-                        || locationPath == moveProject.testsDir()
-                    ) {
-                        val confName = "Test $packageName"
-                        val command = when (project.type) {
-                            ProjectType.APTOS -> "move test --package-dir ."
-                            ProjectType.DOVE -> "package test"
-                        }
-                        return MoveCmdConfig(location, confName, MoveCmd(command, rootPath))
+                is PsiFileSystemItem -> {
+                    val moveProject = location.findMoveProject() ?: return null
+                    val packageName = moveProject.packageName ?: ""
+                    val rootPath = moveProject.rootPath ?: return null
+
+                    val confName = "Test $packageName"
+                    val command = when (project.type) {
+                        ProjectType.APTOS -> "move test --package-dir ."
+                        ProjectType.DOVE -> "package test"
                     }
-                    null
-                }
-                is PsiFile -> {
-                    val module = location.childOfType<MvModuleDef>() ?: return null
-                    fromLocation(module)
+                    return MoveCmdConfig(location, confName, MoveCmd(command, rootPath))
                 }
                 else -> findTestFunction(location, climbUp) ?: findTestModule(location, climbUp)
             }
