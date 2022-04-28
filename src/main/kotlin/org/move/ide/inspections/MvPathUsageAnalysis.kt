@@ -6,7 +6,7 @@ import com.intellij.psi.util.*
 import org.move.lang.core.psi.*
 
 data class PathUsageMap(
-    val pathUsages: MutableMap<String, MutableSet<MvNamedElement>>
+    val pathUsages: MutableMap<String, MutableSet<MvNamedElement>>,
 )
 
 private val PATH_USAGE_KEY: Key<CachedValue<PathUsageMap>> = Key.create("PATH_USAGE_KEY")

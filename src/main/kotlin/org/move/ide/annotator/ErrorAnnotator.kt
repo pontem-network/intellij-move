@@ -186,7 +186,7 @@ class ErrorAnnotator : MvAnnotator() {
     }
 
     private fun checkFunction(holder: MvAnnotationHolder, function: MvFunction) {
-        checkFunctionSignatureDuplicates(holder, function)
+        checkFunctionDuplicates(holder, function)
         warnOnBuiltInFunctionName(holder, function)
     }
 
@@ -244,17 +244,17 @@ private fun checkDuplicates(
     holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${element.name}`")
 }
 
-private fun checkFunctionSignatureDuplicates(
+private fun checkFunctionDuplicates(
     holder: MvAnnotationHolder,
     fn: MvFunction,
 ) {
-    val fnSignatures =
+    val functions =
         fn.module?.allFunctions()
             ?: fn.script?.allFunctions()
             ?: emptyList()
-    val duplicateSignatures = getDuplicates(fnSignatures.asSequence())
+    val duplicateFunctions = getDuplicates(functions.asSequence())
 
-    if (fn.name !in duplicateSignatures.map { it.name }) {
+    if (fn.name !in duplicateFunctions.map { it.name }) {
         return
     }
     val identifier = fn.nameIdentifier ?: fn
