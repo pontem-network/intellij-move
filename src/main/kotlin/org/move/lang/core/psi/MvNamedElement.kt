@@ -28,7 +28,7 @@ data class FqPath(val address: String, val module: String, val item: String?) {
 
 val MvQualifiedNamedElement.fqPath: FqPath? get() {
     return when (this) {
-        is MvModuleDef -> {
+        is MvModule -> {
             val address = this.address()?.text ?: return null
             val moduleName = this.name ?: return null
             FqPath(address, moduleName, null)

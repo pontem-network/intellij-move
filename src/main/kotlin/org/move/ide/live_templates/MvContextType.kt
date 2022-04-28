@@ -12,7 +12,7 @@ import com.intellij.psi.util.PsiUtilCore
 import org.move.ide.MvHighlighter
 import org.move.lang.MvLanguage
 import org.move.lang.core.psi.MvCodeBlock
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 import kotlin.reflect.KClass
 
 sealed class MvContextType(
@@ -45,7 +45,7 @@ sealed class MvContextType(
     class Module: MvContextType("MOVE_MODULE", "Module", Generic::class) {
         override fun isInContext(element: PsiElement): Boolean
             // inside MvModuleDef
-            = owner(element) is MvModuleDef
+            = owner(element) is MvModule
     }
 
     class Block: MvContextType("MOVE_BLOCK", "Block", Generic::class) {
@@ -56,7 +56,7 @@ sealed class MvContextType(
 
     companion object {
         private fun owner(element: PsiElement): PsiElement? = PsiTreeUtil.findFirstParent(element) {
-            it is MvCodeBlock || it is MvModuleDef || it is PsiFile
+            it is MvCodeBlock || it is MvModule || it is PsiFile
         }
     }
 }

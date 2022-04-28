@@ -1,16 +1,14 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.mixins.declaredTy
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
-import org.move.stdext.chain
 
 val MvSchema.specBlock: MvSpecBlock? get() = this.childOfType()
 
-val MvSchema.module: MvModuleDef
+val MvSchema.module: MvModule
     get() {
         val moduleBlock = this.parent
-        return moduleBlock.parent as MvModuleDef
+        return moduleBlock.parent as MvModule
     }
 
 val MvSchema.fqName: String

@@ -2,7 +2,7 @@ package org.move.ide.inspections
 
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvVisitor
 import org.move.lang.core.psi.ext.address
 
@@ -11,7 +11,7 @@ class InvalidModuleDeclarationInspection : MvLocalInspectionTool() {
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
         return object : MvVisitor() {
-            override fun visitModuleDef(mod: MvModuleDef) {
+            override fun visitModule(mod: MvModule) {
                 val identifier = mod.identifier ?: return
                 if (mod.address() == null) {
                     holder.registerProblem(

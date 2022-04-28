@@ -1,6 +1,6 @@
 FILE
-  MvModuleDefImpl(MODULE_DEF)
-    PsiElement(module)('module')
+  MvModuleImpl(MODULE)
+    PsiElement(module_kw)('module')
     PsiWhiteSpace(' ')
     MvAddressRefImpl(ADDRESS_REF)
       PsiElement(DIEM_ADDRESS)('0x1')

@@ -8,7 +8,7 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedAddress
 import org.move.lang.core.psiElement
 import org.move.lang.core.withParent
@@ -19,7 +19,7 @@ object AddressInModuleDeclCompletionProvider : MvCompletionProvider() {
         get() = PlatformPatterns
             .psiElement()
             .withParent<MvNamedAddress>()
-            .withSuperParent(3, psiElement<MvModuleDef>())
+            .withSuperParent(3, psiElement<MvModule>())
 
     override fun addCompletions(
         parameters: CompletionParameters,
@@ -51,7 +51,7 @@ object AddressesCompletionProvider : MvCompletionProvider() {
             .psiElement().withParent<MvNamedAddress>()
             .andNot(
                 PlatformPatterns.psiElement()
-                    .withSuperParent(3, psiElement<MvModuleDef>())
+                    .withSuperParent(3, psiElement<MvModule>())
             )
 
     override fun addCompletions(

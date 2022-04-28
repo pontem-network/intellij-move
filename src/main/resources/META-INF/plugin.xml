@@ -162,7 +162,7 @@
                 language="Move"
                 implementationClass="org.move.ide.navigation.MvStructureViewBuilderFactory"/>
         <declarationRangeHandler
-                key="org.move.lang.core.psi.MvModuleDef"
+                key="org.move.lang.core.psi.MvModule"
                 implementationClass="org.move.ide.navigation.ModuleDeclarationRangeHandler"/>
         <declarationRangeHandler
                 key="org.move.lang.core.psi.MvFunction"

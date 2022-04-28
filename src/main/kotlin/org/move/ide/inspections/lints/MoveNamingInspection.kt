@@ -3,7 +3,7 @@ package org.move.ide.inspections.lints
 import com.intellij.codeInspection.ProblemsHolder
 import org.move.ide.inspections.MvLocalInspectionTool
 import org.move.lang.core.psi.MvBindingPat
-import org.move.lang.core.psi.MvConstDef
+import org.move.lang.core.psi.MvConst
 import org.move.lang.core.psi.MvStruct
 import org.move.lang.core.psi.MvVisitor
 
@@ -16,7 +16,7 @@ abstract class MvNamingInspection(private val elementTitle: String) : MvLocalIns
 
 class MvConstNamingInspection : MvNamingInspection("Constant") {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
-        override fun visitConstDef(o: MvConstDef) {
+        override fun visitConst(o: MvConst) {
             val ident = o.bindingPat?.identifier ?: return
             val name = ident.text
             if (!name.startsWithUpperCaseLetter()) {
@@ -48,7 +48,7 @@ class MvLocalBindingNamingInspection: MvNamingInspection("Local variable") {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitBindingPat(o: MvBindingPat) {
             // filter out constants
-            if (o.parent is MvConstDef) return
+            if (o.parent is MvConst) return
 
             val ident = o.identifier
             val name = ident.text

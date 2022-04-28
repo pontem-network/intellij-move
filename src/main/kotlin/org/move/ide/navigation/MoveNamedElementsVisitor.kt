@@ -13,10 +13,10 @@ abstract class MvNamedElementsVisitor : MvVisitor(), PsiRecursiveVisitor {
     }
 
     override fun visitAddressDef(o: MvAddressDef) {
-        o.addressBlock?.moduleDefList?.map { it.accept(this) }
+        o.addressBlock?.moduleList?.map { it.accept(this) }
     }
 
-    override fun visitModuleDef(o: MvModuleDef) {
+    override fun visitModule(o: MvModule) {
         processNamedElement(o)
 
         val functionSignatures = o.functions(Visibility.Internal)

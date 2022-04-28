@@ -16,7 +16,7 @@ val MvBindingPat.owner: PsiElement?
     get() = PsiTreeUtil.findFirstParent(this) {
         it is MvLetStmt
                 || it is MvFunctionParameter
-                || it is MvConstDef
+                || it is MvConst
                 || it is MvSchemaFieldStmt
     }
 
@@ -24,7 +24,7 @@ fun MvBindingPat.cachedTy(ctx: InferenceContext): Ty {
     val owner = this.owner
     return when (owner) {
         is MvFunctionParameter -> owner.declaredTy(ctx.msl)
-        is MvConstDef -> owner.declaredTy(ctx.msl)
+        is MvConst -> owner.declaredTy(ctx.msl)
         is MvLetStmt -> {
             if (ctx.bindingTypes.containsKey(this)) return ctx.bindingTypes[this]!!
 
@@ -50,7 +50,7 @@ abstract class MvBindingPatMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node
     override fun getIcon(flags: Int): Icon =
         when (this.owner) {
             is MvFunctionParameter -> MvIcons.PARAMETER
-            is MvConstDef -> MvIcons.CONST
+            is MvConst -> MvIcons.CONST
             else -> MvIcons.VARIABLE
         }
 }

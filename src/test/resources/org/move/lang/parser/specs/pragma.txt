@@ -1,6 +1,6 @@
 FILE
-  MvModuleDefImpl(MODULE_DEF)
-    PsiElement(module)('module')
+  MvModuleImpl(MODULE)
+    PsiElement(module_kw)('module')
     PsiWhiteSpace(' ')
     PsiElement(IDENTIFIER)('M')
     PsiWhiteSpace(' ')
@@ -10,7 +10,7 @@ FILE
       MvModuleSpecImpl(MODULE_SPEC)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
-        PsiElement(module)('module')
+        PsiElement(module_kw)('module')
         PsiWhiteSpace(' ')
         MvSpecBlockImpl(SPEC_BLOCK)
           PsiElement({)('{')

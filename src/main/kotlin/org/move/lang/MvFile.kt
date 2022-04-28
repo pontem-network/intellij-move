@@ -73,7 +73,7 @@ class MvFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvider,
     }
 
     fun scriptBlocks(): List<MvScriptBlock> {
-        val defs = PsiTreeUtil.getChildrenOfTypeAsList(this, MvScriptDef::class.java)
+        val defs = PsiTreeUtil.getChildrenOfTypeAsList(this, MvScript::class.java)
         return defs.mapNotNull { it.scriptBlock }.toList()
     }
 }
@@ -84,7 +84,7 @@ val VirtualFile.isMoveTomlManifestFile: Boolean get() = fileType == TomlFileType
 
 fun VirtualFile.toMvFile(project: Project): MvFile? = this.toPsiFile(project) as? MvFile
 
-fun MvFile.modules(): Sequence<MvModuleDef> {
-    return this.childrenOfType<MvModuleDef>()
+fun MvFile.modules(): Sequence<MvModule> {
+    return this.childrenOfType<MvModule>()
         .chain(this.childrenOfType<MvAddressDef>().flatMap { it.modules() })
 }

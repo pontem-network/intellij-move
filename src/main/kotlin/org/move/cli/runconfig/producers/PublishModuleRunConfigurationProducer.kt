@@ -7,13 +7,13 @@ import org.move.cli.runconfig.MoveCmdConfig
 import org.move.cli.settings.ProjectType
 import org.move.cli.settings.moveSettings
 import org.move.cli.settings.type
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.isTestOnly
 import org.move.lang.moveProject
 
 class PublishModuleRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
     override fun configFromLocation(location: PsiElement): MoveCmdConfig? {
-        val mod = findElement<MvModuleDef>(location, true) ?: return null
+        val mod = findElement<MvModule>(location, true) ?: return null
         if (mod.isTestOnly) return null
 
         val rootPath = location.moveProject?.rootPath ?: return null

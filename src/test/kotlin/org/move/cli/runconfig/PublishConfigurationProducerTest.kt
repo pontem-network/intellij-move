@@ -1,7 +1,7 @@
 package org.move.cli.runconfig
 
 import org.move.cli.settings.ProjectType
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 import org.move.utils.tests.RunConfigurationProducerTestBase
 import org.move.utils.tests.SettingsPrivateKey
 import org.move.utils.tests.SettingsProjectType
@@ -18,7 +18,7 @@ class PublishConfigurationProducerTest: RunConfigurationProducerTestBase("publis
                 """)
             }
         }
-        checkOnElement<MvModuleDef>()
+        checkOnElement<MvModule>()
     }
 
     @SettingsProjectType(ProjectType.APTOS)
@@ -32,7 +32,7 @@ class PublishConfigurationProducerTest: RunConfigurationProducerTestBase("publis
                 """)
             }
         }
-        checkNoConfigurationOnElement<MvModuleDef>()
+        checkNoConfigurationOnElement<MvModule>()
     }
 
 

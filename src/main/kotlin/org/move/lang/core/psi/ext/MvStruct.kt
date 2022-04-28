@@ -28,10 +28,10 @@ val MvStruct.fqName: String get() {
     return moduleFqName + name
 }
 
-val MvStruct.module: MvModuleDef
+val MvStruct.module: MvModule
     get() {
         val moduleBlock = this.parent
-        return moduleBlock.parent as MvModuleDef
+        return moduleBlock.parent as MvModule
     }
 
 val MvStruct.abilities: List<MvAbility>

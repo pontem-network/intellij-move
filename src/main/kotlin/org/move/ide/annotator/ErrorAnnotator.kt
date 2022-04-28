@@ -17,13 +17,13 @@ class ErrorAnnotator : MvAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val moveHolder = MvAnnotationHolder(holder)
         val visitor = object : MvVisitor() {
-            override fun visitConstDef(o: MvConstDef) = checkConstDef(moveHolder, o)
+            override fun visitConst(o: MvConst) = checkConstDef(moveHolder, o)
 
             override fun visitFunction(o: MvFunction) = checkFunction(moveHolder, o)
 
             override fun visitStruct(o: MvStruct) = checkStruct(moveHolder, o)
 
-            override fun visitModuleDef(o: MvModuleDef) = checkModuleDef(moveHolder, o)
+            override fun visitModule(o: MvModule) = checkModuleDef(moveHolder, o)
 
             override fun visitStructField(o: MvStructField) = checkDuplicates(moveHolder, o)
 
@@ -190,7 +190,7 @@ class ErrorAnnotator : MvAnnotator() {
         warnOnBuiltInFunctionName(holder, function)
     }
 
-    private fun checkModuleDef(holder: MvAnnotationHolder, mod: MvModuleDef) {
+    private fun checkModuleDef(holder: MvAnnotationHolder, mod: MvModule) {
         val moveProj = mod.moveProject ?: return
         val addressIdent = mod.address()?.toAddress(moveProj) ?: return
         val modIdent = Pair(addressIdent, mod.name)
@@ -208,12 +208,12 @@ class ErrorAnnotator : MvAnnotator() {
         holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${mod.name}`")
     }
 
-    private fun checkConstDef(holder: MvAnnotationHolder, const: MvConstDef) {
+    private fun checkConstDef(holder: MvAnnotationHolder, const: MvConst) {
         val binding = const.bindingPat ?: return
         val owner = const.parent?.parent ?: return
         val allBindings = when (owner) {
-            is MvModuleDef -> owner.constBindings()
-            is MvScriptDef -> owner.constBindings()
+            is MvModule -> owner.constBindings()
+            is MvScript -> owner.constBindings()
             else -> return
         }
         checkDuplicates(holder, binding, allBindings.asSequence())

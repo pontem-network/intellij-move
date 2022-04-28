@@ -3,10 +3,10 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.*
 
-fun MvScriptDef.allFunctions(): List<MvFunction> = scriptBlock?.functionList.orEmpty()
+fun MvScript.allFunctions(): List<MvFunction> = scriptBlock?.functionList.orEmpty()
 
-fun MvScriptDef.constBindings(): List<MvBindingPat> =
-    scriptBlock?.constDefList.orEmpty().mapNotNull { it.bindingPat }
+fun MvScript.constBindings(): List<MvBindingPat> =
+    scriptBlock?.constList.orEmpty().mapNotNull { it.bindingPat }
 
 //fun MvScriptDef.builtinFunctions(): List<MvFunction> {
 //    return listOf(
@@ -14,9 +14,5 @@ fun MvScriptDef.constBindings(): List<MvBindingPat> =
 //    )
 //}
 
-abstract class MvScriptDefMixin(node: ASTNode) : MvElementImpl(node),
-                                                 MvScriptDef {
-//    override val useStmts: List<MvUseStmt>
-//        get() =
-//            this.scriptBlock?.useStmtList.orEmpty()
-}
+//abstract class MvScriptMixin(node: ASTNode) : MvElementImpl(node),
+//                                              MvScript

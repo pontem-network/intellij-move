@@ -4,7 +4,7 @@ import com.intellij.psi.PsiElement
 import org.move.cli.runconfig.producers.TestRunConfigurationProducer
 import org.move.cli.settings.ProjectType
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 import org.move.openapiext.toPsiDirectory
 import org.move.utils.tests.RunConfigurationProducerTestBase
 import org.move.utils.tests.SettingsProjectType
@@ -59,7 +59,7 @@ class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") 
                 )
             }
         }
-        checkNoConfigurationOnElement<MvModuleDef>()
+        checkNoConfigurationOnElement<MvModule>()
     }
 
     @SettingsProjectType(ProjectType.DOVE)
@@ -83,7 +83,7 @@ class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") 
                 )
             }
         }
-        checkOnElement<MvModuleDef>()
+        checkOnElement<MvModule>()
     }
 
     @SettingsProjectType(ProjectType.APTOS)

@@ -39,7 +39,7 @@ fun MvNamedElement.createLookupElement(): LookupElementBuilder {
         .withLookupString(this.name ?: "")
 }
 
-fun MvModuleDef.createSelfLookup(): LookupElement {
+fun MvModule.createSelfLookup(): LookupElement {
     return LookupElementBuilder
         .create("Self")
         .withBoldness(true)
@@ -68,7 +68,7 @@ fun MvNamedElement.createCompletionLookupElement(
             .withTypeText(this.returnType?.type?.text ?: "()")
             .withInsertHandler(insertHandler)
 
-        is MvModuleDef -> this.createLookupElement()
+        is MvModule -> this.createLookupElement()
             .withTailText(this.address()?.let { " ${it.text}" } ?: "")
             .withTypeText(this.containingFile?.name)
 

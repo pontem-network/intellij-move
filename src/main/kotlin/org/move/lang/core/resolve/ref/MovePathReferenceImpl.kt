@@ -5,7 +5,7 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 
 fun processModuleItems(
-    module: MvModuleDef,
+    module: MvModule,
     itemVis: ItemVis,
     processor: MatchingProcessor,
 ): Boolean {
@@ -26,7 +26,7 @@ fun processModuleItems(
 }
 
 fun resolveModuleItem(
-    module: MvModuleDef,
+    module: MvModule,
     name: String,
     itemVis: ItemVis,
 ): List<MvNamedElement> {
@@ -55,7 +55,8 @@ class MvPathReferenceImpl(
         val moduleRef = element.pathIdent.moduleRef
         // first, see whether it's a fully qualified path (ADDRESS::MODULE::NAME) and try to resolve those
         if (moduleRef is MvFQModuleRef) {
-            val module = moduleRef.reference?.resolve() as? MvModuleDef ?: return emptyList()
+            val module = moduleRef.reference?.resolve() as? MvModule
+                ?: return emptyList()
             return resolveModuleItem(module, refName, itemVis)
         }
         // second,
@@ -68,7 +69,8 @@ class MvPathReferenceImpl(
                 )
             }
             val fqModuleRef = resolveIntoFQModuleRef(moduleRef) ?: return emptyList()
-            val module = fqModuleRef.reference?.resolve() as? MvModuleDef ?: return emptyList()
+            val module = fqModuleRef.reference?.resolve() as? MvModule
+                ?: return emptyList()
             return resolveModuleItem(module, refName, itemVis)
         } else {
             // if it's NAME
@@ -81,7 +83,8 @@ class MvPathReferenceImpl(
             if (item !is MvUseItem) return listOf(item)
             // find corresponding FQModuleRef from imports and resolve
             val fqModuleRef = item.moduleImport().fqModuleRef
-            val module = fqModuleRef.reference?.resolve() as? MvModuleDef ?: return emptyList()
+            val module = fqModuleRef.reference?.resolve() as? MvModule
+                ?: return emptyList()
             return resolveModuleItem(module, refName, itemVis)
         }
     }

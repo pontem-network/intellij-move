@@ -8,7 +8,7 @@ import org.move.cli.runconfig.MoveCmdConfig
 import org.move.cli.settings.ProjectType
 import org.move.cli.settings.type
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.findMoveProject
 import org.move.lang.core.psi.ext.isTest
@@ -55,7 +55,7 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
         }
 
         private fun findTestModule(psi: PsiElement, climbUp: Boolean): MoveCmdConfig? {
-            val mod = findElement<MvModuleDef>(psi, climbUp) ?: return null
+            val mod = findElement<MvModule>(psi, climbUp) ?: return null
             if (!hasTestFunction(mod)) return null
 
             val modName = mod.name ?: return null
@@ -70,7 +70,7 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
             return MoveCmdConfig(psi, confName, MoveCmd(command, rootPath))
         }
 
-        private fun hasTestFunction(mod: MvModuleDef): Boolean {
+        private fun hasTestFunction(mod: MvModule): Boolean {
             val items = mod.moduleBlock?.items().orEmpty()
             return items
                 .filterIsInstance<MvFunction>()

@@ -1,12 +1,12 @@
 package org.move.ide.presentation
 
 import org.move.lang.core.psi.MvElement
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.fqName
 import org.move.lang.core.types.ty.*
 
-val Ty.declaringModule: MvModuleDef?
+val Ty.declaringModule: MvModule?
     get() = when (this) {
         is TyReference -> this.referenced.declaringModule
         is TyStruct -> this.item.containingModule

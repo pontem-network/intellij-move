@@ -32,7 +32,8 @@ abstract class MvUseItemMixin(node: ASTNode) : MvNamedElementImpl(node),
         val itemImport = this
         return object : MvReferenceCached<MvUseItem>(itemImport) {
             override fun resolveInner(): List<MvNamedElement> {
-                val module = moduleRef.reference?.resolve() as? MvModuleDef ?: return emptyList()
+                val module = moduleRef.reference?.resolve() as? MvModule
+                    ?: return emptyList()
                 val ns = setOf(Namespace.TYPE, Namespace.NAME, Namespace.SCHEMA)
                 val vs = Visibility.buildSetOfVisibilities(moduleRef)
                 val itemVis = ItemVis(ns, vs, MslScope.NONE)

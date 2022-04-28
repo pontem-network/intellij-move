@@ -1,6 +1,6 @@
 FILE
-  MvModuleDefImpl(MODULE_DEF)
-    PsiElement(module)('module')
+  MvModuleImpl(MODULE)
+    PsiElement(module_kw)('module')
     PsiWhiteSpace(' ')
     MvAddressRefImpl(ADDRESS_REF)
       PsiElement(DIEM_ADDRESS)('0x1')
@@ -11,26 +11,26 @@ FILE
       PsiElement({)('{')
       PsiWhiteSpace('\n    ')
       MvStructImpl(STRUCT)
-        PsiElement(struct)('struct')
+        PsiElement(struct_kw)('struct')
         PsiErrorElement:IDENTIFIER expected, got 'native'
           <empty list>
       PsiWhiteSpace('\n    ')
       MvStructImpl(STRUCT)
         PsiElement(native)('native')
         PsiWhiteSpace(' ')
-        PsiElement(struct)('struct')
+        PsiElement(struct_kw)('struct')
         PsiErrorElement:IDENTIFIER expected, got 'struct'
           <empty list>
       PsiWhiteSpace('\n    ')
       MvStructImpl(STRUCT)
-        PsiElement(struct)('struct')
+        PsiElement(struct_kw)('struct')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('S')
         PsiErrorElement:< or '{' expected, got 'struct'
           <empty list>
       PsiWhiteSpace('\n    ')
       MvStructImpl(STRUCT)
-        PsiElement(struct)('struct')
+        PsiElement(struct_kw)('struct')
         PsiErrorElement:IDENTIFIER expected, got '{'
           <empty list>
         PsiWhiteSpace(' ')
@@ -41,14 +41,14 @@ FILE
       MvStructImpl(STRUCT)
         PsiElement(native)('native')
         PsiWhiteSpace(' ')
-        PsiElement(struct)('struct')
+        PsiElement(struct_kw)('struct')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('S1')
         PsiErrorElement:';' or < expected, got 'struct'
           <empty list>
       PsiWhiteSpace('\n    ')
       MvStructImpl(STRUCT)
-        PsiElement(struct)('struct')
+        PsiElement(struct_kw)('struct')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('S')
         MvTypeParameterListImpl(TYPE_PARAMETER_LIST)
@@ -60,7 +60,7 @@ FILE
           PsiElement(>)('>')
       PsiWhiteSpace('\n    ')
       MvStructImpl(STRUCT)
-        PsiElement(struct)('struct')
+        PsiElement(struct_kw)('struct')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('S')
         MvTypeParameterListImpl(TYPE_PARAMETER_LIST)

@@ -122,9 +122,9 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "#"        { return HASH; }
 
       // keywords
-      "script"         { return SCRIPT; }
-      "module"         { return MODULE; }
-      "const"          { return CONST; }
+      "script"         { return SCRIPT_KW; }
+      "module"         { return MODULE_KW; }
+      "const"          { return CONST_KW; }
       "native"         { return NATIVE; }
       "public"         { return PUBLIC; }
       "fun"            { return FUN; }
