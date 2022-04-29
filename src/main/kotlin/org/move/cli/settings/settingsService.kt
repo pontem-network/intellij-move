@@ -40,7 +40,6 @@ private const val serviceName: String = "MoveProjectSettings"
 class MvProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
-        var projectType: ProjectType = ProjectType.DOVE,
         var moveExecutablePath: String = "",
         var privateKey: String = "",
         var collapseSpecs: Boolean = false,
@@ -114,15 +113,6 @@ class MvProjectSettingsService(private val project: Project) : PersistentStateCo
 
 val Project.moveSettings: MvProjectSettingsService
     get() = this.getService(MvProjectSettingsService::class.java)
-
-
-enum class ProjectType {
-    DOVE, APTOS;
-}
-
-val Project.type: ProjectType
-    get() = this.moveSettings.settingsState.projectType
-
 
 val Project.moveExecutablePathValue: String
     get() {

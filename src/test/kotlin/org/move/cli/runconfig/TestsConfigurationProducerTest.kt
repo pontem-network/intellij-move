@@ -2,92 +2,86 @@ package org.move.cli.runconfig
 
 import com.intellij.psi.PsiElement
 import org.move.cli.runconfig.producers.TestRunConfigurationProducer
-import org.move.cli.settings.ProjectType
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.openapiext.toPsiDirectory
 import org.move.utils.tests.RunConfigurationProducerTestBase
-import org.move.utils.tests.SettingsProjectType
 
 class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") {
-    @SettingsProjectType(ProjectType.DOVE)
-    fun `test dove test run for function`() {
-        testProject {
-            moveToml(
-                """
-            [package]
-            name = "MyPackage"
-            """
-            )
-            tests {
-                move(
-                    "MoveTests.move", """
-            #[test_only]
-            module 0x1::MoveTests {
-                #[test]
-                fun /*caret*/test_add() {
-                    1 + 1;
-                }
-                #[test]
-                fun test_mul() {
-                    1 * 1;
-                }
-            }
-            """
-                )
-            }
-        }
-        checkOnElement<MvFunction>()
+//    fun `test test run for function`() {
+//        testProject {
+//            moveToml(
+//                """
+//            [package]
+//            name = "MyPackage"
+//            """
+//            )
+//            tests {
+//                move(
+//                    "MoveTests.move", """
+//            #[test_only]
+//            module 0x1::MoveTests {
+//                #[test]
+//                fun /*caret*/test_add() {
+//                    1 + 1;
+//                }
+//                #[test]
+//                fun test_mul() {
+//                    1 * 1;
+//                }
+//            }
+//            """
+//                )
+//            }
+//        }
+//        checkOnElement<MvFunction>()
+//
+//        val ctx1 = myFixture.findElementByText("+", PsiElement::class.java)
+//        val ctx2 = myFixture.findElementByText("*", PsiElement::class.java)
+//        doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
+//    }
+//
+//    fun `test no test run if no test functions`() {
+//        testProject {
+//            moveToml("""""")
+//            sources {
+//                move(
+//                    "main.move", """
+//                #[test_only]
+//                module 0x1::/*caret*/M {
+//                    fun call() {}
+//                }
+//                """
+//                )
+//            }
+//        }
+//        checkNoConfigurationOnElement<MvModule>()
+//    }
+//
+//    fun `test test run for module with test functions inside sources`() {
+//        testProject {
+//            moveToml(
+//                """
+//            [package]
+//            name = "MyPackage"
+//            """
+//            )
+//            sources {
+//                move(
+//                    "main.move", """
+//                #[test_only]
+//                module 0x1::/*caret*/Main {
+//                    #[test]
+//                    fun test_some_action() {}
+//                }
+//                """
+//                )
+//            }
+//        }
+//        checkOnElement<MvModule>()
+//    }
 
-        val ctx1 = myFixture.findElementByText("+", PsiElement::class.java)
-        val ctx2 = myFixture.findElementByText("*", PsiElement::class.java)
-        doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
-    }
-
-    @SettingsProjectType(ProjectType.DOVE)
-    fun `test dove no test run if no test functions`() {
-        testProject {
-            moveToml("""""")
-            sources {
-                move(
-                    "main.move", """
-                #[test_only]    
-                module 0x1::/*caret*/M {
-                    fun call() {}
-                }    
-                """
-                )
-            }
-        }
-        checkNoConfigurationOnElement<MvModule>()
-    }
-
-    @SettingsProjectType(ProjectType.DOVE)
-    fun `test dove test run for module with test functions inside sources`() {
-        testProject {
-            moveToml(
-                """
-            [package]
-            name = "MyPackage"    
-            """
-            )
-            sources {
-                move(
-                    "main.move", """
-                #[test_only]    
-                module 0x1::/*caret*/Main {
-                    #[test]
-                    fun test_some_action() {}
-                }    
-                """
-                )
-            }
-        }
-        checkOnElement<MvModule>()
-    }
-
-    @SettingsProjectType(ProjectType.APTOS)
-    fun `test aptos test run for sources`() {
+    fun `test run tests for sources directory`() {
         testProject {
             namedMoveToml("MyPackage")
             sources {
@@ -106,8 +100,7 @@ class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") 
         checkOnFsItem(sourcesDir)
     }
 
-    @SettingsProjectType(ProjectType.APTOS)
-    fun `test aptos test run for file`() {
+    fun `test run tests for move file`() {
         testProject {
             namedMoveToml("MyPackage")
             sources {
@@ -127,8 +120,7 @@ class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") 
         checkOnFsItem(mainFile)
     }
 
-//    @SettingsProjectType(ProjectType.APTOS)
-//    fun `test aptos no configuration on sources if no test function`() {
+//    fun `test no configuration on sources if no test function`() {
 //        testProject {
 //            namedMoveToml("MyPackage")
 //            sources {

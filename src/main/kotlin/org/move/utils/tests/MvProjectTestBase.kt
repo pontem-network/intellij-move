@@ -14,12 +14,6 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
 
     override fun setUp() {
         super.setUp()
-        val type = this.findAnnotationInstance<SettingsProjectType>()?.type
-        if (type != null) {
-            project.moveSettings.modifyTemporary(testRootDisposable) {
-                it.projectType = type
-            }
-        }
         val privateKey = this.findAnnotationInstance<SettingsPrivateKey>()?.privateKey
         if (privateKey != null) {
             project.moveSettings.modifyTemporary(testRootDisposable) {

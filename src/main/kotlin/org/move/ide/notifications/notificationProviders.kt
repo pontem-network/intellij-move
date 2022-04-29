@@ -27,7 +27,7 @@ class UpdateNotificationsOnSettingsChangeListener(val project: Project) : MvSett
     }
 }
 
-class UnconfiguredDoveNotification(
+class UnconfiguredAptosNotification(
     private val project: Project
 ) : EditorNotifications.Provider<EditorNotificationPanel>(),
     DumbAware {

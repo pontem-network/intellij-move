@@ -6,7 +6,7 @@
 
     <description>
         <![CDATA[
-            <p>Support for Move, smart-contract language for Diem, Dfinance and Pontem blockchains.</p>
+            <p>Support for Move, smart-contract language for Aptos and Pontem blockchains.</p>
 
             <p><a href="https://github.com/pontem-network/intellij-move">https://github.com/pontem-network/intellij-move</a></p>
 
@@ -242,8 +242,8 @@
 
         <!-- Notifications -->
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>
-<!--        <editorNotificationProvider-->
-<!--                implementation="org.move.ide.notifications.UnconfiguredDoveNotification"/>-->
+        <editorNotificationProvider
+                implementation="org.move.ide.notifications.UnconfiguredAptosNotification"/>
 
         <intentionAction>
             <className>org.move.ide.intentions.RemoveCurlyBracesIntention</className>

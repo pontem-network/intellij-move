@@ -5,15 +5,12 @@ import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.runconfig.MoveBinaryRunConfigurationProducer
 import org.move.cli.runconfig.MoveCmd
 import org.move.cli.runconfig.MoveCmdConfig
-import org.move.cli.settings.ProjectType
-import org.move.cli.settings.type
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.findMoveProject
 import org.move.lang.core.psi.ext.isTest
 import org.move.lang.core.psi.items
-import org.move.lang.moveProject
 
 class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
     override fun configFromLocation(location: PsiElement) = fromLocation(location)
@@ -28,10 +25,7 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
                     val rootPath = moveProject.rootPath ?: return null
 
                     val confName = "Test $packageName"
-                    val command = when (project.type) {
-                        ProjectType.APTOS -> "move test --package-dir ."
-                        ProjectType.DOVE -> "package test"
-                    }
+                    val command = "move test --package-dir ."
                     return MoveCmdConfig(location, confName, MoveCmd(command, rootPath))
                 }
                 else -> findTestFunction(location, climbUp) ?: findTestModule(location, climbUp)
@@ -44,14 +38,16 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
             val functionName = fn.name ?: return null
             val modName = fn.containingModule?.name ?: return null
             val confName = "Test $modName::$functionName"
-            val command = when (psi.project.type) {
-                ProjectType.DOVE -> "package test --filter $functionName"
-                ProjectType.APTOS -> {
-                    return null
-                }
-            }
-            val rootPath = fn.moveProject?.rootPath ?: return null
-            return MoveCmdConfig(psi, confName, MoveCmd(command, rootPath))
+            // TODO: add when aptos CLI adds support
+            return null
+//            val command = when (psi.project.type) {
+//                ProjectType.DOVE -> "package test --filter $functionName"
+//                ProjectType.APTOS -> {
+//                    return null
+//                }
+//            }
+//            val rootPath = fn.moveProject?.rootPath ?: return null
+//            return MoveCmdConfig(psi, confName, MoveCmd(command, rootPath))
         }
 
         private fun findTestModule(psi: PsiElement, climbUp: Boolean): MoveCmdConfig? {
@@ -60,14 +56,15 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
 
             val modName = mod.name ?: return null
             val confName = "Test $modName"
-            val command = when (psi.project.type) {
-                ProjectType.DOVE -> "package test --filter $modName"
-                ProjectType.APTOS -> {
-                    return null
-                }
-            }
-            val rootPath = mod.moveProject?.rootPath ?: return null
-            return MoveCmdConfig(psi, confName, MoveCmd(command, rootPath))
+            return null
+//            val command = when (psi.project.type) {
+//                ProjectType.DOVE -> "package test --filter $modName"
+//                ProjectType.APTOS -> {
+//                    return null
+//                }
+//            }
+//            val rootPath = mod.moveProject?.rootPath ?: return null
+//            return MoveCmdConfig(psi, confName, MoveCmd(command, rootPath))
         }
 
         private fun hasTestFunction(mod: MvModule): Boolean {
