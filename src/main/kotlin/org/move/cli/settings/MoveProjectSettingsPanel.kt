@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.JBColor
 import com.intellij.ui.layout.enteredTextSatisfies
-import org.move.cli.MoveBinary
+import org.move.cli.AptosCLI
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathTextField
 import java.awt.BorderLayout
@@ -44,7 +44,7 @@ class FilePathWithVersionField(private val project: Project) : Disposable {
 
     init {
         field.textField.text =
-            project.moveSettings.settingsState.moveExecutablePath
+            project.moveSettings.settingsState.aptosCliPath
     }
 
     fun selectedMoveBinaryPath(): String = this.field.textField.text
@@ -62,7 +62,7 @@ class FilePathWithVersionField(private val project: Project) : Disposable {
         val binPath = executablePathField.text
         versionUpdateDebouncer.run(
             onPooledThread = {
-                MoveBinary(project, Paths.get(binPath)).version()
+                AptosCLI(project, Paths.get(binPath)).version()
             },
             onUiThread = { version -> versionLabel.setVersion(version) }
         )

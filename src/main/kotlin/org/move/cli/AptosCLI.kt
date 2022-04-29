@@ -7,14 +7,14 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
-import org.move.cli.settings.moveBinaryPath
+import org.move.cli.settings.aptosCliPath
 import java.io.File
 import java.io.InputStreamReader
 import java.nio.file.Path
 
-class MoveBinary(
+class AptosCLI(
     private val project: Project,
-    private val path: Path? = project.moveBinaryPath
+    private val path: Path? = project.aptosCliPath
 ) {
     fun version(): String? {
         try {
@@ -42,6 +42,6 @@ class MoveBinary(
     }
 
     companion object {
-        private val LOG = logger<MoveBinary>()
+        private val LOG = logger<AptosCLI>()
     }
 }

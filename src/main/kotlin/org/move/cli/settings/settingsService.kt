@@ -16,11 +16,11 @@ import java.nio.file.Paths
 import kotlin.reflect.KProperty1
 
 data class MvSettingsChangedEvent(
-    val oldState: MvProjectSettingsService.State,
-    val newState: MvProjectSettingsService.State,
+    val oldState: MoveProjectSettingsService.State,
+    val newState: MoveProjectSettingsService.State,
 ) {
     /** Use it like `event.isChanged(State::foo)` to check whether `foo` property is changed or not */
-    fun isChanged(prop: KProperty1<MvProjectSettingsService.State, *>): Boolean =
+    fun isChanged(prop: KProperty1<MoveProjectSettingsService.State, *>): Boolean =
         prop.get(oldState) != prop.get(newState)
 }
 
@@ -37,12 +37,12 @@ private const val serviceName: String = "MoveProjectSettings"
         Storage("misc.xml", deprecated = true)
     ]
 )
-class MvProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
+class MoveProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
-        var moveExecutablePath: String = "",
+        var aptosCliPath: String = "",
         var privateKey: String = "",
-        var collapseSpecs: Boolean = false,
+        var foldSpecs: Boolean = false,
     )
 
     @Volatile
@@ -58,7 +58,7 @@ class MvProjectSettingsService(private val project: Project) : PersistentStateCo
             }
         }
 
-    fun showMvConfigureSettings() {
+    fun showMoveSettings() {
         ShowSettingsUtil.getInstance().showSettingsDialog(project, PerProjectMoveConfigurable::class.java)
     }
 
@@ -70,7 +70,7 @@ class MvProjectSettingsService(private val project: Project) : PersistentStateCo
         project.messageBus.syncPublisher(MOVE_SETTINGS_TOPIC)
             .moveSettingsChanged(event)
 
-        if (event.isChanged(State::collapseSpecs)) {
+        if (event.isChanged(State::foldSpecs)) {
             PsiManager.getInstance(project).dropPsiCaches()
         }
     }
@@ -111,22 +111,22 @@ class MvProjectSettingsService(private val project: Project) : PersistentStateCo
     }
 }
 
-val Project.moveSettings: MvProjectSettingsService
-    get() = this.getService(MvProjectSettingsService::class.java)
-
-val Project.moveExecutablePathValue: String
-    get() {
-        return this.moveSettings.settingsState.moveExecutablePath
-    }
+val Project.moveSettings: MoveProjectSettingsService
+    get() = this.getService(MoveProjectSettingsService::class.java)
 
 val Project.collapseSpecs: Boolean
     get() {
-        return this.moveSettings.settingsState.collapseSpecs
+        return this.moveSettings.settingsState.foldSpecs
     }
 
-val Project.moveBinaryPath: Path?
+val Project.aptosCliPathValue: String
     get() {
-        val value = this.moveExecutablePathValue
+        return this.moveSettings.settingsState.aptosCliPath
+    }
+
+val Project.aptosCliPath: Path?
+    get() {
+        val value = this.aptosCliPathValue
         if (value.isBlank()) return null
 
         val path = Paths.get(value)

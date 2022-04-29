@@ -8,7 +8,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
-import org.move.cli.MoveBinary
+import org.move.cli.AptosCLI
 import org.move.lang.isMoveTomlManifestFile
 import org.move.lang.isMoveFile
 import org.move.openapiext.common.isUnitTestMode
@@ -55,12 +55,12 @@ class UnconfiguredAptosNotification(
             || isNotificationDisabled(file)
         ) return null
 
-        if (MoveBinary(project).version() != null) return null
+        if (AptosCLI(project).version() != null) return null
 
         return EditorNotificationPanel().apply {
-            text = "Move configured incorrectly"
+            text = "Move plugin configured incorrectly"
             createActionLabel("Configure") {
-                project.moveSettings.showMvConfigureSettings()
+                project.moveSettings.showMoveSettings()
             }
             createActionLabel("Do not show again") {
                 disableNotification(file)

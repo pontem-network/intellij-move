@@ -9,7 +9,7 @@ import org.jdom.Element
 import org.move.cli.*
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
-import org.move.cli.settings.moveExecutablePathValue
+import org.move.cli.settings.aptosCliPathValue
 
 class MoveRunConfiguration(
     project: Project,
@@ -24,8 +24,8 @@ class MoveRunConfiguration(
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
         val projectRoot = this.cmd.workingDirectory!!
-        val executable = project.moveExecutablePathValue
-        return MoveCommandLineState(environment, executable, this.cmd)
+        val aptosCliPath = project.aptosCliPathValue
+        return MoveCommandLineState(environment, aptosCliPath, this.cmd)
             .apply { addConsoleFilters(MoveFileHyperlinkFilter(project, projectRoot)) }
     }
 

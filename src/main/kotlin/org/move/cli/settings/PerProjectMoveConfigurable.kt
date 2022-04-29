@@ -11,24 +11,22 @@ import com.intellij.ui.layout.panel
 class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move Language"),
                                                          Configurable.NoScroll {
 
-    private val state: MvProjectSettingsService.State = project.moveSettings.settingsState
+    private val state: MoveProjectSettingsService.State = project.moveSettings.settingsState
 
     private val binaryPathField = FilePathWithVersionField(project)
 
     override fun createPanel(): DialogPanel {
         return panel {
-            titledRow("") {
-                row("Aptos CLI") {
-                    binaryPathField.field()
-                    comment("Required").visibleIf(binaryPathField.valid.not())
-                }
-                row("Version") {
-                    binaryPathField.versionLabel()
-                }
+            row("Aptos CLI") {
+                binaryPathField.field()
+                comment("(required)").visibleIf(binaryPathField.valid.not())
+            }
+            row("Version") {
+                binaryPathField.versionLabel()
             }
             row("Aptos private key") { textField(state::privateKey) }
             titledRow("") {
-                row { checkBox("Collapse specs by default", state::collapseSpecs) }
+                row { checkBox("Automatically fold specs in opened files", state::foldSpecs) }
             }
         }
     }
@@ -36,8 +34,8 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
     override fun disposeUIResources() {
         val moveExecutablePath = binaryPathField.selectedMoveBinaryPath()
         val privateKey = this.state.privateKey
-        val collapseSpecs = this.state.collapseSpecs
-        project.moveSettings.settingsState = MvProjectSettingsService.State(
+        val collapseSpecs = this.state.foldSpecs
+        project.moveSettings.settingsState = MoveProjectSettingsService.State(
             moveExecutablePath,
             privateKey,
             collapseSpecs
