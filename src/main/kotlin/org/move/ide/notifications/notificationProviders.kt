@@ -8,13 +8,13 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
-import org.move.cli.AptosCLI
 import org.move.lang.isMoveTomlManifestFile
 import org.move.lang.isMoveFile
 import org.move.openapiext.common.isUnitTestMode
 import org.move.cli.settings.MvSettingsChangedEvent
 import org.move.cli.settings.MvSettingsListener
 import org.move.cli.settings.moveSettings
+import org.move.stdext.toPathOrNull
 
 fun updateAllNotifications(project: Project) {
     EditorNotifications.getInstance(project).updateAllNotifications()
@@ -37,13 +37,6 @@ class UnconfiguredAptosNotification(
 
     override fun getKey(): Key<EditorNotificationPanel> = PROVIDER_KEY
 
-    protected fun disableNotification(file: VirtualFile) {
-        PropertiesComponent.getInstance(project).setValue(file.disablingKey, true)
-    }
-
-    protected fun isNotificationDisabled(file: VirtualFile): Boolean =
-        PropertiesComponent.getInstance(project).getBoolean(file.disablingKey)
-
     override fun createNotificationPanel(
         file: VirtualFile,
         fileEditor: FileEditor,
@@ -55,7 +48,7 @@ class UnconfiguredAptosNotification(
             || isNotificationDisabled(file)
         ) return null
 
-        if (AptosCLI(project).version() != null) return null
+        if (project.moveSettings.aptosPath != null) return null
 
         return EditorNotificationPanel().apply {
             text = "Move plugin configured incorrectly"
@@ -68,6 +61,13 @@ class UnconfiguredAptosNotification(
             }
         }
     }
+
+    private fun disableNotification(file: VirtualFile) {
+        PropertiesComponent.getInstance(project).setValue(file.disablingKey, true)
+    }
+
+    private fun isNotificationDisabled(file: VirtualFile): Boolean =
+        PropertiesComponent.getInstance(project).getBoolean(file.disablingKey)
 
     companion object {
         private const val NOTIFICATION_STATUS_KEY = "org.move.hideMoveNotifications"

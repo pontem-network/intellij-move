@@ -9,7 +9,7 @@ import org.jdom.Element
 import org.move.cli.*
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
-import org.move.cli.settings.aptosCliPathValue
+import org.move.cli.settings.aptosPath
 
 class MoveRunConfiguration(
     project: Project,
@@ -17,15 +17,15 @@ class MoveRunConfiguration(
 ) : LocatableConfigurationBase<RunProfileState>(project, factory, "Move"),
     RunConfigurationWithSuppressedDefaultDebugAction {
 
-    var cmd = MoveCmd("", project.contentRoots.firstOrNull()?.toNioPathOrNull())
+    var cmd = AptosCommandLine("", project.contentRoots.firstOrNull()?.toNioPathOrNull())
     var env: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
 
     override fun getConfigurationEditor() = MoveRunConfigurationEditor()
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
         val projectRoot = this.cmd.workingDirectory!!
-        val aptosCliPath = project.aptosCliPathValue
-        return MoveCommandLineState(environment, aptosCliPath, this.cmd)
+        val aptosPath = project.aptosPath
+        return MoveCommandLineState(environment, aptosPath.toString(), this.cmd)
             .apply { addConsoleFilters(MoveFileHyperlinkFilter(project, projectRoot)) }
     }
 
@@ -40,7 +40,7 @@ class MoveRunConfiguration(
         super.readExternal(element)
         val command = element.readString("command") ?: return
         val path = element.readPath("workingDirectory") ?: return
-        this.cmd = MoveCmd(command, path)
+        this.cmd = AptosCommandLine(command, path)
         env = EnvironmentVariablesData.readExternal(element)
     }
 }

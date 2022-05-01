@@ -12,7 +12,6 @@ import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.reflect.KProperty1
 
 data class MvSettingsChangedEvent(
@@ -40,7 +39,7 @@ private const val serviceName: String = "MoveProjectSettings"
 class MoveProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
-        var aptosCliPath: String = "",
+        var aptosPath: Path? = null,
         var privateKey: String = "",
         var foldSpecs: Boolean = false,
     )
@@ -57,6 +56,8 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
                 notifySettingsChanged(oldState, newState)
             }
         }
+
+    val aptosPath: Path? get() = this._state.aptosPath
 
     fun showMoveSettings() {
         ShowSettingsUtil.getInstance().showSettingsDialog(project, PerProjectMoveConfigurable::class.java)
@@ -90,6 +91,14 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
      * Allows to modify settings.
      * After setting change,
      */
+    fun modify(action: (State) -> Unit) {
+        settingsState = settingsState.also(action)
+    }
+
+    /**
+     * Allows to modify settings.
+     * After setting change,
+     */
     @TestOnly
     fun modifyTemporary(parentDisposable: Disposable, action: (State) -> Unit) {
         val oldState = settingsState
@@ -115,22 +124,7 @@ val Project.moveSettings: MoveProjectSettingsService
     get() = this.getService(MoveProjectSettingsService::class.java)
 
 val Project.collapseSpecs: Boolean
-    get() {
-        return this.moveSettings.settingsState.foldSpecs
-    }
+    get() = this.moveSettings.settingsState.foldSpecs
 
-val Project.aptosCliPathValue: String
-    get() {
-        return this.moveSettings.settingsState.aptosCliPath
-    }
-
-val Project.aptosCliPath: Path?
-    get() {
-        val value = this.aptosCliPathValue
-        if (value.isBlank()) return null
-
-        val path = Paths.get(value)
-        if (!path.toFile().exists()) return null
-
-        return path
-    }
+val Project.aptosPath: Path?
+    get() = this.moveSettings.settingsState.aptosPath

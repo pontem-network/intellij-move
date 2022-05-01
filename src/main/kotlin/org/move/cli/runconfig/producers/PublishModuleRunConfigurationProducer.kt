@@ -2,15 +2,15 @@ package org.move.cli.runconfig.producers
 
 import com.intellij.psi.PsiElement
 import org.move.cli.runconfig.MoveBinaryRunConfigurationProducer
-import org.move.cli.runconfig.MoveCmd
-import org.move.cli.runconfig.MoveCmdConfig
+import org.move.cli.runconfig.AptosCommandLine
+import org.move.cli.runconfig.AptosCommandConf
 import org.move.cli.settings.moveSettings
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.isTestOnly
 import org.move.lang.moveProject
 
 class PublishModuleRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
-    override fun configFromLocation(location: PsiElement): MoveCmdConfig? {
+    override fun configFromLocation(location: PsiElement): AptosCommandConf? {
         val mod = findElement<MvModule>(location, true) ?: return null
         if (mod.isTestOnly) return null
 
@@ -19,10 +19,10 @@ class PublishModuleRunConfigurationProducer : MoveBinaryRunConfigurationProducer
 
         val privateKey = location.project.moveSettings.settingsState.privateKey
         val command = "move publish --package-dir . --private-key $privateKey"
-        return MoveCmdConfig(
+        return AptosCommandConf(
             location,
             "Publish $modName",
-            MoveCmd(command, rootPath)
+            AptosCommandLine(command, rootPath)
         )
     }
 }

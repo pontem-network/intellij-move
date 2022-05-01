@@ -224,7 +224,13 @@
         <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml"/>
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
+        <moduleType id="MOVE_MODULE"
+                    implementationClass="org.move.cli.project.MvModuleType"/>
+        <moduleBuilder builderClass="org.move.cli.project.MvModuleBuilder"/>
+
         <projectOpenProcessor id="Move" implementation="org.move.cli.MvProjectOpenProcessor"/>
+        <directoryProjectGenerator implementation="org.move.ide.newProject.MvDirectoryProjectGenerator" />
+
         <projectConfigurable instance="org.move.cli.settings.PerProjectMoveConfigurable"
                              displayName="Move Language"
                              groupId="language"

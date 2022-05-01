@@ -3,8 +3,8 @@ package org.move.cli.runconfig.producers
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.runconfig.MoveBinaryRunConfigurationProducer
-import org.move.cli.runconfig.MoveCmd
-import org.move.cli.runconfig.MoveCmdConfig
+import org.move.cli.runconfig.AptosCommandLine
+import org.move.cli.runconfig.AptosCommandConf
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
@@ -16,8 +16,7 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
     override fun configFromLocation(location: PsiElement) = fromLocation(location)
 
     companion object {
-        fun fromLocation(location: PsiElement, climbUp: Boolean = true): MoveCmdConfig? {
-            val project = location.project
+        fun fromLocation(location: PsiElement, climbUp: Boolean = true): AptosCommandConf? {
             return when (location) {
                 is PsiFileSystemItem -> {
                     val moveProject = location.findMoveProject() ?: return null
@@ -26,13 +25,13 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
 
                     val confName = "Test $packageName"
                     val command = "move test --package-dir ."
-                    return MoveCmdConfig(location, confName, MoveCmd(command, rootPath))
+                    return AptosCommandConf(location, confName, AptosCommandLine(command, rootPath))
                 }
                 else -> findTestFunction(location, climbUp) ?: findTestModule(location, climbUp)
             }
         }
 
-        private fun findTestFunction(psi: PsiElement, climbUp: Boolean): MoveCmdConfig? {
+        private fun findTestFunction(psi: PsiElement, climbUp: Boolean): AptosCommandConf? {
             val fn = findElement<MvFunction>(psi, climbUp) ?: return null
             if (!fn.isTest) return null
             val functionName = fn.name ?: return null
@@ -50,7 +49,7 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
 //            return MoveCmdConfig(psi, confName, MoveCmd(command, rootPath))
         }
 
-        private fun findTestModule(psi: PsiElement, climbUp: Boolean): MoveCmdConfig? {
+        private fun findTestModule(psi: PsiElement, climbUp: Boolean): AptosCommandConf? {
             val mod = findElement<MvModule>(psi, climbUp) ?: return null
             if (!hasTestFunction(mod)) return null
 

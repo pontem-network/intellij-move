@@ -19,8 +19,6 @@ import java.nio.file.Path
 val <T> T.exhaustive: T
     inline get() = this
 
-fun Path.isExecutable(): Boolean = Files.isExecutable(this)
-
 fun deepIterateChildrenRecursivery(
     root: VirtualFile,
     filePredicate: (VirtualFile) -> Boolean,
