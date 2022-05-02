@@ -12,20 +12,11 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
 
     private val state: MoveProjectSettingsService.State = project.moveSettings.settingsState
 
-    //    private val binaryPathField = FilePathWithVersionField(project)
     private val moveProjectSettings = MoveProjectSettingsPanel()
 
     override fun createPanel(): DialogPanel {
         return panel {
             moveProjectSettings.attachTo(this)
-//            row("Aptos CLI") {
-//                binaryPathField.field()
-//                comment("(required)").visibleIf(binaryPathField.valid.not())
-//            }
-//            row("Version") {
-//                binaryPathField.versionLabel()
-//            }
-//            row("Aptos private key") { textField(state::privateKey) }
             titledRow("") {
                 row { checkBox("Automatically fold specs in opened files", state::foldSpecs) }
             }
@@ -35,16 +26,6 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
     override fun disposeUIResources() {
         super.disposeUIResources()
         Disposer.dispose(moveProjectSettings)
-//        val moveExecutablePath = binaryPathField.selectedMoveBinaryPath()
-//        val privateKey = this.state.privateKey
-//        val collapseSpecs = this.state.foldSpecs
-//        project.moveSettings.settingsState = MoveProjectSettingsService.State(
-//            moveExecutablePath,
-//            privateKey,
-//            collapseSpecs
-//        )
-//        super.disposeUIResources()
-//        Disposer.dispose(binaryPathField)
     }
 
     override fun reset() {

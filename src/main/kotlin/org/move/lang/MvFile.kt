@@ -32,23 +32,6 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
     return null
 }
 
-//fun PsiFile.getCorrespondingMoveTomlFile(): TomlFile? {
-//    return project.moveProjects.findMvProjectForPsiFile(this)?.moveToml?.tomlFile
-//    val moveTomlPath =
-//        addressesService.findMoveTomlPathForFile(this.originalFile.virtualFile)
-//            ?: return null
-//    val moveTomlPath = this.toNioPathOrNull()?.let { findMoveTomlPath(it) } ?: return null
-//    return parseToml(this.project, moveTomlPath)
-//}
-
-//fun PsiFile.getCorrespondingMoveToml(): MoveToml? {
-//    val tomlFile = getCorrespondingMoveTomlFile() ?: return null
-//    return MoveToml.fromTomlFile(tomlFile)
-//}
-
-//fun PsiDirectory.moveProject(): MoveProject? {
-//    project.moveProjectsService.findMoveProjectForPsiFile()
-//}
 val PsiElement.moveProject: MoveProject?
     get() = project.moveProjects.findProjectForPsiElement(this)
 
@@ -77,6 +60,8 @@ class MvFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvider,
         return defs.mapNotNull { it.scriptBlock }.toList()
     }
 }
+
+val VirtualFile.isMoveOrManifest: Boolean get() = this.isMoveFile || this.isMoveTomlManifestFile
 
 val VirtualFile.isMoveFile: Boolean get() = fileType == MoveFileType
 

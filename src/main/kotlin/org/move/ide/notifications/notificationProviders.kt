@@ -8,13 +8,13 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
-import org.move.lang.isMoveTomlManifestFile
-import org.move.lang.isMoveFile
-import org.move.openapiext.common.isUnitTestMode
 import org.move.cli.settings.MvSettingsChangedEvent
 import org.move.cli.settings.MvSettingsListener
 import org.move.cli.settings.moveSettings
-import org.move.stdext.toPathOrNull
+import org.move.lang.isMoveFile
+import org.move.lang.isMoveOrManifest
+import org.move.lang.isMoveTomlManifestFile
+import org.move.openapiext.common.isUnitTestMode
 
 fun updateAllNotifications(project: Project) {
     EditorNotifications.getInstance(project).updateAllNotifications()
@@ -43,15 +43,13 @@ class UnconfiguredAptosNotification(
         project: Project
     ): EditorNotificationPanel? {
         if (isUnitTestMode) return null
-        if (
-            !(file.isMoveFile || file.isMoveTomlManifestFile)
-            || isNotificationDisabled(file)
-        ) return null
+        if (!file.isMoveOrManifest) return null
+        if (isNotificationDisabled(file)) return null
 
         if (project.moveSettings.aptosPath != null) return null
 
         return EditorNotificationPanel().apply {
-            text = "Move plugin configured incorrectly"
+            text = "Aptos binary path is not provided"
             createActionLabel("Configure") {
                 project.moveSettings.showMoveSettings()
             }

@@ -81,7 +81,6 @@
 
         <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.MvImportOptimizer"/>
 
-        <!--        <stubElementTypeHolder class="org.move.lang.MvElementTypes"/>-->
         <gotoSymbolContributor implementation="org.move.ide.navigation.MvSymbolNavigationContributor"/>
         <gotoClassContributor implementation="org.move.ide.navigation.MvStructNavigationContributor"/>
 
@@ -114,7 +113,6 @@
 
         <lang.findUsagesProvider language="Move"
                                  implementationClass="org.move.ide.search.MvFindUsagesProvider"/>
-<!--        <useScopeEnlarger implementation="org.move.ide.search.MvUseScopeEnlarger"/>-->
         <usageTypeProvider
                 implementation="org.move.ide.search.NamedAddressUsageTypeProvider"/>
         <findUsagesHandlerFactory
@@ -240,8 +238,6 @@
                         testServiceImplementation="org.move.utils.TestProjectRootServiceImpl"/>
         <projectService serviceInterface="org.move.cli.MoveProjectsService"
                         serviceImplementation="org.move.cli.MoveProjectsServiceImpl"/>
-
-<!--        <indexedRootsProvider implementation="org.move.ide.inspections.imports.MoveIndexableSetContributor" />-->
 
         <additionalLibraryRootsProvider
                 implementation="org.move.cli.project.BuildLibraryRootsProvider"/>
