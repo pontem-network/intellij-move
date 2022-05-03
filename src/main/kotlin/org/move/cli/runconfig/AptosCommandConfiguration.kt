@@ -13,13 +13,13 @@ import org.move.cli.*
 import org.move.cli.settings.aptosPath
 import java.nio.file.Path
 
-class AptosCommandRunConfiguration(
+class AptosCommandConfiguration(
     project: Project,
     factory: ConfigurationFactory,
 ) : LocatableConfigurationBase<RunProfileState>(project, factory, "Move"),
     RunConfigurationWithSuppressedDefaultDebugAction {
 
-    var command: String = "move build"
+    var command: String = "move compile"
     var workingDirectory: Path? = if (!project.isDefault) {
         project.moveProjects.allProjects.firstOrNull()?.rootPath
     } else {

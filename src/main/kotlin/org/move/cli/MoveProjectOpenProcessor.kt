@@ -7,12 +7,13 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.PlatformProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenProcessor
-import org.move.cli.runconfig.makeDefaultRunConfiguration
+import org.move.cli.runconfig.makeDefaultBuildRunConfiguration
 import org.move.ide.MoveIcons
 import org.move.ide.newProject.openFile
 import org.move.ide.notifications.updateAllNotifications
+import org.move.openapiext.aptosBuildRunConfigurations
+import org.move.openapiext.aptosRunConfigurations
 import org.move.openapiext.contentRoots
-import org.move.openapiext.fullyRefreshDirectory
 
 class MoveProjectOpenProcessor : ProjectOpenProcessor() {
     override fun getName() = "Move"
@@ -36,10 +37,9 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
             StartupManager.getInstance(it).runWhenProjectIsInitialized {
                 it.moveProjects.refreshAllProjects()
 
-                // create default build configuration
-                val runManager = RunManager.getInstance(it)
-                if (runManager.allConfigurationsList.isEmpty()) {
-                    it.makeDefaultRunConfiguration()
+                // create default build configuration if it doesn't exist
+                if (it.aptosBuildRunConfigurations().isEmpty()) {
+                    it.makeDefaultBuildRunConfiguration()
                 }
 
                 val packageRoot = it.contentRoots.firstOrNull()

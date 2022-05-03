@@ -15,7 +15,7 @@ class AptosCommandConfigurationType :
         NotNullLazyValue.createConstantValue(MoveIcons.MOVE)
     ) {
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return AptosCommandRunConfiguration(project, this)
+        return AptosCommandConfiguration(project, this)
     }
 
     companion object {

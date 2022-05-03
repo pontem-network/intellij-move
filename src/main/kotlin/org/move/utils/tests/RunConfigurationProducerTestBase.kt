@@ -6,7 +6,7 @@ import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.jdom.Element
-import org.move.cli.runconfig.AptosCommandRunConfiguration
+import org.move.cli.runconfig.AptosCommandConfiguration
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.openapiext.toXmlString
 import org.move.utils.tests.base.TestCase
@@ -62,14 +62,14 @@ abstract class RunConfigurationProducerTestBase(val testDir: String) : MvProject
     }
 
     protected fun doTestRemembersContext(
-        producer: RunConfigurationProducer<AptosCommandRunConfiguration>,
+        producer: RunConfigurationProducer<AptosCommandConfiguration>,
         ctx1: PsiElement,
         ctx2: PsiElement
     ) {
         val contexts = listOf(ConfigurationContext(ctx1), ConfigurationContext(ctx2))
         val configsFromContext = contexts.map { it.configurationsFromContext!!.single() }
         configsFromContext.forEach { check(it.isProducedBy(producer.javaClass)) }
-        val configs = configsFromContext.map { it.configuration as AptosCommandRunConfiguration }
+        val configs = configsFromContext.map { it.configuration as AptosCommandConfiguration }
         for (i in 0..1) {
             check(producer.isConfigurationFromContext(configs[i], contexts[i])) {
                 "Configuration created from context does not believe it"

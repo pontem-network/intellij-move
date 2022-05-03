@@ -4,7 +4,7 @@ import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "221"
+val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "211"
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
 
 val baseProperties = "base-gradle.properties"

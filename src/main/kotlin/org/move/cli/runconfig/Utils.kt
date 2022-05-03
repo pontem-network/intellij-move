@@ -3,7 +3,6 @@ package org.move.cli.runconfig
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.openapi.project.Project
-import org.move.cli.AptosCommandLine
 import org.move.stdext.toPath
 
 //fun RunManager.createAptosCommandRunConfiguration(
@@ -19,13 +18,14 @@ import org.move.stdext.toPath
 //    return runnerAndConfigurationSettings
 //}
 
-fun Project.makeDefaultRunConfiguration() {
+fun Project.makeDefaultBuildRunConfiguration(): AptosCommandConfiguration {
     val runManager = RunManager.getInstance(this)
     val configurationFactory = DefaultRunConfigurationFactory(runManager, this)
     val configuration = configurationFactory.createAptosBuildConfiguration()
 
     runManager.addConfiguration(configuration)
     runManager.selectedConfiguration = configuration
+    return configuration.configuration as AptosCommandConfiguration
 }
 
 private class DefaultRunConfigurationFactory(val runManager: RunManager, val project: Project) {
@@ -34,7 +34,7 @@ private class DefaultRunConfigurationFactory(val runManager: RunManager, val pro
     fun createAptosBuildConfiguration(): RunnerAndConfigurationSettings =
         runManager.createConfiguration("Build $aptosProjectName", AptosCommandConfigurationType::class.java)
             .apply {
-                (configuration as? AptosCommandRunConfiguration)?.apply {
+                (configuration as? AptosCommandConfiguration)?.apply {
                     command = "move compile"
                     workingDirectory = project.basePath?.toPath()
                 }

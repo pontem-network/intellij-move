@@ -5,13 +5,13 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.io.exists
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.MvResult
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
-import kotlin.io.path.notExists
 
 class Aptos(private val exePath: Path) {
 
@@ -42,7 +42,7 @@ class Aptos(private val exePath: Path) {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        if (exePath.notExists()) return null
+        if (!exePath.exists()) return null
 
         val path = exePath.toString()
         if (StringUtil.isEmptyOrSpaces(path)) return null

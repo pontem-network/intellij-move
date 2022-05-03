@@ -6,7 +6,7 @@
 
     <description>
         <![CDATA[
-            <p>Support for Move, smart-contract language for Aptos and Pontem blockchains.</p>
+            <p>Support for Move, smart-contract language for Aptos and other blockchains.</p>
 
             <p><a href="https://github.com/pontem-network/intellij-move">https://github.com/pontem-network/intellij-move</a></p>
 
@@ -225,6 +225,7 @@
         <moduleType id="MOVE_MODULE"
                     implementationClass="org.move.cli.project.MvModuleType"/>
         <moduleBuilder builderClass="org.move.cli.project.MvModuleBuilder"/>
+<!--        <projectTaskRunner implementation="org.move.cli.runconfig.buildtool.AptosBuildTaskRunner" />-->
 
         <projectOpenProcessor id="Move" implementation="org.move.cli.MoveProjectOpenProcessor"/>
 <!--        <directoryProjectGenerator implementation="org.move.ide.newProject.MvDirectoryProjectGenerator" />-->

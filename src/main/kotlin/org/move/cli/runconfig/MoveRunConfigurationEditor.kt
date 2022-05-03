@@ -13,7 +13,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.JComponent
 
-class MoveRunConfigurationEditor : SettingsEditor<AptosCommandRunConfiguration>() {
+class MoveRunConfigurationEditor : SettingsEditor<AptosCommandConfiguration>() {
     private val textField = EditorTextField()
     private val environmentVariables = EnvironmentVariablesComponent()
     private val workingDirectory: Path?
@@ -22,13 +22,13 @@ class MoveRunConfigurationEditor : SettingsEditor<AptosCommandRunConfiguration>(
     val workingDirectoryField: LabeledComponent<TextFieldWithBrowseButton> =
         WorkingDirectoryComponent()
 
-    override fun resetEditorFrom(configuration: AptosCommandRunConfiguration) {
+    override fun resetEditorFrom(configuration: AptosCommandConfiguration) {
         textField.text = configuration.command
         workingDirectoryField.component.text = configuration.workingDirectory?.toString().orEmpty()
         environmentVariables.envData = configuration.environmentVariables
     }
 
-    override fun applyEditorTo(configuration: AptosCommandRunConfiguration) {
+    override fun applyEditorTo(configuration: AptosCommandConfiguration) {
         configuration.command = textField.text
         configuration.workingDirectory = this.workingDirectory
         configuration.environmentVariables = environmentVariables.envData

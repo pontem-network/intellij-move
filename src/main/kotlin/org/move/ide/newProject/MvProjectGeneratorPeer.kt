@@ -6,13 +6,10 @@
 package org.move.ide.newProject
 
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
-import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.platform.GeneratorPeerImpl
 import com.intellij.ui.layout.panel
 import org.move.cli.settings.MoveProjectSettingsPanel
-import javax.naming.ConfigurationException
 import javax.swing.JComponent
-import kotlin.io.path.exists
 
 class MvProjectGeneratorPeer : GeneratorPeerImpl<ConfigurationData>() {
 

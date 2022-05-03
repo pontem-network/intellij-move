@@ -8,12 +8,12 @@ import com.intellij.psi.util.parentOfType
 
 
 abstract class MoveBinaryRunConfigurationProducer :
-    LazyRunConfigurationProducer<AptosCommandRunConfiguration>() {
+    LazyRunConfigurationProducer<AptosCommandConfiguration>() {
 
     override fun getConfigurationFactory() = AptosCommandConfigurationType.getInstance()
 
     override fun setupConfigurationFromContext(
-        templateConfiguration: AptosCommandRunConfiguration,
+        templateConfiguration: AptosCommandConfiguration,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {
@@ -28,7 +28,7 @@ abstract class MoveBinaryRunConfigurationProducer :
     }
 
     override fun isConfigurationFromContext(
-        configuration: AptosCommandRunConfiguration,
+        configuration: AptosCommandConfiguration,
         context: ConfigurationContext
     ): Boolean {
         val location = context.psiLocation ?: return false
@@ -39,7 +39,7 @@ abstract class MoveBinaryRunConfigurationProducer :
                 && configuration.environmentVariables == cmdConf.commandLine.environmentVariables
     }
 
-    abstract fun configFromLocation(location: PsiElement): AptosCommandConfig?
+    abstract fun configFromLocation(location: PsiElement): AptosCommandLineFromContext?
 
     companion object {
         inline fun <reified T : PsiElement> findElement(base: PsiElement, climbUp: Boolean): T? {
