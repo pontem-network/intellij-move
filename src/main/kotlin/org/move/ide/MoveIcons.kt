@@ -4,7 +4,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
 
-object MvIcons {
+object MoveIcons {
     val MOVE = load("/icons/move.svg")
     val MOVE_BYTECODE = load("/icons/mv.svg")
 
@@ -27,5 +27,5 @@ object MvIcons {
     val TEST_GREEN = AllIcons.RunConfigurations.TestState.Green2
     val TEST_RED = AllIcons.RunConfigurations.TestState.Red2
 
-    private fun load(path: String): Icon = IconLoader.getIcon(path, MvIcons::class.java)
+    private fun load(path: String): Icon = IconLoader.getIcon(path, MoveIcons::class.java)
 }

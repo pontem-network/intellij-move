@@ -32,7 +32,6 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
         super.reset()
         moveProjectSettings.data = MoveProjectSettingsPanel.Data(
             aptosPath = state.aptosPath,
-            privateKey = state.privateKey
         )
     }
 
@@ -40,14 +39,13 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
         if (super.isModified()) return true
         val data = moveProjectSettings.data
         return data.aptosPath != state.aptosPath
-                || data.privateKey == state.privateKey
     }
 
     override fun apply() {
         super.apply()
-        state.aptosPath = moveProjectSettings.data.aptosPath
-        state.privateKey = moveProjectSettings.data.privateKey
-        project.moveSettings.settingsState = state
+        val newState = state
+        newState.aptosPath = moveProjectSettings.data.aptosPath
+        project.moveSettings.settingsState = newState
 
     }
 }

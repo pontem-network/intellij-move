@@ -24,7 +24,7 @@ import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.findVirtualFile
 import org.move.cli.settings.MoveProjectSettingsService
-import org.move.cli.settings.MvSettingsChangedEvent
+import org.move.cli.settings.MoveSettingsChangedEvent
 import org.move.cli.settings.MvSettingsListener
 import org.move.stdext.AsyncValue
 import org.move.stdext.MoveProjectEntry
@@ -40,6 +40,8 @@ interface MoveProjectsService {
 
     fun findProjectForPsiElement(psiElement: PsiElement): MoveProject?
     fun findProjectForPath(path: Path): MoveProject?
+
+    val allProjects: Collection<MoveProject>
 
     companion object {
         val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic(
@@ -62,7 +64,7 @@ class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
                 })
             }
             subscribe(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC, object : MvSettingsListener {
-                override fun moveSettingsChanged(e: MvSettingsChangedEvent) {
+                override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
                     refreshAllProjects()
                 }
             })
@@ -119,6 +121,9 @@ class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
         val file = path.findVirtualFile() ?: return null
         return findMoveProject(file)
     }
+
+    override val allProjects: Collection<MoveProject>
+        get() = this.projects.currentState
 
     private fun findMoveProject(file: VirtualFile?): MoveProject? {
         // in-memory file

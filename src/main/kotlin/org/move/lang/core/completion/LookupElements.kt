@@ -9,7 +9,7 @@ import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.AddressVal
-import org.move.ide.MvIcons
+import org.move.ide.MoveIcons
 import org.move.ide.presentation.shortPresentableText
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -48,7 +48,7 @@ fun MvModule.createSelfLookup(): LookupElement {
 fun AddressVal.createCompletionLookupElement(lookupString: String): LookupElement {
     return LookupElementBuilder
         .create(lookupString)
-        .withIcon(MvIcons.ADDRESS)
+        .withIcon(MoveIcons.ADDRESS)
         .withTypeText(packageName)
 }
 

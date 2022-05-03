@@ -8,78 +8,68 @@ import org.move.openapiext.toPsiDirectory
 import org.move.utils.tests.RunConfigurationProducerTestBase
 
 class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") {
-//    fun `test test run for function`() {
-//        testProject {
-//            moveToml(
-//                """
-//            [package]
-//            name = "MyPackage"
-//            """
-//            )
-//            tests {
-//                move(
-//                    "MoveTests.move", """
-//            #[test_only]
-//            module 0x1::MoveTests {
-//                #[test]
-//                fun /*caret*/test_add() {
-//                    1 + 1;
-//                }
-//                #[test]
-//                fun test_mul() {
-//                    1 * 1;
-//                }
-//            }
-//            """
-//                )
-//            }
-//        }
-//        checkOnElement<MvFunction>()
-//
-//        val ctx1 = myFixture.findElementByText("+", PsiElement::class.java)
-//        val ctx2 = myFixture.findElementByText("*", PsiElement::class.java)
-//        doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
-//    }
-//
-//    fun `test no test run if no test functions`() {
-//        testProject {
-//            moveToml("""""")
-//            sources {
-//                move(
-//                    "main.move", """
-//                #[test_only]
-//                module 0x1::/*caret*/M {
-//                    fun call() {}
-//                }
-//                """
-//                )
-//            }
-//        }
-//        checkNoConfigurationOnElement<MvModule>()
-//    }
-//
-//    fun `test test run for module with test functions inside sources`() {
-//        testProject {
-//            moveToml(
-//                """
-//            [package]
-//            name = "MyPackage"
-//            """
-//            )
-//            sources {
-//                move(
-//                    "main.move", """
-//                #[test_only]
-//                module 0x1::/*caret*/Main {
-//                    #[test]
-//                    fun test_some_action() {}
-//                }
-//                """
-//                )
-//            }
-//        }
-//        checkOnElement<MvModule>()
-//    }
+    fun `test test run for function`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            tests {
+                move(
+                    "MoveTests.move", """
+            #[test_only]
+            module 0x1::MoveTests {
+                #[test]
+                fun /*caret*/test_add() {
+                    1 + 1;
+                }
+                #[test]
+                fun test_mul() {
+                    1 * 1;
+                }
+            }
+            """
+                )
+            }
+        }
+        checkOnElement<MvFunction>()
+
+        val ctx1 = myFixture.findElementByText("+", PsiElement::class.java)
+        val ctx2 = myFixture.findElementByText("*", PsiElement::class.java)
+        doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
+    }
+
+    fun `test no test run if no test functions`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            sources {
+                move(
+                    "main.move", """
+                #[test_only]
+                module 0x1::/*caret*/M {
+                    fun call() {}
+                }
+                """
+                )
+            }
+        }
+        checkNoConfigurationOnElement<MvModule>()
+    }
+
+    fun `test test run for module with test functions inside sources`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            sources {
+                move(
+                    "main.move", """
+                #[test_only]
+                module 0x1::/*caret*/Main {
+                    #[test]
+                    fun test_some_action() {}
+                }
+                """
+                )
+            }
+        }
+        checkOnElement<MvModule>()
+    }
 
     fun `test run tests for sources directory`() {
         testProject {
@@ -100,7 +90,7 @@ class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") 
         checkOnFsItem(sourcesDir)
     }
 
-    fun `test run tests for move file`() {
+    fun `test run tests for move package`() {
         testProject {
             namedMoveToml("MyPackage")
             sources {

@@ -5,9 +5,8 @@ import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.util.PlatformIcons
-import org.move.ide.MvIcons
+import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
-import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.types.ty.Ty
@@ -45,7 +44,7 @@ abstract class MvFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
     override fun canNavigate(): Boolean = !builtIn
     override fun canNavigateToSource(): Boolean = !builtIn
 
-    override fun getIcon(flags: Int): Icon = MvIcons.FUNCTION
+    override fun getIcon(flags: Int): Icon = MoveIcons.FUNCTION
 
     override fun getPresentation(): ItemPresentation? {
         val name = this.name ?: return null

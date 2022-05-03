@@ -66,7 +66,7 @@
         <fileBasedIndex implementation="org.move.ide.inspections.imports.MvNamedElementIndex"/>
 
         <configurationType
-                implementation="org.move.cli.runconfig.MoveRunConfigurationType"/>
+                implementation="org.move.cli.runconfig.AptosCommandConfigurationType"/>
         <runConfigurationProducer
                 implementation="org.move.cli.runconfig.producers.TestRunConfigurationProducer"/>
         <runConfigurationProducer
@@ -226,8 +226,8 @@
                     implementationClass="org.move.cli.project.MvModuleType"/>
         <moduleBuilder builderClass="org.move.cli.project.MvModuleBuilder"/>
 
-        <projectOpenProcessor id="Move" implementation="org.move.cli.MvProjectOpenProcessor"/>
-        <directoryProjectGenerator implementation="org.move.ide.newProject.MvDirectoryProjectGenerator" />
+        <projectOpenProcessor id="Move" implementation="org.move.cli.MoveProjectOpenProcessor"/>
+<!--        <directoryProjectGenerator implementation="org.move.ide.newProject.MvDirectoryProjectGenerator" />-->
 
         <projectConfigurable instance="org.move.cli.settings.PerProjectMoveConfigurable"
                              displayName="Move Language"
@@ -245,7 +245,7 @@
         <!-- Notifications -->
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>
         <editorNotificationProvider
-                implementation="org.move.ide.notifications.UnconfiguredAptosNotification"/>
+                implementation="org.move.ide.notifications.InvalidAptosBinaryNotification"/>
 
         <intentionAction>
             <className>org.move.ide.intentions.RemoveCurlyBracesIntention</className>

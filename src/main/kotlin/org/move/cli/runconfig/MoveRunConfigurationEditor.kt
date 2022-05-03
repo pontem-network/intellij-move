@@ -13,26 +13,25 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.JComponent
 
-class MoveRunConfigurationEditor : SettingsEditor<MoveRunConfiguration>() {
+class MoveRunConfigurationEditor : SettingsEditor<AptosCommandRunConfiguration>() {
     private val textField = EditorTextField()
     private val environmentVariables = EnvironmentVariablesComponent()
+    private val workingDirectory: Path?
+        get() = workingDirectoryField.component.text.nullize()?.let { Paths.get(it) }
 
-    val currentWorkingDirectory: Path?
-        get() = workingDirectory.component.text.nullize()?.let { Paths.get(it) }
-
-    val workingDirectory: LabeledComponent<TextFieldWithBrowseButton> =
+    val workingDirectoryField: LabeledComponent<TextFieldWithBrowseButton> =
         WorkingDirectoryComponent()
 
-    override fun resetEditorFrom(configuration: MoveRunConfiguration) {
-        textField.text = configuration.cmd.command
-        workingDirectory.component.text = configuration.cmd.workingDirectory?.toString().orEmpty()
-        environmentVariables.envData = configuration.env
+    override fun resetEditorFrom(configuration: AptosCommandRunConfiguration) {
+        textField.text = configuration.command
+        workingDirectoryField.component.text = configuration.workingDirectory?.toString().orEmpty()
+        environmentVariables.envData = configuration.environmentVariables
     }
 
-    override fun applyEditorTo(configuration: MoveRunConfiguration) {
-        val command = textField.text
-        configuration.cmd = AptosCommandLine(command, this.currentWorkingDirectory)
-        configuration.env = environmentVariables.envData
+    override fun applyEditorTo(configuration: AptosCommandRunConfiguration) {
+        configuration.command = textField.text
+        configuration.workingDirectory = this.workingDirectory
+        configuration.environmentVariables = environmentVariables.envData
     }
 
     override fun createEditor(): JComponent {
@@ -43,8 +42,8 @@ class MoveRunConfigurationEditor : SettingsEditor<MoveRunConfiguration>() {
             row(environmentVariables.label) {
                 environmentVariables(growX)
             }
-            row(workingDirectory.label) {
-                workingDirectory(growX)
+            row(workingDirectoryField.label) {
+                workingDirectoryField(growX)
             }
         }
     }

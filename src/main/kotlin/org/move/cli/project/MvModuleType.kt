@@ -2,11 +2,11 @@ package org.move.cli.project
 
 import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.module.ModuleTypeManager
-import org.move.ide.MvIcons
+import org.move.ide.MoveIcons
 import javax.swing.Icon
 
 class MvModuleType: ModuleType<MvModuleBuilder>(ID) {
-    override fun getNodeIcon(isOpened: Boolean): Icon = MvIcons.MOVE
+    override fun getNodeIcon(isOpened: Boolean): Icon = MoveIcons.MOVE
 
     override fun createModuleBuilder(): MvModuleBuilder = MvModuleBuilder()
 

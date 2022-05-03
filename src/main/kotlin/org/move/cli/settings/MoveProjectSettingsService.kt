@@ -7,14 +7,17 @@ import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiManager
+import com.intellij.util.io.exists
 import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
+import org.move.stdext.isExecutable
+import org.move.stdext.toPathOrNull
 import java.nio.file.Path
 import kotlin.reflect.KProperty1
 
-data class MvSettingsChangedEvent(
+data class MoveSettingsChangedEvent(
     val oldState: MoveProjectSettingsService.State,
     val newState: MoveProjectSettingsService.State,
 ) {
@@ -24,14 +27,15 @@ data class MvSettingsChangedEvent(
 }
 
 interface MvSettingsListener {
-    fun moveSettingsChanged(e: MvSettingsChangedEvent)
+    fun moveSettingsChanged(e: MoveSettingsChangedEvent)
 }
 
-private const val serviceName: String = "MoveProjectSettings"
+private const val settingsServiceName: String = "MoveProjectSettingsService_1"
 
 @Service
 @com.intellij.openapi.components.State(
-    name = serviceName, storages = [
+    name = settingsServiceName,
+    storages = [
         Storage(StoragePathMacros.WORKSPACE_FILE),
         Storage("misc.xml", deprecated = true)
     ]
@@ -39,8 +43,7 @@ private const val serviceName: String = "MoveProjectSettings"
 class MoveProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
-        var aptosPath: Path? = null,
-        var privateKey: String = "",
+        var aptosPath: String = "",
         var foldSpecs: Boolean = false,
     )
 
@@ -57,8 +60,6 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
             }
         }
 
-    val aptosPath: Path? get() = this._state.aptosPath
-
     fun showMoveSettings() {
         ShowSettingsUtil.getInstance().showSettingsDialog(project, PerProjectMoveConfigurable::class.java)
     }
@@ -67,7 +68,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
         oldState: State,
         newState: State,
     ) {
-        val event = MvSettingsChangedEvent(oldState, newState)
+        val event = MoveSettingsChangedEvent(oldState, newState)
         project.messageBus.syncPublisher(MOVE_SETTINGS_TOPIC)
             .moveSettingsChanged(event)
 
@@ -77,7 +78,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
     }
 
     override fun getState(): Element {
-        val element = Element(serviceName)
+        val element = Element(settingsServiceName)
         serializeObjectInto(_state, element)
         return element
     }
@@ -127,4 +128,12 @@ val Project.collapseSpecs: Boolean
     get() = this.moveSettings.settingsState.foldSpecs
 
 val Project.aptosPath: Path?
-    get() = this.moveSettings.settingsState.aptosPath
+    get() = this.moveSettings.settingsState.aptosPath.toPathOrNull()
+
+fun Project.isValidAptosPath(): Boolean {
+    val aptosPath = this.aptosPath
+    return aptosPath != null
+            && aptosPath.toString().isNotBlank()
+            && aptosPath.exists()
+            && aptosPath.isExecutable()
+}

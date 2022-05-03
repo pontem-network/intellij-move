@@ -3,7 +3,7 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.ide.MvIcons
+import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.mixins.declaredTy
@@ -49,8 +49,8 @@ abstract class MvBindingPatMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node
 
     override fun getIcon(flags: Int): Icon =
         when (this.owner) {
-            is MvFunctionParameter -> MvIcons.PARAMETER
-            is MvConst -> MvIcons.CONST
-            else -> MvIcons.VARIABLE
+            is MvFunctionParameter -> MoveIcons.PARAMETER
+            is MvConst -> MoveIcons.CONST
+            else -> MoveIcons.VARIABLE
         }
 }

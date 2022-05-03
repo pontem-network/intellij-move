@@ -11,7 +11,9 @@ import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
 import org.move.cli.settings.MoveProjectSettingsPanel
 import org.move.cli.settings.moveSettings
-import org.move.ide.MvIcons
+import org.move.ide.MoveIcons
+import org.move.openapiext.computeWithCancelableProgress
+import org.move.stdext.unwrapOrThrow
 
 typealias ConfigurationData = MoveProjectSettingsPanel.Data
 
@@ -21,7 +23,7 @@ class MvDirectoryProjectGenerator : DirectoryProjectGeneratorBase<ConfigurationD
     private var peer: MvProjectGeneratorPeer? = null
 
     override fun getName() = "Move"
-    override fun getLogo() = MvIcons.MOVE
+    override fun getLogo() = MoveIcons.MOVE
     override fun createPeer(): ProjectGeneratorPeer<ConfigurationData> =
         MvProjectGeneratorPeer().also { peer = it }
 
@@ -31,11 +33,17 @@ class MvDirectoryProjectGenerator : DirectoryProjectGeneratorBase<ConfigurationD
         settings: ConfigurationData,
         module: Module
     ) {
+        val aptos = settings.aptos() ?: return
+        val projectName = project.name
+        val generatedFiles = project.computeWithCancelableProgress("Generating Aptos project...") {
+            aptos.init(project, module, baseDir, projectName).unwrapOrThrow() // TODO throw? really??
+        }
+
         project.moveSettings.modify {
             it.aptosPath = settings.aptosPath
-            it.privateKey = settings.privateKey
         }
-        // TODO: add `aptos move init` step
+        project.openFiles(generatedFiles)
+
         // TODO: add `aptos config` step
     }
 

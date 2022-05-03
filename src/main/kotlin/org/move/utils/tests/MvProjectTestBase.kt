@@ -14,12 +14,12 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
 
     override fun setUp() {
         super.setUp()
-        val privateKey = this.findAnnotationInstance<SettingsPrivateKey>()?.privateKey
-        if (privateKey != null) {
-            project.moveSettings.modifyTemporary(testRootDisposable) {
-                it.privateKey = privateKey
-            }
-        }
+//        val privateKey = this.findAnnotationInstance<SettingsPrivateKey>()?.privateKey
+//        if (privateKey != null) {
+//            project.moveSettings.modifyTemporary(testRootDisposable) {
+//                it.privateKey = privateKey
+//            }
+//        }
     }
 
     override fun tearDown() {

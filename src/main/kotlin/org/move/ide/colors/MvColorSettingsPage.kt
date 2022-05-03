@@ -4,7 +4,7 @@ import com.intellij.openapi.options.colors.ColorDescriptor
 import com.intellij.openapi.options.colors.ColorSettingsPage
 import com.intellij.openapi.util.io.StreamUtil
 import org.move.ide.MvHighlighter
-import org.move.ide.MvIcons
+import org.move.ide.MoveIcons
 
 class MvColorSettingsPage : ColorSettingsPage {
     private val DEMO_TEXT by lazy {
@@ -16,7 +16,7 @@ class MvColorSettingsPage : ColorSettingsPage {
     }
 
     override fun getDisplayName() = "Move"
-    override fun getIcon() = MvIcons.MOVE
+    override fun getIcon() = MoveIcons.MOVE
     override fun getHighlighter() = MvHighlighter()
     override fun getAdditionalHighlightingTagToDescriptorMap() = ANNOTATOR_TAGS
     override fun getAttributeDescriptors() = ATTRS

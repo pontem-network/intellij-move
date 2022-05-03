@@ -28,3 +28,9 @@ fun Element.writePath(name: String, value: Path?) {
 fun Element.readPath(name: String): Path? {
     return readString(name)?.let { Paths.get(ExternalizablePath.localPathValue(it)) }
 }
+
+fun splitOnDoubleDash(arguments: List<String>): Pair<List<String>, List<String>> {
+    val idx = arguments.indexOf("--")
+    if (idx == -1) return arguments to emptyList()
+    return arguments.take(idx) to arguments.drop(idx + 1)
+}

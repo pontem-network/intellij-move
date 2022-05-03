@@ -9,4 +9,4 @@ inline fun <reified T : Annotation> TestCase.findAnnotationInstance(): T? =
 inline fun <reified T : Annotation> MvProjectTestBase.findAnnotationInstance(): T? =
     javaClass.getMethod(name).getAnnotation(T::class.java) ?: javaClass.getAnnotation(T::class.java)
 
-annotation class SettingsPrivateKey(val privateKey: String)
+//annotation class SettingsPrivateKey(val privateKey: String)

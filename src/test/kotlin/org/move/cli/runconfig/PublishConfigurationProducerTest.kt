@@ -2,10 +2,8 @@ package org.move.cli.runconfig
 
 import org.move.lang.core.psi.MvModule
 import org.move.utils.tests.RunConfigurationProducerTestBase
-import org.move.utils.tests.SettingsPrivateKey
 
 class PublishConfigurationProducerTest : RunConfigurationProducerTestBase("publish") {
-    @SettingsPrivateKey("0x1122")
     fun `test publish module`() {
         testProject {
             namedMoveToml("MyPackage")

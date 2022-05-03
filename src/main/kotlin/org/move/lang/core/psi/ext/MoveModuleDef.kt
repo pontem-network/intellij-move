@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
-import org.move.ide.MvIcons
+import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.resolve.ref.Visibility
@@ -160,7 +160,7 @@ fun MvModule.moduleSpecs() =
 
 abstract class MvModuleMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                               MvModule {
-    override fun getIcon(flags: Int): Icon = MvIcons.MODULE
+    override fun getIcon(flags: Int): Icon = MoveIcons.MODULE
 
     override fun getPresentation(): ItemPresentation? {
         val name = this.name ?: return null
@@ -168,7 +168,7 @@ abstract class MvModuleMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
         return PresentationData(
             name,
             locationString,
-            MvIcons.MODULE,
+            MoveIcons.MODULE,
             null
         )
     }

@@ -7,32 +7,39 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
 
 
-abstract class MoveBinaryRunConfigurationProducer : LazyRunConfigurationProducer<MoveRunConfiguration>() {
+abstract class MoveBinaryRunConfigurationProducer :
+    LazyRunConfigurationProducer<AptosCommandRunConfiguration>() {
 
-    override fun getConfigurationFactory() = MoveRunConfigurationType.getInstance()
+    override fun getConfigurationFactory() = AptosCommandConfigurationType.getInstance()
 
     override fun setupConfigurationFromContext(
-        templateConfiguration: MoveRunConfiguration,
+        templateConfiguration: AptosCommandRunConfiguration,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {
         val cmdConf = configFromLocation(sourceElement.get()) ?: return false
         templateConfiguration.name = cmdConf.configurationName
-        templateConfiguration.cmd = cmdConf.commandLine
+
+        val commandLine = cmdConf.commandLine
+        templateConfiguration.command = commandLine.commandWithParams()
+        templateConfiguration.workingDirectory = commandLine.workingDirectory
+        templateConfiguration.environmentVariables = commandLine.environmentVariables
         return true
     }
 
     override fun isConfigurationFromContext(
-        configuration: MoveRunConfiguration,
+        configuration: AptosCommandRunConfiguration,
         context: ConfigurationContext
     ): Boolean {
         val location = context.psiLocation ?: return false
         val cmdConf = configFromLocation(location) ?: return false
         return configuration.name == cmdConf.configurationName
-                && configuration.cmd == cmdConf.commandLine
+                && configuration.command == cmdConf.commandLine.commandWithParams()
+                && configuration.workingDirectory == cmdConf.commandLine.workingDirectory
+                && configuration.environmentVariables == cmdConf.commandLine.environmentVariables
     }
 
-    abstract fun configFromLocation(location: PsiElement): AptosCommandConf?
+    abstract fun configFromLocation(location: PsiElement): AptosCommandConfig?
 
     companion object {
         inline fun <reified T : PsiElement> findElement(base: PsiElement, climbUp: Boolean): T? {
