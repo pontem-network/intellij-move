@@ -109,25 +109,25 @@ class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") 
         checkOnFsItem(sourcesDir)
     }
 
-//    fun `test run tests for file with one module`() {
-//        testProject {
-//            namedMoveToml("MyPackage")
-//            sources {
-//                move(
-//                    "main.move", """
-//                module 0x1::Main {
-//                    #[test]
-//                    fun test_main() {/*caret*/}
-//                }
-//                """
-//                )
-//            }
-//        }
-//        val sourcesDir = this.testProject?.rootDirectory
-//            ?.findChild("sources")?.toPsiDirectory(this.project) ?: error("No sources directory")
-//        val mainFile = sourcesDir.findFile("main.move") ?: error("No file")
-//        checkOnFsItem(mainFile)
-//    }
+    fun `test run tests for file with one module`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            sources {
+                move(
+                    "main.move", """
+                module 0x1::Main {
+                    #[test]
+                    fun test_main() {/*caret*/}
+                }
+                """
+                )
+            }
+        }
+        val sourcesDir = this.testProject?.rootDirectory
+            ?.findChild("sources")?.toPsiDirectory(this.project) ?: error("No sources directory")
+        val mainFile = sourcesDir.findFile("main.move") ?: error("No file")
+        checkOnFsItem(mainFile)
+    }
 
 //    fun `test no configuration on sources if no test function`() {
 //        testProject {

@@ -1,16 +1,20 @@
 package org.move.cli.runconfig.producers
 
+import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.AptosCommandLine
 import org.move.cli.runconfig.AptosCommandLineFromContext
 import org.move.cli.runconfig.MoveBinaryRunConfigurationProducer
+import org.move.lang.MvFile
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.findMoveProject
 import org.move.lang.core.psi.ext.isTest
 import org.move.lang.core.psi.items
+import org.move.lang.modules
 import org.move.lang.moveProject
 
 class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
@@ -19,6 +23,10 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
     companion object {
         fun fromLocation(location: PsiElement, climbUp: Boolean = true): AptosCommandLineFromContext? {
             return when (location) {
+                is MvFile -> {
+                   val module = location.modules().firstOrNull() ?: return null
+                   findTestModule(module, climbUp)
+                }
                 is PsiFileSystemItem -> {
                     val moveProject = location.findMoveProject() ?: return null
                     val packageName = moveProject.packageName ?: ""
@@ -26,7 +34,7 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
 
                     val confName = "Test $packageName"
                     val command = "move test"
-                    return AptosCommandLineFromContext(location, confName, AptosCommandLine(command, rootPath))
+                    AptosCommandLineFromContext(location, confName, AptosCommandLine(command, rootPath))
                 }
                 else -> findTestFunction(location, climbUp) ?: findTestModule(location, climbUp)
             }

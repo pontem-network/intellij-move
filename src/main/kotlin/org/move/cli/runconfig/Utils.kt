@@ -18,21 +18,21 @@ import org.move.stdext.toPath
 //    return runnerAndConfigurationSettings
 //}
 
-fun Project.makeDefaultBuildRunConfiguration(): AptosCommandConfiguration {
+fun Project.makeDefaultBuildRunConfiguration(): RunnerAndConfigurationSettings {
     val runManager = RunManager.getInstance(this)
     val configurationFactory = DefaultRunConfigurationFactory(runManager, this)
     val configuration = configurationFactory.createAptosBuildConfiguration()
 
     runManager.addConfiguration(configuration)
     runManager.selectedConfiguration = configuration
-    return configuration.configuration as AptosCommandConfiguration
+    return configuration
 }
 
 private class DefaultRunConfigurationFactory(val runManager: RunManager, val project: Project) {
     private val aptosProjectName = project.name.replace(' ', '_')
 
     fun createAptosBuildConfiguration(): RunnerAndConfigurationSettings =
-        runManager.createConfiguration("Build $aptosProjectName", AptosCommandConfigurationType::class.java)
+        runManager.createConfiguration("Build", AptosCommandConfigurationType::class.java)
             .apply {
                 (configuration as? AptosCommandConfiguration)?.apply {
                     command = "move compile"

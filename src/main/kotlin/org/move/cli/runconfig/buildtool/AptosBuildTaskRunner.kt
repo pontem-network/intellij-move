@@ -28,7 +28,7 @@ class AptosBuildTaskRunner : ProjectTaskRunner() {
     ): Promise<Result> {
         val buildConfiguration =
             project.aptosBuildRunConfigurations().firstOrNull()
-                ?: project.makeDefaultBuildRunConfiguration()
+                ?: project.makeDefaultBuildRunConfiguration().configuration
         val configurationSettings =
             project.runManager.findConfigurationByName(buildConfiguration.name) ?: return rejectedPromise()
         project.runManager.selectedConfiguration = configurationSettings

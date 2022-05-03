@@ -1,6 +1,5 @@
 package org.move.cli
 
-import com.intellij.execution.RunManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupManager
 import com.intellij.openapi.util.io.FileUtil
@@ -14,6 +13,7 @@ import org.move.ide.notifications.updateAllNotifications
 import org.move.openapiext.aptosBuildRunConfigurations
 import org.move.openapiext.aptosRunConfigurations
 import org.move.openapiext.contentRoots
+import org.move.openapiext.runManager
 
 class MoveProjectOpenProcessor : ProjectOpenProcessor() {
     override fun getName() = "Move"
@@ -39,7 +39,11 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
 
                 // create default build configuration if it doesn't exist
                 if (it.aptosBuildRunConfigurations().isEmpty()) {
-                    it.makeDefaultBuildRunConfiguration()
+                    val isEmpty = it.aptosRunConfigurations().isEmpty()
+                    val configuration = it.makeDefaultBuildRunConfiguration()
+                    if (isEmpty) {
+                        it.runManager.selectedConfiguration = configuration
+                    }
                 }
 
                 val packageRoot = it.contentRoots.firstOrNull()
