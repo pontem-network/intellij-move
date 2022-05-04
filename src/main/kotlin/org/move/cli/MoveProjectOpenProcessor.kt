@@ -20,7 +20,7 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
 
     override fun canOpenProject(file: VirtualFile): Boolean =
         FileUtil.namesEqual(file.name, MoveConstants.MANIFEST_FILE)
-                || file.isDirectory && file.findChild(MoveConstants.MANIFEST_FILE) != null
+                || (file.isDirectory && file.findChild(MoveConstants.MANIFEST_FILE) != null)
 
     override fun doOpenProject(
         virtualFile: VirtualFile,

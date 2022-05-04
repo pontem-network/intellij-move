@@ -44,5 +44,4 @@ class AptosBuildTaskRunner : ProjectTaskRunner() {
             return resolvedPromise(TaskRunnerResults.FAILURE)
         }
     }
-
 }

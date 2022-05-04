@@ -8,6 +8,7 @@ package org.move.openapiext
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.Experiments
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -28,6 +29,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import org.jdom.Element
 import org.jdom.input.SAXBuilder
+import org.move.openapiext.common.isHeadlessEnvironment
 import org.move.openapiext.common.isUnitTestMode
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -125,4 +127,15 @@ fun checkIsBackgroundThread() {
     check(!ApplicationManager.getApplication().isDispatchThread) {
         "Long running operation invoked on UI thread"
     }
+}
+
+fun isFeatureEnabled(featureId: String): Boolean {
+    // Hack to pass values of experimental features in headless IDE run
+    // Should help to configure IDE-based tools like Qodana
+    if (isHeadlessEnvironment) {
+        val value = System.getProperty(featureId)?.toBooleanStrictOrNull()
+        if (value != null) return value
+    }
+
+    return Experiments.getInstance().isFeatureEnabled(featureId)
 }

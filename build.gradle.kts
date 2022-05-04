@@ -145,6 +145,7 @@ allprojects {
 
         withType<org.jetbrains.intellij.tasks.RunIdeTask> {
             jbrVersion.set("11_0_9_1b1202.1")
+//            ideDir.set(File("/snap/pycharm-professional/current"))
         }
     }
 }
