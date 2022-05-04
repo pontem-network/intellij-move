@@ -3,15 +3,13 @@ package org.move.cli.runconfig.buildtool
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.impl.RunConfigurationBeforeRunProvider
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
-import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.task.*
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.rejectedPromise
 import org.jetbrains.concurrency.resolvedPromise
 import org.move.cli.moveProjectRoot
-import org.move.cli.runconfig.makeDefaultBuildRunConfiguration
+import org.move.cli.runconfig.addDefaultBuildRunConfiguration
 import org.move.openapiext.aptosBuildRunConfigurations
 import org.move.openapiext.runManager
 
@@ -28,7 +26,7 @@ class AptosBuildTaskRunner : ProjectTaskRunner() {
     ): Promise<Result> {
         val buildConfiguration =
             project.aptosBuildRunConfigurations().firstOrNull()
-                ?: project.makeDefaultBuildRunConfiguration().configuration
+                ?: project.addDefaultBuildRunConfiguration().configuration
         val configurationSettings =
             project.runManager.findConfigurationByName(buildConfiguration.name) ?: return rejectedPromise()
         project.runManager.selectedConfiguration = configurationSettings

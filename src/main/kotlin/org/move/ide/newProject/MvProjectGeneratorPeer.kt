@@ -7,16 +7,19 @@ package org.move.ide.newProject
 
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.platform.GeneratorPeerImpl
+import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.panel
-import org.move.cli.settings.MoveProjectSettingsPanel
+import org.move.cli.settings.AptosSettingsPanel
 import javax.swing.JComponent
 
 class MvProjectGeneratorPeer : GeneratorPeerImpl<ConfigurationData>() {
 
-    private val newProjectSettingsPanel = MoveProjectSettingsPanel { checkValid?.run() }
+    private val aptosSettingsPanel = AptosSettingsPanel { checkValid?.run() }
+    private val privateKeyTextField = JBTextField("")
+
     private var checkValid: Runnable? = null
 
-    override fun getSettings(): ConfigurationData = newProjectSettingsPanel.data
+    override fun getSettings(): ConfigurationData = aptosSettingsPanel.data
 
     override fun getComponent(myLocationField: TextFieldWithBrowseButton, checkValid: Runnable): JComponent {
         this.checkValid = checkValid
@@ -25,7 +28,10 @@ class MvProjectGeneratorPeer : GeneratorPeerImpl<ConfigurationData>() {
 
     override fun getComponent(): JComponent = panel {
         titledRow("") {}
-        newProjectSettingsPanel.attachTo(this)
+        aptosSettingsPanel.attachTo(this)
+//        titledRow("") {
+//            row("Private key") { privateKeyTextField() }
+//        }
     }
 
 //    override fun validate(): ValidationInfo? = try {

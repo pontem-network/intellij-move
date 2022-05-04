@@ -23,6 +23,7 @@ object MoveIcons {
     val VARIABLE = AllIcons.Nodes.Variable
     val PARAMETER = AllIcons.Nodes.Parameter
 
+    val PUBLISH = AllIcons.Actions.Upload
     val TEST = AllIcons.RunConfigurations.TestState.Run
     val TEST_GREEN = AllIcons.RunConfigurations.TestState.Green2
     val TEST_RED = AllIcons.RunConfigurations.TestState.Red2

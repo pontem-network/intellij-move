@@ -18,13 +18,15 @@ import org.move.stdext.toPath
 //    return runnerAndConfigurationSettings
 //}
 
-fun Project.makeDefaultBuildRunConfiguration(): RunnerAndConfigurationSettings {
+fun Project.addDefaultBuildRunConfiguration(isSelected: Boolean = false): RunnerAndConfigurationSettings {
     val runManager = RunManager.getInstance(this)
     val configurationFactory = DefaultRunConfigurationFactory(runManager, this)
     val configuration = configurationFactory.createAptosBuildConfiguration()
 
     runManager.addConfiguration(configuration)
-    runManager.selectedConfiguration = configuration
+    if (isSelected) {
+        runManager.selectedConfiguration = configuration
+    }
     return configuration
 }
 

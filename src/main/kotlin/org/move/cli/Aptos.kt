@@ -13,38 +13,50 @@ import org.move.stdext.MvResult
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
 
-class Aptos(private val exePath: Path) {
+class Aptos(private val aptosPath: Path) {
 
     fun init(
         project: Project,
         owner: Disposable,
-        directory: VirtualFile,
-        name: String,
-    ): MvProcessResult<GeneratedFilesHolder> {
+        privateKey: String,
+    ) {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        val path = directory.pathAsPath
-        val commandLine = GeneralCommandLine(exePath.toString(), "move", "init")
+
+    }
+
+    @Suppress("FunctionName")
+    fun move_init(
+        project: Project,
+        owner: Disposable,
+        rootDirectory: VirtualFile,
+        packageName: String,
+    ): MvProcessResult<VirtualFile> {
+        if (!isUnitTestMode) {
+            checkIsBackgroundThread()
+        }
+        val commandLine = GeneralCommandLine(aptosPath.toString(), "move", "init")
             .withWorkDirectory(project.contentRoots.firstOrNull()?.toNioPathOrNull())
-            .withParameters(listOf("--package-dir", path.toString(), "--name", name, "--framework-dir", "."))
+            .withParameters(listOf("--name", packageName,
+                                   "--assume-yes"))
             .withEnvironment(emptyMap())
             .withCharset(Charsets.UTF_8)
         commandLine.execute(owner).unwrapOrElse { return MvResult.Err(it) }
-        fullyRefreshDirectory(directory)
+        fullyRefreshDirectory(rootDirectory)
 
         val manifest =
-            checkNotNull(directory.findChild(MoveConstants.MANIFEST_FILE)) { "Can't find the manifest file" }
-        return MvResult.Ok(GeneratedFilesHolder(manifest))
+            checkNotNull(rootDirectory.findChild(MoveConstants.MANIFEST_FILE)) { "Can't find the manifest file" }
+        return MvResult.Ok(manifest)
     }
 
     fun version(workingDirectory: Path? = null): String? {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        if (!exePath.exists()) return null
+        if (!aptosPath.exists()) return null
 
-        val path = exePath.toString()
+        val path = aptosPath.toString()
         if (StringUtil.isEmptyOrSpaces(path)) return null
 
         val commandLine = GeneralCommandLine(path)

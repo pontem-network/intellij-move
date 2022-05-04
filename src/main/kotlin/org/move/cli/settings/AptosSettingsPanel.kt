@@ -11,7 +11,7 @@ import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathTextField
 import org.move.stdext.toPathOrNull
 
-class MoveProjectSettingsPanel(
+class AptosSettingsPanel(
     private val updateListener: (() -> Unit)? = null
 ) : Disposable {
     private val versionUpdateDebouncer = UiDebouncer(this)

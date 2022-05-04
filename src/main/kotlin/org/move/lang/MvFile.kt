@@ -35,6 +35,8 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
 val PsiElement.moveProject: MoveProject?
     get() = project.moveProjects.findProjectForPsiElement(this)
 
+fun VirtualFile.hasChild(name: String) = this.findChild(name) != null
+
 fun VirtualFile.toNioPathOrNull(): Path? {
     try {
         return this.toNioPath()

@@ -9,13 +9,18 @@ import com.intellij.openapi.wm.impl.welcomeScreen.AbstractActionWithPanel
 import com.intellij.platform.DirectoryProjectGenerator
 import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
-import org.move.cli.settings.MoveProjectSettingsPanel
+import org.move.cli.MoveConstants
+import org.move.cli.moveProjects
+import org.move.cli.runconfig.addDefaultBuildRunConfiguration
+import org.move.cli.settings.AptosSettingsPanel
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
+import org.move.ide.notifications.updateAllNotifications
+import org.move.lang.hasChild
 import org.move.openapiext.computeWithCancelableProgress
 import org.move.stdext.unwrapOrThrow
 
-typealias ConfigurationData = MoveProjectSettingsPanel.Data
+typealias ConfigurationData = AptosSettingsPanel.Data
 
 class MvDirectoryProjectGenerator : DirectoryProjectGeneratorBase<ConfigurationData>(),
                                     CustomStepProjectGenerator<ConfigurationData> {
@@ -34,21 +39,31 @@ class MvDirectoryProjectGenerator : DirectoryProjectGeneratorBase<ConfigurationD
         module: Module
     ) {
         val aptos = settings.aptos() ?: return
-        val projectName = project.name
-        val generatedFiles = project.computeWithCancelableProgress("Generating Aptos project...") {
-            aptos.init(project, module, baseDir, projectName).unwrapOrThrow() // TODO throw? really??
+        val packageName = project.name
+
+        val manifestFile = project.computeWithCancelableProgress("Generating Aptos project...") {
+            aptos.move_init(
+                project, module,
+                rootDirectory = baseDir,
+                packageName = packageName
+            )
+                .unwrapOrThrow() // TODO throw? really??
         }
+
+        // TODO: add `aptos config` step
 
         project.moveSettings.modify {
             it.aptosPath = settings.aptosPath
         }
-        project.openFiles(generatedFiles)
+        project.addDefaultBuildRunConfiguration(isSelected = true)
+        project.openFile(manifestFile)
 
-        // TODO: add `aptos config` step
+        updateAllNotifications(project)
+        project.moveProjects.refreshAllProjects()
     }
 
     override fun createStep(
-        projectGenerator: DirectoryProjectGenerator<MoveProjectSettingsPanel.Data>,
-        callback: AbstractNewProjectStep.AbstractCallback<MoveProjectSettingsPanel.Data>
+        projectGenerator: DirectoryProjectGenerator<AptosSettingsPanel.Data>,
+        callback: AbstractNewProjectStep.AbstractCallback<AptosSettingsPanel.Data>
     ): AbstractActionWithPanel = MvProjectSettingsStep(projectGenerator)
 }

@@ -228,7 +228,7 @@
 <!--        <projectTaskRunner implementation="org.move.cli.runconfig.buildtool.AptosBuildTaskRunner" />-->
 
         <projectOpenProcessor id="Move" implementation="org.move.cli.MoveProjectOpenProcessor"/>
-<!--        <directoryProjectGenerator implementation="org.move.ide.newProject.MvDirectoryProjectGenerator" />-->
+        <directoryProjectGenerator implementation="org.move.ide.newProject.MvDirectoryProjectGenerator" />
 
         <projectConfigurable instance="org.move.cli.settings.PerProjectMoveConfigurable"
                              displayName="Move Language"
