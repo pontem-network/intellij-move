@@ -227,7 +227,7 @@
         <moduleType id="MOVE_MODULE"
                     implementationClass="org.move.cli.project.MvModuleType"/>
         <moduleBuilder builderClass="org.move.cli.project.MvModuleBuilder"/>
-<!--        <projectTaskRunner implementation="org.move.cli.runconfig.buildtool.AptosBuildTaskRunner" />-->
+        <projectTaskRunner implementation="org.move.cli.runconfig.buildtool.AptosBuildTaskRunner" />
 
         <projectOpenProcessor id="Move" implementation="org.move.cli.MoveProjectOpenProcessor"/>
         <directoryProjectGenerator implementation="org.move.ide.newProject.MvDirectoryProjectGenerator" />

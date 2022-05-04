@@ -6,10 +6,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.io.exists
+import org.move.cli.settings.isValidExecutable
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.MvResult
+import org.move.stdext.isExecutableFile
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
 
@@ -54,12 +56,9 @@ class Aptos(private val aptosPath: Path) {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        if (!aptosPath.exists()) return null
+        if (!aptosPath.isValidExecutable()) return null
 
-        val path = aptosPath.toString()
-        if (StringUtil.isEmptyOrSpaces(path)) return null
-
-        val commandLine = GeneralCommandLine(path)
+        val commandLine = GeneralCommandLine(aptosPath.toString())
             .withWorkDirectory(workingDirectory)
             .withParameters(listOf("--version"))
             .withEnvironment(emptyMap())

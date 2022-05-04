@@ -6,7 +6,6 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.task.*
 import org.jetbrains.concurrency.Promise
-import org.jetbrains.concurrency.rejectedPromise
 import org.jetbrains.concurrency.resolvedPromise
 import org.move.cli.moveProjectRoot
 import org.move.cli.runconfig.addDefaultBuildRunConfiguration
@@ -28,15 +27,17 @@ class AptosBuildTaskRunner : ProjectTaskRunner() {
             project.aptosBuildRunConfigurations().firstOrNull()
                 ?: project.addDefaultBuildRunConfiguration().configuration
         val configurationSettings =
-            project.runManager.findConfigurationByName(buildConfiguration.name) ?: return rejectedPromise()
+            project.runManager.findConfigurationByName(buildConfiguration.name)
+                ?: return resolvedPromise(TaskRunnerResults.ABORTED)
         project.runManager.selectedConfiguration = configurationSettings
 
         val environment = ExecutionEnvironmentBuilder.createOrNull(
             DefaultRunExecutor.getRunExecutorInstance(),
             configurationSettings
-        )?.build() ?: return rejectedPromise()
-        val success = RunConfigurationBeforeRunProvider.doExecuteTask(environment, configurationSettings, null)
+        )?.build() ?: return resolvedPromise(TaskRunnerResults.ABORTED)
 
+        val success =
+            RunConfigurationBeforeRunProvider.doExecuteTask(environment, configurationSettings, null)
         if (success) {
             return resolvedPromise(TaskRunnerResults.SUCCESS)
         } else {

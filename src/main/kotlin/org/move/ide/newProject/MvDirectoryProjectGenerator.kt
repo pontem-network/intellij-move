@@ -18,6 +18,7 @@ import org.move.ide.MoveIcons
 import org.move.ide.notifications.updateAllNotifications
 import org.move.lang.hasChild
 import org.move.openapiext.computeWithCancelableProgress
+import org.move.stdext.toPathOrNull
 import org.move.stdext.unwrapOrThrow
 
 typealias ConfigurationData = AptosSettingsPanel.Data

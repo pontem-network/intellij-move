@@ -1,6 +1,7 @@
 package org.move.stdext
 
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.util.io.isDirectory
 import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
@@ -23,6 +24,6 @@ private inline fun pathOrNull(block: () -> Path): Path? {
     }
 }
 
-fun Path.isExecutable(): Boolean = Files.isExecutable(this)
-
-//fun Path.list(): Sequence<Path> = Files.list(this).asSequence()
+fun Path.isExecutableFile(): Boolean {
+    return !this.isDirectory() && Files.isExecutable(this)
+}

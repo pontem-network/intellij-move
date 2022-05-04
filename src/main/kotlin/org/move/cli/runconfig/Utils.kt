@@ -2,8 +2,11 @@ package org.move.cli.runconfig
 
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.move.stdext.toPath
+
+private val LOG = logger<Project>()
 
 //fun RunManager.createAptosCommandRunConfiguration(
 //    aptosCommandLine: AptosCommandLine,
@@ -24,6 +27,7 @@ fun Project.addDefaultBuildRunConfiguration(isSelected: Boolean = false): Runner
     val configuration = configurationFactory.createAptosBuildConfiguration()
 
     runManager.addConfiguration(configuration)
+    LOG.info("Default \"Build\" run configuration is added")
     if (isSelected) {
         runManager.selectedConfiguration = configuration
     }

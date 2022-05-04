@@ -12,7 +12,7 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
-import org.move.stdext.isExecutable
+import org.move.stdext.isExecutableFile
 import org.move.stdext.toPathOrNull
 import java.nio.file.Path
 import kotlin.reflect.KProperty1
@@ -130,10 +130,9 @@ val Project.collapseSpecs: Boolean
 val Project.aptosPath: Path?
     get() = this.moveSettings.settingsState.aptosPath.toPathOrNull()
 
-fun Project.isValidAptosPath(): Boolean {
-    val aptosPath = this.aptosPath
-    return aptosPath != null
-            && aptosPath.toString().isNotBlank()
-            && aptosPath.exists()
-            && aptosPath.isExecutable()
+fun Path?.isValidExecutable(): Boolean {
+    return this != null
+            && this.toString().isNotBlank()
+            && this.exists()
+            && this.isExecutableFile()
 }

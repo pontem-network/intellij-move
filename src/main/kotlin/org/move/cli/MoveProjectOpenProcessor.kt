@@ -33,9 +33,7 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
             projectToClose,
             forceOpenInNewFrame
         )?.also {
-            StartupManager.getInstance(it).runWhenProjectIsInitialized {
-                it.moveProjects.refreshAllProjects()
-
+            StartupManager.getInstance(it).runAfterOpened {
                 // create default build configuration if it doesn't exist
                 if (it.aptosBuildRunConfigurations().isEmpty()) {
                     val isEmpty = it.aptosRunConfigurations().isEmpty()
@@ -50,6 +48,8 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
                     }
                     updateAllNotifications(it)
                 }
+
+                it.moveProjects.refreshAllProjects()
             }
         }
     }

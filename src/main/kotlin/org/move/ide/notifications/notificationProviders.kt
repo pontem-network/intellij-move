@@ -43,7 +43,7 @@ class InvalidAptosBinaryNotification(
         if (!file.isMoveOrManifest) return null
         if (isNotificationDisabled(file)) return null
 
-        if (project.isValidAptosPath()) return null
+        if (project.aptosPath.isValidExecutable()) return null
 
         return EditorNotificationPanel().apply {
             text = "Aptos binary path is not provided or invalid"
@@ -69,8 +69,4 @@ class InvalidAptosBinaryNotification(
 
         private val PROVIDER_KEY: Key<EditorNotificationPanel> = Key.create("Fix Move.toml file")
     }
-}
-
-private fun Path.isValidAptosPath() {
-
 }

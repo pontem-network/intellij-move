@@ -6,16 +6,19 @@
 package org.move.ide.newProject
 
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
+import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.platform.GeneratorPeerImpl
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.panel
 import org.move.cli.settings.AptosSettingsPanel
+import org.move.cli.settings.isValidExecutable
+import org.move.stdext.toPathOrNull
 import javax.swing.JComponent
 
 class MvProjectGeneratorPeer : GeneratorPeerImpl<ConfigurationData>() {
 
     private val aptosSettingsPanel = AptosSettingsPanel { checkValid?.run() }
-    private val privateKeyTextField = JBTextField("")
+//    private val privateKeyTextField = JBTextField("")
 
     private var checkValid: Runnable? = null
 
@@ -34,10 +37,11 @@ class MvProjectGeneratorPeer : GeneratorPeerImpl<ConfigurationData>() {
 //        }
     }
 
-//    override fun validate(): ValidationInfo? = try {
-//        this.newProjectSettingsPanel.validateSettings()
-//        null
-//    } catch (e: ConfigurationException) {
-//        ValidationInfo(e.message ?: "")
-//    }
+    override fun validate(): ValidationInfo? {
+        val aptosPath = this.aptosSettingsPanel.data.aptosPath.toPathOrNull()
+        if (aptosPath == null || !aptosPath.isValidExecutable()) {
+            return ValidationInfo("Invalid path to Aptos executable")
+        }
+        return null
+    }
 }
