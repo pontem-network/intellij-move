@@ -73,6 +73,8 @@
                 implementation="org.move.cli.runconfig.producers.PublishModuleRunConfigurationProducer"/>
         <runLineMarkerContributor language="Move"
                                   implementationClass="org.move.ide.lineMarkers.TestRunLineMarkerContributor"/>
+        <runLineMarkerContributor language="Move"
+                                  implementationClass="org.move.ide.lineMarkers.PublishRunLineMarkerContributor"/>
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>

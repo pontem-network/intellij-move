@@ -2,25 +2,29 @@ package org.move.cli.runconfig.producers
 
 import com.intellij.psi.PsiElement
 import org.move.cli.AptosCommandLine
-import org.move.cli.runconfig.MoveBinaryRunConfigurationProducer
 import org.move.cli.runconfig.AptosCommandLineFromContext
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.isTestOnly
 import org.move.lang.moveProject
 
-class PublishModuleRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
-    override fun configFromLocation(location: PsiElement): AptosCommandLineFromContext? {
-        val mod = findElement<MvModule>(location, true) ?: return null
-        if (mod.isTestOnly) return null
+class PublishModuleRunConfigurationProducer : AptosCommandConfigurationProducer() {
 
-        val rootPath = location.moveProject?.rootPath ?: return null
-        val modName = mod.name ?: return null
+    override fun configFromLocation(location: PsiElement) = fromLocation(location, true)
 
-        val command = "move publish"
-        return AptosCommandLineFromContext(
-            location,
-            "Publish $modName",
-            AptosCommandLine(command, rootPath)
-        )
+    companion object {
+        fun fromLocation(location: PsiElement, climbUp: Boolean): AptosCommandLineFromContext? {
+            val mod = findElement<MvModule>(location, climbUp) ?: return null
+            if (mod.isTestOnly) return null
+
+            val rootPath = location.moveProject?.rootPath ?: return null
+            val modName = mod.name ?: return null
+
+            val command = "move publish"
+            return AptosCommandLineFromContext(
+                location,
+                "Publish $modName",
+                AptosCommandLine(command, rootPath)
+            )
+        }
     }
 }

@@ -23,6 +23,14 @@ fun List<MvAttr>.findSingleItemAttr(name: String): MvAttr? =
 
 val MvModule.isTestOnly: Boolean get() = this.attrList.findSingleItemAttr("test_only") != null
 
+fun MvModule.hasTestFunctions(): Boolean {
+//    val items = this.moduleBlock?.items().orEmpty()
+    return this.testFunctions().isNotEmpty()
+//    return items
+//        .filterIsInstance<MvFunction>()
+//        .any { it.isTest }
+}
+
 fun MvModule.address(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
 
@@ -55,7 +63,9 @@ val MvModule.friendModules: Set<FQModule>
         return friends
     }
 
-fun MvModule.allFunctions() = moduleBlock?.functionList.orEmpty()
+fun MvModule.allFunctions(): List<MvFunction> = moduleBlock?.functionList.orEmpty()
+
+fun MvModule.testFunctions(): List<MvFunction> = allFunctions().filter { it.isTest }
 
 fun MvModule.builtinFunctions(): List<MvFunction> {
     return listOf(

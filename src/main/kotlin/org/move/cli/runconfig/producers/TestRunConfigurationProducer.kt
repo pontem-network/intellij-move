@@ -1,23 +1,21 @@
 package org.move.cli.runconfig.producers
 
-import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.AptosCommandLine
 import org.move.cli.runconfig.AptosCommandLineFromContext
-import org.move.cli.runconfig.MoveBinaryRunConfigurationProducer
 import org.move.lang.MvFile
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
+import org.move.lang.core.psi.ext.hasTestFunctions
 import org.move.lang.core.psi.ext.findMoveProject
 import org.move.lang.core.psi.ext.isTest
-import org.move.lang.core.psi.items
 import org.move.lang.modules
 import org.move.lang.moveProject
 
-class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
+class TestRunConfigurationProducer : AptosCommandConfigurationProducer() {
+
     override fun configFromLocation(location: PsiElement) = fromLocation(location)
 
     companion object {
@@ -53,20 +51,13 @@ class TestRunConfigurationProducer : MoveBinaryRunConfigurationProducer() {
 
         private fun findTestModule(psi: PsiElement, climbUp: Boolean): AptosCommandLineFromContext? {
             val mod = findElement<MvModule>(psi, climbUp) ?: return null
-            if (!hasTestFunction(mod)) return null
+            if (!mod.hasTestFunctions()) return null
 
             val modName = mod.name ?: return null
             val confName = "Test $modName"
             val command = "move test --filter $modName"
             val rootPath = mod.moveProject?.rootPath ?: return null
             return AptosCommandLineFromContext(mod, confName, AptosCommandLine(command, rootPath))
-        }
-
-        private fun hasTestFunction(mod: MvModule): Boolean {
-            val items = mod.moduleBlock?.items().orEmpty()
-            return items
-                .filterIsInstance<MvFunction>()
-                .any { it.isTest }
         }
     }
 }

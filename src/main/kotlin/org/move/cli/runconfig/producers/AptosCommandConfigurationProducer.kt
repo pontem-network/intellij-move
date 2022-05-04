@@ -1,13 +1,16 @@
-package org.move.cli.runconfig
+package org.move.cli.runconfig.producers
 
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
+import org.move.cli.runconfig.AptosCommandConfiguration
+import org.move.cli.runconfig.AptosCommandConfigurationType
+import org.move.cli.runconfig.AptosCommandLineFromContext
 
 
-abstract class MoveBinaryRunConfigurationProducer :
+abstract class AptosCommandConfigurationProducer :
     LazyRunConfigurationProducer<AptosCommandConfiguration>() {
 
     override fun getConfigurationFactory() = AptosCommandConfigurationType.getInstance()
