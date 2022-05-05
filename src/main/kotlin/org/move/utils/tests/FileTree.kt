@@ -20,8 +20,8 @@ import org.intellij.lang.annotations.Language
 import org.move.cli.MvSyncTask
 import org.move.cli.setupProjectRoots
 import org.move.ide.inspections.imports.MvNamedElementIndex
-import org.move.lang.core.resolve.MvReferenceElement
 import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.resolve.MvReferenceElement
 import org.move.openapiext.document
 import org.move.openapiext.fullyRefreshDirectory
 import org.move.openapiext.toPsiFile
@@ -76,10 +76,13 @@ interface FileTreeBuilder {
     fun toml(name: String, @Language("TOML") code: String = "") = file(name, code)
 
     fun moveToml(@Language("TOML") code: String = "") = file("Move.toml", code)
-    fun namedMoveToml(packageName: String) = moveToml("""
+    fun namedMoveToml(packageName: String) = moveToml(
+        """
     [package]
     name = "$packageName"    
-    """)
+    """
+    )
+
     fun buildInfoYaml(@Language("yaml") code: String = "") = file("BuildInfo.yaml", code)
 
     fun sources(builder: FileTreeBuilder.() -> Unit) = dir("sources", builder)
@@ -204,6 +207,10 @@ class TestProject(
             ?: error("Can't find `$path`")
         val psiManager = PsiManager.getInstance(project)
         return if (vFile.isDirectory) psiManager.findDirectory(vFile)!! else psiManager.findFile(vFile)!!
+    }
+
+    fun file(path: String): VirtualFile {
+        return rootDirectory.findFileByRelativePath(path) ?: error("Can't find `$path`")
     }
 }
 

@@ -137,10 +137,10 @@ data class MoveProject(
                 addresses.putAll(newDepAddresses)
                 placeholders.putAll(newDepPlaceholders)
             }
-            // add addresses defined in this package
-            addresses.putAll(this.declaredAddrs.values)
-            // add placeholders defined in this package as address values
-            addresses.putAll(this.declaredAddrs.placeholdersAsValues())
+//            addresses.putAll(this.declaredAddrs.values)
+//            addresses.putAll(this.declaredAddrs.placeholdersAsValues())
+            addresses.putAll(this.packageAddresses())
+
             // add dev-addresses
             addresses.putAll(this.declaredDevAddresses.values)
 
@@ -154,6 +154,15 @@ data class MoveProject(
 
     fun addresses(): AddressMap {
         return declaredAddresses().values
+    }
+
+    fun packageAddresses(): AddressMap {
+        // add addresses defined in this package
+        val map = mutableAddressMap()
+        map.putAll(this.declaredAddrs.values)
+        // add placeholders defined in this package as address values
+        map.putAll(this.declaredAddrs.placeholdersAsValues())
+        return map
     }
 
     fun getNamedAddress(name: String): Address.Named? {
