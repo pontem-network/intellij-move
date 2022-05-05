@@ -8,16 +8,19 @@ package org.move.openapiext
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.Experiments
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.JDOMUtil
+import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
@@ -26,7 +29,10 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import org.jdom.Element
 import org.jdom.input.SAXBuilder
+import org.move.openapiext.common.isHeadlessEnvironment
 import org.move.openapiext.common.isUnitTestMode
+import java.nio.file.Path
+import java.nio.file.Paths
 
 fun <T> Project.runWriteCommandAction(command: () -> T): T {
     return WriteCommandAction.runWriteCommandAction(this, Computable<T> { command() })
@@ -40,6 +46,8 @@ fun fullyRefreshDirectory(directory: VirtualFile) {
         directory
     )
 }
+
+val VirtualFile.pathAsPath: Path get() = Paths.get(path)
 
 fun VirtualFile.toPsiFile(project: Project): PsiFile? =
     PsiManager.getInstance(project).findFile(this)
@@ -98,3 +106,36 @@ val Project.contentRoots: Sequence<VirtualFile>
 fun Element.toXmlString() = JDOMUtil.writeElement(this)
 fun elementFromXmlString(xml: String): org.jdom.Element =
     SAXBuilder().build(xml.byteInputStream()).rootElement
+
+fun <T> Project.computeWithCancelableProgress(
+    @Suppress("UnstableApiUsage") @NlsContexts.ProgressTitle title: String,
+    supplier: () -> T
+): T {
+    if (isUnitTestMode) {
+        return supplier()
+    }
+    return ProgressManager.getInstance().runProcessWithProgressSynchronously<T, Exception>(supplier, title, true, this)
+}
+
+fun checkIsDispatchThread() {
+    check(ApplicationManager.getApplication().isDispatchThread) {
+        "Should be invoked on the Swing dispatch thread"
+    }
+}
+
+fun checkIsBackgroundThread() {
+    check(!ApplicationManager.getApplication().isDispatchThread) {
+        "Long running operation invoked on UI thread"
+    }
+}
+
+fun isFeatureEnabled(featureId: String): Boolean {
+    // Hack to pass values of experimental features in headless IDE run
+    // Should help to configure IDE-based tools like Qodana
+    if (isHeadlessEnvironment) {
+        val value = System.getProperty(featureId)?.toBooleanStrictOrNull()
+        if (value != null) return value
+    }
+
+    return Experiments.getInstance().isFeatureEnabled(featureId)
+}

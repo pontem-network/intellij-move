@@ -1,6 +1,6 @@
 FILE
-  MvModuleDefImpl(MODULE_DEF)
-    PsiElement(module)('module')
+  MvModuleImpl(MODULE)
+    PsiElement(module_kw)('module')
     PsiWhiteSpace(' ')
     MvAddressRefImpl(ADDRESS_REF)
       PsiElement(DIEM_ADDRESS)('0x1')
@@ -11,13 +11,13 @@ FILE
       PsiElement({)('{')
       PsiWhiteSpace('\n    ')
       PsiElement(spec)('spec')
-      PsiErrorElement:IDENTIFIER, fun, module or native expected, got 'spec'
+      PsiErrorElement:IDENTIFIER, fun, module_kw or native expected, got 'spec'
         <empty list>
       PsiWhiteSpace('\n    ')
       MvModuleSpecImpl(MODULE_SPEC)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
-        PsiElement(module)('module')
+        PsiElement(module_kw)('module')
         PsiErrorElement:'{' expected, got 'spec'
           <empty list>
       PsiWhiteSpace('\n    ')
@@ -102,7 +102,7 @@ FILE
       MvModuleSpecImpl(MODULE_SPEC)
         PsiElement(spec)('spec')
         PsiWhiteSpace(' ')
-        PsiElement(module)('module')
+        PsiElement(module_kw)('module')
         PsiWhiteSpace(' ')
         MvSpecBlockImpl(SPEC_BLOCK)
           PsiElement({)('{')

@@ -12,7 +12,7 @@ class MoveTomlTest : MvTestBase() {
         val moveProjectRoot = Paths.get(TestCase.testResourcesPath).resolve("move_toml_project")
         (project.rootService as TestProjectRootServiceImpl).modifyPath(moveProjectRoot)
 
-        val manifestPath = moveProjectRoot.resolve(MvConstants.MANIFEST_FILE)
+        val manifestPath = moveProjectRoot.resolve(MoveConstants.MANIFEST_FILE)
         val tomlFile = parseToml(project, manifestPath)!!
 
         val moveToml = MoveToml.fromTomlFile(tomlFile, moveProjectRoot)

@@ -23,11 +23,11 @@ class MvPsiFactory(private val project: Project) {
         createFromText("module _M { spec module { include Schema { $fieldName: $expr } }}")
             ?: error("Failed to create MvSchemaField")
 
-    fun inlineModule(address: String, name: String, blockText: String): MvModuleDef =
+    fun inlineModule(address: String, name: String, blockText: String): MvModule =
         createFromText("module $address::$name $blockText") ?: error("failed to create module")
 
     fun identifier(text: String): PsiElement =
-        createFromText<MvModuleDef>("module $text {}")?.nameIdentifier
+        createFromText<MvModule>("module $text {}")?.nameIdentifier
             ?: error("Failed to create identifier: `$text`")
 
 //    fun createColon(): PsiElement =
@@ -42,7 +42,7 @@ class MvPsiFactory(private val project: Project) {
 //    fun tryCreateExpression(text: CharSequence): MvExpr? =
 //        createFromText("module _IntellijPreludeDummy { fun m() { let _ = $text; } }")
 
-    fun const(text: String): MvConstDef =
+    fun const(text: String): MvConst =
         createFromText("module _IntellijPreludeDummy { $text }")
             ?: error("")
 

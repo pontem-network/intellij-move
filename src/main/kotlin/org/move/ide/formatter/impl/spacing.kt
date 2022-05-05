@@ -18,7 +18,7 @@ import org.move.lang.core.MOVE_COMMENTS
 import org.move.lang.core.MOVE_KEYWORDS
 import org.move.lang.core.psi.MvAddressBlock
 import org.move.lang.core.psi.MvModuleBlock
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
 import org.move.lang.core.tokenSetOf
@@ -80,11 +80,11 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .betweenInside(PUBLIC, L_PAREN, FUNCTION_VISIBILITY_MODIFIER).spaces(0)
         .betweenInside(
             tokenSetOf(L_PAREN),
-            tokenSetOf(SCRIPT, FRIEND),
+            tokenSetOf(SCRIPT_KW, FRIEND),
             FUNCTION_VISIBILITY_MODIFIER
         ).spaces(0)
         .betweenInside(
-            tokenSetOf(SCRIPT, FRIEND),
+            tokenSetOf(SCRIPT_KW, FRIEND),
             tokenSetOf(R_PAREN),
             FUNCTION_VISIBILITY_MODIFIER
         ).spaces(0)
@@ -119,7 +119,7 @@ fun Block.computeSpacing(child1: Block?, child2: Block, ctx: MvFmtContext): Spac
                 keepBlankLines = ctx.commonSettings.KEEP_BLANK_LINES_IN_DECLARATIONS
             )
 
-            (ncPsi1.text == "{" && ncPsi1.parent is MvAddressBlock && ncPsi2 is MvModuleDef)
+            (ncPsi1.text == "{" && ncPsi1.parent is MvAddressBlock && ncPsi2 is MvModule)
                     || (ncPsi1.text == "{" && ncPsi1.parent is MvModuleBlock && ncPsi2.isModuleItem)
             -> return lineBreak(
                 minLineFeeds = if (!needsBlankLineBetweenItems()) 0 else 1,

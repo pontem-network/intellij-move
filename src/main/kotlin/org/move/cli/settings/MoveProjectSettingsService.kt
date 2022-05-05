@@ -7,43 +7,44 @@ import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiManager
+import com.intellij.util.io.exists
 import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
+import org.move.stdext.isExecutableFile
+import org.move.stdext.toPathOrNull
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.reflect.KProperty1
 
-data class MvSettingsChangedEvent(
-    val oldState: MvProjectSettingsService.State,
-    val newState: MvProjectSettingsService.State,
+data class MoveSettingsChangedEvent(
+    val oldState: MoveProjectSettingsService.State,
+    val newState: MoveProjectSettingsService.State,
 ) {
     /** Use it like `event.isChanged(State::foo)` to check whether `foo` property is changed or not */
-    fun isChanged(prop: KProperty1<MvProjectSettingsService.State, *>): Boolean =
+    fun isChanged(prop: KProperty1<MoveProjectSettingsService.State, *>): Boolean =
         prop.get(oldState) != prop.get(newState)
 }
 
 interface MvSettingsListener {
-    fun moveSettingsChanged(e: MvSettingsChangedEvent)
+    fun moveSettingsChanged(e: MoveSettingsChangedEvent)
 }
 
-private const val serviceName: String = "MoveProjectSettings"
+private const val settingsServiceName: String = "MoveProjectSettingsService_1"
 
 @Service
 @com.intellij.openapi.components.State(
-    name = serviceName, storages = [
+    name = settingsServiceName,
+    storages = [
         Storage(StoragePathMacros.WORKSPACE_FILE),
         Storage("misc.xml", deprecated = true)
     ]
 )
-class MvProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
+class MoveProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
-        var projectType: ProjectType = ProjectType.DOVE,
-        var moveExecutablePath: String = "",
-        var privateKey: String = "",
-        var collapseSpecs: Boolean = false,
+        var aptosPath: String = "",
+        var foldSpecs: Boolean = false,
     )
 
     @Volatile
@@ -59,7 +60,7 @@ class MvProjectSettingsService(private val project: Project) : PersistentStateCo
             }
         }
 
-    fun showMvConfigureSettings() {
+    fun showMoveSettings() {
         ShowSettingsUtil.getInstance().showSettingsDialog(project, PerProjectMoveConfigurable::class.java)
     }
 
@@ -67,17 +68,17 @@ class MvProjectSettingsService(private val project: Project) : PersistentStateCo
         oldState: State,
         newState: State,
     ) {
-        val event = MvSettingsChangedEvent(oldState, newState)
+        val event = MoveSettingsChangedEvent(oldState, newState)
         project.messageBus.syncPublisher(MOVE_SETTINGS_TOPIC)
             .moveSettingsChanged(event)
 
-        if (event.isChanged(State::collapseSpecs)) {
+        if (event.isChanged(State::foldSpecs)) {
             PsiManager.getInstance(project).dropPsiCaches()
         }
     }
 
     override fun getState(): Element {
-        val element = Element(serviceName)
+        val element = Element(settingsServiceName)
         serializeObjectInto(_state, element)
         return element
     }
@@ -85,6 +86,14 @@ class MvProjectSettingsService(private val project: Project) : PersistentStateCo
     override fun loadState(element: Element) {
         val rawState = element.clone()
         XmlSerializer.deserializeInto(_state, rawState)
+    }
+
+    /**
+     * Allows to modify settings.
+     * After setting change,
+     */
+    fun modify(action: (State) -> Unit) {
+        settingsState = settingsState.also(action)
     }
 
     /**
@@ -112,35 +121,18 @@ class MvProjectSettingsService(private val project: Project) : PersistentStateCo
     }
 }
 
-val Project.moveSettings: MvProjectSettingsService
-    get() = this.getService(MvProjectSettingsService::class.java)
-
-
-enum class ProjectType {
-    DOVE, APTOS;
-}
-
-val Project.type: ProjectType
-    get() = this.moveSettings.settingsState.projectType
-
-
-val Project.moveExecutablePathValue: String
-    get() {
-        return this.moveSettings.settingsState.moveExecutablePath
-    }
+val Project.moveSettings: MoveProjectSettingsService
+    get() = this.getService(MoveProjectSettingsService::class.java)
 
 val Project.collapseSpecs: Boolean
-    get() {
-        return this.moveSettings.settingsState.collapseSpecs
-    }
+    get() = this.moveSettings.settingsState.foldSpecs
 
-val Project.moveBinaryPath: Path?
-    get() {
-        val value = this.moveExecutablePathValue
-        if (value.isBlank()) return null
+val Project.aptosPath: Path?
+    get() = this.moveSettings.settingsState.aptosPath.toPathOrNull()
 
-        val path = Paths.get(value)
-        if (!path.toFile().exists()) return null
-
-        return path
-    }
+fun Path?.isValidExecutable(): Boolean {
+    return this != null
+            && this.toString().isNotBlank()
+            && this.exists()
+            && this.isExecutableFile()
+}

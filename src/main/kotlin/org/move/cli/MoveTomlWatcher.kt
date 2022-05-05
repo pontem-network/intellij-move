@@ -15,7 +15,7 @@ class MoveTomlWatcher(
     }
 
     private fun isInterestingEvent(event: VFileEvent): Boolean {
-        return event.pathEndsWith(MvConstants.MANIFEST_FILE)
+        return event.pathEndsWith(MoveConstants.MANIFEST_FILE)
     }
 
     private fun VFileEvent.pathEndsWith(suffix: String): Boolean = path.endsWith(suffix) ||

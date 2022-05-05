@@ -8,7 +8,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.psi.MvUseItem
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvUseItemGroup
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.moduleImport
@@ -33,7 +33,8 @@ object ImportsCompletionProvider : MvCompletionProvider() {
         val moduleRef = itemImport.moduleImport().fqModuleRef
 
         if (parameters.position !== itemImport.referenceNameElement) return
-        val referredModule = moduleRef.reference?.resolve() as? MvModuleDef ?: return
+        val referredModule = moduleRef.reference?.resolve() as? MvModule
+            ?: return
 
         val p = itemImport.parent
         if (p is MvUseItemGroup && "Self" !in p.names) {

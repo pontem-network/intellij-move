@@ -2,7 +2,7 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.util.descendantsOfType
-import org.move.ide.MvIcons
+import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import javax.swing.Icon
@@ -28,10 +28,10 @@ val MvStruct.fqName: String get() {
     return moduleFqName + name
 }
 
-val MvStruct.module: MvModuleDef
+val MvStruct.module: MvModule
     get() {
         val moduleBlock = this.parent
-        return moduleBlock.parent as MvModuleDef
+        return moduleBlock.parent as MvModule
     }
 
 val MvStruct.abilities: List<MvAbility>
@@ -44,5 +44,5 @@ val MvStruct.hasPhantomTypeParameters get() = this.typeParameters.any { it.isPha
 abstract class MvStructMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                               MvStruct {
 
-    override fun getIcon(flags: Int): Icon = MvIcons.STRUCT
+    override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT
 }

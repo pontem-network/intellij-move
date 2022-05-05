@@ -52,11 +52,10 @@ fun pathToDirectoryTextField(
     )
 
 
-@Suppress("UnstableApiUsage")
 fun pathTextField(
     fileChooserDescriptor: FileChooserDescriptor,
     disposable: Disposable,
-    @NlsContexts.DialogTitle title: String,
+    @Suppress("UnstableApiUsage") @NlsContexts.DialogTitle title: String,
     onTextChanged: () -> Unit = {}
 ): TextFieldWithBrowseButton {
     val component = TextFieldWithBrowseButton(null, disposable)

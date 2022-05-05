@@ -1,6 +1,6 @@
 FILE
-  MvScriptDefImpl(SCRIPT_DEF)
-    PsiElement(script)('script')
+  MvScriptImpl(SCRIPT)
+    PsiElement(script_kw)('script')
     PsiWhiteSpace(' ')
     MvScriptBlockImpl(SCRIPT_BLOCK)
       PsiElement({)('{')

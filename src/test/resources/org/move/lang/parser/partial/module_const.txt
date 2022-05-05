@@ -1,22 +1,22 @@
 FILE
-  MvModuleDefImpl(MODULE_DEF)
-    PsiElement(module)('module')
+  MvModuleImpl(MODULE)
+    PsiElement(module_kw)('module')
     PsiWhiteSpace(' ')
     PsiElement(IDENTIFIER)('M')
     PsiWhiteSpace(' ')
     MvModuleBlockImpl(MODULE_BLOCK)
       PsiElement({)('{')
       PsiWhiteSpace('\n    ')
-      MvConstDefImpl(CONST_DEF)
-        PsiElement(const)('const')
+      MvConstImpl(CONST)
+        PsiElement(const_kw)('const')
         PsiWhiteSpace(' ')
         MvBindingPatImpl(BINDING_PAT)
           PsiElement(IDENTIFIER)('MY_CONST')
         PsiErrorElement:':' expected, got 'const'
           <empty list>
       PsiWhiteSpace('\n\n    ')
-      MvConstDefImpl(CONST_DEF)
-        PsiElement(const)('const')
+      MvConstImpl(CONST)
+        PsiElement(const_kw)('const')
         PsiWhiteSpace(' ')
         MvBindingPatImpl(BINDING_PAT)
           PsiElement(IDENTIFIER)('MY_CONST')
@@ -25,8 +25,8 @@ FILE
           PsiErrorElement:<type> expected, got 'const'
             <empty list>
       PsiWhiteSpace('\n\n    ')
-      MvConstDefImpl(CONST_DEF)
-        PsiElement(const)('const')
+      MvConstImpl(CONST)
+        PsiElement(const_kw)('const')
         PsiWhiteSpace(' ')
         MvBindingPatImpl(BINDING_PAT)
           PsiElement(IDENTIFIER)('MY_CONST')
@@ -40,8 +40,8 @@ FILE
         PsiErrorElement:'::', < or '=' expected, got 'const'
           <empty list>
       PsiWhiteSpace('\n\n    ')
-      MvConstDefImpl(CONST_DEF)
-        PsiElement(const)('const')
+      MvConstImpl(CONST)
+        PsiElement(const_kw)('const')
         PsiWhiteSpace(' ')
         MvBindingPatImpl(BINDING_PAT)
           PsiElement(IDENTIFIER)('MY_CONST')
@@ -58,8 +58,8 @@ FILE
           PsiErrorElement:<expression> expected, got 'const'
             <empty list>
       PsiWhiteSpace('\n\n    ')
-      MvConstDefImpl(CONST_DEF)
-        PsiElement(const)('const')
+      MvConstImpl(CONST)
+        PsiElement(const_kw)('const')
         PsiWhiteSpace(' ')
         MvBindingPatImpl(BINDING_PAT)
           PsiElement(IDENTIFIER)('MY_CONST')

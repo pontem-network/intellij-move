@@ -9,7 +9,7 @@ import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.AddressVal
-import org.move.ide.MvIcons
+import org.move.ide.MoveIcons
 import org.move.ide.presentation.shortPresentableText
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -39,7 +39,7 @@ fun MvNamedElement.createLookupElement(): LookupElementBuilder {
         .withLookupString(this.name ?: "")
 }
 
-fun MvModuleDef.createSelfLookup(): LookupElement {
+fun MvModule.createSelfLookup(): LookupElement {
     return LookupElementBuilder
         .create("Self")
         .withBoldness(true)
@@ -48,7 +48,7 @@ fun MvModuleDef.createSelfLookup(): LookupElement {
 fun AddressVal.createCompletionLookupElement(lookupString: String): LookupElement {
     return LookupElementBuilder
         .create(lookupString)
-        .withIcon(MvIcons.ADDRESS)
+        .withIcon(MoveIcons.ADDRESS)
         .withTypeText(packageName)
 }
 
@@ -68,7 +68,7 @@ fun MvNamedElement.createCompletionLookupElement(
             .withTypeText(this.returnType?.type?.text ?: "()")
             .withInsertHandler(insertHandler)
 
-        is MvModuleDef -> this.createLookupElement()
+        is MvModule -> this.createLookupElement()
             .withTailText(this.address()?.let { " ${it.text}" } ?: "")
             .withTypeText(this.containingFile?.name)
 

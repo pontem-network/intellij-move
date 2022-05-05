@@ -55,7 +55,7 @@ fun processItems(
 ): Boolean {
     return walkUpThroughScopes(
         element,
-        stopAfter = { it is MvModuleDef || it is MvScriptDef }
+        stopAfter = { it is MvModule || it is MvScript }
     ) { cameFrom, scope ->
         processLexicalDeclarations(
             scope, cameFrom, itemVis, processor
@@ -107,7 +107,7 @@ private fun processModules(
 
     var resolved = false
     val visitor = object : MvVisitor() {
-        override fun visitModuleDef(mod: MvModuleDef) {
+        override fun visitModule(mod: MvModule) {
             if (resolved) return
             val modAddress = mod.address()?.toAddress(moveProject)
             if (modAddress == sourceAddress) {
@@ -187,7 +187,7 @@ fun processLexicalDeclarations(
                     scope.itemImportNames(),
                 )
             }
-            is MvModuleDef -> {
+            is MvModule -> {
                 processor.matchAll(
 //                    scope.itemImportsWithoutAliases(),
 //                    scope.itemImportsAliases(),
@@ -203,7 +203,7 @@ fun processLexicalDeclarations(
                 )
             }
             is MvScriptBlock -> processor.matchAll(scope.itemImportNames())
-            is MvScriptDef -> processor.matchAll(
+            is MvScript -> processor.matchAll(
                 listOf(
 //                    scope.itemImports(),
 //                    scope.itemImportsWithoutAliases(),
@@ -290,7 +290,7 @@ fun processLexicalDeclarations(
                 }
             }
             is MvModuleBlock -> processor.matchAll(scope.itemImportNames())
-            is MvModuleDef -> processor.matchAll(
+            is MvModule -> processor.matchAll(
                 listOf(
 //                    scope.itemImports(),
 //                    scope.itemImportsWithoutAliases(),
@@ -314,7 +314,7 @@ fun processLexicalDeclarations(
             else -> false
         }
         Namespace.SPEC_ITEM -> when (scope) {
-            is MvModuleDef -> processor.matchAll(
+            is MvModule -> processor.matchAll(
                 listOf(
                     scope.allFunctions(),
                     scope.structs(),
@@ -323,7 +323,7 @@ fun processLexicalDeclarations(
             else -> false
         }
         Namespace.SCHEMA -> when (scope) {
-            is MvModuleDef -> processor.matchAll(scope.schemas())
+            is MvModule -> processor.matchAll(scope.schemas())
             else -> false
         }
         Namespace.MODULE -> when (scope) {
@@ -351,7 +351,7 @@ fun walkUpThroughScopes(
     while (scope != null) {
         // walk all `spec module {}` clauses
         if (cameFrom is MvAnySpec && scope is MvModuleBlock) {
-            val moduleSpecs = (scope.parent as MvModuleDef)
+            val moduleSpecs = (scope.parent as MvModule)
                 .moduleSpecs()
                 .filter { it != cameFrom }
             for (moduleSpec in moduleSpecs) {

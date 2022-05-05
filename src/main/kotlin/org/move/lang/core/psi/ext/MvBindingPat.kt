@@ -3,7 +3,7 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.ide.MvIcons
+import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.mixins.declaredTy
@@ -16,7 +16,7 @@ val MvBindingPat.owner: PsiElement?
     get() = PsiTreeUtil.findFirstParent(this) {
         it is MvLetStmt
                 || it is MvFunctionParameter
-                || it is MvConstDef
+                || it is MvConst
                 || it is MvSchemaFieldStmt
     }
 
@@ -24,7 +24,7 @@ fun MvBindingPat.cachedTy(ctx: InferenceContext): Ty {
     val owner = this.owner
     return when (owner) {
         is MvFunctionParameter -> owner.declaredTy(ctx.msl)
-        is MvConstDef -> owner.declaredTy(ctx.msl)
+        is MvConst -> owner.declaredTy(ctx.msl)
         is MvLetStmt -> {
             if (ctx.bindingTypes.containsKey(this)) return ctx.bindingTypes[this]!!
 
@@ -49,8 +49,8 @@ abstract class MvBindingPatMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node
 
     override fun getIcon(flags: Int): Icon =
         when (this.owner) {
-            is MvFunctionParameter -> MvIcons.PARAMETER
-            is MvConstDef -> MvIcons.CONST
-            else -> MvIcons.VARIABLE
+            is MvFunctionParameter -> MoveIcons.PARAMETER
+            is MvConst -> MoveIcons.CONST
+            else -> MoveIcons.VARIABLE
         }
 }

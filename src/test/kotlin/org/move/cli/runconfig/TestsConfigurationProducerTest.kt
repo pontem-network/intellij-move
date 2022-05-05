@@ -3,21 +3,14 @@ package org.move.cli.runconfig
 import com.intellij.psi.PsiElement
 import org.move.cli.runconfig.producers.TestRunConfigurationProducer
 import org.move.lang.core.psi.MvFunction
-import org.move.cli.settings.ProjectType
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
+import org.move.openapiext.toPsiDirectory
 import org.move.utils.tests.RunConfigurationProducerTestBase
-import org.move.utils.tests.SettingsProjectType
 
 class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") {
-    @SettingsProjectType(ProjectType.DOVE)
-    fun `test dove test run for function`() {
+    fun `test test run for function`() {
         testProject {
-            moveToml(
-                """
-            [package]
-            name = "MyPackage"
-            """
-            )
+            namedMoveToml("MyPackage")
             tests {
                 move(
                     "MoveTests.move", """
@@ -43,197 +36,114 @@ class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") 
         doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
     }
 
-    @SettingsProjectType(ProjectType.DOVE)
-    fun `test dove no test run if no test functions`() {
+    fun `test no test run if no test functions`() {
         testProject {
-            moveToml("""""")
+            namedMoveToml("MyPackage")
             sources {
-                move("main.move", """
-                #[test_only]    
+                move(
+                    "main.move", """
+                #[test_only]
                 module 0x1::/*caret*/M {
                     fun call() {}
-                }    
-                """)
+                }
+                """
+                )
             }
         }
-        checkNoConfigurationOnElement<MvModuleDef>()
+        checkNoConfigurationOnElement<MvModule>()
     }
 
-    @SettingsProjectType(ProjectType.DOVE)
-    fun `test dove test run for module with test functions inside sources`() {
+    fun `test test run for module with test functions inside sources`() {
         testProject {
-            moveToml("""
-            [package]
-            name = "MyPackage"    
-            """)
+            namedMoveToml("MyPackage")
             sources {
-                move("main.move", """
-                #[test_only]    
+                move(
+                    "main.move", """
+                #[test_only]
                 module 0x1::/*caret*/Main {
                     #[test]
                     fun test_some_action() {}
-                }    
-                """)
+                }
+                """
+                )
             }
         }
-        checkOnElement<MvModuleDef>()
+        checkOnElement<MvModule>()
     }
-}
-//    }
 
-//    @SettingsProjectKind(ProjectKind.DOVE)
-//    fun `test producer works for annotated functions directory`() {
-//        val testProject = testProjectFromFileTree(
-//            """
-//        //- code/Move.toml
-//        [package]
-//        name = "MyPackage"
-//        version = "0.1.0"
-//        //- code/tests/MoveTests.move
-//        #[test_only]
-//        module 0x1::MoveTests {
-//            #[test]
-//            fun /*caret*/test_add() { 1 + 1; }
-//            #[test]
-//            fun test_mul() { 1 * 1; }
-//        }
-//        """
-//        )
-//        myFixture.configureFromFileWithCaret(testProject)
-//
-//        project.setKind(ProjectKind.DOVE, testRootDisposable)
-//
-//        val element = myFixture.file
-//            .findElementAt(myFixture.caretOffset)
-//            ?.ancestorOrSelf<MvFunction>() ?: error("No function at caret position")
-//        val dir = element.containingFile.parent as PsiDirectory
-//
-//        val context = ConfigurationContext(dir)
-//        val configurations = context.configurationsFromContext.orEmpty().map { it.configuration }
-//
-//        val serialized = configurations.map { config ->
-//            Element("configuration").apply {
-//                setAttribute("name", config.name)
-//                setAttribute("class", config.javaClass.simpleName)
-//                config.writeExternal(this)
+    fun `test run tests for sources directory`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            sources {
+                move(
+                    "main.move", """
+                module 0x1::Main {
+                    #[test]
+                    fun test_main() {/*caret*/}
+                }    
+                """
+                )
+            }
+        }
+        val sourcesDir = this.testProject?.rootDirectory
+            ?.findChild("sources")?.toPsiDirectory(this.project) ?: error("No sources directory")
+        checkOnFsItem(sourcesDir)
+    }
+
+    fun `test run tests for move package`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            sources {
+                move(
+                    "main.move", """
+                module 0x1::Main {
+                    #[test]
+                    fun test_main() {/*caret*/}
+                }    
+                """
+                )
+            }
+        }
+        val sourcesDir = this.testProject?.rootDirectory
+            ?.findChild("sources")?.toPsiDirectory(this.project) ?: error("No sources directory")
+        checkOnFsItem(sourcesDir)
+    }
+
+    fun `test run tests for file with one module`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            sources {
+                move(
+                    "main.move", """
+                module 0x1::Main {
+                    #[test]
+                    fun test_main() {/*caret*/}
+                }
+                """
+                )
+            }
+        }
+        val sourcesDir = this.testProject?.rootDirectory
+            ?.findChild("sources")?.toPsiDirectory(this.project) ?: error("No sources directory")
+        val mainFile = sourcesDir.findFile("main.move") ?: error("No file")
+        checkOnFsItem(mainFile)
+    }
+
+//    fun `test no configuration on sources if no test function`() {
+//        testProject {
+//            namedMoveToml("MyPackage")
+//            sources {
+//                move(
+//                    "main.move", """
+//                module 0x1::Main {
+//                    fun test_main() {/*caret*/}
+//                }
+//                """
+//                )
 //            }
 //        }
-//
-//        val root = Element("configurations")
-//        serialized.forEach { root.addContent(it) }
-//
-//        val rootPath = testProject.rootDirectory.toNioPath().toString()
-//        val rootXml = root.toXmlString().replace(rootPath, "/my-package")
-//
-//        val testDataPath = "${TestCase.testResourcesPath}/org/move/runconfig/producers.fixtures"
-//        assertSameLinesWithFile(
-//            "$testDataPath/${getTestName(true)}.xml", rootXml
-//        )
-//
-//        val ctx1 = myFixture.findElementByText("+", PsiElement::class.java)
-//        val ctx2 = myFixture.findElementByText("*", PsiElement::class.java)
-//        doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
+//        val sourcesDir =
+//            this.testProject?.rootDirectory?.toPsiDirectory(this.project) ?: error("No sources directory")
+//        checkNoConfigurationOnFsItem(sourcesDir)
 //    }
-//
-//    @SettingsProjectKind(ProjectKind.DOVE)
-//    fun `test producer works for annotated functions file`() {
-//        val testProject = testProjectFromFileTree(
-//            """
-//        //- code/Move.toml
-//        [package]
-//        name = "MyPackage"
-//        version = "0.1.0"
-//        //- code/tests/MoveTests.move
-//        #[test_only]
-//        module 0x1::MoveTests {
-//            #[test]
-//            fun /*caret*/test_add() { 1 + 1; }
-//            #[test]
-//            fun test_mul() { 1 * 1; }
-//        }
-//        """
-//        )
-//        myFixture.configureFromFileWithCaret(testProject)
-//
-//        val element = myFixture.file
-//            .findElementAt(myFixture.caretOffset)
-//            ?.ancestorOrSelf<MvModuleDef>() ?: error("No function at caret position")
-//        val file = element.containingFile
-//        val context = ConfigurationContext(file)
-//        val configurations = context.configurationsFromContext.orEmpty().map { it.configuration }
-//
-//        val serialized = configurations.map { config ->
-//            Element("configuration").apply {
-//                setAttribute("name", config.name)
-//                setAttribute("class", config.javaClass.simpleName)
-//                config.writeExternal(this)
-//            }
-//        }
-//
-//        val root = Element("configurations")
-//        serialized.forEach { root.addContent(it) }
-//
-//        val rootPath = testProject.rootDirectory.toNioPath().toString()
-//        val rootXml = root.toXmlString().replace(rootPath, "/my-package")
-//
-//        val testDataPath = "${TestCase.testResourcesPath}/org/move/runconfig/producers.fixtures"
-//        assertSameLinesWithFile(
-//            "$testDataPath/${getTestName(true)}.xml", rootXml
-//        )
-//
-//        val ctx1 = myFixture.findElementByText("+", PsiElement::class.java)
-//        val ctx2 = myFixture.findElementByText("*", PsiElement::class.java)
-//        doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
-//    }
-//
-//    @SettingsProjectKind(ProjectKind.DOVE)
-//    fun `test producer works for annotated functions module`() {
-//        val testProject = testProjectFromFileTree(
-//            """
-//        //- code/Move.toml
-//        [package]
-//        name = "MyPackage"
-//        version = "0.1.0"
-//        //- code/tests/MoveTests.move
-//        #[test_only]
-//        module 0x1::MoveTests {
-//            #[test]
-//            fun /*caret*/test_add() { 1 + 1; }
-//            #[test]
-//            fun test_mul() { 1 * 1; }
-//        }
-//        """
-//        )
-//        myFixture.configureFromFileWithCaret(testProject)
-//
-//        val element = myFixture.file
-//            .findElementAt(myFixture.caretOffset)
-//            ?.ancestorOrSelf<MvModuleDef>() ?: error("No function at caret position")
-//
-//        val context = ConfigurationContext(element)
-//        val configurations = context.configurationsFromContext.orEmpty().map { it.configuration }
-//
-//        val serialized = configurations.map { config ->
-//            Element("configuration").apply {
-//                setAttribute("name", config.name)
-//                setAttribute("class", config.javaClass.simpleName)
-//                config.writeExternal(this)
-//            }
-//        }
-//
-//        val root = Element("configurations")
-//        serialized.forEach { root.addContent(it) }
-//
-//        val rootPath = testProject.rootDirectory.toNioPath().toString()
-//        val rootXml = root.toXmlString().replace(rootPath, "/my-package")
-//
-//        val testDataPath = "${TestCase.testResourcesPath}/org/move/runconfig/producers.fixtures"
-//        assertSameLinesWithFile(
-//            "$testDataPath/${getTestName(true)}.xml", rootXml
-//        )
-//
-//        val ctx1 = myFixture.findElementByText("+", PsiElement::class.java)
-//        val ctx2 = myFixture.findElementByText("*", PsiElement::class.java)
-//        doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
-//    }
-//}
+}

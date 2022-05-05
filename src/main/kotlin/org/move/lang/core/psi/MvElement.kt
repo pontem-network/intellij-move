@@ -15,18 +15,18 @@ abstract class MvElementImpl(node: ASTNode) : ASTWrapperPsiElement(node),
 
 val MvElement.containingMvFile: MvFile? get() = this.containingFile as? MvFile
 
-val MvElement.containingScript: MvScriptDef? get() = ancestorStrict()
+val MvElement.containingScript: MvScript? get() = ancestorStrict()
 
 val MvElement.containingFunction: MvFunction? get() = ancestorStrict()
 
 val MvElement.containingFunctionLike: MvFunctionLike? get() = ancestorStrict()
 
-val MvElement.containingModule: MvModuleDef? get() = ancestorStrict()
+val MvElement.containingModule: MvModule? get() = ancestorStrict()
 
 val MvElement.containingImportsOwner get() = ancestorOrSelf<MvItemsOwner>()
 
 val MvElement.containingModuleOrScript: MvElement?
     get() {
-        return this.findFirstParent(false) { it is MvScriptDef || it is MvModuleDef }
+        return this.findFirstParent(false) { it is MvScript || it is MvModule }
                 as? MvElement
     }

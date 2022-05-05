@@ -5,7 +5,6 @@ package org.move.openapiext
  * found in the LICENSE file.
  */
 
-import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.ProcessListener
@@ -17,15 +16,19 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.util.io.systemIndependentPath
+import org.move.cli.runconfig.MvCapturingProcessHandler
+import org.move.stdext.MvResult
+import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
 
 private val LOG = Logger.getInstance("org.rust.openapiext.CommandLineExt")
 
 //@Suppress("FunctionName")
-//fun GeneralCommandLine(path: Path, vararg args: String) = GeneralCommandLine(path.systemIndependentPath, *args)
-//
-//fun GeneralCommandLine.withWorkDirectory(path: Path?) = withWorkDirectory(path?.systemIndependentPath)
-//
+//fun GeneralCommandLine(path: Path, vararg args: String) =
+//    GeneralCommandLine(path.systemIndependentPath, *args)
+
+fun GeneralCommandLine.withWorkDirectory(path: Path?) = withWorkDirectory(path?.systemIndependentPath)
+
 //fun GeneralCommandLine.execute(timeoutInMilliseconds: Int? = 1000): ProcessOutput? {
 //    val output = try {
 //        val handler = CapturingProcessHandler(this)
@@ -43,19 +46,42 @@ private val LOG = Logger.getInstance("org.rust.openapiext.CommandLineExt")
 //    return output
 //}
 
-@Throws(ExecutionException::class)
+fun GeneralCommandLine.execute(): ProcessOutput? {
+    LOG.info("Executing `$commandLineString`")
+    val handler = MvCapturingProcessHandler.startProcess(this).unwrapOrElse {
+        LOG.warn("Failed to run executable", it)
+        return null
+    }
+    val output = handler.runProcessWithGlobalProgress()
+
+    if (!output.isSuccess) {
+        LOG.warn(MvProcessExecutionException.errorMessage(commandLineString, output))
+    }
+
+    return output
+}
+
 fun GeneralCommandLine.execute(
     owner: Disposable,
-    ignoreExitCode: Boolean = true,
     stdIn: ByteArray? = null,
+    runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress(timeoutInMilliseconds = null) },
     listener: ProcessListener? = null
-): ProcessOutput {
+): MvProcessResult<ProcessOutput> {
+    LOG.info("Executing `$commandLineString`")
 
-    val handler = CapturingProcessHandler(this)
+    val handler = MvCapturingProcessHandler.startProcess(this) // The OS process is started here
+        .unwrapOrElse {
+            LOG.warn("Failed to run executable", it)
+            return MvResult.Err(MvProcessExecutionException.Start(commandLineString, it))
+        }
+
     val cargoKiller = Disposable {
         // Don't attempt a graceful termination, Cargo can be SIGKILLed safely.
         // https://github.com/rust-lang/cargo/issues/3566
-        handler.destroyProcess()
+        if (!handler.isProcessTerminated) {
+            handler.process.destroyForcibly() // Send SIGKILL
+            handler.destroyProcess()
+        }
     }
 
     val alreadyDisposed = runReadAction {
@@ -68,32 +94,46 @@ fun GeneralCommandLine.execute(
     }
 
     if (alreadyDisposed) {
+        Disposer.dispose(cargoKiller) // Kill the process
+
         // On the one hand, this seems fishy,
         // on the other hand, this is isomorphic
         // to the scenario where cargoKiller triggers.
-        if (ignoreExitCode) {
-            return ProcessOutput().apply { setCancelled() }
-        } else {
-            throw ExecutionException("Command failed to start")
-        }
+        val output = ProcessOutput().apply { setCancelled() }
+        return MvResult.Err(
+            MvProcessExecutionException.Canceled(
+                commandLineString,
+                output,
+                "Command failed to start"
+            )
+        )
     }
 
     listener?.let { handler.addProcessListener(it) }
 
-    if (stdIn != null) {
-        handler.processInput.use { it.write(stdIn) }
-    }
-
     val output = try {
-        handler.runProcessWithGlobalProgress(null)
+        if (stdIn != null) {
+            handler.processInput.use { it.write(stdIn) }
+        }
+
+        handler.runner()
     } finally {
         Disposer.dispose(cargoKiller)
     }
-    if (!ignoreExitCode && output.exitCode != 0) {
-        throw ExecutionException(errorMessage(this, output))
+
+    return when {
+        output.isCancelled -> MvResult.Err(MvProcessExecutionException.Canceled(commandLineString, output))
+        output.isTimeout -> MvResult.Err(MvProcessExecutionException.Timeout(commandLineString, output))
+        output.exitCode != 0 -> MvResult.Err(
+            MvProcessExecutionException.ProcessAborted(
+                commandLineString,
+                output
+            )
+        )
+        else -> MvResult.Ok(output)
     }
-    return output
 }
+
 
 private fun errorMessage(commandLine: GeneralCommandLine, output: ProcessOutput): String = """
         |Execution failed (exit code ${output.exitCode}).

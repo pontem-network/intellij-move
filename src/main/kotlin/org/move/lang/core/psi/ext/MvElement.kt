@@ -2,8 +2,14 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.util.*
+import org.move.cli.MoveProject
+import org.move.cli.moveProjects
+import org.move.lang.MvFile
 import org.move.lang.core.psi.*
+import org.move.lang.moveProject
+import org.move.lang.toNioPathOrNull
 
 private val IS_MSL_KEY: Key<CachedValue<Boolean>> = Key.create("IS_MSL_KEY")
 
@@ -28,4 +34,11 @@ fun MvElement.isInsideAssignmentLeft(): Boolean {
         it is MvAssignmentExpr || it is MvInitializer
     }
     return parent is MvAssignmentExpr
+}
+
+fun PsiFileSystemItem.findMoveProject(): MoveProject? {
+    if (this is MvFile) return this.moveProject
+    val path = virtualFile.toNioPathOrNull() ?: return null
+    return project.moveProjects.findProjectForPath(path)
+
 }

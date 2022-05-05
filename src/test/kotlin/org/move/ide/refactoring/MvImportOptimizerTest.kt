@@ -113,6 +113,25 @@ module 0x1::M {}
 module 0x1::M2 {}        
     """)
 
+//    fun `test remove duplicate module import`() = doTest("""
+//module 0x1::M { fun m() {} }
+//module 0x1::M2 {
+//    use 0x1::M;
+//    use 0x1::M;
+//    fun main() {
+//        M::m();
+//    }
+//}
+//    """, """
+//module 0x1::M { fun m() {} }
+//module 0x1::M2 {
+//    use 0x1::M;
+//    fun main() {
+//        M::m();
+//    }
+//}
+//    """)
+
     private fun doTest(@Language("Move") code: String, @Language("Move") excepted: String) =
         checkEditorAction(code, excepted, "OptimizeImports")
 }

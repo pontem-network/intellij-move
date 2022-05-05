@@ -6,7 +6,7 @@ import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.psi.PsiElement
 import org.move.lang.MvElementTypes
 import org.move.lang.core.MvPsiPatterns
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.elementType
 
 class CommonCompletionContributor : CompletionContributor() {
@@ -39,7 +39,7 @@ class CommonCompletionContributor : CompletionContributor() {
     override fun beforeCompletion(context: CompletionInitializationContext) {
         val offset = context.startOffset
         val element = context.file.findElementAt(offset) ?: return
-        if (element.parent is MvModuleDef) {
+        if (element.parent is MvModule) {
             context.dummyIdentifier = "DummyAddress::"
         }
     }

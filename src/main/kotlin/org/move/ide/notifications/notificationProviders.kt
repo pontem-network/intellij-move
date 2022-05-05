@@ -8,13 +8,10 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
-import org.move.cli.MoveBinary
-import org.move.lang.isMoveTomlManifestFile
-import org.move.lang.isMoveFile
+import org.move.cli.settings.*
+import org.move.lang.isMoveOrManifest
 import org.move.openapiext.common.isUnitTestMode
-import org.move.cli.settings.MvSettingsChangedEvent
-import org.move.cli.settings.MvSettingsListener
-import org.move.cli.settings.moveSettings
+import java.nio.file.Path
 
 fun updateAllNotifications(project: Project) {
     EditorNotifications.getInstance(project).updateAllNotifications()
@@ -22,12 +19,12 @@ fun updateAllNotifications(project: Project) {
 
 class UpdateNotificationsOnSettingsChangeListener(val project: Project) : MvSettingsListener {
 
-    override fun moveSettingsChanged(e: MvSettingsChangedEvent) {
+    override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
         updateAllNotifications(project)
     }
 }
 
-class UnconfiguredDoveNotification(
+class InvalidAptosBinaryNotification(
     private val project: Project
 ) : EditorNotifications.Provider<EditorNotificationPanel>(),
     DumbAware {
@@ -37,30 +34,21 @@ class UnconfiguredDoveNotification(
 
     override fun getKey(): Key<EditorNotificationPanel> = PROVIDER_KEY
 
-    protected fun disableNotification(file: VirtualFile) {
-        PropertiesComponent.getInstance(project).setValue(file.disablingKey, true)
-    }
-
-    protected fun isNotificationDisabled(file: VirtualFile): Boolean =
-        PropertiesComponent.getInstance(project).getBoolean(file.disablingKey)
-
     override fun createNotificationPanel(
         file: VirtualFile,
         fileEditor: FileEditor,
         project: Project
     ): EditorNotificationPanel? {
         if (isUnitTestMode) return null
-        if (
-            !(file.isMoveFile || file.isMoveTomlManifestFile)
-            || isNotificationDisabled(file)
-        ) return null
+        if (!file.isMoveOrManifest) return null
+        if (isNotificationDisabled(file)) return null
 
-        if (MoveBinary(project).version() != null) return null
+        if (project.aptosPath.isValidExecutable()) return null
 
         return EditorNotificationPanel().apply {
-            text = "Move configured incorrectly"
+            text = "Aptos binary path is not provided or invalid"
             createActionLabel("Configure") {
-                project.moveSettings.showMvConfigureSettings()
+                project.moveSettings.showMoveSettings()
             }
             createActionLabel("Do not show again") {
                 disableNotification(file)
@@ -68,6 +56,13 @@ class UnconfiguredDoveNotification(
             }
         }
     }
+
+    private fun disableNotification(file: VirtualFile) {
+        PropertiesComponent.getInstance(project).setValue(file.disablingKey, true)
+    }
+
+    private fun isNotificationDisabled(file: VirtualFile): Boolean =
+        PropertiesComponent.getInstance(project).getBoolean(file.disablingKey)
 
     companion object {
         private const val NOTIFICATION_STATUS_KEY = "org.move.hideMoveNotifications"

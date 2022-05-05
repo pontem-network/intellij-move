@@ -25,7 +25,7 @@ fun findMoveTomlFiles(project: Project): Sequence<VirtualFile> {
     val moveFiles = mutableSetOf<VirtualFile>()
     for (contentRoot in contentRoots) {
         deepIterateChildrenRecursivery(
-            contentRoot, { it.name == MvConstants.MANIFEST_FILE })
+            contentRoot, { it.name == MoveConstants.MANIFEST_FILE })
         {
             moveFiles.add(it)
             true
@@ -50,7 +50,7 @@ private fun parseAddresses(rawAddressMap: RawAddressMap, packageName: String): D
     val placeholders = placeholderMap()
     for ((addressName, addressVal) in rawAddressMap.entries) {
         val (value, tomlKeyValue) = addressVal
-        if (addressVal.first == MvConstants.ADDR_PLACEHOLDER) {
+        if (addressVal.first == MoveConstants.ADDR_PLACEHOLDER) {
             placeholders[addressName] = PlaceholderVal(tomlKeyValue, packageName)
         } else {
             values[addressName] = AddressVal(value, tomlKeyValue, null, packageName)

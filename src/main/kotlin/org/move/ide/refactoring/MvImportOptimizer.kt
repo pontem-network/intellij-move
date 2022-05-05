@@ -28,7 +28,7 @@ class MvImportOptimizer: ImportOptimizer {
         }
     }
 
-    fun optimizeImports(useStmtOwner: MvItemsOwner) {
+    private fun optimizeImports(useStmtOwner: MvItemsOwner) {
         val useStmts = useStmtOwner.useStmtList
         for (useStmt in useStmts) {
             val moduleSpeck = useStmt.moduleUseSpeck

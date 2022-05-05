@@ -15,7 +15,7 @@ val BINARY_OPS = ts(
     OR, AND, OR_OR, AND_AND,
     EQ, EQ_EQ, NOT_EQ,
 )
-val ONE_LINE_ITEMS = ts(USE_STMT, CONST_DEF)
+val ONE_LINE_ITEMS = ts(USE_STMT, CONST)
 
 val PAREN_DELIMITED_BLOCKS = ts(
     PARENS_EXPR, TUPLE_PAT, TUPLE_TYPE, TUPLE_LIT_EXPR,
@@ -35,13 +35,13 @@ val DELIMITED_BLOCKS = orSet(PAREN_DELIMITED_BLOCKS, ANGLE_DELIMITED_BLOCKS, BLO
 fun ASTNode?.isWhitespaceOrEmpty() = this == null || textLength == 0 || elementType == TokenType.WHITE_SPACE
 
 val PsiElement.isTopLevelItem: Boolean
-    get() = (this is MvModuleDef || this is MvAddressDef || this is MvScriptDef) && parent is MvFile
+    get() = (this is MvModule || this is MvAddressDef || this is MvScript) && parent is MvFile
 
 val PsiElement.isModuleItem: Boolean
-    get() = this is MvFunction || this is MvConstDef || this is MvStruct || this is MvUseStmt
+    get() = this is MvFunction || this is MvConst || this is MvStruct || this is MvUseStmt
 
 val PsiElement.isDeclarationItem: Boolean
-    get() = (this is MvModuleDef && parent is MvAddressBlock) || this.isModuleItem
+    get() = (this is MvModule && parent is MvAddressBlock) || this.isModuleItem
 
 val PsiElement.isStmt: Boolean
     get() = this is MvStmt && parent is MvCodeBlock

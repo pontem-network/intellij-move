@@ -34,7 +34,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
 //        if (docElement is MvFunctionSignature) docElement = docElement.parent
 //        if (docElement is MvStructSignature) docElement = docElement.parent
         if (docElement is MvBindingPat
-            && docElement.owner is MvConstDef
+            && docElement.owner is MvConst
         ) docElement = docElement.owner
         when (docElement) {
             // TODO: add docs for both scopes
@@ -105,7 +105,7 @@ fun MvElement.signature(builder: StringBuilder) {
     val buffer = StringBuilder()
     when (this) {
         is MvFunction -> generateFunction(this, buffer)
-        is MvModuleDef -> {
+        is MvModule -> {
             buffer += "module "
             buffer += this.fqName
         }
@@ -127,7 +127,7 @@ fun MvElement.signature(builder: StringBuilder) {
             buffer.b { it += this.name }
             buffer += ": ${this.declaredTy(false).renderForDocs(true)}"
         }
-        is MvConstDef -> {
+        is MvConst -> {
             buffer += this.containingModule!!.fqName
             buffer += "\n"
             buffer += "const "

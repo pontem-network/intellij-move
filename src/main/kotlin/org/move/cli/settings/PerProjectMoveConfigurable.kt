@@ -5,84 +5,47 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.components.JBRadioButton
-import com.intellij.ui.layout.*
+import com.intellij.ui.layout.panel
 
 class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move Language"),
                                                          Configurable.NoScroll {
 
-    private val state: MvProjectSettingsService.State = project.moveSettings.settingsState
+    private val state: MoveProjectSettingsService.State = project.moveSettings.settingsState
 
-    private val binaryPathField = FilePathWithVersionField(project)
+    private val moveProjectSettings = AptosSettingsPanel()
 
     override fun createPanel(): DialogPanel {
-        val aptosRadio = JBRadioButton("Aptos")
         return panel {
-            row("Project type") {
-                buttonGroup {
-                    cell(true) {
-                        aptosRadio().withSelectedBinding(
-                            PropertyBinding({ state.projectType == ProjectType.APTOS },
-                                            { if (it) state.projectType = ProjectType.APTOS })
-                        )
-                        radioButton("Dove",
-                                    { state.projectType == ProjectType.DOVE },
-                                    { if (it) state.projectType = ProjectType.DOVE })
-                    }
-                }
-            }
+            moveProjectSettings.attachTo(this)
             titledRow("") {
-                row("CLI") {
-                    binaryPathField.field()
-                    comment("Required").visibleIf(binaryPathField.valid.not())
-                }
-                row("Version") {
-                    binaryPathField.versionLabel()
-                }
-            }
-            row("Aptos private key") { textField(state::privateKey) }
-                .enableIf(aptosRadio.selected)
-            titledRow("") {
-                row { checkBox("Collapse specs by default", state::collapseSpecs) }
+                row { checkBox("Automatically fold specs in opened files", state::foldSpecs) }
             }
         }
     }
-//    override fun createPanel(): DialogPanel {
-//        return panel {
-//            row("Move binary:") {
-//                cell(binaryPathField.field)
-//                    .horizontalAlign(HorizontalAlign.FILL)
-//            }
-//            row("Version") {
-//                cell(binaryPathField.versionLabel).horizontalAlign(HorizontalAlign.LEFT)
-//            }
-//            buttonsGroup("", { state::projectType }) {
-//                row {
-//                    radioButton("Aptos", ProjectType.APTOS)
-//                    radioButton("Dove", ProjectType.DOVE)
-//                }
-//            }.bind(state::projectType)
-//            row("Aptos private key") {
-//                textField()
-//                    .bindText(state::privateKey)
-//                    .horizontalAlign(HorizontalAlign.FILL)
-//            }
-//            row { checkBox("Collapse specs by default").bindSelected(state::collapseSpecs) }
-//        }
-//    }
 
     override fun disposeUIResources() {
-        val kind = this.state.projectType
-        val moveExecutablePath = binaryPathField.selectedMoveBinaryPath()
-        val privateKey = this.state.privateKey
-        val collapseSpecs = this.state.collapseSpecs
-        project.moveSettings.settingsState = MvProjectSettingsService.State(
-            kind,
-            moveExecutablePath,
-            privateKey,
-            collapseSpecs
-        )
         super.disposeUIResources()
-        Disposer.dispose(binaryPathField)
+        Disposer.dispose(moveProjectSettings)
+    }
+
+    override fun reset() {
+        super.reset()
+        moveProjectSettings.data = AptosSettingsPanel.Data(
+            aptosPath = state.aptosPath,
+        )
+    }
+
+    override fun isModified(): Boolean {
+        if (super.isModified()) return true
+        val data = moveProjectSettings.data
+        return data.aptosPath != state.aptosPath
+    }
+
+    override fun apply() {
+        super.apply()
+        val newState = state
+        newState.aptosPath = moveProjectSettings.data.aptosPath
+        project.moveSettings.settingsState = newState
+
     }
 }

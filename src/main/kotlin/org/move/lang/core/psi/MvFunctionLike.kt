@@ -58,16 +58,16 @@ val MvFunctionLike.requiredTypeParams: List<MvTypeParameter>
     }
 
 
-val MvFunctionLike.module: MvModuleDef?
+val MvFunctionLike.module: MvModule?
     get() {
         val moduleBlock = this.parent
-        return moduleBlock.parent as? MvModuleDef
+        return moduleBlock.parent as? MvModule
     }
 
-val MvFunctionLike.script: MvScriptDef?
+val MvFunctionLike.script: MvScript?
     get() {
         val scriptBlock = this.parent
-        return scriptBlock.parent as? MvScriptDef
+        return scriptBlock.parent as? MvScript
     }
 
 val MvFunctionLike.fqName: String

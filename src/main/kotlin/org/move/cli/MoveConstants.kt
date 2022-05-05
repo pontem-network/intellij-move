@@ -14,7 +14,7 @@ object MvProjectLayout {
     }
 }
 
-object MvConstants {
+object MoveConstants {
     const val MANIFEST_FILE = "Move.toml"
     const val ADDR_PLACEHOLDER = "_"
 }

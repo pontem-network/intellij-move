@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
-import org.move.ide.MvIcons
+import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.resolve.ref.Visibility
@@ -21,26 +21,34 @@ fun List<MvAttr>.findSingleItemAttr(name: String): MvAttr? =
                 && it.attrItemList.first().identifier.text == name
     }
 
-val MvModuleDef.isTestOnly: Boolean get() = this.attrList.findSingleItemAttr("test_only") != null
+val MvModule.isTestOnly: Boolean get() = this.attrList.findSingleItemAttr("test_only") != null
 
-fun MvModuleDef.address(): MvAddressRef? =
+fun MvModule.hasTestFunctions(): Boolean {
+//    val items = this.moduleBlock?.items().orEmpty()
+    return this.testFunctions().isNotEmpty()
+//    return items
+//        .filterIsInstance<MvFunction>()
+//        .any { it.isTest }
+}
+
+fun MvModule.address(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
 
-fun MvModuleDef.fqModule(): FQModule? {
+fun MvModule.fqModule(): FQModule? {
     val address = this.address()?.toAddress() ?: return null
 //    val address = this.containingAddress ?: return null
     val name = this.name ?: return null
     return FQModule(address, name)
 }
 
-val MvModuleDef.fqName: String?
+val MvModule.fqName: String?
     get() {
         val address = this.address()?.text?.let { "$it::" } ?: ""
         val module = this.name ?: return null
         return address + module
     }
 
-val MvModuleDef.friendModules: Set<FQModule>
+val MvModule.friendModules: Set<FQModule>
     get() {
         val block = this.moduleBlock ?: return emptySet()
         val moduleRefs = block.friendStmtList.mapNotNull { it.fqModuleRef }
@@ -55,9 +63,11 @@ val MvModuleDef.friendModules: Set<FQModule>
         return friends
     }
 
-fun MvModuleDef.allFunctions() = moduleBlock?.functionList.orEmpty()
+fun MvModule.allFunctions(): List<MvFunction> = moduleBlock?.functionList.orEmpty()
 
-fun MvModuleDef.builtinFunctions(): List<MvFunction> {
+fun MvModule.testFunctions(): List<MvFunction> = allFunctions().filter { it.isTest }
+
+fun MvModule.builtinFunctions(): List<MvFunction> {
     return listOf(
         builtinFunction(
             """
@@ -88,7 +98,7 @@ fun MvModuleDef.builtinFunctions(): List<MvFunction> {
     )
 }
 
-fun MvModuleDef.functions(visibility: Visibility): List<MvFunction> =
+fun MvModule.functions(visibility: Visibility): List<MvFunction> =
     when (visibility) {
         is Visibility.Public ->
             allFunctions()
@@ -118,11 +128,11 @@ fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
     return project.psiFactory.specFunction(trimmedText, moduleName = "builtin_spec_functions")
 }
 
-fun MvModuleDef.structs(): List<MvStruct> = moduleBlock?.structList.orEmpty()
+fun MvModule.structs(): List<MvStruct> = moduleBlock?.structList.orEmpty()
 
-fun MvModuleDef.schemas(): List<MvSchema> = moduleBlock?.schemaList.orEmpty()
+fun MvModule.schemas(): List<MvSchema> = moduleBlock?.schemaList.orEmpty()
 
-fun MvModuleDef.builtinSpecFunctions(): List<MvSpecFunction> {
+fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
     return CachedValuesManager.getCachedValue(this) {
         val funcs = listOf(
             builtinSpecFunction("spec native fun max_u8(): num;", project),
@@ -150,17 +160,17 @@ fun MvModuleDef.builtinSpecFunctions(): List<MvSpecFunction> {
     }
 }
 
-fun MvModuleDef.specFunctions(): List<MvSpecFunction> = moduleBlock?.specFunctionList.orEmpty()
+fun MvModule.specFunctions(): List<MvSpecFunction> = moduleBlock?.specFunctionList.orEmpty()
 
-fun MvModuleDef.constBindings(): List<MvBindingPat> =
-    moduleBlock?.constDefList.orEmpty().mapNotNull { it.bindingPat }
+fun MvModule.constBindings(): List<MvBindingPat> =
+    moduleBlock?.constList.orEmpty().mapNotNull { it.bindingPat }
 
-fun MvModuleDef.moduleSpecs() =
+fun MvModule.moduleSpecs() =
     this.moduleBlock?.childrenOfType<MvModuleSpec>().orEmpty()
 
-abstract class MvModuleDefMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
-                                                 MvModuleDef {
-    override fun getIcon(flags: Int): Icon = MvIcons.MODULE
+abstract class MvModuleMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
+                                              MvModule {
+    override fun getIcon(flags: Int): Icon = MoveIcons.MODULE
 
     override fun getPresentation(): ItemPresentation? {
         val name = this.name ?: return null
@@ -168,7 +178,7 @@ abstract class MvModuleDefMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node)
         return PresentationData(
             name,
             locationString,
-            MvIcons.MODULE,
+            MoveIcons.MODULE,
             null
         )
     }

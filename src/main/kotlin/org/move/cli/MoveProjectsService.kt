@@ -4,14 +4,12 @@ import com.intellij.execution.RunManager
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectEx
 import com.intellij.openapi.roots.*
 import com.intellij.openapi.roots.ex.ProjectRootManagerEx
 import com.intellij.openapi.util.EmptyRunnable
-import com.intellij.openapi.util.io.FileSystemUtil
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -23,11 +21,10 @@ import org.jetbrains.rpc.LOG
 import org.move.lang.findMoveTomlPath
 import org.move.lang.isMoveFile
 import org.move.lang.toNioPathOrNull
-import org.move.openapiext.checkReadAccessAllowed
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.findVirtualFile
-import org.move.cli.settings.MvProjectSettingsService
-import org.move.cli.settings.MvSettingsChangedEvent
+import org.move.cli.settings.MoveProjectSettingsService
+import org.move.cli.settings.MoveSettingsChangedEvent
 import org.move.cli.settings.MvSettingsListener
 import org.move.stdext.AsyncValue
 import org.move.stdext.MoveProjectEntry
@@ -43,6 +40,8 @@ interface MoveProjectsService {
 
     fun findProjectForPsiElement(psiElement: PsiElement): MoveProject?
     fun findProjectForPath(path: Path): MoveProject?
+
+    val allProjects: Collection<MoveProject>
 
     companion object {
         val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic(
@@ -64,8 +63,8 @@ class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
                     refreshAllProjects()
                 })
             }
-            subscribe(MvProjectSettingsService.MOVE_SETTINGS_TOPIC, object : MvSettingsListener {
-                override fun moveSettingsChanged(e: MvSettingsChangedEvent) {
+            subscribe(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC, object : MvSettingsListener {
+                override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
                     refreshAllProjects()
                 }
             })
@@ -122,6 +121,9 @@ class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
         val file = path.findVirtualFile() ?: return null
         return findMoveProject(file)
     }
+
+    override val allProjects: Collection<MoveProject>
+        get() = this.projects.currentState
 
     private fun findMoveProject(file: VirtualFile?): MoveProject? {
         // in-memory file

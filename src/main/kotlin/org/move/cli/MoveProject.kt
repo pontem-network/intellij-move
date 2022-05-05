@@ -14,7 +14,6 @@ import org.move.lang.toMvFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
 import org.move.openapiext.stringValue
-import org.move.openapiext.toPsiDirectory
 import org.move.stdext.deepIterateChildrenRecursivery
 import java.nio.file.Path
 import java.util.*
@@ -45,7 +44,7 @@ data class DeclaredAddresses(
         if (name in this.values) return this.values[name]
         return this.placeholders[name]
             ?.let {
-                AddressVal(MvConstants.ADDR_PLACEHOLDER, null, it.keyValue, it.packageName)
+                AddressVal(MoveConstants.ADDR_PLACEHOLDER, null, it.keyValue, it.packageName)
             }
     }
 }

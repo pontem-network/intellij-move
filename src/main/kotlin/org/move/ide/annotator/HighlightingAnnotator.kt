@@ -51,8 +51,8 @@ class HighlightingAnnotator : MvAnnotator() {
         if (element is MvModuleRef && element.isSelf) return MvColor.KEYWORD
         if (element is MvUseItem && element.text == "Self") return MvColor.KEYWORD
         if (element is MvFunction) return MvColor.FUNCTION_DEF
-        if (element is MvBindingPat && element.owner is MvConstDef) return MvColor.CONSTANT_DEF
-        if (element is MvModuleDef) return MvColor.MODULE_DEF
+        if (element is MvBindingPat && element.owner is MvConst) return MvColor.CONSTANT_DEF
+        if (element is MvModule) return MvColor.MODULE_DEF
 
         // any qual :: access is not highlighted
         if (element !is MvPathIdent || !element.isIdentifierOnly) return null
@@ -89,7 +89,7 @@ class HighlightingAnnotator : MvAnnotator() {
                 val resolved = path.reference?.resolve() as? MvBindingPat ?: return null
                 val owner = resolved.owner
                 when (owner) {
-                    is MvConstDef -> return MvColor.CONSTANT
+                    is MvConst -> return MvColor.CONSTANT
                     is MvLetStmt,
                     is MvFunctionParameter -> return MvColor.VARIABLE
                 }

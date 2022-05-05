@@ -5,6 +5,7 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.util.parentOfType
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ext.speck
 
 class MvUnusedImportInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
@@ -20,28 +21,14 @@ class MvUnusedImportInspection: MvLocalInspectionTool() {
                 }
             }
 
-            override fun visitItemUseSpeck(o: MvItemUseSpeck) {
-                val useStmt = o.parentOfType<MvUseStmt>() ?: return
-                if (!o.isUsed()) {
+            override fun visitUseItem(useItem: MvUseItem) {
+                if (!useItem.isUsed()) {
+                    val speck = useItem.speck ?: return
                     holder.registerProblem(
-                        useStmt,
+                        speck,
                         "Unused use item",
                         ProblemHighlightType.LIKE_UNUSED_SYMBOL
                     )
-                }
-            }
-
-            override fun visitUseItemGroup(o: MvUseItemGroup) {
-                // will be handled in another method
-                if (o.parentOfType<MvItemUseSpeck>()?.isUsed() != true) return
-                for (useItem in o.useItemList) {
-                    if (!useItem.isUsed()) {
-                        holder.registerProblem(
-                            useItem,
-                            "Unused use item",
-                            ProblemHighlightType.LIKE_UNUSED_SYMBOL
-                        )
-                    }
                 }
             }
         }
@@ -60,7 +47,7 @@ fun MvModuleUseSpeck.isUsed(): Boolean {
 
     val owner = this.parentOfType<MvUseStmt>()?.parentOfType<MvItemsOwner>() ?: return true
     val usageMap = owner.pathUsageMap
-    return isModuleUseItemUsed(this, usageMap)
+    return isModuleUseSpeckUsed(this, usageMap)
 }
 
 fun MvItemUseSpeck.isUsed(): Boolean {
@@ -68,16 +55,16 @@ fun MvItemUseSpeck.isUsed(): Boolean {
 
     val owner = this.parentOfType<MvUseStmt>()?.parentOfType<MvItemsOwner>() ?: return true
     val usageMap = owner.pathUsageMap
-    return isUseItemUsed(this, usageMap)
+    return isItemUseSpeckUsed(this, usageMap)
 }
 
-private fun isModuleUseItemUsed(moduleUse: MvModuleUseSpeck, usages: PathUsageMap): Boolean {
+private fun isModuleUseSpeckUsed(moduleUse: MvModuleUseSpeck, usages: PathUsageMap): Boolean {
     val moduleName = moduleUse.fqModuleRef?.referenceName ?: return true
     val items = moduleUse.fqModuleRef?.reference?.multiResolve().orEmpty()
     return items.any { it in usages.pathUsages[moduleName].orEmpty() }
 }
 
-private fun isUseItemUsed(useSpeck: MvItemUseSpeck, usages: PathUsageMap): Boolean {
+private fun isItemUseSpeckUsed(useSpeck: MvItemUseSpeck, usages: PathUsageMap): Boolean {
     // Use speck with an empty group is always unused
     val itemGroup = useSpeck.useItemGroup
     if (itemGroup != null && itemGroup.useItemList.isEmpty()) return false
@@ -86,9 +73,9 @@ private fun isUseItemUsed(useSpeck: MvItemUseSpeck, usages: PathUsageMap): Boole
     return isUseItemUsed(useItem, usages)
 }
 
-private fun isUseItemUsed(itemUse: MvUseItem, usages: PathUsageMap): Boolean {
-    val name = itemUse.referenceName
-    val items = itemUse.reference.multiResolve()
+private fun isUseItemUsed(useItem: MvUseItem, usages: PathUsageMap): Boolean {
+    val name = useItem.referenceName
+    val items = useItem.reference.multiResolve()
 
     return items.any { it in usages.pathUsages[name].orEmpty() }
 }

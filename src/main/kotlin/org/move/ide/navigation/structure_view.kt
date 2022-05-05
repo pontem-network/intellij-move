@@ -12,7 +12,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.MvFile
 import org.move.lang.core.psi.MvAddressDef
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.functions
 import org.move.lang.core.psi.ext.modules
 import org.move.lang.core.resolve.ref.Visibility
@@ -40,10 +40,10 @@ class MvStructureViewElement(val element: NavigatablePsiElement) : StructureView
             is MvFile -> {
                 val elements =
                     PsiTreeUtil
-                        .getChildrenOfTypeAsList(element, MvModuleDef::class.java)
+                        .getChildrenOfTypeAsList(element, MvModule::class.java)
                         .toMutableList<NavigatablePsiElement>()
                 for (addressBlock in element.addressBlocks()) {
-                    elements.addAll(addressBlock.moduleDefList)
+                    elements.addAll(addressBlock.moduleList)
                 }
                 for (scriptBlock in element.scriptBlocks()) {
                     elements.addAll(scriptBlock.functionList)
@@ -54,7 +54,7 @@ class MvStructureViewElement(val element: NavigatablePsiElement) : StructureView
                 val modules = element.modules()
                 modules.map { MvStructureViewElement(it) }.toTypedArray()
             }
-            is MvModuleDef -> {
+            is MvModule -> {
                 val allFunctions = element.functions(Visibility.Internal)
                 allFunctions.map { MvStructureViewElement(it) }.toTypedArray()
             }

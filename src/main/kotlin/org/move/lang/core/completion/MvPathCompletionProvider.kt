@@ -6,7 +6,7 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.MvPsiPatterns
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.ext.isSelf
@@ -69,7 +69,8 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
         val itemVis = ItemVis(setOf(Namespace.NAME), msl = element.mslScope)
 
         if (moduleRef != null) {
-            val module = moduleRef.reference?.resolve() as? MvModuleDef ?: return
+            val module = moduleRef.reference?.resolve() as? MvModule
+                ?: return
             val vs = when {
                 moduleRef.isSelf -> setOf(Visibility.Internal)
                 else -> Visibility.buildSetOfVisibilities(element)
@@ -102,7 +103,8 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
         val itemVis = ItemVis(setOf(Namespace.TYPE), msl = MslScope.NONE)
 
         if (moduleRef != null) {
-            val module = moduleRef.reference?.resolve() as? MvModuleDef ?: return
+            val module = moduleRef.reference?.resolve() as? MvModule
+                ?: return
             val vs = when {
                 moduleRef.isSelf -> setOf(Visibility.Internal)
                 else -> Visibility.buildSetOfVisibilities(element)
@@ -136,7 +138,8 @@ object SchemasCompletionProvider : MvPathCompletionProvider() {
         val itemVis = ItemVis(setOf(Namespace.SCHEMA), msl = MslScope.EXPR)
 
         if (moduleRef != null) {
-            val module = moduleRef.reference?.resolve() as? MvModuleDef ?: return
+            val module = moduleRef.reference?.resolve() as? MvModule
+                ?: return
             val vs = when {
                 moduleRef.isSelf -> setOf(Visibility.Internal)
                 else -> Visibility.buildSetOfVisibilities(element)

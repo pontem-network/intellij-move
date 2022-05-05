@@ -5,7 +5,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import org.move.lang.core.psi.MvAddressDef
 import org.move.lang.core.psi.MvElementImpl
-import org.move.lang.core.psi.MvModuleDef
+import org.move.lang.core.psi.MvModule
 
 //val MvAddressDef.address: Address?
 //    get() =
@@ -15,8 +15,8 @@ import org.move.lang.core.psi.MvModuleDef
 //    get() =
 //        addressRef?.toNormalizedAddress()
 
-fun MvAddressDef.modules(): List<MvModuleDef> =
-    addressBlock?.childrenOfType<MvModuleDef>().orEmpty()
+fun MvAddressDef.modules(): List<MvModule> =
+    addressBlock?.childrenOfType<MvModule>().orEmpty()
 
 
 abstract class MvAddressDefMixin(node: ASTNode) : MvElementImpl(node),

@@ -103,7 +103,10 @@
         HAS     = 'has_kw'
         FRIEND     = 'friend_kw'
 
-        STRUCT_KW     = 'struct'
+        SCRIPT_KW     = 'script_kw'
+        MODULE_KW     = 'module_kw'
+        STRUCT_KW     = 'struct_kw'
+        CONST_KW     = 'const_kw'
         SCHEMA_KW     = 'schema_kw'
 
         LOCAL     = 'local_kw'
@@ -147,7 +150,7 @@
 //   * tokens are lowercase: for, if, identifier
 //   * rules are PascalCase: StructItem
 //   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
-File ::= (NamedAddressDef | ScriptDef | AddressDef | ModuleDef)*
+File ::= (NamedAddressDef | Script | AddressDef | Module)*
 
 Attr ::= '#' '[' <<comma_sep_items AttrItem>> ']' { pin = 1 }
 AttrItem ::= IDENTIFIER AttrItemArguments?
@@ -156,10 +159,9 @@ AttrItemArgument ::= IDENTIFIER '=' LitExpr
 
 NamedAddressDef ::= address IDENTIFIER '=' AddressRef ';' { pin = 3 }
 
-ScriptDef ::= script ScriptBlock {
+Script ::= SCRIPT_KW ScriptBlock {
     pin = 1
-//    implements = [ "org.move.lang.core.psi.MvUseStmtOwner" ]
-    mixin = "org.move.lang.core.psi.ext.MvScriptDefMixin"
+//    mixin = "org.move.lang.core.psi.ext.MvScriptMixin"
 }
 ScriptBlock ::= '{' ScriptBlockItems '}' {
     pin = 1
@@ -175,10 +177,10 @@ private ScriptItem ::= !('}' | <<eof>>) ScriptItem_item
     recoverWhile = ScriptItem_recover
 }
 // top-level recovery
-private ScriptItemFirst ::= use | const | fun
+private ScriptItemFirst ::= use | CONST_KW | fun
 private ScriptItem_recover ::= !('}' | <<eof>> | ScriptItemFirst)
 
-private ScriptItem_item ::= UseStmt | ConstDef | FunctionInner
+private ScriptItem_item ::= UseStmt | Const | FunctionInner
 
 private address ::= <<addressKeyword>>
 private has ::= <<hasKeyword>>
@@ -189,22 +191,22 @@ AddressDef ::= address AddressRef AddressBlock {
     mixin = "org.move.lang.core.psi.ext.MvAddressDefMixin"
 }
 AddressBlock ::= '{' AddressBlockItems '}' { pin = 1 }
-private AddressBlockItems ::= ModuleDef*
+private AddressBlockItems ::= Module*
 {
     recoverWhile = AddressBlockItems_recover
 }
 private AddressBlockItems_recover ::= !'}'
 
-ModuleDef ::= Attr* module (AddressRef '::')? IDENTIFIER ModuleBlock
+Module ::= Attr* MODULE_KW (AddressRef '::')? IDENTIFIER ModuleBlock
 {
-    pin = "module"
+    pin = "MODULE_KW"
     name = "module declaration"
     implements = [
         "org.move.lang.core.psi.MvQualifiedNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvModuleDefMixin"
+    mixin = "org.move.lang.core.psi.ext.MvModuleMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
@@ -222,7 +224,7 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
     recoverWhile = Item_recover
 }
 // top-level recovery
-private Item_first ::= use | public | native | fun | const | STRUCT_KW | spec | friend | Attr
+private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec | friend | Attr
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= UseStmt
@@ -230,13 +232,13 @@ private ModuleItem_item ::= UseStmt
                             | StructItem
                             | FunctionItem
                             | SpecFunctionItem
-                            | ConstDef
+                            | Const
                             | Schema
                             | AnySpec
 
-ConstDef ::= Attr* const BindingPat TypeAnnotation Initializer ';'
+Const ::= Attr* CONST_KW BindingPat TypeAnnotation Initializer ';'
 {
-    pin = "const"
+    pin = "CONST_KW"
     implements = [
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
     ]
@@ -376,35 +378,8 @@ private FunctionSignatureInner ::= IDENTIFIER TypeParameterList?
 }
 private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
 
-//private FunctionSignatureWithOptionalVisibility ::= FunctionSignatureVisibility | FunctionSignature
-//private FunctionSignatureVisibility ::= FunctionVisibilityModifier FunctionSignature { pin = 1 }
-//FunctionSignature ::= fun IDENTIFIER TypeParameterList?
-//                          FunctionParameterList
-//                          ReturnType? AcquiresType?
-//{
-//    pin = "fun"
-//    recoverWhile = "FunctionSignature__recover"
-//}
-
-//FunctionDef ::= Attr* native? FunctionVisibilityModifier native?
-//NativeFunctionDef ::= native FunctionSignatureWithOptionalVisibility ';'
-//{
-//    pin = 2
-//    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
-//    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
-//}
-
-//FunctionDef ::= Attr* FunctionSignatureWithOptionalVisibility CodeBlock
-//{
-//    pin = 2
-//    implements = [
-//        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
-//    ]
-//    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
-//}
-
 private friend ::= <<friendKeyword>>
-FunctionVisibilityModifier ::= public ('(' (script | friend) ')')?
+FunctionVisibilityModifier ::= public ('(' (SCRIPT_KW | friend) ')')?
 
 FunctionParameterList ::= '(' FunctionParameter_with_recover* ')' { pin = 1 }
 private FunctionParameter_with_recover ::= !(')' | '{' | ';') FunctionParameter (',' | &')')
@@ -993,7 +968,7 @@ ItemSpec ::= (spec IDENTIFIER) <<msl SpecBlock>>
     implements = ["org.move.lang.core.resolve.MvMandatoryReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecMixin"
 }
-ModuleSpec ::= (spec module) <<msl SpecBlock>> {
+ModuleSpec ::= (spec MODULE_KW) <<msl SpecBlock>> {
     pin = 1
     extends = AnySpec
 }
@@ -1094,7 +1069,7 @@ AbortsWithSpecExpr ::= aborts_with <<comma_sep_items Expr>> { pin = 1 }
 
 AssertSpecExpr ::= assert Expr { pin = 1 }
 AssumeSpecExpr ::= assume Expr { pin = 1 }
-RequiresSpecExpr ::= requires module? Expr { pin = 1 }
+RequiresSpecExpr ::= requires MODULE_KW? Expr { pin = 1 }
 EnsuresSpecExpr ::= ensures SpecExpr { pin = 1 }
 ModifiesSpecExpr ::= modifies Expr { pin = 1 }
 
@@ -1161,7 +1136,6 @@ InvariantSpecExpr ::= invariant InvariantModifier? TypeParameterList? Expr { pin
 
 //AxiomSpecStmt ::= AxiomSpecExpr ';'
 AxiomSpecExpr ::= axiom TypeParameterList? Expr { pin = 1 }
-//InvariantModifier ::= pack | unpack | module | update
 
 SpecVisibility ::= '[' SpecVisibility_items ']' { pin = 1 }
 private SpecVisibility_items ::= SpecVisibilityModifier ( ',' SpecVisibilityModifier )* ','?
