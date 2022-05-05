@@ -4,14 +4,16 @@ import com.intellij.ide.actions.CreateFileFromTemplateAction
 import com.intellij.ide.actions.CreateFileFromTemplateDialog
 import com.intellij.ide.fileTemplates.FileTemplate
 import com.intellij.ide.fileTemplates.FileTemplateManager
-import com.intellij.ide.fileTemplates.actions.AttributesDefaults
-import com.intellij.ide.fileTemplates.ui.CreateFromTemplateDialog
+import com.intellij.ide.fileTemplates.FileTemplateUtil
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
+import com.intellij.psi.SmartPointerManager
 import com.intellij.util.IncorrectOperationException
 import com.jetbrains.rd.util.firstOrNull
+import org.apache.velocity.runtime.parser.ParseException
 import org.move.ide.MoveIcons
 import org.move.lang.moveProject
 import java.util.*
@@ -33,40 +35,49 @@ class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MoveIcons
     }
 
     override fun createFileFromTemplate(name: String, template: FileTemplate, dir: PsiDirectory): PsiFile? {
-        val moduleName = name.removeSuffix(".move")
-        return createFileFromTemplate(dir, moduleName, template)
+        return createFileFromTemplate(dir, name, template)
     }
 
-    fun createFileFromTemplate(dir: PsiDirectory, moduleName: String, template: FileTemplate): PsiFile? {
+    fun createFileFromTemplate(
+        dir: PsiDirectory,
+        fileName: String,
+        template: FileTemplate,
+    ): PsiFile? {
         val project = dir.project
-        val defaultProperties = FileTemplateManager.getInstance(project).defaultProperties
+        val properties = Properties(FileTemplateManager.getInstance(dir.project).defaultProperties)
+        properties.setProperty("ADDRESS", getFirstNamedAddress(dir))
 
-        val properties = Properties(defaultProperties)
-        properties.setProperty("ADDRESS", getDefaultAddressForDirectory(dir))
-
-        val element = try {
-            CreateFromTemplateDialog(
-                project, dir, template,
-                AttributesDefaults(moduleName).withFixedName(true),
-                properties
-            ).create()
+        try {
+            val psiFile = FileTemplateUtil.createFromTemplate(
+                template,
+                fileName,
+                properties,
+                dir
+            )
+                .containingFile
+            val pointer = SmartPointerManager.getInstance(project).createSmartPsiElementPointer(psiFile)
+            val virtualFile = psiFile.virtualFile
+            if (virtualFile != null) {
+                FileEditorManager.getInstance(project).openFile(virtualFile, true)
+                return pointer.element
+            }
+        } catch (e: ParseException) {
+            throw IncorrectOperationException("Error parsing Velocity template: " + e.message, e as Throwable)
         } catch (e: IncorrectOperationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (e: java.lang.Exception) {
             LOG.error(e)
-            return null
         }
 
-        return element?.containingFile
+        return null
     }
 
-    private fun getDefaultAddressForDirectory(dir: PsiDirectory): String {
-        return dir.moveProject?.packageAddresses()?.firstOrNull()?.key
-            ?: DEFAULT_ADDRESS
+    private fun getFirstNamedAddress(dir: PsiDirectory): String {
+        return dir.moveProject?.packageAddresses()?.firstOrNull()?.key ?: DEFAULT_ADDRESS
     }
 
     private companion object {
         private const val CAPTION = "Move File"
-        private const val DEFAULT_ADDRESS = "0x11"
+        private const val DEFAULT_ADDRESS = "0x1"
     }
 }
