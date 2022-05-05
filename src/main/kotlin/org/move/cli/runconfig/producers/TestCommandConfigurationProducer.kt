@@ -3,18 +3,17 @@ package org.move.cli.runconfig.producers
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.AptosCommandLine
-import org.move.cli.runconfig.AptosCommandLineFromContext
 import org.move.lang.MvFile
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
-import org.move.lang.core.psi.ext.hasTestFunctions
 import org.move.lang.core.psi.ext.findMoveProject
+import org.move.lang.core.psi.ext.hasTestFunctions
 import org.move.lang.core.psi.ext.isTest
 import org.move.lang.modules
 import org.move.lang.moveProject
 
-class TestRunConfigurationProducer : AptosCommandConfigurationProducer() {
+class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
 
     override fun configFromLocation(location: PsiElement) = fromLocation(location)
 
@@ -22,8 +21,8 @@ class TestRunConfigurationProducer : AptosCommandConfigurationProducer() {
         fun fromLocation(location: PsiElement, climbUp: Boolean = true): AptosCommandLineFromContext? {
             return when (location) {
                 is MvFile -> {
-                   val module = location.modules().firstOrNull() ?: return null
-                   findTestModule(module, climbUp)
+                    val module = location.modules().firstOrNull() ?: return null
+                    findTestModule(module, climbUp)
                 }
                 is PsiFileSystemItem -> {
                     val moveProject = location.findMoveProject() ?: return null

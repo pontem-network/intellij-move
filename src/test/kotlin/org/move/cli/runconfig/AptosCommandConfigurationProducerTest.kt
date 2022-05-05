@@ -1,13 +1,12 @@
 package org.move.cli.runconfig
 
 import com.intellij.psi.PsiElement
-import org.move.cli.runconfig.producers.TestRunConfigurationProducer
+import org.move.cli.runconfig.producers.TestCommandConfigurationProducer
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
-import org.move.openapiext.toPsiDirectory
 import org.move.utils.tests.RunConfigurationProducerTestBase
 
-class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") {
+class AptosCommandConfigurationProducerTest : RunConfigurationProducerTestBase("test") {
     fun `test test run for function`() {
         testProject {
             namedMoveToml("MyPackage")
@@ -33,7 +32,7 @@ class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") 
 
         val ctx1 = myFixture.findElementByText("+", PsiElement::class.java)
         val ctx2 = myFixture.findElementByText("*", PsiElement::class.java)
-        doTestRemembersContext(TestRunConfigurationProducer(), ctx1, ctx2)
+        doTestRemembersContext(TestCommandConfigurationProducer(), ctx1, ctx2)
     }
 
     fun `test no test run if no test functions`() {
@@ -85,8 +84,7 @@ class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") 
                 )
             }
         }
-        val sourcesDir = this.testProject?.rootDirectory
-            ?.findChild("sources")?.toPsiDirectory(this.project) ?: error("No sources directory")
+        val sourcesDir = findPsiDirectory("sources")
         checkOnFsItem(sourcesDir)
     }
 
@@ -104,8 +102,7 @@ class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") 
                 )
             }
         }
-        val sourcesDir = this.testProject?.rootDirectory
-            ?.findChild("sources")?.toPsiDirectory(this.project) ?: error("No sources directory")
+        val sourcesDir = findPsiDirectory("sources")
         checkOnFsItem(sourcesDir)
     }
 
@@ -123,27 +120,71 @@ class TestsConfigurationProducerTest : RunConfigurationProducerTestBase("test") 
                 )
             }
         }
-        val sourcesDir = this.testProject?.rootDirectory
-            ?.findChild("sources")?.toPsiDirectory(this.project) ?: error("No sources directory")
-        val mainFile = sourcesDir.findFile("main.move") ?: error("No file")
+        val mainFile = findPsiFile("sources/main.move")
         checkOnFsItem(mainFile)
     }
 
-//    fun `test no configuration on sources if no test function`() {
-//        testProject {
-//            namedMoveToml("MyPackage")
-//            sources {
-//                move(
-//                    "main.move", """
-//                module 0x1::Main {
-//                    fun test_main() {/*caret*/}
-//                }
-//                """
-//                )
-//            }
-//        }
-//        val sourcesDir =
-//            this.testProject?.rootDirectory?.toPsiDirectory(this.project) ?: error("No sources directory")
-//        checkNoConfigurationOnFsItem(sourcesDir)
-//    }
+    fun `test run tests for function if inside non test only module`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            sources {
+                move(
+                    "main.move", """
+                module 0x1::Main {
+                    #[test]
+                    fun /*caret*/test_main() {}
+                }
+                """
+                )
+            }
+        }
+        checkOnElement<MvFunction>()
+    }
+
+    fun `test publish module`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            sources {
+                move(
+                    "main.move", """
+                module 0x1::/*caret*/Main {}                    
+                """
+                )
+            }
+        }
+        checkOnElement<MvModule>()
+    }
+
+    fun `test publish and test for module with test function`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            sources {
+                move(
+                    "main.move", """
+                module 0x1::/*caret*/Main {
+                    #[test]
+                    fun test_a() {
+                    }
+                }                    
+                """
+                )
+            }
+        }
+        checkOnElement<MvModule>()
+    }
+
+    fun `test no publish action if test_only`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            sources {
+                move(
+                    "main.move", """
+                #[test_only]    
+                module 0x1::/*caret*/Main {}                    
+                """
+                )
+            }
+        }
+        checkNoConfigurationOnElement<MvModule>()
+    }
 }

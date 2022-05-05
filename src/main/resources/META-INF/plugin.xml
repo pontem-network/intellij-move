@@ -78,13 +78,11 @@
         <configurationType
                 implementation="org.move.cli.runconfig.AptosCommandConfigurationType"/>
         <runConfigurationProducer
-                implementation="org.move.cli.runconfig.producers.TestRunConfigurationProducer"/>
+                implementation="org.move.cli.runconfig.producers.TestCommandConfigurationProducer"/>
         <runConfigurationProducer
-                implementation="org.move.cli.runconfig.producers.PublishModuleRunConfigurationProducer"/>
+                implementation="org.move.cli.runconfig.producers.PublishCommandConfigurationProducer"/>
         <runLineMarkerContributor language="Move"
-                                  implementationClass="org.move.ide.lineMarkers.TestRunLineMarkerContributor"/>
-        <runLineMarkerContributor language="Move"
-                                  implementationClass="org.move.ide.lineMarkers.PublishRunLineMarkerContributor"/>
+                                  implementationClass="org.move.ide.lineMarkers.AptosCommandLineMarkerContributor"/>
 
         <lang.parserDefinition language="Move"
                                implementationClass="org.move.lang.MoveParserDefinition"/>

@@ -3,11 +3,15 @@ package org.move.utils.tests
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.RunConfigurationProducer
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
+import com.intellij.openapi.util.io.FileUtil
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import org.jdom.Element
 import org.move.cli.runconfig.AptosCommandConfiguration
 import org.move.lang.core.psi.ext.ancestorOrSelf
+import org.move.openapiext.toPsiDirectory
 import org.move.openapiext.toXmlString
 import org.move.utils.tests.base.TestCase
 
