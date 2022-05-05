@@ -38,6 +38,8 @@ class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MoveIcons
         return createFileFromTemplate(dir, name, template)
     }
 
+    // TODO: it's possible to create a dialog asking for ADDRESS before creating a file,
+    // see https://youtrack.jetbrains.com/issue/IDEA-161451
     fun createFileFromTemplate(
         dir: PsiDirectory,
         fileName: String,
