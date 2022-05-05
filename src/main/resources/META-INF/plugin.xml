@@ -9,12 +9,17 @@
             <p>Support for Move, smart-contract language for Aptos and other blockchains.</p>
 
             <p><a href="https://github.com/pontem-network/intellij-move">https://github.com/pontem-network/intellij-move</a></p>
-
-            <p>We'd appreciate if you click the "Star" button or leave some feedback so we'd know plugin is useful to the community!</p>
         ]]>
     </description>
     <change-notes>
         <![CDATA[
+    <h3>1.8.0</h3>
+    <ul>
+    <li>Replace Dove support with Aptos CLI support</li>
+    <li>Add Move Project Wizard with "aptos move init" support</li>
+    <li>Add gutter icons for the test runner</li>
+    <li>Add Build Project toolbar button support</li>
+    </ul>
     <h3>1.7.0</h3>
     <ul>
     <li>Optimize imports support: unused import inspection, optimize imports action</li>
