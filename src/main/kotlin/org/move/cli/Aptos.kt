@@ -1,17 +1,15 @@
 package org.move.cli
 
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.util.io.exists
 import org.move.cli.settings.isValidExecutable
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.MvResult
-import org.move.stdext.isExecutableFile
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
 
@@ -20,12 +18,22 @@ class Aptos(private val aptosPath: Path) {
     fun init(
         project: Project,
         owner: Disposable,
-        privateKey: String,
-    ) {
+        privateKeyPath: String,
+        faucetUrl: String,
+        restUrl: String,
+    ): MvProcessResult<ProcessOutput> {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-
+        val commandLine = GeneralCommandLine(aptosPath.toString(), "move", "init")
+            .withWorkDirectory(project.root)
+            .withParameters(listOf("--private-key-file", privateKeyPath,
+                                   "--faucet-url", faucetUrl,
+                                   "--rest-url", restUrl,
+                                   "--assume-yes"))
+            .withEnvironment(emptyMap())
+            .withCharset(Charsets.UTF_8)
+        return commandLine.execute(owner)
     }
 
     @Suppress("FunctionName")
@@ -39,7 +47,7 @@ class Aptos(private val aptosPath: Path) {
             checkIsBackgroundThread()
         }
         val commandLine = GeneralCommandLine(aptosPath.toString(), "move", "init")
-            .withWorkDirectory(project.contentRoots.firstOrNull()?.toNioPathOrNull())
+            .withWorkDirectory(project.root)
             .withParameters(listOf("--name", packageName,
                                    "--assume-yes"))
             .withEnvironment(emptyMap())

@@ -44,7 +44,7 @@ fun pathToDirectoryTextField(
     @NlsContexts.DialogTitle title: String,
     onTextChanged: () -> Unit = {}
 ): TextFieldWithBrowseButton =
-    pathTextField(
+    pathField(
         FileChooserDescriptorFactory.createSingleFolderDescriptor(),
         disposable,
         title,
@@ -52,7 +52,7 @@ fun pathToDirectoryTextField(
     )
 
 
-fun pathTextField(
+fun pathField(
     fileChooserDescriptor: FileChooserDescriptor,
     disposable: Disposable,
     @Suppress("UnstableApiUsage") @NlsContexts.DialogTitle title: String,
