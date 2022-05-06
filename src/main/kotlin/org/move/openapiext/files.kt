@@ -4,15 +4,15 @@ import com.intellij.openapi.project.Project
 import org.move.cli.MoveProjectsServiceImpl
 import org.move.cli.moveProjects
 import org.move.cli.processAllMvFilesOnce
-import org.move.lang.MvFile
-import org.move.lang.toMvFile
+import org.move.lang.MoveFile
+import org.move.lang.toMoveFile
 
-fun Project.allMoveFilesForContentRoots(): List<MvFile> {
-    val files = mutableListOf<MvFile>()
+fun Project.allMoveFilesForContentRoots(): List<MoveFile> {
+    val files = mutableListOf<MoveFile>()
     processAllMvFilesOnce(
         (this.moveProjects as MoveProjectsServiceImpl).projects.currentState
     ) { file, _ ->
-        val mvFile = file.toMvFile(this) ?: return@processAllMvFilesOnce
+        val mvFile = file.toMoveFile(this) ?: return@processAllMvFilesOnce
         files.add(mvFile)
     }
     return files

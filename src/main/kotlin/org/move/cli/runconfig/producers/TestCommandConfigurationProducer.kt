@@ -3,7 +3,7 @@ package org.move.cli.runconfig.producers
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.AptosCommandLine
-import org.move.lang.MvFile
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
@@ -20,7 +20,7 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
     companion object {
         fun fromLocation(location: PsiElement, climbUp: Boolean = true): AptosCommandLineFromContext? {
             return when (location) {
-                is MvFile -> {
+                is MoveFile -> {
                     val module = location.modules().firstOrNull() ?: return null
                     findTestModule(module, climbUp)
                 }

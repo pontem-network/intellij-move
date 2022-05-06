@@ -8,9 +8,9 @@ import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
-import org.move.lang.MvFile
+import org.move.lang.MoveFile
 import org.move.lang.core.types.Address
-import org.move.lang.toMvFile
+import org.move.lang.toMoveFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
 import org.move.openapiext.stringValue
@@ -23,7 +23,7 @@ enum class MoveScope {
 }
 
 data class MvModuleFile(
-    val file: MvFile,
+    val file: MoveFile,
     val addressSubst: Map<String, String>,
 )
 
@@ -185,7 +185,7 @@ data class MoveProject(
         for (folder in folders) {
             if (stopped) break
             deepIterateChildrenRecursivery(folder, { it.extension == "move" }) { file ->
-                val moveFile = file.toMvFile(project) ?: return@deepIterateChildrenRecursivery true
+                val moveFile = file.toMoveFile(project) ?: return@deepIterateChildrenRecursivery true
                 val moduleFile = MvModuleFile(moveFile, emptyMap())
                 val continueForward = processFile(moduleFile)
                 stopped = !continueForward

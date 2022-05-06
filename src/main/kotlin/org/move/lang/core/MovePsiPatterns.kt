@@ -9,7 +9,7 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.ProcessingContext
 import org.move.lang.MvElementTypes.*
-import org.move.lang.MvFile
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.hasAncestorOrSelf
@@ -27,7 +27,7 @@ object MvPsiPatterns {
         PlatformPatterns.psiElement().with(OnStmtBeginning(*startWords))
 
     fun toplevel(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvFile>()
+        psiElementWithParent<MoveFile>()
 
     fun addressBlock(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvAddressBlock>()

@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet.orSet
 import org.move.lang.MvElementTypes.*
-import org.move.lang.MvFile
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import com.intellij.psi.tree.TokenSet.create as ts
 
@@ -35,7 +35,7 @@ val DELIMITED_BLOCKS = orSet(PAREN_DELIMITED_BLOCKS, ANGLE_DELIMITED_BLOCKS, BLO
 fun ASTNode?.isWhitespaceOrEmpty() = this == null || textLength == 0 || elementType == TokenType.WHITE_SPACE
 
 val PsiElement.isTopLevelItem: Boolean
-    get() = (this is MvModule || this is MvAddressDef || this is MvScript) && parent is MvFile
+    get() = (this is MvModule || this is MvAddressDef || this is MvScript) && parent is MoveFile
 
 val PsiElement.isModuleItem: Boolean
     get() = this is MvFunction || this is MvConst || this is MvStruct || this is MvUseStmt

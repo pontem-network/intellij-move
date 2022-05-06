@@ -194,7 +194,7 @@ class ErrorAnnotator : MvAnnotator() {
         val moveProj = mod.moveProject ?: return
         val addressIdent = mod.address()?.toAddress(moveProj) ?: return
         val modIdent = Pair(addressIdent, mod.name)
-        val file = mod.containingMvFile ?: return
+        val file = mod.containingMoveFile ?: return
         val duplicateIdents =
             file.modules()
                 .filter { it.name != null }

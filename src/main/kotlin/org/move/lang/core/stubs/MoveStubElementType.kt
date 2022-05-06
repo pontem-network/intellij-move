@@ -5,12 +5,12 @@ import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.tree.IStubFileElementType
-import org.move.lang.MvLanguage
+import org.move.lang.MoveLanguage
 import org.move.lang.core.psi.MvElement
 
 abstract class MvStubElementType<StubT : StubElement<*>, PsiT : MvElement>(
     debugName: String,
-) : IStubElementType<StubT, PsiT>(debugName, MvLanguage) {
+) : IStubElementType<StubT, PsiT>(debugName, MoveLanguage) {
 
     final override fun getExternalId(): String = "move.${super.toString()}"
 

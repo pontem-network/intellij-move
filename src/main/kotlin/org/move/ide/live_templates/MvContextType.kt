@@ -10,7 +10,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.ide.MvHighlighter
-import org.move.lang.MvLanguage
+import org.move.lang.MoveLanguage
 import org.move.lang.core.psi.MvCodeBlock
 import org.move.lang.core.psi.MvModule
 import kotlin.reflect.KClass
@@ -22,7 +22,7 @@ sealed class MvContextType(
 ): TemplateContextType(id, presentableName, baseContextType.java) {
 
     final override fun isInContext(context: TemplateActionContext): Boolean {
-        if (!PsiUtilCore.getLanguageAtOffset(context.file, context.startOffset).isKindOf(MvLanguage)) {
+        if (!PsiUtilCore.getLanguageAtOffset(context.file, context.startOffset).isKindOf(MoveLanguage)) {
             return false
         }
 

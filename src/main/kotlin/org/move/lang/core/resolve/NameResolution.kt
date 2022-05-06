@@ -3,7 +3,7 @@ package org.move.lang.core.resolve
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.cli.MoveScope
-import org.move.lang.MvFile
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
@@ -99,7 +99,7 @@ fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
 
 private fun processModules(
     fqModuleRef: MvFQModuleRef,
-    file: MvFile,
+    file: MoveFile,
     processor: MatchingProcessor,
 ): Boolean {
     val moveProject = fqModuleRef.moveProject ?: return false
@@ -128,7 +128,7 @@ fun processFQModuleRef(
     processor: MatchingProcessor,
 ) {
     // first search modules in the current file
-    val currentFile = fqModuleRef.containingMvFile ?: return
+    val currentFile = fqModuleRef.containingMoveFile ?: return
     var stopped = processModules(fqModuleRef, currentFile, processor)
     if (stopped) return
 

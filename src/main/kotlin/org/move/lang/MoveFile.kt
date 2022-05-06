@@ -49,7 +49,8 @@ fun PsiFile.toNioPathOrNull(): Path? {
     return this.originalFile.virtualFile.toNioPathOrNull()
 }
 
-class MvFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvider, MvLanguage) {
+class MoveFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvider, MoveLanguage) {
+
     override fun getFileType(): FileType = MoveFileType
 
     fun addressBlocks(): List<MvAddressBlock> {
@@ -69,9 +70,9 @@ val VirtualFile.isMoveFile: Boolean get() = fileType == MoveFileType
 
 val VirtualFile.isMoveTomlManifestFile: Boolean get() = fileType == TomlFileType && name == "Move.toml"
 
-fun VirtualFile.toMvFile(project: Project): MvFile? = this.toPsiFile(project) as? MvFile
+fun VirtualFile.toMoveFile(project: Project): MoveFile? = this.toPsiFile(project) as? MoveFile
 
-fun MvFile.modules(): Sequence<MvModule> {
+fun MoveFile.modules(): Sequence<MvModule> {
     return this.childrenOfType<MvModule>()
         .chain(this.childrenOfType<MvAddressDef>().flatMap { it.modules() })
 }

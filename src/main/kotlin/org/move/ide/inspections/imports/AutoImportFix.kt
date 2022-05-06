@@ -7,7 +7,7 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import org.move.lang.MvFile
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ItemVis
@@ -91,7 +91,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
                 .toMutableList()
             if (isUnitTestMode) {
                 // always add current file in tests
-                val currentFile = contextElement.containingFile as? MvFile ?: return emptyList()
+                val currentFile = contextElement.containingFile as? MoveFile ?: return emptyList()
                 files.add(0, currentFile)
             }
             return files

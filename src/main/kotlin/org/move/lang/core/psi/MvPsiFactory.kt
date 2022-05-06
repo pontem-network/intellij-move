@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiParserFacade
 import org.move.lang.MoveFileType
-import org.move.lang.MvFile
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
 
 val Project.psiFactory get() = MvPsiFactory(this)
@@ -113,7 +113,7 @@ class MvPsiFactory(private val project: Project) {
                 "DUMMY.move",
                 MoveFileType,
                 code
-            ) as MvFile
+            ) as MoveFile
         return dummyFile.descendantOfTypeStrict()
     }
 }

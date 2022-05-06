@@ -5,12 +5,12 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import org.move.ide.inspections.isUsed
 import org.move.ide.intentions.removeCurlyBraces
-import org.move.lang.MvFile
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvItemsOwner
 import org.move.lang.modules
 
 class MvImportOptimizer: ImportOptimizer {
-    override fun supports(file: PsiFile) = file is MvFile
+    override fun supports(file: PsiFile) = file is MoveFile
 
     override fun processFile(file: PsiFile) = Runnable {
         val documentManager = PsiDocumentManager.getInstance(file.project)
@@ -18,12 +18,12 @@ class MvImportOptimizer: ImportOptimizer {
         if (document != null) {
             documentManager.commitDocument(document)
         }
-        val mvFile = file as MvFile
-        for (module in mvFile.modules()) {
+        val moveFile = file as MoveFile
+        for (module in moveFile.modules()) {
             val block = module.moduleBlock ?: continue
             optimizeImports(block)
         }
-        for (scriptBlock in mvFile.scriptBlocks()) {
+        for (scriptBlock in moveFile.scriptBlocks()) {
             optimizeImports(scriptBlock)
         }
     }
