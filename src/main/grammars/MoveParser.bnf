@@ -819,11 +819,6 @@ LitExpr ::= HEX_INTEGER_LITERAL
                 | INTEGER_LITERAL
                 | HEX_STRING_LITERAL
                 | BYTE_STRING_LITERAL
-//                | PLACEHOLDER_ADDRESS_LITERAL
-//                | ADDRESS_LITERAL
-//                | BECH32_ADDRESS_LITERAL
-//                | POLKADOT_ADDRESS_LITERAL
-//                | ('@' NamedAddress)
                 | AddressLit
 AddressLit ::= '@' AddressRef { pin = 1 }
 
