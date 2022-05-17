@@ -621,7 +621,7 @@ Stmt ::= LetMoveStmt | ExprStmt
 
 SpecExprStmt ::= (SpecExpr_item !'}') ';' { pin = 1 }
 private SpecExpr ::= SpecExprStmt_items | Expr
-private SpecExpr_item ::= SpecExprStmt_items | ExprStmt_items
+private SpecExpr_item ::= SpecExprStmt_items | ExprStmt_expr
 {
     recoverWhile = SpecExprStmt_recover
 }
@@ -651,18 +651,19 @@ LetMslStmt ::= (let post?) Pat TypeAnnotation? Initializer? ';'
     elementType = LetStmt
 }
 
-ExprStmt ::= (ExprStmt_items !('}')) ';' { pin = 1 }
-private ExprStmt_items ::= IfExpr
-                                | LoopExpr
-                                | WhileExpr
-                                | SpecBlockExpr
-                                | Expr
+ExprStmt ::= (ExprStmt_expr !('}')) ';' { pin = 1 }
+private ExprStmt_expr ::= IfExpr
+                            | LoopExpr
+                            | WhileExpr
+                            | SpecBlockExpr
+                            | Expr
 {
     recoverWhile = "ExprStmt_recover"
 }
-private ExprStmt_recover ::= !(';' | '}' | ExprStmt_first)
-private ExprStmt_first ::= let | if | while
-//                                | <<specOnly include>>
+private ExprStmt_recover ::= !(';' | '}' | Expr_first)
+private Expr_first ::= let | if | while
+                        | IDENTIFIER
+                        | (AddressRef '::')
 //                                | <<specOnly apply>>
 //                                | <<specOnly pragma>>
 //                                | <<specOnly emits>>
@@ -688,7 +689,7 @@ CodeBlock ::= '{' CodeBlock_items '}'
 
 private CodeBlock_items ::= UseStmt*
                             Stmt*
-                            ExprStmt_items?
+                            ExprStmt_expr?
 {
     recoverWhile = "CodeBlock_items_recover"
 }
@@ -892,7 +893,6 @@ ModuleRef ::= IDENTIFIER | FQModuleRef
 }
 
 FQModuleRef ::= AddressRef '::' IDENTIFIER
-//FQModuleRef ::= (FQModuleRefUseStart | FQModuleRefStart) IDENTIFIER
 {
     pin = 2
     extends = ModuleRef
@@ -901,8 +901,6 @@ FQModuleRef ::= AddressRef '::' IDENTIFIER
     ]
     mixin = "org.move.lang.core.psi.ext.MvFQModuleRefMixin"
 }
-private FQModuleRefUseStart ::= AddressRef '::' { pin = 2 }
-private FQModuleRefStart ::= AddressRef '::'
 
 AddressRef ::= NamedAddress
                 | PLACEHOLDER_ADDRESS
@@ -982,7 +980,7 @@ SpecBlockExpr ::= spec <<msl SpecBlock>>
 
 SpecBlock ::= '{' SpecBlock_items '}' { pin = 1 }
 //private SpecBlock_inner ::= '{' SpecBlock_items '}' { pin = 1 }
-private SpecBlock_items ::= (SpecStmt | ExprStmt)* (SpecExprStmt_items | ExprStmt_items)?
+private SpecBlock_items ::= (SpecStmt | ExprStmt)* (SpecExprStmt_items | ExprStmt_expr)?
 {
     recoverWhile = SpecBlock_items_recover
 }

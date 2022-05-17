@@ -85,8 +85,6 @@ fun MvNamedElement.createCompletionLookupElement(
         is MvSchema -> this.createLookupElement()
             .withInsertHandler(insertHandler)
 
-//        is MvSchemaFieldStmt -> this.createLookupElement()
-
         else -> LookupElementBuilder.create(this)
     }
 }

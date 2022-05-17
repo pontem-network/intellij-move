@@ -41,6 +41,24 @@ FILE
             MvRefExprImpl(REF_EXPR)
               MvPathImpl(PATH)
                 MvPathIdentImpl(PATH_IDENT)
+                  PsiElement(IDENTIFIER)('RMRK')
+            PsiErrorElement:';' expected, got 'RMRK'
+              <empty list>
+          PsiWhiteSpace('\n        ')
+          MvExprStmtImpl(EXPR_STMT)
+            MvRefExprImpl(REF_EXPR)
+              MvPathImpl(PATH)
+                MvPathIdentImpl(PATH_IDENT)
+                  MvModuleRefImpl(MODULE_REF)
+                    PsiElement(IDENTIFIER)('RMRK')
+                  PsiElement(::)('::')
+                  PsiErrorElement:<, IDENTIFIER or '{' expected, got '0x1'
+                    <empty list>
+          PsiWhiteSpace('\n        ')
+          MvExprStmtImpl(EXPR_STMT)
+            MvRefExprImpl(REF_EXPR)
+              MvPathImpl(PATH)
+                MvPathIdentImpl(PATH_IDENT)
                   MvFQModuleRefImpl(FQ_MODULE_REF)
                     MvAddressRefImpl(ADDRESS_REF)
                       PsiElement(DIEM_ADDRESS)('0x1')

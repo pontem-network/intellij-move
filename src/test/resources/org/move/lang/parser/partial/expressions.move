@@ -4,6 +4,8 @@ script {
         b"
     }
     fun main() {
+        RMRK
+        RMRK::
         0x1:: ;
         0x1::RMRK:: ;
         Sender::RMRK:: ;
