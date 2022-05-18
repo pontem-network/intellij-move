@@ -1,5 +1,6 @@
 package org.move.lang.core.resolve
 
+import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.cli.MoveScope

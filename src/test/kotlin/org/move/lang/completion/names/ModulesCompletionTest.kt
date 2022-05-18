@@ -76,4 +76,46 @@ class ModulesCompletionTest : CompletionTestCase() {
         use 0x1::Signer::Se/*caret*/;
     }    
     """)
+
+    fun `test module name in path position with auto import`() = doSingleCompletion("""
+    module 0x1::Signer {}
+    module 0x1::M {
+        fun call() {
+            let a = 1;
+            Sign/*caret*/
+        }
+    }    
+    """, """
+    module 0x1::Signer {}
+    module 0x1::M {
+        use 0x1::Signer;
+
+        fun call() {
+            let a = 1;
+            Signer/*caret*/
+        }
+    }    
+    """)
+
+    fun `test no import if name already in scope`() = doSingleCompletion("""
+    module 0x1::Signer {}
+    module 0x1::M {
+        use 0x1::Signer;
+
+        fun call() {
+            let a = 1;
+            Sign/*caret*/
+        }
+    }    
+    """, """
+    module 0x1::Signer {}
+    module 0x1::M {
+        use 0x1::Signer;
+
+        fun call() {
+            let a = 1;
+            Signer/*caret*/
+        }
+    }    
+    """)
 }

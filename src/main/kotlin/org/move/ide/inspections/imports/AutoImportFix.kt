@@ -81,13 +81,16 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
             return Context(candidates)
         }
 
-        fun getImportCandidates(context: ImportContext, targetName: String): List<ImportCandidate> {
+        fun getImportCandidates(
+            context: ImportContext,
+            targetName: String,
+            itemFilter: (MvQualifiedNamedElement) -> Boolean = { true }
+        ): List<ImportCandidate> {
             val (contextElement, itemVis) = context
-            val name = contextElement.referenceName ?: return emptyList()
             val moveProject = contextElement.moveProject ?: return emptyList()
             val searchScope = moveProject.searchScope()
             val files = MvNamedElementIndex
-                .findFilesByElementName(contextElement.project, name, searchScope)
+                .findFilesByElementName(contextElement.project, targetName, searchScope)
                 .toMutableList()
             if (isUnitTestMode) {
                 // always add current file in tests
@@ -96,6 +99,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
             }
             return files
                 .flatMap { it.qualifiedItems(targetName, itemVis) }
+                .filter(itemFilter)
                 .mapNotNull { el -> el.fqPath?.let { ImportCandidate(el, it) } }
         }
     }
@@ -107,6 +111,10 @@ data class ImportContext private constructor(
     val itemVis: ItemVis,
 ) {
     companion object {
+        fun from(contextElement: MvReferenceElement, itemVis: ItemVis): ImportContext {
+            return ImportContext(contextElement, itemVis)
+        }
+
         fun from(contextElement: MvReferenceElement): ImportContext {
             var itemVis = ItemVis(visibilities = setOf(Visibility.Public))
             if (contextElement.containingScript != null) {
@@ -125,7 +133,7 @@ data class ImportContext private constructor(
 
 data class ImportCandidate(val element: MvQualifiedNamedElement, val fqPath: FqPath)
 
-private fun ImportCandidate.import(context: MvElement) {
+fun ImportCandidate.import(context: MvElement) {
     checkWriteAccessAllowed()
     val psiFactory = element.project.psiFactory
     val insertionScope = context.containingModule?.moduleBlock

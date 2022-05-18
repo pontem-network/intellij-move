@@ -20,7 +20,6 @@ class MvNamedElementIndex : ScalarIndexExtension<String>() {
     override fun getVersion() = INDEX_VERSION
     override fun getKeyDescriptor(): KeyDescriptor<String> = EnumeratorStringDescriptor.INSTANCE
     override fun dependsOnFileContent() = true
-
     override fun getInputFilter() = DefaultFileTypeSpecificInputFilter(MoveFileType)
 
     override fun getIndexer() =
@@ -37,6 +36,10 @@ class MvNamedElementIndex : ScalarIndexExtension<String>() {
         const val INDEX_VERSION = 1
 
         val KEY = ID.create<String, Void>("MvNamedElementIndex")
+
+        fun getAllKeys(project: Project): Collection<String> {
+            return FileBasedIndex.getInstance().getAllKeys(KEY, project)
+        }
 
         fun findFilesByElementName(
             project: Project,
