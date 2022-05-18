@@ -132,9 +132,9 @@ object MvPsiPatterns {
     fun ability(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvAbility>()
 
-    fun pathIdent(): PsiElementPattern.Capture<PsiElement> =
-        PlatformPatterns.psiElement()
-            .withParent<MvPathIdent>()
+//    fun pathIdent(): PsiElementPattern.Capture<PsiElement> =
+//        PlatformPatterns.psiElement()
+//            .withParent<MvPathIdent>()
 //            .withSuperParent<MvPath>(2)
 
 //    fun fqPathIdent(): PsiElementPattern.Capture<PsiElement> =
@@ -143,16 +143,16 @@ object MvPsiPatterns {
 ////            .withSuperParent<MvPath>(2)
 
     fun path(): PsiElementPattern.Capture<PsiElement> =
-        pathIdent()
-            .withSuperParent<MvPath>(2)
+        psiElementWithParent<MvPath>()
+//            .withSuperParent<MvPath>(2)
 
     fun pathType(): PsiElementPattern.Capture<PsiElement> =
-        pathIdent()
-            .withSuperParent<MvPathType>(3)
+        path()
+            .withSuperParent<MvPathType>(2)
 
     fun schemaRef(): PsiElementPattern.Capture<PsiElement> =
-        pathIdent()
-            .withSuperParent<MvSchemaLit>(3)
+        path()
+            .withSuperParent<MvSchemaLit>(2)
 
     fun nameTypeIdentifier(): PsiElementPattern.Capture<PsiElement> =
         pathType()
@@ -162,7 +162,7 @@ object MvPsiPatterns {
         PlatformPatterns.psiElement()
             .withSuperParent<MvAnySpec>(2)
 
-    fun whitespaceAndErrors() = PlatformPatterns.psiElement().whitespaceCommentEmptyOrError()
+    private fun whitespaceAndErrors() = PlatformPatterns.psiElement().whitespaceCommentEmptyOrError()
 
     inline fun <reified I : PsiElement> psiElementWithParent() =
         PlatformPatterns.psiElement().withParent(

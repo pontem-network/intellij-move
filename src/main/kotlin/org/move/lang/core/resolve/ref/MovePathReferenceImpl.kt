@@ -52,7 +52,7 @@ class MvPathReferenceImpl(
         val itemVis = ItemVis(ns, vs, element.mslScope)
 
         val refName = element.referenceName ?: return emptyList()
-        val moduleRef = element.pathIdent.moduleRef
+        val moduleRef = element.moduleRef
         // first, see whether it's a fully qualified path (ADDRESS::MODULE::NAME) and try to resolve those
         if (moduleRef is MvFQModuleRef) {
             val module = moduleRef.reference?.resolve() as? MvModule

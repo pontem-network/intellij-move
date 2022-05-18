@@ -62,7 +62,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             if (path.isInsideAssignmentLeft()) return
             if (path.text == "assert") return
 
-            val moduleRef = path.pathIdent.moduleRef
+            val moduleRef = path.moduleRef
             if (moduleRef != null) {
                 if (moduleRef is MvFQModuleRef) return
                 if (moduleRef.isUnresolved) {

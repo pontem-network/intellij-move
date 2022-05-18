@@ -872,18 +872,18 @@ Path ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList
     mixin = "org.move.lang.core.psi.ext.MvPathMixin"
 }
 
-fake PathIdent ::= ((FQModuleRef | ModuleRef) '::')? IDENTIFIER?
+//fake PathIdent ::= ((FQModuleRef | ModuleRef) '::')? IDENTIFIER?
 
-LocalPathIdent ::= IDENTIFIER { elementType = PathIdent }
-ModulePathIdent ::= ModuleRef ('::' !(IDENTIFIER '::')) IDENTIFIER
+private LocalPathIdent ::= IDENTIFIER
+private ModulePathIdent ::= ModuleRef ('::' !(IDENTIFIER '::')) IDENTIFIER
 {
     pin = 2
-    elementType = PathIdent
+//    elementType = PathIdent
 }
-FQModulePathIdent ::= FQModuleRef '::' IDENTIFIER
+private FQModulePathIdent ::= FQModuleRef '::' IDENTIFIER
 {
     pin = 1
-    elementType = PathIdent
+//    elementType = PathIdent
 }
 
 ModuleRef ::= IDENTIFIER | FQModuleRef

@@ -54,13 +54,12 @@ class HighlightingAnnotator : MvAnnotator() {
         if (element is MvBindingPat && element.owner is MvConst) return MvColor.CONSTANT_DEF
         if (element is MvModule) return MvColor.MODULE_DEF
 
+        val path = element as? MvPath ?: return null
         // any qual :: access is not highlighted
-        if (element !is MvPathIdent || !element.isIdentifierOnly) return null
+        if (path.isQual) return null
 
-        val path = element.parent as? MvPath ?: return null
         val identifierName = path.identifierName
-        val pathContainer = path.parent
-        when (pathContainer) {
+        when (path.parent) {
             is MvPathType -> {
                 if (identifierName in PRIMITIVE_TYPE_IDENTIFIERS) return MvColor.PRIMITIVE_TYPE
                 if (identifierName in SPEC_ONLY_PRIMITIVE_TYPES && path.isMsl()) return MvColor.PRIMITIVE_TYPE

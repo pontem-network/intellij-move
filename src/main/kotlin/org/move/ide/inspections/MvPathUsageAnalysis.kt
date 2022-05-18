@@ -37,8 +37,8 @@ private fun handleElement(
 
     return when (element) {
         is MvPath -> {
-            val pathIdent = element.pathIdent
-            val moduleRef = pathIdent.moduleRef
+//            val pathIdent = element.pathIdent
+            val moduleRef = element.moduleRef
             when {
                 moduleRef != null && moduleRef !is MvFQModuleRef -> {
                     val modName = moduleRef.referenceName ?: return true

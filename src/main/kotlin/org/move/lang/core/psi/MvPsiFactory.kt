@@ -89,7 +89,7 @@ class MvPsiFactory(private val project: Project) {
             ?: error("Failed to create a type parameter from text: `$text`")
     }
 
-    fun pathIdent(text: String): MvPathIdent {
+    fun path(text: String): MvPath {
         return createFromText("module _IntellijPreludeDummy { fun main() { $text(); } } ")
             ?: error("`$text`")
     }

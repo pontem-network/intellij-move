@@ -10,7 +10,6 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.ext.isSelf
-import org.move.lang.core.psi.ext.moduleRef
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslScope
 import org.move.lang.core.resolve.mslScope
@@ -43,8 +42,7 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
         context: ProcessingContext,
         result: CompletionResultSet
     ) {
-        val maybePathIdent = parameters.position.parent
-        val maybePath = maybePathIdent.parent
+        val maybePath = parameters.position.parent
         val path = maybePath as? MvPath ?: maybePath.parent as MvPath
 
         if (parameters.position !== path.referenceNameElement) return
@@ -56,7 +54,7 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
 object NamesCompletionProvider : MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
-            MvPsiPatterns.pathIdent()
+            MvPsiPatterns.path()
                 .andNot(MvPsiPatterns.pathType())
                 .andNot(MvPsiPatterns.schemaRef())
 

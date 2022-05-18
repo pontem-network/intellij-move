@@ -20,20 +20,19 @@ import org.move.lang.core.resolve.ref.Visibility
 object ModulesCompletionProvider : MvCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
-            MvPsiPatterns.pathIdent()
+            MvPsiPatterns.path()
 
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
         result: CompletionResultSet,
     ) {
-        val maybePathIdent = parameters.position.parent
-        val maybePath = maybePathIdent.parent
+        val maybePath = parameters.position.parent
         val refElement =
             maybePath as? MvPath ?: maybePath.parent as MvPath
 
         if (parameters.position !== refElement.referenceNameElement) return
-        if (refElement.pathIdent.moduleRef != null) return
+        if (refElement.moduleRef != null) return
 
         val processedNames = mutableSetOf<String>()
         val itemVis = ItemVis(setOf(Namespace.MODULE), emptySet(), refElement.mslScope)
@@ -51,7 +50,7 @@ object ModulesCompletionProvider : MvCompletionProvider() {
         result: CompletionResultSet,
         processedPathNames: Set<String>
     ) {
-        val path = parameters.originalPosition?.parent?.parent as? MvPath ?: return
+        val path = parameters.originalPosition?.parent as? MvPath ?: return
         val importContext =
             ImportContext.from(path, ItemVis(setOf(Namespace.MODULE), setOf(Visibility.Public)))
 
