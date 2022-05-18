@@ -43,13 +43,12 @@ fun resolveModuleItem(
 
 class MvPathReferenceImpl(
     element: MvPath,
-    val namespace: Namespace,
+    val namespaces: Set<Namespace>,
 ) : MvReferenceCached<MvPath>(element), MvPathReference {
 
     override fun resolveInner(): List<MvNamedElement> {
-        val ns = mutableSetOf(namespace)
         val vs = Visibility.buildSetOfVisibilities(element)
-        val itemVis = ItemVis(ns, vs, element.mslScope)
+        val itemVis = ItemVis(namespaces, vs, element.mslScope)
 
         val refName = element.referenceName ?: return emptyList()
         val moduleRef = element.moduleRef
@@ -78,7 +77,7 @@ class MvPathReferenceImpl(
             if (element.isUpdateFieldArg2) return emptyList()
 
             // try local names
-            val item = resolveItem(element, namespace).firstOrNull() ?: return emptyList()
+            val item = resolveItem(element, namespaces).firstOrNull() ?: return emptyList()
             // local name -> return
             if (item !is MvUseItem) return listOf(item)
             // find corresponding FQModuleRef from imports and resolve

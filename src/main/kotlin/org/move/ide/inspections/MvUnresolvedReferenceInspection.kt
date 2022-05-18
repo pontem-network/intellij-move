@@ -67,12 +67,6 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
                 if (moduleRef is MvFQModuleRef) return
                 if (moduleRef.isUnresolved) {
                     holder.registerProblem(moduleRef)
-//                    holder.registerProblem(
-//                        moduleRef,
-//                        "Unresolved module reference: `${moduleRef.referenceName}`",
-//                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL,
-//                        AutoImportFix(moduleRef)
-//                    )
                     return
                 }
             }

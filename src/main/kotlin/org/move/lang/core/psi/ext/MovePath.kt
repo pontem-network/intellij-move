@@ -38,9 +38,6 @@ val MvPath.isUpdateFieldArg2: Boolean
 
 val MvPath.identifierName: String? get() = identifier?.text
 
-//val MvPath.moduleRef: MvModuleRef? get() = pathIdent.moduleRef
-//val MvPath.moduleRef: MvModuleRef? get() = null
-
 val MvPath.colonColon get() = this.findFirstChildByType(MvElementTypes.COLON_COLON)
 
 val MvPath.isLocal: Boolean
@@ -58,15 +55,19 @@ val MvPath.maybeSchema get() = reference?.resolve() as? MvSchema
 
 abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
 
-//    override val identifier: PsiElement? get() = this.identifier
-
     override fun getReference(): MvPathReference? {
-        val namespace = when (this.parent) {
-            is MvSchemaLit, is MvSchemaRef -> Namespace.SCHEMA
-            is MvPathType -> Namespace.TYPE
-            else -> Namespace.NAME
+        val namespaces = when (this.parent) {
+            is MvSchemaLit, is MvSchemaRef -> setOf(Namespace.SCHEMA)
+            is MvPathType -> setOf(Namespace.TYPE)
+            else -> {
+                if (this.isLocal) {
+                    setOf(Namespace.NAME, Namespace.MODULE)
+                } else {
+                    setOf(Namespace.NAME)
+                }
+            }
         }
-        return MvPathReferenceImpl(this, namespace)
+        return MvPathReferenceImpl(this, namespaces)
     }
 }
 

@@ -10,7 +10,7 @@ class MvStructFieldReferenceImpl(
     element: MvMandatoryReferenceElement
 ) : MvReferenceCached<MvMandatoryReferenceElement>(element) {
 
-    override fun resolveInner() = resolveItem(element, Namespace.STRUCT_FIELD)
+    override fun resolveInner() = resolveItem(element, setOf(Namespace.STRUCT_FIELD))
 }
 
 class MvStructLitShorthandFieldReferenceImpl(
@@ -19,8 +19,8 @@ class MvStructLitShorthandFieldReferenceImpl(
 
     override fun resolveInner(): List<MvNamedElement> {
         return listOf(
-            resolveItem(element, Namespace.STRUCT_FIELD),
-            resolveItem(element, Namespace.NAME)
+            resolveItem(element, setOf(Namespace.STRUCT_FIELD)),
+            resolveItem(element, setOf(Namespace.NAME))
         ).flatten()
     }
 }
@@ -29,5 +29,5 @@ class MvStructPatShorthandFieldReferenceImpl(
     element: MvStructPatField
 ) : MvReferenceCached<MvStructPatField>(element) {
 
-    override fun resolveInner() = resolveItem(element, Namespace.STRUCT_FIELD)
+    override fun resolveInner() = resolveItem(element, setOf(Namespace.STRUCT_FIELD))
 }
