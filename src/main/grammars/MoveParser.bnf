@@ -824,8 +824,12 @@ LitExpr ::= HEX_INTEGER_LITERAL
 AddressLit ::= '@' AddressRef { pin = 1 }
 
 CallExpr ::= (Path &'(') CallArgumentList { pin = 1 }
-CallArgumentList ::= '(' <<comma_sep_items (Expr &(','|')'))>>? ')' { pin = 1 }
-//CallArgumentList ::= '(' ((Expr &(','|')')) ( ',' (Expr &(','|')')) )* ',')? ')' { pin = 1 }
+CallArgumentList ::= '(' CallArgumentList_items? ')' { pin = 1 }
+private CallArgumentList_items ::= <<comma_sep_items Expr>>
+{
+    recoverWhile = CallArgumentList_items_recovery
+}
+private CallArgumentList_items_recovery ::= !(')' | ';')
 
 IfExpr ::= if Condition AnyBlock ElseBlock? { pin = 1 }
 
