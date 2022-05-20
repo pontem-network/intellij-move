@@ -243,4 +243,17 @@ class ResolveModulesTest : ResolveTestCase() {
         }
     }    
     """)
+
+    fun `test resolve module as identifier`() = checkByCode("""
+module 0x1::Signer {}
+            //X
+module 0x1::M {
+    use 0x1::Signer;
+    
+    fun call() {
+        Signer
+          //^  
+    }
+}        
+    """)
 }

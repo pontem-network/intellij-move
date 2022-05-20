@@ -113,6 +113,22 @@ module 0x1::M {}
 module 0x1::M2 {}        
     """)
 
+    fun `test remove unused import group with two items`() = doTest("""
+module 0x1::M {
+    struct BTC {}
+    struct USDT {}
+}        
+module 0x1::Main {
+    use 0x1::M::{BTC, USDT};
+}
+    """, """
+module 0x1::M {
+    struct BTC {}
+    struct USDT {}
+}        
+module 0x1::Main {}
+    """)
+
 //    fun `test remove duplicate module import`() = doTest("""
 //module 0x1::M { fun m() {} }
 //module 0x1::M2 {

@@ -55,6 +55,32 @@ script {
     """
     )
 
+    fun `test module in other module with struct`() = checkAutoImportFixByText("""
+module 0x1::Module {
+    public fun call() {} 
+}
+module 0x1::Main {
+    struct BTC {}
+
+    fun m() {
+        <error descr="Unresolved reference: `Module`">/*caret*/Module</error>::call();
+    }
+}        
+    """, """
+module 0x1::Module {
+    public fun call() {} 
+}
+module 0x1::Main {
+    use 0x1::Module;
+
+    struct BTC {}
+
+    fun m() {
+        Module::call();
+    }
+}        
+    """)
+
     fun `test unavailable if unresolved member`() = checkAutoImportFixIsUnavailable("""
 module 0x1::M {}
 module 0x1::Main {

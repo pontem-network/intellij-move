@@ -44,12 +44,6 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
             if (moduleRef.isUnresolved) {
                 holder.registerProblem(moduleRef)
-//                holder.registerProblem(
-//                    moduleRef,
-//                    "Unresolved module reference: `${moduleRef.referenceName}`",
-//                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL,
-//                    AutoImportFix(moduleRef)
-//                )
             }
         }
 
@@ -72,17 +66,6 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             }
             if (path.isUnresolved) {
                 holder.registerProblem(path)
-//                val description = when (path.parent) {
-//                    is MvPathType -> "Unresolved type: `${path.referenceName}`"
-//                    else -> "Unresolved reference: `${path.referenceName}`"
-//                }
-//                val highlightedElement = path.referenceNameElement ?: return
-//                holder.registerProblem(
-//                    highlightedElement,
-//                    description,
-//                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL,
-//                    AutoImportFix(path)
-//                )
             }
         }
 

@@ -7,9 +7,11 @@ import org.move.ide.inspections.isUsed
 import org.move.ide.intentions.removeCurlyBraces
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvItemsOwner
+import org.move.lang.core.psi.MvUseItemGroup
+import org.move.lang.core.psi.psiFactory
 import org.move.lang.modules
 
-class MvImportOptimizer: ImportOptimizer {
+class MvImportOptimizer : ImportOptimizer {
     override fun supports(file: PsiFile) = file is MoveFile
 
     override fun processFile(file: PsiFile) = Runnable {
@@ -29,6 +31,7 @@ class MvImportOptimizer: ImportOptimizer {
     }
 
     private fun optimizeImports(useStmtOwner: MvItemsOwner) {
+        val psiFactory = useStmtOwner.project.psiFactory
         val useStmts = useStmtOwner.useStmtList
         for (useStmt in useStmts) {
             val moduleSpeck = useStmt.moduleUseSpeck
@@ -40,22 +43,16 @@ class MvImportOptimizer: ImportOptimizer {
             }
             val useSpeck = useStmt.itemUseSpeck
             if (useSpeck != null) {
-                val itemGroup = useSpeck.useItemGroup
+                var itemGroup = useSpeck.useItemGroup
                 if (itemGroup != null) {
+                    val usedItems = itemGroup.useItemList.filter { it.isUsed() }
+                    if (usedItems.isEmpty()) useStmt.delete()
+                    else {
+                        val newItemGroup = psiFactory.useItemGroup(usedItems.map { it.text })
+                        itemGroup = itemGroup.replace(newItemGroup) as MvUseItemGroup
+                    }
                     if (itemGroup.useItemList.size == 1) {
-                        if (itemGroup.useItemList.first().isUsed()) {
-                            // used 0x1::M::{call};
-                            itemGroup.removeCurlyBraces()
-                        } else {
-                            // unused 0x1::M::{call};
-                            useStmt.delete()
-                        }
-                    } else {
-                        val items = itemGroup.useItemList.filter { it.isUsed() }
-                        if (items.size == 1) {
-                            // 0x1::M::{Used, unused} -> 0x1::M::Used;
-                            itemGroup.replace(items.first())
-                        }
+                        itemGroup.removeCurlyBraces()
                     }
                 }
                 if (!useSpeck.isUsed()) {

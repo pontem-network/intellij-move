@@ -152,7 +152,7 @@ private fun MvItemsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: FqPath
     } else {
         val firstItem = this.items().first()
         addBefore(newUseStmt, firstItem)
-        addAfter(psiFactory.createNewline(), firstItem)
+        addBefore(psiFactory.createNewline(), firstItem)
     }
 }
 

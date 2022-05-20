@@ -7,6 +7,7 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.typeArguments
 
 class RedundantQualifiedPathInspection : MvLocalInspectionTool() {
 
@@ -15,13 +16,13 @@ class RedundantQualifiedPathInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor =
         object : MvVisitor() {
             override fun visitPath(path: MvPath) {
-                val pathText = path.text
+                val pathText = path.text.replace(path.typeArgumentList?.text.orEmpty(), "")
                 val item = path.reference?.resolve() ?: return
 
                 val importsOwner = path.containingScript?.scriptBlock
                     ?: path.containingModule?.moduleBlock
                     ?: return
-                val shortestPathText = importsOwner.shortestPathIdentText(item) ?: return
+                val shortestPathText = importsOwner.shortestPathText(item) ?: return
                 val diff = pathText.length - shortestPathText.length
                 if (diff > 0) {
                     if (pathText.substring(0, diff) == "Self::") return

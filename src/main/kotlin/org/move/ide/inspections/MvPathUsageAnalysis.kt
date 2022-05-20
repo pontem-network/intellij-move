@@ -4,6 +4,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.*
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.isLocal
 
 data class PathUsageMap(
     val pathUsages: MutableMap<String, MutableSet<MvNamedElement>>,
@@ -37,7 +38,6 @@ private fun handleElement(
 
     return when (element) {
         is MvPath -> {
-//            val pathIdent = element.pathIdent
             val moduleRef = element.moduleRef
             when {
                 moduleRef != null && moduleRef !is MvFQModuleRef -> {

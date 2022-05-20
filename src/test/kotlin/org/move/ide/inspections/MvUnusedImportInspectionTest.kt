@@ -66,7 +66,6 @@ module 0x1::M2 {
     }
 }
     """)
-
 //    fun `test duplicate import`() = checkWarnings("""
 //module 0x1::M {
 //    public fun call() {}

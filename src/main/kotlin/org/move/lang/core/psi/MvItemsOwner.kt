@@ -58,7 +58,7 @@ fun MvItemsOwner.itemImportsWithoutAliases(): List<MvUseItem> =
     itemImports().filter { it.useAlias == null }
 
 
-fun MvItemsOwner.shortestPathIdentText(item: MvNamedElement): String? {
+fun MvItemsOwner.shortestPathText(item: MvNamedElement): String? {
     val itemName = item.name ?: return null
     // local
     if (this == item.containingImportsOwner) return itemName
