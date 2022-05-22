@@ -18,7 +18,7 @@ import org.move.stdext.deepIterateChildrenRecursivery
 import java.nio.file.Path
 import java.util.*
 
-enum class MoveScope {
+enum class DevMode {
     MAIN, DEV;
 }
 
@@ -94,7 +94,7 @@ data class MoveProject(
     fun testsDir(): Path? = projectDirPath("tests")
     fun scriptsDir(): Path? = projectDirPath("scripts")
 
-    fun moduleFolders(scope: MoveScope): List<VirtualFile> {
+    fun moduleFolders(devMode: DevMode): List<VirtualFile> {
         val q = ArrayDeque<ProjectInfo>()
         val folders = mutableListOf<VirtualFile>()
         val projectInfo = this.projectInfo ?: return emptyList()
@@ -105,7 +105,7 @@ data class MoveProject(
         q.add(projectInfo)
         while (q.isNotEmpty()) {
             val info = q.pop()
-            val depInfos = info.deps(scope).values.mapNotNull { it.projectInfo(project) }
+            val depInfos = info.deps(devMode).values.mapNotNull { it.projectInfo(project) }
             q.addAll(depInfos)
             folders.addAll(depInfos.mapNotNull { it.sourcesFolder })
         }
@@ -170,17 +170,17 @@ data class MoveProject(
         return Address.Named(name, addressVal.value)
     }
 
-    fun searchScope(moveScope: MoveScope = MoveScope.MAIN): GlobalSearchScope {
+    fun searchScope(devMode: DevMode = DevMode.MAIN): GlobalSearchScope {
         var searchScope = GlobalSearchScope.EMPTY_SCOPE
-        for (folder in moduleFolders(moveScope)) {
+        for (folder in moduleFolders(devMode)) {
             val dirScope = GlobalSearchScopes.directoryScope(project, folder, true)
             searchScope = searchScope.uniteWith(dirScope)
         }
         return searchScope
     }
 
-    fun processModuleFiles(scope: MoveScope, processFile: (MvModuleFile) -> Boolean) {
-        val folders = moduleFolders(scope)
+    fun processModuleFiles(devMode: DevMode, processFile: (MvModuleFile) -> Boolean) {
+        val folders = moduleFolders(devMode)
         var stopped = false;
         for (folder in folders) {
             if (stopped) break
