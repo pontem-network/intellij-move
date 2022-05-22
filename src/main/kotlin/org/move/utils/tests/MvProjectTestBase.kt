@@ -9,7 +9,7 @@ import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import org.intellij.lang.annotations.Language
-import org.move.openapiext.findVirtualFile
+import org.move.openapiext.toVirtualFile
 import org.move.openapiext.toPsiDirectory
 import org.move.openapiext.toPsiFile
 import org.move.utils.tests.base.TestCase
@@ -58,7 +58,7 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
     protected fun CodeInsightTestFixture.configureFromFileWithCaret(testProject: TestProject) {
         val fileWithCaret =
             testProject.rootDirectory.toNioPath()
-                .resolve(testProject.fileWithCaret).findVirtualFile()
+                .resolve(testProject.fileWithCaret).toVirtualFile()
                 ?: error("No file with //^ caret")
         this.configureFromExistingVirtualFile(fileWithCaret)
     }
@@ -66,7 +66,7 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
     protected fun CodeInsightTestFixture.configureFromFileWithNamedElement(testProject: TestProject) {
         val fileWithNamedElement =
             testProject.rootDirectory.toNioPath()
-                .resolve(testProject.fileWithNamedElement).findVirtualFile()
+                .resolve(testProject.fileWithNamedElement).toVirtualFile()
                 ?: error("No file with //X caret")
         this.configureFromExistingVirtualFile(fileWithNamedElement)
     }

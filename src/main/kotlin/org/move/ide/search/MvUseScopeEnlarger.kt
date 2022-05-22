@@ -6,7 +6,7 @@ import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.UseScopeEnlarger
 import org.move.cli.MoveScope
 import org.move.lang.moveProject
-import org.move.openapiext.findVirtualFile
+import org.move.openapiext.toVirtualFile
 
 class MvUseScopeEnlarger : UseScopeEnlarger() {
     override fun getAdditionalUseScope(element: PsiElement): SearchScope? {
@@ -15,8 +15,8 @@ class MvUseScopeEnlarger : UseScopeEnlarger() {
         val dirs = listOf(
             moveProject.moduleFolders(MoveScope.DEV),
             listOfNotNull(
-                moveProject.testsDir()?.findVirtualFile(),
-                moveProject.scriptsDir()?.findVirtualFile()
+                moveProject.testsDir()?.toVirtualFile(),
+                moveProject.scriptsDir()?.toVirtualFile()
             ),
         ).flatten()
         return GlobalSearchScopes.directoriesScope(

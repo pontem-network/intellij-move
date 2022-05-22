@@ -23,5 +23,5 @@ fun Path.resolveAbsPath(other: String): Path? {
     }
 }
 
-fun Path.findVirtualFile(): VirtualFile? =
+fun Path.toVirtualFile(): VirtualFile? =
     VirtualFileManager.getInstance().findFileByNioPath(this)

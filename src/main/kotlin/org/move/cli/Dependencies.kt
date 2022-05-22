@@ -3,7 +3,7 @@ package org.move.cli
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.lang.moveProject
-import org.move.openapiext.findVirtualFile
+import org.move.openapiext.toVirtualFile
 import org.move.openapiext.resolveExisting
 import org.move.openapiext.toPsiFile
 import java.nio.file.Path
@@ -13,7 +13,7 @@ data class ProjectInfo(
     val dependencies: DependenciesMap,
     val dev_dependencies: DependenciesMap,
 ) {
-    val sourcesFolder: VirtualFile? get() = rootPath.resolveExisting("sources")?.findVirtualFile()
+    val sourcesFolder: VirtualFile? get() = rootPath.resolveExisting("sources")?.toVirtualFile()
 
     fun deps(scope: MoveScope): DependenciesMap {
         return when (scope) {
@@ -41,7 +41,7 @@ sealed class Dependency {
     data class Local(val absoluteLocalPath: Path) : Dependency() {
         override fun declaredAddresses(project: Project): DeclaredAddresses? {
             val moveTomlFile = this.absoluteLocalPath.resolve("Move.toml")
-                .findVirtualFile()
+                .toVirtualFile()
                 ?.toPsiFile(project) ?: return null
             return moveTomlFile.moveProject?.declaredAddresses() ?: return null
         }

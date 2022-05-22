@@ -22,7 +22,7 @@ import org.move.lang.findMoveTomlPath
 import org.move.lang.isMoveFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
-import org.move.openapiext.findVirtualFile
+import org.move.openapiext.toVirtualFile
 import org.move.cli.settings.MoveProjectSettingsService
 import org.move.cli.settings.MoveSettingsChangedEvent
 import org.move.cli.settings.MvSettingsListener
@@ -118,7 +118,7 @@ class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
     }
 
     override fun findProjectForPath(path: Path): MoveProject? {
-        val file = path.findVirtualFile() ?: return null
+        val file = path.toVirtualFile() ?: return null
         return findMoveProject(file)
     }
 
@@ -146,7 +146,7 @@ class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
                     return null
                 }
             }
-            return moveTomlPath.findVirtualFile()?.let { initializeMoveProject(project, it) }
+            return moveTomlPath.toVirtualFile()?.let { initializeMoveProject(project, it) }
         }.invoke()
         if (moveProject == null && isUnitTestMode) {
             // this is for light tests, heavy test should always have valid moveProject
