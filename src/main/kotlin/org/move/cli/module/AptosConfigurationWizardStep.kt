@@ -1,4 +1,4 @@
-package org.move.cli.project
+package org.move.cli.module
 
 import com.intellij.ide.util.projectWizard.ModuleBuilder
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
@@ -11,7 +11,6 @@ import com.intellij.util.ui.JBUI
 import org.move.cli.moveProjects
 import org.move.cli.settings.MoveSettingsPanel
 import org.move.cli.settings.moveSettings
-import org.move.ide.newProject.NewProjectData
 import org.move.openapiext.isFeatureEnabled
 import javax.swing.JComponent
 

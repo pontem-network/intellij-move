@@ -1,4 +1,4 @@
-package org.move.cli.project
+package org.move.cli.module
 
 import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.vfs.VirtualFile

@@ -1,4 +1,4 @@
-package org.move.cli.project
+package org.move.cli.module
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider

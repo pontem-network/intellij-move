@@ -233,8 +233,8 @@
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
         <moduleType id="MOVE_MODULE"
-                    implementationClass="org.move.cli.project.MvModuleType"/>
-        <moduleBuilder builderClass="org.move.cli.project.MvModuleBuilder"/>
+                    implementationClass="org.move.cli.module.MvModuleType"/>
+        <moduleBuilder builderClass="org.move.cli.module.MvModuleBuilder"/>
         <projectTaskRunner implementation="org.move.cli.runconfig.buildtool.AptosBuildTaskRunner" />
 
         <projectOpenProcessor id="Move" implementation="org.move.cli.MoveProjectOpenProcessor"/>
@@ -249,9 +249,13 @@
                         testServiceImplementation="org.move.utils.TestProjectRootServiceImpl"/>
         <projectService serviceInterface="org.move.cli.MoveProjectsService"
                         serviceImplementation="org.move.cli.MoveProjectsServiceImpl"/>
+        
+<!--        <projectService serviceInterface="com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker"-->
+<!--                        serviceImplementation="org.move.cli.project.MovePackagesTracker"-->
+<!--                        overrides="true" />-->
 
         <additionalLibraryRootsProvider
-                implementation="org.move.cli.project.BuildLibraryRootsProvider"/>
+                implementation="org.move.cli.module.BuildLibraryRootsProvider"/>
 
         <!-- Notifications -->
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>
