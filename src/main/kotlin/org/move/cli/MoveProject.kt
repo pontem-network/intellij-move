@@ -88,9 +88,6 @@ data class MoveProject(
     val rootPath: Path? get() = root.toNioPathOrNull()
     fun projectDirPath(name: String): Path? = rootPath?.resolve(name)
 
-    fun buildDir(): Path? = projectDirPath("build")
-    fun packageInBuildDir(): Path? = projectDirPath("build")?.resolve(packageName)
-    fun sourcesDir(): Path? = projectDirPath("sources")
     fun testsDir(): Path? = projectDirPath("tests")
     fun scriptsDir(): Path? = projectDirPath("scripts")
 
@@ -116,7 +113,7 @@ data class MoveProject(
         return CachedValuesManager.getManager(this.project).getCachedValue(this) {
             val addresses = mutableAddressMap()
             val placeholders = placeholderMap()
-            for ((dep, subst) in this.moveToml.dependencies.values) {
+            for ((dep, subst) in moveToml.dependencies.values) {
                 val depDeclaredAddrs = dep.declaredAddresses(project) ?: continue
 
                 val (newDepAddresses, newDepPlaceholders) = applyAddressSubstitutions(
@@ -137,17 +134,14 @@ data class MoveProject(
                 addresses.putAll(newDepAddresses)
                 placeholders.putAll(newDepPlaceholders)
             }
-//            addresses.putAll(this.declaredAddrs.values)
-//            addresses.putAll(this.declaredAddrs.placeholdersAsValues())
-            addresses.putAll(this.packageAddresses())
-
+            addresses.putAll(packageAddresses())
             // add dev-addresses
-            addresses.putAll(this.declaredDevAddresses.values)
-
+            addresses.putAll(declaredDevAddresses.values)
             // add placeholders that weren't filled
-            placeholders.putAll(this.declaredAddrs.placeholders)
+            placeholders.putAll(declaredAddrs.placeholders)
 
             val res = DeclaredAddresses(addresses, placeholders)
+
             CachedValueProvider.Result.create(res, PsiModificationTracker.MODIFICATION_COUNT)
         }
     }
