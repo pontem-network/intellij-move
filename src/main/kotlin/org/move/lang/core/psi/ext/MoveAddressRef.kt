@@ -15,5 +15,17 @@ fun MvAddressRef.toAddress(moveProj: MoveProject? = this.moveProject): Address? 
     return Address.Value(addressLitText)
 }
 
+val MvAddressRef.useGroupLevel: Int get() {
+    // sort to the end if not a named address
+    if (this.namedAddress == null) return 3
+
+    val name = this.namedAddress?.text.orEmpty()
+    val packageAddrs = this.moveProject?.packageAddresses()?.keys.orEmpty()
+    return when (name) {
+        "Std" -> 0
+        !in packageAddrs -> 1
+        else -> 2
+    }
+}
 //fun MvAddressRef.toNormalizedAddress(contextProject: MoveProject = this.moveProject!!): Address? =
 //    this.toAddress(contextProject)?.normalized()
