@@ -13,6 +13,7 @@ import org.move.ide.MoveIcons
 import org.move.ide.presentation.shortPresentableText
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.inferenceCtx
 
 const val DEFAULT_PRIORITY = 0.0
@@ -53,10 +54,27 @@ fun AddressVal.createCompletionLookupElement(lookupString: String): LookupElemen
 }
 
 fun MvNamedElement.createCompletionLookupElement(
-    insertHandler: InsertHandler<LookupElement> = MvInsertHandler()
+    insertHandler: InsertHandler<LookupElement> = MvInsertHandler(),
+    ns: Set<Namespace> = emptySet()
 ): LookupElement {
     return when (this) {
-        is MvModuleUseSpeck -> this.createLookupElement()
+        is MvModuleUseSpeck -> {
+            val module = this.fqModuleRef?.reference?.resolve()
+            if (module != null) {
+                module.createCompletionLookupElement(insertHandler, ns)
+            } else {
+                this.createLookupElement()
+            }
+        }
+
+        is MvUseItem -> {
+            val namedItem = this.reference.resolve()
+            if (namedItem != null) {
+                namedItem.createCompletionLookupElement(insertHandler, ns)
+            } else {
+                this.createLookupElement()
+            }
+        }
 
         is MvFunction -> this.createLookupElement()
             .withTailText(this.functionParameterList?.parametersText ?: "()")
@@ -72,9 +90,12 @@ fun MvNamedElement.createCompletionLookupElement(
             .withTailText(this.address()?.let { " ${it.text}" } ?: "")
             .withTypeText(this.containingFile?.name)
 
-        is MvStruct -> this.createLookupElement()
-            .withTailText(" { ... }")
-            .withInsertHandler(insertHandler)
+        is MvStruct -> {
+            val tailText = if (Namespace.TYPE !in ns) " { ... }" else ""
+            this.createLookupElement()
+                .withTailText(tailText)
+                .withInsertHandler(insertHandler)
+        }
 
         is MvStructField -> this.createLookupElement()
             .withTypeText(this.typeAnnotation?.type?.text)

@@ -66,6 +66,20 @@ module 0x1::M2 {
     }
 }
     """)
+
+    fun `test no unused import on Self`() = checkWarnings("""
+module 0x1::M {
+    struct S {}
+    public fun call() {}
+}        
+module 0x1::Main {
+    use 0x1::M::{Self, S};
+    
+    fun main(a: S) {
+        M::call();
+    }
+}
+    """)
 //    fun `test duplicate import`() = checkWarnings("""
 //module 0x1::M {
 //    public fun call() {}

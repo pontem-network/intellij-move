@@ -17,6 +17,26 @@ val MvUseItem.speck: MvElement? get() {
     return ancestorStrict<MvUseStmt>()
 }
 
+class MvUseItemReferenceElement(element: MvUseItem): MvReferenceCached<MvUseItem>(element) {
+    override fun resolveInner(): List<MvNamedElement> {
+        val moduleRef = element.moduleImport().fqModuleRef
+        val module =
+            moduleRef.reference?.resolve() as? MvModule ?: return emptyList()
+        if ((element.useAlias == null && element.text == "Self")
+            || (element.useAlias != null && element.text.startsWith("Self as"))) return listOf(module)
+
+        val ns = setOf(Namespace.TYPE, Namespace.NAME, Namespace.SCHEMA)
+        val vs = Visibility.buildSetOfVisibilities(moduleRef)
+        val itemVis = ItemVis(ns, vs, MslScope.NONE)
+        return resolveModuleItem(
+            module,
+            element.referenceName,
+            itemVis
+        )
+    }
+
+}
+
 abstract class MvUseItemMixin(node: ASTNode) : MvNamedElementImpl(node),
                                                MvUseItem {
     override fun getName(): String? {
@@ -27,22 +47,5 @@ abstract class MvUseItemMixin(node: ASTNode) : MvNamedElementImpl(node),
 
     override val referenceNameElement: PsiElement get() = identifier
 
-    override fun getReference(): MvReference {
-        val moduleRef = moduleImport().fqModuleRef
-        val itemImport = this
-        return object : MvReferenceCached<MvUseItem>(itemImport) {
-            override fun resolveInner(): List<MvNamedElement> {
-                val module = moduleRef.reference?.resolve() as? MvModule
-                    ?: return emptyList()
-                val ns = setOf(Namespace.TYPE, Namespace.NAME, Namespace.SCHEMA)
-                val vs = Visibility.buildSetOfVisibilities(moduleRef)
-                val itemVis = ItemVis(ns, vs, MslScope.NONE)
-                return resolveModuleItem(
-                    module,
-                    referenceName,
-                    itemVis
-                )
-            }
-        }
-    }
+    override fun getReference() = MvUseItemReferenceElement(this)
 }

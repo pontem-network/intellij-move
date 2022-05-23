@@ -6,12 +6,12 @@ import javax.swing.Icon
 
 object MoveIcons {
     val MOVE = load("/icons/move.svg")
-    val MOVE_BYTECODE = load("/icons/mv.svg")
+//    val MOVE_BYTECODE = load("/icons/mv.svg")
 
-    val ADDRESS = AllIcons.Nodes.Annotationtype
-    val MODULE = AllIcons.Nodes.Method
+    val ADDRESS = load("/icons/annotationtype@2x.png")
+    val MODULE = load("/icons/module.svg")
 
-    val STRUCT = AllIcons.Nodes.AbstractClass
+    val STRUCT = load("/icons/struct.svg")
     val STRUCT_FIELD = AllIcons.Nodes.Field
     val SCHEMA = AllIcons.Nodes.Static
 

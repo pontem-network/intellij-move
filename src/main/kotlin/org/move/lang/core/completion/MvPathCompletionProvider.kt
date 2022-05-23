@@ -109,7 +109,7 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
                 else -> Visibility.buildSetOfVisibilities(element)
             }
             processModuleItems(module, itemVis.replace(vs = vs)) {
-                val lookup = it.element.createCompletionLookupElement()
+                val lookup = it.element.createCompletionLookupElement(ns = setOf(Namespace.TYPE))
                 result.addElement(lookup)
                 false
             }
@@ -118,7 +118,7 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
 
         val processedNames = mutableSetOf<String>()
         handleItemsWithShadowing(element, itemVis) {
-            val lookup = it.createCompletionLookupElement()
+            val lookup = it.createCompletionLookupElement(ns = setOf(Namespace.TYPE))
             result.addElement(lookup)
             it.name?.let { name -> processedNames.add(name) }
         }
