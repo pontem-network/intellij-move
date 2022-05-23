@@ -5,6 +5,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedElement
@@ -115,10 +116,22 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
             return
         }
 
+        val processedNames = mutableSetOf<String>()
         handleItemsWithShadowing(element, itemVis) {
             val lookup = it.createCompletionLookupElement()
             result.addElement(lookup)
+            it.name?.let { name -> processedNames.add(name) }
         }
+
+        val pathElement = parameters.originalPosition?.parent as? MvPath ?: return
+        val importContext =
+            ImportContext.from(pathElement, itemVis.replace(vs = setOf(Visibility.Public)))
+        addCompletionsFromIndex(
+            parameters,
+            result,
+            processedNames,
+            importContext
+        )
     }
 }
 

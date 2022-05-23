@@ -107,7 +107,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
 
 @Suppress("DataClassPrivateConstructor")
 data class ImportContext private constructor(
-    val contextElement: MvReferenceElement,
+    val pathElement: MvReferenceElement,
     val itemVis: ItemVis,
 ) {
     companion object {
