@@ -63,7 +63,7 @@ fun MvNamedElement.createCompletionLookupElement(
             if (module != null) {
                 module.createCompletionLookupElement(insertHandler, ns)
             } else {
-                this.createLookupElement()
+                this.createLookupElement().withInsertHandler(insertHandler)
             }
         }
 
@@ -72,7 +72,7 @@ fun MvNamedElement.createCompletionLookupElement(
             if (namedItem != null) {
                 namedItem.createCompletionLookupElement(insertHandler, ns)
             } else {
-                this.createLookupElement()
+                this.createLookupElement().withInsertHandler(insertHandler)
             }
         }
 
@@ -89,6 +89,7 @@ fun MvNamedElement.createCompletionLookupElement(
         is MvModule -> this.createLookupElement()
             .withTailText(this.address()?.let { " ${it.text}" } ?: "")
             .withTypeText(this.containingFile?.name)
+            .withInsertHandler(insertHandler)
 
         is MvStruct -> {
             val tailText = if (Namespace.TYPE !in ns) " { ... }" else ""
@@ -99,14 +100,16 @@ fun MvNamedElement.createCompletionLookupElement(
 
         is MvStructField -> this.createLookupElement()
             .withTypeText(this.typeAnnotation?.type?.text)
+            .withInsertHandler(insertHandler)
 
         is MvBindingPat -> this.createLookupElement()
             .withTypeText(this.cachedTy(this.inferenceCtx(this.isMsl())).shortPresentableText(true))
+            .withInsertHandler(insertHandler)
 
         is MvSchema -> this.createLookupElement()
             .withInsertHandler(insertHandler)
 
-        else -> LookupElementBuilder.create(this)
+        else -> LookupElementBuilder.create(this).withInsertHandler(insertHandler)
     }
 }
 

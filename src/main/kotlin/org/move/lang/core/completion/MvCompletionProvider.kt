@@ -3,6 +3,8 @@ package org.move.lang.core.completion
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.completion.InsertHandler
+import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import org.move.ide.inspections.imports.AutoImportFix
@@ -17,7 +19,7 @@ abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>()
         parameters: CompletionParameters,
         result: CompletionResultSet,
         processedPathNames: Set<String>,
-        importContext: ImportContext
+        importContext: ImportContext,
     ) {
         val project = parameters.position.project
         val keys = hashSetOf<String>().apply {
@@ -31,9 +33,13 @@ abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>()
                 .distinctBy { it.element }
                 .map { candidate ->
                     val element = candidate.element
-                    element.createLookupElement().withInsertHandler { _, _ ->
+                    val insertHandler = InsertHandler<LookupElement> { _, _ ->
                         candidate.import(importContext.pathElement)
                     }
+                    element.createCompletionLookupElement(
+                        insertHandler,
+                        importContext.itemVis.namespaces
+                    )
                 }
                 .forEach(result::addElement)
         }
