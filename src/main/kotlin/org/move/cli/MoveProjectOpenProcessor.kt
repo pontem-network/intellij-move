@@ -49,7 +49,7 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
                     updateAllNotifications(it)
                 }
 
-                it.moveProjects.refreshAllProjects()
+                it.projectsService.refreshAllProjects()
             }
         }
     }

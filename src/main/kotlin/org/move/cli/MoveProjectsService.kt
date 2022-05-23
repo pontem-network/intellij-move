@@ -4,7 +4,6 @@ import com.intellij.execution.RunManager
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
-import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectEx
@@ -25,6 +24,7 @@ import org.jetbrains.rpc.LOG
 import org.move.cli.settings.MoveProjectSettingsService
 import org.move.cli.settings.MoveSettingsChangedEvent
 import org.move.cli.settings.MvSettingsListener
+import org.move.lang.MoveFile
 import org.move.lang.findMoveTomlPath
 import org.move.lang.isMoveFile
 import org.move.lang.toNioPathOrNull
@@ -33,33 +33,12 @@ import org.move.openapiext.toVirtualFile
 import org.move.stdext.AsyncValue
 import org.move.stdext.MoveProjectEntry
 import org.move.stdext.MyLightDirectoryIndex
-import org.move.stdext.deepIterateChildrenRecursivery
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
-val Project.moveProjects get() = service<MoveProjectsService>()
+val Project.projectsService get() = service<MoveProjectsService>()
 
-interface MoveProjectsService {
-    fun refreshAllProjects()
-
-    fun findProjectForPsiElement(psiElement: PsiElement): MoveProject?
-    fun findProjectForPath(path: Path): MoveProject?
-
-    val allProjects: Collection<MoveProject>
-
-    companion object {
-        val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic(
-            "move projects changes",
-            MoveProjectsListener::class.java
-        )
-    }
-
-    fun interface MoveProjectsListener {
-        fun moveProjectsUpdated(service: MoveProjectsService, projects: Collection<MoveProject>)
-    }
-}
-
-class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
+class MoveProjectsService(val project: Project) {
     init {
         with(project.messageBus.connect()) {
             if (!isUnitTestMode) {
@@ -75,44 +54,12 @@ class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
         }
     }
 
-    /**
-     * The heart of the plugin Project model. Care must be taken to ensure
-     * this is thread-safe, and that refreshes are scheduled after
-     * set of projects changes.
-     */
-    val projects = AsyncValue<List<MoveProject>>(emptyList())
-
-    /**
-     * All modifications to project model except for low-level `loadState` should
-     * go through this method: it makes sure that when we update various IDEA listeners.
-     */
-    private fun modifyProjects(
-        f: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
-    ): CompletableFuture<List<MoveProject>> =
-        projects.updateAsync(f)
-            .thenApply { projects ->
-                invokeAndWaitIfNeeded {
-                    runWriteAction {
-                        directoryIndex.resetIndex()
-                        // In unit tests roots change is done by the test framework in most cases
-                        runWithNonLightProject(project) {
-                            ProjectRootManagerEx.getInstanceEx(project)
-                                .makeRootsChange(EmptyRunnable.getInstance(), false, true)
-                        }
-                        project.messageBus.syncPublisher(MoveProjectsService.MOVE_PROJECTS_TOPIC)
-                            .moveProjectsUpdated(this, projects)
-                    }
-                }
-
-                projects
-            }
-
-    override fun refreshAllProjects() {
+    fun refreshAllProjects() {
         LOG.info("Project state refresh started")
         modifyProjects { doRefresh(project) }
     }
 
-    override fun findProjectForPsiElement(psiElement: PsiElement): MoveProject? {
+    fun findProjectForPsiElement(psiElement: PsiElement): MoveProject? {
         val file = when (psiElement) {
             is PsiDirectory -> psiElement.virtualFile
             is PsiFile -> psiElement.originalFile.virtualFile
@@ -121,12 +68,12 @@ class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
         return findMoveProject(file)
     }
 
-    override fun findProjectForPath(path: Path): MoveProject? {
+    fun findProjectForPath(path: Path): MoveProject? {
         val file = path.toVirtualFile() ?: return null
         return findMoveProject(file)
     }
 
-    override val allProjects: Collection<MoveProject>
+    val allProjects: List<MoveProject>
         get() = this.projects.currentState
 
     private fun findMoveProject(file: VirtualFile?): MoveProject? {
@@ -160,13 +107,187 @@ class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
         return moveProject
     }
 
+
+    /**
+     * The heart of the plugin Project model. Care must be taken to ensure
+     * this is thread-safe, and that refreshes are scheduled after
+     * set of projects changes.
+     */
+    private val projects = AsyncValue<List<MoveProject>>(emptyList())
+
     private val directoryIndex: MyLightDirectoryIndex<MoveProjectEntry> =
         MyLightDirectoryIndex(project, MoveProjectEntry.Missing) { index ->
-            processAllMvFilesOnce(this.projects.currentState) { file, moveProject ->
-                index.putInfo(file, MoveProjectEntry.Present(moveProject))
+            val projects = projects.currentState
+            processAllMoveFilesOnce(projects) { moveFile, moveProject ->
+                index.putInfo(moveFile.virtualFile, MoveProjectEntry.Present(moveProject))
             }
         }
+
+    /**
+     * All modifications to project model except for low-level `loadState` should
+     * go through this method: it makes sure that when we update various IDEA listeners.
+     */
+    private fun modifyProjects(
+        f: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
+    ): CompletableFuture<List<MoveProject>> =
+        projects.updateAsync(f)
+            .thenApply { projects ->
+                invokeAndWaitIfNeeded {
+                    runWriteAction {
+                        directoryIndex.resetIndex()
+                        // In unit tests roots change is done by the test framework in most cases
+                        runWithNonLightProject(project) {
+                            ProjectRootManagerEx.getInstanceEx(project)
+                                .makeRootsChange(EmptyRunnable.getInstance(), false, true)
+                        }
+                        project.messageBus.syncPublisher(MOVE_PROJECTS_TOPIC)
+                            .moveProjectsUpdated(this, projects)
+                    }
+                }
+
+                projects
+            }
+
+    companion object {
+        val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic(
+            "move projects changes",
+            MoveProjectsListener::class.java
+        )
+    }
+
+    fun interface MoveProjectsListener {
+        fun moveProjectsUpdated(service: MoveProjectsService, projects: Collection<MoveProject>)
+    }
 }
+
+//interface MoveProjectsService {
+//    fun refreshAllProjects()
+//
+//    fun findProjectForPsiElement(psiElement: PsiElement): MoveProject?
+//    fun findProjectForPath(path: Path): MoveProject?
+//
+//    val allProjects: Collection<MoveProject>
+//
+//    companion object {
+//        val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic(
+//            "move projects changes",
+//            MoveProjectsListener::class.java
+//        )
+//    }
+//
+//    fun interface MoveProjectsListener {
+//        fun moveProjectsUpdated(service: MoveProjectsService, projects: Collection<MoveProject>)
+//    }
+//}
+
+//class MoveProjectsServiceImpl(val project: Project) : MoveProjectsService {
+//    init {
+//        with(project.messageBus.connect()) {
+//            if (!isUnitTestMode) {
+//                subscribe(VirtualFileManager.VFS_CHANGES, MoveTomlWatcher {
+//                    refreshAllProjects()
+//                })
+//            }
+//            subscribe(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC, object : MvSettingsListener {
+//                override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
+//                    refreshAllProjects()
+//                }
+//            })
+//        }
+//    }
+//
+//    /**
+//     * The heart of the plugin Project model. Care must be taken to ensure
+//     * this is thread-safe, and that refreshes are scheduled after
+//     * set of projects changes.
+//     */
+//    val projects = AsyncValue<List<MoveProject>>(emptyList())
+//
+//    /**
+//     * All modifications to project model except for low-level `loadState` should
+//     * go through this method: it makes sure that when we update various IDEA listeners.
+//     */
+//    private fun modifyProjects(
+//        f: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
+//    ): CompletableFuture<List<MoveProject>> =
+//        projects.updateAsync(f)
+//            .thenApply { projects ->
+//                invokeAndWaitIfNeeded {
+//                    runWriteAction {
+//                        directoryIndex.resetIndex()
+//                        // In unit tests roots change is done by the test framework in most cases
+//                        runWithNonLightProject(project) {
+//                            ProjectRootManagerEx.getInstanceEx(project)
+//                                .makeRootsChange(EmptyRunnable.getInstance(), false, true)
+//                        }
+//                        project.messageBus.syncPublisher(MoveProjectsService.MOVE_PROJECTS_TOPIC)
+//                            .moveProjectsUpdated(this, projects)
+//                    }
+//                }
+//
+//                projects
+//            }
+//
+//    override fun refreshAllProjects() {
+//        LOG.info("Project state refresh started")
+//        modifyProjects { doRefresh(project) }
+//    }
+//
+//    override fun findProjectForPsiElement(psiElement: PsiElement): MoveProject? {
+//        val file = when (psiElement) {
+//            is PsiDirectory -> psiElement.virtualFile
+//            is PsiFile -> psiElement.originalFile.virtualFile
+//            else -> psiElement.containingFile?.originalFile?.virtualFile
+//        }
+//        return findMoveProject(file)
+//    }
+//
+//    override fun findProjectForPath(path: Path): MoveProject? {
+//        val file = path.toVirtualFile() ?: return null
+//        return findMoveProject(file)
+//    }
+//
+//    override val allProjects: Collection<MoveProject>
+//        get() = this.projects.currentState
+//
+//    private fun findMoveProject(file: VirtualFile?): MoveProject? {
+//        // in-memory file
+//        if (file == null) return null
+//
+//        val cachedProjectEntry = this.directoryIndex.getInfoForFile(file)
+//        if (cachedProjectEntry is MoveProjectEntry.Present) {
+//            return cachedProjectEntry.project
+//        }
+//        LOG.warn("MoveProject is not found in cache")
+//
+//        var moveProject = fun(): MoveProject? {
+//            val filePath = file.toNioPathOrNull() ?: return null
+//            val moveTomlPath = findMoveTomlPath(filePath) ?: return null
+//
+//            if (file.isMoveFile) {
+//                val expectedRoot = moveTomlPath.parent
+//                val dirs = MvProjectLayout.dirs(expectedRoot)
+//                if (!dirs.any { filePath.startsWith(it) }) {
+//                    return null
+//                }
+//            }
+//            return moveTomlPath.toVirtualFile()?.let { initializeMoveProject(project, it) }
+//        }.invoke()
+//        if (moveProject == null && isUnitTestMode) {
+//            // this is for light tests, heavy test should always have valid moveProject
+//            moveProject = testEmptyMvProject(project)
+//        }
+//        this.directoryIndex.putInfo(file, MoveProjectEntry.Present(moveProject))
+//        return moveProject
+//    }
+//
+//    private val directoryIndex: MyLightDirectoryIndex<MoveProjectEntry> =
+//        MyLightDirectoryIndex(project, MoveProjectEntry.Missing) { index ->
+//            processAllMvFilesOnce(this.projects.currentState) { file, moveProject ->
+//                index.putInfo(file, MoveProjectEntry.Present(moveProject))
+//            }
+//        }
+//}
 
 private fun doRefresh(project: Project): CompletableFuture<List<MoveProject>> {
     val result = CompletableFuture<List<MoveProject>>()
@@ -212,20 +333,22 @@ private inline fun runWithNonLightProject(project: Project, action: () -> Unit) 
 val VirtualFile.fsDepth: Int get() = this.path.split("/").count()
 //val String.pathDepth: Int get() = this.split("/").count()
 
-fun processAllMvFilesOnce(
+fun processAllMoveFilesOnce(
     moveProjects: List<MoveProject>,
-    processFile: (VirtualFile, MoveProject) -> Unit
+    processFile: (MoveFile, MoveProject) -> Unit
 ) {
     val visited = mutableSetOf<String>()
     // find Move.toml files in all project roots, remembering depth of those
     // then search all .move children of those files, with biggest depth first
     moveProjects
         .sortedByDescending { it.root.fsDepth }
-        .map { project ->
-            deepIterateChildrenRecursivery(project.root, { it.extension == "move" }) {
-                if (it.path in visited) return@deepIterateChildrenRecursivery true
-                visited.add(it.path)
-                processFile(it, project)
+        .map { moveProject ->
+            moveProject.walkMoveFiles {
+                val filePath = it.virtualFile.path
+                if (filePath in visited) return@walkMoveFiles true
+                visited.add(filePath)
+
+                processFile(it, moveProject)
                 true
             }
         }

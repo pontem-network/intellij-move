@@ -10,11 +10,10 @@ import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import org.move.lang.MoveFile
 import org.move.lang.core.types.Address
-import org.move.lang.toMoveFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
 import org.move.openapiext.stringValue
-import org.move.stdext.deepIterateChildrenRecursivery
+import org.move.utils.deepWalkMoveFiles
 import java.nio.file.Path
 import java.util.*
 
@@ -178,13 +177,14 @@ data class MoveProject(
         var stopped = false;
         for (folder in folders) {
             if (stopped) break
-            deepIterateChildrenRecursivery(folder, { it.extension == "move" }) { file ->
-                val moveFile = file.toMoveFile(project) ?: return@deepIterateChildrenRecursivery true
-                val moduleFile = MvModuleFile(moveFile, emptyMap())
+            deepWalkMoveFiles(project, folder) {
+                val moduleFile = MvModuleFile(it, emptyMap())
                 val continueForward = processFile(moduleFile)
                 stopped = !continueForward
                 continueForward
             }
         }
     }
+
+    fun walkMoveFiles(process: (MoveFile) -> Boolean) = deepWalkMoveFiles(project, root, process)
 }

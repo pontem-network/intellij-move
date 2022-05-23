@@ -17,7 +17,7 @@ class ProjectAddressesServiceTest: MvProjectTestBase() {
                 }
             }
         }
-        val addressesService = project.moveProjects
+        val addressesService = project.projectsService
 
         val moveFiles = findMoveTomlFilesDeepestFirst(myFixture.project).toList()
         check(moveFiles.size == 2)

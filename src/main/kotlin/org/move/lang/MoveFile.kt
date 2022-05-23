@@ -10,7 +10,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.MoveProject
 import org.move.cli.Consts
-import org.move.cli.moveProjects
+import org.move.cli.projectsService
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.childrenOfType
 import org.move.lang.core.psi.ext.modules
@@ -33,7 +33,7 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
 }
 
 val PsiElement.moveProject: MoveProject?
-    get() = project.moveProjects.findProjectForPsiElement(this)
+    get() = project.projectsService.findProjectForPsiElement(this)
 
 fun VirtualFile.hasChild(name: String) = this.findChild(name) != null
 
