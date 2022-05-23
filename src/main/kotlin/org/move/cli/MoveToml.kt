@@ -77,6 +77,40 @@ class MoveToml(
 ) {
     val packageName: String? get() = packageTable?.name
 
+    fun declaredAddresses(devMode: DevMode): DeclaredAddresses {
+        val packageName = this.packageName ?: ""
+        val raws = when (devMode) {
+            DevMode.MAIN -> this.addresses
+            DevMode.DEV -> this.dev_addresses
+        }
+
+        val values = mutableAddressMap()
+        val placeholders = placeholderMap()
+        for ((addressName, addressVal) in raws.entries) {
+            val (value, tomlKeyValue) = addressVal
+            if (addressVal.first == Consts.ADDR_PLACEHOLDER) {
+                placeholders[addressName] = PlaceholderVal(tomlKeyValue, packageName)
+            } else {
+                values[addressName] = AddressVal(value, tomlKeyValue, null, packageName)
+            }
+        }
+        return DeclaredAddresses(values, placeholders)
+    }
+
+//    private fun parseAddresses(rawAddressMap: RawAddressMap, packageName: String): DeclaredAddresses {
+//        val values = mutableAddressMap()
+//        val placeholders = placeholderMap()
+//        for ((addressName, addressVal) in rawAddressMap.entries) {
+//            val (value, tomlKeyValue) = addressVal
+//            if (addressVal.first == Consts.ADDR_PLACEHOLDER) {
+//                placeholders[addressName] = PlaceholderVal(tomlKeyValue, packageName)
+//            } else {
+//                values[addressName] = AddressVal(value, tomlKeyValue, null, packageName)
+//            }
+//        }
+//        return DeclaredAddresses(values, placeholders)
+//    }
+
     companion object {
         fun fromTomlFile(tomlFile: TomlFile, projectRoot: Path): MoveToml {
             val packageTomlTable = tomlFile.getTable("package")

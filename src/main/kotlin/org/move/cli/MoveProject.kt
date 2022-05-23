@@ -8,6 +8,7 @@ import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
+import org.move.cli.project.LocalPackage
 import org.move.lang.MoveFile
 import org.move.lang.core.types.Address
 import org.move.lang.toNioPathOrNull
@@ -48,11 +49,17 @@ data class DeclaredAddresses(
     }
 }
 
-fun testEmptyMvProject(project: Project): MoveProject {
+fun testEmptyMoveProject(project: Project): MoveProject {
     val moveToml = MoveToml(project)
-    val rootFile = project.contentRoots.first()
+    val contentRoot = project.contentRoots.first()
     val addresses = DeclaredAddresses(mutableAddressMap(), placeholderMap())
-    return MoveProject(project, moveToml, rootFile, addresses, addresses.copy())
+    val localPackage = LocalPackage(project, contentRoot, moveToml)
+    return MoveProject(
+        project,
+        addresses,
+        addresses.copy(),
+        localPackage
+    )
 }
 
 fun applyAddressSubstitutions(
@@ -77,18 +84,19 @@ fun applyAddressSubstitutions(
 
 data class MoveProject(
     val project: Project,
-    val moveToml: MoveToml,
-    val root: VirtualFile,
     val declaredAddrs: DeclaredAddresses,
     val declaredDevAddresses: DeclaredAddresses,
+    val localPackage: LocalPackage
 ) : UserDataHolderBase() {
-    val packageName: String? get() = moveToml.packageName
 
+    val packageName: String? get() = this.localPackage.packageName
+    val root get() = this.localPackage.contentRoot
     val rootPath: Path? get() = root.toNioPathOrNull()
-    fun projectDirPath(name: String): Path? = rootPath?.resolve(name)
 
     fun testsDir(): Path? = projectDirPath("tests")
     fun scriptsDir(): Path? = projectDirPath("scripts")
+
+    private fun projectDirPath(name: String): Path? = rootPath?.resolve(name)
 
     fun moduleFolders(devMode: DevMode): List<VirtualFile> {
         val q = ArrayDeque<ProjectInfo>()
@@ -112,7 +120,7 @@ data class MoveProject(
         return CachedValuesManager.getManager(this.project).getCachedValue(this) {
             val addresses = mutableAddressMap()
             val placeholders = placeholderMap()
-            for ((dep, subst) in moveToml.dependencies.values) {
+            for ((dep, subst) in this.localPackage.moveToml.dependencies.values) {
                 val depDeclaredAddrs = dep.declaredAddresses(project) ?: continue
 
                 val (newDepAddresses, newDepPlaceholders) = applyAddressSubstitutions(

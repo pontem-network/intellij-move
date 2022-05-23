@@ -28,8 +28,8 @@ val MoveProject.projectInfo: ProjectInfo?
         val rootPath = this.rootPath ?: return null
         return ProjectInfo(
             rootPath,
-            this.moveToml.dependencies.asDependenciesMap(),
-            this.moveToml.dev_dependencies.asDependenciesMap(),
+            this.localPackage.moveToml.dependencies.asDependenciesMap(),
+            this.localPackage.moveToml.dev_dependencies.asDependenciesMap(),
         )
     }
 

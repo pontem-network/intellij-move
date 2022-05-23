@@ -101,7 +101,7 @@ class MoveProjectsService(val project: Project) {
         }.invoke()
         if (moveProject == null && isUnitTestMode) {
             // this is for light tests, heavy test should always have valid moveProject
-            moveProject = testEmptyMvProject(project)
+            moveProject = testEmptyMoveProject(project)
         }
         this.directoryIndex.putInfo(file, MoveProjectEntry.Present(moveProject))
         return moveProject
