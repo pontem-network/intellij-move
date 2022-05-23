@@ -44,7 +44,7 @@ data class DeclaredAddresses(
         if (name in this.values) return this.values[name]
         return this.placeholders[name]
             ?.let {
-                AddressVal(MoveConstants.ADDR_PLACEHOLDER, null, it.keyValue, it.packageName)
+                AddressVal(Consts.ADDR_PLACEHOLDER, null, it.keyValue, it.packageName)
             }
     }
 }

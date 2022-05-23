@@ -10,7 +10,7 @@ import com.intellij.openapi.projectRoots.SdkTypeId
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.util.Disposer
 import org.move.cli.Aptos
-import org.move.cli.MoveConstants
+import org.move.cli.Consts
 import org.move.cli.runconfig.addDefaultBuildRunConfiguration
 import org.move.cli.settings.MoveSettingsPanel
 import org.move.ide.newProject.openFile
@@ -40,7 +40,7 @@ class MvModuleBuilder : ModuleBuilder() {
         root.refresh(false, true)
 
         // Just work if user "creates new project" over an existing one.
-        if (aptosPath != null && root.findChild(MoveConstants.MANIFEST_FILE) == null) {
+        if (aptosPath != null && root.findChild(Consts.MANIFEST_FILE) == null) {
             val aptos = Aptos(aptosPath)
             val project = modifiableRootModel.project
             val packageName = project.name.replace(' ', '_')

@@ -6,7 +6,6 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.settings.isValidExecutable
-import org.move.lang.toNioPathOrNull
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.MvResult
@@ -56,7 +55,7 @@ class Aptos(private val aptosPath: Path) {
         fullyRefreshDirectory(rootDirectory)
 
         val manifest =
-            checkNotNull(rootDirectory.findChild(MoveConstants.MANIFEST_FILE)) { "Can't find the manifest file" }
+            checkNotNull(rootDirectory.findChild(Consts.MANIFEST_FILE)) { "Can't find the manifest file" }
         return MvResult.Ok(manifest)
     }
 

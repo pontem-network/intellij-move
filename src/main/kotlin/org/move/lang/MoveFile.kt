@@ -9,7 +9,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.MoveProject
-import org.move.cli.MoveConstants
+import org.move.cli.Consts
 import org.move.cli.moveProjects
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.childrenOfType
@@ -23,7 +23,7 @@ import java.nio.file.Path
 fun findMoveTomlPath(currentFilePath: Path): Path? {
     var dir = currentFilePath.parent
     while (dir != null) {
-        val moveTomlPath = dir.resolveAbsPath(MoveConstants.MANIFEST_FILE)
+        val moveTomlPath = dir.resolveAbsPath(Consts.MANIFEST_FILE)
         if (moveTomlPath != null) {
             return moveTomlPath
         }
