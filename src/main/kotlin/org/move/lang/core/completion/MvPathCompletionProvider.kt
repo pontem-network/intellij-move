@@ -123,15 +123,15 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
             it.name?.let { name -> processedNames.add(name) }
         }
 
-        val pathElement = parameters.originalPosition?.parent as? MvPath ?: return
-        val importContext =
-            ImportContext.from(pathElement, itemVis.replace(vs = setOf(Visibility.Public)))
-        addCompletionsFromIndex(
-            parameters,
-            result,
-            processedNames,
-            importContext
-        )
+//        val pathElement = parameters.originalPosition?.parent as? MvPath ?: return
+//        val importContext =
+//            ImportContext.from(pathElement, itemVis.replace(vs = setOf(Visibility.Public)))
+//        addCompletionsFromIndex(
+//            parameters,
+//            result,
+//            processedNames,
+//            importContext
+//        )
     }
 }
 

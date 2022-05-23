@@ -237,22 +237,22 @@ class StructsCompletionTest: CompletionTestCase() {
     }    
     """)
 
-    fun `test add import when completion is selected if not in scope`() = doSingleCompletion("""
-    module 0x1::M {
-        struct MyStruct {}
-    }    
-    module 0x1::Main {
-        fun call(): MySt/*caret*/
-    }
-    """, """
-    module 0x1::M {
-        struct MyStruct {}
-    }    
-    module 0x1::Main {
-        use 0x1::M::MyStruct;
-    
-        fun call(): MyStruct/*caret*/
-    }
-    """)
+//    fun `test add import when completion is selected if not in scope`() = doSingleCompletion("""
+//    module 0x1::M {
+//        struct MyStruct {}
+//    }
+//    module 0x1::Main {
+//        fun call(): MySt/*caret*/
+//    }
+//    """, """
+//    module 0x1::M {
+//        struct MyStruct {}
+//    }
+//    module 0x1::Main {
+//        use 0x1::M::MyStruct;
+//
+//        fun call(): MyStruct/*caret*/
+//    }
+//    """)
 
 }
