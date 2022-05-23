@@ -21,7 +21,7 @@ class PublishCommandConfigurationProducer : AptosCommandConfigurationProducer() 
             val mod = findElement<MvModule>(location, climbUp) ?: return null
             if (mod.isTestOnly) return null
 
-            val rootPath = location.moveProject?.rootPath ?: return null
+            val rootPath = location.moveProject?.contentRootPath ?: return null
             val modName = mod.name ?: return null
 
             val command = "move publish"

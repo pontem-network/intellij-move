@@ -87,17 +87,18 @@ data class MoveProject(
     val project: Project,
     val declaredAddrs: DeclaredAddresses,
     val declaredDevAddresses: DeclaredAddresses,
-    val localPackage: LocalPackage
+    val currentPackage: LocalPackage,
 ) : UserDataHolderBase() {
 
-    val packageName: String? get() = this.localPackage.packageName
-    val root get() = this.localPackage.contentRoot
-    val rootPath: Path? get() = root.toNioPathOrNull()
+    val packageName: String? get() = this.currentPackage.packageName
+
+    val contentRoot get() = this.currentPackage.contentRoot
+    val contentRootPath: Path? get() = contentRoot.toNioPathOrNull()
 
     fun testsDir(): Path? = projectDirPath("tests")
     fun scriptsDir(): Path? = projectDirPath("scripts")
 
-    private fun projectDirPath(name: String): Path? = rootPath?.resolve(name)
+    private fun projectDirPath(name: String): Path? = contentRootPath?.resolve(name)
 
     fun moduleFolders(devMode: DevMode): List<VirtualFile> {
         val q = ArrayDeque<ProjectInfo>()
@@ -121,7 +122,7 @@ data class MoveProject(
         return CachedValuesManager.getManager(this.project).getCachedValue(this) {
             val addresses = mutableAddressMap()
             val placeholders = placeholderMap()
-            for ((dep, subst) in this.localPackage.moveToml.dependencies.values) {
+            for ((dep, subst) in this.currentPackage.moveToml.dependencies.values) {
                 val depDeclaredAddrs = dep.declaredAddresses(project) ?: continue
 
                 val (newDepAddresses, newDepPlaceholders) = applyAddressSubstitutions(
@@ -195,5 +196,5 @@ data class MoveProject(
         }
     }
 
-    fun walkMoveFiles(process: (MoveFile) -> Boolean) = deepWalkMoveFiles(project, root, process)
+    fun walkMoveFiles(process: (MoveFile) -> Boolean) = deepWalkMoveFiles(project, contentRoot, process)
 }

@@ -26,11 +26,11 @@ data class ProjectInfo(
 
 val MoveProject.projectInfo: ProjectInfo?
     get() {
-        val rootPath = this.rootPath ?: return null
+        val rootPath = this.contentRootPath ?: return null
         return ProjectInfo(
             rootPath,
-            this.localPackage.moveToml.dependencies.asDependenciesMap(),
-            this.localPackage.moveToml.dev_dependencies.asDependenciesMap(),
+            this.currentPackage.moveToml.dependencies.asDependenciesMap(),
+            this.currentPackage.moveToml.dev_dependencies.asDependenciesMap(),
         )
     }
 

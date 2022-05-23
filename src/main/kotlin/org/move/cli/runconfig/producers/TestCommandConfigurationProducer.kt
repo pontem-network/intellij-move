@@ -27,7 +27,7 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
                 is PsiFileSystemItem -> {
                     val moveProject = location.findMoveProject() ?: return null
                     val packageName = moveProject.packageName ?: ""
-                    val rootPath = moveProject.rootPath ?: return null
+                    val rootPath = moveProject.contentRootPath ?: return null
 
                     val confName = "Test $packageName"
                     val command = "move test"
@@ -44,7 +44,7 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
             val modName = fn.containingModule?.name ?: return null
             val confName = "Test $modName::$functionName"
             val command = "move test --filter $functionName"
-            val rootPath = fn.moveProject?.rootPath ?: return null
+            val rootPath = fn.moveProject?.contentRootPath ?: return null
             return AptosCommandLineFromContext(fn, confName, AptosCommandLine(command, rootPath))
         }
 
@@ -55,7 +55,7 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
             val modName = mod.name ?: return null
             val confName = "Test $modName"
             val command = "move test --filter $modName"
-            val rootPath = mod.moveProject?.rootPath ?: return null
+            val rootPath = mod.moveProject?.contentRootPath ?: return null
             return AptosCommandLineFromContext(mod, confName, AptosCommandLine(command, rootPath))
         }
     }

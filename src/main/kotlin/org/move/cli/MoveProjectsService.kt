@@ -341,7 +341,7 @@ fun processAllMoveFilesOnce(
     // find Move.toml files in all project roots, remembering depth of those
     // then search all .move children of those files, with biggest depth first
     moveProjects
-        .sortedByDescending { it.root.fsDepth }
+        .sortedByDescending { it.contentRoot.fsDepth }
         .map { moveProject ->
             moveProject.walkMoveFiles {
                 val filePath = it.virtualFile.path
@@ -358,8 +358,8 @@ private fun MoveProject.setupContentRoots(
     project: Project,
     setup: ContentEntry.(ModifiableRootModel, VirtualFile) -> Unit
 ) {
-    val packageModule = ModuleUtilCore.findModuleForFile(this.root, project) ?: return
+    val packageModule = ModuleUtilCore.findModuleForFile(this.contentRoot, project) ?: return
     ModuleRootModificationUtil.updateModel(packageModule) { rootModel ->
-        rootModel.contentEntries.singleOrNull()?.setup(rootModel, this.root)
+        rootModel.contentEntries.singleOrNull()?.setup(rootModel, this.contentRoot)
     }
 }

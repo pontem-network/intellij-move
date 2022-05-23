@@ -25,8 +25,8 @@ class ProjectAddressesServiceTest: MvProjectTestBase() {
         check(moveFiles[1].path.endsWith("Move.toml")) { moveFiles[1].path }
 
         val vfile = testProject.psiFile("stdlib/sources/module2.move").virtualFile.toPsiFile(project)!!
-        println("moveTomlPath: ${addressesService.findProjectForPsiElement(vfile)?.root}")
-        println("moveTomlPath: ${addressesService.findProjectForPsiElement(vfile)?.root}")
-        println("moveTomlPath: ${addressesService.findProjectForPsiElement(vfile)?.root}")
+        println("moveTomlPath: ${addressesService.findProjectForPsiElement(vfile)?.contentRoot}")
+        println("moveTomlPath: ${addressesService.findProjectForPsiElement(vfile)?.contentRoot}")
+        println("moveTomlPath: ${addressesService.findProjectForPsiElement(vfile)?.contentRoot}")
     }
 }
