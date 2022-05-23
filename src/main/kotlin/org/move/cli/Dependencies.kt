@@ -2,6 +2,7 @@ package org.move.cli
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import org.move.cli.project.BuildInfoYaml
 import org.move.lang.moveProject
 import org.move.openapiext.toVirtualFile
 import org.move.openapiext.resolveExisting
@@ -55,11 +56,12 @@ sealed class Dependency {
 
     data class Git(val dirPath: Path) : Dependency() {
         override fun projectInfo(project: Project): ProjectInfo? {
-            val buildInfo = BuildInfo.fromRootPath(dirPath) ?: return null
-            val buildDir = dirPath.parent
+            val yamlPath = dirPath.resolveExisting("BuildInfo.yaml") ?: return null
+            val buildInfoYaml = BuildInfoYaml.fromPath(yamlPath) ?: return null
 
+            val buildDir = dirPath.parent
             val dependencies = dependenciesMap()
-            for (depName in buildInfo.dependencies) {
+            for (depName in buildInfoYaml.dependencies) {
                 val depDir = buildDir.resolveExisting(depName) ?: continue
                 dependencies[depName] = Git(depDir)
             }
@@ -67,8 +69,10 @@ sealed class Dependency {
         }
 
         override fun declaredAddresses(project: Project): DeclaredAddresses? {
-            val buildInfo = BuildInfo.fromRootPath(dirPath) ?: return null
-            val addresses = buildInfo.addresses()
+            val yamlPath = dirPath.resolveExisting("BuildInfo.yaml") ?: return null
+            val buildInfoYaml = BuildInfoYaml.fromPath(yamlPath) ?: return null
+
+            val addresses = buildInfoYaml.addresses()
             return DeclaredAddresses(addresses, mutableMapOf())
         }
     }

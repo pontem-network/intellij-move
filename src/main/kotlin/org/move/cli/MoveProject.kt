@@ -9,6 +9,7 @@ import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import org.move.cli.project.LocalPackage
+import org.move.cli.project.MoveToml
 import org.move.lang.MoveFile
 import org.move.lang.core.types.Address
 import org.move.lang.toNioPathOrNull
@@ -53,7 +54,7 @@ fun testEmptyMoveProject(project: Project): MoveProject {
     val moveToml = MoveToml(project)
     val contentRoot = project.contentRoots.first()
     val addresses = DeclaredAddresses(mutableAddressMap(), placeholderMap())
-    val localPackage = LocalPackage(project, contentRoot, moveToml)
+    val localPackage = LocalPackage(contentRoot, project, moveToml)
     return MoveProject(
         project,
         addresses,
@@ -182,7 +183,7 @@ data class MoveProject(
 
     fun processModuleFiles(devMode: DevMode, processFile: (MvModuleFile) -> Boolean) {
         val folders = moduleFolders(devMode)
-        var stopped = false;
+        var stopped = false
         for (folder in folders) {
             if (stopped) break
             deepWalkMoveFiles(project, folder) {

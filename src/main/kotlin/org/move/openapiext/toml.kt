@@ -78,3 +78,14 @@ fun TomlFile.getTablesByFirstSegment(segmentText: String) =
     this.tables()
         .filter { it.header.key?.segments.orEmpty().size == 2 }
         .filter { it.header.key?.segments?.get(0)?.text == segmentText }
+
+typealias TomlElementMap = Map<String, TomlValue?>
+
+fun TomlElement.toMap(): TomlElementMap {
+    val namedEntries = when (this) {
+        is TomlTable -> this.namedEntries()
+        is TomlInlineTable -> this.namedEntries()
+        else -> null
+    }
+    return namedEntries.orEmpty().associate { Pair(it.first, it.second) }
+}
