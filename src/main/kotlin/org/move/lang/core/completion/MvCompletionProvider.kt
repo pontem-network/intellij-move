@@ -1,16 +1,15 @@
 package org.move.lang.core.completion
 
-import com.intellij.codeInsight.completion.CompletionParameters
-import com.intellij.codeInsight.completion.CompletionProvider
-import com.intellij.codeInsight.completion.CompletionResultSet
-import com.intellij.codeInsight.completion.InsertHandler
+import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.patterns.ElementPattern
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import org.move.ide.inspections.imports.AutoImportFix
 import org.move.ide.inspections.imports.ImportContext
 import org.move.ide.inspections.imports.MvNamedElementIndex
 import org.move.ide.inspections.imports.import
+import org.move.lang.core.psi.MvPath
 
 abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>() {
     abstract val elementPattern: ElementPattern<out PsiElement>
@@ -33,8 +32,13 @@ abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>()
                 .distinctBy { it.element }
                 .map { candidate ->
                     val element = candidate.element
-                    val insertHandler = InsertHandler<LookupElement> { _, _ ->
-                        candidate.import(importContext.pathElement)
+                    val insertHandler = object : MvInsertHandler() {
+                        override fun handleInsert(context: InsertionContext, item: LookupElement) {
+                            super.handleInsert(context, item)
+                            context.commitDocument()
+                            val path = parameters.originalPosition?.parent as? MvPath ?: return
+                            candidate.import(path)
+                        }
                     }
                     element.createCompletionLookupElement(
                         insertHandler,

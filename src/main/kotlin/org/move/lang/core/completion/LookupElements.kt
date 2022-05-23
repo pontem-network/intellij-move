@@ -175,7 +175,7 @@ private fun InsertionContext.functionSuffixAndOffset(
     return Pair(suffix, offset)
 }
 
-class MvInsertHandler : InsertHandler<LookupElement> {
+open class MvInsertHandler : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, item: LookupElement) {
         val document = context.document
         val element = item.psiElement as? MvElement ?: return

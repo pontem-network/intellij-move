@@ -82,10 +82,22 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
             return
         }
 
+        val processedNames = mutableSetOf<String>()
         handleItemsWithShadowing(element, itemVis) {
             val lookupElement = it.createCompletionLookupElement()
             result.addElement(lookupElement)
+            it.name?.let { name -> processedNames.add(name) }
         }
+
+        val pathElement = parameters.originalPosition?.parent as? MvPath ?: return
+        val importContext =
+            ImportContext.from(pathElement, itemVis.replace(vs = setOf(Visibility.Public)))
+        addCompletionsFromIndex(
+            parameters,
+            result,
+            processedNames,
+            importContext
+        )
     }
 }
 

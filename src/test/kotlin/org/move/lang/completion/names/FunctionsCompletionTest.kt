@@ -246,27 +246,27 @@ class FunctionsCompletionTest : CompletionTestCase() {
     }
     """)
 
-//    fun `test function in path position with auto import`() = doSingleCompletion("""
-//    module 0x1::Signer {
-//        public fun address_of(s: &signer): address { @0x1 }
-//    }
-//    module 0x1::M {
-//        fun call() {
-//            let a = 1;
-//            address_o/*caret*/
-//        }
-//    }
-//    """, """
-//    module 0x1::Signer {
-//        public fun address_of(s: &signer): address { @0x1 }
-//    }
-//    module 0x1::M {
-//        use 0x1::Signer::address_of;
-//
-//        fun call() {
-//            let a = 1;
-//            address_of(/*caret*/)
-//        }
-//    }
-//    """)
+    fun `test function in path position with auto import`() = doSingleCompletion("""
+    module 0x1::Signer {
+        public fun address_of(s: &signer): address { @0x1 }
+    }
+    module 0x1::M {
+        fun call() {
+            let a = 1;
+            address_o/*caret*/
+        }
+    }
+    """, """
+    module 0x1::Signer {
+        public fun address_of(s: &signer): address { @0x1 }
+    }
+    module 0x1::M {
+        use 0x1::Signer::address_of;
+
+        fun call() {
+            let a = 1;
+            address_of(/*caret*/)
+        }
+    }
+    """)
 }
