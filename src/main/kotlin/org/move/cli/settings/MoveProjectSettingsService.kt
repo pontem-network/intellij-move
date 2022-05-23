@@ -121,8 +121,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
     }
 }
 
-val Project.moveSettings: MoveProjectSettingsService
-    get() = this.getService(MoveProjectSettingsService::class.java)
+val Project.moveSettings: MoveProjectSettingsService get() = service()
 
 val Project.collapseSpecs: Boolean
     get() = this.moveSettings.settingsState.foldSpecs
