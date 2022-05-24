@@ -5,8 +5,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.util.*
 import org.move.cli.MoveProject
-import org.move.cli.moveProjects
-import org.move.lang.MvFile
+import org.move.cli.projectsService
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
@@ -37,8 +37,8 @@ fun MvElement.isInsideAssignmentLeft(): Boolean {
 }
 
 fun PsiFileSystemItem.findMoveProject(): MoveProject? {
-    if (this is MvFile) return this.moveProject
+    if (this is MoveFile) return this.moveProject
     val path = virtualFile.toNioPathOrNull() ?: return null
-    return project.moveProjects.findProjectForPath(path)
+    return project.projectsService.findProjectForPath(path)
 
 }

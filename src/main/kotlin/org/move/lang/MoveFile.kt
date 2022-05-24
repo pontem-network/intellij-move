@@ -9,8 +9,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.MoveProject
-import org.move.cli.MoveConstants
-import org.move.cli.moveProjects
+import org.move.cli.Consts
+import org.move.cli.projectsService
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.childrenOfType
 import org.move.lang.core.psi.ext.modules
@@ -23,7 +23,7 @@ import java.nio.file.Path
 fun findMoveTomlPath(currentFilePath: Path): Path? {
     var dir = currentFilePath.parent
     while (dir != null) {
-        val moveTomlPath = dir.resolveAbsPath(MoveConstants.MANIFEST_FILE)
+        val moveTomlPath = dir.resolveAbsPath(Consts.MANIFEST_FILE)
         if (moveTomlPath != null) {
             return moveTomlPath
         }
@@ -33,7 +33,7 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
 }
 
 val PsiElement.moveProject: MoveProject?
-    get() = project.moveProjects.findProjectForPsiElement(this)
+    get() = project.projectsService.findProjectForPsiElement(this)
 
 fun VirtualFile.hasChild(name: String) = this.findChild(name) != null
 
@@ -49,7 +49,8 @@ fun PsiFile.toNioPathOrNull(): Path? {
     return this.originalFile.virtualFile.toNioPathOrNull()
 }
 
-class MvFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvider, MvLanguage) {
+class MoveFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvider, MoveLanguage) {
+
     override fun getFileType(): FileType = MoveFileType
 
     fun addressBlocks(): List<MvAddressBlock> {
@@ -69,9 +70,9 @@ val VirtualFile.isMoveFile: Boolean get() = fileType == MoveFileType
 
 val VirtualFile.isMoveTomlManifestFile: Boolean get() = fileType == TomlFileType && name == "Move.toml"
 
-fun VirtualFile.toMvFile(project: Project): MvFile? = this.toPsiFile(project) as? MvFile
+fun VirtualFile.toMoveFile(project: Project): MoveFile? = this.toPsiFile(project) as? MoveFile
 
-fun MvFile.modules(): Sequence<MvModule> {
+fun MoveFile.modules(): Sequence<MvModule> {
     return this.childrenOfType<MvModule>()
         .chain(this.childrenOfType<MvAddressDef>().flatMap { it.modules() })
 }

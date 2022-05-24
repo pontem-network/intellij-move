@@ -7,7 +7,7 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import org.move.lang.MvFile
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ItemVis
@@ -81,21 +81,25 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
             return Context(candidates)
         }
 
-        fun getImportCandidates(context: ImportContext, targetName: String): List<ImportCandidate> {
+        fun getImportCandidates(
+            context: ImportContext,
+            targetName: String,
+            itemFilter: (MvQualifiedNamedElement) -> Boolean = { true }
+        ): List<ImportCandidate> {
             val (contextElement, itemVis) = context
-            val name = contextElement.referenceName ?: return emptyList()
             val moveProject = contextElement.moveProject ?: return emptyList()
             val searchScope = moveProject.searchScope()
             val files = MvNamedElementIndex
-                .findFilesByElementName(contextElement.project, name, searchScope)
+                .findFilesByElementName(contextElement.project, targetName, searchScope)
                 .toMutableList()
             if (isUnitTestMode) {
                 // always add current file in tests
-                val currentFile = contextElement.containingFile as? MvFile ?: return emptyList()
+                val currentFile = contextElement.containingFile as? MoveFile ?: return emptyList()
                 files.add(0, currentFile)
             }
             return files
                 .flatMap { it.qualifiedItems(targetName, itemVis) }
+                .filter(itemFilter)
                 .mapNotNull { el -> el.fqPath?.let { ImportCandidate(el, it) } }
         }
     }
@@ -103,10 +107,14 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
 
 @Suppress("DataClassPrivateConstructor")
 data class ImportContext private constructor(
-    val contextElement: MvReferenceElement,
+    val pathElement: MvReferenceElement,
     val itemVis: ItemVis,
 ) {
     companion object {
+        fun from(contextElement: MvReferenceElement, itemVis: ItemVis): ImportContext {
+            return ImportContext(contextElement, itemVis)
+        }
+
         fun from(contextElement: MvReferenceElement): ImportContext {
             var itemVis = ItemVis(visibilities = setOf(Visibility.Public))
             if (contextElement.containingScript != null) {
@@ -125,7 +133,7 @@ data class ImportContext private constructor(
 
 data class ImportCandidate(val element: MvQualifiedNamedElement, val fqPath: FqPath)
 
-private fun ImportCandidate.import(context: MvElement) {
+fun ImportCandidate.import(context: MvElement) {
     checkWriteAccessAllowed()
     val psiFactory = element.project.psiFactory
     val insertionScope = context.containingModule?.moduleBlock
@@ -144,7 +152,7 @@ private fun MvItemsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: FqPath
     } else {
         val firstItem = this.items().first()
         addBefore(newUseStmt, firstItem)
-        addAfter(psiFactory.createNewline(), firstItem)
+        addBefore(psiFactory.createNewline(), firstItem)
     }
 }
 

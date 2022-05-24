@@ -2,8 +2,9 @@ package org.move.cli
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import org.move.cli.project.BuildInfoYaml
 import org.move.lang.moveProject
-import org.move.openapiext.findVirtualFile
+import org.move.openapiext.toVirtualFile
 import org.move.openapiext.resolveExisting
 import org.move.openapiext.toPsiFile
 import java.nio.file.Path
@@ -13,23 +14,23 @@ data class ProjectInfo(
     val dependencies: DependenciesMap,
     val dev_dependencies: DependenciesMap,
 ) {
-    val sourcesFolder: VirtualFile? get() = rootPath.resolveExisting("sources")?.findVirtualFile()
+    val sourcesFolder: VirtualFile? get() = rootPath.resolveExisting("sources")?.toVirtualFile()
 
-    fun deps(scope: MoveScope): DependenciesMap {
-        return when (scope) {
-            MoveScope.MAIN -> this.dependencies
-            MoveScope.DEV -> (this.dependencies + this.dev_dependencies) as DependenciesMap
+    fun deps(devMode: DevMode): DependenciesMap {
+        return when (devMode) {
+            DevMode.MAIN -> this.dependencies
+            DevMode.DEV -> (this.dependencies + this.dev_dependencies) as DependenciesMap
         }
     }
 }
 
 val MoveProject.projectInfo: ProjectInfo?
     get() {
-        val rootPath = this.rootPath ?: return null
+        val rootPath = this.contentRootPath ?: return null
         return ProjectInfo(
             rootPath,
-            this.moveToml.dependencies.asDependenciesMap(),
-            this.moveToml.dev_dependencies.asDependenciesMap(),
+            this.currentPackage.moveToml.dependencies.asDependenciesMap(),
+            this.currentPackage.moveToml.dev_dependencies.asDependenciesMap(),
         )
     }
 
@@ -41,25 +42,26 @@ sealed class Dependency {
     data class Local(val absoluteLocalPath: Path) : Dependency() {
         override fun declaredAddresses(project: Project): DeclaredAddresses? {
             val moveTomlFile = this.absoluteLocalPath.resolve("Move.toml")
-                .findVirtualFile()
+                .toVirtualFile()
                 ?.toPsiFile(project) ?: return null
             return moveTomlFile.moveProject?.declaredAddresses() ?: return null
         }
 
         override fun projectInfo(project: Project): ProjectInfo? {
             val moveTomlPath = absoluteLocalPath.resolve("Move.toml")
-            val p = project.moveProjects.findProjectForPath(moveTomlPath) ?: return null
+            val p = project.projectsService.findProjectForPath(moveTomlPath) ?: return null
             return p.projectInfo
         }
     }
 
     data class Git(val dirPath: Path) : Dependency() {
         override fun projectInfo(project: Project): ProjectInfo? {
-            val buildInfo = BuildInfo.fromRootPath(dirPath) ?: return null
-            val buildDir = dirPath.parent
+            val yamlPath = dirPath.resolveExisting("BuildInfo.yaml") ?: return null
+            val buildInfoYaml = BuildInfoYaml.fromPath(yamlPath) ?: return null
 
+            val buildDir = dirPath.parent
             val dependencies = dependenciesMap()
-            for (depName in buildInfo.dependencies) {
+            for (depName in buildInfoYaml.dependencies) {
                 val depDir = buildDir.resolveExisting(depName) ?: continue
                 dependencies[depName] = Git(depDir)
             }
@@ -67,8 +69,10 @@ sealed class Dependency {
         }
 
         override fun declaredAddresses(project: Project): DeclaredAddresses? {
-            val buildInfo = BuildInfo.fromRootPath(dirPath) ?: return null
-            val addresses = buildInfo.addresses()
+            val yamlPath = dirPath.resolveExisting("BuildInfo.yaml") ?: return null
+            val buildInfoYaml = BuildInfoYaml.fromPath(yamlPath) ?: return null
+
+            val addresses = buildInfoYaml.addresses()
             return DeclaredAddresses(addresses, mutableMapOf())
         }
     }

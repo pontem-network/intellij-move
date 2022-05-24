@@ -8,22 +8,23 @@ import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
-import org.move.lang.MvFile
+import org.move.cli.project.LocalPackage
+import org.move.cli.project.MoveToml
+import org.move.lang.MoveFile
 import org.move.lang.core.types.Address
-import org.move.lang.toMvFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.contentRoots
 import org.move.openapiext.stringValue
-import org.move.stdext.deepIterateChildrenRecursivery
+import org.move.utils.deepWalkMoveFiles
 import java.nio.file.Path
 import java.util.*
 
-enum class MoveScope {
+enum class DevMode {
     MAIN, DEV;
 }
 
 data class MvModuleFile(
-    val file: MvFile,
+    val file: MoveFile,
     val addressSubst: Map<String, String>,
 )
 
@@ -44,16 +45,22 @@ data class DeclaredAddresses(
         if (name in this.values) return this.values[name]
         return this.placeholders[name]
             ?.let {
-                AddressVal(MoveConstants.ADDR_PLACEHOLDER, null, it.keyValue, it.packageName)
+                AddressVal(Consts.ADDR_PLACEHOLDER, null, it.keyValue, it.packageName)
             }
     }
 }
 
-fun testEmptyMvProject(project: Project): MoveProject {
+fun testEmptyMoveProject(project: Project): MoveProject {
     val moveToml = MoveToml(project)
-    val rootFile = project.contentRoots.first()
+    val contentRoot = project.contentRoots.first()
     val addresses = DeclaredAddresses(mutableAddressMap(), placeholderMap())
-    return MoveProject(project, moveToml, rootFile, addresses, addresses.copy())
+    val localPackage = LocalPackage(contentRoot, project, moveToml)
+    return MoveProject(
+        project,
+        addresses,
+        addresses.copy(),
+        localPackage
+    )
 }
 
 fun applyAddressSubstitutions(
@@ -78,23 +85,22 @@ fun applyAddressSubstitutions(
 
 data class MoveProject(
     val project: Project,
-    val moveToml: MoveToml,
-    val root: VirtualFile,
     val declaredAddrs: DeclaredAddresses,
     val declaredDevAddresses: DeclaredAddresses,
+    val currentPackage: LocalPackage,
 ) : UserDataHolderBase() {
-    val packageName: String? get() = moveToml.packageName
 
-    val rootPath: Path? get() = root.toNioPathOrNull()
-    fun projectDirPath(name: String): Path? = rootPath?.resolve(name)
+    val packageName: String? get() = this.currentPackage.packageName
 
-    fun buildDir(): Path? = projectDirPath("build")
-    fun packageInBuildDir(): Path? = projectDirPath("build")?.resolve(packageName)
-    fun sourcesDir(): Path? = projectDirPath("sources")
+    val contentRoot get() = this.currentPackage.contentRoot
+    val contentRootPath: Path? get() = contentRoot.toNioPathOrNull()
+
     fun testsDir(): Path? = projectDirPath("tests")
     fun scriptsDir(): Path? = projectDirPath("scripts")
 
-    fun moduleFolders(scope: MoveScope): List<VirtualFile> {
+    private fun projectDirPath(name: String): Path? = contentRootPath?.resolve(name)
+
+    fun moduleFolders(devMode: DevMode): List<VirtualFile> {
         val q = ArrayDeque<ProjectInfo>()
         val folders = mutableListOf<VirtualFile>()
         val projectInfo = this.projectInfo ?: return emptyList()
@@ -105,7 +111,7 @@ data class MoveProject(
         q.add(projectInfo)
         while (q.isNotEmpty()) {
             val info = q.pop()
-            val depInfos = info.deps(scope).values.mapNotNull { it.projectInfo(project) }
+            val depInfos = info.deps(devMode).values.mapNotNull { it.projectInfo(project) }
             q.addAll(depInfos)
             folders.addAll(depInfos.mapNotNull { it.sourcesFolder })
         }
@@ -116,7 +122,7 @@ data class MoveProject(
         return CachedValuesManager.getManager(this.project).getCachedValue(this) {
             val addresses = mutableAddressMap()
             val placeholders = placeholderMap()
-            for ((dep, subst) in this.moveToml.dependencies.values) {
+            for ((dep, subst) in this.currentPackage.moveToml.dependencies.values) {
                 val depDeclaredAddrs = dep.declaredAddresses(project) ?: continue
 
                 val (newDepAddresses, newDepPlaceholders) = applyAddressSubstitutions(
@@ -137,17 +143,14 @@ data class MoveProject(
                 addresses.putAll(newDepAddresses)
                 placeholders.putAll(newDepPlaceholders)
             }
-//            addresses.putAll(this.declaredAddrs.values)
-//            addresses.putAll(this.declaredAddrs.placeholdersAsValues())
-            addresses.putAll(this.packageAddresses())
-
+            addresses.putAll(packageAddresses())
             // add dev-addresses
-            addresses.putAll(this.declaredDevAddresses.values)
-
+            addresses.putAll(declaredDevAddresses.values)
             // add placeholders that weren't filled
-            placeholders.putAll(this.declaredAddrs.placeholders)
+            placeholders.putAll(declaredAddrs.placeholders)
 
             val res = DeclaredAddresses(addresses, placeholders)
+
             CachedValueProvider.Result.create(res, PsiModificationTracker.MODIFICATION_COUNT)
         }
     }
@@ -170,27 +173,28 @@ data class MoveProject(
         return Address.Named(name, addressVal.value)
     }
 
-    fun searchScope(moveScope: MoveScope = MoveScope.MAIN): GlobalSearchScope {
+    fun searchScope(devMode: DevMode = DevMode.MAIN): GlobalSearchScope {
         var searchScope = GlobalSearchScope.EMPTY_SCOPE
-        for (folder in moduleFolders(moveScope)) {
+        for (folder in moduleFolders(devMode)) {
             val dirScope = GlobalSearchScopes.directoryScope(project, folder, true)
             searchScope = searchScope.uniteWith(dirScope)
         }
         return searchScope
     }
 
-    fun processModuleFiles(scope: MoveScope, processFile: (MvModuleFile) -> Boolean) {
-        val folders = moduleFolders(scope)
-        var stopped = false;
+    fun processModuleFiles(devMode: DevMode, processFile: (MvModuleFile) -> Boolean) {
+        val folders = moduleFolders(devMode)
+        var stopped = false
         for (folder in folders) {
             if (stopped) break
-            deepIterateChildrenRecursivery(folder, { it.extension == "move" }) { file ->
-                val moveFile = file.toMvFile(project) ?: return@deepIterateChildrenRecursivery true
-                val moduleFile = MvModuleFile(moveFile, emptyMap())
+            deepWalkMoveFiles(project, folder) {
+                val moduleFile = MvModuleFile(it, emptyMap())
                 val continueForward = processFile(moduleFile)
                 stopped = !continueForward
                 continueForward
             }
         }
     }
+
+    fun walkMoveFiles(process: (MoveFile) -> Boolean) = deepWalkMoveFiles(project, contentRoot, process)
 }

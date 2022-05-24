@@ -1,10 +1,8 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import com.intellij.psi.PsiElement
 import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
 import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
-import org.move.ide.annotator.SPEC_INTEGER_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
@@ -40,13 +38,13 @@ val MvPath.isUpdateFieldArg2: Boolean
 
 val MvPath.identifierName: String? get() = identifier?.text
 
-val MvPath.moduleRef: MvModuleRef? get() = pathIdent.moduleRef
+val MvPath.colonColon get() = this.findFirstChildByType(MvElementTypes.COLON_COLON)
 
-val MvPathIdent.colonColon get() = this.findFirstChildByType(MvElementTypes.COLON_COLON)
-
-val MvPathIdent.isIdentifierOnly: Boolean
+val MvPath.isLocal: Boolean
     get() =
         identifier != null && this.moduleRef == null
+
+val MvPath.isQual: Boolean get() = !this.isLocal
 
 val MvPath.typeArguments: List<MvTypeArgument>
     get() = typeArgumentList?.typeArgumentList.orEmpty()
@@ -57,15 +55,19 @@ val MvPath.maybeSchema get() = reference?.resolve() as? MvSchema
 
 abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
 
-    override val identifier: PsiElement? get() = this.pathIdent.identifier
-
     override fun getReference(): MvPathReference? {
-        val namespace = when (this.parent) {
-            is MvSchemaLit, is MvSchemaRef -> Namespace.SCHEMA
-            is MvPathType -> Namespace.TYPE
-            else -> Namespace.NAME
+        val namespaces = when (this.parent) {
+            is MvSchemaLit, is MvSchemaRef -> setOf(Namespace.SCHEMA)
+            is MvPathType -> setOf(Namespace.TYPE)
+            else -> {
+                if (this.isLocal) {
+                    setOf(Namespace.NAME, Namespace.MODULE)
+                } else {
+                    setOf(Namespace.NAME)
+                }
+            }
         }
-        return MvPathReferenceImpl(this, namespace)
+        return MvPathReferenceImpl(this, namespaces)
     }
 }
 

@@ -43,16 +43,15 @@ fun resolveModuleItem(
 
 class MvPathReferenceImpl(
     element: MvPath,
-    val namespace: Namespace,
+    val namespaces: Set<Namespace>,
 ) : MvReferenceCached<MvPath>(element), MvPathReference {
 
     override fun resolveInner(): List<MvNamedElement> {
-        val ns = mutableSetOf(namespace)
         val vs = Visibility.buildSetOfVisibilities(element)
-        val itemVis = ItemVis(ns, vs, element.mslScope)
+        val itemVis = ItemVis(namespaces, vs, element.mslScope)
 
         val refName = element.referenceName ?: return emptyList()
-        val moduleRef = element.pathIdent.moduleRef
+        val moduleRef = element.moduleRef
         // first, see whether it's a fully qualified path (ADDRESS::MODULE::NAME) and try to resolve those
         if (moduleRef is MvFQModuleRef) {
             val module = moduleRef.reference?.resolve() as? MvModule
@@ -78,14 +77,25 @@ class MvPathReferenceImpl(
             if (element.isUpdateFieldArg2) return emptyList()
 
             // try local names
-            val item = resolveItem(element, namespace).firstOrNull() ?: return emptyList()
+            val item = resolveItem(element, namespaces).firstOrNull() ?: return emptyList()
             // local name -> return
-            if (item !is MvUseItem) return listOf(item)
-            // find corresponding FQModuleRef from imports and resolve
-            val fqModuleRef = item.moduleImport().fqModuleRef
-            val module = fqModuleRef.reference?.resolve() as? MvModule
-                ?: return emptyList()
-            return resolveModuleItem(module, refName, itemVis)
+            return when (item) {
+                // item import
+                is MvUseItem -> {
+                    // find corresponding FQModuleRef from imports and resolve
+                    val modRef = item.moduleImport().fqModuleRef
+                    val module = modRef.reference?.resolve() as? MvModule
+                        ?: return emptyList()
+                    return resolveModuleItem(module, refName, itemVis)
+                }
+                // module import
+                is MvModuleUseSpeck -> {
+                    val module = item.fqModuleRef?.reference?.resolve() as? MvModule
+                    return listOfNotNull(module)
+                }
+                // local item
+                else -> listOf(item)
+            }
         }
     }
 }

@@ -17,7 +17,7 @@ class MvSchemaFieldReferenceImpl(
     element: MvSchemaLitField
 ) : MvReferenceCached<MvSchemaLitField>(element) {
     override fun resolveInner(): List<MvNamedElement> {
-        return resolveItem(element, Namespace.SCHEMA_FIELD)
+        return resolveItem(element, setOf(Namespace.SCHEMA_FIELD))
     }
 }
 
@@ -26,8 +26,8 @@ class MvSchemaFieldShorthandReferenceImpl(
 ) : MvReferenceCached<MvSchemaLitField>(element) {
     override fun resolveInner(): List<MvNamedElement> {
         return listOf(
-            resolveItem(element, Namespace.SCHEMA_FIELD),
-            resolveItem(element, Namespace.NAME)
+            resolveItem(element, setOf(Namespace.SCHEMA_FIELD)),
+            resolveItem(element, setOf(Namespace.NAME))
         ).flatten()
     }
 }

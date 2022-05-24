@@ -41,11 +41,11 @@ class MoveParserDefinition : ParserDefinition {
     }
 
     override fun createFile(viewProvider: FileViewProvider): PsiFile {
-        return MvFile(viewProvider)
+        return MoveFile(viewProvider)
     }
 
     companion object {
-        val FILE = IFileElementType(MvLanguage)
+        val FILE = IFileElementType(MoveLanguage)
 
         @JvmField val BLOCK_COMMENT = MvTokenType("BLOCK_COMMENT")
         @JvmField val EOL_COMMENT = MvTokenType("EOL_COMMENT")

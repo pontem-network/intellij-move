@@ -4,7 +4,7 @@ import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.resolve.MvReferenceElement
-import org.move.openapiext.findVirtualFile
+import org.move.openapiext.toVirtualFile
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.TestProject
@@ -66,7 +66,7 @@ abstract class ResolveProjectTestCase : MvProjectTestBase() {
 
         val fileWithNamedElement =
             testProject.rootDirectory.toNioPath()
-                .resolve(testProject.fileWithNamedElement).findVirtualFile()
+                .resolve(testProject.fileWithNamedElement).toVirtualFile()
                 ?: error("No file with //X caret")
         myFixture.configureFromExistingVirtualFile(fileWithNamedElement)
 

@@ -7,25 +7,24 @@ import com.intellij.util.indexing.*
 import com.intellij.util.io.EnumeratorStringDescriptor
 import com.intellij.util.io.KeyDescriptor
 import org.move.lang.MoveFileType
-import org.move.lang.MvFile
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvQualifiedNamedElement
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.processModuleItems
 import org.move.lang.modules
-import org.move.lang.toMvFile
+import org.move.lang.toMoveFile
 
 class MvNamedElementIndex : ScalarIndexExtension<String>() {
     override fun getName() = KEY
     override fun getVersion() = INDEX_VERSION
     override fun getKeyDescriptor(): KeyDescriptor<String> = EnumeratorStringDescriptor.INSTANCE
     override fun dependsOnFileContent() = true
-
     override fun getInputFilter() = DefaultFileTypeSpecificInputFilter(MoveFileType)
 
     override fun getIndexer() =
         DataIndexer<String, Void, FileContent> { data ->
-            val file = data.psiFile as? MvFile ?: return@DataIndexer emptyMap()
+            val file = data.psiFile as? MoveFile ?: return@DataIndexer emptyMap()
             val map = file
                 .descendantsOfType<MvQualifiedNamedElement>()
                 .mapNotNull { it.name }
@@ -38,19 +37,23 @@ class MvNamedElementIndex : ScalarIndexExtension<String>() {
 
         val KEY = ID.create<String, Void>("MvNamedElementIndex")
 
+        fun getAllKeys(project: Project): Collection<String> {
+            return FileBasedIndex.getInstance().getAllKeys(KEY, project)
+        }
+
         fun findFilesByElementName(
             project: Project,
             target: String,
             searchScope: GlobalSearchScope
-        ): Collection<MvFile> {
+        ): Collection<MoveFile> {
             val fileIndex = FileBasedIndex.getInstance()
             val files = fileIndex.getContainingFiles(KEY, target, searchScope)
-            return files.mapNotNull { it.toMvFile(project) }
+            return files.mapNotNull { it.toMoveFile(project) }
         }
     }
 }
 
-fun MvFile.qualifiedItems(target: String, itemVis: ItemVis): List<MvQualifiedNamedElement> {
+fun MoveFile.qualifiedItems(target: String, itemVis: ItemVis): List<MvQualifiedNamedElement> {
     val elements = mutableListOf<MvQualifiedNamedElement>()
     val modules = this.modules()
     for (module in modules) {

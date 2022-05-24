@@ -11,7 +11,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.TokenType
 import com.intellij.util.text.CharArrayUtil
-import org.move.lang.MvFile
+import org.move.lang.MoveFile
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 import org.move.lang.core.psi.ext.elementType
@@ -26,7 +26,7 @@ class MvEnterInLineCommentHandler: EnterHandlerDelegateAdapter() {
         dataContext: DataContext,
         originalHandler: EditorActionHandler?
     ): Result {
-        if (file !is MvFile) return Result.Continue
+        if (file !is MoveFile) return Result.Continue
 
         // get current document and commit any changes, so we'll get latest PSI
         val document = editor.document

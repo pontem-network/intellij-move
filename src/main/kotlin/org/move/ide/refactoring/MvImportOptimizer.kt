@@ -2,15 +2,19 @@ package org.move.ide.refactoring
 
 import com.intellij.lang.ImportOptimizer
 import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiWhiteSpace
 import org.move.ide.inspections.isUsed
 import org.move.ide.intentions.removeCurlyBraces
-import org.move.lang.MvFile
-import org.move.lang.core.psi.MvItemsOwner
+import org.move.lang.MoveFile
+import org.move.lang.MvElementTypes
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.*
 import org.move.lang.modules
 
-class MvImportOptimizer: ImportOptimizer {
-    override fun supports(file: PsiFile) = file is MvFile
+class MvImportOptimizer : ImportOptimizer {
+    override fun supports(file: PsiFile) = file is MoveFile
 
     override fun processFile(file: PsiFile) = Runnable {
         val documentManager = PsiDocumentManager.getInstance(file.project)
@@ -18,17 +22,23 @@ class MvImportOptimizer: ImportOptimizer {
         if (document != null) {
             documentManager.commitDocument(document)
         }
-        val mvFile = file as MvFile
-        for (module in mvFile.modules()) {
+        val moveFile = file as MoveFile
+        for (module in moveFile.modules()) {
             val block = module.moduleBlock ?: continue
             optimizeImports(block)
         }
-        for (scriptBlock in mvFile.scriptBlocks()) {
+        for (scriptBlock in moveFile.scriptBlocks()) {
             optimizeImports(scriptBlock)
         }
     }
 
     private fun optimizeImports(useStmtOwner: MvItemsOwner) {
+        removeUnusedImports(useStmtOwner)
+        sortImports(useStmtOwner)
+    }
+
+    private fun removeUnusedImports(useStmtOwner: MvItemsOwner) {
+        val psiFactory = useStmtOwner.project.psiFactory
         val useStmts = useStmtOwner.useStmtList
         for (useStmt in useStmts) {
             val moduleSpeck = useStmt.moduleUseSpeck
@@ -40,22 +50,16 @@ class MvImportOptimizer: ImportOptimizer {
             }
             val useSpeck = useStmt.itemUseSpeck
             if (useSpeck != null) {
-                val itemGroup = useSpeck.useItemGroup
+                var itemGroup = useSpeck.useItemGroup
                 if (itemGroup != null) {
+                    val usedItems = itemGroup.useItemList.filter { it.isUsed() }
+                    if (usedItems.isEmpty()) useStmt.delete()
+                    else {
+                        val newItemGroup = psiFactory.useItemGroup(usedItems.map { it.text })
+                        itemGroup = itemGroup.replace(newItemGroup) as MvUseItemGroup
+                    }
                     if (itemGroup.useItemList.size == 1) {
-                        if (itemGroup.useItemList.first().isUsed()) {
-                            // used 0x1::M::{call};
-                            itemGroup.removeCurlyBraces()
-                        } else {
-                            // unused 0x1::M::{call};
-                            useStmt.delete()
-                        }
-                    } else {
-                        val items = itemGroup.useItemList.filter { it.isUsed() }
-                        if (items.size == 1) {
-                            // 0x1::M::{Used, unused} -> 0x1::M::Used;
-                            itemGroup.replace(items.first())
-                        }
+                        itemGroup.removeCurlyBraces()
                     }
                 }
                 if (!useSpeck.isUsed()) {
@@ -63,6 +67,37 @@ class MvImportOptimizer: ImportOptimizer {
                     useStmt.delete()
                 }
             }
+        }
+    }
+
+    private fun sortImports(useStmtOwner: MvItemsOwner) {
+        val psiFactory = useStmtOwner.project.psiFactory
+        val offset =
+            (useStmtOwner.findFirstChildByType(MvElementTypes.L_BRACE)?.textOffset ?: return) + 1
+        val first = useStmtOwner.childrenOfType<MvElement>()
+            .firstOrNull { it.textOffset >= offset && it !is MvAttr } ?: return
+
+        val useStmts = useStmtOwner.useStmtList
+        val sortedUseGroups = useStmts
+            .groupBy { it.addressRef?.useGroupLevel ?: -1 }
+            .map { (groupLevel, items) ->
+                val sortedItems = items
+                    .sortedBy { it.useSpeckText }
+                    .mapNotNull { it.copy() as? MvUseStmt }
+                groupLevel to sortedItems
+            }
+            .sortedBy { it.first }
+        for ((_, sortedUseStmts) in sortedUseGroups) {
+            var lastAddedUseItem: PsiElement? = null
+            for (useStmt in sortedUseStmts) {
+                lastAddedUseItem = useStmtOwner.addBefore(useStmt, first)
+                useStmtOwner.addAfter(psiFactory.createNewline(), lastAddedUseItem)
+            }
+            useStmtOwner.addAfter(psiFactory.createNewline(), lastAddedUseItem)
+        }
+        useStmts.forEach {
+            (it.nextSibling as? PsiWhiteSpace)?.delete()
+            it.delete()
         }
     }
 }

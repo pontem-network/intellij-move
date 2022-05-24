@@ -1,5 +1,6 @@
 package org.move.cli
 
+import com.intellij.openapi.externalSystem.model.ProjectSystemId
 import com.intellij.util.io.exists
 import java.nio.file.Path
 
@@ -14,7 +15,9 @@ object MvProjectLayout {
     }
 }
 
-object MoveConstants {
+object Consts {
     const val MANIFEST_FILE = "Move.toml"
     const val ADDR_PLACEHOLDER = "_"
+
+    val PROJECT_SYSTEM_ID = ProjectSystemId("Move")
 }

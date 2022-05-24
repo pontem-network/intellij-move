@@ -19,8 +19,8 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
     override fun getIcon() = MoveIcons.MOVE
 
     override fun canOpenProject(file: VirtualFile): Boolean =
-        FileUtil.namesEqual(file.name, MoveConstants.MANIFEST_FILE)
-                || (file.isDirectory && file.findChild(MoveConstants.MANIFEST_FILE) != null)
+        FileUtil.namesEqual(file.name, Consts.MANIFEST_FILE)
+                || (file.isDirectory && file.findChild(Consts.MANIFEST_FILE) != null)
 
     override fun doOpenProject(
         virtualFile: VirtualFile,
@@ -42,14 +42,14 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
 
                 val packageRoot = it.contentRoots.firstOrNull()
                 if (packageRoot != null) {
-                    val manifest = packageRoot.findChild(MoveConstants.MANIFEST_FILE)
+                    val manifest = packageRoot.findChild(Consts.MANIFEST_FILE)
                     if (manifest != null) {
                         it.openFile(manifest)
                     }
                     updateAllNotifications(it)
                 }
 
-                it.moveProjects.refreshAllProjects()
+                it.projectsService.refreshAllProjects()
             }
         }
     }

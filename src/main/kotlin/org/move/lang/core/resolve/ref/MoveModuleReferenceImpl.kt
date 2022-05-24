@@ -13,7 +13,7 @@ class MvModuleReferenceImpl(
     override fun resolveInner(): List<MvNamedElement> {
         if (element.isSelf) return element.containingModule.wrapWithList()
 
-        val resolved = resolveSingleItem(element, Namespace.MODULE)
+        val resolved = resolveSingleItem(element, setOf(Namespace.MODULE))
         if (resolved is MvUseAlias) {
             return resolved.wrapWithList()
         }

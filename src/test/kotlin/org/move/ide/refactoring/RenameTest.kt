@@ -407,6 +407,22 @@ class RenameTest : MvTestBase() {
     """
     )
 
+    fun `test Self is not renamed for module`() = doTest("RenamedModule", """
+    module 0x1::/*caret*/Module {
+        struct S {}
+    }        
+    module 0x1::Main {
+        use 0x1::Module::{Self, S};
+    }
+    """, """
+    module 0x1::RenamedModule {
+        struct S {}
+    }        
+    module 0x1::Main {
+        use 0x1::RenamedModule::{Self, S};
+    }
+    """)
+
     private fun doTest(
         newName: String,
         @Language("Move") before: String,

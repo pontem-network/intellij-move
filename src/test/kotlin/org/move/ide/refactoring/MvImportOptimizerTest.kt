@@ -17,7 +17,7 @@ script {
 script {
     use 0x1::M::MyStruct;
     use 0x1::M::call;
-    
+
     fun main() {
         let a: MyStruct = call();
     }
@@ -44,7 +44,7 @@ module 0x1::M {
 }        
 script {
     use 0x1::M::call;
-    
+
     fun main() {
         let a = call();
     }
@@ -70,7 +70,7 @@ module 0x1::M {
 }        
 script {
     use 0x1::M::call;
-    
+
     fun main() {
         let a = call();
     }
@@ -96,7 +96,7 @@ module 0x1::M {
 }        
 script {
     use 0x1::M::call;
-    
+
     fun main() {
         let a = call();
     }
@@ -111,6 +111,65 @@ module 0x1::M2 {
     """, """
 module 0x1::M {}
 module 0x1::M2 {}        
+    """)
+
+    fun `test remove unused import group with two items`() = doTest("""
+module 0x1::M {
+    struct BTC {}
+    struct USDT {}
+}        
+module 0x1::Main {
+    use 0x1::M::{BTC, USDT};
+}
+    """, """
+module 0x1::M {
+    struct BTC {}
+    struct USDT {}
+}        
+module 0x1::Main {}
+    """)
+
+    fun `test sort imports std first`() = doTest("""
+module AAA::M1 {
+    struct S1 {} 
+    struct SS1 {} 
+}        
+module BBB::M2 {
+    struct S2 {}
+}
+module 0x1::Main {
+    use BBB::M2::S2;
+    use AAA::M1::S1;
+    use AAA::M1::SS1;
+    use Std::Signer;
+    use Std::Errors;
+
+    fun call(a: S1, b: S2, c: SS1) {
+        Signer::address_of();
+        Errors;
+    }
+}
+    """, """
+module AAA::M1 {
+    struct S1 {} 
+    struct SS1 {} 
+}        
+module BBB::M2 {
+    struct S2 {}
+}
+module 0x1::Main {
+    use Std::Errors;
+    use Std::Signer;
+
+    use AAA::M1::S1;
+    use AAA::M1::SS1;
+    use BBB::M2::S2;
+
+    fun call(a: S1, b: S2, c: SS1) {
+        Signer::address_of();
+        Errors;
+    }
+}
     """)
 
 //    fun `test remove duplicate module import`() = doTest("""
@@ -132,6 +191,6 @@ module 0x1::M2 {}
 //}
 //    """)
 
-    private fun doTest(@Language("Move") code: String, @Language("Move") excepted: String) =
-        checkEditorAction(code, excepted, "OptimizeImports")
+    private fun doTest(@Language("Move") code: String, @Language("Move") expected: String) =
+        checkEditorAction(code, expected, "OptimizeImports")
 }

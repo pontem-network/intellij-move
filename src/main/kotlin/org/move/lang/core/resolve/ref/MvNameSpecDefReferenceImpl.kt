@@ -6,6 +6,6 @@ import org.move.lang.core.resolve.resolveItem
 
 class MvNameSpecDefReferenceImpl(element: MvItemSpec): MvReferenceCached<MvItemSpec>(element) {
 
-    override fun resolveInner(): List<MvNamedElement> = resolveItem(element, Namespace.SPEC_ITEM)
+    override fun resolveInner(): List<MvNamedElement> = resolveItem(element, setOf(Namespace.SPEC_ITEM))
 
 }

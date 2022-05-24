@@ -29,6 +29,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import org.jdom.Element
 import org.jdom.input.SAXBuilder
+import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isHeadlessEnvironment
 import org.move.openapiext.common.isUnitTestMode
 import java.nio.file.Path
@@ -102,6 +103,8 @@ val Project.modules: Collection<Module>
 val Project.contentRoots: Sequence<VirtualFile>
     get() = this.modules.asSequence()
         .flatMap { ModuleRootManager.getInstance(it).contentRoots.asSequence() }
+
+val Project.root: Path? get() = contentRoots.firstOrNull()?.toNioPathOrNull()
 
 fun Element.toXmlString() = JDOMUtil.writeElement(this)
 fun elementFromXmlString(xml: String): org.jdom.Element =

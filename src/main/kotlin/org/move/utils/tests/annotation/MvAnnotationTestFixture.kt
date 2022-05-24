@@ -9,19 +9,13 @@ import com.intellij.codeInsight.daemon.impl.SeveritiesProvider
 import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.Project
-import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.PsiFile
 import com.intellij.testFramework.InspectionTestUtil
-import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
-import com.intellij.util.PlatformUtils
-import com.intellij.util.indexing.FileBasedIndex
 import junit.framework.TestCase
 import org.intellij.lang.annotations.Language
-import org.move.cli.MvSyncTask
-import org.move.cli.setupProjectRoots
 import org.move.ide.annotator.MvAnnotator
-import org.move.ide.inspections.imports.MvNamedElementIndex
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.createAndOpenFileWithCaretMarker
 import org.move.utils.tests.fileTree
@@ -64,8 +58,8 @@ class MvAnnotationTestFixture(
     fun checkErrors(text: String) =
         checkByText(text, checkWarn = false, checkWeakWarn = false, checkInfo = false)
 
-    private fun configureByText(text: String) {
-        codeInsightFixture.configureByText("main.move", replaceCaretMarker(text.trimIndent()))
+    private fun configureByText(text: String): PsiFile {
+        return codeInsightFixture.configureByText("main.move", replaceCaretMarker(text.trimIndent()))
     }
 
     fun checkFixByFileTree(
@@ -144,6 +138,9 @@ class MvAnnotationTestFixture(
         checkInfo: Boolean = false,
         checkWeakWarn: Boolean = false,
     ) {
+        check(before.contains("/*caret*/")) {
+            "No /*caret*/ comment, add it to the place where fix is expected"
+        }
         configureByText(before)
         codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
         applyQuickFix(fixName)

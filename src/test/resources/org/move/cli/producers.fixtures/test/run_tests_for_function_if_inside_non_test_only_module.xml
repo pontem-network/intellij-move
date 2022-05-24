@@ -1,0 +1,8 @@
+<configurations>
+  <configuration name="Test Main::test_main" type="MoveRunConfiguration">
+    <option name="command" value="move test --filter test_main" />
+    <option name="workingDirectory" value="file://$PROJECT_DIR$/../unitTest_ID" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</configurations>

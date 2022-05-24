@@ -1,20 +1,18 @@
-package org.move.cli.project
+package org.move.cli.module
 
 import com.intellij.ide.util.projectWizard.ModuleBuilder
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
 import com.intellij.ide.util.projectWizard.WizardContext
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.projectRoots.SdkTypeId
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.util.Disposer
 import org.move.cli.Aptos
-import org.move.cli.MoveConstants
+import org.move.cli.Consts
 import org.move.cli.runconfig.addDefaultBuildRunConfiguration
-import org.move.ide.newProject.ConfigurationData
+import org.move.cli.settings.MoveSettingsPanel
 import org.move.ide.newProject.openFile
 import org.move.openapiext.computeWithCancelableProgress
 import org.move.stdext.toPathOrNull
@@ -42,7 +40,7 @@ class MvModuleBuilder : ModuleBuilder() {
         root.refresh(false, true)
 
         // Just work if user "creates new project" over an existing one.
-        if (aptosPath != null && root.findChild(MoveConstants.MANIFEST_FILE) == null) {
+        if (aptosPath != null && root.findChild(Consts.MANIFEST_FILE) == null) {
             val aptos = Aptos(aptosPath)
             val project = modifiableRootModel.project
             val packageName = project.name.replace(' ', '_')
@@ -62,9 +60,5 @@ class MvModuleBuilder : ModuleBuilder() {
         }
     }
 
-    var configurationData: ConfigurationData? = null
-
-    companion object {
-        private val LOG: Logger = logger<MvModuleBuilder>()
-    }
+    var configurationData: MoveSettingsPanel.Data? = null
 }

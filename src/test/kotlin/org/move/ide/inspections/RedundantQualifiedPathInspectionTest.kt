@@ -155,4 +155,18 @@ class RedundantQualifiedPathInspectionTest : InspectionTestBase(RedundantQualifi
         }
     }    
     """)
+
+    fun `test no redundant qualifier for struct with generic`() = checkWarnings("""
+    module 0x1::Coin {
+        struct MintCapability<CoinType> has store {}
+    }    
+    module 0x1::M {
+        use 0x1::Coin::MintCapability;
+        
+        struct BTC {}
+        struct Caps has key {
+            cap2: MintCapability<BTC>,
+        }       
+    }
+    """)
 }

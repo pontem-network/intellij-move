@@ -13,6 +13,7 @@ import org.move.ide.MoveIcons
 import org.move.ide.presentation.shortPresentableText
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.inferenceCtx
 
 const val DEFAULT_PRIORITY = 0.0
@@ -53,10 +54,27 @@ fun AddressVal.createCompletionLookupElement(lookupString: String): LookupElemen
 }
 
 fun MvNamedElement.createCompletionLookupElement(
-    insertHandler: InsertHandler<LookupElement> = MvInsertHandler()
+    insertHandler: InsertHandler<LookupElement> = MvInsertHandler(),
+    ns: Set<Namespace> = emptySet()
 ): LookupElement {
     return when (this) {
-        is MvModuleUseSpeck -> this.createLookupElement()
+        is MvModuleUseSpeck -> {
+            val module = this.fqModuleRef?.reference?.resolve()
+            if (module != null) {
+                module.createCompletionLookupElement(insertHandler, ns)
+            } else {
+                this.createLookupElement().withInsertHandler(insertHandler)
+            }
+        }
+
+        is MvUseItem -> {
+            val namedItem = this.reference.resolve()
+            if (namedItem != null) {
+                namedItem.createCompletionLookupElement(insertHandler, ns)
+            } else {
+                this.createLookupElement().withInsertHandler(insertHandler)
+            }
+        }
 
         is MvFunction -> this.createLookupElement()
             .withTailText(this.functionParameterList?.parametersText ?: "()")
@@ -71,23 +89,27 @@ fun MvNamedElement.createCompletionLookupElement(
         is MvModule -> this.createLookupElement()
             .withTailText(this.address()?.let { " ${it.text}" } ?: "")
             .withTypeText(this.containingFile?.name)
-
-        is MvStruct -> this.createLookupElement()
-            .withTailText(" { ... }")
             .withInsertHandler(insertHandler)
+
+        is MvStruct -> {
+            val tailText = if (Namespace.TYPE !in ns) " { ... }" else ""
+            this.createLookupElement()
+                .withTailText(tailText)
+                .withInsertHandler(insertHandler)
+        }
 
         is MvStructField -> this.createLookupElement()
             .withTypeText(this.typeAnnotation?.type?.text)
+            .withInsertHandler(insertHandler)
 
         is MvBindingPat -> this.createLookupElement()
             .withTypeText(this.cachedTy(this.inferenceCtx(this.isMsl())).shortPresentableText(true))
+            .withInsertHandler(insertHandler)
 
         is MvSchema -> this.createLookupElement()
             .withInsertHandler(insertHandler)
 
-//        is MvSchemaFieldStmt -> this.createLookupElement()
-
-        else -> LookupElementBuilder.create(this)
+        else -> LookupElementBuilder.create(this).withInsertHandler(insertHandler)
     }
 }
 
@@ -153,7 +175,7 @@ private fun InsertionContext.functionSuffixAndOffset(
     return Pair(suffix, offset)
 }
 
-class MvInsertHandler : InsertHandler<LookupElement> {
+open class MvInsertHandler : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, item: LookupElement) {
         val document = context.document
         val element = item.psiElement as? MvElement ?: return

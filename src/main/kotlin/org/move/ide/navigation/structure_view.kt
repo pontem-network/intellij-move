@@ -10,7 +10,7 @@ import com.intellij.openapi.ui.Queryable
 import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.lang.MvFile
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvAddressDef
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.functions
@@ -37,7 +37,7 @@ class MvStructureViewElement(val element: NavigatablePsiElement) : StructureView
 
     override fun getChildren(): Array<TreeElement> {
         return when (element) {
-            is MvFile -> {
+            is MoveFile -> {
                 val elements =
                     PsiTreeUtil
                         .getChildrenOfTypeAsList(element, MvModule::class.java)

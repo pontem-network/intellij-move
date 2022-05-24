@@ -2,13 +2,13 @@ package org.move.lang.core
 
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
-import org.move.lang.MvLanguage
+import org.move.lang.MoveLanguage
 import org.move.lang.MvElementTypes.*
 import org.move.lang.MoveParserDefinition.Companion.BLOCK_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 
-class MvTokenType(debugName: String) : IElementType(debugName, MvLanguage)
+class MvTokenType(debugName: String) : IElementType(debugName, MoveLanguage)
 
 fun tokenSetOf(vararg tokens: IElementType) = TokenSet.create(*tokens)
 

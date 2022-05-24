@@ -74,8 +74,11 @@ private fun isItemUseSpeckUsed(useSpeck: MvItemUseSpeck, usages: PathUsageMap): 
 }
 
 private fun isUseItemUsed(useItem: MvUseItem, usages: PathUsageMap): Boolean {
-    val name = useItem.referenceName
     val items = useItem.reference.multiResolve()
-
+    var name = useItem.referenceName
+    if (name == "Self") {
+        val useStmt = useItem.ancestorStrict<MvUseStmt>()
+        name = useStmt?.itemUseSpeck?.fqModuleRef?.referenceName.orEmpty()
+    }
     return items.any { it in usages.pathUsages[name].orEmpty() }
 }

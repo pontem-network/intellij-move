@@ -243,4 +243,39 @@ class ResolveModulesTest : ResolveTestCase() {
         }
     }    
     """)
+
+    fun `test resolve module as identifier`() = checkByCode("""
+module 0x1::Signer {}
+            //X
+module 0x1::M {
+    use 0x1::Signer;
+    
+    fun call() {
+        Signer
+          //^  
+    }
+}        
+    """)
+
+    fun `test resolve module from Self`() = checkByCode("""
+    module 0x1::M {
+              //X
+        struct MyStruct {}
+    }    
+    module 0x1::Main {
+        use 0x1::M::{Self, MyStruct};
+                    //^
+    }
+    """)
+
+    fun `test resolve module from Self with alias`() = checkByCode("""
+    module 0x1::M {
+              //X
+        struct MyStruct {}
+    }    
+    module 0x1::Main {
+        use 0x1::M::{Self as MyM, MyStruct};
+                    //^
+    }
+    """)
 }

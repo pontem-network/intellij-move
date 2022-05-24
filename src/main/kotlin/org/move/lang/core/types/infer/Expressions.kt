@@ -25,6 +25,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
         is MvStructLitExpr -> inferStructLitExpr(expr, ctx)
         is MvDerefExpr -> inferDerefExprTy(expr, ctx)
         is MvLitExpr -> inferLitExprTy(expr, ctx)
+        is MvTupleLitExpr -> inferTupleLitExprTy(expr, ctx)
 
         is MvMoveExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
         is MvCopyExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
@@ -47,6 +48,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
         is MvOrExpr -> TyBool
 
         is MvIfExpr -> inferIfExprTy(expr, ctx)
+
         else -> TyUnknown
     }
     if (exprTy is TyReference && expr.isMsl()) {
@@ -178,6 +180,11 @@ private fun inferDerefExprTy(derefExpr: MvDerefExpr, ctx: InferenceContext): Ty 
     val exprTy =
         derefExpr.expr?.let { inferExprTy(it, ctx) }
     return (exprTy as? TyReference)?.referenced ?: TyUnknown
+}
+
+private fun inferTupleLitExprTy(tupleExpr: MvTupleLitExpr, ctx: InferenceContext): Ty {
+    val types = tupleExpr.exprList.map { it.inferExprTy(ctx) }
+    return TyTuple(types)
 }
 
 private fun inferLitExprTy(litExpr: MvLitExpr, ctx: InferenceContext): Ty {

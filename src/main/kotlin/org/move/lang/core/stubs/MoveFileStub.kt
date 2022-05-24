@@ -6,13 +6,13 @@ import com.intellij.psi.stubs.DefaultStubBuilder
 import com.intellij.psi.stubs.PsiFileStubImpl
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.tree.IStubFileElementType
-import org.move.lang.MvFile
-import org.move.lang.MvLanguage
+import org.move.lang.MoveFile
+import org.move.lang.MoveLanguage
 
-class MvFileStub(file: MvFile) : PsiFileStubImpl<MvFile>(file) {
+class MvFileStub(file: MoveFile) : PsiFileStubImpl<MoveFile>(file) {
     override fun getType() = Type
 
-    object Type : IStubFileElementType<MvFileStub>(MvLanguage) {
+    object Type : IStubFileElementType<MvFileStub>(MoveLanguage) {
         // Bump this number if Stub structure changes
         override fun getStubVersion(): Int {
             return 5002
@@ -21,7 +21,7 @@ class MvFileStub(file: MvFile) : PsiFileStubImpl<MvFile>(file) {
 
         override fun getBuilder(): StubBuilder = object : DefaultStubBuilder() {
             override fun createStubForFile(file: PsiFile): StubElement<*> {
-                return MvFileStub(file as MvFile)
+                return MvFileStub(file as MoveFile)
             }
 
 //            override fun skipChildProcessingWhenBuildingStubs(parent: ASTNode, child: ASTNode): Boolean {

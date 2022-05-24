@@ -5,36 +5,49 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslScope
 import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Visibility
 
 object ModulesCompletionProvider : MvCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
-            MvPsiPatterns.pathIdent()
+            MvPsiPatterns.path()
 
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
         result: CompletionResultSet,
     ) {
-        val maybePathIdent = parameters.position.parent
-        val maybePath = maybePathIdent.parent
+        val maybePath = parameters.position.parent
         val refElement =
             maybePath as? MvPath ?: maybePath.parent as MvPath
 
         if (parameters.position !== refElement.referenceNameElement) return
-        if (refElement.pathIdent.moduleRef != null) return
+        if (refElement.moduleRef != null) return
 
+        val processedNames = mutableSetOf<String>()
         val itemVis = ItemVis(setOf(Namespace.MODULE), emptySet(), refElement.mslScope)
         processItems(refElement, itemVis) {
             val lookup = it.element.createCompletionLookupElement()
             result.addElement(lookup)
+            it.element.name?.let(processedNames::add)
             false
         }
+
+        val path = parameters.originalPosition?.parent as? MvPath ?: return
+        val importContext =
+            ImportContext.from(path, itemVis.replace(vs = setOf(Visibility.Public)))
+        addCompletionsFromIndex(
+            parameters,
+            result,
+            processedNames,
+            importContext
+        )
     }
 }

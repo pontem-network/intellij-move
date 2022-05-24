@@ -621,7 +621,7 @@ Stmt ::= LetMoveStmt | ExprStmt
 
 SpecExprStmt ::= (SpecExpr_item !'}') ';' { pin = 1 }
 private SpecExpr ::= SpecExprStmt_items | Expr
-private SpecExpr_item ::= SpecExprStmt_items | ExprStmt_items
+private SpecExpr_item ::= SpecExprStmt_items | ExprStmt_expr
 {
     recoverWhile = SpecExprStmt_recover
 }
@@ -651,18 +651,19 @@ LetMslStmt ::= (let post?) Pat TypeAnnotation? Initializer? ';'
     elementType = LetStmt
 }
 
-ExprStmt ::= (ExprStmt_items !('}')) ';' { pin = 1 }
-private ExprStmt_items ::= IfExpr
-                                | LoopExpr
-                                | WhileExpr
-                                | SpecBlockExpr
-                                | Expr
+ExprStmt ::= (ExprStmt_expr !('}')) ';' { pin = 1 }
+private ExprStmt_expr ::= IfExpr
+                            | LoopExpr
+                            | WhileExpr
+                            | SpecBlockExpr
+                            | Expr
 {
     recoverWhile = "ExprStmt_recover"
 }
-private ExprStmt_recover ::= !(';' | '}' | ExprStmt_first)
-private ExprStmt_first ::= let | if | while
-//                                | <<specOnly include>>
+private ExprStmt_recover ::= !(';' | '}' | Expr_first)
+private Expr_first ::= let | if | while
+                        | IDENTIFIER
+                        | (AddressRef '::')
 //                                | <<specOnly apply>>
 //                                | <<specOnly pragma>>
 //                                | <<specOnly emits>>
@@ -688,7 +689,7 @@ CodeBlock ::= '{' CodeBlock_items '}'
 
 private CodeBlock_items ::= UseStmt*
                             Stmt*
-                            ExprStmt_items?
+                            ExprStmt_expr?
 {
     recoverWhile = "CodeBlock_items_recover"
 }
@@ -819,17 +820,16 @@ LitExpr ::= HEX_INTEGER_LITERAL
                 | INTEGER_LITERAL
                 | HEX_STRING_LITERAL
                 | BYTE_STRING_LITERAL
-//                | PLACEHOLDER_ADDRESS_LITERAL
-//                | ADDRESS_LITERAL
-//                | BECH32_ADDRESS_LITERAL
-//                | POLKADOT_ADDRESS_LITERAL
-//                | ('@' NamedAddress)
                 | AddressLit
 AddressLit ::= '@' AddressRef { pin = 1 }
 
 CallExpr ::= (Path &'(') CallArgumentList { pin = 1 }
-CallArgumentList ::= '(' <<comma_sep_items (Expr &(','|')'))>>? ')' { pin = 1 }
-//CallArgumentList ::= '(' ((Expr &(','|')')) ( ',' (Expr &(','|')')) )* ',')? ')' { pin = 1 }
+CallArgumentList ::= '(' CallArgumentList_items? ')' { pin = 1 }
+private CallArgumentList_items ::= <<comma_sep_items Expr>>
+{
+    recoverWhile = CallArgumentList_items_recovery
+}
+private CallArgumentList_items_recovery ::= !(')' | ';')
 
 IfExpr ::= if Condition AnyBlock ElseBlock? { pin = 1 }
 
@@ -876,18 +876,18 @@ Path ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList
     mixin = "org.move.lang.core.psi.ext.MvPathMixin"
 }
 
-fake PathIdent ::= ((FQModuleRef | ModuleRef) '::')? IDENTIFIER?
+//fake PathIdent ::= ((FQModuleRef | ModuleRef) '::')? IDENTIFIER?
 
-LocalPathIdent ::= IDENTIFIER { elementType = PathIdent }
-ModulePathIdent ::= ModuleRef ('::' !(IDENTIFIER '::')) IDENTIFIER
+private LocalPathIdent ::= IDENTIFIER
+private ModulePathIdent ::= ModuleRef ('::' !(IDENTIFIER '::')) IDENTIFIER
 {
     pin = 2
-    elementType = PathIdent
+//    elementType = PathIdent
 }
-FQModulePathIdent ::= FQModuleRef '::' IDENTIFIER
+private FQModulePathIdent ::= FQModuleRef '::' IDENTIFIER
 {
     pin = 1
-    elementType = PathIdent
+//    elementType = PathIdent
 }
 
 ModuleRef ::= IDENTIFIER | FQModuleRef
@@ -897,7 +897,6 @@ ModuleRef ::= IDENTIFIER | FQModuleRef
 }
 
 FQModuleRef ::= AddressRef '::' IDENTIFIER
-//FQModuleRef ::= (FQModuleRefUseStart | FQModuleRefStart) IDENTIFIER
 {
     pin = 2
     extends = ModuleRef
@@ -906,8 +905,6 @@ FQModuleRef ::= AddressRef '::' IDENTIFIER
     ]
     mixin = "org.move.lang.core.psi.ext.MvFQModuleRefMixin"
 }
-private FQModuleRefUseStart ::= AddressRef '::' { pin = 2 }
-private FQModuleRefStart ::= AddressRef '::'
 
 AddressRef ::= NamedAddress
                 | PLACEHOLDER_ADDRESS
@@ -987,7 +984,7 @@ SpecBlockExpr ::= spec <<msl SpecBlock>>
 
 SpecBlock ::= '{' SpecBlock_items '}' { pin = 1 }
 //private SpecBlock_inner ::= '{' SpecBlock_items '}' { pin = 1 }
-private SpecBlock_items ::= (SpecStmt | ExprStmt)* (SpecExprStmt_items | ExprStmt_items)?
+private SpecBlock_items ::= (SpecStmt | ExprStmt)* (SpecExprStmt_items | ExprStmt_expr)?
 {
     recoverWhile = SpecBlock_items_recover
 }

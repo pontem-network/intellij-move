@@ -1,4 +1,4 @@
-package org.move.cli.project
+package org.move.cli.module
 
 import com.intellij.ide.util.projectWizard.ModuleBuilder
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
@@ -8,10 +8,9 @@ import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.layout.panel
 import com.intellij.util.ui.JBUI
-import org.move.cli.moveProjects
-import org.move.cli.settings.AptosSettingsPanel
+import org.move.cli.projectsService
+import org.move.cli.settings.MoveSettingsPanel
 import org.move.cli.settings.moveSettings
-import org.move.ide.newProject.ConfigurationData
 import org.move.openapiext.isFeatureEnabled
 import javax.swing.JComponent
 
@@ -20,16 +19,16 @@ class AptosConfigurationWizardStep(
     private val configurationUpdaterConsumer: ((ModuleBuilder.ModuleConfigurationUpdater) -> Unit)? = null
 ) : ModuleWizardStep() {
 
-    private val aptosSettingsPanel = AptosSettingsPanel()
+    private val moveSettingsPanel = MoveSettingsPanel()
 
     override fun getComponent(): JComponent = panel {
-        aptosSettingsPanel.attachTo(this)
+        moveSettingsPanel.attachTo(this)
     }.withBorderIfNeeded()
 
-    override fun disposeUIResources() = Disposer.dispose(aptosSettingsPanel)
+    override fun disposeUIResources() = Disposer.dispose(moveSettingsPanel)
 
     override fun updateDataModel() {
-        val data = aptosSettingsPanel.data
+        val data = moveSettingsPanel.data
         ConfigurationUpdater.data = data
 
         val projectBuilder = context.projectBuilder
@@ -55,7 +54,7 @@ class AptosConfigurationWizardStep(
     private fun isNewWizard(): Boolean = isFeatureEnabled("new.project.wizard")
 
     private object ConfigurationUpdater : ModuleBuilder.ModuleConfigurationUpdater() {
-        var data: ConfigurationData? = null
+        var data: MoveSettingsPanel.Data? = null
 
         override fun update(module: Module, rootModel: ModifiableRootModel) {
             val data = data
@@ -68,7 +67,7 @@ class AptosConfigurationWizardStep(
             // "SDK not configured" errors
             // https://github.com/intellij-rust/intellij-rust/issues/1062
             rootModel.inheritSdk()
-            module.project.moveProjects.refreshAllProjects()
+            module.project.projectsService.refreshAllProjects()
 
 //            val contentEntry = rootModel.contentEntries.singleOrNull()
 //            if (contentEntry != null) {

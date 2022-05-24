@@ -1,70 +1,11 @@
-package org.move.cli
+package org.move.cli.project
 
 import com.intellij.openapi.project.Project
-import com.intellij.ui.navigation.Place
-import org.move.lang.core.psi.MvNamedAddress
-import org.move.lang.core.types.shortenYamlAddress
+import org.move.cli.*
 import org.move.openapiext.*
 import org.move.stdext.chain
-import org.toml.lang.psi.*
+import org.toml.lang.psi.TomlFile
 import java.nio.file.Path
-
-typealias RawAddressVal = Pair<String, TomlKeyValue>
-
-data class AddressVal(
-    val value: String,
-    val keyValue: TomlKeyValue?,
-    val placeholderKeyValue: TomlKeyValue?,
-    val packageName: String
-) {
-    val tomlKeySegment: TomlKeySegment?
-        get() {
-            return this.placeholderKeyValue?.singleSegmentOrNull()
-                ?: this.keyValue?.singleSegmentOrNull()
-        }
-}
-
-data class PlaceholderVal(
-    val keyValue: TomlKeyValue,
-    val packageName: String,
-)
-
-typealias RawAddressMap = MutableMap<String, RawAddressVal>
-
-typealias AddressMap = MutableMap<String, AddressVal>
-typealias PlaceholderMap = MutableMap<String, PlaceholderVal>
-
-typealias DependenciesMap = MutableMap<String, Dependency>
-typealias DepsSubstMap = MutableMap<String, Pair<Dependency, RawAddressMap>>
-
-fun DepsSubstMap.asDependenciesMap(): DependenciesMap {
-    return this.mapValues { it.value.first }.toMutableMap()
-}
-
-fun mutableRawAddressMap(): RawAddressMap = mutableMapOf()
-fun mutableAddressMap(): AddressMap = mutableMapOf()
-fun dependenciesMap(): DependenciesMap = mutableMapOf()
-fun placeholderMap(): PlaceholderMap = mutableMapOf()
-
-fun AddressMap.copyMap(): AddressMap = this.toMutableMap()
-
-typealias TomlElementMap = Map<String, TomlValue?>
-
-fun TomlElement.toMap(): TomlElementMap {
-    val namedEntries = when (this) {
-        is TomlTable -> this.namedEntries()
-        is TomlInlineTable -> this.namedEntries()
-        else -> null
-    }
-    return namedEntries.orEmpty().associate { Pair(it.first, it.second) }
-}
-
-data class MoveTomlPackageTable(
-    val name: String?,
-    val version: String?,
-    val authors: List<String>,
-    val license: String?
-)
 
 class MoveToml(
     val project: Project,
@@ -76,6 +17,33 @@ class MoveToml(
     val dev_dependencies: DepsSubstMap = mutableMapOf(),
 ) {
     val packageName: String? get() = packageTable?.name
+
+    fun declaredAddresses(devMode: DevMode): DeclaredAddresses {
+        val packageName = this.packageName ?: ""
+        val raws = when (devMode) {
+            DevMode.MAIN -> this.addresses
+            DevMode.DEV -> this.dev_addresses
+        }
+
+        val values = mutableAddressMap()
+        val placeholders = placeholderMap()
+        for ((addressName, addressVal) in raws.entries) {
+            val (value, tomlKeyValue) = addressVal
+            if (addressVal.first == Consts.ADDR_PLACEHOLDER) {
+                placeholders[addressName] = PlaceholderVal(tomlKeyValue, packageName)
+            } else {
+                values[addressName] = AddressVal(value, tomlKeyValue, null, packageName)
+            }
+        }
+        return DeclaredAddresses(values, placeholders)
+    }
+
+    data class MoveTomlPackageTable(
+        val name: String?,
+        val version: String?,
+        val authors: List<String>,
+        val license: String?
+    )
 
     companion object {
         fun fromTomlFile(tomlFile: TomlFile, projectRoot: Path): MoveToml {

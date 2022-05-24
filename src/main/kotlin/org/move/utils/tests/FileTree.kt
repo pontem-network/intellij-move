@@ -28,6 +28,8 @@ import org.move.openapiext.toPsiFile
 import org.move.utils.tests.resolve.TestResolveResult
 import org.move.utils.tests.resolve.checkResolvedFile
 
+typealias TreeBuilder = FileTreeBuilder.() -> Unit
+
 fun fileTree(builder: FileTreeBuilder.() -> Unit): FileTree =
     FileTree(FileTreeBuilderImpl().apply { builder() }.intoDirectory())
 

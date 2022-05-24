@@ -40,27 +40,27 @@ FILE
           MvExprStmtImpl(EXPR_STMT)
             MvRefExprImpl(REF_EXPR)
               MvPathImpl(PATH)
-                MvPathIdentImpl(PATH_IDENT)
-                  MvFQModuleRefImpl(FQ_MODULE_REF)
-                    MvAddressRefImpl(ADDRESS_REF)
-                      PsiElement(DIEM_ADDRESS)('0x1')
-                    PsiElement(::)('::')
-                    PsiErrorElement:'::', <, IDENTIFIER or '{' expected, got ';'
-                      <empty list>
-            PsiWhiteSpace(' ')
-            PsiElement(;)(';')
+                PsiElement(IDENTIFIER)('RMRK')
+            PsiErrorElement:';' expected, got 'RMRK'
+              <empty list>
           PsiWhiteSpace('\n        ')
           MvExprStmtImpl(EXPR_STMT)
             MvRefExprImpl(REF_EXPR)
               MvPathImpl(PATH)
-                MvPathIdentImpl(PATH_IDENT)
-                  MvFQModuleRefImpl(FQ_MODULE_REF)
-                    MvAddressRefImpl(ADDRESS_REF)
-                      PsiElement(DIEM_ADDRESS)('0x1')
-                    PsiElement(::)('::')
-                    PsiElement(IDENTIFIER)('RMRK')
+                MvModuleRefImpl(MODULE_REF)
+                  PsiElement(IDENTIFIER)('RMRK')
+                PsiElement(::)('::')
+                PsiErrorElement:<, IDENTIFIER or '{' expected, got '0x1'
+                  <empty list>
+          PsiWhiteSpace('\n        ')
+          MvExprStmtImpl(EXPR_STMT)
+            MvRefExprImpl(REF_EXPR)
+              MvPathImpl(PATH)
+                MvFQModuleRefImpl(FQ_MODULE_REF)
+                  MvAddressRefImpl(ADDRESS_REF)
+                    PsiElement(DIEM_ADDRESS)('0x1')
                   PsiElement(::)('::')
-                  PsiErrorElement:<, IDENTIFIER or '{' expected, got ';'
+                  PsiErrorElement:'::', <, IDENTIFIER or '{' expected, got ';'
                     <empty list>
             PsiWhiteSpace(' ')
             PsiElement(;)(';')
@@ -68,22 +68,20 @@ FILE
           MvExprStmtImpl(EXPR_STMT)
             MvRefExprImpl(REF_EXPR)
               MvPathImpl(PATH)
-                MvPathIdentImpl(PATH_IDENT)
-                  MvFQModuleRefImpl(FQ_MODULE_REF)
-                    MvAddressRefImpl(ADDRESS_REF)
-                      MvNamedAddressImpl(NAMED_ADDRESS)
-                        PsiElement(IDENTIFIER)('Sender')
-                    PsiElement(::)('::')
-                    PsiElement(IDENTIFIER)('RMRK')
+                MvFQModuleRefImpl(FQ_MODULE_REF)
+                  MvAddressRefImpl(ADDRESS_REF)
+                    PsiElement(DIEM_ADDRESS)('0x1')
                   PsiElement(::)('::')
-                  PsiErrorElement:<, IDENTIFIER or '{' expected, got ';'
-                    <empty list>
+                  PsiElement(IDENTIFIER)('RMRK')
+                PsiElement(::)('::')
+                PsiErrorElement:<, IDENTIFIER or '{' expected, got ';'
+                  <empty list>
             PsiWhiteSpace(' ')
             PsiElement(;)(';')
           PsiWhiteSpace('\n        ')
-          MvRefExprImpl(REF_EXPR)
-            MvPathImpl(PATH)
-              MvPathIdentImpl(PATH_IDENT)
+          MvExprStmtImpl(EXPR_STMT)
+            MvRefExprImpl(REF_EXPR)
+              MvPathImpl(PATH)
                 MvFQModuleRefImpl(FQ_MODULE_REF)
                   MvAddressRefImpl(ADDRESS_REF)
                     MvNamedAddressImpl(NAMED_ADDRESS)
@@ -91,8 +89,22 @@ FILE
                   PsiElement(::)('::')
                   PsiElement(IDENTIFIER)('RMRK')
                 PsiElement(::)('::')
-                PsiErrorElement:<, IDENTIFIER or '{' expected, got '}'
+                PsiErrorElement:<, IDENTIFIER or '{' expected, got ';'
                   <empty list>
+            PsiWhiteSpace(' ')
+            PsiElement(;)(';')
+          PsiWhiteSpace('\n        ')
+          MvRefExprImpl(REF_EXPR)
+            MvPathImpl(PATH)
+              MvFQModuleRefImpl(FQ_MODULE_REF)
+                MvAddressRefImpl(ADDRESS_REF)
+                  MvNamedAddressImpl(NAMED_ADDRESS)
+                    PsiElement(IDENTIFIER)('Sender')
+                PsiElement(::)('::')
+                PsiElement(IDENTIFIER)('RMRK')
+              PsiElement(::)('::')
+              PsiErrorElement:<, IDENTIFIER or '{' expected, got '}'
+                <empty list>
           PsiWhiteSpace('\n    ')
           PsiElement(})('}')
       PsiWhiteSpace('\n')

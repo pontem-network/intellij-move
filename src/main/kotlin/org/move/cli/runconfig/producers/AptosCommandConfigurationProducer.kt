@@ -5,10 +5,16 @@ import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
+import org.move.cli.AptosCommandLine
 import org.move.cli.runconfig.AptosCommandConfiguration
 import org.move.cli.runconfig.AptosCommandConfigurationType
-import org.move.cli.runconfig.AptosCommandLineFromContext
 
+
+data class AptosCommandLineFromContext(
+    val sourceElement: PsiElement,
+    val configurationName: String,
+    val commandLine: AptosCommandLine
+)
 
 abstract class AptosCommandConfigurationProducer :
     LazyRunConfigurationProducer<AptosCommandConfiguration>() {

@@ -7,6 +7,7 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.typeArguments
 
 class RedundantQualifiedPathInspection : MvLocalInspectionTool() {
 
@@ -14,20 +15,20 @@ class RedundantQualifiedPathInspection : MvLocalInspectionTool() {
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor =
         object : MvVisitor() {
-            override fun visitPathIdent(pathIdent: MvPathIdent) {
-                val pathIdentText = pathIdent.text
-                val item = pathIdent.parent.reference?.resolve() as? MvNamedElement ?: return
+            override fun visitPath(path: MvPath) {
+                val pathText = path.text.replace(path.typeArgumentList?.text.orEmpty(), "")
+                val item = path.reference?.resolve() ?: return
 
-                val importsOwner = pathIdent.containingScript?.scriptBlock
-                    ?: pathIdent.containingModule?.moduleBlock
+                val importsOwner = path.containingScript?.scriptBlock
+                    ?: path.containingModule?.moduleBlock
                     ?: return
-                val shortestPathIdentText = importsOwner.shortestPathIdentText(item) ?: return
-                val diff = pathIdentText.length - shortestPathIdentText.length
+                val shortestPathText = importsOwner.shortestPathText(item) ?: return
+                val diff = pathText.length - shortestPathText.length
                 if (diff > 0) {
-                    if (pathIdentText.substring(0, diff) == "Self::") return
+                    if (pathText.substring(0, diff) == "Self::") return
                     val range = TextRange.from(0, diff)
                     holder.registerProblem(
-                        pathIdent,
+                        path,
                         "Redundant qualifier",
                         ProblemHighlightType.LIKE_UNUSED_SYMBOL,
                         range,
@@ -38,10 +39,8 @@ class RedundantQualifiedPathInspection : MvLocalInspectionTool() {
                                 project: Project,
                                 descriptor: ProblemDescriptor
                             ) {
-                                val newPathIdent = project.psiFactory.pathIdent(
-                                    shortestPathIdentText
-                                )
-                                descriptor.psiElement.replace(newPathIdent)
+                                val newPath = project.psiFactory.path(shortestPathText)
+                                descriptor.psiElement.replace(newPath)
                             }
 
                         })

@@ -12,7 +12,7 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
 
     private val state: MoveProjectSettingsService.State = project.moveSettings.settingsState
 
-    private val moveProjectSettings = AptosSettingsPanel()
+    private val moveProjectSettings = MoveSettingsPanel()
 
     override fun createPanel(): DialogPanel {
         return panel {
@@ -30,7 +30,7 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
 
     override fun reset() {
         super.reset()
-        moveProjectSettings.data = AptosSettingsPanel.Data(
+        moveProjectSettings.data = MoveSettingsPanel.Data(
             aptosPath = state.aptosPath,
         )
     }

@@ -1,6 +1,6 @@
 package org.move.lang
 
-import org.move.cli.moveProjects
+import org.move.cli.projectsService
 import org.move.lang.core.psi.MvNamedAddress
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
@@ -185,7 +185,7 @@ dependencies: []
         val (address, data) = myFixture.findElementAndDataInEditor<MvNamedAddress>()
         val expectedValue = data.trim()
 
-        val moveProject = project.moveProjects.findProjectForPsiElement(address)!!
+        val moveProject = project.projectsService.findProjectForPsiElement(address)!!
         val actualValue = moveProject.getNamedAddress(address.referenceName)!!.text()
 
         check(actualValue == expectedValue) {

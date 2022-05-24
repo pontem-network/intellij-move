@@ -40,5 +40,5 @@ fun splitOnDoubleDash(arguments: List<String>): Pair<List<String>, List<String>>
 
 val Module.moveProjectRoot: VirtualFile?
     get() = ModuleRootManager.getInstance(this).contentRoots.firstOrNull {
-        it.findChild(MoveConstants.MANIFEST_FILE) != null
+        it.findChild(Consts.MANIFEST_FILE) != null
     }

@@ -362,4 +362,21 @@ class ResolveFunctionTest : ResolveTestCase() {
         }
     }
     """)
+
+    fun `test public script function available in test`() = checkByCode("""
+    module 0x1::M {
+        public(script) fun call() {}
+                           //X
+    }    
+    #[test_only]
+    module 0x1::Tests {
+        use 0x1::M::call;
+        
+        #[test]
+        public(script) fun test_1() {
+            call();
+            //^
+        }
+    }
+    """)
 }

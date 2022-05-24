@@ -14,7 +14,7 @@ import org.move.lang.core.psi.MvPath
 
 object MacrosCompletionProvider : MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
-        get() = MvPsiPatterns.pathIdent()
+        get() = MvPsiPatterns.path()
             .andNot(MvPsiPatterns.pathType())
             .andNot(MvPsiPatterns.schemaRef())
             .andNot(
@@ -28,8 +28,7 @@ object MacrosCompletionProvider : MvCompletionProvider() {
         context: ProcessingContext,
         result: CompletionResultSet
     ) {
-        val maybePathIdent = parameters.position.parent
-        val maybePath = maybePathIdent.parent
+        val maybePath = parameters.position.parent
         val path = maybePath as? MvPath ?: maybePath.parent as MvPath
 
         if (parameters.position !== path.referenceNameElement) return

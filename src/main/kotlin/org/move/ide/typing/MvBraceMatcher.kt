@@ -11,7 +11,7 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.lang.MvElementTypes.*
 import org.move.lang.MoveFileType
-import org.move.lang.MvLanguage
+import org.move.lang.MoveLanguage
 import org.move.lang.core.MOVE_COMMENTS
 import java.util.*
 
@@ -46,7 +46,7 @@ private class MvPairedBraceMatcher : PairedBraceMatcher {
 }
 
 
-class MvBraceMatcher : PairedBraceMatcherAdapter(MvPairedBraceMatcher(), MvLanguage) {
+class MvBraceMatcher : PairedBraceMatcherAdapter(MvPairedBraceMatcher(), MoveLanguage) {
     override fun isLBraceToken(
         iterator: HighlighterIterator,
         fileText: CharSequence,
