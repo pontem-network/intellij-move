@@ -32,20 +32,25 @@ class MvImportOptimizer : ImportOptimizer {
         }
     }
 
-    private fun optimizeImports(useStmtOwner: MvItemsOwner) {
-        removeUnusedImports(useStmtOwner)
-        sortImports(useStmtOwner)
+    private fun optimizeImports(itemsOwner: MvItemsOwner) {
+        removeUnusedImports(itemsOwner)
+        sortImports(itemsOwner)
     }
 
     private fun removeUnusedImports(useStmtOwner: MvItemsOwner) {
+        fun MvUseStmt.deleteWithLeadingWhitespace() {
+            if (this.nextSibling.isWhitespace()) this.nextSibling.delete()
+            this.delete()
+        }
+
         val psiFactory = useStmtOwner.project.psiFactory
         val useStmts = useStmtOwner.useStmtList
         for (useStmt in useStmts) {
             val moduleSpeck = useStmt.moduleUseSpeck
             if (moduleSpeck != null) {
                 if (!moduleSpeck.isUsed()) {
-                    useStmt.delete()
-                    return
+                    useStmt.deleteWithLeadingWhitespace()
+                    continue
                 }
             }
             val useSpeck = useStmt.itemUseSpeck
@@ -53,8 +58,9 @@ class MvImportOptimizer : ImportOptimizer {
                 var itemGroup = useSpeck.useItemGroup
                 if (itemGroup != null) {
                     val usedItems = itemGroup.useItemList.filter { it.isUsed() }
-                    if (usedItems.isEmpty()) useStmt.delete()
-                    else {
+                    if (usedItems.isEmpty()) {
+                        useStmt.deleteWithLeadingWhitespace()
+                    } else {
                         val newItemGroup = psiFactory.useItemGroup(usedItems.map { it.text })
                         itemGroup = itemGroup.replace(newItemGroup) as MvUseItemGroup
                     }
@@ -64,7 +70,7 @@ class MvImportOptimizer : ImportOptimizer {
                 }
                 if (!useSpeck.isUsed()) {
                     // single unused import 0x1::M::call;
-                    useStmt.delete()
+                    useStmt.deleteWithLeadingWhitespace()
                 }
             }
         }

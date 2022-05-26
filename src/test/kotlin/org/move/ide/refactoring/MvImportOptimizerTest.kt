@@ -172,6 +172,43 @@ module 0x1::Main {
 }
     """)
 
+    fun `test remove all imports if not needed`() = doTest("""
+module Std::Errors {}        
+module Std::Signer {}        
+module AAA::M1 {
+    struct S1 {} 
+    struct SS1 {} 
+}        
+module BBB::M2 {
+    struct S2 {}
+}
+module 0x1::Main {
+    use Std::Errors;
+    use Std::Signer;
+
+    use AAA::M1::S1;
+    use AAA::M1::SS1;
+    use BBB::M2::S2;
+
+    #[test]
+    fun call() {}
+}
+    """, """
+module Std::Errors {}        
+module Std::Signer {}        
+module AAA::M1 {
+    struct S1 {} 
+    struct SS1 {} 
+}        
+module BBB::M2 {
+    struct S2 {}
+}
+module 0x1::Main {
+    #[test]
+    fun call() {}
+}
+    """)
+
 //    fun `test remove duplicate module import`() = doTest("""
 //module 0x1::M { fun m() {} }
 //module 0x1::M2 {

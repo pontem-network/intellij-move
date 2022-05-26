@@ -8,7 +8,7 @@ object MoveIcons {
     val MOVE = load("/icons/move.svg")
 //    val MOVE_BYTECODE = load("/icons/mv.svg")
 
-    val ADDRESS = load("/icons/annotationtype@2x.png")
+    val ADDRESS = load("/icons/annotationtype.png")
     val MODULE = load("/icons/module.svg")
 
     val STRUCT = load("/icons/struct.svg")

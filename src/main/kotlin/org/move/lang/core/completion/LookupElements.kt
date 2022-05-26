@@ -57,60 +57,56 @@ fun MvNamedElement.createCompletionLookupElement(
     insertHandler: InsertHandler<LookupElement> = MvInsertHandler(),
     ns: Set<Namespace> = emptySet()
 ): LookupElement {
-    return when (this) {
+    val lookupElement = when (this) {
         is MvModuleUseSpeck -> {
             val module = this.fqModuleRef?.reference?.resolve()
             if (module != null) {
-                module.createCompletionLookupElement(insertHandler, ns)
+                return module.createCompletionLookupElement(insertHandler, ns)
             } else {
-                this.createLookupElement().withInsertHandler(insertHandler)
+                this.createLookupElement()
             }
         }
 
         is MvUseItem -> {
             val namedItem = this.reference.resolve()
             if (namedItem != null) {
-                namedItem.createCompletionLookupElement(insertHandler, ns)
+                return namedItem.createCompletionLookupElement(insertHandler, ns)
             } else {
-                this.createLookupElement().withInsertHandler(insertHandler)
+                this.createLookupElement()
             }
         }
 
         is MvFunction -> this.createLookupElement()
             .withTailText(this.functionParameterList?.parametersText ?: "()")
             .withTypeText(this.returnType?.type?.text ?: "()")
-            .withInsertHandler(insertHandler)
 
         is MvSpecFunction -> this.createLookupElement()
             .withTailText(this.functionParameterList?.parametersText ?: "()")
             .withTypeText(this.returnType?.type?.text ?: "()")
-            .withInsertHandler(insertHandler)
 
         is MvModule -> this.createLookupElement()
             .withTailText(this.address()?.let { " ${it.text}" } ?: "")
             .withTypeText(this.containingFile?.name)
-            .withInsertHandler(insertHandler)
 
         is MvStruct -> {
             val tailText = if (Namespace.TYPE !in ns) " { ... }" else ""
             this.createLookupElement()
                 .withTailText(tailText)
-                .withInsertHandler(insertHandler)
+                .withTypeText(this.containingFile?.name)
         }
 
         is MvStructField -> this.createLookupElement()
             .withTypeText(this.typeAnnotation?.type?.text)
-            .withInsertHandler(insertHandler)
 
         is MvBindingPat -> this.createLookupElement()
             .withTypeText(this.cachedTy(this.inferenceCtx(this.isMsl())).shortPresentableText(true))
-            .withInsertHandler(insertHandler)
 
         is MvSchema -> this.createLookupElement()
-            .withInsertHandler(insertHandler)
+            .withTypeText(this.containingFile?.name)
 
-        else -> LookupElementBuilder.create(this).withInsertHandler(insertHandler)
+        else -> LookupElementBuilder.create(this)
     }
+    return lookupElement.withInsertHandler(insertHandler)
 }
 
 fun InsertionContext.addSuffix(suffix: String) {

@@ -46,7 +46,7 @@ class LookupElementTest : MvTestBase() {
             struct MyStruct { val: u8 }
                  //^
         }
-    """, tailText = " { ... }")
+    """, tailText = " { ... }", typeText = "main.move")
 
     fun `test module`() = check("""
         address 0x1 {

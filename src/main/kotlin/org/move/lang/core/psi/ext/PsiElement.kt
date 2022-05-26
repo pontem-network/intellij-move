@@ -168,5 +168,8 @@ fun PsiElement?.getNextNonCommentSibling(): PsiElement? =
 fun PsiElement.isWhitespace(): Boolean =
     this is PsiWhiteSpace || this is PsiComment
 
+fun PsiElement.isNewline(): Boolean =
+    this.isWhitespace() && this.textMatches("\n")
+
 fun PsiElement.isErrorElement(): Boolean =
     this is PsiErrorElement
