@@ -1,5 +1,6 @@
 package org.move.ide.refactoring
 
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.listeners.RefactoringElementListener
@@ -7,8 +8,10 @@ import com.intellij.refactoring.rename.RenamePsiElementProcessor
 import com.intellij.usageView.UsageInfo
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
+import org.move.lang.core.psi.ext.equalsTo
 import org.move.lang.core.psi.ext.isShorthand
 import org.move.lang.core.psi.ext.owner
+import org.move.lang.modules
 
 val PsiElement.maybeLitFieldParent
     get() = PsiTreeUtil.findFirstParent(this) {
@@ -27,6 +30,18 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
     ) {
         val psiFactory = element.project.psiFactory
         when (element) {
+            is MvModule -> {
+                // if only module in file and file has the same name -> rename file
+                val file = element.containingMoveFile
+                if (file != null) {
+                    val filename = FileUtil.getNameWithoutExtension(file.name)
+                    if (filename == element.name
+                        && file.modules().singleOrNull()?.equalsTo(element) == true
+                    ) {
+                        file.name = "$newName.move"
+                    }
+                }
+            }
             is MvStructField -> {
                 usages.forEach {
                     val usage = it.element

@@ -173,3 +173,6 @@ fun PsiElement.isNewline(): Boolean =
 
 fun PsiElement.isErrorElement(): Boolean =
     this is PsiErrorElement
+
+fun PsiElement.equalsTo(another: PsiElement): Boolean =
+    PsiManager.getInstance(this.project).areElementsEquivalent(this, another)
