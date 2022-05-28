@@ -13,6 +13,12 @@
     </description>
     <change-notes>
         <![CDATA[
+    <h3>1.10.1</h3>
+    <ul>
+    <li>Import optimizer and auto-import bugfixes</li>
+    <li>Better priorities for the completions</li>
+    <li>Renaming module now renames module file too</li>
+    </ul>
     <h3>1.10.0</h3>
     <ul>
     <li>Auto-import: automatically create use statements for the items not yet present in scope</li>
