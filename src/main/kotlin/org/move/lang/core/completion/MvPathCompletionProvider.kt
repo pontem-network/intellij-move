@@ -5,10 +5,13 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.MvPsiPatterns
+import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvPath
+import org.move.lang.core.psi.completionPriority
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslScope
@@ -43,7 +46,10 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
                 else -> Visibility.buildSetOfVisibilities(pathElement)
             }
             processModuleItems(module, itemVis.replace(vs = vs)) {
-                val lookup = it.element.createCompletionLookupElement(ns = itemVis.namespaces)
+                val lookup = it.element.createCompletionLookupElement(
+                    ns = itemVis.namespaces,
+                    priority = it.element.completionPriority
+                )
                 result.addElement(lookup)
                 false
             }

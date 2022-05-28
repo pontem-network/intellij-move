@@ -41,7 +41,7 @@ class BuiltInFunctionLookupTest : MvTestBase() {
         inlineFile(moduleText)
         val moduleElement = myFixture.findElementInEditor<MvModule>()
         val lookup =
-            moduleElement.builtinFunctions().find { it.name == name }!!.createCompletionLookupElement()
+            moduleElement.builtinFunctions().find { it.name == name }?.createCompletionLookupElement()!!
         checkLookupPresentation(
             lookup,
             tailText = tailText,

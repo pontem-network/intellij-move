@@ -36,7 +36,7 @@ object ModulesCompletionProvider : MvCompletionProvider() {
         val processedNames = mutableSetOf<String>()
         val itemVis = ItemVis(setOf(Namespace.MODULE), emptySet(), refElement.mslScope)
         processItems(refElement, itemVis) {
-            val lookup = it.element.createCompletionLookupElement()
+            val lookup = it.element.createCompletionLookupElement(priority = LOCAL_MODULE_PRIORITY)
             result.addElement(lookup)
             it.element.name?.let(processedNames::add)
             false

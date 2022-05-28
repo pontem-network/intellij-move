@@ -16,9 +16,13 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.inferenceCtx
 
+const val KEYWORD_PRIORITY = 80.0
+const val BUILTIN_ITEM_PRIORITY = 30.0
+const val LOCAL_ITEM_PRIORITY = 20.0
+const val LOCAL_MODULE_PRIORITY = 15.0
+
 const val DEFAULT_PRIORITY = 0.0
 
-const val KEYWORD_PRIORITY = 80.0
 const val PRIMITIVE_TYPE_PRIORITY = KEYWORD_PRIORITY
 
 const val BUILTIN_FUNCTION_PRIORITY = 10.0
@@ -55,9 +59,10 @@ fun AddressVal.createCompletionLookupElement(lookupString: String): LookupElemen
 
 fun MvNamedElement.createCompletionLookupElement(
     insertHandler: InsertHandler<LookupElement> = MvInsertHandler(),
-    ns: Set<Namespace> = emptySet()
+    ns: Set<Namespace> = emptySet(),
+    priority: Double = DEFAULT_PRIORITY,
 ): LookupElement {
-    val lookupElement = when (this) {
+    var lookupElement = when (this) {
         is MvModuleUseSpeck -> {
             val module = this.fqModuleRef?.reference?.resolve()
             if (module != null) {
@@ -106,7 +111,8 @@ fun MvNamedElement.createCompletionLookupElement(
 
         else -> LookupElementBuilder.create(this)
     }
-    return lookupElement.withInsertHandler(insertHandler)
+    lookupElement = lookupElement.withInsertHandler(insertHandler)
+    return PrioritizedLookupElement.withPriority(lookupElement, priority)
 }
 
 fun InsertionContext.addSuffix(suffix: String) {
