@@ -8,6 +8,8 @@ import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.psi.MvPath
+import org.move.lang.core.psi.containingModule
+import org.move.lang.core.psi.ext.equalsTo
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslScope
 import org.move.lang.core.resolve.processItems
@@ -43,11 +45,13 @@ object ModulesCompletionProvider : MvCompletionProvider() {
         val path = parameters.originalPosition?.parent as? MvPath ?: return
         val importContext =
             ImportContext.from(path, itemVis.replace(vs = setOf(Visibility.Public)))
+        val containingMod = path.containingModule
         addCompletionsFromIndex(
             parameters,
             result,
             processedNames,
-            importContext
+            importContext,
+            itemFilter = { containingMod != null && !it.equalsTo(containingMod) }
         )
     }
 }

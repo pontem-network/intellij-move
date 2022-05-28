@@ -255,4 +255,20 @@ class StructsCompletionTest: CompletionTestCase() {
     }
     """)
 
+    fun `test no import if struct literal is used`() = doSingleCompletion("""
+    module 0x1::Main {
+        struct UserInfo { name: vector<u8> }
+        fun set_name() {
+            let a = UserIn/*caret*/
+        } 
+    }    
+    """, """
+    module 0x1::Main {
+        struct UserInfo { name: vector<u8> }
+        fun set_name() {
+            let a = UserInfo/*caret*/
+        } 
+    }    
+    """)
+
 }

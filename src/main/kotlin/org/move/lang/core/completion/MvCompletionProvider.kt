@@ -19,6 +19,7 @@ abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>()
         result: CompletionResultSet,
         processedPathNames: Set<String>,
         importContext: ImportContext,
+        itemFilter: (PsiElement) -> Boolean = { true }
     ) {
         val project = parameters.position.project
         val keys = hashSetOf<String>().apply {
@@ -30,6 +31,7 @@ abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>()
             val candidates = AutoImportFix.getImportCandidates(importContext, elementName)
             candidates
                 .distinctBy { it.element }
+                .filter { itemFilter(it.element) }
                 .map { candidate ->
                     val element = candidate.element
                     val insertHandler = object : MvInsertHandler() {
