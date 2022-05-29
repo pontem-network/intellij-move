@@ -15,7 +15,7 @@
         <![CDATA[
     <h3>1.10.1</h3>
     <ul>
-    <li>Import optimizer and auto-import bugfixes</li>
+    <li>Import optimizer and auto-import bug fixes</li>
     <li>Better priorities for the completions</li>
     <li>Renaming module now renames module file too</li>
     </ul>
