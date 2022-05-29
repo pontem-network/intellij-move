@@ -7,8 +7,8 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.psi.MvUseItem
 import org.move.lang.core.psi.MvModule
+import org.move.lang.core.psi.MvUseItem
 import org.move.lang.core.psi.MvUseItemGroup
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.moduleImport
@@ -48,7 +48,10 @@ object ImportsCompletionProvider : MvCompletionProvider() {
         val ns = setOf(Namespace.NAME, Namespace.TYPE)
         val itemVis = ItemVis(ns, vs)
         processModuleItems(referredModule, itemVis) {
-            val lookup = it.element.createCompletionLookupElement(BasicInsertHandler())
+            val lookup =
+                it.element.createCompletionLookupElement(
+                    BasicInsertHandler(),
+                    ns = itemVis.namespaces)
             result.addElement(lookup)
             false
         }

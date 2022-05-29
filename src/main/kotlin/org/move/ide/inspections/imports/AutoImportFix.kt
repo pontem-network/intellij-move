@@ -73,6 +73,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
             if (refElement.reference == null) return null
             if (refElement.resolvable) return null
             if (refElement.ancestorStrict<MvUseStmt>() != null) return null
+            if (refElement is MvPath && refElement.moduleRef != null) return null
 
             // TODO: no auto-import if name in scope, but cannot be resolved
 

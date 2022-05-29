@@ -4,7 +4,8 @@ import org.intellij.lang.annotations.Language
 import org.move.utils.tests.MvTestBase
 
 class RenameTest : MvTestBase() {
-    fun `test function argument`() = doTest("spam", """
+    fun `test function argument`() = doTest(
+        "spam", """
         script {
             fun main(/*caret*/account: &signer) {
                 account;
@@ -16,9 +17,11 @@ class RenameTest : MvTestBase() {
                 spam;
             }
         }
-    """)
+    """
+    )
 
-    fun `test local variable`() = doTest("spam", """
+    fun `test local variable`() = doTest(
+        "spam", """
         script {
             fun main() {
                 let /*caret*/a = 1;
@@ -32,9 +35,11 @@ class RenameTest : MvTestBase() {
                 spam;
             }
         }
-    """)
+    """
+    )
 
-    fun `test local variable shadowed`() = doTest("spam", """
+    fun `test local variable shadowed`() = doTest(
+        "spam", """
         script {
             fun main() {
                 let /*caret*/a = 1;
@@ -50,9 +55,11 @@ class RenameTest : MvTestBase() {
                 a;
             }
         }
-    """)
+    """
+    )
 
-    fun `test function name`() = doTest("renamed_call", """
+    fun `test function name`() = doTest(
+        "renamed_call", """
         module M {
             fun /*caret*/call() {
                 1
@@ -72,9 +79,11 @@ class RenameTest : MvTestBase() {
                 renamed_call();
             }
         }
-    """)
+    """
+    )
 
-    fun `test destructuring field reassignment`() = doTest("myval2", """
+    fun `test destructuring field reassignment`() = doTest(
+        "myval2", """
         module M {
             struct MyStruct { val: u8 }
             fun main() {
@@ -90,9 +99,11 @@ class RenameTest : MvTestBase() {
                 myval2;
             }
         }
-    """)
+    """
+    )
 
-    fun `test rename val with shorthand struct literal`() = doTest("myval", """
+    fun `test rename val with shorthand struct literal`() = doTest(
+        "myval", """
         module 0x1::M {
             struct MyStruct { val: u8 }
             fun main() {
@@ -110,9 +121,11 @@ class RenameTest : MvTestBase() {
                 myval;
             }
         }
-    """)
+    """
+    )
 
-    fun `test rename field from shorthand struct literal`() = doTest("myval", """
+    fun `test rename field from shorthand struct literal`() = doTest(
+        "myval", """
         module 0x1::M {
             struct MyStruct { /*caret*/val: u8 }
             fun main() {
@@ -130,9 +143,11 @@ class RenameTest : MvTestBase() {
                 val;
             }
         }
-    """)
+    """
+    )
 
-    fun `test rename val from shorthand struct pattern`() = doTest("myval", """
+    fun `test rename val from shorthand struct pattern`() = doTest(
+        "myval", """
         module 0x1::M {
             struct MyStruct { val: u8 }
             fun get_s(): MyStruct { MyStruct { val: 1 } }
@@ -150,9 +165,11 @@ class RenameTest : MvTestBase() {
                 myval;
             }
         }
-    """)
+    """
+    )
 
-    fun `test rename field from shorthand struct pattern`() = doTest("myval", """
+    fun `test rename field from shorthand struct pattern`() = doTest(
+        "myval", """
         module 0x1::M {
             struct MyStruct { /*caret*/val: u8 }
             fun get_s(): MyStruct { MyStruct { val: 1 } }
@@ -170,9 +187,11 @@ class RenameTest : MvTestBase() {
                 val;
             }
         }
-    """)
+    """
+    )
 
-    fun `test struct`() = doTest("RenamedStruct", """
+    fun `test struct`() = doTest(
+        "RenamedStruct", """
         module M {
             struct /*caret*/MyStruct { val: u8 }
             
@@ -192,9 +211,11 @@ class RenameTest : MvTestBase() {
                 move_from<RenamedStruct>();
             }
         }
-    """)
+    """
+    )
 
-    fun `test struct from use position`() = doTest("RenamedStruct", """
+    fun `test struct from use position`() = doTest(
+        "RenamedStruct", """
         module M {
             struct MyStruct { val: u8 }
             
@@ -214,7 +235,8 @@ class RenameTest : MvTestBase() {
                 move_from<RenamedStruct>();
             }
         }
-    """)
+    """
+    )
 
 //    fun `test schema`() = doTest("RenamedSchema", """
 //        module M {
@@ -234,7 +256,8 @@ class RenameTest : MvTestBase() {
 //        }
 //    """)
 
-    fun `test type param`() = doTest("U", """
+    fun `test type param`() = doTest(
+        "U", """
         module M {
             struct MyStruct<T> {
                 val: /*caret*/T
@@ -246,9 +269,11 @@ class RenameTest : MvTestBase() {
                 val: U
             }
         }
-    """)
+    """
+    )
 
-    fun `test const`() = doTest("RENAMED_CONST", """
+    fun `test const`() = doTest(
+        "RENAMED_CONST", """
         module 0x1::M {
             const /*caret*/MY_CONST: u8 = 1;
             
@@ -264,9 +289,11 @@ class RenameTest : MvTestBase() {
                 RENAMED_CONST
             }
         }
-    """)
+    """
+    )
 
-    fun `test native struct`() = doTest("RenamedNative", """
+    fun `test native struct`() = doTest(
+        "RenamedNative", """
         module M {
             native struct /*caret*/Native<T>;
             
@@ -278,9 +305,11 @@ class RenameTest : MvTestBase() {
             
             native fun main(n: RenamedNative<u8>): u8;
         }
-    """)
+    """
+    )
 
-    fun `test import alias`() = doTest("RenamedStruct", """
+    fun `test import alias`() = doTest(
+        "RenamedStruct", """
         address 0x1 {
             module Transaction {
                 struct Struct {}
@@ -304,9 +333,11 @@ class RenameTest : MvTestBase() {
                 fun main(): RenamedStruct {}
             }
         }
-    """)
+    """
+    )
 
-    fun `test rename module via import`() = doTest("RenamedTransaction", """
+    fun `test rename module via import`() = doTest(
+        "RenamedTransaction", """
         address 0x1 {
             module Transaction {}
             
@@ -330,9 +361,11 @@ class RenameTest : MvTestBase() {
                 }
             }
         }
-    """)
+    """
+    )
 
-    fun `test rename module member via import`() = doTest("renamed_create", """
+    fun `test rename module member via import`() = doTest(
+        "renamed_create", """
         address 0x1 {
             module Transaction {
                 public fun create() {}
@@ -360,9 +393,11 @@ class RenameTest : MvTestBase() {
                 }
             }
         }
-    """)
+    """
+    )
 
-    fun `test rename schema field with shorthand`() = doTest("root_account", """
+    fun `test rename schema field with shorthand`() = doTest(
+        "root_account", """
     module 0x1::M {
         spec schema Schema {
             /*caret*/account: address;
@@ -382,9 +417,11 @@ class RenameTest : MvTestBase() {
             include Schema { root_account: account };
         }
     }    
-    """)
+    """
+    )
 
-    fun `test rename schema expr binding with shorthand`() = doTest("root_account", """
+    fun `test rename schema expr binding with shorthand`() = doTest(
+        "root_account", """
     module 0x1::M {
         spec schema Schema {
             account: address;
@@ -407,7 +444,8 @@ class RenameTest : MvTestBase() {
     """
     )
 
-    fun `test Self is not renamed for module`() = doTest("RenamedModule", """
+    fun `test Self is not renamed for module`() = doTest(
+        "RenamedModule", """
     module 0x1::/*caret*/Module {
         struct S {}
     }        
@@ -421,7 +459,17 @@ class RenameTest : MvTestBase() {
     module 0x1::Main {
         use 0x1::RenamedModule::{Self, S};
     }
-    """)
+    """
+    )
+
+    fun `test file name is changed if only module in file`() =
+        doTestFilename(
+            "RenamedModule", "Module.move", "RenamedModule.move", """
+    module 0x1::/*caret*/Module {}        
+        """, """
+    module 0x1::RenamedModule {}        
+        """
+        )
 
     private fun doTest(
         newName: String,
@@ -432,5 +480,21 @@ class RenameTest : MvTestBase() {
         val element = myFixture.elementAtCaret
         myFixture.renameElement(element, newName, false, false)
         myFixture.checkResult(after)
+    }
+
+    private fun doTestFilename(
+        newName: String,
+        beforeFileName: String,
+        afterFileName: String,
+        @Language("Move") before: String,
+        @Language("Move") after: String,
+    ) {
+        inlineFile(before, name = beforeFileName).withCaret()
+        val element = myFixture.elementAtCaret
+        myFixture.renameElement(element, newName, false, false)
+        myFixture.checkResult(after)
+
+        val newFileName = myFixture.file.name
+        check(newFileName == afterFileName) { "New filename `$newFileName` != `$afterFileName`" }
     }
 }

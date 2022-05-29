@@ -7,8 +7,9 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.util.PlatformIcons
 import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
+import org.move.lang.core.psi.isNative
 import org.move.lang.core.types.ty.Ty
 import javax.swing.Icon
 
@@ -34,8 +35,24 @@ val MvFunction.isTest: Boolean get() = this.attrList.findSingleItemAttr("test") 
 
 val MvFunction.isBuiltinFunc get() = this.isNative && this.name in BUILTIN_FUNCTIONS
 
-val MvFunction.acquiresTys: List<Ty> get() =
-    this.acquiresType?.pathTypeList.orEmpty().map { it.ty() }
+val MvFunction.acquiresTys: List<Ty>
+    get() =
+        this.acquiresType?.pathTypeList.orEmpty().map { it.ty() }
+
+val MvFunction.signatureText: String get() {
+    val params = this.functionParameterList?.parametersText ?: "()"
+    val returnTypeText = this.returnType?.type?.text ?: ""
+    val returnType = if (returnTypeText == "") "" else ": $returnTypeText"
+    return "$params$returnType"
+}
+
+val MvFunction.outerFileName: String
+    get() =
+        if (this.name in BUILTIN_FUNCTIONS) {
+            "builtins"
+        } else {
+            this.containingFile?.name.orEmpty()
+        }
 
 abstract class MvFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                                 MvFunction {
@@ -48,11 +65,11 @@ abstract class MvFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
 
     override fun getPresentation(): ItemPresentation? {
         val name = this.name ?: return null
-        val params = this.functionParameterList?.parametersText ?: "()"
-        val returnTypeText = this.returnType?.type?.text ?: ""
-        val tail = if (returnTypeText == "") "" else ": $returnTypeText"
+//        val params = this.functionParameterList?.parametersText ?: "()"
+//        val returnTypeText = this.returnType?.type?.text ?: ""
+//        val tail = if (returnTypeText == "") "" else ": $returnTypeText"
         return PresentationData(
-            "$name$params$tail",
+            "$name${this.signatureText}",
             null,
             PlatformIcons.PUBLIC_ICON,
             TextAttributesKey.createTextAttributesKey("public")

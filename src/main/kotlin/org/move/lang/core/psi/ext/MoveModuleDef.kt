@@ -118,7 +118,7 @@ fun MvModule.functions(visibility: Visibility): List<MvFunction> =
 
 fun builtinFunction(text: String, project: Project): MvFunction {
     val trimmedText = text.trimIndent()
-    val function = project.psiFactory.function(trimmedText, moduleName = "builtin_functions")
+    val function = project.psiFactory.function(trimmedText, moduleName = "builtins")
     (function as MvFunctionMixin).builtIn = true
     return function
 }

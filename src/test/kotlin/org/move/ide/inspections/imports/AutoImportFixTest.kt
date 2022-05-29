@@ -195,6 +195,20 @@ module 0x1::Main {
 }
     """)
 
+    fun `test unresolved function on module should not have import fix`() = checkAutoImportFixIsUnavailable("""
+    module 0x1::Coin {
+        public fun initialize() {}
+    }        
+    module 0x1::AnotherCoin {}
+    module 0x1::Main {
+        use 0x1::AnotherCoin;
+        
+        fun call() {
+            AnotherCoin::<error descr="Unresolved reference: `initialize`">/*caret*/initialize</error>();
+        }
+    }
+    """)
+
     private fun checkAutoImportFixByText(
         @Language("Move") before: String,
         @Language("Move") after: String,

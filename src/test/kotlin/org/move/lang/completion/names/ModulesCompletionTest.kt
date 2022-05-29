@@ -118,4 +118,12 @@ class ModulesCompletionTest : CompletionTestCase() {
         }
     }    
     """)
+
+    fun `test module name itself should not be present in completion`() = checkNoCompletion("""
+    module 0x1::Main {
+        fun call() {
+            Ma/*caret*/
+        }
+    }    
+    """)
 }

@@ -16,9 +16,13 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.inferenceCtx
 
+const val KEYWORD_PRIORITY = 80.0
+const val BUILTIN_ITEM_PRIORITY = 30.0
+const val LOCAL_ITEM_PRIORITY = 20.0
+const val LOCAL_MODULE_PRIORITY = 15.0
+
 const val DEFAULT_PRIORITY = 0.0
 
-const val KEYWORD_PRIORITY = 80.0
 const val PRIMITIVE_TYPE_PRIORITY = KEYWORD_PRIORITY
 
 const val BUILTIN_FUNCTION_PRIORITY = 10.0
@@ -55,62 +59,60 @@ fun AddressVal.createCompletionLookupElement(lookupString: String): LookupElemen
 
 fun MvNamedElement.createCompletionLookupElement(
     insertHandler: InsertHandler<LookupElement> = MvInsertHandler(),
-    ns: Set<Namespace> = emptySet()
+    ns: Set<Namespace> = emptySet(),
+    priority: Double = DEFAULT_PRIORITY,
 ): LookupElement {
-    return when (this) {
+    var lookupElement = when (this) {
         is MvModuleUseSpeck -> {
             val module = this.fqModuleRef?.reference?.resolve()
             if (module != null) {
-                module.createCompletionLookupElement(insertHandler, ns)
+                return module.createCompletionLookupElement(insertHandler, ns)
             } else {
-                this.createLookupElement().withInsertHandler(insertHandler)
+                this.createLookupElement()
             }
         }
 
         is MvUseItem -> {
             val namedItem = this.reference.resolve()
             if (namedItem != null) {
-                namedItem.createCompletionLookupElement(insertHandler, ns)
+                return namedItem.createCompletionLookupElement(insertHandler, ns)
             } else {
-                this.createLookupElement().withInsertHandler(insertHandler)
+                this.createLookupElement()
             }
         }
 
         is MvFunction -> this.createLookupElement()
-            .withTailText(this.functionParameterList?.parametersText ?: "()")
-            .withTypeText(this.returnType?.type?.text ?: "()")
-            .withInsertHandler(insertHandler)
+            .withTailText(this.signatureText)
+            .withTypeText(this.outerFileName)
 
         is MvSpecFunction -> this.createLookupElement()
             .withTailText(this.functionParameterList?.parametersText ?: "()")
             .withTypeText(this.returnType?.type?.text ?: "()")
-            .withInsertHandler(insertHandler)
 
         is MvModule -> this.createLookupElement()
             .withTailText(this.address()?.let { " ${it.text}" } ?: "")
             .withTypeText(this.containingFile?.name)
-            .withInsertHandler(insertHandler)
 
         is MvStruct -> {
             val tailText = if (Namespace.TYPE !in ns) " { ... }" else ""
             this.createLookupElement()
                 .withTailText(tailText)
-                .withInsertHandler(insertHandler)
+                .withTypeText(this.containingFile?.name)
         }
 
         is MvStructField -> this.createLookupElement()
             .withTypeText(this.typeAnnotation?.type?.text)
-            .withInsertHandler(insertHandler)
 
         is MvBindingPat -> this.createLookupElement()
             .withTypeText(this.cachedTy(this.inferenceCtx(this.isMsl())).shortPresentableText(true))
-            .withInsertHandler(insertHandler)
 
         is MvSchema -> this.createLookupElement()
-            .withInsertHandler(insertHandler)
+            .withTypeText(this.containingFile?.name)
 
-        else -> LookupElementBuilder.create(this).withInsertHandler(insertHandler)
+        else -> LookupElementBuilder.create(this)
     }
+    lookupElement = lookupElement.withInsertHandler(insertHandler)
+    return PrioritizedLookupElement.withPriority(lookupElement, priority)
 }
 
 fun InsertionContext.addSuffix(suffix: String) {

@@ -23,7 +23,7 @@ class MvCompletionTestFixture(
     }
 
     fun doSingleCompletion(@Language("Move") code: String, @Language("Move") after: String) {
-        check(hasCaretMarker(after))
+        check(hasCaretMarker(after)) { "No /*caret*/ marker in `after`" }
         checkByText(code, after.trimIndent()) { executeSoloCompletion() }
     }
 
@@ -107,7 +107,7 @@ class MvCompletionTestFixture(
             }
             fun LookupElement.debug(): String = "$lookupString ($psiElement)"
             error("Expected a single completion, but got ${lookups.size}\n"
-                    + lookups.joinToString("\n") { it.debug() })
+                          + lookups.joinToString("\n") { it.debug() })
         }
     }
 
