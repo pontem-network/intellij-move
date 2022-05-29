@@ -24,7 +24,7 @@ class LookupElementTest : MvTestBase() {
             fun call(x: u64, account: &signer): u8 {}
               //^
         }
-    """, tailText = "(x: u64, account: &signer)", typeText = "u8")
+    """, tailText = "(x: u64, account: &signer): u8", typeText = "main.move")
 
     fun `test multiline params function`() = check("""
         module 0x1::M {
@@ -32,7 +32,7 @@ class LookupElementTest : MvTestBase() {
                      account: &signer): u8 {}
               //^
         }
-    """, tailText = "(x: u64, account: &signer)", typeText = "u8")
+    """, tailText = "(x: u64, account: &signer): u8", typeText = "main.move")
 
     fun `test const item`() = check("""
         module 0x1::M {

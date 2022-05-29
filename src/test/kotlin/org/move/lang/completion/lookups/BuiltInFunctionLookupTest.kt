@@ -11,26 +11,26 @@ import org.move.utils.tests.base.findElementInEditor
 class BuiltInFunctionLookupTest : MvTestBase() {
     fun `test move_from`() = checkBuiltinPresentation(
         "move_from",
-        tailText = "(addr: address)",
-        typeText = "T"
+        tailText = "(addr: address): T",
+        typeText = "builtins"
     )
 
     fun `test move_to`() = checkBuiltinPresentation(
         "move_to",
         tailText = "(acc: &signer, res: T)",
-        typeText = "()"
+        typeText = "builtins"
     )
 
     fun `test borrow_global`() = checkBuiltinPresentation(
         "borrow_global",
-        tailText = "(addr: address)",
-        typeText = "&T"
+        tailText = "(addr: address): &T",
+        typeText = "builtins"
     )
 
     fun `test borrow_global_mut`() = checkBuiltinPresentation(
         "borrow_global_mut",
-        tailText = "(addr: address)",
-        typeText = "&mut T"
+        tailText = "(addr: address): &mut T",
+        typeText = "builtins"
     )
 
     private fun checkBuiltinPresentation(name: String, tailText: String, typeText: String) {

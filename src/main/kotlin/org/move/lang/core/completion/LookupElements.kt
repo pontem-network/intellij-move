@@ -82,8 +82,8 @@ fun MvNamedElement.createCompletionLookupElement(
         }
 
         is MvFunction -> this.createLookupElement()
-            .withTailText(this.functionParameterList?.parametersText ?: "()")
-            .withTypeText(this.returnType?.type?.text ?: "()")
+            .withTailText(this.signatureText)
+            .withTypeText(this.outerFileName)
 
         is MvSpecFunction -> this.createLookupElement()
             .withTailText(this.functionParameterList?.parametersText ?: "()")
