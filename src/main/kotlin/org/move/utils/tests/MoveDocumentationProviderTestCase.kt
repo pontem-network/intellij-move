@@ -9,12 +9,11 @@ import org.move.utils.tests.base.findElementAndOffsetInEditor
 
 abstract class MvDocumentationProviderProjectTestCase: MvProjectTestBase() {
     protected fun doTestByFileTree(
-        @Language("Move") code: String,
+        @Language("Move") builder: TreeBuilder,
         @Language("Html") expected: String?,
-        findElement: () -> Pair<PsiElement, Int> = { myFixture.findElementAndOffsetInEditor() },
         block: MvDocumentationProvider.(PsiElement, PsiElement?) -> String?
     ) {
-        val testProject = testProjectFromFileTree(code)
+        val testProject = testProjectFromFileTree(builder)
         myFixture.configureFromFileWithCaret(testProject)
 
         val (originalElement, offset) = myFixture.findElementAndOffsetInEditor<MvElement>()
