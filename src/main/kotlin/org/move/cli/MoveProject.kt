@@ -8,6 +8,8 @@ import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
+import com.intellij.util.containers.addIfNotNull
+import org.move.cli.project.BuildInfoYaml
 import org.move.cli.project.LocalPackage
 import org.move.cli.project.MoveToml
 import org.move.lang.MoveFile
@@ -17,7 +19,6 @@ import org.move.openapiext.contentRoots
 import org.move.openapiext.stringValue
 import org.move.utils.deepWalkMoveFiles
 import java.nio.file.Path
-import java.util.*
 
 enum class DevMode {
     MAIN, DEV;
@@ -101,27 +102,51 @@ data class MoveProject(
     private fun projectDirPath(name: String): Path? = contentRootPath?.resolve(name)
 
     fun moduleFolders(devMode: DevMode): List<VirtualFile> {
-        val q = ArrayDeque<ProjectInfo>()
         val folders = mutableListOf<VirtualFile>()
         val projectInfo = this.projectInfo ?: return emptyList()
-        val s = projectInfo.sourcesFolder
-        if (s != null) {
-            folders.add(s)
-        }
+        folders.addIfNotNull(projectInfo.sourcesFolder)
+
+        val q = ArrayDeque<ProjectInfo>()
+        val visited = mutableSetOf<String>()
         q.add(projectInfo)
+
         while (q.isNotEmpty()) {
-            val info = q.pop()
-            val depInfos = info.deps(devMode).values.mapNotNull { it.projectInfo(project) }
+            val info = q.removeFirst()
+            val deps = info.deps(devMode)
+            val depInfos = deps.values.mapNotNull { it.projectInfo(project) }
             q.addAll(depInfos)
-            folders.addAll(depInfos.mapNotNull { it.sourcesFolder })
+
+            val localFolders = deps
+                .filter { it.value is Dependency.Local }
+                .mapNotNull {
+                    visited.add(it.key)
+                    it.value.projectInfo(project)?.sourcesFolder
+                }
+            folders.addAll(localFolders)
         }
+
+        val gitFolders = this.buildRoot()
+            ?.findChild("sources")
+            ?.findChild("dependencies")
+            ?.children
+            .orEmpty()
+            .filter { it.nameWithoutExtension !in visited }
+        folders.addAll(gitFolders)
         return folders
+    }
+
+    private fun buildRoot(): VirtualFile? {
+        val packageName = this.packageName ?: return null
+        return this.contentRoot
+            .findChild("build")
+            ?.findChild(packageName)
     }
 
     fun declaredAddresses(): DeclaredAddresses {
         return CachedValuesManager.getManager(this.project).getCachedValue(this) {
             val addresses = mutableAddressMap()
             val placeholders = placeholderMap()
+
             for ((dep, subst) in this.currentPackage.moveToml.dependencies.values) {
                 val depDeclaredAddrs = dep.declaredAddresses(project) ?: continue
 
@@ -148,6 +173,16 @@ data class MoveProject(
             addresses.putAll(declaredDevAddresses.values)
             // add placeholders that weren't filled
             placeholders.putAll(declaredAddrs.placeholders)
+
+            // add addresses from git dependencies
+            buildRoot()
+                ?.findChild("BuildInfo.yaml")
+                ?.let { BuildInfoYaml.fromPath(it.toNioPath()) }
+                ?.addresses()
+                .orEmpty()
+                .forEach {
+                    addresses.putIfAbsent(it.key, it.value)
+                }
 
             val res = DeclaredAddresses(addresses, placeholders)
 

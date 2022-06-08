@@ -61,6 +61,8 @@ class AutoImportFixProjectTest : InspectionProjectTestBase(MvUnresolvedReference
             }
             moveToml(
                 """
+            [package]
+            name = "MyModule"        
             [dependencies]
             MoveStdlib = { local = "./move-stdlib" }    
             """
@@ -89,32 +91,9 @@ class AutoImportFixProjectTest : InspectionProjectTestBase(MvUnresolvedReference
 
     fun `test auto import from git dependency`() = checkAutoImportFixByText(
         {
-            build {
-                dir("MoveStdlib") {
-                    buildInfoYaml(
-                        """
-compiled_package_info:
-  package_name: MoveStdlib
-  address_alias_instantiation:
-    Std: "0000000000000000000000000000000000000000000000000000000000000001"
-  module_resolution_metadata:
-    ? address: "0000000000000000000000000000000000000000000000000000000000000001"
-      name: Signer
-    : Std
-  source_digest: 7DD3C823198A0DF84D836ED674128977405E6CD644037DC421F468B962231A94
-  build_flags:
-    dev_mode: false
-    test_mode: false
-    generate_docs: false
-    generate_abis: false
-    install_dir: ~
-    force_recompilation: false
-    additional_named_addresses: {}
-    language_flavor: ~
-dependencies: []
-"""
-                    )
-                    sources {
+            buildInfo("MyModule", mapOf()) {
+                dependencies {
+                    dir("MoveStdlib") {
                         move(
                             "Mod.move",
                             """
@@ -128,6 +107,8 @@ dependencies: []
             }
             moveToml(
                 """
+            [package]
+            name = "MyModule"        
             [dependencies.MoveStdlib]
             git = "https://github.com/aptos-labs/hello.git"
             rev = "012f07809431e936d32a9be8620089ad1834d4e9"

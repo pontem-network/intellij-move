@@ -89,8 +89,12 @@ class ResolveNamedAddressProjectTest : ResolveProjectTestCase() {
     }
 
     fun `test resolve address from dependency of dependency`() = checkByFileTree {
+        buildInfo("UserInfo", mapOf("Std" to "0001"))
         moveToml(
             """
+        [package]
+        name = "UserInfo"
+        
         [dependencies]
         PontStdlib = { local = "./pont-stdlib" }
         """
@@ -103,19 +107,27 @@ class ResolveNamedAddressProjectTest : ResolveProjectTestCase() {
             }     
             """)
         }
-        dir("pont-stdlib", {
-            moveToml("""
+        dir("pont-stdlib") {
+            moveToml(
+                """
+            [package]
+            name = "PontStdlib"                    
             [dependencies]
             MoveStdlib = { local = "./move-stdlib" }    
-            """)
-            dir("move-stdlib", {
-                moveToml("""
+            """
+            )
+            dir("move-stdlib") {
+                moveToml(
+                    """
+                [package]
+                name = "MoveStdlib"                           
                 [addresses]
                 Std = "0x1"    
                 #X  
-                """)
-            })
-        })
+                """
+                )
+            }
+        }
     }
 
     override fun checkByFileTree(fileTree: FileTreeBuilder.() -> Unit) {

@@ -70,10 +70,11 @@ fun fileTreeFromText(@Language("Move") text: String): FileTree {
 }
 
 interface FileTreeBuilder {
-    fun dir(name: String, builder: FileTreeBuilder.() -> Unit)
+    fun dir(name: String, builder: TreeBuilder)
     fun dir(name: String, tree: FileTree)
     fun file(name: String, code: String)
 
+    fun main(@Language("Move") code: String = "") = move("main.move", code)
     fun move(name: String, @Language("Move") code: String = "") = file(name, code)
     fun toml(name: String, @Language("TOML") code: String = "") = file(name, code)
 
@@ -85,9 +86,34 @@ interface FileTreeBuilder {
     """
     )
 
+    fun buildInfo(packageName: String, addresses: Map<String, String>, builder: TreeBuilder = {}) =
+        build { dir(packageName) {
+            builder()
+            buildInfoYaml(addresses)
+        } }
+
     fun buildInfoYaml(@Language("yaml") code: String = "") = file("BuildInfo.yaml", code)
+    fun buildInfoYaml(addresses: Map<String, String>) = buildInfoYaml(
+        """
+compiled_package_info:
+  address_alias_instantiation:
+${addresses.map { "    ${it.key}: \"${it.value}\"" }.joinToString("\n")}   
+  source_digest: 223A8C78902F806DE810C95988FDDD64D1418DA960621361AD5235D6E5AC654C
+  build_flags:
+    dev_mode: false
+    test_mode: false
+    generate_docs: true
+    generate_abis: true
+    install_dir: ~
+    force_recompilation: false
+    additional_named_addresses: {}
+    architecture: ~
+dependencies: []
+    """
+    )
 
     fun sources(builder: FileTreeBuilder.() -> Unit) = dir("sources", builder)
+    fun dependencies(builder: FileTreeBuilder.() -> Unit) = sources { dir("dependencies", builder) }
     fun build(builder: FileTreeBuilder.() -> Unit) = dir("build", builder)
     fun tests(builder: FileTreeBuilder.() -> Unit) = dir("tests", builder)
 }

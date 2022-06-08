@@ -13,6 +13,10 @@
     </description>
     <change-notes>
         <![CDATA[
+    <h3>1.11.0</h3>
+    <ul>
+    <li>Support new build/ directory layout in Aptos 0.1.2, drop support for earlier layouts</li>
+    </ul>
     <h3>1.10.1</h3>
     <ul>
     <li>Import optimizer and auto-import bug fixes</li>
