@@ -14,6 +14,10 @@ import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 import org.move.stdext.makeBitMask
 
+enum class FunModifier {
+    VIS, NATIVE, ENTRY;
+}
+
 @Suppress("UNUSED_PARAMETER")
 object MoveParserUtil : GeneratedParserUtilBase() {
     @JvmField
@@ -156,6 +160,78 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
+    fun functionModifierSet(
+        b: PsiBuilder,
+        level: Int,
+        visParser: Parser,
+    ): Boolean {
+        return innerFunctionModifierSet(
+            b,
+            level,
+            visParser,
+            native = false
+        )
+    }
+
+    @JvmStatic
+    fun nativeFunctionModifierSet(
+        b: PsiBuilder,
+        level: Int,
+        visParser: Parser,
+    ): Boolean {
+        return innerFunctionModifierSet(
+            b,
+            level,
+            visParser,
+            native = true
+        )
+    }
+
+    private fun innerFunctionModifierSet(
+        b: PsiBuilder,
+        level: Int,
+        visParser: Parser,
+        native: Boolean,
+    ): Boolean {
+        val modifiersLeft = FunModifier.values().toMutableSet()
+        if (!native) {
+            modifiersLeft.remove(FunModifier.NATIVE)
+        }
+        var nativeEncountered = false
+        var parsed = false
+
+        fun isParsed() = parsed && if (native) nativeEncountered else true
+
+        while (modifiersLeft.isNotEmpty()) {
+            when {
+                b.tokenType == PUBLIC -> {
+                    if (FunModifier.VIS !in modifiersLeft) return isParsed()
+                    if (!visParser.parse(b, level)) return false
+                    modifiersLeft.remove(FunModifier.VIS)
+                    parsed = true
+                }
+                b.tokenType == NATIVE -> {
+                    if (FunModifier.NATIVE !in modifiersLeft) return isParsed()
+                    modifiersLeft.remove(FunModifier.NATIVE)
+                    // native alone only should give true for next token fun
+                    parsed = parsed || (b.lookAhead(1) == FUN)
+                    nativeEncountered = true
+                    b.advanceLexer()
+                }
+                contextualKeyword(b, "entry", ENTRY) -> {
+                    if (FunModifier.ENTRY !in modifiersLeft) return isParsed()
+                    modifiersLeft.remove(FunModifier.ENTRY)
+                    parsed = true
+                }
+                else -> return isParsed()
+            }
+
+        }
+        return isParsed()
+
+    }
+
+    @JvmStatic
     fun invariantModifierKeyword(b: PsiBuilder, level: Int): Boolean {
         if (b.tokenType in tokenSetOf(PACK, UNPACK, UPDATE)) {
             b.advanceLexer()
@@ -181,6 +257,9 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun hasKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "has", HAS)
+
+    @JvmStatic
+    fun entryKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "entry", ENTRY)
 
     @JvmStatic
     fun schemaKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "schema", SCHEMA_KW)

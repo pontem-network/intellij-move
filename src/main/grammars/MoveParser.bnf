@@ -101,6 +101,7 @@
 
         ADDRESS     = 'address_kw'
         HAS     = 'has_kw'
+        ENTRY     = 'entry_kw'
         FRIEND     = 'friend_kw'
 
         SCRIPT_KW     = 'script_kw'
@@ -184,6 +185,7 @@ private ScriptItem_item ::= UseStmt | Const | FunctionInner
 
 private address ::= <<addressKeyword>>
 private has ::= <<hasKeyword>>
+private entry ::= <<entryKeyword>>
 private schema ::= <<schemaKeyword>>
 
 AddressDef ::= address AddressRef AddressBlock {
@@ -345,8 +347,8 @@ fake Function ::= Attr* native? FunctionVisibilityModifier? native?
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
-private FunctionInnerNoVisFirst ::= fun { pin = FunctionVisibilityModifier }
-private FunctionInnerVisFirst ::= FunctionVisibilityModifier fun { pin = 1 }
+private FunctionInnerNoVisFirst ::= fun
+private FunctionInnerVisFirst ::= FunctionModifierSetInner fun { pin = 1 }
 private FunctionInnerFirst ::= FunctionInnerVisFirst | FunctionInnerNoVisFirst
 
 FunctionInner ::= Attr* FunctionInnerFirst FunctionSignatureInner CodeBlock
@@ -356,15 +358,15 @@ FunctionInner ::= Attr* FunctionInnerFirst FunctionSignatureInner CodeBlock
 //    recoverWhile = "FunctionSignature__recover"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
+//
+//private NativeFunctionInnerNoVisFirst ::= native fun
+//private NativeFunctionInnerVisFirst ::= ((native FunctionVisibilityModifier)
+//                                        | (FunctionVisibilityModifier native)) fun { pin = 1 }
+//private NativeFunctionInnerFirst ::= NativeFunctionInnerNoVisFirst | NativeFunctionInnerVisFirst
 
-private NativeFunctionInnerNoVisFirst ::= native fun
-private NativeFunctionInnerVisFirst ::= ((native FunctionVisibilityModifier)
-                                        | (FunctionVisibilityModifier native)) fun { pin = 1 }
-private NativeFunctionInnerFirst ::= NativeFunctionInnerNoVisFirst | NativeFunctionInnerVisFirst
-
-NativeFunctionInner ::= Attr* NativeFunctionInnerFirst FunctionSignatureInner ';'
+NativeFunctionInner ::= Attr* NativeFunctionModifierSetInner fun FunctionSignatureInner ';'
 {
-    pin = NativeFunctionInnerFirst
+    pin = NativeFunctionModifierSetInner
     elementType = Function
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
@@ -379,6 +381,21 @@ private FunctionSignatureInner ::= IDENTIFIER TypeParameterList?
 private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
 
 private friend ::= <<friendKeyword>>
+
+//fake FunctionModifierSet ::= native? FunctionVisibilityModifier? entry?
+
+private FunctionModifierSetInner ::= <<functionModifierSet FunctionVisibilityModifier>>
+//{
+//    name = "modifier"
+//}
+private NativeFunctionModifierSetInner ::= <<nativeFunctionModifierSet FunctionVisibilityModifier>>
+//{
+//    elementType = FunctionModifierSet
+//}
+//NativeFunctionModifierSet ::= <<nativeFunctionModifierSet FunctionVisibilityModifier entry>>
+
+//NativeFunctionModifierSet ::= <<functionModifierSet FunctionVisibilityModifier entry true>>
+
 FunctionVisibilityModifier ::= public ('(' (SCRIPT_KW | friend) ')')?
 
 FunctionParameterList ::= '(' FunctionParameter_with_recover* ')' { pin = 1 }

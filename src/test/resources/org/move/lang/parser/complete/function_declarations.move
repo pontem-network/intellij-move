@@ -5,10 +5,12 @@ module M {
     fun tuple_fn(): (&u64, &u64, &mut u64) {}
 
     public fun fn(): u8 {}
+    public entry fun fn(): u8 {}
 
     public(script) fun fn(): u8 {}
 
     public(friend) fun fn(): u8 {}
+    public(friend) entry fun fn(): u8 {}
 
     fun fn_with_returned_tuple(): (u8, u8) {}
 
