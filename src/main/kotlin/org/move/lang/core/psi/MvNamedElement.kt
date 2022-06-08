@@ -3,6 +3,10 @@ package org.move.lang.core.psi
 import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.PsiReference
+import com.intellij.psi.search.PsiSearchHelper
+import com.intellij.psi.search.searches.ReferencesSearch
+import com.intellij.util.Query
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
 import org.move.lang.core.completion.BUILTIN_ITEM_PRIORITY
@@ -17,7 +21,7 @@ interface MvNamedElement : MvElement,
         get() = findLastChildByType(MvElementTypes.IDENTIFIER)
 }
 
-interface MvQualifiedNamedElement: MvNamedElement
+interface MvQualifiedNamedElement : MvNamedElement
 
 data class FqPath(val address: String, val module: String, val item: String?) {
     override fun toString(): String {
@@ -29,24 +33,32 @@ data class FqPath(val address: String, val module: String, val item: String?) {
     }
 }
 
-val MvQualifiedNamedElement.fqPath: FqPath? get() {
-    return when (this) {
-        is MvModule -> {
-            val address = this.address()?.text ?: return null
-            val moduleName = this.name ?: return null
-            FqPath(address, moduleName, null)
-        }
-        else -> {
-            val module = this.containingModule ?: return null
-            val address = module.address()?.text ?: return null
-            val moduleName = module.name ?: return null
-            val elementName = this.name ?: return null
-            FqPath(address, moduleName, elementName)
+val MvQualifiedNamedElement.fqPath: FqPath?
+    get() {
+        return when (this) {
+            is MvModule -> {
+                val address = this.address()?.text ?: return null
+                val moduleName = this.name ?: return null
+                FqPath(address, moduleName, null)
+            }
+            else -> {
+                val module = this.containingModule ?: return null
+                val address = module.address()?.text ?: return null
+                val moduleName = module.name ?: return null
+                val elementName = this.name ?: return null
+                FqPath(address, moduleName, elementName)
+            }
         }
     }
-}
 
-val MvNamedElement.completionPriority get() = when {
-    this is MvFunction && this.name in BUILTIN_FUNCTIONS -> BUILTIN_ITEM_PRIORITY
-    else -> LOCAL_ITEM_PRIORITY
-}
+val MvNamedElement.completionPriority
+    get() = when {
+        this is MvFunction && this.name in BUILTIN_FUNCTIONS -> BUILTIN_ITEM_PRIORITY
+        else -> LOCAL_ITEM_PRIORITY
+    }
+
+fun MvNamedElement.findUsages(): Query<PsiReference> =
+    ReferencesSearch.search(
+        this,
+        PsiSearchHelper.getInstance(this.project).getUseScope(this)
+    )

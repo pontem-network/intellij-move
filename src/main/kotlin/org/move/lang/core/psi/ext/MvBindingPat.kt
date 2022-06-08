@@ -2,6 +2,9 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.LocalSearchScope
+import com.intellij.psi.search.SearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
@@ -46,11 +49,16 @@ fun MvBindingPat.cachedTy(ctx: InferenceContext): Ty {
 
 abstract class MvBindingPatMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                                   MvBindingPat {
-
     override fun getIcon(flags: Int): Icon =
         when (this.owner) {
             is MvFunctionParameter -> MoveIcons.PARAMETER
             is MvConst -> MoveIcons.CONST
             else -> MoveIcons.VARIABLE
         }
+
+    override fun getUseScope(): SearchScope {
+        val function = this.ancestorStrict<MvFunction>() ?: return super.getUseScope()
+        val codeBlock = function.codeBlock ?: return super.getUseScope()
+        return LocalSearchScope(codeBlock)
+    }
 }
