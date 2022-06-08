@@ -16,13 +16,28 @@ class PhantomTypeParameterInspection : MvLocalInspectionTool() {
                 val fields = struct.fields
                 val usedParamNames = mutableListOf<String>()
                 for (field in fields) {
+                    val paramNames = mutableListOf<String>()
                     field.declaredTy(false).foldTyTypeParameterWith { param ->
-                        val name = param.parameter.name
+                        val typeParameter = param.parameter
+                        val name = typeParameter.name
                         if (name != null) {
-                            usedParamNames.add(name)
+                            paramNames.add(name)
                         }
                         param
                     }
+                    run {
+                        val fieldType = field.typeAnnotation?.type ?: return@run
+                        val fieldStruct = fieldType.moveReference?.resolve() as? MvStruct ?: return@run
+                        for ((i, typeArg) in fieldType.typeArguments.withIndex()) {
+                            val typeParam = typeArg.type
+                                .moveReference?.resolve() as? MvTypeParameter ?: continue
+                            val structTypeParam = fieldStruct.typeParameters.getOrNull(i)
+                            if (structTypeParam != null && structTypeParam.isPhantom) {
+                                paramNames.remove(typeParam.name)
+                            }
+                        }
+                    }
+                    usedParamNames.addAll(paramNames)
                 }
                 for (typeParam in o.typeParameterList) {
                     if (typeParam.isPhantom) continue
@@ -36,11 +51,13 @@ class PhantomTypeParameterInspection : MvLocalInspectionTool() {
 
                                 override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
                                     var paramText = "phantom $name"
-                                    if (typeParam.abilities.isNotEmpty()) {
-                                        paramText += ": " + typeParam.abilities.joinToString(", ") { it.text }
+                                    val tp = descriptor.psiElement as? MvTypeParameter ?: return
+                                    if (tp.abilities.isNotEmpty()) {
+                                        paramText +=
+                                            ": " + tp.abilities.joinToString(", ") { it.text }
                                     }
                                     val newParam = project.psiFactory.typeParameter(paramText)
-                                    typeParam.replace(newParam)
+                                    tp.replace(newParam)
                                 }
                             }
                         )
