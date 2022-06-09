@@ -3,8 +3,8 @@ package org.move.cli
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.cli.project.MovePackage
-import org.move.cli.project.MoveToml
+import org.move.cli.packages.MovePackage
+import org.move.cli.manifest.MoveToml
 import org.move.openapiext.contentRoots
 import org.move.openapiext.parseTomlFromFile
 import org.move.stdext.deepIterateChildrenRecursivery

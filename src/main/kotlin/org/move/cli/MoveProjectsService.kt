@@ -140,8 +140,8 @@ class MoveProjectsService(val project: Project) {
                             ProjectRootManagerEx.getInstanceEx(project)
                                 .makeRootsChange(EmptyRunnable.getInstance(), false, true)
                         }
-                        project.messageBus.syncPublisher(MOVE_PROJECTS_TOPIC)
-                            .moveProjectsUpdated(this, projects)
+//                        project.messageBus.syncPublisher(MOVE_PROJECTS_TOPIC)
+//                            .moveProjectsUpdated(this, projects)
                     }
                 }
 
@@ -149,10 +149,10 @@ class MoveProjectsService(val project: Project) {
             }
 
     companion object {
-        val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic(
-            "move projects changes",
-            MoveProjectsListener::class.java
-        )
+//        val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic(
+//            "move projects changes",
+//            MoveProjectsListener::class.java
+//        )
     }
 
     fun interface MoveProjectsListener {

@@ -1,4 +1,4 @@
-package org.move.cli.project
+package org.move.cli.packages
 
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
@@ -7,6 +7,7 @@ import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.*
+import org.move.cli.manifest.MoveToml
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.checkReadAccessAllowed
 import org.move.openapiext.resolveExisting

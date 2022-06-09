@@ -1,4 +1,4 @@
-package org.move.cli.project
+package org.move.cli.packages
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager

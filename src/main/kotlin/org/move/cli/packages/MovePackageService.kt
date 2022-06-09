@@ -1,4 +1,4 @@
-package org.move.cli.project
+package org.move.cli.packages
 
 import com.intellij.execution.RunManager
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
@@ -106,9 +106,9 @@ class MovePackageService(val project: Project) {
                     ProjectRootManagerEx.getInstanceEx(project)
                         .makeRootsChange(EmptyRunnable.getInstance(), false, true)
                 }
-                project.messageBus
-                    .syncPublisher(MOVE_PACKAGES_CHANGES_TOPIC)
-                    .movePackagesUpdated(this, packages)
+//                project.messageBus
+//                    .syncPublisher(MOVE_PACKAGES_CHANGES_TOPIC)
+//                    .movePackagesUpdated(this, packages)
             }
         }
     }
@@ -145,17 +145,17 @@ class MovePackageService(val project: Project) {
     companion object {
         private val LOG = logger<MovePackageService>()
 
-        fun interface MovePackagesUpdatedListener {
-            fun movePackagesUpdated(
-                service: MovePackageService,
-                packages: List<MovePackage>
-            )
-        }
+//        fun interface MovePackagesUpdatedListener {
+//            fun movePackagesUpdated(
+//                service: MovePackageService,
+//                packages: List<MovePackage>
+//            )
+//        }
 
-        private val MOVE_PACKAGES_CHANGES_TOPIC = Topic(
-            "packages changes",
-            MovePackagesUpdatedListener::class.java
-        )
+//        private val MOVE_PACKAGES_CHANGES_TOPIC = Topic(
+//            "packages changes",
+//            MovePackagesUpdatedListener::class.java
+//        )
 
     }
 }

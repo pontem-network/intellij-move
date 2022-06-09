@@ -277,10 +277,10 @@
                         testServiceImplementation="org.move.utils.TestProjectRootServiceImpl"/>
 
         <projectService serviceImplementation="org.move.cli.MoveProjectsService"/>
-        <projectService serviceImplementation="org.move.cli.project.MovePackageService"/>
+        <projectService serviceImplementation="org.move.cli.packages.MovePackageService"/>
 
 <!--        <projectService serviceInterface="com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker"-->
-<!--                        serviceImplementation="org.move.cli.project.MovePackagesTracker"-->
+<!--                        serviceImplementation="org.move.cli.manifest.MovePackagesTracker"-->
 <!--                        overrides="true" />-->
 
         <additionalLibraryRootsProvider

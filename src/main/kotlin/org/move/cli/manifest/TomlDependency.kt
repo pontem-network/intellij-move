@@ -1,4 +1,4 @@
-package org.move.cli.project
+package org.move.cli.manifest
 
 import java.nio.file.Path
 import java.nio.file.Paths

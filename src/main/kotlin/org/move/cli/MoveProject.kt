@@ -9,9 +9,9 @@ import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.util.containers.addIfNotNull
-import org.move.cli.project.BuildInfoYaml
-import org.move.cli.project.MovePackage
-import org.move.cli.project.MoveToml
+import org.move.cli.manifest.BuildInfoYaml
+import org.move.cli.packages.MovePackage
+import org.move.cli.manifest.MoveToml
 import org.move.lang.MoveFile
 import org.move.lang.core.types.Address
 import org.move.lang.toNioPathOrNull

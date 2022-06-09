@@ -2,7 +2,7 @@ package org.move.cli
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.cli.project.BuildInfoYaml
+import org.move.cli.manifest.BuildInfoYaml
 import org.move.lang.moveProject
 import org.move.openapiext.toVirtualFile
 import org.move.openapiext.resolveExisting

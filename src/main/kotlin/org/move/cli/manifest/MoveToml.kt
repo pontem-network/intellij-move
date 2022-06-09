@@ -1,4 +1,4 @@
-package org.move.cli.project
+package org.move.cli.manifest
 
 import com.intellij.openapi.project.Project
 import org.move.cli.*

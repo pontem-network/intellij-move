@@ -1,9 +1,10 @@
-package org.move.cli.project
+package org.move.cli.packages
 
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import org.move.cli.Consts
+import org.move.cli.manifest.MoveToml
 import org.move.lang.toNioPathOrNull
 import org.move.lang.toTomlFile
 import org.move.openapiext.contentRoots

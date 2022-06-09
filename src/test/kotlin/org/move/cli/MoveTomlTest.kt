@@ -1,6 +1,6 @@
 package org.move.cli
 
-import org.move.cli.project.MoveToml
+import org.move.cli.manifest.MoveToml
 import org.move.openapiext.parseToml
 import org.move.utils.TestProjectRootServiceImpl
 import org.move.utils.rootService
