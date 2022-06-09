@@ -55,7 +55,7 @@ fun testEmptyMoveProject(project: Project): MoveProject {
     val moveToml = MoveToml(project)
     val contentRoot = project.contentRoots.first()
     val addresses = DeclaredAddresses(mutableAddressMap(), placeholderMap())
-    val movePackage = MovePackage(contentRoot, project, moveToml)
+    val movePackage = MovePackage(project, contentRoot, moveToml)
     return MoveProject(
         project,
         addresses,

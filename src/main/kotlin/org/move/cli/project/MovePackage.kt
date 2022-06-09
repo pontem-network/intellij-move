@@ -3,16 +3,18 @@ package org.move.cli.project
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.*
+import org.move.lang.toNioPathOrNull
+import org.move.openapiext.checkReadAccessAllowed
+import org.toml.lang.psi.TomlFile
 
 data class MovePackage(
-    val contentRoot: VirtualFile,
     private val project: Project,
+    val contentRoot: VirtualFile,
     val moveToml: MoveToml,
 ) {
-
     val packageName = this.moveToml.packageName
 
-    fun addresses(): DeclaredAddresses {
+    fun declaredAddresses(): DeclaredAddresses {
         val tomlMainAddresses = moveToml.declaredAddresses(DevMode.MAIN)
         val tomlDevAddresses = moveToml.declaredAddresses(DevMode.DEV)
 
@@ -51,5 +53,15 @@ data class MovePackage(
             placeholders.putAll(newDepPlaceholders)
         }
         return addrs to placeholders
+    }
+
+    companion object {
+        fun fromTomlFile(tomlFile: TomlFile): MovePackage? {
+            checkReadAccessAllowed()
+            val contentRoot = tomlFile.parent?.virtualFile ?: return null
+            val contentRootPath = contentRoot.toNioPathOrNull() ?: return null
+            val moveToml = MoveToml.fromTomlFile(tomlFile, contentRootPath)
+            return MovePackage(tomlFile.project, contentRoot, moveToml)
+        }
     }
 }

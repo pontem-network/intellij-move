@@ -43,7 +43,8 @@ fun initializeMoveProject(project: Project, fsMoveTomlFile: VirtualFile): MovePr
         val moveToml = MoveToml.fromTomlFile(tomlFile, contentRoot.toNioPath())
         val addresses = moveToml.declaredAddresses(DevMode.MAIN)
         val devAddresses = moveToml.declaredAddresses(DevMode.DEV)
-        val movePackage = MovePackage(contentRoot, project, moveToml)
+
+        val movePackage = MovePackage.fromTomlFile(tomlFile) ?: return@runReadAction null
         MoveProject(project, addresses, devAddresses, movePackage)
     }
 }
