@@ -91,21 +91,14 @@ fun applyAddressSubstitutions(
 }
 
 data class MoveProject(
-    val project: Project,
-    val declaredAddrs: DeclaredAddresses,
-    val declaredDevAddresses: DeclaredAddresses,
-    val movePackage: MovePackage,
+    private val project: Project,
+    private val declaredAddrs: DeclaredAddresses,
+    private val declaredDevAddresses: DeclaredAddresses,
+    val currentPackage: MovePackage,
 ) : UserDataHolderBase() {
 
-    val packageName: String? get() = this.movePackage.packageName
-
-    val contentRoot get() = this.movePackage.contentRoot
-    val contentRootPath: Path? get() = contentRoot.toNioPathOrNull()
-
-    fun testsDir(): Path? = projectDirPath("tests")
-    fun scriptsDir(): Path? = projectDirPath("scripts")
-
-    private fun projectDirPath(name: String): Path? = contentRootPath?.resolve(name)
+    val contentRoot get() = this.currentPackage.contentRoot
+    val contentRootPath: Path? get() = this.currentPackage.contentRoot.toNioPathOrNull()
 
     fun moduleFolders(devMode: DevMode): List<VirtualFile> {
         val folders = mutableListOf<VirtualFile>()
@@ -142,8 +135,8 @@ data class MoveProject(
     }
 
     private fun buildRoot(): VirtualFile? {
-        val packageName = this.packageName ?: return null
-        return this.contentRoot
+        val packageName = this.currentPackage.packageName ?: return null
+        return this.currentPackage.contentRoot
             .findChild("build")
             ?.findChild(packageName)
     }
@@ -153,13 +146,13 @@ data class MoveProject(
             val addresses = mutableAddressMap()
             val placeholders = placeholderMap()
 
-            for ((dep, subst) in this.movePackage.moveToml.dependencies.values) {
+            for ((dep, subst) in this.currentPackage.moveToml.dependencies.values) {
                 val depDeclaredAddrs = dep.declaredAddresses(project) ?: continue
 
                 val (newDepAddresses, newDepPlaceholders) = applyAddressSubstitutions(
                     depDeclaredAddrs,
                     subst,
-                    packageName ?: ""
+                    currentPackage.packageName ?: ""
                 )
 
                 // renames
@@ -168,7 +161,12 @@ data class MoveProject(
                     val origVal = depDeclaredAddrs.get(originalName)
                     if (origVal != null) {
                         newDepAddresses[renamedName] =
-                            AddressVal(origVal.value, keyVal, null, packageName ?: "")
+                            AddressVal(
+                                origVal.value,
+                                keyVal,
+                                null,
+                                currentPackage.packageName ?: ""
+                            )
                     }
                 }
                 addresses.putAll(newDepAddresses)
@@ -237,5 +235,9 @@ data class MoveProject(
         }
     }
 
-    fun walkMoveFiles(process: (MoveFile) -> Boolean) = deepWalkMoveFiles(project, contentRoot, process)
+    fun walkMoveFiles(process: (MoveFile) -> Boolean) = deepWalkMoveFiles(
+        project,
+        currentPackage.contentRoot,
+        process
+    )
 }
