@@ -19,7 +19,6 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.util.messages.Topic
 import org.jetbrains.rpc.LOG
 import org.move.cli.settings.MoveProjectSettingsService
 import org.move.cli.settings.MoveSettingsChangedEvent
@@ -32,7 +31,7 @@ import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.toVirtualFile
 import org.move.stdext.AsyncValue
 import org.move.stdext.DirectoryIndexEntry
-import org.move.stdext.MyLightDirectoryIndex
+import org.move.stdext.MoveProjectsIndex
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
@@ -80,7 +79,7 @@ class MoveProjectsService(val project: Project) {
         // in-memory file
         if (file == null) return null
 
-        val cachedProjectEntry = this.directoryIndex.getInfoForFile(file)
+        val cachedProjectEntry = this.projectsIndex.getInfoForFile(file)
         if (cachedProjectEntry is DirectoryIndexEntry.Present) {
             return cachedProjectEntry.project
         }
@@ -103,7 +102,7 @@ class MoveProjectsService(val project: Project) {
             // this is for light tests, heavy test should always have valid moveProject
             moveProject = testEmptyMoveProject(project)
         }
-        this.directoryIndex.putInfo(file, DirectoryIndexEntry.Present(moveProject))
+        this.projectsIndex.putInfo(file, DirectoryIndexEntry.Present(moveProject))
         return moveProject
     }
 
@@ -115,8 +114,8 @@ class MoveProjectsService(val project: Project) {
      */
     private val projects = AsyncValue<List<MoveProject>>(emptyList())
 
-    private val directoryIndex: MyLightDirectoryIndex<DirectoryIndexEntry> =
-        MyLightDirectoryIndex(project, DirectoryIndexEntry.Missing) { index ->
+    private val projectsIndex: MoveProjectsIndex<DirectoryIndexEntry> =
+        MoveProjectsIndex(project, DirectoryIndexEntry.Missing) { index ->
             val projects = projects.state
             processAllMoveFilesOnce(projects) { moveFile, moveProject ->
                 index.putInfo(moveFile.virtualFile, DirectoryIndexEntry.Present(moveProject))
@@ -134,7 +133,7 @@ class MoveProjectsService(val project: Project) {
             .thenApply { projects ->
                 invokeAndWaitIfNeeded {
                     runWriteAction {
-                        directoryIndex.resetIndex()
+                        projectsIndex.resetIndex()
                         // In unit tests roots change is done by the test framework in most cases
                         runOnlyInNonLightProject(project) {
                             ProjectRootManagerEx.getInstanceEx(project)

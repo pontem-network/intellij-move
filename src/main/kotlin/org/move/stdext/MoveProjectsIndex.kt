@@ -24,10 +24,10 @@ sealed class DirectoryIndexEntry {
  *
  * @author gregsh
  */
-class MyLightDirectoryIndex<T>(
+class MoveProjectsIndex<T>(
     parentDisposable: Disposable,
     private val myDefValue: T,
-    private val myInitializer: Consumer<MyLightDirectoryIndex<T>>
+    private val myInitializer: Consumer<MoveProjectsIndex<T>>
 ) {
     private val myRootInfos: MutableMap<VirtualFile, T> = ConcurrentHashMap()
     fun resetIndex() {
