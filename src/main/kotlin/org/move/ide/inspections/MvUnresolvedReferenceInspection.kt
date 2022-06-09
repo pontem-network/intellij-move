@@ -141,5 +141,15 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
                 }
             }
         }
+
+        override fun visitStructDotField(o: MvStructDotField) {
+            if (!o.resolvable) {
+                holder.registerProblem(
+                    o.referenceNameElement,
+                    "Unresolved field: `${o.referenceName}`",
+                    ProblemHighlightType.LIKE_UNUSED_SYMBOL
+                )
+            }
+        }
     }
 }

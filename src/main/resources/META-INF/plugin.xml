@@ -17,6 +17,7 @@
     <ul>
     <li>Unused variable inspection</li>
     <li>Warn if non-phantom type parameter only used in phantom positions</li>
+    <li>Unresolved references inspection: dot expr support</li>
     </ul>
     <h3>1.11.0</h3>
     <ul>

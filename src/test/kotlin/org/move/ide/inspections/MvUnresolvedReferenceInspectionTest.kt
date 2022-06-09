@@ -276,4 +276,16 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
         }
     }
     """)
+
+    fun `test unresolved field for dot expression`() = checkByText(
+        """
+    module 0x1::M {
+        struct S has key {}
+        fun call() acquires S {
+            let a = borrow_global_mut<S>(@0x1);
+            a.<error descr="Unresolved field: `val`">val</error>;
+        }
+    }    
+    """
+    )
 }
