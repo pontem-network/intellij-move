@@ -19,7 +19,9 @@ class ProjectAddressesServiceTest: MvProjectTestBase() {
         }
         val addressesService = project.projectsService
 
-        val moveFiles = findMoveTomlFilesDeepestFirst(myFixture.project).toList()
+        val moveFiles = findMoveTomlFiles(project)
+            .sortedByDescending { it.path.split("/").count() }
+            .toList()
         check(moveFiles.size == 2)
         check(moveFiles[0].path.endsWith("stdlib/Move.toml")) { moveFiles[0].path }
         check(moveFiles[1].path.endsWith("Move.toml")) { moveFiles[1].path }

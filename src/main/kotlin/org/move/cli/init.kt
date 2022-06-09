@@ -17,12 +17,13 @@ sealed class InitResult {
 fun ok(moveProject: MoveProject) = InitResult.Ok(moveProject)
 fun error(message: String) = InitResult.Err(message)
 
-fun findMoveTomlFilesDeepestFirst(project: Project): Sequence<VirtualFile> {
-    return findMoveTomlFiles(project)
-        .sortedByDescending { it.path.split("/").count() }
-}
+//fun findMoveTomlFilesDeepestFirst(project: Project): Sequence<VirtualFile> {
+//    return findMoveTomlFiles(project)
+//        .sortedByDescending { it.path.split("/").count() }
+//}
 
 fun findMoveTomlFiles(project: Project): Sequence<VirtualFile> {
+    // search over content roots
     val contentRoots = project.contentRoots
     val moveFiles = mutableSetOf<VirtualFile>()
     for (contentRoot in contentRoots) {

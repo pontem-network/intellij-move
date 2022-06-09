@@ -15,9 +15,9 @@ import com.intellij.util.Consumer
 import org.move.cli.MoveProject
 import java.util.concurrent.ConcurrentHashMap
 
-sealed class MoveProjectEntry {
-    object Missing : MoveProjectEntry()
-    data class Present(val project: MoveProject?): MoveProjectEntry()
+sealed class DirectoryIndexEntry {
+    object Missing : DirectoryIndexEntry()
+    data class Present(val project: MoveProject?): DirectoryIndexEntry()
 }
 /**
  * This is a light version of DirectoryIndexImpl

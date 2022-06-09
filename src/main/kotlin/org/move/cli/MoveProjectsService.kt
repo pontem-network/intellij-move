@@ -31,7 +31,7 @@ import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.toVirtualFile
 import org.move.stdext.AsyncValue
-import org.move.stdext.MoveProjectEntry
+import org.move.stdext.DirectoryIndexEntry
 import org.move.stdext.MyLightDirectoryIndex
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
@@ -74,14 +74,14 @@ class MoveProjectsService(val project: Project) {
     }
 
     val allProjects: List<MoveProject>
-        get() = this.projects.currentState
+        get() = this.projects.state
 
     private fun findMoveProject(file: VirtualFile?): MoveProject? {
         // in-memory file
         if (file == null) return null
 
         val cachedProjectEntry = this.directoryIndex.getInfoForFile(file)
-        if (cachedProjectEntry is MoveProjectEntry.Present) {
+        if (cachedProjectEntry is DirectoryIndexEntry.Present) {
             return cachedProjectEntry.project
         }
         LOG.warn("MoveProject is not found in cache")
@@ -103,7 +103,7 @@ class MoveProjectsService(val project: Project) {
             // this is for light tests, heavy test should always have valid moveProject
             moveProject = testEmptyMoveProject(project)
         }
-        this.directoryIndex.putInfo(file, MoveProjectEntry.Present(moveProject))
+        this.directoryIndex.putInfo(file, DirectoryIndexEntry.Present(moveProject))
         return moveProject
     }
 
@@ -115,11 +115,11 @@ class MoveProjectsService(val project: Project) {
      */
     private val projects = AsyncValue<List<MoveProject>>(emptyList())
 
-    private val directoryIndex: MyLightDirectoryIndex<MoveProjectEntry> =
-        MyLightDirectoryIndex(project, MoveProjectEntry.Missing) { index ->
-            val projects = projects.currentState
+    private val directoryIndex: MyLightDirectoryIndex<DirectoryIndexEntry> =
+        MyLightDirectoryIndex(project, DirectoryIndexEntry.Missing) { index ->
+            val projects = projects.state
             processAllMoveFilesOnce(projects) { moveFile, moveProject ->
-                index.putInfo(moveFile.virtualFile, MoveProjectEntry.Present(moveProject))
+                index.putInfo(moveFile.virtualFile, DirectoryIndexEntry.Present(moveProject))
             }
         }
 
@@ -136,7 +136,7 @@ class MoveProjectsService(val project: Project) {
                     runWriteAction {
                         directoryIndex.resetIndex()
                         // In unit tests roots change is done by the test framework in most cases
-                        runWithNonLightProject(project) {
+                        runOnlyInNonLightProject(project) {
                             ProjectRootManagerEx.getInstanceEx(project)
                                 .makeRootsChange(EmptyRunnable.getInstance(), false, true)
                         }
@@ -294,7 +294,7 @@ private fun doRefresh(project: Project): CompletableFuture<List<MoveProject>> {
     val syncTask = MvSyncTask(project, result)
     project.taskQueue.run(syncTask)
     return result.thenApply { updatedProjects ->
-        runWithNonLightProject(project) {
+        runOnlyInNonLightProject(project) {
             setupProjectRoots(project, updatedProjects)
         }
         updatedProjects
@@ -321,7 +321,7 @@ fun setupProjectRoots(project: Project, moveProjects: List<MoveProject>) {
     }
 }
 
-private inline fun runWithNonLightProject(project: Project, action: () -> Unit) {
+inline fun runOnlyInNonLightProject(project: Project, action: () -> Unit) {
     if ((project as? ProjectEx)?.isLight != true) {
         action()
     } else {

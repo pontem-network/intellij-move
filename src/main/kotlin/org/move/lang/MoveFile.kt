@@ -17,6 +17,7 @@ import org.move.lang.core.psi.ext.modules
 import org.move.openapiext.resolveAbsPath
 import org.move.openapiext.toPsiFile
 import org.move.stdext.chain
+import org.toml.lang.psi.TomlFile
 import org.toml.lang.psi.TomlFileType
 import java.nio.file.Path
 
@@ -71,6 +72,8 @@ val VirtualFile.isMoveFile: Boolean get() = fileType == MoveFileType
 val VirtualFile.isMoveTomlManifestFile: Boolean get() = fileType == TomlFileType && name == "Move.toml"
 
 fun VirtualFile.toMoveFile(project: Project): MoveFile? = this.toPsiFile(project) as? MoveFile
+
+fun VirtualFile.toTomlFile(project: Project): TomlFile? = this.toPsiFile(project) as? TomlFile
 
 fun MoveFile.modules(): Sequence<MvModule> {
     return this.childrenOfType<MvModule>()

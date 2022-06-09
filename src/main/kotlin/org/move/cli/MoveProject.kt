@@ -64,6 +64,12 @@ fun testEmptyMoveProject(project: Project): MoveProject {
     )
 }
 
+fun testEmptyMovePackage(project: Project): MovePackage {
+    val moveToml = MoveToml(project)
+    val contentRoot = project.contentRoots.first()
+    return MovePackage(project, contentRoot, moveToml)
+}
+
 fun applyAddressSubstitutions(
     addresses: DeclaredAddresses,
     subst: RawAddressMap,
