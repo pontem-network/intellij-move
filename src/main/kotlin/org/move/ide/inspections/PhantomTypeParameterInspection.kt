@@ -40,9 +40,34 @@ class PhantomTypeParameterInspection : MvLocalInspectionTool() {
                     usedParamNames.addAll(paramNames)
                 }
                 for (typeParam in o.typeParameterList) {
-                    if (typeParam.isPhantom) continue
-                    val name = typeParam.name ?: continue
-                    if (name !in usedParamNames) {
+                    val typeParamName = typeParam.name ?: continue
+                    if (typeParam.isPhantom) {
+                        if (typeParamName !in usedParamNames) {
+                            continue
+                        } else {
+                            holder.registerProblem(
+                                typeParam,
+                                "Cannot be phantom",
+                                object : LocalQuickFix {
+                                    override fun getFamilyName(): String {
+                                        return "Remove phantom"
+                                    }
+
+                                    override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
+                                        var paramText = typeParamName
+                                        val tp = descriptor.psiElement as? MvTypeParameter ?: return
+                                        if (tp.abilities.isNotEmpty()) {
+                                            paramText +=
+                                                ": " + tp.abilities.joinToString(", ") { it.text }
+                                        }
+                                        val newParam = project.psiFactory.typeParameter(paramText)
+                                        tp.replace(newParam)
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    if (typeParamName !in usedParamNames) {
                         holder.registerProblem(
                             typeParam,
                             "Unused type parameter. Consider declaring it as phantom",
@@ -50,7 +75,7 @@ class PhantomTypeParameterInspection : MvLocalInspectionTool() {
                                 override fun getFamilyName() = "Declare phantom"
 
                                 override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-                                    var paramText = "phantom $name"
+                                    var paramText = "phantom $typeParamName"
                                     val tp = descriptor.psiElement as? MvTypeParameter ?: return
                                     if (tp.abilities.isNotEmpty()) {
                                         paramText +=

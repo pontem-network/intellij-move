@@ -64,4 +64,26 @@ class PhantomTypeParameterInspectionTest : InspectionTestBase(PhantomTypeParamet
     }
     """
     )
+
+    fun `test cannot be phantom if used`() = checkFixByText(
+        "Remove phantom", """
+    module 0x1::M {
+        struct S<<error descr="Cannot be phantom">/*caret*/phantom T</error>> {
+            value: T
+        }
+    }    
+    """, """
+    module 0x1::M {
+        struct S<T> {
+            value: T
+        }
+    }    
+    """
+    )
+    fun `test no error if phantom and not used`() = checkByText("""
+    module 0x1::M {
+        struct S<phantom T> {}
+    }    
+    """
+    )
 }
