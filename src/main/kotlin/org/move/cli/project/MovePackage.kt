@@ -4,15 +4,15 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.*
 
-data class LocalPackage(
-    override val contentRoot: VirtualFile,
+data class MovePackage(
+    val contentRoot: VirtualFile,
     private val project: Project,
     val moveToml: MoveToml,
-): Package(contentRoot) {
+) {
 
     val packageName = this.moveToml.packageName
 
-    override fun addresses(): DeclaredAddresses {
+    fun addresses(): DeclaredAddresses {
         val tomlMainAddresses = moveToml.declaredAddresses(DevMode.MAIN)
         val tomlDevAddresses = moveToml.declaredAddresses(DevMode.DEV)
 

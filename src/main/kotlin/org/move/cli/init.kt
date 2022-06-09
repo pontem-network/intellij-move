@@ -3,7 +3,7 @@ package org.move.cli
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.cli.project.LocalPackage
+import org.move.cli.project.MovePackage
 import org.move.cli.project.MoveToml
 import org.move.openapiext.contentRoots
 import org.move.openapiext.parseTomlFromFile
@@ -43,7 +43,7 @@ fun initializeMoveProject(project: Project, fsMoveTomlFile: VirtualFile): MovePr
         val moveToml = MoveToml.fromTomlFile(tomlFile, contentRoot.toNioPath())
         val addresses = moveToml.declaredAddresses(DevMode.MAIN)
         val devAddresses = moveToml.declaredAddresses(DevMode.DEV)
-        val localPackage = LocalPackage(contentRoot, project, moveToml)
-        MoveProject(project, addresses, devAddresses, localPackage)
+        val movePackage = MovePackage(contentRoot, project, moveToml)
+        MoveProject(project, addresses, devAddresses, movePackage)
     }
 }

@@ -10,7 +10,7 @@ import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.util.containers.addIfNotNull
 import org.move.cli.project.BuildInfoYaml
-import org.move.cli.project.LocalPackage
+import org.move.cli.project.MovePackage
 import org.move.cli.project.MoveToml
 import org.move.lang.MoveFile
 import org.move.lang.core.types.Address
@@ -55,12 +55,12 @@ fun testEmptyMoveProject(project: Project): MoveProject {
     val moveToml = MoveToml(project)
     val contentRoot = project.contentRoots.first()
     val addresses = DeclaredAddresses(mutableAddressMap(), placeholderMap())
-    val localPackage = LocalPackage(contentRoot, project, moveToml)
+    val movePackage = MovePackage(contentRoot, project, moveToml)
     return MoveProject(
         project,
         addresses,
         addresses.copy(),
-        localPackage
+        movePackage
     )
 }
 
@@ -88,12 +88,12 @@ data class MoveProject(
     val project: Project,
     val declaredAddrs: DeclaredAddresses,
     val declaredDevAddresses: DeclaredAddresses,
-    val currentPackage: LocalPackage,
+    val movePackage: MovePackage,
 ) : UserDataHolderBase() {
 
-    val packageName: String? get() = this.currentPackage.packageName
+    val packageName: String? get() = this.movePackage.packageName
 
-    val contentRoot get() = this.currentPackage.contentRoot
+    val contentRoot get() = this.movePackage.contentRoot
     val contentRootPath: Path? get() = contentRoot.toNioPathOrNull()
 
     fun testsDir(): Path? = projectDirPath("tests")
@@ -147,7 +147,7 @@ data class MoveProject(
             val addresses = mutableAddressMap()
             val placeholders = placeholderMap()
 
-            for ((dep, subst) in this.currentPackage.moveToml.dependencies.values) {
+            for ((dep, subst) in this.movePackage.moveToml.dependencies.values) {
                 val depDeclaredAddrs = dep.declaredAddresses(project) ?: continue
 
                 val (newDepAddresses, newDepPlaceholders) = applyAddressSubstitutions(
