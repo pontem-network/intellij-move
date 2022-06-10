@@ -94,4 +94,12 @@ class PhantomTypeParameterInspectionTest : InspectionTestBase(PhantomTypeParamet
         struct R<phantom T> { val: S<Event<T>> }
     }    
     """)
+
+    fun `test error if only used in phantom positions in nested types`() = checkByText("""
+    module 0x1::M {
+        struct Event<phantom T> {}
+        struct S<T> { val: T }
+        struct R<<error descr="Unused type parameter. Consider declaring it as phantom">T</error>> { val: S<Event<T>> }
+    }    
+    """)
 }
