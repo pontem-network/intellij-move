@@ -4,6 +4,7 @@ import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
+import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
@@ -27,13 +28,17 @@ class PhantomTypeParameterInspection : MvLocalInspectionTool() {
                     }
                     run {
                         val fieldType = field.typeAnnotation?.type ?: return@run
-                        val fieldStruct = fieldType.moveReference?.resolve() as? MvStruct ?: return@run
-                        for ((i, typeArg) in fieldType.typeArguments.withIndex()) {
-                            val typeParam = typeArg.type
-                                .moveReference?.resolve() as? MvTypeParameter ?: continue
-                            val structTypeParam = fieldStruct.typeParameters.getOrNull(i)
-                            if (structTypeParam != null && structTypeParam.isPhantom) {
-                                paramNames.remove(typeParam.name)
+                        val typeLists = fieldType.descendantsOfType<MvTypeArgumentList>()
+                        for (typeList in typeLists) {
+                            val path = typeList.parent as MvPath
+                            val outerStruct = path.reference?.resolve() as? MvStruct ?: continue
+                            for ((i, typeArg) in typeList.typeArgumentList.withIndex()) {
+                                val typeParam = typeArg.type
+                                    .moveReference?.resolve() as? MvTypeParameter ?: continue
+                                val outerTypeParam = outerStruct.typeParameters.getOrNull(i) ?: continue
+                                if (outerTypeParam.isPhantom) {
+                                    paramNames.remove(typeParam.name)
+                                }
                             }
                         }
                     }

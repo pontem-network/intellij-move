@@ -86,4 +86,12 @@ class PhantomTypeParameterInspectionTest : InspectionTestBase(PhantomTypeParamet
     }    
     """
     )
+
+    fun `test no error if phantom and used in only phantom positions in generics`() = checkByText("""
+    module 0x1::M {
+        struct Event<phantom T> {}
+        struct S<T> { val: T }
+        struct R<phantom T> { val: S<Event<T>> }
+    }    
+    """)
 }
