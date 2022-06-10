@@ -147,7 +147,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
                 holder.registerProblem(
                     o.referenceNameElement,
                     "Unresolved field: `${o.referenceName}`",
-                    ProblemHighlightType.LIKE_UNUSED_SYMBOL
+                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
                 )
             }
         }
