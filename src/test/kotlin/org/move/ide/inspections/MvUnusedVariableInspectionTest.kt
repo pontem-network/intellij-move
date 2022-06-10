@@ -47,4 +47,12 @@ class MvUnusedVariableInspectionTest: InspectionTestBase(MvUnusedVariableInspect
         } 
     }    
     """)
+
+    fun `test no error if prefixed with underscore`() = checkByText("""
+    module 0x1::M {
+        fun call(_a: u8) {
+            let _b = 1;
+        }
+    }    
+    """)
 }

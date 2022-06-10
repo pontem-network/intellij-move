@@ -28,6 +28,8 @@ class MvUnusedVariableInspection : MvLocalInspectionTool() {
 
             private fun checkUnused(binding: MvBindingPat, description: String) {
                 val bindingName = binding.name ?: return
+                if (bindingName.startsWith("_")) return
+
                 val usages = binding.findUsages()
                 if (usages.none()) {
                     holder.registerProblem(
