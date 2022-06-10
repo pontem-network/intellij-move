@@ -4,6 +4,7 @@ import com.intellij.execution.RunManager
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectEx
@@ -19,7 +20,7 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import org.jetbrains.rpc.LOG
+import com.intellij.util.messages.Topic
 import org.move.cli.settings.MoveProjectSettingsService
 import org.move.cli.settings.MoveSettingsChangedEvent
 import org.move.cli.settings.MvSettingsListener
@@ -30,8 +31,8 @@ import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.toVirtualFile
 import org.move.stdext.AsyncValue
-import org.move.stdext.DirectoryIndexEntry
 import org.move.stdext.MoveProjectsIndex
+import org.move.stdext.ProjectsIndexEntry
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
@@ -42,23 +43,26 @@ class MoveProjectsService(val project: Project) {
         with(project.messageBus.connect()) {
             if (!isUnitTestMode) {
                 subscribe(VirtualFileManager.VFS_CHANGES, MoveTomlWatcher {
-                    refreshAllProjects()
+                    refresh()
                 })
             }
             subscribe(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC, object : MvSettingsListener {
                 override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
-                    refreshAllProjects()
+                    refresh()
                 }
             })
         }
     }
 
-    fun refreshAllProjects() {
+    fun refresh() {
         LOG.info("Project state refresh started")
-        modifyProjects { doRefresh(project) }
+        modifyProjects {
+            doRefresh(project)
+        }
+
     }
 
-    fun findProjectForPsiElement(psiElement: PsiElement): MoveProject? {
+    fun findMoveProject(psiElement: PsiElement): MoveProject? {
         val file = when (psiElement) {
             is PsiDirectory -> psiElement.virtualFile
             is PsiFile -> psiElement.originalFile.virtualFile
@@ -67,7 +71,7 @@ class MoveProjectsService(val project: Project) {
         return findMoveProject(file)
     }
 
-    fun findProjectForPath(path: Path): MoveProject? {
+    fun findMoveProject(path: Path): MoveProject? {
         val file = path.toVirtualFile() ?: return null
         return findMoveProject(file)
     }
@@ -79,8 +83,8 @@ class MoveProjectsService(val project: Project) {
         // in-memory file
         if (file == null) return null
 
-        val cachedProjectEntry = this.projectsIndex.getInfoForFile(file)
-        if (cachedProjectEntry is DirectoryIndexEntry.Present) {
+        val cachedProjectEntry = this.projectsIndex.get(file)
+        if (cachedProjectEntry is ProjectsIndexEntry.Present) {
             return cachedProjectEntry.project
         }
         LOG.warn("MoveProject is not found in cache")
@@ -102,7 +106,7 @@ class MoveProjectsService(val project: Project) {
             // this is for light tests, heavy test should always have valid moveProject
             moveProject = testEmptyMoveProject(project)
         }
-        this.projectsIndex.putInfo(file, DirectoryIndexEntry.Present(moveProject))
+        this.projectsIndex.put(file, ProjectsIndexEntry.Present(moveProject))
         return moveProject
     }
 
@@ -114,11 +118,11 @@ class MoveProjectsService(val project: Project) {
      */
     private val projects = AsyncValue<List<MoveProject>>(emptyList())
 
-    private val projectsIndex: MoveProjectsIndex<DirectoryIndexEntry> =
-        MoveProjectsIndex(project, DirectoryIndexEntry.Missing) { index ->
+    private val projectsIndex: MoveProjectsIndex =
+        MoveProjectsIndex(project) { index ->
             val projects = projects.state
             processAllMoveFilesOnce(projects) { moveFile, moveProject ->
-                index.putInfo(moveFile.virtualFile, DirectoryIndexEntry.Present(moveProject))
+                index.put(moveFile.virtualFile, ProjectsIndexEntry.Present(moveProject))
             }
         }
 
@@ -129,33 +133,40 @@ class MoveProjectsService(val project: Project) {
     private fun modifyProjects(
         f: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
     ): CompletableFuture<List<MoveProject>> =
-        projects.updateAsync(f)
+        projects
+            .updateAsync(f)
             .thenApply { projects ->
-                invokeAndWaitIfNeeded {
-                    runWriteAction {
-                        projectsIndex.resetIndex()
-                        // In unit tests roots change is done by the test framework in most cases
-                        runOnlyInNonLightProject(project) {
-                            ProjectRootManagerEx.getInstanceEx(project)
-                                .makeRootsChange(EmptyRunnable.getInstance(), false, true)
-                        }
-//                        project.messageBus.syncPublisher(MOVE_PROJECTS_TOPIC)
-//                            .moveProjectsUpdated(this, projects)
-                    }
-                }
-
+                resetIDEState(projects)
                 projects
             }
 
-    companion object {
-//        val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic(
-//            "move projects changes",
-//            MoveProjectsListener::class.java
-//        )
+    private fun resetIDEState(projects: Collection<MoveProject>) {
+        invokeAndWaitIfNeeded {
+            runWriteAction {
+                projectsIndex.resetIndex()
+                // In unit tests roots change is done by the test framework in most cases
+                runOnlyInNonLightProject(project) {
+                    ProjectRootManagerEx.getInstanceEx(project)
+                        .makeRootsChange(EmptyRunnable.getInstance(), false, true)
+                }
+                project.messageBus.syncPublisher(MOVE_PROJECTS_TOPIC)
+                    .moveProjectsUpdated(this, projects)
+            }
+        }
     }
 
-    fun interface MoveProjectsListener {
-        fun moveProjectsUpdated(service: MoveProjectsService, projects: Collection<MoveProject>)
+    companion object {
+        private val LOG = logger<MoveProjectsService>()
+
+        val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic(
+            "move projects changes",
+            MoveProjectsListener::class.java
+        )
+
+        fun interface MoveProjectsListener {
+            fun moveProjectsUpdated(service: MoveProjectsService, projects: Collection<MoveProject>)
+        }
+
     }
 }
 

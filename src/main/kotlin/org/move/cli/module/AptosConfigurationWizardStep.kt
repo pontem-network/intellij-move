@@ -67,7 +67,7 @@ class AptosConfigurationWizardStep(
             // "SDK not configured" errors
             // https://github.com/intellij-rust/intellij-rust/issues/1062
             rootModel.inheritSdk()
-            module.project.projectsService.refreshAllProjects()
+            module.project.projectsService.refresh()
 
 //            val contentEntry = rootModel.contentEntries.singleOrNull()
 //            if (contentEntry != null) {

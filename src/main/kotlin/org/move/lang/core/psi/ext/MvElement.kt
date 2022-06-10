@@ -39,6 +39,6 @@ fun MvElement.isInsideAssignmentLeft(): Boolean {
 fun PsiFileSystemItem.findMoveProject(): MoveProject? {
     if (this is MoveFile) return this.moveProject
     val path = virtualFile.toNioPathOrNull() ?: return null
-    return project.projectsService.findProjectForPath(path)
+    return project.projectsService.findMoveProject(path)
 
 }

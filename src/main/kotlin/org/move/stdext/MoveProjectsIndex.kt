@@ -11,42 +11,38 @@ import com.intellij.openapi.vfs.VirtualFileWithId
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
-import com.intellij.util.Consumer
 import org.move.cli.MoveProject
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
 
-sealed class DirectoryIndexEntry {
-    object Missing : DirectoryIndexEntry()
-    data class Present(val project: MoveProject?): DirectoryIndexEntry()
+sealed class ProjectsIndexEntry {
+    object Missing : ProjectsIndexEntry()
+    data class Present(val project: MoveProject?) : ProjectsIndexEntry()
 }
-/**
- * This is a light version of DirectoryIndexImpl
- *
- * @author gregsh
- */
-class MoveProjectsIndex<T>(
+
+class MoveProjectsIndex(
     parentDisposable: Disposable,
-    private val myDefValue: T,
-    private val myInitializer: Consumer<MoveProjectsIndex<T>>
+    private val myInitializer: Consumer<MoveProjectsIndex>
 ) {
-    private val myRootInfos: MutableMap<VirtualFile, T> = ConcurrentHashMap()
+    private val entryMap: MutableMap<VirtualFile, ProjectsIndexEntry> = ConcurrentHashMap()
+
     fun resetIndex() {
-        myRootInfos.clear()
-        myInitializer.consume(this)
+        entryMap.clear()
+        myInitializer.accept(this)
     }
 
-    fun putInfo(file: VirtualFile?, value: T) {
+    fun put(file: VirtualFile?, value: ProjectsIndexEntry) {
         if (file !is VirtualFileWithId) return
-        myRootInfos[file] = value
+        entryMap[file] = value
     }
 
-    fun getInfoForFile(file: VirtualFile): T {
-        if (file !is VirtualFileWithId || !file.isValid) return myDefValue
-        return myRootInfos.getOrDefault(file, myDefValue)
+    fun get(file: VirtualFile): ProjectsIndexEntry {
+        if (file !is VirtualFileWithId || !file.isValid) return ProjectsIndexEntry.Missing
+        return entryMap.getOrDefault(file, ProjectsIndexEntry.Missing)
     }
 
     companion object {
-        private fun shouldReset(event: VFileEvent): Boolean {
+        private fun isDirectoryEvent(event: VFileEvent): Boolean {
             if (event is VFileCreateEvent) {
                 return event.isDirectory
             }
@@ -66,7 +62,7 @@ class MoveProjectsIndex<T>(
         connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
             override fun after(events: List<VFileEvent>) {
                 for (event in events) {
-                    if (shouldReset(event)) {
+                    if (isDirectoryEvent(event)) {
                         resetIndex()
                         break
                     }

@@ -71,7 +71,7 @@ class MvDirectoryProjectGenerator : DirectoryProjectGeneratorBase<NewProjectData
         project.openFile(manifestFile)
 
         updateAllNotifications(project)
-        project.projectsService.refreshAllProjects()
+        project.projectsService.refresh()
     }
 
     override fun createStep(

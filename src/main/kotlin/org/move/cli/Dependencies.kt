@@ -49,7 +49,7 @@ sealed class Dependency {
 
         override fun projectInfo(project: Project): ProjectInfo? {
             val moveTomlPath = absoluteLocalPath.resolve("Move.toml")
-            val p = project.projectsService.findProjectForPath(moveTomlPath) ?: return null
+            val p = project.projectsService.findMoveProject(moveTomlPath) ?: return null
             return p.projectInfo
         }
     }

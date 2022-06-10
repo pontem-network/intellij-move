@@ -18,7 +18,6 @@ class MvUnusedVariableInspection : MvLocalInspectionTool() {
                 for (binding in bindings) {
                     checkUnused(binding, "Unused variable")
                 }
-
             }
 
             override fun visitFunctionParameter(o: MvFunctionParameter) {

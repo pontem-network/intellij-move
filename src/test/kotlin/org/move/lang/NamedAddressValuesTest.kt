@@ -180,7 +180,7 @@ class NamedAddressValuesTest : MvProjectTestBase() {
         val (address, data) = myFixture.findElementAndDataInEditor<MvNamedAddress>()
         val expectedValue = data.trim()
 
-        val moveProject = project.projectsService.findProjectForPsiElement(address)!!
+        val moveProject = project.projectsService.findMoveProject(address)!!
         val actualValue = moveProject.getNamedAddress(address.referenceName)!!.text()
 
         check(actualValue == expectedValue) {
