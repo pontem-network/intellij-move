@@ -11,11 +11,13 @@ import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.util.containers.addIfNotNull
 import org.move.cli.manifest.MoveToml
 import org.move.lang.MoveFile
+import org.move.lang.core.psi.ext.wrapWithList
 import org.move.lang.core.types.Address
 import org.move.lang.toMoveFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.checkUnitTestMode
 import org.move.openapiext.contentRoots
+import org.move.stdext.chain
 import org.move.stdext.iterateMoveVirtualFiles
 import java.nio.file.Path
 
@@ -27,6 +29,11 @@ data class MoveProject(
 
     val contentRoot get() = this.currentPackage.contentRoot
     val contentRootPath: Path? get() = this.currentPackage.contentRoot.toNioPathOrNull()
+
+    fun movePackages(): Sequence<MovePackage> {
+        return currentPackage.wrapWithList()
+            .chain(dependencies.map { it.first }.reversed())
+    }
 
     fun moduleFolders(devMode: DevMode): List<VirtualFile> {
         val folders = mutableListOf<VirtualFile>()

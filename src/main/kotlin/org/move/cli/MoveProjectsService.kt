@@ -92,33 +92,6 @@ class MoveProjectsService(val project: Project) {
         }
     }
 
-//    private fun findMovePackageForFile(file: VirtualFile): MovePackage? {
-//        val moveProject = findMoveProject(file) ?: return null
-//        val packages = moveProject.currentPackage
-//            .wrapWithList()
-//            .chain(moveProject.dependencies.map { it.first })
-//        val filePath = file.toNioPathOrNull() ?: return null
-//        var maxDepth = 0
-//        var movePackage: MovePackage? = null
-//        for (package_ in packages) {
-//            if (package_.layoutPaths().any { filePath.startsWith(it) }) {
-//                val depth = package_.contentRoot.fsDepth
-//                if (maxDepth < depth) {
-//                    maxDepth = depth
-//                    movePackage = package_
-//                }
-//            }
-//        }
-//        if (movePackage == null && isUnitTestMode) {
-//            // this is for light tests, heavy test should always have valid moveProject
-//            val moveToml = MoveToml(project)
-//            val contentRoot = project.contentRoots.first()
-//            movePackage = MovePackage(project, contentRoot, moveToml)
-//        }
-////        this.projectsIndex.put(file, PackageFileIndexEntry.Present(movePackage))
-//        return movePackage
-//    }
-
     private fun findMoveProject(file: VirtualFile): MoveProject? {
         val cached = this.projectsIndex.get(file)
         if (cached is IndexEntry.Present) {
@@ -130,15 +103,13 @@ class MoveProjectsService(val project: Project) {
 
         val filePath = file.toNioPathOrNull() ?: return null
         var moveProject: MoveProject? = null
-        var maxDepth = 0
         for (candidate in this.projects.state) {
-            val projectRoot = candidate.contentRoot
-            val projectPath = candidate.contentRootPath ?: continue
-            if (filePath.startsWith(projectPath)) {
-                val depth = projectRoot.fsDepth
-                if (maxDepth < depth) {
-                    maxDepth = depth
+            if (moveProject != null) break
+            for (movePackage in candidate.movePackages()) {
+                val packageRoot = movePackage.contentRoot.toNioPathOrNull() ?: continue
+                if (filePath.startsWith(packageRoot)) {
                     moveProject = candidate
+                    break
                 }
             }
         }
