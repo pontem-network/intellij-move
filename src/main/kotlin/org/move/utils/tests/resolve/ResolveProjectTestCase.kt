@@ -33,7 +33,7 @@ abstract class ResolveProjectTestCase : MvProjectTestBase() {
         refClass: Class<R>,
         targetClass: Class<T>
     ) {
-        val testProject = testProjectFromFileTree(code)
+        val testProject = testProject(code)
         checkByTestProject(testProject, refClass, targetClass)
     }
 
@@ -42,7 +42,7 @@ abstract class ResolveProjectTestCase : MvProjectTestBase() {
         targetClass: Class<T>,
         fileTree: FileTreeBuilder.() -> Unit
     ) {
-        val testProject = testProjectFromFileTree(fileTree)
+        val testProject = testProject(fileTree)
         checkByTestProject(testProject, refClass, targetClass)
     }
 
@@ -51,8 +51,6 @@ abstract class ResolveProjectTestCase : MvProjectTestBase() {
         refClass: Class<R>,
         targetClass: Class<T>
     ) {
-        myFixture.configureFromFileWithCaret(testProject)
-
         val (refElement, data, offset) =
             myFixture.findElementWithDataAndOffsetInEditor(refClass, "^")
         if (data == "unresolved") {

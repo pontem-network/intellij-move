@@ -70,12 +70,16 @@ class ResolveNamedAddressProjectTest : ResolveProjectTestCase() {
 
     fun `test named address to renamed dep address`() = checkByFileTree {
         moveToml("""
+        [package]
+        name = "Main"    
         [dependencies]
         Stdlib = { local = "./stdlib", addr_subst = { "StdX" = "Std" } }
                                                        #X
         """)
         dir("stdlib") {
             moveToml("""
+            [package]
+            name = "Stdlib"
             [addresses]
             Std = "0x1"
             """)
@@ -84,6 +88,29 @@ class ResolveNamedAddressProjectTest : ResolveProjectTestCase() {
             move("main.move", """
             module StdX::Module {}
                  //^     
+            """)
+        }
+    }
+
+    fun `test old name for renamed address should not be present`() = checkByFileTree {
+        moveToml("""
+        [package]
+        name = "Main"    
+        [dependencies]
+        Stdlib = { local = "./stdlib", addr_subst = { "StdX" = "Std" } }
+        """)
+        dir("stdlib") {
+            moveToml("""
+            [package]
+            name = "Stdlib"
+            [addresses]
+            Std = "0x1"
+            """)
+        }
+        sources {
+            move("main.move", """
+            module Std::Module {}
+                 //^ unresolved     
             """)
         }
     }

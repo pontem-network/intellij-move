@@ -106,6 +106,8 @@ val Project.contentRoots: Sequence<VirtualFile>
 
 val Project.root: Path? get() = contentRoots.firstOrNull()?.toNioPathOrNull()
 
+val Project.contentRoot: VirtualFile? get() = contentRoots.firstOrNull()
+
 fun Element.toXmlString() = JDOMUtil.writeElement(this)
 fun elementFromXmlString(xml: String): org.jdom.Element =
     SAXBuilder().build(xml.byteInputStream()).rootElement

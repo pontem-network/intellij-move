@@ -108,19 +108,21 @@ class AptosCommandConfigurationProducerTest : RunConfigurationProducerTestBase("
 
     fun `test run tests for file with one module`() {
         testProject {
-            namedMoveToml("MyPackage")
-            sources {
-                move(
-                    "main.move", """
+            dir("mypackage") {
+                namedMoveToml("MyPackage")
+                sources {
+                    move(
+                        "main.move", """
                 module 0x1::Main {
                     #[test]
                     fun test_main() {/*caret*/}
                 }
                 """
-                )
+                    )
+                }
             }
         }
-        val mainFile = findPsiFile("sources/main.move")
+        val mainFile = findPsiFile("mypackage/sources/main.move")
         checkOnFsItem(mainFile)
     }
 

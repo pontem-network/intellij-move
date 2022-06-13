@@ -9,6 +9,7 @@ import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import org.intellij.lang.annotations.Language
+import org.move.cli.moveProjects
 import org.move.openapiext.toVirtualFile
 import org.move.openapiext.toPsiDirectory
 import org.move.openapiext.toPsiFile
@@ -16,16 +17,6 @@ import org.move.utils.tests.base.TestCase
 
 abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuilder<*>>() {
     var testProject: TestProject? = null
-
-    override fun setUp() {
-        super.setUp()
-//        val privateKey = this.findAnnotationInstance<SettingsPrivateKey>()?.privateKey
-//        if (privateKey != null) {
-//            project.moveSettings.modifyTemporary(testRootDisposable) {
-//                it.privateKey = privateKey
-//            }
-//        }
-    }
 
     override fun tearDown() {
         testProject = null
@@ -37,22 +28,25 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
         return TestCase.camelOrWordsToSnake(camelCase)
     }
 
-    protected fun testProjectFromFileTree(@Language("Move") code: String): TestProject {
+    fun testProject(@Language("Move") code: String): TestProject {
         val fileTree = fileTreeFromText(code)
-        val rootDirectory = myModule.rootManager.contentRoots.first()
-        return fileTree.prepareTestProject(myFixture.project, rootDirectory)
+        return testProject(fileTree)
     }
 
-    protected fun testProjectFromFileTree(builder: FileTreeBuilder.() -> Unit): TestProject {
+    fun testProject(builder: FileTreeBuilder.() -> Unit): TestProject {
         val fileTree = fileTree(builder)
-        val rootDirectory = myModule.rootManager.contentRoots.first()
-        return fileTree.prepareTestProject(myFixture.project, rootDirectory)
+        return testProject(fileTree)
     }
 
-    fun testProject(builder: FileTreeBuilder.() -> Unit) {
-        val testProject = testProjectFromFileTree(builder)
+    private fun testProject(fileTree: FileTree): TestProject {
+        val rootDirectory = myModule.rootManager.contentRoots.first()
+        val testProject = fileTree.toTestProject(myFixture.project, rootDirectory)
         this.testProject = testProject
         myFixture.configureFromFileWithCaret(testProject)
+
+        System.setProperty("user.home", testProject.rootDirectory.path)
+        project.moveProjects.refresh()
+        return testProject
     }
 
     protected fun CodeInsightTestFixture.configureFromFileWithCaret(testProject: TestProject) {
@@ -61,14 +55,6 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
                 .resolve(testProject.fileWithCaret).toVirtualFile()
                 ?: error("No file with //^ caret")
         this.configureFromExistingVirtualFile(fileWithCaret)
-    }
-
-    protected fun CodeInsightTestFixture.configureFromFileWithNamedElement(testProject: TestProject) {
-        val fileWithNamedElement =
-            testProject.rootDirectory.toNioPath()
-                .resolve(testProject.fileWithNamedElement).toVirtualFile()
-                ?: error("No file with //X caret")
-        this.configureFromExistingVirtualFile(fileWithNamedElement)
     }
 
     protected fun findPsiFile(path: String): PsiFile {

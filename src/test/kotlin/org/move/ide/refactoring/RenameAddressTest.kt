@@ -57,8 +57,8 @@ module Std::Module {}
         @Language("Move") code: TreeBuilder,
         @Language("Move") after: String,
     ) {
-        val testProject = testProjectFromFileTree(code)
-        myFixture.configureFromFileWithCaret(testProject)
+        val testProject = testProject(code)
+//        myFixture.configureFromFileWithCaret(testProject)
 
         val element = myFixture.elementAtCaret
         myFixture.renameElement(element, newName, false, false)

@@ -115,31 +115,51 @@ class ResolveModulesProjectTest : ResolveProjectTestCase() {
         }
     }
 
-
-    fun `test resolve namedaddr_module from dependency file with addr_subst`() = checkByFileTree(
-        """
-        //- Move.toml
+    fun `test resolve namedaddr_module from dependency file with addr_subst`() = checkByFileTree {
+        moveToml(
+            """
+        [package]
+        name = "Main"    
         [dependencies]
         Stdlib = { local = "./stdlib", addr_subst = { Std = "0x1" } }
-        
-        //- stdlib/Move.toml
-        [addresses]
-        Std = "_"
-        //- stdlib/sources/module.move
-        module Std::Module {}
-                  //X
-        //- sources/main.move
-        script {
-            use Std::Module;
-                   //^
-        }    
-    """
-    )
+        """
+        )
+        sources {
+            main("""
+                script {
+                    use Std::Module;
+                           //^
+                }        
+        """)
+        }
+        dir("stdlib") {
+            moveToml(
+                """
+            [package]
+            name = "Stdlib"
+            [addresses]
+            Std = "_"                
+            """
+            )
+            sources {
+                move("module.move", """
+                module Std::Module {}
+                           //X                    
+                """)
+            }
+        }
+    }
 
     fun `test resolve module git dependency as inline table`() = checkByFileTree {
-        buildInfo("MyModule", mapOf("Std" to "0001")) {
-            dependencies {
-                dir("MoveStdlib") {
+        dotMove {
+            git("https://github.com/pontem-network/move-stdlib.git", "main") {
+                moveToml("""
+                [package]
+                name = "MoveStdlib"
+                [addresses]
+                Std = "0x1"    
+                """)
+                sources {
                     move(
                         "Vector.move", """
                     module Std::Vector {}
@@ -154,7 +174,7 @@ class ResolveModulesProjectTest : ResolveProjectTestCase() {
         [package]
         name = "MyModule"        
         [dependencies]
-        MoveStdlib = { git = "git@github.com:pontem-network/move-stdlib.git", rev = "fdeb555c2157a1d68ca64eaf2a2e2cfe2a64efa2" }
+        MoveStdlib = { git = "https://github.com/pontem-network/move-stdlib.git", rev = "main" }
         """
         )
         sources {
@@ -171,9 +191,15 @@ class ResolveModulesProjectTest : ResolveProjectTestCase() {
     }
 
     fun `test resolve module git dependency as table`() = checkByFileTree {
-        buildInfo("MyModule", mapOf("Std" to "0001")) {
-            dependencies {
-                dir("MoveStdlib") {
+        dotMove {
+            git("https://github.com/pontem-network/move-stdlib.git", "main") {
+                moveToml("""
+                [package]
+                name = "MoveStdlib"
+                [addresses]
+                Std = "0x1"    
+                """)
+                sources {
                     move(
                         "Vector.move", """
                     module Std::Vector {}
@@ -206,9 +232,21 @@ class ResolveModulesProjectTest : ResolveProjectTestCase() {
     }
 
     fun `test resolve module from git transitive dependency`() = checkByFileTree {
-        buildInfo("MyModule", mapOf("Std" to "0001")) {
-            dependencies {
-                dir("MoveStdlib") {
+        dotMove {
+            git("https://github.com/aptos-labs/pont-stdlib.git", "main") {
+                moveToml("""
+        [package]
+        name = "PontStdlib"        
+        [dependencies]
+        MoveStdlib = { git = "https://github.com/aptos-labs/move-stdlib.git", rev = "main" }                        
+                """)
+            }
+            git("https://github.com/aptos-labs/move-stdlib.git", "main") {
+                moveToml("""
+        [package]
+        name = "MoveStdlib"        
+                """)
+                sources {
                     move(
                         "module.move", """
                     module Std::Module {}    
@@ -216,7 +254,6 @@ class ResolveModulesProjectTest : ResolveProjectTestCase() {
                     """
                     )
                 }
-                dir("PontStdlib") {}
             }
         }
         moveToml(
@@ -224,7 +261,7 @@ class ResolveModulesProjectTest : ResolveProjectTestCase() {
         [package]
         name = "MyModule"        
         [dependencies]
-        PontStdlib = { git = "", rev = "" }    
+        PontStdlib = { git = "https://github.com/aptos-labs/pont-stdlib.git", rev = "main" }    
         """
         )
         sources {

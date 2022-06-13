@@ -9,92 +9,20 @@ import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.util.containers.addIfNotNull
-import org.move.cli.manifest.BuildInfoYaml
-import org.move.cli.packages.MovePackage
 import org.move.cli.manifest.MoveToml
 import org.move.lang.MoveFile
 import org.move.lang.core.types.Address
+import org.move.lang.toMoveFile
 import org.move.lang.toNioPathOrNull
+import org.move.openapiext.common.checkUnitTestMode
 import org.move.openapiext.contentRoots
-import org.move.openapiext.stringValue
-import org.move.utils.deepWalkMoveFiles
+import org.move.stdext.iterateMoveVirtualFiles
 import java.nio.file.Path
 
-enum class DevMode {
-    MAIN, DEV;
-}
-
-data class MvModuleFile(
-    val file: MoveFile,
-    val addressSubst: Map<String, String>,
-)
-
-data class DeclaredAddresses(
-    val values: AddressMap,
-    val placeholders: PlaceholderMap,
-) {
-    fun placeholdersAsValues(): AddressMap {
-        val values = mutableAddressMap()
-        for ((name, pVal) in placeholders.entries) {
-            val value = pVal.keyValue.value?.stringValue() ?: continue
-            values[name] = AddressVal(value, pVal.keyValue, pVal.keyValue, pVal.packageName)
-        }
-        return values
-    }
-
-    fun get(name: String): AddressVal? {
-        if (name in this.values) return this.values[name]
-        return this.placeholders[name]
-            ?.let {
-                AddressVal(Consts.ADDR_PLACEHOLDER, null, it.keyValue, it.packageName)
-            }
-    }
-}
-
-fun testEmptyMoveProject(project: Project): MoveProject {
-    val moveToml = MoveToml(project)
-    val contentRoot = project.contentRoots.first()
-    val addresses = DeclaredAddresses(mutableAddressMap(), placeholderMap())
-    val movePackage = MovePackage(project, contentRoot, moveToml)
-    return MoveProject(
-        project,
-        addresses,
-        addresses.copy(),
-        movePackage
-    )
-}
-
-fun testEmptyMovePackage(project: Project): MovePackage {
-    val moveToml = MoveToml(project)
-    val contentRoot = project.contentRoots.first()
-    return MovePackage(project, contentRoot, moveToml)
-}
-
-fun applyAddressSubstitutions(
-    addresses: DeclaredAddresses,
-    subst: RawAddressMap,
-    packageName: String
-): Pair<AddressMap, PlaceholderMap> {
-    val newDepAddresses = addresses.values.copyMap()
-    val newDepPlaceholders = placeholderMap()
-
-    for ((pName, pVal) in addresses.placeholders.entries) {
-        val placeholderSubst = subst[pName]
-        if (placeholderSubst == null) {
-            newDepPlaceholders[pName] = pVal
-            continue
-        }
-        val (value, keyValue) = placeholderSubst
-        newDepAddresses[pName] = AddressVal(value, keyValue, pVal.keyValue, packageName)
-    }
-    return Pair(newDepAddresses, newDepPlaceholders)
-}
-
 data class MoveProject(
-    private val project: Project,
-    private val declaredAddrs: DeclaredAddresses,
-    private val declaredDevAddresses: DeclaredAddresses,
+    val project: Project,
     val currentPackage: MovePackage,
+    val dependencies: List<Pair<MovePackage, RawAddressMap>>
 ) : UserDataHolderBase() {
 
     val contentRoot get() = this.currentPackage.contentRoot
@@ -102,113 +30,44 @@ data class MoveProject(
 
     fun moduleFolders(devMode: DevMode): List<VirtualFile> {
         val folders = mutableListOf<VirtualFile>()
-        val projectInfo = this.projectInfo ?: return emptyList()
-        folders.addIfNotNull(projectInfo.sourcesFolder)
+        folders.addIfNotNull(currentPackage.sourcesFolder)
 
-        val q = ArrayDeque<ProjectInfo>()
-        val visited = mutableSetOf<String>()
-        q.add(projectInfo)
-
-        while (q.isNotEmpty()) {
-            val info = q.removeFirst()
-            val deps = info.deps(devMode)
-            val depInfos = deps.values.mapNotNull { it.projectInfo(project) }
-            q.addAll(depInfos)
-
-            val localFolders = deps
-                .filter { it.value is Dependency.Local }
-                .mapNotNull {
-                    visited.add(it.key)
-                    it.value.projectInfo(project)?.sourcesFolder
-                }
-            folders.addAll(localFolders)
-        }
-
-        val gitFolders = this.buildRoot()
-            ?.findChild("sources")
-            ?.findChild("dependencies")
-            ?.children
-            .orEmpty()
-            .filter { it.nameWithoutExtension !in visited }
-        folders.addAll(gitFolders)
+        val depFolders = dependencies.asReversed().mapNotNull { it.first.sourcesFolder }
+        folders.addAll(depFolders)
         return folders
     }
 
-    private fun buildRoot(): VirtualFile? {
-        val packageName = this.currentPackage.packageName ?: return null
-        return this.currentPackage.contentRoot
-            .findChild("build")
-            ?.findChild(packageName)
-    }
-
-    fun declaredAddresses(): DeclaredAddresses {
+    fun addresses(): PackageAddresses {
         return CachedValuesManager.getManager(this.project).getCachedValue(this) {
-            val addresses = mutableAddressMap()
-            val placeholders = placeholderMap()
-
-            for ((dep, subst) in this.currentPackage.moveToml.dependencies.values) {
-                val depDeclaredAddrs = dep.declaredAddresses(project) ?: continue
-
-                val (newDepAddresses, newDepPlaceholders) = applyAddressSubstitutions(
-                    depDeclaredAddrs,
-                    subst,
-                    currentPackage.packageName ?: ""
-                )
-
-                // renames
-                for ((renamedName, originalVal) in subst.entries) {
-                    val (originalName, keyVal) = originalVal
-                    val origVal = depDeclaredAddrs.get(originalName)
-                    if (origVal != null) {
-                        newDepAddresses[renamedName] =
-                            AddressVal(
-                                origVal.value,
-                                keyVal,
-                                null,
-                                currentPackage.packageName ?: ""
-                            )
-                    }
-                }
-                addresses.putAll(newDepAddresses)
-                placeholders.putAll(newDepPlaceholders)
+            val packageName = currentPackage.packageName
+            val cumulativeAddresses = PackageAddresses(mutableAddressMap(), placeholderMap())
+            for ((depPackage, subst) in this.dependencies) {
+                cumulativeAddresses.extendWith(depPackage.addresses())
+                cumulativeAddresses.applySubstitution(subst, packageName)
             }
-            addresses.putAll(packageAddresses())
-            // add dev-addresses
-            addresses.putAll(declaredDevAddresses.values)
-            // add placeholders that weren't filled
-            placeholders.putAll(declaredAddrs.placeholders)
+            cumulativeAddresses.extendWith(this.currentPackage.addresses())
 
-            // add addresses from git dependencies
-            buildRoot()
-                ?.findChild("BuildInfo.yaml")
-                ?.let { BuildInfoYaml.fromPath(it.toNioPath()) }
-                ?.addresses()
-                .orEmpty()
-                .forEach {
-                    addresses.putIfAbsent(it.key, it.value)
-                }
-
-            val res = DeclaredAddresses(addresses, placeholders)
-
-            CachedValueProvider.Result.create(res, PsiModificationTracker.MODIFICATION_COUNT)
+            CachedValueProvider.Result.create(
+                cumulativeAddresses,
+                PsiModificationTracker.MODIFICATION_COUNT
+            )
         }
     }
 
-    fun addresses(): AddressMap {
-        return declaredAddresses().values
+    fun addressValues(): AddressMap {
+        return addresses().values
     }
 
-    fun packageAddresses(): AddressMap {
-        // add addresses defined in this package
+    fun currentPackageAddresses(): AddressMap {
+        val addresses = this.currentPackage.addresses()
         val map = mutableAddressMap()
-        map.putAll(this.declaredAddrs.values)
-        // add placeholders defined in this package as address values
-        map.putAll(this.declaredAddrs.placeholdersAsValues())
+        map.putAll(addresses.values)
+        map.putAll(addresses.placeholdersAsValues())
         return map
     }
 
     fun getNamedAddress(name: String): Address.Named? {
-        val addressVal = addresses()[name] ?: return null
+        val addressVal = addressValues()[name] ?: return null
         return Address.Named(name, addressVal.value)
     }
 
@@ -221,23 +80,31 @@ data class MoveProject(
         return searchScope
     }
 
-    fun processModuleFiles(devMode: DevMode, processFile: (MvModuleFile) -> Boolean) {
+    fun processMoveFiles(devMode: DevMode, processFile: (MoveFile) -> Boolean) {
         val folders = moduleFolders(devMode)
         var stopped = false
         for (folder in folders) {
             if (stopped) break
-            deepWalkMoveFiles(project, folder) {
-                val moduleFile = MvModuleFile(it, emptyMap())
-                val continueForward = processFile(moduleFile)
+            folder.iterateMoveVirtualFiles {
+                val moveFile = it.toMoveFile(project) ?: return@iterateMoveVirtualFiles true
+                val continueForward = processFile(moveFile)
                 stopped = !continueForward
                 continueForward
             }
         }
     }
 
-    fun walkMoveFiles(process: (MoveFile) -> Boolean) = deepWalkMoveFiles(
-        project,
-        currentPackage.contentRoot,
-        process
-    )
+    companion object {
+        fun forTests(project: Project): MoveProject {
+            checkUnitTestMode()
+            val contentRoot = project.contentRoots.first()
+            val moveToml = MoveToml(project)
+            val movePackage = MovePackage(project, contentRoot, moveToml)
+            return MoveProject(
+                project,
+                movePackage,
+                dependencies = emptyList()
+            )
+        }
+    }
 }

@@ -75,7 +75,7 @@ class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MoveIcons
     }
 
     private fun getFirstNamedAddress(dir: PsiDirectory): String {
-        return dir.moveProject?.packageAddresses()?.firstOrNull()?.key ?: DEFAULT_ADDRESS
+        return dir.moveProject?.currentPackageAddresses()?.firstOrNull()?.key ?: DEFAULT_ADDRESS
     }
 
     private companion object {

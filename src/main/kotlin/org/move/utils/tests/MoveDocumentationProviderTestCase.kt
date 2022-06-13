@@ -13,8 +13,7 @@ abstract class MvDocumentationProviderProjectTestCase: MvProjectTestBase() {
         @Language("Html") expected: String?,
         block: MvDocumentationProvider.(PsiElement, PsiElement?) -> String?
     ) {
-        val testProject = testProjectFromFileTree(builder)
-        myFixture.configureFromFileWithCaret(testProject)
+        testProject(builder)
 
         val (originalElement, offset) = myFixture.findElementAndOffsetInEditor<MvElement>()
         val element = DocumentationManager.getInstance(project)

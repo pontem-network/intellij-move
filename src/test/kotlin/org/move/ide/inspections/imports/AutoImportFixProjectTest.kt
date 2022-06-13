@@ -8,7 +8,7 @@ import org.move.utils.tests.annotation.InspectionProjectTestBase
 class AutoImportFixProjectTest : InspectionProjectTestBase(MvUnresolvedReferenceInspection::class) {
     fun `test import method from another file`() = checkAutoImportFixByText(
         {
-            moveToml("""""")
+            namedMoveToml("MyModule")
             sources {
                 move(
                     "Mod.move", """
@@ -91,9 +91,10 @@ class AutoImportFixProjectTest : InspectionProjectTestBase(MvUnresolvedReference
 
     fun `test auto import from git dependency`() = checkAutoImportFixByText(
         {
-            buildInfo("MyModule", mapOf()) {
-                dependencies {
-                    dir("MoveStdlib") {
+            dotMove {
+                git("https://github.com/aptos-labs/hello.git", "main") {
+                    namedMoveToml("MoveStdlib")
+                    sources {
                         move(
                             "Mod.move",
                             """
@@ -111,7 +112,7 @@ class AutoImportFixProjectTest : InspectionProjectTestBase(MvUnresolvedReference
             name = "MyModule"        
             [dependencies.MoveStdlib]
             git = "https://github.com/aptos-labs/hello.git"
-            rev = "012f07809431e936d32a9be8620089ad1834d4e9"
+            rev = "main"
             """
             )
             sources {

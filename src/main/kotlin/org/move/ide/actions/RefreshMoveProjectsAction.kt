@@ -2,7 +2,7 @@ package org.move.ide.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
-import org.move.cli.projectsService
+import org.move.cli.moveProjects
 import org.move.openapiext.saveAllDocuments
 
 class RefreshMvProjectsAction : DumbAwareAction() {
@@ -11,6 +11,6 @@ class RefreshMvProjectsAction : DumbAwareAction() {
         val project = e.project ?: return
 
         saveAllDocuments()
-        project.projectsService.refresh()
+        project.moveProjects.refresh()
     }
 }

@@ -9,14 +9,17 @@ import org.move.utils.tests.fileTree
 
 class MoveProjectOpenProcessorTest : MvProjectTestBase() {
     fun `test open project via directory with Move toml file`() {
-        val testDir = fileTree {
+        val testProject = testProject {
             dir("package") {
                 namedMoveToml("MyPackage")
-                sources { }
+                sources {
+                    main("""
+                    module 0x1::M {/*caret*/}    
+                    """)
+                }
             }
-        }.prepareTestProject(project, myModule.rootManager.sourceRoots.first())
-
-        val packageDir = testDir.file("package")
+        }
+        val packageDir = testProject.file("package")
         checkFileCanBeOpenedAsProject(packageDir)
     }
 

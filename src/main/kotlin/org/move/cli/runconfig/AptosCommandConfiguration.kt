@@ -21,7 +21,7 @@ class AptosCommandConfiguration(
 
     var command: String = "move compile"
     var workingDirectory: Path? = if (!project.isDefault) {
-        project.projectsService.allProjects.firstOrNull()?.contentRootPath
+        project.moveProjects.allProjects.firstOrNull()?.contentRootPath
     } else {
         null
     }

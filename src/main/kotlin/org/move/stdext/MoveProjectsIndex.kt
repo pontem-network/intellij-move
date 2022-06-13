@@ -15,30 +15,30 @@ import org.move.cli.MoveProject
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 
-sealed class ProjectsIndexEntry {
-    object Missing : ProjectsIndexEntry()
-    data class Present(val project: MoveProject?) : ProjectsIndexEntry()
+sealed class IndexEntry {
+    object Missing : IndexEntry()
+    data class Present(val value: MoveProject?) : IndexEntry()
 }
 
 class MoveProjectsIndex(
     parentDisposable: Disposable,
     private val myInitializer: Consumer<MoveProjectsIndex>
 ) {
-    private val entryMap: MutableMap<VirtualFile, ProjectsIndexEntry> = ConcurrentHashMap()
+    private val entryMap: MutableMap<VirtualFile, IndexEntry> = ConcurrentHashMap()
 
     fun resetIndex() {
         entryMap.clear()
         myInitializer.accept(this)
     }
 
-    fun put(file: VirtualFile?, value: ProjectsIndexEntry) {
+    fun put(file: VirtualFile?, value: IndexEntry) {
         if (file !is VirtualFileWithId) return
         entryMap[file] = value
     }
 
-    fun get(file: VirtualFile): ProjectsIndexEntry {
-        if (file !is VirtualFileWithId || !file.isValid) return ProjectsIndexEntry.Missing
-        return entryMap.getOrDefault(file, ProjectsIndexEntry.Missing)
+    fun get(file: VirtualFile): IndexEntry {
+        if (file !is VirtualFileWithId || !file.isValid) return IndexEntry.Missing
+        return entryMap.getOrDefault(file, IndexEntry.Missing)
     }
 
     companion object {

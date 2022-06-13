@@ -133,11 +133,11 @@ fun processFQModuleRef(
     if (stopped) return
 
     val moveProject = currentFile.moveProject ?: return
-    moveProject.processModuleFiles(DevMode.MAIN) { moduleFile ->
+    moveProject.processMoveFiles(DevMode.MAIN) { moveFile ->
         // skip current file as it's processed already
-        if (moduleFile.file.toNioPathOrNull() == currentFile.toNioPathOrNull())
-            return@processModuleFiles true
-        stopped = processModules(fqModuleRef, moduleFile.file, processor)
+        if (moveFile.toNioPathOrNull() == currentFile.toNioPathOrNull())
+            return@processMoveFiles true
+        stopped = processModules(fqModuleRef, moveFile, processor)
         // if not resolved, returns true to indicate that next file should be tried
         !stopped
     }
