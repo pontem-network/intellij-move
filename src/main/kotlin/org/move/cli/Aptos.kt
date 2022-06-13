@@ -4,12 +4,17 @@ import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.io.isDirectory
 import org.move.cli.settings.isValidExecutable
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.MvResult
+import org.move.stdext.isExecutableFile
+import org.move.stdext.toPathOrNull
 import org.move.stdext.unwrapOrElse
+import java.io.File
 import java.nio.file.Path
 
 class Aptos(private val aptosPath: Path) {
@@ -26,10 +31,14 @@ class Aptos(private val aptosPath: Path) {
         }
         val commandLine = GeneralCommandLine(aptosPath.toString(), "move", "init")
             .withWorkDirectory(project.root)
-            .withParameters(listOf("--private-key-file", privateKeyPath,
-                                   "--faucet-url", faucetUrl,
-                                   "--rest-url", restUrl,
-                                   "--assume-yes"))
+            .withParameters(
+                listOf(
+                    "--private-key-file", privateKeyPath,
+                    "--faucet-url", faucetUrl,
+                    "--rest-url", restUrl,
+                    "--assume-yes"
+                )
+            )
             .withEnvironment(emptyMap())
             .withCharset(Charsets.UTF_8)
         return commandLine.execute(owner)
@@ -47,8 +56,12 @@ class Aptos(private val aptosPath: Path) {
         }
         val commandLine = GeneralCommandLine(aptosPath.toString(), "move", "init")
             .withWorkDirectory(project.root)
-            .withParameters(listOf("--name", packageName,
-                                   "--assume-yes"))
+            .withParameters(
+                listOf(
+                    "--name", packageName,
+                    "--assume-yes"
+                )
+            )
             .withEnvironment(emptyMap())
             .withCharset(Charsets.UTF_8)
         commandLine.execute(owner).unwrapOrElse { return MvResult.Err(it) }
@@ -72,36 +85,39 @@ class Aptos(private val aptosPath: Path) {
             .withCharset(Charsets.UTF_8)
         val lines = commandLine.execute()?.stdoutLines.orEmpty()
         return if (lines.isNotEmpty()) return lines.joinToString("\n") else null
-//        try {
-//            val execPath = aptosPath
-//            val cwd =
-//            val cwd = project.contentRoots.firstOrNull()?.toNioPathOrNull() ?: return null
-
-
-//            val (out, err) = runExecutable(aptosPath, workingDirectory, "--version")
-//            if (err.isNotEmpty()) return null
-//            return out
-//        } catch (e: ProcessNotCreatedException) {
-//            return null
-//        }
     }
 
-//    private fun runExecutable(execPath: Path, cwd: Path?, vararg command: String): Pair<String, String> {
-//        val workingDirectory = cwd?.toFile()
-//        val process =
-//            GeneralCommandLine(execPath.toAbsolutePath().toString(), *command)
-//                .withWorkDirectory(workingDirectory)
-//                .createProcess()
-//        LOG.info("Executing command at $cwd: ${process.info().commandLine()}")
-//
-//        val out = CharStreams.toString(InputStreamReader(process.inputStream))
-//        val err = CharStreams.toString(InputStreamReader(process.errorStream))
-//        return Pair(out, err)
-//    }
-
     companion object {
-//        private val LOG = logger<Aptos>()
-
         data class GeneratedFilesHolder(val manifest: VirtualFile)
+
+        fun suggestPath(): String? {
+            for (path in homePathCandidates()) {
+                when {
+                    path.isDirectory() -> {
+                        val candidate = path.resolveExisting(executableName("aptos")) ?: continue
+                        if (candidate.isExecutableFile())
+                            return candidate.toAbsolutePath().toString()
+                    }
+                    path.isExecutableFile() && path.fileName.toString() == executableName("aptos") -> {
+                        if (path.isExecutableFile())
+                            return path.toAbsolutePath().toString()
+                    }
+                }
+            }
+            return null
+        }
+
+        private fun homePathCandidates(): Sequence<Path> {
+            return System.getenv("PATH")
+                .orEmpty()
+                .split(File.pathSeparator)
+                .asSequence()
+                .filter { it.isNotEmpty() }
+                .mapNotNull { it.toPathOrNull() }
+        }
+
+        private fun executableName(toolName: String): String =
+            if (SystemInfo.isWindows) "$toolName.exe" else toolName
+
     }
 }
