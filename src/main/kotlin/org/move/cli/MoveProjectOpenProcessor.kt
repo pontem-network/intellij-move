@@ -7,6 +7,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.PlatformProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenProcessor
 import org.move.cli.runconfig.addDefaultBuildRunConfiguration
+import org.move.cli.settings.aptosPath
+import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
 import org.move.ide.newProject.openFile
 import org.move.ide.notifications.updateAllNotifications
@@ -49,7 +51,13 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
                     updateAllNotifications(it)
                 }
 
-                it.moveProjects.refresh()
+                val aptosPath = Aptos.suggestPath()
+                if (aptosPath != null && it.aptosPath?.toString().isNullOrBlank()) {
+                    it.moveSettings.modify {
+                        it.aptosPath = aptosPath
+                    }
+                }
+                it.moveProjects.scheduleRefresh()
             }
         }
     }

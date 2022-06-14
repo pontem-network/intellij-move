@@ -45,18 +45,18 @@ class MoveProjectsService(val project: Project) {
         with(project.messageBus.connect()) {
             if (!isUnitTestMode) {
                 subscribe(VirtualFileManager.VFS_CHANGES, MoveTomlWatcher {
-                    refresh()
+                    scheduleRefresh()
                 })
             }
             subscribe(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC, object : MvSettingsListener {
                 override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
-                    refresh()
+                    scheduleRefresh()
                 }
             })
         }
     }
 
-    fun refresh() {
+    fun scheduleRefresh() {
         LOG.info("Project state refresh started")
         modifyProjects {
             doRefresh(project)

@@ -45,7 +45,7 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
         myFixture.configureFromFileWithCaret(testProject)
 
         System.setProperty("user.home", testProject.rootDirectory.path)
-        project.moveProjects.refresh()
+        project.moveProjects.scheduleRefresh()
         return testProject
     }
 

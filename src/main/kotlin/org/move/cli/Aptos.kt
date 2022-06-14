@@ -29,7 +29,7 @@ class Aptos(private val aptosPath: Path) {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        val commandLine = GeneralCommandLine(aptosPath.toString(), "move", "init")
+        val commandLine = GeneralCommandLine(aptosPath.toString(), "init")
             .withWorkDirectory(project.root)
             .withParameters(
                 listOf(

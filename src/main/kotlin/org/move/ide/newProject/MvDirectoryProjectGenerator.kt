@@ -45,22 +45,23 @@ class MvDirectoryProjectGenerator : DirectoryProjectGeneratorBase<NewProjectData
         val packageName = project.name
 
         val manifestFile = project.computeWithCancelableProgress("Generating Aptos project...") {
-            aptos.move_init(
+            val manifestFile = aptos.move_init(
                 project, module,
                 rootDirectory = baseDir,
                 packageName = packageName
             )
                 .unwrapOrThrow() // TODO throw? really??
 
-//            if (settings.aptosInitEnabled) {
-//                aptos.init(
-//                    project, module,
-//                    privateKeyPath = settings.initData.privateKeyPath,
-//                    faucetUrl = settings.initData.faucetUrl,
-//                    restUrl = settings.initData.restUrl,
-//                )
-//                    .unwrapOrThrow()
-//            }
+            if (settings.aptosInitEnabled) {
+                aptos.init(
+                    project, module,
+                    privateKeyPath = settings.initData.privateKeyPath,
+                    faucetUrl = settings.initData.faucetUrl,
+                    restUrl = settings.initData.restUrl,
+                )
+                    .unwrapOrThrow()
+            }
+            manifestFile
         }
 
 
@@ -71,7 +72,7 @@ class MvDirectoryProjectGenerator : DirectoryProjectGeneratorBase<NewProjectData
         project.openFile(manifestFile)
 
         updateAllNotifications(project)
-        project.moveProjects.refresh()
+        project.moveProjects.scheduleRefresh()
     }
 
     override fun createStep(

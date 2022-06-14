@@ -2,11 +2,13 @@ package org.move.cli.settings
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.ComponentPredicate
 import com.intellij.ui.layout.LayoutBuilder
 import com.intellij.ui.layout.enableIf
+import com.intellij.util.Urls
 import org.move.openapiext.pathField
 
 class AptosSettingsPanel(val panelEnabled: ComponentPredicate) : Disposable {
@@ -44,4 +46,17 @@ class AptosSettingsPanel(val panelEnabled: ComponentPredicate) : Disposable {
     override fun dispose() {
         Disposer.dispose(privateKeyPathField)
     }
+
+    fun validate(): ValidationInfo? {
+        if (data.privateKeyPath.isBlank()) return ValidationInfo("Private key is required")
+        if (data.faucetUrl.isBlank()) return ValidationInfo("Faucet url is required")
+        if (!data.faucetUrl.isValidUrl()) return ValidationInfo("Faucet url is invalid")
+        if (data.restUrl.isBlank()) return ValidationInfo("Rest url is required")
+        if (!data.restUrl.isValidUrl()) return ValidationInfo("Rest url is invalid")
+        return null
+    }
+}
+
+private fun String.isValidUrl(): Boolean {
+    return Urls.parse(this, false) != null
 }

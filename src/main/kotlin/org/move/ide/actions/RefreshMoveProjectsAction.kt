@@ -11,6 +11,6 @@ class RefreshMvProjectsAction : DumbAwareAction() {
         val project = e.project ?: return
 
         saveAllDocuments()
-        project.moveProjects.refresh()
+        project.moveProjects.scheduleRefresh()
     }
 }

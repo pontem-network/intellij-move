@@ -43,7 +43,7 @@ class InvalidAptosBinaryNotification(
         if (!file.isMoveOrManifest) return null
 
         if (project.moveProjects.allProjects.isEmpty()) {
-            project.moveProjects.refresh()
+            project.moveProjects.scheduleRefresh()
         }
 
         if (project.aptosPath.isValidExecutable()) return null
