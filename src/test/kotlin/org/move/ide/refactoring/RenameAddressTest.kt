@@ -1,10 +1,8 @@
 package org.move.ide.refactoring
 
-import com.intellij.openapi.project.rootManager
 import org.intellij.lang.annotations.Language
 import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.TreeBuilder
-import org.move.utils.tests.fileTreeFromText
 
 class RenameAddressTest : MvProjectTestBase() {
     fun `test rename from move correctly replaces Std in toml`() = doTest(
@@ -52,16 +50,46 @@ module Std::Module {}
     """
     )
 
+    fun `test rename from move address literal correctly replaces Std in toml`() = doTest(
+        "NoStd", {
+            moveToml(
+                """
+[addresses]
+Std = "0x1"
+#X
+                     """
+            )
+            sources {
+                main(
+                    """
+module 0x1::Module {
+    fun call() {
+        @/*caret*/Std;
+    }
+}                        
+                """
+                )
+            }
+        }, """
+[addresses]
+NoStd = "0x1"
+#X
+    """
+    )
+
     private fun doTest(
         newName: String,
         @Language("Move") code: TreeBuilder,
         @Language("Move") after: String,
     ) {
         val testProject = testProject(code)
-//        myFixture.configureFromFileWithCaret(testProject)
 
         val element = myFixture.elementAtCaret
-        myFixture.renameElement(element, newName, false, false)
+        check(MvRenameProcessor().canProcessElement(element)) {
+            "MvRenameAddressProcessor cannot process element"
+        }
+
+        myFixture.renameElementAtCaretUsingHandler(newName)
         myFixture.checkResult(
             testProject.fileWithNamedElement, after.trimIndent(), true
         )

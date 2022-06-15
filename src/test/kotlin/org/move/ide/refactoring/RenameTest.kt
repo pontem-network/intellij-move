@@ -471,6 +471,18 @@ class RenameTest : MvTestBase() {
         """
         )
 
+    fun `test rename signer in test function`() = doTest("new_acc", """
+    module 0x1::M {
+        #[test(acc = @0x1)]
+        fun call(/*caret*/acc: signer) {}
+    }    
+    """, """
+    module 0x1::M {
+        #[test(new_acc = @0x1)]
+        fun call(new_acc: signer) {}
+    }    
+    """)
+
     private fun doTest(
         newName: String,
         @Language("Move") before: String,

@@ -157,6 +157,12 @@ Attr ::= '#' '[' <<comma_sep_items AttrItem>> ']' { pin = 1 }
 AttrItem ::= IDENTIFIER AttrItemArguments?
 AttrItemArguments ::= '(' <<comma_sep_items AttrItemArgument>> ')'
 AttrItemArgument ::= IDENTIFIER '=' LitExpr
+{
+    implements = [
+        "org.move.lang.core.resolve.MvReferenceElement"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvAttrItemArgumentMixin"
+}
 
 NamedAddressDef ::= address IDENTIFIER '=' AddressRef ';' { pin = 3 }
 
@@ -185,7 +191,6 @@ private ScriptItem_item ::= UseStmt | Const | FunctionInner
 
 private address ::= <<addressKeyword>>
 private has ::= <<hasKeyword>>
-private entry ::= <<entryKeyword>>
 private schema ::= <<schemaKeyword>>
 
 AddressDef ::= address AddressRef AddressBlock {
