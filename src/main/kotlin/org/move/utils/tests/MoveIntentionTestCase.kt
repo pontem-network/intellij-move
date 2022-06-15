@@ -65,13 +65,13 @@ abstract class MvIntentionTestCase(private val intentionClass: KClass<out Intent
         myFixture.launchAction(intention)
     }
 
-//    protected fun doUnavailableTest(@Language("Move") before: String, fileName: String = "main.move") {
-//        InlineFile(myFixture, before, fileName).withCaret()
-//        val intention = findIntention()
-//        check(intention == null) {
-//            "\"${intentionClass.simpleName}\" should not be available"
-//        }
-//    }
+    protected fun doUnavailableTest(@Language("Move") before: String, fileName: String = "main.move") {
+        InlineFile(myFixture, before, fileName).withCaret()
+        val intention = findIntention()
+        check(intention == null) {
+            "\"${intentionClass.simpleName}\" should not be available"
+        }
+    }
 
     private fun findIntention(): IntentionAction? {
         return myFixture.availableIntentions.firstOrNull {

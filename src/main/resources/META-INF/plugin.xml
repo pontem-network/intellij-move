@@ -308,6 +308,14 @@
             <className>org.move.ide.intentions.InlineAddressBlockIntention</className>
             <category>Move</category>
         </intentionAction>
+        <intentionAction>
+            <className>org.move.ide.intentions.ChopParameterListIntention</className>
+            <category>Move</category>
+        </intentionAction>
+        <intentionAction>
+            <className>org.move.ide.intentions.ChopArgumentListIntention</className>
+            <category>Move</category>
+        </intentionAction>
 
     </extensions>
 
