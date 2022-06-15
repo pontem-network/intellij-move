@@ -144,8 +144,15 @@
                              implementationClass="org.move.ide.refactoring.MvNamesValidator"/>
         <lang.refactoringSupport language="Move"
                                  implementationClass="org.move.ide.refactoring.MvRefactoringSupportProvider"/>
+
 <!--        <lang.refactoringSupport language="TOML"-->
-<!--                                 implementationClass="org.move.ide.refactoring.TomlRefactoringSupportProvider"/>-->
+<!--                                 implementationClass="org.move.ide.refactoring.toml.TomlRefactoringSupportProvider"/>-->
+<!--        <renameHandler implementation="org.move.ide.refactoring.toml.TomlInPlaceRenameHandler" />-->
+<!--        <renameHandler implementation="org.move.ide.refactoring.toml.TomlRenameHandler" />-->
+<!--        <renamePsiElementProcessor implementation="org.move.ide.refactoring.toml.MvRenameAddressProcessor"-->
+<!--                                   order="first"-->
+<!--                                   id="mvRenameAddressProcessor" />-->
+
 
         <lang.findUsagesProvider language="Move"
                                  implementationClass="org.move.ide.search.MvFindUsagesProvider"/>
@@ -192,9 +199,6 @@
         <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameProcessor"
                                    order="first"
                                    id="mvRenameProcessor"/>
-<!--        <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameAddressProcessor"-->
-<!--                                   order="first"-->
-<!--                                   id="mvRenameAddressProcessor"/>-->
         <lang.psiStructureViewFactory
                 language="Move"
                 implementationClass="org.move.ide.navigation.MvStructureViewBuilderFactory"/>

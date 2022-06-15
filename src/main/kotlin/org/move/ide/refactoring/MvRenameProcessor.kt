@@ -7,10 +7,11 @@ import com.intellij.refactoring.listeners.RefactoringElementListener
 import com.intellij.refactoring.rename.RenamePsiElementProcessor
 import com.intellij.usageView.UsageInfo
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.descendantOfTypeStrict
+import org.move.lang.core.psi.ext.equalsTo
+import org.move.lang.core.psi.ext.isShorthand
+import org.move.lang.core.psi.ext.owner
 import org.move.lang.modules
-import org.move.openapiext.addressesTable
-import org.toml.lang.psi.TomlKeySegment
 
 val PsiElement.maybeLitFieldParent
     get() = PsiTreeUtil.findFirstParent(this) {
@@ -20,9 +21,6 @@ val PsiElement.maybeLitFieldParent
 
 class MvRenameProcessor : RenamePsiElementProcessor() {
     override fun canProcessElement(element: PsiElement): Boolean {
-        if (element is TomlKeySegment) {
-            return element.addressesTable != null
-        }
         return element is MvNamedElement
 
     }
