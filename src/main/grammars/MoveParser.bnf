@@ -232,7 +232,7 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
     recoverWhile = Item_recover
 }
 // top-level recovery
-private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec | friend | Attr
+private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec | friend | Attr | entry
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= UseStmt
