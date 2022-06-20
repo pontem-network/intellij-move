@@ -29,7 +29,7 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "1.6.21"
-    id("org.jetbrains.intellij") version "1.5.2"
+    id("org.jetbrains.intellij") version "1.6.0"
     id("org.jetbrains.grammarkit") version "2021.2.2"
 }
 
