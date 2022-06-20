@@ -191,6 +191,7 @@ private ScriptItem_item ::= UseStmt | Const | FunctionInner
 
 private address ::= <<addressKeyword>>
 private has ::= <<hasKeyword>>
+private entry ::= <<entryKeyword>>
 private schema ::= <<schemaKeyword>>
 
 AddressDef ::= address AddressRef AddressBlock {
@@ -255,7 +256,7 @@ Const ::= Attr* CONST_KW BindingPat TypeAnnotation Initializer ';'
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-fake SpecFunction ::= spec native? fun IDENTIFIER? TypeParameterList?
+fake SpecFunction ::= Attr* spec native? fun IDENTIFIER? TypeParameterList?
                         FunctionParameterList? ReturnType?
                         (';' | CodeBlock)?
 {
@@ -268,20 +269,20 @@ fake SpecFunction ::= spec native? fun IDENTIFIER? TypeParameterList?
 private SpecFunctionItem ::= SpecFunctionInner
                             | NativeSpecFunctionInner
 
-SpecFunctionInner ::= spec fun IDENTIFIER TypeParameterList?
+SpecFunctionInner ::= Attr* spec fun IDENTIFIER TypeParameterList?
                        FunctionParameterList ReturnType? (<<msl CodeBlock>> | ';')
 {
-    pin = 2
+    pin = 3
     elementType = SpecFunction
 }
-NativeSpecFunctionInner ::= spec (native fun) IDENTIFIER TypeParameterList?
+NativeSpecFunctionInner ::= Attr* spec (native fun) IDENTIFIER TypeParameterList?
                              FunctionParameterList ReturnType? ';'
 {
+    pin = 3
     elementType = SpecFunction
-    pin = 2
 }
 
-fake SpecInlineFunction ::= native? fun IDENTIFIER? TypeParameterList?
+fake SpecInlineFunction ::= Attr* native? fun IDENTIFIER? TypeParameterList?
                                 FunctionParameterList? ReturnType?
                                 (CodeBlock | ';')?
 {
@@ -339,7 +340,7 @@ NativeStructInner ::= Attr* NativeStructInnerFirst IDENTIFIER TypeParameterList?
 }
 private StructItem ::= StructInner | NativeStructInner
 
-fake Function ::= Attr* native? FunctionVisibilityModifier? native?
+fake Function ::= Attr* native? FunctionVisibilityModifier? entry?
                     fun? IDENTIFIER? TypeParameterList? FunctionParameterList?
                         ReturnType? AcquiresType?
                         (';' | CodeBlock)?
@@ -465,9 +466,9 @@ private StructField_with_recover ::= !'}' StructField (',' | &'}')
 }
 private StructField_recover ::= !('}' | IDENTIFIER)
 
-StructField ::= IDENTIFIER TypeAnnotation &(',' | '}')
+StructField ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
 {
-    pin = 1
+    pin = 2
     implements = [
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"

@@ -16,6 +16,7 @@ data class MovePackage(
     val packageName = this.moveToml.packageName ?: ""
 
     val sourcesFolder: VirtualFile? get() = contentRoot.findChild("sources")
+    val testsFolder: VirtualFile? get() = contentRoot.findChild("tests")
 
     fun layoutPaths(): List<Path> {
         val rootPath = contentRoot.toNioPathOrNull() ?: return emptyList()
@@ -28,8 +29,8 @@ data class MovePackage(
     }
 
     fun addresses(): PackageAddresses {
-        val tomlMainAddresses = moveToml.declaredAddresses(DevMode.MAIN)
-        val tomlDevAddresses = moveToml.declaredAddresses(DevMode.DEV)
+        val tomlMainAddresses = moveToml.declaredAddresses()
+        val tomlDevAddresses = moveToml.declaredAddresses()
 
         val addresses = mutableAddressMap()
         addresses.putAll(tomlMainAddresses.values)

@@ -36,10 +36,6 @@ import java.util.concurrent.CompletableFuture
 
 val Project.moveProjects get() = service<MoveProjectsService>()
 
-enum class DevMode {
-    MAIN, DEV;
-}
-
 class MoveProjectsService(val project: Project) {
     init {
         with(project.messageBus.connect()) {
@@ -204,24 +200,3 @@ inline fun runOnlyInNonLightProject(project: Project, action: () -> Unit) {
 }
 
 val VirtualFile.fsDepth: Int get() = this.path.split(File.separator).count()
-
-fun processAllMoveFilesOnce(
-    moveProjects: List<MoveProject>,
-    processFile: (MoveFile, MoveProject) -> Unit
-) {
-    val visited = mutableSetOf<String>()
-    // find Move.toml files in all project roots, remembering depth of those
-    // then search all .move children of those files, with biggest depth first
-    moveProjects
-        .sortedByDescending { it.contentRoot.fsDepth }
-        .map { moveProject ->
-            moveProject.processMoveFiles(DevMode.DEV) {
-                val filePath = it.virtualFile.path
-                if (filePath in visited) return@processMoveFiles true
-                visited.add(filePath)
-
-                processFile(it, moveProject)
-                true
-            }
-        }
-}

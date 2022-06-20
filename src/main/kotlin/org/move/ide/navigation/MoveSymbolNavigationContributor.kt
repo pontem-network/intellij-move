@@ -7,7 +7,7 @@ import com.intellij.util.Processor
 import com.intellij.util.indexing.FindSymbolParameters
 import com.intellij.util.indexing.IdFilter
 import org.move.lang.core.psi.MvNamedElement
-import org.move.openapiext.allMoveFilesForContentRoots
+import org.move.openapiext.allMoveFiles
 
 
 class MvSymbolNavigationContributor : ChooseByNameContributorEx {
@@ -20,7 +20,7 @@ class MvSymbolNavigationContributor : ChooseByNameContributorEx {
                 processor.process(elementName)
             }
         }
-        project.allMoveFilesForContentRoots().map { it.accept(visitor) }
+        project.allMoveFiles().map { it.accept(visitor) }
     }
 
     override fun processElementsWithName(
@@ -35,6 +35,6 @@ class MvSymbolNavigationContributor : ChooseByNameContributorEx {
                 if (elementName == name) processor.process(element)
             }
         }
-        project.allMoveFilesForContentRoots().map { it.accept(visitor) }
+        project.allMoveFiles().map { it.accept(visitor) }
     }
 }

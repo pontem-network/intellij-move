@@ -46,7 +46,7 @@ object ImportsCompletionProvider : MvCompletionProvider() {
             else -> Visibility.buildSetOfVisibilities(itemImport)
         }
         val ns = setOf(Namespace.NAME, Namespace.TYPE)
-        val itemVis = ItemVis(ns, vs)
+        val itemVis = ItemVis.default().replace(ns, vs)
         processModuleItems(referredModule, itemVis) {
             val lookup =
                 it.element.createCompletionLookupElement(

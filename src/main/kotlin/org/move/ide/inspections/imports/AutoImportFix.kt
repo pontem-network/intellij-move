@@ -117,7 +117,7 @@ data class ImportContext private constructor(
         }
 
         fun from(contextElement: MvReferenceElement): ImportContext {
-            var itemVis = ItemVis(visibilities = setOf(Visibility.Public))
+            var itemVis = ItemVis.default().replace(vs = setOf(Visibility.Public))
             if (contextElement.containingScript != null) {
                 itemVis = itemVis.replace(vs = itemVis.visibilities + Visibility.PublicScript)
             }

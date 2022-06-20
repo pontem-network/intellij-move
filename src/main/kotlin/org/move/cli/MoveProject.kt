@@ -35,9 +35,10 @@ data class MoveProject(
             .chain(dependencies.map { it.first }.reversed())
     }
 
-    fun moduleFolders(devMode: DevMode): List<VirtualFile> {
+    fun sourceFolders(): List<VirtualFile> {
         val folders = mutableListOf<VirtualFile>()
         folders.addIfNotNull(currentPackage.sourcesFolder)
+        folders.addIfNotNull(currentPackage.testsFolder)
 
         val depFolders = dependencies.asReversed().mapNotNull { it.first.sourcesFolder }
         folders.addAll(depFolders)
@@ -78,17 +79,17 @@ data class MoveProject(
         return Address.Named(name, addressVal.value)
     }
 
-    fun searchScope(devMode: DevMode = DevMode.MAIN): GlobalSearchScope {
+    fun searchScope(): GlobalSearchScope {
         var searchScope = GlobalSearchScope.EMPTY_SCOPE
-        for (folder in moduleFolders(devMode)) {
+        for (folder in sourceFolders()) {
             val dirScope = GlobalSearchScopes.directoryScope(project, folder, true)
             searchScope = searchScope.uniteWith(dirScope)
         }
         return searchScope
     }
 
-    fun processMoveFiles(devMode: DevMode, processFile: (MoveFile) -> Boolean) {
-        val folders = moduleFolders(devMode)
+    fun processMoveFiles(processFile: (MoveFile) -> Boolean) {
+        val folders = sourceFolders()
         var stopped = false
         for (folder in folders) {
             if (stopped) break

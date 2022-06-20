@@ -14,7 +14,7 @@ FILE
         PsiWhiteSpace(' ')
         MvStructBlockImpl(STRUCT_BLOCK)
           PsiElement({)('{')
-          PsiErrorElement:IDENTIFIER expected, got ':'
+          PsiErrorElement:<struct field> expected, got ':'
             <empty list>
           PsiWhiteSpace('\n        ')
           PsiElement(:)(':')

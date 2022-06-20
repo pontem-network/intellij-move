@@ -6,28 +6,39 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNamedElementImpl
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslScope
-import org.move.lang.core.resolve.ref.*
+import org.move.lang.core.resolve.ref.MvReferenceCached
+import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.resolve.ref.resolveModuleItem
 
 fun MvUseItem.moduleImport(): MvItemUseSpeck =
     ancestorStrict() ?: error("ItemImport outside ModuleItemsImport")
 
-val MvUseItem.speck: MvElement? get() {
-    val parent = this.parent
-    if (parent is MvUseItemGroup && parent.useItemList.size != 1) return this
-    return ancestorStrict<MvUseStmt>()
-}
+val MvUseItem.speck: MvElement?
+    get() {
+        val parent = this.parent
+        if (parent is MvUseItemGroup && parent.useItemList.size != 1) return this
+        return ancestorStrict<MvUseStmt>()
+    }
 
-class MvUseItemReferenceElement(element: MvUseItem): MvReferenceCached<MvUseItem>(element) {
+class MvUseItemReferenceElement(element: MvUseItem) : MvReferenceCached<MvUseItem>(element) {
     override fun resolveInner(): List<MvNamedElement> {
         val moduleRef = element.moduleImport().fqModuleRef
         val module =
             moduleRef.reference?.resolve() as? MvModule ?: return emptyList()
         if ((element.useAlias == null && element.text == "Self")
-            || (element.useAlias != null && element.text.startsWith("Self as"))) return listOf(module)
+            || (element.useAlias != null && element.text.startsWith("Self as"))
+        ) return listOf(module)
 
         val ns = setOf(Namespace.TYPE, Namespace.NAME, Namespace.SCHEMA)
         val vs = Visibility.buildSetOfVisibilities(moduleRef)
-        val itemVis = ItemVis(ns, vs, MslScope.NONE)
+        val itemVis = ItemVis(
+            ns,
+            vs,
+            MslScope.NONE,
+            itemScope = moduleRef.itemScope,
+            folderScope = moduleRef.folderScope
+        )
         return resolveModuleItem(
             module,
             element.referenceName,

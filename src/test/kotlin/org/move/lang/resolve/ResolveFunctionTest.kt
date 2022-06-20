@@ -379,4 +379,49 @@ class ResolveFunctionTest : ResolveTestCase() {
         }
     }
     """)
+
+    fun `test resolve fun in test_only module from another test_only`() = checkByCode("""
+    #[test_only] 
+    module 0x1::M1 {
+        public fun call() {}
+                  //X
+    }   
+    #[test_only] 
+    module 0x1::M2 {
+        use 0x1::M1::call;
+        
+        fun main() {
+            call();
+            //^
+        }
+    }
+    """)
+
+    fun `test test_only function is not accessible from non test_only module`() = checkByCode("""
+    module 0x1::M1 {
+        #[test_only]
+        public fun call() {}
+    }        
+    module 0x1::M2 {
+        use 0x1::M1;
+        fun call() {
+            M1::call();
+               //^ unresolved             
+        }
+    }
+    """)
+
+    fun `test test_only module is not accessible from non_test_only module`() = checkByCode("""
+    #[test_only]
+    module 0x1::M1 {
+        public fun call() {}
+    }        
+    module 0x1::M2 {
+        use 0x1::M1;
+               //^ unresolved 
+        fun call() {
+            M1::call();
+        }
+    }
+    """)
 }

@@ -2,7 +2,7 @@ package org.move.lang.resolve
 
 import org.move.utils.tests.resolve.ResolveProjectTestCase
 
-class ResolveModulesProjectTest : ResolveProjectTestCase() {
+class ResolveItemsProjectTest : ResolveProjectTestCase() {
 
     fun `test resolve module from other file in sources folder`() = checkByFileTree {
         moveToml()
@@ -273,6 +273,31 @@ class ResolveModulesProjectTest : ResolveProjectTestCase() {
             }    
             """
             )
+        }
+    }
+
+    fun `test test_only items from tests are available in other tests`() = checkByFileTree {
+        namedMoveToml("MyPackage")
+        sources {  }
+        tests {
+            move("CoinTests.move", """
+            #[test_only]    
+            module 0x1::CoinTests {
+                public fun call() {}
+                          //X
+            }    
+            """)
+            move("TestCoinTests.move", """
+            #[test_only]    
+            module 0x1::TestCoinTests {
+                use 0x1::CoinTests::call;
+                
+                fun main() {
+                    call();
+                    //^
+                }
+            }    
+            """)
         }
     }
 }

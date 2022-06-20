@@ -34,19 +34,19 @@ class ResolveNamedAddressProjectTest : ResolveProjectTestCase() {
         }
     }
 
-    fun `test resolve named address to dev address`() = checkByFileTree {
-        moveToml("""
-        [dev-addresses]
-        Std = "0x1"
-        #X    
-        """)
-        sources {
-            move("main.move", """
-            module Std::Module {}
-                  //^
-            """)
-        }
-    }
+//    fun `test resolve named address to dev address`() = checkByFileTree {
+//        moveToml("""
+//        [dev-addresses]
+//        Std = "0x1"
+//        #X
+//        """)
+//        sources {
+//            move("main.move", """
+//            module Std::Module {}
+//                  //^
+//            """)
+//        }
+//    }
 
     fun `test resolve named address to toml key of the dependency`() = checkByFileTree {
         moveToml("""

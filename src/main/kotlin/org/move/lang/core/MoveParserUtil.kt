@@ -218,7 +218,7 @@ object MoveParserUtil : GeneratedParserUtilBase() {
                     nativeEncountered = true
                     b.advanceLexer()
                 }
-                contextualKeyword(b, "entry", ENTRY) -> {
+                 contextualKeyword(b, "entry", ENTRY) -> {
                     if (FunModifier.ENTRY !in modifiersLeft) return isParsed()
                     modifiersLeft.remove(FunModifier.ENTRY)
                     parsed = true

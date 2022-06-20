@@ -5,14 +5,14 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.MvPsiPatterns
-import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.completionPriority
+import org.move.lang.core.psi.ext.folderScope
 import org.move.lang.core.psi.ext.isSelf
+import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslScope
 import org.move.lang.core.resolve.mslScope
@@ -87,7 +87,13 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
                 .andNot(MvPsiPatterns.schemaRef())
 
     override fun itemVis(pathElement: MvPath): ItemVis {
-        return ItemVis(setOf(Namespace.NAME), msl = pathElement.mslScope)
+        return ItemVis(
+            setOf(Namespace.NAME),
+            Visibility.none(),
+            msl = pathElement.mslScope,
+            itemScope = pathElement.itemScope,
+            folderScope = pathElement.folderScope
+        )
     }
 }
 
@@ -96,7 +102,13 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
         get() = MvPsiPatterns.pathType()
 
     override fun itemVis(pathElement: MvPath): ItemVis {
-        return ItemVis(setOf(Namespace.TYPE), msl = MslScope.NONE)
+        return ItemVis(
+            setOf(Namespace.TYPE),
+            Visibility.none(),
+            msl = MslScope.NONE,
+            itemScope = pathElement.itemScope,
+            folderScope = pathElement.folderScope
+        )
     }
 }
 
@@ -106,6 +118,12 @@ object SchemasCompletionProvider : MvPathCompletionProvider() {
             MvPsiPatterns.schemaRef()
 
     override fun itemVis(pathElement: MvPath): ItemVis {
-        return ItemVis(setOf(Namespace.SCHEMA), msl = MslScope.EXPR)
+        return ItemVis(
+            setOf(Namespace.SCHEMA),
+            Visibility.none(),
+            msl = MslScope.EXPR,
+            itemScope = pathElement.itemScope,
+            folderScope = pathElement.folderScope
+        )
     }
 }

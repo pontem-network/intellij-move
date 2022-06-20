@@ -31,7 +31,7 @@ val MvFunction.visibility: FunctionVisibility
         }
     }
 
-val MvFunction.isTest: Boolean get() = this.attrList.findSingleItemAttr("test") != null
+val MvFunction.isTest: Boolean get() = this.findSingleItemAttr("test") != null
 
 val MvFunction.isBuiltinFunc get() = this.isNative && this.name in BUILTIN_FUNCTIONS
 

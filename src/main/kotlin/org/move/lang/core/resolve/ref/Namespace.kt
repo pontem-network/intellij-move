@@ -15,6 +15,9 @@ sealed class Visibility {
     object Internal : Visibility()
 
     companion object {
+        fun local(): Set<Visibility> = setOf(Public, Internal)
+        fun none(): Set<Visibility> = setOf()
+
         fun buildSetOfVisibilities(element: MvElement): Set<Visibility> {
             val vs = mutableSetOf<Visibility>(Public)
             val containingModule = element.containingModule
@@ -50,5 +53,6 @@ enum class Namespace {
         fun allNames(): Set<Namespace> {
             return setOf(NAME, TYPE, SCHEMA, MODULE)
         }
+        fun none(): Set<Namespace> = setOf()
     }
 }
