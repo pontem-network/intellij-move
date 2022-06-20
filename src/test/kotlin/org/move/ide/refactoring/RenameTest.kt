@@ -196,8 +196,8 @@ class RenameTest : MvTestBase() {
             struct /*caret*/MyStruct { val: u8 }
             
             fun main(s: MyStruct): MyStruct {
-                let MyStruct{ val: myval } = get_struct();
-                let a = MyStruct{ val: 1 };
+                let MyStruct { val: myval } = get_struct();
+                let a = MyStruct { val: 1 };
                 move_from<MyStruct>();
             }
         }
@@ -206,8 +206,8 @@ class RenameTest : MvTestBase() {
             struct RenamedStruct { val: u8 }
             
             fun main(s: RenamedStruct): RenamedStruct {
-                let RenamedStruct{ val: myval } = get_struct();
-                let a = RenamedStruct{ val: 1 };
+                let RenamedStruct { val: myval } = get_struct();
+                let a = RenamedStruct { val: 1 };
                 move_from<RenamedStruct>();
             }
         }
@@ -217,21 +217,21 @@ class RenameTest : MvTestBase() {
     fun `test struct from use position`() = doTest(
         "RenamedStruct", """
         module M {
-            struct MyStruct { val: u8 }
+            struct MyStruct has key { val: u8 }
             
             fun main(s: MyStruct): /*caret*/MyStruct {
-                let MyStruct{ val: myval } = get_struct();
-                let a = MyStruct{ val: 1 };
+                let MyStruct { val: myval } = get_struct();
+                let a = MyStruct { val: 1 };
                 move_from<MyStruct>();
             }
         }
     """, """
         module M {
-            struct RenamedStruct { val: u8 }
+            struct RenamedStruct has key { val: u8 }
             
             fun main(s: RenamedStruct): RenamedStruct {
-                let RenamedStruct{ val: myval } = get_struct();
-                let a = RenamedStruct{ val: 1 };
+                let RenamedStruct { val: myval } = get_struct();
+                let a = RenamedStruct { val: 1 };
                 move_from<RenamedStruct>();
             }
         }
