@@ -20,10 +20,7 @@ val PsiElement.maybeLitFieldParent
 
 
 class MvRenameProcessor : RenamePsiElementProcessor() {
-    override fun canProcessElement(element: PsiElement): Boolean {
-        return element is MvNamedElement
-
-    }
+    override fun canProcessElement(element: PsiElement): Boolean = element is MvNamedElement
 
     override fun renameElement(
         element: PsiElement,

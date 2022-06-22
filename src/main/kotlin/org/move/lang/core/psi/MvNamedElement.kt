@@ -6,6 +6,8 @@ import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.PsiReference
 import com.intellij.psi.search.PsiSearchHelper
 import com.intellij.psi.search.searches.ReferencesSearch
+import com.intellij.refactoring.listeners.RefactoringElementListener
+import com.intellij.refactoring.rename.RenameUtil
 import com.intellij.util.Query
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
@@ -57,8 +59,25 @@ val MvNamedElement.completionPriority
         else -> LOCAL_ITEM_PRIORITY
     }
 
-fun MvNamedElement.findUsages(): Query<PsiReference> =
+fun MvNamedElement.usages(): Query<PsiReference> =
     ReferencesSearch.search(
         this,
         PsiSearchHelper.getInstance(this.project).getUseScope(this)
     )
+
+fun MvNamedElement.rename(newName: String) {
+    val usageInfos = RenameUtil.findUsages(
+        this,
+        newName,
+        false,
+        false,
+        emptyMap()
+    )
+    RenameUtil.doRename(
+        this,
+        newName,
+        usageInfos,
+        this.project,
+        RefactoringElementListener.DEAF
+    )
+}

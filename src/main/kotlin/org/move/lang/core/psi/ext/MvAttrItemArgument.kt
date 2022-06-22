@@ -19,17 +19,6 @@ class AttrItemArgumentReferenceImpl(
 
 abstract class MvAttrItemArgumentMixin(node: ASTNode) : MvElementImpl(node),
                                                         MvAttrItemArgument {
-//    override fun getTextLength(): Int {
-//        return 2
-//    }
-//
-//    override fun getTextOffset(): Int {
-//        return super.getTextOffset()
-//    }
-//
-//    override fun getTextRange(): TextRange {
-//        return TextRange(textOffset, textOffset + 2)
-//    }
 
     override fun getReference(): MvReference? {
         val attr = this.ancestorStrict<MvAttr>() ?: return null

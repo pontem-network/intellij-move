@@ -5,8 +5,6 @@ import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
-import com.intellij.psi.search.PsiSearchHelper
-import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.*
 
@@ -29,7 +27,9 @@ class MvUnusedVariableInspection : MvLocalInspectionTool() {
                 val bindingName = binding.name ?: return
                 if (bindingName.startsWith("_")) return
 
-                val usages = binding.findUsages()
+                val usages = binding.usages()
+                    // filter out #[test] attributes
+                    .filter { it.element !is MvAttrItemArgument }
                 if (usages.none()) {
                     holder.registerProblem(
                         binding,
@@ -39,9 +39,10 @@ class MvUnusedVariableInspection : MvLocalInspectionTool() {
                             override fun getFamilyName(): String {
                                 return "Rename to _$bindingName"
                             }
+
                             override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-                                val newBindingPat = project.psiFactory.bindingPat("_$bindingName")
-                                descriptor.psiElement.replace(newBindingPat)
+                                val bindingPat = descriptor.psiElement as MvBindingPat
+                                bindingPat.rename("_$bindingName")
                             }
                         })
                 }
