@@ -21,7 +21,7 @@ enum class MslScope {
 }
 
 enum class ItemScope {
-    MAIN, TEST_ONLY;
+    MAIN, TEST;
 }
 
 enum class FolderScope {
@@ -29,7 +29,7 @@ enum class FolderScope {
 }
 
 fun MvElement.visibleInScope(itemScope: ItemScope): Boolean {
-    return itemScope == ItemScope.TEST_ONLY
+    return itemScope == ItemScope.TEST
             || this.itemScope == ItemScope.MAIN
 }
 

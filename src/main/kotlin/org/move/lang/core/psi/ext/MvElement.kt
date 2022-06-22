@@ -1,7 +1,6 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.openapi.util.Key
-import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.util.*
@@ -50,7 +49,12 @@ val MvElement.itemScope: ItemScope
         val testOnly = ancestors
             .filterIsInstance<MvDocAndAttributeOwner>()
             .any { it.isTestOnly }
-        return if (testOnly) ItemScope.TEST_ONLY else ItemScope.MAIN
+        if (testOnly) return ItemScope.TEST
+
+        val insideTestFunction = ancestorOrSelf<MvFunction>()?.isTest ?: false
+        if (insideTestFunction) return ItemScope.TEST
+
+        return ItemScope.MAIN
     }
 
 val MvElement.folderScope: FolderScope

@@ -199,4 +199,31 @@ class ResolveVariablesTest : ResolveTestCase() {
             }
         }    
     """)
+
+    fun `test test_only const in test function`() = checkByCode("""
+    module 0x1::M {
+        #[test_only]
+        const TEST_CONST: u64 = 1;
+              //X
+        #[test]
+        fun test_a() {
+            TEST_CONST;
+                //^
+        }
+    }    
+    """)
+
+    fun `test test_only function in test function`() = checkByCode("""
+    module 0x1::M {
+        #[test_only]
+        fun call() {}
+           //X
+        
+        #[test]
+        fun test_a() {
+            call();
+           //^
+        }
+    }    
+    """)
 }

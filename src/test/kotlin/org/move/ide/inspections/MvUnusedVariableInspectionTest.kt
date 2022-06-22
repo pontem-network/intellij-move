@@ -55,4 +55,20 @@ class MvUnusedVariableInspectionTest: InspectionTestBase(MvUnusedVariableInspect
         }
     }    
     """)
+
+    fun `test unused signer in unit test`() = checkFixByText("Rename to _validator_acc", """
+    module 0x1::M {
+        #[test(validator_acc = @0x42)]
+        fun test_function(<warning descr="Unused function parameter">/*caret*/validator_acc</warning>: signer) {
+            
+        }
+    }    
+    """, """
+    module 0x1::M {
+        #[test(_validator_acc = @0x42)]
+        fun test_function(_validator_acc: signer) {
+            
+        }
+    }           
+    """)
 }
