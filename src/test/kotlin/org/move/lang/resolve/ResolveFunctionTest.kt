@@ -424,4 +424,33 @@ class ResolveFunctionTest : ResolveTestCase() {
         }
     }
     """)
+
+    fun `test unittest functions are not accessible as items`() = checkByCode("""
+    #[test_only]    
+    module 0x1::M {
+        #[test]
+        fun test_a() {}
+        fun main() {
+            test_a();
+           //^ unresolved 
+        }
+    }    
+    """)
+
+    fun `test unittest functions are not accessible as module items`() = checkByCode("""
+    #[test_only]    
+    module 0x1::M1 {
+        #[test]
+        public(script) fun test_a() {}
+    }    
+    #[test_only]
+    module 0x1::M2 {
+        use 0x1::M1; 
+        
+        public(script) fun main() {
+            M1::test_a();
+               //^ unresolved    
+        }
+    }    
+    """)
 }

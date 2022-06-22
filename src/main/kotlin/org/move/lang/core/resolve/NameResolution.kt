@@ -241,7 +241,7 @@ fun processLexicalDeclarations(
                 is MvModule -> {
                     processor.matchAll(
                         itemVis,
-                        scope.allFunctions(),
+                        scope.allNonTestFunctions(),
                         scope.builtinFunctions(),
                         scope.structs(),
                         scope.constBindings(),
@@ -348,7 +348,7 @@ fun processLexicalDeclarations(
                 is MvModule -> processor.matchAll(
                     itemVis,
                     listOf(
-                        scope.allFunctions(),
+                        scope.allNonTestFunctions(),
                         scope.structs(),
                     ).flatten()
                 )

@@ -50,6 +50,8 @@ val MvModule.friendModules: Set<FQModule>
 
 fun MvModule.allFunctions(): List<MvFunction> = moduleBlock?.functionList.orEmpty()
 
+fun MvModule.allNonTestFunctions(): List<MvFunction> = allFunctions().filter { !it.isTest }
+
 fun MvModule.testFunctions(): List<MvFunction> = allFunctions().filter { it.isTest }
 
 fun MvModule.builtinFunctions(): List<MvFunction> {
@@ -86,19 +88,19 @@ fun MvModule.builtinFunctions(): List<MvFunction> {
 fun MvModule.functions(visibility: Visibility): List<MvFunction> =
     when (visibility) {
         is Visibility.Public ->
-            allFunctions()
+            allNonTestFunctions()
                 .filter { it.visibility == FunctionVisibility.PUBLIC }
         is Visibility.PublicScript ->
-            allFunctions()
+            allNonTestFunctions()
                 .filter { it.visibility == FunctionVisibility.PUBLIC_SCRIPT }
         is Visibility.PublicFriend -> {
             if (visibility.currentModule in this.friendModules) {
-                allFunctions().filter { it.visibility == FunctionVisibility.PUBLIC_FRIEND }
+                allNonTestFunctions().filter { it.visibility == FunctionVisibility.PUBLIC_FRIEND }
             } else {
                 emptyList()
             }
         }
-        is Visibility.Internal -> allFunctions()
+        is Visibility.Internal -> allNonTestFunctions()
     }
 
 fun builtinFunction(text: String, project: Project): MvFunction {
