@@ -45,7 +45,9 @@ object ModulesCompletionProvider : MvCompletionProvider() {
                 folderScope = refElement.folderScope,
             )
         processItems(refElement, itemVis) {
-            val lookup = it.element.createCompletionLookupElement(priority = LOCAL_MODULE_PRIORITY)
+            val lookup = it.element.createCompletionLookupElement(
+                priority = IMPORTED_MODULE_PRIORITY
+            )
             result.addElement(lookup)
             it.element.name?.let(processedNames::add)
             false

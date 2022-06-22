@@ -46,10 +46,7 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
                 else -> Visibility.buildSetOfVisibilities(pathElement)
             }
             processModuleItems(module, itemVis.replace(vs = vs)) {
-                val lookup = it.element.createCompletionLookupElement(
-                    ns = itemVis.namespaces,
-                    priority = it.element.completionPriority
-                )
+                val lookup = it.element.createCompletionLookupElement(ns = itemVis.namespaces)
                 result.addElement(lookup)
                 false
             }
@@ -61,7 +58,10 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
             if (processedNames.contains(it.name)) return@processItems false
             processedNames.add(it.name)
 
-            val lookupElement = it.element.createCompletionLookupElement(ns = itemVis.namespaces)
+            val lookupElement = it.element.createCompletionLookupElement(
+                ns = itemVis.namespaces,
+                priority = it.element.completionPriority
+            )
             result.addElement(lookupElement)
 
             false
