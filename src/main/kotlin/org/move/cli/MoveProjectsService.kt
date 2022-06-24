@@ -1,6 +1,7 @@
 package org.move.cli
 
 import com.intellij.execution.RunManager
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
@@ -22,41 +23,40 @@ import com.intellij.psi.PsiFile
 import com.intellij.util.messages.Topic
 import org.move.cli.settings.MoveProjectSettingsService
 import org.move.cli.settings.MoveSettingsChangedEvent
-import org.move.cli.settings.MvSettingsListener
-import org.move.lang.MoveFile
+import org.move.cli.settings.MoveSettingsListener
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.toVirtualFile
 import org.move.stdext.AsyncValue
-import org.move.stdext.MoveProjectsIndex
 import org.move.stdext.IndexEntry
+import org.move.stdext.MoveProjectsIndex
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
 val Project.moveProjects get() = service<MoveProjectsService>()
 
-class MoveProjectsService(val project: Project) {
+class MoveProjectsService(val project: Project): Disposable {
     init {
         with(project.messageBus.connect()) {
             if (!isUnitTestMode) {
                 subscribe(VirtualFileManager.VFS_CHANGES, MoveTomlWatcher {
-                    scheduleRefresh()
+                    refreshAllProjects()
                 })
             }
-            subscribe(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC, object : MvSettingsListener {
+            subscribe(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC, object : MoveSettingsListener {
                 override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
-                    scheduleRefresh()
+                    refreshAllProjects()
                 }
             })
         }
+
+//        MoveExternalSystemProjectAware.register(project, this)
     }
 
-    fun scheduleRefresh() {
+    fun refreshAllProjects() {
         LOG.info("Project state refresh started")
-        modifyProjects {
-            doRefresh(project)
-        }
+        modifyProjects { doRefresh(project) }
     }
 
     fun findMoveProject(psiElement: PsiElement): MoveProject? {
@@ -128,14 +128,22 @@ class MoveProjectsService(val project: Project) {
      * go through this method: it makes sure that when we update various IDEA listeners.
      */
     private fun modifyProjects(
-        f: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
-    ): CompletableFuture<List<MoveProject>> =
-        projects
-            .updateAsync(f)
+        updater: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
+    ): CompletableFuture<List<MoveProject>> {
+        val refreshStatusPublisher =
+            project.messageBus.syncPublisher(MOVE_PROJECTS_REFRESH_TOPIC)
+
+        val wrappedUpdater = { projects: List<MoveProject> ->
+            refreshStatusPublisher.onRefreshStarted()
+            updater(projects)
+        }
+
+        return projects.updateAsync(wrappedUpdater)
             .thenApply { projects ->
                 resetIDEState(projects)
                 projects
             }
+    }
 
     private fun resetIDEState(projects: Collection<MoveProject>) {
         invokeAndWaitIfNeeded {
@@ -152,6 +160,8 @@ class MoveProjectsService(val project: Project) {
         }
     }
 
+    override fun dispose() {}
+
     companion object {
         private val LOG = logger<MoveProjectsService>()
 
@@ -160,10 +170,25 @@ class MoveProjectsService(val project: Project) {
             MoveProjectsListener::class.java
         )
 
-        fun interface MoveProjectsListener {
-            fun moveProjectsUpdated(service: MoveProjectsService, projects: Collection<MoveProject>)
-        }
+        val MOVE_PROJECTS_REFRESH_TOPIC: Topic<MoveProjectsRefreshListener> = Topic(
+            "Move refresh",
+            MoveProjectsRefreshListener::class.java
+        )
+    }
 
+    fun interface MoveProjectsListener {
+        fun moveProjectsUpdated(service: MoveProjectsService, projects: Collection<MoveProject>)
+    }
+
+    interface MoveProjectsRefreshListener {
+        fun onRefreshStarted()
+        fun onRefreshFinished(status: MoveRefreshStatus)
+    }
+
+    enum class MoveRefreshStatus {
+        SUCCESS,
+        FAILURE,
+        CANCEL
     }
 }
 

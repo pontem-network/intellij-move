@@ -26,7 +26,7 @@ data class MoveSettingsChangedEvent(
         prop.get(oldState) != prop.get(newState)
 }
 
-interface MvSettingsListener {
+interface MoveSettingsListener {
     fun moveSettingsChanged(e: MoveSettingsChangedEvent)
 }
 
@@ -116,7 +116,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
     companion object {
         val MOVE_SETTINGS_TOPIC = Topic(
             "move settings changes",
-            MvSettingsListener::class.java
+            MoveSettingsListener::class.java
         )
     }
 }

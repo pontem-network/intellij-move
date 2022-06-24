@@ -11,18 +11,11 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.InspectionTestUtil
-import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
-import com.intellij.util.indexing.FileBasedIndex
 import junit.framework.TestCase
 import org.intellij.lang.annotations.Language
-import org.move.cli.MoveProjectsSyncTask
-import org.move.cli.setupProjectRoots
 import org.move.ide.annotator.MvAnnotator
-import org.move.ide.inspections.imports.MvNamedElementIndex
-import org.move.utils.tests.FileTreeBuilder
-import org.move.utils.tests.fileTree
 import kotlin.reflect.KClass
 
 class MvAnnotationTestFixture(

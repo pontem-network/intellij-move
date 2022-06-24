@@ -17,7 +17,7 @@ fun updateAllNotifications(project: Project) {
     EditorNotifications.getInstance(project).updateAllNotifications()
 }
 
-class UpdateNotificationsOnSettingsChangeListener(val project: Project) : MvSettingsListener {
+class UpdateNotificationsOnSettingsChangeListener(val project: Project) : MoveSettingsListener {
 
     override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
         updateAllNotifications(project)
@@ -43,7 +43,7 @@ class InvalidAptosBinaryNotification(
         if (!file.isMoveOrManifest) return null
 
         if (project.moveProjects.allProjects.isEmpty()) {
-            project.moveProjects.scheduleRefresh()
+            project.moveProjects.refreshAllProjects()
         }
 
         if (project.aptosPath.isValidExecutable()) return null

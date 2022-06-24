@@ -3,10 +3,10 @@ package org.move.utils.tests.annotation
 import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.util.indexing.FileBasedIndex
-import org.move.cli.MoveProjectsSyncTask
-import org.move.cli.setupProjectRoots
 import org.move.ide.inspections.imports.MvNamedElementIndex
-import org.move.utils.tests.*
+import org.move.utils.tests.FileTreeBuilder
+import org.move.utils.tests.MvProjectTestBase
+import org.move.utils.tests.replaceCaretMarker
 import kotlin.reflect.KClass
 
 abstract class InspectionProjectTestBase(

@@ -13,14 +13,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
-import com.intellij.testFramework.PlatformTestUtil
-import com.intellij.testFramework.fixtures.CodeInsightTestFixture
-import com.intellij.util.indexing.FileBasedIndex
 import org.intellij.lang.annotations.Language
-import org.move.cli.MoveProjectsSyncTask
 import org.move.cli.manifest.TomlDependency
-import org.move.cli.setupProjectRoots
-import org.move.ide.inspections.imports.MvNamedElementIndex
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.resolve.MvReferenceElement
 import org.move.openapiext.document
@@ -91,13 +85,16 @@ interface FileTreeBuilder {
         val dirName = TomlDependency.Git.dirName(repo, rev)
         return dir(dirName, builder)
     }
+
     fun dotMove(builder: TreeBuilder = {}) = dir(".move", builder)
 
     fun buildInfo(packageName: String, addresses: Map<String, String>, builder: TreeBuilder = {}) =
-        build { dir(packageName) {
-            builder()
-            buildInfoYaml(addresses)
-        } }
+        build {
+            dir(packageName) {
+                builder()
+                buildInfoYaml(addresses)
+            }
+        }
 
     fun buildInfoYaml(@Language("yaml") code: String = "") = file("BuildInfo.yaml", code)
     fun buildInfoYaml(addresses: Map<String, String>) = buildInfoYaml(

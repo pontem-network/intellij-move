@@ -57,7 +57,7 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
                         it.aptosPath = aptosPath
                     }
                 }
-                it.moveProjects.scheduleRefresh()
+                it.moveProjects.refreshAllProjects()
             }
         }
     }
