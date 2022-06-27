@@ -199,6 +199,9 @@
         <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameProcessor"
                                    order="first"
                                    id="mvRenameProcessor"/>
+        <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameFileProcessor"
+                                   order="before renamePsiFile"
+                                   id="mvRenamePsiFileProcessor"/>
         <lang.psiStructureViewFactory
                 language="Move"
                 implementationClass="org.move.ide.navigation.MvStructureViewBuilderFactory"/>

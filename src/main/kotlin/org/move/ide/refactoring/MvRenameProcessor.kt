@@ -13,11 +13,6 @@ import org.move.lang.core.psi.ext.isShorthand
 import org.move.lang.core.psi.ext.owner
 import org.move.lang.modules
 
-val PsiElement.maybeLitFieldParent
-    get() = PsiTreeUtil.findFirstParent(this) {
-        it is MvStructLitField || it is MvSchemaLitField
-    }
-
 
 class MvRenameProcessor : RenamePsiElementProcessor() {
     override fun canProcessElement(element: PsiElement): Boolean = element is MvNamedElement
@@ -100,4 +95,9 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
         }
         super.renameElement(elementToRename, newName, usages, listener)
     }
+
+    val PsiElement.maybeLitFieldParent
+        get() = PsiTreeUtil.findFirstParent(this) {
+            it is MvStructLitField || it is MvSchemaLitField
+        }
 }
