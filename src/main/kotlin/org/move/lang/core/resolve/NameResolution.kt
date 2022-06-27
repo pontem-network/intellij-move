@@ -212,7 +212,10 @@ fun processLexicalDeclarations(
                 }
                 if (innerTy !is TyStruct) return false
 
-                val fields = innerTy.item.fields
+                val structItem = innerTy.item
+                if (structItem.containingModule != dotExpr.containingModule) return false
+
+                val fields = structItem.fields
                 return processor.matchAll(itemVis, fields)
             }
             Namespace.STRUCT_FIELD -> {
