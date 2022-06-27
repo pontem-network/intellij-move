@@ -1,13 +1,12 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import com.intellij.psi.PsiElement
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvReference
 import org.move.lang.core.resolve.ref.MvReferenceCached
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.resolveItem
+import org.move.lang.core.resolve.resolveLocalItem
 
 val MvSchemaLitField.isShorthand get() = !hasChild(MvElementTypes.COLON)
 
@@ -17,7 +16,7 @@ class MvSchemaFieldReferenceImpl(
     element: MvSchemaLitField
 ) : MvReferenceCached<MvSchemaLitField>(element) {
     override fun resolveInner(): List<MvNamedElement> {
-        return resolveItem(element, setOf(Namespace.SCHEMA_FIELD))
+        return resolveLocalItem(element, setOf(Namespace.SCHEMA_FIELD))
     }
 }
 
@@ -26,8 +25,8 @@ class MvSchemaFieldShorthandReferenceImpl(
 ) : MvReferenceCached<MvSchemaLitField>(element) {
     override fun resolveInner(): List<MvNamedElement> {
         return listOf(
-            resolveItem(element, setOf(Namespace.SCHEMA_FIELD)),
-            resolveItem(element, setOf(Namespace.NAME))
+            resolveLocalItem(element, setOf(Namespace.SCHEMA_FIELD)),
+            resolveLocalItem(element, setOf(Namespace.NAME))
         ).flatten()
     }
 }

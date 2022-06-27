@@ -1,7 +1,6 @@
-package org.move.ide.inspections.lints
+package org.move.ide.inspections
 
 import com.intellij.codeInspection.ProblemsHolder
-import org.move.ide.inspections.MvLocalInspectionTool
 import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvConst
 import org.move.lang.core.psi.MvStruct

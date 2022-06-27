@@ -9,7 +9,7 @@ import com.intellij.openapi.wm.impl.welcomeScreen.AbstractActionWithPanel
 import com.intellij.platform.DirectoryProjectGenerator
 import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
-import org.move.cli.projectsService
+import org.move.cli.moveProjects
 import org.move.cli.runconfig.addDefaultBuildRunConfiguration
 import org.move.cli.settings.AptosSettingsPanel
 import org.move.cli.settings.MoveSettingsPanel
@@ -45,22 +45,23 @@ class MvDirectoryProjectGenerator : DirectoryProjectGeneratorBase<NewProjectData
         val packageName = project.name
 
         val manifestFile = project.computeWithCancelableProgress("Generating Aptos project...") {
-            aptos.move_init(
+            val manifestFile = aptos.move_init(
                 project, module,
                 rootDirectory = baseDir,
                 packageName = packageName
             )
                 .unwrapOrThrow() // TODO throw? really??
 
-//            if (settings.aptosInitEnabled) {
-//                aptos.init(
-//                    project, module,
-//                    privateKeyPath = settings.initData.privateKeyPath,
-//                    faucetUrl = settings.initData.faucetUrl,
-//                    restUrl = settings.initData.restUrl,
-//                )
-//                    .unwrapOrThrow()
-//            }
+            if (settings.aptosInitEnabled) {
+                aptos.init(
+                    project, module,
+                    privateKeyPath = settings.initData.privateKeyPath,
+                    faucetUrl = settings.initData.faucetUrl,
+                    restUrl = settings.initData.restUrl,
+                )
+                    .unwrapOrThrow()
+            }
+            manifestFile
         }
 
 
@@ -71,7 +72,7 @@ class MvDirectoryProjectGenerator : DirectoryProjectGeneratorBase<NewProjectData
         project.openFile(manifestFile)
 
         updateAllNotifications(project)
-        project.projectsService.refreshAllProjects()
+        project.moveProjects.refreshAllProjects()
     }
 
     override fun createStep(

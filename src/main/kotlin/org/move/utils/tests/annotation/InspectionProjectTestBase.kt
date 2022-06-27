@@ -1,8 +1,12 @@
 package org.move.utils.tests.annotation
 
 import com.intellij.codeInspection.InspectionProfileEntry
+import com.intellij.testFramework.PlatformTestUtil
+import com.intellij.util.indexing.FileBasedIndex
+import org.move.ide.inspections.imports.MvNamedElementIndex
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
+import org.move.utils.tests.replaceCaretMarker
 import kotlin.reflect.KClass
 
 abstract class InspectionProjectTestBase(
@@ -28,14 +32,6 @@ abstract class InspectionProjectTestBase(
         super.tearDown()
     }
 
-//    protected fun createAnnotationFixture(): MvAnnotationTestFixture =
-//        MvAnnotationTestFixture(this, myFixture, inspectionClasses = listOf(inspectionClass))
-
-//    fun checkHighlighting(text: String) = annotationFixture.checkHighlighting(text)
-
-//    fun checkErrors(@Language("Move") text: String) = annotationFixture.checkErrors(text)
-//    fun checkWarnings(@Language("Move") text: String) = annotationFixture.checkWarnings(text)
-
     protected fun checkFixByFileTree(
         fixName: String,
         before: FileTreeBuilder.() -> Unit,
@@ -43,14 +39,16 @@ abstract class InspectionProjectTestBase(
         checkWarn: Boolean = true,
         checkInfo: Boolean = false,
         checkWeakWarn: Boolean = false
-    ) = annotationFixture.checkFixByFileTree(
-        fixName,
-        before,
-        after,
-        checkWarn,
-        checkInfo,
-        checkWeakWarn
-    )
+    ) {
+        testProject(before)
+
+        FileBasedIndex.getInstance().requestRebuild(MvNamedElementIndex.KEY)
+        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+
+        annotationFixture.codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
+        annotationFixture.applyQuickFix(fixName)
+        annotationFixture.codeInsightFixture.checkResult(replaceCaretMarker(after.trimIndent()))
+    }
 
 //    fun checkFixIsUnavailable(
 //        fixName: String,

@@ -44,7 +44,8 @@ abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>()
                     }
                     element.createCompletionLookupElement(
                         insertHandler,
-                        importContext.itemVis.namespaces
+                        importContext.itemVis.namespaces,
+                        priority = UNIMPORTED_ITEM_PRIORITY,
                     )
                 }
                 .forEach(result::addElement)

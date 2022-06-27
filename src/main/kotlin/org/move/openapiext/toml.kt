@@ -1,21 +1,9 @@
 package org.move.openapiext
 
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFile
+import org.move.lang.core.psi.ext.ancestorStrict
+import org.toml.lang.psi.TomlFile
 import org.toml.lang.psi.*
 import org.toml.lang.psi.ext.elementType
-import java.nio.file.Path
-
-fun parseToml(project: Project, path: Path): TomlFile? {
-    val file = LocalFileSystem.getInstance().findFileByNioFile(path) ?: return null
-    return file.toPsiFile(project) as? TomlFile
-}
-
-fun parseTomlFromFile(project: Project, moveFile: VirtualFile): TomlFile? {
-    return moveFile.toPsiFile(project) as? TomlFile
-//    return moveFile.toPsiFile(project) as? TomlFile
-}
 
 fun TomlTable.namedEntries(): List<Pair<String, TomlValue?>> {
     return this.entries.map { Pair(it.key.text, it.value) }
@@ -44,6 +32,17 @@ fun TomlInlineTable.hasKey(key: String): Boolean =
 
 val TomlKey.parentTable: TomlTable? get() = (this.parent as? TomlKeyValue)?.parentTable
 val TomlKeyValue.parentTable: TomlTable? get() = this.parent as? TomlTable
+
+val TomlElement.moveTomlFile
+    get() = this.containingFile?.takeIf { it.name == "Move.toml" } as? TomlFile
+
+val TomlKeySegment.addressesTable: TomlTable?
+    get() {
+        if (this.moveTomlFile == null) return null
+        return this.ancestorStrict<TomlKeyValue>()
+            ?.parentTable
+            ?.takeIf { it.header.text == "[addresses]" }
+    }
 
 val TomlKeyValue.parentInlineTable: TomlInlineTable? get() = this.parent as? TomlInlineTable
 

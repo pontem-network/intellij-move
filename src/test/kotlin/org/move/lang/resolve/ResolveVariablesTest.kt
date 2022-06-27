@@ -167,4 +167,63 @@ class ResolveVariablesTest : ResolveTestCase() {
             }
         }        
     """)
+
+    fun `test resolve test attribute to test function parameter`() = checkByCode("""
+        module 0x1::M {
+            #[test(acc = @0x1)]
+                  //^
+            fun test_add(acc: signer) {
+                        //X
+            
+            }
+        }    
+    """)
+
+    fun `test no test attribute resolution if not on function`() = checkByCode("""
+        module 0x1::M {
+            fun test_add(acc: signer) {
+                #[test(acc = @0x1)]
+                      //^ unresolved
+                use 0x1::M;            
+            }
+        }    
+    """)
+
+    fun `test no attribute resolution if not a test attribute`() = checkByCode("""
+        module 0x1::M {
+            #[test]
+            #[expected_failure(abort_code = 1)]
+                                 //^ unresolved
+            fun call(abort_code: signer) {
+                
+            }
+        }    
+    """)
+
+    fun `test test_only const in test function`() = checkByCode("""
+    module 0x1::M {
+        #[test_only]
+        const TEST_CONST: u64 = 1;
+              //X
+        #[test]
+        fun test_a() {
+            TEST_CONST;
+                //^
+        }
+    }    
+    """)
+
+    fun `test test_only function in test function`() = checkByCode("""
+    module 0x1::M {
+        #[test_only]
+        fun call() {}
+           //X
+        
+        #[test]
+        fun test_a() {
+            call();
+           //^
+        }
+    }    
+    """)
 }

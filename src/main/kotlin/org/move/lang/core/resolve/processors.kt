@@ -20,6 +20,10 @@ fun interface MatchingProcessor {
         return match(name, element)
     }
 
-    fun matchAll(vararg collections: Iterable<MvNamedElement>): Boolean =
-        listOf(*collections).flatten().any { match(it) }
+//    fun matchAll(vararg collections: Iterable<MvNamedElement>): Boolean =
+//        listOf(*collections).flatten().any { match(it) }
+
+    fun matchAll(itemVis: ItemVis, vararg collections: Iterable<MvNamedElement>): Boolean =
+        listOf(*collections).flatten()
+            .filter { it.visibleInScopes(itemVis) }.any { match(it) }
 }

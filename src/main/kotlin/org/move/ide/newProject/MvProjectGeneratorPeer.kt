@@ -12,6 +12,7 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.layout.CCFlags
 import com.intellij.ui.layout.panel
 import com.intellij.ui.layout.selected
+import org.move.cli.Aptos
 import org.move.cli.settings.AptosSettingsPanel
 import org.move.cli.settings.MoveSettingsPanel
 import org.move.cli.settings.isValidExecutable
@@ -40,14 +41,20 @@ class MvProjectGeneratorPeer : GeneratorPeerImpl<NewProjectData>() {
         return super.getComponent(myLocationField, checkValid)
     }
 
-    override fun getComponent(): JComponent = panel {
-        titledRow("") {}
+    override fun getComponent(): JComponent {
+        val panel = panel {
+            titledRow("") {}
+            moveSettingsPanel.attachTo(this)
+            titledRow("") {}.largeGapAfter()
 
-        moveSettingsPanel.attachTo(this)
-        titledRow("") {}.largeGapAfter()
-
-//        row{ aptosInitCheckBox(CCFlags.growX, CCFlags.pushX) }
-//        aptosSettingsPanel.attachTo(panel)
+            row { aptosInitCheckBox(CCFlags.growX, CCFlags.pushX) }
+            aptosSettingsPanel.attachTo(this)
+        }
+        val suggestedAptosPath = Aptos.suggestPath()
+        if (suggestedAptosPath != null) {
+            moveSettingsPanel.data = MoveSettingsPanel.Data(suggestedAptosPath)
+        }
+        return panel
     }
 
     override fun validate(): ValidationInfo? {
@@ -56,6 +63,13 @@ class MvProjectGeneratorPeer : GeneratorPeerImpl<NewProjectData>() {
             return ValidationInfo("Invalid path to Aptos executable")
         }
 
+        if (aptosInitEnabled()) {
+            return aptosSettingsPanel.validate()
+        }
         return null
+    }
+
+    private fun aptosInitEnabled(): Boolean {
+        return aptosInitCheckBox.isSelected
     }
 }

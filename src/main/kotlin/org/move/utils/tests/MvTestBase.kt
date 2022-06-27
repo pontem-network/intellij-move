@@ -43,9 +43,8 @@ abstract class MvTestBase : BasePlatformTestCase(),
         myFixture.checkResultByFile(after, ignoreTrailingWhitespace)
     }
 
-    protected fun FileTree.prepareTestProjectFromFixture(): TestProject = prepareTestProject(myFixture)
-    protected fun FileTree.createAndOpenFileWithCaretMarker(): TestProject =
-        createAndOpenFileWithCaretMarker(myFixture)
+//    protected fun FileTree.prepareTestProjectFromFixture(): TestProject =
+//        toTestProject(myFixture.project, myFixture.findFileInTempDir("."))
 
     protected open fun checkEditorAction(
         @Language("Rust") before: String,

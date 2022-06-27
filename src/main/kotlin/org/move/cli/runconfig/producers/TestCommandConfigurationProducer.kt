@@ -26,7 +26,7 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
                 }
                 is PsiFileSystemItem -> {
                     val moveProject = location.findMoveProject() ?: return null
-                    val packageName = moveProject.packageName ?: ""
+                    val packageName = moveProject.currentPackage.packageName
                     val rootPath = moveProject.contentRootPath ?: return null
 
                     val confName = "Test $packageName"

@@ -21,7 +21,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
 
     fun `test test unresolved module member`() = checkByText("""
         script {
-            use 0x1::MyModule::call;
+            use 0x1::<error descr="Unresolved reference: `Module`">Module</error>::call;
 
             fun main() {
                 <error descr="Unresolved reference: `call`">call</error>();
@@ -275,5 +275,36 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
             Signer
         }
     }
+    """)
+
+    fun `test unresolved field for dot expression`() = checkByText(
+        """
+    module 0x1::M {
+        struct S has key {}
+        fun call() acquires S {
+            let a = borrow_global_mut<S>(@0x1);
+            a.<error descr="Unresolved field: `val`">val</error>;
+        }
+    }    
+    """
+    )
+
+    fun `test unresolved module import`() = checkByText("""
+    module 0x1::Main {
+        use 0x1::<error descr="Unresolved reference: `M1`">M1</error>;
+    }    
+    """)
+
+    fun `test unresolved module import in item import`() = checkByText("""
+    module 0x1::Main {
+        use 0x1::<error descr="Unresolved reference: `M1`">M1</error>::call;
+    }    
+    """)
+
+    fun `test unresolved item import`() = checkByText("""
+    module 0x1::M1 {}    
+    module 0x1::Main {
+        use 0x1::M1::<error descr="Unresolved reference: `call`">call</error>;
+    }    
     """)
 }

@@ -16,14 +16,11 @@ import com.intellij.testFramework.fixtures.impl.BaseFixture
 import junit.framework.TestCase
 import org.intellij.lang.annotations.Language
 import org.move.ide.annotator.MvAnnotator
-import org.move.utils.tests.FileTreeBuilder
-import org.move.utils.tests.createAndOpenFileWithCaretMarker
-import org.move.utils.tests.fileTree
 import kotlin.reflect.KClass
 
 class MvAnnotationTestFixture(
     private val testCase: TestCase,
-    private val codeInsightFixture: CodeInsightTestFixture,
+    val codeInsightFixture: CodeInsightTestFixture,
     private val annotatorClasses: List<KClass<out MvAnnotator>> = emptyList(),
     private val inspectionClasses: List<KClass<out InspectionProfileEntry>> = emptyList(),
 ) : BaseFixture() {
@@ -60,21 +57,6 @@ class MvAnnotationTestFixture(
 
     private fun configureByText(text: String): PsiFile {
         return codeInsightFixture.configureByText("main.move", replaceCaretMarker(text.trimIndent()))
-    }
-
-    fun checkFixByFileTree(
-        fixName: String,
-        before: FileTreeBuilder.() -> Unit,
-        after: String,
-        checkWarn: Boolean = true,
-        checkInfo: Boolean = false,
-        checkWeakWarn: Boolean = false,
-    ) {
-        fileTree(before).createAndOpenFileWithCaretMarker(codeInsightFixture)
-
-        codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
-        applyQuickFix(fixName)
-        codeInsightFixture.checkResult(replaceCaretMarker(after.trimIndent()))
     }
 
     fun checkByText(

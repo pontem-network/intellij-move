@@ -17,9 +17,17 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.inferenceCtx
 
 const val KEYWORD_PRIORITY = 80.0
+
+const val ITEM_WITH_EXPECTED_TYPE_PRIORITY = 40.0
+
 const val BUILTIN_ITEM_PRIORITY = 30.0
-const val LOCAL_ITEM_PRIORITY = 20.0
-const val LOCAL_MODULE_PRIORITY = 15.0
+const val ITEM_PRIORITY = 20.0
+
+const val IMPORTED_ITEM_PRIORITY = 15.0
+const val IMPORTED_MODULE_PRIORITY = 15.0
+
+const val UNIMPORTED_ITEM_PRIORITY = 5.0
+const val UNIMPORTED_MODULE_PRIORITY = 5.0
 
 const val DEFAULT_PRIORITY = 0.0
 

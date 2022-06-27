@@ -13,6 +13,16 @@
     </description>
     <change-notes>
         <![CDATA[
+    <h3>1.12.0</h3>
+    <ul>
+    <li>Unused variable inspection</li>
+    <li>Warn if non-phantom type parameter only used in phantom positions</li>
+    <li>Warn if phantom type parameter used in non-phantom positions</li>
+    <li>Unresolved reference inspection: dot expr support</li>
+    <li>Unresolved reference inspection: imports</li>
+    <li>Correct scoping for #[test_only] items</li>
+    <li>Refactor internal project model</li>
+    </ul>
     <h3>1.11.0</h3>
     <ul>
     <li>Support new build/ directory layout in Aptos 0.1.2, drop support for earlier layouts</li>
@@ -138,6 +148,15 @@
         <lang.refactoringSupport language="Move"
                                  implementationClass="org.move.ide.refactoring.MvRefactoringSupportProvider"/>
 
+<!--        <lang.refactoringSupport language="TOML"-->
+<!--                                 implementationClass="org.move.ide.refactoring.toml.TomlRefactoringSupportProvider"/>-->
+<!--        <renameHandler implementation="org.move.ide.refactoring.toml.TomlInPlaceRenameHandler" />-->
+<!--        <renameHandler implementation="org.move.ide.refactoring.toml.TomlRenameHandler" />-->
+<!--        <renamePsiElementProcessor implementation="org.move.ide.refactoring.toml.MvRenameAddressProcessor"-->
+<!--                                   order="first"-->
+<!--                                   id="mvRenameAddressProcessor" />-->
+
+
         <lang.findUsagesProvider language="Move"
                                  implementationClass="org.move.ide.search.MvFindUsagesProvider"/>
         <usageTypeProvider
@@ -183,9 +202,13 @@
         <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameProcessor"
                                    order="first"
                                    id="mvRenameProcessor"/>
+        <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameFileProcessor"
+                                   order="before renamePsiFile"
+                                   id="mvRenamePsiFileProcessor"/>
         <lang.psiStructureViewFactory
                 language="Move"
                 implementationClass="org.move.ide.navigation.MvStructureViewBuilderFactory"/>
+
         <declarationRangeHandler
                 key="org.move.lang.core.psi.MvModule"
                 implementationClass="org.move.ide.navigation.ModuleDeclarationRangeHandler"/>
@@ -213,15 +236,15 @@
         <localInspection language="Move" groupName="Move"
                          displayName="Constant naming convention"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.lints.MvConstNamingInspection"/>
+                         implementationClass="org.move.ide.inspections.MvConstNamingInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Struct naming convention"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.lints.MvStructNamingInspection"/>
+                         implementationClass="org.move.ide.inspections.MvStructNamingInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Local variable naming convention"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.lints.MvLocalBindingNamingInspection"/>
+                         implementationClass="org.move.ide.inspections.MvLocalBindingNamingInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Redundant qualifier"
                          enabledByDefault="true" level="WARNING"
@@ -242,6 +265,10 @@
                          displayName="Unused import"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.move.ide.inspections.MvUnusedImportInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Unused declaration"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.MvUnusedVariableInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>
@@ -266,9 +293,10 @@
                         testServiceImplementation="org.move.utils.TestProjectRootServiceImpl"/>
 
         <projectService serviceImplementation="org.move.cli.MoveProjectsService"/>
-        
+<!--        <projectService serviceImplementation="org.move.cli.packages.MovePackageService"/>-->
+
 <!--        <projectService serviceInterface="com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker"-->
-<!--                        serviceImplementation="org.move.cli.project.MovePackagesTracker"-->
+<!--                        serviceImplementation="org.move.cli.projectAware.MoveExternalSystemProjectAware"-->
 <!--                        overrides="true" />-->
 
         <additionalLibraryRootsProvider
@@ -287,12 +315,20 @@
             <className>org.move.ide.intentions.InlineAddressBlockIntention</className>
             <category>Move</category>
         </intentionAction>
+        <intentionAction>
+            <className>org.move.ide.intentions.ChopParameterListIntention</className>
+            <category>Move</category>
+        </intentionAction>
+        <intentionAction>
+            <className>org.move.ide.intentions.ChopArgumentListIntention</className>
+            <category>Move</category>
+        </intentionAction>
 
     </extensions>
 
     <projectListeners>
         <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
-                  topic="org.move.cli.settings.MvSettingsListener"
+                  topic="org.move.cli.settings.MoveSettingsListener"
                   activeInTestMode="false"/>
     </projectListeners>
 

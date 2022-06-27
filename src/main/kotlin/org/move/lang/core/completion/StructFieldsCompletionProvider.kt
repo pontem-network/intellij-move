@@ -60,7 +60,8 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
                 )
             }
             is MvStructDotField -> {
-                val itemVis = ItemVis(setOf(Namespace.DOT_ACCESSED_FIELD), msl = element.mslScope)
+                val itemVis =
+                    ItemVis.default().replace(setOf(Namespace.DOT_ACCESSED_FIELD), msl = element.mslScope)
                 processItems(element, itemVis) {
                     val field = it.element as? MvStructField
                     if (field != null) {

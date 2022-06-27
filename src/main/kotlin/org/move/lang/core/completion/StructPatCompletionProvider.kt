@@ -32,7 +32,8 @@ object StructPatCompletionProvider : MvCompletionProvider() {
         val bindingPat = parameters.position.parent as MvBindingPat
         val module = bindingPat.containingModule ?: return
 
-        val itemVis = ItemVis(setOf(Namespace.TYPE), setOf(Visibility.Internal), MslScope.NONE)
+        val itemVis =
+            ItemVis.default().replace(setOf(Namespace.TYPE), setOf(Visibility.Internal), MslScope.NONE)
         processModuleItems(module, itemVis) {
             val lookup = it.element.createCompletionLookupElement()
             result.addElement(lookup)

@@ -20,12 +20,10 @@ val MvAddressRef.useGroupLevel: Int get() {
     if (this.namedAddress == null) return 3
 
     val name = this.namedAddress?.text.orEmpty()
-    val packageAddrs = this.moveProject?.packageAddresses()?.keys.orEmpty()
+    val currentPackageAddresses = this.moveProject?.currentPackageAddresses()?.keys.orEmpty()
     return when (name) {
         "Std" -> 0
-        !in packageAddrs -> 1
+        !in currentPackageAddresses -> 1
         else -> 2
     }
 }
-//fun MvAddressRef.toNormalizedAddress(contextProject: MoveProject = this.moveProject!!): Address? =
-//    this.toAddress(contextProject)?.normalized()

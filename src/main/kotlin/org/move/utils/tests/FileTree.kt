@@ -13,13 +13,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
-import com.intellij.testFramework.PlatformTestUtil
-import com.intellij.testFramework.fixtures.CodeInsightTestFixture
-import com.intellij.util.indexing.FileBasedIndex
 import org.intellij.lang.annotations.Language
-import org.move.cli.MvSyncTask
-import org.move.cli.setupProjectRoots
-import org.move.ide.inspections.imports.MvNamedElementIndex
+import org.move.cli.manifest.TomlDependency
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.resolve.MvReferenceElement
 import org.move.openapiext.document
@@ -86,11 +81,20 @@ interface FileTreeBuilder {
     """
     )
 
+    fun git(repo: String, rev: String, builder: TreeBuilder = {}) {
+        val dirName = TomlDependency.Git.dirName(repo, rev)
+        return dir(dirName, builder)
+    }
+
+    fun dotMove(builder: TreeBuilder = {}) = dir(".move", builder)
+
     fun buildInfo(packageName: String, addresses: Map<String, String>, builder: TreeBuilder = {}) =
-        build { dir(packageName) {
-            builder()
-            buildInfoYaml(addresses)
-        } }
+        build {
+            dir(packageName) {
+                builder()
+                buildInfoYaml(addresses)
+            }
+        }
 
     fun buildInfoYaml(@Language("yaml") code: String = "") = file("BuildInfo.yaml", code)
     fun buildInfoYaml(addresses: Map<String, String>) = buildInfoYaml(
@@ -119,7 +123,7 @@ dependencies: []
 }
 
 class FileTree(val rootDirInfo: FilesystemEntry.Directory) {
-    fun prepareTestProject(project: Project, directory: VirtualFile): TestProject {
+    fun toTestProject(project: Project, directory: VirtualFile): TestProject {
         val filesWithCaret: MutableList<String> = mutableListOf()
         val filesWithNamedElement: MutableList<String> = mutableListOf()
 
@@ -156,22 +160,6 @@ class FileTree(val rootDirInfo: FilesystemEntry.Directory) {
         }
         return TestProject(project, directory, filesWithCaret, filesWithNamedElement)
     }
-}
-
-fun FileTree.prepareTestProject(fixture: CodeInsightTestFixture): TestProject =
-    prepareTestProject(fixture.project, fixture.findFileInTempDir("."))
-
-fun FileTree.createAndOpenFileWithCaretMarker(fixture: CodeInsightTestFixture): TestProject {
-    val testProject = prepareTestProject(fixture)
-    fixture.configureFromTempProjectFile(testProject.fileWithCaret)
-
-    val moveProjects = MvSyncTask.doSync(fixture.project)
-    setupProjectRoots(fixture.project, moveProjects)
-
-    FileBasedIndex.getInstance().requestRebuild(MvNamedElementIndex.KEY)
-    PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
-
-    return testProject
 }
 
 class TestProject(

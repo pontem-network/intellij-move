@@ -8,16 +8,16 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
+import org.move.cli.moveProjects
 import org.move.cli.settings.*
 import org.move.lang.isMoveOrManifest
 import org.move.openapiext.common.isUnitTestMode
-import java.nio.file.Path
 
 fun updateAllNotifications(project: Project) {
     EditorNotifications.getInstance(project).updateAllNotifications()
 }
 
-class UpdateNotificationsOnSettingsChangeListener(val project: Project) : MvSettingsListener {
+class UpdateNotificationsOnSettingsChangeListener(val project: Project) : MoveSettingsListener {
 
     override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
         updateAllNotifications(project)
@@ -41,9 +41,13 @@ class InvalidAptosBinaryNotification(
     ): EditorNotificationPanel? {
         if (isUnitTestMode) return null
         if (!file.isMoveOrManifest) return null
-        if (isNotificationDisabled(file)) return null
+
+        if (project.moveProjects.allProjects.isEmpty()) {
+            project.moveProjects.refreshAllProjects()
+        }
 
         if (project.aptosPath.isValidExecutable()) return null
+        if (isNotificationDisabled(file)) return null
 
         return EditorNotificationPanel().apply {
             text = "Aptos binary path is not provided or invalid"

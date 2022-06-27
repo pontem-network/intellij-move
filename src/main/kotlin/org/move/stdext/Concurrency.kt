@@ -33,7 +33,7 @@ class AsyncValue<T>(initial: T) {
     private val updates: Queue<(T) -> CompletableFuture<Unit>> = ConcurrentLinkedQueue()
     private var running: Boolean = false
 
-    val currentState: T get() = current
+    val state: T get() = current
 
     fun updateAsync(updater: (T) -> CompletableFuture<T>): CompletableFuture<T> {
         val result = CompletableFuture<T>()

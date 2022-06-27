@@ -1,6 +1,5 @@
 package org.move.cli
 
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.BackgroundTaskQueue

@@ -196,8 +196,8 @@ class RenameTest : MvTestBase() {
             struct /*caret*/MyStruct { val: u8 }
             
             fun main(s: MyStruct): MyStruct {
-                let MyStruct{ val: myval } = get_struct();
-                let a = MyStruct{ val: 1 };
+                let MyStruct { val: myval } = get_struct();
+                let a = MyStruct { val: 1 };
                 move_from<MyStruct>();
             }
         }
@@ -206,8 +206,8 @@ class RenameTest : MvTestBase() {
             struct RenamedStruct { val: u8 }
             
             fun main(s: RenamedStruct): RenamedStruct {
-                let RenamedStruct{ val: myval } = get_struct();
-                let a = RenamedStruct{ val: 1 };
+                let RenamedStruct { val: myval } = get_struct();
+                let a = RenamedStruct { val: 1 };
                 move_from<RenamedStruct>();
             }
         }
@@ -217,21 +217,21 @@ class RenameTest : MvTestBase() {
     fun `test struct from use position`() = doTest(
         "RenamedStruct", """
         module M {
-            struct MyStruct { val: u8 }
+            struct MyStruct has key { val: u8 }
             
             fun main(s: MyStruct): /*caret*/MyStruct {
-                let MyStruct{ val: myval } = get_struct();
-                let a = MyStruct{ val: 1 };
+                let MyStruct { val: myval } = get_struct();
+                let a = MyStruct { val: 1 };
                 move_from<MyStruct>();
             }
         }
     """, """
         module M {
-            struct RenamedStruct { val: u8 }
+            struct RenamedStruct has key { val: u8 }
             
             fun main(s: RenamedStruct): RenamedStruct {
-                let RenamedStruct{ val: myval } = get_struct();
-                let a = RenamedStruct{ val: 1 };
+                let RenamedStruct { val: myval } = get_struct();
+                let a = RenamedStruct { val: 1 };
                 move_from<RenamedStruct>();
             }
         }
@@ -470,6 +470,32 @@ class RenameTest : MvTestBase() {
     module 0x1::RenamedModule {}        
         """
         )
+
+    fun `test rename signer in test function`() = doTest("new_acc", """
+    module 0x1::M {
+        #[test(acc = @0x1)]
+        fun call(/*caret*/acc: signer) {}
+    }    
+    """, """
+    module 0x1::M {
+        #[test(new_acc = @0x1)]
+        fun call(new_acc: signer) {}
+    }    
+    """)
+
+    fun `test file rename renames module if only one and same name`() {
+        val fileText = """
+    module 0x1::Main {}                
+        """
+        inlineFile(fileText, "Main.move")
+
+        myFixture.renameElement(myFixture.file, "MyMain")
+
+        val afterText = """
+    module 0x1::MyMain {}                
+        """
+        myFixture.checkResult(afterText)
+    }
 
     private fun doTest(
         newName: String,

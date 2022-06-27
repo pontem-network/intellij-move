@@ -58,14 +58,21 @@ abstract class CompletionProjectTestCase : MvProjectTestBase() {
     protected fun checkContainsCompletionsExact(
         @Language("Move") code: String, expected: List<String>
     ) {
-        val testProject = testProjectFromFileTree(code.trimIndent())
+        val testProject = testProject(code.trimIndent())
+        checkContainsCompletionsExact(testProject, expected)
+    }
+
+    protected fun checkContainsCompletionsExact(
+        expected: List<String>, builder: FileTreeBuilder.() -> Unit,
+    ) {
+        val testProject = testProject(builder)
         checkContainsCompletionsExact(testProject, expected)
     }
 
     protected fun checkContainsCompletionsExact(
         builder: FileTreeBuilder.() -> Unit, expected: List<String>
     ) {
-        val testProject = testProjectFromFileTree(builder)
+        val testProject = testProject(builder)
         checkContainsCompletionsExact(testProject, expected)
     }
 
@@ -85,8 +92,7 @@ abstract class CompletionProjectTestCase : MvProjectTestBase() {
     protected fun doSingleCompletion(
         @Language("Move") before: String, @Language("Move") after: String
     ) {
-        val testProject = testProjectFromFileTree(before)
-        completionFixture.codeInsightFixture.configureFromFileWithCaret(testProject)
+        testProject(before)
 
         completionFixture.executeSoloCompletion()
         myFixture.checkResult(replaceCaretMarker(after))
@@ -95,16 +101,16 @@ abstract class CompletionProjectTestCase : MvProjectTestBase() {
     protected fun doSingleCompletion(
         before: FileTreeBuilder.() -> Unit, @Language("Move") after: String
     ) {
-        val testProject = testProjectFromFileTree(before)
-        completionFixture.codeInsightFixture.configureFromFileWithCaret(testProject)
+        testProject(before)
+//        completionFixture.codeInsightFixture.configureFromFileWithCaret(testProject)
 
         completionFixture.executeSoloCompletion()
         myFixture.checkResult(replaceCaretMarker(after.trimIndent()))
     }
 
     protected fun checkNoCompletion(builder: FileTreeBuilder.() -> Unit) {
-        val testProject = testProjectFromFileTree(builder)
-        completionFixture.codeInsightFixture.configureFromFileWithCaret(testProject)
+        testProject(builder)
+//        completionFixture.codeInsightFixture.configureFromFileWithCaret(testProject)
         completionFixture.checkNoCompletion()
     }
 

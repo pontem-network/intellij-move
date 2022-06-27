@@ -12,12 +12,13 @@ fun processModuleItems(
     for (namespace in itemVis.namespaces) {
         val found = when (namespace) {
             Namespace.NAME -> processor.matchAll(
+                itemVis,
                 itemVis.visibilities.flatMap { module.functions(it) },
                 if (itemVis.isMsl) module.specFunctions() else emptyList(),
                 if (itemVis.isMsl) module.constBindings() else emptyList()
             )
-            Namespace.TYPE -> processor.matchAll(module.structs())
-            Namespace.SCHEMA -> processor.matchAll(module.schemas())
+            Namespace.TYPE -> processor.matchAll(itemVis, module.structs())
+            Namespace.SCHEMA -> processor.matchAll(itemVis, module.schemas())
             else -> false
         }
         if (found) return true
@@ -48,7 +49,13 @@ class MvPathReferenceImpl(
 
     override fun resolveInner(): List<MvNamedElement> {
         val vs = Visibility.buildSetOfVisibilities(element)
-        val itemVis = ItemVis(namespaces, vs, element.mslScope)
+        val itemVis = ItemVis(
+            namespaces,
+            vs,
+            element.mslScope,
+            itemScope = element.itemScope,
+            folderScope = element.folderScope
+        )
 
         val refName = element.referenceName ?: return emptyList()
         val moduleRef = element.moduleRef
@@ -77,7 +84,7 @@ class MvPathReferenceImpl(
             if (element.isUpdateFieldArg2) return emptyList()
 
             // try local names
-            val item = resolveItem(element, namespaces).firstOrNull() ?: return emptyList()
+            val item = resolveLocalItem(element, namespaces).firstOrNull() ?: return emptyList()
             // local name -> return
             return when (item) {
                 // item import

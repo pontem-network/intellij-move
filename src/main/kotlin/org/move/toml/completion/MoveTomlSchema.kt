@@ -31,7 +31,7 @@ class MoveTomlSchema private constructor(
     companion object {
         fun parse(project: Project, @Language("TOML") example: String): MoveTomlSchema {
             val toml = PsiFileFactory.getInstance(project)
-                .createFileFromText("Cargo.toml", TomlFileType, example)
+                .createFileFromText("Move.toml", TomlFileType, example)
 
             val tables = toml.children
                 .filterIsInstance<TomlKeyValueOwner>()

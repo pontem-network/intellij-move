@@ -21,8 +21,7 @@ class FindUsagesNamedAddressTest : MvProjectTestBase() {
     )
 
     private fun doTestByText(@Language("Move") code: String) {
-        val testProject = testProjectFromFileTree(code)
-        myFixture.configureFromFileWithCaret(testProject)
+        testProject(code)
 
         val (_, _, offset) = myFixture.findElementWithDataAndOffsetInEditor<PsiElement>()
         val source = TargetElementUtil.getInstance().findTargetElement(

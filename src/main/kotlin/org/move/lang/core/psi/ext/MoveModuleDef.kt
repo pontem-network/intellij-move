@@ -15,28 +15,13 @@ import org.move.lang.core.types.FQModule
 import org.move.lang.moveProject
 import javax.swing.Icon
 
-fun List<MvAttr>.findSingleItemAttr(name: String): MvAttr? =
-    this.find {
-        it.attrItemList.size == 1
-                && it.attrItemList.first().identifier.text == name
-    }
-
-val MvModule.isTestOnly: Boolean get() = this.attrList.findSingleItemAttr("test_only") != null
-
-fun MvModule.hasTestFunctions(): Boolean {
-//    val items = this.moduleBlock?.items().orEmpty()
-    return this.testFunctions().isNotEmpty()
-//    return items
-//        .filterIsInstance<MvFunction>()
-//        .any { it.isTest }
-}
+fun MvModule.hasTestFunctions(): Boolean = this.testFunctions().isNotEmpty()
 
 fun MvModule.address(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
 
 fun MvModule.fqModule(): FQModule? {
     val address = this.address()?.toAddress() ?: return null
-//    val address = this.containingAddress ?: return null
     val name = this.name ?: return null
     return FQModule(address, name)
 }
@@ -64,6 +49,8 @@ val MvModule.friendModules: Set<FQModule>
     }
 
 fun MvModule.allFunctions(): List<MvFunction> = moduleBlock?.functionList.orEmpty()
+
+fun MvModule.allNonTestFunctions(): List<MvFunction> = allFunctions().filter { !it.isTest }
 
 fun MvModule.testFunctions(): List<MvFunction> = allFunctions().filter { it.isTest }
 
@@ -101,19 +88,19 @@ fun MvModule.builtinFunctions(): List<MvFunction> {
 fun MvModule.functions(visibility: Visibility): List<MvFunction> =
     when (visibility) {
         is Visibility.Public ->
-            allFunctions()
+            allNonTestFunctions()
                 .filter { it.visibility == FunctionVisibility.PUBLIC }
         is Visibility.PublicScript ->
-            allFunctions()
+            allNonTestFunctions()
                 .filter { it.visibility == FunctionVisibility.PUBLIC_SCRIPT }
         is Visibility.PublicFriend -> {
             if (visibility.currentModule in this.friendModules) {
-                allFunctions().filter { it.visibility == FunctionVisibility.PUBLIC_FRIEND }
+                allNonTestFunctions().filter { it.visibility == FunctionVisibility.PUBLIC_FRIEND }
             } else {
                 emptyList()
             }
         }
-        is Visibility.Internal -> allFunctions()
+        is Visibility.Internal -> allNonTestFunctions()
     }
 
 fun builtinFunction(text: String, project: Project): MvFunction {

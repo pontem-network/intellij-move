@@ -20,7 +20,7 @@ object SpecItemCompletionProvider : MvCompletionProvider() {
     ) {
         val specItem = parameters.position.parent as? MvItemSpec ?: return
 
-        val itemVis = ItemVis(setOf(Namespace.SPEC_ITEM), msl = MslScope.NONE)
+        val itemVis = ItemVis.default().replace(setOf(Namespace.SPEC_ITEM), msl = MslScope.NONE)
         processItems(specItem, itemVis) {
             val lookup = it.element.createLookupElement()
                 .withInsertHandler { ctx, _ ->

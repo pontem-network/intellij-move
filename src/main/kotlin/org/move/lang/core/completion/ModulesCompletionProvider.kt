@@ -10,6 +10,8 @@ import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.equalsTo
+import org.move.lang.core.psi.ext.folderScope
+import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslScope
 import org.move.lang.core.resolve.processItems
@@ -34,9 +36,18 @@ object ModulesCompletionProvider : MvCompletionProvider() {
         if (refElement.moduleRef != null) return
 
         val processedNames = mutableSetOf<String>()
-        val itemVis = ItemVis(setOf(Namespace.MODULE), emptySet(), refElement.mslScope)
+        val itemVis =
+            ItemVis(
+                setOf(Namespace.MODULE),
+                visibilities = Visibility.local(),
+                msl = refElement.mslScope,
+                itemScope = refElement.itemScope,
+                folderScope = refElement.folderScope,
+            )
         processItems(refElement, itemVis) {
-            val lookup = it.element.createCompletionLookupElement(priority = LOCAL_MODULE_PRIORITY)
+            val lookup = it.element.createCompletionLookupElement(
+                priority = IMPORTED_MODULE_PRIORITY
+            )
             result.addElement(lookup)
             it.element.name?.let(processedNames::add)
             false

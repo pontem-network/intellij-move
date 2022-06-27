@@ -8,7 +8,7 @@ import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.layout.panel
 import com.intellij.util.ui.JBUI
-import org.move.cli.projectsService
+import org.move.cli.moveProjects
 import org.move.cli.settings.MoveSettingsPanel
 import org.move.cli.settings.moveSettings
 import org.move.openapiext.isFeatureEnabled
@@ -67,7 +67,7 @@ class AptosConfigurationWizardStep(
             // "SDK not configured" errors
             // https://github.com/intellij-rust/intellij-rust/issues/1062
             rootModel.inheritSdk()
-            module.project.projectsService.refreshAllProjects()
+            module.project.moveProjects.refreshAllProjects()
 
 //            val contentEntry = rootModel.contentEntries.singleOrNull()
 //            if (contentEntry != null) {

@@ -43,15 +43,22 @@ abstract class MvIntentionTestCase(private val intentionClass: KClass<out Intent
         myFixture.checkResult(replaceCaretMarker(after.trimIndent()))
     }
 
-    @Suppress("unused")
-    protected fun doAvailableTestWithFileTree(
-        @Language("Move") fileStructureBefore: String,
-        @Language("Move") openedFileAfter: String
-    ) {
-        fileTreeFromText(fileStructureBefore).createAndOpenFileWithCaretMarker()
-        launchAction()
-        myFixture.checkResult(replaceCaretMarker(openedFileAfter.trimIndent()))
-    }
+//    @Suppress("unused")
+//    protected fun doAvailableTestWithFileTree(
+//        @Language("Move") fileStructureBefore: String,
+//        @Language("Move") openedFileAfter: String
+//    ) {
+//        val fileTree = fileTreeFromText(fileStructureBefore)
+//        val testProject = fileTree.toTestProject(myFixture.project, myFixture.findFileInTempDir("."))
+//        myFixture.configureFromTempProjectFile(testProject.fileWithCaret)
+//
+//        val moveProjects = MoveProjectsSyncTask.loadProjects(myFixture.project)
+//        setupProjectRoots(myFixture.project, moveProjects)
+//        FileBasedIndex.getInstance().requestRebuild(MvNamedElementIndex.KEY)
+//        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+//        launchAction()
+//        myFixture.checkResult(replaceCaretMarker(openedFileAfter.trimIndent()))
+//    }
 
     protected fun launchAction() {
         UIUtil.dispatchAllInvocationEvents()

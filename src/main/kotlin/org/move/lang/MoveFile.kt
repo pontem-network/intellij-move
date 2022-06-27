@@ -8,16 +8,16 @@ import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import org.move.cli.MoveProject
 import org.move.cli.Consts
-import org.move.cli.projectsService
+import org.move.cli.MoveProject
+import org.move.cli.moveProjects
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.childrenOfType
 import org.move.lang.core.psi.ext.modules
 import org.move.openapiext.resolveAbsPath
 import org.move.openapiext.toPsiFile
 import org.move.stdext.chain
-import org.toml.lang.psi.TomlFileType
+import org.toml.lang.psi.TomlFile
 import java.nio.file.Path
 
 fun findMoveTomlPath(currentFilePath: Path): Path? {
@@ -33,7 +33,7 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
 }
 
 val PsiElement.moveProject: MoveProject?
-    get() = project.projectsService.findProjectForPsiElement(this)
+    get() = project.moveProjects.findMoveProject(this)
 
 fun VirtualFile.hasChild(name: String) = this.findChild(name) != null
 
@@ -68,9 +68,11 @@ val VirtualFile.isMoveOrManifest: Boolean get() = this.isMoveFile || this.isMove
 
 val VirtualFile.isMoveFile: Boolean get() = fileType == MoveFileType
 
-val VirtualFile.isMoveTomlManifestFile: Boolean get() = fileType == TomlFileType && name == "Move.toml"
+val VirtualFile.isMoveTomlManifestFile: Boolean get() = name == "Move.toml"
 
 fun VirtualFile.toMoveFile(project: Project): MoveFile? = this.toPsiFile(project) as? MoveFile
+
+fun VirtualFile.toTomlFile(project: Project): TomlFile? = this.toPsiFile(project) as? TomlFile
 
 fun MoveFile.modules(): Sequence<MvModule> {
     return this.childrenOfType<MvModule>()
