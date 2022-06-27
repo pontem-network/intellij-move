@@ -18,7 +18,10 @@
     <li>Unused variable inspection</li>
     <li>Warn if non-phantom type parameter only used in phantom positions</li>
     <li>Warn if phantom type parameter used in non-phantom positions</li>
-    <li>Unresolved references inspection: dot expr support</li>
+    <li>Unresolved reference inspection: dot expr support</li>
+    <li>Unresolved reference inspection: imports</li>
+    <li>Correct scoping for #[test_only] items</li>
+    <li>Refactor internal project model</li>
     </ul>
     <h3>1.11.0</h3>
     <ul>
