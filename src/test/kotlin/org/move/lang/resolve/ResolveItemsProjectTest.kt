@@ -5,7 +5,7 @@ import org.move.utils.tests.resolve.ResolveProjectTestCase
 class ResolveItemsProjectTest : ResolveProjectTestCase() {
 
     fun `test resolve module from other file in sources folder`() = checkByFileTree {
-        moveToml()
+        namedMoveToml("MyPackage")
         sources {
             move(
                 "module.move", """
@@ -24,53 +24,65 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
         }
     }
 
-    fun `test resolve module from file in local dependency`() = checkByFileTree(
-        """
-        //- Move.toml
+    fun `test resolve module from file in local dependency`() = checkByFileTree {
+        moveToml("""
         [dependencies]
         Stdlib = { local = "./stdlib" }
-        
-        //- stdlib/Move.toml
-        //- stdlib/sources/module.move
-        module 0x1::Module {}
-                  //X
-        //- sources/main.move
-        script {
-            use 0x1::Module;
-                   //^
-        }    
-    """
-    )
-
-    fun `test resolve module from other file with inline address`() = checkByFileTree(
-        """
-        //- Move.toml
-        //- sources/module.move
-        module 0x1::Module {}
-                  //X
-        //- sources/main.move
-        script {
-            use 0x1::Module;
-                   //^
+        """)
+        sources {
+            main("""
+                script {
+                    use 0x1::Module;
+                           //^
+            """)
         }
-    """
-    )
+        dir("stdlib") {
+            namedMoveToml("Stdlib")
+            sources {
+                move("module.move", """
+                    module 0x1::Module {}
+                              //X
+                """)
+            }
+        }
+    }
 
-    fun `test resolve module from another file with named address`() = checkByFileTree(
-        """
-        //- Move.toml
+    fun `test resolve module from other file with inline address`() = checkByFileTree {
+        namedMoveToml("MyPackage")
+        sources {
+            move("module.move", """
+                module 0x1::Module {}
+                          //X
+            """)
+            main("""
+                script {
+                    use 0x1::Module;
+                           //^
+                }
+            """)
+        }
+    }
+
+    fun `test resolve module from another file with named address`() = checkByFileTree {
+        moveToml("""
+        [package]
+        name = "MyPackage"
         [addresses]
-        Std = "0x1"
-        //- sources/module.move
-        module Std::Module {}
-                  //X
-        //- sources/main.move
-        script {
-            use Std::Module;
-                   //^
+        Std = "0x1"    
+        """)
+        sources {
+            move("module.move", """
+                module Std::Module {}
+                          //X                
+            """)
+            main("""
+                script {
+                    use Std::Module;
+                           //^
+                }
+            """)
         }
-    """
-    )
+    }
 
     fun `test resolve module from dependency of dependency`() = checkByFileTree {
         moveToml(

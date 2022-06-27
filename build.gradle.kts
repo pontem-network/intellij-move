@@ -80,20 +80,34 @@ allprojects {
 //        }
     }
 
-    val generateRustLexer = task<GenerateLexerTask>("generateMoveLexer") {
+    val generateMoveLexer = task<GenerateLexerTask>("generateMoveLexer") {
         source.set("src/main/grammars/MoveLexer.flex")
         targetDir.set("src/main/gen/org/move/lang")
         targetClass.set("_MoveLexer")
         purgeOldFiles.set(true)
     }
 
-    val generateRustParser = task<GenerateParserTask>("generateMoveParser") {
+    val generateMoveParser = task<GenerateParserTask>("generateMoveParser") {
         source.set("src/main/grammars/MoveParser.bnf")
         targetRoot.set("src/main/gen")
         pathToParser.set("/org/move/lang/MoveParser.java")
         pathToPsiRoot.set("/org/move/lang/psi")
         purgeOldFiles.set(true)
     }
+
+//    val generateMoveTomlLexer = task<GenerateLexerTask>("generateMoveTomlLexer") {
+//        source.set("src/main/grammars/MoveTomlLexer.flex")
+//        targetDir.set("src/main/gen/org/moveToml/lang")
+//        targetClass.set("_MoveTomlLexer")
+//        purgeOldFiles.set(true)
+//    }
+//    val generateMoveTomlParser = task<GenerateParserTask>("generateMoveTomlParser") {
+//        source.set("src/main/grammars/MoveTomlParser.bnf")
+//        targetRoot.set("src/main/gen")
+//        pathToParser.set("/org/move/lang/MoveTomlParser.java")
+//        pathToPsiRoot.set("/org/move/lang/psi")
+//        purgeOldFiles.set(true)
+//    }
 
     tasks {
         // workaround for gradle not seeing tests in 2021.3+
@@ -130,7 +144,10 @@ allprojects {
         }
 
         withType<KotlinCompile> {
-            dependsOn(generateRustLexer, generateRustParser)
+            dependsOn(
+//                generateMoveTomlLexer, generateMoveTomlParser,
+                generateMoveLexer, generateMoveParser
+            )
             kotlinOptions {
                 jvmTarget = "11"
                 languageVersion = "1.6"

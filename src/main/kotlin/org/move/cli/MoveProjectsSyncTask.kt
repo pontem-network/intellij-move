@@ -1,9 +1,10 @@
 package org.move.cli
 
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Computable
+import com.intellij.psi.PsiDocumentManager
 import org.move.cli.manifest.MoveToml
 import org.move.cli.manifest.TomlDependency
 import org.move.lang.toNioPathOrNull
@@ -25,7 +26,9 @@ class MoveProjectsSyncTask(
         // aptos move fetch
         fetchDependencies()
 
-        val projects = runReadAction { loadProjects(project) }
+        val projects = PsiDocumentManager
+            .getInstance(project)
+            .commitAndRunReadAction(Computable { loadProjects(project) })
         future.complete(projects)
     }
 

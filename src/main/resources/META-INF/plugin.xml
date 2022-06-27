@@ -321,7 +321,7 @@
 
     <projectListeners>
         <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
-                  topic="org.move.cli.settings.MvSettingsListener"
+                  topic="org.move.cli.settings.MoveSettingsListener"
                   activeInTestMode="false"/>
     </projectListeners>
 

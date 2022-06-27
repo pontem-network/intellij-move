@@ -1,22 +1,9 @@
 package org.move.openapiext
 
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFile
 import org.move.lang.core.psi.ext.ancestorStrict
+import org.toml.lang.psi.TomlFile
 import org.toml.lang.psi.*
 import org.toml.lang.psi.ext.elementType
-import java.nio.file.Path
-
-fun parseToml(project: Project, path: Path): TomlFile? {
-    val file = LocalFileSystem.getInstance().findFileByNioFile(path) ?: return null
-    return file.toPsiFile(project) as? TomlFile
-}
-
-fun parseTomlFromFile(project: Project, moveFile: VirtualFile): TomlFile? {
-    return moveFile.toPsiFile(project) as? TomlFile
-//    return moveFile.toPsiFile(project) as? TomlFile
-}
 
 fun TomlTable.namedEntries(): List<Pair<String, TomlValue?>> {
     return this.entries.map { Pair(it.key.text, it.value) }

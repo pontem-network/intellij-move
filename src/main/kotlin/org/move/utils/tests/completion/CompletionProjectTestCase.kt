@@ -63,6 +63,13 @@ abstract class CompletionProjectTestCase : MvProjectTestBase() {
     }
 
     protected fun checkContainsCompletionsExact(
+        expected: List<String>, builder: FileTreeBuilder.() -> Unit,
+    ) {
+        val testProject = testProject(builder)
+        checkContainsCompletionsExact(testProject, expected)
+    }
+
+    protected fun checkContainsCompletionsExact(
         builder: FileTreeBuilder.() -> Unit, expected: List<String>
     ) {
         val testProject = testProject(builder)

@@ -20,6 +20,7 @@ import com.intellij.openapi.vfs.ex.temp.TempFileSystem
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
 import com.intellij.util.messages.Topic
 import org.move.cli.settings.MoveProjectSettingsService
 import org.move.cli.settings.MoveSettingsChangedEvent
@@ -36,7 +37,7 @@ import java.util.concurrent.CompletableFuture
 
 val Project.moveProjects get() = service<MoveProjectsService>()
 
-class MoveProjectsService(val project: Project): Disposable {
+class MoveProjectsService(val project: Project) : Disposable {
     init {
         with(project.messageBus.connect()) {
             if (!isUnitTestMode) {
@@ -149,6 +150,7 @@ class MoveProjectsService(val project: Project): Disposable {
         invokeAndWaitIfNeeded {
             runWriteAction {
                 projectsIndex.resetIndex()
+                PsiManager.getInstance(project).dropPsiCaches()
                 // In unit tests roots change is done by the test framework in most cases
                 runOnlyInNonLightProject(project) {
                     ProjectRootManagerEx.getInstanceEx(project)
