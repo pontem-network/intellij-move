@@ -2,6 +2,7 @@ package org.move.ide.inspections
 
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.psi.util.descendantsOfType
 import org.move.ide.inspections.imports.AutoImportFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -149,6 +150,42 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
                     "Unresolved field: `${o.referenceName}`",
                     ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
                 )
+            }
+        }
+
+        override fun visitModuleUseSpeck(o: MvModuleUseSpeck) {
+            val moduleRef = o.fqModuleRef ?: return
+            if (!moduleRef.resolvable) {
+                val refNameElement = moduleRef.referenceNameElement ?: return
+                holder.registerProblem(
+                    refNameElement,
+                    "Unresolved reference: `${refNameElement.text}`",
+                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                )
+            }
+        }
+
+        override fun visitItemUseSpeck(o: MvItemUseSpeck) {
+            val moduleRef = o.fqModuleRef
+            if (!moduleRef.resolvable) {
+                val refNameElement = moduleRef.referenceNameElement ?: return
+                holder.registerProblem(
+                    refNameElement,
+                    "Unresolved reference: `${refNameElement.text}`",
+                    ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                )
+                return
+            }
+            val useItems = o.descendantsOfType<MvUseItem>()
+            for (useItem in useItems) {
+                if (!useItem.resolvable) {
+                    val refNameElement = useItem.referenceNameElement
+                    holder.registerProblem(
+                        refNameElement,
+                        "Unresolved reference: `${refNameElement.text}`",
+                        ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
+                    )
+                }
             }
         }
     }
