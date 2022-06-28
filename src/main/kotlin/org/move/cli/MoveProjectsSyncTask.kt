@@ -37,6 +37,8 @@ class MoveProjectsSyncTask(
     }
 
     companion object {
+        private data class DepId(val root: String, val from: String?)
+
         fun loadProjects(project: Project): List<MoveProject> {
             val projects = mutableListOf<MoveProject>()
             for (contentRoot in project.contentRoots) {
@@ -49,8 +51,12 @@ class MoveProjectsSyncTask(
                     rawDepQueue.addAll(moveToml.deps)
 
                     val rootPackage = MovePackage.fromMoveToml(moveToml) ?: return@iterateFiles true
+
                     val deps = mutableListOf<Pair<MovePackage, RawAddressMap>>()
-                    loadDependencies(project, moveToml, deps)
+                    val visitedDepIds = mutableSetOf(
+                        DepId(rootPackage.contentRoot.path, null)
+                    )
+                    loadDependencies(project, moveToml, deps, visitedDepIds)
 
                     projects.add(MoveProject(project, rootPackage, deps))
                     true
@@ -62,10 +68,18 @@ class MoveProjectsSyncTask(
         private fun loadDependencies(
             project: Project,
             rootMoveToml: MoveToml,
-            deps: MutableList<Pair<MovePackage, RawAddressMap>>
+            deps: MutableList<Pair<MovePackage, RawAddressMap>>,
+            visitedIds: MutableSet<DepId>
         ) {
             for ((dep, addressMap) in rootMoveToml.deps) {
                 val depRoot = dep.localPath()
+
+                val depId = DepId(
+                    depRoot.toString(),
+                    rootMoveToml.tomlFile?.parent?.virtualFile?.path
+                )
+                if (depId in visitedIds) continue
+
                 val depTomlFile = depRoot
                     .resolveExisting(Consts.MANIFEST_FILE)
                     ?.toVirtualFile()
@@ -76,7 +90,8 @@ class MoveProjectsSyncTask(
                 val depPackage = MovePackage.fromMoveToml(depMoveToml) ?: continue
 
                 // parse all nested dependencies with their address maps
-                loadDependencies(project, depMoveToml, deps)
+                visitedIds.add(depId)
+                loadDependencies(project, depMoveToml, deps, visitedIds)
 
                 deps.add(Pair(depPackage, addressMap))
             }
