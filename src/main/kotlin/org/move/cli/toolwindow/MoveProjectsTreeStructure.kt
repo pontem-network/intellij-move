@@ -70,9 +70,9 @@ class MoveProjectsTreeStructure(
                     }
                 }
                 return arrayOf(
-                    Modules(modules, this),
+                    Modules(emptyList(), this),
                     Entrypoints(scriptFunctions, this),
-                    Tests(testModules, this)
+                    Tests(emptyList(), this)
                 )
             }
 

@@ -102,6 +102,9 @@ class MoveToolWindow(private val project: Project) {
                 }
             })
         }
+        invokeLater {
+            projectStructure.updateMoveProjects(project.moveProjects.allProjects.toList())
+        }
     }
 
     companion object {
