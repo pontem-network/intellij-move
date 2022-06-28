@@ -37,6 +37,8 @@ import java.util.concurrent.CompletableFuture
 
 val Project.moveProjects get() = service<MoveProjectsService>()
 
+val Project.hasMoveProject get() = this.moveProjects.allProjects.isNotEmpty()
+
 class MoveProjectsService(val project: Project) : Disposable {
     init {
         with(project.messageBus.connect()) {

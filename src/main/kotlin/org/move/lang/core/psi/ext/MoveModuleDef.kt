@@ -26,10 +26,10 @@ fun MvModule.fqModule(): FQModule? {
     return FQModule(address, name)
 }
 
-val MvModule.fqName: String?
+val MvModule.fqName: String
     get() {
         val address = this.address()?.text?.let { "$it::" } ?: ""
-        val module = this.name ?: return null
+        val module = this.name ?: "<unknown>"
         return address + module
     }
 
