@@ -6,8 +6,8 @@ import com.intellij.psi.util.descendantsOfType
 import com.intellij.util.indexing.*
 import com.intellij.util.io.EnumeratorStringDescriptor
 import com.intellij.util.io.KeyDescriptor
-import org.move.lang.MoveFileType
 import org.move.lang.MoveFile
+import org.move.lang.MoveFileType
 import org.move.lang.core.psi.MvQualifiedNamedElement
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.ref.Namespace
@@ -58,6 +58,7 @@ fun MoveFile.qualifiedItems(target: String, itemVis: ItemVis): List<MvQualifiedN
     val modules = this.modules()
     for (module in modules) {
         if (Namespace.MODULE in itemVis.namespaces) {
+
             if (module.name == target) {
                 elements.add(module)
             }
