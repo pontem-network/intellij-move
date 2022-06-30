@@ -80,32 +80,48 @@ module 0x1::Main {
     }
 }
     """)
-//    fun `test duplicate import`() = checkWarnings("""
-//module 0x1::M {
-//    public fun call() {}
-//}
-//module 0x1::M2 {
-//    use 0x1::M::call;
-//    <warning descr="Unused use item">use 0x1::M::call;</warning>
-//
-//    fun main() {
-//        call();
-//    }
-//}
-//    """)
-//
-//    fun `test duplicate import with item group`() = checkWarnings("""
-//module 0x1::M {
-//    struct S {}
-//    public fun call() {}
-//}
-//module 0x1::M2 {
-//    use 0x1::M::{S, call};
-//    <warning descr="Unused use item">use 0x1::M::call;</warning>
-//
-//    fun main(s: S) {
-//        call();
-//    }
-//}
-//    """)
+
+    fun `test unused imports if unresolved`() = checkWarnings("""
+module 0x1::Main {
+    <warning descr="Unused use item">use 0x1::M1;</warning>
+}
+    """)
+
+    fun `test no unused import if unresolved but used`() = checkWarnings("""
+module 0x1::Main {
+    use 0x1::M;
+    fun call() {
+        M::call();
+    }
+}        
+    """)
+
+    fun `test duplicate import`() = checkWarnings("""
+module 0x1::M {
+    public fun call() {}
+}
+module 0x1::M2 {
+    use 0x1::M::call;
+    <warning descr="Unused use item">use 0x1::M::call;</warning>
+
+    fun main() {
+        call();
+    }
+}
+    """)
+
+    fun `test duplicate import with item group`() = checkWarnings("""
+module 0x1::M {
+    struct S {}
+    public fun call() {}
+}
+module 0x1::M2 {
+    use 0x1::M::{S, call};
+    <warning descr="Unused use item">use 0x1::M::call;</warning>
+
+    fun main(s: S) {
+        call();
+    }
+}
+    """)
 }

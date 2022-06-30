@@ -2,33 +2,61 @@ package org.move.ide.inspections
 
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.psi.PsiElement
+import com.intellij.psi.util.descendantsOfType
 import com.intellij.psi.util.parentOfType
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.speck
 
-class MvUnusedImportInspection: MvLocalInspectionTool() {
+class MvUnusedImportInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
+        fun registerUnused(targetElement: PsiElement) {
+            holder.registerProblem(
+                targetElement,
+                "Unused use item",
+                ProblemHighlightType.LIKE_UNUSED_SYMBOL
+            )
+        }
         return object : MvVisitor() {
-            override fun visitModuleUseSpeck(o: MvModuleUseSpeck) {
-                val useStmt = o.parentOfType<MvUseStmt>() ?: return
-                if (!o.isUsed()) {
-                    holder.registerProblem(
-                        useStmt,
-                        "Unused use item",
-                        ProblemHighlightType.LIKE_UNUSED_SYMBOL
-                    )
-                }
-            }
+            override fun visitModuleBlock(o: MvModuleBlock) {
+                val visitedItems = mutableSetOf<String>()
+                val visitedModules = mutableSetOf<String>()
+                for (useStmt in o.useStmtList) {
 
-            override fun visitUseItem(useItem: MvUseItem) {
-                if (!useItem.isUsed()) {
-                    val speck = useItem.speck ?: return
-                    holder.registerProblem(
-                        speck,
-                        "Unused use item",
-                        ProblemHighlightType.LIKE_UNUSED_SYMBOL
-                    )
+                    val moduleUseSpeck = useStmt.moduleUseSpeck
+                    if (moduleUseSpeck != null) {
+                        val moduleName = moduleUseSpeck.name ?: continue
+                        if (moduleName in visitedModules) {
+                            registerUnused(useStmt)
+                            continue
+                        }
+                        visitedModules.add(moduleName)
+
+                        if (!moduleUseSpeck.isUsed()) {
+                            registerUnused(useStmt)
+                        }
+                        continue
+                    }
+
+                    val itemUseSpeck = useStmt.itemUseSpeck
+                    if (itemUseSpeck != null) {
+                        for (useItem in itemUseSpeck.descendantsOfType<MvUseItem>()) {
+                            val speck = useItem.speck ?: continue
+
+                            val itemName = useItem.name ?: continue
+                            if (itemName in visitedItems) {
+                                registerUnused(speck)
+                                continue
+                            }
+                            visitedItems.add(itemName)
+
+                            if (!useItem.isUsed()) {
+                                registerUnused(speck)
+                            }
+                        }
+                        continue
+                    }
                 }
             }
         }
