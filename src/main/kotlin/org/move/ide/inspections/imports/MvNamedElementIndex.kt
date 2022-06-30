@@ -10,6 +10,7 @@ import org.move.lang.MoveFile
 import org.move.lang.MoveFileType
 import org.move.lang.core.psi.MvQualifiedNamedElement
 import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.processFileItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.processModuleItems
 import org.move.lang.modules
@@ -53,23 +54,29 @@ class MvNamedElementIndex : ScalarIndexExtension<String>() {
     }
 }
 
-fun MoveFile.qualifiedItems(target: String, itemVis: ItemVis): List<MvQualifiedNamedElement> {
+fun MoveFile.qualifiedItems(targetName: String, itemVis: ItemVis): List<MvQualifiedNamedElement> {
     val elements = mutableListOf<MvQualifiedNamedElement>()
-    val modules = this.modules()
-    for (module in modules) {
-        if (Namespace.MODULE in itemVis.namespaces) {
-
-            if (module.name == target) {
-                elements.add(module)
-            }
+    processFileItems(this, itemVis) {
+        if (it.element is MvQualifiedNamedElement && it.name == targetName) {
+            elements.add(it.element)
         }
-        processModuleItems(module, itemVis) {
-            val element = it.element
-            if (element is MvQualifiedNamedElement && element.name == target) {
-                elements.add(element)
-            }
-            false
-        }
+        false
     }
+//    val modules = this.modules()
+//    for (module in modules) {
+//        if (Namespace.MODULE in itemVis.namespaces) {
+//
+//            if (module.name == targetName) {
+//                elements.add(module)
+//            }
+//        }
+//        processModuleItems(module, itemVis) {
+//            val element = it.element
+//            if (element is MvQualifiedNamedElement && element.name == targetName) {
+//                elements.add(element)
+//            }
+//            false
+//        }
+//    }
     return elements
 }
