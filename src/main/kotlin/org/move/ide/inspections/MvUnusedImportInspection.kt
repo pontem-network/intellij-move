@@ -23,7 +23,6 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                 val visitedItems = mutableSetOf<String>()
                 val visitedModules = mutableSetOf<String>()
                 for (useStmt in o.useStmtList) {
-
                     val moduleUseSpeck = useStmt.moduleUseSpeck
                     if (moduleUseSpeck != null) {
                         val moduleName = moduleUseSpeck.name ?: continue
@@ -64,35 +63,41 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
 }
 
 fun MvUseItem.isUsed(): Boolean {
-    if (!this.resolvable) return true
     val owner = this.ancestorStrict<MvItemsOwner>() ?: return true
-    val usageMap = owner.pathUsageMap
+    val usageMap = owner.pathUsages
     return isUseItemUsed(this, usageMap)
 }
 
 fun MvModuleUseSpeck.isUsed(): Boolean {
-    if (this.fqModuleRef?.resolvable != true) return true
-
-    val owner = this.parentOfType<MvUseStmt>()?.parentOfType<MvItemsOwner>() ?: return true
-    val usageMap = owner.pathUsageMap
+    val owner = this.parentOfType<MvItemsOwner>() ?: return true
+    val usageMap = owner.pathUsages
     return isModuleUseSpeckUsed(this, usageMap)
 }
 
 fun MvItemUseSpeck.isUsed(): Boolean {
-    if (this.useItem?.resolvable != true) return true
-
-    val owner = this.parentOfType<MvUseStmt>()?.parentOfType<MvItemsOwner>() ?: return true
-    val usageMap = owner.pathUsageMap
+    val owner = this.parentOfType<MvItemsOwner>() ?: return true
+    val usageMap = owner.pathUsages
     return isItemUseSpeckUsed(this, usageMap)
 }
 
-private fun isModuleUseSpeckUsed(moduleUse: MvModuleUseSpeck, usages: PathUsageMap): Boolean {
+private fun isModuleUseSpeckUsed(moduleUse: MvModuleUseSpeck, pathUsages: PathUsages): Boolean {
     val moduleName = moduleUse.fqModuleRef?.referenceName ?: return true
-    val items = moduleUse.fqModuleRef?.reference?.multiResolve().orEmpty()
-    return items.any { it in usages.pathUsages[moduleName].orEmpty() }
+    val usageResolvedItems = pathUsages.map[moduleName]
+    @Suppress("FoldInitializerAndIfToElvis")
+    if (usageResolvedItems == null) {
+        // import is never used
+        return false
+    }
+    if (usageResolvedItems.isEmpty()) {
+        // import is used but usages are unresolved
+        return true
+    }
+    val speckResolvedItems = moduleUse.fqModuleRef?.reference?.multiResolve().orEmpty()
+    // any of path usages resolve to the same named item
+    return speckResolvedItems.any { it in usageResolvedItems }
 }
 
-private fun isItemUseSpeckUsed(useSpeck: MvItemUseSpeck, usages: PathUsageMap): Boolean {
+private fun isItemUseSpeckUsed(useSpeck: MvItemUseSpeck, usages: PathUsages): Boolean {
     // Use speck with an empty group is always unused
     val itemGroup = useSpeck.useItemGroup
     if (itemGroup != null && itemGroup.useItemList.isEmpty()) return false
@@ -101,12 +106,23 @@ private fun isItemUseSpeckUsed(useSpeck: MvItemUseSpeck, usages: PathUsageMap): 
     return isUseItemUsed(useItem, usages)
 }
 
-private fun isUseItemUsed(useItem: MvUseItem, usages: PathUsageMap): Boolean {
-    val items = useItem.reference.multiResolve()
-    var name = useItem.referenceName
-    if (name == "Self") {
+private fun isUseItemUsed(useItem: MvUseItem, pathUsages: PathUsages): Boolean {
+    var itemName = useItem.referenceName
+    if (itemName == "Self") {
         val useStmt = useItem.ancestorStrict<MvUseStmt>()
-        name = useStmt?.itemUseSpeck?.fqModuleRef?.referenceName.orEmpty()
+        itemName = useStmt?.itemUseSpeck?.fqModuleRef?.referenceName.orEmpty()
     }
-    return items.any { it in usages.pathUsages[name].orEmpty() }
+    val usageResolvedItems = pathUsages.map[itemName]
+    @Suppress("FoldInitializerAndIfToElvis")
+    if (usageResolvedItems == null) {
+        // import is never used
+        return false
+    }
+    if (usageResolvedItems.isEmpty()) {
+        // import is used but usages are unresolved
+        return true
+    }
+    val speckResolvedItems = useItem.reference.multiResolve()
+    // any of path usages resolve to the same named item
+    return speckResolvedItems.any { it in usageResolvedItems }
 }

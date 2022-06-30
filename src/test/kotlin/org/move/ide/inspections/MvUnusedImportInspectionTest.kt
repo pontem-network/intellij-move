@@ -81,17 +81,32 @@ module 0x1::Main {
 }
     """)
 
-    fun `test unused imports if unresolved`() = checkWarnings("""
+    fun `test unused imports if unresolved module`() = checkWarnings("""
 module 0x1::Main {
     <warning descr="Unused use item">use 0x1::M1;</warning>
 }
     """)
 
-    fun `test no unused import if unresolved but used`() = checkWarnings("""
+    fun `test no unused import if unresolved module but used`() = checkWarnings("""
 module 0x1::Main {
     use 0x1::M;
     fun call() {
         M::call();
+    }
+}        
+    """)
+
+    fun `test unused imports if unresolved item`() = checkWarnings("""
+module 0x1::Main {
+    <warning descr="Unused use item">use 0x1::M1::call;</warning>
+}
+    """)
+
+    fun `test no unused import if unresolved item but used`() = checkWarnings("""
+module 0x1::Main {
+    use 0x1::M::call;
+    fun call() {
+        call();
     }
 }        
     """)
