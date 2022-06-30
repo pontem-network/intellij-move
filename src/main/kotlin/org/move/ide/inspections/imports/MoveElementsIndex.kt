@@ -11,12 +11,9 @@ import org.move.lang.MoveFileType
 import org.move.lang.core.psi.MvQualifiedNamedElement
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.processFileItems
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.processModuleItems
-import org.move.lang.modules
 import org.move.lang.toMoveFile
 
-class MvNamedElementIndex : ScalarIndexExtension<String>() {
+class MoveElementsIndex : ScalarIndexExtension<String>() {
     override fun getName() = KEY
     override fun getVersion() = INDEX_VERSION
     override fun getKeyDescriptor(): KeyDescriptor<String> = EnumeratorStringDescriptor.INSTANCE
@@ -37,6 +34,10 @@ class MvNamedElementIndex : ScalarIndexExtension<String>() {
         const val INDEX_VERSION = 1
 
         val KEY = ID.create<String, Void>("MvNamedElementIndex")
+
+        fun requestRebuild() {
+            FileBasedIndex.getInstance().requestRebuild(KEY)
+        }
 
         fun getAllKeys(project: Project): Collection<String> {
             return FileBasedIndex.getInstance().getAllKeys(KEY, project)
@@ -62,21 +63,5 @@ fun MoveFile.qualifiedItems(targetName: String, itemVis: ItemVis): List<MvQualif
         }
         false
     }
-//    val modules = this.modules()
-//    for (module in modules) {
-//        if (Namespace.MODULE in itemVis.namespaces) {
-//
-//            if (module.name == targetName) {
-//                elements.add(module)
-//            }
-//        }
-//        processModuleItems(module, itemVis) {
-//            val element = it.element
-//            if (element is MvQualifiedNamedElement && element.name == targetName) {
-//                elements.add(element)
-//            }
-//            false
-//        }
-//    }
     return elements
 }

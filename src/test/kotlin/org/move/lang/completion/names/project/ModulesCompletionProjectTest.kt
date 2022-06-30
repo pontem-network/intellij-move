@@ -168,6 +168,31 @@ class ModulesCompletionProjectTest : CompletionProjectTestCase() {
         }
     }
 
+    fun `test test_only modules from tests directory should not be in completion of sources`() =
+        checkNoCompletion {
+            namedMoveToml("MyPackage")
+            sources {
+                main(
+                    """
+            module 0x1::Main {
+                fun call() {
+                    TestHe/*caret*/
+                }
+            }    
+            """
+                )
+            }
+            tests {
+                move(
+                    "TestHelpers.move", """
+            #[test_only]        
+            module 0x1::TestHelpers {
+            }    
+            """
+                )
+            }
+        }
+
     fun `test test_only modules from tests directory should not be in completion of test_only sources`() =
         checkNoCompletion {
             namedMoveToml("MyPackage")

@@ -90,7 +90,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
             val (contextElement, itemVis) = context
             val moveProject = contextElement.moveProject ?: return emptyList()
             val searchScope = moveProject.searchScope()
-            val files = MvNamedElementIndex
+            val files = MoveElementsIndex
                 .findFilesByElementName(contextElement.project, targetName, searchScope)
                 .toMutableList()
             if (isUnitTestMode) {

@@ -100,7 +100,7 @@
                   extensions="move"
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
-        <fileBasedIndex implementation="org.move.ide.inspections.imports.MvNamedElementIndex"/>
+        <fileBasedIndex implementation="org.move.ide.inspections.imports.MoveElementsIndex"/>
 
         <configurationType
                 implementation="org.move.cli.runconfig.AptosCommandConfigurationType"/>

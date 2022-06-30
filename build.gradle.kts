@@ -4,7 +4,7 @@ import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "212"
+val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "221"
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
 
 val baseProperties = "base-gradle.properties"
@@ -17,7 +17,7 @@ file(properties).inputStream().let { props.load(it) }
 fun prop(key: String): String = props[key].toString()
 
 //val intellijVersion = prop("intellijVersion", "2021.2")
-val kotlinVersion = "1.6.21"
+val kotlinVersion = "1.7.0"
 
 val pluginJarName = "intellij-move-$propsVersion"
 val pluginVersion = "1.12.1"
@@ -28,7 +28,7 @@ version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.6.21"
+    kotlin("jvm") version "1.7.0"
     id("org.jetbrains.intellij") version "1.5.2"
     id("org.jetbrains.grammarkit") version "2021.2.2"
 }
@@ -150,7 +150,7 @@ allprojects {
             )
             kotlinOptions {
                 jvmTarget = "11"
-                languageVersion = "1.6"
+                languageVersion = "1.7"
                 apiVersion = "1.6"
                 freeCompilerArgs = listOf("-Xjvm-default=all")
             }

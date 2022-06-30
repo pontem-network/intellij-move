@@ -3,11 +3,10 @@ package org.move.lang.core.completion
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.patterns.ElementPattern
-import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import org.move.ide.inspections.imports.AutoImportFix
 import org.move.ide.inspections.imports.ImportContext
-import org.move.ide.inspections.imports.MvNamedElementIndex
+import org.move.ide.inspections.imports.MoveElementsIndex
 import org.move.ide.inspections.imports.import
 import org.move.lang.core.psi.MvPath
 
@@ -23,7 +22,7 @@ abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>()
     ) {
         val project = parameters.position.project
         val keys = hashSetOf<String>().apply {
-            val names = MvNamedElementIndex.getAllKeys(project)
+            val names = MoveElementsIndex.getAllKeys(project)
             addAll(names)
             removeAll(processedPathNames)
         }
