@@ -264,6 +264,10 @@
                          enabledByDefault="true" level="ERROR"
                          implementationClass="org.move.ide.inspections.MvMissingAcquiresInspection"/>
         <localInspection language="Move" groupName="Move"
+                         displayName="Unused acquires"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.MvUnusedAcquiresTypeInspection"/>
+        <localInspection language="Move" groupName="Move"
                          displayName="Unused struct type parameter"
                          enabledByDefault="true" level="ERROR"
                          implementationClass="org.move.ide.inspections.PhantomTypeParameterInspection"/>
