@@ -65,15 +65,16 @@ fun AddressVal.createCompletionLookupElement(lookupString: String): LookupElemen
 }
 
 fun MvNamedElement.createCompletionLookupElement(
-    insertHandler: InsertHandler<LookupElement> = MvInsertHandler(),
-    ns: Set<Namespace> = emptySet(),
+    insertHandler: InsertHandler<LookupElement> = MvDefaultInsertHandler(),
+    namespaces: Set<Namespace> = emptySet(),
     priority: Double = DEFAULT_PRIORITY,
+    props: LookupElementProperties = LookupElementProperties()
 ): LookupElement {
-    var lookupElement = when (this) {
+    val lookupElement = when (this) {
         is MvModuleUseSpeck -> {
             val module = this.fqModuleRef?.reference?.resolve()
             if (module != null) {
-                return module.createCompletionLookupElement(insertHandler, ns)
+                return module.createCompletionLookupElement(insertHandler, namespaces)
             } else {
                 this.createLookupElement()
             }
@@ -82,7 +83,7 @@ fun MvNamedElement.createCompletionLookupElement(
         is MvUseItem -> {
             val namedItem = this.reference.resolve()
             if (namedItem != null) {
-                return namedItem.createCompletionLookupElement(insertHandler, ns)
+                return namedItem.createCompletionLookupElement(insertHandler, namespaces)
             } else {
                 this.createLookupElement()
             }
@@ -101,7 +102,7 @@ fun MvNamedElement.createCompletionLookupElement(
             .withTypeText(this.containingFile?.name)
 
         is MvStruct -> {
-            val tailText = if (Namespace.TYPE !in ns) " { ... }" else ""
+            val tailText = if (Namespace.TYPE !in namespaces) " { ... }" else ""
             this.createLookupElement()
                 .withTailText(tailText)
                 .withTypeText(this.containingFile?.name)
@@ -118,8 +119,10 @@ fun MvNamedElement.createCompletionLookupElement(
 
         else -> LookupElementBuilder.create(this)
     }
-    lookupElement = lookupElement.withInsertHandler(insertHandler)
-    return PrioritizedLookupElement.withPriority(lookupElement, priority)
+    return lookupElement
+        .withInsertHandler(insertHandler)
+        .withPriority(priority)
+        .toMvLookupElement(props)
 }
 
 fun InsertionContext.addSuffix(suffix: String) {
@@ -183,7 +186,7 @@ private fun InsertionContext.functionSuffixAndOffset(
     return Pair(suffix, offset)
 }
 
-open class MvInsertHandler : InsertHandler<LookupElement> {
+open class MvDefaultInsertHandler : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, item: LookupElement) {
         val document = context.document
         val element = item.psiElement as? MvElement ?: return

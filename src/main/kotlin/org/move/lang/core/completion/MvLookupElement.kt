@@ -1,16 +1,14 @@
 package org.move.lang.core.completion
 
 import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.codeInsight.lookup.LookupElementDecorator
 
-fun LookupElementBuilder.toMvLookupElement(properties: MvLookupElementProperties): LookupElement {
-    return MvLookupElement(this, properties)
-}
+fun LookupElement.toMvLookupElement(properties: LookupElementProperties): LookupElement =
+    MvLookupElement(this, properties)
 
 class MvLookupElement(
     delegate: LookupElement,
-    val props: MvLookupElementProperties
+    val props: LookupElementProperties
 ) : LookupElementDecorator<LookupElement>(delegate) {
 
     override fun equals(other: Any?): Boolean {
@@ -33,7 +31,7 @@ class MvLookupElement(
 }
 
 
-data class MvLookupElementProperties(
+data class LookupElementProperties(
     /**
      * `true` if after insertion of the lookup element it will form an expression with a type
      * that conforms to the expected type of that expression.
@@ -47,4 +45,6 @@ data class MvLookupElementProperties(
      * ```
      */
     val isReturnTypeConformsToExpectedType: Boolean = false,
+
+    val isCompatibleWithContext: Boolean = false,
 )

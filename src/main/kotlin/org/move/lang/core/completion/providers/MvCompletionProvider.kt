@@ -8,7 +8,7 @@ import org.move.ide.inspections.imports.AutoImportFix
 import org.move.ide.inspections.imports.ImportContext
 import org.move.ide.inspections.imports.MoveElementsIndex
 import org.move.ide.inspections.imports.import
-import org.move.lang.core.completion.MvInsertHandler
+import org.move.lang.core.completion.MvDefaultInsertHandler
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
 import org.move.lang.core.completion.createCompletionLookupElement
 import org.move.lang.core.psi.MvElement
@@ -39,7 +39,7 @@ abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>()
                 .filter { itemFilter(it.element) }
                 .map { candidate ->
                     val element = candidate.element
-                    val insertHandler = object : MvInsertHandler() {
+                    val insertHandler = object : MvDefaultInsertHandler() {
                         override fun handleInsert(context: InsertionContext, item: LookupElement) {
                             super.handleInsert(context, item)
                             context.commitDocument()

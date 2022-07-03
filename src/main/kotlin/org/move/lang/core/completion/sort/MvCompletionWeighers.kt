@@ -6,8 +6,9 @@
 package org.move.lang.core.completion.sort
 
 import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInsight.lookup.LookupElementWeigher
 import org.move.lang.core.completion.MvLookupElement
-import org.move.lang.core.completion.MvLookupElementProperties
+import org.move.lang.core.completion.LookupElementProperties
 
 /**
  * A list of weighers that sort completion variants in the Rust plugin.
@@ -65,18 +66,16 @@ import org.move.lang.core.completion.MvLookupElementProperties
  * This list must not be changed within a major IDE release because it breaks "Machine Learning-Assisted Completion"
  * model. The "change" is understood as adding or removing weighers, or changing their ID.
  */
-val COMPLETION_WEIGHERS: List<Any> = listOf(
+private val COMPLETION_WEIGHERS: List<Any> = listOf(
     /**
      * Based on the value passed via [com.intellij.codeInsight.completion.PrioritizedLookupElement.withPriority].
      * @see com.intellij.codeInsight.completion.PriorityWeigher
      */
     "priority",
 
-    // HINT: jump to `P::isImplMemberFullLineCompletion` docs
-//    preferTrue(P::isImplMemberFullLineCompletion, id = "rust-impl-member-full-line-completion"),
-//    preferUpperVariant(P::keywordKind, id = "rust-prefer-keywords"),
-//    preferTrue(P::isSelfTypeCompatible, id = "rust-prefer-compatible-self-type"),
+    preferTrue(P::isCompatibleWithContext, id = "rust-prefer-matching-context"),
     preferTrue(P::isReturnTypeConformsToExpectedType, id = "rust-prefer-matching-expected-type"),
+
 //    // TODO these weighers most likely should be after "stats"
 //    preferTrue(P::isLocal, id = "rust-prefer-locals"),
 //    preferUpperVariant(P::elementKind, id = "rust-prefer-by-kind"),
@@ -104,7 +103,7 @@ val COMPLETION_WEIGHERS: List<Any> = listOf(
 //    "proximity",
 )
 
-private typealias P = MvLookupElementProperties
+private typealias P = LookupElementProperties
 
 private fun preferTrue(
     property: (P) -> Boolean,
@@ -125,3 +124,56 @@ private fun preferTrue(
 //
 //    override val id: String get() = id
 //}
+
+val COMPLETION_WEIGHERS_GROUPED: List<AnchoredWeigherGroup> = splitIntoGroups(COMPLETION_WEIGHERS)
+
+class AnchoredWeigherGroup(val anchor: String, val weighers: Array<LookupElementWeigher>)
+
+private fun splitIntoGroups(weighersWithAnchors: List<Any>): List<AnchoredWeigherGroup> {
+    val firstEntry = weighersWithAnchors.firstOrNull() ?: return emptyList()
+    check(firstEntry is String) {
+        "The first element in the weigher list must be a string placeholder like \"priority\"; " +
+                "actually it is `${firstEntry}`"
+    }
+    val result = mutableListOf<AnchoredWeigherGroup>()
+    val weigherIds = hashSetOf<String>()
+    var currentAnchor: String = firstEntry
+    var currentWeighers = mutableListOf<LookupElementWeigher>()
+    // Add "dummy weigher" in order to execute `is String ->` arm in the last iteration
+    for (weigherOrAnchor in weighersWithAnchors.asSequence().drop(1)
+        .plus(sequenceOf("dummy weigher"))) {
+        when (weigherOrAnchor) {
+            is String -> {
+                if (currentWeighers.isNotEmpty()) {
+                    result += AnchoredWeigherGroup(currentAnchor, currentWeighers.toTypedArray())
+                    currentWeighers = mutableListOf()
+                }
+                currentAnchor = weigherOrAnchor
+            }
+            is MvCompletionWeigher -> {
+                if (!weigherIds.add(weigherOrAnchor.id)) {
+                    error(
+                        "Found a ${MvCompletionWeigher::class.simpleName}.id duplicate: " +
+                                "`${weigherOrAnchor.id}`"
+                    )
+                }
+                currentWeighers += RsCompletionWeigherAsLookupElementWeigher(weigherOrAnchor)
+            }
+            else -> error(
+                "The weigher list must consists of String placeholders and instances of " +
+                        "${MvCompletionWeigher::class.simpleName}, got ${weigherOrAnchor.javaClass}"
+            )
+        }
+    }
+    return result
+}
+
+
+private class RsCompletionWeigherAsLookupElementWeigher(
+    private val weigher: MvCompletionWeigher
+) : LookupElementWeigher(weigher.id, /* negated = */ false, /* dependsOnPrefix = */ false) {
+    override fun weigh(element: LookupElement): Comparable<*> {
+        val rsElement = element.`as`(LookupElement::class.java)
+        return weigher.weigh(rsElement ?: element)
+    }
+}
