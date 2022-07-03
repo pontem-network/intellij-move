@@ -12,7 +12,7 @@ import com.intellij.util.Query
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
 import org.move.lang.core.completion.BUILTIN_ITEM_PRIORITY
-import org.move.lang.core.completion.ITEM_PRIORITY
+import org.move.lang.core.completion.LOCAL_ITEM_PRIORITY
 import org.move.lang.core.psi.ext.address
 import org.move.lang.core.psi.ext.findLastChildByType
 
@@ -56,7 +56,7 @@ val MvQualifiedNamedElement.fqPath: FqPath?
 val MvNamedElement.completionPriority
     get() = when {
         this is MvFunction && this.name in BUILTIN_FUNCTIONS -> BUILTIN_ITEM_PRIORITY
-        else -> ITEM_PRIORITY
+        else -> LOCAL_ITEM_PRIORITY
     }
 
 fun MvNamedElement.usages(): Query<PsiReference> =

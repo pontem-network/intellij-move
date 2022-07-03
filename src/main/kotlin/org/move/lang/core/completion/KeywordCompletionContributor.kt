@@ -18,6 +18,7 @@ import org.move.lang.core.MvPsiPatterns.specStmt
 import org.move.lang.core.MvPsiPatterns.toplevel
 import org.move.lang.core.MvPsiPatterns.typeParameter
 import org.move.lang.core.TYPES
+import org.move.lang.core.completion.providers.KeywordCompletionProvider
 
 class KeywordCompletionContributor : CompletionContributor() {
     init {

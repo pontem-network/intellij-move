@@ -1,4 +1,4 @@
-package org.move.lang.core.completion
+package org.move.lang.core.completion.providers
 
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
@@ -8,7 +8,13 @@ import org.move.ide.inspections.imports.AutoImportFix
 import org.move.ide.inspections.imports.ImportContext
 import org.move.ide.inspections.imports.MoveElementsIndex
 import org.move.ide.inspections.imports.import
+import org.move.lang.core.completion.MvInsertHandler
+import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
+import org.move.lang.core.completion.createCompletionLookupElement
+import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvPath
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnknown
 
 abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>() {
     abstract val elementPattern: ElementPattern<out PsiElement>
@@ -51,3 +57,8 @@ abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>()
         }
     }
 }
+
+data class MvCompletionContext(
+    val context: MvElement? = null,
+    val expectedTy: Ty = TyUnknown,
+)

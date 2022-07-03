@@ -6,8 +6,6 @@ import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
-import com.intellij.psi.PsiElement
-import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.AddressVal
 import org.move.ide.MoveIcons
 import org.move.ide.presentation.shortPresentableText
@@ -20,8 +18,8 @@ const val KEYWORD_PRIORITY = 80.0
 
 const val ITEM_WITH_EXPECTED_TYPE_PRIORITY = 40.0
 
+const val LOCAL_ITEM_PRIORITY = 40.0
 const val BUILTIN_ITEM_PRIORITY = 30.0
-const val ITEM_PRIORITY = 20.0
 
 const val IMPORTED_ITEM_PRIORITY = 15.0
 const val IMPORTED_MODULE_PRIORITY = 15.0
@@ -33,6 +31,7 @@ const val DEFAULT_PRIORITY = 0.0
 
 const val PRIMITIVE_TYPE_PRIORITY = KEYWORD_PRIORITY
 
+const val MACRO_PRIORITY = 30.0
 const val BUILTIN_FUNCTION_PRIORITY = 10.0
 const val FUNCTION_PRIORITY = 10.0
 
@@ -155,7 +154,6 @@ private fun CharSequence.indexOfSkippingSpace(c: Char, startIndex: Int): Int? {
 fun LookupElementBuilder.withPriority(priority: Double): LookupElement =
     if (priority == DEFAULT_PRIORITY) this else PrioritizedLookupElement.withPriority(this, priority)
 
-
 class AngleBracketsInsertHandler : InsertHandler<LookupElement> {
 
     override fun handleInsert(context: InsertionContext, item: LookupElement) {
@@ -221,6 +219,3 @@ open class MvInsertHandler : InsertHandler<LookupElement> {
         }
     }
 }
-
-inline fun <reified T : PsiElement> InsertionContext.getElementOfType(strict: Boolean = false): T? =
-    PsiTreeUtil.findElementOfClassAtOffset(file, tailOffset - 1, T::class.java, strict)

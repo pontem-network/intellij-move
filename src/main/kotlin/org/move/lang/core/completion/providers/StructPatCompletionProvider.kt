@@ -1,4 +1,4 @@
-package org.move.lang.core.completion
+package org.move.lang.core.completion.providers
 
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
@@ -6,6 +6,7 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.move.lang.core.completion.createCompletionLookupElement
 import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvLetStmt
 import org.move.lang.core.psi.containingModule

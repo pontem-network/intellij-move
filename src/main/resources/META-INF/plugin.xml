@@ -131,6 +131,8 @@
                            implementationClass="org.move.ide.typing.MvQuoteHandler"/>
         <typedHandler implementation="org.move.ide.typing.MvAngleBraceTypedHandler"
                       id="MvAngleBracketsHandler"/>
+        <typedHandler implementation="org.move.ide.typing.MvTypedHandler"
+                      id="MvTypedHandler"/>
         <enterHandlerDelegate implementation="org.move.ide.typing.MvEnterInLineCommentHandler"
                               id="MvEnterInLineComments"/>
         <backspaceHandlerDelegate implementation="org.move.ide.typing.MvAngleBracketsBackspaceHandler"
@@ -172,6 +174,10 @@
                                 implementationClass="org.move.lang.core.completion.KeywordCompletionContributor"/>
         <completion.contributor language="TOML"
                                 implementationClass="org.move.toml.completion.MoveTomlCompletionContributor"/>
+        <weigher key="completion"
+                 implementationClass="com.intellij.codeInsight.completion.PriorityWeigher"
+                 id="priority"
+                 order="first"/>
 
         <psi.referenceContributor language="TOML"
                                   implementation="org.move.toml.MoveTomlReferenceContributor"/>
