@@ -21,6 +21,8 @@ interface MvNamedElement : MvElement,
                            NavigatablePsiElement {
     val nameElement: PsiElement?
         get() = findLastChildByType(MvElementTypes.IDENTIFIER)
+
+    val fqName: String
 }
 
 interface MvQualifiedNamedElement : MvNamedElement

@@ -15,7 +15,8 @@ class MvCompletionTestFixture(
 
     fun invokeCompletion(@Language("Move") code: String): List<LookupElement> {
         prepare(code)
-        return myFixture.completeBasic().toList()
+        val completions = myFixture.completeBasic()
+        return completions.toList()
     }
 
     fun doFirstCompletion(@Language("Move") code: String, @Language("Move") after: String) {

@@ -139,4 +139,18 @@ module 0x1::M2 {
     }
 }
     """)
+
+    fun `test no unused import for type with the same name as module`() = checkWarnings("""
+    module 0x1::Coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::Coin::{Self, Coin};
+        
+        fun call(): Coin {
+            Coin::get_coin()
+        }
+    }
+    """)
 }

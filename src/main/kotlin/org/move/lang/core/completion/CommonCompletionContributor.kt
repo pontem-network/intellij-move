@@ -6,6 +6,7 @@ import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.providers.*
 import org.move.lang.core.completion.sort.COMPLETION_WEIGHERS_GROUPED
 import org.move.lang.core.psi.MvModule
+import javax.xml.stream.events.Namespace
 
 class CommonCompletionContributor : CompletionContributor() {
     init {

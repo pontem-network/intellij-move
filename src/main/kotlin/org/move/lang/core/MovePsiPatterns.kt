@@ -8,8 +8,8 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.ProcessingContext
-import org.move.lang.MvElementTypes.*
 import org.move.lang.MoveFile
+import org.move.lang.MvElementTypes.*
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.hasAncestorOrSelf
@@ -272,7 +272,7 @@ inline fun <reified I : PsiElement> PsiElementPattern.Capture<PsiElement>.withSu
     return this.withSuperParent(level, I::class.java)
 }
 
-fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCond(
+fun <T : Any, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCond(
     name: String,
     cond: (T) -> Boolean
 ): Self =
@@ -280,7 +280,7 @@ fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCond(
         override fun accepts(t: T, context: ProcessingContext?): Boolean = cond(t)
     })
 
-fun <T, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCondContext(
+fun <T : Any, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCondContext(
     name: String,
     cond: (T, ProcessingContext?) -> Boolean
 ): Self =

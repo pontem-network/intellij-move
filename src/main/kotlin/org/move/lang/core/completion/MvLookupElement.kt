@@ -2,8 +2,15 @@ package org.move.lang.core.completion
 
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementDecorator
+import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.ext.ty
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.isCompatible
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnknown
 
-fun LookupElement.toMvLookupElement(properties: LookupElementProperties): LookupElement =
+fun LookupElement.toMvLookupElement(properties: LookupElementProperties): MvLookupElement =
     MvLookupElement(this, properties)
 
 class MvLookupElement(
@@ -30,7 +37,6 @@ class MvLookupElement(
     }
 }
 
-
 data class LookupElementProperties(
     /**
      * `true` if after insertion of the lookup element it will form an expression with a type
@@ -47,4 +53,28 @@ data class LookupElementProperties(
     val isReturnTypeConformsToExpectedType: Boolean = false,
 
     val isCompatibleWithContext: Boolean = false,
+
+    val typeHasAllRequiredAbilities: Boolean = false,
 )
+
+fun lookupProperties(element: MvNamedElement, context: CompletionContext): LookupElementProperties {
+    val ctx = InferenceContext(context.itemVis.isMsl)
+    var props = LookupElementProperties()
+    if (context.expectedTy !is TyUnknown) {
+        val ty = element.asTy(ctx)
+        props = props.copy(isReturnTypeConformsToExpectedType = isCompatible(context.expectedTy, ty))
+    }
+    return props
+}
+
+private fun MvNamedElement.asTy(ctx: InferenceContext): Ty =
+    when (this) {
+//        is RsConstant -> typeReference?.type
+//        is RsConstParameter -> typeReference?.type
+//        is RsFieldDecl -> typeReference?.type
+        is MvFunction -> returnType?.type?.ty(ctx.msl) ?: TyUnknown
+//        is RsStructItem -> declaredType
+//        is RsEnumVariant -> parentEnum.declaredType
+//        is MvBindingPat -> this.cachedTy(ctx)
+        else -> TyUnknown
+    }

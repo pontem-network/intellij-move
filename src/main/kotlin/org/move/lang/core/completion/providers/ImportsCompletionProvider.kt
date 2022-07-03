@@ -53,7 +53,7 @@ object ImportsCompletionProvider : MvCompletionProvider() {
             val lookup =
                 it.element.createCompletionLookupElement(
                     BasicInsertHandler(),
-                    namespaces = itemVis.namespaces)
+                    ns = itemVis.namespaces)
             result.addElement(lookup)
             false
         }

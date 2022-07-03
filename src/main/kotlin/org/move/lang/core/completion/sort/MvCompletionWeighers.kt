@@ -73,8 +73,9 @@ private val COMPLETION_WEIGHERS: List<Any> = listOf(
      */
     "priority",
 
-    preferTrue(P::isCompatibleWithContext, id = "rust-prefer-matching-context"),
     preferTrue(P::isReturnTypeConformsToExpectedType, id = "rust-prefer-matching-expected-type"),
+//    preferTrue(P::typeHasAllRequiredAbilities, id = "rust-prefer-matching-abilities"),
+//    preferTrue(P::isCompatibleWithContext, id = "rust-prefer-matching-context"),
 
 //    // TODO these weighers most likely should be after "stats"
 //    preferTrue(P::isLocal, id = "rust-prefer-locals"),
