@@ -7,6 +7,7 @@ import com.intellij.psi.util.descendantsOfType
 import com.intellij.psi.util.parentOfType
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ext.moduleName
 import org.move.lang.core.psi.ext.speck
 
 class MvUnusedImportInspection : MvLocalInspectionTool() {
@@ -42,17 +43,33 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                     val itemUseSpeck = useStmt.itemUseSpeck
                     if (itemUseSpeck != null) {
                         for (useItem in itemUseSpeck.descendantsOfType<MvUseItem>()) {
-                            val speck = useItem.speck ?: continue
+                            val targetItem = useItem.speck ?: continue
 
-                            val itemName = useItem.name ?: continue
+                            // use .text as .name is overloaded
+                            val itemName = useItem.text ?: continue
+                            if (itemName == "Self") {
+                                // Self reference to module, check against visitedModules
+                                val moduleName = useItem.moduleName
+                                if (moduleName in visitedModules) {
+                                    registerUnused(targetItem)
+                                    continue
+                                }
+                                visitedModules.add(moduleName)
+
+                                if (!useItem.isUsed()) {
+                                    registerUnused(targetItem)
+                                }
+                                continue
+                            }
+
                             if (itemName in visitedItems) {
-                                registerUnused(speck)
+                                registerUnused(targetItem)
                                 continue
                             }
                             visitedItems.add(itemName)
 
                             if (!useItem.isUsed()) {
-                                registerUnused(speck)
+                                registerUnused(targetItem)
                             }
                         }
                         continue
@@ -110,8 +127,7 @@ private fun isItemUseSpeckUsed(useSpeck: MvItemUseSpeck, usages: PathUsages): Bo
 private fun isUseItemUsed(useItem: MvUseItem, pathUsages: PathUsages): Boolean {
     var itemName = useItem.referenceName
     if (itemName == "Self") {
-        val useStmt = useItem.ancestorStrict<MvUseStmt>()
-        itemName = useStmt?.itemUseSpeck?.fqModuleRef?.referenceName.orEmpty()
+        itemName = useItem.moduleName
     }
     val usageResolvedItems = pathUsages.map[itemName]
     @Suppress("FoldInitializerAndIfToElvis")
