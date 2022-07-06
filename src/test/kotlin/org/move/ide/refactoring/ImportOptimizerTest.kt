@@ -3,7 +3,7 @@ package org.move.ide.refactoring
 import org.intellij.lang.annotations.Language
 import org.move.utils.tests.MvTestBase
 
-class MvImportOptimizerTest : MvTestBase() {
+class ImportOptimizerTest : MvTestBase() {
     fun `test no change`() = doTest("""
 script {
     use 0x1::M::MyStruct;

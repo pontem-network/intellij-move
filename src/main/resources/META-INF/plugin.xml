@@ -116,7 +116,7 @@
         <lang.documentationProvider language="Move"
                                     implementationClass="org.move.ide.docs.MvDocumentationProvider"/>
 
-        <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.MvImportOptimizer"/>
+        <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.ImportOptimizer"/>
 
         <gotoSymbolContributor implementation="org.move.ide.navigation.MvSymbolNavigationContributor"/>
         <gotoClassContributor implementation="org.move.ide.navigation.MvStructNavigationContributor"/>

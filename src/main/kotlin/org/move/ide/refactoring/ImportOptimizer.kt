@@ -13,7 +13,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.modules
 
-class MvImportOptimizer : ImportOptimizer {
+class ImportOptimizer : ImportOptimizer {
     override fun supports(file: PsiFile) = file is MoveFile
 
     override fun processFile(file: PsiFile) = Runnable {
