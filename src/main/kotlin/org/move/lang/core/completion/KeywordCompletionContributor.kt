@@ -1,6 +1,8 @@
 package org.move.lang.core.completion
 
 import com.intellij.codeInsight.completion.CompletionContributor
+import com.intellij.codeInsight.completion.CompletionParameters
+import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PlatformPatterns.psiElement
@@ -11,9 +13,9 @@ import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.MvPsiPatterns.addressBlock
 import org.move.lang.core.MvPsiPatterns.codeStmt
 import org.move.lang.core.MvPsiPatterns.function
+import org.move.lang.core.MvPsiPatterns.itemSpecLabel
 import org.move.lang.core.MvPsiPatterns.moduleBlock
 import org.move.lang.core.MvPsiPatterns.scriptBlock
-import org.move.lang.core.MvPsiPatterns.itemSpecLabel
 import org.move.lang.core.MvPsiPatterns.specStmt
 import org.move.lang.core.MvPsiPatterns.toplevel
 import org.move.lang.core.MvPsiPatterns.typeParameter
@@ -81,6 +83,9 @@ class KeywordCompletionContributor : CompletionContributor() {
                 "while",
                 "abort",
                 "return",
+                "continue",
+                "break",
+                "else"
             )
         )
         extend(
@@ -126,6 +131,13 @@ class KeywordCompletionContributor : CompletionContributor() {
 
     private fun onStmtBeginning(vararg startWords: String): PsiElementPattern.Capture<PsiElement> =
         psiElement(IDENTIFIER).and(MvPsiPatterns.onStmtBeginning(*startWords))
+
+    override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
+        super.fillCompletionVariants(
+            parameters,
+            CommonCompletionContributor.withSorter(parameters, result)
+        )
+    }
 
     companion object {
         private val VISIBILITY_MODIFIERS = arrayOf("public", "public(script)", "public(friend)")

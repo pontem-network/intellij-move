@@ -38,6 +38,7 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                         continue
                     }
 
+                    // process items. If Self import, add to the visitedModules
                     val itemUseSpeck = useStmt.itemUseSpeck
                     if (itemUseSpeck != null) {
                         for (useItem in itemUseSpeck.descendantsOfType<MvUseItem>()) {

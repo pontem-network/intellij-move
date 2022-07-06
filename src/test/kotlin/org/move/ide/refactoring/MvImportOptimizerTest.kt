@@ -209,24 +209,32 @@ module 0x1::Main {
 }
     """)
 
-//    fun `test remove duplicate module import`() = doTest("""
-//module 0x1::M { fun m() {} }
-//module 0x1::M2 {
-//    use 0x1::M;
-//    use 0x1::M;
-//    fun main() {
-//        M::m();
-//    }
-//}
-//    """, """
-//module 0x1::M { fun m() {} }
-//module 0x1::M2 {
-//    use 0x1::M;
-//    fun main() {
-//        M::m();
-//    }
-//}
-//    """)
+    fun `test simple module import merges with item group`() = doTest("""
+    module 0x1::Coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::Coin;
+        use 0x1::Coin::Coin;
+        
+        fun call(): Coin {
+            Coin::get_coin()
+        }
+    }
+    """, """
+    module 0x1::Coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::Coin::{Self, Coin};
+        
+        fun call(): Coin {
+            Coin::get_coin()
+        }
+    }
+    """)
 
     private fun doTest(@Language("Move") code: String, @Language("Move") expected: String) =
         checkEditorAction(code, expected, "OptimizeImports")

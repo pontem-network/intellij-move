@@ -73,6 +73,18 @@ module 0x1::Main {
         """
     )
 
+    fun `test return before local items`() = checkCompletionsOrder(
+        listOf("return", "return_local"),
+        """
+            module 0x1::Main {
+                fun return_local() {}
+                fun call() {
+                    ret/*caret*/
+                }
+            }    
+        """
+    )
+
 //    fun `test resource before non-resource in borrow_global`() = checkCompletionsOrder(
 //        listOf("Coin", "Cat"),
 //        """

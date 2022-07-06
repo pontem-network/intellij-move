@@ -71,8 +71,10 @@ BECH32_ADDRESS=wallet1[A-Z0-9a-z&&[^boi1]]{6,83}
 POLKADOT_ADDRESS=[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*
 
 BOOL_LITERAL=(true)|(false)
-HEX_INTEGER_LITERAL=0x[0-9a-fA-F]+((u8)|(u64)|(u128))?
-INTEGER_LITERAL=[0-9]+((u8)|(u64)|(u128))?
+HEX_INTEGER_LITERAL=0x[0-9a-fA-F]+[a-zA-Z0-9]*
+//HEX_INTEGER_LITERAL=0x[0-9a-fA-F]+((u8)|(u64)|(u128))?
+INTEGER_LITERAL=[0-9]+[a-zA-Z0-9]*
+//INTEGER_LITERAL=[0-9]+((u8)|(u64)|(u128))?
 HEX_STRING_LITERAL=x\" ( [A-F0-9a-f]* ) (\")?
 BYTE_STRING_LITERAL=b\" ( [^\"\n] )* (\")?
 

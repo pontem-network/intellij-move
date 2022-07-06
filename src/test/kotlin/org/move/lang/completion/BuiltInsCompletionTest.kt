@@ -105,6 +105,15 @@ class BuiltInsCompletionTest : CompletionTestCase() {
     }    
     """)
 
+    fun `test 0 has no completions`() = checkNoCompletion("""
+    module 0x1::Main {
+        const ONE_E_12: u64 = 1;
+        fun call() {
+            0/*caret*/
+        }
+    }    
+    """)
+
     private fun checkContainsBuiltins(@Language("Move") text: String) {
         val functionNames = BUILTIN_FUNCTIONS
         for (name in functionNames) {

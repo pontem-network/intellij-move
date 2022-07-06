@@ -67,7 +67,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 val fn = codeBlock.parent as? MvFunction ?: return
                 val returningExpr = codeBlock.returningExpr
 
-                val expectedReturnTy = fn.resolvedReturnTy
+                val expectedReturnTy = fn.returnTy
                 val actualReturnTy = returningExpr?.inferExprTy(fn.inferenceCtx(msl)) ?: TyUnit
                 if (!isCompatible(expectedReturnTy, actualReturnTy)) {
                     val annotatedElement = returningExpr as? PsiElement
@@ -85,7 +85,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 val outerFn = returnExpr.containingFunction ?: return
 
                 val ctx = outerFn.inferenceCtx(msl)
-                val expectedReturnTy = outerFn.resolvedReturnTy
+                val expectedReturnTy = outerFn.returnTy
                 val actualReturnTy = returnExpr.expr?.inferExprTy(ctx) ?: return
                 if (!isCompatible(expectedReturnTy, actualReturnTy)) {
                     holder.registerTypeError(

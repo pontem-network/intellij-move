@@ -486,4 +486,40 @@ class KeywordCompletionTest : CompletionTestCase() {
         spec module/*caret*/ {}
     }    
     """)
+
+    fun `test else after if block`() = doSingleCompletion("""
+    module 0x1::M {
+        fun call() {
+            if (true) {
+                
+            } el/*caret*/
+        }
+    }    
+    """, """
+    module 0x1::M {
+        fun call() {
+            if (true) {
+                
+            } else /*caret*/
+        }
+    }    
+    """)
+
+    fun `test continue inside while`() = doSingleCompletion("""
+    module 0x1::Main {
+        fun call() {
+            while (true) {
+                con/*caret*/
+            }
+        }
+    }    
+    """, """
+    module 0x1::Main {
+        fun call() {
+            while (true) {
+                continue /*caret*/
+            }
+        }
+    }    
+    """)
 }

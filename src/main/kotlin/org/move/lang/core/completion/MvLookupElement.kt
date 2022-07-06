@@ -5,6 +5,7 @@ import com.intellij.codeInsight.lookup.LookupElementDecorator
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.ty
+import org.move.lang.core.psi.returnTy
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.Ty
@@ -72,7 +73,7 @@ private fun MvNamedElement.asTy(ctx: InferenceContext): Ty =
 //        is RsConstant -> typeReference?.type
 //        is RsConstParameter -> typeReference?.type
 //        is RsFieldDecl -> typeReference?.type
-        is MvFunction -> returnType?.type?.ty(ctx.msl) ?: TyUnknown
+        is MvFunction -> this.returnTy
 //        is RsStructItem -> declaredType
 //        is RsEnumVariant -> parentEnum.declaredType
 //        is MvBindingPat -> this.cachedTy(ctx)

@@ -10,5 +10,9 @@ script {
         0x1::RMRK:: ;
         Sender::RMRK:: ;
         Sender::RMRK::
+
+        while (true) {}
+        return
+        0hello
     }
 }

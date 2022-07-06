@@ -153,4 +153,34 @@ module 0x1::M2 {
         }
     }
     """)
+
+    fun `test simple import has more priority than Self not in group`() = checkWarnings("""
+    module 0x1::Coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::Coin;
+        <warning descr="Unused use item">use 0x1::Coin::Self;</warning>
+        
+        fun call(): Coin {
+            Coin::get_coin()
+        }
+    }
+    """)
+
+    fun `test Self in group has priority over simple import`() = checkWarnings("""
+    module 0x1::Coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        <warning descr="Unused use item">use 0x1::Coin;</warning>
+        use 0x1::Coin::{Self, Coin};
+        
+        fun call(): Coin {
+            Coin::get_coin()
+        }
+    }
+    """)
 }

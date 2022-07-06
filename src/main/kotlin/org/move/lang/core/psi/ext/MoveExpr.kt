@@ -4,6 +4,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferExprTy
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
 
 fun MvExpr.inferExprTy(ctx: InferenceContext) = inferExprTy(this, ctx)
@@ -22,8 +23,8 @@ fun MvExpr.expectedTy(ctx: InferenceContext): Ty {
             for ((i, childExpr) in parent.children.withIndex()) {
                 if (childExpr.textRange.contains(this.textOffset)) {
                     val callExpr = parent.parent as? MvCallExpr ?: return TyUnknown
-                    val function = callExpr.path.reference?.resolve() as? MvFunction ?: return TyUnknown
-                    return function.parameterBindings[i].declaredTy(ctx)
+                    val callTy = callExpr.inferCallTy(ctx) as? TyFunction ?: return TyUnknown
+                    return callTy.paramTypes[i]
                 }
             }
             TyUnknown

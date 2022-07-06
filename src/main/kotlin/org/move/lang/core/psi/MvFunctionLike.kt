@@ -27,7 +27,7 @@ val MvFunctionLike.parameters get() = this.functionParameterList?.functionParame
 
 val MvFunctionLike.parameterBindings: List<MvBindingPat> get() = this.parameters.map { it.bindingPat }
 
-val MvFunctionLike.resolvedReturnTy: Ty
+val MvFunctionLike.returnTy: Ty
     get() {
         val returnTypeElement = this.returnType
         return if (returnTypeElement == null) {
