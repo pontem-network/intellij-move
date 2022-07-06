@@ -209,6 +209,50 @@ module 0x1::Main {
 }
     """)
 
+    fun `test removes empty group`() = doTest("""
+module 0x1::M1 {}         
+module 0x1::Main {
+    use 0x1::M1::{};
+}        
+    """, """
+module 0x1::M1 {}         
+module 0x1::Main {}        
+    """)
+
+    fun `test merge items into group`() = doTest("""
+module 0x1::M1 { struct S1 {} struct S2 {} }         
+module 0x1::Main {
+    use 0x1::M1::S1;
+    use 0x1::M1::S2;
+    
+    fun call(s1: S1, s2: S2) {}
+}        
+    """, """
+module 0x1::M1 { struct S1 {} struct S2 {} }         
+module 0x1::Main {
+    use 0x1::M1::{S1, S2};
+    
+    fun call(s1: S1, s2: S2) {}
+}        
+    """)
+
+    fun `test merge item into existing group`() = doTest("""
+module 0x1::M1 { struct S1 {} struct S2 {} struct S3 {} }         
+module 0x1::Main {
+    use 0x1::M1::S1;
+    use 0x1::M1::{S2, S3};
+    
+    fun call(s1: S1, s2: S2, s3: S3) {}
+}        
+    """, """
+module 0x1::M1 { struct S1 {} struct S2 {} struct S3 {} }         
+module 0x1::Main {
+    use 0x1::M1::{S1, S2, S3};
+    
+    fun call(s1: S1, s2: S2, s3: S3) {}
+}        
+    """)
+
     fun `test simple module import merges with item group`() = doTest("""
     module 0x1::Coin {
         struct Coin {}
@@ -236,6 +280,6 @@ module 0x1::Main {
     }
     """)
 
-    private fun doTest(@Language("Move") code: String, @Language("Move") expected: String) =
-        checkEditorAction(code, expected, "OptimizeImports")
+    private fun doTest(@Language("Move") before: String, @Language("Move") after: String) =
+        checkEditorAction(before, after, "OptimizeImports")
 }

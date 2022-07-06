@@ -183,4 +183,13 @@ module 0x1::M2 {
         }
     }
     """)
+
+    fun `test empty item group`() = checkWarnings("""
+    module 0x1::Coin {
+        struct C {}
+    }    
+    module 0x1::Main {
+        <warning descr="Unused use item">use 0x1::Coin::{};</warning>
+    }
+    """)
 }

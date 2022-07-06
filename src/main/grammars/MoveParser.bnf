@@ -499,7 +499,7 @@ ItemUseSpeck ::= FQModuleRef '::' (UseItem | UseItemGroup)
     name = "qual path to imported item"
 }
 
-UseItemGroup ::= '{' <<comma_sep_items MultiItemUse_member_with_recovery>> '}'
+UseItemGroup ::= '{' <<comma_sep_items MultiItemUse_member_with_recovery>>? '}'
 {
     pin = 1
 }

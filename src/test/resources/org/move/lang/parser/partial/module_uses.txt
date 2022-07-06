@@ -138,25 +138,8 @@ FILE
           PsiElement(::)('::')
           MvUseItemGroupImpl(USE_ITEM_GROUP)
             PsiElement({)('{')
-            PsiErrorElement:';' unexpected
+            PsiErrorElement:'}' expected, got ';'
               <empty list>
-        PsiElement(;)(';')
-      PsiWhiteSpace('\n    ')
-      MvUseStmtImpl(USE_STMT)
-        PsiElement(use)('use')
-        PsiWhiteSpace(' ')
-        MvItemUseSpeckImpl(ITEM_USE_SPECK)
-          MvFQModuleRefImpl(FQ_MODULE_REF)
-            MvAddressRefImpl(ADDRESS_REF)
-              PsiElement(DIEM_ADDRESS)('0x0')
-            PsiElement(::)('::')
-            PsiElement(IDENTIFIER)('Transaction')
-          PsiElement(::)('::')
-          MvUseItemGroupImpl(USE_ITEM_GROUP)
-            PsiElement({)('{')
-            PsiErrorElement:'}' unexpected
-              <empty list>
-            PsiElement(})('}')
         PsiElement(;)(';')
       PsiWhiteSpace('\n    ')
       MvUseStmtImpl(USE_STMT)
