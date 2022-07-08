@@ -485,14 +485,14 @@ class RenameTest : MvTestBase() {
 
     fun `test file rename renames module if only one and same name`() {
         val fileText = """
-    module 0x1::Main {}                
+    module 0x1::Main { use 0x1::Main; }                
         """
         inlineFile(fileText, "Main.move")
 
-        myFixture.renameElement(myFixture.file, "MyMain")
+        myFixture.renameElement(myFixture.file, "MyMain.move")
 
         val afterText = """
-    module 0x1::MyMain {}                
+    module 0x1::MyMain { use 0x1::MyMain; }                
         """
         myFixture.checkResult(afterText)
     }

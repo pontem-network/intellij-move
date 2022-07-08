@@ -1,9 +1,11 @@
 package org.move.lang.core.psi
 
 import com.intellij.psi.NavigatablePsiElement
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.PsiReference
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.PsiSearchHelper
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.refactoring.listeners.RefactoringElementListener
@@ -15,6 +17,7 @@ import org.move.lang.core.completion.BUILTIN_ITEM_PRIORITY
 import org.move.lang.core.completion.LOCAL_ITEM_PRIORITY
 import org.move.lang.core.psi.ext.address
 import org.move.lang.core.psi.ext.findLastChildByType
+import org.move.lang.moveProject
 
 interface MvNamedElement : MvElement,
                            PsiNamedElement,
@@ -82,4 +85,5 @@ fun MvNamedElement.rename(newName: String) {
         this.project,
         RefactoringElementListener.DEAF
     )
+    PsiDocumentManager.getInstance(project).commitAllDocuments()
 }
