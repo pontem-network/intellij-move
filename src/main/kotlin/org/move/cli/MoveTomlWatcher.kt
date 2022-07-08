@@ -8,8 +8,6 @@ class MoveTomlWatcher(
     private val onMoveTomlChange: () -> Unit
 ) : BulkFileListener {
 
-    override fun before(events: List<VFileEvent>) = Unit
-
     override fun after(events: List<VFileEvent>) {
         if (events.any { isInterestingEvent(it) }) onMoveTomlChange()
     }
@@ -17,7 +15,10 @@ class MoveTomlWatcher(
     private fun isInterestingEvent(event: VFileEvent): Boolean {
         return event.pathEndsWith(Consts.MANIFEST_FILE)
     }
-
-    private fun VFileEvent.pathEndsWith(suffix: String): Boolean = path.endsWith(suffix) ||
-            this is VFilePropertyChangeEvent && oldPath.endsWith(suffix)
 }
+
+fun VFileEvent.pathStartsWith(prefix: String): Boolean = path.startsWith(prefix) ||
+        this is VFilePropertyChangeEvent && oldPath.startsWith(prefix)
+
+fun VFileEvent.pathEndsWith(suffix: String): Boolean = path.endsWith(suffix) ||
+        this is VFilePropertyChangeEvent && oldPath.endsWith(suffix)

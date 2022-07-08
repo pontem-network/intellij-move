@@ -41,9 +41,12 @@ val Project.moveProjects get() = service<MoveProjectsService>()
 val Project.hasMoveProject get() = this.moveProjects.allProjects.isNotEmpty()
 
 class MoveProjectsService(val project: Project) : Disposable {
+    private val buildWatcher = BuildDirectoryWatcher(emptyList()) { refreshAllProjects() }
+
     init {
         with(project.messageBus.connect()) {
             if (!isUnitTestMode) {
+                subscribe(VirtualFileManager.VFS_CHANGES, buildWatcher)
                 subscribe(VirtualFileManager.VFS_CHANGES, MoveTomlWatcher {
                     refreshAllProjects()
                 })
@@ -54,8 +57,6 @@ class MoveProjectsService(val project: Project) : Disposable {
                 }
             })
         }
-
-//        MoveExternalSystemProjectAware.register(project, this)
     }
 
     fun refreshAllProjects() {
@@ -144,6 +145,7 @@ class MoveProjectsService(val project: Project) : Disposable {
 
         return projects.updateAsync(wrappedUpdater)
             .thenApply { projects ->
+                buildWatcher.updateProjects(projects)
                 resetIDEState(projects)
                 projects
             }

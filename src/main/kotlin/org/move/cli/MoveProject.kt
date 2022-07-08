@@ -27,7 +27,7 @@ data class MoveProject(
     val dependencies: List<Pair<MovePackage, RawAddressMap>>
 ) : UserDataHolderBase() {
 
-    val contentRoot get() = this.currentPackage.contentRoot
+    val contentRoot: VirtualFile get() = this.currentPackage.contentRoot
     val contentRootPath: Path? get() = this.currentPackage.contentRoot.toNioPathOrNull()
 
     fun movePackages(): Sequence<MovePackage> {
