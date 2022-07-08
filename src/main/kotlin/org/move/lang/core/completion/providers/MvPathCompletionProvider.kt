@@ -1,4 +1,4 @@
-package org.move.lang.core.completion
+package org.move.lang.core.completion.providers
 
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
@@ -6,20 +6,20 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
+import org.move.ide.inspections.imports.ImportInsertHandler
 import org.move.lang.core.MvPsiPatterns
-import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.MvPath
-import org.move.lang.core.psi.completionPriority
-import org.move.lang.core.psi.ext.folderScope
-import org.move.lang.core.psi.ext.isSelf
-import org.move.lang.core.psi.ext.itemScope
-import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.MslScope
-import org.move.lang.core.resolve.mslScope
-import org.move.lang.core.resolve.processItems
+import org.move.lang.core.completion.CompletionContext
+import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
+import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnknown
 
 abstract class MvPathCompletionProvider : MvCompletionProvider() {
 
@@ -37,6 +37,9 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
 
         val moduleRef = pathElement.moduleRef
         val itemVis = itemVis(pathElement)
+        val expectedTy =
+            getExpectedTypeForEnclosingPathOrDotExpr(pathElement, InferenceContext(pathElement.isMsl()))
+        val ctx = CompletionContext(pathElement, itemVis, expectedTy)
 
         if (moduleRef != null) {
             val module = moduleRef.reference?.resolve() as? MvModule
@@ -46,7 +49,7 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
                 else -> Visibility.buildSetOfVisibilities(pathElement)
             }
             processModuleItems(module, itemVis.replace(vs = vs)) {
-                val lookup = it.element.createCompletionLookupElement(ns = itemVis.namespaces)
+                val lookup = it.element.createLookupElement(ctx)
                 result.addElement(lookup)
                 false
             }
@@ -58,8 +61,8 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
             if (processedNames.contains(it.name)) return@processItems false
             processedNames.add(it.name)
 
-            val lookupElement = it.element.createCompletionLookupElement(
-                ns = itemVis.namespaces,
+            val lookupElement = it.element.createLookupElement(
+                ctx,
                 priority = it.element.completionPriority
             )
             result.addElement(lookupElement)
@@ -70,12 +73,20 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
         val originalPathElement = parameters.originalPosition?.parent as? MvPath ?: return
         val importContext =
             ImportContext.from(originalPathElement, itemVis.replace(vs = setOf(Visibility.Public)))
-        addCompletionsFromIndex(
+        val candidates = getImportCandidates(
             parameters,
             result,
             processedNames,
             importContext
         )
+        candidates.forEach { candidate ->
+            val lookupElement = candidate.element.createLookupElement(
+                ctx,
+                priority = UNIMPORTED_ITEM_PRIORITY,
+                insertHandler = ImportInsertHandler(parameters, candidate)
+            )
+            result.addElement(lookupElement)
+        }
     }
 }
 
@@ -100,6 +111,12 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
 object TypesCompletionProvider : MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = MvPsiPatterns.pathType()
+
+//    override fun lookupElementProperties(pathElement: MvPath): LookupElementProperties {
+//        return LookupElementProperties(
+//            typeHasAllRequiredAbilities =
+//        )
+//    }
 
     override fun itemVis(pathElement: MvPath): ItemVis {
         return ItemVis(
@@ -126,4 +143,16 @@ object SchemasCompletionProvider : MvPathCompletionProvider() {
             folderScope = pathElement.folderScope
         )
     }
+}
+
+private fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement, ctx: InferenceContext): Ty {
+    for (ancestor in element.ancestors) {
+        if (element.endOffset < ancestor.endOffset) continue
+        if (element.endOffset > ancestor.endOffset) break
+        when (ancestor) {
+            is MvRefExpr -> return ancestor.expectedTy(ctx)
+            is MvDotExpr -> return ancestor.expectedTy(ctx)
+        }
+    }
+    return TyUnknown
 }

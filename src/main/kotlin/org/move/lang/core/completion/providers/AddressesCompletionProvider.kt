@@ -1,13 +1,17 @@
-package org.move.lang.core.completion
+package org.move.lang.core.completion.providers
 
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.move.cli.AddressVal
+import org.move.ide.MoveIcons
+import org.move.lang.core.completion.alreadyHasColonColon
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedAddress
 import org.move.lang.core.psiElement
@@ -67,4 +71,11 @@ object AddressesCompletionProvider : MvCompletionProvider() {
             result.addElement(lookup)
         }
     }
+}
+
+fun AddressVal.createCompletionLookupElement(lookupString: String): LookupElement {
+    return LookupElementBuilder
+        .create(lookupString)
+        .withIcon(MoveIcons.ADDRESS)
+        .withTypeText(packageName)
 }

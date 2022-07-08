@@ -10,6 +10,7 @@ import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.isNative
+import org.move.lang.core.psi.module
 import org.move.lang.core.types.ty.Ty
 import javax.swing.Icon
 
@@ -57,6 +58,13 @@ val MvFunction.outerFileName: String
 abstract class MvFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                                 MvFunction {
     var builtIn = false
+
+    override val fqName: String
+        get() {
+            val moduleFqName = this.module?.fqName?.let { "$it::" }
+            val name = this.name ?: "<unknown>"
+            return moduleFqName + name
+        }
 
     override fun canNavigate(): Boolean = !builtIn
     override fun canNavigateToSource(): Boolean = !builtIn

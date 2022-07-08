@@ -64,7 +64,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
 private fun inferRefExprTy(refExpr: MvRefExpr, ctx: InferenceContext): Ty {
     val binding =
         refExpr.path.reference?.resolve() as? MvBindingPat ?: return TyUnknown
-    return binding.cachedTy(ctx)
+    return binding.inferredTy(ctx)
 }
 
 private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): Ty {

@@ -58,3 +58,9 @@ class ChopArgumentListIntention : ChopListIntentionBase<MvCallArgumentList, MvEx
     MvExpr::class.java,
     "Put arguments on separate lines"
 )
+
+class ChopAttrArgumentListIntention : ChopListIntentionBase<MvAttrItemArguments, MvAttrItemArgument>(
+    MvAttrItemArguments::class.java,
+    MvAttrItemArgument::class.java,
+    "Put arguments on separate lines"
+)

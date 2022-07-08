@@ -1,4 +1,4 @@
-package org.move.lang.core.completion
+package org.move.lang.core.completion.providers
 
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
@@ -6,6 +6,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.ProcessingContext
+import org.move.lang.core.completion.*
 import org.move.lang.core.psi.ext.isErrorElement
 import org.move.lang.core.psi.ext.isWhitespace
 import org.move.lang.core.psi.ext.rightSiblings
@@ -38,7 +39,7 @@ class KeywordCompletionProvider(
                 }
                 ctx.addSuffix(suffix)
             }
-            result.addElement(PrioritizedLookupElement.withPriority(element, KEYWORD_PRIORITY))
+            result.addElement(element.withPriority(KEYWORD_PRIORITY))
         }
     }
 }

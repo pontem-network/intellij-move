@@ -13,6 +13,13 @@
     </description>
     <change-notes>
         <![CDATA[
+    <h3>1.13.0</h3>
+    <ul>
+    <li>Correct scoping for modules suggested in auto-import</li>
+    <li>Highlight duplicate imports</li>
+    <li>Merge imports into groups if possible</li>
+    <li>Initial completion weighting</li>
+    </ul>
     <h3>1.12.0</h3>
     <ul>
     <li>Unused variable inspection</li>
@@ -100,7 +107,7 @@
                   extensions="move"
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
-        <fileBasedIndex implementation="org.move.ide.inspections.imports.MvNamedElementIndex"/>
+        <fileBasedIndex implementation="org.move.ide.inspections.imports.MoveElementsIndex"/>
 
         <configurationType
                 implementation="org.move.cli.runconfig.AptosCommandConfigurationType"/>
@@ -116,7 +123,7 @@
         <lang.documentationProvider language="Move"
                                     implementationClass="org.move.ide.docs.MvDocumentationProvider"/>
 
-        <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.MvImportOptimizer"/>
+        <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.ImportOptimizer"/>
 
         <gotoSymbolContributor implementation="org.move.ide.navigation.MvSymbolNavigationContributor"/>
         <gotoClassContributor implementation="org.move.ide.navigation.MvStructNavigationContributor"/>
@@ -131,6 +138,8 @@
                            implementationClass="org.move.ide.typing.MvQuoteHandler"/>
         <typedHandler implementation="org.move.ide.typing.MvAngleBraceTypedHandler"
                       id="MvAngleBracketsHandler"/>
+        <typedHandler implementation="org.move.ide.typing.MvTypedHandler"
+                      id="MvTypedHandler"/>
         <enterHandlerDelegate implementation="org.move.ide.typing.MvEnterInLineCommentHandler"
                               id="MvEnterInLineComments"/>
         <backspaceHandlerDelegate implementation="org.move.ide.typing.MvAngleBracketsBackspaceHandler"
@@ -172,6 +181,10 @@
                                 implementationClass="org.move.lang.core.completion.KeywordCompletionContributor"/>
         <completion.contributor language="TOML"
                                 implementationClass="org.move.toml.completion.MoveTomlCompletionContributor"/>
+        <weigher key="completion"
+                 implementationClass="com.intellij.codeInsight.completion.PriorityWeigher"
+                 id="priority"
+                 order="first"/>
 
         <psi.referenceContributor language="TOML"
                                   implementation="org.move.toml.MoveTomlReferenceContributor"/>
@@ -216,6 +229,12 @@
                 key="org.move.lang.core.psi.MvFunction"
                 implementationClass="org.move.ide.navigation.FunctionDeclarationRangeHandler"/>
 
+<!--        <toolWindow id="Aptos"-->
+<!--                    anchor="right"-->
+<!--                    factoryClass="org.move.cli.toolwindow.MoveToolWindowFactory" />-->
+
+
+
         <!--        <localInspection language="Move" groupPath="Move" groupName="Naming"-->
         <!--                         displayName="Attempt to override a built-in function"-->
         <!--                         enabledByDefault="true" level="ERROR"-->
@@ -257,6 +276,10 @@
                          displayName="Missing acquires"
                          enabledByDefault="true" level="ERROR"
                          implementationClass="org.move.ide.inspections.MvMissingAcquiresInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Unused acquires"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.MvUnusedAcquiresTypeInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Unused struct type parameter"
                          enabledByDefault="true" level="ERROR"
@@ -323,6 +346,10 @@
             <className>org.move.ide.intentions.ChopArgumentListIntention</className>
             <category>Move</category>
         </intentionAction>
+        <intentionAction>
+            <className>org.move.ide.intentions.ChopAttrArgumentListIntention</className>
+            <category>Move</category>
+        </intentionAction>
 
     </extensions>
 
@@ -340,7 +367,11 @@
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
         </action>
         <action id="Move.RefreshAllProjects"
-                class="org.move.ide.actions.RefreshMvProjectsAction"
+                class="org.move.ide.actions.RefreshMoveProjectsAction"
                 icon="AllIcons.Actions.Refresh"/>
+
+        <group id="Move.Aptos">
+            <reference id="Move.RefreshAllProjects"/>
+        </group>
     </actions>
 </idea-plugin>

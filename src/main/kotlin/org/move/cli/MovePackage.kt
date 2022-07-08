@@ -9,7 +9,7 @@ import org.move.openapiext.resolveExisting
 import java.nio.file.Path
 
 data class MovePackage(
-    private val project: Project,
+    val project: Project,
     val contentRoot: VirtualFile,
     val moveToml: MoveToml,
 ) {
@@ -17,6 +17,8 @@ data class MovePackage(
 
     val sourcesFolder: VirtualFile? get() = contentRoot.findChild("sources")
     val testsFolder: VirtualFile? get() = contentRoot.findChild("tests")
+
+    fun moveFolders(): List<VirtualFile> = listOfNotNull(sourcesFolder, testsFolder)
 
     fun layoutPaths(): List<Path> {
         val rootPath = contentRoot.toNioPathOrNull() ?: return emptyList()

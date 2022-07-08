@@ -1,5 +1,6 @@
 package org.move.ide.refactoring
 
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.psi.PsiElement
 import com.intellij.refactoring.listeners.RefactoringElementListener
 import com.intellij.refactoring.rename.RenamePsiFileProcessor
@@ -16,10 +17,13 @@ class MvRenameFileProcessor : RenamePsiFileProcessor() {
         listener: RefactoringElementListener?
     ) {
         val moveFile = element as? MoveFile ?: return
-        val oldName = moveFile.virtualFile.nameWithoutExtension
+
+        val oldModuleName = moveFile.virtualFile.nameWithoutExtension
+        val newModuleName = FileUtil.getNameWithoutExtension(newName)
+
         val module = moveFile.modules().singleOrNull() ?: return
-        if (module.name == oldName) {
-            module.rename(newName)
+        if (module.name == oldModuleName) {
+            module.rename(newModuleName)
         }
         super.renameElement(element, newName, usages, listener)
     }

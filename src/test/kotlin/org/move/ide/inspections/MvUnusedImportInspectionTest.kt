@@ -80,32 +80,116 @@ module 0x1::Main {
     }
 }
     """)
-//    fun `test duplicate import`() = checkWarnings("""
-//module 0x1::M {
-//    public fun call() {}
-//}
-//module 0x1::M2 {
-//    use 0x1::M::call;
-//    <warning descr="Unused use item">use 0x1::M::call;</warning>
-//
-//    fun main() {
-//        call();
-//    }
-//}
-//    """)
-//
-//    fun `test duplicate import with item group`() = checkWarnings("""
-//module 0x1::M {
-//    struct S {}
-//    public fun call() {}
-//}
-//module 0x1::M2 {
-//    use 0x1::M::{S, call};
-//    <warning descr="Unused use item">use 0x1::M::call;</warning>
-//
-//    fun main(s: S) {
-//        call();
-//    }
-//}
-//    """)
+
+    fun `test unused imports if unresolved module`() = checkWarnings("""
+module 0x1::Main {
+    <warning descr="Unused use item">use 0x1::M1;</warning>
+}
+    """)
+
+    fun `test no unused import if unresolved module but used`() = checkWarnings("""
+module 0x1::Main {
+    use 0x1::M;
+    fun call() {
+        M::call();
+    }
+}        
+    """)
+
+    fun `test unused imports if unresolved item`() = checkWarnings("""
+module 0x1::Main {
+    <warning descr="Unused use item">use 0x1::M1::call;</warning>
+}
+    """)
+
+    fun `test no unused import if unresolved item but used`() = checkWarnings("""
+module 0x1::Main {
+    use 0x1::M::call;
+    fun call() {
+        call();
+    }
+}        
+    """)
+
+    fun `test duplicate import`() = checkWarnings("""
+module 0x1::M {
+    public fun call() {}
+}
+module 0x1::M2 {
+    use 0x1::M::call;
+    <warning descr="Unused use item">use 0x1::M::call;</warning>
+
+    fun main() {
+        call();
+    }
+}
+    """)
+
+    fun `test duplicate import with item group`() = checkWarnings("""
+module 0x1::M {
+    struct S {}
+    public fun call() {}
+}
+module 0x1::M2 {
+    use 0x1::M::{S, call};
+    <warning descr="Unused use item">use 0x1::M::call;</warning>
+
+    fun main(s: S) {
+        call();
+    }
+}
+    """)
+
+    fun `test no unused import for type with the same name as module`() = checkWarnings("""
+    module 0x1::Coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::Coin::{Self, Coin};
+        
+        fun call(): Coin {
+            Coin::get_coin()
+        }
+    }
+    """)
+
+    fun `test unused Self import`() = checkWarnings("""
+    module 0x1::Coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::Coin;
+        <warning descr="Unused use item">use 0x1::Coin::Self;</warning>
+        
+        fun call(): Coin {
+            Coin::get_coin()
+        }
+    }
+    """)
+
+    fun `test unused Self in group`() = checkWarnings("""
+    module 0x1::Coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::Coin;
+        use 0x1::Coin::{<warning descr="Unused use item">Self</warning>, Coin};
+        
+        fun call(): Coin {
+            Coin::get_coin()
+        }
+    }
+    """)
+
+    fun `test empty item group`() = checkWarnings("""
+    module 0x1::Coin {
+        struct C {}
+    }    
+    module 0x1::Main {
+        <warning descr="Unused use item">use 0x1::Coin::{};</warning>
+    }
+    """)
 }

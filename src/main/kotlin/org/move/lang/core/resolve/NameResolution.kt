@@ -38,7 +38,7 @@ fun MvElement.visibleInScope(folderScope: FolderScope): Boolean {
             || this.folderScope == FolderScope.SOURCES
 }
 
-fun MvElement.visibleInScopes(itemVis: ItemVis): Boolean =
+fun MvElement.isVisibleInScopes(itemVis: ItemVis): Boolean =
     this.visibleInScope(itemVis.itemScope)
             && this.visibleInScope(itemVis.folderScope)
 
@@ -143,26 +143,29 @@ fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
     return resolved.fqModuleRef
 }
 
-private fun processModules(
-    fqModuleRef: MvFQModuleRef,
+fun processFileItems(
     file: MoveFile,
     itemVis: ItemVis,
     processor: MatchingProcessor,
 ): Boolean {
-    val moveProject = fqModuleRef.moveProject ?: return false
-
-    val refAddress = fqModuleRef.addressRef.toAddress(moveProject)
-    file.modules().forEach {
-        if (!it.visibleInScope(itemVis.itemScope)) return@forEach
-        if (!it.visibleInScope(itemVis.folderScope)) return@forEach
-
-        val modAddress = it.address()?.toAddress(moveProject)
-        if (modAddress != refAddress) return@forEach
-
-        if (modAddress == refAddress) {
-            if (processor.match(it)) {
-                return true
+    for (module in file.modules()) {
+        for (namespace in itemVis.namespaces) {
+            val found = when (namespace) {
+                Namespace.MODULE -> processor.match(itemVis, module)
+                Namespace.NAME -> {
+                    val functions = itemVis.visibilities.flatMap { module.functions(it) }
+                    val specFunctions = if (itemVis.isMsl) module.specFunctions() else emptyList()
+                    val consts = if (itemVis.isMsl) module.constBindings() else emptyList()
+                    processor.matchAll(
+                        itemVis,
+                        functions, specFunctions, consts
+                    )
+                }
+                Namespace.TYPE -> processor.matchAll(itemVis, module.structs())
+                Namespace.SCHEMA -> processor.matchAll(itemVis, module.schemas())
+                else -> continue
             }
+            if (found) return true
         }
     }
     return false
@@ -173,20 +176,33 @@ fun processFQModuleRef(
     processor: MatchingProcessor,
 ) {
     val itemVis = ItemVis.default().replace(
+        ns = setOf(Namespace.MODULE),
         itemScope = fqModuleRef.itemScope,
         folderScope = fqModuleRef.folderScope
     )
+    val moveProject = fqModuleRef.moveProject ?: return
+    val refAddress = fqModuleRef.addressRef.toAddress(moveProject)
+
+    val moduleProcessor = MatchingProcessor {
+        val module = it.element as MvModule
+        val modAddress = module.address()?.toAddress(moveProject)
+        if (modAddress != refAddress) return@MatchingProcessor false
+        if (modAddress == refAddress) {
+            return@MatchingProcessor processor.match(it)
+        }
+        false
+    }
+
     // first search modules in the current file
     val currentFile = fqModuleRef.containingMoveFile ?: return
-    var stopped = processModules(fqModuleRef, currentFile, itemVis, processor)
+    var stopped = processFileItems(currentFile, itemVis, moduleProcessor)
     if (stopped) return
 
-    val moveProject = currentFile.moveProject ?: return
     moveProject.processMoveFiles { moveFile ->
         // skip current file as it's processed already
         if (moveFile.toNioPathOrNull() == currentFile.toNioPathOrNull())
             return@processMoveFiles true
-        stopped = processModules(fqModuleRef, moveFile, itemVis, processor)
+        stopped = processFileItems(moveFile, itemVis, moduleProcessor)
         // if not resolved, returns true to indicate that next file should be tried
         !stopped
     }

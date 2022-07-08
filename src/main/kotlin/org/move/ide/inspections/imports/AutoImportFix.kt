@@ -1,6 +1,9 @@
 package org.move.ide.inspections.imports
 
+import com.intellij.codeInsight.completion.CompletionParameters
+import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.intention.HighPriorityAction
+import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInspection.LocalQuickFixOnPsiElement
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.DataContext
@@ -8,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.move.lang.MoveFile
+import org.move.lang.core.completion.DefaultInsertHandler
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ItemVis
@@ -90,7 +94,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
             val (contextElement, itemVis) = context
             val moveProject = contextElement.moveProject ?: return emptyList()
             val searchScope = moveProject.searchScope()
-            val files = MvNamedElementIndex
+            val files = MoveElementsIndex
                 .findFilesByElementName(contextElement.project, targetName, searchScope)
                 .toMutableList()
             if (isUnitTestMode) {
@@ -179,3 +183,16 @@ private fun MvItemUseSpeck.tryGroupWith(
 }
 
 private val <T : MvElement> List<T>.lastElement: T? get() = maxByOrNull { it.textOffset }
+
+class ImportInsertHandler(
+    val parameters: CompletionParameters,
+    val candidate: ImportCandidate
+) : DefaultInsertHandler() {
+
+    override fun handleInsert(context: InsertionContext, item: LookupElement) {
+        super.handleInsert(context, item)
+        context.commitDocument()
+        val path = parameters.originalPosition?.parent as? MvPath ?: return
+        candidate.import(path)
+    }
+}

@@ -25,6 +25,7 @@ import com.intellij.util.messages.Topic
 import org.move.cli.settings.MoveProjectSettingsService
 import org.move.cli.settings.MoveSettingsChangedEvent
 import org.move.cli.settings.MoveSettingsListener
+import org.move.ide.inspections.imports.MoveElementsIndex
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.toVirtualFile
@@ -37,10 +38,15 @@ import java.util.concurrent.CompletableFuture
 
 val Project.moveProjects get() = service<MoveProjectsService>()
 
+val Project.hasMoveProject get() = this.moveProjects.allProjects.isNotEmpty()
+
 class MoveProjectsService(val project: Project) : Disposable {
+    private val buildWatcher = BuildDirectoryWatcher(emptyList()) { refreshAllProjects() }
+
     init {
         with(project.messageBus.connect()) {
             if (!isUnitTestMode) {
+                subscribe(VirtualFileManager.VFS_CHANGES, buildWatcher)
                 subscribe(VirtualFileManager.VFS_CHANGES, MoveTomlWatcher {
                     refreshAllProjects()
                 })
@@ -51,8 +57,6 @@ class MoveProjectsService(val project: Project) : Disposable {
                 }
             })
         }
-
-//        MoveExternalSystemProjectAware.register(project, this)
     }
 
     fun refreshAllProjects() {
@@ -141,6 +145,7 @@ class MoveProjectsService(val project: Project) : Disposable {
 
         return projects.updateAsync(wrappedUpdater)
             .thenApply { projects ->
+                buildWatcher.updateProjects(projects)
                 resetIDEState(projects)
                 projects
             }
@@ -150,7 +155,10 @@ class MoveProjectsService(val project: Project) : Disposable {
         invokeAndWaitIfNeeded {
             runWriteAction {
                 projectsIndex.resetIndex()
+
+                MoveElementsIndex.requestRebuild()
                 PsiManager.getInstance(project).dropPsiCaches()
+
                 // In unit tests roots change is done by the test framework in most cases
                 runOnlyInNonLightProject(project) {
                     ProjectRootManagerEx.getInstanceEx(project)

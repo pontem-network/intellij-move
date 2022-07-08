@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.cachedTy
+import org.move.lang.core.psi.ext.inferredTy
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.InferenceContext
@@ -92,13 +92,13 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
                 val ctx = pat.inferenceCtx(pat.isMsl())
                 for (binding in pat.descendantsOfType<MvBindingPat>()) {
                     if (binding.identifier.text.startsWith("_")) continue
-                    if (binding.cachedTy(ctx) is TyUnknown) continue
+                    if (binding.inferredTy(ctx) is TyUnknown) continue
                     presentTypeForBinding(binding, ctx)
                 }
             }
 
             private fun presentTypeForBinding(binding: MvBindingPat, ctx: InferenceContext) {
-                val presentation = typeHintsFactory.typeHint(binding.cachedTy(ctx))
+                val presentation = typeHintsFactory.typeHint(binding.inferredTy(ctx))
                 sink.addInlineElement(binding.endOffset, false, presentation, false)
             }
         }

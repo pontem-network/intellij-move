@@ -48,7 +48,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
             is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
                 val ctx = docElement.inferenceCtx(false)
-                val type = docElement.cachedTy(ctx).renderForDocs(true)
+                val type = docElement.inferredTy(ctx).renderForDocs(true)
                 buffer += presentationInfo.type
                 buffer += " "
                 buffer.b { it += presentationInfo.name }

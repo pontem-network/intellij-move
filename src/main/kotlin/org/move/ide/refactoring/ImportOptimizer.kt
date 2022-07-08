@@ -8,12 +8,12 @@ import com.intellij.psi.PsiWhiteSpace
 import org.move.ide.inspections.isUsed
 import org.move.ide.intentions.removeCurlyBraces
 import org.move.lang.MoveFile
-import org.move.lang.MvElementTypes
+import org.move.lang.MvElementTypes.L_BRACE
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.modules
 
-class MvImportOptimizer : ImportOptimizer {
+class ImportOptimizer : ImportOptimizer {
     override fun supports(file: PsiFile) = file is MoveFile
 
     override fun processFile(file: PsiFile) = Runnable {
@@ -34,6 +34,7 @@ class MvImportOptimizer : ImportOptimizer {
 
     private fun optimizeImports(itemsOwner: MvItemsOwner) {
         removeUnusedImports(itemsOwner)
+        mergeImports(itemsOwner)
         sortImports(itemsOwner)
     }
 
@@ -76,10 +77,33 @@ class MvImportOptimizer : ImportOptimizer {
         }
     }
 
+    private fun mergeImports(useStmtOwner: MvItemsOwner) {
+        val psiFactory = useStmtOwner.project.psiFactory
+        val leftBrace = useStmtOwner.findFirstChildByType(L_BRACE) ?: return
+
+        val useStmts = useStmtOwner.useStmtList
+        useStmts
+            .groupBy { it.fqModuleText }
+            .forEach { (fqModuleText, stmts) ->
+                if (stmts.size > 1) {
+                    val useItemNames = mutableListOf<String>()
+                    if (stmts.any { it.moduleUseSpeck != null }) {
+                        useItemNames.add("Self")
+                    }
+                    useItemNames.addAll(stmts.flatMap { it.childUseItems }.map { it.text })
+                    val newStmt =
+                        psiFactory.useStmt("$fqModuleText::{${useItemNames.joinToString(", ")}}")
+                    useStmtOwner.addAfter(newStmt, leftBrace)
+                    stmts.forEach { it.delete() }
+                }
+//                }
+            }
+    }
+
     private fun sortImports(useStmtOwner: MvItemsOwner) {
         val psiFactory = useStmtOwner.project.psiFactory
         val offset =
-            (useStmtOwner.findFirstChildByType(MvElementTypes.L_BRACE)?.textOffset ?: return) + 1
+            (useStmtOwner.findFirstChildByType(L_BRACE)?.textOffset ?: return) + 1
         val first = useStmtOwner.childrenOfType<MvElement>()
             .firstOrNull { it.textOffset >= offset && it !is MvAttr } ?: return
 

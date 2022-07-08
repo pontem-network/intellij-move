@@ -6,16 +6,14 @@ import com.intellij.psi.util.descendantsOfType
 import com.intellij.util.indexing.*
 import com.intellij.util.io.EnumeratorStringDescriptor
 import com.intellij.util.io.KeyDescriptor
-import org.move.lang.MoveFileType
 import org.move.lang.MoveFile
+import org.move.lang.MoveFileType
 import org.move.lang.core.psi.MvQualifiedNamedElement
 import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.processModuleItems
-import org.move.lang.modules
+import org.move.lang.core.resolve.processFileItems
 import org.move.lang.toMoveFile
 
-class MvNamedElementIndex : ScalarIndexExtension<String>() {
+class MoveElementsIndex : ScalarIndexExtension<String>() {
     override fun getName() = KEY
     override fun getVersion() = INDEX_VERSION
     override fun getKeyDescriptor(): KeyDescriptor<String> = EnumeratorStringDescriptor.INSTANCE
@@ -37,6 +35,10 @@ class MvNamedElementIndex : ScalarIndexExtension<String>() {
 
         val KEY = ID.create<String, Void>("MvNamedElementIndex")
 
+        fun requestRebuild() {
+            FileBasedIndex.getInstance().requestRebuild(KEY)
+        }
+
         fun getAllKeys(project: Project): Collection<String> {
             return FileBasedIndex.getInstance().getAllKeys(KEY, project)
         }
@@ -53,22 +55,13 @@ class MvNamedElementIndex : ScalarIndexExtension<String>() {
     }
 }
 
-fun MoveFile.qualifiedItems(target: String, itemVis: ItemVis): List<MvQualifiedNamedElement> {
+fun MoveFile.qualifiedItems(targetName: String, itemVis: ItemVis): List<MvQualifiedNamedElement> {
     val elements = mutableListOf<MvQualifiedNamedElement>()
-    val modules = this.modules()
-    for (module in modules) {
-        if (Namespace.MODULE in itemVis.namespaces) {
-            if (module.name == target) {
-                elements.add(module)
-            }
+    processFileItems(this, itemVis) {
+        if (it.element is MvQualifiedNamedElement && it.name == targetName) {
+            elements.add(it.element)
         }
-        processModuleItems(module, itemVis) {
-            val element = it.element
-            if (element is MvQualifiedNamedElement && element.name == target) {
-                elements.add(element)
-            }
-            false
-        }
+        false
     }
     return elements
 }

@@ -3,7 +3,7 @@ package org.move.utils.tests.annotation
 import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.util.indexing.FileBasedIndex
-import org.move.ide.inspections.imports.MvNamedElementIndex
+import org.move.ide.inspections.imports.MoveElementsIndex
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.replaceCaretMarker
@@ -42,7 +42,7 @@ abstract class InspectionProjectTestBase(
     ) {
         testProject(before)
 
-        FileBasedIndex.getInstance().requestRebuild(MvNamedElementIndex.KEY)
+        FileBasedIndex.getInstance().requestRebuild(MoveElementsIndex.KEY)
         PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
 
         annotationFixture.codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)

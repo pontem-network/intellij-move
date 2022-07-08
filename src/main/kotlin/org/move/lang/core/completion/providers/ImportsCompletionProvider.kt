@@ -1,4 +1,4 @@
-package org.move.lang.core.completion
+package org.move.lang.core.completion.providers
 
 import com.intellij.codeInsight.completion.BasicInsertHandler
 import com.intellij.codeInsight.completion.CompletionParameters
@@ -7,6 +7,8 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.move.lang.core.completion.createCompletionLookupElement
+import org.move.lang.core.completion.createSelfLookup
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvUseItem
 import org.move.lang.core.psi.MvUseItemGroup

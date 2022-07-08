@@ -11,13 +11,6 @@ val MvSchema.module: MvModule
         return moduleBlock.parent as MvModule
     }
 
-val MvSchema.fqName: String
-    get() {
-        val moduleFqName = this.module.fqName?.let { "$it::" }
-        val name = this.name ?: "<unknown>"
-        return moduleFqName + name
-    }
-
 val MvSchema.typeParams get() = typeParameterList?.typeParameterList.orEmpty()
 
 val MvSchema.requiredTypeParams: List<MvTypeParameter>

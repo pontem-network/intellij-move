@@ -126,4 +126,14 @@ class ModulesCompletionTest : CompletionTestCase() {
         }
     }    
     """)
+
+    fun `test test_only modules not present in non test_only scopes`() = checkNoCompletion("""
+    #[test_only]    
+    module 0x1::TestHelpers {}
+    module 0x1::Main {
+        fun call() {
+            TestH/*caret*/
+        }
+    }    
+    """)
 }

@@ -10,7 +10,6 @@ module 0x1::M {
     use 0x0::Transaction::create
     use 0x0::Transaction::{
     use 0x0::Transaction::{;
-    use 0x0::Transaction::{};
     use 0x0::Transaction::{create,
     use 0x0::Transaction::{create,;
     use 0x0::Transaction::{create, modify,,}

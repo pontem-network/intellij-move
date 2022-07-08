@@ -1,13 +1,12 @@
 package org.move.lang.core.completion
 
-import com.intellij.codeInsight.completion.CompletionContributor
-import com.intellij.codeInsight.completion.CompletionInitializationContext
-import com.intellij.codeInsight.completion.CompletionType
-import com.intellij.psi.PsiElement
-import org.move.lang.MvElementTypes
+import com.intellij.codeInsight.completion.*
+import com.intellij.codeInsight.completion.impl.CompletionSorterImpl
 import org.move.lang.core.MvPsiPatterns
+import org.move.lang.core.completion.providers.*
+import org.move.lang.core.completion.sort.COMPLETION_WEIGHERS_GROUPED
 import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.ext.elementType
+import javax.xml.stream.events.Namespace
 
 class CommonCompletionContributor : CompletionContributor() {
     init {
@@ -44,6 +43,22 @@ class CommonCompletionContributor : CompletionContributor() {
         }
     }
 
-    override fun invokeAutoPopup(position: PsiElement, typeChar: Char): Boolean =
-        typeChar == ':' && position.elementType == MvElementTypes.COLON
+    override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
+        super.fillCompletionVariants(parameters, withSorter(parameters, result))
+    }
+
+    companion object {
+        fun withSorter(
+            parameters: CompletionParameters,
+            result: CompletionResultSet
+        ): CompletionResultSet {
+            var sorter =
+                (CompletionSorter.defaultSorter(parameters, result.prefixMatcher) as CompletionSorterImpl)
+                    .withoutClassifiers { it.id == "liftShorter" }
+            for (weigherGroup in COMPLETION_WEIGHERS_GROUPED) {
+                sorter = sorter.weighAfter(weigherGroup.anchor, *weigherGroup.weighers)
+            }
+            return result.withRelevanceSorter(sorter)
+        }
+    }
 }

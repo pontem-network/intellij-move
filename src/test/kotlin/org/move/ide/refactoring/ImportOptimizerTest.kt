@@ -3,11 +3,10 @@ package org.move.ide.refactoring
 import org.intellij.lang.annotations.Language
 import org.move.utils.tests.MvTestBase
 
-class MvImportOptimizerTest : MvTestBase() {
+class ImportOptimizerTest : MvTestBase() {
     fun `test no change`() = doTest("""
 script {
-    use 0x1::M::MyStruct;
-    use 0x1::M::call;
+    use 0x1::M::{MyStruct, call};
     
     fun main() {
         let a: MyStruct = call();
@@ -15,8 +14,7 @@ script {
 }
     """, """
 script {
-    use 0x1::M::MyStruct;
-    use 0x1::M::call;
+    use 0x1::M::{MyStruct, call};
 
     fun main() {
         let a: MyStruct = call();
@@ -161,8 +159,7 @@ module 0x1::Main {
     use Std::Errors;
     use Std::Signer;
 
-    use AAA::M1::S1;
-    use AAA::M1::SS1;
+    use AAA::M1::{S1, SS1};
     use BBB::M2::S2;
 
     fun call(a: S1, b: S2, c: SS1) {
@@ -209,25 +206,77 @@ module 0x1::Main {
 }
     """)
 
-//    fun `test remove duplicate module import`() = doTest("""
-//module 0x1::M { fun m() {} }
-//module 0x1::M2 {
-//    use 0x1::M;
-//    use 0x1::M;
-//    fun main() {
-//        M::m();
-//    }
-//}
-//    """, """
-//module 0x1::M { fun m() {} }
-//module 0x1::M2 {
-//    use 0x1::M;
-//    fun main() {
-//        M::m();
-//    }
-//}
-//    """)
+    fun `test removes empty group`() = doTest("""
+module 0x1::M1 {}         
+module 0x1::Main {
+    use 0x1::M1::{};
+}        
+    """, """
+module 0x1::M1 {}         
+module 0x1::Main {}        
+    """)
 
-    private fun doTest(@Language("Move") code: String, @Language("Move") expected: String) =
-        checkEditorAction(code, expected, "OptimizeImports")
+    fun `test merge items into group`() = doTest("""
+module 0x1::M1 { struct S1 {} struct S2 {} }         
+module 0x1::Main {
+    use 0x1::M1::S1;
+    use 0x1::M1::S2;
+    
+    fun call(s1: S1, s2: S2) {}
+}        
+    """, """
+module 0x1::M1 { struct S1 {} struct S2 {} }         
+module 0x1::Main {
+    use 0x1::M1::{S1, S2};
+
+    fun call(s1: S1, s2: S2) {}
+}        
+    """)
+
+    fun `test merge item into existing group`() = doTest("""
+module 0x1::M1 { struct S1 {} struct S2 {} struct S3 {} }         
+module 0x1::Main {
+    use 0x1::M1::S1;
+    use 0x1::M1::{S2, S3};
+    
+    fun call(s1: S1, s2: S2, s3: S3) {}
+}        
+    """, """
+module 0x1::M1 { struct S1 {} struct S2 {} struct S3 {} }         
+module 0x1::Main {
+    use 0x1::M1::{S1, S2, S3};
+
+    fun call(s1: S1, s2: S2, s3: S3) {}
+}        
+    """)
+
+    fun `test simple module import merges with item group`() = doTest("""
+    module 0x1::Coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::Coin;
+        use 0x1::Coin::Coin;
+        
+        fun call(): Coin {
+            Coin::get_coin()
+        }
+    }
+    """, """
+    module 0x1::Coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::Coin::{Self, Coin};
+    
+        fun call(): Coin {
+            Coin::get_coin()
+        }
+    }
+    """)
+
+    private fun doTest(@Language("Move") before: String, @Language("Move") after: String) =
+        checkEditorAction(before, after, "OptimizeImports")
 }

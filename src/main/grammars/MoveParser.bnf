@@ -499,7 +499,7 @@ ItemUseSpeck ::= FQModuleRef '::' (UseItem | UseItemGroup)
     name = "qual path to imported item"
 }
 
-UseItemGroup ::= '{' <<comma_sep_items MultiItemUse_member_with_recovery>> '}'
+UseItemGroup ::= '{' <<comma_sep_items MultiItemUse_member_with_recovery>>? '}'
 {
     pin = 1
 }
@@ -684,7 +684,7 @@ private ExprStmt_expr ::= IfExpr
     recoverWhile = "ExprStmt_recover"
 }
 private ExprStmt_recover ::= !(';' | '}' | Expr_first)
-private Expr_first ::= let | if | while
+private Expr_first ::= let | if | while | return | continue | break | spec
                         | IDENTIFIER
                         | (AddressRef '::')
 //                                | <<specOnly apply>>

@@ -46,9 +46,9 @@ class MvPsiFactory(private val project: Project) {
         createFromText("module _IntellijPreludeDummy { $text }")
             ?: error("")
 
-    fun useStmt(text: String): MvUseStmt {
-        return createFromText("module _IntellijPreludeDummy { use $text; }")
-            ?: error("Failed to create an item import from text: `$text`")
+    fun useStmt(speckText: String): MvUseStmt {
+        return createFromText("module _IntellijPreludeDummy { use $speckText; }")
+            ?: error("Failed to create an item import from text: `$speckText`")
     }
 
     fun itemUseSpeck(fqModuleText: String, names: List<String>): MvItemUseSpeck {

@@ -12,6 +12,13 @@ class MvCompletionTestFixture(
     val myFixture: CodeInsightTestFixture,
     private val defaultFileName: String = "main.move"
 ) : BaseFixture() {
+
+    fun invokeCompletion(@Language("Move") code: String): List<LookupElement> {
+        prepare(code)
+        val completions = myFixture.completeBasic()
+        return completions.toList()
+    }
+
     fun doFirstCompletion(@Language("Move") code: String, @Language("Move") after: String) {
         check(hasCaretMarker(after)) { "No /*caret*/ marker in `after`" }
         checkByText(code, after.trimIndent()) {

@@ -2,7 +2,6 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.util.PsiTreeUtil
@@ -23,7 +22,32 @@ val MvBindingPat.owner: PsiElement?
                 || it is MvSchemaFieldStmt
     }
 
-fun MvBindingPat.cachedTy(ctx: InferenceContext): Ty {
+fun MvBindingPat.declaredTy(ctx: InferenceContext): Ty {
+    val owner = this.owner
+    return when (owner) {
+        is MvFunctionParameter -> owner.declaredTy(ctx.msl)
+        is MvConst -> owner.declaredTy(ctx.msl)
+        is MvLetStmt -> {
+            if (ctx.bindingTypes.containsKey(this)) return ctx.bindingTypes[this]!!
+
+            val pat = owner.pat ?: return TyUnknown
+            val explicitType = owner.typeAnnotation?.type
+            if (explicitType != null) {
+                val explicitTy = inferMvTypeTy(explicitType, ctx.msl)
+                return collectBindings(pat, explicitTy)[this] ?: TyUnknown
+            }
+            return TyUnknown
+//            val inferredTy = owner.initializer?.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
+//            val bindings = collectBindings(pat, inferredTy)
+//            ctx.bindingTypes.putAll(bindings)
+//            return bindings[this] ?: TyUnknown
+        }
+        is MvSchemaFieldStmt -> owner.declaredTy(ctx.msl)
+        else -> TyUnknown
+    }
+}
+
+fun MvBindingPat.inferredTy(ctx: InferenceContext): Ty {
     val owner = this.owner
     return when (owner) {
         is MvFunctionParameter -> owner.declaredTy(ctx.msl)

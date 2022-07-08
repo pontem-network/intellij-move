@@ -1,6 +1,7 @@
 script {
     use 0x1::Transaction;
     use 0x1::Transaction::Instance;
+    use 0x1::Transaction::{};
     use 0x1::Transaction::{Self, EventHandle};
     use 0x1::Transaction::foo as bar;
     use 0x1::Transaction::{foo, foo as bar};

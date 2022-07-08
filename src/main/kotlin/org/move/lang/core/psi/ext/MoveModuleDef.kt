@@ -26,13 +26,6 @@ fun MvModule.fqModule(): FQModule? {
     return FQModule(address, name)
 }
 
-val MvModule.fqName: String?
-    get() {
-        val address = this.address()?.text?.let { "$it::" } ?: ""
-        val module = this.name ?: return null
-        return address + module
-    }
-
 val MvModule.friendModules: Set<FQModule>
     get() {
         val block = this.moduleBlock ?: return emptySet()
@@ -169,6 +162,13 @@ abstract class MvModuleMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
             null
         )
     }
+
+    override val fqName: String
+        get() {
+            val address = this.address()?.text?.let { "$it::" } ?: ""
+            val module = this.name ?: "<unknown>"
+            return address + module
+        }
 
 //    override val useStmts: List<MvUseStmt>
 //        get() =
