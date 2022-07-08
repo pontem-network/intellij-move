@@ -17,7 +17,7 @@ file(properties).inputStream().let { props.load(it) }
 fun prop(key: String): String = props[key].toString()
 
 //val intellijVersion = prop("intellijVersion", "2021.2")
-val kotlinVersion = "1.7.0"
+val kotlinVersion = "1.7.10"
 
 val pluginJarName = "intellij-move-$propsVersion"
 val pluginVersion = "1.13.0"
@@ -29,16 +29,16 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "1.7.10"
-    id("org.jetbrains.intellij") version "1.6.0"
+    id("org.jetbrains.intellij") version "1.7.0"
     id("org.jetbrains.grammarkit") version "2021.2.2"
 }
 
 dependencies {
     // kotlin stdlib source code
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    // https://mvnrepository.com/artifact/org.yaml/snakeyaml
-    implementation("org.yaml:snakeyaml:1.30")
+
     testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
 }
 
