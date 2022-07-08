@@ -339,6 +339,10 @@
             <className>org.move.ide.intentions.ChopArgumentListIntention</className>
             <category>Move</category>
         </intentionAction>
+        <intentionAction>
+            <className>org.move.ide.intentions.ChopAttrArgumentListIntention</className>
+            <category>Move</category>
+        </intentionAction>
 
     </extensions>
 
