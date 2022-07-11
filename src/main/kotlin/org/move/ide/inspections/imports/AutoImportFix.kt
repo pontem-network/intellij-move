@@ -148,7 +148,7 @@ fun ImportCandidate.import(context: MvElement) {
 }
 
 private fun MvItemsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: FqPath) {
-    val newUseStmt = psiFactory.useStmt(usePath.toString())
+    val newUseStmt = psiFactory.useStmt(usePath.toString(), false)
     if (this.tryGroupWithOtherUseItems(psiFactory, newUseStmt)) return
 
     val anchor = childrenOfType<MvUseStmt>().lastElement

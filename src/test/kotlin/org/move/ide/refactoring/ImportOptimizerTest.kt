@@ -127,7 +127,7 @@ module 0x1::M {
 module 0x1::Main {}
     """)
 
-    fun `test sort imports std first`() = doTest("""
+    fun `test sort imports std first non test_only first`() = doTest("""
 module AAA::M1 {
     struct S1 {} 
     struct SS1 {} 
@@ -140,6 +140,7 @@ module 0x1::Main {
     use AAA::M1::S1;
     use AAA::M1::SS1;
     use Std::Signer;
+    #[test_only]
     use Std::Errors;
 
     fun call(a: S1, b: S2, c: SS1) {
@@ -156,8 +157,9 @@ module BBB::M2 {
     struct S2 {}
 }
 module 0x1::Main {
-    use Std::Errors;
     use Std::Signer;
+    #[test_only]
+    use Std::Errors;
 
     use AAA::M1::{S1, SS1};
     use BBB::M2::S2;
@@ -272,6 +274,47 @@ module 0x1::Main {
         use 0x1::Coin::{Self, Coin};
     
         fun call(): Coin {
+            Coin::get_coin()
+        }
+    }
+    """)
+
+    fun `test test_only has its own separate group`() = doTest("""
+    module 0x1::Coin {
+        struct Coin {}
+        struct Coin2 {}
+        public fun get_coin(): Coin {}
+        #[test_only]
+        public fun get_coin_2(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::Coin;
+        use 0x1::Coin::Coin;
+        #[test_only]
+        use 0x1::Coin::Coin2;
+        #[test_only]
+        use 0x1::Coin::get_coin_2;
+        
+        fun call(c: Coin2): Coin {
+            get_coin_2();
+            Coin::get_coin()
+        }
+    }
+    """, """
+    module 0x1::Coin {
+        struct Coin {}
+        struct Coin2 {}
+        public fun get_coin(): Coin {}
+        #[test_only]
+        public fun get_coin_2(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::Coin::{Self, Coin};
+        #[test_only]
+        use 0x1::Coin::{Coin2, get_coin_2};
+    
+        fun call(c: Coin2): Coin {
+            get_coin_2();
             Coin::get_coin()
         }
     }

@@ -1,6 +1,5 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.MvAddressRef
 import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.psi.MvUseItem

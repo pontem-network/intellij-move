@@ -484,7 +484,10 @@ StructField ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
 
 FriendStmt ::= Attr* friend FQModuleRef ';' { pin = "friend" }
 
-UseStmt ::= Attr* use (ItemUseSpeck | ModuleUseSpeck) ';' { pin = "use" }
+UseStmt ::= Attr* use (ItemUseSpeck | ModuleUseSpeck) ';' {
+    pin = "use"
+    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+}
 ModuleUseSpeck ::= (AddressRef !'::') | FQModuleRef UseAlias?
 {
     name = "qual path to module"

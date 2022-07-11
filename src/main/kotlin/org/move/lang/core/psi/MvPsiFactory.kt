@@ -4,8 +4,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiParserFacade
-import org.move.lang.MoveFileType
 import org.move.lang.MoveFile
+import org.move.lang.MoveFileType
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
 
 val Project.psiFactory get() = MvPsiFactory(this)
@@ -46,8 +46,8 @@ class MvPsiFactory(private val project: Project) {
         createFromText("module _IntellijPreludeDummy { $text }")
             ?: error("")
 
-    fun useStmt(speckText: String): MvUseStmt {
-        return createFromText("module _IntellijPreludeDummy { use $speckText; }")
+    fun useStmt(speckText: String, testOnly: Boolean): MvUseStmt {
+        return createFromText("module _IntellijPreludeDummy { ${if (testOnly) "#[test_only]\n" else ""}use $speckText; }")
             ?: error("Failed to create an item import from text: `$speckText`")
     }
 
