@@ -74,7 +74,7 @@ private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): 
     return TyReference(innerExprTy, mutability, ctx.msl)
 }
 
-fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
+fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext, expectedTy: Ty? = null): Ty {
     val existingTy = ctx.callExprTypes[callExpr]
     if (existingTy != null) {
         return existingTy
@@ -100,9 +100,9 @@ fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
             inference.registerConstraint(Constraint.Equate(paramTy, argumentTy))
         }
     }
-//    if (expectedTy != null) {
-//        inference.registerConstraint(Constraint.Equate(funcTy.retType, expectedTy))
-//    }
+    if (expectedTy != null) {
+        inference.registerConstraint(Constraint.Equate(funcTy.retType, expectedTy))
+    }
     // solve constraints
     val solvable = inference.processConstraints()
 
