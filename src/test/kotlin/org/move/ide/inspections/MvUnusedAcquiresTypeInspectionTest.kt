@@ -47,4 +47,34 @@ class MvUnusedAcquiresTypeInspectionTest : InspectionTestBase(MvUnusedAcquiresTy
         }
     """
     )
+
+    fun `test error type not declared in the current module`() = checkFixByText("Remove acquires",
+        """
+        module 0x1::M {
+            struct S has key {}
+            public fun call() acquires S {
+                borrow_global<S>(@0x1);
+            }
+        }
+        module 0x1::M2 {
+            use 0x1::M::{Self, S};
+            fun call() <warning descr="Unused acquires clause">/*caret*/acquires S</warning> {
+                M::call();        
+            }
+        }
+    """, """
+        module 0x1::M {
+            struct S has key {}
+            public fun call() acquires S {
+                borrow_global<S>(@0x1);
+            }
+        }
+        module 0x1::M2 {
+            use 0x1::M::{Self, S};
+            fun call() {
+                M::call();        
+            }
+        }
+    """
+    )
 }
