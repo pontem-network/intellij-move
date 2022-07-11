@@ -12,6 +12,7 @@ import org.move.cli.Consts
 import org.move.cli.MoveProject
 import org.move.cli.moveProjects
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.childrenOfType
 import org.move.lang.core.psi.ext.modules
 import org.move.openapiext.resolveAbsPath
@@ -78,3 +79,6 @@ fun MoveFile.modules(): Sequence<MvModule> {
     return this.childrenOfType<MvModule>()
         .chain(this.childrenOfType<MvAddressDef>().flatMap { it.modules() })
 }
+
+inline fun <reified T : PsiElement> PsiFile.elementAtOffset(offset: Int): T? =
+    this.findElementAt(offset)?.ancestorOrSelf<T>()
