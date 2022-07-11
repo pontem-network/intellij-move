@@ -23,6 +23,11 @@ val MvUseStmt.addressRef: MvAddressRef?
         return null
     }
 
+val MvUseStmt.useGroupLevel: Int get() {
+    if (this.isTestOnly) return 4
+    return this.addressRef?.useGroupLevel ?: -1
+}
+
 val MvUseStmt.fqModuleText: String? get() {
     val fqModuleRef = this.fqModuleRef ?: return null
     return fqModuleRef.text

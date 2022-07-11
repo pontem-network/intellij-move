@@ -113,10 +113,10 @@ class ImportOptimizer : ImportOptimizer {
 
         val useStmts = useStmtOwner.useStmtList
         val sortedUseGroups = useStmts
-            .groupBy { it.addressRef?.useGroupLevel ?: -1 }
+            .groupBy { it.useGroupLevel }
             .map { (groupLevel, items) ->
                 val sortedItems = items
-                    .sortedBy { "${it.isTestOnly}::${it.useSpeckText}" }
+                    .sortedBy { it.useSpeckText }
                     .mapNotNull { it.copy() as? MvUseStmt }
                 groupLevel to sortedItems
             }

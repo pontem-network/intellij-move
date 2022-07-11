@@ -158,11 +158,12 @@ module BBB::M2 {
 }
 module 0x1::Main {
     use Std::Signer;
-    #[test_only]
-    use Std::Errors;
 
     use AAA::M1::{S1, SS1};
     use BBB::M2::S2;
+
+    #[test_only]
+    use Std::Errors;
 
     fun call(a: S1, b: S2, c: SS1) {
         Signer::address_of();
@@ -310,6 +311,7 @@ module 0x1::Main {
     }    
     module 0x1::Main {
         use 0x1::Coin::{Self, Coin};
+
         #[test_only]
         use 0x1::Coin::{Coin2, get_coin_2};
     
