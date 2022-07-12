@@ -5,8 +5,8 @@ import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
+import org.move.ide.presentation.acquireableIn
 import org.move.ide.presentation.fullnameNoArgs
-import org.move.ide.presentation.declaringModule
 import org.move.ide.presentation.nameNoArgs
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -27,7 +27,7 @@ class MvMissingAcquiresInspection : MvLocalInspectionTool() {
                 val inferenceCtx = function.inferenceCtx(callExpr.isMsl())
                 val missingTys = callExpr.acquiresTys(inferenceCtx)
                     .filter { it.fullnameNoArgs() !in declaredTyFullnames }
-                    .filter { it.declaringModule == module }
+                    .filter { it.acquireableIn(module) }
 
                 if (missingTys.isNotEmpty()) {
                     val name = function.name ?: return

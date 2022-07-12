@@ -3,7 +3,7 @@ package org.move.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
-import org.move.ide.presentation.declaringModule
+import org.move.ide.presentation.acquireableIn
 import org.move.ide.presentation.fullname
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
@@ -111,8 +111,7 @@ class ErrorAnnotator : MvAnnotator() {
                     val currentModule = o.containingModule ?: return
                     for (typeArg in explicitTypeArgs) {
                         val ty = typeArg.type.ty()
-                        val mod = ty.declaringModule ?: continue
-                        if (mod != currentModule) {
+                        if (!ty.acquireableIn(currentModule)) {
                             val typeName = ty.fullname()
                             holder.newAnnotation(
                                 HighlightSeverity.ERROR,
