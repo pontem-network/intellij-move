@@ -74,7 +74,11 @@ private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): 
     return TyReference(innerExprTy, mutability, ctx.msl)
 }
 
-fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext, expectedTy: Ty?): Ty {
+fun inferCallExprTy(
+    callExpr: MvCallExpr,
+    ctx: InferenceContext,
+    expectedTy: Ty?
+): Ty {
     val existingTy = ctx.callExprTypes[callExpr]
     if (existingTy != null) {
         return existingTy
@@ -134,7 +138,7 @@ private fun inferDotExprTy(dotExpr: MvDotExpr, ctx: InferenceContext): Ty {
     return inference.resolveTy(structTy.fieldTy(fieldName, ctx.msl))
 }
 
-private fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext): Ty {
+fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext): Ty {
     val structItem = litExpr.path.maybeStruct ?: return TyUnknown
     val structTypeVars = structItem.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
 
