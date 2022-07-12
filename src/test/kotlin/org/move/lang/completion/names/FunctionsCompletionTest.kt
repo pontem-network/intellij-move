@@ -310,33 +310,33 @@ class FunctionsCompletionTest : CompletionTestCase() {
     }
     """)
 
-    fun `test do not add angle brackets if type is inferrable from context`() = doSingleCompletion("""
-    module 0x1::Event {
-        struct EventHandle<phantom E> {}
-        
-        struct MyEvent {}
-        struct EventStore {
-            my_events: EventHandle<MyEvent>
-        }
-        
-        fun new_event_handle<E>(): EventHandle<E> { EventHandle<E> {} } 
-        fun call() {
-            EventStore { my_events: new_eve/*caret*/ };
-        }
-    }    
-    """, """
-    module 0x1::Event {
-        struct EventHandle<phantom E> {}
-        
-        struct MyEvent {}
-        struct EventStore {
-            my_events: EventHandle<MyEvent>
-        }
-        
-        fun new_event_handle<E>(): EventHandle<E> { EventHandle<E> {} } 
-        fun call() {
-            EventStore { my_events: new_event_handle()/*caret*/ };
-        }
-    }    
-    """)
+//    fun `test do not add angle brackets if type is inferrable from context`() = doSingleCompletion("""
+//    module 0x1::Event {
+//        struct EventHandle<phantom E> {}
+//
+//        struct MyEvent {}
+//        struct EventStore {
+//            my_events: EventHandle<MyEvent>
+//        }
+//
+//        fun new_event_handle<E>(): EventHandle<E> { EventHandle<E> {} }
+//        fun call() {
+//            EventStore { my_events: new_eve/*caret*/ };
+//        }
+//    }
+//    """, """
+//    module 0x1::Event {
+//        struct EventHandle<phantom E> {}
+//
+//        struct MyEvent {}
+//        struct EventStore {
+//            my_events: EventHandle<MyEvent>
+//        }
+//
+//        fun new_event_handle<E>(): EventHandle<E> { EventHandle<E> {} }
+//        fun call() {
+//            EventStore { my_events: new_event_handle()/*caret*/ };
+//        }
+//    }
+//    """)
 }
