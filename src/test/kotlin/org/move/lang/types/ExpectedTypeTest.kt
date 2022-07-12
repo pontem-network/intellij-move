@@ -27,6 +27,16 @@ class ExpectedTypeTest : TypificationTestCase() {
     """
     )
 
+    fun `test function parameter gets type from first parameter`() = testExpectedTypeExpr("""
+    module 0x1::Main {
+        fun call<T>(a: T, b: T) {}
+        fun main() {
+            call(1u8, my_ref);
+                     //^ u8
+        }
+    }    
+    """)
+
     fun `test let statement initializer no pattern explicit type`() = testExpectedTypeExpr(
         """
     module 0x1::Main {
