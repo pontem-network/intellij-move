@@ -13,6 +13,6 @@ val MvCallExpr.typeArguments: List<MvTypeArgument> get() = this.path.typeArgumen
 val MvCallExpr.arguments: List<MvExpr> get() = this.callArgumentList?.exprList.orEmpty()
 
 fun MvCallExpr.acquiresTys(ctx: InferenceContext): List<Ty> =
-    (inferCallExprTy(this, ctx) as? TyFunction)?.acquiresTypes.orEmpty()
+    (inferCallExprTy(this, ctx, null) as? TyFunction)?.acquiresTypes.orEmpty()
 
-fun MvCallExpr.inferCallTy(ctx: InferenceContext) = inferCallExprTy(this, ctx)
+fun MvCallExpr.inferCallTy(ctx: InferenceContext) = inferCallExprTy(this, ctx, null)

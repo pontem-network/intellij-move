@@ -14,7 +14,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
         is MvRefExpr -> inferRefExprTy(expr, ctx)
         is MvBorrowExpr -> inferBorrowExprTy(expr, ctx)
         is MvCallExpr -> {
-            val funcTy = inferCallExprTy(expr, ctx) as? TyFunction
+            val funcTy = inferCallExprTy(expr, ctx, null) as? TyFunction
             if (funcTy == null || !funcTy.solvable) {
                 TyUnknown
             } else {
@@ -74,7 +74,7 @@ private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): 
     return TyReference(innerExprTy, mutability, ctx.msl)
 }
 
-fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext, expectedTy: Ty? = null): Ty {
+fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext, expectedTy: Ty?): Ty {
     val existingTy = ctx.callExprTypes[callExpr]
     if (existingTy != null) {
         return existingTy
