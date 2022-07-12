@@ -108,11 +108,13 @@ fun inferCallExprTy(
         inference.registerConstraint(Constraint.Equate(funcTy.retType, expectedTy))
     }
     // solve constraints
-    val solvable = inference.processConstraints()
+    val isTypeError = inference.processConstraints()
 
-    // see whether every arg is coerceable with those vars having those values
     val resolvedFuncTy = inference.resolveTy(funcTy) as TyFunction
-    resolvedFuncTy.solvable = solvable
+    // if there's any unsolved TyInfer left, then unsolvable
+    resolvedFuncTy.solvable = isTypeError
+    resolvedFuncTy.foldTyInferWith { resolvedFuncTy.solvable = false; it }
+
     ctx.cacheCallExprTy(callExpr, resolvedFuncTy)
 
     return resolvedFuncTy
