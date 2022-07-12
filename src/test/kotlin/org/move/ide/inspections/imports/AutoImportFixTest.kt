@@ -243,8 +243,8 @@ module 0x1::Main {
     }   
     #[test_only] 
     module 0x1::MinterTests {
-        use 0x1::Minter::get_weekly_emission; 
-        
+        use 0x1::Minter::get_weekly_emission;
+
         #[test]
         fun test_a() {
             get_weekly_emission();
@@ -253,7 +253,7 @@ module 0x1::Main {
     """
     )
 
-    fun `test test_only function available in test_only function with test_only import`() =
+    fun `test test_only function available in test function with test_only import`() =
         checkAutoImportFixByText(
             """
     module 0x1::Minter {
@@ -261,7 +261,7 @@ module 0x1::Main {
         public fun get_weekly_emission(): u64 { 0 }
     }   
     module 0x1::MinterTests {
-        #[test_only]
+        #[test]
         fun my_fun() {
             <error descr="Unresolved reference: `get_weekly_emission`">/*caret*/get_weekly_emission</error>();
         }    
@@ -273,9 +273,9 @@ module 0x1::Main {
     }   
     module 0x1::MinterTests {
         #[test_only]
-        use 0x1::Minter::get_weekly_emission; 
-        
-        #[test_only]
+        use 0x1::Minter::get_weekly_emission;
+
+        #[test]
         fun my_fun() {
             get_weekly_emission();
         }    

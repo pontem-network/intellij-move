@@ -136,4 +136,28 @@ class ModulesCompletionTest : CompletionTestCase() {
         }
     }    
     """)
+
+    fun `test import test_only modules in test_only context`() = doSingleCompletion("""
+    #[test_only]    
+    module 0x1::Helpers {}
+    #[test_only]
+    module 0x1::ModuleTests {
+        use 0x1::He/*caret*/
+    }    
+    """, """
+    #[test_only]    
+    module 0x1::Helpers {}
+    #[test_only]
+    module 0x1::ModuleTests {
+        use 0x1::Helpers/*caret*/
+    }    
+    """)
+
+    fun `test no completion in non test context`() = checkNoCompletion("""
+    #[test_only]    
+    module 0x1::Helpers {}
+    module 0x1::Module {
+        use 0x1::He/*caret*/
+    }    
+    """)
 }

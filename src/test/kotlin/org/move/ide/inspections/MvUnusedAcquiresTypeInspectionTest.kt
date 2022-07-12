@@ -48,7 +48,7 @@ class MvUnusedAcquiresTypeInspectionTest : InspectionTestBase(MvUnusedAcquiresTy
     """
     )
 
-    fun `test error type not declared in the current module`() = checkFixByText("Remove acquires",
+    fun `test warn if type not declared in the current module`() = checkFixByText("Remove acquires",
         """
         module 0x1::M {
             struct S has key {}
