@@ -25,6 +25,7 @@ class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
     override fun getLanguagePlaceholderText(node: ASTNode, range: TextRange): String {
         return when {
             node.elementType == USE_STMT -> "/* uses */"
+            node.elementType == CONST -> "/* consts */"
             node.psi is MvFunctionParameterList -> "(...)"
             node.psi is PsiComment -> "/* ... */"
             node.psi is MvAcquiresType -> "/* acquires */"
@@ -42,8 +43,9 @@ class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
         if (root !is MoveFile) return
 
         val usesRanges: MutableList<TextRange> = ArrayList()
+        val constRanges: MutableList<TextRange> = ArrayList()
 
-        val visitor = FoldingVisitor(descriptors, usesRanges)
+        val visitor = FoldingVisitor(descriptors, usesRanges, constRanges)
         PsiTreeUtil.processElements(root) { it.accept(visitor); true }
     }
 
@@ -54,7 +56,8 @@ class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
 
     private class FoldingVisitor(
         private val descriptors: MutableList<FoldingDescriptor>,
-        private val usesRanges: MutableList<TextRange>
+        private val usesRanges: MutableList<TextRange>,
+        private val constRanges: MutableList<TextRange>,
     ) : MvVisitor() {
 
         override fun visitCodeBlock(o: MvCodeBlock) = fold(o)
@@ -87,6 +90,7 @@ class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
         }
 
         override fun visitUseStmt(o: MvUseStmt) = foldRepeatingItems(o, usesRanges)
+        override fun visitConst(o: MvConst) = foldRepeatingItems(o, constRanges)
 
         private fun fold(element: PsiElement) {
             descriptors += FoldingDescriptor(element.node, element.textRange)
