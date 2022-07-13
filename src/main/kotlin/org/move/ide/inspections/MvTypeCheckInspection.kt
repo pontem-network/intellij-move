@@ -144,7 +144,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
                 val msl = callArgs.isMsl()
                 val ctx = callArgs.inferenceCtx(msl)
-                val inferredFuncTy = inferCallExprTy(callExpr, ctx)
+                val inferredFuncTy = inferCallExprTy(callExpr, ctx, null)
                 if (inferredFuncTy !is TyFunction) return
 
                 for ((i, expr) in callArgs.exprList.withIndex()) {

@@ -14,9 +14,7 @@ import org.move.lang.MoveFile
 import org.move.lang.core.completion.DefaultInsertHandler
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.MslScope
-import org.move.lang.core.resolve.MvReferenceElement
+import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.moveProject
 import org.move.openapiext.checkWriteAccessAllowed
@@ -121,16 +119,19 @@ data class ImportContext private constructor(
         }
 
         fun from(contextElement: MvReferenceElement): ImportContext {
-            var itemVis = ItemVis.default().replace(vs = setOf(Visibility.Public))
-            if (contextElement.containingScript != null) {
-                itemVis = itemVis.replace(vs = itemVis.visibilities + Visibility.PublicScript)
+            val ns = contextElement.namespaces()
+            val vs = if (contextElement.containingScript != null) {
+                setOf(Visibility.Public, Visibility.PublicScript)
+            } else {
+                setOf(Visibility.Public)
             }
-            val namespaces = contextElement.namespaces()
-            itemVis = itemVis.replace(ns = namespaces)
-
-            if (contextElement.isMsl()) {
-                itemVis = itemVis.replace(msl = MslScope.EXPR)
-            }
+            val itemVis = ItemVis(
+                namespaces = ns,
+                visibilities = vs,
+                msl = contextElement.mslScope,
+                itemScope = contextElement.itemScope,
+                folderScope = contextElement.folderScope,
+            )
             return ImportContext(contextElement, itemVis)
         }
     }
@@ -144,11 +145,13 @@ fun ImportCandidate.import(context: MvElement) {
     val insertionScope = context.containingModule?.moduleBlock
         ?: context.containingScript?.scriptBlock
         ?: return
-    insertionScope.insertUseItem(psiFactory, fqPath)
+    val insertTestOnly = insertionScope.itemScope == ItemScope.MAIN
+            && context.itemScope == ItemScope.TEST
+    insertionScope.insertUseItem(psiFactory, fqPath, insertTestOnly)
 }
 
-private fun MvItemsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: FqPath) {
-    val newUseStmt = psiFactory.useStmt(usePath.toString())
+private fun MvItemsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: FqPath, testOnly: Boolean) {
+    val newUseStmt = psiFactory.useStmt(usePath.toString(), testOnly)
     if (this.tryGroupWithOtherUseItems(psiFactory, newUseStmt)) return
 
     val anchor = childrenOfType<MvUseStmt>().lastElement

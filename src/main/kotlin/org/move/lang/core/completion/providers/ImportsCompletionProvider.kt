@@ -12,10 +12,9 @@ import org.move.lang.core.completion.createSelfLookup
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvUseItem
 import org.move.lang.core.psi.MvUseItemGroup
-import org.move.lang.core.psi.ext.isSelf
-import org.move.lang.core.psi.ext.moduleImport
-import org.move.lang.core.psi.ext.names
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.mslScope
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
@@ -48,12 +47,18 @@ object ImportsCompletionProvider : MvCompletionProvider() {
             else -> Visibility.buildSetOfVisibilities(itemImport)
         }
         val ns = setOf(Namespace.NAME, Namespace.TYPE)
-        val itemVis = ItemVis.default().replace(ns, vs)
+        val itemVis = ItemVis(
+            ns, vs,
+            msl = itemImport.mslScope,
+            itemScope = itemImport.itemScope,
+            folderScope = itemImport.folderScope
+        )
         processModuleItems(referredModule, itemVis) {
             val lookup =
                 it.element.createCompletionLookupElement(
                     BasicInsertHandler(),
-                    ns = itemVis.namespaces)
+                    ns = itemVis.namespaces
+                )
             result.addElement(lookup)
             false
         }

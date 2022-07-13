@@ -271,4 +271,19 @@ class StructsCompletionTest: CompletionTestCase() {
     }    
     """)
 
+    fun `test complete field name in pattern`() = doSingleCompletion("""
+    module 0x1::Main {
+        struct UserInfo { name: vector<u8> }
+        fun set_name() {
+            let UserInfo { n/*caret*/ }
+        }
+    }    
+    """, """
+    module 0x1::Main {
+        struct UserInfo { name: vector<u8> }
+        fun set_name() {
+            let UserInfo { name/*caret*/ }
+        }
+    }    
+    """)
 }

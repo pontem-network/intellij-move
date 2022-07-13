@@ -34,7 +34,7 @@ class ImportOptimizer : ImportOptimizer {
 
     private fun optimizeImports(itemsOwner: MvItemsOwner) {
         removeUnusedImports(itemsOwner)
-        mergeImports(itemsOwner)
+        mergeImportsIntoGroups(itemsOwner)
         sortImports(itemsOwner)
     }
 
@@ -77,14 +77,15 @@ class ImportOptimizer : ImportOptimizer {
         }
     }
 
-    private fun mergeImports(useStmtOwner: MvItemsOwner) {
+    private fun mergeImportsIntoGroups(useStmtOwner: MvItemsOwner) {
         val psiFactory = useStmtOwner.project.psiFactory
         val leftBrace = useStmtOwner.findFirstChildByType(L_BRACE) ?: return
 
         val useStmts = useStmtOwner.useStmtList
         useStmts
-            .groupBy { it.fqModuleText }
-            .forEach { (fqModuleText, stmts) ->
+            .groupBy { Pair(it.fqModuleText, it.isTestOnly) }
+            .forEach { (pair, stmts) ->
+                val (fqModuleText, isTestOnly) = pair
                 if (stmts.size > 1) {
                     val useItemNames = mutableListOf<String>()
                     if (stmts.any { it.moduleUseSpeck != null }) {
@@ -92,7 +93,10 @@ class ImportOptimizer : ImportOptimizer {
                     }
                     useItemNames.addAll(stmts.flatMap { it.childUseItems }.map { it.text })
                     val newStmt =
-                        psiFactory.useStmt("$fqModuleText::{${useItemNames.joinToString(", ")}}")
+                        psiFactory.useStmt(
+                            "$fqModuleText::{${useItemNames.joinToString(", ")}}",
+                            isTestOnly
+                        )
                     useStmtOwner.addAfter(newStmt, leftBrace)
                     stmts.forEach { it.delete() }
                 }
@@ -109,7 +113,7 @@ class ImportOptimizer : ImportOptimizer {
 
         val useStmts = useStmtOwner.useStmtList
         val sortedUseGroups = useStmts
-            .groupBy { it.addressRef?.useGroupLevel ?: -1 }
+            .groupBy { it.useGroupLevel }
             .map { (groupLevel, items) ->
                 val sortedItems = items
                     .sortedBy { it.useSpeckText }

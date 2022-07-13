@@ -112,12 +112,6 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = MvPsiPatterns.pathType()
 
-//    override fun lookupElementProperties(pathElement: MvPath): LookupElementProperties {
-//        return LookupElementProperties(
-//            typeHasAllRequiredAbilities =
-//        )
-//    }
-
     override fun itemVis(pathElement: MvPath): ItemVis {
         return ItemVis(
             setOf(Namespace.TYPE),

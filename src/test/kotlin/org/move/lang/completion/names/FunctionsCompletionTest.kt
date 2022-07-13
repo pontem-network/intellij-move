@@ -269,4 +269,74 @@ class FunctionsCompletionTest : CompletionTestCase() {
         }
     }
     """)
+
+    fun `test test_only function completion in test_only scope`() = doSingleCompletion("""
+    module 0x1::Minter {
+        #[test_only]
+        public fun get_weekly() {}
+    }    
+    #[test_only]
+    module 0x1::MinterTests {
+        use 0x1::Minter::get/*caret*/
+    }
+    """, """
+    module 0x1::Minter {
+        #[test_only]
+        public fun get_weekly() {}
+    }    
+    #[test_only]
+    module 0x1::MinterTests {
+        use 0x1::Minter::get_weekly/*caret*/
+    }
+    """)
+
+    fun `test test_only function completion in test_only use item scope`() = doSingleCompletion("""
+    module 0x1::Minter {
+        #[test_only]
+        public fun get_weekly() {}
+    }    
+    module 0x1::MinterTests {
+        #[test_only]
+        use 0x1::Minter::get/*caret*/
+    }
+    """, """
+    module 0x1::Minter {
+        #[test_only]
+        public fun get_weekly() {}
+    }    
+    module 0x1::MinterTests {
+        #[test_only]
+        use 0x1::Minter::get_weekly/*caret*/
+    }
+    """)
+
+//    fun `test do not add angle brackets if type is inferrable from context`() = doSingleCompletion("""
+//    module 0x1::Event {
+//        struct EventHandle<phantom E> {}
+//
+//        struct MyEvent {}
+//        struct EventStore {
+//            my_events: EventHandle<MyEvent>
+//        }
+//
+//        fun new_event_handle<E>(): EventHandle<E> { EventHandle<E> {} }
+//        fun call() {
+//            EventStore { my_events: new_eve/*caret*/ };
+//        }
+//    }
+//    """, """
+//    module 0x1::Event {
+//        struct EventHandle<phantom E> {}
+//
+//        struct MyEvent {}
+//        struct EventStore {
+//            my_events: EventHandle<MyEvent>
+//        }
+//
+//        fun new_event_handle<E>(): EventHandle<E> { EventHandle<E> {} }
+//        fun call() {
+//            EventStore { my_events: new_event_handle()/*caret*/ };
+//        }
+//    }
+//    """)
 }

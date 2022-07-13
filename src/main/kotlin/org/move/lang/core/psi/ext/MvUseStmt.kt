@@ -1,6 +1,5 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.MvAddressRef
 import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.psi.MvUseItem
@@ -23,6 +22,11 @@ val MvUseStmt.addressRef: MvAddressRef?
         }
         return null
     }
+
+val MvUseStmt.useGroupLevel: Int get() {
+    if (this.isTestOnly) return 4
+    return this.addressRef?.useGroupLevel ?: -1
+}
 
 val MvUseStmt.fqModuleText: String? get() {
     val fqModuleRef = this.fqModuleRef ?: return null

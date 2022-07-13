@@ -73,12 +73,12 @@ val MvFunctionLike.script: MvScript?
         return scriptBlock.parent as? MvScript
     }
 
-val MvFunctionLike.fqName: String
-    get() {
-        val moduleFqName = this.module?.fqName?.let { "$it::" }
-        val name = this.name ?: "<unknown>"
-        return moduleFqName + name
-    }
+//val MvFunctionLike.fqName: String
+//    get() {
+//        val moduleFqName = this.module?.fqName?.let { "$it::" }
+//        val name = this.name ?: "<unknown>"
+//        return moduleFqName + name
+//    }
 
 val MvFunctionLike.acquiresPathTypes: List<MvPathType>
     get() =

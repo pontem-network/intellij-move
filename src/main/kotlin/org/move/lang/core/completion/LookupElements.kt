@@ -149,7 +149,7 @@ fun InsertionContext.addSuffix(suffix: String) {
     EditorModificationUtil.moveCaretRelatively(editor, suffix.length)
 }
 
-val InsertionContext.alreadyHasCallParens: Boolean
+val InsertionContext.hasCallParens: Boolean
     get() = nextCharIs('(')
 
 val InsertionContext.alreadyHasColonColon: Boolean
@@ -158,7 +158,7 @@ val InsertionContext.alreadyHasColonColon: Boolean
 val InsertionContext.alreadyHasSpace: Boolean
     get() = nextCharIs(' ')
 
-private val InsertionContext.alreadyHasAngleBrackets: Boolean
+private val InsertionContext.hasAngleBrackets: Boolean
     get() = nextCharIs('<')
 
 fun InsertionContext.nextCharIs(c: Char): Boolean =
@@ -180,29 +180,22 @@ class AngleBracketsInsertHandler : InsertHandler<LookupElement> {
 
     override fun handleInsert(context: InsertionContext, item: LookupElement) {
         val document = context.document
-        if (!context.alreadyHasAngleBrackets) {
+        if (!context.hasAngleBrackets) {
             document.insertString(context.selectionEndOffset, "<>")
         }
         EditorModificationUtil.moveCaretRelatively(context.editor, 1)
     }
 }
 
-private fun InsertionContext.functionSuffixAndOffset(
-    requiredTypeParams: List<MvTypeParameter>,
-    parameters: List<MvFunctionParameter>
-): Pair<String, Int> {
+private fun InsertionContext.functionSuffix(hasRequiredTypeParams: Boolean): String {
     var suffix = ""
-    if (!this.alreadyHasAngleBrackets && requiredTypeParams.isNotEmpty()) {
+    if (!this.hasAngleBrackets && hasRequiredTypeParams) {
         suffix += "<>"
     }
-    if (!this.alreadyHasAngleBrackets && !this.alreadyHasCallParens) {
+    if (!this.hasAngleBrackets && !this.hasCallParens) {
         suffix += "()"
     }
-    val offset = when {
-        parameters.isNotEmpty() || requiredTypeParams.isNotEmpty() -> 1
-        else -> 2
-    }
-    return Pair(suffix, offset)
+    return suffix
 }
 
 open class DefaultInsertHandler : InsertHandler<LookupElement> {
@@ -212,15 +205,25 @@ open class DefaultInsertHandler : InsertHandler<LookupElement> {
 
         when (element) {
             is MvFunctionLike -> {
-                val requiredTypeParams = element.typeParamsUsedOnlyInReturnType
-                val (suffix, offset) = context.functionSuffixAndOffset(requiredTypeParams, element.parameters)
+                // TODO:
+                //  1. ensure that there is a call brackets `()` so it's a valid CallExpr
+                //  2. find `expectedTy` of the expr
+                //  3. infer TyFunction of the CallExpr
+                //  4. check whether it's solvable, insert angle brackets if not
+                val hasRequiredTypeParams = element.typeParamsUsedOnlyInReturnType.isNotEmpty()
+
+                val suffix = context.functionSuffix(hasRequiredTypeParams)
+                val offset = when {
+                    element.parameters.isNotEmpty() || hasRequiredTypeParams -> 1
+                    else -> 2
+                }
 
                 document.insertString(context.selectionEndOffset, suffix)
                 EditorModificationUtil.moveCaretRelatively(context.editor, offset)
             }
             is MvSchema -> {
                 if (element.hasTypeParameters) {
-                    if (!context.alreadyHasAngleBrackets) {
+                    if (!context.hasAngleBrackets) {
                         document.insertString(context.selectionEndOffset, "<>")
                     }
                     EditorModificationUtil.moveCaretRelatively(context.editor, 1)
@@ -232,7 +235,7 @@ open class DefaultInsertHandler : InsertHandler<LookupElement> {
                         .findElementAt(context.startOffset)
                         ?.ancestorOrSelf<MvAcquiresType>() != null
                 if (element.hasTypeParameters && !insideAcquiresType) {
-                    if (!context.alreadyHasAngleBrackets) {
+                    if (!context.hasAngleBrackets) {
                         document.insertString(context.selectionEndOffset, "<>")
                     }
                     EditorModificationUtil.moveCaretRelatively(context.editor, 1)

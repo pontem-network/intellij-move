@@ -53,7 +53,7 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
                 )
             }
             is MvStructLitField -> {
-                val structLit = element.structLit
+                val structLit = element.structLitExpr
                 addFieldsToCompletion(
                     structLit.path.maybeStruct ?: return,
                     structLit.fieldNames,

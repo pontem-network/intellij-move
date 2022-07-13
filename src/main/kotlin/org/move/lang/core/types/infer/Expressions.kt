@@ -14,7 +14,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
         is MvRefExpr -> inferRefExprTy(expr, ctx)
         is MvBorrowExpr -> inferBorrowExprTy(expr, ctx)
         is MvCallExpr -> {
-            val funcTy = inferCallExprTy(expr, ctx) as? TyFunction
+            val funcTy = inferCallExprTy(expr, ctx, null) as? TyFunction
             if (funcTy == null || !funcTy.solvable) {
                 TyUnknown
             } else {
@@ -74,7 +74,11 @@ private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): 
     return TyReference(innerExprTy, mutability, ctx.msl)
 }
 
-fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
+fun inferCallExprTy(
+    callExpr: MvCallExpr,
+    ctx: InferenceContext,
+    expectedTy: Ty?
+): Ty {
     val existingTy = ctx.callExprTypes[callExpr]
     if (existingTy != null) {
         return existingTy
@@ -100,15 +104,17 @@ fun inferCallExprTy(callExpr: MvCallExpr, ctx: InferenceContext): Ty {
             inference.registerConstraint(Constraint.Equate(paramTy, argumentTy))
         }
     }
-//    if (expectedTy != null) {
-//        inference.registerConstraint(Constraint.Equate(funcTy.retType, expectedTy))
-//    }
+    if (expectedTy != null) {
+        inference.registerConstraint(Constraint.Equate(funcTy.retType, expectedTy))
+    }
     // solve constraints
-    val solvable = inference.processConstraints()
+    val isTypeError = inference.processConstraints()
 
-    // see whether every arg is coerceable with those vars having those values
     val resolvedFuncTy = inference.resolveTy(funcTy) as TyFunction
-    resolvedFuncTy.solvable = solvable
+    // if there's any unsolved TyInfer left, then unsolvable
+    resolvedFuncTy.solvable = isTypeError
+    resolvedFuncTy.foldTyInferWith { resolvedFuncTy.solvable = false; it }
+
     ctx.cacheCallExprTy(callExpr, resolvedFuncTy)
 
     return resolvedFuncTy
@@ -134,7 +140,7 @@ private fun inferDotExprTy(dotExpr: MvDotExpr, ctx: InferenceContext): Ty {
     return inference.resolveTy(structTy.fieldTy(fieldName, ctx.msl))
 }
 
-private fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext): Ty {
+fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext): Ty {
     val structItem = litExpr.path.maybeStruct ?: return TyUnknown
     val structTypeVars = structItem.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
 

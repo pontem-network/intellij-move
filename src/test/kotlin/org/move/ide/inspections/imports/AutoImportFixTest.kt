@@ -55,7 +55,8 @@ script {
     """
     )
 
-    fun `test module in other module with struct`() = checkAutoImportFixByText("""
+    fun `test module in other module with struct`() = checkAutoImportFixByText(
+        """
 module 0x1::Module {
     public fun call() {} 
 }
@@ -79,9 +80,11 @@ module 0x1::Main {
         Module::call();
     }
 }        
-    """)
+    """
+    )
 
-    fun `test unavailable if unresolved member`() = checkAutoImportFixIsUnavailable("""
+    fun `test unavailable if unresolved member`() = checkAutoImportFixIsUnavailable(
+        """
 module 0x1::M {}
 module 0x1::Main {
     use 0x1::M;
@@ -90,9 +93,11 @@ module 0x1::Main {
         M::<error descr="Unresolved reference: `value`">/*caret*/value</error>();
     }
 }        
-    """)
+    """
+    )
 
-    fun `test auto import to the same group`() = checkAutoImportFixByText("""
+    fun `test auto import to the same group`() = checkAutoImportFixByText(
+        """
 module 0x1::M {
     struct S {}
     public fun call() {}
@@ -116,9 +121,11 @@ module 0x1::Main {
         call();
     }
 }
-    """)
+    """
+    )
 
-    fun `test multiple import candidates`() = checkAutoImportFixByTextWithMultipleChoice("""
+    fun `test multiple import candidates`() = checkAutoImportFixByTextWithMultipleChoice(
+        """
 module 0x1::M1 {
     public fun call() {}
 }
@@ -144,9 +151,11 @@ module 0x1::Main {
         call();
     }
 }
-    """)
+    """
+    )
 
-    fun `test no struct in module context`() = checkAutoImportFixByText("""
+    fun `test no struct in module context`() = checkAutoImportFixByText(
+        """
 module 0x1::Token {
     struct Token {}
     struct MintCapability {}
@@ -166,9 +175,11 @@ module 0x1::Main {
 
     fun main(a: Token::MintCapability) {}
 }
-    """)
+    """
+    )
 
-    fun `test struct same name as module import`() = checkAutoImportFixByText("""
+    fun `test struct same name as module import`() = checkAutoImportFixByText(
+        """
 module 0x1::Token {
     struct Token {}
     public fun call() {}
@@ -193,9 +204,11 @@ module 0x1::Main {
         Token::call();
     }
 }
-    """)
+    """
+    )
 
-    fun `test unresolved function on module should not have import fix`() = checkAutoImportFixIsUnavailable("""
+    fun `test unresolved function on module should not have import fix`() = checkAutoImportFixIsUnavailable(
+        """
     module 0x1::Coin {
         public fun initialize() {}
     }        
@@ -207,7 +220,68 @@ module 0x1::Main {
             AnotherCoin::<error descr="Unresolved reference: `initialize`">/*caret*/initialize</error>();
         }
     }
-    """)
+    """
+    )
+
+    fun `test test_only function available in test_only module`() = checkAutoImportFixByText(
+        """
+    module 0x1::Minter {
+        #[test_only]
+        public fun get_weekly_emission(): u64 { 0 }
+    }   
+    #[test_only] 
+    module 0x1::MinterTests {
+        #[test]
+        fun test_a() {
+            <error descr="Unresolved reference: `get_weekly_emission`">/*caret*/get_weekly_emission</error>();
+        }    
+    }
+    """, """
+    module 0x1::Minter {
+        #[test_only]
+        public fun get_weekly_emission(): u64 { 0 }
+    }   
+    #[test_only] 
+    module 0x1::MinterTests {
+        use 0x1::Minter::get_weekly_emission;
+
+        #[test]
+        fun test_a() {
+            get_weekly_emission();
+        }    
+    }
+    """
+    )
+
+    fun `test test_only function available in test function with test_only import`() =
+        checkAutoImportFixByText(
+            """
+    module 0x1::Minter {
+        #[test_only]
+        public fun get_weekly_emission(): u64 { 0 }
+    }   
+    module 0x1::MinterTests {
+        #[test]
+        fun my_fun() {
+            <error descr="Unresolved reference: `get_weekly_emission`">/*caret*/get_weekly_emission</error>();
+        }    
+    }
+    """, """
+    module 0x1::Minter {
+        #[test_only]
+        public fun get_weekly_emission(): u64 { 0 }
+    }   
+    module 0x1::MinterTests {
+        #[test_only]
+        use 0x1::Minter::get_weekly_emission;
+
+        #[test]
+        fun my_fun() {
+            get_weekly_emission();
+        }    
+    }
+    """
+        )
 
     private fun checkAutoImportFixByText(
         @Language("Move") before: String,

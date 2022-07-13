@@ -7,6 +7,7 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
+import org.move.ide.presentation.acquireableIn
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.acquiresTys
@@ -47,6 +48,7 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
         return object : MvVisitor() {
             override fun visitAcquiresType(o: MvAcquiresType) {
                 val function = o.parent as? MvFunction ?: return
+                val module = function.module ?: return
                 val codeBlock = function.codeBlock ?: return
                 val ctx = function.inferenceCtx(codeBlock.isMsl())
                 val blockAcquiredTys = codeBlock
@@ -59,8 +61,14 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val visitedTypeNames = mutableSetOf<String>()
                 val pathTypes = o.pathTypeList
                 for ((i, pathType) in pathTypes.withIndex()) {
+                    // check that this acquires is allowed in the context
+                    val ty = pathType.ty(codeBlock.isMsl())
+                    if (!ty.acquireableIn(module)) {
+                        unusedAcquiresIndices.add(i)
+                        continue
+                    }
                     // check for duplicates
-                    val typeName = pathType.ty(codeBlock.isMsl()).fullnameNoArgs()
+                    val typeName = ty.fullnameNoArgs()
                     if (typeName in visitedTypeNames) {
                         unusedAcquiresIndices.add(i)
                         continue
