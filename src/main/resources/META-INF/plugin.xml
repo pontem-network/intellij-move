@@ -13,6 +13,11 @@
     </description>
     <change-notes>
         <![CDATA[
+    <h3>1.13.1</h3>
+    <ul>
+    <li>Fix #[test_only] scoping for auto-import and Optimize Imports action</li>
+    <li>More type inference support</li>
+    </ul>
     <h3>1.13.0</h3>
     <ul>
     <li>Correct scoping for modules suggested in auto-import</li>
