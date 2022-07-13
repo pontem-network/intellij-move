@@ -1,5 +1,9 @@
+<fold text='/* ... */'>/// my docstring
+/// my other docstring</fold>
 module 0x1::M <fold text='{...}'>{
-    fun main() <fold text='{...}'>{
+    <fold text='/* ... */'>/// my docstring
+    /// my other docstring</fold>
+    fun main() <fold text='/* acquires */'>acquires A, B, C</fold> <fold text='{...}'>{
         let a = 1;
     }</fold>
 
@@ -13,5 +17,7 @@ module 0x1::M <fold text='{...}'>{
 
     spec module {}
 
+    <fold text='/* ... */'>/// my docstring
+    /// my other docstring</fold>
     struct R <fold text='{...}'>{ val: u8 }</fold>
-}</fold>
+    }</fold>
