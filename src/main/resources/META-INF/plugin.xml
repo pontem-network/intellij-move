@@ -225,7 +225,7 @@
                                    id="mvRenamePsiFileProcessor"/>
         <lang.psiStructureViewFactory
                 language="Move"
-                implementationClass="org.move.ide.navigation.MvStructureViewBuilderFactory"/>
+                implementationClass="org.move.ide.structure.MvPsiStructureViewFactory"/>
 
         <declarationRangeHandler
                 key="org.move.lang.core.psi.MvModule"

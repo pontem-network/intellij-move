@@ -3,6 +3,7 @@ package org.move.ide.navigation
 import com.intellij.openapi.ui.Queryable
 import com.intellij.testFramework.PlatformTestUtil
 import org.intellij.lang.annotations.Language
+import org.move.ide.structure.MvStructureViewElement
 import org.move.utils.tests.MvTestBase
 import javax.swing.JTree
 import javax.swing.tree.TreePath
