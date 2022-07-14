@@ -5,14 +5,20 @@ import com.intellij.ide.structureView.StructureViewModelBase
 import com.intellij.ide.structureView.StructureViewTreeElement
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiFile
+import org.move.lang.MoveFile
+import org.move.lang.core.psi.MvNamedElement
 
-class MvStructureViewModel(editor: Editor?, psiFile: PsiFile) :
+class MvStructureViewModel(editor: Editor?, moveFile: MoveFile) :
     StructureViewModelBase(
-        psiFile,
+        moveFile,
         editor,
-        MvStructureViewElement(psiFile)
+        MvStructureViewElement(moveFile)
     ),
     StructureViewModel.ElementInfoProvider {
+
+    init {
+        withSuitableClasses(MvNamedElement::class.java)
+    }
 
     override fun isAlwaysShowsPlus(element: StructureViewTreeElement): Boolean = false
 
