@@ -2,6 +2,7 @@ package org.move.ide.inspections
 
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalInspectionToolSession
+import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
 import org.move.cli.moveProjects
@@ -43,4 +44,8 @@ abstract class MvLocalInspectionTool: LocalInspectionTool() {
         if (isSyntaxOnly) return true
         return file.project.moveProjects.findMoveProject(file) != null
     }
+}
+
+abstract class InspectionQuickFix(val fixName: String) : LocalQuickFix {
+    override fun getFamilyName(): String = fixName
 }

@@ -302,6 +302,10 @@
                          displayName="Unused declaration"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.move.ide.inspections.MvUnusedVariableInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Unused test signer"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.UnusedTestSignerInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>

@@ -42,4 +42,17 @@ class DotAccessCompletionTest: CompletionTestCase() {
             }
         }
     """)
+
+    fun `test borrow global dot field in test_only module`() = checkContainsCompletion(
+        listOf("mint_cap", "burn_cap"),
+        """
+#[test_only]            
+module 0x1::M {
+    struct Caps has key { mint_cap: u8, burn_cap: u8 }
+    fun main() {
+        borrow_global<Caps>(@0x1)./*caret*/
+    }
+}            
+        """
+    )
 }

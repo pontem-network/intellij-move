@@ -559,4 +559,39 @@ module 0x1::M {
     }
     """
     )
+
+    fun `test docstring indent module`() = doTestByText("""
+/// hello/*caret*/
+module 0x1::M {}        
+    """, """
+/// hello
+/// /*caret*/
+module 0x1::M {}        
+    """)
+
+    fun `test docstring indent function`() = doTestByText("""
+module 0x1::M {
+    /// hello/*caret*/
+    fun m() {}
+}        
+    """, """
+module 0x1::M {
+    /// hello
+    /// /*caret*/
+    fun m() {}
+}        
+    """)
+
+    fun `test docstring indent struct`() = doTestByText("""
+module 0x1::M {
+    /// hello/*caret*/
+    struct S {}
+}        
+    """, """
+module 0x1::M {
+    /// hello
+    /// /*caret*/
+    struct S {}
+}        
+    """)
 }

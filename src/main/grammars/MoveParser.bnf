@@ -155,6 +155,10 @@ File ::= (NamedAddressDef | Script | AddressDef | Module)*
 
 Attr ::= '#' '[' <<comma_sep_items AttrItem>> ']' { pin = 1 }
 AttrItem ::= IDENTIFIER AttrItemArguments?
+{
+    implements = [ "org.move.lang.core.psi.MvNamedElement" ]
+    mixin = "org.move.lang.core.psi.ext.MvAttrItemMixin"
+}
 AttrItemArguments ::= '(' <<comma_sep_items AttrItemArgument>> ')'
 AttrItemArgument ::= IDENTIFIER '=' LitExpr
 {
@@ -1000,6 +1004,7 @@ Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl SpecBlock>> {
     pin = 1
     implements = [
         "org.move.lang.core.psi.MvTypeParametersOwner"
+        "org.move.lang.core.psi.MvQualifiedNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
     ]
     mixin = "org.move.lang.core.psi.mixins.MvSchemaMixin"

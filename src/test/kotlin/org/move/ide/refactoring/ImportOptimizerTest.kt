@@ -322,6 +322,24 @@ module 0x1::Main {
     }
     """)
 
+    fun `test self import into module import if no items`() = doTest("""
+module 0x1::Coin { public fun call() {} }        
+module 0x1::Main {
+    use 0x1::Coin::Self;
+    fun main() {
+        Coin::call();
+    }
+}        
+    """, """
+module 0x1::Coin { public fun call() {} }        
+module 0x1::Main {
+    use 0x1::Coin;
+    fun main() {
+        Coin::call();
+    }
+}        
+    """)
+
     private fun doTest(@Language("Move") before: String, @Language("Move") after: String) =
         checkEditorAction(before, after, "OptimizeImports")
 }
