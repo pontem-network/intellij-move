@@ -334,6 +334,7 @@ module 0x1::Main {
 module 0x1::Coin { public fun call() {} }        
 module 0x1::Main {
     use 0x1::Coin;
+
     fun main() {
         Coin::call();
     }

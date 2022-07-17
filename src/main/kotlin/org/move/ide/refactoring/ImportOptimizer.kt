@@ -86,21 +86,31 @@ class ImportOptimizer : ImportOptimizer {
             .groupBy { Pair(it.fqModuleText, it.isTestOnly) }
             .forEach { (pair, stmts) ->
                 val (fqModuleText, isTestOnly) = pair
-                if (stmts.size > 1) {
-                    val useItemNames = mutableListOf<String>()
-                    if (stmts.any { it.moduleUseSpeck != null }) {
-                        useItemNames.add("Self")
+                if (fqModuleText == null) return@forEach
+
+                // special case: if single stmt and import like `use 0x1::Main::Self;`, change to `0x1::Main`
+                if (stmts.size == 1) {
+                    val stmt = stmts.single()
+                    val useItem = stmt.childUseItems.singleOrNull()?.takeIf { it.text == "Self" }
+                    if (useItem != null) {
+                        val newStmt = psiFactory.useStmt(fqModuleText, isTestOnly)
+                        stmt.replace(newStmt)
                     }
-                    useItemNames.addAll(stmts.flatMap { it.childUseItems }.map { it.text })
-                    val newStmt =
-                        psiFactory.useStmt(
-                            "$fqModuleText::{${useItemNames.joinToString(", ")}}",
-                            isTestOnly
-                        )
-                    useStmtOwner.addAfter(newStmt, leftBrace)
-                    stmts.forEach { it.delete() }
+                    return@forEach
                 }
-//                }
+
+                val useItemNames = mutableListOf<String>()
+                if (stmts.any { it.moduleUseSpeck != null }) {
+                    useItemNames.add("Self")
+                }
+                useItemNames.addAll(stmts.flatMap { it.childUseItems }.map { it.text })
+                val newStmt =
+                    psiFactory.useStmt(
+                        "$fqModuleText::{${useItemNames.joinToString(", ")}}",
+                        isTestOnly
+                    )
+                useStmtOwner.addAfter(newStmt, leftBrace)
+                stmts.forEach { it.delete() }
             }
     }
 
