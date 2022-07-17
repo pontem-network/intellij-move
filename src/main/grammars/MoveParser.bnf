@@ -486,7 +486,10 @@ StructField ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // 'use 0x0::Transaction as MyTransaction;'
 
-FriendStmt ::= Attr* friend FQModuleRef ';' { pin = "friend" }
+FriendStmt ::= Attr* friend FQModuleRef ';' {
+    pin = "friend"
+    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+}
 
 UseStmt ::= Attr* use (ItemUseSpeck | ModuleUseSpeck) ';' {
     pin = "use"
