@@ -71,7 +71,7 @@ class MvPathReferenceImpl(
             if (moduleRef.isSelf) {
                 val containingModule = moduleRef.containingModule ?: return emptyList()
                 return resolveModuleItem(
-                    containingModule, refName, itemVis.replace(vs = setOf(Visibility.Internal))
+                    containingModule, refName, itemVis.copy(visibilities = setOf(Visibility.Internal))
                 )
             }
             val fqModuleRef = resolveIntoFQModuleRef(moduleRef) ?: return emptyList()

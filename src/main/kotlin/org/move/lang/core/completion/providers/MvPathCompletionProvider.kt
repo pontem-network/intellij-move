@@ -48,7 +48,7 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
                 moduleRef.isSelf -> setOf(Visibility.Internal)
                 else -> Visibility.buildSetOfVisibilities(pathElement)
             }
-            processModuleItems(module, itemVis.replace(vs = vs)) {
+            processModuleItems(module, itemVis.copy(visibilities = vs)) {
                 val lookup = it.element.createLookupElement(ctx)
                 result.addElement(lookup)
                 false
@@ -72,7 +72,7 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
 
         val originalPathElement = parameters.originalPosition?.parent as? MvPath ?: return
         val importContext =
-            ImportContext.from(originalPathElement, itemVis.replace(vs = setOf(Visibility.Public)))
+            ImportContext.from(originalPathElement, itemVis.copy(visibilities = setOf(Visibility.Public)))
         val candidates = getImportCandidates(
             parameters,
             result,
@@ -101,7 +101,7 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
         return ItemVis(
             setOf(Namespace.NAME),
             Visibility.none(),
-            msl = pathElement.mslScope,
+            mslScope = pathElement.mslScope,
             itemScope = pathElement.itemScope,
             folderScope = pathElement.folderScope
         )
@@ -116,7 +116,7 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
         return ItemVis(
             setOf(Namespace.TYPE),
             Visibility.none(),
-            msl = MslScope.NONE,
+            mslScope = MslScope.NONE,
             itemScope = pathElement.itemScope,
             folderScope = pathElement.folderScope
         )
@@ -132,7 +132,7 @@ object SchemasCompletionProvider : MvPathCompletionProvider() {
         return ItemVis(
             setOf(Namespace.SCHEMA),
             Visibility.none(),
-            msl = MslScope.EXPR,
+            mslScope = MslScope.EXPR,
             itemScope = pathElement.itemScope,
             folderScope = pathElement.folderScope
         )
