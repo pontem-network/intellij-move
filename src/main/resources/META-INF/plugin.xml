@@ -13,6 +13,13 @@
     </description>
     <change-notes>
         <![CDATA[
+    <h3>1.14.0</h3>
+    <ul>
+    <li>Fold more statements</li>
+    <li>Auto-fold use statements</li>
+    <li>Support "Context Info" action</li>
+    <li>0x1::Mod::Self -> 0x1::Mod in import optimizer</li>
+    </ul>
     <h3>1.13.1</h3>
     <ul>
     <li>Fix #[test_only] scoping for auto-import and Optimize Imports action</li>
@@ -225,7 +232,7 @@
                                    id="mvRenamePsiFileProcessor"/>
         <lang.psiStructureViewFactory
                 language="Move"
-                implementationClass="org.move.ide.navigation.MvStructureViewBuilderFactory"/>
+                implementationClass="org.move.ide.structure.MvPsiStructureViewFactory"/>
 
         <declarationRangeHandler
                 key="org.move.lang.core.psi.MvModule"
@@ -297,6 +304,10 @@
                          displayName="Unused declaration"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.move.ide.inspections.MvUnusedVariableInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Unused test signer"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.UnusedTestSignerInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>

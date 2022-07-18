@@ -9,8 +9,13 @@ import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvFQModuleRef
+import org.move.lang.core.psi.ext.folderScope
+import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.mslScope
 import org.move.lang.core.resolve.processFQModuleRef
+import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.withParent
 
 object FQModuleCompletionProvider : MvCompletionProvider() {
@@ -30,7 +35,14 @@ object FQModuleCompletionProvider : MvCompletionProvider() {
                 ?: directParent.parent as MvFQModuleRef
         if (parameters.position !== fqModuleRef.referenceNameElement) return
 
-        val completionContext = CompletionContext(fqModuleRef, ItemVis.default())
+        val itemVis = ItemVis(
+            namespaces = setOf(Namespace.MODULE),
+            visibilities = Visibility.none(),
+            mslScope = fqModuleRef.mslScope,
+            itemScope = fqModuleRef.itemScope,
+            folderScope = fqModuleRef.folderScope,
+        )
+        val completionContext = CompletionContext(fqModuleRef, itemVis)
         processFQModuleRef(fqModuleRef) {
             val lookup = it.element.createLookupElement(completionContext)
             result.addElement(lookup)

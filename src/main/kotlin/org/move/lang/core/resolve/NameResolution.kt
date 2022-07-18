@@ -56,33 +56,11 @@ val MvElement.mslScope: MslScope
 data class ItemVis(
     val namespaces: Set<Namespace>,
     val visibilities: Set<Visibility>,
-    val msl: MslScope,
+    val mslScope: MslScope,
     val itemScope: ItemScope,
     val folderScope: FolderScope
 ) {
-    val isMsl get() = msl != MslScope.NONE
-
-    fun replace(
-        ns: Set<Namespace> = this.namespaces,
-        vs: Set<Visibility> = this.visibilities,
-        msl: MslScope = this.msl,
-        itemScope: ItemScope = this.itemScope,
-        folderScope: FolderScope = this.folderScope,
-    ): ItemVis {
-        return ItemVis(ns, vs, msl, itemScope, folderScope)
-    }
-
-    companion object {
-        fun default(): ItemVis {
-            return ItemVis(
-                Namespace.none(),
-                Visibility.none(),
-                msl = MslScope.NONE,
-                itemScope = ItemScope.MAIN,
-                folderScope = FolderScope.SOURCES
-            )
-        }
-    }
+    val isMsl get() = mslScope != MslScope.NONE
 }
 
 fun processItems(
@@ -110,7 +88,7 @@ fun resolveLocalItem(
 ): List<MvNamedElement> {
     val itemVis = ItemVis(
         namespaces,
-        msl = element.mslScope,
+        mslScope = element.mslScope,
         visibilities = Visibility.local(),
         itemScope = element.itemScope,
         folderScope = element.folderScope
@@ -175,10 +153,12 @@ fun processFQModuleRef(
     fqModuleRef: MvFQModuleRef,
     processor: MatchingProcessor,
 ) {
-    val itemVis = ItemVis.default().replace(
-        ns = setOf(Namespace.MODULE),
+    val itemVis = ItemVis(
+        namespaces = setOf(Namespace.MODULE),
+        visibilities = Visibility.local(),
+        mslScope = fqModuleRef.mslScope,
         itemScope = fqModuleRef.itemScope,
-        folderScope = fqModuleRef.folderScope
+        folderScope = fqModuleRef.folderScope,
     )
     val moveProject = fqModuleRef.moveProject ?: return
     val refAddress = fqModuleRef.addressRef.toAddress(moveProject)
@@ -305,10 +285,10 @@ fun processLexicalDeclarations(
                 is MvSchema -> processor.matchAll(itemVis, scope.fieldBindings)
                 is MvQuantBindingsOwner -> processor.matchAll(itemVis, scope.bindings)
                 is MvSpecBlock -> {
-                    val visibleLetDecls = when (itemVis.msl) {
+                    val visibleLetDecls = when (itemVis.mslScope) {
                         MslScope.EXPR -> scope.letStmts()
                         MslScope.LET, MslScope.LET_POST -> {
-                            val letDecls = if (itemVis.msl == MslScope.LET_POST) {
+                            val letDecls = if (itemVis.mslScope == MslScope.LET_POST) {
                                 scope.letStmts()
                             } else {
                                 scope.letStmts(false)

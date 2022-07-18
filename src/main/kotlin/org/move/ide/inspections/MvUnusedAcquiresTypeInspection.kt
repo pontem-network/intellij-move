@@ -15,9 +15,6 @@ import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.ty
 import org.move.lang.core.types.infer.inferenceCtx
 
-abstract class InspectionQuickFix(val fixName: String) : LocalQuickFix {
-    override fun getFamilyName(): String = fixName
-}
 
 class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {

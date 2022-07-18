@@ -49,7 +49,7 @@ object ImportsCompletionProvider : MvCompletionProvider() {
         val ns = setOf(Namespace.NAME, Namespace.TYPE)
         val itemVis = ItemVis(
             ns, vs,
-            msl = itemImport.mslScope,
+            mslScope = itemImport.mslScope,
             itemScope = itemImport.itemScope,
             folderScope = itemImport.folderScope
         )

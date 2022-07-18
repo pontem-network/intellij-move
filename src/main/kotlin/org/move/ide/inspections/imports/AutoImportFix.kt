@@ -128,7 +128,7 @@ data class ImportContext private constructor(
             val itemVis = ItemVis(
                 namespaces = ns,
                 visibilities = vs,
-                msl = contextElement.mslScope,
+                mslScope = contextElement.mslScope,
                 itemScope = contextElement.itemScope,
                 folderScope = contextElement.folderScope,
             )

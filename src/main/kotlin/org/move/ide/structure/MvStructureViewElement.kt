@@ -1,14 +1,11 @@
-package org.move.ide.navigation
+package org.move.ide.structure
 
 import com.intellij.ide.projectView.PresentationData
-import com.intellij.ide.structureView.*
+import com.intellij.ide.structureView.StructureViewTreeElement
 import com.intellij.ide.util.treeView.smartTree.TreeElement
-import com.intellij.lang.PsiStructureViewFactory
 import com.intellij.navigation.ItemPresentation
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.ui.Queryable
 import com.intellij.psi.NavigatablePsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvAddressDef
@@ -18,7 +15,9 @@ import org.move.lang.core.psi.ext.modules
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.openapiext.common.isUnitTestMode
 
-class MvStructureViewElement(val element: NavigatablePsiElement) : StructureViewTreeElement, Queryable {
+class MvStructureViewElement(
+    val element: NavigatablePsiElement
+) : StructureViewTreeElement, Queryable {
     override fun navigate(requestFocus: Boolean) {
         return element.navigate(requestFocus)
     }
@@ -75,29 +74,5 @@ class MvStructureViewElement(val element: NavigatablePsiElement) : StructureView
 
     companion object {
         const val NAME_KEY: String = "name"
-    }
-}
-
-class MvStructureViewModel(psiFile: PsiFile) :
-    StructureViewModelBase(psiFile, MvStructureViewElement(psiFile)),
-    StructureViewModel.ElementInfoProvider {
-
-    override fun isAlwaysShowsPlus(element: StructureViewTreeElement?): Boolean {
-        return false
-    }
-
-    override fun isAlwaysLeaf(element: StructureViewTreeElement?): Boolean {
-        return element is PsiFile
-    }
-
-}
-
-class MvStructureViewBuilderFactory : PsiStructureViewFactory {
-    override fun getStructureViewBuilder(psiFile: PsiFile): StructureViewBuilder {
-        return object : TreeBasedStructureViewBuilder() {
-            override fun createStructureViewModel(editor: Editor?): StructureViewModel {
-                return MvStructureViewModel(psiFile)
-            }
-        }
     }
 }

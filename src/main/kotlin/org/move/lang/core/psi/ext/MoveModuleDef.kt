@@ -142,6 +142,8 @@ fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
 
 fun MvModule.specFunctions(): List<MvSpecFunction> = moduleBlock?.specFunctionList.orEmpty()
 
+fun MvModule.consts(): List<MvConst> = moduleBlock?.constList.orEmpty()
+
 fun MvModule.constBindings(): List<MvBindingPat> =
     moduleBlock?.constList.orEmpty().mapNotNull { it.bindingPat }
 

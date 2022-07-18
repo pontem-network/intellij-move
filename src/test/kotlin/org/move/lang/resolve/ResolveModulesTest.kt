@@ -278,4 +278,24 @@ module 0x1::M {
                     //^
     }
     """)
+
+    fun `test friend module resolution for test_only modules`() = checkByCode("""
+    module 0x1::M {
+        #[test_only]
+        friend 0x1::MTest;
+                   //^
+    }    
+    #[test_only]
+    module 0x1::MTest {}
+               //X
+    """)
+
+    fun `test friend no module resolution for test_only modules in non test_only case`() = checkByCode("""
+    module 0x1::M {
+        friend 0x1::MTest;
+                   //^ unresolved
+    }    
+    #[test_only]
+    module 0x1::MTest {}
+    """)
 }

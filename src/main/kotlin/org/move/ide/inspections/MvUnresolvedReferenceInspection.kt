@@ -43,7 +43,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             if (moduleRef.ancestorStrict<MvUseStmt>() != null) return
             if (moduleRef is MvFQModuleRef) return
 
-            if (moduleRef.isUnresolved) {
+            if (moduleRef.unresolved) {
                 holder.registerProblem(moduleRef)
             }
         }
@@ -60,12 +60,12 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             val moduleRef = path.moduleRef
             if (moduleRef != null) {
                 if (moduleRef is MvFQModuleRef) return
-                if (moduleRef.isUnresolved) {
+                if (moduleRef.unresolved) {
                     holder.registerProblem(moduleRef)
                     return
                 }
             }
-            if (path.isUnresolved) {
+            if (path.unresolved) {
                 holder.registerProblem(path)
             }
         }
