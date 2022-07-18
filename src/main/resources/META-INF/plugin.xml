@@ -15,8 +15,10 @@
         <![CDATA[
     <h3>1.14.0</h3>
     <ul>
+    <li>Fold more statements</li>
     <li>Auto-fold use statements</li>
     <li>Support "Context Info" action</li>
+    <li>0x1::Mod::Self -> 0x1::Mod in import optimizer</li>
     </ul>
     <h3>1.13.1</h3>
     <ul>
