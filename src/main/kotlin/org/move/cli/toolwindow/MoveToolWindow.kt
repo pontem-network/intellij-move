@@ -31,7 +31,7 @@ class MoveToolWindowFactory : ToolWindowFactory, DumbAware {
         project.moveProjects.refreshAllProjects()
 
         val toolwindowPanel = MoveToolWindowPanel(project)
-        val tab = ContentFactory.SERVICE.getInstance()
+        val tab = ContentFactory.getInstance()
             .createContent(toolwindowPanel, "", false)
         toolWindow.contentManager.addContent(tab)
     }
