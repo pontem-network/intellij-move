@@ -19,10 +19,10 @@ val MvAddressRef.useGroupLevel: Int get() {
     // sort to the end if not a named address
     if (this.namedAddress == null) return 3
 
-    val name = this.namedAddress?.text.orEmpty()
-    val currentPackageAddresses = this.moveProject?.currentPackageAddresses()?.keys.orEmpty()
+    val name = this.namedAddress?.text.orEmpty().lowercase()
+    val currentPackageAddresses = this.moveProject?.currentPackageAddresses()?.keys.orEmpty().map { it.lowercase() }
     return when (name) {
-        "Std" -> 0
+        "std" -> 0
         !in currentPackageAddresses -> 1
         else -> 2
     }

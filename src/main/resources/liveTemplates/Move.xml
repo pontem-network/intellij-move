@@ -1,6 +1,6 @@
 <templateSet group="Move">
     <template name="d"
-              value="Std::Debug::print($TEXT$);"
+              value="std::debug::print($TEXT$);"
               description="Debug"
               toReformat="false"
               toShortenFQNames="true">

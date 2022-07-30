@@ -251,6 +251,42 @@ class KeywordCompletionTest : CompletionTestCase() {
     """
     )
 
+    fun `test entry`() = doSingleCompletion(
+        """
+        module 0x1::M {
+            ent/*caret*/
+        }
+    """, """
+        module 0x1::M {
+            entry /*caret*/
+        }
+    """
+    )
+
+    fun `test entry after public`() = doSingleCompletion(
+        """
+        module 0x1::M {
+            public ent/*caret*/
+        }
+    """, """
+        module 0x1::M {
+            public entry /*caret*/
+        }
+    """
+    )
+
+    fun `test entry after public friend`() = doSingleCompletion(
+        """
+        module 0x1::M {
+            public(friend) ent/*caret*/
+        }
+    """, """
+        module 0x1::M {
+            public(friend) entry /*caret*/
+        }
+    """
+    )
+
     fun `test no completion in bound if no colon`() = checkNoCompletion(
         """
         module 0x1::M {

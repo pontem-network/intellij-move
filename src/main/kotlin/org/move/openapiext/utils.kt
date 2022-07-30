@@ -28,7 +28,6 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import org.jdom.Element
-import org.jdom.input.SAXBuilder
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isHeadlessEnvironment
 import org.move.openapiext.common.isUnitTestMode
@@ -109,8 +108,6 @@ val Project.root: Path? get() = contentRoots.firstOrNull()?.toNioPathOrNull()
 val Project.contentRoot: VirtualFile? get() = contentRoots.firstOrNull()
 
 fun Element.toXmlString() = JDOMUtil.writeElement(this)
-fun elementFromXmlString(xml: String): org.jdom.Element =
-    SAXBuilder().build(xml.byteInputStream()).rootElement
 
 fun <T> Project.computeWithCancelableProgress(
     @Suppress("UnstableApiUsage") @NlsContexts.ProgressTitle title: String,
@@ -119,7 +116,8 @@ fun <T> Project.computeWithCancelableProgress(
     if (isUnitTestMode) {
         return supplier()
     }
-    return ProgressManager.getInstance().runProcessWithProgressSynchronously<T, Exception>(supplier, title, true, this)
+    return ProgressManager.getInstance()
+        .runProcessWithProgressSynchronously<T, Exception>(supplier, title, true, this)
 }
 
 fun checkIsDispatchThread() {
