@@ -103,7 +103,7 @@ class MvPsiFactory(private val project: Project) {
             ?: error("Failed to create a function from text: `$text`")
 
     fun createWhitespace(ws: String): PsiElement =
-        PsiParserFacade.getInstance(project).createWhiteSpaceFromText(ws)
+        PsiParserFacade.SERVICE.getInstance(project).createWhiteSpaceFromText(ws)
 
     fun createNewline(): PsiElement = createWhitespace("\n")
 
