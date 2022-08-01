@@ -20,7 +20,7 @@ fun prop(key: String): String = props[key].toString()
 val kotlinVersion = "1.7.10"
 
 val pluginJarName = "intellij-move-$propsVersion"
-val pluginVersion = "1.15.0"
+val pluginVersion = "1.16.0"
 val pluginGroup = "org.move"
 
 group = pluginGroup
@@ -95,20 +95,6 @@ allprojects {
         purgeOldFiles.set(true)
     }
 
-//    val generateMoveTomlLexer = task<GenerateLexerTask>("generateMoveTomlLexer") {
-//        source.set("src/main/grammars/MoveTomlLexer.flex")
-//        targetDir.set("src/main/gen/org/moveToml/lang")
-//        targetClass.set("_MoveTomlLexer")
-//        purgeOldFiles.set(true)
-//    }
-//    val generateMoveTomlParser = task<GenerateParserTask>("generateMoveTomlParser") {
-//        source.set("src/main/grammars/MoveTomlParser.bnf")
-//        targetRoot.set("src/main/gen")
-//        pathToParser.set("/org/move/lang/MoveTomlParser.java")
-//        pathToPsiRoot.set("/org/move/lang/psi")
-//        purgeOldFiles.set(true)
-//    }
-
     tasks {
         // workaround for gradle not seeing tests in 2021.3+
         val test by getting(Test::class) {
@@ -146,7 +132,6 @@ allprojects {
 
         withType<KotlinCompile> {
             dependsOn(
-//                generateMoveTomlLexer, generateMoveTomlParser,
                 generateMoveLexer, generateMoveParser
             )
             kotlinOptions {
