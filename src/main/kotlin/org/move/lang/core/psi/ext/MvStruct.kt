@@ -22,12 +22,12 @@ fun MvStruct.getField(fieldName: String): MvStructField? =
     this.descendantsOfType<MvStructField>()
         .find { it.name == fieldName }
 
-val MvStruct.fqName: String
-    get() {
-        val moduleFqName = "${this.module.fqName}::"
-        val name = this.name ?: "<unknown>"
-        return moduleFqName + name
-    }
+//val MvStruct.fqName: String
+//    get() {
+//        val moduleFqName = "${this.module.fqName}::"
+//        val name = this.name ?: "<unknown>"
+//        return moduleFqName + name
+//    }
 
 val MvStruct.module: MvModule
     get() {

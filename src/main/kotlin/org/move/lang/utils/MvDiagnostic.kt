@@ -33,7 +33,7 @@ sealed class MvDiagnostic(
             return PreparedAnnotation(
                 ERROR,
                 "Mismatched types",
-                expectedFound(element, expectedTy, actualTy)
+                expectedFound(expectedTy, actualTy)
             )
         }
 
@@ -43,7 +43,7 @@ sealed class MvDiagnostic(
         override fun innerVisitWith(visitor: TypeVisitor): Boolean =
             expectedTy.visitWith(visitor) || actualTy.visitWith(visitor)
 
-        private fun expectedFound(element: PsiElement, expectedTy: Ty, actualTy: Ty): String {
+        private fun expectedFound(expectedTy: Ty, actualTy: Ty): String {
             return "expected `${expectedTy.shortPresentableText(true)}`" +
                     ", found `${actualTy.shortPresentableText(true)}`"
         }

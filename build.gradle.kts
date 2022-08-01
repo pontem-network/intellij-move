@@ -146,11 +146,11 @@ allprojects {
         }
 
         withType<org.jetbrains.intellij.tasks.BuildSearchableOptionsTask> {
-            jbrVersion.set("jb17.0.4-b532.3")
+            jbrVersion.set("11_0_9_1b1202.1")
         }
 
         withType<org.jetbrains.intellij.tasks.RunIdeTask> {
-            jbrVersion.set("jb17.0.4-b532.3")
+            jbrVersion.set("11_0_9_1b1202.1")
             ideDir.set(File("/snap/clion/current"))
         }
     }
