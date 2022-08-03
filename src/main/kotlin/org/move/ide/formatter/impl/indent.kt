@@ -12,7 +12,7 @@ fun MvFormatterBlock.computeIndent(child: ASTNode): Indent? {
     val elementType = node.elementType
     val childPsi = child.psi
     return when {
-        elementType in tokenSetOf(CODE_BLOCK_EXPR) -> Indent.getNoneIndent()
+        elementType == CODE_BLOCK_EXPR -> Indent.getNoneIndent()
         elementType in DELIMITED_BLOCKS -> getNormalIndentIfNotCurrentBlockDelimiter(child, node)
         // do not indent statements
         childPsi.prevSibling == null -> Indent.getNoneIndent()
