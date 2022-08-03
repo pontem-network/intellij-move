@@ -366,6 +366,10 @@
             <className>org.move.ide.intentions.ChopAttrArgumentListIntention</className>
             <category>Move</category>
         </intentionAction>
+        <intentionAction>
+            <className>org.move.ide.intentions.ChopStructLiteralIntention</className>
+            <category>Move</category>
+        </intentionAction>
 
     </extensions>
 
