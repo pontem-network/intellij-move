@@ -24,23 +24,12 @@ enum class ItemScope {
     MAIN, TEST;
 }
 
-enum class FolderScope {
-    SOURCES, TESTS;
-}
-
 fun MvElement.visibleInScope(itemScope: ItemScope): Boolean {
     return itemScope == ItemScope.TEST
             || this.itemScope == ItemScope.MAIN
 }
 
-fun MvElement.visibleInScope(folderScope: FolderScope): Boolean {
-    return folderScope == FolderScope.TESTS
-            || this.folderScope == FolderScope.SOURCES
-}
-
-fun MvElement.isVisibleInScopes(itemVis: ItemVis): Boolean =
-    this.visibleInScope(itemVis.itemScope)
-            && this.visibleInScope(itemVis.folderScope)
+fun MvElement.isVisibleInScopes(itemVis: ItemVis): Boolean = this.visibleInScope(itemVis.itemScope)
 
 val MvElement.mslScope: MslScope
     get() {
@@ -58,7 +47,6 @@ data class ItemVis(
     val visibilities: Set<Visibility>,
     val mslScope: MslScope,
     val itemScope: ItemScope,
-    val folderScope: FolderScope
 ) {
     val isMsl get() = mslScope != MslScope.NONE
 }
@@ -91,7 +79,6 @@ fun resolveLocalItem(
         mslScope = element.mslScope,
         visibilities = Visibility.local(),
         itemScope = element.itemScope,
-        folderScope = element.folderScope
     )
     var resolved: MvNamedElement? = null
     processItems(element, itemVis) {
@@ -158,7 +145,6 @@ fun processFQModuleRef(
         visibilities = Visibility.local(),
         mslScope = fqModuleRef.mslScope,
         itemScope = fqModuleRef.itemScope,
-        folderScope = fqModuleRef.folderScope,
     )
     val moveProject = fqModuleRef.moveProject ?: return
     val refAddress = fqModuleRef.addressRef.toAddress(moveProject)

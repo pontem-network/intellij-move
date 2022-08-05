@@ -8,7 +8,6 @@ import org.move.lang.core.completion.addSuffix
 import org.move.lang.core.completion.alreadyHasSpace
 import org.move.lang.core.completion.createLookupElementWithIcon
 import org.move.lang.core.psi.MvItemSpec
-import org.move.lang.core.psi.ext.folderScope
 import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslScope
@@ -31,7 +30,6 @@ object SpecItemCompletionProvider : MvCompletionProvider() {
             visibilities = Visibility.none(),
             mslScope = MslScope.NONE,
             itemScope = specItem.itemScope,
-            folderScope = specItem.folderScope
         )
         processItems(specItem, itemVis) {
             val lookup = it.element.createLookupElementWithIcon()

@@ -8,7 +8,6 @@ import org.move.cli.MoveProject
 import org.move.cli.moveProjects
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.FolderScope
 import org.move.lang.core.resolve.ItemScope
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
@@ -55,20 +54,4 @@ val MvElement.itemScope: ItemScope
         if (insideTestFunction) return ItemScope.TEST
 
         return ItemScope.MAIN
-    }
-
-val MvElement.folderScope: FolderScope
-    get() {
-        val testsFolderPath = this.moveProject?.contentRoot
-            ?.findChild("tests")
-            ?.takeIf { it.exists() }
-            ?.path ?: return FolderScope.SOURCES
-        val isTestFolder =
-            this.containingFile?.originalFile?.virtualFile?.path?.startsWith(testsFolderPath) ?: false
-//        val isTestFolder = this.containingFile?.parents(false)
-//            ?.any {
-//                it is PsiDirectory
-//                        && it.virtualFile.path == testsFolderPath
-//            } ?: false
-        return if (isTestFolder) FolderScope.TESTS else FolderScope.SOURCES
     }

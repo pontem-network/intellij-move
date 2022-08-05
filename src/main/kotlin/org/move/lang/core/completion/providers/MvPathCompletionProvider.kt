@@ -103,7 +103,6 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
             Visibility.none(),
             mslScope = pathElement.mslScope,
             itemScope = pathElement.itemScope,
-            folderScope = pathElement.folderScope
         )
     }
 }
@@ -118,7 +117,6 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
             Visibility.none(),
             mslScope = MslScope.NONE,
             itemScope = pathElement.itemScope,
-            folderScope = pathElement.folderScope
         )
     }
 }
@@ -134,7 +132,6 @@ object SchemasCompletionProvider : MvPathCompletionProvider() {
             Visibility.none(),
             mslScope = MslScope.EXPR,
             itemScope = pathElement.itemScope,
-            folderScope = pathElement.folderScope
         )
     }
 }

@@ -42,7 +42,6 @@ class MvUseItemReferenceElement(element: MvUseItem) : MvReferenceCached<MvUseIte
             vs,
             MslScope.NONE,
             itemScope = moduleRef.itemScope,
-            folderScope = moduleRef.folderScope
         )
         return resolveModuleItem(
             module,
