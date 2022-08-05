@@ -4,9 +4,17 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferExprExpectedTy
 import org.move.lang.core.types.infer.inferExprTy
+import org.move.lang.core.types.infer.inferenceCtx
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
+
+fun MvExpr.inferredTy(): Ty {
+    val containingFunction = this.containingFunction ?: return TyUnknown
+    val msl = this.isMsl()
+    val inferenceCtx = containingFunction.inferenceCtx(msl)
+    return inferExprTy(this, inferenceCtx)
+}
 
 fun MvExpr.inferExprTy(ctx: InferenceContext) = inferExprTy(this, ctx)
 

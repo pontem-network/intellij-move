@@ -17,7 +17,7 @@ typealias TypeVisitor = (Ty) -> Boolean
  * Despite a scary name, [TypeFoldable] is a rather simple thing.
  *
  * It allows to map type variables within a type (or another object,
- * containing a type, like a [Constraint]) to other types.
+ * containing a type, like a [EqualityConstraint]) to other types.
  */
 interface TypeFoldable<out Self> {
     /**

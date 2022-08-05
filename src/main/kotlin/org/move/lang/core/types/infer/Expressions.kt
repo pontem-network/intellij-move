@@ -4,40 +4,40 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
 
-fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
-    val existingTy = ctx.exprTypes[expr]
+fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext): Ty {
+    val existingTy = parentCtx.exprTypes[expr]
     if (existingTy != null) {
         return existingTy
     }
 
     var exprTy = when (expr) {
-        is MvRefExpr -> inferRefExprTy(expr, ctx)
-        is MvBorrowExpr -> inferBorrowExprTy(expr, ctx)
+        is MvRefExpr -> inferRefExprTy(expr, parentCtx)
+        is MvBorrowExpr -> inferBorrowExprTy(expr, parentCtx)
         is MvCallExpr -> {
-            val funcTy = inferCallExprTy(expr, ctx, null) as? TyFunction
+            val funcTy = inferCallExprTy(expr, parentCtx, null) as? TyFunction
             if (funcTy == null || !funcTy.solvable) {
                 TyUnknown
             } else {
                 funcTy.retType
             }
         }
-        is MvDotExpr -> inferDotExprTy(expr, ctx)
-        is MvStructLitExpr -> inferStructLitExpr(expr, ctx)
-        is MvDerefExpr -> inferDerefExprTy(expr, ctx)
-        is MvLitExpr -> inferLitExprTy(expr, ctx)
-        is MvTupleLitExpr -> inferTupleLitExprTy(expr, ctx)
+        is MvDotExpr -> inferDotExprTy(expr, parentCtx)
+        is MvStructLitExpr -> inferStructLitExpr(expr, parentCtx)
+        is MvDerefExpr -> inferDerefExprTy(expr, parentCtx)
+        is MvLitExpr -> inferLitExprTy(expr, parentCtx)
+        is MvTupleLitExpr -> inferTupleLitExprTy(expr, parentCtx)
 
-        is MvMoveExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
-        is MvCopyExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
+        is MvMoveExpr -> expr.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
+        is MvCopyExpr -> expr.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
 
-        is MvCastExpr -> inferMvTypeTy(expr.type, ctx.msl)
-        is MvParensExpr -> expr.expr?.let { inferExprTy(it, ctx) } ?: TyUnknown
+        is MvCastExpr -> inferMvTypeTy(expr.type, parentCtx.msl)
+        is MvParensExpr -> expr.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
 
-        is MvPlusExpr -> inferBinaryExprTy(expr.exprList, ctx)
-        is MvMinusExpr -> inferBinaryExprTy(expr.exprList, ctx)
-        is MvMulExpr -> inferBinaryExprTy(expr.exprList, ctx)
-        is MvDivExpr -> inferBinaryExprTy(expr.exprList, ctx)
-        is MvModExpr -> inferBinaryExprTy(expr.exprList, ctx)
+        is MvPlusExpr -> inferBinaryExprTy(expr.exprList, parentCtx)
+        is MvMinusExpr -> inferBinaryExprTy(expr.exprList, parentCtx)
+        is MvMulExpr -> inferBinaryExprTy(expr.exprList, parentCtx)
+        is MvDivExpr -> inferBinaryExprTy(expr.exprList, parentCtx)
+        is MvModExpr -> inferBinaryExprTy(expr.exprList, parentCtx)
 
         is MvBangExpr -> TyBool
         is MvLessExpr -> TyBool
@@ -47,7 +47,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
         is MvAndExpr -> TyBool
         is MvOrExpr -> TyBool
 
-        is MvIfExpr -> inferIfExprTy(expr, ctx)
+        is MvIfExpr -> inferIfExprTy(expr, parentCtx)
 
         else -> TyUnknown
     }
@@ -57,7 +57,7 @@ fun inferExprTy(expr: MvExpr, ctx: InferenceContext): Ty {
     if (exprTy is TyInteger && expr.isMsl()) {
         exprTy = TyNum
     }
-    ctx.cacheExprTy(expr, exprTy)
+    parentCtx.cacheExprTy(expr, exprTy)
     return exprTy
 }
 
@@ -94,18 +94,18 @@ fun inferCallExprTy(
         if (path.typeArguments.size != funcTy.typeVars.size) return TyUnknown
         for ((typeVar, typeArgument) in funcTy.typeVars.zip(path.typeArguments)) {
             val passedTy = inferMvTypeTy(typeArgument.type, parentCtx.msl)
-            inferenceCtx.registerConstraint(Constraint.Equate(typeVar, passedTy))
+            inferenceCtx.registerConstraint(EqualityConstraint(typeVar, passedTy))
         }
     }
     // find all types of passed expressions, create constraints with those
     if (callExpr.arguments.isNotEmpty()) {
         for ((paramTy, argumentExpr) in funcTy.paramTypes.zip(callExpr.arguments)) {
             val argumentTy = inferExprTy(argumentExpr, parentCtx)
-            inferenceCtx.registerConstraint(Constraint.Equate(paramTy, argumentTy))
+            inferenceCtx.registerConstraint(EqualityConstraint(paramTy, argumentTy))
         }
     }
     if (expectedTy != null) {
-        inferenceCtx.registerConstraint(Constraint.Equate(funcTy.retType, expectedTy))
+        inferenceCtx.registerConstraint(EqualityConstraint(funcTy.retType, expectedTy))
     }
     // solve constraints
     val solvable = inferenceCtx.processConstraints()
@@ -131,7 +131,7 @@ private fun inferDotExprTy(dotExpr: MvDotExpr, ctx: InferenceContext): Ty {
 
     val inference = InferenceContext(ctx.msl)
     for ((tyVar, tyArg) in structTy.typeVars.zip(structTy.typeArgs)) {
-        inference.registerConstraint(Constraint.Equate(tyVar, tyArg))
+        inference.registerConstraint(EqualityConstraint(tyVar, tyArg))
     }
     // solve constraints, return TyUnknown if cannot
     if (!inference.processConstraints()) return TyUnknown
@@ -150,7 +150,7 @@ fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext): Ty {
     if (typeArgs.isNotEmpty()) {
         if (typeArgs.size < structItem.typeParameters.size) return TyUnknown
         for ((tyVar, typeArg) in structTypeVars.zip(typeArgs)) {
-            inference.registerConstraint(Constraint.Equate(tyVar, typeArg.type.ty()))
+            inference.registerConstraint(EqualityConstraint(tyVar, typeArg.type.ty()))
         }
     }
     for (field in litExpr.fields) {
@@ -161,7 +161,7 @@ fun inferStructLitExpr(litExpr: MvStructLitExpr, ctx: InferenceContext): Ty {
             ?.foldTyTypeParameterWith { param -> structTypeVars.find { it.origin?.parameter == param.parameter }!! }
             ?: TyUnknown
         val fieldExprTy = field.inferInitExprTy(ctx)
-        inference.registerConstraint(Constraint.Equate(declaredFieldTy, fieldExprTy))
+        inference.registerConstraint(EqualityConstraint(declaredFieldTy, fieldExprTy))
     }
     // solve constraints, return TyUnknown if cannot
     if (!inference.processConstraints()) return TyUnknown

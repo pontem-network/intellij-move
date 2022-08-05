@@ -160,7 +160,7 @@ class InferenceContext(var msl: Boolean) {
 
     private val solver = ConstraintSolver(this)
 
-    fun registerConstraint(constraint: Constraint) {
+    fun registerConstraint(constraint: EqualityConstraint) {
         solver.registerConstraint(constraint)
     }
 
