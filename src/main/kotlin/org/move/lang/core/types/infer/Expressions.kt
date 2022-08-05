@@ -100,8 +100,8 @@ fun inferCallExprTy(
     // find all types of passed expressions, create constraints with those
     if (callExpr.arguments.isNotEmpty()) {
         for ((paramTy, argumentExpr) in funcTy.paramTypes.zip(callExpr.arguments)) {
-            val argumentTy = inferExprTy(argumentExpr, parentCtx)
-            inferenceCtx.registerConstraint(EqualityConstraint(paramTy, argumentTy))
+            val argumentExprTy = inferExprTy(argumentExpr, parentCtx)
+            inferenceCtx.registerConstraint(EqualityConstraint(paramTy, argumentExprTy))
         }
     }
     if (expectedTy != null) {
@@ -115,6 +115,9 @@ fun inferCallExprTy(
     // if there's any unsolved TyInfer left, then unsolvable
 //    resolvedFuncTy.foldTyInferWith { TyUnknown }
 //    resolvedFuncTy.foldTyInferWith { resolvedFuncTy.solvable = false; it }
+
+    parentCtx.exprTypes = inferenceCtx.resolveTyMap(parentCtx.exprTypes)
+    parentCtx.bindingTypes = inferenceCtx.resolveTyMap(parentCtx.bindingTypes)
 
     parentCtx.cacheCallExprTy(callExpr, resolvedFuncTy)
     return resolvedFuncTy

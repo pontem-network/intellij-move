@@ -36,6 +36,8 @@ fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
                             fctx.bindingTypes.putAll(collectBindings(pat, patTy))
                         }
                     }
+//                    fctx.processConstraints()
+//                    fctx.exprTypes.values.map { fctx.resolveTy(it) }
                 }
             }
         }
@@ -153,9 +155,10 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
 }
 
 class InferenceContext(var msl: Boolean) {
-    val exprTypes = mutableMapOf<MvExpr, Ty>()
-    val callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
-    val bindingTypes = mutableMapOf<MvBindingPat, Ty>()
+    var exprTypes = mutableMapOf<MvExpr, Ty>()
+    var callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
+    var bindingTypes = mutableMapOf<MvBindingPat, Ty>()
+
     val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
 
     private val solver = ConstraintSolver(this)
@@ -174,6 +177,14 @@ class InferenceContext(var msl: Boolean) {
 
     fun cacheCallExprTy(expr: MvCallExpr, ty: TyFunction) {
         this.callExprTypes[expr] = ty
+    }
+
+    fun <K> resolveTyMap(map: Map<K, Ty>): MutableMap<K, Ty> {
+        val resolvedTyMap = mutableMapOf<K, Ty>()
+        for ((expr, ty) in map.entries) {
+            resolvedTyMap[expr] = this.resolveTy(ty)
+        }
+        return resolvedTyMap
     }
 
     fun resolveTy(ty: Ty): Ty {

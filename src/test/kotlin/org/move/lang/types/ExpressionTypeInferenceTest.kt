@@ -108,4 +108,31 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test vector no specific type`() = testExpr("""
+    module 0x1::M {
+        native public fun vector_empty<Element>(): vector<Element>;
+        native public fun vector_push_back<Element>(v: &mut vector<Element>, e: Element);
+        native public fun vector_borrow_mut<Element>(v: &mut vector<Element>, i: u64): &mut Element;
+        fun call() {
+            let v = vector_empty();
+            v;
+          //^ vector<?Element>  
+        }
+    }        
+    """)
+
+    fun `test vector inferred type`() = testExpr("""
+    module 0x1::M {
+        native public fun vector_empty<El>(): vector<El>;
+        native public fun vector_push_back<Element>(v: &mut vector<Element>, e: Element);
+        native public fun vector_borrow_mut<Element>(v: &mut vector<Element>, i: u64): &mut Element;
+        fun call() {
+            let v = vector_empty();
+            vector_push_back(&mut v, 1u8);
+            v;
+          //^ vector<u8>  
+        }
+    }        
+    """)
 }

@@ -10,9 +10,8 @@ import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
 
 fun MvExpr.inferredTy(): Ty {
-    val containingFunction = this.containingFunction ?: return TyUnknown
     val msl = this.isMsl()
-    val inferenceCtx = containingFunction.inferenceCtx(msl)
+    val inferenceCtx = this.containingFunction?.inferenceCtx(msl) ?: InferenceContext(msl)
     return inferExprTy(this, inferenceCtx)
 }
 
