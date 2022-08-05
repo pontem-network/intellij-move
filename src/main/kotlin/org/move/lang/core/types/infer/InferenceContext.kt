@@ -36,8 +36,6 @@ fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
                             fctx.bindingTypes.putAll(collectBindings(pat, patTy))
                         }
                     }
-//                    fctx.processConstraints()
-//                    fctx.exprTypes.values.map { fctx.resolveTy(it) }
                 }
             }
         }

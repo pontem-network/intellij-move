@@ -185,8 +185,7 @@ fun processLexicalDeclarations(
             Namespace.DOT_ACCESSED_FIELD -> {
                 val dotExpr = scope as? MvDotExpr ?: return false
 
-                val ctx = dotExpr.inferenceCtx(dotExpr.isMsl())
-                val receiverTy = dotExpr.expr.inferExprTy(ctx)
+                val receiverTy = dotExpr.expr.inferredTy()
                 val innerTy = when (receiverTy) {
                     is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
                     is TyStruct -> receiverTy
