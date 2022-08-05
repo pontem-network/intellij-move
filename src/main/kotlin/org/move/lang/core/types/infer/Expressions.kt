@@ -76,47 +76,47 @@ private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): 
 
 fun inferCallExprTy(
     callExpr: MvCallExpr,
-    ctx: InferenceContext,
+    parentCtx: InferenceContext,
     expectedTy: Ty?
 ): Ty {
-    val existingTy = ctx.callExprTypes[callExpr]
+    val existingTy = parentCtx.callExprTypes[callExpr]
     if (existingTy != null) {
         return existingTy
     }
 
     val path = callExpr.path
     val funcItem = path.reference?.resolve() as? MvFunctionLike ?: return TyUnknown
-    val funcTy = instantiateItemTy(funcItem, ctx.msl) as? TyFunction ?: return TyUnknown
+    val funcTy = instantiateItemTy(funcItem, parentCtx.msl) as? TyFunction ?: return TyUnknown
 
-    val inference = InferenceContext(ctx.msl)
+    val inferenceCtx = InferenceContext(parentCtx.msl)
     // find all types passed as explicit type parameters, create constraints with those
     if (path.typeArguments.isNotEmpty()) {
         if (path.typeArguments.size != funcTy.typeVars.size) return TyUnknown
         for ((typeVar, typeArgument) in funcTy.typeVars.zip(path.typeArguments)) {
-            val passedTy = inferMvTypeTy(typeArgument.type, ctx.msl)
-            inference.registerConstraint(Constraint.Equate(typeVar, passedTy))
+            val passedTy = inferMvTypeTy(typeArgument.type, parentCtx.msl)
+            inferenceCtx.registerConstraint(Constraint.Equate(typeVar, passedTy))
         }
     }
     // find all types of passed expressions, create constraints with those
     if (callExpr.arguments.isNotEmpty()) {
         for ((paramTy, argumentExpr) in funcTy.paramTypes.zip(callExpr.arguments)) {
-            val argumentTy = inferExprTy(argumentExpr, ctx)
-            inference.registerConstraint(Constraint.Equate(paramTy, argumentTy))
+            val argumentTy = inferExprTy(argumentExpr, parentCtx)
+            inferenceCtx.registerConstraint(Constraint.Equate(paramTy, argumentTy))
         }
     }
     if (expectedTy != null) {
-        inference.registerConstraint(Constraint.Equate(funcTy.retType, expectedTy))
+        inferenceCtx.registerConstraint(Constraint.Equate(funcTy.retType, expectedTy))
     }
     // solve constraints
-    val isTypeError = inference.processConstraints()
+    val solvable = inferenceCtx.processConstraints()
 
-    val resolvedFuncTy = inference.resolveTy(funcTy) as TyFunction
+    val resolvedFuncTy = inferenceCtx.resolveTy(funcTy) as TyFunction
+    resolvedFuncTy.solvable = solvable
     // if there's any unsolved TyInfer left, then unsolvable
-    resolvedFuncTy.solvable = isTypeError
-    resolvedFuncTy.foldTyInferWith { resolvedFuncTy.solvable = false; it }
+//    resolvedFuncTy.foldTyInferWith { TyUnknown }
+//    resolvedFuncTy.foldTyInferWith { resolvedFuncTy.solvable = false; it }
 
-    ctx.cacheCallExprTy(callExpr, resolvedFuncTy)
-
+    parentCtx.cacheCallExprTy(callExpr, resolvedFuncTy)
     return resolvedFuncTy
 }
 
