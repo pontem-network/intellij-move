@@ -169,4 +169,17 @@ class RedundantQualifiedPathInspectionTest : InspectionTestBase(RedundantQualifi
         }       
     }
     """)
+
+    fun `test no redundant qualifier for line break`() = checkWarnings("""
+    module 0x1::coin {
+        public fun get_collateral_counts_test(): (u64, u64) { (1, 1) }
+    }    
+    module 0x1::M {
+        use 0x1::coin;
+        fun call() {
+            coin::
+            get_collateral_counts_test();
+        }        
+    }        
+    """)
 }

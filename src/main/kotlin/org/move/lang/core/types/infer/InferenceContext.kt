@@ -12,7 +12,7 @@ import org.move.lang.core.types.ty.*
 
 private val TYPE_INFERENCE_KEY: Key<CachedValue<InferenceContext>> = Key.create("TYPE_INFERENCE_KEY")
 
-fun MvElement.inferenceCtx(msl: Boolean): InferenceContext {
+fun MvElement.functionInferenceCtx(msl: Boolean = this.isMsl()): InferenceContext {
     return this.containingFunctionLike?.inferenceCtx(msl) ?: InferenceContext(msl)
 }
 
@@ -29,6 +29,7 @@ fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
                         is MvExprStmt -> {
                             inferExprTy(stmt.expr, fctx)
                         }
+
                         is MvLetStmt -> {
                             val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, fctx) }
                             val patTy = stmt.declaredTy ?: initializerTy ?: TyUnknown
@@ -36,6 +37,12 @@ fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
                             fctx.bindingTypes.putAll(collectBindings(pat, patTy))
                         }
                     }
+                    fctx.processConstraints()
+                    fctx.resolveTyVarsFromContext(fctx)
+                }
+                val tailExpr = this.codeBlock?.expr
+                if (tailExpr != null) {
+                    inferExprTy(tailExpr, fctx, expectedTy = this.returnTy)
                     fctx.processConstraints()
                     fctx.resolveTyVarsFromContext(fctx)
                 }
@@ -49,10 +56,29 @@ fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
 
 fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
     return when (item) {
-        is MvStruct -> TyStruct(item)
+        is MvStruct -> {
+            val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
+            fun findTypeVar(parameter: MvTypeParameter): Ty {
+                return typeVars.find { it.origin?.parameter == parameter }!!
+            }
+
+            val fieldTys = mutableMapOf<String, Ty>()
+            for (field in item.fields) {
+                val fieldName = field.name ?: return TyUnknown
+                val fieldTy = item
+                    .fieldsMap[fieldName]
+                    ?.declaredTy(msl)
+                    ?.foldTyTypeParameterWith { findTypeVar(it.parameter) }
+                    ?: TyUnknown
+                fieldTys[fieldName] = fieldTy
+            }
+
+            val typeArgs = item.typeParameters.map { findTypeVar(it) }
+            TyStruct(item, typeVars, fieldTys, typeArgs)
+        }
+
         is MvFunctionLike -> {
             val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
-
             fun findTypeVar(parameter: MvTypeParameter): Ty {
                 return typeVars.find { it.origin?.parameter == parameter }!!
             }
@@ -78,6 +104,7 @@ fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
             }
             TyFunction(item, typeVars, paramTypes, retTy, acqTys)
         }
+
         is MvTypeParameter -> item.ty()
         else -> TyUnknown
     }
@@ -120,6 +147,7 @@ fun combineTys(ty1: Ty, ty2: Ty): Ty {
             }
             TyReference(ty1.referenced, combinedMutability, ty1.msl || ty2.msl)
         }
+
         else -> ty1
     }
 }
@@ -133,20 +161,25 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
             // check abilities
             true
         }
+
         expectedTy is TyInfer.IntVar && (inferredTy is TyInfer.IntVar || inferredTy is TyInteger) -> {
             true
         }
+
         inferredTy is TyInfer.IntVar && expectedTy is TyInteger -> {
             true
         }
+
         expectedTy is TyTypeParameter || inferredTy is TyTypeParameter -> {
             // check abilities
             true
         }
+
         expectedTy is TyUnit && inferredTy is TyUnit -> true
         expectedTy is TyInteger && inferredTy is TyInteger -> isCompatibleIntegers(expectedTy, inferredTy)
         expectedTy is TyPrimitive && inferredTy is TyPrimitive
                 && expectedTy.name == inferredTy.name -> true
+
         expectedTy is TyVector && inferredTy is TyVector
                 && isCompatible(expectedTy.item, inferredTy.item) -> true
 
@@ -160,10 +193,19 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
     }
 }
 
+data class TypeError(val element: MvElement, val expectedTy: Ty, val actualTy: Ty)
+
 class InferenceContext(var msl: Boolean) {
+    @Volatile
     var exprTypes = mutableMapOf<MvExpr, Ty>()
+
+    @Volatile
     var callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
+
+    @Volatile
     var bindingTypes = mutableMapOf<MvBindingPat, Ty>()
+
+    val typeErrors = mutableListOf<TypeError>()
 
     val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
     val intUnificationTable = UnificationTable<TyInfer.IntVar, Ty>()
@@ -172,6 +214,10 @@ class InferenceContext(var msl: Boolean) {
 
     fun registerConstraint(constraint: EqualityConstraint) {
         solver.registerConstraint(constraint)
+    }
+
+    fun addTypeError(sourceElement: MvElement, expectedTy: Ty, actualTy: Ty) {
+        this.typeErrors.add(TypeError(sourceElement, expectedTy, actualTy))
     }
 
     fun processConstraints(): Boolean {
@@ -186,10 +232,11 @@ class InferenceContext(var msl: Boolean) {
         this.callExprTypes[expr] = ty
     }
 
-    @Synchronized
     fun resolveTyVarsFromContext(ctx: InferenceContext) {
-        this.exprTypes = ctx.resolveTyMap(this.exprTypes)
-        this.bindingTypes = ctx.resolveTyMap(this.bindingTypes)
+        val newExprTypes = ctx.resolveTyMap(this.exprTypes)
+        val newBindingTypes = ctx.resolveTyMap(this.bindingTypes)
+        this.exprTypes = newExprTypes
+        this.bindingTypes = newBindingTypes
     }
 
     fun <K> resolveTyMap(map: Map<K, Ty>): MutableMap<K, Ty> {

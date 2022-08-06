@@ -85,6 +85,16 @@ module 0x1::Main {
         """
     )
 
+    fun `test correct type const first`() = checkCompletionsOrder(listOf("CONST_2u8", "CONST_1u64"), """
+    module 0x1::Main {
+        const CONST_1u64: u64 = 2;
+        const CONST_2u8: u8 = 1;
+        fun call() {
+            let a: u8 = CO/*caret*/;
+        }
+    }    
+    """)
+
 //    fun `test resource before non-resource in borrow_global`() = checkCompletionsOrder(
 //        listOf("Coin", "Cat"),
 //        """

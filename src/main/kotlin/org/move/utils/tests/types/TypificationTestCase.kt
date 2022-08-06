@@ -4,10 +4,9 @@ import org.intellij.lang.annotations.Language
 import org.move.ide.presentation.shortPresentableText
 import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.psi.ext.expectedTy
-import org.move.lang.core.psi.ext.inferExprTy
 import org.move.lang.core.psi.ext.inferredTy
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.functionInferenceCtx
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementAndDataInEditor
@@ -18,7 +17,7 @@ abstract class TypificationTestCase : MvTestBase() {
         val (expr, data) = myFixture.findElementAndDataInEditor<MvExpr>()
         val expectedType = data.trim()
 
-        val ctx = InferenceContext(expr.isMsl())
+        val ctx = expr.functionInferenceCtx(expr.isMsl())
         val actualType = expr.expectedTy(ctx).shortPresentableText(true)
         check(actualType == expectedType) {
             "Type mismatch. Expected $expectedType, found: $actualType"

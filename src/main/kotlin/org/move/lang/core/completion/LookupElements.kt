@@ -11,7 +11,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.types.infer.inferenceCtx
+import org.move.lang.core.types.infer.functionInferenceCtx
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -101,7 +101,7 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
             .withTypeText(this.typeAnnotation?.type?.text)
 
         is MvBindingPat -> this.createLookupElementWithIcon()
-            .withTypeText(this.inferredTy(this.inferenceCtx(this.isMsl())).shortPresentableText(true))
+            .withTypeText(this.inferredTy(this.functionInferenceCtx(this.isMsl())).shortPresentableText(true))
 
         is MvSchema -> this.createLookupElementWithIcon()
             .withTypeText(this.containingFile?.name)

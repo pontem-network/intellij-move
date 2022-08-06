@@ -48,7 +48,7 @@ class MvTypeCheckInspectionTest: InspectionTestBase(MvTypeCheckInspection::class
     """
     )
 
-    fun `test different generic types`() = checkErrors(
+    fun `test same struct but different generic types`() = checkErrors(
         """
     module 0x1::M {
         struct Option<Element> {}
@@ -57,7 +57,7 @@ class MvTypeCheckInspectionTest: InspectionTestBase(MvTypeCheckInspection::class
         }
         fun main() {
             let opt = Option<u8> {};
-            is_none(<error descr="Invalid argument for parameter 't': type 'Option<u8>' is not compatible with 'Option<u64>'">opt</error>)
+            is_none(<error descr="Invalid argument for parameter 't': type 'Option<u8>' is not compatible with 'Option<u64>'">opt</error>);
         } 
     }    
     """
@@ -72,7 +72,7 @@ class MvTypeCheckInspectionTest: InspectionTestBase(MvTypeCheckInspection::class
         }
         fun main() {
             let opt = &Option<u8> {};
-            is_none(<error descr="Invalid argument for parameter 't': type '&Option<u8>' is not compatible with '&Option<u64>'">opt</error>)
+            is_none(<error descr="Invalid argument for parameter 't': type '&Option<u8>' is not compatible with '&Option<u64>'">opt</error>);
         } 
     }    
     """
@@ -275,7 +275,7 @@ module 0x1::M {
         struct D {}
         fun new<Content>(a: Content, b: Content): Content {}
         fun m() {
-            new(C {}, <error descr="Invalid argument for parameter 'b': type 'D' is not compatible with 'C'">D {}</error>)
+            new(C {}, <error descr="Invalid argument for parameter 'b': type 'D' is not compatible with 'C'">D {}</error>);
         }
     }    
     """)

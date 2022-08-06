@@ -18,6 +18,7 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
 import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.functionInferenceCtx
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -37,8 +38,11 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
 
         val moduleRef = pathElement.moduleRef
         val itemVis = itemVis(pathElement)
+        val inferenceCtx = pathElement.functionInferenceCtx()
         val expectedTy =
-            getExpectedTypeForEnclosingPathOrDotExpr(pathElement, InferenceContext(pathElement.isMsl()))
+            getExpectedTypeForEnclosingPathOrDotExpr(pathElement, inferenceCtx)
+//        val expectedTy =
+//            getExpectedTypeForEnclosingPathOrDotExpr(pathElement, InferenceContext(pathElement.isMsl()))
         val ctx = CompletionContext(pathElement, itemVis, expectedTy)
 
         if (moduleRef != null) {

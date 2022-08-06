@@ -10,9 +10,7 @@ import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.ty
-import org.move.lang.core.types.infer.inferCallExprTy
-import org.move.lang.core.types.infer.inferenceCtx
-import org.move.lang.core.types.infer.isCompatible
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.*
 
 fun ProblemsHolder.registerTypeError(
@@ -37,7 +35,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
         object : MvVisitor() {
             override fun visitIfExpr(ifExpr: MvIfExpr) {
                 val msl = ifExpr.isMsl()
-                val ctx = ifExpr.inferenceCtx(msl)
+                val ctx = ifExpr.functionInferenceCtx(msl)
                 val ifTy = ifExpr.returningExpr?.inferExprTy(ctx) ?: return
                 val elseExpr = ifExpr.elseExpr ?: return
                 val elseTy = elseExpr.inferExprTy(ctx)
@@ -53,7 +51,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             override fun visitCondition(cond: MvCondition) {
                 val msl = cond.isMsl()
                 val expr = cond.expr ?: return
-                val exprTy = expr.inferExprTy(cond.inferenceCtx(msl))
+                val exprTy = expr.inferExprTy(cond.functionInferenceCtx(msl))
                 if (!isCompatible(exprTy, TyBool)) {
                     holder.registerTypeError(
                         expr,
@@ -99,7 +97,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 val struct = litExpr.path.maybeStruct ?: return
 
                 val msl = litExpr.isMsl()
-                val ctx = litExpr.inferenceCtx(msl)
+                val ctx = litExpr.functionInferenceCtx(msl)
                 for (field in litExpr.fields) {
                     val initExprTy = field.inferInitExprTy(ctx)
 
@@ -143,7 +141,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 if (function.parameters.size != callArgs.exprList.size) return
 
                 val msl = callArgs.isMsl()
-                val ctx = callArgs.inferenceCtx(msl)
+                val ctx = callArgs.functionInferenceCtx(msl)
                 val inferredFuncTy = inferCallExprTy(callExpr, ctx, null)
                 if (inferredFuncTy !is TyFunction) return
 
@@ -171,7 +169,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
             override fun visitStructField(field: MvStructField) {
                 val msl = field.isMsl()
-                val structTy = TyStruct(field.struct)
+                val structTy = instantiateItemTy(field.struct, msl)
                 val structAbilities = structTy.abilities()
                 if (structAbilities.isEmpty()) return
 
