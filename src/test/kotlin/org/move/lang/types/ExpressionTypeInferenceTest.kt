@@ -113,7 +113,6 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
     module 0x1::M {
         native public fun vector_empty<Element>(): vector<Element>;
         native public fun vector_push_back<Element>(v: &mut vector<Element>, e: Element);
-        native public fun vector_borrow_mut<Element>(v: &mut vector<Element>, i: u64): &mut Element;
         fun call() {
             let v = vector_empty();
             v;
@@ -126,10 +125,35 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
     module 0x1::M {
         native public fun vector_empty<El>(): vector<El>;
         native public fun vector_push_back<Element>(v: &mut vector<Element>, e: Element);
-        native public fun vector_borrow_mut<Element>(v: &mut vector<Element>, i: u64): &mut Element;
         fun call() {
             let v = vector_empty();
             vector_push_back(&mut v, 1u8);
+            v;
+          //^ vector<u8>  
+        }
+    }        
+    """)
+
+    fun `test vector inferred type generic parameters`() = testExpr("""
+    module 0x1::M {
+        native public fun vector_empty<El>(): vector<El>;
+        native public fun vector_push_back<Element>(v: &mut vector<Element>, e: Element);
+        fun call() {
+            let v = vector_empty();
+            vector_push_back<u8>(&mut v);
+            v;
+          //^ vector<u8>  
+        }
+    }        
+    """)
+
+    fun `test infer type with struct literal`() = testExpr("""
+    module 0x1::M {
+        struct S { vec: vector<u8> }
+        native public fun vector_empty<El>(): vector<El>;
+        fun call() {
+            let v = vector_empty();
+            S { vec: v };
             v;
           //^ vector<u8>  
         }

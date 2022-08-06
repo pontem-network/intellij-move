@@ -177,6 +177,12 @@ class InferenceContext(var msl: Boolean) {
         this.callExprTypes[expr] = ty
     }
 
+    @Synchronized
+    fun resolveTyVarsFromContext(ctx: InferenceContext) {
+        this.exprTypes = ctx.resolveTyMap(this.exprTypes)
+        this.bindingTypes = ctx.resolveTyMap(this.bindingTypes)
+    }
+
     fun <K> resolveTyMap(map: Map<K, Ty>): MutableMap<K, Ty> {
         val resolvedTyMap = mutableMapOf<K, Ty>()
         for ((expr, ty) in map.entries) {
