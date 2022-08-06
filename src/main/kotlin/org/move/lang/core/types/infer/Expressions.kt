@@ -172,15 +172,25 @@ fun inferStructLitExpr(litExpr: MvStructLitExpr, parentCtx: InferenceContext): T
 }
 
 private fun inferBinaryExprTy(exprList: List<MvExpr>, ctx: InferenceContext): Ty {
-    for ((i, expr) in exprList.withIndex()) {
-        val exprTy = inferExprTy(expr, ctx)
-        if (exprTy is TyInteger && exprTy.kind == TyInteger.DEFAULT_KIND) {
-            if (i == exprList.lastIndex) return exprTy
-            continue
-        }
-        return exprTy
+    val leftExpr = exprList.getOrNull(0) ?: return TyUnknown
+    val rightExpr = exprList.getOrNull(1)
+
+    val leftExprTy = inferExprTy(leftExpr, ctx)
+    if (rightExpr != null) {
+        val rightExprTy = inferExprTy(rightExpr, ctx)
+        ctx.registerConstraint(EqualityConstraint(leftExprTy, rightExprTy))
     }
-    return TyUnknown
+    return leftExprTy
+
+//    for ((i, expr) in exprList.withIndex()) {
+//        val exprTy = inferExprTy(expr, ctx)
+//        if (exprTy is TyInteger && exprTy.kind == TyInteger.DEFAULT_KIND) {
+//            if (i == exprList.lastIndex) return exprTy
+//            continue
+//        }
+//        return exprTy
+//    }
+//    return TyUnknown
 }
 
 private fun inferDerefExprTy(derefExpr: MvDerefExpr, ctx: InferenceContext): Ty {
@@ -201,7 +211,8 @@ private fun inferLitExprTy(litExpr: MvLitExpr, ctx: InferenceContext): Ty {
         litExpr.integerLiteral != null || litExpr.hexIntegerLiteral != null -> {
             if (ctx.msl) return TyNum
             val literal = (litExpr.integerLiteral ?: litExpr.hexIntegerLiteral)!!
-            return TyInteger.fromSuffixedLiteral(literal) ?: TyInteger(TyInteger.DEFAULT_KIND)
+//            return TyInteger.fromSuffixedLiteral(literal) ?: TyInteger(TyInteger.DEFAULT_KIND)
+            return TyInteger.fromSuffixedLiteral(literal) ?: TyInfer.IntVar()
         }
         litExpr.byteStringLiteral != null -> TyByteString(ctx.msl)
         litExpr.hexStringLiteral != null -> TyHexString(ctx.msl)

@@ -36,6 +36,8 @@ fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
                             fctx.bindingTypes.putAll(collectBindings(pat, patTy))
                         }
                     }
+                    fctx.processConstraints()
+                    fctx.resolveTyVarsFromContext(fctx)
                 }
             }
         }
@@ -131,6 +133,12 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
             // check abilities
             true
         }
+        expectedTy is TyInfer.IntVar && (inferredTy is TyInfer.IntVar || inferredTy is TyInteger) -> {
+            true
+        }
+        inferredTy is TyInfer.IntVar && expectedTy is TyInteger -> {
+            true
+        }
         expectedTy is TyTypeParameter || inferredTy is TyTypeParameter -> {
             // check abilities
             true
@@ -158,6 +166,7 @@ class InferenceContext(var msl: Boolean) {
     var bindingTypes = mutableMapOf<MvBindingPat, Ty>()
 
     val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
+    val intUnificationTable = UnificationTable<TyInfer.IntVar, Ty>()
 
     private val solver = ConstraintSolver(this)
 
@@ -199,6 +208,7 @@ class InferenceContext(var msl: Boolean) {
         if (ty !is TyInfer) return ty
         return when (ty) {
             is TyInfer.TyVar -> unificationTable.findValue(ty)?.let(this::resolveTyInferFromContext) ?: ty
+            is TyInfer.IntVar -> intUnificationTable.findValue(ty)?.let(this::resolveTyInferFromContext) ?: ty
         }
     }
 

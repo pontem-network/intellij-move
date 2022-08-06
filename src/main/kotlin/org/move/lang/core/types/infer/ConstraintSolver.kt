@@ -39,6 +39,16 @@ class ConstraintSolver(val ctx: InferenceContext) {
             ty2 = ty2.mslTy()
         }
         when {
+            ty1 is TyInfer.IntVar && ty2 is TyInfer.IntVar -> {
+                ctx.intUnificationTable.unifyVarVar(ty1, ty2)
+            }
+            ty1 is TyInfer.IntVar && ty2 is TyInteger -> {
+                ctx.intUnificationTable.unifyVarValue(ty1, ty2)
+            }
+            ty2 is TyInfer.IntVar && ty1 is TyInteger -> {
+                ctx.intUnificationTable.unifyVarValue(ty2, ty1)
+            }
+
             ty1 is TyInfer.TyVar && ty2 is TyInfer.TyVar -> {
                 if ((ty1.abilities() - ty2.abilities()).isNotEmpty()) return false
                 ctx.unificationTable.unifyVarVar(ty1, ty2)
@@ -49,7 +59,7 @@ class ConstraintSolver(val ctx: InferenceContext) {
                 ctx.unificationTable.unifyVarValue(ty1, ty2)
             }
 
-            ty2 is TyInfer.TyVar && ty1 !is TyInfer.TyVar -> {
+            ty2 is TyInfer.TyVar /* && ty1 !is TyInfer.TyVar */ -> {
                 if ((ty2.abilities() - ty1.abilities()).isNotEmpty()) return false
                 ctx.unificationTable.unifyVarValue(ty2, ty1)
             }

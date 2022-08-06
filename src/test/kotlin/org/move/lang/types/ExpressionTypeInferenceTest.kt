@@ -159,4 +159,17 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
         }
     }        
     """)
+
+    fun `test integer type inference from call expr`() = testExpr("""
+    module 0x1::M {
+        fun add_u8(a: u8, b: u8): u8 { a + b }
+        fun call() {
+            let a = 0;
+            let b = 1;
+            add_u8(a, b);
+            a;
+          //^ u8  
+        }
+    }    
+    """)
 }

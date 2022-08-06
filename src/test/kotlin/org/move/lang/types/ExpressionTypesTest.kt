@@ -226,7 +226,7 @@ class ExpressionTypesTest: TypificationTestCase() {
         fun m() {
             let a = if (true) 1 else 2;
             a;
-          //^ integer  
+          //^ integer 
         }
     }    
     """)
