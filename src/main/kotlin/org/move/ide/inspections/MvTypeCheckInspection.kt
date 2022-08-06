@@ -34,11 +34,9 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
             override fun visitIfExpr(ifExpr: MvIfExpr) {
-                val msl = ifExpr.isMsl()
-                val ctx = ifExpr.functionInferenceCtx(msl)
-                val ifTy = ifExpr.returningExpr?.inferExprTy(ctx) ?: return
+                val ifTy = ifExpr.returningExpr?.inferredTy() ?: return
                 val elseExpr = ifExpr.elseExpr ?: return
-                val elseTy = elseExpr.inferExprTy(ctx)
+                val elseTy = elseExpr.inferredTy()
 
                 if (!isCompatible(ifTy, elseTy) && !isCompatible(elseTy, ifTy)) {
                     holder.registerTypeError(
@@ -49,9 +47,8 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitCondition(cond: MvCondition) {
-                val msl = cond.isMsl()
                 val expr = cond.expr ?: return
-                val exprTy = expr.inferExprTy(cond.functionInferenceCtx(msl))
+                val exprTy = expr.inferredTy()
                 if (!isCompatible(exprTy, TyBool)) {
                     holder.registerTypeError(
                         expr,
@@ -61,12 +58,11 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitCodeBlock(codeBlock: MvCodeBlock) {
-                val msl = codeBlock.isMsl()
                 val fn = codeBlock.parent as? MvFunction ?: return
                 val returningExpr = codeBlock.returningExpr
 
                 val expectedReturnTy = fn.returnTy
-                val actualReturnTy = returningExpr?.inferExprTy(fn.inferenceCtx(msl)) ?: TyUnit
+                val actualReturnTy = returningExpr?.inferredTy() ?: TyUnit
                 if (!isCompatible(expectedReturnTy, actualReturnTy)) {
                     val annotatedElement = returningExpr as? PsiElement
                         ?: codeBlock.rightBrace
@@ -79,12 +75,10 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitReturnExpr(returnExpr: MvReturnExpr) {
-                val msl = returnExpr.isMsl()
                 val outerFn = returnExpr.containingFunction ?: return
 
-                val ctx = outerFn.inferenceCtx(msl)
                 val expectedReturnTy = outerFn.returnTy
-                val actualReturnTy = returnExpr.expr?.inferExprTy(ctx) ?: return
+                val actualReturnTy = returnExpr.expr?.inferredTy() ?: return
                 if (!isCompatible(expectedReturnTy, actualReturnTy)) {
                     holder.registerTypeError(
                         returnExpr,
@@ -99,7 +93,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 val msl = litExpr.isMsl()
                 val ctx = litExpr.functionInferenceCtx(msl)
                 for (field in litExpr.fields) {
-                    val initExprTy = field.inferInitExprTy(ctx)
+                    val initExprTy = inferLitFieldInitExprTy(field, ctx)
 
                     val fieldName = field.referenceName
                     val fieldDef = struct.getField(fieldName) ?: continue
@@ -142,13 +136,12 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
                 val msl = callArgs.isMsl()
                 val ctx = callArgs.functionInferenceCtx(msl)
-                val inferredFuncTy = inferCallExprTy(callExpr, ctx, null)
-                if (inferredFuncTy !is TyFunction) return
+                val inferredFuncTy = inferCallExprTy(callExpr, ctx, null) as? TyFunction ?: return
 
                 for ((i, expr) in callArgs.exprList.withIndex()) {
                     val parameter = function.parameters[i]
                     val paramTy = inferredFuncTy.paramTypes[i]
-                    val exprTy = expr.inferExprTy(ctx)
+                    val exprTy = expr.inferredTy()
 
                     if (paramTy.isTypeParam || exprTy.isTypeParam) {
                         val abilitiesErrorCreated = checkHasRequiredAbilities(holder, expr, exprTy, paramTy)

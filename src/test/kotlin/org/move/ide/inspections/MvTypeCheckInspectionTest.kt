@@ -8,7 +8,7 @@ class MvTypeCheckInspectionTest: InspectionTestBase(MvTypeCheckInspection::class
             fun send(account: &signer) {}
             
             fun main(addr: address) {
-                send(<error descr="Invalid argument for parameter 'account': type 'address' is not compatible with '&signer'">addr</error>)
+                send(<error descr="Invalid argument for parameter 'account': type 'address' is not compatible with '&signer'">addr</error>);
             }
         }        
     """)

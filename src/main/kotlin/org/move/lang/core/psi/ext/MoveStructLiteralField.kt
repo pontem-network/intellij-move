@@ -19,19 +19,6 @@ val MvStructLitField.structLitExpr: MvStructLitExpr
 val MvStructLitField.isShorthand: Boolean
     get() = !hasChild(MvElementTypes.COLON)
 
-fun MvStructLitField.inferInitExprTy(ctx: InferenceContext): Ty {
-    val initExpr = this.expr
-    return if (initExpr == null) {
-        // find type of binding
-        val resolved =
-            this.reference.multiResolve().filterIsInstance<MvBindingPat>().firstOrNull() ?: return TyUnknown
-        resolved.inferredTy(ctx)
-    } else {
-        // find type of expression
-        initExpr.inferExprTy(ctx)
-    }
-}
-
 fun MvStructLitField.ty(): Ty {
     val msl = this.isMsl()
     val ctx = this.containingFunction?.inferenceCtx(msl) ?: return TyUnknown

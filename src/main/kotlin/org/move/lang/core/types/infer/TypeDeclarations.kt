@@ -35,21 +35,21 @@ fun inferBuiltinTypeTy(moveType: MvPathType, msl: Boolean): Ty {
             val itemTy = moveType.path.typeArguments
                 .firstOrNull()
                 ?.type
-                ?.let { inferMvTypeTy(it, msl) } ?: TyUnknown
+                ?.let { inferTypeTy(it, msl) } ?: TyUnknown
             return TyVector(itemTy)
         }
         else -> TyUnknown
     }
 }
 
-fun inferMvTypeTy(moveType: MvType, msl: Boolean): Ty {
+fun inferTypeTy(moveType: MvType, msl: Boolean): Ty {
     return when (moveType) {
         is MvPathType -> {
             val struct = moveType.path.reference?.resolve() ?: return inferBuiltinTypeTy(moveType, msl)
             when (struct) {
                 is MvTypeParameter -> TyTypeParameter(struct)
                 is MvStruct -> {
-                    val typeArgs = moveType.path.typeArguments.map { inferMvTypeTy(it.type, msl) }
+                    val typeArgs = moveType.path.typeArguments.map { inferTypeTy(it.type, msl) }
                     val structTy = instantiateItemTy(struct, msl) as? TyStruct ?: return TyUnknown
                     structTy.typeArgs = typeArgs
                     structTy
@@ -60,11 +60,11 @@ fun inferMvTypeTy(moveType: MvType, msl: Boolean): Ty {
         is MvRefType -> {
             val mutability = Mutability.valueOf(moveType.mutable)
             val innerTypeRef = moveType.type ?: return TyReference(TyUnknown, mutability, msl)
-            val innerTy = inferMvTypeTy(innerTypeRef, msl)
+            val innerTy = inferTypeTy(innerTypeRef, msl)
             TyReference(innerTy, mutability, msl)
         }
         is MvTupleType -> {
-            val innerTypes = moveType.typeList.map { inferMvTypeTy(it, msl) }
+            val innerTypes = moveType.typeList.map { inferTypeTy(it, msl) }
             TyTuple(innerTypes)
         }
         is MvUnitType -> TyUnit

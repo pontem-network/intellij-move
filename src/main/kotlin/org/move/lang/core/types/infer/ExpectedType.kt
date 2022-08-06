@@ -2,7 +2,6 @@ package org.move.lang.core.types.infer
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.declaredTy
-import org.move.lang.core.psi.ext.inferCallTy
 import org.move.lang.core.psi.ext.ty
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
@@ -17,9 +16,10 @@ fun inferExprExpectedTy(expr: MvExpr, ctx: InferenceContext): Ty {
             if (paramIndex == -1) return TyUnknown
 
             val callExpr = owner.parent as? MvCallExpr ?: return TyUnknown
-            val callTy = callExpr.inferCallTy(ctx) as? TyFunction ?: return TyUnknown
+            val callTy = inferCallExprTy(callExpr, ctx, null) as? TyFunction ?: return TyUnknown
             callTy.paramTypes[paramIndex]
         }
+
         is MvInitializer -> {
             val initializerParent = owner.parent
             when (initializerParent) {
@@ -31,9 +31,11 @@ fun inferExprExpectedTy(expr: MvExpr, ctx: InferenceContext): Ty {
                         else -> TyUnknown
                     }
                 }
+
                 else -> TyUnknown
             }
         }
+
         is MvStructLitField -> owner.ty()
         else -> TyUnknown
     }

@@ -5,6 +5,7 @@ import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
+import com.jetbrains.rd.util.concurrentMapOf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.ty
@@ -86,7 +87,7 @@ fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
             val paramTypes = mutableListOf<Ty>()
             for (param in item.parameters) {
                 val paramType = param.typeAnnotation?.type
-                    ?.let { inferMvTypeTy(it, msl) }
+                    ?.let { inferTypeTy(it, msl) }
                     ?.foldTyTypeParameterWith { findTypeVar(it.parameter) } ?: TyUnknown
                 paramTypes.add(paramType)
             }
@@ -94,7 +95,7 @@ fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
             val retTy = if (returnMvType == null) {
                 TyUnit
             } else {
-                inferMvTypeTy(returnMvType, msl).foldTyTypeParameterWith { findTypeVar(it.parameter) }
+                inferTypeTy(returnMvType, msl).foldTyTypeParameterWith { findTypeVar(it.parameter) }
             }
             val acqTys = item.acquiresPathTypes.map {
                 val acqItem =
@@ -196,14 +197,9 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
 data class TypeError(val element: MvElement, val expectedTy: Ty, val actualTy: Ty)
 
 class InferenceContext(var msl: Boolean) {
-    @Volatile
-    var exprTypes = mutableMapOf<MvExpr, Ty>()
-
-    @Volatile
+    val exprTypes = concurrentMapOf<MvExpr, Ty>()
+    val bindingTypes = concurrentMapOf<MvBindingPat, Ty>()
     var callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
-
-    @Volatile
-    var bindingTypes = mutableMapOf<MvBindingPat, Ty>()
 
     val typeErrors = mutableListOf<TypeError>()
 
@@ -233,19 +229,21 @@ class InferenceContext(var msl: Boolean) {
     }
 
     fun resolveTyVarsFromContext(ctx: InferenceContext) {
-        val newExprTypes = ctx.resolveTyMap(this.exprTypes)
-        val newBindingTypes = ctx.resolveTyMap(this.bindingTypes)
-        this.exprTypes = newExprTypes
-        this.bindingTypes = newBindingTypes
+        for ((expr, ty) in this.exprTypes.entries) {
+            this.exprTypes[expr] = ctx.resolveTy(ty)
+        }
+        for ((binding, ty) in this.bindingTypes.entries) {
+            this.bindingTypes[binding] = ctx.resolveTy(ty)
+        }
     }
 
-    fun <K> resolveTyMap(map: Map<K, Ty>): MutableMap<K, Ty> {
-        val resolvedTyMap = mutableMapOf<K, Ty>()
-        for ((expr, ty) in map.entries) {
-            resolvedTyMap[expr] = this.resolveTy(ty)
-        }
-        return resolvedTyMap
-    }
+//    fun <K> resolveTyMap(map: Map<K, Ty>): MutableMap<K, Ty> {
+//        val resolvedTyMap = mutableMapOf<K, Ty>()
+//        for ((expr, ty) in map.entries) {
+//            resolvedTyMap[expr] = this.resolveTy(ty)
+//        }
+//        return resolvedTyMap
+//    }
 
     fun resolveTy(ty: Ty): Ty {
         return ty.foldTyInferWith(this::resolveTyInferFromContext)

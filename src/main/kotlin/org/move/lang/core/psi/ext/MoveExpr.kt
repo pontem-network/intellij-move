@@ -10,9 +10,12 @@ import org.move.lang.core.types.ty.Ty
 fun MvExpr.inferredTy(): Ty {
     val msl = this.isMsl()
     val inferenceCtx = this.functionInferenceCtx(msl)
+
+    val existingTy = inferenceCtx.exprTypes[this]
+    if (existingTy != null) {
+        return existingTy
+    }
     return inferExprTy(this, inferenceCtx)
 }
-
-fun MvExpr.inferExprTy(ctx: InferenceContext) = inferExprTy(this, ctx)
 
 fun MvExpr.expectedTy(ctx: InferenceContext): Ty = inferExprExpectedTy(this, ctx)
