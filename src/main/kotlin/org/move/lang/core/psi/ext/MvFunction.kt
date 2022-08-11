@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.util.PlatformIcons
 import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
+import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.isNative
@@ -31,6 +32,8 @@ val MvFunction.visibility: FunctionVisibility
             else -> FunctionVisibility.PRIVATE
         }
     }
+
+val MvFunction.isEntry: Boolean get() = this.isChildExists(MvElementTypes.ENTRY)
 
 val MvFunction.isTest: Boolean get() = this.findSingleItemAttr("test") != null
 

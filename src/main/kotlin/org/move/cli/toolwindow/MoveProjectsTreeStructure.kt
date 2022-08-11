@@ -10,10 +10,7 @@ import org.move.cli.MoveProject
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.ext.functions
-import org.move.lang.core.psi.ext.isTest
-import org.move.lang.core.psi.ext.isTestOnly
-import org.move.lang.core.psi.ext.testFunctions
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.modules
 import org.move.stdext.iterateMoveFiles
@@ -65,7 +62,7 @@ class MoveProjectsTreeStructure(
                             if (!module.isTestOnly) modules.add(module)
                             if (module.testFunctions().isNotEmpty()) testModules.add(module)
                             scriptFunctions.addAll(
-                                module.functions(Visibility.PublicScript)
+                                module.entryFunctions()
                                     .filter { fn -> !fn.isTestOnly && !fn.isTest })
                         }
                         true
