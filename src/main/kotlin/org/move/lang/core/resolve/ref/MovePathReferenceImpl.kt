@@ -7,7 +7,7 @@ import org.move.lang.core.resolve.*
 fun processModuleItems(
     module: MvModule,
     itemVis: ItemVis,
-    processor: MatchingProcessor,
+    processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     for (namespace in itemVis.namespaces) {
         val found = when (namespace) {

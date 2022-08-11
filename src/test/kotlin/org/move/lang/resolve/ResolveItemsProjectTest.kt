@@ -312,4 +312,35 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
             """)
         }
     }
+
+    fun `test resolve module by address value`() = checkByFileTree {
+        moveToml(
+            """
+        [package]
+        name = "MyPackage"
+        [addresses]
+        std = "0x1"
+        aptos_std = "0x1"
+        """
+        )
+        sources {
+            main("""
+            module 0x1::M {
+                use aptos_std::debug;
+                fun call() {
+                    debug::print();
+                   //^ 
+                }
+            }    
+            """)
+            move(
+                "debug.move", """
+            module std::debug {
+                        //X
+                public native fun print();
+            }    
+            """
+            )
+        }
+    }
 }

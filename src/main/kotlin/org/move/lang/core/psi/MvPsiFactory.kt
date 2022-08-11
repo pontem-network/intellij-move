@@ -98,6 +98,10 @@ class MvPsiFactory(private val project: Project) {
         createFromText("module $moduleName { $text } ")
             ?: error("Failed to create a function from text: `$text`")
 
+    fun addressRef(text: String): MvAddressRef =
+        createFromText("module $text::Main {} ")
+            ?: error("Failed to create a function from text: `$text`")
+
     fun specFunction(text: String, moduleName: String = "_Dummy"): MvSpecFunction =
         createFromText("module $moduleName { $text } ")
             ?: error("Failed to create a function from text: `$text`")

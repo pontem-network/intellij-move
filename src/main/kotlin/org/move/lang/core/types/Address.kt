@@ -26,9 +26,7 @@ sealed class Address(open val value: String) {
 //    }
 
     data class Value(override val value: String) : Address(value) {
-        override fun text(): String {
-            return value
-        }
+        override fun text(): String = value
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

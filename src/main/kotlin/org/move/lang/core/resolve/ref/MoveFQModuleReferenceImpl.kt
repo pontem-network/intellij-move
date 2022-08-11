@@ -18,9 +18,8 @@ class MvFQModuleReferenceImpl(
         val referenceName = element.referenceName
         var resolved: MvModule? = null
         processFQModuleRef(element) {
-            val element = it.element as? MvModule ?: return@processFQModuleRef false
             if (it.name == referenceName) {
-                resolved = element
+                resolved = it.element
                 true
             } else {
                 false

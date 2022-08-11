@@ -193,4 +193,30 @@ class ModulesCompletionProjectTest : CompletionProjectTestCase() {
                 )
             }
         }
+
+    fun `test no completion if module address name is different`() = checkNoCompletion {
+        moveToml(
+            """
+        [package]
+        name = "MyPackage"
+        [addresses]
+        std = "0x1"
+        aptos_std = "0x1"
+        """
+        )
+        sources {
+            main("""
+            module 0x1::M {
+                use aptos_std::de/*caret*/;
+            }    
+            """)
+            move(
+                "debug.move", """
+            module std::debug {
+                public native fun print();
+            }    
+            """
+            )
+        }
+    }
 }

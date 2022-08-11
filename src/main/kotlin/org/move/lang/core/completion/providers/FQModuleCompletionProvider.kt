@@ -9,7 +9,10 @@ import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvFQModuleRef
+import org.move.lang.core.psi.MvModule
+import org.move.lang.core.psi.ext.address
 import org.move.lang.core.psi.ext.itemScope
+import org.move.lang.core.psi.ext.toAddress
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslScope
 import org.move.lang.core.resolve.processFQModuleRef
@@ -41,9 +44,13 @@ object FQModuleCompletionProvider : MvCompletionProvider() {
             itemScope = fqModuleRef.itemScope,
         )
         val completionContext = CompletionContext(fqModuleRef, itemVis)
+        val positionAddress = fqModuleRef.addressRef.toAddress()
         processFQModuleRef(fqModuleRef) {
-            val lookup = it.element.createLookupElement(completionContext)
-            result.addElement(lookup)
+            val module = it.element
+            if (positionAddress == module.address()?.toAddress()) {
+                val lookup = module.createLookupElement(completionContext)
+                result.addElement(lookup)
+            }
             false
         }
     }
