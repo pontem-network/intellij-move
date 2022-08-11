@@ -6,6 +6,8 @@ import com.intellij.ui.tree.StructureTreeModel
 import com.intellij.ui.treeStructure.CachingSimpleNode
 import com.intellij.ui.treeStructure.SimpleNode
 import com.intellij.ui.treeStructure.SimpleTreeStructure
+import com.intellij.util.containers.toArray
+import org.move.cli.MovePackage
 import org.move.cli.MoveProject
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MvFunction
@@ -47,7 +49,7 @@ class MoveProjectsTreeStructure(
             override fun toTestString() = "Root"
         }
 
-        class Project(val moveProject: MoveProject, parent: SimpleNode) : MoveSimpleNode(parent) {
+        open class Package(val movePackage: MovePackage, parent: SimpleNode) : MoveSimpleNode(parent) {
             init {
                 icon = MoveIcons.MOVE
             }
@@ -56,8 +58,8 @@ class MoveProjectsTreeStructure(
                 val modules = mutableListOf<MvModule>()
                 val testModules = mutableListOf<MvModule>()
                 val scriptFunctions = mutableListOf<MvFunction>()
-                for (folder in moveProject.currentPackage.moveFolders()) {
-                    folder.iterateMoveFiles(moveProject.project) {
+                for (folder in movePackage.moveFolders()) {
+                    folder.iterateMoveFiles(movePackage.project) {
                         for (module in it.modules()) {
                             if (!module.isTestOnly) modules.add(module)
                             if (module.testFunctions().isNotEmpty()) testModules.add(module)
@@ -71,12 +73,32 @@ class MoveProjectsTreeStructure(
                 return arrayOf(
                     Modules(modules, this),
                     Entrypoints(scriptFunctions, this),
-//                    Tests(emptyList(), this)
+                )
+            }
+
+            override fun getName(): String = movePackage.packageName
+            override fun toTestString(): String = "Package($name)"
+        }
+
+        class Project(val moveProject: MoveProject, parent: SimpleNode) : Package(moveProject.currentPackage, parent) {
+            override fun buildChildren(): Array<SimpleNode> {
+                val dependencyPackages = moveProject.dependencies.map { it.first }
+                return arrayOf(
+                    *super.buildChildren(),
+                    DependencyPackages(dependencyPackages, this),
                 )
             }
 
             override fun getName(): String = moveProject.currentPackage.packageName
             override fun toTestString(): String = "Project($name)"
+        }
+
+        class DependencyPackages(val packages: List<MovePackage>, parent: SimpleNode): MoveSimpleNode(parent) {
+            override fun buildChildren(): Array<SimpleNode> {
+                return packages.map { Package(it, this) }.toTypedArray()
+            }
+            override fun getName(): String = "Dependencies"
+            override fun toTestString(): String = "Dependencies"
         }
 
         class Modules(val modules: List<MvModule>, parent: SimpleNode) : MoveSimpleNode(parent) {

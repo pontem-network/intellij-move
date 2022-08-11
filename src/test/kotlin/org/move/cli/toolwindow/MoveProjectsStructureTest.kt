@@ -9,19 +9,46 @@ import org.move.utils.tests.TreeBuilder
 
 class MoveProjectsStructureTest : MvProjectTestBase() {
     fun `test move projects`() = doTest("""
-    Root
-     Project(MyNestedPackage)
-      Entrypoints
-      Modules
-     Project(MyPackage)
-      Entrypoints
-      Modules
+Root
+ Project(DepPackage)
+  Dependencies
+  Entrypoints
+   Entrypoint(0x1::DepModule::my_init)
+  Modules
+   Module(0x1::DepModule)
+ Project(MyPackage)
+  Dependencies
+   Package(DepPackage)
+    Entrypoints
+     Entrypoint(0x1::DepModule::my_init)
+    Modules
+     Module(0x1::DepModule)
+  Entrypoints
+   Entrypoint(0x1::M::init)
+  Modules
+   Module(0x1::M)
     """) {
-        namedMoveToml("MyPackage")
-        sources { main("/*caret*/") }
-        dir("nested") {
-            namedMoveToml("MyNestedPackage")
-            sources { main("") }
+        moveToml("""
+        [package]
+        name = "MyPackage"
+        
+        [dependencies]
+        DepPackage = { local = "./dependency" }
+        """)
+        sources { main("""
+            module 0x1::M {
+                entry fun init() { /*caret*/ }
+            }    
+        """) }
+        dir("dependency") {
+            namedMoveToml("DepPackage")
+            sources {
+                move("DepModule.move", """
+                module 0x1::DepModule {
+                    entry fun my_init() {}
+                }    
+                """)
+            }
         }
     }
 
