@@ -307,4 +307,21 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
         use 0x1::M1::<error descr="Unresolved reference: `call`">call</error>;
     }    
     """)
+
+    fun `test no unresolved field for uninferred type of vector`() = checkByText(
+        """
+    module 0x1::M {
+        struct ValidatorInfo { field: u8 }
+        native public fun vector_empty<Element>(): vector<Element>;
+        native public fun vector_push_back<Element>(v: &mut vector<Element>, e: Element);
+        native public fun vector_borrow_mut<Element>(v: &mut vector<Element>, i: u64): &mut Element;
+        fun call() {
+            let v = vector_empty();
+            let item = ValidatorInfo { field: 10 };
+            vector_push_back(&mut v, item);
+            vector_borrow_mut(&mut v, 10).field
+        }
+    }        
+    """
+    )
 }

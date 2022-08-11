@@ -13,9 +13,11 @@ sealed class TyInfer : Ty {
         override fun abilities(): Set<Ability> = origin?.abilities() ?: Ability.none()
     }
 
-//    class IntVar(
-//        override var next: DAGNodeOrValue = DAGValue(null)
-//    ) : TyInfer(), DAGNode
+    class IntVar(
+        override var next: DAGNodeOrValue = DAGValue(null)
+    ) : TyInfer(), DAGNode {
+        override fun abilities(): Set<Ability> = Ability.all()
+    }
 
     override fun toString(): String = tyToString(this)
 }

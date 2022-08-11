@@ -64,3 +64,15 @@ class ChopAttrArgumentListIntention : ChopListIntentionBase<MvAttrItemArguments,
     MvAttrItemArgument::class.java,
     "Put arguments on separate lines"
 )
+
+class ChopStructLiteralIntention : ChopListIntentionBase<MvStructLitFieldsBlock, MvStructLitField>(
+    MvStructLitFieldsBlock::class.java,
+    MvStructLitField::class.java,
+    "Put fields on separate lines"
+)
+
+class ChopStructPatIntention : ChopListIntentionBase<MvStructPatFieldsBlock, MvStructPatField>(
+    MvStructPatFieldsBlock::class.java,
+    MvStructPatField::class.java,
+    "Put fields on separate lines"
+)

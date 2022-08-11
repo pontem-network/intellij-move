@@ -7,7 +7,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.types.infer.inferenceCtx
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
@@ -24,23 +23,12 @@ enum class ItemScope {
     MAIN, TEST;
 }
 
-enum class FolderScope {
-    SOURCES, TESTS;
-}
-
 fun MvElement.visibleInScope(itemScope: ItemScope): Boolean {
     return itemScope == ItemScope.TEST
             || this.itemScope == ItemScope.MAIN
 }
 
-fun MvElement.visibleInScope(folderScope: FolderScope): Boolean {
-    return folderScope == FolderScope.TESTS
-            || this.folderScope == FolderScope.SOURCES
-}
-
-fun MvElement.isVisibleInScopes(itemVis: ItemVis): Boolean =
-    this.visibleInScope(itemVis.itemScope)
-            && this.visibleInScope(itemVis.folderScope)
+fun MvElement.isVisibleInScopes(itemVis: ItemVis): Boolean = this.visibleInScope(itemVis.itemScope)
 
 val MvElement.mslScope: MslScope
     get() {
@@ -58,7 +46,6 @@ data class ItemVis(
     val visibilities: Set<Visibility>,
     val mslScope: MslScope,
     val itemScope: ItemScope,
-    val folderScope: FolderScope
 ) {
     val isMsl get() = mslScope != MslScope.NONE
 }
@@ -91,7 +78,6 @@ fun resolveLocalItem(
         mslScope = element.mslScope,
         visibilities = Visibility.local(),
         itemScope = element.itemScope,
-        folderScope = element.folderScope
     )
     var resolved: MvNamedElement? = null
     processItems(element, itemVis) {
@@ -158,7 +144,6 @@ fun processFQModuleRef(
         visibilities = Visibility.local(),
         mslScope = fqModuleRef.mslScope,
         itemScope = fqModuleRef.itemScope,
-        folderScope = fqModuleRef.folderScope,
     )
     val moveProject = fqModuleRef.moveProject ?: return
     val refAddress = fqModuleRef.addressRef.toAddress(moveProject)
@@ -199,8 +184,7 @@ fun processLexicalDeclarations(
             Namespace.DOT_ACCESSED_FIELD -> {
                 val dotExpr = scope as? MvDotExpr ?: return false
 
-                val ctx = dotExpr.inferenceCtx(dotExpr.isMsl())
-                val receiverTy = dotExpr.expr.inferExprTy(ctx)
+                val receiverTy = dotExpr.expr.inferredTy()
                 val innerTy = when (receiverTy) {
                     is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
                     is TyStruct -> receiverTy

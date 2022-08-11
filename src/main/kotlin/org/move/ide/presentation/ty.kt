@@ -62,7 +62,7 @@ private fun render(
     level: Int,
     unknown: String = "<unknown>",
     anonymous: String = "<anonymous>",
-    integer: String = "{integer}",
+    integer: String = "integer",
     fq: Boolean = false
 ): String {
     check(level >= 0)
@@ -72,12 +72,11 @@ private fun render(
             is TyBool -> "bool"
             is TyAddress -> "address"
             is TySigner -> "signer"
-            is TyVector -> "vector"
             is TyUnit -> "()"
             is TyNum -> "num"
             is TyInteger -> {
                 if (ty.kind == TyInteger.DEFAULT_KIND) {
-                    "integer"
+                    integer
                 } else {
                     ty.kind.toString()
                 }
@@ -115,7 +114,7 @@ private fun render(
         }
         is TyInfer -> when (ty) {
             is TyInfer.TyVar -> "?${ty.origin?.name ?: "_"}"
-//            is TyInfer.IntVar -> integer
+            is TyInfer.IntVar -> integer
         }
         else -> error("unreachable")
     }

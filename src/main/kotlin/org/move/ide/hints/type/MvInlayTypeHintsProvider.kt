@@ -12,7 +12,7 @@ import org.move.lang.core.psi.ext.inferredTy
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.inferenceCtx
+import org.move.lang.core.types.infer.functionInferenceCtx
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -89,7 +89,7 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
 //            }
 
             private fun presentTypeForPat(pat: MvPat) {
-                val ctx = pat.inferenceCtx(pat.isMsl())
+                val ctx = pat.functionInferenceCtx(pat.isMsl())
                 for (binding in pat.descendantsOfType<MvBindingPat>()) {
                     if (binding.identifier.text.startsWith("_")) continue
                     if (binding.inferredTy(ctx) is TyUnknown) continue

@@ -16,7 +16,9 @@ class RedundantQualifiedPathInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor =
         object : MvVisitor() {
             override fun visitPath(path: MvPath) {
-                val pathText = path.text.replace(path.typeArgumentList?.text.orEmpty(), "")
+                val pathText = path.text
+                    .replace(path.typeArgumentList?.text.orEmpty(), "")
+                    .replace(Regex("\\s"), "")
                 val item = path.reference?.resolve() ?: return
 
                 val importsOwner = path.containingScript?.scriptBlock

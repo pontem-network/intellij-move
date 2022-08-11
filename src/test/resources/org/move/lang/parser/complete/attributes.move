@@ -24,4 +24,7 @@ module 0x1::M {
 
     #[test_only]
     native fun native_main();
+
+    #[show(book_orders_sdk, book_price_levels_sdk)]
+    fun test() {}
 }

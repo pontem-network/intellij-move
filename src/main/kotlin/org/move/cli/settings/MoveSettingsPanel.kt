@@ -3,6 +3,7 @@ package org.move.cli.settings
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.layout.CCFlags
 import com.intellij.ui.layout.LayoutBuilder

@@ -54,7 +54,6 @@ class MvPathReferenceImpl(
             vs,
             element.mslScope,
             itemScope = element.itemScope,
-            folderScope = element.folderScope
         )
 
         val refName = element.referenceName ?: return emptyList()

@@ -19,9 +19,9 @@ object InlayParameterHints {
         return callInfo.parameters
             .map { it.name }
             .zip(arguments)
-            .filter { (_, arg) ->
-                arg !is MvRefExpr && arg !is MvCallExpr && arg !is MvStructLitExpr
-            }
+            // don't show argument, if just function call / variable / struct literal
+//            .filter { (_, arg) -> arg !is MvRefExpr && arg !is MvCallExpr && arg !is MvStructLitExpr }
+            .filter { (_, arg) -> arg !is MvRefExpr && arg !is MvStructLitExpr }
             .filter { (hint, arg) -> !isSimilar(hint, arg.text) }
             .filter { (hint, _) -> hint != "_" }
             .map { (hint, arg) -> InlayInfo("$hint:", arg.startOffset) }

@@ -7,6 +7,7 @@ import org.move.ide.inspections.imports.AutoImportFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.MvReferenceElement
+import org.move.lang.core.types.ty.TyUnknown
 
 class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
@@ -143,11 +144,15 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             }
         }
 
-        override fun visitStructDotField(o: MvStructDotField) {
-            if (!o.resolvable) {
+        override fun visitDotExpr(dotExpr: MvDotExpr) {
+            val ty = dotExpr.expr.inferredTy()
+            if (ty is TyUnknown) return
+
+            val dotField = dotExpr.structDotField
+            if (!dotField.resolvable) {
                 holder.registerProblem(
-                    o.referenceNameElement,
-                    "Unresolved field: `${o.referenceName}`",
+                    dotField.referenceNameElement,
+                    "Unresolved field: `${dotField.referenceName}`",
                     ProblemHighlightType.LIKE_UNKNOWN_SYMBOL
                 )
             }

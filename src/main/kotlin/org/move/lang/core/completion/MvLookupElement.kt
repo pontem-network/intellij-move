@@ -2,12 +2,11 @@ package org.move.lang.core.completion
 
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementDecorator
-import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.ext.ty
-import org.move.lang.core.psi.returnTy
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.inferredTy
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.isCompatible
+import org.move.lang.core.types.infer.functionInferenceCtx
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -60,6 +59,7 @@ data class LookupElementProperties(
 
 fun lookupProperties(element: MvNamedElement, context: CompletionContext): LookupElementProperties {
     val ctx = InferenceContext(context.itemVis.isMsl)
+//    val ctx = element.functionInferenceCtx(context.itemVis.isMsl)
     var props = LookupElementProperties()
     if (context.expectedTy !is TyUnknown) {
         val ty = element.asTy(ctx)
@@ -70,12 +70,9 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
 
 private fun MvNamedElement.asTy(ctx: InferenceContext): Ty =
     when (this) {
-//        is RsConstant -> typeReference?.type
-//        is RsConstParameter -> typeReference?.type
 //        is RsFieldDecl -> typeReference?.type
         is MvFunction -> this.returnTy
 //        is RsStructItem -> declaredType
-//        is RsEnumVariant -> parentEnum.declaredType
-//        is MvBindingPat -> this.cachedTy(ctx)
+        is MvBindingPat -> this.inferredTy(ctx)
         else -> TyUnknown
     }

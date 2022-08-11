@@ -4,7 +4,7 @@ import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "222"
+val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "212"
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
 
 val baseProperties = "base-gradle.properties"
@@ -20,7 +20,7 @@ fun prop(key: String): String = props[key].toString()
 val kotlinVersion = "1.7.10"
 
 val pluginJarName = "intellij-move-$propsVersion"
-val pluginVersion = "1.15.0"
+val pluginVersion = "1.16.0"
 val pluginGroup = "org.move"
 
 group = pluginGroup
@@ -29,7 +29,7 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "1.7.10"
-    id("org.jetbrains.intellij") version "1.7.0"
+    id("org.jetbrains.intellij") version "1.8.0"
     id("org.jetbrains.grammarkit") version "2021.2.2"
 }
 
@@ -95,20 +95,6 @@ allprojects {
         purgeOldFiles.set(true)
     }
 
-//    val generateMoveTomlLexer = task<GenerateLexerTask>("generateMoveTomlLexer") {
-//        source.set("src/main/grammars/MoveTomlLexer.flex")
-//        targetDir.set("src/main/gen/org/moveToml/lang")
-//        targetClass.set("_MoveTomlLexer")
-//        purgeOldFiles.set(true)
-//    }
-//    val generateMoveTomlParser = task<GenerateParserTask>("generateMoveTomlParser") {
-//        source.set("src/main/grammars/MoveTomlParser.bnf")
-//        targetRoot.set("src/main/gen")
-//        pathToParser.set("/org/move/lang/MoveTomlParser.java")
-//        pathToPsiRoot.set("/org/move/lang/psi")
-//        purgeOldFiles.set(true)
-//    }
-
     tasks {
         // workaround for gradle not seeing tests in 2021.3+
         val test by getting(Test::class) {
@@ -146,7 +132,6 @@ allprojects {
 
         withType<KotlinCompile> {
             dependsOn(
-//                generateMoveTomlLexer, generateMoveTomlParser,
                 generateMoveLexer, generateMoveParser
             )
             kotlinOptions {

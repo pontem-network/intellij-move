@@ -12,7 +12,6 @@ import org.move.lang.core.completion.*
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.equalsTo
-import org.move.lang.core.psi.ext.folderScope
 import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslScope
@@ -47,7 +46,6 @@ object ModulesCompletionProvider : MvCompletionProvider() {
                 visibilities = Visibility.local(),
                 mslScope = refElement.mslScope,
                 itemScope = refElement.itemScope,
-                folderScope = refElement.folderScope,
             )
         val ctx = CompletionContext(refElement, itemVis)
         processItems(refElement, itemVis) {

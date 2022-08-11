@@ -4,6 +4,7 @@ import org.move.lang.core.psi.MvStruct
 import org.move.lang.core.psi.MvStructPat
 import org.move.lang.core.psi.MvStructPatField
 import org.move.lang.core.psi.typeParameters
+import org.move.lang.core.types.infer.instantiateItemTy
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
@@ -20,5 +21,5 @@ fun MvStructPat.ty(): Ty {
     val struct = this.path.reference?.resolve() as? MvStruct ?: return TyUnknown
     // TODO: if one or more type arguments
     if (struct.typeParameters.isNotEmpty()) return TyUnknown
-    return TyStruct(struct)
+    return instantiateItemTy(struct, this.isMsl())
 }

@@ -130,7 +130,6 @@ data class ImportContext private constructor(
                 visibilities = vs,
                 mslScope = contextElement.mslScope,
                 itemScope = contextElement.itemScope,
-                folderScope = contextElement.folderScope,
             )
             return ImportContext(contextElement, itemVis)
         }

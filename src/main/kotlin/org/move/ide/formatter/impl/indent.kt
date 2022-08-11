@@ -3,16 +3,17 @@ package org.move.ide.formatter.impl
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
 import org.move.ide.formatter.MvFormatterBlock
-import org.move.lang.MvElementTypes.ADDRESS_BLOCK
+import org.move.lang.MvElementTypes.*
 import org.move.lang.core.psi.*
+import org.move.lang.core.tokenSetOf
 
 fun MvFormatterBlock.computeIndent(child: ASTNode): Indent? {
-//    val parentType = node.elementType
-    val parentPsi = node.psi
-//    val childType = child.elementType
+    val nodePsi = node.psi
+    val elementType = node.elementType
     val childPsi = child.psi
     return when {
-        node.isDelimitedBlock -> getNormalIndentIfNotCurrentBlockDelimiter(child, node)
+        elementType == CODE_BLOCK_EXPR -> Indent.getNoneIndent()
+        elementType in DELIMITED_BLOCKS -> getNormalIndentIfNotCurrentBlockDelimiter(child, node)
         // do not indent statements
         childPsi.prevSibling == null -> Indent.getNoneIndent()
         //     let a =
@@ -24,12 +25,12 @@ fun MvFormatterBlock.computeIndent(child: ASTNode): Indent? {
 //        childPsi is MvExpr
 //                && (parentType == LET_EXPR || parentType == ASSIGNMENT_EXPR || parentType == CONST_DEF) -> Indent.getNormalIndent()
         childPsi is MvExpr
-                && parentPsi is MvInitializer -> Indent.getNormalIndent()
+                && nodePsi is MvInitializer -> Indent.getNormalIndent()
 //        if (true)
 //            create()
 //        else
 //            delete()
-        parentPsi is MvIfExpr || parentPsi is MvElseBlock -> when (childPsi) {
+        nodePsi is MvIfExpr || nodePsi is MvElseBlock -> when (childPsi) {
             is MvInlineBlock -> Indent.getNormalIndent()
             else -> Indent.getNoneIndent()
         }
@@ -37,7 +38,7 @@ fun MvFormatterBlock.computeIndent(child: ASTNode): Indent? {
 
         // binary expressions, chain calls
         // no indent on it's own, use parent indent
-        parentPsi is MvExpr -> Indent.getIndent(Indent.Type.NONE, true, true)
+        nodePsi is MvExpr -> Indent.getIndent(Indent.Type.NONE, true, true)
 
         else -> Indent.getNoneIndent()
     }

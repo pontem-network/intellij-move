@@ -13,6 +13,13 @@
     </description>
     <change-notes>
         <![CDATA[
+    <h3>1.16.0</h3>
+    <ul>
+    <li>types: multi-statement type inference for generics</li>
+    <li>types: multi-statement type inference for integers</li>
+    <li>tools: add Aptos side menu with the project information and "refresh projects" button</li>
+    <li>internal: drop support for 2021.1</li>
+    </ul>
     <h3>1.14.0</h3>
     <ul>
     <li>Fold more statements</li>
@@ -241,9 +248,12 @@
                 key="org.move.lang.core.psi.MvFunction"
                 implementationClass="org.move.ide.navigation.FunctionDeclarationRangeHandler"/>
 
-<!--        <toolWindow id="Aptos"-->
-<!--                    anchor="right"-->
-<!--                    factoryClass="org.move.cli.toolwindow.MoveToolWindowFactory" />-->
+        <breadcrumbsInfoProvider implementation="org.move.ide.MvBreadcrumbsProvider" />
+
+        <toolWindow id="Aptos"
+                    anchor="right"
+                    factoryClass="org.move.cli.toolwindow.AptosToolWindowFactory"
+                    icon="/icons/move.svg" />
 
 
 
@@ -366,6 +376,14 @@
             <className>org.move.ide.intentions.ChopAttrArgumentListIntention</className>
             <category>Move</category>
         </intentionAction>
+        <intentionAction>
+            <className>org.move.ide.intentions.ChopStructLiteralIntention</className>
+            <category>Move</category>
+        </intentionAction>
+        <intentionAction>
+            <className>org.move.ide.intentions.ChopStructPatIntention</className>
+            <category>Move</category>
+        </intentionAction>
 
     </extensions>
 
@@ -383,6 +401,8 @@
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
         </action>
         <action id="Move.RefreshAllProjects"
+                description="Update Move project information"
+                text="Update Move projects"
                 class="org.move.ide.actions.RefreshMoveProjectsAction"
                 icon="AllIcons.Actions.Refresh"/>
 

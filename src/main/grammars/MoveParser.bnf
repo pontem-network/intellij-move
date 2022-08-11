@@ -160,7 +160,7 @@ AttrItem ::= IDENTIFIER AttrItemArguments?
     mixin = "org.move.lang.core.psi.ext.MvAttrItemMixin"
 }
 AttrItemArguments ::= '(' <<comma_sep_items AttrItemArgument>> ')'
-AttrItemArgument ::= IDENTIFIER '=' LitExpr
+AttrItemArgument ::= IDENTIFIER ('=' LitExpr)?
 {
     implements = [
         "org.move.lang.core.resolve.MvReferenceElement"

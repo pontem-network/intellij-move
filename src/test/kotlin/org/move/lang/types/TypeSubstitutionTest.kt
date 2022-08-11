@@ -126,7 +126,7 @@ class TypeSubstitutionTest: TypificationTestCase() {
     }    
     """)
 
-    fun `test unknown type if cannot solve constraints for function`() = testExpr("""
+    fun `test infer return type from the known parameters`() = testExpr("""
     module 0x1::M {
         struct C {}
         struct D {}
@@ -134,18 +134,18 @@ class TypeSubstitutionTest: TypificationTestCase() {
         fun m() {
             let a = new(C{}, D{});
             a;
-          //^ <unknown>  
+          //^ 0x1::M::C  
         }
     }    
     """)
 
-    fun `test unknown type if cannot solve constraints for struct literal`() = testExpr("""
+    fun `test infer struct literal type from known field types`() = testExpr("""
     module 0x1::M {
         struct S<Num> { a: Num, b: Num }
         fun m() {
             let s = S { a: true, b: 1u64 };
             s;
-          //^ <unknown>  
+          //^ 0x1::M::S<bool>
         }
     }    
     """)
