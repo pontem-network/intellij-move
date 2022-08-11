@@ -13,11 +13,9 @@ class MoveProjectsStructureTest : MvProjectTestBase() {
      Project(MyNestedPackage)
       Entrypoints
       Modules
-      Tests
      Project(MyPackage)
       Entrypoints
       Modules
-      Tests
     """) {
         namedMoveToml("MyPackage")
         sources { main("/*caret*/") }

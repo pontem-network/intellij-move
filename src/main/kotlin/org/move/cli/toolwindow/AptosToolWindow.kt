@@ -10,10 +10,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.ToolWindow
-import com.intellij.openapi.wm.ToolWindowEP
 import com.intellij.openapi.wm.ToolWindowFactory
-import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.openapi.wm.ex.ToolWindowManagerEx
 import com.intellij.ui.ScrollPaneFactory
 import com.intellij.ui.content.ContentFactory
 import org.move.cli.MoveProject
@@ -23,14 +20,14 @@ import org.move.cli.hasMoveProject
 import org.move.cli.moveProjects
 import javax.swing.JComponent
 
-class MoveToolWindowFactory : ToolWindowFactory, DumbAware {
+class AptosToolWindowFactory : ToolWindowFactory, DumbAware {
     private val lock: Any = Any()
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
 //        guessAndSetupRustProject(project)
         project.moveProjects.refreshAllProjects()
 
-        val toolwindowPanel = MoveToolWindowPanel(project)
+        val toolwindowPanel = AptosToolWindowPanel(project)
         val tab = ContentFactory.SERVICE.getInstance()
             .createContent(toolwindowPanel, "", false)
         toolWindow.contentManager.addContent(tab)
@@ -54,8 +51,8 @@ class MoveToolWindowFactory : ToolWindowFactory, DumbAware {
 //    }
 }
 
-private class MoveToolWindowPanel(project: Project) : SimpleToolWindowPanel(true, false) {
-    private val aptosTab = MoveToolWindow(project)
+private class AptosToolWindowPanel(project: Project) : SimpleToolWindowPanel(true, false) {
+    private val aptosTab = AptosToolWindow(project)
 
     init {
         toolbar = aptosTab.toolbar.component
@@ -65,13 +62,13 @@ private class MoveToolWindowPanel(project: Project) : SimpleToolWindowPanel(true
 
     override fun getData(dataId: String): Any? =
         when {
-            MoveToolWindow.SELECTED_MOVE_PROJECT.`is`(dataId) -> aptosTab.selectedProject
+            AptosToolWindow.SELECTED_MOVE_PROJECT.`is`(dataId) -> aptosTab.selectedProject
             PlatformDataKeys.TREE_EXPANDER.`is`(dataId) -> aptosTab.treeExpander
             else -> super.getData(dataId)
         }
 }
 
-class MoveToolWindow(private val project: Project) {
+class AptosToolWindow(private val project: Project) {
 
     val toolbar: ActionToolbar = run {
         val actionManager = ActionManager.getInstance()
@@ -108,7 +105,7 @@ class MoveToolWindow(private val project: Project) {
     }
 
     companion object {
-        private val LOG: Logger = logger<MoveToolWindow>()
+        private val LOG: Logger = logger<AptosToolWindow>()
 
         @JvmStatic
         val SELECTED_MOVE_PROJECT: DataKey<MoveProject> = DataKey.create("SELECTED_MOVE_PROJECT")

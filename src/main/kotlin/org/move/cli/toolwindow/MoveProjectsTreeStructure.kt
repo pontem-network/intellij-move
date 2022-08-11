@@ -69,9 +69,9 @@ class MoveProjectsTreeStructure(
                     }
                 }
                 return arrayOf(
-                    Modules(emptyList(), this),
+                    Modules(modules, this),
                     Entrypoints(scriptFunctions, this),
-                    Tests(emptyList(), this)
+//                    Tests(emptyList(), this)
                 )
             }
 
@@ -88,6 +88,10 @@ class MoveProjectsTreeStructure(
         }
 
         class Module(val module: MvModule, parent: SimpleNode) : MoveSimpleNode(parent) {
+            init {
+                icon = MoveIcons.MODULE
+            }
+
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
             override fun getName(): String = module.fqName
             override fun toTestString(): String = "Module($name)"
@@ -103,6 +107,10 @@ class MoveProjectsTreeStructure(
         }
 
         class Entrypoint(val function: MvFunction, parent: SimpleNode) : MoveSimpleNode(parent) {
+            init {
+                icon = MoveIcons.FUNCTION
+            }
+
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
             override fun getName(): String = function.fqName
             override fun toTestString(): String = "Entrypoint($name)"

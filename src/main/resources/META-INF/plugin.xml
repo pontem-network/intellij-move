@@ -243,9 +243,10 @@
 
         <breadcrumbsInfoProvider implementation="org.move.ide.MvBreadcrumbsProvider" />
 
-<!--        <toolWindow id="Aptos"-->
-<!--                    anchor="right"-->
-<!--                    factoryClass="org.move.cli.toolwindow.MoveToolWindowFactory" />-->
+        <toolWindow id="Aptos"
+                    anchor="right"
+                    factoryClass="org.move.cli.toolwindow.AptosToolWindowFactory"
+                    icon="/icons/move.svg" />
 
 
 
@@ -393,6 +394,8 @@
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
         </action>
         <action id="Move.RefreshAllProjects"
+                description="Update Move project information"
+                text="Update Move projects"
                 class="org.move.ide.actions.RefreshMoveProjectsAction"
                 icon="AllIcons.Actions.Refresh"/>
 
