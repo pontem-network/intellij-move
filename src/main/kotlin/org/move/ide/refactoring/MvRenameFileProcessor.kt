@@ -46,6 +46,10 @@ class MvRenameFileProcessor : RenamePsiFileProcessor() {
         }
     }
 
+    override fun canProcessElement(element: PsiElement): Boolean {
+        return super.canProcessElement(element) && element.language == MoveLanguage
+    }
+
     override fun renameElement(
         element: PsiElement,
         newName: String,
