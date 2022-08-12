@@ -10,7 +10,6 @@ import org.move.ide.presentation.shortPresentableText
 import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.infer.inferTypeTy
 import org.move.lang.core.types.infer.functionInferenceCtx
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.moveProject
@@ -44,6 +43,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
                 val named = moveProject.getNamedAddress(refName) ?: return null
                 return "$refName = \"${named.value}\""
             }
+
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
@@ -55,6 +55,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
                 buffer += ": "
                 buffer += type
             }
+
             is MvTypeParameter -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
                 buffer += presentationInfo.type
@@ -109,6 +110,7 @@ fun MvElement.signature(builder: StringBuilder) {
             buffer += "module "
             buffer += this.fqName
         }
+
         is MvStruct -> {
             buffer += this.containingModule!!.fqName
             buffer += "\n"
@@ -119,6 +121,7 @@ fun MvElement.signature(builder: StringBuilder) {
             this.abilitiesList?.abilityList
                 ?.joinToWithBuffer(buffer, ", ", " has ") { generateDocumentation(it) }
         }
+
         is MvStructField -> {
             buffer += this.containingModule!!.fqName
             buffer += "::"
@@ -127,6 +130,7 @@ fun MvElement.signature(builder: StringBuilder) {
             buffer.b { it += this.name }
             buffer += ": ${this.declaredTy(false).renderForDocs(true)}"
         }
+
         is MvConst -> {
             buffer += this.containingModule!!.fqName
             buffer += "\n"
@@ -135,6 +139,7 @@ fun MvElement.signature(builder: StringBuilder) {
             buffer += ": ${this.declaredTy(false).renderForDocs(false)}"
             this.initializer?.let { buffer += " ${it.text}" }
         }
+
         else -> return
     } ?: return
     listOf(buffer.toString()).joinTo(builder, "<br>")
@@ -148,18 +153,22 @@ private fun PsiElement.generateDocumentation(
     buffer += prefix
     when (this) {
         is MvType -> {
-            buffer += inferTypeTy(this, this.isMsl()).typeLabel(this)
+            buffer += this.ty().typeLabel(this)
         }
+
         is MvFunctionParameterList ->
             this.functionParameterList
                 .joinToWithBuffer(buffer, ", ", "(", ")") { generateDocumentation(it) }
+
         is MvFunctionParameter -> {
             buffer += this.bindingPat.identifier.text
             this.typeAnnotation?.type?.generateDocumentation(buffer, ": ")
         }
+
         is MvTypeParameterList ->
             this.typeParameterList
                 .joinToWithBuffer(buffer, ", ", "&lt;", "&gt;") { generateDocumentation(it) }
+
         is MvTypeParameter -> {
             if (this.isPhantom) {
                 buffer += "phantom"
@@ -171,9 +180,11 @@ private fun PsiElement.generateDocumentation(
                 abilities.joinToWithBuffer(buffer, " + ", ": ") { generateDocumentation(it) }
             }
         }
+
         is MvAbility -> {
             buffer += this.text
         }
+
         is MvReturnType -> this.type?.generateDocumentation(buffer, ": ")
     }
     buffer += suffix

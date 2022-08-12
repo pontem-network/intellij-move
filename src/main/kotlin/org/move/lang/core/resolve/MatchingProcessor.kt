@@ -11,9 +11,9 @@ fun interface MatchingProcessor<T: MvNamedElement> {
     fun match(entry: SimpleScopeEntry<T>): Boolean
 
     fun match(itemVis: ItemVis, element: T): Boolean {
-        if (!element.isVisibleInScopes(itemVis)) return false
+        if (!element.isVisibleInScope(itemVis.itemScope)) return false
         val name = element.name ?: return false
-        val entry = SimpleScopeEntry<T>(name, element)
+        val entry = SimpleScopeEntry(name, element)
         return match(entry)
     }
 

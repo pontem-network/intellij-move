@@ -58,7 +58,7 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val pathTypes = o.pathTypeList
                 for ((i, pathType) in pathTypes.withIndex()) {
                     // check that this acquires is allowed in the context
-                    val ty = pathType.ty(codeBlock.isMsl())
+                    val ty = pathType.ty()
                     if (!ty.acquireableIn(module)) {
                         unusedAcquiresIndices.add(i)
                         continue

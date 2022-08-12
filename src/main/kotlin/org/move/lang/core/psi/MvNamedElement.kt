@@ -1,29 +1,26 @@
 package org.move.lang.core.psi
 
-import com.intellij.psi.NavigatablePsiElement
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiNamedElement
-import com.intellij.psi.PsiReference
-import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.*
 import com.intellij.psi.search.PsiSearchHelper
 import com.intellij.psi.search.searches.ReferencesSearch
+import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.refactoring.listeners.RefactoringElementListener
 import com.intellij.refactoring.rename.RenameUtil
 import com.intellij.util.Query
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
-import org.move.lang.MvElementTypes
+import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.completion.BUILTIN_ITEM_PRIORITY
 import org.move.lang.core.completion.LOCAL_ITEM_PRIORITY
 import org.move.lang.core.psi.ext.address
 import org.move.lang.core.psi.ext.findLastChildByType
-import org.move.lang.moveProject
 
 interface MvNamedElement : MvElement,
                            PsiNamedElement,
                            NavigatablePsiElement {
     val nameElement: PsiElement?
-        get() = findLastChildByType(MvElementTypes.IDENTIFIER)
+        get() {
+            return getProjectPsiDependentCache(this) { it.findLastChildByType(IDENTIFIER) }
+        }
 
     val fqName: String
 }
@@ -48,6 +45,7 @@ val MvQualifiedNamedElement.fqPath: FqPath?
                 val moduleName = this.name ?: return null
                 FqPath(address, moduleName, null)
             }
+
             else -> {
                 val module = this.containingModule ?: return null
                 val address = module.address()?.text ?: return null

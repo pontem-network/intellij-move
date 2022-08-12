@@ -24,12 +24,12 @@ enum class ItemScope {
     MAIN, TEST;
 }
 
-fun MvElement.visibleInScope(itemScope: ItemScope): Boolean {
+fun MvElement.isVisibleInScope(itemScope: ItemScope): Boolean {
     return itemScope == ItemScope.TEST
             || this.itemScope == ItemScope.MAIN
 }
 
-fun MvElement.isVisibleInScopes(itemVis: ItemVis): Boolean = this.visibleInScope(itemVis.itemScope)
+//fun MvElement.isVisibleInScopes(itemVis: ItemVis): Boolean = this.visibleInScope(itemVis.itemScope)
 
 val MvElement.mslScope: MslScope
     get() {
@@ -126,7 +126,6 @@ fun processFileItems(
                         functions, specFunctions, consts
                     )
                 }
-
                 Namespace.TYPE -> processor.matchAll(itemVis, module.structs())
                 Namespace.SCHEMA -> processor.matchAll(itemVis, module.schemas())
                 else -> continue

@@ -1,34 +1,18 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.openapi.util.Key
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
-import com.intellij.psi.util.*
+import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
+import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.MoveProject
 import org.move.cli.moveProjects
 import org.move.lang.MoveFile
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvAssignmentExpr
+import org.move.lang.core.psi.MvElement
+import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvInitializer
 import org.move.lang.core.resolve.ItemScope
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
-
-private val IS_MSL_KEY: Key<CachedValue<Boolean>> = Key.create("IS_MSL_KEY")
-
-fun PsiElement.isMsl(): Boolean {
-    if (this !is MvElement) return false
-    return CachedValuesManager.getCachedValue(this, IS_MSL_KEY) {
-        val specElement = PsiTreeUtil.findFirstParent(this, false) {
-            it is MvSpecFunction
-                    || it is MvSpecBlockExpr
-                    || it is MvSchema
-                    || it is MvAnySpec
-        }
-        CachedValueProvider.Result(specElement != null, PsiModificationTracker.MODIFICATION_COUNT)
-    }
-}
-
-fun PsiElement.cameBefore(element: PsiElement) =
-    PsiUtilCore.compareElementsByPosition(this, element) <= 0
 
 fun MvElement.isInsideAssignmentLeft(): Boolean {
     val parent = PsiTreeUtil.findFirstParent(this, false) {
@@ -45,13 +29,17 @@ fun PsiFileSystemItem.findMoveProject(): MoveProject? {
 
 val MvElement.itemScope: ItemScope
     get() {
-        val testOnly = ancestors
-            .filterIsInstance<MvDocAndAttributeOwner>()
-            .any { it.isTestOnly }
-        if (testOnly) return ItemScope.TEST
+        return getProjectPsiDependentCache(this) {
+            run {
+                val testOnly = it.ancestors
+                    .filterIsInstance<MvDocAndAttributeOwner>()
+                    .any { el -> el.isTestOnly }
+                if (testOnly) return@run ItemScope.TEST
 
-        val insideTestFunction = ancestorOrSelf<MvFunction>()?.isTest ?: false
-        if (insideTestFunction) return ItemScope.TEST
+                val insideTestFunction = it.ancestorOrSelf<MvFunction>()?.isTest ?: false
+                if (insideTestFunction) return@run ItemScope.TEST
 
-        return ItemScope.MAIN
+                return@run ItemScope.MAIN
+            }
+        }
     }
