@@ -13,6 +13,14 @@
     </description>
     <change-notes>
         <![CDATA[
+    <h3>1.17.0</h3>
+    <ul>
+    <li>resolve: use named address values for module resolution</li>
+    <li>insp: add warning to check for inconsistent address names usage</li>
+    <li>ref: check for valid module name in single-module file rename</li>
+    <li>ref: fix file name refactoring for non-move files</li>
+    <li>proj: generate test run configuration correctly for packages in aptos-core/ repo</li>
+    </ul>
     <h3>1.16.0</h3>
     <ul>
     <li>types: multi-statement type inference for generics</li>
