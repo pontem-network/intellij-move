@@ -30,10 +30,8 @@ data class MoveProject(
     val contentRoot: VirtualFile get() = this.currentPackage.contentRoot
     val contentRootPath: Path? get() = this.currentPackage.contentRoot.toNioPathOrNull()
 
-    fun movePackages(): Sequence<MovePackage> {
-        return currentPackage.wrapWithList()
-            .chain(dependencies.map { it.first }.reversed())
-    }
+    fun movePackages(): Sequence<MovePackage> = currentPackage.wrapWithList().chain(depPackages())
+    fun depPackages(): List<MovePackage> = dependencies.map { it.first }.reversed()
 
     fun sourceFolders(): List<VirtualFile> {
         val folders = mutableListOf<VirtualFile>()
@@ -100,6 +98,12 @@ data class MoveProject(
                 continueForward
             }
         }
+    }
+
+    override fun toString(): String {
+        return "MoveProject(" +
+                "root=${this.contentRoot.path}, " +
+                "deps=${this.depPackages().map { it.contentRoot.path }})"
     }
 
     companion object {
