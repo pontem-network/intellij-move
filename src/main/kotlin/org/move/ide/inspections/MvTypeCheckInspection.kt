@@ -48,16 +48,16 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 }
             }
 
-            override fun visitCondition(cond: MvCondition) {
-                val expr = cond.expr ?: return
-                val exprTy = expr.inferredTy()
-                if (!isCompatible(exprTy, TyBool)) {
-                    holder.registerTypeError(
-                        expr,
-                        "Incompatible type '${exprTy.name()}', expected 'bool'"
-                    )
-                }
-            }
+//            override fun visitCondition(cond: MvCondition) {
+//                val expr = cond.expr ?: return
+//                val exprTy = expr.inferredTy()
+//                if (!isCompatible(exprTy, TyBool)) {
+//                    holder.registerTypeError(
+//                        expr,
+//                        "Incompatible type '${exprTy.name()}', expected 'bool'"
+//                    )
+//                }
+//            }
 
             override fun visitCodeBlock(codeBlock: MvCodeBlock) {
                 val fn = codeBlock.parent as? MvFunction ?: return
@@ -75,7 +75,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                     )
                 }
 
-                val inference = fn.inferenceCtx(codeBlock.isMsl())
+                val inference = fn.inferenceCtx(fn.isMsl())
                 inference.typeErrors
                     .forEach { holder.registerTypeError(it) }
             }

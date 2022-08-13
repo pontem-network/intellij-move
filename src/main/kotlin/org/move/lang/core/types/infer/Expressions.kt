@@ -46,6 +46,10 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         is MvOrExpr -> TyBool
 
         is MvIfExpr -> inferIfExprTy(expr, parentCtx)
+        is MvWhileExpr -> inferWhileExprTy(expr, parentCtx)
+        is MvReturnExpr -> {
+            expr.expr?.let { inferExprTy(it, parentCtx, expectedTy) } ?: TyUnknown
+        }
 
         else -> TyUnknown
     }
@@ -110,11 +114,10 @@ fun inferCallExprTy(
                     )
                     false
                 }
+
                 else -> true
             }
             inferenceCtx.addConstraint(typeVar, if (isCompat) typeArgTy else TyUnknown)
-
-//            inferenceCtx.addConstraint(typeVar, passedTy)
         }
     }
     // find all types of passed expressions, create constraints with those
@@ -187,6 +190,7 @@ fun inferStructLitExpr(
                     )
                     false
                 }
+
                 else -> true
             }
             inferenceCtx.addConstraint(typeVar, if (isCompat) typeArgTy else TyUnknown)
@@ -281,7 +285,27 @@ private fun inferLitExprTy(litExpr: MvLitExpr, ctx: InferenceContext): Ty {
 }
 
 private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext): Ty {
+    val conditionExpr = ifExpr.condition?.expr
+    if (conditionExpr != null) {
+        // TODO: into inferExprTy(conditionExpr, ctx, TyBool) and Compat
+        val exprTy = inferExprTy(conditionExpr, ctx)
+        if (!isCompatible(TyBool, exprTy)) {
+            ctx.typeErrors.add(TypeError.TypeMismatch(conditionExpr, TyBool, exprTy))
+        }
+    }
     val ifTy = ifExpr.returningExpr?.let { inferExprTy(it, ctx) } ?: return TyUnknown
     val elseTy = ifExpr.elseExpr?.let { inferExprTy(it, ctx) } ?: return TyUnknown
     return combineTys(ifTy, elseTy)
+}
+
+private fun inferWhileExprTy(whileExpr: MvWhileExpr, ctx: InferenceContext): Ty {
+    val conditionExpr = whileExpr.condition?.expr
+    if (conditionExpr != null) {
+        // TODO: into inferExprTy(conditionExpr, ctx, TyBool) and Compat
+        val exprTy = inferExprTy(conditionExpr, ctx)
+        if (!isCompatible(TyBool, exprTy)) {
+            ctx.typeErrors.add(TypeError.TypeMismatch(conditionExpr, TyBool, exprTy))
+        }
+    }
+    return TyUnit
 }

@@ -6,6 +6,7 @@ import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import com.jetbrains.rd.util.concurrentMapOf
+import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -220,7 +221,7 @@ sealed class TypeError(open val element: MvElement) {
         val actualTy: Ty
     ) : TypeError(element) {
         override fun message(): String {
-            TODO("Not yet implemented")
+            return "Incompatible type '${actualTy.name()}', expected '${expectedTy.name()}'"
         }
     }
 

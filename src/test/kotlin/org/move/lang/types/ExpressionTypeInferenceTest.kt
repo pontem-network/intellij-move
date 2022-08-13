@@ -173,12 +173,23 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
     }    
     """)
 
-    fun `test integer type inference with return type`() = testExpr("""
+    fun `test integer type inference with tail expr type`() = testExpr("""
     module 0x1::M {
         fun get_u8(): u8 {
             let a = 1;
             a
           //^ u8  
+        }
+    }    
+    """)
+
+    fun `test integer type inference with return expr type`() = testExpr("""
+    module 0x1::M {
+        fun get_u8(): u8 {
+            let a = 1;
+            a;
+          //^ u8  
+            return a
         }
     }    
     """)
