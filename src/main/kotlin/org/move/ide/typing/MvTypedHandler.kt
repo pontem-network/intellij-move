@@ -9,6 +9,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.elementType
 import org.move.lang.MoveFile
+import org.move.lang.MvElementTypes.AT
 import org.move.lang.MvElementTypes.COLON_COLON
 
 class MvTypedHandler : TypedHandlerDelegate() {
@@ -17,6 +18,13 @@ class MvTypedHandler : TypedHandlerDelegate() {
 
         val offset = editor.caretModel.offset
 
+        if (charTyped == '@') {
+            AutoPopupController.getInstance(project).scheduleAutoPopup(editor, CompletionType.BASIC) { f ->
+                val leaf = f.findElementAt(offset)
+                leaf.elementType == AT
+            }
+            return Result.STOP
+        }
         // `:` is typed right after `:`
         if (
             charTyped == ':'
