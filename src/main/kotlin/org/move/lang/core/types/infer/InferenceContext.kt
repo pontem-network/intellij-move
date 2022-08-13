@@ -1,6 +1,7 @@
 package org.move.lang.core.types.infer
 
 import com.intellij.openapi.util.Key
+import com.intellij.psi.PsiElement
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
@@ -26,13 +27,11 @@ fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
             fctx.bindingTypes[param] = param.inferredTy(fctx)
         }
         when (this) {
-            is MvFunction -> {
-                for (stmt in this.codeBlock?.stmtList.orEmpty()) {
+            is MvFunction -> run {
+                val block = this.codeBlock ?: return@run
+                for (stmt in block.stmtList) {
                     when (stmt) {
-                        is MvExprStmt -> {
-                            inferExprTy(stmt.expr, fctx)
-                        }
-
+                        is MvExprStmt -> inferExprTy(stmt.expr, fctx)
                         is MvLetStmt -> {
                             val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, fctx) }
                             val patTy = stmt.declaredTy ?: initializerTy ?: TyUnknown
@@ -43,8 +42,19 @@ fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
                     fctx.processConstraints()
                     fctx.resolveTyVarsFromContext(fctx)
                 }
-                val tailExpr = this.codeBlock?.expr
-                if (tailExpr != null) {
+                val tailExpr = block.expr
+                if (tailExpr == null) {
+                    val returnTy = this.returnTy
+                    if (returnTy !is TyUnit) {
+                        fctx.typeErrors.add(
+                            TypeError.TypeMismatch(
+                                block.rightBrace ?: block,
+                                returnTy,
+                                TyUnit
+                            )
+                        )
+                    }
+                } else {
                     inferExprTy(tailExpr, fctx, expectedTy = this.returnTy)
                     fctx.processConstraints()
                     fctx.resolveTyVarsFromContext(fctx)
@@ -113,9 +123,6 @@ fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
     }
 }
 
-fun isCompatibleMutability(from: Mutability, to: Mutability): Boolean =
-    from == to || from.isMut && !to.isMut
-
 fun isCompatibleReferences(expectedTy: TyReference, inferredTy: TyReference): Boolean {
     return isCompatible(expectedTy.referenced, inferredTy.referenced)
 }
@@ -143,12 +150,8 @@ fun combineTys(ty1: Ty, ty2: Ty): Ty {
     return when {
         ty1 is TyReference && ty2 is TyReference
                 && isCompatible(ty1.referenced, ty2.referenced) -> {
-            val combinedMutability = if (ty1.mutability.isMut && ty2.mutability.isMut) {
-                Mutability.MUTABLE
-            } else {
-                Mutability.IMMUTABLE
-            }
-            TyReference(ty1.referenced, combinedMutability, ty1.msl || ty2.msl)
+            val combined = ty1.permissions.intersect(ty2.permissions)
+            TyReference(ty1.referenced, combined, ty1.msl || ty2.msl)
         }
 
         else -> ty1
@@ -187,7 +190,8 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
                 && isCompatible(expectedTy.item, inferredTy.item) -> true
 
         expectedTy is TyReference && inferredTy is TyReference
-                && isCompatibleMutability(inferredTy.mutability, expectedTy.mutability) ->
+                // inferredTy permissions should be a superset of expectedTy permissions
+                && (expectedTy.permissions - inferredTy.permissions).isEmpty() ->
             isCompatibleReferences(expectedTy, inferredTy)
 
         expectedTy is TyStruct && inferredTy is TyStruct -> isCompatibleStructs(expectedTy, inferredTy)
@@ -197,8 +201,8 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
 }
 
 sealed class Compat {
-    object Yes: Compat()
-    data class AbilitiesMismatch(val abilities: Set<Ability>): Compat()
+    object Yes : Compat()
+    data class AbilitiesMismatch(val abilities: Set<Ability>) : Compat()
 }
 
 fun isCompatibleAbilities(expectedTy: Ty, actualTy: Ty, msl: Boolean): Compat {
@@ -212,24 +216,27 @@ fun isCompatibleAbilities(expectedTy: Ty, actualTy: Ty, msl: Boolean): Compat {
     }
 }
 
-sealed class TypeError(open val element: MvElement) {
+sealed class TypeError(open val element: PsiElement) {
     abstract fun message(): String
 
     data class TypeMismatch(
-        override val element: MvElement,
+        override val element: PsiElement,
         val expectedTy: Ty,
         val actualTy: Ty
     ) : TypeError(element) {
         override fun message(): String {
-            return "Incompatible type '${actualTy.name()}', expected '${expectedTy.name()}'"
+            return when (element) {
+                is MvReturnExpr -> "Invalid return type '${actualTy.name()}', expected '${expectedTy.name()}'"
+                else -> "Incompatible type '${actualTy.name()}', expected '${expectedTy.name()}'"
+            }
         }
     }
 
     data class AbilitiesMismatch(
-        override val element: MvElement,
+        override val element: PsiElement,
         val ty: Ty,
         val abilities: Set<Ability>
-    ): TypeError(element) {
+    ) : TypeError(element) {
         override fun message(): String {
             return "The type '${ty.text()}' " +
                     "does not have required ability '${abilities.map { it.label() }.first()}'"
@@ -238,7 +245,7 @@ sealed class TypeError(open val element: MvElement) {
     }
 
     data class UnsupportedBinaryOp(
-        override val element: MvElement,
+        override val element: PsiElement,
         val ty: Ty,
         val op: String
     ) : TypeError(element) {

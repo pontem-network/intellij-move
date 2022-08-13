@@ -48,7 +48,8 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         is MvIfExpr -> inferIfExprTy(expr, parentCtx)
         is MvWhileExpr -> inferWhileExprTy(expr, parentCtx)
         is MvReturnExpr -> {
-            expr.expr?.let { inferExprTy(it, parentCtx, expectedTy) } ?: TyUnknown
+            val fnReturnTy = expr.containingFunction?.returnTy
+            expr.expr?.let { inferExprTy(it, parentCtx, fnReturnTy) } ?: TyUnknown
         }
 
         else -> TyUnknown
@@ -59,8 +60,12 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
     if (exprTy is TyInteger && expr.isMsl()) {
         exprTy = TyNum
     }
-    if (expectedTy != null && isCompatible(expectedTy, exprTy)) {
-        parentCtx.addConstraint(exprTy, expectedTy)
+    if (expectedTy != null) {
+        if (!isCompatible(expectedTy, exprTy)) {
+            parentCtx.typeErrors.add(TypeError.TypeMismatch(expr, expectedTy, exprTy))
+        } else {
+            parentCtx.addConstraint(exprTy, expectedTy)
+        }
     }
 
     parentCtx.cacheExprTy(expr, exprTy)
@@ -76,8 +81,8 @@ private fun inferRefExprTy(refExpr: MvRefExpr, ctx: InferenceContext): Ty {
 private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): Ty {
     val innerExpr = borrowExpr.expr ?: return TyUnknown
     val innerExprTy = inferExprTy(innerExpr, ctx)
-    val mutability = Mutability.valueOf(borrowExpr.isMut)
-    return TyReference(innerExprTy, mutability, ctx.msl)
+    val mutabilities = RefPermissions.valueOf(borrowExpr.isMut)
+    return TyReference(innerExprTy, mutabilities, ctx.msl)
 }
 
 fun inferCallExprTy(
@@ -287,25 +292,17 @@ private fun inferLitExprTy(litExpr: MvLitExpr, ctx: InferenceContext): Ty {
 private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext): Ty {
     val conditionExpr = ifExpr.condition?.expr
     if (conditionExpr != null) {
-        // TODO: into inferExprTy(conditionExpr, ctx, TyBool) and Compat
-        val exprTy = inferExprTy(conditionExpr, ctx)
-        if (!isCompatible(TyBool, exprTy)) {
-            ctx.typeErrors.add(TypeError.TypeMismatch(conditionExpr, TyBool, exprTy))
-        }
+        inferExprTy(conditionExpr, ctx, TyBool)
     }
-    val ifTy = ifExpr.returningExpr?.let { inferExprTy(it, ctx) } ?: return TyUnknown
-    val elseTy = ifExpr.elseExpr?.let { inferExprTy(it, ctx) } ?: return TyUnknown
-    return combineTys(ifTy, elseTy)
+    val ifExprTy = ifExpr.returningExpr?.let { inferExprTy(it, ctx) } ?: return TyUnknown
+    val elseExprTy = ifExpr.elseExpr?.let { inferExprTy(it, ctx) } ?: return TyUnknown
+    return combineTys(ifExprTy, elseExprTy)
 }
 
 private fun inferWhileExprTy(whileExpr: MvWhileExpr, ctx: InferenceContext): Ty {
     val conditionExpr = whileExpr.condition?.expr
     if (conditionExpr != null) {
-        // TODO: into inferExprTy(conditionExpr, ctx, TyBool) and Compat
-        val exprTy = inferExprTy(conditionExpr, ctx)
-        if (!isCompatible(TyBool, exprTy)) {
-            ctx.typeErrors.add(TypeError.TypeMismatch(conditionExpr, TyBool, exprTy))
-        }
+        inferExprTy(conditionExpr, ctx, TyBool)
     }
     return TyUnit
 }

@@ -48,49 +48,11 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 }
             }
 
-//            override fun visitCondition(cond: MvCondition) {
-//                val expr = cond.expr ?: return
-//                val exprTy = expr.inferredTy()
-//                if (!isCompatible(exprTy, TyBool)) {
-//                    holder.registerTypeError(
-//                        expr,
-//                        "Incompatible type '${exprTy.name()}', expected 'bool'"
-//                    )
-//                }
-//            }
-
             override fun visitCodeBlock(codeBlock: MvCodeBlock) {
                 val fn = codeBlock.parent as? MvFunction ?: return
-                val returningExpr = codeBlock.returningExpr
-
-                val expectedReturnTy = fn.returnTy
-                val actualReturnTy = returningExpr?.inferredTy() ?: TyUnit
-                if (!isCompatible(expectedReturnTy, actualReturnTy)) {
-                    val annotatedElement = returningExpr as? PsiElement
-                        ?: codeBlock.rightBrace
-                        ?: codeBlock
-                    holder.registerTypeError(
-                        annotatedElement,
-                        invalidReturnTypeMessage(expectedReturnTy, actualReturnTy)
-                    )
-                }
-
                 val inference = fn.inferenceCtx(fn.isMsl())
                 inference.typeErrors
                     .forEach { holder.registerTypeError(it) }
-            }
-
-            override fun visitReturnExpr(returnExpr: MvReturnExpr) {
-                val outerFn = returnExpr.containingFunction ?: return
-
-                val expectedReturnTy = outerFn.returnTy
-                val actualReturnTy = returnExpr.expr?.inferredTy() ?: return
-                if (!isCompatible(expectedReturnTy, actualReturnTy)) {
-                    holder.registerTypeError(
-                        returnExpr,
-                        invalidReturnTypeMessage(expectedReturnTy, actualReturnTy)
-                    )
-                }
             }
 
             override fun visitStructLitExpr(litExpr: MvStructLitExpr) {

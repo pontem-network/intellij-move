@@ -100,7 +100,7 @@ private fun render(
         }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
         is TyVector -> "vector<${render(ty.item, level, unknown, anonymous, integer, fq)}>"
-        is TyReference -> "${if (ty.mutability.isMut) "&mut " else "&"}${
+        is TyReference -> "${if (ty.permissions.contains(RefPermissions.WRITE)) "&mut " else "&"}${
             render(ty.referenced, level, unknown, anonymous, integer, fq)
         }"
 //        is TyTraitObject -> ty.trait.name ?: anonymous

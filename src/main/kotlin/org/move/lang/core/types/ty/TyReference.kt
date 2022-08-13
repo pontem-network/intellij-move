@@ -10,26 +10,26 @@ import org.move.ide.presentation.tyToString
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
 
-enum class Mutability {
-    MUTABLE,
-    IMMUTABLE;
+enum class RefPermissions {
+    READ,
+    WRITE;
 
-    val isMut: Boolean get() = this == MUTABLE
+    val isMut: Boolean get() = this == READ
 
     companion object {
-        fun valueOf(mutable: Boolean): Mutability =
-            if (mutable) MUTABLE else IMMUTABLE
+        fun valueOf(mutable: Boolean): Set<RefPermissions> =
+            if (mutable) setOf(READ, WRITE) else setOf(READ)
     }
 }
 
-data class TyReference(val referenced: Ty, val mutability: Mutability, val msl: Boolean) : Ty {
+data class TyReference(val referenced: Ty, val permissions: Set<RefPermissions>, val msl: Boolean) : Ty {
     override fun abilities() = setOf(Ability.COPY, Ability.DROP)
 
     fun innerTy(): Ty {
-        if (referenced is TyReference) {
-            return referenced.innerTy()
+        return if (referenced is TyReference) {
+            referenced.innerTy()
         } else {
-            return referenced
+            referenced
         }
     }
 
@@ -42,7 +42,7 @@ data class TyReference(val referenced: Ty, val mutability: Mutability, val msl: 
     }
 
     override fun innerFoldWith(folder: TypeFolder): Ty =
-        TyReference(referenced.foldWith(folder), mutability, msl)
+        TyReference(referenced.foldWith(folder), permissions, msl)
 
     override fun innerVisitWith(visitor: TypeVisitor): Boolean =
         referenced.visitWith(visitor)

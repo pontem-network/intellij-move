@@ -3,7 +3,6 @@ package org.move.lang.core.types.infer
 import org.move.ide.annotator.INTEGER_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_INTEGER_TYPE_IDENTIFIERS
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.mutable
 import org.move.lang.core.psi.ext.typeArguments
 import org.move.lang.core.types.ty.*
@@ -43,10 +42,10 @@ fun inferTypeTy(moveType: MvType, msl: Boolean): Ty {
             }
         }
         is MvRefType -> {
-            val mutability = Mutability.valueOf(moveType.mutable)
-            val innerTypeRef = moveType.type ?: return TyReference(TyUnknown, mutability, msl)
+            val mutabilities = RefPermissions.valueOf(moveType.mutable)
+            val innerTypeRef = moveType.type ?: return TyReference(TyUnknown, mutabilities, msl)
             val innerTy = inferTypeTy(innerTypeRef, msl)
-            TyReference(innerTy, mutability, msl)
+            TyReference(innerTy, mutabilities, msl)
         }
         is MvTupleType -> {
             val innerTypes = moveType.typeList.map { inferTypeTy(it, msl) }

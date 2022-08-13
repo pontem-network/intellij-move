@@ -182,7 +182,7 @@ module 0x1::M {
     fun `test no return type but returns u8`() = checkErrors("""
     module 0x1::M {
         fun call() {
-            <error descr="Invalid return type: expected '()', found 'integer'">return 1</error>;
+            return <error descr="Incompatible type 'integer', expected '()'">1</error>;
         }
     }    
     """)
@@ -190,7 +190,7 @@ module 0x1::M {
     fun `test no return type but returns u8 with expression`() = checkErrors("""
     module 0x1::M {
         fun call() {
-            <error descr="Invalid return type: expected '()', found 'integer'">1</error>
+            <error descr="Incompatible type 'integer', expected '()'">1</error>
         }
     }    
     """)
@@ -214,7 +214,7 @@ module 0x1::M {
     fun `test error on code block if empty block and return type`() = checkErrors(
         """
     module 0x1::M {
-        fun call(): u8 {<error descr="Invalid return type: expected 'u8', found '()'">}</error>
+        fun call(): u8 {<error descr="Incompatible type '()', expected 'u8'">}</error>
     }    
         """
     )
@@ -225,7 +225,7 @@ module 0x1::M {
         native public fun push_back<Element>(v: &mut vector<Element>, e: Element);
         
         fun m<E: drop>(v: &mut vector<E>, x: E): u8 {
-            <error descr="Invalid return type: expected 'u8', found '()'">push_back(v, x)</error>
+            <error descr="Incompatible type '()', expected 'u8'">push_back(v, x)</error>
         }
     }    
     """
@@ -273,7 +273,7 @@ module 0x1::M {
     module 0x1::M {
         struct C {}
         struct D {}
-        fun new<Content>(a: Content, b: Content): Content {}
+        fun new<Content>(a: Content, b: Content): Content { a }
         fun m() {
             new(C {}, <error descr="Invalid argument for parameter 'b': type 'D' is not compatible with 'C'">D {}</error>);
         }
