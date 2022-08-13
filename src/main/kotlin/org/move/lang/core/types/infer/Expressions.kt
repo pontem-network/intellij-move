@@ -249,6 +249,7 @@ private fun Ty.supportsBinaryOp(): Boolean {
             || this is TyNum
             || this is TyTypeParameter
             || this is TyInfer
+            || this is TyUnknown
 }
 
 private fun inferDerefExprTy(derefExpr: MvDerefExpr, ctx: InferenceContext): Ty {
