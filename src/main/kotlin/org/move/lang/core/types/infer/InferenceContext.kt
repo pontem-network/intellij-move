@@ -165,12 +165,12 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
     val expectedTy = rawExpectedTy.mslTy()
     val inferredTy = rawInferredTy.mslTy()
     return when {
+        expectedTy is TyNever || inferredTy is TyNever -> true
         expectedTy is TyUnknown || inferredTy is TyUnknown -> true
         expectedTy is TyInfer.TyVar || inferredTy is TyInfer.TyVar -> {
             // check abilities
             true
         }
-
         expectedTy is TyInfer.IntVar && (inferredTy is TyInfer.IntVar || inferredTy is TyInteger) -> {
             true
         }

@@ -465,4 +465,13 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test if else return`() = testExpr("""
+    module 0x1::M {
+        fun main(): u8 {
+            if (true) { return 1 } else { return 2 }
+          //^ <never>  
+        }
+    }    
+    """)
 }

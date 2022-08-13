@@ -26,6 +26,11 @@ object TyUnit: TyPrimitive("()") {
     override fun toString(): String = tyToString(this)
 }
 
+object TyNever: TyPrimitive("()") {
+    override fun abilities() = Ability.none()
+    override fun toString(): String = "<never>"
+}
+
 object TyNum: TyPrimitive("num") {
     override fun abilities() = Ability.all()
     override fun toString(): String = tyToString(this)

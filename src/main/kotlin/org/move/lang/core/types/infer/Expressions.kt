@@ -49,7 +49,8 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         is MvWhileExpr -> inferWhileExprTy(expr, parentCtx)
         is MvReturnExpr -> {
             val fnReturnTy = expr.containingFunction?.returnTy
-            expr.expr?.let { inferExprTy(it, parentCtx, fnReturnTy) } ?: TyUnknown
+            expr.expr?.let { inferExprTy(it, parentCtx, fnReturnTy) }
+            TyNever
         }
         is MvCodeBlockExpr -> {
             inferCodeBlockTy(expr.codeBlock, parentCtx.childContext(), expectedTy)

@@ -613,4 +613,53 @@ module 0x1::M {
         }
     }    
     """)
+
+    fun `test no error if return nested in if and while`() = checkErrors("""
+    module 0x1::M {
+        fun main(): u8 {
+            let i = 0;
+            while (true) {
+                if (true) return i
+            };
+            i
+        }
+    }    
+    """)
+
+    fun `test no error empty return`() = checkErrors("""
+    module 0x1::M {
+        fun main() {
+            if (true) return
+            return 
+        }
+    }    
+    """)
+
+    fun `test no error return tuple from if else`() = checkErrors("""
+    module 0x1::M {
+        fun main(): (u8, u8) {
+            if (true) {
+                return (1, 1) 
+            } else {
+                return (2, 2)
+            }
+        }
+    }    
+    """)
+
+    fun `test no error return tuple from nested if else`() = checkErrors("""
+    module 0x1::M {
+        fun main(): (u8, u8) {
+            if (true) {
+                if (true) {
+                    return (1, 1) 
+                } else {
+                    return (2, 2)
+                }
+            } else {
+                return (3, 3)
+            }
+        }
+    }    
+    """)
 }

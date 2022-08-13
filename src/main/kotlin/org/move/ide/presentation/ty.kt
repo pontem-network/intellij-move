@@ -81,6 +81,7 @@ private fun render(
                     ty.kind.toString()
                 }
             }
+            is TyNever -> "<never>"
             else -> error("unreachable")
         }
     }
