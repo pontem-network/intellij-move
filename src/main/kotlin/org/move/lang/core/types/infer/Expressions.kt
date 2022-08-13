@@ -17,6 +17,7 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
             val funcTy = inferCallExprTy(expr, parentCtx, expectedTy) as? TyFunction
             funcTy?.retType ?: TyUnknown
         }
+
         is MvStructLitExpr -> inferStructLitExpr(expr, parentCtx, expectedTy)
 
         is MvDotExpr -> inferDotExprTy(expr, parentCtx)
@@ -93,9 +94,27 @@ fun inferCallExprTy(
     // find all types passed as explicit type parameters, create constraints with those
     if (path.typeArguments.isNotEmpty()) {
         if (path.typeArguments.size != funcTy.typeVars.size) return TyUnknown
-        for ((typeVar, typeArgument) in funcTy.typeVars.zip(path.typeArguments)) {
-            val passedTy = inferTypeTy(typeArgument.type, parentCtx.msl)
-            inferenceCtx.addConstraint(typeVar, passedTy)
+        for ((typeVar, typeArg) in funcTy.typeVars.zip(path.typeArguments)) {
+            val typeArgTy = inferTypeTy(typeArg.type, parentCtx.msl)
+
+            // check compat for abilities
+            val compat = isCompatibleAbilities(typeVar, typeArgTy, path.isMsl())
+            val isCompat = when (compat) {
+                is Compat.AbilitiesMismatch -> {
+                    parentCtx.typeErrors.add(
+                        TypeError.AbilitiesMismatch(
+                            typeArg,
+                            typeArgTy,
+                            compat.abilities
+                        )
+                    )
+                    false
+                }
+                else -> true
+            }
+            inferenceCtx.addConstraint(typeVar, if (isCompat) typeArgTy else TyUnknown)
+
+//            inferenceCtx.addConstraint(typeVar, passedTy)
         }
     }
     // find all types of passed expressions, create constraints with those
@@ -152,9 +171,25 @@ fun inferStructLitExpr(
     // find all types passed as explicit type parameters, create constraints with those
     if (path.typeArguments.isNotEmpty()) {
         if (path.typeArguments.size != structTy.typeVars.size) return TyUnknown
-        for ((typeVar, typeArgument) in structTy.typeVars.zip(path.typeArguments)) {
-            val passedTy = inferTypeTy(typeArgument.type, parentCtx.msl)
-            inferenceCtx.addConstraint(typeVar, passedTy)
+        for ((typeVar, typeArg) in structTy.typeVars.zip(path.typeArguments)) {
+            val typeArgTy = inferTypeTy(typeArg.type, parentCtx.msl)
+
+            // check compat for abilities
+            val compat = isCompatibleAbilities(typeVar, typeArgTy, path.isMsl())
+            val isCompat = when (compat) {
+                is Compat.AbilitiesMismatch -> {
+                    parentCtx.typeErrors.add(
+                        TypeError.AbilitiesMismatch(
+                            typeArg,
+                            typeArgTy,
+                            compat.abilities
+                        )
+                    )
+                    false
+                }
+                else -> true
+            }
+            inferenceCtx.addConstraint(typeVar, if (isCompat) typeArgTy else TyUnknown)
         }
     }
     for (field in litExpr.fields) {
@@ -177,7 +212,8 @@ fun inferLitFieldInitExprTy(litField: MvStructLitField, ctx: InferenceContext): 
     return if (initExpr == null) {
         // find type of binding
         val binding =
-            litField.reference.multiResolve().filterIsInstance<MvBindingPat>().firstOrNull() ?: return TyUnknown
+            litField.reference.multiResolve().filterIsInstance<MvBindingPat>().firstOrNull()
+                ?: return TyUnknown
         binding.inferredTy(ctx)
     } else {
         // find type of expression

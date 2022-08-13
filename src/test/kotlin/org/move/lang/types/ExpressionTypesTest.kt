@@ -434,4 +434,15 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test struct lit with generic of type with incorrect abilities`() = testExpr("""
+    module 0x1::M {
+        struct S<phantom Message: store> {}
+        struct R has copy {  }
+        fun main() {
+            S<R> {};
+          //^ 0x1::M::S<<unknown>>  
+        }
+    }    
+    """)
 }

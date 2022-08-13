@@ -117,23 +117,6 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 }
             }
 
-            override fun visitPath(path: MvPath) {
-                val typeArguments = path.typeArguments
-                val item = path.reference?.resolve() as? MvTypeParametersOwner ?: return
-                if (item.typeParameters.size != typeArguments.size) return
-
-                for ((i, typeArgument) in typeArguments.withIndex()) {
-                    val typeParam = item.typeParameters[i]
-                    val argumentTy = typeArgument.type.ty()
-                    checkHasRequiredAbilities(
-                        holder,
-                        typeArgument.type,
-                        argumentTy,
-                        typeParam.ty()
-                    )
-                }
-            }
-
             override fun visitCallArgumentList(callArgs: MvCallArgumentList) {
                 val callExpr = callArgs.parent as? MvCallExpr ?: return
                 val function = callExpr.path.reference?.resolve() as? MvFunctionLike ?: return

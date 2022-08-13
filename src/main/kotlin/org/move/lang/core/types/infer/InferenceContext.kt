@@ -195,6 +195,22 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
     }
 }
 
+sealed class Compat {
+    object Yes: Compat()
+    data class AbilitiesMismatch(val abilities: Set<Ability>): Compat()
+}
+
+fun isCompatibleAbilities(expectedTy: Ty, actualTy: Ty, msl: Boolean): Compat {
+    // skip ability check for specs
+    if (msl) return Compat.Yes
+    val missingAbilities = expectedTy.abilities() - actualTy.abilities()
+    if (missingAbilities.isNotEmpty()) {
+        return Compat.AbilitiesMismatch(missingAbilities)
+    } else {
+        return Compat.Yes
+    }
+}
+
 sealed class TypeError(open val element: MvElement) {
     abstract fun message(): String
 
@@ -205,6 +221,17 @@ sealed class TypeError(open val element: MvElement) {
     ) : TypeError(element) {
         override fun message(): String {
             TODO("Not yet implemented")
+        }
+    }
+
+    data class AbilitiesMismatch(
+        override val element: MvElement,
+        val ty: Ty,
+        val abilities: Set<Ability>
+    ): TypeError(element) {
+        override fun message(): String {
+            return "The type '${ty.text()}' " +
+                    "does not have required ability '${abilities.map { it.label() }.first()}'"
         }
 
     }

@@ -379,7 +379,7 @@ module 0x1::M {
     """)
 
     fun `test function invocation with explicitly provided generic type`() = checkErrors("""
-    module Event {
+    module 0x1::Event {
         struct Message has drop {}
         
         public fun emit_event<T: store + drop>() {}
@@ -391,7 +391,7 @@ module 0x1::M {
     """)
 
     fun `test struct constructor with explicitly provided generic type`() = checkErrors("""
-    module Event {
+    module 0x1::Event {
         struct Message has drop {}
         
         struct Event<Message: store + drop> {}
