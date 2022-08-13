@@ -45,13 +45,15 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         is MvAndExpr -> TyBool
         is MvOrExpr -> TyBool
 
-        is MvIfExpr -> inferIfExprTy(expr, parentCtx)
+        is MvIfExpr -> inferIfExprTy(expr, parentCtx, expectedTy)
         is MvWhileExpr -> inferWhileExprTy(expr, parentCtx)
         is MvReturnExpr -> {
             val fnReturnTy = expr.containingFunction?.returnTy
             expr.expr?.let { inferExprTy(it, parentCtx, fnReturnTy) } ?: TyUnknown
         }
-
+        is MvCodeBlockExpr -> {
+            inferCodeBlockTy(expr.codeBlock, parentCtx.childContext(), expectedTy)
+        }
         else -> TyUnknown
     }
     if (exprTy is TyReference && expr.isMsl()) {
@@ -289,13 +291,39 @@ private fun inferLitExprTy(litExpr: MvLitExpr, ctx: InferenceContext): Ty {
     }
 }
 
-private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext): Ty {
+private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext, expectedTy: Ty?): Ty {
     val conditionExpr = ifExpr.condition?.expr
     if (conditionExpr != null) {
         inferExprTy(conditionExpr, ctx, TyBool)
     }
-    val ifExprTy = ifExpr.returningExpr?.let { inferExprTy(it, ctx) } ?: return TyUnknown
-    val elseExprTy = ifExpr.elseExpr?.let { inferExprTy(it, ctx) } ?: return TyUnknown
+
+    val ifCodeBlock = ifExpr.codeBlock
+    val ifInlineBlockExpr = ifExpr.inlineBlock?.expr
+    val ifExprTy = when {
+        ifCodeBlock != null -> {
+            val blockCtx = ctx.childContext()
+            inferCodeBlockTy(ifCodeBlock, blockCtx, expectedTy)
+        }
+        ifInlineBlockExpr != null -> {
+            inferExprTy(ifInlineBlockExpr, ctx, expectedTy)
+        }
+        else -> return TyUnknown
+    }
+
+    val elseBlock = ifExpr.elseBlock ?: return TyUnknown
+    val elseCodeBlock = elseBlock.codeBlock
+    val elseInlineBlockExpr = elseBlock.inlineBlock?.expr
+    val elseExprTy = when {
+        elseCodeBlock != null -> {
+            val blockCtx = ctx.childContext()
+            inferCodeBlockTy(elseCodeBlock, blockCtx, expectedTy)
+        }
+        elseInlineBlockExpr != null -> {
+            inferExprTy(elseInlineBlockExpr, ctx, expectedTy)
+        }
+        else -> return TyUnknown
+    }
+
     return combineTys(ifExprTy, elseExprTy)
 }
 
@@ -303,6 +331,17 @@ private fun inferWhileExprTy(whileExpr: MvWhileExpr, ctx: InferenceContext): Ty 
     val conditionExpr = whileExpr.condition?.expr
     if (conditionExpr != null) {
         inferExprTy(conditionExpr, ctx, TyBool)
+    }
+    val whileCodeBlock = whileExpr.codeBlock
+    val whileInlineBlockExpr = whileExpr.inlineBlock?.expr
+    when {
+        whileCodeBlock != null -> {
+            val blockCtx = ctx.childContext()
+            inferCodeBlockTy(whileCodeBlock, blockCtx, TyUnit)
+        }
+        whileInlineBlockExpr != null -> {
+            inferExprTy(whileInlineBlockExpr, ctx, TyUnit)
+        }
     }
     return TyUnit
 }

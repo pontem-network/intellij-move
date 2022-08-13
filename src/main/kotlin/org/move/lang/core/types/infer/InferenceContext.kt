@@ -22,49 +22,52 @@ fun MvElement.functionInferenceCtx(msl: Boolean = this.isMsl()): InferenceContex
 
 fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
     val ctx = CachedValuesManager.getCachedValue(this, TYPE_INFERENCE_KEY) {
-        val fctx = InferenceContext(msl)
+        val functionCtx = InferenceContext(msl)
         for (param in this.parameterBindings) {
-            fctx.bindingTypes[param] = param.inferredTy(fctx)
+            functionCtx.bindingTypes[param] = param.inferredTy(functionCtx)
         }
-        when (this) {
-            is MvFunction -> run {
-                val block = this.codeBlock ?: return@run
-                for (stmt in block.stmtList) {
-                    when (stmt) {
-                        is MvExprStmt -> inferExprTy(stmt.expr, fctx)
-                        is MvLetStmt -> {
-                            val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, fctx) }
-                            val patTy = stmt.declaredTy ?: initializerTy ?: TyUnknown
-                            val pat = stmt.pat ?: continue
-                            fctx.bindingTypes.putAll(collectBindings(pat, patTy))
-                        }
-                    }
-                    fctx.processConstraints()
-                    fctx.resolveTyVarsFromContext(fctx)
-                }
-                val tailExpr = block.expr
-                if (tailExpr == null) {
-                    val returnTy = this.returnTy
-                    if (returnTy !is TyUnit) {
-                        fctx.typeErrors.add(
-                            TypeError.TypeMismatch(
-                                block.rightBrace ?: block,
-                                returnTy,
-                                TyUnit
-                            )
-                        )
-                    }
-                } else {
-                    inferExprTy(tailExpr, fctx, expectedTy = this.returnTy)
-                    fctx.processConstraints()
-                    fctx.resolveTyVarsFromContext(fctx)
-                }
-            }
+        if (this is MvFunction) {
+            this.codeBlock?.let { inferCodeBlockTy(it, functionCtx, this.returnTy) }
         }
-        CachedValueProvider.Result(fctx, PsiModificationTracker.MODIFICATION_COUNT)
+        CachedValueProvider.Result(functionCtx, PsiModificationTracker.MODIFICATION_COUNT)
     }
     ctx.msl = msl
     return ctx
+}
+
+fun inferCodeBlockTy(block: MvCodeBlock, blockCtx: InferenceContext, expectedTy: Ty?): Ty {
+    for (stmt in block.stmtList) {
+        when (stmt) {
+            is MvExprStmt -> inferExprTy(stmt.expr, blockCtx)
+            is MvLetStmt -> {
+                val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, blockCtx) }
+                val patTy = stmt.declaredTy ?: initializerTy ?: TyUnknown
+                val pat = stmt.pat ?: continue
+                blockCtx.bindingTypes.putAll(collectBindings(pat, patTy))
+            }
+        }
+        blockCtx.processConstraints()
+        blockCtx.resolveTyVarsFromContext(blockCtx)
+    }
+    val tailExpr = block.expr
+    if (tailExpr == null) {
+        if (expectedTy != null && expectedTy !is TyUnit) {
+            blockCtx.typeErrors.add(
+                TypeError.TypeMismatch(
+                    block.rightBrace ?: block,
+                    expectedTy,
+                    TyUnit
+                )
+            )
+            return TyUnknown
+        }
+        return TyUnit
+    } else {
+        val tailExprTy = inferExprTy(tailExpr, blockCtx, expectedTy)
+        blockCtx.processConstraints()
+        blockCtx.resolveTyVarsFromContext(blockCtx)
+        return tailExprTy
+    }
 }
 
 fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
@@ -258,11 +261,10 @@ sealed class TypeError(open val element: PsiElement) {
 }
 
 class InferenceContext(var msl: Boolean) {
-    val exprTypes = concurrentMapOf<MvExpr, Ty>()
+    var exprTypes = concurrentMapOf<MvExpr, Ty>()
+    var callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
     val bindingTypes = concurrentMapOf<MvBindingPat, Ty>()
-    val callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
-
-    val typeErrors = mutableListOf<TypeError>()
+    var typeErrors = mutableListOf<TypeError>()
 
     val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
     val intUnificationTable = UnificationTable<TyInfer.IntVar, Ty>()
@@ -271,7 +273,6 @@ class InferenceContext(var msl: Boolean) {
 
     fun addConstraint(ty1: Ty, ty2: Ty) {
         solver.registerConstraint(EqualityConstraint(ty1, ty2))
-
     }
 
     fun processConstraints(): Boolean {
@@ -315,5 +316,11 @@ class InferenceContext(var msl: Boolean) {
         }
     }
 
-
+    fun childContext(): InferenceContext {
+        val childContext = InferenceContext(this.msl)
+        childContext.exprTypes = this.exprTypes
+        childContext.callExprTypes = this.callExprTypes
+        childContext.typeErrors = this.typeErrors
+        return childContext
+    }
 }

@@ -455,4 +455,14 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test return value from block`() = testExpr("""
+    module 0x1::M {
+        fun main() {
+            let a = { 1u8 };
+            a;
+          //^ u8  
+        }
+    }    
+    """)
 }

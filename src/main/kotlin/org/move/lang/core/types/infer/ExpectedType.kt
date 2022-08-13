@@ -35,7 +35,6 @@ fun inferExprExpectedTy(expr: MvExpr, ctx: InferenceContext): Ty {
                 else -> TyUnknown
             }
         }
-
         is MvStructLitField -> owner.ty()
         else -> TyUnknown
     }
