@@ -6,7 +6,7 @@ import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
-import org.move.ide.presentation.shortPresentableText
+import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ItemVis
@@ -101,7 +101,7 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
             .withTypeText(this.typeAnnotation?.type?.text)
 
         is MvBindingPat -> this.createLookupElementWithIcon()
-            .withTypeText(this.inferredTy(this.functionInferenceCtx(this.isMsl())).shortPresentableText(true))
+            .withTypeText(this.inferredTy(this.functionInferenceCtx(this.isMsl())).text(true))
 
         is MvSchema -> this.createLookupElementWithIcon()
             .withTypeText(this.containingFile?.name)

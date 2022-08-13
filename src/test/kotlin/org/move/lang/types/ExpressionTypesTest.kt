@@ -425,4 +425,13 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }        
     """)
+
+    fun `test type of plus with invalid arguments`() = testExpr("""
+    module 0x1::M {
+        fun add(a: bool, b: bool) {
+            (a + b);
+          //^ <unknown>  
+        }
+    }    
+    """)
 }

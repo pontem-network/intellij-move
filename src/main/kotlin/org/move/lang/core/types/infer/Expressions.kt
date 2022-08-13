@@ -189,12 +189,30 @@ private fun inferBinaryExprTy(exprList: List<MvExpr>, ctx: InferenceContext): Ty
     val leftExpr = exprList.getOrNull(0) ?: return TyUnknown
     val rightExpr = exprList.getOrNull(1)
 
+    var typeErrorEncountered = false
     val leftExprTy = inferExprTy(leftExpr, ctx)
+    if (!leftExprTy.supportsBinaryOp()) {
+        ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(leftExpr, leftExprTy, "+"))
+        typeErrorEncountered = true
+    }
     if (rightExpr != null) {
         val rightExprTy = inferExprTy(rightExpr, ctx)
-        ctx.registerConstraint(EqualityConstraint(leftExprTy, rightExprTy))
+        if (!rightExprTy.supportsBinaryOp()) {
+            ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(rightExpr, rightExprTy, "+"))
+            typeErrorEncountered = true
+        }
+        if (!typeErrorEncountered) {
+            ctx.registerConstraint(EqualityConstraint(leftExprTy, rightExprTy))
+        }
     }
-    return leftExprTy
+    return if (typeErrorEncountered) TyUnknown else leftExprTy
+}
+
+private fun Ty.supportsBinaryOp(): Boolean {
+    return this is TyInteger
+            || this is TyNum
+            || this is TyTypeParameter
+            || this is TyInfer
 }
 
 private fun inferDerefExprTy(derefExpr: MvDerefExpr, ctx: InferenceContext): Ty {

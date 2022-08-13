@@ -2,7 +2,7 @@ package org.move.ide.hints.type
 
 import com.intellij.codeInsight.hints.presentation.InlayPresentation
 import com.intellij.codeInsight.hints.presentation.PresentationFactory
-import org.move.ide.presentation.shortPresentableText
+import org.move.ide.presentation.text
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyTuple
@@ -19,7 +19,7 @@ class MvTypeHintsPresentationFactory(private val factory: PresentationFactory) {
         is TyTuple -> tupleTypeHint(ty, level)
         is TyReference -> referenceTypeHint(ty, level)
         is TyTypeParameter -> typeParameterTypeHint(ty)
-        else -> text(ty.shortPresentableText(false))
+        else -> text(ty.text(false))
     }
 
     private fun tupleTypeHint(type: TyTuple, level: Int): InlayPresentation =

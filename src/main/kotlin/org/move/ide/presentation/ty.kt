@@ -23,7 +23,7 @@ fun Ty.nameNoArgs(): String {
 }
 
 fun Ty.name(): String {
-    return shortPresentableText(fq = false)
+    return text(fq = false)
 }
 
 fun Ty.fullnameNoArgs(): String {
@@ -31,7 +31,7 @@ fun Ty.fullnameNoArgs(): String {
 }
 
 fun Ty.fullname(): String {
-    return shortPresentableText(fq = true)
+    return text(fq = true)
 }
 
 fun Ty.typeLabel(relativeTo: MvElement): String {
@@ -43,7 +43,7 @@ fun Ty.typeLabel(relativeTo: MvElement): String {
     }
 }
 
-fun Ty.shortPresentableText(fq: Boolean = false): String =
+fun Ty.text(fq: Boolean = false): String =
     render(this,
            level = 3,
            fq = fq)

@@ -6,7 +6,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.move.ide.presentation.presentationInfo
-import org.move.ide.presentation.shortPresentableText
+import org.move.ide.presentation.text
 import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -205,7 +205,7 @@ private inline fun content(buffer: StringBuilder, block: (StringBuilder) -> Unit
 private fun angleWrapped(text: String): String = "&lt;$text&gt;"
 
 private fun Ty.renderForDocs(fq: Boolean): String {
-    val original = this.shortPresentableText(fq)
+    val original = this.text(fq)
     return original
         .replace("<", "&lt;")
         .replace(">", "&gt;")

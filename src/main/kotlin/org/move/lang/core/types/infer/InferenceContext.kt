@@ -6,6 +6,7 @@ import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import com.jetbrains.rd.util.concurrentMapOf
+import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.ty
@@ -194,12 +195,37 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
     }
 }
 
-data class TypeError(val element: MvElement, val expectedTy: Ty, val actualTy: Ty)
+sealed class TypeError(open val element: MvElement) {
+    abstract fun message(): String
+
+    data class TypeMismatch(
+        override val element: MvElement,
+        val expectedTy: Ty,
+        val actualTy: Ty
+    ) : TypeError(element) {
+        override fun message(): String {
+            TODO("Not yet implemented")
+        }
+
+    }
+
+    data class UnsupportedBinaryOp(
+        override val element: MvElement,
+        val ty: Ty,
+        val op: String
+    ) : TypeError(element) {
+        override fun message(): String {
+            return "Invalid argument to '$op': " +
+                    "expected 'u8', 'u64', 'u128', but found '${ty.text()}'"
+        }
+
+    }
+}
 
 class InferenceContext(var msl: Boolean) {
     val exprTypes = concurrentMapOf<MvExpr, Ty>()
     val bindingTypes = concurrentMapOf<MvBindingPat, Ty>()
-    var callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
+    val callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
 
     val typeErrors = mutableListOf<TypeError>()
 
@@ -210,10 +236,6 @@ class InferenceContext(var msl: Boolean) {
 
     fun registerConstraint(constraint: EqualityConstraint) {
         solver.registerConstraint(constraint)
-    }
-
-    fun addTypeError(sourceElement: MvElement, expectedTy: Ty, actualTy: Ty) {
-        this.typeErrors.add(TypeError(sourceElement, expectedTy, actualTy))
     }
 
     fun processConstraints(): Boolean {

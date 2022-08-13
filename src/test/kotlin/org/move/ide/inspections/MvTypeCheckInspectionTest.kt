@@ -604,4 +604,13 @@ module 0x1::M {
         }
     }    
     """)
+
+    fun `test invalid argument to plus expr`() = checkErrors("""
+    module 0x1::M {
+        fun add(a: bool, b: bool) {
+            <error descr="Invalid argument to '+': expected 'u8', 'u64', 'u128', but found 'bool'">a</error> 
+            + <error descr="Invalid argument to '+': expected 'u8', 'u64', 'u128', but found 'bool'">b</error>;
+        }
+    }    
+    """)
 }

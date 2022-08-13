@@ -1,6 +1,5 @@
 package org.move.ide.inspections
 
-import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.codeInspection.util.InspectionMessage
@@ -16,9 +15,12 @@ import org.move.lang.core.types.ty.*
 fun ProblemsHolder.registerTypeError(
     element: PsiElement,
     @InspectionMessage message: String,
-    vararg fixes: LocalQuickFix
 ) {
-    this.registerProblem(element, message, ProblemHighlightType.GENERIC_ERROR, *fixes)
+    this.registerProblem(element, message, ProblemHighlightType.GENERIC_ERROR)
+}
+
+fun ProblemsHolder.registerTypeError(typeError: TypeError) {
+    this.registerProblem(typeError.element, typeError.message(), ProblemHighlightType.GENERIC_ERROR)
 }
 
 class MvTypeCheckInspection : MvLocalInspectionTool() {
@@ -72,6 +74,10 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                         invalidReturnTypeMessage(expectedReturnTy, actualReturnTy)
                     )
                 }
+
+                val inference = fn.inferenceCtx(codeBlock.isMsl())
+                inference.typeErrors
+                    .forEach { holder.registerTypeError(it) }
             }
 
             override fun visitReturnExpr(returnExpr: MvReturnExpr) {
