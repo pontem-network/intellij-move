@@ -234,8 +234,9 @@ class InferenceContext(var msl: Boolean) {
 
     private val solver = ConstraintSolver(this)
 
-    fun registerConstraint(constraint: EqualityConstraint) {
-        solver.registerConstraint(constraint)
+    fun addConstraint(ty1: Ty, ty2: Ty) {
+        solver.registerConstraint(EqualityConstraint(ty1, ty2))
+
     }
 
     fun processConstraints(): Boolean {

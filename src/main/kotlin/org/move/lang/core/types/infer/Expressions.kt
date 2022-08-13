@@ -55,7 +55,7 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         exprTy = TyNum
     }
     if (expectedTy != null && isCompatible(expectedTy, exprTy)) {
-        parentCtx.registerConstraint(EqualityConstraint(exprTy, expectedTy))
+        parentCtx.addConstraint(exprTy, expectedTy)
     }
 
     parentCtx.cacheExprTy(expr, exprTy)
@@ -95,18 +95,18 @@ fun inferCallExprTy(
         if (path.typeArguments.size != funcTy.typeVars.size) return TyUnknown
         for ((typeVar, typeArgument) in funcTy.typeVars.zip(path.typeArguments)) {
             val passedTy = inferTypeTy(typeArgument.type, parentCtx.msl)
-            inferenceCtx.registerConstraint(EqualityConstraint(typeVar, passedTy))
+            inferenceCtx.addConstraint(typeVar, passedTy)
         }
     }
     // find all types of passed expressions, create constraints with those
     if (callExpr.arguments.isNotEmpty()) {
         for ((paramTy, argumentExpr) in funcTy.paramTypes.zip(callExpr.arguments)) {
             val argumentExprTy = inferExprTy(argumentExpr, parentCtx)
-            inferenceCtx.registerConstraint(EqualityConstraint(paramTy, argumentExprTy))
+            inferenceCtx.addConstraint(paramTy, argumentExprTy)
         }
     }
     if (expectedTy != null) {
-        inferenceCtx.registerConstraint(EqualityConstraint(funcTy.retType, expectedTy))
+        inferenceCtx.addConstraint(funcTy.retType, expectedTy)
     }
     // solve constraints
     val solvable = inferenceCtx.processConstraints()
@@ -130,7 +130,7 @@ private fun inferDotExprTy(dotExpr: MvDotExpr, parentCtx: InferenceContext): Ty 
 
     val inferenceCtx = InferenceContext(parentCtx.msl)
     for ((tyVar, tyArg) in structTy.typeVars.zip(structTy.typeArgs)) {
-        inferenceCtx.registerConstraint(EqualityConstraint(tyVar, tyArg))
+        inferenceCtx.addConstraint(tyVar, tyArg)
     }
     // solve constraints, return TyUnknown if cannot
     if (!inferenceCtx.processConstraints()) return TyUnknown
@@ -154,17 +154,17 @@ fun inferStructLitExpr(
         if (path.typeArguments.size != structTy.typeVars.size) return TyUnknown
         for ((typeVar, typeArgument) in structTy.typeVars.zip(path.typeArguments)) {
             val passedTy = inferTypeTy(typeArgument.type, parentCtx.msl)
-            inferenceCtx.registerConstraint(EqualityConstraint(typeVar, passedTy))
+            inferenceCtx.addConstraint(typeVar, passedTy)
         }
     }
     for (field in litExpr.fields) {
         val fieldName = field.referenceName
         val fieldTy = structTy.fieldTys[fieldName] ?: TyUnknown
         val fieldInitExprTy = inferLitFieldInitExprTy(field, parentCtx)
-        inferenceCtx.registerConstraint(EqualityConstraint(fieldTy, fieldInitExprTy))
+        inferenceCtx.addConstraint(fieldTy, fieldInitExprTy)
     }
     if (expectedTy != null) {
-        inferenceCtx.registerConstraint(EqualityConstraint(structTy, expectedTy))
+        inferenceCtx.addConstraint(structTy, expectedTy)
     }
     inferenceCtx.processConstraints()
 
@@ -202,7 +202,7 @@ private fun inferBinaryExprTy(exprList: List<MvExpr>, ctx: InferenceContext): Ty
             typeErrorEncountered = true
         }
         if (!typeErrorEncountered) {
-            ctx.registerConstraint(EqualityConstraint(leftExprTy, rightExprTy))
+            ctx.addConstraint(leftExprTy, rightExprTy)
         }
     }
     return if (typeErrorEncountered) TyUnknown else leftExprTy
