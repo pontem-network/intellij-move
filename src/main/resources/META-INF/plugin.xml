@@ -15,6 +15,7 @@
         <![CDATA[
     <h3>1.17.0</h3>
     <ul>
+    <li>types: type checking for binary arithmetic operators</li>
     <li>resolve: use named address values for module resolution</li>
     <li>insp: add warning to check for inconsistent address names usage</li>
     <li>ref: check for valid module name in single-module file rename</li>
