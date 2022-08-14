@@ -14,7 +14,7 @@ import org.move.lang.core.psi.ext.schema
 import org.move.lang.core.psi.ext.schemaLit
 import org.move.lang.core.withParent
 
-object SchemaFieldsCompletionProvider: MvCompletionProvider() {
+object SchemaFieldsCompletionProvider : MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = PlatformPatterns
             .psiElement()

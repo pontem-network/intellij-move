@@ -19,7 +19,7 @@ sealed class MvContextType(
     id: String,
     presentableName: String,
     baseContextType: KClass<out TemplateContextType>
-): TemplateContextType(id, presentableName, baseContextType.java) {
+) : TemplateContextType(id, presentableName, baseContextType.java) {
 
     final override fun isInContext(context: TemplateActionContext): Boolean {
         if (!PsiUtilCore.getLanguageAtOffset(context.file, context.startOffset).isKindOf(MoveLanguage)) {
@@ -38,20 +38,20 @@ sealed class MvContextType(
 
     override fun createHighlighter(): SyntaxHighlighter = MvHighlighter()
 
-    class Generic: MvContextType("MOVE_FILE", "Move", EverywhereContextType::class) {
+    class Generic : MvContextType("MOVE_FILE", "Move", EverywhereContextType::class) {
         override fun isInContext(element: PsiElement) = true
     }
 
-    class Module: MvContextType("MOVE_MODULE", "Module", Generic::class) {
+    class Module : MvContextType("MOVE_MODULE", "Module", Generic::class) {
         override fun isInContext(element: PsiElement): Boolean
-            // inside MvModuleDef
-            = owner(element) is MvModule
+        // inside MvModuleDef
+                = owner(element) is MvModule
     }
 
-    class Block: MvContextType("MOVE_BLOCK", "Block", Generic::class) {
+    class Block : MvContextType("MOVE_BLOCK", "Block", Generic::class) {
         override fun isInContext(element: PsiElement): Boolean
-            // inside MvCodeBlock
-            = owner(element) is MvCodeBlock
+        // inside MvCodeBlock
+                = owner(element) is MvCodeBlock
     }
 
     companion object {

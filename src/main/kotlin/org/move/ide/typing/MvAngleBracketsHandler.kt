@@ -62,7 +62,7 @@ class MvAngleBraceTypedHandler : TypedHandlerDelegate() {
     }
 }
 
-class MvAngleBracketsBackspaceHandler: BackspaceHandlerDelegate() {
+class MvAngleBracketsBackspaceHandler : BackspaceHandlerDelegate() {
     private var enabled: Boolean = false
 
     override fun beforeCharDeleted(c: Char, file: PsiFile, editor: Editor) {

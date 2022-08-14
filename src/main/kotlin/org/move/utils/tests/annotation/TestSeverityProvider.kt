@@ -12,12 +12,14 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.PsiElement
 
 class TestSeverityProvider(private val severities: List<HighlightSeverity>) : SeveritiesProvider() {
-    override fun getSeveritiesHighlightInfoTypes(): List<HighlightInfoType> = severities.map(::TestHighlightingInfoType)
+    override fun getSeveritiesHighlightInfoTypes(): List<HighlightInfoType> =
+        severities.map(::TestHighlightingInfoType)
 }
 
 private class TestHighlightingInfoType(private val severity: HighlightSeverity) : HighlightInfoType {
     override fun getAttributesKey(): TextAttributesKey =
         DEFAULT_TEXT_ATTRIBUTES
+
     override fun getSeverity(psiElement: PsiElement?): HighlightSeverity = severity
 
     companion object {

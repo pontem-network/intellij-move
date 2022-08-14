@@ -40,7 +40,7 @@ class AptosSettingsPanel(val panelEnabled: ComponentPredicate) : Disposable {
     fun attachTo(layout: LayoutBuilder) = with(layout) {
         row("Private key file") { privateKeyPathField() }.enableIf(panelEnabled)
         row("Faucet URL") { faucetUrlField() }.enableIf(panelEnabled)
-        row("Rest API URL") { restUrlField()}.enableIf(panelEnabled)
+        row("Rest API URL") { restUrlField() }.enableIf(panelEnabled)
     }
 
     override fun dispose() {

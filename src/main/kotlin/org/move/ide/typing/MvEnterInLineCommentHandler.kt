@@ -17,7 +17,7 @@ import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.startOffset
 
-class MvEnterInLineCommentHandler: EnterHandlerDelegateAdapter() {
+class MvEnterInLineCommentHandler : EnterHandlerDelegateAdapter() {
     override fun preprocessEnter(
         file: PsiFile,
         editor: Editor,

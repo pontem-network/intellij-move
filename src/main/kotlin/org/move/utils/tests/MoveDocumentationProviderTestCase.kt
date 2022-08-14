@@ -7,7 +7,7 @@ import org.move.ide.docs.MvDocumentationProvider
 import org.move.lang.core.psi.MvElement
 import org.move.utils.tests.base.findElementAndOffsetInEditor
 
-abstract class MvDocumentationProviderProjectTestCase: MvProjectTestBase() {
+abstract class MvDocumentationProviderProjectTestCase : MvProjectTestBase() {
     protected fun doTestByFileTree(
         @Language("Move") builder: TreeBuilder,
         @Language("Html") expected: String?,

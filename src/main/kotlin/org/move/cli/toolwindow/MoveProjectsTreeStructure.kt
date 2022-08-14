@@ -81,7 +81,8 @@ class MoveProjectsTreeStructure(
             override fun toTestString(): String = "Package($name)"
         }
 
-        class Project(val moveProject: MoveProject, parent: SimpleNode) : Package(moveProject.currentPackage, parent) {
+        class Project(val moveProject: MoveProject, parent: SimpleNode) :
+            Package(moveProject.currentPackage, parent) {
             override fun buildChildren(): Array<SimpleNode> {
                 val dependencyPackages = moveProject.dependencies.map { it.first }
                 return arrayOf(
@@ -94,10 +95,11 @@ class MoveProjectsTreeStructure(
             override fun toTestString(): String = "Project($name)"
         }
 
-        class DependencyPackages(val packages: List<MovePackage>, parent: SimpleNode): MoveSimpleNode(parent) {
+        class DependencyPackages(val packages: List<MovePackage>, parent: SimpleNode) : MoveSimpleNode(parent) {
             override fun buildChildren(): Array<SimpleNode> {
                 return packages.map { Package(it, this) }.toTypedArray()
             }
+
             override fun getName(): String = "Dependencies"
             override fun toTestString(): String = "Dependencies"
         }

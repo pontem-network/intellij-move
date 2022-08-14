@@ -13,9 +13,10 @@ import org.move.lang.core.resolve.ref.MvStructPatShorthandFieldReferenceImpl
 val MvStructPatField.structPat: MvStructPat
     get() = ancestorStrict()!!
 
-val MvStructPatField.pat: MvPat? get() {
-    return this.bindingPat ?: this.structPatFieldBinding?.pat
-}
+val MvStructPatField.pat: MvPat?
+    get() {
+        return this.bindingPat ?: this.structPatFieldBinding?.pat
+    }
 
 val MvStructPatField.isShorthand: Boolean get() = this.structPatFieldBinding == null
 

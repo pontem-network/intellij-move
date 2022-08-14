@@ -27,7 +27,8 @@ abstract class InspectionTestBase(
         ignoreExtraHighlighting: Boolean = false,
     ) =
         annotationFixture.checkFixIsUnavailable(
-            fixName, text, checkWarn, checkInfo, checkWeakWarn, ignoreExtraHighlighting)
+            fixName, text, checkWarn, checkInfo, checkWeakWarn, ignoreExtraHighlighting
+        )
 
     protected fun checkFixByText(
         fixName: String,

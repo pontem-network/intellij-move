@@ -9,7 +9,7 @@ import org.move.lang.core.psi.psiFactory
 import org.move.lang.core.stubs.MvNamedElementStub
 
 abstract class MvStubbedNamedElementImpl<StubT> : MvStubbedElementImpl<StubT>,
-                                                    MvNamedElement
+                                                  MvNamedElement
         where StubT : MvNamedElementStub, StubT : StubElement<*> {
 
     constructor(node: ASTNode) : super(node)

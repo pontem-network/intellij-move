@@ -7,7 +7,7 @@ import com.intellij.psi.stubs.StubElement
 import org.move.lang.core.psi.MvElement
 
 abstract class MvStubbedElementImpl<StubT : StubElement<*>> : StubBasedPsiElementBase<StubT>,
-                                                                MvElement {
+                                                              MvElement {
 
     constructor(node: ASTNode) : super(node)
 

@@ -8,7 +8,7 @@ import org.move.lang.core.psi.MvNameIdentifierOwner
 import org.move.lang.core.stubs.MvNamedElementStub
 
 abstract class MvStubbedNameIdentifierOwnerImpl<StubT> : MvStubbedNamedElementImpl<StubT>,
-                                                           MvNameIdentifierOwner
+                                                         MvNameIdentifierOwner
         where StubT : MvNamedElementStub, StubT : StubElement<*> {
 
     constructor(node: ASTNode) : super(node)

@@ -44,16 +44,20 @@ fun Ty.typeLabel(relativeTo: MvElement): String {
 }
 
 fun Ty.text(fq: Boolean = false): String =
-    render(this,
-           level = 3,
-           fq = fq)
+    render(
+        this,
+        level = 3,
+        fq = fq
+    )
 
 val Ty.insertionSafeText: String
-    get() = render(this,
-                   level = Int.MAX_VALUE,
-                   unknown = "_",
-                   anonymous = "_",
-                   integer = "_")
+    get() = render(
+        this,
+        level = Int.MAX_VALUE,
+        unknown = "_",
+        anonymous = "_",
+        integer = "_"
+    )
 
 fun tyToString(ty: Ty) = render(ty, Int.MAX_VALUE)
 

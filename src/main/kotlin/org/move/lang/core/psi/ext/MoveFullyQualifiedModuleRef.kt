@@ -9,7 +9,7 @@ import org.move.lang.core.resolve.ref.MvFQModuleReference
 import org.move.lang.core.resolve.ref.MvFQModuleReferenceImpl
 
 abstract class MvFQModuleRefMixin(node: ASTNode) : MvElementImpl(node),
-                                                     MvFQModuleRef {
+                                                   MvFQModuleRef {
     override val identifier: PsiElement?
         get() = findChildByType(MvElementTypes.IDENTIFIER)
 

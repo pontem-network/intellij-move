@@ -13,4 +13,4 @@ interface MvReference : PsiPolyVariantReference {
     fun multiResolve(): List<MvNamedElement>
 }
 
-interface MvPathReference: MvReference
+interface MvPathReference : MvReference

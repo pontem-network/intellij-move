@@ -15,15 +15,17 @@ fun MvAddressRef.toAddress(moveProj: MoveProject? = this.moveProject): Address? 
     return Address.Value(addressLitText)
 }
 
-val MvAddressRef.useGroupLevel: Int get() {
-    // sort to the end if not a named address
-    if (this.namedAddress == null) return 3
+val MvAddressRef.useGroupLevel: Int
+    get() {
+        // sort to the end if not a named address
+        if (this.namedAddress == null) return 3
 
-    val name = this.namedAddress?.text.orEmpty().lowercase()
-    val currentPackageAddresses = this.moveProject?.currentPackageAddresses()?.keys.orEmpty().map { it.lowercase() }
-    return when (name) {
-        "std" -> 0
-        !in currentPackageAddresses -> 1
-        else -> 2
+        val name = this.namedAddress?.text.orEmpty().lowercase()
+        val currentPackageAddresses =
+            this.moveProject?.currentPackageAddresses()?.keys.orEmpty().map { it.lowercase() }
+        return when (name) {
+            "std" -> 0
+            !in currentPackageAddresses -> 1
+            else -> 2
+        }
     }
-}

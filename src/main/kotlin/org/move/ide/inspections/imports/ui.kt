@@ -32,8 +32,10 @@ fun showItemsToImportChooser(
 ) {
     val itemImportUi = if (isUnitTestMode) {
         MOCK
-            ?: error("Multiple items: ${items.map { it.fqPath.toString() }}. " +
-                             "You should set mock ui via `withMockImportItemUi`")
+            ?: error(
+                "Multiple items: ${items.map { it.fqPath.toString() }}. " +
+                        "You should set mock ui via `withMockImportItemUi`"
+            )
     } else {
         PopupImportItemUi(project, dataContext)
     }
@@ -81,6 +83,7 @@ private class PopupImportItemUi(private val project: Project, private val dataCo
                 override fun getIconFor(value: ImportCandidatePsiElement): Icon =
                     value.importCandidate.element.getIcon(0)
             }
+
         @Suppress("UNCHECKED_CAST")
         val popup = object : ListPopupImpl(project, step) {
             override fun getListElementRenderer(): ListCellRenderer<*> {

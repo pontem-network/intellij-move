@@ -28,7 +28,7 @@ class MvConstNamingInspection : MvNamingInspection("Constant") {
     }
 }
 
-class MvStructNamingInspection: MvNamingInspection("Struct") {
+class MvStructNamingInspection : MvNamingInspection("Struct") {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitStruct(o: MvStruct) {
             val ident = o.identifier ?: return
@@ -43,7 +43,7 @@ class MvStructNamingInspection: MvNamingInspection("Struct") {
     }
 }
 
-class MvLocalBindingNamingInspection: MvNamingInspection("Local variable") {
+class MvLocalBindingNamingInspection : MvNamingInspection("Local variable") {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitBindingPat(o: MvBindingPat) {
             // filter out constants
