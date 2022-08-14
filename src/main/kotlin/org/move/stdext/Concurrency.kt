@@ -50,7 +50,6 @@ class AsyncValue<T>(initial: T) {
                         }
                         result.completeExceptionally(err)
                     }
-                    Unit
                 }
         }
         startUpdateProcessing()

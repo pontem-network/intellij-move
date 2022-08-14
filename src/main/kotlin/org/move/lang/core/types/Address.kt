@@ -1,6 +1,6 @@
 package org.move.lang.core.types
 
-const val MAX_LENGTH = 32;
+const val MAX_LENGTH = 32
 
 fun normalizeAddressValue(text: String): String {
     if (!text.startsWith("0")) return text

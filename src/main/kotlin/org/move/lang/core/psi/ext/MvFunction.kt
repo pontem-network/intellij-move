@@ -86,6 +86,6 @@ abstract class MvFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
             null,
             PlatformIcons.PUBLIC_ICON,
             TextAttributesKey.createTextAttributesKey("public")
-        );
+        )
     }
 }

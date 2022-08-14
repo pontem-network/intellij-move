@@ -29,7 +29,7 @@ class MvAnnotationHolder(val holder: AnnotationHolder) {
         element: PsiElement,
         severity: HighlightSeverity,
         message: String?,
-    ): AnnotationBuilder? {
+    ): AnnotationBuilder {
         val builder = if (message == null) {
             holder.newSilentAnnotation(severity)
         } else {
