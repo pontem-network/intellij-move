@@ -1,6 +1,5 @@
 package org.move.cli.manifest
 
-import org.move.openapiext.common.isUnitTestMode
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -27,10 +26,6 @@ sealed class TomlDependency {
             val home = System.getProperty("user.home")
             val dirName = dirName(repo, rev)
             return Paths.get(home, ".move", dirName, subdir)
-//            return path(repo, rev, subdir)
-//            val sanitizedRepoName = repo.replace(Regex("[/:.@]"), "_")
-//            val revName = rev.replace('/', '_')
-//            return Paths.get(homeDir, ".move", "${sanitizedRepoName}_$revName", subdir)
         }
 
         companion object {

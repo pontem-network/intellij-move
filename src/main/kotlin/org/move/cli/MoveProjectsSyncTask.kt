@@ -37,7 +37,7 @@ class MoveProjectsSyncTask(
     }
 
     companion object {
-        private data class DepId(val root: String, val from: String?)
+        private data class DepId(val rootPath: String)
 
         fun loadProjects(project: Project): List<MoveProject> {
             val projects = mutableListOf<MoveProject>()
@@ -54,7 +54,7 @@ class MoveProjectsSyncTask(
 
                     val deps = mutableListOf<Pair<MovePackage, RawAddressMap>>()
                     val visitedDepIds = mutableSetOf(
-                        DepId(rootPackage.contentRoot.path, null)
+                        DepId(rootPackage.contentRoot.path)
                     )
                     loadDependencies(project, moveToml, deps, visitedDepIds)
 
@@ -74,10 +74,7 @@ class MoveProjectsSyncTask(
             for ((dep, addressMap) in rootMoveToml.deps) {
                 val depRoot = dep.localPath()
 
-                val depId = DepId(
-                    depRoot.toString(),
-                    rootMoveToml.tomlFile?.parent?.virtualFile?.path
-                )
+                val depId = DepId(depRoot.toString())
                 if (depId in visitedIds) continue
 
                 val depTomlFile = depRoot
