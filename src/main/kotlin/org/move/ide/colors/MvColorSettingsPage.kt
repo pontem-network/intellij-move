@@ -3,8 +3,8 @@ package org.move.ide.colors
 import com.intellij.openapi.options.colors.ColorDescriptor
 import com.intellij.openapi.options.colors.ColorSettingsPage
 import com.intellij.openapi.util.io.StreamUtil
-import org.move.ide.MvHighlighter
 import org.move.ide.MoveIcons
+import org.move.ide.MvHighlighter
 
 class MvColorSettingsPage : ColorSettingsPage {
     private val DEMO_TEXT by lazy {

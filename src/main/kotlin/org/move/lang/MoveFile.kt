@@ -1,7 +1,6 @@
 package org.move.lang
 
 import com.intellij.extapi.psi.PsiFileBase
-import com.intellij.model.psi.impl.allDeclarations
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile

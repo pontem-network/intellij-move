@@ -11,8 +11,6 @@ import org.move.lang.core.psi.MvCallArgumentList
 import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvStructLitFieldsBlock
 import org.move.lang.core.psi.ext.ancestorOrSelf
-import org.move.lang.core.psi.ext.ancestorStrict
-import org.move.lang.core.psi.ext.contains
 import org.move.lang.core.psi.ext.startOffset
 import org.move.utils.AsyncParameterInfoHandler
 

@@ -10,8 +10,8 @@ import com.intellij.openapi.editor.highlighter.HighlighterIterator
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import org.move.lang.MvElementTypes.*
 import org.move.lang.MoveFile
+import org.move.lang.MvElementTypes.*
 import org.move.lang.core.tokenSetOf
 import org.move.openapiext.isValidOffset
 

@@ -9,9 +9,9 @@ import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.BitUtil
-import org.move.lang.MvElementTypes.*
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
+import org.move.lang.MvElementTypes.*
 import org.move.stdext.makeBitMask
 
 enum class FunModifier {

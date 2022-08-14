@@ -8,7 +8,6 @@ import org.move.lang.core.psi.MvModuleBlock
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.hasAncestorOrSelf
 import org.move.lang.core.psi.ext.modules
-import org.move.lang.core.psi.ext.startOffset
 import org.move.lang.core.psi.psiFactory
 
 class InlineAddressBlockIntention: MvElementBaseIntentionAction<InlineAddressBlockIntention.Context>() {

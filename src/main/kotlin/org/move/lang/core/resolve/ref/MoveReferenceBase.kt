@@ -1,7 +1,10 @@
 package org.move.lang.core.resolve.ref
 
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.*
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiElementResolveResult
+import com.intellij.psi.PsiPolyVariantReferenceBase
+import com.intellij.psi.ResolveResult
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.resolve.MvReferenceElement
 import org.move.utils.doRenameIdentifier

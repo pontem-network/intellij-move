@@ -5,12 +5,10 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
-import org.move.ide.inspections.imports.*
-import org.move.lang.core.psi.ext.ancestors
-import org.move.lang.core.psi.ext.endOffset
-import org.move.lang.core.resolve.MvReferenceElement
-import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyUnknown
+import org.move.ide.inspections.imports.AutoImportFix
+import org.move.ide.inspections.imports.ImportCandidate
+import org.move.ide.inspections.imports.ImportContext
+import org.move.ide.inspections.imports.MoveElementsIndex
 
 abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>() {
     abstract val elementPattern: ElementPattern<out PsiElement>

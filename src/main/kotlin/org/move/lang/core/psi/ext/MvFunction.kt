@@ -11,7 +11,6 @@ import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
-import org.move.lang.core.psi.isNative
 import org.move.lang.core.psi.module
 import org.move.lang.core.types.ty.Ty
 import javax.swing.Icon

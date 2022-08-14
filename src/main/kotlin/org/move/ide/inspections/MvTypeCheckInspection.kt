@@ -8,9 +8,11 @@ import org.move.ide.presentation.name
 import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.mixins.ty
 import org.move.lang.core.types.infer.*
-import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyFunction
+import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.core.types.ty.isTypeParam
 
 fun ProblemsHolder.registerTypeError(
     element: PsiElement,

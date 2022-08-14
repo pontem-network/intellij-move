@@ -2,9 +2,11 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvElementImpl
+import org.move.lang.core.psi.MvPat
+import org.move.lang.core.psi.MvStructPat
+import org.move.lang.core.psi.MvStructPatField
 import org.move.lang.core.resolve.ref.MvReference
-import org.move.lang.core.resolve.ref.MvReferenceBase
 import org.move.lang.core.resolve.ref.MvStructFieldReferenceImpl
 import org.move.lang.core.resolve.ref.MvStructPatShorthandFieldReferenceImpl
 

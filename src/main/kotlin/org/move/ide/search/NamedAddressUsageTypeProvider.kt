@@ -3,10 +3,8 @@ package org.move.ide.search
 import com.intellij.psi.PsiElement
 import com.intellij.usages.UsageTarget
 import com.intellij.usages.impl.rules.UsageType
-import com.intellij.usages.impl.rules.UsageTypeProvider
 import com.intellij.usages.impl.rules.UsageTypeProviderEx
 import org.move.lang.core.psi.MvNamedAddress
-import org.move.lang.core.psi.MvNamedElement
 
 class NamedAddressUsageTypeProvider : UsageTypeProviderEx {
     override fun getUsageType(element: PsiElement?, targets: Array<out UsageTarget>): UsageType? {

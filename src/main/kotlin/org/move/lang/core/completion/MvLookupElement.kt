@@ -2,11 +2,13 @@ package org.move.lang.core.completion
 
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementDecorator
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvBindingPat
+import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.inferredTy
+import org.move.lang.core.psi.returnTy
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.isCompatible
-import org.move.lang.core.types.infer.functionInferenceCtx
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 

@@ -4,7 +4,10 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.*
+import org.move.utils.tests.FileTreeBuilder
+import org.move.utils.tests.MvProjectTestBase
+import org.move.utils.tests.TestProject
+import org.move.utils.tests.replaceCaretMarker
 
 class CompletionTestProjectFixture(
     val codeInsightFixture: CodeInsightTestFixture

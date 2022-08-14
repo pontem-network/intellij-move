@@ -7,8 +7,8 @@ package org.move.lang.core.completion.sort
 
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementWeigher
-import org.move.lang.core.completion.MvLookupElement
 import org.move.lang.core.completion.LookupElementProperties
+import org.move.lang.core.completion.MvLookupElement
 
 /**
  * A list of weighers that sort completion variants in the Rust plugin.

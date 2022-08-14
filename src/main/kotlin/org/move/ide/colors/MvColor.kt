@@ -1,9 +1,9 @@
 package org.move.ide.colors
 
 import com.intellij.lang.annotation.HighlightSeverity
-import com.intellij.openapi.editor.DefaultLanguageHighlighterColors as Default
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.options.colors.AttributesDescriptor
+import com.intellij.openapi.editor.DefaultLanguageHighlighterColors as Default
 
 enum class MvColor(humanName: String, default: TextAttributesKey? = null) {
     VARIABLE("Variables//Default", Default.IDENTIFIER),

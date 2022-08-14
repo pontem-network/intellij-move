@@ -2,10 +2,6 @@ package org.move.cli.toolwindow
 
 import com.intellij.ui.treeStructure.SimpleTree
 import org.move.cli.MoveProject
-import org.move.cli.scripts.RunScriptDialog
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import javax.swing.SwingUtilities
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeSelectionModel
 

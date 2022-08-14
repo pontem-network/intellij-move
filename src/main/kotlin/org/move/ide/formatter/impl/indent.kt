@@ -3,9 +3,9 @@ package org.move.ide.formatter.impl
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
 import org.move.ide.formatter.MvFormatterBlock
-import org.move.lang.MvElementTypes.*
+import org.move.lang.MvElementTypes.ADDRESS_BLOCK
+import org.move.lang.MvElementTypes.CODE_BLOCK_EXPR
 import org.move.lang.core.psi.*
-import org.move.lang.core.tokenSetOf
 
 fun MvFormatterBlock.computeIndent(child: ASTNode): Indent? {
     val nodePsi = node.psi

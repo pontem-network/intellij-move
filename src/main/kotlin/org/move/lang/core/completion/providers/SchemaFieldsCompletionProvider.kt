@@ -8,7 +8,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.createCompletionLookupElement
 import org.move.lang.core.psi.MvSchemaLitField
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.fieldBindings
+import org.move.lang.core.psi.ext.fieldNames
+import org.move.lang.core.psi.ext.schema
+import org.move.lang.core.psi.ext.schemaLit
 import org.move.lang.core.withParent
 
 object SchemaFieldsCompletionProvider: MvCompletionProvider() {

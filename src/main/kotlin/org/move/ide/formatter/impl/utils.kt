@@ -4,8 +4,8 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet.orSet
-import org.move.lang.MvElementTypes.*
 import org.move.lang.MoveFile
+import org.move.lang.MvElementTypes.*
 import org.move.lang.core.psi.*
 import com.intellij.psi.tree.TokenSet.create as ts
 

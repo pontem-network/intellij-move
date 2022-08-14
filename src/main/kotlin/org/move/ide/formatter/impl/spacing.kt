@@ -17,8 +17,8 @@ import org.move.lang.MvElementTypes.*
 import org.move.lang.core.MOVE_COMMENTS
 import org.move.lang.core.MOVE_KEYWORDS
 import org.move.lang.core.psi.MvAddressBlock
-import org.move.lang.core.psi.MvModuleBlock
 import org.move.lang.core.psi.MvModule
+import org.move.lang.core.psi.MvModuleBlock
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
 import org.move.lang.core.tokenSetOf
