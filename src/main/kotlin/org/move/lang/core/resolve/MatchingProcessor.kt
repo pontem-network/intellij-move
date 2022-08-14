@@ -2,22 +2,22 @@ package org.move.lang.core.resolve
 
 import org.move.lang.core.psi.MvNamedElement
 
-data class SimpleScopeEntry(
+data class SimpleScopeEntry<T : MvNamedElement>(
     val name: String,
-    val element: MvNamedElement
+    val element: T
 )
 
-fun interface MatchingProcessor {
-    fun match(entry: SimpleScopeEntry): Boolean
+fun interface MatchingProcessor<T : MvNamedElement> {
+    fun match(entry: SimpleScopeEntry<T>): Boolean
 
-    fun match(itemVis: ItemVis, element: MvNamedElement): Boolean {
-        if (!element.isVisibleInScopes(itemVis)) return false
+    fun match(itemVis: ItemVis, element: T): Boolean {
+        if (!element.isVisibleInScope(itemVis.itemScope)) return false
         val name = element.name ?: return false
         val entry = SimpleScopeEntry(name, element)
         return match(entry)
     }
 
-    fun matchAll(itemVis: ItemVis, vararg collections: Iterable<MvNamedElement>): Boolean =
+    fun matchAll(itemVis: ItemVis, vararg collections: Iterable<T>): Boolean =
         listOf(*collections)
             .flatten()
             .any { match(itemVis, it) }

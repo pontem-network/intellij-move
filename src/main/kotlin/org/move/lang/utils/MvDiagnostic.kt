@@ -8,7 +8,7 @@ import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import org.move.ide.annotator.MvAnnotationHolder
-import org.move.ide.presentation.shortPresentableText
+import org.move.ide.presentation.text
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.startOffset
 import org.move.lang.core.types.infer.TypeFoldable
@@ -44,8 +44,8 @@ sealed class MvDiagnostic(
             expectedTy.visitWith(visitor) || actualTy.visitWith(visitor)
 
         private fun expectedFound(expectedTy: Ty, actualTy: Ty): String {
-            return "expected `${expectedTy.shortPresentableText(true)}`" +
-                    ", found `${actualTy.shortPresentableText(true)}`"
+            return "expected `${expectedTy.text(true)}`" +
+                    ", found `${actualTy.text(true)}`"
         }
     }
 

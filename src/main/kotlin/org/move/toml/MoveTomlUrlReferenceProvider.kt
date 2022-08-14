@@ -9,7 +9,7 @@ import org.toml.lang.psi.TomlLiteral
 import org.toml.lang.psi.ext.TomlLiteralKind
 import org.toml.lang.psi.ext.kind
 
-class MoveTomlUrlReferenceProvider: PsiReferenceProvider() {
+class MoveTomlUrlReferenceProvider : PsiReferenceProvider() {
     override fun getReferencesByElement(element: PsiElement, context: ProcessingContext): Array<PsiReference> {
         val literal = element as? TomlLiteral ?: return emptyArray()
         val kind = (literal.kind as? TomlLiteralKind.String) ?: return emptyArray()

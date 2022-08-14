@@ -7,22 +7,6 @@ import org.move.lang.core.psi.ext.mutable
 import org.move.lang.core.psi.ext.typeArguments
 import org.move.lang.core.types.ty.*
 
-//fun tyFromBuiltinTypeLabel(label: String): Ty {
-//    return when (label) {
-//        in INTEGER_TYPE_IDENTIFIERS -> TyInteger.fromName(label)!!
-//        "bool" -> TyBool
-//        "address" -> TyAddress
-//        "signer" -> TySigner
-//        "vector" -> {
-//            val itemTy = moveType.path.typeArguments
-//                .firstOrNull()
-//                ?.type
-//                ?.let { inferMvTypeTy(it) } ?: TyUnknown
-//            return TyVector(itemTy)
-//        }
-//        else -> TyUnknown
-//}
-
 fun inferBuiltinTypeTy(moveType: MvPathType, msl: Boolean): Ty {
     val refName = moveType.path.referenceName ?: return TyUnknown
     if (msl && refName in SPEC_INTEGER_TYPE_IDENTIFIERS) return TyInteger.fromName("num")
@@ -58,10 +42,10 @@ fun inferTypeTy(moveType: MvType, msl: Boolean): Ty {
             }
         }
         is MvRefType -> {
-            val mutability = Mutability.valueOf(moveType.mutable)
-            val innerTypeRef = moveType.type ?: return TyReference(TyUnknown, mutability, msl)
+            val mutabilities = RefPermissions.valueOf(moveType.mutable)
+            val innerTypeRef = moveType.type ?: return TyReference(TyUnknown, mutabilities, msl)
             val innerTy = inferTypeTy(innerTypeRef, msl)
-            TyReference(innerTy, mutability, msl)
+            TyReference(innerTy, mutabilities, msl)
         }
         is MvTupleType -> {
             val innerTypes = moveType.typeList.map { inferTypeTy(it, msl) }

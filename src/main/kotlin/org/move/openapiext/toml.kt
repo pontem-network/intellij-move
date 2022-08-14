@@ -1,7 +1,6 @@
 package org.move.openapiext
 
 import org.move.lang.core.psi.ext.ancestorStrict
-import org.toml.lang.psi.TomlFile
 import org.toml.lang.psi.*
 import org.toml.lang.psi.ext.elementType
 

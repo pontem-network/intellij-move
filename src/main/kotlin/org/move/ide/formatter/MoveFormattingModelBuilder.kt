@@ -11,8 +11,10 @@ class MvFormattingModelBuilder : FormattingModelBuilder {
             Indent.getNoneIndent(),
             MvFmtContext.create(formattingContext.codeStyleSettings)
         )
-        return FormattingModelProvider.createFormattingModelForPsiFile(formattingContext.containingFile,
-                                                                       formatterBlock,
-                                                                       formattingContext.codeStyleSettings)
+        return FormattingModelProvider.createFormattingModelForPsiFile(
+            formattingContext.containingFile,
+            formatterBlock,
+            formattingContext.codeStyleSettings
+        )
     }
 }

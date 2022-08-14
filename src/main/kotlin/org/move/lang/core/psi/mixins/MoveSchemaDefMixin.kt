@@ -7,7 +7,7 @@ import org.move.lang.core.psi.ext.module
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 
 abstract class MvSchemaMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
-                                                  MvSchema {
+                                              MvSchema {
     override fun getIcon(flags: Int) = MoveIcons.SCHEMA
 
     override val fqName: String

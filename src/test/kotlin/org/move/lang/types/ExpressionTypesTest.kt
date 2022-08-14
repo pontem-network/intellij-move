@@ -425,4 +425,53 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }        
     """)
+
+    fun `test type of plus with invalid arguments`() = testExpr("""
+    module 0x1::M {
+        fun add(a: bool, b: bool) {
+            (a + b);
+          //^ <unknown>  
+        }
+    }    
+    """)
+
+    fun `test struct lit with generic of type with incorrect abilities`() = testExpr("""
+    module 0x1::M {
+        struct S<phantom Message: store> {}
+        struct R has copy {  }
+        fun main() {
+            S<R> {};
+          //^ 0x1::M::S<<unknown>>  
+        }
+    }    
+    """)
+
+    fun `test while expr returns unit`() = testExpr("""
+    module 0x1::M {
+        fun main() {
+            let a = while (true) { 1; };
+            a;
+          //^ ()  
+        }
+    }    
+    """)
+
+    fun `test return value from block`() = testExpr("""
+    module 0x1::M {
+        fun main() {
+            let a = { 1u8 };
+            a;
+          //^ u8  
+        }
+    }    
+    """)
+
+    fun `test if else return`() = testExpr("""
+    module 0x1::M {
+        fun main(): u8 {
+            if (true) { return 1 } else { return 2 }
+          //^ <never>  
+        }
+    }    
+    """)
 }

@@ -6,14 +6,15 @@ import com.intellij.ui.tree.StructureTreeModel
 import com.intellij.ui.treeStructure.CachingSimpleNode
 import com.intellij.ui.treeStructure.SimpleNode
 import com.intellij.ui.treeStructure.SimpleTreeStructure
-import com.intellij.util.containers.toArray
 import org.move.cli.MovePackage
 import org.move.cli.MoveProject
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.psi.ext.entryFunctions
+import org.move.lang.core.psi.ext.isTest
+import org.move.lang.core.psi.ext.isTestOnly
+import org.move.lang.core.psi.ext.testFunctions
 import org.move.lang.modules
 import org.move.stdext.iterateMoveFiles
 
@@ -80,7 +81,8 @@ class MoveProjectsTreeStructure(
             override fun toTestString(): String = "Package($name)"
         }
 
-        class Project(val moveProject: MoveProject, parent: SimpleNode) : Package(moveProject.currentPackage, parent) {
+        class Project(val moveProject: MoveProject, parent: SimpleNode) :
+            Package(moveProject.currentPackage, parent) {
             override fun buildChildren(): Array<SimpleNode> {
                 val dependencyPackages = moveProject.dependencies.map { it.first }
                 return arrayOf(
@@ -93,10 +95,11 @@ class MoveProjectsTreeStructure(
             override fun toTestString(): String = "Project($name)"
         }
 
-        class DependencyPackages(val packages: List<MovePackage>, parent: SimpleNode): MoveSimpleNode(parent) {
+        class DependencyPackages(val packages: List<MovePackage>, parent: SimpleNode) : MoveSimpleNode(parent) {
             override fun buildChildren(): Array<SimpleNode> {
                 return packages.map { Package(it, this) }.toTypedArray()
             }
+
             override fun getName(): String = "Dependencies"
             override fun toTestString(): String = "Dependencies"
         }

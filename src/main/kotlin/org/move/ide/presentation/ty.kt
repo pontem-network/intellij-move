@@ -23,7 +23,7 @@ fun Ty.nameNoArgs(): String {
 }
 
 fun Ty.name(): String {
-    return shortPresentableText(fq = false)
+    return text(fq = false)
 }
 
 fun Ty.fullnameNoArgs(): String {
@@ -31,7 +31,7 @@ fun Ty.fullnameNoArgs(): String {
 }
 
 fun Ty.fullname(): String {
-    return shortPresentableText(fq = true)
+    return text(fq = true)
 }
 
 fun Ty.typeLabel(relativeTo: MvElement): String {
@@ -43,17 +43,21 @@ fun Ty.typeLabel(relativeTo: MvElement): String {
     }
 }
 
-fun Ty.shortPresentableText(fq: Boolean = false): String =
-    render(this,
-           level = 3,
-           fq = fq)
+fun Ty.text(fq: Boolean = false): String =
+    render(
+        this,
+        level = 3,
+        fq = fq
+    )
 
 val Ty.insertionSafeText: String
-    get() = render(this,
-                   level = Int.MAX_VALUE,
-                   unknown = "_",
-                   anonymous = "_",
-                   integer = "_")
+    get() = render(
+        this,
+        level = Int.MAX_VALUE,
+        unknown = "_",
+        anonymous = "_",
+        integer = "_"
+    )
 
 fun tyToString(ty: Ty) = render(ty, Int.MAX_VALUE)
 
@@ -81,6 +85,7 @@ private fun render(
                     ty.kind.toString()
                 }
             }
+            is TyNever -> "<never>"
             else -> error("unreachable")
         }
     }
@@ -100,7 +105,7 @@ private fun render(
         }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
         is TyVector -> "vector<${render(ty.item, level, unknown, anonymous, integer, fq)}>"
-        is TyReference -> "${if (ty.mutability.isMut) "&mut " else "&"}${
+        is TyReference -> "${if (ty.permissions.contains(RefPermissions.WRITE)) "&mut " else "&"}${
             render(ty.referenced, level, unknown, anonymous, integer, fq)
         }"
 //        is TyTraitObject -> ty.trait.name ?: anonymous

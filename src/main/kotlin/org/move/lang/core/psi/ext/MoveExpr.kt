@@ -1,10 +1,10 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.functionInferenceCtx
 import org.move.lang.core.types.infer.inferExprExpectedTy
 import org.move.lang.core.types.infer.inferExprTy
-import org.move.lang.core.types.infer.functionInferenceCtx
 import org.move.lang.core.types.ty.Ty
 
 fun MvExpr.inferredTy(): Ty {

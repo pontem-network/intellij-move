@@ -7,9 +7,11 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.descendantsOfType
-import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.inferredTy
+import org.move.lang.core.psi.MvBindingPat
+import org.move.lang.core.psi.MvLetStmt
+import org.move.lang.core.psi.MvPat
 import org.move.lang.core.psi.ext.endOffset
+import org.move.lang.core.psi.ext.inferredTy
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.functionInferenceCtx

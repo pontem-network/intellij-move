@@ -9,7 +9,8 @@ import org.move.ide.presentation.acquireableIn
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.ide.presentation.nameNoArgs
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.acquiresTys
+import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.inferenceCtx
 import org.move.lang.core.types.ty.Ty
 

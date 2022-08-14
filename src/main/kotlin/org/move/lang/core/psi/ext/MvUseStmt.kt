@@ -23,39 +23,43 @@ val MvUseStmt.addressRef: MvAddressRef?
         return null
     }
 
-val MvUseStmt.useGroupLevel: Int get() {
-    if (this.isTestOnly) return 4
-    return this.addressRef?.useGroupLevel ?: -1
-}
-
-val MvUseStmt.fqModuleText: String? get() {
-    val fqModuleRef = this.fqModuleRef ?: return null
-    return fqModuleRef.text
-}
-
-val MvUseStmt.fqModuleRef: MvFQModuleRef? get() {
-    val moduleUseSpeck = this.moduleUseSpeck
-    if (moduleUseSpeck != null) {
-        return moduleUseSpeck.fqModuleRef
+val MvUseStmt.useGroupLevel: Int
+    get() {
+        if (this.isTestOnly) return 4
+        return this.addressRef?.useGroupLevel ?: -1
     }
-    val itemUseSpeck = this.itemUseSpeck
-    if (itemUseSpeck != null) {
-        return itemUseSpeck.fqModuleRef
-    }
-    return null
-}
 
-val MvUseStmt.childUseItems: List<MvUseItem> get() {
-    val itemUseSpeck = this.itemUseSpeck
-    if (itemUseSpeck != null) {
-        val group = itemUseSpeck.useItemGroup
-        if (group != null) {
-            return group.useItemList
+val MvUseStmt.fqModuleText: String?
+    get() {
+        val fqModuleRef = this.fqModuleRef ?: return null
+        return fqModuleRef.text
+    }
+
+val MvUseStmt.fqModuleRef: MvFQModuleRef?
+    get() {
+        val moduleUseSpeck = this.moduleUseSpeck
+        if (moduleUseSpeck != null) {
+            return moduleUseSpeck.fqModuleRef
         }
-        return itemUseSpeck.useItem.wrapWithList()
+        val itemUseSpeck = this.itemUseSpeck
+        if (itemUseSpeck != null) {
+            return itemUseSpeck.fqModuleRef
+        }
+        return null
     }
-    return emptyList()
-}
+
+val MvUseStmt.childUseItems: List<MvUseItem>
+    get() {
+        val itemUseSpeck = this.itemUseSpeck
+        if (itemUseSpeck != null) {
+            val group = itemUseSpeck.useItemGroup
+            if (group != null) {
+                return group.useItemList
+            }
+            return itemUseSpeck.useItem.wrapWithList()
+        }
+        return emptyList()
+    }
 
 val MvUseStmt.useSpeckText: String
     get() {

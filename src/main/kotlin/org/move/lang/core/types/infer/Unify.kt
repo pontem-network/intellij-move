@@ -9,6 +9,7 @@ interface DAGNodeOrValue
 interface DAGNode : DAGNodeOrValue {
     var next: DAGNodeOrValue
 }
+
 data class DAGValue<out V>(val value: V?) : DAGNodeOrValue
 
 /**

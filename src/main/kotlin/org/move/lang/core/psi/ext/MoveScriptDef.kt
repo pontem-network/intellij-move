@@ -1,7 +1,8 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.lang.ASTNode
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvBindingPat
+import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvScript
 
 fun MvScript.allFunctions(): List<MvFunction> = scriptBlock?.functionList.orEmpty()
 

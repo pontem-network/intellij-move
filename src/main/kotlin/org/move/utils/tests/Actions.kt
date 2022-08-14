@@ -21,12 +21,13 @@ fun CodeInsightTestFixture.launchAction(
         }
     }, testRootDisposable)
 
-    val action = ActionManager.getInstance().getAction(actionId) ?: error("Failed to find action by `$actionId` id")
+    val action =
+        ActionManager.getInstance().getAction(actionId) ?: error("Failed to find action by `$actionId` id")
     val presentation = testAction(action)
     if (shouldBeEnabled) {
         check(presentation.isEnabledAndVisible) { "Failed to run `${action.javaClass.simpleName}` action" }
     } else {
-        check(!presentation.isEnabledAndVisible) { "`${action.javaClass.simpleName}` action shouldn't be enabled"}
+        check(!presentation.isEnabledAndVisible) { "`${action.javaClass.simpleName}` action shouldn't be enabled" }
     }
     return presentation
 }

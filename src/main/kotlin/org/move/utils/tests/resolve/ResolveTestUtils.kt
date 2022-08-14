@@ -4,7 +4,11 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 
-fun checkResolvedFile(actualResolveFile: VirtualFile, expectedFilePath: String, pathResolver: (String) -> VirtualFile?): TestResolveResult {
+fun checkResolvedFile(
+    actualResolveFile: VirtualFile,
+    expectedFilePath: String,
+    pathResolver: (String) -> VirtualFile?
+): TestResolveResult {
     if (expectedFilePath.startsWith("...")) {
         if (!actualResolveFile.path.endsWith(expectedFilePath.drop(3))) {
             return TestResolveResult.Err("Should resolve to $expectedFilePath, was ${actualResolveFile.path} instead")

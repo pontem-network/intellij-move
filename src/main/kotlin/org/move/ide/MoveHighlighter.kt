@@ -5,10 +5,10 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
 import org.move.ide.colors.MvColor
-import org.move.lang.MvElementTypes.*
 import org.move.lang.MoveParserDefinition.Companion.BLOCK_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
+import org.move.lang.MvElementTypes.*
 import org.move.lang.core.MOVE_KEYWORDS
 import org.move.lang.core.lexer.createMoveLexer
 
@@ -34,7 +34,7 @@ class MvHighlighter : SyntaxHighlighterBase() {
             COMMA -> MvColor.COMMA
 
             BYTE_STRING_LITERAL, HEX_STRING_LITERAL -> MvColor.STRING
-            INTEGER_LITERAL-> MvColor.NUMBER
+            INTEGER_LITERAL -> MvColor.NUMBER
 
             in MOVE_KEYWORDS, BOOL_LITERAL -> MvColor.KEYWORD
             else -> null

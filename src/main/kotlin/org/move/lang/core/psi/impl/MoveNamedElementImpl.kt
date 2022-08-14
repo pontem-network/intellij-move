@@ -2,7 +2,9 @@ package org.move.lang.core.psi.impl
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvElementImpl
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.psiFactory
 
 abstract class MvNamedElementImpl(node: ASTNode) : MvElementImpl(node),
                                                    MvNamedElement {

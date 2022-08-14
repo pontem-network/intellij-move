@@ -9,7 +9,10 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.mixins.declaredTy
-import org.move.lang.core.types.infer.*
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.collectBindings
+import org.move.lang.core.types.infer.inferExprTy
+import org.move.lang.core.types.infer.inferTypeTy
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.Icon

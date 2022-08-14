@@ -6,7 +6,7 @@ import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.psi.ext.ability
 
 
-data class TyTypeParameter(val parameter: MvTypeParameter): Ty {
+data class TyTypeParameter(val parameter: MvTypeParameter) : Ty {
 
     val name: String? get() = parameter.name
 

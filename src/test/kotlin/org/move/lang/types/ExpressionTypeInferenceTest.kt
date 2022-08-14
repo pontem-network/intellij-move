@@ -173,12 +173,83 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
     }    
     """)
 
-    fun `test integer type inference with return type`() = testExpr("""
+    fun `test integer type inference with tail expr type`() = testExpr("""
     module 0x1::M {
         fun get_u8(): u8 {
             let a = 1;
             a
           //^ u8  
+        }
+    }    
+    """)
+
+    fun `test integer type inference with return expr type`() = testExpr("""
+    module 0x1::M {
+        fun get_u8(): u8 {
+            let a = 1;
+            a;
+          //^ u8  
+            return a
+        }
+    }    
+    """)
+
+    fun `test integer multi statement inside if expr block`() = testExpr("""
+    module 0x1::M {
+        fun put(i: u64, val: u64) {}
+        fun main() {
+            let i = 0;
+            if (i < 10) {
+                put(i, 10);
+                i = i + 1;
+            };
+            i;
+          //^ u64  
+        }
+    }    
+    """)
+
+    fun `test integer multi statement inside else expr block`() = testExpr("""
+    module 0x1::M {
+        fun put(i: u64, val: u64) {}
+        fun main() {
+            let i = 0;
+            if (i < 10) {
+                i = i + 1;
+            } else { 
+                put(i, 10);
+                i = i + 1;
+            };
+            i;
+          //^ u64  
+        }
+    }    
+    """)
+
+    fun `test integer multi statement inside block expr`() = testExpr("""
+    module 0x1::M {
+        fun put(i: u64, val: u64) {}
+        fun main() {
+            let i = 0;
+            {
+                put(i, 10);
+                i = i + 1;
+            };
+            i;
+          //^ u64  
+        }
+    }    
+    """)
+
+    fun `test if block bindings are isolated from outside`() = testExpr("""
+    module 0x1::M {
+        fun main() {
+            let i = 1u8;
+            if (true) {
+                let i = 1u64;
+            };
+            i;
+          //^ u8 
         }
     }    
     """)

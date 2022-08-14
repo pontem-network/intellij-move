@@ -70,7 +70,7 @@ interface MvAlignmentStrategy {
          */
         fun wrap(alignment: Alignment = Alignment.createAlignment()): MvAlignmentStrategy =
             object : MvAlignmentStrategy {
-                override fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MvFmtContext): Alignment? =
+                override fun getAlignment(child: ASTNode, parent: ASTNode?, childCtx: MvFmtContext): Alignment =
                     alignment
             }
 

@@ -6,7 +6,6 @@ import org.move.lang.core.psi.MvStructPatField
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.instantiateItemTy
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
 
 val MvStructPat.fields: List<MvStructPatField>

@@ -50,7 +50,6 @@ class AsyncValue<T>(initial: T) {
                         }
                         result.completeExceptionally(err)
                     }
-                    Unit
                 }
         }
         startUpdateProcessing()
@@ -111,7 +110,12 @@ fun <V> Future<V>.getWithCheckCanceled(timeoutMillis: Long): V {
 }
 
 fun <T> Lock.withLockAndCheckingCancelled(action: () -> T): T =
-    ProgressIndicatorUtils.computeWithLockAndCheckingCanceled<T, Exception>(this, 10, TimeUnit.MILLISECONDS, action)
+    ProgressIndicatorUtils.computeWithLockAndCheckingCanceled<T, Exception>(
+        this,
+        10,
+        TimeUnit.MILLISECONDS,
+        action
+    )
 
 fun Condition.awaitWithCheckCancelled() {
     ProgressIndicatorUtils.awaitWithCheckCanceled(this)

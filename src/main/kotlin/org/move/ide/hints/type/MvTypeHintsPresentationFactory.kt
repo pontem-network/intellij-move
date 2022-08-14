@@ -2,11 +2,8 @@ package org.move.ide.hints.type
 
 import com.intellij.codeInsight.hints.presentation.InlayPresentation
 import com.intellij.codeInsight.hints.presentation.PresentationFactory
-import org.move.ide.presentation.shortPresentableText
-import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyReference
-import org.move.lang.core.types.ty.TyTuple
-import org.move.lang.core.types.ty.TyTypeParameter
+import org.move.ide.presentation.text
+import org.move.lang.core.types.ty.*
 
 @Suppress("UnstableApiUsage")
 class MvTypeHintsPresentationFactory(private val factory: PresentationFactory) {
@@ -19,7 +16,7 @@ class MvTypeHintsPresentationFactory(private val factory: PresentationFactory) {
         is TyTuple -> tupleTypeHint(ty, level)
         is TyReference -> referenceTypeHint(ty, level)
         is TyTypeParameter -> typeParameterTypeHint(ty)
-        else -> text(ty.shortPresentableText(false))
+        else -> text(ty.text(false))
     }
 
     private fun tupleTypeHint(type: TyTuple, level: Int): InlayPresentation =
@@ -32,7 +29,7 @@ class MvTypeHintsPresentationFactory(private val factory: PresentationFactory) {
         )
 
     private fun referenceTypeHint(type: TyReference, level: Int): InlayPresentation = listOf(
-        text("&" + if (type.mutability.isMut) "mut " else ""),
+        text("&" + if (type.permissions.contains(RefPermissions.WRITE)) "mut " else ""),
         hint(type.referenced, level) // level is not incremented intentionally
     ).join()
 

@@ -5,7 +5,6 @@ import com.intellij.psi.PsiRecursiveVisitor
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.allFunctions
 import org.move.lang.core.psi.ext.constBindings
-import org.move.lang.core.psi.ext.consts
 import org.move.lang.core.psi.ext.structs
 
 abstract class MvNamedElementsVisitor : MvVisitor(), PsiRecursiveVisitor {

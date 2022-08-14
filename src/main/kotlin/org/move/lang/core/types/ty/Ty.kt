@@ -1,6 +1,5 @@
 package org.move.lang.core.types.ty
 
-import org.move.lang.core.psi.MvElement
 import org.move.lang.core.types.infer.TypeFoldable
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor

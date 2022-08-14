@@ -12,5 +12,4 @@ class MvWordsScanner : DefaultWordsScanner(
     tokenSetOf(IDENTIFIER),
     MOVE_COMMENTS,
     tokenSetOf(BYTE_STRING_LITERAL)
-) {
-}
+)

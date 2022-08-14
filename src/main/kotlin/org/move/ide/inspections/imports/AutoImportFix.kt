@@ -14,7 +14,10 @@ import org.move.lang.MoveFile
 import org.move.lang.core.completion.DefaultInsertHandler
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ItemScope
+import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.MvReferenceElement
+import org.move.lang.core.resolve.mslScope
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.moveProject
 import org.move.openapiext.checkWriteAccessAllowed

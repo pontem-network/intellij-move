@@ -95,27 +95,35 @@ class MoveProjectsService(val project: Project) : Disposable {
 
     private fun findMoveProject(file: VirtualFile): MoveProject? {
         val cached = this.projectsIndex.get(file)
-        if (cached is IndexEntry.Present) {
-            return cached.value
-        }
-        if (isUnitTestMode && file.fileSystem is TempFileSystem) {
-            return MoveProject.forTests(project)
-        }
+        if (cached is IndexEntry.Present) return cached.value
+
+        if (isUnitTestMode && file.fileSystem is TempFileSystem) return MoveProject.forTests(project)
 
         val filePath = file.toNioPathOrNull() ?: return null
-        var moveProject: MoveProject? = null
+
+        var resProject: MoveProject? = null
+        val depthSortedProjects = this.projects.state.sortedByDescending { it.contentRoot.fsDepth }
+        // first go through all the root packages of the projects
+        for (candidate in depthSortedProjects) {
+            val candidateRoot = candidate.currentPackage.contentRoot.toNioPathOrNull() ?: continue
+            if (filePath.startsWith(candidateRoot)) {
+                resProject = candidate
+                break
+            }
+        }
+        // go through dependencies
         for (candidate in this.projects.state) {
-            if (moveProject != null) break
-            for (movePackage in candidate.movePackages()) {
-                val packageRoot = movePackage.contentRoot.toNioPathOrNull() ?: continue
-                if (filePath.startsWith(packageRoot)) {
-                    moveProject = candidate
+            if (resProject != null) break
+            for (depPackage in candidate.depPackages()) {
+                val depRoot = depPackage.contentRoot.toNioPathOrNull() ?: continue
+                if (filePath.startsWith(depRoot)) {
+                    resProject = candidate
                     break
                 }
             }
         }
-        this.projectsIndex.put(file, IndexEntry.Present(moveProject))
-        return moveProject
+        this.projectsIndex.put(file, IndexEntry.Present(resProject))
+        return resProject
     }
 
 

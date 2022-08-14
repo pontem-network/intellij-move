@@ -3,10 +3,12 @@ package org.move.lang.core.completion.providers
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
-import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.completion.*
+import org.move.lang.core.completion.KEYWORD_PRIORITY
+import org.move.lang.core.completion.addSuffix
+import org.move.lang.core.completion.alreadyHasSpace
+import org.move.lang.core.completion.withPriority
 import org.move.lang.core.psi.ext.isErrorElement
 import org.move.lang.core.psi.ext.isWhitespace
 import org.move.lang.core.psi.ext.rightSiblings

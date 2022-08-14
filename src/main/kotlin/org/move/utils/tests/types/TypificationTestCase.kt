@@ -1,7 +1,7 @@
 package org.move.utils.tests.types
 
 import org.intellij.lang.annotations.Language
-import org.move.ide.presentation.shortPresentableText
+import org.move.ide.presentation.text
 import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.psi.ext.expectedTy
 import org.move.lang.core.psi.ext.inferredTy
@@ -18,7 +18,7 @@ abstract class TypificationTestCase : MvTestBase() {
         val expectedType = data.trim()
 
         val ctx = expr.functionInferenceCtx(expr.isMsl())
-        val actualType = expr.expectedTy(ctx).shortPresentableText(true)
+        val actualType = expr.expectedTy(ctx).text(true)
         check(actualType == expectedType) {
             "Type mismatch. Expected $expectedType, found: $actualType"
         }
@@ -63,7 +63,7 @@ abstract class TypificationTestCase : MvTestBase() {
         val expectedType = data.trim()
 
 //        val ctx = InferenceContext(expr.isMsl())
-        val type = expr.inferredTy().shortPresentableText(true)
+        val type = expr.inferredTy().text(true)
         check(type == expectedType) {
             "Type mismatch. Expected $expectedType, found: $type"
         }

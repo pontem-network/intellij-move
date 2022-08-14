@@ -8,7 +8,6 @@ import com.intellij.util.ProcessingContext
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.ancestors
-import org.toml.lang.psi.TomlFile
 import org.toml.lang.psi.*
 
 private fun CompletionResultSet.addNames(names: Collection<String>) {

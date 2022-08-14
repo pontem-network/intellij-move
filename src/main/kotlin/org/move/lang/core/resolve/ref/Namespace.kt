@@ -53,6 +53,7 @@ enum class Namespace {
         fun allNames(): Set<Namespace> {
             return setOf(NAME, TYPE, SCHEMA, MODULE)
         }
+
         fun none(): Set<Namespace> = setOf()
     }
 }

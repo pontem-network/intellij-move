@@ -21,10 +21,11 @@ val MvUseItem.speck: MvElement?
         return ancestorStrict<MvUseStmt>()
     }
 
-val MvUseItem.moduleName: String get() {
-    val useStmt = this.ancestorStrict<MvUseStmt>()
-    return useStmt?.itemUseSpeck?.fqModuleRef?.referenceName.orEmpty()
-}
+val MvUseItem.moduleName: String
+    get() {
+        val useStmt = this.ancestorStrict<MvUseStmt>()
+        return useStmt?.itemUseSpeck?.fqModuleRef?.referenceName.orEmpty()
+    }
 
 class MvUseItemReferenceElement(element: MvUseItem) : MvReferenceCached<MvUseItem>(element) {
     override fun resolveInner(): List<MvNamedElement> {

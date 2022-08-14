@@ -9,9 +9,9 @@ import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.BitUtil
-import org.move.lang.MvElementTypes.*
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
+import org.move.lang.MvElementTypes.*
 import org.move.stdext.makeBitMask
 
 enum class FunModifier {
@@ -94,7 +94,8 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun patternIdent(b: PsiBuilder, level: Int): Boolean {
-        if (b.tokenType == FUNCTION_PATTERN_IDENT) { b.advanceLexer(); return true; }
+        if (b.tokenType == FUNCTION_PATTERN_IDENT) {
+            b.advanceLexer(); return true; }
         if (b.tokenType in tokenSetOf(MUL, IDENTIFIER)) {
             val marker = b.mark()
             while (true) {
@@ -218,7 +219,7 @@ object MoveParserUtil : GeneratedParserUtilBase() {
                     nativeEncountered = true
                     b.advanceLexer()
                 }
-                 contextualKeyword(b, "entry", ENTRY) -> {
+                contextualKeyword(b, "entry", ENTRY) -> {
                     if (FunModifier.ENTRY !in modifiersLeft) return isParsed()
                     modifiersLeft.remove(FunModifier.ENTRY)
                     parsed = true

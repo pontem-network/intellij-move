@@ -8,7 +8,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.KEYWORD_PRIORITY
 
-object TraitsCompletionProvider: CompletionProvider<CompletionParameters>() {
+object TraitsCompletionProvider : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,

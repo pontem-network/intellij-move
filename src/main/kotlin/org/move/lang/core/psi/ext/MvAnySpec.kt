@@ -2,8 +2,8 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ref.MvReference
 import org.move.lang.core.resolve.ref.MvNameSpecDefReferenceImpl
+import org.move.lang.core.resolve.ref.MvReference
 
 val MvItemSpec.item: MvNamedElement? get() = this.reference.resolve()
 

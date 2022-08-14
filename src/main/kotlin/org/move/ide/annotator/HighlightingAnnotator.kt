@@ -19,8 +19,10 @@ val GLOBAL_STORAGE_ACCESS_FUNCTIONS =
     setOf("move_from", "borrow_global", "borrow_global_mut", "exists", "freeze")
 val BUILTIN_FUNCTIONS =
     GLOBAL_STORAGE_ACCESS_FUNCTIONS + setOf("move_to")
-val SPEC_BUILTIN_FUNCTIONS = setOf("global", "len", "vec", "concat", "contains", "index_of", "range",
-                                   "in_range", "update_field", "old", "TRACE")
+val SPEC_BUILTIN_FUNCTIONS = setOf(
+    "global", "len", "vec", "concat", "contains", "index_of", "range",
+    "in_range", "update_field", "old", "TRACE"
+)
 
 class HighlightingAnnotator : MvAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {

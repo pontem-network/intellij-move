@@ -33,7 +33,7 @@ interface MoveSettingsListener {
 private const val settingsServiceName: String = "MoveProjectSettingsService_1"
 
 @Service
-@com.intellij.openapi.components.State(
+@State(
     name = settingsServiceName,
     storages = [
         Storage(StoragePathMacros.WORKSPACE_FILE),

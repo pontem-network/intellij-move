@@ -3,6 +3,7 @@ package org.move.utils.tests.annotation
 import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.util.indexing.FileBasedIndex
+import org.intellij.lang.annotations.Language
 import org.move.ide.inspections.imports.MoveElementsIndex
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
@@ -32,10 +33,24 @@ abstract class InspectionProjectTestBase(
         super.tearDown()
     }
 
+    protected fun checkByFileTree(
+        code: FileTreeBuilder.() -> Unit,
+        checkWarn: Boolean = true,
+        checkInfo: Boolean = false,
+        checkWeakWarn: Boolean = false
+    ) {
+        testProject(code)
+
+        FileBasedIndex.getInstance().requestRebuild(MoveElementsIndex.KEY)
+        PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+
+        annotationFixture.codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
+    }
+
     protected fun checkFixByFileTree(
         fixName: String,
         before: FileTreeBuilder.() -> Unit,
-        after: String,
+        @Language("Move") after: String,
         checkWarn: Boolean = true,
         checkInfo: Boolean = false,
         checkWeakWarn: Boolean = false

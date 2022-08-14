@@ -5,8 +5,10 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiFileImpl
 import com.intellij.psi.tree.IElementType
+import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
+import org.move.lang.core.psi.*
 
 fun <T> T?.wrapWithList(): List<T> = this?.let { listOf(it) }.orEmpty()
 fun <T> T?.wrapWithMutableList(): MutableList<T> = this?.let { listOf(it) }.orEmpty().toMutableList()
@@ -46,7 +48,7 @@ inline fun <reified T : PsiElement> PsiElement.ancestorStrict(stopAt: Class<out 
 inline fun <reified T : PsiElement> PsiElement.ancestorOrSelf(): T? =
     PsiTreeUtil.getParentOfType(this, T::class.java, false)
 
-fun <T: PsiElement> PsiElement.ancestorOfClass(psiClass: Class<T>, strict: Boolean = false): T? =
+fun <T : PsiElement> PsiElement.ancestorOfClass(psiClass: Class<T>, strict: Boolean = false): T? =
     PsiTreeUtil.getParentOfType(this, psiClass, strict)
 
 inline fun <reified T : PsiElement> PsiElement.hasAncestor(): Boolean =
@@ -176,3 +178,19 @@ fun PsiElement.isErrorElement(): Boolean =
 
 fun PsiElement.equalsTo(another: PsiElement): Boolean =
     PsiManager.getInstance(this.project).areElementsEquivalent(this, another)
+
+fun PsiElement.isMsl(): Boolean {
+    return CachedValuesManager.getProjectPsiDependentCache(this) {
+        if (this !is MvElement) return@getProjectPsiDependentCache false
+        val specElement = PsiTreeUtil.findFirstParent(it, false) { parent ->
+            parent is MvSpecFunction
+                    || parent is MvSpecBlockExpr
+                    || parent is MvSchema
+                    || parent is MvAnySpec
+        }
+        specElement != null
+    }
+}
+
+fun PsiElement.cameBefore(element: PsiElement) =
+    PsiUtilCore.compareElementsByPosition(this, element) <= 0

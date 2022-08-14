@@ -5,12 +5,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.MvPsiFactory
 import org.move.lang.core.psi.psiFactory
 import org.move.lang.core.stubs.MvNamedElementStub
 
 abstract class MvStubbedNamedElementImpl<StubT> : MvStubbedElementImpl<StubT>,
-                                                    MvNamedElement
+                                                  MvNamedElement
         where StubT : MvNamedElementStub, StubT : StubElement<*> {
 
     constructor(node: ASTNode) : super(node)

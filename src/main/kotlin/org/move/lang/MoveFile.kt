@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.Consts
 import org.move.cli.MoveProject
@@ -76,8 +77,10 @@ fun VirtualFile.toMoveFile(project: Project): MoveFile? = this.toPsiFile(project
 fun VirtualFile.toTomlFile(project: Project): TomlFile? = this.toPsiFile(project) as? TomlFile
 
 fun MoveFile.modules(): Sequence<MvModule> {
-    return this.childrenOfType<MvModule>()
-        .chain(this.childrenOfType<MvAddressDef>().flatMap { it.modules() })
+    return getProjectPsiDependentCache(this) {
+        it.childrenOfType<MvModule>()
+            .chain(it.childrenOfType<MvAddressDef>().flatMap { a -> a.modules() })
+    }
 }
 
 inline fun <reified T : PsiElement> PsiFile.elementAtOffset(offset: Int): T? =

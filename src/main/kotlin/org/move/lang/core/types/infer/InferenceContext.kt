@@ -1,11 +1,14 @@
 package org.move.lang.core.types.infer
 
 import com.intellij.openapi.util.Key
+import com.intellij.psi.PsiElement
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import com.jetbrains.rd.util.concurrentMapOf
+import org.move.ide.presentation.name
+import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.ty
@@ -19,40 +22,52 @@ fun MvElement.functionInferenceCtx(msl: Boolean = this.isMsl()): InferenceContex
 
 fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
     val ctx = CachedValuesManager.getCachedValue(this, TYPE_INFERENCE_KEY) {
-        val fctx = InferenceContext(msl)
+        val functionCtx = InferenceContext(msl)
         for (param in this.parameterBindings) {
-            fctx.bindingTypes[param] = param.inferredTy(fctx)
+            functionCtx.bindingTypes[param] = param.inferredTy(functionCtx)
         }
-        when (this) {
-            is MvFunction -> {
-                for (stmt in this.codeBlock?.stmtList.orEmpty()) {
-                    when (stmt) {
-                        is MvExprStmt -> {
-                            inferExprTy(stmt.expr, fctx)
-                        }
-
-                        is MvLetStmt -> {
-                            val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, fctx) }
-                            val patTy = stmt.declaredTy ?: initializerTy ?: TyUnknown
-                            val pat = stmt.pat ?: continue
-                            fctx.bindingTypes.putAll(collectBindings(pat, patTy))
-                        }
-                    }
-                    fctx.processConstraints()
-                    fctx.resolveTyVarsFromContext(fctx)
-                }
-                val tailExpr = this.codeBlock?.expr
-                if (tailExpr != null) {
-                    inferExprTy(tailExpr, fctx, expectedTy = this.returnTy)
-                    fctx.processConstraints()
-                    fctx.resolveTyVarsFromContext(fctx)
-                }
-            }
+        if (this is MvFunction) {
+            this.codeBlock?.let { inferCodeBlockTy(it, functionCtx, this.returnTy) }
         }
-        CachedValueProvider.Result(fctx, PsiModificationTracker.MODIFICATION_COUNT)
+        CachedValueProvider.Result(functionCtx, PsiModificationTracker.MODIFICATION_COUNT)
     }
     ctx.msl = msl
     return ctx
+}
+
+fun inferCodeBlockTy(block: MvCodeBlock, blockCtx: InferenceContext, expectedTy: Ty?): Ty {
+    for (stmt in block.stmtList) {
+        when (stmt) {
+            is MvExprStmt -> inferExprTy(stmt.expr, blockCtx)
+            is MvLetStmt -> {
+                val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, blockCtx) }
+                val patTy = stmt.declaredTy ?: initializerTy ?: TyUnknown
+                val pat = stmt.pat ?: continue
+                blockCtx.bindingTypes.putAll(collectBindings(pat, patTy))
+            }
+        }
+        blockCtx.processConstraints()
+        blockCtx.resolveTyVarsFromContext(blockCtx)
+    }
+    val tailExpr = block.expr
+    if (tailExpr == null) {
+        if (expectedTy != null && expectedTy !is TyUnit) {
+            blockCtx.typeErrors.add(
+                TypeError.TypeMismatch(
+                    block.rightBrace ?: block,
+                    expectedTy,
+                    TyUnit
+                )
+            )
+            return TyUnknown
+        }
+        return TyUnit
+    } else {
+        val tailExprTy = inferExprTy(tailExpr, blockCtx, expectedTy)
+        blockCtx.processConstraints()
+        blockCtx.resolveTyVarsFromContext(blockCtx)
+        return tailExprTy
+    }
 }
 
 fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
@@ -111,9 +126,6 @@ fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
     }
 }
 
-fun isCompatibleMutability(from: Mutability, to: Mutability): Boolean =
-    from == to || from.isMut && !to.isMut
-
 fun isCompatibleReferences(expectedTy: TyReference, inferredTy: TyReference): Boolean {
     return isCompatible(expectedTy.referenced, inferredTy.referenced)
 }
@@ -141,12 +153,8 @@ fun combineTys(ty1: Ty, ty2: Ty): Ty {
     return when {
         ty1 is TyReference && ty2 is TyReference
                 && isCompatible(ty1.referenced, ty2.referenced) -> {
-            val combinedMutability = if (ty1.mutability.isMut && ty2.mutability.isMut) {
-                Mutability.MUTABLE
-            } else {
-                Mutability.IMMUTABLE
-            }
-            TyReference(ty1.referenced, combinedMutability, ty1.msl || ty2.msl)
+            val combined = ty1.permissions.intersect(ty2.permissions)
+            TyReference(ty1.referenced, combined, ty1.msl || ty2.msl)
         }
 
         else -> ty1
@@ -157,12 +165,12 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
     val expectedTy = rawExpectedTy.mslTy()
     val inferredTy = rawInferredTy.mslTy()
     return when {
+        expectedTy is TyNever || inferredTy is TyNever -> true
         expectedTy is TyUnknown || inferredTy is TyUnknown -> true
         expectedTy is TyInfer.TyVar || inferredTy is TyInfer.TyVar -> {
             // check abilities
             true
         }
-
         expectedTy is TyInfer.IntVar && (inferredTy is TyInfer.IntVar || inferredTy is TyInteger) -> {
             true
         }
@@ -185,7 +193,8 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
                 && isCompatible(expectedTy.item, inferredTy.item) -> true
 
         expectedTy is TyReference && inferredTy is TyReference
-                && isCompatibleMutability(inferredTy.mutability, expectedTy.mutability) ->
+                // inferredTy permissions should be a superset of expectedTy permissions
+                && (expectedTy.permissions - inferredTy.permissions).isEmpty() ->
             isCompatibleReferences(expectedTy, inferredTy)
 
         expectedTy is TyStruct && inferredTy is TyStruct -> isCompatibleStructs(expectedTy, inferredTy)
@@ -194,26 +203,76 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
     }
 }
 
-data class TypeError(val element: MvElement, val expectedTy: Ty, val actualTy: Ty)
+sealed class Compat {
+    object Yes : Compat()
+    data class AbilitiesMismatch(val abilities: Set<Ability>) : Compat()
+}
+
+fun isCompatibleAbilities(expectedTy: Ty, actualTy: Ty, msl: Boolean): Compat {
+    // skip ability check for specs
+    if (msl) return Compat.Yes
+    val missingAbilities = expectedTy.abilities() - actualTy.abilities()
+    if (missingAbilities.isNotEmpty()) {
+        return Compat.AbilitiesMismatch(missingAbilities)
+    } else {
+        return Compat.Yes
+    }
+}
+
+sealed class TypeError(open val element: PsiElement) {
+    abstract fun message(): String
+
+    data class TypeMismatch(
+        override val element: PsiElement,
+        val expectedTy: Ty,
+        val actualTy: Ty
+    ) : TypeError(element) {
+        override fun message(): String {
+            return when (element) {
+                is MvReturnExpr -> "Invalid return type '${actualTy.name()}', expected '${expectedTy.name()}'"
+                else -> "Incompatible type '${actualTy.name()}', expected '${expectedTy.name()}'"
+            }
+        }
+    }
+
+    data class AbilitiesMismatch(
+        override val element: PsiElement,
+        val ty: Ty,
+        val abilities: Set<Ability>
+    ) : TypeError(element) {
+        override fun message(): String {
+            return "The type '${ty.text()}' " +
+                    "does not have required ability '${abilities.map { it.label() }.first()}'"
+        }
+
+    }
+
+    data class UnsupportedBinaryOp(
+        override val element: PsiElement,
+        val ty: Ty,
+        val op: String
+    ) : TypeError(element) {
+        override fun message(): String {
+            return "Invalid argument to '$op': " +
+                    "expected 'u8', 'u64', 'u128', but found '${ty.text()}'"
+        }
+
+    }
+}
 
 class InferenceContext(var msl: Boolean) {
-    val exprTypes = concurrentMapOf<MvExpr, Ty>()
-    val bindingTypes = concurrentMapOf<MvBindingPat, Ty>()
+    var exprTypes = concurrentMapOf<MvExpr, Ty>()
     var callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
-
-    val typeErrors = mutableListOf<TypeError>()
+    val bindingTypes = concurrentMapOf<MvBindingPat, Ty>()
+    var typeErrors = mutableListOf<TypeError>()
 
     val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
     val intUnificationTable = UnificationTable<TyInfer.IntVar, Ty>()
 
     private val solver = ConstraintSolver(this)
 
-    fun registerConstraint(constraint: EqualityConstraint) {
-        solver.registerConstraint(constraint)
-    }
-
-    fun addTypeError(sourceElement: MvElement, expectedTy: Ty, actualTy: Ty) {
-        this.typeErrors.add(TypeError(sourceElement, expectedTy, actualTy))
+    fun addConstraint(ty1: Ty, ty2: Ty) {
+        solver.registerConstraint(EqualityConstraint(ty1, ty2))
     }
 
     fun processConstraints(): Boolean {
@@ -257,5 +316,11 @@ class InferenceContext(var msl: Boolean) {
         }
     }
 
-
+    fun childContext(): InferenceContext {
+        val childContext = InferenceContext(this.msl)
+        childContext.exprTypes = this.exprTypes
+        childContext.callExprTypes = this.callExprTypes
+        childContext.typeErrors = this.typeErrors
+        return childContext
+    }
 }

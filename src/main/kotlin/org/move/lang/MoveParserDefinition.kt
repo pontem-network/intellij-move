@@ -47,8 +47,13 @@ class MoveParserDefinition : ParserDefinition {
     companion object {
         val FILE = IFileElementType(MoveLanguage)
 
-        @JvmField val BLOCK_COMMENT = MvTokenType("BLOCK_COMMENT")
-        @JvmField val EOL_COMMENT = MvTokenType("EOL_COMMENT")
-        @JvmField val EOL_DOC_COMMENT = MvTokenType("EOL_DOC_COMMENT")
+        @JvmField
+        val BLOCK_COMMENT = MvTokenType("BLOCK_COMMENT")
+
+        @JvmField
+        val EOL_COMMENT = MvTokenType("EOL_COMMENT")
+
+        @JvmField
+        val EOL_DOC_COMMENT = MvTokenType("EOL_DOC_COMMENT")
     }
 }

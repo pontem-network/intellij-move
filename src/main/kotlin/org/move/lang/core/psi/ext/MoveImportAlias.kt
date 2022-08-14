@@ -5,5 +5,4 @@ import org.move.lang.core.psi.MvUseAlias
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 
 abstract class MvUseAliasMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
-                                                MvUseAlias {
-}
+                                                MvUseAlias

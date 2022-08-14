@@ -1,6 +1,5 @@
 package org.move.ide.inspections
 
-import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.codeInspection.util.InspectionMessage
@@ -9,16 +8,21 @@ import org.move.ide.presentation.name
 import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.mixins.ty
 import org.move.lang.core.types.infer.*
-import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyFunction
+import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.core.types.ty.isTypeParam
 
 fun ProblemsHolder.registerTypeError(
     element: PsiElement,
     @InspectionMessage message: String,
-    vararg fixes: LocalQuickFix
 ) {
-    this.registerProblem(element, message, ProblemHighlightType.GENERIC_ERROR, *fixes)
+    this.registerProblem(element, message, ProblemHighlightType.GENERIC_ERROR)
+}
+
+fun ProblemsHolder.registerTypeError(typeError: TypeError) {
+    this.registerProblem(typeError.element, typeError.message(), ProblemHighlightType.GENERIC_ERROR)
 }
 
 class MvTypeCheckInspection : MvLocalInspectionTool() {
@@ -46,45 +50,11 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 }
             }
 
-            override fun visitCondition(cond: MvCondition) {
-                val expr = cond.expr ?: return
-                val exprTy = expr.inferredTy()
-                if (!isCompatible(exprTy, TyBool)) {
-                    holder.registerTypeError(
-                        expr,
-                        "Incompatible type '${exprTy.name()}', expected 'bool'"
-                    )
-                }
-            }
-
             override fun visitCodeBlock(codeBlock: MvCodeBlock) {
                 val fn = codeBlock.parent as? MvFunction ?: return
-                val returningExpr = codeBlock.returningExpr
-
-                val expectedReturnTy = fn.returnTy
-                val actualReturnTy = returningExpr?.inferredTy() ?: TyUnit
-                if (!isCompatible(expectedReturnTy, actualReturnTy)) {
-                    val annotatedElement = returningExpr as? PsiElement
-                        ?: codeBlock.rightBrace
-                        ?: codeBlock
-                    holder.registerTypeError(
-                        annotatedElement,
-                        invalidReturnTypeMessage(expectedReturnTy, actualReturnTy)
-                    )
-                }
-            }
-
-            override fun visitReturnExpr(returnExpr: MvReturnExpr) {
-                val outerFn = returnExpr.containingFunction ?: return
-
-                val expectedReturnTy = outerFn.returnTy
-                val actualReturnTy = returnExpr.expr?.inferredTy() ?: return
-                if (!isCompatible(expectedReturnTy, actualReturnTy)) {
-                    holder.registerTypeError(
-                        returnExpr,
-                        invalidReturnTypeMessage(expectedReturnTy, actualReturnTy)
-                    )
-                }
+                val inference = fn.inferenceCtx(fn.isMsl())
+                inference.typeErrors
+                    .forEach { holder.registerTypeError(it) }
             }
 
             override fun visitStructLitExpr(litExpr: MvStructLitExpr) {
@@ -108,23 +78,6 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                         val initExpr = field.expr ?: field
                         holder.registerTypeError(initExpr, message)
                     }
-                }
-            }
-
-            override fun visitPath(path: MvPath) {
-                val typeArguments = path.typeArguments
-                val item = path.reference?.resolve() as? MvTypeParametersOwner ?: return
-                if (item.typeParameters.size != typeArguments.size) return
-
-                for ((i, typeArgument) in typeArguments.withIndex()) {
-                    val typeParam = item.typeParameters[i]
-                    val argumentTy = typeArgument.type.ty()
-                    checkHasRequiredAbilities(
-                        holder,
-                        typeArgument.type,
-                        argumentTy,
-                        typeParam.ty()
-                    )
                 }
             }
 

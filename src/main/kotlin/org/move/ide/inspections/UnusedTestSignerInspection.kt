@@ -5,7 +5,6 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import org.move.lang.MvElementTypes.COMMA
-import org.move.lang.core.psi.MvAttr
 import org.move.lang.core.psi.MvAttrItem
 import org.move.lang.core.psi.MvAttrItemArgument
 import org.move.lang.core.psi.MvAttrItemArguments
