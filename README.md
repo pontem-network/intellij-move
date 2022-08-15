@@ -1,6 +1,11 @@
-# Move Language plugin for Intellij platform
+# Move Language plugin for the Intellij platform
 
-https://plugins.jetbrains.com/plugin/14721-move-language
+## Installation
+
+Open `Settings > Plugins > Marketplace` in your IDE, search for _Move Language_ and install the plugin.
+To open an existing project, use **File | Open** and point to the directory containing `Move.toml`. 
+
+New features are announched in [changelogs](https://github.com/pontem-network/intellij-move/tree/master/changelog). 
 
 ## Features
 
@@ -10,10 +15,6 @@ https://plugins.jetbrains.com/plugin/14721-move-language
 * Rename refactoring
 * Type inference
 * `Move.toml` and `move` binary integration
-
-## Installation
-
-Open `Settings > Plugins > Marketplace` in your IDE, search for _Move Language_ and install the plugin.
 
 ## Dependencies
 
