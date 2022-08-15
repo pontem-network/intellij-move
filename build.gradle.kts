@@ -20,7 +20,7 @@ fun prop(key: String): String = props[key].toString()
 val kotlinVersion = "1.7.10"
 
 val pluginJarName = "intellij-move-$propsVersion"
-val pluginVersion = "1.17.0"
+val pluginVersion = "1.18.0"
 val pluginGroup = "org.move"
 
 group = pluginGroup
