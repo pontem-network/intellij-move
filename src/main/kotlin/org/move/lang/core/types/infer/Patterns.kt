@@ -22,6 +22,9 @@ fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext)
                     pat.patList.zip(ty.types)
                         .forEach { (pat, ty) -> bind(pat, ty) }
                 } else {
+                    if (ty !is TyUnknown) {
+                        parentCtx.typeErrors.add(TypeError.InvalidUnpacking(pat, ty))
+                    }
                     pat.patList.map { bind(it, TyUnknown) }
                 }
             }
@@ -33,6 +36,9 @@ fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext)
                         field.pat?.let { bind(it, fieldTy) }
                     }
                 } else {
+                    if (ty !is TyUnknown) {
+                        parentCtx.typeErrors.add(TypeError.InvalidUnpacking(pat, ty))
+                    }
                     pat.fields.map {
                         it.pat?.let { pat -> bind(pat, TyUnknown) }
                     }

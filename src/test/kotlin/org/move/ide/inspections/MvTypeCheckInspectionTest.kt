@@ -681,4 +681,53 @@ module 0x1::M {
         }
     }    
     """)
+
+    fun `test tuple unpacking with three elements when two is specified`() = checkErrors("""
+    module 0x1::M {
+        fun tuple(): (u8, u8, u8) { (1, 1, 1) }
+        fun main() {
+            let <error descr="Invalid unpacking. Expected tuple binding of length 3: (_, _, _)">(a, b)</error> = tuple();
+        }
+    }    
+    """)
+
+    fun `test tuple unpacking no nested errors`() = checkErrors("""
+    module 0x1::M {
+        struct S { val: u8 }
+        fun tuple(): (u8, u8, u8) { (1, 1, 1) }
+        fun main() {
+            let <error descr="Invalid unpacking. Expected tuple binding of length 3: (_, _, _)">(S { val }, b)</error> = tuple();
+        }
+    }    
+    """)
+
+    fun `test tuple unpacking into struct when tuple pat is expected is specified`() = checkErrors("""
+    module 0x1::M {
+        struct S { val: u8 }
+        fun tuple(): (u8, u8, u8) { (1, 1, 1) }
+        fun main() {
+            let <error descr="Invalid unpacking. Expected tuple binding of length 3: (_, _, _)">S { val }</error> = tuple();
+        }
+    }    
+    """)
+
+    fun `test unpacking struct into field`() = checkErrors("""
+    module 0x1::M {
+        struct S { val: u8 }
+        fun s(): S { S { val: 10 } }
+        fun main() {
+            let s = s();
+        }
+    }    
+    """)
+
+    fun `test error unpacking struct into tuple`() = checkErrors("""
+    module 0x1::M {
+        struct S { val: u8 }
+        fun s(): S { S { val: 10 } }
+        fun main() {
+            let <error descr="Invalid unpacking. Expected struct binding of type 0x1::M::S">(a, b)</error> = s();
+        }
+    }    
+    """)
 }

@@ -7,6 +7,7 @@ import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import com.jetbrains.rd.util.concurrentMapOf
+import org.move.ide.presentation.expectedBindingFormText
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
@@ -256,7 +257,15 @@ sealed class TypeError(open val element: PsiElement) {
             return "Invalid argument to '$op': " +
                     "expected 'u8', 'u64', 'u128', but found '${ty.text()}'"
         }
+    }
 
+    data class InvalidUnpacking(
+        override val element: PsiElement,
+        val assignedTy: Ty,
+    ): TypeError(element) {
+        override fun message(): String {
+            return "Invalid unpacking. Expected ${assignedTy.expectedBindingFormText()}"
+        }
     }
 }
 
