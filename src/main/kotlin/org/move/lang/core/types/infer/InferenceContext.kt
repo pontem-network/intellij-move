@@ -43,7 +43,7 @@ fun inferCodeBlockTy(block: MvCodeBlock, blockCtx: InferenceContext, expectedTy:
                 val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, blockCtx) }
                 val patTy = stmt.declaredTy ?: initializerTy ?: TyUnknown
                 val pat = stmt.pat ?: continue
-                blockCtx.bindingTypes.putAll(collectBindings(pat, patTy))
+                collectBindings(pat, patTy, blockCtx)
             }
         }
         blockCtx.processConstraints()

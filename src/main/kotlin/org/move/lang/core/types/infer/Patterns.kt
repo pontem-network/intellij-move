@@ -11,11 +11,12 @@ import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyTuple
 import org.move.lang.core.types.ty.TyUnknown
 
-fun collectBindings(pattern: MvPat, type: Ty): Map<MvBindingPat, Ty> {
-    val bindings = mutableMapOf<MvBindingPat, Ty>()
+fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext) {
     fun bind(pat: MvPat, ty: Ty) {
         when (pat) {
-            is MvBindingPat -> bindings += pat to ty
+            is MvBindingPat -> {
+                parentCtx.bindingTypes[pat] = ty
+            }
             is MvTuplePat -> {
                 if (ty is TyTuple && pat.patList.size == ty.types.size) {
                     pat.patList.zip(ty.types)
@@ -39,27 +40,5 @@ fun collectBindings(pattern: MvPat, type: Ty): Map<MvBindingPat, Ty> {
             }
         }
     }
-    bind(pattern, type)
-    return bindings
+    bind(pattern, inferredTy)
 }
-
-//fun inferBindingTy(bindingPat: MvBindingPat, msl: Boolean): Ty {
-//    val owner = bindingPat.owner
-//    return when (owner) {
-//        is MvFunctionParameter -> owner.declaredTy(msl)
-//        is MvConstDef -> owner.declaredTy(msl)
-//        is MvLetStmt -> {
-//            val pat = owner.pat ?: return TyUnknown
-//            val explicitType = owner.typeAnnotation?.type
-//            if (explicitType != null) {
-//                val explicitTy = inferMvTypeTy(explicitType, msl)
-//                return collectBindings(pat, explicitTy)[bindingPat] ?: TyUnknown
-//            }
-//
-//            val inference = InferenceContext(msl = bindingPat.isMsl())
-//            val inferredTy = owner.initializer?.expr?.let { inferExprTy(it, inference) } ?: TyUnknown
-//            return collectBindings(pat, inferredTy)[bindingPat] ?: TyUnknown
-//        }
-//        else -> TyUnknown
-//    }
-//}
