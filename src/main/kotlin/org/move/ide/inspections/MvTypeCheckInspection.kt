@@ -115,8 +115,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
             override fun visitStructField(field: MvStructField) {
                 val msl = field.isMsl()
-                val structTy = instantiateItemTy(field.struct, msl)
-                val structAbilities = structTy.abilities()
+                val structAbilities = field.struct.tyAbilities
                 if (structAbilities.isEmpty()) return
 
                 val fieldTy = field.declaredTy(msl) as? TyStruct ?: return
@@ -126,7 +125,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                         val message =
                             "The type '${fieldTy.name()}' does not have the ability '${requiredAbility.label()}' " +
                                     "required by the declared ability '${ability.label()}' " +
-                                    "of the struct '${structTy.name()}'"
+                                    "of the struct '${TyStruct(field.struct, listOf(), mapOf()).name()}'"
                         holder.registerTypeError(field, message)
                         return
                     }
