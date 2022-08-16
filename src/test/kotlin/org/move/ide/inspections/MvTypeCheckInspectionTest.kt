@@ -662,4 +662,23 @@ module 0x1::M {
         }
     }    
     """)
+
+    fun `test error add to bool in assignment expr`() = checkErrors("""
+    module 0x1::M {
+        fun main() {
+            let a = 1u64;
+            let b = false;
+            a = a + <error descr="Invalid argument to '+': expected 'u8', 'u64', 'u128', but found 'bool'">b</error>;
+        }
+    }    
+    """)
+
+    fun `test error invalid assignment type`() = checkErrors("""
+    module 0x1::M {
+        fun main() {
+            let a = 1u64;
+            a = <error descr="Incompatible type 'bool', expected 'u64'">false</error>;
+        }
+    }    
+    """)
 }
