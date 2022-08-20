@@ -30,7 +30,6 @@ class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MoveIcons
         builder.setTitle(CAPTION)
             .addKind("Empty", MoveIcons.MOVE, "Move File")
             .addKind("Module", MoveIcons.MOVE, "Move Module")
-            .addKind("Script", MoveIcons.MOVE, "Move Script")
             .addKind("Test", MoveIcons.MOVE, "Move Test Module")
     }
 
