@@ -30,7 +30,7 @@ class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MoveIcons
         builder.setTitle(CAPTION)
             .addKind("Empty", MoveIcons.MOVE, "Move File")
             .addKind("Module", MoveIcons.MOVE, "Move Module")
-            .addKind("Test", MoveIcons.MOVE, "Move Test Module")
+            .addKind("Test Module", MoveIcons.MOVE, "Move Test Module")
     }
 
     override fun createFileFromTemplate(name: String, template: FileTemplate, dir: PsiDirectory): PsiFile? {
