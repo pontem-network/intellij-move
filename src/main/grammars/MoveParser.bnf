@@ -996,7 +996,7 @@ ModuleSpec ::= Attr* spec (AddressRef '::')? IDENTIFIER ModuleSpecBlock
     name = "module spec declaration"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
-ModuleSpecBlock ::= '{' ItemSpec* '}'
+ModuleSpecBlock ::= '{' ModuleSpecBlock_item_with_recover* '}'
 {
     pin = 1
 //    implements = [
@@ -1004,12 +1004,13 @@ ModuleSpecBlock ::= '{' ItemSpec* '}'
 //    ]
 }
 
-//private ModuleSpecBlockItems ::= AnySpec*
-//private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
-//{
-//    pin = 1
-//    recoverWhile = Item_recover
-//}
+private ModuleSpecBlock_item_with_recover ::= !('}' | <<eof>>) ModuleSpecBlock_item
+{
+    pin = 1
+    recoverWhile = ModuleSpecBlock_item_recover
+}
+private ModuleSpecBlock_item ::= UseStmt | SpecFunctionItem | Schema | ItemSpec
+private ModuleSpecBlock_item_recover ::= !('}' | <<eof>> | spec | use)
 // top-level recovery
 //private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec | friend | Attr | entry
 //private Item_recover ::= !('}' | <<eof>> | Item_first)
@@ -1050,10 +1051,8 @@ Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl ItemSpecBlock>> {
 }
 
 ItemSpecBlockExpr ::= spec <<msl ItemSpecBlock>>
-//SpecBlockStmt ::= SpecBlockExpr ';'
 
 ItemSpecBlock ::= '{' ItemSpecBlock_items '}' { pin = 1 }
-//private SpecBlock_inner ::= '{' SpecBlock_items '}' { pin = 1 }
 private ItemSpecBlock_items ::= (SpecStmt | ExprStmt)* (SpecExprStmt_items | ExprStmt_expr)?
 {
     recoverWhile = ItemSpecBlock_items_recover
