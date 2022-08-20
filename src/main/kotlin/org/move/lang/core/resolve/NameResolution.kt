@@ -274,7 +274,7 @@ fun processLexicalDeclarations(
 
                 is MvSchema -> processor.matchAll(itemVis, scope.fieldBindings)
                 is MvQuantBindingsOwner -> processor.matchAll(itemVis, scope.bindings)
-                is MvSpecBlock -> {
+                is MvItemSpecBlock -> {
                     val visibleLetDecls = when (itemVis.mslScope) {
                         MslScope.EXPR -> scope.letStmts()
                         MslScope.LET, MslScope.LET_POST -> {
@@ -383,13 +383,13 @@ fun walkUpThroughScopes(
     var scope = start.parent as MvElement?
     while (scope != null) {
         // walk all `spec module {}` clauses
-        if (cameFrom is MvAnySpec && scope is MvModuleBlock) {
-            val moduleSpecs = (scope.parent as MvModule)
+        if (cameFrom is MvItemSpec && scope is MvModuleBlock) {
+            val itemModuleSpecs = (scope.parent as MvModule)
                 .moduleSpecs()
                 .filter { it != cameFrom }
-            for (moduleSpec in moduleSpecs) {
-                val moduleSpecBlock = moduleSpec.specBlock ?: continue
-                if (handleScope(cameFrom, moduleSpecBlock)) return true
+            for (itemModuleSpec in itemModuleSpecs) {
+                val itemSpecBlock = itemModuleSpec.itemSpecBlock ?: continue
+                if (handleScope(cameFrom, itemSpecBlock)) return true
             }
         }
         if (handleScope(cameFrom, scope)) return true

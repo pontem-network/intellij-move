@@ -184,9 +184,9 @@ fun PsiElement.isMsl(): Boolean {
         if (this !is MvElement) return@getProjectPsiDependentCache false
         val specElement = PsiTreeUtil.findFirstParent(it, false) { parent ->
             parent is MvSpecFunction
-                    || parent is MvSpecBlockExpr
+                    || parent is MvItemSpecBlockExpr
                     || parent is MvSchema
-                    || parent is MvAnySpec
+                    || parent is MvItemSpec
         }
         specElement != null
     }

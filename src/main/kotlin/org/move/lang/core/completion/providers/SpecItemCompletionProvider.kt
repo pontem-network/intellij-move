@@ -8,6 +8,7 @@ import org.move.lang.core.completion.addSuffix
 import org.move.lang.core.completion.alreadyHasSpace
 import org.move.lang.core.completion.createLookupElementWithIcon
 import org.move.lang.core.psi.MvItemSpec
+import org.move.lang.core.psi.MvItemSpecRef
 import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslScope
@@ -16,22 +17,22 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 
 object SpecItemCompletionProvider : MvCompletionProvider() {
-    override val elementPattern get() = MvPsiPatterns.itemSpecLabel()
+    override val elementPattern get() = MvPsiPatterns.itemSpecRef()
 
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
         result: CompletionResultSet
     ) {
-        val specItem = parameters.position.parent as? MvItemSpec ?: return
+        val itemSpecRef = parameters.position.parent as? MvItemSpecRef ?: return
 
         val itemVis = ItemVis(
             namespaces = setOf(Namespace.SPEC_ITEM),
             visibilities = Visibility.none(),
             mslScope = MslScope.NONE,
-            itemScope = specItem.itemScope,
+            itemScope = itemSpecRef.itemScope,
         )
-        processItems(specItem, itemVis) {
+        processItems(itemSpecRef, itemVis) {
             val lookup = it.element.createLookupElementWithIcon()
                 .withInsertHandler { ctx, _ ->
                     if (!ctx.alreadyHasSpace) ctx.addSuffix(" ")

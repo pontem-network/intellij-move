@@ -29,7 +29,7 @@ fun MvModule.fqModule(): FQModule? {
 val MvModule.friendModules: Set<FQModule>
     get() {
         val block = this.moduleBlock ?: return emptySet()
-        val moduleRefs = block.friendStmtList.mapNotNull { it.fqModuleRef }
+        val moduleRefs = block.friendDeclList.mapNotNull { it.fqModuleRef }
 
         val friends = mutableSetOf<FQModule>()
         for (moduleRef in moduleRefs) {
@@ -157,7 +157,10 @@ fun MvModule.constBindings(): List<MvBindingPat> =
     moduleBlock?.constList.orEmpty().mapNotNull { it.bindingPat }
 
 fun MvModule.moduleSpecs() =
-    this.moduleBlock?.childrenOfType<MvModuleSpec>().orEmpty()
+    this.moduleBlock
+        ?.childrenOfType<MvItemSpec>()
+        .orEmpty()
+        .filter { it.itemSpecRef?.moduleKw != null }
 
 abstract class MvModuleMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                               MvModule {

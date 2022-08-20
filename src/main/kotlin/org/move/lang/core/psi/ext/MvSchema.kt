@@ -3,7 +3,7 @@ package org.move.lang.core.psi.ext
 import org.move.lang.core.psi.*
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 
-val MvSchema.specBlock: MvSpecBlock? get() = this.childOfType()
+val MvSchema.specBlock: MvItemSpecBlock? get() = this.childOfType()
 
 val MvSchema.module: MvModule
     get() {

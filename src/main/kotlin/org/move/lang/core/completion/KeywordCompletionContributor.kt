@@ -11,12 +11,12 @@ import com.intellij.psi.PsiElement
 import org.move.lang.MvElementTypes.*
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.MvPsiPatterns.addressBlock
+import org.move.lang.core.MvPsiPatterns.anySpecStart
 import org.move.lang.core.MvPsiPatterns.codeStmt
 import org.move.lang.core.MvPsiPatterns.function
-import org.move.lang.core.MvPsiPatterns.itemSpecLabel
+import org.move.lang.core.MvPsiPatterns.itemSpecStmt
 import org.move.lang.core.MvPsiPatterns.moduleBlock
 import org.move.lang.core.MvPsiPatterns.scriptBlock
-import org.move.lang.core.MvPsiPatterns.specStmt
 import org.move.lang.core.MvPsiPatterns.toplevel
 import org.move.lang.core.MvPsiPatterns.typeParameter
 import org.move.lang.core.TYPES
@@ -96,7 +96,7 @@ class KeywordCompletionContributor : CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            specStmt().and(onStmtBeginning()),
+            itemSpecStmt().and(onStmtBeginning()),
             KeywordCompletionProvider(
                 "pragma",
                 "let",
@@ -130,7 +130,7 @@ class KeywordCompletionContributor : CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            itemSpecLabel(),
+            anySpecStart(),
             KeywordCompletionProvider("module", "fun", "schema")
         )
     }

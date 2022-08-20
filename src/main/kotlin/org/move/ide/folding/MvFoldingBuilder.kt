@@ -50,7 +50,7 @@ class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
     }
 
     override fun isRegionCollapsedByDefault(node: ASTNode): Boolean {
-        return node.psi.project.collapseSpecs && node.elementType == SPEC_BLOCK
+        return node.psi.project.collapseSpecs && node.elementType == MODULE_SPEC_BLOCK
                 || CodeFoldingSettings.getInstance().isDefaultCollapsedNode(node)
     }
 
@@ -64,7 +64,7 @@ class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
         override fun visitScriptBlock(o: MvScriptBlock) = fold(o)
         override fun visitModuleBlock(o: MvModuleBlock) = fold(o)
 
-        override fun visitSpecBlock(o: MvSpecBlock) {
+        override fun visitItemSpecBlock(o: MvItemSpecBlock) {
             if (o.children.isNotEmpty()) {
                 fold(o)
             }

@@ -151,7 +151,7 @@
 //   * tokens are lowercase: for, if, identifier
 //   * rules are PascalCase: StructItem
 //   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
-File ::= (NamedAddressDef | Script | AddressDef | Module)*
+File ::= (NamedAddressDef | Script | AddressDef | Module | ModuleSpec)*
 
 Attr ::= '#' '[' <<comma_sep_items AttrItem>> ']' { pin = 1 }
 AttrItem ::= IDENTIFIER AttrItemArguments?
@@ -240,13 +240,13 @@ private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= UseStmt
-                            | FriendStmt
+                            | FriendDecl
                             | StructItem
                             | FunctionItem
                             | SpecFunctionItem
                             | Const
                             | Schema
-                            | AnySpec
+                            | ItemSpec
 
 Const ::= Attr* CONST_KW BindingPat TypeAnnotation Initializer ';'
 {
@@ -486,7 +486,8 @@ StructField ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // 'use 0x0::Transaction as MyTransaction;'
 
-FriendStmt ::= Attr* friend FQModuleRef ';' {
+FriendDecl ::= Attr* friend FQModuleRef ';'
+{
     pin = "friend"
     implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
 }
@@ -688,7 +689,7 @@ ExprStmt ::= (ExprStmt_expr !('}')) ';' { pin = 1 }
 private ExprStmt_expr ::= IfExpr
                             | LoopExpr
                             | WhileExpr
-                            | SpecBlockExpr
+                            | ItemSpecBlockExpr
                             | Expr
 {
     recoverWhile = "ExprStmt_recover"
@@ -989,21 +990,56 @@ private except ::= <<exceptKeyword>>
 //                         | invariant | pragma | local | global | emits
 //private SpecItem_recover ::= !('}' | <<eof>> | SpecItem_first)
 
-AnySpec ::= ItemSpec | ModuleSpec
-
-ItemSpec ::= (spec IDENTIFIER) <<msl SpecBlock>>
+ModuleSpec ::= Attr* spec (AddressRef '::')? IDENTIFIER ModuleSpecBlock
+{
+    pin = "spec"
+    name = "module spec declaration"
+    hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
+}
+ModuleSpecBlock ::= '{' ItemSpec* '}'
 {
     pin = 1
-    extends = AnySpec
-    implements = ["org.move.lang.core.resolve.MvMandatoryReferenceElement"]
-    mixin = "org.move.lang.core.psi.ext.MvItemSpecMixin"
-}
-ModuleSpec ::= (spec MODULE_KW) <<msl SpecBlock>> {
-    pin = 1
-    extends = AnySpec
+//    implements = [
+//        "org.move.lang.core.psi.MvItemsOwner"
+//    ]
 }
 
-Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl SpecBlock>> {
+//private ModuleSpecBlockItems ::= AnySpec*
+//private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
+//{
+//    pin = 1
+//    recoverWhile = Item_recover
+//}
+// top-level recovery
+//private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec | friend | Attr | entry
+//private Item_recover ::= !('}' | <<eof>> | Item_first)
+
+//AnySpec ::= ItemSpec | ModuleKeywordSpec
+
+ItemSpec ::= spec ItemSpecRef <<msl ItemSpecBlock>>
+{
+    pin = 1
+}
+
+ItemSpecRef ::= MODULE_KW | IDENTIFIER
+{
+    implements = ["org.move.lang.core.resolve.MvReferenceElement"]
+    mixin = "org.move.lang.core.psi.ext.MvItemSpecRefMixin"
+}
+
+//ItemSpec ::= (spec IDENTIFIER) <<msl ItemSpecBlock>>
+//{
+//    pin = 1
+////    extends = AnySpec
+//    implements = ["org.move.lang.core.resolve.MvMandatoryReferenceElement"]
+//    mixin = "org.move.lang.core.psi.ext.MvItemSpecMixin"
+//}
+//ModuleKeywordSpec ::= (spec MODULE_KW) <<msl ItemSpecBlock>> {
+//    pin = 1
+////    extends = AnySpec
+//}
+
+Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl ItemSpecBlock>> {
     pin = 1
     implements = [
         "org.move.lang.core.psi.MvTypeParametersOwner"
@@ -1013,16 +1049,16 @@ Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl SpecBlock>> {
     mixin = "org.move.lang.core.psi.mixins.MvSchemaMixin"
 }
 
-SpecBlockExpr ::= spec <<msl SpecBlock>>
+ItemSpecBlockExpr ::= spec <<msl ItemSpecBlock>>
 //SpecBlockStmt ::= SpecBlockExpr ';'
 
-SpecBlock ::= '{' SpecBlock_items '}' { pin = 1 }
+ItemSpecBlock ::= '{' ItemSpecBlock_items '}' { pin = 1 }
 //private SpecBlock_inner ::= '{' SpecBlock_items '}' { pin = 1 }
-private SpecBlock_items ::= (SpecStmt | ExprStmt)* (SpecExprStmt_items | ExprStmt_expr)?
+private ItemSpecBlock_items ::= (SpecStmt | ExprStmt)* (SpecExprStmt_items | ExprStmt_expr)?
 {
-    recoverWhile = SpecBlock_items_recover
+    recoverWhile = ItemSpecBlock_items_recover
 }
-private SpecBlock_items_recover ::= !('}' | <<eof>>)
+private ItemSpecBlock_items_recover ::= !('}' | <<eof>>)
 
 //private SpecExpr_item ::= SpecExprStmt_items | ExprStmt_items
 
