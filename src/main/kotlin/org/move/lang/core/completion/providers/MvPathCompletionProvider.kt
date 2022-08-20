@@ -9,6 +9,7 @@ import org.move.ide.inspections.imports.ImportContext
 import org.move.ide.inspections.imports.ImportInsertHandler
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.CompletionContext
+import org.move.lang.core.completion.DefaultInsertHandler
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
@@ -41,8 +42,6 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
         val inferenceCtx = pathElement.functionInferenceCtx()
         val expectedTy =
             getExpectedTypeForEnclosingPathOrDotExpr(pathElement, inferenceCtx)
-//        val expectedTy =
-//            getExpectedTypeForEnclosingPathOrDotExpr(pathElement, InferenceContext(pathElement.isMsl()))
         val ctx = CompletionContext(pathElement, itemVis, expectedTy)
 
         if (moduleRef != null) {
