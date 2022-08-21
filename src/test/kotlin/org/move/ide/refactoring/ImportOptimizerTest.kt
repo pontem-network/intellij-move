@@ -345,6 +345,48 @@ module 0x1::Main {
 }        
     """)
 
+    fun `test module spec`() = doTest("""
+module 0x1::string {}        
+spec 0x1::main {
+    use 0x1::string;
+}        
+    """, """
+module 0x1::string {}        
+spec 0x1::main {}        
+    """)
+
+//    fun `test module spec with parent import`() = doTest("""
+//module 0x1::string { public fun utf8(v: vector<u8>) {} }
+//module 0x1::main {
+//    use 0x1::string;
+//
+//    fun main() {
+//        let _a = string::utf8(b"hello");
+//    }
+//}
+//spec 0x1::main {
+//    use 0x1::string;
+//
+//    spec main {
+//        let _a = string::utf8(b"hello");
+//    }
+//}
+//    """, """
+//module 0x1::string { public fun utf8(v: vector<u8>) {} }
+//module 0x1::main {
+//    use 0x1::string;
+//
+//    fun main() {
+//        let _a = string::utf8(b"hello");
+//    }
+//}
+//spec 0x1::main {
+//    spec main {
+//        let _a = string::utf8(b"hello");
+//    }
+//}
+//    """)
+
     private fun doTest(@Language("Move") before: String, @Language("Move") after: String) =
         checkEditorAction(before, after, "OptimizeImports")
 }

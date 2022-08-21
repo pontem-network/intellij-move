@@ -16,6 +16,7 @@ import org.move.lang.core.MvPsiPatterns.codeStmt
 import org.move.lang.core.MvPsiPatterns.function
 import org.move.lang.core.MvPsiPatterns.itemSpecStmt
 import org.move.lang.core.MvPsiPatterns.moduleBlock
+import org.move.lang.core.MvPsiPatterns.moduleSpecBlock
 import org.move.lang.core.MvPsiPatterns.scriptBlock
 import org.move.lang.core.MvPsiPatterns.toplevel
 import org.move.lang.core.MvPsiPatterns.typeParameter
@@ -27,7 +28,7 @@ class KeywordCompletionContributor : CompletionContributor() {
         extend(
             CompletionType.BASIC,
             toplevel().and(onStmtBeginning()),
-            KeywordCompletionProvider("address", "module", "script")
+            KeywordCompletionProvider("address", "module", "script", "spec")
         )
         extend(
             CompletionType.BASIC,
@@ -57,6 +58,14 @@ class KeywordCompletionContributor : CompletionContributor() {
                 "use",
                 "spec",
                 "friend",
+            )
+        )
+        extend(
+            CompletionType.BASIC,
+            moduleSpecBlock().and(onStmtBeginning()),
+            KeywordCompletionProvider(
+                "use",
+                "spec",
             )
         )
         extend(

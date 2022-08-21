@@ -42,8 +42,9 @@ object MvPsiPatterns {
         psiElementWithParent<MvFunction>()
 //            .afterSibling(PlatformPatterns.psiElement(NATIVE))
 
-    fun scriptBlock(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvScriptBlock>()
+    fun scriptBlock(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvScriptBlock>()
+
+    fun moduleSpecBlock(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvModuleSpecBlock>()
 
     fun codeStmt(): PsiElementPattern.Capture<PsiElement> = psiElementInside<MvCodeBlock>()
 

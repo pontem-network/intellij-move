@@ -11,6 +11,7 @@ import org.move.lang.MoveFile
 import org.move.lang.MvElementTypes.L_BRACE
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.moduleSpecs
 import org.move.lang.modules
 
 class ImportOptimizer : ImportOptimizer {
@@ -23,6 +24,7 @@ class ImportOptimizer : ImportOptimizer {
             documentManager.commitDocument(document)
         }
         val moveFile = file as MoveFile
+
         for (module in moveFile.modules()) {
             val block = module.moduleBlock ?: continue
             optimizeImports(block)
@@ -30,12 +32,16 @@ class ImportOptimizer : ImportOptimizer {
         for (scriptBlock in moveFile.scriptBlocks()) {
             optimizeImports(scriptBlock)
         }
+        for (moduleSpec in moveFile.moduleSpecs()) {
+            val moduleSpecBlock = moduleSpec.moduleSpecBlock ?: continue
+            optimizeImports(moduleSpecBlock)
+        }
     }
 
-    private fun optimizeImports(itemsOwner: MvImportsOwner) {
-        removeUnusedImports(itemsOwner)
-        mergeImportsIntoGroups(itemsOwner)
-        sortImports(itemsOwner)
+    private fun optimizeImports(importsOwner: MvImportsOwner) {
+        removeUnusedImports(importsOwner)
+        mergeImportsIntoGroups(importsOwner)
+        sortImports(importsOwner)
     }
 
     private fun removeUnusedImports(useStmtOwner: MvImportsOwner) {

@@ -1,11 +1,16 @@
 package org.move.lang.index
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.ex.temp.TempFileSystem
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.indexing.*
 import org.move.lang.MoveFile
+import org.move.lang.core.psi.MvModule
+import org.move.lang.core.psi.containingMoveFile
+import org.move.lang.isTempFile
 import org.move.lang.moduleSpecs
 import org.move.lang.toMoveFile
+import org.move.openapiext.common.isUnitTestMode
 
 class MvModuleSpecIndex: BaseMoveFileIndex() {
     override fun getName() = KEY
@@ -34,12 +39,22 @@ class MvModuleSpecIndex: BaseMoveFileIndex() {
 
         fun moduleSpecFiles(
             project: Project,
-            moduleName: String,
+            module: MvModule,
             searchScope: GlobalSearchScope
-        ): Collection<MoveFile> {
+        ): List<MoveFile> {
+            if (isUnitTestMode) {
+                val moduleFile = module.containingMoveFile?.takeIf { it.isTempFile() }
+                if (moduleFile != null) {
+                    return listOf(moduleFile)
+                }
+            }
+
+            val moduleName = module.name ?: return emptyList()
             val fileIndex = FileBasedIndex.getInstance()
-            val files = fileIndex.getContainingFiles(KEY, moduleName, searchScope)
-            return files.mapNotNull { it.toMoveFile(project) }
+            return fileIndex
+                .getContainingFiles(KEY, moduleName, searchScope)
+                .mapNotNull { it.toMoveFile(project) }
+                .toList()
         }
     }
 }

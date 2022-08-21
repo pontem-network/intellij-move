@@ -4,6 +4,7 @@ import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.ex.temp.TempFileSystem
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -83,7 +84,11 @@ fun MoveFile.modules(): Sequence<MvModule> {
     }
 }
 
-fun MoveFile.moduleSpecs(): List<MvModuleSpec> = this.childrenOfType<MvModuleSpec>()
+fun MoveFile.moduleSpecs(): List<MvModuleSpec> = this.childrenOfType()
+
+fun MoveFile.isTempFile(): Boolean =
+    this.virtualFile == null
+        || this.virtualFile.fileSystem is TempFileSystem
 
 inline fun <reified T : PsiElement> PsiFile.elementAtOffset(offset: Int): T? =
     this.findElementAt(offset)?.ancestorOrSelf<T>()

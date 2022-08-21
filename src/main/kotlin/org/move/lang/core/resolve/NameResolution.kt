@@ -233,7 +233,12 @@ fun processLexicalDeclarations(
                         }
                     )
                 }
-
+                is MvModuleSpecBlock -> processor.matchAll(
+                    itemVis,
+                    scope.itemImportNames(),
+                    scope.schemaList,
+                    scope.specFunctionList,
+                )
                 is MvScriptBlock -> processor.matchAll(itemVis, scope.itemImportNames())
                 is MvScript -> processor.matchAll(itemVis, scope.constBindings())
                 is MvFunctionLike -> processor.matchAll(itemVis, scope.parameterBindings)
@@ -328,6 +333,7 @@ fun processLexicalDeclarations(
                         module.structs()
                     )
                 }
+                is MvModuleSpecBlock -> processor.matchAll(itemVis, scope.itemImportNames())
                 is MvScriptBlock -> processor.matchAll(itemVis, scope.itemImportNames())
                 is MvApplySchemaStmt -> {
                     val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
@@ -355,10 +361,12 @@ fun processLexicalDeclarations(
             Namespace.SCHEMA -> when (scope) {
                 is MvModuleBlock -> processor.matchAll(
                     itemVis,
+                    scope.itemImportNames(),
                     scope.schemaList
                 )
                 is MvModuleSpecBlock -> processor.matchAll(
                     itemVis,
+                    scope.itemImportNames(),
                     scope.schemaList,
                     scope.specFunctionList
                 )
@@ -392,19 +400,23 @@ fun walkUpThroughScopes(
         if (handleScope(cameFrom, scope)) return true
 
         // walk all items in original module block
-        if (scope is MvModuleSpecBlock) {
-            val moduleSpec = scope.parent as MvModuleSpec
-            val module = moduleSpec.fqModuleRef?.reference?.resolve() as? MvModule
-            val moduleBlock = module?.moduleBlock
-            if (moduleBlock != null) {
-                if (handleScope(cameFrom, moduleBlock)) return true
-                if (handleItemModuleSpecs(cameFrom, moduleBlock, handleScope)) return true
+        if (scope is MvModuleBlock) {
+            // handle spec module {}
+            if (handleModuleItemSpecs(cameFrom, scope, handleScope)) return true
+            // walk over all spec modules
+            for (moduleSpec in scope.module.allModuleSpecs()) {
+                val moduleSpecBlock = moduleSpec.moduleSpecBlock ?: continue
+                if (handleScope(cameFrom, moduleSpecBlock)) return true
             }
         }
 
-        // walk all `spec module {}` clauses
-        if (cameFrom is MvItemSpec && scope is MvModuleBlock) {
-            if (handleItemModuleSpecs(cameFrom, scope, handleScope)) return true
+        if (scope is MvModuleSpecBlock) {
+            val moduleBlock = scope.moduleSpec.module?.moduleBlock
+            if (moduleBlock != null) {
+                cameFrom = scope
+                scope = moduleBlock
+                continue
+            }
         }
 
         if (stopAfter(scope)) break
@@ -416,16 +428,18 @@ fun walkUpThroughScopes(
     return false
 }
 
-private fun handleItemModuleSpecs(
+private fun handleModuleItemSpecs(
     cameFrom: MvElement,
-    scope: MvModuleBlock,
+    scope: MvElement,
     handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean
 ): Boolean {
-    val itemModuleSpecs = (scope.parent as MvModule)
-        .moduleSpecs()
-        .filter { it != cameFrom }
-    for (itemModuleSpec in itemModuleSpecs) {
-        val itemSpecBlock = itemModuleSpec.itemSpecBlock ?: continue
+    val moduleItemSpecs = when (scope) {
+        is MvModuleBlock -> scope.moduleItemSpecs()
+        is MvModuleSpecBlock -> scope.moduleItemSpecs()
+        else -> emptyList()
+    }
+    for (moduleItemSpec in moduleItemSpecs.filter { it != cameFrom }) {
+        val itemSpecBlock = moduleItemSpec.itemSpecBlock ?: continue
         if (handleScope(cameFrom, itemSpecBlock)) return true
     }
     return false

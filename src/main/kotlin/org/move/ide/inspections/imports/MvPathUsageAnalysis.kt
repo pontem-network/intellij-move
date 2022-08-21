@@ -3,10 +3,7 @@ package org.move.ide.inspections.imports
 import com.intellij.openapi.util.Key
 import com.intellij.psi.util.*
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.fqModule
-import org.move.lang.index.MvModuleSpecIndex
-import org.move.lang.moduleSpecs
-import org.move.lang.moveProject
+import org.move.lang.core.psi.ext.allModuleSpecs
 
 typealias PathUsages = Map<String, MutableSet<MvNamedElement>>
 
@@ -61,44 +58,13 @@ private fun calculatePathUsages(owner: MvImportsOwner): PathUsages {
     }
 
     if (owner is MvModuleBlock) {
-        val currentModule = (owner.parent as MvModule).fqModule() ?: return map
-        val moveProject = owner.moveProject ?: return map
-        val specFiles =
-            MvModuleSpecIndex.moduleSpecFiles(owner.project, currentModule.name, moveProject.searchScope())
-        for (specFile in specFiles) {
-            val moduleSpecs = specFile.moduleSpecs().filter {
-                val module = it.fqModuleRef?.reference?.resolve() as? MvModule ?: return@filter false
-                currentModule == module.fqModule()
+        (owner.parent as MvModule)
+            .allModuleSpecs()
+            .mapNotNull { it.moduleSpecBlock }
+            .forEach {
+                map.putAll(it.pathUsages)
             }
-            for (specBlock in moduleSpecs.mapNotNull { it.moduleSpecBlock }) {
-                map.putAll(specBlock.pathUsages)
-            }
-        }
-//        // find all spec modules for this module
-//        owner.moveProject?.processMoveFiles { file ->
-//            val moduleSpecs = file.moduleSpecs().filter {
-//                val module = it.fqModuleRef?.reference?.resolve() as? MvModule ?: return@filter false
-//                currentModule == module.fqModule()
-//            }
-//            for (specBlock in moduleSpecs.mapNotNull { it.moduleSpecBlock }) {
-//                map.putAll(specBlock.pathUsages)
-//            }
-//            true
-//        }
     }
 
     return map
 }
-
-//private fun collectPathUsagesFromModuleSpecs(
-//    file: MoveFile,
-//    pathUsages: MutableMap<String, MutableSet<MvNamedElement>>
-//) {
-//    val moduleSpecs = file.moduleSpecs().filter {
-//        val module = it.fqModuleRef?.reference?.resolve() as? MvModule ?: return@filter false
-//        currentModule == module.fqModule()
-//    }
-//    for (block in moduleSpecs.mapNotNull { it.moduleSpecBlock }) {
-//        pathUsages.putAll(block.pathUsages.map)
-//    }
-//}

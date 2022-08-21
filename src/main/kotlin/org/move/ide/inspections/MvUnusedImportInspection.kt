@@ -13,16 +13,9 @@ import org.move.lang.core.psi.ext.moduleName
 import org.move.lang.core.psi.ext.speck
 
 class MvUnusedImportInspection : MvLocalInspectionTool() {
-    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
-        fun registerUnused(targetElement: PsiElement) {
-            holder.registerProblem(
-                targetElement,
-                "Unused use item",
-                ProblemHighlightType.LIKE_UNUSED_SYMBOL
-            )
-        }
-        return object : MvVisitor() {
-            override fun visitModuleBlock(o: MvModuleBlock) {
+    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
+        object : MvVisitor() {
+            override fun visitImportsOwner(o: MvImportsOwner) {
                 val visitedItems = mutableSetOf<String>()
                 val visitedModules = mutableSetOf<String>()
                 for (useStmt in o.useStmtList) {
@@ -30,13 +23,13 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                     if (moduleUseSpeck != null) {
                         val moduleName = moduleUseSpeck.name ?: continue
                         if (moduleName in visitedModules) {
-                            registerUnused(useStmt)
+                            holder.registerUnused(useStmt)
                             continue
                         }
                         visitedModules.add(moduleName)
 
                         if (!moduleUseSpeck.isUsed()) {
-                            registerUnused(useStmt)
+                            holder.registerUnused(useStmt)
                         }
                         continue
                     }
@@ -47,7 +40,7 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                         val useItems = itemUseSpeck.descendantsOfType<MvUseItem>().toList()
                         if (useItems.isEmpty()) {
                             // empty item group
-                            registerUnused(useStmt)
+                            holder.registerUnused(useStmt)
                             continue
                         }
                         for (useItem in useItems) {
@@ -59,25 +52,25 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                                 // Self reference to module, check against visitedModules
                                 val moduleName = useItem.moduleName
                                 if (moduleName in visitedModules) {
-                                    registerUnused(targetItem)
+                                    holder.registerUnused(targetItem)
                                     continue
                                 }
                                 visitedModules.add(moduleName)
 
                                 if (!useItem.isUsed()) {
-                                    registerUnused(targetItem)
+                                    holder.registerUnused(targetItem)
                                 }
                                 continue
                             }
 
                             if (itemName in visitedItems) {
-                                registerUnused(targetItem)
+                                holder.registerUnused(targetItem)
                                 continue
                             }
                             visitedItems.add(itemName)
 
                             if (!useItem.isUsed()) {
-                                registerUnused(targetItem)
+                                holder.registerUnused(targetItem)
                             }
                         }
                         continue
@@ -85,7 +78,15 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                 }
             }
         }
+
+    private fun ProblemsHolder.registerUnused(targetElement: PsiElement) {
+        this.registerProblem(
+            targetElement,
+            "Unused use item",
+            ProblemHighlightType.LIKE_UNUSED_SYMBOL
+        )
     }
+
 }
 
 fun MvUseItem.isUsed(): Boolean {

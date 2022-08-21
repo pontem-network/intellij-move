@@ -19,6 +19,14 @@ class KeywordCompletionTest : CompletionTestCase() {
     """
     )
 
+    fun `test top level spec`() = doSingleCompletion(
+        """
+        sp/*caret*/    
+    """, """
+        spec /*caret*/    
+    """
+    )
+
 //    fun `test script keyword completion if brace is present`() = doSingleCompletion("""
 //        scr/*caret*/ {}
 //    """, """
@@ -113,6 +121,18 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """, """
         module 0x1::M {
+            spec /*caret*/
+        }
+    """
+    )
+
+    fun `test spec in spec module`() = doSingleCompletion(
+        """
+        spec 0x1::M {
+            sp/*caret*/
+        }
+    """, """
+        spec 0x1::M {
             spec /*caret*/
         }
     """
