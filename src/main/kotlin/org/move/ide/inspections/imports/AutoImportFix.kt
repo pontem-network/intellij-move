@@ -14,11 +14,9 @@ import org.move.lang.MoveFile
 import org.move.lang.core.completion.DefaultInsertHandler
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ItemScope
-import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.MvReferenceElement
-import org.move.lang.core.resolve.mslScope
+import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.moveProject
 import org.move.openapiext.checkWriteAccessAllowed
 import org.move.openapiext.common.isUnitTestMode
@@ -95,8 +93,8 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
             val (contextElement, itemVis) = context
             val moveProject = contextElement.moveProject ?: return emptyList()
             val searchScope = moveProject.searchScope()
-            val files = MoveElementsIndex
-                .findFilesByElementName(contextElement.project, targetName, searchScope)
+            val files = MvNamedElementIndex
+                .namedElementFiles(contextElement.project, targetName, searchScope)
                 .toMutableList()
             if (isUnitTestMode) {
                 // always add current file in tests
@@ -152,7 +150,7 @@ fun ImportCandidate.import(context: MvElement) {
     insertionScope.insertUseItem(psiFactory, fqPath, insertTestOnly)
 }
 
-private fun MvItemsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: FqPath, testOnly: Boolean) {
+private fun MvImportsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: FqPath, testOnly: Boolean) {
     val newUseStmt = psiFactory.useStmt(usePath.toString(), testOnly)
     if (this.tryGroupWithOtherUseItems(psiFactory, newUseStmt)) return
 
@@ -166,7 +164,7 @@ private fun MvItemsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: FqPath
     }
 }
 
-private fun MvItemsOwner.tryGroupWithOtherUseItems(psiFactory: MvPsiFactory, newUseStmt: MvUseStmt): Boolean {
+private fun MvImportsOwner.tryGroupWithOtherUseItems(psiFactory: MvPsiFactory, newUseStmt: MvUseStmt): Boolean {
     val newUseSpeck = newUseStmt.itemUseSpeck ?: return false
     val newName = newUseSpeck.names().singleOrNull() ?: return false
     val newFqModule = newUseSpeck.fqModuleRef
@@ -200,4 +198,15 @@ class ImportInsertHandler(
         val path = parameters.originalPosition?.parent as? MvPath ?: return
         candidate.import(path)
     }
+}
+
+fun MoveFile.qualifiedItems(targetName: String, itemVis: ItemVis): List<MvQualifiedNamedElement> {
+    val elements = mutableListOf<MvQualifiedNamedElement>()
+    processFileItems(this, itemVis) {
+        if (it.element is MvQualifiedNamedElement && it.name == targetName) {
+            elements.add(it.element)
+        }
+        false
+    }
+    return elements
 }

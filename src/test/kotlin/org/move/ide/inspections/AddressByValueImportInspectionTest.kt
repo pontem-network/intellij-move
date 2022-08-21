@@ -1,11 +1,10 @@
 package org.move.ide.inspections
 
-import org.move.ide.inspections.AddressByValueImportInspection
 import org.move.utils.tests.annotation.InspectionProjectTestBase
 
 class AddressByValueImportInspectionTest : InspectionProjectTestBase(AddressByValueImportInspection::class) {
-    fun `test no inspection if imported from the correct address name`() = checkByFileTree(
-        {
+    fun `test no inspection if imported from the correct address name`() =
+        checkWeakWarningsByFileTree {
             moveToml(
                 """
         [package]
@@ -34,13 +33,12 @@ class AddressByValueImportInspectionTest : InspectionProjectTestBase(AddressByVa
             """
                 )
             }
-        })
+        }
 
     fun `test no inspection if imported from the different address name with different value`() =
-        checkByFileTree(
-            {
-                moveToml(
-                    """
+        checkWeakWarningsByFileTree {
+            moveToml(
+                """
         [package]
         name = "MyPackage"
         [addresses]
@@ -48,10 +46,10 @@ class AddressByValueImportInspectionTest : InspectionProjectTestBase(AddressByVa
         aptos_std = "0x1"
         std2 = "0x2"
         """
-                )
-                sources {
-                    main(
-                        """
+            )
+            sources {
+                main(
+                    """
                 module aptos_std::main {
                     use std2::debug/*caret*/;
                     fun main() {
@@ -59,18 +57,19 @@ class AddressByValueImportInspectionTest : InspectionProjectTestBase(AddressByVa
                     }
                 }    
                 """
-                    )
-                    move(
-                        "debug.move", """
+                )
+                move(
+                    "debug.move", """
             module std::debug { 
                 public native fun print();
             }    
             """
-                    )
-                }
-            })
+                )
+            }
+        }
 
-    fun `test fail if imported from the different address name but same value`() = checkFixByFileTree("Change address to `std`",
+    fun `test fail if imported from the different address name but same value`() = checkFixByFileTree(
+        "Change address to `std`",
         {
             moveToml(
                 """
@@ -107,5 +106,6 @@ class AddressByValueImportInspectionTest : InspectionProjectTestBase(AddressByVa
                         debug::print();
                     }
                 }    
-        """, checkWeakWarn = true)
+        """, checkWeakWarn = true
+    )
 }

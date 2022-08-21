@@ -32,13 +32,13 @@ class ImportOptimizer : ImportOptimizer {
         }
     }
 
-    private fun optimizeImports(itemsOwner: MvItemsOwner) {
+    private fun optimizeImports(itemsOwner: MvImportsOwner) {
         removeUnusedImports(itemsOwner)
         mergeImportsIntoGroups(itemsOwner)
         sortImports(itemsOwner)
     }
 
-    private fun removeUnusedImports(useStmtOwner: MvItemsOwner) {
+    private fun removeUnusedImports(useStmtOwner: MvImportsOwner) {
         fun MvUseStmt.deleteWithLeadingWhitespace() {
             if (this.nextSibling.isWhitespace()) this.nextSibling.delete()
             this.delete()
@@ -77,7 +77,7 @@ class ImportOptimizer : ImportOptimizer {
         }
     }
 
-    private fun mergeImportsIntoGroups(useStmtOwner: MvItemsOwner) {
+    private fun mergeImportsIntoGroups(useStmtOwner: MvImportsOwner) {
         val psiFactory = useStmtOwner.project.psiFactory
         val leftBrace = useStmtOwner.findFirstChildByType(L_BRACE) ?: return
 
@@ -114,7 +114,7 @@ class ImportOptimizer : ImportOptimizer {
             }
     }
 
-    private fun sortImports(useStmtOwner: MvItemsOwner) {
+    private fun sortImports(useStmtOwner: MvImportsOwner) {
         val psiFactory = useStmtOwner.project.psiFactory
         val offset =
             (useStmtOwner.findFirstChildByType(L_BRACE)?.textOffset ?: return) + 1

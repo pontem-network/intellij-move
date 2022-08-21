@@ -177,7 +177,7 @@ Script ::= SCRIPT_KW ScriptBlock {
 ScriptBlock ::= '{' ScriptBlockItems '}' {
     pin = 1
     implements = [
-        "org.move.lang.core.psi.MvItemsOwner"
+        "org.move.lang.core.psi.MvImportsOwner"
     ]
 }
 private ScriptBlockItems ::= ScriptItem*
@@ -226,7 +226,7 @@ ModuleBlock ::= '{' ModuleBlockItems '}'
 {
     pin = 1
     implements = [
-        "org.move.lang.core.psi.MvItemsOwner"
+        "org.move.lang.core.psi.MvImportsOwner"
     ]
 }
 private ModuleBlockItems ::= ModuleItem*
@@ -717,7 +717,7 @@ CodeBlockExpr ::= CodeBlock
 CodeBlock ::= '{' CodeBlock_items '}'
 {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvItemsOwner" ]
+    implements = [ "org.move.lang.core.psi.MvImportsOwner" ]
     mixin = "org.move.lang.core.psi.ext.MvCodeBlockMixin"
 }
 
@@ -990,7 +990,7 @@ private except ::= <<exceptKeyword>>
 //                         | invariant | pragma | local | global | emits
 //private SpecItem_recover ::= !('}' | <<eof>> | SpecItem_first)
 
-ModuleSpec ::= Attr* spec (AddressRef '::')? IDENTIFIER ModuleSpecBlock
+ModuleSpec ::= Attr* spec FQModuleRef ModuleSpecBlock
 {
     pin = "spec"
     name = "module spec declaration"
@@ -999,9 +999,9 @@ ModuleSpec ::= Attr* spec (AddressRef '::')? IDENTIFIER ModuleSpecBlock
 ModuleSpecBlock ::= '{' ModuleSpecBlock_item_with_recover* '}'
 {
     pin = 1
-//    implements = [
-//        "org.move.lang.core.psi.MvItemsOwner"
-//    ]
+    implements = [
+        "org.move.lang.core.psi.MvImportsOwner"
+    ]
 }
 
 private ModuleSpecBlock_item_with_recover ::= !('}' | <<eof>>) ModuleSpecBlock_item

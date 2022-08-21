@@ -83,5 +83,7 @@ fun MoveFile.modules(): Sequence<MvModule> {
     }
 }
 
+fun MoveFile.moduleSpecs(): List<MvModuleSpec> = this.childrenOfType<MvModuleSpec>()
+
 inline fun <reified T : PsiElement> PsiFile.elementAtOffset(offset: Int): T? =
     this.findElementAt(offset)?.ancestorOrSelf<T>()

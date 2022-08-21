@@ -394,4 +394,93 @@ class ResolveSpecsTest: ResolveTestCase() {
         }
     }    
     """)
+
+    fun `test resolve module name in spec module`() = checkByCode("""
+    module 0x1::Module {
+                //X        
+    }    
+    spec 0x1::Module {
+                //^
+    }
+    """)
+
+    fun `test resolve function name in spec module`() = checkByCode("""
+    module 0x1::Module {
+        public fun call() {}
+                   //X
+    }    
+    spec 0x1::Module {
+        spec call {}
+            //^
+    }
+    """)
+
+    fun `test resolve struct name in spec module`() = checkByCode("""
+    module 0x1::Module {
+        struct MyStruct {}
+              //X
+    }    
+    spec 0x1::Module {
+        spec MyStruct {}
+            //^
+    }
+    """)
+
+    fun `test spec module has access to all items of module`() = checkByCode("""
+    module 0x1::Module {
+        fun address_of(addr: address) {}
+           //X
+    }    
+    spec 0x1::Module {
+        spec schema MySchema {
+            let a = address_of(@0x1);  
+                    //^
+        }
+    }
+    """)
+
+    fun `test spec module has access to module imports`() = checkByCode("""
+    module 0x1::signer {
+              //X
+        fun address_of(addr: address) {}
+    }     
+    module 0x1::Module {
+        use 0x1::signer;
+    }    
+    spec 0x1::Module {
+        spec schema MySchema {
+            let a = signer::;  
+                   //^
+        }
+    }
+    """)
+
+    fun `test spec module has access to item imports`() = checkByCode("""
+    module 0x1::signer {
+              //X
+        fun address_of(addr: address) {}
+    }     
+    module 0x1::Module {
+        use 0x1::signer;
+    }    
+    spec 0x1::Module {
+        spec schema MySchema {
+            let a = signer::;  
+                   //^
+        }
+    }
+    """)
+
+    fun `test resolve schema from current scope`() = checkByCode("""
+    module 0x1::Module {}    
+    spec 0x1::Module {
+        spec schema MySchema {
+                   //X
+        }
+        spec schema MySchema2 {
+            include MySchema;
+                     //^
+        }
+    }
+    """)
 }

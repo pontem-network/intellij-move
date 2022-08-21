@@ -25,7 +25,7 @@ import com.intellij.util.messages.Topic
 import org.move.cli.settings.MoveProjectSettingsService
 import org.move.cli.settings.MoveSettingsChangedEvent
 import org.move.cli.settings.MoveSettingsListener
-import org.move.ide.inspections.imports.MoveElementsIndex
+import org.move.lang.index.BaseMoveFileIndex
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.toVirtualFile
@@ -164,8 +164,8 @@ class MoveProjectsService(val project: Project) : Disposable {
             runWriteAction {
                 projectsIndex.resetIndex()
 
-                MoveElementsIndex.requestRebuild()
                 PsiManager.getInstance(project).dropPsiCaches()
+                BaseMoveFileIndex.requestRebuildIndices()
 
                 // In unit tests roots change is done by the test framework in most cases
                 runOnlyInNonLightProject(project) {
@@ -200,7 +200,7 @@ class MoveProjectsService(val project: Project) : Disposable {
 
     interface MoveProjectsRefreshListener {
         fun onRefreshStarted()
-        fun onRefreshFinished(status: MoveRefreshStatus)
+//        fun onRefreshFinished(status: MoveRefreshStatus)
     }
 
     enum class MoveRefreshStatus {

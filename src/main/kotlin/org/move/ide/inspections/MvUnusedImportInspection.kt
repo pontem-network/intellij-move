@@ -5,6 +5,8 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
 import com.intellij.psi.util.parentOfType
+import org.move.ide.inspections.imports.PathUsages
+import org.move.ide.inspections.imports.pathUsages
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.moduleName
@@ -87,31 +89,27 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
 }
 
 fun MvUseItem.isUsed(): Boolean {
-    val owner = this.ancestorStrict<MvItemsOwner>() ?: return true
+    val owner = this.ancestorStrict<MvImportsOwner>() ?: return true
     val usageMap = owner.pathUsages
     return isUseItemUsed(this, usageMap)
 }
 
 fun MvModuleUseSpeck.isUsed(): Boolean {
-    val owner = this.parentOfType<MvItemsOwner>() ?: return true
+    val owner = this.parentOfType<MvImportsOwner>() ?: return true
     val usageMap = owner.pathUsages
     return isModuleUseSpeckUsed(this, usageMap)
 }
 
 fun MvItemUseSpeck.isUsed(): Boolean {
-    val owner = this.parentOfType<MvItemsOwner>() ?: return true
+    val owner = this.parentOfType<MvImportsOwner>() ?: return true
     val usageMap = owner.pathUsages
     return isItemUseSpeckUsed(this, usageMap)
 }
 
 private fun isModuleUseSpeckUsed(moduleUse: MvModuleUseSpeck, pathUsages: PathUsages): Boolean {
     val moduleName = moduleUse.fqModuleRef?.referenceName ?: return true
-    val usageResolvedItems = pathUsages.map[moduleName]
-    @Suppress("FoldInitializerAndIfToElvis")
-    if (usageResolvedItems == null) {
-        // import is never used
-        return false
-    }
+    // null if import is never used
+    val usageResolvedItems = pathUsages[moduleName] ?: return false
     if (usageResolvedItems.isEmpty()) {
         // import is used but usages are unresolved
         return true
@@ -135,12 +133,8 @@ private fun isUseItemUsed(useItem: MvUseItem, pathUsages: PathUsages): Boolean {
     if (itemName == "Self") {
         itemName = useItem.moduleName
     }
-    val usageResolvedItems = pathUsages.map[itemName]
-    @Suppress("FoldInitializerAndIfToElvis")
-    if (usageResolvedItems == null) {
-        // import is never used
-        return false
-    }
+    // null if import is never used
+    val usageResolvedItems = pathUsages[itemName] ?: return false
     if (usageResolvedItems.isEmpty()) {
         // import is used but usages are unresolved
         return true
