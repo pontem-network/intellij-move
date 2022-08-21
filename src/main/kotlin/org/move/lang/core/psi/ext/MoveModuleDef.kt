@@ -175,17 +175,21 @@ fun MvModuleSpecBlock.moduleItemSpecs() =
 
 fun MvModule.allModuleSpecs(): List<MvModuleSpec> {
     return getProjectPsiDependentCache(this) {
-        val currentModule = this.fqModule() ?: return@getProjectPsiDependentCache emptyList()
-        val moveProject = this.moveProject ?: return@getProjectPsiDependentCache emptyList()
+        val currentModule = it.fqModule() ?: return@getProjectPsiDependentCache emptyList()
+        val moveProject = it.moveProject ?: return@getProjectPsiDependentCache emptyList()
         val specFiles =
-            MvModuleSpecIndex.moduleSpecFiles(this.project, this, moveProject.searchScope())
+            MvModuleSpecIndex.moduleSpecFiles(it.project, it, moveProject.searchScope())
         specFiles
-            .flatMap { it.moduleSpecs() }
-            .filter {
-                val module = it.fqModuleRef?.reference?.resolve() as? MvModule ?: return@filter false
+            .flatMap { f -> f.moduleSpecs() }
+            .filter { moduleSpec ->
+                val module = moduleSpec.fqModuleRef?.reference?.resolve() as? MvModule ?: return@filter false
                 currentModule == module.fqModule()
             }
     }
+}
+
+fun MvModule.allModuleSpecBlocks(): List<MvModuleSpecBlock> {
+    return this.allModuleSpecs().mapNotNull { it.moduleSpecBlock }
 }
 
 abstract class MvModuleMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
