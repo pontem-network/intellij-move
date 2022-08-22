@@ -3,7 +3,10 @@ package org.move.lang.index
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.descendantsOfType
-import com.intellij.util.indexing.*
+import com.intellij.util.indexing.DataIndexer
+import com.intellij.util.indexing.FileBasedIndex
+import com.intellij.util.indexing.FileContent
+import com.intellij.util.indexing.ID
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvQualifiedNamedElement
 import org.move.lang.toMoveFile

@@ -7,7 +7,6 @@ import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.addSuffix
 import org.move.lang.core.completion.alreadyHasSpace
 import org.move.lang.core.completion.createLookupElementWithIcon
-import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.MvItemSpecRef
 import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.resolve.ItemVis

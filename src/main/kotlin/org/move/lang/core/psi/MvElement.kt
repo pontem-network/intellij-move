@@ -3,7 +3,6 @@ package org.move.lang.core.psi
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.PsiUtilBase
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.ancestorStrict

@@ -1,9 +1,11 @@
 package org.move.ide.inspections.imports
 
-import com.intellij.psi.util.*
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
+import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.allModuleSpecBlocks
+import org.move.lang.core.psi.ext.module
+import org.move.lang.core.psi.ext.moduleSpec
 
 typealias PathUsages = MutableMap<String, MutableSet<MvNamedElement>>
 

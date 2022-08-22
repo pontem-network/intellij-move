@@ -2,7 +2,9 @@ package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
 import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.declaredTy
+import org.move.lang.core.psi.ext.fieldsMap
+import org.move.lang.core.psi.ext.tyAbilities
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 
