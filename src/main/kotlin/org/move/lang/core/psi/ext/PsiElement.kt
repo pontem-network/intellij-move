@@ -5,7 +5,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiFileImpl
 import com.intellij.psi.tree.IElementType
-import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.core.psi.*
@@ -180,8 +180,8 @@ fun PsiElement.equalsTo(another: PsiElement): Boolean =
     PsiManager.getInstance(this.project).areElementsEquivalent(this, another)
 
 fun PsiElement.isMsl(): Boolean {
-    return CachedValuesManager.getProjectPsiDependentCache(this) {
-        if (this !is MvElement) return@getProjectPsiDependentCache false
+    return getProjectPsiDependentCache(this) {
+        if (it !is MvElement) return@getProjectPsiDependentCache false
         val specElement = PsiTreeUtil.findFirstParent(it, false) { parent ->
             parent is MvSpecFunction
                     || parent is MvItemSpecBlockExpr
