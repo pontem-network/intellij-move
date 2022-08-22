@@ -167,6 +167,10 @@ fun PsiElement?.getPrevNonCommentSibling(): PsiElement? =
 fun PsiElement?.getNextNonCommentSibling(): PsiElement? =
     PsiTreeUtil.skipWhitespacesAndCommentsForward(this)
 
+/** Finds first sibling that is not whitespace after given element */
+fun PsiElement?.getNextNonWhitespaceSibling(): PsiElement? =
+    PsiTreeUtil.skipWhitespacesForward(this)
+
 fun PsiElement.isWhitespace(): Boolean =
     this is PsiWhiteSpace || this is PsiComment
 
