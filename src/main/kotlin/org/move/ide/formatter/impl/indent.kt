@@ -8,7 +8,7 @@ import org.move.lang.MvElementTypes.CODE_BLOCK_EXPR
 import org.move.lang.core.psi.*
 
 fun MvFormatterBlock.computeIndent(child: ASTNode): Indent? {
-    val nodePsi = node.psi
+    val parentPsi = node.psi
     val elementType = node.elementType
     val childPsi = child.psi
     return when {
@@ -25,12 +25,12 @@ fun MvFormatterBlock.computeIndent(child: ASTNode): Indent? {
 //        childPsi is MvExpr
 //                && (parentType == LET_EXPR || parentType == ASSIGNMENT_EXPR || parentType == CONST_DEF) -> Indent.getNormalIndent()
         childPsi is MvExpr
-                && nodePsi is MvInitializer -> Indent.getNormalIndent()
+                && parentPsi is MvInitializer -> Indent.getNormalIndent()
 //        if (true)
 //            create()
 //        else
 //            delete()
-        nodePsi is MvIfExpr || nodePsi is MvElseBlock -> when (childPsi) {
+        parentPsi is MvIfExpr || parentPsi is MvElseBlock -> when (childPsi) {
             is MvInlineBlock -> Indent.getNormalIndent()
             else -> Indent.getNoneIndent()
         }
@@ -43,11 +43,12 @@ fun MvFormatterBlock.computeIndent(child: ASTNode): Indent? {
 //                Indent.getNoneIndent()
 //            }
 
-//        parentPsi is MvSpecBlockExpr -> Indent.getNormalIndent()
+        parentPsi is MvCondition -> Indent.getNoneIndent()
 
         // binary expressions, chain calls
         // no indent on it's own, use parent indent
-        nodePsi is MvExpr -> Indent.getIndent(Indent.Type.NONE, true, true)
+        parentPsi is MvExpr -> Indent.getContinuationWithoutFirstIndent()
+//        parentPsi is MvExpr -> Indent.getIndent(Indent.Type.NONE, true, true)
 
         else -> Indent.getNoneIndent()
     }

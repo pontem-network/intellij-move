@@ -425,7 +425,7 @@ module 0x1::M {
         script {
             fun main() {
                 get_record() 
-                /*caret*/&& mytransaction;
+                    /*caret*/&& mytransaction;
             }
         }
     """
@@ -442,7 +442,7 @@ module 0x1::M {
         script {
             fun main() {
                 let alpha = get_record() 
-                            /*caret*/&& mytransaction;
+                    /*caret*/&& mytransaction;
             }
         }
     """
@@ -499,24 +499,7 @@ module 0x1::M {
     script  {
         fun main() {
             true 
-            /*caret*/&& true;
-        }
-    }
-    """
-    )
-
-    fun `test indent after operator in function arguments`() = doTestByText(
-        """
-    script  {
-        fun main() {
-            assert(true /*caret*/&& true, 1);
-        }
-    }
-    """, """
-    script  {
-        fun main() {
-            assert(true 
-                   /*caret*/&& true, 1);
+                /*caret*/&& true;
         }
     }
     """
@@ -553,7 +536,7 @@ module 0x1::M {
         fun main() {
             assert(
                 true 
-                /*caret*/&& true, 1
+                    /*caret*/&& true, 1
             );
         }
     }

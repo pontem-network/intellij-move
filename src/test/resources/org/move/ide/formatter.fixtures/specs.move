@@ -1,8 +1,4 @@
 module M {
-    spec from_bytes { // TODO: temporary mockup.
-        pragma opaque;
-    }
-
     spec initialize {
 assert true;
 
@@ -16,8 +12,7 @@ assert true;
                   now != timestamp
               } else  {
                   now >= timestamp
-              }
-              )
+              })
     with error::INVALID_ARGUMENT;
 }
 
