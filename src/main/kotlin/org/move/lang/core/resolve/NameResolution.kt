@@ -180,7 +180,7 @@ fun processLexicalDeclarations(
 ): Boolean {
     for (namespace in itemVis.namespaces) {
         val stop = when (namespace) {
-            Namespace.DOT_ACCESSED_FIELD -> {
+            Namespace.DOT_FIELD -> {
                 val dotExpr = scope as? MvDotExpr ?: return false
 
                 val receiverTy = dotExpr.expr.inferredTy()
@@ -192,7 +192,8 @@ fun processLexicalDeclarations(
                 if (innerTy !is TyStruct) return false
 
                 val structItem = innerTy.item
-                if (structItem.containingModule != dotExpr.containingModule) return false
+                val dotExprModule = dotExpr.namespaceModule ?: return false
+                if (structItem.containingModule != dotExprModule) return false
 
                 val fields = structItem.fields
                 return processor.matchAll(itemVis, fields)

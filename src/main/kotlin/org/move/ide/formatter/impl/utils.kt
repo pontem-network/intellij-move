@@ -18,7 +18,7 @@ val BINARY_OPS = ts(
 val ONE_LINE_ITEMS = ts(USE_STMT, CONST)
 
 val PAREN_DELIMITED_BLOCKS = ts(
-    PARENS_EXPR, TUPLE_PAT, TUPLE_TYPE, TUPLE_LIT_EXPR,
+    PARENS_EXPR, TUPLE_PAT, TUPLE_TYPE, TUPLE_LIT_EXPR, CONDITION,
     FUNCTION_PARAMETER_LIST, CALL_ARGUMENT_LIST, ATTR_ITEM_ARGUMENTS
 )
 val ANGLE_DELIMITED_BLOCKS = ts(TYPE_PARAMETER_LIST, TYPE_ARGUMENT_LIST)
@@ -63,6 +63,18 @@ fun ASTNode.isDelimiterOfCurrentBlock(parent: ASTNode?): Boolean {
         else -> false
     }
 }
+
+//val ASTNode.isFlatBraceBlock: Boolean
+//    get() = elementType in FLAT_BRACE_BLOCKS
+
+/**
+ * A flat block is a Rust PSI element which does not denote separate PSI
+ * element for its _block_ part (e.g. `{...}`), for example [MOD_ITEM].
+ */
+//val ASTNode.isFlatBlock: Boolean
+//    get() = isFlatBraceBlock
+//            || elementType == PAT_TUPLE_STRUCT
+
 
 //class CommaList(
 //    val list: IElementType,

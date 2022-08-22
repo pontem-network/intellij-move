@@ -35,6 +35,55 @@ class AddressByValueImportInspectionTest : InspectionProjectTestBase(AddressByVa
             }
         }
 
+    fun `test no inspection if std value is _ in the dependency`() =
+        checkWeakWarningsByFileTree {
+            dir("stdlib") {
+                moveToml(
+                    """
+        [package]
+        name = "Stdlib"
+        [addresses]
+        std = "_"
+        [dev-addresses]
+        std = "0x1"
+        """
+                )
+                sources {
+                    move(
+                        "debug.move", """
+            module std::debug { 
+                public native fun print();
+            }    
+            """
+                    )
+                }
+            }
+            moveToml(
+                """
+        [package]
+        name = "MyPackage"
+        
+        [addresses]
+        std = "0x1"
+
+        [dependencies]
+        Stdlib = { local = "./stdlib" } 
+        """
+            )
+            sources {
+                main(
+                    """
+                module std::main {
+                    use std::debug/*caret*/;
+                    fun main() {
+                        debug::print();
+                    }
+                }    
+                """
+                )
+            }
+        }
+
     fun `test no inspection if imported from the different address name with different value`() =
         checkWeakWarningsByFileTree {
             moveToml(

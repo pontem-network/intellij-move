@@ -4,6 +4,7 @@ import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
+import org.move.cli.Consts
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.toAddress
 import org.move.lang.core.types.Address
@@ -17,9 +18,11 @@ class AddressByValueImportInspection : MvLocalInspectionTool() {
                 val module = moduleRef.reference?.resolve() as? MvModule ?: return
 
                 val refAddress = moduleRef.addressRef.toAddress() ?: return
+                if (refAddress.value == Consts.ADDR_PLACEHOLDER) return
                 if (refAddress !is Address.Named) return
 
                 val modAddress = module.addressRef?.toAddress() ?: return
+                if (modAddress.value == Consts.ADDR_PLACEHOLDER) return
                 if (modAddress !is Address.Named) return
 
                 if (refAddress != modAddress) {

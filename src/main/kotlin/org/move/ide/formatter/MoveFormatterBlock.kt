@@ -47,7 +47,10 @@ class MvFormatterBlock(
     override fun getChildAttributes(newChildIndex: Int): ChildAttributes {
         val indent = when {
             node.elementType == ADDRESS_BLOCK -> Indent.getNoneIndent()
+
+            // We are inside some kind of {...}, [...], (...) or <...> block
             node.isDelimitedBlock -> Indent.getNormalIndent()
+
             // Otherwise we don't want any indentation (null means continuation indent)
             else -> Indent.getNoneIndent()
         }

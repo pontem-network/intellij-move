@@ -34,6 +34,15 @@ fun MvFormatterBlock.computeIndent(child: ASTNode): Indent? {
             is MvInlineBlock -> Indent.getNormalIndent()
             else -> Indent.getNoneIndent()
         }
+
+//        // Indent flat block contents, excluding closing brace
+//        node.isFlatBlock ->
+//            if (childCtx.metLBrace) {
+//                getIndentIfNotDelim(child, node)
+//            } else {
+//                Indent.getNoneIndent()
+//            }
+
 //        parentPsi is MvSpecBlockExpr -> Indent.getNormalIndent()
 
         // binary expressions, chain calls

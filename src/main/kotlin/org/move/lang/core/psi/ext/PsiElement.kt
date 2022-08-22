@@ -187,6 +187,7 @@ fun PsiElement.isMsl(): Boolean {
                     || parent is MvItemSpecBlockExpr
                     || parent is MvSchema
                     || parent is MvItemSpec
+                    || parent is MvModuleSpecBlock
         }
         specElement != null
     }
