@@ -192,4 +192,10 @@ module 0x1::M2 {
         <warning descr="Unused use item">use 0x1::Coin::{};</warning>
     }
     """)
+
+    fun `test unused import in module spec`() = checkWarnings("""
+    spec 0x1::Main {
+        <warning descr="Unused use item">use 0x1::Coin::{};</warning>
+    }
+    """)
 }

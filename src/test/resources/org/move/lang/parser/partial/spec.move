@@ -1,5 +1,7 @@
 module 0x1::M {
     spec
+    spec my_function
+    spec MyStruct
     spec module
     spec fun
     spec fun myfun

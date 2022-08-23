@@ -10,7 +10,7 @@ fun processModuleItems(
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     for (namespace in itemVis.namespaces) {
-        val found = when (namespace) {
+        var found = when (namespace) {
             Namespace.NAME -> processor.matchAll(
                 itemVis,
                 itemVis.visibilities.flatMap { module.functions(it) },
@@ -20,6 +20,17 @@ fun processModuleItems(
             Namespace.TYPE -> processor.matchAll(itemVis, module.structs())
             Namespace.SCHEMA -> processor.matchAll(itemVis, module.schemas())
             else -> false
+        }
+        if (!found) {
+            for (moduleSpec in module.allModuleSpecs()) {
+                val moduleSpecBlock = moduleSpec.moduleSpecBlock ?: continue
+                found = when (namespace) {
+                    Namespace.NAME -> processor.matchAll(itemVis, moduleSpecBlock.specFunctionList)
+                    Namespace.SCHEMA -> processor.matchAll(itemVis, moduleSpecBlock.schemaList)
+                    else -> false
+                }
+                if (found) break
+            }
         }
         if (found) return true
     }

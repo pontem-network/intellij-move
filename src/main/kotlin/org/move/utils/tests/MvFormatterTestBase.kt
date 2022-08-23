@@ -15,7 +15,9 @@ abstract class MvFormatterTestBase : FormatterTestCase() {
     }
 
     override fun doTextTest(@Language("Move") text: String, @Language("Move") textAfter: String) {
-        check(text.trimIndent() != textAfter.trimIndent())
+        check(text.trimIndent() != textAfter.trimIndent()) {
+            "Formatter before and after should be different"
+        }
         super.doTextTest(text.trimIndent(), textAfter.trimIndent())
     }
 

@@ -3,6 +3,7 @@ package org.move.lang.core.types.ty
 import org.move.ide.presentation.tyToString
 import org.move.lang.core.psi.MvFunctionLike
 import org.move.lang.core.types.infer.TypeFolder
+import org.move.lang.core.types.infer.TypeVisitor
 
 class TyFunction(
     val item: MvFunctionLike,
@@ -22,6 +23,9 @@ class TyFunction(
             acquiresTypes.map { it.foldWith(folder) }
         )
     }
+
+    override fun innerVisitWith(visitor: TypeVisitor): Boolean =
+        paramTypes.any { it.visitWith(visitor) } || retType.visitWith(visitor)
 
     override fun abilities(): Set<Ability> = Ability.all()
 

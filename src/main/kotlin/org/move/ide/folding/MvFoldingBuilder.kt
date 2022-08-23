@@ -11,15 +11,14 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.elementType
 import org.move.cli.settings.collapseSpecs
 import org.move.lang.MoveFile
 import org.move.lang.MoveParserDefinition.Companion.BLOCK_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 import org.move.lang.MvElementTypes.*
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.endOffset
-import org.move.lang.core.psi.ext.getNextNonCommentSibling
-import org.move.lang.core.psi.ext.startOffset
+import org.move.lang.core.psi.ext.*
 
 class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
     override fun getLanguagePlaceholderText(node: ASTNode, range: TextRange): String {
@@ -44,13 +43,14 @@ class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
 
         val usesRanges: MutableList<TextRange> = ArrayList()
         val constRanges: MutableList<TextRange> = ArrayList()
+        val docCommentRanges: MutableList<TextRange> = ArrayList()
 
-        val visitor = FoldingVisitor(descriptors, usesRanges, constRanges)
+        val visitor = FoldingVisitor(descriptors, usesRanges, constRanges, docCommentRanges)
         PsiTreeUtil.processElements(root) { it.accept(visitor); true }
     }
 
     override fun isRegionCollapsedByDefault(node: ASTNode): Boolean {
-        return node.psi.project.collapseSpecs && node.elementType == SPEC_BLOCK
+        return node.psi.project.collapseSpecs && node.elementType == MODULE_SPEC_BLOCK
                 || CodeFoldingSettings.getInstance().isDefaultCollapsedNode(node)
     }
 
@@ -58,13 +58,14 @@ class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
         private val descriptors: MutableList<FoldingDescriptor>,
         private val usesRanges: MutableList<TextRange>,
         private val constRanges: MutableList<TextRange>,
+        private val docCommentRanges: MutableList<TextRange>,
     ) : MvVisitor() {
 
         override fun visitCodeBlock(o: MvCodeBlock) = fold(o)
         override fun visitScriptBlock(o: MvScriptBlock) = fold(o)
         override fun visitModuleBlock(o: MvModuleBlock) = fold(o)
 
-        override fun visitSpecBlock(o: MvSpecBlock) {
+        override fun visitItemSpecBlock(o: MvItemSpecBlock) {
             if (o.children.isNotEmpty()) {
                 fold(o)
             }
@@ -74,8 +75,8 @@ class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
 
         override fun visitComment(comment: PsiComment) {
             when (comment.tokenType) {
-                BLOCK_COMMENT,
-                EOL_DOC_COMMENT -> fold(comment)
+                BLOCK_COMMENT -> fold(comment)
+                EOL_DOC_COMMENT -> foldRepeatingDocComments(comment)
             }
         }
 
@@ -100,6 +101,27 @@ class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
             if (left != null && right != null && right.textLength > 0) {
                 val range = TextRange(left.textOffset, right.textOffset + 1)
                 descriptors += FoldingDescriptor(element.node, range)
+            }
+        }
+
+        private fun foldRepeatingDocComments(startNode: PsiComment) {
+            if (isInRangesAlready(docCommentRanges, startNode as PsiElement)) return
+
+            var lastNode: PsiElement? = null
+            var tmpNode: PsiElement? = startNode
+
+            while (tmpNode.elementType == EOL_DOC_COMMENT || tmpNode is PsiWhiteSpace) {
+                tmpNode = tmpNode.getNextNonWhitespaceSibling()
+                if (tmpNode.elementType == EOL_DOC_COMMENT)
+                    lastNode = tmpNode
+            }
+
+            if (lastNode == startNode) return
+
+            if (lastNode != null) {
+                val range = TextRange(startNode.startOffset, lastNode.endOffset)
+                descriptors += FoldingDescriptor(startNode.node, range)
+                docCommentRanges.add(range)
             }
         }
 

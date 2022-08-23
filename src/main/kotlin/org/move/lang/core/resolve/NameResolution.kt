@@ -180,7 +180,7 @@ fun processLexicalDeclarations(
 ): Boolean {
     for (namespace in itemVis.namespaces) {
         val stop = when (namespace) {
-            Namespace.DOT_ACCESSED_FIELD -> {
+            Namespace.DOT_FIELD -> {
                 val dotExpr = scope as? MvDotExpr ?: return false
 
                 val receiverTy = dotExpr.expr.inferredTy()
@@ -192,7 +192,8 @@ fun processLexicalDeclarations(
                 if (innerTy !is TyStruct) return false
 
                 val structItem = innerTy.item
-                if (structItem.containingModule != dotExpr.containingModule) return false
+                val dotExprModule = dotExpr.namespaceModule ?: return false
+                if (structItem.containingModule != dotExprModule) return false
 
                 val fields = structItem.fields
                 return processor.matchAll(itemVis, fields)
@@ -218,27 +219,27 @@ fun processLexicalDeclarations(
 
             Namespace.NAME -> when (scope) {
                 is MvModuleBlock -> {
+                    val module = scope.parent as MvModule
                     processor.matchAll(
                         itemVis,
                         scope.itemImportNames(),
-                    )
-                }
-
-                is MvModule -> {
-                    processor.matchAll(
-                        itemVis,
-                        scope.allNonTestFunctions(),
-                        scope.builtinFunctions(),
-                        scope.structs(),
-                        scope.constBindings(),
+                        module.allNonTestFunctions(),
+                        module.builtinFunctions(),
+                        module.structs(),
+                        module.constBindings(),
                         if (itemVis.isMsl) {
-                            listOf(scope.specFunctions(), scope.builtinSpecFunctions()).flatten()
+                            listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
                         } else {
                             emptyList()
                         }
                     )
                 }
-
+                is MvModuleSpecBlock -> processor.matchAll(
+                    itemVis,
+                    scope.itemImportNames(),
+                    scope.schemaList,
+                    scope.specFunctionList,
+                )
                 is MvScriptBlock -> processor.matchAll(itemVis, scope.itemImportNames())
                 is MvScript -> processor.matchAll(itemVis, scope.constBindings())
                 is MvFunctionLike -> processor.matchAll(itemVis, scope.parameterBindings)
@@ -274,7 +275,7 @@ fun processLexicalDeclarations(
 
                 is MvSchema -> processor.matchAll(itemVis, scope.fieldBindings)
                 is MvQuantBindingsOwner -> processor.matchAll(itemVis, scope.bindings)
-                is MvSpecBlock -> {
+                is MvItemSpecBlock -> {
                     val visibleLetDecls = when (itemVis.mslScope) {
                         MslScope.EXPR -> scope.letStmts()
                         MslScope.LET, MslScope.LET_POST -> {
@@ -310,7 +311,6 @@ fun processLexicalDeclarations(
                         namedElements.asIterable()
                     )
                 }
-
                 else -> false
             }
 
@@ -326,9 +326,15 @@ fun processLexicalDeclarations(
                         false
                     }
                 }
-
-                is MvModuleBlock -> processor.matchAll(itemVis, scope.itemImportNames())
-                is MvModule -> processor.matchAll(itemVis, scope.structs())
+                is MvModuleBlock -> {
+                    val module = scope.parent as MvModule
+                    processor.matchAll(
+                        itemVis,
+                        scope.itemImportNames(),
+                        module.structs()
+                    )
+                }
+                is MvModuleSpecBlock -> processor.matchAll(itemVis, scope.itemImportNames())
                 is MvScriptBlock -> processor.matchAll(itemVis, scope.itemImportNames())
                 is MvApplySchemaStmt -> {
                     val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
@@ -340,31 +346,42 @@ fun processLexicalDeclarations(
             }
 
             Namespace.SPEC_ITEM -> when (scope) {
-                is MvModule -> processor.matchAll(
-                    itemVis,
-                    listOf(
-                        scope.allNonTestFunctions(),
-                        scope.structs(),
-                    ).flatten()
-                )
-
+                is MvModuleBlock -> {
+                    val module = scope.parent as MvModule
+                    processor.matchAll(
+                        itemVis,
+                        listOf(
+                            module.allNonTestFunctions(),
+                            module.structs(),
+                        ).flatten()
+                    )
+                }
                 else -> false
             }
 
             Namespace.SCHEMA -> when (scope) {
-                is MvModule -> processor.matchAll(itemVis, scope.schemas())
+                is MvModuleBlock -> processor.matchAll(
+                    itemVis,
+                    scope.itemImportNames(),
+                    scope.schemaList
+                )
+                is MvModuleSpecBlock -> processor.matchAll(
+                    itemVis,
+                    scope.itemImportNames(),
+                    scope.schemaList,
+                    scope.specFunctionList
+                )
                 else -> false
             }
 
             Namespace.MODULE -> when (scope) {
-                is MvItemsOwner -> processor.matchAll(
+                is MvImportsOwner -> processor.matchAll(
                     itemVis,
                     listOf(
                         scope.moduleImportNames(),
                         scope.selfItemImports(),
                     ).flatten(),
                 )
-
                 else -> false
             }
         }
@@ -378,26 +395,53 @@ fun walkUpThroughScopes(
     stopAfter: (MvElement) -> Boolean,
     handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean,
 ): Boolean {
-
     var cameFrom = start
     var scope = start.parent as MvElement?
     while (scope != null) {
-        // walk all `spec module {}` clauses
-        if (cameFrom is MvAnySpec && scope is MvModuleBlock) {
-            val moduleSpecs = (scope.parent as MvModule)
-                .moduleSpecs()
-                .filter { it != cameFrom }
-            for (moduleSpec in moduleSpecs) {
-                val moduleSpecBlock = moduleSpec.specBlock ?: continue
+        if (handleScope(cameFrom, scope)) return true
+
+        // walk all items in original module block
+        if (scope is MvModuleBlock) {
+            // handle spec module {}
+            if (handleModuleItemSpecs(cameFrom, scope, handleScope)) return true
+            // walk over all spec modules
+            for (moduleSpec in scope.module.allModuleSpecs()) {
+                val moduleSpecBlock = moduleSpec.moduleSpecBlock ?: continue
                 if (handleScope(cameFrom, moduleSpecBlock)) return true
             }
         }
-        if (handleScope(cameFrom, scope)) return true
+
+        if (scope is MvModuleSpecBlock) {
+            val moduleBlock = scope.moduleSpec.module?.moduleBlock
+            if (moduleBlock != null) {
+                cameFrom = scope
+                scope = moduleBlock
+                continue
+            }
+        }
+
         if (stopAfter(scope)) break
 
         cameFrom = scope
         scope = scope.parent as? MvElement
     }
 
+    return false
+}
+
+private fun handleModuleItemSpecs(
+    cameFrom: MvElement,
+    scope: MvElement,
+    handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean
+): Boolean {
+    val moduleItemSpecs = when (scope) {
+        is MvModuleBlock -> scope.moduleItemSpecs()
+        is MvModuleSpecBlock -> scope.moduleItemSpecs()
+        else -> emptyList()
+    }
+    for (moduleItemSpec in moduleItemSpecs.filter { it != cameFrom }) {
+        val itemSpecBlock = moduleItemSpec.itemSpecBlock ?: continue
+        if (handleScope(cameFrom, itemSpecBlock)) return true
+    }
     return false
 }

@@ -11,8 +11,13 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.containsTyOfClass
 import org.move.lang.core.types.infer.functionInferenceCtx
+import org.move.lang.core.types.infer.instantiateItemTy
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyFunction
+import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyUnknown
 
 const val KEYWORD_PRIORITY = 80.0
@@ -121,7 +126,7 @@ data class CompletionContext(
 fun MvNamedElement.createLookupElement(
     context: CompletionContext,
     priority: Double = DEFAULT_PRIORITY,
-    insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(),
+    insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(context),
 ): LookupElement {
     val lookupElement = this.createBaseLookupElement(context.itemVis.namespaces)
     val props = lookupProperties(this, context)
@@ -187,34 +192,39 @@ class AngleBracketsInsertHandler : InsertHandler<LookupElement> {
     }
 }
 
-private fun InsertionContext.functionSuffix(hasRequiredTypeParams: Boolean): String {
-    var suffix = ""
-    if (!this.hasAngleBrackets && hasRequiredTypeParams) {
-        suffix += "<>"
-    }
-    if (!this.hasAngleBrackets && !this.hasCallParens) {
-        suffix += "()"
-    }
-    return suffix
-}
-
-open class DefaultInsertHandler : InsertHandler<LookupElement> {
+open class DefaultInsertHandler(val completionContext: CompletionContext? = null) : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, item: LookupElement) {
         val document = context.document
         val element = item.psiElement as? MvElement ?: return
 
         when (element) {
             is MvFunctionLike -> {
-                // TODO:
-                //  1. ensure that there is a call brackets `()` so it's a valid CallExpr
-                //  2. find `expectedTy` of the expr
-                //  3. infer TyFunction of the CallExpr
-                //  4. check whether it's solvable, insert angle brackets if not
-                val hasRequiredTypeParams = element.typeParamsUsedOnlyInReturnType.isNotEmpty()
+                val allTypesInferred = run {
+                    // explicit type arguments required
+                    if (element.requiredTypeParams.isNotEmpty()) return@run false
+                    // all type arguments inferrable from function parameters
+                    if (element.typeParamsUsedOnlyInReturnType.isEmpty()) return@run true
 
-                val suffix = context.functionSuffix(hasRequiredTypeParams)
+                    if (completionContext == null) return@run false
+                    val msl = element.isMsl()
+                    val inferenceCtx = InferenceContext(msl)
+                    val funcTy = instantiateItemTy(element, msl) as? TyFunction ?: return@run false
+
+                    inferenceCtx.addConstraint(funcTy.retType, completionContext.expectedTy)
+                    inferenceCtx.processConstraints()
+                    inferenceCtx.resolveTy(funcTy)
+                    !funcTy.containsTyOfClass(listOf(TyInfer::class.java))
+                }
+
+                var suffix = ""
+                if (!context.hasAngleBrackets && !allTypesInferred) {
+                    suffix += "<>"
+                }
+                if (!context.hasAngleBrackets && !context.hasCallParens) {
+                    suffix += "()"
+                }
                 val offset = when {
-                    element.parameters.isNotEmpty() || hasRequiredTypeParams -> 1
+                    element.parameters.isNotEmpty() || !allTypesInferred -> 1
                     else -> 2
                 }
 

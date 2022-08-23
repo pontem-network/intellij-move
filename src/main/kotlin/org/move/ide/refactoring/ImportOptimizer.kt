@@ -11,6 +11,7 @@ import org.move.lang.MoveFile
 import org.move.lang.MvElementTypes.L_BRACE
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.moduleSpecs
 import org.move.lang.modules
 
 class ImportOptimizer : ImportOptimizer {
@@ -23,6 +24,7 @@ class ImportOptimizer : ImportOptimizer {
             documentManager.commitDocument(document)
         }
         val moveFile = file as MoveFile
+
         for (module in moveFile.modules()) {
             val block = module.moduleBlock ?: continue
             optimizeImports(block)
@@ -30,15 +32,19 @@ class ImportOptimizer : ImportOptimizer {
         for (scriptBlock in moveFile.scriptBlocks()) {
             optimizeImports(scriptBlock)
         }
+        for (moduleSpec in moveFile.moduleSpecs()) {
+            val moduleSpecBlock = moduleSpec.moduleSpecBlock ?: continue
+            optimizeImports(moduleSpecBlock)
+        }
     }
 
-    private fun optimizeImports(itemsOwner: MvItemsOwner) {
-        removeUnusedImports(itemsOwner)
-        mergeImportsIntoGroups(itemsOwner)
-        sortImports(itemsOwner)
+    private fun optimizeImports(importsOwner: MvImportsOwner) {
+        removeUnusedImports(importsOwner)
+        mergeImportsIntoGroups(importsOwner)
+        sortImports(importsOwner)
     }
 
-    private fun removeUnusedImports(useStmtOwner: MvItemsOwner) {
+    private fun removeUnusedImports(useStmtOwner: MvImportsOwner) {
         fun MvUseStmt.deleteWithLeadingWhitespace() {
             if (this.nextSibling.isWhitespace()) this.nextSibling.delete()
             this.delete()
@@ -77,7 +83,7 @@ class ImportOptimizer : ImportOptimizer {
         }
     }
 
-    private fun mergeImportsIntoGroups(useStmtOwner: MvItemsOwner) {
+    private fun mergeImportsIntoGroups(useStmtOwner: MvImportsOwner) {
         val psiFactory = useStmtOwner.project.psiFactory
         val leftBrace = useStmtOwner.findFirstChildByType(L_BRACE) ?: return
 
@@ -114,7 +120,7 @@ class ImportOptimizer : ImportOptimizer {
             }
     }
 
-    private fun sortImports(useStmtOwner: MvItemsOwner) {
+    private fun sortImports(useStmtOwner: MvImportsOwner) {
         val psiFactory = useStmtOwner.project.psiFactory
         val offset =
             (useStmtOwner.findFirstChildByType(L_BRACE)?.textOffset ?: return) + 1

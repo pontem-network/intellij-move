@@ -5,6 +5,7 @@ import com.intellij.psi.util.descendantsOfType
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
+import org.move.lang.core.types.ty.Ability
 import javax.swing.Icon
 
 val MvStruct.fields: List<MvStructField>
@@ -39,6 +40,8 @@ val MvStruct.abilities: List<MvAbility>
     get() {
         return this.abilitiesList?.abilityList ?: emptyList()
     }
+
+val MvStruct.tyAbilities: Set<Ability> get() = this.abilities.mapNotNull { it.ability }.toSet()
 
 val MvStruct.hasPhantomTypeParameters get() = this.typeParameters.any { it.isPhantom }
 

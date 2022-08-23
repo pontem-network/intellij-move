@@ -2,11 +2,11 @@ package org.move.utils.tests.annotation
 
 import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.testFramework.PlatformTestUtil
-import com.intellij.util.indexing.FileBasedIndex
 import org.intellij.lang.annotations.Language
-import org.move.ide.inspections.imports.MoveElementsIndex
+import org.move.lang.index.BaseMoveFileIndex
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
+import org.move.utils.tests.TreeBuilder
 import org.move.utils.tests.replaceCaretMarker
 import kotlin.reflect.KClass
 
@@ -41,11 +41,17 @@ abstract class InspectionProjectTestBase(
     ) {
         testProject(code)
 
-        FileBasedIndex.getInstance().requestRebuild(MoveElementsIndex.KEY)
+        BaseMoveFileIndex.requestRebuildIndices()
         PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
 
         annotationFixture.codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
     }
+
+    protected fun checkWarningsByFileTree(code: TreeBuilder) =
+        checkByFileTree(code)
+
+    protected fun checkWeakWarningsByFileTree(code: TreeBuilder) =
+        checkByFileTree(code, checkWarn = false, checkWeakWarn = true)
 
     protected fun checkFixByFileTree(
         fixName: String,
@@ -57,7 +63,7 @@ abstract class InspectionProjectTestBase(
     ) {
         testProject(before)
 
-        FileBasedIndex.getInstance().requestRebuild(MoveElementsIndex.KEY)
+        BaseMoveFileIndex.requestRebuildIndices()
         PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
 
         annotationFixture.codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)

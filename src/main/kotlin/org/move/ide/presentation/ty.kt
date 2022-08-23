@@ -26,6 +26,17 @@ fun Ty.name(): String {
     return text(fq = false)
 }
 
+fun Ty.expectedBindingFormText(): String {
+    return when (this) {
+        is TyTuple -> {
+            val expectedForm = this.types.joinToString(", ", "(", ")") { "_" }
+            "tuple binding of length ${this.types.size}: $expectedForm"
+        }
+        is TyStruct -> "struct binding of type ${this.text(true)}"
+        else -> "a single type"
+    }
+}
+
 fun Ty.fullnameNoArgs(): String {
     return this.fullname().replace(Regex("<.*>"), "")
 }

@@ -60,6 +60,7 @@ WHITE_SPACE      = {WHITE_SPACE_CHAR}+
 // Comments
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 EOL_DOC_LINE  = {LINE_WS}*("///".*)
+EOL_DOC_COMMENT =  ("///".*)
 OUTER_EOL_DOC = ({EOL_DOC_LINE}{EOL_WS})*{EOL_DOC_LINE}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,7 +84,7 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 %%
 <YYINITIAL> {
       {WHITE_SPACE}        { return WHITE_SPACE; }
-      {OUTER_EOL_DOC}                 { return EOL_DOC_COMMENT; }
+      {EOL_DOC_COMMENT}                 { return EOL_DOC_COMMENT; }
       "//" .*              { return EOL_COMMENT; }
       "/*"                 {
           yybegin(IN_BLOCK_COMMENT); yypushback(2);

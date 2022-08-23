@@ -2,10 +2,9 @@ package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
 import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.ext.abilities
-import org.move.lang.core.psi.ext.ability
 import org.move.lang.core.psi.ext.declaredTy
 import org.move.lang.core.psi.ext.fieldsMap
+import org.move.lang.core.psi.ext.tyAbilities
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 
@@ -15,9 +14,7 @@ data class TyStruct(
     val fieldTys: Map<String, Ty>,
     var typeArgs: List<Ty> = emptyList()
 ) : Ty {
-    override fun abilities(): Set<Ability> {
-        return this.item.abilities.mapNotNull { it.ability }.toSet()
-    }
+    override fun abilities(): Set<Ability> = this.item.tyAbilities
 
     override fun innerFoldWith(folder: TypeFolder): Ty = TyStruct(
         item,

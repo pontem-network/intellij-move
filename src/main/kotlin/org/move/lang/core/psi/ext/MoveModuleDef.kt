@@ -6,12 +6,15 @@ import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiModificationTracker
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.FQModule
+import org.move.lang.index.MvModuleSpecIndex
+import org.move.lang.moduleSpecs
 import org.move.lang.moveProject
 import javax.swing.Icon
 
@@ -29,7 +32,7 @@ fun MvModule.fqModule(): FQModule? {
 val MvModule.friendModules: Set<FQModule>
     get() {
         val block = this.moduleBlock ?: return emptySet()
-        val moduleRefs = block.friendStmtList.mapNotNull { it.fqModuleRef }
+        val moduleRefs = block.friendDeclList.mapNotNull { it.fqModuleRef }
 
         val friends = mutableSetOf<FQModule>()
         for (moduleRef in moduleRefs) {
@@ -156,8 +159,38 @@ fun MvModule.consts(): List<MvConst> = moduleBlock?.constList.orEmpty()
 fun MvModule.constBindings(): List<MvBindingPat> =
     moduleBlock?.constList.orEmpty().mapNotNull { it.bindingPat }
 
-fun MvModule.moduleSpecs() =
-    this.moduleBlock?.childrenOfType<MvModuleSpec>().orEmpty()
+val MvModuleBlock.module: MvModule get() = this.parent as MvModule
+
+fun MvModuleBlock.moduleItemSpecs() =
+    this.childrenOfType<MvItemSpec>()
+        .filter { it.itemSpecRef?.moduleKw != null }
+
+val MvModuleSpec.module: MvModule? get() = this.fqModuleRef?.reference?.resolve() as? MvModule
+
+val MvModuleSpecBlock.moduleSpec: MvModuleSpec get() = this.parent as MvModuleSpec
+
+fun MvModuleSpecBlock.moduleItemSpecs() =
+    this.childrenOfType<MvItemSpec>()
+        .filter { it.itemSpecRef?.moduleKw != null }
+
+fun MvModule.allModuleSpecs(): List<MvModuleSpec> {
+    return getProjectPsiDependentCache(this) {
+        val currentModule = it.fqModule() ?: return@getProjectPsiDependentCache emptyList()
+        val moveProject = it.moveProject ?: return@getProjectPsiDependentCache emptyList()
+        val specFiles =
+            MvModuleSpecIndex.moduleSpecFiles(it.project, it, moveProject.searchScope())
+        specFiles
+            .flatMap { f -> f.moduleSpecs() }
+            .filter { moduleSpec ->
+                val module = moduleSpec.fqModuleRef?.reference?.resolve() as? MvModule ?: return@filter false
+                currentModule == module.fqModule()
+            }
+    }
+}
+
+fun MvModule.allModuleSpecBlocks(): List<MvModuleSpecBlock> {
+    return this.allModuleSpecs().mapNotNull { it.moduleSpecBlock }
+}
 
 abstract class MvModuleMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                               MvModule {

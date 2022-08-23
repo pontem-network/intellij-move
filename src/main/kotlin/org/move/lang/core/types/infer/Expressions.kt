@@ -55,6 +55,11 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         is MvCodeBlockExpr -> {
             inferCodeBlockTy(expr.codeBlock, parentCtx.childContext(), expectedTy)
         }
+        is MvAssignmentExpr -> {
+            val lhsExprTy = inferExprTy(expr.expr, parentCtx, null)
+            expr.initializer.expr?.let { inferExprTy(it, parentCtx, lhsExprTy) }
+            TyUnit
+        }
         else -> TyUnknown
     }
     if (exprTy is TyReference && expr.isMsl()) {

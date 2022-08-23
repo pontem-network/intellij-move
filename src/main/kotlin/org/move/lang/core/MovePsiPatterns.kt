@@ -42,16 +42,18 @@ object MvPsiPatterns {
         psiElementWithParent<MvFunction>()
 //            .afterSibling(PlatformPatterns.psiElement(NATIVE))
 
-    fun scriptBlock(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvScriptBlock>()
+    fun scriptBlock(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvScriptBlock>()
 
-    fun codeStmt(): PsiElementPattern.Capture<PsiElement> =
-        psiElementInside<MvCodeBlock>()
+    fun moduleSpecBlock(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvModuleSpecBlock>()
 
-    fun itemSpecLabel() = psiElementInside<MvItemSpec>().and(onStmtBeginning("spec"))
+    fun codeStmt(): PsiElementPattern.Capture<PsiElement> = psiElementInside<MvCodeBlock>()
 
-    fun specStmt(): PsiElementPattern.Capture<PsiElement> =
-        psiElementInside<MvSpecBlock>()
+    fun anySpecStart() = psiElementInside<MvItemSpec>().and(onStmtBeginning("spec"))
+//    fun anySpecStart() = psiElementInside<>().and(onStmtBeginning("spec"))
+
+    fun itemSpecStmt(): PsiElementPattern.Capture<PsiElement> = psiElementInside<MvItemSpecBlock>()
+
+    fun itemSpecRef(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvItemSpecRef>()
 
     fun bindingPat(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvBindingPat>()
 
@@ -160,7 +162,7 @@ object MvPsiPatterns {
 
     fun specIdentifier(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
-            .withSuperParent<MvAnySpec>(2)
+            .withParent<MvItemSpecRef>()
 
     private fun whitespaceAndErrors() = PlatformPatterns.psiElement().whitespaceCommentEmptyOrError()
 

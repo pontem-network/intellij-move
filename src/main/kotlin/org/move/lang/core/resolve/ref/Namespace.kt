@@ -47,7 +47,7 @@ enum class Namespace {
     SCHEMA_FIELD,
     MODULE,
     STRUCT_FIELD,
-    DOT_ACCESSED_FIELD;
+    DOT_FIELD;
 
     companion object {
         fun allNames(): Set<Namespace> {

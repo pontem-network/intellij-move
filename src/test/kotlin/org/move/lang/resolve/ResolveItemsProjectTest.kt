@@ -25,24 +25,30 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
     }
 
     fun `test resolve module from file in local dependency`() = checkByFileTree {
-        moveToml("""
+        moveToml(
+            """
         [dependencies]
         Stdlib = { local = "./stdlib" }
-        """)
+        """
+        )
         sources {
-            main("""
+            main(
+                """
                 script {
                     use 0x1::Module;
                            //^
-            """)
+            """
+            )
         }
         dir("stdlib") {
             namedMoveToml("Stdlib")
             sources {
-                move("module.move", """
+                move(
+                    "module.move", """
                     module 0x1::Module {}
                               //X
-                """)
+                """
+                )
             }
         }
     }
@@ -50,37 +56,47 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
     fun `test resolve module from other file with inline address`() = checkByFileTree {
         namedMoveToml("MyPackage")
         sources {
-            move("module.move", """
+            move(
+                "module.move", """
                 module 0x1::Module {}
                           //X
-            """)
-            main("""
+            """
+            )
+            main(
+                """
                 script {
                     use 0x1::Module;
                            //^
                 }
-            """)
+            """
+            )
         }
     }
 
     fun `test resolve module from another file with named address`() = checkByFileTree {
-        moveToml("""
+        moveToml(
+            """
         [package]
         name = "MyPackage"
         [addresses]
         Std = "0x1"    
-        """)
+        """
+        )
         sources {
-            move("module.move", """
+            move(
+                "module.move", """
                 module Std::Module {}
                           //X                
-            """)
-            main("""
+            """
+            )
+            main(
+                """
                 script {
                     use Std::Module;
                            //^
                 }
-            """)
+            """
+            )
         }
     }
 
@@ -137,12 +153,14 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
         """
         )
         sources {
-            main("""
+            main(
+                """
                 script {
                     use Std::Module;
                            //^
                 }        
-        """)
+        """
+            )
         }
         dir("stdlib") {
             moveToml(
@@ -154,10 +172,12 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
             """
             )
             sources {
-                move("module.move", """
+                move(
+                    "module.move", """
                 module Std::Module {}
                            //X                    
-                """)
+                """
+                )
             }
         }
     }
@@ -165,12 +185,14 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
     fun `test resolve module git dependency as inline table`() = checkByFileTree {
         dotMove {
             git("https://github.com/pontem-network/move-stdlib.git", "main") {
-                moveToml("""
+                moveToml(
+                    """
                 [package]
                 name = "MoveStdlib"
                 [addresses]
                 Std = "0x1"    
-                """)
+                """
+                )
                 sources {
                     move(
                         "Vector.move", """
@@ -205,12 +227,14 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
     fun `test resolve module git dependency as table`() = checkByFileTree {
         dotMove {
             git("https://github.com/pontem-network/move-stdlib.git", "main") {
-                moveToml("""
+                moveToml(
+                    """
                 [package]
                 name = "MoveStdlib"
                 [addresses]
                 Std = "0x1"    
-                """)
+                """
+                )
                 sources {
                     move(
                         "Vector.move", """
@@ -246,18 +270,22 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
     fun `test resolve module from git transitive dependency`() = checkByFileTree {
         dotMove {
             git("https://github.com/aptos-labs/pont-stdlib.git", "main") {
-                moveToml("""
+                moveToml(
+                    """
         [package]
         name = "PontStdlib"        
         [dependencies]
         MoveStdlib = { git = "https://github.com/aptos-labs/move-stdlib.git", rev = "main" }                        
-                """)
+                """
+                )
             }
             git("https://github.com/aptos-labs/move-stdlib.git", "main") {
-                moveToml("""
+                moveToml(
+                    """
         [package]
         name = "MoveStdlib"        
-                """)
+                """
+                )
                 sources {
                     move(
                         "module.move", """
@@ -290,16 +318,19 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
 
     fun `test test_only items from tests are available in other tests`() = checkByFileTree {
         namedMoveToml("MyPackage")
-        sources {  }
+        sources { }
         tests {
-            move("CoinTests.move", """
+            move(
+                "CoinTests.move", """
             #[test_only]    
             module 0x1::CoinTests {
                 public fun call() {}
                           //X
             }    
-            """)
-            move("TestCoinTests.move", """
+            """
+            )
+            move(
+                "TestCoinTests.move", """
             #[test_only]    
             module 0x1::TestCoinTests {
                 use 0x1::CoinTests::call;
@@ -309,7 +340,8 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
                     //^
                 }
             }    
-            """)
+            """
+            )
         }
     }
 
@@ -324,7 +356,8 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
         """
         )
         sources {
-            main("""
+            main(
+                """
             module 0x1::M {
                 use aptos_std::debug;
                 fun call() {
@@ -332,7 +365,8 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
                    //^ 
                 }
             }    
-            """)
+            """
+            )
             move(
                 "debug.move", """
             module std::debug {

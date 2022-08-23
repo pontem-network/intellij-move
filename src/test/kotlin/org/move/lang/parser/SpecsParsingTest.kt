@@ -10,4 +10,5 @@ class SpecsParsingTest: MvParsingTestCase("specs") {
 
     fun `test apply`() = doTest(true)
     fun `test spec statements`() = doTest(true)
+    fun `test spec file`() = doTest(true)
 }
