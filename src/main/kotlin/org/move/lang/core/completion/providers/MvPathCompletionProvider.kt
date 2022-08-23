@@ -72,6 +72,9 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
             false
         }
 
+        // disable auto-import in module specs for now
+        if (pathElement.containingModuleSpec != null) return
+
         val originalPathElement = parameters.originalPosition?.parent as? MvPath ?: return
         val importContext =
             ImportContext.from(originalPathElement, itemVis.copy(visibilities = setOf(Visibility.Public)))

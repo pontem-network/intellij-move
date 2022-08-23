@@ -11,6 +11,7 @@ import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.*
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.containingModule
+import org.move.lang.core.psi.containingModuleSpec
 import org.move.lang.core.psi.ext.equalsTo
 import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.resolve.ItemVis
@@ -61,6 +62,9 @@ object ModulesCompletionProvider : MvCompletionProvider() {
             it.element.name?.let(processedNames::add)
             false
         }
+
+        // disable auto-import in module specs for now
+        if (refElement.containingModuleSpec != null) return
 
         val path = parameters.originalPosition?.parent as? MvPath ?: return
         val importContext =

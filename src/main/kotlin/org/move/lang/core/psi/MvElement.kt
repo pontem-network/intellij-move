@@ -33,6 +33,8 @@ val MvElement.namespaceModule: MvModule? get() {
 
 val MvElement.containingModule: MvModule? get() = ancestorStrict()
 
+val MvElement.containingModuleSpec: MvModuleSpec? get() = ancestorStrict()
+
 val MvElement.containingImportsOwner get() = ancestorOrSelf<MvImportsOwner>()
 
 val MvElement.containingModuleOrScript: MvElement?
