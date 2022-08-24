@@ -17,8 +17,10 @@ class MoveTomlWatcher(
     }
 }
 
-fun VFileEvent.pathStartsWith(prefix: String): Boolean = path.startsWith(prefix) ||
-        this is VFilePropertyChangeEvent && oldPath.startsWith(prefix)
+fun VFileEvent.pathStartsWith(prefix: String): Boolean =
+    path.startsWith(prefix) ||
+            this is VFilePropertyChangeEvent && oldPath.startsWith(prefix)
 
-fun VFileEvent.pathEndsWith(suffix: String): Boolean = path.endsWith(suffix) ||
-        this is VFilePropertyChangeEvent && oldPath.endsWith(suffix)
+fun VFileEvent.pathEndsWith(suffix: String): Boolean =
+    path.endsWith(suffix) ||
+            this is VFilePropertyChangeEvent && oldPath.endsWith(suffix)

@@ -186,6 +186,10 @@ fun PsiElement.equalsTo(another: PsiElement): Boolean =
 fun PsiElement.isMsl(): Boolean {
     return getProjectPsiDependentCache(this) {
         if (it !is MvElement) return@getProjectPsiDependentCache false
+
+        // use items always non-msl, otherwise import resolution doesn't work correctly
+        if (it is MvUseItem) return@getProjectPsiDependentCache false
+
         val specElement = PsiTreeUtil.findFirstParent(it, false) { parent ->
             parent is MvSpecFunction
                     || parent is MvItemSpecBlockExpr

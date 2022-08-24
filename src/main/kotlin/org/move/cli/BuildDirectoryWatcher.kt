@@ -14,9 +14,9 @@ class BuildDirectoryWatcher(
     }
 
     override fun after(events: MutableList<out VFileEvent>) {
-        val builds = moveProjects.map { FileUtil.join(it.contentRoot.path, "build") }
+        val buildDirectories = moveProjects.map { FileUtil.join(it.contentRoot.path, "build") }
         for (event in events) {
-            if (builds.any { event.pathStartsWith(it) }) {
+            if (buildDirectories.any { event.pathStartsWith(it) }) {
                 onChange()
                 return
             }
