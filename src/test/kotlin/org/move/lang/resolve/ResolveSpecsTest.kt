@@ -512,4 +512,46 @@ class ResolveSpecsTest: ResolveTestCase() {
         }
     } 
     """)
+
+    fun `test spec functions not available in main code`() = checkByCode("""
+    module 0x1::main {
+        fun call() {
+            spec_add();
+            //^ unresolved
+        }
+    }    
+    spec 0x1::main {
+        spec fun spec_add(): u8 { 1 }
+    }
+    """)
+
+    fun `test spec functions are available in spec code`() = checkByCode("""
+    module 0x1::main {
+        fun call() {
+        }
+        spec call {
+            spec_add();
+            //^
+        }
+    }    
+    spec 0x1::main {
+        spec fun spec_add(): u8 { 1 }
+                 //X
+    }
+    """)
+
+    fun `test spec functions are available in spec module code`() = checkByCode("""
+    module 0x1::main {
+        fun call() {
+        }
+    }    
+    spec 0x1::main {
+        spec fun spec_add(): u8 { 1 }
+                 //X
+        spec call {
+            spec_add();
+            //^
+        }
+    }
+    """)
 }

@@ -120,7 +120,7 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
         return ItemVis(
             setOf(Namespace.TYPE),
             Visibility.none(),
-            mslScope = MslScope.NONE,
+            mslScope = pathElement.mslScope,
             itemScope = pathElement.itemScope,
         )
     }
