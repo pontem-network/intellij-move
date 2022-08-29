@@ -13,6 +13,7 @@ class CompleteParsingTest : MvParsingTestCase("complete") {
 
     //expressions
     fun `test strings`() = doTest(true)
+    fun `test vectors`() = doTest(true)
     fun `test expressions`() = doTest(true)
     fun `test expressions assignments`() = doTest(true)
     fun `test expressions if else as`() = doTest(true)

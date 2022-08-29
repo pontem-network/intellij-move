@@ -198,4 +198,18 @@ module 0x1::M2 {
         <warning descr="Unused use item">use 0x1::Coin::{};</warning>
     }
     """)
+
+    fun `test unused signer import`() = checkWarnings("""
+    module 0x1::main {
+        <warning descr="Unused use item">use std::signer;</warning>
+        fun call(a: signer) {}
+    }    
+    """)
+
+    fun `test unused vector import`() = checkWarnings("""
+    module 0x1::main {
+        <warning descr="Unused use item">use std::vector;</warning>
+        fun call(a: vector<u8>) {}
+    }    
+    """)
 }

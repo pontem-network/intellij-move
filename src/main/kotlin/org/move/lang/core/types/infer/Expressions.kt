@@ -19,6 +19,7 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         }
 
         is MvStructLitExpr -> inferStructLitExpr(expr, parentCtx, expectedTy)
+        is MvVectorLitExpr -> inferVectorLitExpr(expr, parentCtx)
 
         is MvDotExpr -> inferDotExprTy(expr, parentCtx)
         is MvDerefExpr -> inferDerefExprTy(expr, parentCtx)
@@ -222,6 +223,10 @@ fun inferStructLitExpr(
 
     parentCtx.resolveTyVarsFromContext(inferenceCtx)
     return inferenceCtx.resolveTy(structTy)
+}
+
+fun inferVectorLitExpr(litExpr: MvVectorLitExpr, parentCtx: InferenceContext): Ty {
+    return TyVector(TyUnknown)
 }
 
 fun inferLitFieldInitExprTy(litField: MvStructLitField, ctx: InferenceContext): Ty {

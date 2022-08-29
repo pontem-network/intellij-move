@@ -497,6 +497,65 @@ class RenameTest : MvTestBase() {
         myFixture.checkResult(afterText)
     }
 
+    fun `test rename function argument in specs`() = doTest("new_name", """
+    module 0x1::main {
+        fun call(/*caret*/old_name: bool) {}
+        spec call {
+            assert old_name;
+        }
+    }    
+    """, """
+    module 0x1::main {
+        fun call(new_name: bool) {}
+        spec call {
+            assert new_name;
+        }
+    }    
+    """)
+
+    fun `test rename function argument in module specs`() = doTest("new_name", """
+    module 0x1::main {
+        fun call(/*caret*/old_name: bool) {}
+    }
+    spec 0x1::main {
+        spec call {
+            assert old_name;
+        }
+
+    }    
+    """, """
+    module 0x1::main {
+        fun call(new_name: bool) {}
+    }
+    spec 0x1::main {
+        spec call {
+            assert new_name;
+        }
+
+    }    
+    """)
+
+
+    fun `test rename shorthand into non-shorthand`() = doTest("new_val", """
+    module 0x1::main {
+        struct S { val: u8 }
+        fun get_s(): S { S { val: 10 } }
+        fun main() {
+            let S { val } = get_s();
+            /*caret*/val;
+        }
+    }        
+    """, """
+    module 0x1::main {
+        struct S { val: u8 }
+        fun get_s(): S { S { val: 10 } }
+        fun main() {
+            let S { val: new_val } = get_s();
+            new_val;
+        }
+    }        
+    """)
+
     private fun doTest(
         newName: String,
         @Language("Move") before: String,

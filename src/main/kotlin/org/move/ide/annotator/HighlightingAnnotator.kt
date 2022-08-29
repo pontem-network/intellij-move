@@ -55,6 +55,7 @@ class HighlightingAnnotator : MvAnnotator() {
         if (element is MvFunction) return MvColor.FUNCTION_DEF
         if (element is MvBindingPat && element.owner is MvConst) return MvColor.CONSTANT_DEF
         if (element is MvModule) return MvColor.MODULE_DEF
+        if (element is MvVectorLitExpr) return MvColor.VECTOR_LITERAL
 
         val path = element as? MvPath ?: return null
         // any qual :: access is not highlighted

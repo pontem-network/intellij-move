@@ -197,6 +197,7 @@ private address ::= <<addressKeyword>>
 private has ::= <<hasKeyword>>
 private entry ::= <<entryKeyword>>
 private schema ::= <<schemaKeyword>>
+//private vector ::= <<vectorKeyword>>
 
 AddressDef ::= address AddressRef AddressBlock {
     pin = 1
@@ -640,7 +641,6 @@ private StructPatField_recover ::= !('}' | IDENTIFIER)
 
 StructPatField ::= (BindingPat !':') | (IDENTIFIER StructPatFieldBinding)
 {
-    pin = 1
     implements = [
         "org.move.lang.core.resolve.MvStructFieldReferenceElement"
     ]
@@ -765,6 +765,7 @@ private AtomExpr ::=
                     | TupleLitExpr
                     | ParensExpr
                     | StructLitExpr
+                    | VectorLitExpr
                     | DotExpr
                     | IndexExpr
                     | (CallExpr | MacroCallExpr)
@@ -820,6 +821,12 @@ ReturnExpr ::= return Expr?
 AbortExpr ::= abort Expr
 BreakExpr ::= break
 ContinueExpr ::= continue
+
+VectorLitExpr ::= <<VECTOR_IDENTIFIER>> ('<' TypeArgument '>')? VectorLitItems
+VectorLitItems ::= '[' <<comma_sep_items Expr>>? ']'
+{
+    pin = 1
+}
 
 StructLitExpr ::= Path StructLitFieldsBlock
 StructLitFieldsBlock ::= '{' StructLitField_with_recover* '}' { pin = 1 }

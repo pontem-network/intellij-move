@@ -253,6 +253,12 @@ object MoveParserUtil : GeneratedParserUtilBase() {
         return true
     }
 
+    @Suppress("FunctionName")
+    @JvmStatic
+    fun VECTOR_IDENTIFIER(b: PsiBuilder, level: Int): Boolean {
+        return nextTokenIs(b, "vector") && consumeToken(b, IDENTIFIER)
+    }
+
     @JvmStatic
     fun addressKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "address", ADDRESS)
 
@@ -264,6 +270,9 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun schemaKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "schema", SCHEMA_KW)
+
+//    @JvmStatic
+//    fun vectorKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "vector", VECTOR_KW)
 
     @JvmStatic
     fun friendKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "friend", FRIEND)

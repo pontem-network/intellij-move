@@ -10,6 +10,7 @@ import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.module
 import org.move.lang.core.types.ty.Ty
@@ -59,6 +60,21 @@ val MvFunction.outerFileName: String
         } else {
             this.containingFile?.name.orEmpty()
         }
+
+fun MvFunction.innerItemSpecs(): List<MvItemSpec> {
+    val functionName = this.name ?: return emptyList()
+    val itemSpecs = this.module?.moduleBlock?.itemSpecs().orEmpty()
+    return itemSpecs
+        .filter { it.itemSpecRef?.referenceName == functionName }
+}
+
+fun MvFunction.outerItemSpecs(): List<MvItemSpec> {
+    val functionName = this.name ?: return emptyList()
+    val moduleSpecs = this.module?.allModuleSpecs().orEmpty()
+    return moduleSpecs
+        .flatMap { it.moduleSpecBlock?.itemSpecs().orEmpty() }
+        .filter { it.itemSpecRef?.referenceName == functionName }
+}
 
 abstract class MvFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                                 MvFunction {

@@ -5,6 +5,11 @@
             <option name="FOREGROUND" value="34349A"/>
         </value>
     </option>
+    <option name="org.move.VECTOR_LITERAL">
+        <value>
+            <option name="FOREGROUND" value="34349A"/>
+        </value>
+    </option>
     <option name="org.move.BUILTIN_TYPE">
         <value>
             <option name="FOREGROUND" value="34349A"/>

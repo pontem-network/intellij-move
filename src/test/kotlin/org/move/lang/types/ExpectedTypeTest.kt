@@ -37,6 +37,16 @@ class ExpectedTypeTest : TypificationTestCase() {
     }    
     """)
 
+    fun `test unknown if too many parameters`() = testExpectedTypeExpr("""
+    module 0x1::Main {
+        fun call<T>(a: T, b: T) {}
+        fun main() {
+            call(1u8, my_ref, my_ref2);
+                            //^ <unknown>
+        }
+    }    
+    """)
+
     fun `test let statement initializer no pattern explicit type`() = testExpectedTypeExpr(
         """
     module 0x1::Main {
