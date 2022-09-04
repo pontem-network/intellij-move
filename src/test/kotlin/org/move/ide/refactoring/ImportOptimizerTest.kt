@@ -355,6 +355,26 @@ module 0x1::string {}
 spec 0x1::main {}        
     """)
 
+    fun `test test_only merged into main`() = doTest("""
+module 0x1::string { public fun utf8() {} }        
+module 0x1::main {
+    use 0x1::string::utf8;
+    #[test_only]
+    use 0x1::string::utf8;
+    fun main() {
+        utf8();
+    }
+}        
+    """, """
+module 0x1::string { public fun utf8() {} }        
+module 0x1::main {
+    use 0x1::string::utf8;
+    fun main() {
+        utf8();
+    }
+}        
+    """)
+
 //    fun `test module spec with parent import`() = doTest("""
 //module 0x1::string { public fun utf8(v: vector<u8>) {} }
 //module 0x1::main {

@@ -22,6 +22,7 @@ val PAREN_DELIMITED_BLOCKS = ts(
     FUNCTION_PARAMETER_LIST, CALL_ARGUMENT_LIST, ATTR_ITEM_ARGUMENTS
 )
 val ANGLE_DELIMITED_BLOCKS = ts(TYPE_PARAMETER_LIST, TYPE_ARGUMENT_LIST)
+val BRACKET_DELIMITED_BLOCKS = ts(VECTOR_LIT_ITEMS)
 
 val STRUCT_LITERAL_BLOCKS = ts(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LIT_FIELDS_BLOCK)
 val DEF_BLOCKS = ts(
@@ -31,7 +32,8 @@ val DEF_BLOCKS = ts(
 )
 val BLOCK_LIKE = orSet(STRUCT_LITERAL_BLOCKS, DEF_BLOCKS)
 
-val DELIMITED_BLOCKS = orSet(PAREN_DELIMITED_BLOCKS, ANGLE_DELIMITED_BLOCKS, BLOCK_LIKE)
+val DELIMITED_BLOCKS = orSet(PAREN_DELIMITED_BLOCKS, ANGLE_DELIMITED_BLOCKS, BRACKET_DELIMITED_BLOCKS,
+                             BLOCK_LIKE)
 
 fun ASTNode?.isWhitespaceOrEmpty() = this == null || textLength == 0 || elementType == TokenType.WHITE_SPACE
 
@@ -58,6 +60,7 @@ fun ASTNode.isDelimiterOfCurrentBlock(parent: ASTNode?): Boolean {
     val parentType = parent.elementType
     return when (elementType) {
         L_BRACE, R_BRACE -> parentType in BLOCK_LIKE
+        L_BRACK, R_BRACK -> parentType in BRACKET_DELIMITED_BLOCKS
         L_PAREN, R_PAREN -> parentType in PAREN_DELIMITED_BLOCKS
         LT, GT -> parentType in ANGLE_DELIMITED_BLOCKS
         else -> false
