@@ -152,7 +152,7 @@ fun ImportCandidate.import(context: MvElement) {
 
 private fun MvImportsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: FqPath, testOnly: Boolean) {
     val newUseStmt = psiFactory.useStmt(usePath.toString(), testOnly)
-    if (this.tryGroupWithOtherUseItems(psiFactory, newUseStmt)) return
+    if (this.tryGroupWithOtherUseItems(psiFactory, newUseStmt, testOnly)) return
 
     val anchor = childrenOfType<MvUseStmt>().lastElement
     if (anchor != null) {
@@ -164,11 +164,16 @@ private fun MvImportsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: FqPa
     }
 }
 
-private fun MvImportsOwner.tryGroupWithOtherUseItems(psiFactory: MvPsiFactory, newUseStmt: MvUseStmt): Boolean {
+private fun MvImportsOwner.tryGroupWithOtherUseItems(
+    psiFactory: MvPsiFactory,
+    newUseStmt: MvUseStmt,
+    testOnly: Boolean
+): Boolean {
     val newUseSpeck = newUseStmt.itemUseSpeck ?: return false
     val newName = newUseSpeck.names().singleOrNull() ?: return false
     val newFqModule = newUseSpeck.fqModuleRef
     return useStmtList
+        .filter { it.isTestOnly == testOnly }
         .mapNotNull { it.itemUseSpeck }
         .any { it.tryGroupWith(psiFactory, newFqModule, newName) }
 }

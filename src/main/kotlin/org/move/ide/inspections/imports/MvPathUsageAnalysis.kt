@@ -4,16 +4,18 @@ import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.allModuleSpecBlocks
+import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.psi.ext.module
 import org.move.lang.core.psi.ext.moduleSpec
+import org.move.lang.core.resolve.ItemScope
 
 typealias ItemUsages = MutableMap<String, MutableSet<MvNamedElement>>
 
-data class PathUsages(
+data class ScopePathUsages(
     val nameUsages: ItemUsages,
     val typeUsages: ItemUsages,
 ) {
-    fun updateFrom(other: PathUsages) {
+    fun updateFrom(other: ScopePathUsages) {
         nameUsages.putAll(other.nameUsages)
         typeUsages.putAll(other.typeUsages)
     }
@@ -22,6 +24,23 @@ data class PathUsages(
         val usages = nameUsages.toMutableMap()
         usages.putAll(typeUsages)
         return usages
+    }
+}
+
+data class PathUsages(
+    val mainUsages: ScopePathUsages,
+    val testUsages: ScopePathUsages
+) {
+    fun updateFrom(other: PathUsages) {
+        mainUsages.updateFrom(other.mainUsages)
+        testUsages.updateFrom(other.testUsages)
+    }
+
+    fun get(itemScope: ItemScope): ScopePathUsages {
+        return when (itemScope) {
+            ItemScope.MAIN -> mainUsages
+            ItemScope.TEST -> testUsages
+        }
     }
 }
 
@@ -50,16 +69,24 @@ val MvImportsOwner.pathUsages: PathUsages
 
 private fun MvImportsOwner.localPathUsages(): PathUsages {
     return getProjectPsiDependentCache(this) {
-        val nameUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
-        val typeUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
+
+        val mainNameUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
+        val mainTypeUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
+        val testNameUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
+        val testTypeUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
+
         for (child in it.children) {
             PsiTreeUtil.processElements(child) { element ->
                 when {
                     element is MvPathType -> {
+                        val typeUsages =
+                            if (element.itemScope == ItemScope.TEST) testTypeUsages else mainTypeUsages
                         putUsage(element.path, typeUsages)
                         true
                     }
                     element is MvPath && element.parent !is MvPathType -> {
+                        val nameUsages =
+                            if (element.itemScope == ItemScope.TEST) testNameUsages else mainNameUsages
                         putUsage(element, nameUsages)
                         true
                     }
@@ -67,7 +94,10 @@ private fun MvImportsOwner.localPathUsages(): PathUsages {
                 }
             }
         }
-        PathUsages(nameUsages, typeUsages)
+        PathUsages(
+            ScopePathUsages(mainNameUsages, mainTypeUsages),
+            ScopePathUsages(testNameUsages, testTypeUsages),
+        )
     }
 }
 

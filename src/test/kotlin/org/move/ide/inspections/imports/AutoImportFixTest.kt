@@ -283,7 +283,7 @@ module 0x1::Main {
     """
         )
 
-    fun `test auto import removes test_only if required`() = checkAutoImportFixByText("""
+    fun `test auto import add non-test-only statement`() = checkAutoImportFixByText("""
 module 0x1::minter {
     public fun mint() {}    
 }        
@@ -292,7 +292,7 @@ module 0x1::main {
     use 0x1::minter::mint;
     
     public fun main() {
-        <error descr="Unresolved reference: `get_weekly_emission`">/*caret*/mint</error>();    
+        <error descr="Unresolved reference: `mint`">/*caret*/mint</error>();    
     }
     
     #[test_only]
@@ -305,14 +305,55 @@ module 0x1::minter {
     public fun mint() {}    
 }        
 module 0x1::main {
+    #[test_only]
     use 0x1::minter::mint;
-    
+    use 0x1::minter::mint;
+
     public fun main() {
         mint();    
     }
     
     #[test_only]
     public fun main_test() {
+        mint();
+    }
+}        
+    """)
+
+    fun `test auto import adds non test_only item`() = checkAutoImportFixByText("""
+module 0x1::minter {
+    struct S {}
+    public fun mint() {}    
+}        
+module 0x1::main {
+    #[test_only]
+    use 0x1::minter::{Self, mint};
+    
+    public fun main() {
+        <error descr="Unresolved reference: `mint`">/*caret*/mint</error>();    
+    }
+    
+    #[test_only]
+    public fun main_test(): minter::S {
+        mint();
+    }
+}        
+    """, """
+module 0x1::minter {
+    struct S {}
+    public fun mint() {}    
+}        
+module 0x1::main {
+    #[test_only]
+    use 0x1::minter::{Self, mint};
+    use 0x1::minter::mint;
+
+    public fun main() {
+        mint();    
+    }
+    
+    #[test_only]
+    public fun main_test(): minter::S {
         mint();
     }
 }        

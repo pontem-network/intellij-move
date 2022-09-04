@@ -237,4 +237,49 @@ module 0x1::main {
         }
     }
     """)
+
+    fun `test unused test_only import`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        use 0x1::string::call;
+        <warning descr="Unused use item">#[test_only]
+        use 0x1::string::call;</warning>
+        
+        fun main() {
+            call();
+        }
+    }
+    """)
+
+    fun `test unused main import in presence of test_only usage`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        <warning descr="Unused use item">use 0x1::string::call;</warning>
+        #[test_only]
+        use 0x1::string::call;
+        
+        #[test_only]
+        fun main() {
+            call();
+        }
+    }
+    """)
+
+    fun `test unused main import in presence of unresolved test_only usage`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        <warning descr="Unused use item">use 0x1::string::call;</warning>
+
+        #[test_only]
+        fun main() {
+            call();
+        }
+    }
+    """)
 }

@@ -40,16 +40,12 @@ class ImportOptimizer : ImportOptimizer {
 
     private fun optimizeImports(importsOwner: MvImportsOwner) {
         removeUnusedImports(importsOwner)
+        mergeTestOnlyImportsIntoMainImports(importsOwner)
         mergeImportsIntoGroups(importsOwner)
         sortImports(importsOwner)
     }
 
     private fun removeUnusedImports(useStmtOwner: MvImportsOwner) {
-        fun MvUseStmt.deleteWithLeadingWhitespace() {
-            if (this.nextSibling.isWhitespace()) this.nextSibling.delete()
-            this.delete()
-        }
-
         val psiFactory = useStmtOwner.project.psiFactory
         val useStmts = useStmtOwner.useStmtList
         for (useStmt in useStmts) {
@@ -83,6 +79,11 @@ class ImportOptimizer : ImportOptimizer {
         }
     }
 
+    private fun mergeTestOnlyImportsIntoMainImports(useStmtOwner: MvImportsOwner) {
+        useStmtOwner.useStmtList
+            .flatMap { it.childUseItems }
+    }
+
     private fun mergeImportsIntoGroups(useStmtOwner: MvImportsOwner) {
         val psiFactory = useStmtOwner.project.psiFactory
         val leftBrace = useStmtOwner.findFirstChildByType(L_BRACE) ?: return
@@ -90,8 +91,8 @@ class ImportOptimizer : ImportOptimizer {
         val useStmts = useStmtOwner.useStmtList
         useStmts
             .groupBy { Pair(it.fqModuleText, it.isTestOnly) }
-            .forEach { (pair, stmts) ->
-                val (fqModuleText, isTestOnly) = pair
+            .forEach { (key, stmts) ->
+                val (fqModuleText, isTestOnly) = key
                 if (fqModuleText == null) return@forEach
 
                 // special case: if single stmt and import like `use 0x1::Main::Self;`, change to `0x1::Main`
@@ -150,4 +151,9 @@ class ImportOptimizer : ImportOptimizer {
             it.delete()
         }
     }
+}
+
+fun MvUseStmt.deleteWithLeadingWhitespace() {
+    if (this.nextSibling.isWhitespace()) this.nextSibling.delete()
+    this.delete()
 }
