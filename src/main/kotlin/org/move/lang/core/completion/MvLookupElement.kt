@@ -63,7 +63,8 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
     val ctx = InferenceContext(context.itemVis.isMsl)
 //    val ctx = element.functionInferenceCtx(context.itemVis.isMsl)
     var props = LookupElementProperties()
-    if (context.expectedTy !is TyUnknown) {
+    val expectedTy = context.expectedTy
+    if (expectedTy != null) {
         val ty = element.asTy(ctx)
         props = props.copy(isReturnTypeConformsToExpectedType = isCompatible(context.expectedTy, ty))
     }

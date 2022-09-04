@@ -18,7 +18,6 @@ import org.move.lang.core.types.infer.instantiateItemTy
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyInfer
-import org.move.lang.core.types.ty.TyUnknown
 
 const val KEYWORD_PRIORITY = 80.0
 
@@ -119,7 +118,7 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
 data class CompletionContext(
     val contextElement: MvElement,
     val itemVis: ItemVis,
-    val expectedTy: Ty = TyUnknown,
+    val expectedTy: Ty? = null,
 )
 
 
@@ -210,10 +209,14 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
                     val inferenceCtx = InferenceContext(msl)
                     val funcTy = instantiateItemTy(element, msl) as? TyFunction ?: return@run false
 
-                    inferenceCtx.addConstraint(funcTy.retType, completionContext.expectedTy)
+                    val expectedTy = completionContext.expectedTy
+                    if (expectedTy != null) {
+                        inferenceCtx.addConstraint(funcTy.retType, expectedTy)
+                    }
                     inferenceCtx.processConstraints()
-                    inferenceCtx.resolveTy(funcTy)
-                    !funcTy.containsTyOfClass(listOf(TyInfer::class.java))
+
+                    val resolvedTy = inferenceCtx.resolveTy(funcTy)
+                    !resolvedTy.containsTyOfClass(listOf(TyInfer::class.java))
                 }
 
                 var suffix = ""

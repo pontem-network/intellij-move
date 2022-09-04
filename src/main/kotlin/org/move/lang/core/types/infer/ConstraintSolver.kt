@@ -6,6 +6,8 @@ data class EqualityConstraint(val ty1: Ty, val ty2: Ty) : TypeFoldable<EqualityC
     override fun innerFoldWith(folder: TypeFolder): EqualityConstraint =
         EqualityConstraint(ty1.foldWith(folder), ty2.foldWith(folder))
 
+    override fun visitWith(visitor: TypeVisitor): Boolean = innerVisitWith(visitor)
+
     override fun innerVisitWith(visitor: TypeVisitor): Boolean =
         ty1.visitWith(visitor) || ty2.visitWith(visitor)
 

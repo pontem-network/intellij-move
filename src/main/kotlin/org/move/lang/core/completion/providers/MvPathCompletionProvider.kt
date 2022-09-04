@@ -141,7 +141,7 @@ object SchemasCompletionProvider : MvPathCompletionProvider() {
     }
 }
 
-private fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement, ctx: InferenceContext): Ty {
+private fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement, ctx: InferenceContext): Ty? {
     for (ancestor in element.ancestors) {
         if (element.endOffset < ancestor.endOffset) continue
         if (element.endOffset > ancestor.endOffset) break
@@ -150,5 +150,5 @@ private fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement
             is MvDotExpr -> return ancestor.expectedTy(ctx)
         }
     }
-    return TyUnknown
+    return null
 }

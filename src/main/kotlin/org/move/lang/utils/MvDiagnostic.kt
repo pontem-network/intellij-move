@@ -40,6 +40,8 @@ sealed class MvDiagnostic(
         override fun innerFoldWith(folder: TypeFolder): TypeError =
             TypeError(element, expectedTy.foldWith(folder), actualTy.foldWith(folder))
 
+        override fun visitWith(visitor: TypeVisitor): Boolean = innerVisitWith(visitor)
+
         override fun innerVisitWith(visitor: TypeVisitor): Boolean =
             expectedTy.visitWith(visitor) || actualTy.visitWith(visitor)
 

@@ -44,11 +44,6 @@ class UnificationTable<K : DAGNode, V> {
         val root = getRoot(node)
         key.next = root.key
         return root
-//        return (node as? Node)?.let {
-//            val got = get(it)
-//            key.redirectsTo = got.key // Path compression
-//            got
-//        } ?: Root(key as K)
     }
 
     fun findRoot(key: K): K = getRoot(key).key

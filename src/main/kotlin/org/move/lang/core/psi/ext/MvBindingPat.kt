@@ -99,7 +99,7 @@ abstract class MvBindingPatMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node
             }
             is MvSchemaFieldStmt -> super.getUseScope()
             is MvConst -> super.getUseScope()
-            else -> error("unreachable")
+            else -> super.getUseScope()
         }
     }
 }

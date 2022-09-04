@@ -87,13 +87,15 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
                 if (function.parameters.size != callArgs.exprList.size) return
 
-                val msl = callArgs.isMsl()
-                val ctx = callArgs.functionInferenceCtx(msl)
-                val inferredFuncTy = inferCallExprTy(callExpr, ctx, null) as? TyFunction ?: return
+                val inferenceCtx = callArgs.functionInferenceCtx(callArgs.isMsl())
+                val callTy = inferenceCtx.callExprTypes
+                    .getOrElse(callExpr) {
+                        inferCallExprTy(callExpr, inferenceCtx, null) as? TyFunction
+                    } ?: return
 
                 for ((i, expr) in callArgs.exprList.withIndex()) {
                     val parameter = function.parameters[i]
-                    val paramTy = inferredFuncTy.paramTypes[i]
+                    val paramTy = callTy.paramTypes[i]
                     val exprTy = expr.inferredTy()
 
                     if (paramTy.isTypeParam || exprTy.isTypeParam) {

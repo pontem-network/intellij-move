@@ -2,22 +2,24 @@ package org.move.lang.core.types.infer
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.declaredTy
+import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.ty
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
 
-fun inferExprExpectedTy(expr: MvExpr, ctx: InferenceContext): Ty {
+fun inferExprExpectedTy(expr: MvExpr, ctx: InferenceContext): Ty? {
     val owner = expr.parent
     return when (owner) {
         is MvCallArgumentList -> {
             val paramIndex =
                 owner.children.indexOfFirst { it.textRange.contains(expr.textOffset) }
-            if (paramIndex == -1) return TyUnknown
+            if (paramIndex == -1) return null
 
-            val callExpr = owner.parent as? MvCallExpr ?: return TyUnknown
-            val callTy = inferCallExprTy(callExpr, ctx, null) as? TyFunction ?: return TyUnknown
-            callTy.paramTypes[paramIndex]
+            val callExpr = owner.parent as? MvCallExpr ?: return null
+            val inferenceCtx = callExpr.functionInferenceCtx(callExpr.isMsl())
+            inferenceCtx.callExprTypes[callExpr]
+                ?.paramTypes
+                ?.getOrNull(paramIndex)
         }
 
         is MvInitializer -> {
@@ -26,16 +28,19 @@ fun inferExprExpectedTy(expr: MvExpr, ctx: InferenceContext): Ty {
                 is MvLetStmt -> {
                     val pat = initializerParent.pat
                     when (pat) {
-                        is MvBindingPat -> pat.declaredTy(ctx)
+                        is MvBindingPat -> {
+                            val ty = pat.declaredTy(ctx)
+                            if (ty is TyUnknown) null else ty
+                        }
                         is MvStructPat -> pat.ty()
-                        else -> TyUnknown
+                        else -> null
+//                        else -> TyUnknown
                     }
                 }
-
-                else -> TyUnknown
+                else -> null
             }
         }
         is MvStructLitField -> owner.ty()
-        else -> TyUnknown
+        else -> null
     }
 }

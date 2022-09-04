@@ -212,4 +212,13 @@ module 0x1::M2 {
         fun call(a: vector<u8>) {}
     }    
     """)
+
+    fun `test unused module import type with the same name is used`() = checkWarnings("""
+module 0x1::main {
+    <warning descr="Unused use item">use std::coin;</warning>
+    use std::coin::coin;
+    
+    fun call(coin: coin) {}
+}        
+    """)
 }
