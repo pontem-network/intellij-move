@@ -140,20 +140,6 @@ module 0x1::M2 {
 }
     """)
 
-    fun `test no unused import for type with the same name as module`() = checkWarnings("""
-    module 0x1::Coin {
-        struct Coin {}
-        public fun get_coin(): Coin {}
-    }    
-    module 0x1::Main {
-        use 0x1::Coin::{Self, Coin};
-        
-        fun call(): Coin {
-            Coin::get_coin()
-        }
-    }
-    """)
-
     fun `test unused Self import`() = checkWarnings("""
     module 0x1::Coin {
         struct Coin {}
@@ -206,6 +192,13 @@ module 0x1::M2 {
     }    
     """)
 
+    fun `test unused signer import with self`() = checkWarnings("""
+    module 0x1::main {
+        <warning descr="Unused use item">use std::signer::Self;</warning>
+        fun call(a: signer) {}
+    }    
+    """)
+
     fun `test unused vector import`() = checkWarnings("""
     module 0x1::main {
         <warning descr="Unused use item">use std::vector;</warning>
@@ -220,5 +213,28 @@ module 0x1::main {
     
     fun call(coin: coin) {}
 }        
+    """)
+
+    fun `test no unused import for type`() = checkWarnings("""
+module 0x1::main {
+    use std::coin::coin;
+    fun call(coin: coin) {
+    }
+}        
+    """)
+
+
+    fun `test no unused import for type with the same name as module`() = checkWarnings("""
+    module 0x1::Coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::Coin::{Self, Coin};
+        
+        fun call(): Coin {
+            Coin::get_coin()
+        }
+    }
     """)
 }

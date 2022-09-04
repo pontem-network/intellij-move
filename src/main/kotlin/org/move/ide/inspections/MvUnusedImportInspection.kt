@@ -4,7 +4,7 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
-import com.intellij.psi.util.parentOfType
+import org.move.ide.inspections.imports.ItemUsages
 import org.move.ide.inspections.imports.PathUsages
 import org.move.ide.inspections.imports.pathUsages
 import org.move.lang.core.psi.*
@@ -28,7 +28,7 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                         }
                         visitedModules.add(moduleName)
 
-                        if (!moduleUseSpeck.isUsed()) {
+                        if (!moduleUseSpeck.isImportedItemUsed()) {
                             holder.registerUnused(useStmt)
                         }
                         continue
@@ -57,7 +57,7 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                                 }
                                 visitedModules.add(moduleName)
 
-                                if (!useItem.isUsed()) {
+                                if (!useItem.isImportedItemUsed()) {
                                     holder.registerUnused(targetItem)
                                 }
                                 continue
@@ -69,7 +69,7 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                             }
                             visitedItems.add(itemName)
 
-                            if (!useItem.isUsed()) {
+                            if (!useItem.isImportedItemUsed()) {
                                 holder.registerUnused(targetItem)
                             }
                         }
@@ -89,53 +89,43 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
 
 }
 
-fun MvUseItem.isUsed(): Boolean {
+fun MvElement.isImportedItemUsed(): Boolean {
     val owner = this.ancestorStrict<MvImportsOwner>() ?: return true
-    val usageMap = owner.pathUsages
-    return isUseItemUsed(this, usageMap)
-}
-
-fun MvModuleUseSpeck.isUsed(): Boolean {
-    val owner = this.parentOfType<MvImportsOwner>() ?: return true
-    val usageMap = owner.pathUsages
-    return isModuleUseSpeckUsed(this, usageMap)
-}
-
-fun MvItemUseSpeck.isUsed(): Boolean {
-    val owner = this.parentOfType<MvImportsOwner>() ?: return true
-    val usageMap = owner.pathUsages
-    return isItemUseSpeckUsed(this, usageMap)
-}
-
-private fun isModuleUseSpeckUsed(moduleUse: MvModuleUseSpeck, pathUsages: PathUsages): Boolean {
-    val moduleName = moduleUse.fqModuleRef?.referenceName ?: return true
-    // null if import is never used
-    val usageResolvedItems = pathUsages[moduleName] ?: return false
-    if (usageResolvedItems.isEmpty()) {
-        // import is used but usages are unresolved
-        return true
+    val pathUsages = owner.pathUsages
+    return when (this) {
+        is MvModuleUseSpeck -> {
+            val moduleName = this.fqModuleRef?.referenceName ?: return true
+            // null if import is never used
+            val usageResolvedItems = pathUsages.nameUsages[moduleName] ?: return false
+            if (usageResolvedItems.isEmpty()) {
+                // import is used but usages are unresolved
+                return true
+            }
+            val speckResolvedItems = this.fqModuleRef?.reference?.multiResolve().orEmpty()
+            // any of path usages resolve to the same named item
+            speckResolvedItems.any { it in usageResolvedItems }
+        }
+        is MvItemUseSpeck -> {
+            // Use speck with an empty group is always unused
+            val itemGroup = this.useItemGroup
+            if (itemGroup != null && itemGroup.useItemList.isEmpty()) return false
+            val useItem = this.useItem ?: return true
+            isUseItemUsed(useItem, pathUsages)
+        }
+        is MvUseItem -> isUseItemUsed(this, pathUsages)
+        else -> error("unimplemented")
     }
-    val speckResolvedItems = moduleUse.fqModuleRef?.reference?.multiResolve().orEmpty()
-    // any of path usages resolve to the same named item
-    return speckResolvedItems.any { it in usageResolvedItems }
-}
-
-private fun isItemUseSpeckUsed(useSpeck: MvItemUseSpeck, usages: PathUsages): Boolean {
-    // Use speck with an empty group is always unused
-    val itemGroup = useSpeck.useItemGroup
-    if (itemGroup != null && itemGroup.useItemList.isEmpty()) return false
-
-    val useItem = useSpeck.useItem ?: return true
-    return isUseItemUsed(useItem, usages)
 }
 
 private fun isUseItemUsed(useItem: MvUseItem, pathUsages: PathUsages): Boolean {
+    var itemUsages = pathUsages.all()
     var itemName = useItem.referenceName
     if (itemName == "Self") {
         itemName = useItem.moduleName
+        itemUsages = pathUsages.nameUsages
     }
     // null if import is never used
-    val usageResolvedItems = pathUsages[itemName] ?: return false
+    val usageResolvedItems = itemUsages[itemName] ?: return false
     if (usageResolvedItems.isEmpty()) {
         // import is used but usages are unresolved
         return true

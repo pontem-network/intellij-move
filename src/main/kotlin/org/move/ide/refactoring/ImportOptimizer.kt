@@ -5,7 +5,7 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiWhiteSpace
-import org.move.ide.inspections.isUsed
+import org.move.ide.inspections.isImportedItemUsed
 import org.move.ide.intentions.removeCurlyBraces
 import org.move.lang.MoveFile
 import org.move.lang.MvElementTypes.L_BRACE
@@ -55,7 +55,7 @@ class ImportOptimizer : ImportOptimizer {
         for (useStmt in useStmts) {
             val moduleSpeck = useStmt.moduleUseSpeck
             if (moduleSpeck != null) {
-                if (!moduleSpeck.isUsed()) {
+                if (!moduleSpeck.isImportedItemUsed()) {
                     useStmt.deleteWithLeadingWhitespace()
                     continue
                 }
@@ -64,7 +64,7 @@ class ImportOptimizer : ImportOptimizer {
             if (useSpeck != null) {
                 var itemGroup = useSpeck.useItemGroup
                 if (itemGroup != null) {
-                    val usedItems = itemGroup.useItemList.filter { it.isUsed() }
+                    val usedItems = itemGroup.useItemList.filter { it.isImportedItemUsed() }
                     if (usedItems.isEmpty()) {
                         useStmt.deleteWithLeadingWhitespace()
                     } else {
@@ -75,7 +75,7 @@ class ImportOptimizer : ImportOptimizer {
                         itemGroup.removeCurlyBraces()
                     }
                 }
-                if (!useSpeck.isUsed()) {
+                if (!useSpeck.isImportedItemUsed()) {
                     // single unused import 0x1::M::call;
                     useStmt.deleteWithLeadingWhitespace()
                 }

@@ -7,7 +7,23 @@ import org.move.lang.core.psi.ext.allModuleSpecBlocks
 import org.move.lang.core.psi.ext.module
 import org.move.lang.core.psi.ext.moduleSpec
 
-typealias PathUsages = MutableMap<String, MutableSet<MvNamedElement>>
+typealias ItemUsages = MutableMap<String, MutableSet<MvNamedElement>>
+
+data class PathUsages(
+    val nameUsages: ItemUsages,
+    val typeUsages: ItemUsages,
+) {
+    fun updateFrom(other: PathUsages) {
+        nameUsages.putAll(other.nameUsages)
+        typeUsages.putAll(other.typeUsages)
+    }
+
+    fun all(): ItemUsages {
+        val usages = nameUsages.toMutableMap()
+        usages.putAll(typeUsages)
+        return usages
+    }
+}
 
 val MvImportsOwner.pathUsages: PathUsages
     get() {
@@ -15,17 +31,17 @@ val MvImportsOwner.pathUsages: PathUsages
         when (this) {
             is MvModuleBlock -> {
                 for (specBlock in this.module.allModuleSpecBlocks()) {
-                    localPathUsages.putAll(specBlock.localPathUsages())
+                    localPathUsages.updateFrom(specBlock.localPathUsages())
                 }
             }
             is MvModuleSpecBlock -> {
                 val module = this.moduleSpec.module ?: return localPathUsages
                 val moduleBlock = module.moduleBlock
                 if (moduleBlock != null) {
-                    localPathUsages.putAll(moduleBlock.localPathUsages())
+                    localPathUsages.updateFrom(moduleBlock.localPathUsages())
                 }
                 for (specBlock in module.allModuleSpecBlocks().filter { it != this }) {
-                    localPathUsages.putAll(specBlock.localPathUsages())
+                    localPathUsages.updateFrom(specBlock.localPathUsages())
                 }
             }
         }
@@ -34,45 +50,55 @@ val MvImportsOwner.pathUsages: PathUsages
 
 private fun MvImportsOwner.localPathUsages(): PathUsages {
     return getProjectPsiDependentCache(this) {
-        val map = mutableMapOf<String, MutableSet<MvNamedElement>>()
+        val nameUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
+        val typeUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
         for (child in it.children) {
-            PsiTreeUtil.processElements(child) { el ->
-                if (el !is MvPath) return@processElements true
-
-                val moduleRef = el.moduleRef
+            PsiTreeUtil.processElements(child) { element ->
                 when {
-                    // MODULE::ITEM
-                    moduleRef != null && moduleRef !is MvFQModuleRef -> {
-                        val modName = moduleRef.referenceName ?: return@processElements true
-                        val targets = moduleRef.reference?.multiResolve().orEmpty()
-                        if (targets.isEmpty()) {
-                            map.putIfAbsent(modName, mutableSetOf())
-                        } else {
-                            val items = map.getOrPut(modName) { mutableSetOf() }
-                            targets.forEach {
-                                items.add(it)
-                            }
-                        }
+                    element is MvPathType -> {
+                        putUsage(element.path, typeUsages)
                         true
                     }
-                    // ITEM_NAME
-                    moduleRef == null -> {
-                        val name = el.referenceName ?: return@processElements true
-                        val targets = el.reference?.multiResolve().orEmpty()
-                        if (targets.isEmpty()) {
-                            map.putIfAbsent(name, mutableSetOf())
-                        } else {
-                            val items = map.getOrPut(name) { mutableSetOf() }
-                            targets.forEach {
-                                items.add(it)
-                            }
-                        }
+                    element is MvPath && element.parent !is MvPathType -> {
+                        putUsage(element, nameUsages)
                         true
                     }
                     else -> true
                 }
             }
         }
-        map
+        PathUsages(nameUsages, typeUsages)
+    }
+}
+
+private fun putUsage(element: MvPath, itemUsages: ItemUsages) {
+    val moduleRef = element.moduleRef
+    when {
+        // MODULE::ITEM
+        moduleRef != null && moduleRef !is MvFQModuleRef -> {
+            val modName = moduleRef.referenceName ?: return
+            val targets = moduleRef.reference?.multiResolve().orEmpty()
+            if (targets.isEmpty()) {
+                itemUsages.putIfAbsent(modName, mutableSetOf())
+            } else {
+                val items = itemUsages.getOrPut(modName) { mutableSetOf() }
+                targets.forEach {
+                    items.add(it)
+                }
+            }
+        }
+        // ITEM_NAME
+        moduleRef == null -> {
+            val name = element.referenceName ?: return
+            val targets = element.reference?.multiResolve().orEmpty()
+            if (targets.isEmpty()) {
+                itemUsages.putIfAbsent(name, mutableSetOf())
+            } else {
+                val items = itemUsages.getOrPut(name) { mutableSetOf() }
+                targets.forEach {
+                    items.add(it)
+                }
+            }
+        }
     }
 }
