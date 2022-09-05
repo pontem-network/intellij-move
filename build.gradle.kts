@@ -133,7 +133,7 @@ allprojects {
             kotlinOptions {
                 jvmTarget = "11"
                 languageVersion = "1.7"
-                apiVersion = "1.6"
+                apiVersion = "1.5"
                 freeCompilerArgs = listOf("-Xjvm-default=all")
             }
         }
