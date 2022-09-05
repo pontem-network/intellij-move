@@ -332,4 +332,29 @@ module 0x1::main {
         }
     }
     """)
+
+    fun `test error with self module alias used in type position`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }    
+    module 0x1::main {
+        <warning descr="Unused use item">use 0x1::string::Self as mystring;</warning>
+
+        fun main(s: mystring) {
+        }
+    }
+    """)
+
+    fun `test no error with self module alias`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }    
+    module 0x1::main {
+        use 0x1::string::Self as mystring;
+
+        fun main() {
+            mystring::call();
+        }
+    }
+    """)
 }
