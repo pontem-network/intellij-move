@@ -88,7 +88,7 @@ fun MoveFile.moduleSpecs(): List<MvModuleSpec> = this.childrenOfType()
 
 fun MoveFile.isTempFile(): Boolean =
     this.virtualFile == null
-        || this.virtualFile.fileSystem is TempFileSystem
+            || this.virtualFile.fileSystem is TempFileSystem
 
 inline fun <reified T : PsiElement> PsiFile.elementAtOffset(offset: Int): T? =
     this.findElementAt(offset)?.ancestorOrSelf<T>()

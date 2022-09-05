@@ -4,7 +4,6 @@ import org.move.ide.presentation.tyToString
 import org.move.lang.core.types.infer.DAGNode
 import org.move.lang.core.types.infer.DAGNodeOrValue
 import org.move.lang.core.types.infer.DAGValue
-import org.move.lang.core.types.infer.TypeVisitor
 
 sealed class TyInfer : Ty {
     class TyVar(

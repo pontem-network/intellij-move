@@ -14,7 +14,7 @@ import org.move.lang.moduleSpecs
 import org.move.lang.toMoveFile
 import org.move.openapiext.common.isUnitTestMode
 
-class MvModuleSpecIndex: BaseMoveFileIndex() {
+class MvModuleSpecIndex : BaseMoveFileIndex() {
     override fun getName() = KEY
     override fun getVersion() = INDEX_VERSION
     override fun getIndexer() =

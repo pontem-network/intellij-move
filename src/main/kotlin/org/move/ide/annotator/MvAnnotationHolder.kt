@@ -17,13 +17,13 @@ class MvAnnotationHolder(val holder: AnnotationHolder) {
     fun newErrorAnnotation(
         element: PsiElement,
         message: String?,
-    ): AnnotationBuilder? =
+    ): AnnotationBuilder =
         newAnnotation(element, HighlightSeverity.ERROR, message)
 
     fun newWeakWarningAnnotation(
         element: PsiElement,
         message: String?,
-    ): AnnotationBuilder? = newAnnotation(element, HighlightSeverity.WEAK_WARNING, message)
+    ): AnnotationBuilder = newAnnotation(element, HighlightSeverity.WEAK_WARNING, message)
 
     fun newAnnotation(
         element: PsiElement,

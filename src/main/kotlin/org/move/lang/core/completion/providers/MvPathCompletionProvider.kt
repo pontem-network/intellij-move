@@ -20,7 +20,6 @@ import org.move.lang.core.resolve.ref.processModuleItems
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.functionInferenceCtx
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyUnknown
 
 abstract class MvPathCompletionProvider : MvCompletionProvider() {
 

@@ -263,7 +263,7 @@ sealed class TypeError(open val element: PsiElement) {
     data class InvalidUnpacking(
         override val element: PsiElement,
         val assignedTy: Ty,
-    ): TypeError(element) {
+    ) : TypeError(element) {
         override fun message(): String {
             return "Invalid unpacking. Expected ${assignedTy.expectedBindingFormText()}"
         }
