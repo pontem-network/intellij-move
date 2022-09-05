@@ -26,6 +26,11 @@ jobs:
                     java-version: 11
                     distribution: 'zulu'
 
+            -   name: Verify Plugin Configuration
+                uses: eskatos/gradle-command-action@v1
+                with:
+                    arguments: "verifyPluginConfiguration"
+
             -   name: Build
                 uses: eskatos/gradle-command-action@v1
                 with:
