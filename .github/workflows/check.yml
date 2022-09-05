@@ -15,7 +15,7 @@ jobs:
 
         runs-on: ${{ matrix.os }}
         env:
-            GRADLE_PROPS_VERSION: ${{ matrix.gradle-properties-version }}
+            ORG_GRADLE_PROJECT_shortPlatformVersion: ${{ matrix.gradle-properties-version }}
 
         steps:
             -   uses: actions/checkout@v2

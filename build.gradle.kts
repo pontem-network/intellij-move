@@ -4,22 +4,27 @@ import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "212"
+val shortPlatformVersion = prop("shortPlatformVersion")
+//val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "212"
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
 
-val baseProperties = "base-gradle.properties"
-val properties = "gradle-$propsVersion.properties"
+//val baseProperties = "gradle.properties"
+//val properties = "gradle-$propsVersion.properties"
 
-val props = Properties()
-file(baseProperties).inputStream().let { props.load(it) }
-file(properties).inputStream().let { props.load(it) }
+//val props = Properties()
+//file(baseProperties).inputStream().let { props.load(it) }
+//file(properties).inputStream().let { props.load(it) }
+//
+//fun prop(key: String): String = props[key].toString()
 
-fun prop(key: String): String = props[key].toString()
+fun prop(name: String): String =
+    extra.properties[name] as? String
+        ?: error("Property `$name` is not defined in gradle.properties for environment `$shortPlatformVersion`")
 
 //val intellijVersion = prop("intellijVersion", "2021.2")
 val kotlinVersion = "1.7.10"
 
-val pluginJarName = "intellij-move-$propsVersion"
+val pluginJarName = "intellij-move-$shortPlatformVersion"
 val pluginVersion = "1.19.0"
 val pluginGroup = "org.move"
 
@@ -31,6 +36,7 @@ plugins {
     kotlin("jvm") version "1.7.10"
     id("org.jetbrains.intellij") version "1.9.0"
     id("org.jetbrains.grammarkit") version "2021.2.2"
+    id("net.saliman.properties") version "1.5.2"
 }
 
 dependencies {
@@ -104,7 +110,7 @@ allprojects {
         }
 
         patchPluginXml {
-            version.set("$pluginVersion.$propsVersion")
+            version.set("$pluginVersion.$shortPlatformVersion")
             sinceBuild.set(prop("pluginSinceBuild"))
             untilBuild.set(prop("pluginUntilBuild"))
         }
