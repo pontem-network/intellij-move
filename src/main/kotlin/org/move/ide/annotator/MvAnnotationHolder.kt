@@ -7,11 +7,11 @@ import com.intellij.psi.PsiElement
 
 class MvAnnotationHolder(val holder: AnnotationHolder) {
     fun createErrorAnnotation(element: PsiElement, message: String?) {
-        newErrorAnnotation(element, message)?.create()
+        newErrorAnnotation(element, message).create()
     }
 
     fun createWeakWarningAnnotation(element: PsiElement, message: String?) {
-        newWeakWarningAnnotation(element, message)?.create()
+        newWeakWarningAnnotation(element, message).create()
     }
 
     fun newErrorAnnotation(
