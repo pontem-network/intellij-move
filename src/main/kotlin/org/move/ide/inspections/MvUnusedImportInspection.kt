@@ -104,15 +104,19 @@ fun MvElement.isImportedItemUsed(): Boolean {
     val pathUsages = owner.pathUsages.get(this.itemScope)
     return when (this) {
         is MvModuleUseSpeck -> {
-            val moduleName = this.fqModuleRef?.referenceName ?: return true
+            val useAlias = this.useAlias
+            val moduleName =
+                (if (useAlias != null) useAlias.name else this.fqModuleRef?.referenceName)
+                    ?: return true
+//            val moduleName =  this.fqModuleRef?.referenceName ?: return true
             // null if import is never used
-            val usageResolvedItems = pathUsages.nameUsages[moduleName]
-                ?: return false
+            val usageResolvedItems = pathUsages.nameUsages[moduleName] ?: return false
             if (usageResolvedItems.isEmpty()) {
                 // import is used but usages are unresolved
                 return true
             }
-            val speckResolvedItems = this.fqModuleRef?.reference?.multiResolve().orEmpty()
+            val speckResolvedItems =
+                if (useAlias != null) listOf(useAlias) else this.fqModuleRef?.reference?.multiResolve().orEmpty()
             // any of path usages resolve to the same named item
             speckResolvedItems.any { it in usageResolvedItems }
         }
@@ -131,6 +135,12 @@ fun MvElement.isImportedItemUsed(): Boolean {
 private fun isUseItemUsed(useItem: MvUseItem, pathUsages: ScopePathUsages): Boolean {
     var itemUsages = pathUsages.all()
     var itemName = useItem.referenceName
+
+    val useAlias = useItem.useAlias
+    if (useAlias != null) {
+        itemName = useAlias.name ?: return false
+    }
+
     if (itemName == "Self") {
         itemName = useItem.moduleName
         itemUsages = pathUsages.nameUsages
@@ -141,7 +151,8 @@ private fun isUseItemUsed(useItem: MvUseItem, pathUsages: ScopePathUsages): Bool
         // import is used but usages are unresolved
         return true
     }
-    val speckResolvedItems = useItem.reference.multiResolve()
+    val speckResolvedItems =
+        if (useAlias != null) listOf(useAlias) else useItem.reference.multiResolve()
     // any of path usages resolve to the same named item
     return speckResolvedItems.any { it in usageResolvedItems }
 }

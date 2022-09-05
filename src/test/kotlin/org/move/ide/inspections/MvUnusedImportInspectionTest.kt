@@ -282,4 +282,54 @@ module 0x1::main {
         }
     }
     """)
+
+    fun `test no error with used alias`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        use 0x1::string::call as mycall;
+
+        fun main() {
+            mycall();
+        }
+    }
+    """)
+
+    fun `test no error with used module alias`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        use 0x1::string as mystring;
+
+        fun main() {
+            mystring::call();
+        }
+    }
+    """)
+
+    fun `test error with unused alias`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        <warning descr="Unused use item">use 0x1::string::call as mycall;</warning>
+
+        fun main() {
+        }
+    }
+    """)
+
+    fun `test error with unused module alias`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        <warning descr="Unused use item">use 0x1::string as mystring;</warning>
+
+        fun main() {
+        }
+    }
+    """)
 }
