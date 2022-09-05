@@ -88,6 +88,16 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
     """
     )
 
+    fun `test vector literal`() = checkHighlighting(
+        """
+        module 0x1::main {
+            fun call() {
+                <VECTOR_LITERAL>vector</VECTOR_LITERAL>[];
+            }            
+        }
+        """
+    )
+
     fun `test generic type parameters highlighted`() = checkHighlighting(
         """
         module M {

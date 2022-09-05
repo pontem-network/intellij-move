@@ -169,8 +169,12 @@ val MvModuleSpec.module: MvModule? get() = this.fqModuleRef?.reference?.resolve(
 
 val MvModuleSpecBlock.moduleSpec: MvModuleSpec get() = this.parent as MvModuleSpec
 
+fun MvModuleBlock.itemSpecs() = this.childrenOfType<MvItemSpec>()
+
+fun MvModuleSpecBlock.itemSpecs() = this.childrenOfType<MvItemSpec>()
+
 fun MvModuleSpecBlock.moduleItemSpecs() =
-    this.childrenOfType<MvItemSpec>()
+    this.itemSpecs()
         .filter { it.itemSpecRef?.moduleKw != null }
 
 fun MvModule.allModuleSpecs(): List<MvModuleSpec> {

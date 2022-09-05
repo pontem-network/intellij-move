@@ -8,5 +8,10 @@ module 0x1::expressions {
             true
                 && false
         ) {};
+
+        vector[
+            1,
+            1,
+        ]
     }
 }

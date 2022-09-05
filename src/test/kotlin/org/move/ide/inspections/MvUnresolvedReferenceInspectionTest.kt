@@ -319,9 +319,22 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
             let v = vector_empty();
             let item = ValidatorInfo { field: 10 };
             vector_push_back(&mut v, item);
-            vector_borrow_mut(&mut v, 10).field
+            vector_borrow_mut(&mut v, 10).field;
         }
     }        
     """
     )
+
+    fun `test no error for dot field in specs`() = checkByText("""
+module 0x1::main {
+    struct S {}
+    fun call(): S {}
+    fun main() {}
+}   
+spec 0x1::main {
+    spec main {
+        call().val
+    }
+}
+    """)
 }

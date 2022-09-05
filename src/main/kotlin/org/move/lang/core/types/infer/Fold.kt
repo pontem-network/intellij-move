@@ -52,7 +52,7 @@ interface TypeFoldable<out Self> {
     fun innerFoldWith(folder: TypeFolder): Self
 
     /** Similar to [innerVisitWith], but just visit types without folding */
-    fun visitWith(visitor: TypeVisitor): Boolean = innerVisitWith(visitor)
+    fun visitWith(visitor: TypeVisitor): Boolean
 
     /** Similar to [foldWith], but just visit types without folding */
     fun innerVisitWith(visitor: TypeVisitor): Boolean

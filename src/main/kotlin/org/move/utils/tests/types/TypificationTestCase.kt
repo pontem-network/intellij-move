@@ -18,7 +18,7 @@ abstract class TypificationTestCase : MvTestBase() {
         val expectedType = data.trim()
 
         val ctx = expr.functionInferenceCtx(expr.isMsl())
-        val actualType = expr.expectedTy(ctx).text(true)
+        val actualType = expr.expectedTy(ctx)?.text(true) ?: "null"
         check(actualType == expectedType) {
             "Type mismatch. Expected $expectedType, found: $actualType"
         }

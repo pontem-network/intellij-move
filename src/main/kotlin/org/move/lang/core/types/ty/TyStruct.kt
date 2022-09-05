@@ -6,6 +6,7 @@ import org.move.lang.core.psi.ext.declaredTy
 import org.move.lang.core.psi.ext.fieldsMap
 import org.move.lang.core.psi.ext.tyAbilities
 import org.move.lang.core.types.infer.TypeFolder
+import org.move.lang.core.types.infer.TypeVisitor
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 
 data class TyStruct(
@@ -16,12 +17,14 @@ data class TyStruct(
 ) : Ty {
     override fun abilities(): Set<Ability> = this.item.tyAbilities
 
-    override fun innerFoldWith(folder: TypeFolder): Ty = TyStruct(
-        item,
-        typeVars,
-        fieldTys,
-        typeArgs.map(folder)
-    )
+    override fun innerFoldWith(folder: TypeFolder): Ty {
+        return TyStruct(
+            item,
+            typeVars,
+            fieldTys.mapValues { folder(it.value) },
+            typeArgs.map(folder)
+        )
+    }
 
     override fun toString(): String = tyToString(this)
 
@@ -35,5 +38,9 @@ data class TyStruct(
             .foldTyTypeParameterWith { typeParam ->
                 this.typeVars.find { it.origin?.parameter == typeParam.parameter }!!
             }
+    }
+
+    override fun innerVisitWith(visitor: TypeVisitor): Boolean {
+        return fieldTys.any { it.value.visitWith(visitor) } || typeArgs.any { it.visitWith(visitor) }
     }
 }

@@ -4,31 +4,35 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
-import com.intellij.psi.util.parentOfType
-import org.move.ide.inspections.imports.PathUsages
+import org.move.ide.inspections.imports.ScopePathUsages
 import org.move.ide.inspections.imports.pathUsages
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.psi.ext.moduleName
 import org.move.lang.core.psi.ext.speck
+import org.move.lang.core.resolve.ItemScope
 
 class MvUnusedImportInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
             override fun visitImportsOwner(o: MvImportsOwner) {
-                val visitedItems = mutableSetOf<String>()
-                val visitedModules = mutableSetOf<String>()
+                val visitedItems = mutableMapOf<ItemScope, MutableSet<String>>()
+                val visitedModules = mutableMapOf<ItemScope, MutableSet<String>>()
                 for (useStmt in o.useStmtList) {
                     val moduleUseSpeck = useStmt.moduleUseSpeck
                     if (moduleUseSpeck != null) {
+                        val itemScope = moduleUseSpeck.itemScope
+                        val scopedVisitedModules = visitedModules.getOrPut(itemScope) { mutableSetOf() }
+
                         val moduleName = moduleUseSpeck.name ?: continue
-                        if (moduleName in visitedModules) {
+                        if (moduleName in scopedVisitedModules) {
                             holder.registerUnused(useStmt)
                             continue
                         }
-                        visitedModules.add(moduleName)
+                        scopedVisitedModules.add(moduleName)
 
-                        if (!moduleUseSpeck.isUsed()) {
+                        if (!moduleUseSpeck.isImportedItemUsed()) {
                             holder.registerUnused(useStmt)
                         }
                         continue
@@ -49,27 +53,33 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                             // use .text as .name is overloaded
                             val itemName = useItem.text ?: continue
                             if (itemName == "Self") {
+                                val itemScope = useItem.itemScope
+                                val scopedVisitedModules = visitedModules.getOrPut(itemScope) { mutableSetOf() }
+
                                 // Self reference to module, check against visitedModules
                                 val moduleName = useItem.moduleName
-                                if (moduleName in visitedModules) {
+                                if (moduleName in scopedVisitedModules) {
                                     holder.registerUnused(targetItem)
                                     continue
                                 }
-                                visitedModules.add(moduleName)
+                                scopedVisitedModules.add(moduleName)
 
-                                if (!useItem.isUsed()) {
+                                if (!useItem.isImportedItemUsed()) {
                                     holder.registerUnused(targetItem)
                                 }
                                 continue
                             }
 
-                            if (itemName in visitedItems) {
+                            val itemScope = useItem.itemScope
+                            val scopedVisitedItems = visitedItems.getOrPut(itemScope) { mutableSetOf() }
+
+                            if (itemName in scopedVisitedItems) {
                                 holder.registerUnused(targetItem)
                                 continue
                             }
-                            visitedItems.add(itemName)
+                            scopedVisitedItems.add(itemName)
 
-                            if (!useItem.isUsed()) {
+                            if (!useItem.isImportedItemUsed()) {
                                 holder.registerUnused(targetItem)
                             }
                         }
@@ -89,58 +99,60 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
 
 }
 
-fun MvUseItem.isUsed(): Boolean {
+fun MvElement.isImportedItemUsed(): Boolean {
     val owner = this.ancestorStrict<MvImportsOwner>() ?: return true
-    val usageMap = owner.pathUsages
-    return isUseItemUsed(this, usageMap)
-}
-
-fun MvModuleUseSpeck.isUsed(): Boolean {
-    val owner = this.parentOfType<MvImportsOwner>() ?: return true
-    val usageMap = owner.pathUsages
-    return isModuleUseSpeckUsed(this, usageMap)
-}
-
-fun MvItemUseSpeck.isUsed(): Boolean {
-    val owner = this.parentOfType<MvImportsOwner>() ?: return true
-    val usageMap = owner.pathUsages
-    return isItemUseSpeckUsed(this, usageMap)
-}
-
-private fun isModuleUseSpeckUsed(moduleUse: MvModuleUseSpeck, pathUsages: PathUsages): Boolean {
-    val moduleName = moduleUse.fqModuleRef?.referenceName ?: return true
-    // null if import is never used
-    val usageResolvedItems = pathUsages[moduleName] ?: return false
-    if (usageResolvedItems.isEmpty()) {
-        // import is used but usages are unresolved
-        return true
+    val pathUsages = owner.pathUsages.get(this.itemScope)
+    return when (this) {
+        is MvModuleUseSpeck -> {
+            val useAlias = this.useAlias
+            val moduleName =
+                (if (useAlias != null) useAlias.name else this.fqModuleRef?.referenceName)
+                    ?: return true
+//            val moduleName =  this.fqModuleRef?.referenceName ?: return true
+            // null if import is never used
+            val usageResolvedItems = pathUsages.nameUsages[moduleName] ?: return false
+            if (usageResolvedItems.isEmpty()) {
+                // import is used but usages are unresolved
+                return true
+            }
+            val speckResolvedItems =
+                if (useAlias != null) listOf(useAlias) else this.fqModuleRef?.reference?.multiResolve().orEmpty()
+            // any of path usages resolve to the same named item
+            speckResolvedItems.any { it in usageResolvedItems }
+        }
+        is MvItemUseSpeck -> {
+            // Use speck with an empty group is always unused
+            val itemGroup = this.useItemGroup
+            if (itemGroup != null && itemGroup.useItemList.isEmpty()) return false
+            val useItem = this.useItem ?: return true
+            isUseItemUsed(useItem, pathUsages)
+        }
+        is MvUseItem -> isUseItemUsed(this, pathUsages)
+        else -> error("unimplemented")
     }
-    val speckResolvedItems = moduleUse.fqModuleRef?.reference?.multiResolve().orEmpty()
-    // any of path usages resolve to the same named item
-    return speckResolvedItems.any { it in usageResolvedItems }
 }
 
-private fun isItemUseSpeckUsed(useSpeck: MvItemUseSpeck, usages: PathUsages): Boolean {
-    // Use speck with an empty group is always unused
-    val itemGroup = useSpeck.useItemGroup
-    if (itemGroup != null && itemGroup.useItemList.isEmpty()) return false
-
-    val useItem = useSpeck.useItem ?: return true
-    return isUseItemUsed(useItem, usages)
-}
-
-private fun isUseItemUsed(useItem: MvUseItem, pathUsages: PathUsages): Boolean {
+private fun isUseItemUsed(useItem: MvUseItem, pathUsages: ScopePathUsages): Boolean {
+    var itemUsages = pathUsages.all()
     var itemName = useItem.referenceName
+
+    val useAlias = useItem.useAlias
+    if (useAlias != null) {
+        itemName = useAlias.name ?: return false
+    }
+
     if (itemName == "Self") {
         itemName = useItem.moduleName
+        itemUsages = pathUsages.nameUsages
     }
     // null if import is never used
-    val usageResolvedItems = pathUsages[itemName] ?: return false
+    val usageResolvedItems = itemUsages[itemName] ?: return false
     if (usageResolvedItems.isEmpty()) {
         // import is used but usages are unresolved
         return true
     }
-    val speckResolvedItems = useItem.reference.multiResolve()
+    val speckResolvedItems =
+        if (useAlias != null) listOf(useAlias) else useItem.reference.multiResolve()
     // any of path usages resolve to the same named item
     return speckResolvedItems.any { it in usageResolvedItems }
 }

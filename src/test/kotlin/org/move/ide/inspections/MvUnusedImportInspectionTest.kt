@@ -140,20 +140,6 @@ module 0x1::M2 {
 }
     """)
 
-    fun `test no unused import for type with the same name as module`() = checkWarnings("""
-    module 0x1::Coin {
-        struct Coin {}
-        public fun get_coin(): Coin {}
-    }    
-    module 0x1::Main {
-        use 0x1::Coin::{Self, Coin};
-        
-        fun call(): Coin {
-            Coin::get_coin()
-        }
-    }
-    """)
-
     fun `test unused Self import`() = checkWarnings("""
     module 0x1::Coin {
         struct Coin {}
@@ -196,6 +182,154 @@ module 0x1::M2 {
     fun `test unused import in module spec`() = checkWarnings("""
     spec 0x1::Main {
         <warning descr="Unused use item">use 0x1::Coin::{};</warning>
+    }
+    """)
+
+    fun `test unused signer import`() = checkWarnings("""
+    module 0x1::main {
+        <warning descr="Unused use item">use std::signer;</warning>
+        fun call(a: signer) {}
+    }    
+    """)
+
+    fun `test unused signer import with self`() = checkWarnings("""
+    module 0x1::main {
+        <warning descr="Unused use item">use std::signer::Self;</warning>
+        fun call(a: signer) {}
+    }    
+    """)
+
+    fun `test unused vector import`() = checkWarnings("""
+    module 0x1::main {
+        <warning descr="Unused use item">use std::vector;</warning>
+        fun call(a: vector<u8>) {}
+    }    
+    """)
+
+    fun `test unused module import type with the same name is used`() = checkWarnings("""
+module 0x1::main {
+    <warning descr="Unused use item">use std::coin;</warning>
+    use std::coin::coin;
+    
+    fun call(coin: coin) {}
+}        
+    """)
+
+    fun `test no unused import for type`() = checkWarnings("""
+module 0x1::main {
+    use std::coin::coin;
+    fun call(coin: coin) {
+    }
+}        
+    """)
+
+
+    fun `test no unused import for type with the same name as module`() = checkWarnings("""
+    module 0x1::Coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::Coin::{Self, Coin};
+        
+        fun call(): Coin {
+            Coin::get_coin()
+        }
+    }
+    """)
+
+    fun `test unused test_only import`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        use 0x1::string::call;
+        <warning descr="Unused use item">#[test_only]
+        use 0x1::string::call;</warning>
+        
+        fun main() {
+            call();
+        }
+    }
+    """)
+
+    fun `test unused main import in presence of test_only usage`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        <warning descr="Unused use item">use 0x1::string::call;</warning>
+        #[test_only]
+        use 0x1::string::call;
+        
+        #[test_only]
+        fun main() {
+            call();
+        }
+    }
+    """)
+
+    fun `test unused main import in presence of unresolved test_only usage`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        <warning descr="Unused use item">use 0x1::string::call;</warning>
+
+        #[test_only]
+        fun main() {
+            call();
+        }
+    }
+    """)
+
+    fun `test no error with used alias`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        use 0x1::string::call as mycall;
+
+        fun main() {
+            mycall();
+        }
+    }
+    """)
+
+    fun `test no error with used module alias`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        use 0x1::string as mystring;
+
+        fun main() {
+            mystring::call();
+        }
+    }
+    """)
+
+    fun `test error with unused alias`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        <warning descr="Unused use item">use 0x1::string::call as mycall;</warning>
+
+        fun main() {
+        }
+    }
+    """)
+
+    fun `test error with unused module alias`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        <warning descr="Unused use item">use 0x1::string as mystring;</warning>
+
+        fun main() {
+        }
     }
     """)
 }

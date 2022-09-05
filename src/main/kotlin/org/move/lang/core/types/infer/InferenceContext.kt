@@ -41,8 +41,9 @@ fun inferCodeBlockTy(block: MvCodeBlock, blockCtx: InferenceContext, expectedTy:
         when (stmt) {
             is MvExprStmt -> inferExprTy(stmt.expr, blockCtx)
             is MvLetStmt -> {
-                val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, blockCtx) }
-                val patTy = stmt.declaredTy ?: initializerTy ?: TyUnknown
+                val explicitTy = stmt.declaredTy
+                val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, blockCtx, explicitTy) }
+                val patTy = explicitTy ?: initializerTy ?: TyUnknown
                 val pat = stmt.pat ?: continue
                 collectBindings(pat, patTy, blockCtx)
             }
@@ -304,14 +305,6 @@ class InferenceContext(var msl: Boolean) {
             this.bindingTypes[binding] = ctx.resolveTy(ty)
         }
     }
-
-//    fun <K> resolveTyMap(map: Map<K, Ty>): MutableMap<K, Ty> {
-//        val resolvedTyMap = mutableMapOf<K, Ty>()
-//        for ((expr, ty) in map.entries) {
-//            resolvedTyMap[expr] = this.resolveTy(ty)
-//        }
-//        return resolvedTyMap
-//    }
 
     fun resolveTy(ty: Ty): Ty {
         return ty.foldTyInferWith(this::resolveTyInferFromContext)

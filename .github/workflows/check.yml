@@ -15,7 +15,7 @@ jobs:
 
         runs-on: ${{ matrix.os }}
         env:
-            GRADLE_PROPS_VERSION: ${{ matrix.gradle-properties-version }}
+            ORG_GRADLE_PROJECT_shortPlatformVersion: ${{ matrix.gradle-properties-version }}
 
         steps:
             -   uses: actions/checkout@v2
@@ -25,6 +25,11 @@ jobs:
                 with:
                     java-version: 11
                     distribution: 'zulu'
+
+            -   name: Verify Plugin Configuration
+                uses: eskatos/gradle-command-action@v1
+                with:
+                    arguments: "verifyPluginConfiguration"
 
             -   name: Build
                 uses: eskatos/gradle-command-action@v1

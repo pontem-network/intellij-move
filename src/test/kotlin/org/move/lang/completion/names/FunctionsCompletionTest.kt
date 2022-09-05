@@ -339,4 +339,22 @@ class FunctionsCompletionTest : CompletionTestCase() {
         }
     }
     """)
+
+    fun `test add angle brackets if untyped let pattern`() = doSingleCompletion("""
+    module 0x1::main {
+        struct Coin<CoinType> {}
+        fun withdraw<CoinType>(): Coin<CoinType> { Coin<CoinType> {} }
+        fun main() {
+            let a = with/*caret*/;
+        }
+    }    
+    """, """
+    module 0x1::main {
+        struct Coin<CoinType> {}
+        fun withdraw<CoinType>(): Coin<CoinType> { Coin<CoinType> {} }
+        fun main() {
+            let a = withdraw</*caret*/>();
+        }
+    }    
+    """)
 }

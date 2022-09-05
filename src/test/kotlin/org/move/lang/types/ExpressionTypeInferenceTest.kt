@@ -253,4 +253,16 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test transitive integer inference`() = testExpr("""
+    module 0x1::M {
+        fun identity<T>(a: T): T { a }
+        fun main() {
+            let a = 0;
+            let b: u8 = identity(a);
+            a;
+          //^ u8  
+        }
+    }    
+    """)
 }

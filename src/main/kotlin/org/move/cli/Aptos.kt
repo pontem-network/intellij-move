@@ -6,8 +6,10 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.io.exists
 import com.intellij.util.io.isDirectory
 import org.move.cli.settings.isValidExecutable
+import org.move.cli.settings.moveSettings
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.MvResult
@@ -17,7 +19,23 @@ import org.move.stdext.unwrapOrElse
 import java.io.File
 import java.nio.file.Path
 
-class Aptos(private val aptosPath: Path) {
+class Aptos(val location: Path) {
+    fun isValidLocation(): Boolean {
+        return this.location.exists()
+    }
+
+    fun toGeneralCommandLine(project: Project, commandLine: AptosCommandLine): GeneralCommandLine {
+        val generalCommandLine =
+            GeneralCommandLine(
+                this.location.toString(),
+                commandLine.command,
+                *commandLine.additionalArguments.toTypedArray()
+            )
+                .withWorkDirectory(commandLine.workingDirectory)
+                .withCharset(Charsets.UTF_8)
+        commandLine.environmentVariables.configureCommandLine(generalCommandLine, true)
+        return generalCommandLine
+    }
 
     fun init(
         project: Project,
@@ -29,7 +47,7 @@ class Aptos(private val aptosPath: Path) {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        val commandLine = GeneralCommandLine(aptosPath.toString(), "init")
+        val commandLine = GeneralCommandLine(location.toString(), "init")
             .withWorkDirectory(project.root)
             .withParameters(
                 listOf(
@@ -54,7 +72,7 @@ class Aptos(private val aptosPath: Path) {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        val commandLine = GeneralCommandLine(aptosPath.toString(), "move", "init")
+        val commandLine = GeneralCommandLine(location.toString(), "move", "init")
             .withWorkDirectory(project.root)
             .withParameters(
                 listOf(
@@ -76,9 +94,9 @@ class Aptos(private val aptosPath: Path) {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        if (!aptosPath.isValidExecutable()) return null
+        if (!location.isValidExecutable()) return null
 
-        val commandLine = GeneralCommandLine(aptosPath.toString())
+        val commandLine = GeneralCommandLine(location.toString())
             .withWorkDirectory(workingDirectory)
             .withParameters(listOf("--version"))
             .withEnvironment(emptyMap())
@@ -121,3 +139,9 @@ class Aptos(private val aptosPath: Path) {
 
     }
 }
+
+val Project.aptos
+    get() = this.moveSettings.settingsState.aptosPath
+        .takeIf { it.isNotBlank() }
+        ?.let { Path.of(it) }
+        ?.let { loc -> Aptos(loc) }

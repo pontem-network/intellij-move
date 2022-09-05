@@ -146,8 +146,12 @@ module 0x1::Main {
 
     fun call(a: S1, b: S2, c: SS1) {
         Signer::address_of();
-        Errors;
         signature;
+    }
+
+    #[test]
+    fun test() {
+        Errors;
     }
 }
     """, """
@@ -170,8 +174,12 @@ module 0x1::Main {
 
     fun call(a: S1, b: S2, c: SS1) {
         Signer::address_of();
-        Errors;
         signature;
+    }
+
+    #[test]
+    fun test() {
+        Errors;
     }
 }
     """)
@@ -300,9 +308,13 @@ module 0x1::Main {
         #[test_only]
         use 0x1::Coin::get_coin_2;
         
-        fun call(c: Coin2): Coin {
-            get_coin_2();
+        fun call(): Coin {
             Coin::get_coin()
+        }
+        
+        #[test]
+        fun test(c: Coin2) {
+            get_coin_2();
         }
     }
     """, """
@@ -319,9 +331,13 @@ module 0x1::Main {
         #[test_only]
         use 0x1::Coin::{Coin2, get_coin_2};
     
-        fun call(c: Coin2): Coin {
-            get_coin_2();
+        fun call(): Coin {
             Coin::get_coin()
+        }
+        
+        #[test]
+        fun test(c: Coin2) {
+            get_coin_2();
         }
     }
     """)
@@ -353,6 +369,27 @@ spec 0x1::main {
     """, """
 module 0x1::string {}        
 spec 0x1::main {}        
+    """)
+
+    fun `test test_only merged into main`() = doTest("""
+module 0x1::string { public fun utf8() {} }        
+module 0x1::main {
+    use 0x1::string::utf8;
+    #[test_only]
+    use 0x1::string::utf8;
+    fun main() {
+        utf8();
+    }
+}        
+    """, """
+module 0x1::string { public fun utf8() {} }        
+module 0x1::main {
+    use 0x1::string::utf8;
+
+    fun main() {
+        utf8();
+    }
+}        
     """)
 
 //    fun `test module spec with parent import`() = doTest("""

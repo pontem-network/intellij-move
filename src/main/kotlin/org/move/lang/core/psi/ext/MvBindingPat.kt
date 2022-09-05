@@ -81,7 +81,25 @@ abstract class MvBindingPatMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node
         }
 
     override fun getUseScope(): SearchScope {
-        val function = this.ancestorStrict<MvFunction>() ?: return super.getUseScope()
-        return LocalSearchScope(function)
+        return when (this.owner) {
+            is MvFunctionParameter -> {
+                val function = this.ancestorStrict<MvFunction>() ?: return super.getUseScope()
+                var combinedScope: SearchScope = LocalSearchScope(function)
+                for (itemSpec in function.innerItemSpecs()) {
+                    combinedScope = combinedScope.union(LocalSearchScope(itemSpec))
+                }
+                for (itemSpec in function.outerItemSpecs()) {
+                    combinedScope = combinedScope.union(LocalSearchScope(itemSpec))
+                }
+                combinedScope
+            }
+            is MvLetStmt -> {
+                val function = this.ancestorStrict<MvFunction>() ?: return super.getUseScope()
+                LocalSearchScope(function)
+            }
+            is MvSchemaFieldStmt -> super.getUseScope()
+            is MvConst -> super.getUseScope()
+            else -> super.getUseScope()
+        }
     }
 }

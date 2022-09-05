@@ -2,6 +2,7 @@ package org.move.lang.core.types.ty
 
 import com.intellij.psi.PsiElement
 import org.move.ide.presentation.tyToString
+import org.move.lang.core.types.infer.TypeVisitor
 
 
 abstract class TyPrimitive(val name: String) : Ty {

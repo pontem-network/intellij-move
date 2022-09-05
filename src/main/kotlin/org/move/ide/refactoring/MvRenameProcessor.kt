@@ -88,8 +88,9 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
 
         val elementToRename = when {
             element is MvBindingPat && element.parent is MvStructPatField -> {
-                val newPatField = psiFactory.structPatField(element.identifier.text, element.text)
-                element.replace(newPatField).descendantOfTypeStrict<MvBindingPat>()!!
+                val newField = psiFactory.structPatField(element.identifier.text, element.text)
+                val newFieldInTree = element.parent.replace(newField)
+                newFieldInTree.descendantOfTypeStrict<MvBindingPat>()!!
             }
             else -> element
         }

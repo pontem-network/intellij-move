@@ -25,6 +25,7 @@ enum class MvColor(humanName: String, default: TextAttributesKey? = null) {
     BUILTIN_TYPE("Types//Builtins", Default.IDENTIFIER),
     TYPE_PARAMETER("Types//Generic type parameters", Default.IDENTIFIER),
 
+    VECTOR_LITERAL("Literals//Vector", Default.FUNCTION_CALL),
     NUMBER("Literals//Number", Default.NUMBER),
     ADDRESS("Literals//Address", Default.NUMBER),
     STRING("Literals//String", Default.STRING),

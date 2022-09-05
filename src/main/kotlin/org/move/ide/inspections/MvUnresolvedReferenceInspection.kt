@@ -145,6 +145,8 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitDotExpr(dotExpr: MvDotExpr) {
+            if (dotExpr.isMsl()) return
+
             val ty = dotExpr.expr.inferredTy()
             if (ty is TyUnknown) return
 

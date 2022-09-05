@@ -37,6 +37,36 @@ class ExpectedTypeTest : TypificationTestCase() {
     }    
     """)
 
+    fun `test null if too many parameters`() = testExpectedTypeExpr("""
+    module 0x1::Main {
+        fun call<T>(a: T, b: T) {}
+        fun main() {
+            call(1u8, my_ref, my_ref2);
+                            //^ null
+        }
+    }    
+    """)
+
+    fun `test inferred correctly if not enough parameters`() = testExpectedTypeExpr("""
+    module 0x1::Main {
+        fun call<T>(a: T, b: T, c: T) {}
+        fun main() {
+            call(1u8, my_ref, );
+                     //^ u8
+        }
+    }    
+    """)
+
+    fun `test inferred from return type`() = testExpectedTypeExpr("""
+    module 0x1::Main {
+        fun identity<T>(a: T): T { a }
+        fun main() {
+            let a: u8 = identity( );
+                               //^ u8
+        }
+    }    
+    """)
+
     fun `test let statement initializer no pattern explicit type`() = testExpectedTypeExpr(
         """
     module 0x1::Main {
@@ -72,12 +102,12 @@ class ExpectedTypeTest : TypificationTestCase() {
     """
     )
 
-    fun `test no expected type if inside other expr`() = testExpectedTypeExpr(
+    fun `test null if inside other expr`() = testExpectedTypeExpr(
         """
     module 0x1::Main {
         fun call() {
             let a: u8 = 1 + my_ref;
-                           //^ <unknown>
+                           //^ null
         }
     }    
     """

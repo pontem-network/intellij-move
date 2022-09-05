@@ -730,4 +730,13 @@ module 0x1::M {
         }
     }    
     """)
+
+    fun `test error parameter type with return type inferred`() = checkErrors("""
+    module 0x1::M {
+        fun identity<T>(a: T): T { a }
+        fun main() {
+            let a: u8 = <error descr="Incompatible type 'u64', expected 'u8'">identity(1u64)</error>;
+        }
+    }        
+    """)
 }
