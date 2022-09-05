@@ -1,6 +1,7 @@
 package org.move.cli
 
 import com.intellij.execution.configurations.CommandLineState
+import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
@@ -37,7 +38,7 @@ class AptosCommandLineState(
 //                .withCharset(Charsets.UTF_8)
 //        this.environmentVariables.configureCommandLine(generalCommandLine, true)
 
-        val handler = OSProcessHandler(generalCommandLine)
+        val handler = KillableColoredProcessHandler(generalCommandLine)
         consoleBuilder.console.attachToProcess(handler)
         ProcessTerminatedListener.attach(handler)  // shows exit code upon termination
         return handler
