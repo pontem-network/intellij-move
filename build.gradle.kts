@@ -5,17 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
 val shortPlatformVersion = prop("shortPlatformVersion")
-//val propsVersion = System.getenv("GRADLE_PROPS_VERSION") ?: "212"
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
-
-//val baseProperties = "gradle.properties"
-//val properties = "gradle-$propsVersion.properties"
-
-//val props = Properties()
-//file(baseProperties).inputStream().let { props.load(it) }
-//file(properties).inputStream().let { props.load(it) }
-//
-//fun prop(key: String): String = props[key].toString()
 
 fun prop(name: String): String =
     extra.properties[name] as? String
@@ -161,12 +151,4 @@ allprojects {
             ideDir.set(File("/snap/clion/current"))
         }
     }
-}
-
-fun prop(name: String, default: String = ""): String {
-    val value = extra.properties.getOrDefault(name, default) as String
-    if (value.isEmpty()) {
-        error("Property `$name` is not defined in gradle.properties")
-    }
-    return value
 }
