@@ -22,14 +22,15 @@ val MvElement.containingFunction: MvFunction? get() = ancestorStrict()
 
 val MvElement.containingFunctionLike: MvFunctionLike? get() = ancestorStrict()
 
-val MvElement.namespaceModule: MvModule? get() {
-    val parent = this.findFirstParent(false) { it is MvModule || it is MvModuleSpec }
-    return when (parent) {
-        is MvModule -> parent
-        is MvModuleSpec -> parent.module
-        else -> null
+val MvElement.namespaceModule: MvModule?
+    get() {
+        val parent = this.findFirstParent(false) { it is MvModule || it is MvModuleSpec }
+        return when (parent) {
+            is MvModule -> parent
+            is MvModuleSpec -> parent.module
+            else -> null
+        }
     }
-}
 
 val MvElement.containingModule: MvModule? get() = ancestorStrict()
 

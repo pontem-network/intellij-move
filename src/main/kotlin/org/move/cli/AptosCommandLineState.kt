@@ -2,7 +2,6 @@ package org.move.cli
 
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.process.KillableColoredProcessHandler
-import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment

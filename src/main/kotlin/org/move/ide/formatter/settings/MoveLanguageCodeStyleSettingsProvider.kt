@@ -59,7 +59,8 @@ class MvLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider() 
 
 private fun sample(@org.intellij.lang.annotations.Language("Move") code: String) = code.trim()
 
-private val INDENT_SAMPLE = sample("""
+private val INDENT_SAMPLE = sample(
+    """
 module std::main {
     struct Vector {
         x: u64,
@@ -75,4 +76,5 @@ module std::main {
         }
     }
 }    
-""")
+"""
+)

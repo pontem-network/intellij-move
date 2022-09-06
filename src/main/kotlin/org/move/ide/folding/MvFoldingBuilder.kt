@@ -18,7 +18,10 @@ import org.move.lang.MoveParserDefinition.Companion.BLOCK_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 import org.move.lang.MvElementTypes.*
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.endOffset
+import org.move.lang.core.psi.ext.getNextNonCommentSibling
+import org.move.lang.core.psi.ext.getNextNonWhitespaceSibling
+import org.move.lang.core.psi.ext.startOffset
 
 class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
     override fun getLanguagePlaceholderText(node: ASTNode, range: TextRange): String {

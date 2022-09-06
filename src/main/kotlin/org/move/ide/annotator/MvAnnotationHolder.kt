@@ -7,23 +7,23 @@ import com.intellij.psi.PsiElement
 
 class MvAnnotationHolder(val holder: AnnotationHolder) {
     fun createErrorAnnotation(element: PsiElement, message: String?) {
-        newErrorAnnotation(element, message)?.create()
+        newErrorAnnotation(element, message).create()
     }
 
     fun createWeakWarningAnnotation(element: PsiElement, message: String?) {
-        newWeakWarningAnnotation(element, message)?.create()
+        newWeakWarningAnnotation(element, message).create()
     }
 
     fun newErrorAnnotation(
         element: PsiElement,
         message: String?,
-    ): AnnotationBuilder? =
+    ): AnnotationBuilder =
         newAnnotation(element, HighlightSeverity.ERROR, message)
 
     fun newWeakWarningAnnotation(
         element: PsiElement,
         message: String?,
-    ): AnnotationBuilder? = newAnnotation(element, HighlightSeverity.WEAK_WARNING, message)
+    ): AnnotationBuilder = newAnnotation(element, HighlightSeverity.WEAK_WARNING, message)
 
     fun newAnnotation(
         element: PsiElement,

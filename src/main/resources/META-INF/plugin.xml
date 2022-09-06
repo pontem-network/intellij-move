@@ -11,14 +11,6 @@
             <p><a href="https://github.com/pontem-network/intellij-move">https://github.com/pontem-network/intellij-move</a></p>
         ]]>
     </description>
-    <change-notes>
-        <![CDATA[
-    <ul>
-    <li><a href="https://github.com/pontem-network/intellij-move/blob/master/changelog/1.18.0.md">1.18.0</a></li>
-    <li><a href="https://github.com/pontem-network/intellij-move/blob/master/changelog/1.17.0.md">1.17.0</a></li>
-    </ul>
-]]>
-    </change-notes>
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
     <depends>com.intellij.modules.platform</depends>

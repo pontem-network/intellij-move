@@ -4,6 +4,7 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
+import org.move.ide.inspections.imports.ItemUsages
 import org.move.ide.inspections.imports.ScopePathUsages
 import org.move.ide.inspections.imports.pathUsages
 import org.move.lang.core.psi.*
@@ -133,17 +134,30 @@ fun MvElement.isImportedItemUsed(): Boolean {
 }
 
 private fun isUseItemUsed(useItem: MvUseItem, pathUsages: ScopePathUsages): Boolean {
-    var itemUsages = pathUsages.all()
-    var itemName = useItem.referenceName
-
+    val refName = useItem.referenceName
     val useAlias = useItem.useAlias
-    if (useAlias != null) {
-        itemName = useAlias.name ?: return false
-    }
 
-    if (itemName == "Self") {
-        itemName = useItem.moduleName
-        itemUsages = pathUsages.nameUsages
+    val itemName: String
+    val itemUsages: ItemUsages
+    when {
+        useAlias != null && refName == "Self" -> {
+            // use 0x1::module::Self as mymodule;
+            itemName = useAlias.name ?: return true
+            itemUsages = pathUsages.nameUsages
+        }
+        useAlias != null -> {
+            // use 0x1::module::item as myitem;
+            itemName = useAlias.name ?: return true
+            itemUsages = pathUsages.all()
+        }
+        refName == "Self" -> {
+            itemName = useItem.moduleName
+            itemUsages = pathUsages.nameUsages
+        }
+        else -> {
+            itemName = useItem.referenceName
+            itemUsages = pathUsages.all()
+        }
     }
     // null if import is never used
     val usageResolvedItems = itemUsages[itemName] ?: return false

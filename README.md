@@ -5,7 +5,7 @@
 Open `Settings > Plugins > Marketplace` in your IDE, search for _Move Language_ and install the plugin.
 To open an existing project, use **File | Open** and point to the directory containing `Move.toml`. 
 
-New features are announched in [changelogs](https://github.com/pontem-network/intellij-move/tree/master/changelog). 
+New features are announced in [changelog](https://github.com/pontem-network/intellij-move/tree/master/changelog). 
 
 ## Features
 
