@@ -101,6 +101,13 @@ allprojects {
 
         patchPluginXml {
             version.set("$pluginVersion.$shortPlatformVersion")
+            changeNotes.set("""
+    <body>
+        <p><a href="https://github.com/pontem-network/intellij-move/blob/master/changelog/$pluginVersion.md">
+            Changelog for Intellij-Move $pluginVersion on Github
+            </a></p>
+    </body>
+            """)
             sinceBuild.set(prop("pluginSinceBuild"))
             untilBuild.set(prop("pluginUntilBuild"))
         }
