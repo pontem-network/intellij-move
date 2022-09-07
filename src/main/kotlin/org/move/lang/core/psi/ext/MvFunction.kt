@@ -26,10 +26,10 @@ enum class FunctionVisibility {
 val MvFunction.visibility: FunctionVisibility
     get() {
         val visibility = this.functionVisibilityModifier ?: return FunctionVisibility.PRIVATE
-        return when (visibility.node.text) {
-            "public" -> FunctionVisibility.PUBLIC
-            "public(friend)" -> FunctionVisibility.PUBLIC_FRIEND
-            "public(script)" -> FunctionVisibility.PUBLIC_SCRIPT
+        return when {
+            visibility.hasChild(MvElementTypes.FRIEND) -> FunctionVisibility.PUBLIC_FRIEND
+            visibility.hasChild(MvElementTypes.SCRIPT_KW) -> FunctionVisibility.PUBLIC_SCRIPT
+            visibility.hasChild(MvElementTypes.PUBLIC) -> FunctionVisibility.PUBLIC
             else -> FunctionVisibility.PRIVATE
         }
     }
