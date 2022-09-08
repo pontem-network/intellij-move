@@ -15,7 +15,7 @@ fun prop(name: String): String =
 val kotlinVersion = "1.7.10"
 
 val pluginJarName = "intellij-move-$shortPlatformVersion"
-val pluginVersion = "1.19.0"
+val pluginVersion = "1.20.0"
 val pluginGroup = "org.move"
 
 group = pluginGroup
