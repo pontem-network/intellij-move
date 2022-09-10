@@ -166,4 +166,13 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
         }
     }
     """)
+
+    fun `test integer highlighting`() = checkHighlighting("""
+    module 0x1::main {
+        fun main() {
+            let a = <NUMBER>0x123456</NUMBER>;
+            
+        }
+    }
+    """)
 }

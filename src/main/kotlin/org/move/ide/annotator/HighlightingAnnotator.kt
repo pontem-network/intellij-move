@@ -4,6 +4,7 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.move.ide.colors.MvColor
+import org.move.lang.MvElementTypes.HEX_INTEGER_LITERAL
 import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -38,9 +39,11 @@ class HighlightingAnnotator : MvAnnotator() {
 
     private fun highlightLeaf(element: PsiElement): MvColor? {
         val parent = element.parent as? MvElement ?: return null
-        if (element.elementType.toString().endsWith("_kw")) return MvColor.KEYWORD
+        val leafType = element.elementType
+        if (leafType.toString().endsWith("_kw")) return MvColor.KEYWORD
         return when {
-            element.elementType == IDENTIFIER -> highlightIdentifier(parent)
+            leafType == IDENTIFIER -> highlightIdentifier(parent)
+            leafType == HEX_INTEGER_LITERAL -> MvColor.NUMBER
             parent is MvCopyExpr
                     && element.text == "copy" -> MvColor.KEYWORD
             else -> null
