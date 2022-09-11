@@ -7,9 +7,9 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import org.move.ide.utils.CallInfo
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvValueArgumentList
 import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvStructLitFieldsBlock
+import org.move.lang.core.psi.MvValueArgumentList
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.startOffset
 import org.move.utils.AsyncParameterInfoHandler

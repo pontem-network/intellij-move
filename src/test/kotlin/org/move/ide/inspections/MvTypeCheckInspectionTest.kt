@@ -740,4 +740,32 @@ module 0x1::M {
     }        
     """)
 
+    fun `test no error integer should ignore spec blocks`() = checkErrors("""
+    module 0x1::main {
+        spec fun spec_pow(y: u64, x: u64): u64 {
+            if (x == 0) {
+                1
+            } else {
+                y * spec_pow(y, x - 1)
+            }
+        }
+
+        /// Returns 10^degree.
+        public fun pow_10(degree: u8): u64 {
+            let res = 1;
+            let i = 0;
+            while ({
+                spec {
+                    invariant res == spec_pow(10, i);
+                    invariant 0 <= i && i <= degree;
+                };
+                i < degree
+            }) {
+                res = res * 10;
+                i = i + 1;
+            };
+            res
+        }
+    }        
+    """)
 }

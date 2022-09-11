@@ -3,9 +3,7 @@ package org.move.lang.core.types.infer
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.CachedValue
-import com.intellij.psi.util.CachedValueProvider
-import com.intellij.psi.util.CachedValuesManager
-import com.intellij.psi.util.PsiModificationTracker
+import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.jetbrains.rd.util.concurrentMapOf
 import org.move.ide.presentation.expectedBindingFormText
 import org.move.ide.presentation.name
@@ -22,18 +20,26 @@ fun MvElement.functionInferenceCtx(msl: Boolean = this.isMsl()): InferenceContex
 }
 
 fun MvFunctionLike.inferenceCtx(msl: Boolean): InferenceContext {
-    val ctx = CachedValuesManager.getCachedValue(this, TYPE_INFERENCE_KEY) {
-        val functionCtx = InferenceContext(msl)
-        for (param in this.parameterBindings) {
-            functionCtx.bindingTypes[param] = param.inferredTy(functionCtx)
+    return if (msl) {
+        getProjectPsiDependentCache(this) {
+            getInferenceContext(it, true)
         }
-        if (this is MvFunction) {
-            this.codeBlock?.let { inferCodeBlockTy(it, functionCtx, this.returnTy) }
+    } else {
+        getProjectPsiDependentCache(this) {
+            getInferenceContext(it, false)
         }
-        CachedValueProvider.Result(functionCtx, PsiModificationTracker.MODIFICATION_COUNT)
     }
-    ctx.msl = msl
-    return ctx
+}
+
+private fun getInferenceContext(owner: MvFunctionLike, msl: Boolean): InferenceContext {
+    val functionCtx = InferenceContext(msl)
+    for (param in owner.parameterBindings) {
+        functionCtx.bindingTypes[param] = param.inferredTy(functionCtx)
+    }
+    if (owner is MvFunction) {
+        owner.codeBlock?.let { inferCodeBlockTy(it, functionCtx, owner.returnTy) }
+    }
+    return functionCtx
 }
 
 fun inferCodeBlockTy(block: MvCodeBlock, blockCtx: InferenceContext, expectedTy: Ty?): Ty {
@@ -141,7 +147,7 @@ fun isCompatibleStructs(expectedTy: TyStruct, inferredTy: TyStruct, msl: Boolean
 
 fun isCompatibleTuples(expectedTy: TyTuple, inferredTy: TyTuple, msl: Boolean): Boolean {
     return expectedTy.types.size == inferredTy.types.size
-            && expectedTy.types.zip(inferredTy.types).all { isCompatible(it.first, it.second) }
+            && expectedTy.types.zip(inferredTy.types).all { isCompatible(it.first, it.second, msl) }
 }
 
 fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean {
@@ -151,11 +157,11 @@ fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean 
 }
 
 /// find common denominator for both types
-fun combineTys(ty1: Ty, ty2: Ty): Ty {
-    if (!isCompatible(ty1, ty2) && !isCompatible(ty2, ty1)) return TyUnknown
+fun combineTys(ty1: Ty, ty2: Ty, msl: Boolean): Ty {
+    if (!isCompatible(ty1, ty2, msl) && !isCompatible(ty2, ty1, msl)) return TyUnknown
     return when {
         ty1 is TyReference && ty2 is TyReference
-                && isCompatible(ty1.referenced, ty2.referenced) -> {
+                && isCompatible(ty1.referenced, ty2.referenced, msl) -> {
             val combined = ty1.permissions.intersect(ty2.permissions)
             TyReference(ty1.referenced, combined, ty1.msl || ty2.msl)
         }

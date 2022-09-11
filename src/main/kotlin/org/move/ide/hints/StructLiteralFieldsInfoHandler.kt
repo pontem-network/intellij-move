@@ -8,9 +8,9 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IElementType
 import org.move.ide.presentation.fullname
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvValueArgumentList
 import org.move.lang.core.psi.MvStructLitField
 import org.move.lang.core.psi.MvStructLitFieldsBlock
+import org.move.lang.core.psi.MvValueArgumentList
 import org.move.lang.core.psi.ext.*
 import org.move.utils.AsyncParameterInfoHandler
 

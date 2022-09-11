@@ -5,26 +5,24 @@
 
 package org.move.ide.utils
 
-import com.intellij.psi.util.CachedValueProvider
-import com.intellij.psi.util.CachedValuesManager
-import com.intellij.psi.util.PsiModificationTracker
+import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.parameters
 
 val MvFunction.callInfo: CallInfo?
-    get() = CachedValuesManager.getCachedValue(this) {
-        val name = this.name ?: return@getCachedValue null
+    get() = getProjectPsiDependentCache(this) {
+        val name = it.name ?: return@getProjectPsiDependentCache null
 
-        val parameters = this.parameters.map {
-            val paramName = it.bindingPat.name
-            val paramType = it.typeAnnotation?.type
+        val parameters = it.parameters.map { param ->
+            val paramName = param.bindingPat.name
+            val paramType = param.typeAnnotation?.type
             if (paramName == null || paramType == null) {
-                return@getCachedValue null
+                return@getProjectPsiDependentCache null
             }
             CallInfo.Parameter(paramName, paramType.text)
         }
-        CachedValueProvider.Result(CallInfo(name, parameters), PsiModificationTracker.MODIFICATION_COUNT)
+        CallInfo(name, parameters)
     }
 
 class CallInfo(

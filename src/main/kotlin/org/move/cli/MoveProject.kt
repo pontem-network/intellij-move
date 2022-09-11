@@ -45,7 +45,8 @@ data class MoveProject(
 
     fun addresses(): PackageAddresses {
         return CachedValuesManager.getManager(this.project).getCachedValue(this) {
-            val packageName = currentPackage.packageName
+            val packageName = this.currentPackage.packageName
+
             val cumulativeAddresses = PackageAddresses(mutableAddressMap(), placeholderMap())
             for ((depPackage, subst) in this.dependencies) {
                 cumulativeAddresses.extendWith(depPackage.addresses())

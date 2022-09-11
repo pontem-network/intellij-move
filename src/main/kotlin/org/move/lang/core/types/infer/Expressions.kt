@@ -70,7 +70,7 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         exprTy = TyNum
     }
     if (expectedTy != null) {
-        if (!isCompatible(expectedTy, exprTy)) {
+        if (!isCompatible(expectedTy, exprTy, parentCtx.msl)) {
             parentCtx.typeErrors.add(TypeError.TypeMismatch(expr, expectedTy, exprTy))
         } else {
             parentCtx.addConstraint(exprTy, expectedTy)
@@ -335,7 +335,7 @@ private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext, expectedTy: T
         else -> return TyUnknown
     }
 
-    return combineTys(ifExprTy, elseExprTy)
+    return combineTys(ifExprTy, elseExprTy, ctx.msl)
 }
 
 private fun inferWhileExprTy(whileExpr: MvWhileExpr, ctx: InferenceContext): Ty {

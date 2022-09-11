@@ -4,10 +4,7 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
-import com.intellij.psi.util.CachedValueProvider
-import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
-import com.intellij.psi.util.PsiModificationTracker
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
@@ -51,39 +48,34 @@ fun MvModule.allNonTestFunctions(): List<MvFunction> = allFunctions().filter { !
 fun MvModule.testFunctions(): List<MvFunction> = allFunctions().filter { it.isTest }
 
 fun MvModule.builtinFunctions(): List<MvFunction> {
-    return CachedValuesManager.getManager(this.project).getCachedValue(this) {
-        val functions = listOf(
+    return getProjectPsiDependentCache(this) {
+        listOf(
             builtinFunction(
                 """
             /// Removes `T` from address and returns it. 
             /// Aborts if address does not hold a `T`.
             native fun move_from<T: key>(addr: address): T acquires T;
-            """, project
+            """, it.project
             ),
             builtinFunction(
                 """
             /// Publishes `T` under `signer.address`. 
             /// Aborts if `signer.address` already holds a `T`.
             native fun move_to<T: key>(acc: &signer, res: T);
-            """, project
+            """, it.project
             ),
-            builtinFunction("native fun borrow_global<T: key>(addr: address): &T acquires T;", project),
+            builtinFunction("native fun borrow_global<T: key>(addr: address): &T acquires T;", it.project),
             builtinFunction(
                 "native fun borrow_global_mut<T: key>(addr: address): &mut T acquires T;",
-                project
+                it.project
             ),
             builtinFunction(
                 """
             /// Returns `true` if a `T` is stored under address
             native fun exists<T: key>(addr: address): bool;
-            """, project
+            """, it.project
             ),
-            builtinFunction("native fun freeze<S>(mut_ref: &mut S): &S;", project),
-        )
-
-        CachedValueProvider.Result.create(
-            functions,
-            PsiModificationTracker.MODIFICATION_COUNT
+            builtinFunction("native fun freeze<S>(mut_ref: &mut S): &S;", it.project),
         )
     }
 }
@@ -125,30 +117,29 @@ fun MvModule.structs(): List<MvStruct> = moduleBlock?.structList.orEmpty()
 fun MvModule.schemas(): List<MvSchema> = moduleBlock?.schemaList.orEmpty()
 
 fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
-    return CachedValuesManager.getCachedValue(this) {
-        val funcs = listOf(
-            builtinSpecFunction("spec native fun max_u8(): num;", project),
-            builtinSpecFunction("spec native fun max_u64(): num;", project),
-            builtinSpecFunction("spec native fun max_u128(): num;", project),
-            builtinSpecFunction("spec native fun global<T: key>(addr: address): T;", project),
-            builtinSpecFunction("spec native fun old<T>(_: T): T;", project),
+    return getProjectPsiDependentCache(this) {
+        listOf(
+            builtinSpecFunction("spec native fun max_u8(): num;", it.project),
+            builtinSpecFunction("spec native fun max_u64(): num;", it.project),
+            builtinSpecFunction("spec native fun max_u128(): num;", it.project),
+            builtinSpecFunction("spec native fun global<T: key>(addr: address): T;", it.project),
+            builtinSpecFunction("spec native fun old<T>(_: T): T;", it.project),
             builtinSpecFunction(
                 "spec native fun update_field<S, F, V>(s: S, fname: F, val: V): S;",
-                project
+                it.project
             ),
-            builtinSpecFunction("spec native fun TRACE<T>(_: T): T;", project),
+            builtinSpecFunction("spec native fun TRACE<T>(_: T): T;", it.project),
             // vector functions
-            builtinSpecFunction("spec native fun len<T>(_: vector<T>): num;", project),
+            builtinSpecFunction("spec native fun len<T>(_: vector<T>): num;", it.project),
             builtinSpecFunction(
                 "spec native fun concat<T>(v1: vector<T>, v2: vector<T>): vector<T>;",
-                project
+                it.project
             ),
-            builtinSpecFunction("spec native fun contains<T>(v: vector<T>, e: T): bool;", project),
-            builtinSpecFunction("spec native fun index_of<T>(_: vector<T>, _: T): num;", project),
-            builtinSpecFunction("spec native fun range<T>(_: vector<T>): range;", project),
-            builtinSpecFunction("spec native fun in_range<T>(_: vector<T>, _: num): bool;", project),
+            builtinSpecFunction("spec native fun contains<T>(v: vector<T>, e: T): bool;", it.project),
+            builtinSpecFunction("spec native fun index_of<T>(_: vector<T>, _: T): num;", it.project),
+            builtinSpecFunction("spec native fun range<T>(_: vector<T>): range;", it.project),
+            builtinSpecFunction("spec native fun in_range<T>(_: vector<T>, _: num): bool;", it.project),
         )
-        CachedValueProvider.Result(funcs, PsiModificationTracker.MODIFICATION_COUNT)
     }
 }
 

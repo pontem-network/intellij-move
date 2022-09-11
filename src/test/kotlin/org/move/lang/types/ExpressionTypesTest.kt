@@ -498,4 +498,33 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }            
     """)
+
+    fun `test integer inference with spec blocks inside block`() = testExpr("""
+    module 0x1::main {
+        spec fun get_num(): num { 1 }
+        fun main() {
+            let myint = 1;
+            myint + 1u8;
+            spec {
+                myint
+                //^ num
+            };
+        }
+    }    
+    """)
+
+    fun `test integer inference with spec blocks outside block`() = testExpr("""
+    module 0x1::main {
+        spec fun get_num(): num { 1 }
+        fun main() {
+            let myint = 1;
+            myint + 1u8;
+            spec {
+                myint + get_num();
+            };
+            myint;
+            //^ u8
+        }
+    }    
+    """)
 }
