@@ -18,6 +18,14 @@ class BuiltinCallErrorTest: AnnotatorTestCase(ErrorAnnotator::class) {
     }
     """)
 
+    fun `test no error if type is unresolved`() = checkErrors("""
+    module 0x1::Main {
+        fun m() {
+            borrow_global<S2>(@0x1);
+        }
+    }
+    """)
+
     fun `test no global storage access error in spec`() = checkErrors("""
     module 0x1::M {
         struct S1 has key {}

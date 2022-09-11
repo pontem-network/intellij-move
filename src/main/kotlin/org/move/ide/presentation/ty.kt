@@ -5,7 +5,8 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.types.ty.*
 
-fun Ty.acquireableIn(mod: MvModule): Boolean {
+fun Ty.canBeAcquiredInModule(mod: MvModule): Boolean {
+    if (this is TyUnknown) return true
     // no declaring module means builtin
     val declaringMod = this.declaringModule ?: return false
     return declaringMod == mod
@@ -61,6 +62,22 @@ fun Ty.text(fq: Boolean = false): String =
         fq = fq
     )
 
+fun Ty.expectedTyText(): String {
+    return render(
+        this,
+        level = 3,
+        typeVar = {
+            val name = "?${it.origin?.name ?: "_"}"
+            val abilities =
+                it.abilities()
+                    .toList().sorted()
+                    .joinToString(", ", "(", ")") { a -> a.label() }
+            "$name$abilities"
+        },
+        fq = true
+    )
+}
+
 val Ty.insertionSafeText: String
     get() = render(
         this,
@@ -78,6 +95,7 @@ private fun render(
     unknown: String = "<unknown>",
     anonymous: String = "<anonymous>",
     integer: String = "integer",
+    typeVar: (TyInfer.TyVar) -> String = { "?${it.origin?.name ?: "_"}" },
     fq: Boolean = false
 ): String {
     check(level >= 0)
@@ -103,7 +121,7 @@ private fun render(
 
     if (level == 0) return "_"
 
-    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, fq) }
+    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, typeVar, fq) }
 
     return when (ty) {
         is TyFunction -> {
@@ -115,9 +133,9 @@ private fun render(
             s
         }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
-        is TyVector -> "vector<${render(ty.item, level, unknown, anonymous, integer, fq)}>"
+        is TyVector -> "vector<${render(ty.item, level, unknown, anonymous, integer, typeVar, fq)}>"
         is TyReference -> "${if (ty.permissions.contains(RefPermissions.WRITE)) "&mut " else "&"}${
-            render(ty.referenced, level, unknown, anonymous, integer, fq)
+            render(ty.referenced, level, unknown, anonymous, integer, typeVar, fq)
         }"
 //        is TyTraitObject -> ty.trait.name ?: anonymous
         is TyTypeParameter -> ty.name ?: anonymous
@@ -129,7 +147,7 @@ private fun render(
             name + args
         }
         is TyInfer -> when (ty) {
-            is TyInfer.TyVar -> "?${ty.origin?.name ?: "_"}"
+            is TyInfer.TyVar -> typeVar(ty)
             is TyInfer.IntVar -> integer
         }
         else -> error("unreachable")

@@ -6,7 +6,7 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
-import org.move.ide.presentation.acquireableIn
+import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.acquiresTys
@@ -59,7 +59,7 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 for ((i, pathType) in pathTypes.withIndex()) {
                     // check that this acquires is allowed in the context
                     val ty = pathType.ty()
-                    if (!ty.acquireableIn(module)) {
+                    if (!ty.canBeAcquiredInModule(module)) {
                         unusedAcquiresIndices.add(i)
                         continue
                     }

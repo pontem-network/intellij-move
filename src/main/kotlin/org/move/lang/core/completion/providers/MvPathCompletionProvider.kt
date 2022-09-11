@@ -19,6 +19,7 @@ import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.functionInferenceCtx
+import org.move.lang.core.types.infer.inferExpectedTy
 import org.move.lang.core.types.ty.Ty
 
 abstract class MvPathCompletionProvider : MvCompletionProvider() {
@@ -145,8 +146,9 @@ private fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement
         if (element.endOffset < ancestor.endOffset) continue
         if (element.endOffset > ancestor.endOffset) break
         when (ancestor) {
-            is MvRefExpr -> return ancestor.expectedTy(ctx)
-            is MvDotExpr -> return ancestor.expectedTy(ctx)
+            is MvPathType,
+            is MvRefExpr,
+            is MvDotExpr -> return inferExpectedTy(ancestor, ctx)
         }
     }
     return null

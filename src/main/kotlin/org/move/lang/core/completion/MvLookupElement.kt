@@ -5,11 +5,14 @@ import com.intellij.codeInsight.lookup.LookupElementDecorator
 import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.MvStruct
 import org.move.lang.core.psi.ext.inferredTy
 import org.move.lang.core.psi.returnTy
 import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.instantiateItemTy
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
 
 fun LookupElement.toMvLookupElement(properties: LookupElementProperties): MvLookupElement =
@@ -66,7 +69,9 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
     val expectedTy = context.expectedTy
     if (expectedTy != null) {
         val ty = element.asTy(ctx)
-        props = props.copy(isReturnTypeConformsToExpectedType = isCompatible(context.expectedTy, ty))
+        props = props.copy(
+            isReturnTypeConformsToExpectedType = isCompatible(context.expectedTy, ty, ctx.msl)
+        )
     }
     return props
 }
@@ -75,7 +80,7 @@ private fun MvNamedElement.asTy(ctx: InferenceContext): Ty =
     when (this) {
 //        is RsFieldDecl -> typeReference?.type
         is MvFunction -> this.returnTy
-//        is RsStructItem -> declaredType
+        is MvStruct -> instantiateItemTy(this, ctx.msl)
         is MvBindingPat -> this.inferredTy(ctx)
         else -> TyUnknown
     }

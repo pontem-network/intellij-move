@@ -13,7 +13,7 @@ data class TyStruct(
     val item: MvStruct,
     val typeVars: List<TyInfer.TyVar>,
     val fieldTys: Map<String, Ty>,
-    var typeArgs: List<Ty> = emptyList()
+    var typeArgs: List<Ty>
 ) : Ty {
     override fun abilities(): Set<Ability> = this.item.tyAbilities
 

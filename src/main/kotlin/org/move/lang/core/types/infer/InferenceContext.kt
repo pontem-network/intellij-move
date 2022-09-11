@@ -120,7 +120,8 @@ fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
                 instantiateItemTy(acqItem, msl)
                     .foldTyTypeParameterWith { tp -> findTypeVar(tp.parameter) }
             }
-            TyFunction(item, typeVars, paramTypes, retTy, acqTys)
+            val typeArgs = item.typeParameters.map { findTypeVar(it) }
+            TyFunction(item, typeVars, paramTypes, retTy, acqTys, typeArgs)
         }
 
         is MvTypeParameter -> item.ty()
@@ -128,17 +129,17 @@ fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
     }
 }
 
-fun isCompatibleReferences(expectedTy: TyReference, inferredTy: TyReference): Boolean {
-    return isCompatible(expectedTy.referenced, inferredTy.referenced)
+fun isCompatibleReferences(expectedTy: TyReference, inferredTy: TyReference, msl: Boolean): Boolean {
+    return isCompatible(expectedTy.referenced, inferredTy.referenced, msl)
 }
 
-fun isCompatibleStructs(expectedTy: TyStruct, inferredTy: TyStruct): Boolean {
+fun isCompatibleStructs(expectedTy: TyStruct, inferredTy: TyStruct, msl: Boolean): Boolean {
     return expectedTy.item.fqName == inferredTy.item.fqName
             && expectedTy.typeArgs.size == inferredTy.typeArgs.size
-            && expectedTy.typeArgs.zip(inferredTy.typeArgs).all { isCompatible(it.first, it.second) }
+            && expectedTy.typeArgs.zip(inferredTy.typeArgs).all { isCompatible(it.first, it.second, msl) }
 }
 
-fun isCompatibleTuples(expectedTy: TyTuple, inferredTy: TyTuple): Boolean {
+fun isCompatibleTuples(expectedTy: TyTuple, inferredTy: TyTuple, msl: Boolean): Boolean {
     return expectedTy.types.size == inferredTy.types.size
             && expectedTy.types.zip(inferredTy.types).all { isCompatible(it.first, it.second) }
 }
@@ -163,14 +164,19 @@ fun combineTys(ty1: Ty, ty2: Ty): Ty {
     }
 }
 
-fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
+fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean = true): Boolean {
     val expectedTy = rawExpectedTy.mslTy()
     val inferredTy = rawInferredTy.mslTy()
     return when {
         expectedTy is TyNever || inferredTy is TyNever -> true
         expectedTy is TyUnknown || inferredTy is TyUnknown -> true
-        expectedTy is TyInfer.TyVar || inferredTy is TyInfer.TyVar -> {
-            // check abilities
+        expectedTy is TyInfer.TyVar -> {
+            val compat = isCompatibleAbilities(expectedTy, inferredTy, msl)
+            compat == Compat.Yes
+        }
+        /* expectedTy !is TyInfer.TyVar && */ inferredTy is TyInfer.TyVar -> {
+            // todo: should always be false
+            // todo: can it ever occur anyway?
             true
         }
         expectedTy is TyInfer.IntVar && (inferredTy is TyInfer.IntVar || inferredTy is TyInteger) -> {
@@ -192,15 +198,15 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty): Boolean {
                 && expectedTy.name == inferredTy.name -> true
 
         expectedTy is TyVector && inferredTy is TyVector
-                && isCompatible(expectedTy.item, inferredTy.item) -> true
+                && isCompatible(expectedTy.item, inferredTy.item, msl) -> true
 
         expectedTy is TyReference && inferredTy is TyReference
                 // inferredTy permissions should be a superset of expectedTy permissions
                 && (expectedTy.permissions - inferredTy.permissions).isEmpty() ->
-            isCompatibleReferences(expectedTy, inferredTy)
+            isCompatibleReferences(expectedTy, inferredTy, msl)
 
-        expectedTy is TyStruct && inferredTy is TyStruct -> isCompatibleStructs(expectedTy, inferredTy)
-        expectedTy is TyTuple && inferredTy is TyTuple -> isCompatibleTuples(expectedTy, inferredTy)
+        expectedTy is TyStruct && inferredTy is TyStruct -> isCompatibleStructs(expectedTy, inferredTy, msl)
+        expectedTy is TyTuple && inferredTy is TyTuple -> isCompatibleTuples(expectedTy, inferredTy, msl)
         else -> false
     }
 }

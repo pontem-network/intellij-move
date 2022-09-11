@@ -18,4 +18,4 @@ fun MvExpr.inferredTy(): Ty {
     return inferExprTy(this, inferenceCtx)
 }
 
-fun MvExpr.expectedTy(ctx: InferenceContext): Ty? = inferExpectedTy(this, ctx)
+//fun MvExpr.expectedTy(ctx: InferenceContext): Ty? = inferExpectedTy(this, ctx)

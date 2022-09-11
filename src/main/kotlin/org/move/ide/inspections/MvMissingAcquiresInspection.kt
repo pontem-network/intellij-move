@@ -5,7 +5,7 @@ import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
-import org.move.ide.presentation.acquireableIn
+import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.ide.presentation.nameNoArgs
 import org.move.lang.core.psi.*
@@ -13,6 +13,7 @@ import org.move.lang.core.psi.ext.acquiresTys
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.inferenceCtx
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnknown
 
 class MvMissingAcquiresInspection : MvLocalInspectionTool() {
 
@@ -28,7 +29,8 @@ class MvMissingAcquiresInspection : MvLocalInspectionTool() {
                 val inferenceCtx = function.inferenceCtx(callExpr.isMsl())
                 val missingTys = callExpr.acquiresTys(inferenceCtx)
                     .filter { it.fullnameNoArgs() !in declaredTyFullnames }
-                    .filter { it.acquireableIn(module) }
+                    .filter { it !is TyUnknown }
+                    .filter { it.canBeAcquiredInModule(module) }
 
                 if (missingTys.isNotEmpty()) {
                     val name = function.name ?: return

@@ -120,7 +120,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                         val message =
                             "The type '${fieldTy.name()}' does not have the ability '${requiredAbility.label()}' " +
                                     "required by the declared ability '${ability.label()}' " +
-                                    "of the struct '${TyStruct(field.struct, listOf(), mapOf()).name()}'"
+                                    "of the struct '${TyStruct(field.struct, listOf(), mapOf(), listOf()).name()}'"
                         holder.registerTypeError(field, message)
                         return
                     }
