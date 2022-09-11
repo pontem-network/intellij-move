@@ -67,7 +67,7 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .between(FUNCTION_PARAMETER_LIST, RETURN_TYPE).spaceIf(false)
 
         .between(IDENTIFIER, FUNCTION_PARAMETER_LIST).spaceIf(false)
-        .between(IDENTIFIER, CALL_ARGUMENT_LIST).spaceIf(false)
+        .between(IDENTIFIER, VALUE_ARGUMENT_LIST).spaceIf(false)
         .between(IDENTIFIER, TYPE_PARAMETER_LIST).spaceIf(false)
         .between(IDENTIFIER, TYPE_ARGUMENT_LIST).spaceIf(false)
 
@@ -75,7 +75,7 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
 //        .between(IDENTIFIER, STRUCT_LIT_FIELDS_BLOCK).spaceIf(true)
 
         .between(TYPE_PARAMETER_LIST, FUNCTION_PARAMETER_LIST).spaceIf(false)
-        .before(CALL_ARGUMENT_LIST).spaceIf(false)
+        .before(VALUE_ARGUMENT_LIST).spaceIf(false)
 
         .betweenInside(PUBLIC, L_PAREN, FUNCTION_VISIBILITY_MODIFIER).spaces(0)
         .betweenInside(

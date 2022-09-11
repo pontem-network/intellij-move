@@ -7,5 +7,7 @@ script {
         assert()
 
         let a = call(,);
+        call(& );
+        call(&mut );
     }
 }

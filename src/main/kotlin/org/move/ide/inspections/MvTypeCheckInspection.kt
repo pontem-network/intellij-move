@@ -26,13 +26,6 @@ fun ProblemsHolder.registerTypeError(typeError: TypeError) {
 }
 
 class MvTypeCheckInspection : MvLocalInspectionTool() {
-    companion object {
-        private fun invalidReturnTypeMessage(expectedTy: Ty, actualTy: Ty): String {
-            return "Invalid return type: " +
-                    "expected '${expectedTy.name()}', found '${actualTy.name()}'"
-        }
-    }
-
     override val isSyntaxOnly: Boolean get() = true
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
@@ -81,11 +74,11 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 }
             }
 
-            override fun visitCallArgumentList(callArgs: MvCallArgumentList) {
+            override fun visitValueArgumentList(callArgs: MvValueArgumentList) {
                 val callExpr = callArgs.parent as? MvCallExpr ?: return
                 val function = callExpr.path.reference?.resolve() as? MvFunctionLike ?: return
 
-                if (function.parameters.size != callArgs.exprList.size) return
+                if (function.parameters.size != callArgs.valueArgumentList.size) return
 
                 val inferenceCtx = callArgs.functionInferenceCtx(callArgs.isMsl())
                 val callTy = inferenceCtx.callExprTypes
@@ -93,7 +86,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                         inferCallExprTy(callExpr, inferenceCtx, null) as? TyFunction
                     } ?: return
 
-                for ((i, expr) in callArgs.exprList.withIndex()) {
+                for ((i, expr) in callArgs.argumentExprs.withIndex()) {
                     val parameter = function.parameters[i]
                     val paramTy = callTy.paramTypes[i]
                     val exprTy = expr.inferredTy()

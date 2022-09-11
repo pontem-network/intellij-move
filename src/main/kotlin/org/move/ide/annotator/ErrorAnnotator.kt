@@ -125,12 +125,12 @@ class ErrorAnnotator : MvAnnotator() {
                 }
             }
 
-            override fun visitCallArgumentList(arguments: MvCallArgumentList) {
+            override fun visitValueArgumentList(arguments: MvValueArgumentList) {
                 val callExpr = arguments.parent as? MvCallExpr ?: return
                 val function = callExpr.path.reference?.resolve() as? MvFunction ?: return
 
                 val expectedCount = function.parameters.size
-                val realCount = arguments.exprList.size
+                val realCount = arguments.valueArgumentList.size
                 val errorMessage =
                     "This function takes $expectedCount ${
                         pluralise(
@@ -150,11 +150,12 @@ class ErrorAnnotator : MvAnnotator() {
                         return
                     }
                     realCount > expectedCount -> {
-                        arguments.exprList.drop(expectedCount).forEach {
-                            holder.newAnnotation(HighlightSeverity.ERROR, errorMessage)
-                                .range(it)
-                                .create()
-                        }
+                        arguments.valueArgumentList.drop(expectedCount)
+                            .forEach {
+                                holder.newAnnotation(HighlightSeverity.ERROR, errorMessage)
+                                    .range(it)
+                                    .create()
+                            }
                         return
                     }
                 }

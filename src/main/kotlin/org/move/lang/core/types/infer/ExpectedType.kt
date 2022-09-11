@@ -5,17 +5,23 @@ import org.move.lang.core.psi.ext.declaredTy
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.ty
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyUnknown
 
-fun inferExprExpectedTy(expr: MvExpr, ctx: InferenceContext): Ty? {
-    val owner = expr.parent
+fun inferExpectedTy(element: MvElement, ctx: InferenceContext): Ty? {
+    val owner = element.parent
     return when (owner) {
-        is MvCallArgumentList -> {
+        is MvBorrowExpr -> {
+            val refTy = inferExpectedTy(owner, ctx) as? TyReference ?: return null
+            refTy.innerTy()
+        }
+        is MvValueArgument -> {
+            val valueArgumentList = owner.parent as MvValueArgumentList
             val paramIndex =
-                owner.children.indexOfFirst { it.textRange.contains(expr.textOffset) }
+                valueArgumentList.children.indexOfFirst { it.textRange.contains(owner.textOffset) }
             if (paramIndex == -1) return null
 
-            val callExpr = owner.parent as? MvCallExpr ?: return null
+            val callExpr = valueArgumentList.parent as? MvCallExpr ?: return null
             val inferenceCtx = callExpr.functionInferenceCtx(callExpr.isMsl())
             inferenceCtx.callExprTypes[callExpr]
                 ?.paramTypes
@@ -34,7 +40,6 @@ fun inferExprExpectedTy(expr: MvExpr, ctx: InferenceContext): Ty? {
                         }
                         is MvStructPat -> pat.ty()
                         else -> null
-//                        else -> TyUnknown
                     }
                 }
                 else -> null

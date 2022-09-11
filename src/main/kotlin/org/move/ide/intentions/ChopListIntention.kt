@@ -53,8 +53,8 @@ class ChopParameterListIntention : ChopListIntentionBase<MvFunctionParameterList
     "Put parameters on separate lines"
 )
 
-class ChopArgumentListIntention : ChopListIntentionBase<MvCallArgumentList, MvExpr>(
-    MvCallArgumentList::class.java,
+class ChopArgumentListIntention : ChopListIntentionBase<MvValueArgumentList, MvExpr>(
+    MvValueArgumentList::class.java,
     MvExpr::class.java,
     "Put arguments on separate lines"
 )

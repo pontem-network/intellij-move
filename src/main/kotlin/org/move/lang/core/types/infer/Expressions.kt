@@ -135,8 +135,8 @@ fun inferCallExprTy(
         }
     }
     // find all types of passed expressions, create constraints with those
-    if (callExpr.arguments.isNotEmpty()) {
-        for ((paramTy, argumentExpr) in funcTy.paramTypes.zip(callExpr.arguments)) {
+    if (callExpr.callArgumentExprs.isNotEmpty()) {
+        for ((paramTy, argumentExpr) in funcTy.paramTypes.zip(callExpr.callArgumentExprs)) {
             val argumentExprTy = inferExprTy(argumentExpr, parentCtx)
             inferenceCtx.addConstraint(paramTy, argumentExprTy)
         }

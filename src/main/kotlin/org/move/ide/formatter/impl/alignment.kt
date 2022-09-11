@@ -5,7 +5,7 @@ import org.move.ide.formatter.MvFormatterBlock
 import org.move.lang.MvElementTypes.*
 
 fun MvFormatterBlock.getAlignmentStrategy(): MvAlignmentStrategy = when (node.elementType) {
-    FUNCTION_PARAMETER_LIST, CALL_ARGUMENT_LIST ->
+    FUNCTION_PARAMETER_LIST, VALUE_ARGUMENT_LIST ->
         MvAlignmentStrategy
             .shared()
             .alignUnlessBlockDelim()

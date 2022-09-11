@@ -864,13 +864,15 @@ LitExpr ::= HEX_INTEGER_LITERAL
                 | AddressLit
 AddressLit ::= '@' AddressRef { pin = 1 }
 
-CallExpr ::= (Path &'(') CallArgumentList { pin = 1 }
-CallArgumentList ::= '(' CallArgumentList_items? ')' { pin = 1 }
-private CallArgumentList_items ::= <<comma_sep_items Expr>>
+CallExpr ::= (Path &'(') ValueArgumentList { pin = 1 }
+ValueArgumentList ::= '(' ValueArgumentList_items? ')' { pin = 1 }
+private ValueArgumentList_items ::= <<comma_sep_items ValueArgument>>
 {
-    recoverWhile = CallArgumentList_items_recovery
+    recoverWhile = ValueArgumentList_items_recovery
 }
-private CallArgumentList_items_recovery ::= !(')' | ';')
+private ValueArgumentList_items_recovery ::= !(';' | ')')
+
+ValueArgument ::= Expr
 
 IfExpr ::= if Condition AnyBlock ElseBlock? { pin = 1 }
 
@@ -960,7 +962,7 @@ NamedAddress ::= IDENTIFIER
 }
 
 /// Macros
-MacroCallExpr ::= MacroIdent CallArgumentList { pin = 1 }
+MacroCallExpr ::= MacroIdent ValueArgumentList { pin = 1 }
 MacroIdent ::= IDENTIFIER '!'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

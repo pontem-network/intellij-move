@@ -31,7 +31,7 @@ val MvPath.isUpdateFieldArg2: Boolean
             ?.let { if (it.path.textMatches("update_field")) it else null }
             ?.let {
                 val expr = this.ancestorStrict<MvRefExpr>() ?: return@let -1
-                it.arguments.indexOf(expr)
+                it.callArgumentExprs.indexOf(expr)
             }
         return ind == 1
     }

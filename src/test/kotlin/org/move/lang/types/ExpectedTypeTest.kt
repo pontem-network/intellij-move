@@ -112,4 +112,26 @@ class ExpectedTypeTest : TypificationTestCase() {
     }    
     """
     )
+
+    fun `test borrow type`() = testExpectedTypeExpr("""
+    module 0x1::main {
+        struct LiquidityPool {}
+        fun call(pool: &LiquidityPool) {}
+        fun main() {
+            call(&myref);
+                 //^ 0x1::main::LiquidityPool
+        }
+    }    
+    """)
+
+    fun `test borrow mut type`() = testExpectedTypeExpr("""
+    module 0x1::main {
+        struct LiquidityPool {}
+        fun call(pool: &mut LiquidityPool) {}
+        fun main() {
+            call(&mut myref);
+                     //^ 0x1::main::LiquidityPool
+        }
+    }    
+    """)
 }
