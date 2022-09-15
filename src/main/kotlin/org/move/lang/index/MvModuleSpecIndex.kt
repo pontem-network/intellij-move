@@ -18,8 +18,8 @@ class MvModuleSpecIndex : BaseMoveFileIndex() {
     override fun getName() = KEY
     override fun getVersion() = INDEX_VERSION
     override fun getIndexer() =
-        DataIndexer<String, Void, FileContent> { data ->
-            val file = data.psiFile as? MoveFile ?: return@DataIndexer emptyMap()
+        DataIndexer<String, Void, FileContent> { fileContent ->
+            val file = fileContent.psiFile as? MoveFile ?: return@DataIndexer emptyMap()
             // create (moduleName -> null) map for every file
             file.moduleSpecs()
                 .mapNotNull { it.fqModuleRef?.referenceName }
@@ -35,9 +35,9 @@ class MvModuleSpecIndex : BaseMoveFileIndex() {
             FileBasedIndex.getInstance().requestRebuild(KEY)
         }
 
-        fun getAllKeys(project: Project): Collection<String> {
-            return FileBasedIndex.getInstance().getAllKeys(MvNamedElementIndex.KEY, project)
-        }
+//        fun getAllKeys(project: Project): Collection<String> {
+//            return FileBasedIndex.getInstance().getAllKeys(MvNamedElementIndex.KEY, project)
+//        }
 
         fun moduleSpecFiles(
             project: Project,
@@ -50,10 +50,8 @@ class MvModuleSpecIndex : BaseMoveFileIndex() {
                     return listOf(moduleFile)
                 }
             }
-
             val moduleName = module.name ?: return emptyList()
-            val fileIndex = FileBasedIndex.getInstance()
-            return fileIndex
+            return FileBasedIndex.getInstance()
                 .getContainingFiles(KEY, moduleName, searchScope)
                 .mapNotNull { it.toMoveFile(project) }
                 .toList()

@@ -6,7 +6,10 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.util.descendantsOfType
+import org.move.ide.inspections.fixes.RemoveParameterFix
+import org.move.ide.inspections.fixes.RenameFix
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.owner
 
 class MvUnusedVariableInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
@@ -27,24 +30,23 @@ class MvUnusedVariableInspection : MvLocalInspectionTool() {
                 val bindingName = binding.name ?: return
                 if (bindingName.startsWith("_")) return
 
-                val usages = binding.usages()
+                val references = binding.searchReferences()
                     // filter out #[test] attributes
                     .filter { it.element !is MvAttrItemArgument }
-                if (usages.none()) {
+                if (references.none()) {
+                    val fixes = when (binding.owner) {
+                        is MvFunctionParameter -> arrayOf(
+                            RenameFix(binding, "_$bindingName"),
+                            RemoveParameterFix(binding, bindingName)
+                        )
+                        else -> arrayOf(RenameFix(binding, "_$bindingName"))
+                    }
                     holder.registerProblem(
                         binding,
                         description,
                         ProblemHighlightType.LIKE_UNUSED_SYMBOL,
-                        object : LocalQuickFix {
-                            override fun getFamilyName(): String {
-                                return "Rename to _$bindingName"
-                            }
-
-                            override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-                                val bindingPat = descriptor.psiElement as MvBindingPat
-                                bindingPat.rename("_$bindingName")
-                            }
-                        })
+                        *fixes
+                    )
                 }
             }
         }

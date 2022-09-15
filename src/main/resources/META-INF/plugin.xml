@@ -108,7 +108,7 @@
                                   implementation="org.move.toml.NamedAddressReferenceContributor"/>
 
         <annotator language="Move"
-                   implementationClass="org.move.ide.annotator.ErrorAnnotator"/>
+                   implementationClass="org.move.ide.annotator.MvErrorAnnotator"/>
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.HighlightingAnnotator"/>
 
@@ -270,7 +270,7 @@
             <category>Move</category>
         </intentionAction>
         <intentionAction>
-            <className>org.move.ide.intentions.ChopArgumentListIntention</className>
+            <className>org.move.ide.intentions.ChopValueArgumentListIntention</className>
             <category>Move</category>
         </intentionAction>
         <intentionAction>

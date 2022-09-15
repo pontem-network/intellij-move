@@ -1,13 +1,18 @@
 package org.move.lang.core.types.infer
 
+import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.ProblemDescriptor
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.jetbrains.rd.util.concurrentMapOf
+import org.move.ide.inspections.InspectionQuickFix
 import org.move.ide.presentation.expectedBindingFormText
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
+import org.move.lang.MvElementTypes.SEMICOLON
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.mixins.ty
@@ -235,6 +240,7 @@ fun isCompatibleAbilities(expectedTy: Ty, actualTy: Ty, msl: Boolean): Compat {
 
 sealed class TypeError(open val element: PsiElement) {
     abstract fun message(): String
+    open fun quickfix(): LocalQuickFix? = null
 
     data class TypeMismatch(
         override val element: PsiElement,
@@ -259,6 +265,32 @@ sealed class TypeError(open val element: PsiElement) {
                     "does not have required ability '${abilities.map { it.label() }.first()}'"
         }
 
+        override fun quickfix(): LocalQuickFix? {
+            if (abilities.size > 1) return null
+            val abilityName = abilities.map { it.label() }.first()
+            return object : InspectionQuickFix("Add '$abilityName' ability to ${ty.name()}") {
+                override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
+                    val pathType = descriptor.psiElement as? MvPathType ?: return
+                    val struct = pathType.reference?.resolve() as? MvStruct ?: return
+                    // sanity check
+                    val existingAbilities = struct.abilities.map { it.text }
+                    if (abilityName in existingAbilities) return
+
+                    val newList = project.psiFactory.abilitiesList(existingAbilities + listOf(abilityName))
+                    if (struct.abilitiesList != null) {
+                        struct.abilitiesList?.replace(newList)
+                    } else {
+                        val anchor = when {
+                            struct.structBlock != null -> struct.structBlock
+                            struct.hasChild(SEMICOLON) -> struct.getChild(SEMICOLON)
+                            else -> return
+                        }
+                        struct.addBefore(newList, anchor)
+                    }
+                    struct.abilitiesList?.replace(newList)
+                }
+            }
+        }
     }
 
     data class UnsupportedBinaryOp(

@@ -737,6 +737,7 @@ Expr ::= AssignmentExpr
         | SpecVisRestrictedExpr
         | RangeExpr
         | (ForallQuantExpr | ExistsQuantExpr | ChooseQuantExpr)
+        | CastExpr
         | ImplyOperatorsExpr_items
         | OrExpr
         | AndExpr
@@ -748,7 +749,6 @@ Expr ::= AssignmentExpr
         | AddExprItem
         | MulExprItem
         | ControlFlowExpr
-        | CastExpr
         | UnaryExpr
         | BorrowExpr
         | AtomExpr

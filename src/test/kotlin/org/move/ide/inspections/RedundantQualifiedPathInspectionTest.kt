@@ -182,4 +182,31 @@ class RedundantQualifiedPathInspectionTest : InspectionTestBase(RedundantQualifi
         }        
     }        
     """)
+
+    fun `test remove redundant qualifier with specified generic`() = checkFixByText(
+        "Remove redundant qualifier", """
+    module 0x1::M {
+        public fun call<Curve>() {}
+    }        
+    module 0x1::M2 {
+        use 0x1::M;
+        use 0x1::M::call;
+        fun m() {
+            <warning descr="Redundant qualifier">0x1::M/*caret*/::</warning>call<u8>();
+        }
+    }    
+    """, """
+    module 0x1::M {
+        public fun call<Curve>() {}
+    }        
+    module 0x1::M2 {
+        use 0x1::M;
+        use 0x1::M::call;
+        fun m() {
+            /*caret*/call<u8>();
+        }
+    }    
+    """
+    )
+
 }

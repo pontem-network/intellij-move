@@ -22,7 +22,12 @@ fun ProblemsHolder.registerTypeError(
 }
 
 fun ProblemsHolder.registerTypeError(typeError: TypeError) {
-    this.registerProblem(typeError.element, typeError.message(), ProblemHighlightType.GENERIC_ERROR)
+    this.registerProblem(
+        typeError.element,
+        typeError.message(),
+        ProblemHighlightType.GENERIC_ERROR,
+        typeError.quickfix()
+    )
 }
 
 class MvTypeCheckInspection : MvLocalInspectionTool() {

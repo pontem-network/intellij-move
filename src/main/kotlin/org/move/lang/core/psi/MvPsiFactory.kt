@@ -26,6 +26,13 @@ class MvPsiFactory(private val project: Project) {
     fun inlineModule(address: String, name: String, blockText: String): MvModule =
         createFromText("module $address::$name $blockText") ?: error("failed to create module")
 
+    fun abilitiesList(names: List<String>): MvAbilitiesList =
+        createFromText("module 0x1::main { struct S has ${names.joinToString(", ")} {} }")
+            ?: error("failed to create abilities")
+
+    fun ability(name: String): MvAbility =
+        createFromText("module 0x1::main { struct S has $name {} }") ?: error("failed to create ability")
+
     fun identifier(text: String): PsiElement =
         createFromText<MvModule>("module $text {}")?.nameIdentifier
             ?: error("Failed to create identifier: `$text`")

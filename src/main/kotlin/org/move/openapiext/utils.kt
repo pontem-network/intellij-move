@@ -5,11 +5,16 @@
 
 package org.move.openapiext
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.Experiments
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -27,12 +32,14 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.util.concurrency.AppExecutorUtil
 import org.jdom.Element
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isHeadlessEnvironment
 import org.move.openapiext.common.isUnitTestMode
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.Callable
 
 fun <T> Project.runWriteCommandAction(command: () -> T): T {
     return WriteCommandAction.runWriteCommandAction(this, Computable<T> { command() })
@@ -141,4 +148,31 @@ fun isFeatureEnabled(featureId: String): Boolean {
     }
 
     return Experiments.getInstance().isFeatureEnabled(featureId)
+}
+
+/** Intended to be invoked from EDT */
+inline fun <R> Project.nonBlocking(crossinline block: () -> R, crossinline uiContinuation: (R) -> Unit) {
+    if (isUnitTestMode) {
+        val result = block()
+        uiContinuation(result)
+    } else {
+        ReadAction.nonBlocking(Callable {
+            block()
+        })
+            .inSmartMode(this)
+            .expireWith(MvPluginDisposable.getInstance(this))
+            .finishOnUiThread(ModalityState.current()) { result ->
+                uiContinuation(result)
+            }.submit(AppExecutorUtil.getAppExecutorService())
+    }
+}
+
+@Service
+class MvPluginDisposable : Disposable {
+    companion object {
+        @JvmStatic
+        fun getInstance(project: Project): Disposable = project.service<MvPluginDisposable>()
+    }
+
+    override fun dispose() {}
 }

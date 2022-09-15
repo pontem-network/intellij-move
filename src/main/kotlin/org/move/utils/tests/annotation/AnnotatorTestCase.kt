@@ -5,7 +5,10 @@
 
 package org.move.utils.tests.annotation
 
+import com.intellij.psi.PsiFile
+import org.intellij.lang.annotations.Language
 import org.move.ide.annotator.MvAnnotator
+import org.move.utils.tests.replaceCaretMarker
 import kotlin.reflect.KClass
 
 abstract class AnnotatorTestCase(
@@ -15,4 +18,14 @@ abstract class AnnotatorTestCase(
     override fun createAnnotationFixture(): MvAnnotationTestFixture = MvAnnotationTestFixture(
         this, myFixture, annotatorClasses = listOf(annotatorClass)
     )
+
+    protected fun checkFixByText(
+        fixName: String,
+        @Language("Move") before: String,
+        @Language("Move") after: String,
+        checkWarn: Boolean = true,
+        checkInfo: Boolean = false,
+        checkWeakWarn: Boolean = false,
+    ) =
+        annotationFixture.checkFixByText(fixName, before, after, checkWarn, checkInfo, checkWeakWarn)
 }

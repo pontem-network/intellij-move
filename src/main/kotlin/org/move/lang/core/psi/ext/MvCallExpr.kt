@@ -3,6 +3,7 @@ package org.move.lang.core.psi.ext
 import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.psi.MvTypeArgument
+import org.move.lang.core.psi.MvValueArgument
 import org.move.lang.core.psi.MvValueArgumentList
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferCallExprTy
@@ -10,6 +11,9 @@ import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
 
 val MvCallExpr.typeArguments: List<MvTypeArgument> get() = this.path.typeArguments
+
+val MvCallExpr.valueArguments: List<MvValueArgument> get() =
+    this.valueArgumentList?.valueArgumentList.orEmpty()
 
 val MvCallExpr.callArgumentExprs: List<MvExpr>
     get() = this.valueArgumentList
