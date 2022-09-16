@@ -73,7 +73,7 @@ FILE
           PsiWhiteSpace(' ')
           MvLitExprImpl(LIT_EXPR)
             PsiElement(INTEGER_LITERAL)('1')
-        PsiErrorElement:'::', ';', '=' or '[' expected, got 'fun'
+        PsiErrorElement:'::', ';', <operator>, '=' or '[' expected, got 'fun'
           <empty list>
       PsiWhiteSpace('\n\n    ')
       MvFunctionImpl(FUNCTION)

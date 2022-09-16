@@ -10,6 +10,7 @@ import org.move.ide.inspections.fixes.RemoveParameterFix
 import org.move.ide.inspections.fixes.RenameFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.owner
+import org.move.lang.core.psi.mixins.functionLike
 
 class MvUnusedVariableInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
@@ -22,6 +23,8 @@ class MvUnusedVariableInspection : MvLocalInspectionTool() {
             }
 
             override fun visitFunctionParameter(o: MvFunctionParameter) {
+                val functionLike = o.functionLike ?: return
+                if (functionLike.isNative) return
                 val binding = o.bindingPat
                 checkUnused(binding, "Unused function parameter")
             }

@@ -80,6 +80,38 @@ class RemoveParameterFixTest: InspectionTestBase(MvUnusedVariableInspection::cla
     """
     )
 
+    fun `test second of two multiline`() = checkFixByText(
+        "Remove parameter", """
+    module 0x1::M {
+        fun call(
+            b: u8,
+            <warning descr="Unused function parameter">/*caret*/a</warning>: u8, 
+        ): u8 {
+            b
+        }
+        fun main() {
+            call(
+                1, 
+                2
+            );
+        }
+    }    
+    """, """
+    module 0x1::M {
+        fun call(
+            b: u8
+        ): u8 {
+            b
+        }
+        fun main() {
+            call(
+                1
+            );
+        }
+    }    
+    """
+    )
+
     fun `test second of three`() = checkFixByText(
         "Remove parameter", """
     module 0x1::M {

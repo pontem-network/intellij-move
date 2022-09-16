@@ -923,4 +923,13 @@ module 0x1::M {
         }
     }    
     """)
+
+    fun `test no error unpacking a struct from move_from`() = checkByText("""
+module 0x1::main {
+    struct Container has key { val: u8 }
+    fun main() {
+        let Container { val } = move_from(source_addr);
+    }
+}        
+    """)
 }

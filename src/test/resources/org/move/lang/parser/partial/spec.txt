@@ -106,7 +106,7 @@ FILE
             MvLitExprImpl(LIT_EXPR)
               PsiElement(INTEGER_LITERAL)('1')
             PsiWhiteSpace(' ')
-            PsiErrorElement:'::', '=' or '[' expected, got '=='
+            PsiErrorElement:'::', <operator>, '=' or '[' expected, got '=='
               PsiElement(==)('==')
             PsiElement(>)('>')
             PsiWhiteSpace(' ')
@@ -130,7 +130,7 @@ FILE
             MvSchemaLitImpl(SCHEMA_LIT)
               MvPathImpl(PATH)
                 PsiElement(IDENTIFIER)('Schema')
-            PsiErrorElement:'!', '::', ';', <, '=', '[' or '{' expected, got 'assert'
+            PsiErrorElement:'!', '::', ';', <, <operator>, '=', '[' or '{' expected, got 'assert'
               <empty list>
           PsiWhiteSpace('\n\n        ')
           MvSpecExprStmtImpl(SPEC_EXPR_STMT)
@@ -164,12 +164,13 @@ FILE
             MvEnsuresSpecExprImpl(ENSURES_SPEC_EXPR)
               PsiElement(ensures_kw)('ensures')
               PsiWhiteSpace(' ')
-              MvImplyOperatorExprImpl(IMPLY_OPERATOR_EXPR)
+              MvBinaryExprImpl(BINARY_EXPR[==>])
                 MvRefExprImpl(REF_EXPR)
                   MvPathImpl(PATH)
                     PsiElement(IDENTIFIER)('result')
                 PsiWhiteSpace(' ')
-                PsiElement(==>)('==>')
+                MvBinaryOpImpl(BINARY_OP)
+                  PsiElement(==>)('==>')
                 PsiWhiteSpace(' ')
                 MvLitExprImpl(LIT_EXPR)
                   PsiElement(INTEGER_LITERAL)('1')

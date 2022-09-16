@@ -25,3 +25,15 @@ val MOVE_KEYWORDS = tokenSetOf(
 val TYPES = tokenSetOf(PATH_TYPE, REF_TYPE, TUPLE_TYPE)
 
 val MOVE_COMMENTS = tokenSetOf(BLOCK_COMMENT, EOL_COMMENT, EOL_DOC_COMMENT)
+
+val MOVE_BINARY_OPS = tokenSetOf(
+    OR_OR, AND_AND,
+    EQ_EQ_GT, LT_EQ_EQ_GT,
+    LT, LT_EQ, GT, GT_EQ,
+    EQ, EQ_EQ,
+    OR, AND, XOR,
+    EQ, NOT_EQ,
+    MUL, DIV, MODULO,
+    PLUS, MINUS,
+    XOR, AND, OR
+)

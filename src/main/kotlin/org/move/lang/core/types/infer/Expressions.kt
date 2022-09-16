@@ -32,19 +32,8 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         is MvCastExpr -> inferTypeTy(expr.type, parentCtx.msl)
         is MvParensExpr -> expr.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
 
-        is MvPlusExpr -> inferBinaryExprTy(expr.exprList, parentCtx)
-        is MvMinusExpr -> inferBinaryExprTy(expr.exprList, parentCtx)
-        is MvMulExpr -> inferBinaryExprTy(expr.exprList, parentCtx)
-        is MvDivExpr -> inferBinaryExprTy(expr.exprList, parentCtx)
-        is MvModExpr -> inferBinaryExprTy(expr.exprList, parentCtx)
-
+        is MvBinaryExpr -> inferBinaryExprTy(expr, parentCtx)
         is MvBangExpr -> TyBool
-        is MvLessExpr -> TyBool
-        is MvLessEqualsExpr -> TyBool
-        is MvGreaterExpr -> TyBool
-        is MvGreaterEqualsExpr -> TyBool
-        is MvAndExpr -> TyBool
-        is MvOrExpr -> TyBool
 
         is MvIfExpr -> inferIfExprTy(expr, parentCtx, expectedTy)
         is MvWhileExpr -> inferWhileExprTy(expr, parentCtx)
@@ -243,19 +232,27 @@ fun inferLitFieldInitExprTy(litField: MvStructLitField, ctx: InferenceContext): 
     }
 }
 
-private fun inferBinaryExprTy(exprList: List<MvExpr>, ctx: InferenceContext): Ty {
-    val leftExpr = exprList.getOrNull(0) ?: return TyUnknown
-    val rightExpr = exprList.getOrNull(1)
+private fun inferBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceContext): Ty {
+    return when (binaryExpr.binaryOp.op) {
+        "<", ">", "<=", ">=", "==", "!=", "||", "&&", "==>", "<==>" -> inferBoolExprTy(binaryExpr, ctx)
+        "+", "-", "*", "/", "%" -> inferBinaryArithmeticExprTy(binaryExpr, ctx)
+        else -> TyUnknown
+    }
+}
+
+private fun inferBinaryArithmeticExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceContext): Ty {
+    val leftExpr = binaryExpr.left
+    val rightExpr = binaryExpr.right
 
     var typeErrorEncountered = false
     val leftExprTy = inferExprTy(leftExpr, ctx)
-    if (!leftExprTy.supportsBinaryOp()) {
+    if (!leftExprTy.supportsArithmeticOp()) {
         ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(leftExpr, leftExprTy, "+"))
         typeErrorEncountered = true
     }
     if (rightExpr != null) {
         val rightExprTy = inferExprTy(rightExpr, ctx)
-        if (!rightExprTy.supportsBinaryOp()) {
+        if (!rightExprTy.supportsArithmeticOp()) {
             ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(rightExpr, rightExprTy, "+"))
             typeErrorEncountered = true
         }
@@ -266,7 +263,9 @@ private fun inferBinaryExprTy(exprList: List<MvExpr>, ctx: InferenceContext): Ty
     return if (typeErrorEncountered) TyUnknown else leftExprTy
 }
 
-private fun Ty.supportsBinaryOp(): Boolean {
+private fun inferBoolExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceContext): Ty { return TyBool }
+
+private fun Ty.supportsArithmeticOp(): Boolean {
     return this is TyInteger
             || this is TyNum
             || this is TyTypeParameter

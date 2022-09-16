@@ -14,6 +14,7 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.ide.formatter.MvFmtContext
 import org.move.lang.MvElementTypes.*
+import org.move.lang.core.MOVE_BINARY_OPS
 import org.move.lang.core.MOVE_COMMENTS
 import org.move.lang.core.MOVE_KEYWORDS
 import org.move.lang.core.psi.MvAddressBlock
@@ -90,8 +91,10 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         ).spaces(0)
         .after(FUNCTION_VISIBILITY_MODIFIER).spaces(1)
 
-        .around(BINARY_OPS).spaces(1)
+        .around(BINARY_OP).spaces(1)
+        .around(EQ).spaces(1)
         .around(MOVE_KEYWORDS).spaces(1)
+
         .applyForEach(BLOCK_LIKE) { before(it).spaces(1) }
 //        .applyForEach(STRUCT_LITERAL_BLOCKS) { before(it).spaces(0) }
 }

@@ -68,21 +68,24 @@ FILE
             MvAssignmentExprImpl(ASSIGNMENT_EXPR)
               MvParensExprImpl(PARENS_EXPR)
                 PsiElement(()('(')
-                MvPlusExprImpl(PLUS_EXPR)
-                  MvPlusExprImpl(PLUS_EXPR)
-                    MvPlusExprImpl(PLUS_EXPR)
+                MvBinaryExprImpl(BINARY_EXPR[+])
+                  MvBinaryExprImpl(BINARY_EXPR[+])
+                    MvBinaryExprImpl(BINARY_EXPR[+])
                       MvRefExprImpl(REF_EXPR)
                         MvPathImpl(PATH)
                           PsiElement(IDENTIFIER)('a')
                       PsiWhiteSpace(' ')
-                      PsiElement(+)('+')
-                      PsiErrorElement:<expression> or '=' expected, got '+'
+                      MvBinaryOpImpl(BINARY_OP)
+                        PsiElement(+)('+')
+                      PsiErrorElement:'+', <expression>, <operator> or '=' expected, got '+'
                         <empty list>
-                    PsiElement(+)('+')
-                    PsiErrorElement:<expression> or '=' expected, got '+'
+                    MvBinaryOpImpl(BINARY_OP)
+                      PsiElement(+)('+')
+                    PsiErrorElement:'+', <expression>, <operator> or '=' expected, got '+'
                       <empty list>
-                  PsiElement(+)('+')
-                  PsiErrorElement:',', ':', <expression>, '=' or '[' expected, got ')'
+                  MvBinaryOpImpl(BINARY_OP)
+                    PsiElement(+)('+')
+                  PsiErrorElement:',', ':', <expression>, <operator>, '=' or '[' expected, got ')'
                     <empty list>
                 PsiWhiteSpace(' ')
                 PsiElement())(')')
@@ -201,7 +204,7 @@ FILE
                 PsiWhiteSpace(' ')
                 MvInitializerImpl(INITIALIZER)
                   PsiElement(=)('=')
-                  PsiErrorElement:',', ':', <expression>, '=' or '[' expected, got ')'
+                  PsiErrorElement:',', ':', <expression>, <operator>, '=' or '[' expected, got ')'
                     <empty list>
               PsiWhiteSpace(' ')
               PsiElement())(')')

@@ -10,11 +10,11 @@ import org.move.lang.core.psi.*
 import com.intellij.psi.tree.TokenSet.create as ts
 
 
-val BINARY_OPS = ts(
-    PLUS, MINUS, MUL, DIV, MODULO,
-    OR, AND, OR_OR, AND_AND,
-    EQ, EQ_EQ, NOT_EQ,
-)
+//val BINARY_OPS = ts(
+//    PLUS, MINUS, MUL, DIV, MODULO,
+//    OR, AND, OR_OR, AND_AND,
+//    EQ, EQ_EQ, NOT_EQ,
+//)
 val ONE_LINE_ITEMS = ts(USE_STMT, CONST)
 
 val PAREN_DELIMITED_BLOCKS = ts(

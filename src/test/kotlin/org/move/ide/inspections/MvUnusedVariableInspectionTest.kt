@@ -83,4 +83,10 @@ class MvUnusedVariableInspectionTest : InspectionTestBase(MvUnusedVariableInspec
     }
     """
     )
+
+    fun `test no unused parameter for native function`() = checkByText("""
+module 0x1::main {
+    native fun main(a: u8);
+}        
+    """)
 }

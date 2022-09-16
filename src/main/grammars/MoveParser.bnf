@@ -21,11 +21,15 @@
     extends("(Lambda|Ref|Path|Tuple|Unit)Type")=Type
 //    extends(".*SpecDef")=AnySpec
 
-    extends(".*Stmt")=Stmt
+    elementType(".+BinExpr")=BinaryExpr
+    elementType(".+BinOp")=BinaryOp
 
+    name(".+BinOp")="operator"
     name(".*Expr")="expression"
 
-//    consumeTokenMethod(".*Expr") = "consumeTokenFast"
+    extends(".*Stmt")=Stmt
+
+    consumeTokenMethod("((?!.*_with_recover).*_recover)|(.*_first)|(.*Expr)") = "consumeTokenFast"
 
     tokens = [
         WHITESPACE='regexp:[ \n\t\r\f]'
@@ -738,26 +742,42 @@ Expr ::= AssignmentExpr
         | RangeExpr
         | (ForallQuantExpr | ExistsQuantExpr | ChooseQuantExpr)
         | CastExpr
-        | ImplyOperatorsExpr_items
-        | OrExpr
-        | AndExpr
-        | LogicalEqExprItem
-        | BitOrExpr
-        | BitXorExpr
-        | BitAndExpr
-        | (LeftShiftExpr | RightShiftExpr)
-        | AddExprItem
-        | MulExprItem
-        | ControlFlowExpr
+        | ImplyBinExpr_items
+        | OrBinExpr
+        | AndBinExpr
+        | LogicalEqExpr_items
+        | BitOrBinExpr
+        | BitXorBinExpr
+        | BitAndBinExpr
+        | (LeftShiftBinExpr | RightShiftBinExpr)
+        | AddExpr_items
+        | MulExpr_items
+        | ControlFlowExpr_items
         | UnaryExpr
         | BorrowExpr
         | AtomExpr
 
-private MulExprItem ::= DivExpr | MulExpr | ModExpr
-private AddExprItem ::= PlusExpr | MinusExpr
-private LogicalEqExprItem ::= EqualsExpr | NotEqualsExpr | LessEqualsExpr | LessExpr | GreaterEqualsExpr | GreaterExpr
+fake BinaryExpr ::= Expr BinaryOp Expr {
+    methods = [
+        left="/Expr[0]"
+        right="/Expr[1]"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvBinaryExprMixin"
+}
 
-private ControlFlowExpr ::= IfExpr | LoopExpr | WhileExpr
+fake BinaryOp ::= '==>' | '='
+                    | '==' | '!='
+                    | '<' | '>' | '<=' | '>='
+                    | '<<' | '>>'
+                    | '+' | '-' | '*' | '/' | '%'
+                    | '||' | '&&' | '|' | '&' | '^'
+
+
+private MulExpr_items ::= DivBinExpr | MulBinExpr | ModBinExpr
+private AddExpr_items ::= PlusBinExpr | MinusBinExpr
+private LogicalEqExpr_items ::= EqualsBinExpr | NotEqualsBinExpr | LessEqualsBinExpr | LessBinExpr | GreaterEqualsBinExpr | GreaterBinExpr
+
+private ControlFlowExpr_items ::= IfExpr | LoopExpr | WhileExpr
 private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
                       | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
 private AtomExpr ::=
@@ -774,38 +794,71 @@ private AtomExpr ::=
                     | LitExpr
                     | CodeBlockExpr
 
-EqualsExpr ::= Expr (!eqeq_gt '==') Expr
-NotEqualsExpr ::= Expr '!=' Expr
-
-OrExpr ::= Expr oror Expr
-AndExpr ::= Expr andand Expr
-
-LessExpr ::= Expr (!(ltlt | lt_eqeq_gt) '<') Expr
-GreaterExpr ::= Expr (!gtgt '>') Expr
-LessEqualsExpr ::= Expr lteq Expr
-GreaterEqualsExpr ::= Expr gteq Expr
-
-BitOrExpr ::= Expr (!oror '|') Expr
-BitAndExpr ::= Expr (!andand '&') Expr
-BitXorExpr ::= Expr '^' Expr
 
 CastExpr ::= Expr as Type
 
 private AnnotatedExpPrefix ::= '(' Expr ':'
 AnnotatedExpr ::= AnnotatedExpPrefix Type ')' { pin = 1 }
 
-MulExpr ::= Expr '*' Expr
-DivExpr ::= Expr '/' Expr
-PlusExpr ::= Expr '+' Expr
-MinusExpr ::= Expr '-' Expr
-ModExpr ::= Expr '%' Expr
+EqualsBinExpr ::= Expr (!eqeq_gt EqualsBinOp) Expr
+NotEqualsBinExpr ::= Expr NotEqualsBinOp Expr
 
-LeftShiftExpr ::= Expr ltlt Expr
-RightShiftExpr ::= Expr gtgt Expr
+EqualsBinOp ::= '=='
+NotEqualsBinOp ::= '!='
 
-private ImplyOperatorsExpr_items ::= ImplyOperatorExpr | PartialImplyOperatorExpr
-ImplyOperatorExpr ::= Expr <<implyMslOnly eqeq_gt>> Expr
-PartialImplyOperatorExpr ::= Expr <<implyMslOnly lt_eqeq_gt>> Expr
+// booleans
+OrBinExpr ::= Expr OrBinOp Expr
+AndBinExpr ::= Expr AndBinOp Expr
+
+OrBinOp ::= oror
+AndBinOp ::= andand
+
+LessBinExpr ::= Expr (!(ltlt | lt_eqeq_gt) LessBinOp) Expr
+GreaterBinExpr ::= Expr (!gtgt GreaterBinOp) Expr
+LessEqualsBinExpr ::= Expr LessEqualsBinOp Expr
+GreaterEqualsBinExpr ::= Expr GreaterEqualsBinOp Expr
+
+LessBinOp ::= '<'
+GreaterBinOp ::= '>'
+LessEqualsBinOp ::= lteq
+GreaterEqualsBinOp ::= gteq
+
+// bitwise ops
+BitOrBinExpr ::= Expr (!oror BitOrBinOp) Expr
+BitAndBinExpr ::= Expr (!andand BitAndBinOp) Expr
+BitXorBinExpr ::= Expr BitXorBinOp Expr
+
+BitOrBinOp ::= '|'
+BitAndBinOp ::= '&'
+BitXorBinOp ::= '^'
+
+// arithmetic
+MulBinExpr ::= Expr MulBinOp Expr
+DivBinExpr ::= Expr DivBinOp Expr
+PlusBinExpr ::= Expr PlusBinOp Expr
+MinusBinExpr ::= Expr MinusBinOp Expr
+ModBinExpr ::= Expr ModBinOp Expr
+
+MulBinOp ::= '*'
+DivBinOp ::= '/'
+PlusBinOp ::= '+'
+MinusBinOp ::= '-'
+ModBinOp ::= '%'
+
+// bit shifts
+LeftShiftBinExpr ::= Expr LeftShiftBinOp Expr
+RightShiftBinExpr ::= Expr RightShiftBinOp Expr
+
+LeftShiftBinOp ::= ltlt
+RightShiftBinOp ::= gtgt
+
+// imply
+private ImplyBinExpr_items ::= ImplyBinExpr | PartialImplyBinExpr
+ImplyBinExpr ::= Expr ImplyBinOp Expr
+PartialImplyBinExpr ::= Expr PartialImplyBinOp Expr
+
+ImplyBinOp ::= <<implyMslOnly eqeq_gt>>
+PartialImplyBinOp ::= <<implyMslOnly lt_eqeq_gt>>
 
 BangExpr ::= '!' Expr
 DerefExpr ::= '*' Expr

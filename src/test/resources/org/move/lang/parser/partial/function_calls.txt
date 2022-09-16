@@ -36,11 +36,12 @@ FILE
               MvValueArgumentListImpl(VALUE_ARGUMENT_LIST)
                 PsiElement(()('(')
                 MvValueArgumentImpl(VALUE_ARGUMENT)
-                  MvPlusExprImpl(PLUS_EXPR)
+                  MvBinaryExprImpl(BINARY_EXPR[+])
                     MvLitExprImpl(LIT_EXPR)
                       PsiElement(INTEGER_LITERAL)('1')
                     PsiWhiteSpace(' ')
-                    PsiElement(+)('+')
+                    MvBinaryOpImpl(BINARY_OP)
+                      PsiElement(+)('+')
                     PsiErrorElement:<expression> expected, got ')'
                       <empty list>
                 PsiElement())(')')
@@ -58,11 +59,12 @@ FILE
                 PsiElement(,)(',')
                 PsiWhiteSpace(' ')
                 MvValueArgumentImpl(VALUE_ARGUMENT)
-                  MvPlusExprImpl(PLUS_EXPR)
+                  MvBinaryExprImpl(BINARY_EXPR[+])
                     MvLitExprImpl(LIT_EXPR)
                       PsiElement(INTEGER_LITERAL)('2')
                     PsiWhiteSpace(' ')
-                    PsiElement(+)('+')
+                    MvBinaryOpImpl(BINARY_OP)
+                      PsiElement(+)('+')
                     PsiErrorElement:<expression> expected, got ')'
                       <empty list>
                 PsiElement())(')')
