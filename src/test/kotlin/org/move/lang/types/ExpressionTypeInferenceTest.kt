@@ -276,4 +276,37 @@ module 0x1::main {
     }
 }                
     """)
+
+    fun `tests struct unpacking incompatible field type`() = testExpr("""
+module 0x1::main {
+    struct Container<Type> { val: Type }
+    fun main() {
+        let Container<u8> { val } = Container<bool> { val: false };
+        val;
+      //^ u8  
+    }
+}        
+    """)
+
+    fun `test struct unpacking compatible field type inference`() = testExpr("""
+module 0x1::main {
+    struct Container<Type> { val: Type }
+    fun main() {
+        let Container { val } = Container<bool> { val: false };
+        val;
+      //^ bool  
+    }
+}        
+    """)
+
+    fun `test struct unpacking with explicit type`() = testExpr("""
+module 0x1::main {
+    struct Container<Type> { val: Type }
+    fun main() {
+        let Container { val }: Container<u8> = call();
+        val;
+      //^ u8
+    }
+}        
+    """)
 }

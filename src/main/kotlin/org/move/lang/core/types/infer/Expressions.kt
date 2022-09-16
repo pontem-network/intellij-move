@@ -161,7 +161,7 @@ private fun inferDotExprTy(dotExpr: MvDotExpr, parentCtx: InferenceContext): Ty 
     if (!inferenceCtx.processConstraints()) return TyUnknown
 
     val fieldName = dotExpr.structDotField.referenceName
-    return inferenceCtx.resolveTy(structTy.fieldTy(fieldName, parentCtx.msl))
+    return inferenceCtx.resolveTy(structTy.fieldTy(fieldName))
 }
 
 fun inferStructLitExpr(
@@ -202,8 +202,7 @@ fun inferStructLitExpr(
     for (field in litExpr.fields) {
         val fieldName = field.referenceName
         val fieldTy = structTy.fieldTys[fieldName] ?: TyUnknown
-        val fieldInitExprTy = inferLitFieldInitExprTy(field, parentCtx)
-        inferenceCtx.addConstraint(fieldTy, fieldInitExprTy)
+        inferLitFieldInitExprTy(field, parentCtx, fieldTy)
     }
     if (expectedTy != null) {
         inferenceCtx.addConstraint(structTy, expectedTy)
@@ -214,21 +213,72 @@ fun inferStructLitExpr(
     return inferenceCtx.resolveTy(structTy)
 }
 
+fun inferStructPatTy(structPat: MvStructPat, parentCtx: InferenceContext, expectedTy: Ty?): Ty {
+    val path = structPat.path
+    val struct = structPat.struct ?: return TyUnknown
+    val structTy = instantiateItemTy(struct, parentCtx.msl) as TyStruct
+
+    val inferenceCtx = InferenceContext(parentCtx.msl)
+    // find all types passed as explicit type parameters, create constraints with those
+    if (path.typeArguments.isNotEmpty()) {
+        if (path.typeArguments.size != structTy.typeVars.size) return TyUnknown
+        for ((typeVar, typeArg) in structTy.typeVars.zip(path.typeArguments)) {
+            val typeArgTy = inferTypeTy(typeArg.type, parentCtx.msl)
+
+            // check compat for abilities
+            val compat = isCompatibleAbilities(typeVar, typeArgTy, path.isMsl())
+            val isCompat = when (compat) {
+                is Compat.AbilitiesMismatch -> {
+                    parentCtx.typeErrors.add(
+                        TypeError.AbilitiesMismatch(
+                            typeArg,
+                            typeArgTy,
+                            compat.abilities
+                        )
+                    )
+                    false
+                }
+
+                else -> true
+            }
+            inferenceCtx.addConstraint(typeVar, if (isCompat) typeArgTy else TyUnknown)
+        }
+    }
+    if (expectedTy != null) {
+        if (isCompatible(expectedTy, structTy)) {
+            inferenceCtx.addConstraint(structTy, expectedTy)
+        } else {
+            parentCtx.typeErrors.add(TypeError.InvalidUnpacking(structPat, expectedTy))
+        }
+    }
+    inferenceCtx.processConstraints()
+    parentCtx.resolveTyVarsFromContext(inferenceCtx)
+    return inferenceCtx.resolveTy(structTy)
+}
+
 fun inferVectorLitExpr(litExpr: MvVectorLitExpr, parentCtx: InferenceContext): Ty {
     return TyVector(TyUnknown)
 }
 
-fun inferLitFieldInitExprTy(litField: MvStructLitField, ctx: InferenceContext): Ty {
+fun inferLitFieldInitExprTy(litField: MvStructLitField, ctx: InferenceContext, expectedTy: Ty?): Ty {
     val initExpr = litField.expr
     return if (initExpr == null) {
         // find type of binding
         val binding =
             litField.reference.multiResolve().filterIsInstance<MvBindingPat>().firstOrNull()
                 ?: return TyUnknown
-        binding.inferredTy(ctx)
+        val bindingTy = binding.inferredTy(ctx)
+        if (expectedTy != null) {
+            if (!isCompatible(expectedTy, bindingTy, ctx.msl)) {
+                ctx.typeErrors.add(TypeError.TypeMismatch(litField, expectedTy, bindingTy))
+            } else {
+                ctx.addConstraint(bindingTy, expectedTy)
+            }
+        }
+        bindingTy
     } else {
         // find type of expression
-        inferExprTy(initExpr, ctx)
+        inferExprTy(initExpr, ctx, expectedTy)
     }
 }
 

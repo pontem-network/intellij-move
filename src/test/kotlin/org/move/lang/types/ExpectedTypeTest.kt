@@ -90,6 +90,30 @@ class ExpectedTypeTest : TypificationTestCase() {
     """
     )
 
+    fun `test let statement struct pattern field explicit type`() = testExpectedTyExpr(
+        """
+    module 0x1::Main {
+        struct S<Type> { val: Type }
+        fun main() {
+            let val: S<u8> = S { val: my_ref };
+                                      //^ u8
+        }
+    }    
+    """
+    )
+
+    fun `test let statement struct pattern field path type`() = testExpectedTyExpr(
+        """
+    module 0x1::Main {
+        struct S<Type> { val: Type }
+        fun main() {
+            let S<u8> { val } = S { val: my_ref };
+                                         //^ u8
+        }
+    }    
+    """
+    )
+
     fun `test struct field literal`() = testExpectedTyExpr(
         """
     module 0x1::Main {
@@ -97,6 +121,31 @@ class ExpectedTypeTest : TypificationTestCase() {
         fun main() {
             S { val: my_ref };
                     //^ u8
+        }
+    }    
+    """
+    )
+
+    fun `test struct field literal with generic`() = testExpectedTyExpr(
+        """
+    module 0x1::Main {
+        struct S<Type> { val1: Type }
+        fun main() {
+            S<u8> { val1: my_ref };
+                         //^ u8
+        }
+    }    
+    """
+    )
+
+    fun `test struct field literal with generic inferred from outer context`() = testExpectedTyExpr(
+        """
+    module 0x1::Main {
+        struct S<Type> { val1: Type, val2: Type }
+        fun main() {
+            let a = 1u8;
+            S { val1: a, val2: my_ref };
+                              //^ u8
         }
     }    
     """

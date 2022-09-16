@@ -21,13 +21,6 @@ val MvStructLitField.structLitExpr: MvStructLitExpr
 val MvStructLitField.isShorthand: Boolean
     get() = !hasChild(MvElementTypes.COLON)
 
-fun MvStructLitField.ty(): Ty {
-    val msl = this.isMsl()
-    val ctx = this.containingFunction?.inferenceCtx(msl) ?: return TyUnknown
-    val structLitTy = inferStructLitExpr(this.structLitExpr, ctx) as? TyStruct ?: return TyUnknown
-    return structLitTy.fieldTy(this.referenceName, msl)
-}
-
 abstract class MvStructLitFieldMixin(node: ASTNode) : MvElementImpl(node),
                                                       MvStructLitField {
     override fun getReference(): MvReference {

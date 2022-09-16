@@ -55,30 +55,6 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                     .forEach { holder.registerTypeError(it) }
             }
 
-            override fun visitStructLitExpr(litExpr: MvStructLitExpr) {
-                val struct = litExpr.path.maybeStruct ?: return
-
-                val msl = litExpr.isMsl()
-                val ctx = litExpr.functionInferenceCtx(msl)
-                for (field in litExpr.fields) {
-                    val initExprTy = inferLitFieldInitExprTy(field, ctx)
-
-                    val fieldName = field.referenceName
-                    val fieldDef = struct.getField(fieldName) ?: continue
-                    val expectedFieldTy = fieldDef.declaredTy(msl)
-
-                    if (!isCompatible(expectedFieldTy, initExprTy)) {
-                        val exprTypeName = initExprTy.name()
-                        val expectedTypeName = expectedFieldTy.name()
-                        val message =
-                            "Invalid argument for field '$fieldName': " +
-                                    "type '$exprTypeName' is not compatible with '$expectedTypeName'"
-                        val initExpr = field.expr ?: field
-                        holder.registerTypeError(initExpr, message)
-                    }
-                }
-            }
-
             override fun visitValueArgumentList(callArgs: MvValueArgumentList) {
                 val callExpr = callArgs.parent as? MvCallExpr ?: return
                 val function = callExpr.path.reference?.resolve() as? MvFunctionLike ?: return

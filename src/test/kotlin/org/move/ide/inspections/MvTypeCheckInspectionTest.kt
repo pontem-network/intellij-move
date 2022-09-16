@@ -549,13 +549,13 @@ module 0x1::M {
 
     fun `test invalid type for field in struct literal`() = checkErrors(
         """
-    module 0x1::M {
-        struct Deal { val: u8 }
-        fun main() {
-            Deal { val: <error descr="Invalid argument for field 'val': type 'bool' is not compatible with 'u8'">false</error> };
-        }
-    }    
-    """
+module 0x1::M {
+    struct Deal { val: u8 }
+    fun main() {
+        Deal { val: <error descr="Incompatible type 'bool', expected 'u8'">false</error> };
+    }
+}    
+"""
     )
 
     fun `test valid type for field`() = checkErrors(
@@ -607,7 +607,7 @@ module 0x1::M {
         struct S { a: u8 }
         fun m() {
             let a = true;
-            S { <error descr="Invalid argument for field 'a': type 'bool' is not compatible with 'u8'">a</error> };
+            S { <error descr="Incompatible type 'bool', expected 'u8'">a</error> };
         }
     }    
     """
@@ -922,14 +922,17 @@ module 0x1::M {
             S<<error descr="The type 'Cat' does not have required ability 'key'">/*caret*/Cat</error>> {};
         }
     }    
-    """)
+    """
+    )
 
-    fun `test no error unpacking a struct from move_from`() = checkByText("""
+    fun `test no error unpacking a struct from move_from`() = checkByText(
+        """
 module 0x1::main {
     struct Container has key { val: u8 }
     fun main() {
         let Container { val } = move_from(source_addr);
     }
 }        
-    """)
+    """
+    )
 }

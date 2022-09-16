@@ -25,29 +25,26 @@ val MvBindingPat.owner: PsiElement?
                 || it is MvSchemaFieldStmt
     }
 
-fun MvBindingPat.declaredTy(parentCtx: InferenceContext): Ty {
+fun MvBindingPat.declaredTy(parentCtx: InferenceContext): Ty? {
     val owner = this.owner
     return when (owner) {
         is MvFunctionParameter -> owner.declaredTy(parentCtx.msl)
         is MvConst -> owner.declaredTy(parentCtx.msl)
-        is MvLetStmt -> {
-            if (parentCtx.bindingTypes.containsKey(this)) return parentCtx.bindingTypes[this]!!
-
-            val pat = owner.pat ?: return TyUnknown
-            val explicitType = owner.typeAnnotation?.type
-            if (explicitType != null) {
-                val explicitTy = inferTypeTy(explicitType, parentCtx.msl)
-                collectBindings(pat, explicitTy, parentCtx)
-                return parentCtx.bindingTypes[this] ?: TyUnknown
-            }
-            return TyUnknown
-        }
         is MvSchemaFieldStmt -> owner.declaredTy(parentCtx.msl)
+        is MvLetStmt -> {
+            val explicitType = owner.typeAnnotation?.type ?: return null
+            val typeTy = inferTypeTy(explicitType, parentCtx.msl)
+            parentCtx.resolveTy(typeTy)
+        }
         else -> TyUnknown
     }
 }
 
 fun MvBindingPat.inferredTy(parentCtx: InferenceContext): Ty {
+    val existingTy = parentCtx.bindingTypes[this]
+    if (existingTy != null) {
+        return existingTy
+    }
     val owner = this.owner
     return when (owner) {
         is MvFunctionParameter -> owner.declaredTy(parentCtx.msl)

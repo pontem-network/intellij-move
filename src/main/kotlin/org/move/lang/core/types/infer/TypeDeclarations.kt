@@ -35,8 +35,14 @@ fun inferTypeTy(moveType: MvType, msl: Boolean): Ty {
                 is MvStruct -> {
                     val typeArgs = moveType.path.typeArguments.map { inferTypeTy(it.type, msl) }
                     val structTy = instantiateItemTy(struct, msl) as? TyStruct ?: return TyUnknown
-                    structTy.typeArgs = typeArgs
-                    structTy
+
+                    val ctx = InferenceContext(msl)
+                    for ((tyVar, tyArg) in structTy.typeVars.zip(typeArgs)) {
+                        ctx.addConstraint(tyVar, tyArg)
+                    }
+                    ctx.processConstraints()
+
+                    ctx.resolveTy(structTy)
                 }
                 else -> TyUnknown
             }

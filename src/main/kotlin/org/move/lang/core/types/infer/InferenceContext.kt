@@ -52,10 +52,11 @@ fun inferCodeBlockTy(block: MvCodeBlock, blockCtx: InferenceContext, expectedTy:
         when (stmt) {
             is MvExprStmt -> inferExprTy(stmt.expr, blockCtx)
             is MvLetStmt -> {
-                val explicitTy = stmt.declaredTy
+//                val explicitTy = stmt.declaredTy
+                val explicitTy = stmt.typeAnnotation?.type?.let { inferTypeTy(it, stmt.isMsl()) }
                 val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, blockCtx, explicitTy) }
-                val patTy = explicitTy ?: initializerTy ?: TyUnknown
                 val pat = stmt.pat ?: continue
+                val patTy = inferPatTy(pat, blockCtx, explicitTy ?: initializerTy)
                 collectBindings(pat, patTy, blockCtx)
             }
         }
@@ -314,8 +315,9 @@ sealed class TypeError(open val element: PsiElement) {
     }
 }
 
-class InferenceContext(var msl: Boolean) {
+class InferenceContext(val msl: Boolean) {
     var exprTypes = concurrentMapOf<MvExpr, Ty>()
+    val patTypes = mutableMapOf<MvPat, Ty>()
     var callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
     val bindingTypes = concurrentMapOf<MvBindingPat, Ty>()
     var typeErrors = mutableListOf<TypeError>()
@@ -337,6 +339,10 @@ class InferenceContext(var msl: Boolean) {
         this.exprTypes[expr] = ty
     }
 
+    fun cachePatTy(pat: MvPat, ty: Ty) {
+        this.patTypes[pat] = ty
+    }
+
     fun cacheCallExprTy(expr: MvCallExpr, ty: TyFunction) {
         this.callExprTypes[expr] = ty
     }
@@ -351,14 +357,14 @@ class InferenceContext(var msl: Boolean) {
     }
 
     fun resolveTy(ty: Ty): Ty {
-        return ty.foldTyInferWith(this::resolveTyInferFromContext)
+        return ty.foldTyInferWith(this::resolveTyInfer)
     }
 
-    fun resolveTyInferFromContext(ty: Ty): Ty {
+    fun resolveTyInfer(ty: Ty): Ty {
         if (ty !is TyInfer) return ty
         return when (ty) {
-            is TyInfer.TyVar -> unificationTable.findValue(ty)?.let(this::resolveTyInferFromContext) ?: ty
-            is TyInfer.IntVar -> intUnificationTable.findValue(ty)?.let(this::resolveTyInferFromContext) ?: ty
+            is TyInfer.TyVar -> unificationTable.findValue(ty)?.let(this::resolveTyInfer) ?: ty
+            is TyInfer.IntVar -> intUnificationTable.findValue(ty)?.let(this::resolveTyInfer) ?: ty
         }
     }
 

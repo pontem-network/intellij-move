@@ -4,6 +4,7 @@ import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.declaredTy
 import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.structLitExpr
 import org.move.lang.core.psi.ext.ty
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyReference
@@ -56,20 +57,20 @@ fun inferExpectedTy(element: PsiElement, ctx: InferenceContext): Ty? {
             val initializerParent = owner.parent
             when (initializerParent) {
                 is MvLetStmt -> {
-                    val pat = initializerParent.pat
-                    when (pat) {
-                        is MvBindingPat -> {
-                            val ty = pat.declaredTy(ctx)
-                            if (ty is TyUnknown) null else ty
-                        }
-                        is MvStructPat -> pat.ty()
-                        else -> null
-                    }
+                    val patExplicitTy = initializerParent.typeAnnotation?.type?.let { inferTypeTy(it, ctx.msl) }
+                    initializerParent.pat
+                        ?.let { inferPatTy(it, ctx, patExplicitTy) }
                 }
                 else -> null
             }
         }
-        is MvStructLitField -> owner.ty()
+        is MvStructLitField -> {
+            // only first level field for now, rewrite later as recursive
+            val structLitExpr = owner.structLitExpr
+            val structExpectedTy = inferExpectedTy(structLitExpr, ctx)
+            val structTy = inferExprTy(structLitExpr, ctx, structExpectedTy) as? TyStruct ?: return null
+            structTy.fieldTy(owner.referenceName)
+        }
         else -> null
     }
 }
