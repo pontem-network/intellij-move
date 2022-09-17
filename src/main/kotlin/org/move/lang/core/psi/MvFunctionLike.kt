@@ -5,6 +5,7 @@ import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
 import org.move.lang.core.psi.ext.hasChild
 import org.move.lang.core.psi.ext.ty
 import org.move.lang.core.psi.mixins.declaredTy
+import org.move.lang.core.types.infer.MvInferenceContextOwner
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
@@ -14,18 +15,20 @@ import org.move.stdext.wrapWithList
 
 interface MvFunctionLike : MvTypeParametersOwner,
                            MvNameIdentifierOwner,
-                           MvDocAndAttributeOwner {
+                           MvDocAndAttributeOwner,
+                           MvInferenceContextOwner {
 
     val functionParameterList: MvFunctionParameterList?
 
     val returnType: MvReturnType?
+
+    override fun parameterBindings(): List<MvBindingPat> =
+        this.functionParameterList?.functionParameterList.orEmpty().map { it.bindingPat }
 }
 
 val MvFunctionLike.isNative get() = hasChild(MvElementTypes.NATIVE)
 
 val MvFunctionLike.parameters get() = this.functionParameterList?.functionParameterList.orEmpty()
-
-val MvFunctionLike.parameterBindings: List<MvBindingPat> get() = this.parameters.map { it.bindingPat }
 
 val MvFunctionLike.returnTy: Ty
     get() {

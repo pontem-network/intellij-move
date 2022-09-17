@@ -15,13 +15,13 @@ data class MovePackage(
 ) {
     val packageName = this.moveToml.packageName ?: ""
 
-    val sourcesFolder: VirtualFile? get() = contentRoot.findChild("sources")
-    val testsFolder: VirtualFile? get() = contentRoot.findChild("tests")
+    val sourcesFolder: VirtualFile? get() = contentRoot.takeIf { it.isValid }?.findChild("sources")
+    val testsFolder: VirtualFile? get() = contentRoot.takeIf { it.isValid }?.findChild("tests")
 
     fun moveFolders(): List<VirtualFile> = listOfNotNull(sourcesFolder, testsFolder)
 
     fun layoutPaths(): List<Path> {
-        val rootPath = contentRoot.toNioPathOrNull() ?: return emptyList()
+        val rootPath = contentRoot.takeIf { it.isValid }?.toNioPathOrNull() ?: return emptyList()
         val names = listOf(
             *MvProjectLayout.sourcesDirs,
             MvProjectLayout.testsDir,

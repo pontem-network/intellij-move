@@ -1,13 +1,13 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.MvExpr
-import org.move.lang.core.types.infer.functionInferenceCtx
+import org.move.lang.core.types.infer.ownerInferenceCtx
 import org.move.lang.core.types.infer.inferExprTy
 import org.move.lang.core.types.ty.Ty
 
 fun MvExpr.inferredTy(): Ty {
     val msl = this.isMsl()
-    val inferenceCtx = this.functionInferenceCtx(msl)
+    val inferenceCtx = this.ownerInferenceCtx(msl)
 
     val existingTy = inferenceCtx.exprTypes[this]
     if (existingTy != null) {

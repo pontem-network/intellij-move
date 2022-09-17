@@ -59,10 +59,15 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         exprTy = TyNum
     }
     if (expectedTy != null) {
-        if (!isCompatible(expectedTy, exprTy, parentCtx.msl)) {
-            parentCtx.typeErrors.add(TypeError.TypeMismatch(expr, expectedTy, exprTy))
-        } else {
-            parentCtx.addConstraint(exprTy, expectedTy)
+        val compat = checkTysCompatible(expectedTy, exprTy, parentCtx.msl)
+        when (compat) {
+            is Compat.AbilitiesMismatch -> {
+                parentCtx.typeErrors.add(TypeError.AbilitiesMismatch(expr, exprTy, compat.abilities))
+            }
+            is Compat.TypeMismatch -> {
+                parentCtx.typeErrors.add(TypeError.TypeMismatch(expr, expectedTy, exprTy))
+            }
+            else -> parentCtx.addConstraint(exprTy, expectedTy)
         }
     }
 
@@ -95,8 +100,8 @@ fun inferCallExprTy(
 
     val path = callExpr.path
     val funcItem = path.reference?.resolve() as? MvFunctionLike ?: return TyUnknown
-    val funcTy = instantiateItemTy(funcItem, parentCtx.msl) as? TyFunction ?: return TyUnknown
 
+    var funcTy = instantiateItemTy(funcItem, parentCtx.msl) as? TyFunction ?: return TyUnknown
     val inferenceCtx = InferenceContext(parentCtx.msl)
     // find all types passed as explicit type parameters, create constraints with those
     if (path.typeArguments.isNotEmpty()) {
@@ -124,24 +129,23 @@ fun inferCallExprTy(
         }
     }
     // find all types of passed expressions, create constraints with those
-    if (callExpr.callArgumentExprs.isNotEmpty()) {
-        for ((paramTy, argumentExpr) in funcTy.paramTypes.zip(callExpr.callArgumentExprs)) {
-            val argumentExprTy = inferExprTy(argumentExpr, parentCtx)
-            inferenceCtx.addConstraint(paramTy, argumentExprTy)
-        }
+    for ((i, argumentExpr) in callExpr.callArgumentExprs.withIndex()) {
+        inferenceCtx.processConstraints()
+        funcTy = inferenceCtx.resolveTy(funcTy) as TyFunction
+
+        val paramTy = funcTy.paramTypes.getOrNull(i) ?: break
+        val argumentExprTy = inferExprTy(argumentExpr, parentCtx, paramTy)
+        inferenceCtx.addConstraint(paramTy, argumentExprTy)
     }
     if (expectedTy != null) {
         inferenceCtx.addConstraint(funcTy.retType, expectedTy)
     }
-    // solve constraints
-    val solvable = inferenceCtx.processConstraints()
 
-    val resolvedFuncTy = inferenceCtx.resolveTy(funcTy) as TyFunction
-    resolvedFuncTy.solvable = solvable
+    inferenceCtx.processConstraints()
+    funcTy = inferenceCtx.resolveTy(funcTy) as TyFunction
 
-    parentCtx.resolveTyVarsFromContext(inferenceCtx)
-    parentCtx.cacheCallExprTy(callExpr, resolvedFuncTy)
-    return resolvedFuncTy
+    parentCtx.cacheCallExprTy(callExpr, funcTy)
+    return funcTy
 }
 
 private fun inferDotExprTy(dotExpr: MvDotExpr, parentCtx: InferenceContext): Ty {
@@ -257,7 +261,24 @@ fun inferStructPatTy(structPat: MvStructPat, parentCtx: InferenceContext, expect
 }
 
 fun inferVectorLitExpr(litExpr: MvVectorLitExpr, parentCtx: InferenceContext): Ty {
-    return TyVector(TyUnknown)
+    var tyVector = TyVector(TyInfer.TyVar())
+    val inferenceCtx = InferenceContext(litExpr.isMsl())
+    val typeArgument = litExpr.typeArgument
+    if (typeArgument != null) {
+        val ty = inferTypeTy(typeArgument.type, litExpr.isMsl())
+        inferenceCtx.addConstraint(tyVector.item, ty)
+    }
+    val exprs = litExpr.vectorLitItems.exprList
+    for (expr in exprs) {
+        inferenceCtx.processConstraints()
+        tyVector = inferenceCtx.resolveTy(tyVector) as TyVector
+
+        val exprTy = inferExprTy(expr, parentCtx, tyVector.item)
+        inferenceCtx.addConstraint(tyVector.item, exprTy)
+    }
+    inferenceCtx.processConstraints()
+    tyVector = inferenceCtx.resolveTy(tyVector) as TyVector
+    return tyVector
 }
 
 fun inferLitFieldInitExprTy(litField: MvStructLitField, ctx: InferenceContext, expectedTy: Ty?): Ty {

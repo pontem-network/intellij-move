@@ -1083,7 +1083,12 @@ ItemSpec ::= spec ItemSpecRef ItemSpecTypeParameterList? ItemSpecFunctionParamet
              <<msl ItemSpecBlock>>
 {
     pin = 1
+    implements = [
+        "org.move.lang.core.types.infer.MvInferenceContextOwner"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvItemSpecMixin"
 }
+
 ItemSpecTypeParameterList ::= '<' ItemSpecTypeParameter_with_recover* '>'
 {
     pin = 1

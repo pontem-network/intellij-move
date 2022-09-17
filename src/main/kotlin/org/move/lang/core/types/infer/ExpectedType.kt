@@ -24,13 +24,13 @@ fun inferExpectedTy(element: PsiElement, ctx: InferenceContext): Ty? {
             val ownerExpr = path.parent
             when (ownerExpr) {
                 is MvCallExpr -> {
-                    val inferenceCtx = ownerExpr.functionInferenceCtx(ownerExpr.isMsl())
+                    val inferenceCtx = ownerExpr.ownerInferenceCtx(ownerExpr.isMsl())
                     inferenceCtx.callExprTypes[ownerExpr]
                         ?.typeVars
                         ?.getOrNull(paramIndex)
                 }
                 is MvStructLitExpr -> {
-                    val inferenceCtx = ownerExpr.functionInferenceCtx(ownerExpr.isMsl())
+                    val inferenceCtx = ownerExpr.ownerInferenceCtx(ownerExpr.isMsl())
                     (inferenceCtx.exprTypes[ownerExpr] as? TyStruct)
                         ?.typeArgs
                         ?.getOrNull(paramIndex)
@@ -44,7 +44,7 @@ fun inferExpectedTy(element: PsiElement, ctx: InferenceContext): Ty? {
                 valueArgumentList.children.indexOfFirst { it.textRange.contains(owner.textOffset) }
             if (paramIndex == -1) return null
             val callExpr = valueArgumentList.parent as? MvCallExpr ?: return null
-            val inferenceCtx = callExpr.functionInferenceCtx(callExpr.isMsl())
+            val inferenceCtx = callExpr.ownerInferenceCtx(callExpr.isMsl())
             inferenceCtx.callExprTypes[callExpr]
                 ?.paramTypes
                 ?.getOrNull(paramIndex)

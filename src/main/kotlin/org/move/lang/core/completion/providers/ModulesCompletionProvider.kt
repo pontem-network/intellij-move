@@ -37,9 +37,6 @@ object ModulesCompletionProvider : MvCompletionProvider() {
         if (parameters.position !== refElement.referenceNameElement) return
         if (refElement.moduleRef != null) return
 
-//        val props = LookupElementProperties(
-//            isCompatibleWithContext = maybePath.parent !is MvPathType
-//        )
         val processedNames = mutableSetOf<String>()
         val itemVis =
             ItemVis(
