@@ -15,6 +15,7 @@ import org.move.lang.modules
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.stdext.chain
+import org.move.stdext.wrapWithList
 
 enum class MslScope {
     NONE, EXPR, LET, LET_POST;

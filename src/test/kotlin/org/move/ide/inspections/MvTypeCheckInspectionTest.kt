@@ -888,43 +888,6 @@ module 0x1::M {
     """
     )
 
-    fun `test missing key ability with quickfix`() = checkFixByText(
-        "Add 'key' ability to Cat",
-        """
-    module 0x1::main {
-        struct Cat has drop {}
-        struct S<phantom Type: key> {}
-        fun main() {
-            S<<error descr="The type 'Cat' does not have required ability 'key'">/*caret*/Cat</error>> {};
-        }
-    }
-    """, """
-    module 0x1::main {
-        struct Cat has drop, key {}
-        struct S<phantom Type: key> {}
-        fun main() {
-            S<Cat> {};
-        }
-    }
-    """
-    )
-
-    fun `test no missing ability quickfix in other module struct`() = checkFixIsUnavailable(
-        "Add 'key' ability to Cat",
-        """
-    module 0x1::pets {
-        struct Cat {}
-    }    
-    module 0x1::main {
-        use 0x1::pets::Cat;
-        struct S<phantom Type: key> {}
-        fun main() {
-            S<<error descr="The type 'Cat' does not have required ability 'key'">/*caret*/Cat</error>> {};
-        }
-    }    
-    """
-    )
-
     fun `test no error unpacking a struct from move_from`() = checkByText(
         """
 module 0x1::main {

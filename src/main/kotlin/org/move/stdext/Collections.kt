@@ -188,3 +188,8 @@ private class LookbackIterator<T>(private val iterator: Iterator<T>) : Iterator<
 fun <K, V> MutableMap<K, MutableList<V>>.putGrouped(key: K, value: V) {
     getOrPut(key) { mutableListOf() }.add(value)
 }
+
+fun <T> T?.wrapWithList(): List<T> = this?.let { listOf(it) }.orEmpty()
+fun <T> T?.wrapWithMutableList(): MutableList<T> = this?.let { listOf(it) }.orEmpty().toMutableList()
+
+fun <T> List<T>.withElement(element: T): List<T> = listOf(this, listOf(element)).flatten()

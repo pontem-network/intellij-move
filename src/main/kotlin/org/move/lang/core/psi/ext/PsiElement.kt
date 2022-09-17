@@ -10,9 +10,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.core.psi.*
 
-fun <T> T?.wrapWithList(): List<T> = this?.let { listOf(it) }.orEmpty()
-fun <T> T?.wrapWithMutableList(): MutableList<T> = this?.let { listOf(it) }.orEmpty().toMutableList()
-
 fun PsiElement.hasChild(tokenType: IElementType): Boolean = childrenByType(tokenType).toList().isNotEmpty()
 
 fun PsiElement.getChild(tokenType: IElementType): PsiElement? = childrenByType(tokenType).firstOrNull()

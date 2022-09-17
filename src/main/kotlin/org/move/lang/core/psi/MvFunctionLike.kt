@@ -4,13 +4,13 @@ import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
 import org.move.lang.core.psi.ext.hasChild
 import org.move.lang.core.psi.ext.ty
-import org.move.lang.core.psi.ext.wrapWithList
 import org.move.lang.core.psi.mixins.declaredTy
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.stdext.chain
+import org.move.stdext.wrapWithList
 
 interface MvFunctionLike : MvTypeParametersOwner,
                            MvNameIdentifierOwner,

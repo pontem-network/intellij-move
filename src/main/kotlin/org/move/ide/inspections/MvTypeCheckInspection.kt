@@ -1,5 +1,6 @@
 package org.move.ide.inspections
 
+import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.codeInspection.util.InspectionMessage
@@ -26,7 +27,6 @@ fun ProblemsHolder.registerTypeError(typeError: TypeError) {
         typeError.element,
         typeError.message(),
         ProblemHighlightType.GENERIC_ERROR,
-        typeError.quickfix()
     )
 }
 
