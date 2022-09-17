@@ -527,4 +527,46 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }    
     """)
+
+    fun `test vector lit with explicit type`() = testExpr("""
+    module 0x1::main {
+        fun main() {
+            let vv = vector<u8>[];
+            vv;
+           //^ vector<u8>   
+        }
+    }        
+    """)
+
+    fun `test vector lit with inferred type`() = testExpr("""
+    module 0x1::main {
+        fun main() {
+            let vv = vector[1u8];
+            vv;
+           //^ vector<u8>   
+        }
+    }        
+    """)
+
+    fun `test vector lit with inferred integer type`() = testExpr("""
+    module 0x1::main {
+        fun main() {
+            let vv = vector[1];
+            vv;
+           //^ vector<integer>   
+        }
+    }        
+    """)
+
+    fun `test vector lit with inferred type from call expr`() = testExpr("""
+    module 0x1::main {
+        fun call(a: vector<u8>) {}
+        fun main() {
+            let vv = vector[];
+            call(vv);
+            vv;
+           //^ vector<u8>   
+        }
+    }        
+    """)
 }

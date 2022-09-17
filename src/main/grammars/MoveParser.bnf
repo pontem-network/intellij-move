@@ -1079,9 +1079,44 @@ private ModuleSpecBlock_item_recover ::= !('}' | <<eof>> | spec | use)
 
 //AnySpec ::= ItemSpec | ModuleKeywordSpec
 
-ItemSpec ::= spec ItemSpecRef <<msl ItemSpecBlock>>
+ItemSpec ::= spec ItemSpecRef ItemSpecTypeParameterList? ItemSpecFunctionParameterList? ReturnType?
+             <<msl ItemSpecBlock>>
 {
     pin = 1
+}
+ItemSpecTypeParameterList ::= '<' ItemSpecTypeParameter_with_recover* '>'
+{
+    pin = 1
+}
+private ItemSpecTypeParameter_with_recover ::= !'>' ItemSpecTypeParameter (',' | &'>')
+{
+    pin = 1
+    recoverWhile = ItemSpecTypeParameter_recover
+}
+private ItemSpecTypeParameter_recover ::= !('>' | '(' | '{' | phantom | IDENTIFIER)
+
+ItemSpecTypeParameter ::= IDENTIFIER {
+    pin = 2
+//    implements = [
+//        "org.move.lang.core.resolve.MvMandatoryReferenceElement"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MvItemSpecTypeParameterMixin"
+}
+
+ItemSpecFunctionParameterList ::= '(' ItemSpecFunctionParameter_with_recover* ')' { pin = 1 }
+private ItemSpecFunctionParameter_with_recover ::= !(')' | '{' | ';') ItemSpecFunctionParameter (',' | &')')
+{
+    pin = 1
+    recoverWhile = ItemSpecFunctionParameter_recover
+}
+private ItemSpecFunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER)
+
+ItemSpecFunctionParameter ::= IDENTIFIER TypeAnnotation {
+    pin = 1
+//    implements = [
+//        "org.move.lang.core.resolve.MvMandatoryReferenceElement"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MvItemSpecFunctionParameterMixin"
 }
 
 ItemSpecRef ::= MODULE_KW | IDENTIFIER

@@ -30,8 +30,6 @@ fun MvElement.isVisibleInScope(itemScope: ItemScope): Boolean {
             || this.itemScope == ItemScope.MAIN
 }
 
-//fun MvElement.isVisibleInScopes(itemVis: ItemVis): Boolean = this.visibleInScope(itemVis.itemScope)
-
 val MvElement.mslScope: MslScope
     get() {
         if (!this.isMsl()) return MslScope.NONE

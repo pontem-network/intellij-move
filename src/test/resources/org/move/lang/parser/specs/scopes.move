@@ -18,7 +18,12 @@ module M {
     spec native fun spec_is_valid_native(addr: address);
 
     fun unpack() {}
+
     spec unpack {}
+    spec unpack() {}
+    spec unpack<T, U>() {}
+    spec unpack(a: u8, b: u8) {}
+    spec unpack(): u8 {}
 
     spec schema ModuleInvariant<X, Y> {}
 }
