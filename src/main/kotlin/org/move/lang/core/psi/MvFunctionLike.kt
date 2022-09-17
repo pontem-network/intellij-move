@@ -43,7 +43,7 @@ val MvFunctionLike.typeParamsUsedOnlyInReturnType: List<MvTypeParameter>
         this.parameters
             .map { it.declaredTy(false) }
             .forEach {
-                it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.parameter); paramTy }
+                it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.origin); paramTy }
             }
         return this.typeParameters.filter { it !in usedTypeParams }
     }
@@ -55,7 +55,7 @@ val MvFunctionLike.requiredTypeParams: List<MvTypeParameter>
             .map { it.declaredTy(false) }
             .chain(this.returnType?.type?.ty().wrapWithList())
             .forEach {
-                it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.parameter); paramTy }
+                it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.origin); paramTy }
             }
         return this.typeParameters.filter { it !in usedTypeParams }
     }

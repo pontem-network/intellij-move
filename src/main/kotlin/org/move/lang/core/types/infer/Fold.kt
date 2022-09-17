@@ -72,6 +72,13 @@ fun <T> TypeFoldable<T>.foldTyTypeParameterWith(folder: (TyTypeParameter) -> Ty)
             if (ty is TyTypeParameter) folder(ty) else ty.innerFoldWith(this)
     })
 //
+
+fun <T> TypeFoldable<T>.visitTyTypeParameterWith(visitor: (TyTypeParameter) -> Boolean) =
+    visitWith(object : TypeVisitor {
+        override fun invoke(ty: Ty): Boolean =
+            if (ty is TyTypeParameter) visitor(ty) else ty.innerVisitWith(this)
+    })
+//
 ///** Deeply replace any [TyInfer] with the function [folder] */
 //fun <T> TypeFoldable<T>.foldTyInfersWith(folder: (TyInfer) -> Ty): T =
 //    foldWith(object : TypeFolder {

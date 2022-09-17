@@ -2,14 +2,11 @@ package org.move.lang.core.types.infer
 
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.declaredTy
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.structLitExpr
-import org.move.lang.core.psi.ext.ty
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
-import org.move.lang.core.types.ty.TyUnknown
 
 fun inferExpectedTy(element: PsiElement, ctx: InferenceContext): Ty? {
     val owner = element.parent

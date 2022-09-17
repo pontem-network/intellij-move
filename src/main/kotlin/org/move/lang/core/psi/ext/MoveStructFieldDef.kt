@@ -15,5 +15,5 @@ val MvStructField.struct: MvStruct
     get() =
         fieldsDefBlock?.parent as MvStruct
 
-fun MvStructField.declaredTy(msl: Boolean): Ty =
+fun MvStructField.declarationTy(msl: Boolean): Ty =
     this.typeAnnotation?.type?.let { inferTypeTy(it, msl) } ?: TyUnknown

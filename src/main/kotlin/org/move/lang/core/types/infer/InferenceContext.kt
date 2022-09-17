@@ -89,7 +89,7 @@ fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
         is MvStruct -> {
             val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
             fun findTypeVar(parameter: MvTypeParameter): Ty {
-                return typeVars.find { it.origin?.parameter == parameter }!!
+                return typeVars.find { it.origin?.origin == parameter }!!
             }
 
             val fieldTys = mutableMapOf<String, Ty>()
@@ -97,8 +97,8 @@ fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
                 val fieldName = field.name ?: return TyUnknown
                 val fieldTy = item
                     .fieldsMap[fieldName]
-                    ?.declaredTy(msl)
-                    ?.foldTyTypeParameterWith { findTypeVar(it.parameter) }
+                    ?.declarationTy(msl)
+                    ?.foldTyTypeParameterWith { findTypeVar(it.origin) }
                     ?: TyUnknown
                 fieldTys[fieldName] = fieldTy
             }
@@ -110,27 +110,27 @@ fun instantiateItemTy(item: MvNameIdentifierOwner, msl: Boolean): Ty {
         is MvFunctionLike -> {
             val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
             fun findTypeVar(parameter: MvTypeParameter): Ty {
-                return typeVars.find { it.origin?.parameter == parameter }!!
+                return typeVars.find { it.origin?.origin == parameter }!!
             }
 
             val paramTypes = mutableListOf<Ty>()
             for (param in item.parameters) {
                 val paramType = param.typeAnnotation?.type
                     ?.let { inferTypeTy(it, msl) }
-                    ?.foldTyTypeParameterWith { findTypeVar(it.parameter) } ?: TyUnknown
+                    ?.foldTyTypeParameterWith { findTypeVar(it.origin) } ?: TyUnknown
                 paramTypes.add(paramType)
             }
             val returnMvType = item.returnType?.type
             val retTy = if (returnMvType == null) {
                 TyUnit
             } else {
-                inferTypeTy(returnMvType, msl).foldTyTypeParameterWith { findTypeVar(it.parameter) }
+                inferTypeTy(returnMvType, msl).foldTyTypeParameterWith { findTypeVar(it.origin) }
             }
             val acqTys = item.acquiresPathTypes.map {
                 val acqItem =
                     it.path.reference?.resolve() as? MvNameIdentifierOwner ?: return@map TyUnknown
                 instantiateItemTy(acqItem, msl)
-                    .foldTyTypeParameterWith { tp -> findTypeVar(tp.parameter) }
+                    .foldTyTypeParameterWith { tp -> findTypeVar(tp.origin) }
             }
             val typeArgs = item.typeParameters.map { findTypeVar(it) }
             TyFunction(item, typeVars, paramTypes, retTy, acqTys, typeArgs)

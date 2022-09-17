@@ -94,7 +94,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 val structAbilities = field.struct.tyAbilities
                 if (structAbilities.isEmpty()) return
 
-                val fieldTy = field.declaredTy(msl) as? TyStruct ?: return
+                val fieldTy = field.declarationTy(msl) as? TyStruct ?: return
                 for (ability in structAbilities) {
                     val requiredAbility = ability.requires()
                     if (requiredAbility !in fieldTy.abilities()) {

@@ -5,8 +5,10 @@ import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.LocalQuickFixOnPsiElement
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
+import com.intellij.psi.PsiFile
 import org.move.cli.moveProjects
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvVisitor
@@ -50,4 +52,18 @@ abstract class MvLocalInspectionTool : LocalInspectionTool() {
 
 abstract class InspectionQuickFix(val fixName: String) : LocalQuickFix {
     override fun getFamilyName(): String = fixName
+}
+
+abstract class MvLocalQuickFixOnPsiElement<T: PsiElement>(psiElement: T): LocalQuickFixOnPsiElement(psiElement) {
+    override fun invoke(project: Project, file: PsiFile, startElement: PsiElement, endElement: PsiElement) {
+        @Suppress("UNCHECKED_CAST")
+        val element = startElement as T
+        if (stillApplicable(project, file, element)) {
+            invoke(project, file, element)
+        }
+    }
+
+    abstract fun stillApplicable(project: Project, file: PsiFile, element: T): Boolean
+
+    abstract fun invoke(project: Project, file: PsiFile, element: T)
 }

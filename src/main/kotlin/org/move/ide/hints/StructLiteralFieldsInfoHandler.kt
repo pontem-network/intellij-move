@@ -100,7 +100,7 @@ class FieldsDescription(val fields: Array<String>) {
             val struct = block.litExpr.path.maybeStruct ?: return null
             val fieldParams =
                 struct.fieldsMap.entries.map { (name, field) ->
-                    val type = field.declaredTy(false).fullname()
+                    val type = field.declarationTy(false).fullname()
                     "$name: $type"
                 }.toTypedArray()
             return FieldsDescription(fieldParams)

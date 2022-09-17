@@ -19,7 +19,7 @@ val MvSchema.requiredTypeParams: List<MvTypeParameter>
         this.fieldStmts
             .map { it.declaredTy(true) }
             .forEach {
-                it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.parameter); paramTy }
+                it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.origin); paramTy }
             }
         return this.typeParameters.filter { it !in usedTypeParams }
     }

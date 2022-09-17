@@ -128,7 +128,7 @@ fun MvElement.signature(builder: StringBuilder) {
             buffer += this.struct.name ?: angleWrapped("anonymous")
             buffer += "\n"
             buffer.b { it += this.name }
-            buffer += ": ${this.declaredTy(false).renderForDocs(true)}"
+            buffer += ": ${this.declarationTy(false).renderForDocs(true)}"
         }
 
         is MvConst -> {
