@@ -20,7 +20,7 @@ class TyFunction(
             paramTypes.map { it.foldWith(folder) },
             retType.foldWith(folder),
             acquiresTypes.map { it.foldWith(folder) },
-            typeArgs.map(folder)
+            typeArgs.map { it.foldWith(folder) }
         )
     }
 

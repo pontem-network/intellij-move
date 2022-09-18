@@ -7,7 +7,7 @@ import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.types.ty.Ability
-import org.move.stdext.withElement
+import org.move.stdext.withAdded
 import javax.swing.Icon
 
 val MvStruct.fields: List<MvStructField>
@@ -50,7 +50,7 @@ val MvStruct.hasPhantomTypeParameters get() = this.typeParameters.any { it.isPha
 fun MvStruct.addAbility(ability: String) {
     if (ability in this.abilities.map { it.text }) return
 
-    val newAbilities = this.abilities.mapNotNull { it.text }.withElement(ability)
+    val newAbilities = this.abilities.mapNotNull { it.text }.withAdded(ability)
     val newAbilitiesList = project.psiFactory.abilitiesList(newAbilities)
     if (this.abilitiesList != null) {
         this.abilitiesList?.replace(newAbilitiesList)

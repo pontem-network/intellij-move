@@ -1,16 +1,13 @@
 package org.move.ide.inspections
 
-import com.intellij.codeInspection.LocalQuickFix
-import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.openapi.project.Project
 import com.intellij.psi.util.descendantsOfType
 import org.move.ide.inspections.fixes.RemoveParameterFix
 import org.move.ide.inspections.fixes.RenameFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.owner
-import org.move.lang.core.psi.mixins.functionLike
+import org.move.lang.core.psi.ext.functionLike
 
 class MvUnusedVariableInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =

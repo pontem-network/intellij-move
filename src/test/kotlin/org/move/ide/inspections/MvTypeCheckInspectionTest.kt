@@ -949,12 +949,37 @@ module 0x1::main {
 
     fun `test deeply nested structure type is unknown due to memory issues`() = checkByText("""
 module 0x1::main {
-    struct Box<T> { x: T }
-    struct Box3<T> { x: Box<Box<T>> }
-//    struct Box7<T> { x: Box3<Box3<T>> }
-//    struct Box15<T> { x: Box7<Box7<T>> }
+    struct Box<T> has copy, drop, store { x: T }
+    struct Box3<T> has copy, drop, store { x: Box<Box<T>> }
+    struct Box7<T> has copy, drop, store { x: Box3<Box3<T>> }
+    struct Box15<T> has copy, drop, store { x: Box7<Box7<T>> }
+    struct Box31<T> has copy, drop, store { x: Box15<Box15<T>> }
+    struct Box63<T> has copy, drop, store { x: Box31<Box31<T>> }
+    
+    fun box3<T>(x: T): Box3<T> {
+        Box3 { x: Box { x: Box { x } } }
+    }
+
+    fun box7<T>(x: T): Box7<T> {
+        Box7 { x: box3(box3(x)) }
+    }
+
+    fun box15<T>(x: T): Box15<T> {
+        Box15 { x: box7(box7(x)) }
+    }
+
+    fun box31<T>(x: T): Box31<T> {
+        Box31 { x: box15(box15(x)) }
+    }
+    
+    fun box63<T>(x: T): Box63<T> {
+        Box63 { x: box31(box31(x)) }
+    }
+
     fun main() {
-        let a: Box3<u8>;
+        let a: Box63<u8>;
+        a;
+      //^ unknown  
     }
 }
     """)

@@ -207,7 +207,7 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
                     if (completionContext == null) return@run false
                     val msl = element.isMsl()
                     val inferenceCtx = InferenceContext(msl)
-                    val funcTy = instantiateItemTy(element, msl) as? TyFunction ?: return@run false
+                    val funcTy = instantiateItemTy(element, inferenceCtx) as? TyFunction ?: return@run false
 
                     val expectedTy = completionContext.expectedTy
                     if (expectedTy != null) {

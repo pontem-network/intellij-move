@@ -11,7 +11,7 @@ import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.acquiresTys
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.ty
+import org.move.lang.core.types.infer.inferTypeTy
 import org.move.lang.core.types.infer.inferenceCtx
 
 
@@ -46,10 +46,10 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val function = o.parent as? MvFunction ?: return
                 val module = function.module ?: return
                 val codeBlock = function.codeBlock ?: return
-                val ctx = function.inferenceCtx(codeBlock.isMsl())
+                val inferenceCtx = function.inferenceCtx(codeBlock.isMsl())
                 val blockAcquiredTys = codeBlock
                     .descendantsOfType<MvCallExpr>()
-                    .flatMap { it.acquiresTys(ctx) }
+                    .flatMap { it.acquiresTys(inferenceCtx) }
                     .map { it.fullnameNoArgs() }
                     .toSet()
 
@@ -58,7 +58,7 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val pathTypes = o.pathTypeList
                 for ((i, pathType) in pathTypes.withIndex()) {
                     // check that this acquires is allowed in the context
-                    val ty = pathType.ty()
+                    val ty = inferTypeTy(pathType, inferenceCtx)
                     if (!ty.canBeAcquiredInModule(module)) {
                         unusedAcquiresIndices.add(i)
                         continue

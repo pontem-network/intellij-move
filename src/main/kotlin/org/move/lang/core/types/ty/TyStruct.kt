@@ -15,11 +15,12 @@ data class TyStruct(
     override fun abilities(): Set<Ability> = this.item.tyAbilities
 
     override fun innerFoldWith(folder: TypeFolder): Ty {
+        folder.depth += 1
         return TyStruct(
             item,
             typeVars,
-            fieldTys.mapValues { folder(it.value) },
-            typeArgs.map(folder)
+            fieldTys.mapValues { it.value.foldWith(folder) },
+            typeArgs.map { it.foldWith(folder) }
         )
     }
 

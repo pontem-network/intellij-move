@@ -7,7 +7,7 @@ import com.intellij.psi.PsiElement
 import org.move.ide.presentation.name
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.infer.MvInferenceContextOwner
+import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.TypeError
 import org.move.lang.core.types.infer.inferenceCtx
 import org.move.lang.core.types.infer.isCompatible
@@ -45,11 +45,11 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitStructField(field: MvStructField) {
-                val msl = field.isMsl()
+//                val msl = field.isMsl()
                 val structAbilities = field.struct.tyAbilities
                 if (structAbilities.isEmpty()) return
 
-                val fieldTy = field.declarationTy(msl) as? TyStruct ?: return
+                val fieldTy = field.declarationTypeTy(InferenceContext(false)) as? TyStruct ?: return
                 for (ability in structAbilities) {
                     val requiredAbility = ability.requires()
                     if (requiredAbility !in fieldTy.abilities()) {

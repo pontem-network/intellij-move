@@ -8,11 +8,11 @@ import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 
-fun inferExpectedTy(element: PsiElement, ctx: InferenceContext): Ty? {
+fun inferExpectedTy(element: PsiElement, parentCtx: InferenceContext): Ty? {
     val owner = element.parent
     return when (owner) {
         is MvBorrowExpr -> {
-            val refTy = inferExpectedTy(owner, ctx) as? TyReference ?: return null
+            val refTy = inferExpectedTy(owner, parentCtx) as? TyReference ?: return null
             refTy.innerTy()
         }
         is MvTypeArgument -> {
@@ -54,9 +54,9 @@ fun inferExpectedTy(element: PsiElement, ctx: InferenceContext): Ty? {
             val initializerParent = owner.parent
             when (initializerParent) {
                 is MvLetStmt -> {
-                    val patExplicitTy = initializerParent.typeAnnotation?.type?.let { inferTypeTy(it, ctx.msl) }
+                    val patExplicitTy = initializerParent.typeAnnotation?.type?.let { inferTypeTy(it, parentCtx) }
                     initializerParent.pat
-                        ?.let { inferPatTy(it, ctx, patExplicitTy) }
+                        ?.let { inferPatTy(it, parentCtx, patExplicitTy) }
                 }
                 else -> null
             }
@@ -64,8 +64,8 @@ fun inferExpectedTy(element: PsiElement, ctx: InferenceContext): Ty? {
         is MvStructLitField -> {
             // only first level field for now, rewrite later as recursive
             val structLitExpr = owner.structLitExpr
-            val structExpectedTy = inferExpectedTy(structLitExpr, ctx)
-            val structTy = inferExprTy(structLitExpr, ctx, structExpectedTy) as? TyStruct ?: return null
+            val structExpectedTy = inferExpectedTy(structLitExpr, parentCtx)
+            val structTy = inferExprTy(structLitExpr, parentCtx, structExpectedTy) as? TyStruct ?: return null
             structTy.fieldTy(owner.referenceName)
         }
         else -> null

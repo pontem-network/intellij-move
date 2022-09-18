@@ -5,6 +5,7 @@ import com.intellij.psi.util.descendantsOfType
 import org.move.ide.inspections.fixes.PhantomFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.visitTyTypeParameterWith
 
 class PhantomTypeParameterInspection : MvLocalInspectionTool() {
@@ -17,7 +18,7 @@ class PhantomTypeParameterInspection : MvLocalInspectionTool() {
                     val fieldUsedTypeParams = mutableListOf<MvTypeParameter>()
 
                     // find all MvTypeParameter used in field declaration
-                    structField.declarationTy(false)
+                    structField.declarationTypeTy(InferenceContext(false))
                         .visitTyTypeParameterWith { fieldUsedTypeParams.add(it.origin) }
 
                     // find all MvTypeArgument, check their phantom status

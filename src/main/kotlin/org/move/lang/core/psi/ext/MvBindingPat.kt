@@ -8,7 +8,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
-import org.move.lang.core.psi.mixins.declaredTy
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.collectBindings
 import org.move.lang.core.types.infer.inferExprTy
@@ -25,21 +24,6 @@ val MvBindingPat.owner: PsiElement?
                 || it is MvSchemaFieldStmt
     }
 
-fun MvBindingPat.declaredTy(parentCtx: InferenceContext): Ty? {
-    val owner = this.owner
-    return when (owner) {
-        is MvFunctionParameter -> owner.declaredTy(parentCtx.msl)
-        is MvConst -> owner.declaredTy(parentCtx.msl)
-        is MvSchemaFieldStmt -> owner.declaredTy(parentCtx.msl)
-        is MvLetStmt -> {
-            val explicitType = owner.typeAnnotation?.type ?: return null
-            val typeTy = inferTypeTy(explicitType, parentCtx.msl)
-            parentCtx.resolveTy(typeTy)
-        }
-        else -> TyUnknown
-    }
-}
-
 fun MvBindingPat.inferredTy(parentCtx: InferenceContext): Ty {
     val existingTy = parentCtx.bindingTypes[this]
     if (existingTy != null) {
@@ -47,15 +31,15 @@ fun MvBindingPat.inferredTy(parentCtx: InferenceContext): Ty {
     }
     val owner = this.owner
     return when (owner) {
-        is MvFunctionParameter -> owner.declaredTy(parentCtx.msl)
-        is MvConst -> owner.declaredTy(parentCtx.msl)
+        is MvFunctionParameter -> owner.declarationTypeTy(parentCtx)
+        is MvConst -> owner.declarationTy(parentCtx)
         is MvLetStmt -> {
             if (parentCtx.bindingTypes.containsKey(this)) return parentCtx.bindingTypes[this]!!
 
             val pat = owner.pat ?: return TyUnknown
             val explicitType = owner.typeAnnotation?.type
             if (explicitType != null) {
-                val explicitTy = inferTypeTy(explicitType, parentCtx.msl)
+                val explicitTy = inferTypeTy(explicitType, parentCtx)
                 collectBindings(pat, explicitTy, parentCtx)
                 return parentCtx.bindingTypes[this] ?: TyUnknown
             }
@@ -63,7 +47,7 @@ fun MvBindingPat.inferredTy(parentCtx: InferenceContext): Ty {
             collectBindings(pat, inferredTy, parentCtx)
             return parentCtx.bindingTypes[this] ?: TyUnknown
         }
-        is MvSchemaFieldStmt -> owner.declaredTy(parentCtx.msl)
+        is MvSchemaFieldStmt -> owner.declarationTypeTy(parentCtx)
         else -> TyUnknown
     }
 }

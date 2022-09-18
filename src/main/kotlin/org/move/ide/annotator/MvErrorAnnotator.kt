@@ -8,6 +8,8 @@ import org.move.ide.presentation.fullname
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.inferTypeTy
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.modules
 import org.move.lang.moveProject
@@ -110,10 +112,11 @@ class MvErrorAnnotator : MvAnnotator() {
                 if (o.path.referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
                     val explicitTypeArgs = o.typeArguments
                     val currentModule = o.containingModule ?: return
+                    val inferenceCtx = InferenceContext(o.isMsl())
                     for (typeArg in explicitTypeArgs) {
-                        val ty = typeArg.type.ty()
-                        if (ty !is TyUnknown && !ty.canBeAcquiredInModule(currentModule)) {
-                            val typeName = ty.fullname()
+                        val typeArgTy = inferTypeTy(typeArg.type, inferenceCtx)
+                        if (typeArgTy !is TyUnknown && !typeArgTy.canBeAcquiredInModule(currentModule)) {
+                            val typeName = typeArgTy.fullname()
                             holder.newAnnotation(
                                 HighlightSeverity.ERROR,
                                 "The type '$typeName' was not declared in the current module. " +

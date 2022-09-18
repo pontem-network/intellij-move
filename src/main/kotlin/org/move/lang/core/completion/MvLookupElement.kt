@@ -74,8 +74,8 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
 private fun MvNamedElement.asTy(ctx: InferenceContext): Ty =
     when (this) {
 //        is RsFieldDecl -> typeReference?.type
-        is MvFunction -> this.returnTy
-        is MvStruct -> instantiateItemTy(this, ctx.msl)
+        is MvFunction -> this.returnTypeTy(ctx)
+        is MvStruct -> instantiateItemTy(this, ctx)
         is MvBindingPat -> this.inferredTy(ctx)
         else -> TyUnknown
     }
