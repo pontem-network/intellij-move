@@ -357,4 +357,51 @@ module 0x1::main {
         }
     }
     """)
+
+    fun `test no unused import for function return type`() = checkWarnings("""
+module 0x1::string {
+    struct String {}
+}    
+module 0x1::main {
+    use 0x1::string;
+    public fun type_name<T>(): string::String {}
+}        
+    """)
+
+    fun `test no unused import for native function return type`() = checkWarnings("""
+module 0x1::string {
+    struct String {}
+}    
+module 0x1::main {
+    use 0x1::string;
+    public native fun type_name<T>(): string::String;
+}        
+    """)
+
+    fun `test unused import if imported locally`() = checkWarnings("""
+module 0x1::string {
+    public fun call() {}
+}    
+module 0x1::main {
+    <warning descr="Unused use item">use 0x1::string;</warning>
+    fun main() {
+        use 0x1::string;
+        string::call();
+    }
+}        
+    """)
+
+    fun `test unused import if imported locally test_only`() = checkWarnings("""
+module 0x1::string {
+    public fun call() {}
+}    
+module 0x1::main {
+    <warning descr="Unused use item">use 0x1::string;</warning>
+    #[test_only]
+    fun main() {
+        use 0x1::string;
+        string::call();
+    }
+}        
+    """)
 }

@@ -209,4 +209,18 @@ class RedundantQualifiedPathInspectionTest : InspectionTestBase(RedundantQualifi
     """
     )
 
+    fun `test no redundant qualifier if import is in a different scope`() = checkByText("""
+module 0x1::string {
+    public fun call() {}
+}
+module 0x1::main {
+    #[test_only]
+    use 0x1::string;
+    
+    fun main() {
+        0x1::string::call();
+    }
+}        
+    """)
+
 }

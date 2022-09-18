@@ -102,4 +102,32 @@ class PhantomTypeParameterInspectionTest : InspectionTestBase(PhantomTypeParamet
         struct R<<error descr="Unused type parameter. Consider declaring it as phantom">T</error>> { val: S<Event<T>> }
     }    
     """)
+
+    fun `test twice nested non-phantom type`() = checkByText(
+        """
+module 0x1::main {
+    struct Value<K, V> has store {
+        key: K,
+        val: V
+    }
+    struct Table<K, V> has store {
+        inner: vector<Value<K, V>>,
+    }
+}        
+    """
+    )
+
+    fun `test three times nested non-phantom type`() = checkByText(
+        """
+module 0x1::main {
+    struct Value<K, V> has store {
+        key: K,
+        val: V
+    }
+    struct Table<K, V> has store {
+        inner: vector<vector<Value<K, V>>>,
+    }
+}        
+    """
+    )
 }

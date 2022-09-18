@@ -926,14 +926,36 @@ module 0x1::main {
     }        
     """)
 
-//    fun `test generic type is not compatible to primitive type`() = checkErrors(
-//        """
-//    module 0x1::M {
-//        fun count(val: u8) {}
-//        fun balance<Token: key>(k: Token) {
-//            count(<error descr="Incompatible type 'Token', expected 'u8'">);
-//        }
-//    }
-//    """
-//    )
+    fun `test option none is compatible with any option`() = checkByText("""
+module 0x1::option {
+    struct Option<Element> has copy, drop, store {
+        vec: vector<Element>
+    }
+    public fun none<Element>(): Option<Element> {
+        Option { vec: vector::empty() }
+    }
+}        
+module 0x1::main {
+    use 0x1::option;
+    struct IterableValue<K: copy + store + drop> has store {
+        prev: option::Option<K>,
+        next: option::Option<K>,
+    }
+    public fun new() {
+        IterableValue { prev: option::none(), next: option::none() };
+    }
+}        
+    """)
+
+    fun `test deeply nested structure type is unknown due to memory issues`() = checkByText("""
+module 0x1::main {
+    struct Box<T> { x: T }
+    struct Box3<T> { x: Box<Box<T>> }
+//    struct Box7<T> { x: Box3<Box3<T>> }
+//    struct Box15<T> { x: Box7<Box7<T>> }
+    fun main() {
+        let a: Box3<u8>;
+    }
+}
+    """)
 }
