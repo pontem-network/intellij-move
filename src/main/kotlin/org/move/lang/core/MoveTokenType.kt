@@ -30,9 +30,9 @@ val MOVE_BINARY_OPS = tokenSetOf(
     OR_OR, AND_AND,
     EQ_EQ_GT, LT_EQ_EQ_GT,
     LT, LT_EQ, GT, GT_EQ,
-    EQ, EQ_EQ,
+    LT_LT, GT_GT,
+    EQ_EQ, NOT_EQ,
     OR, AND, XOR,
-    EQ, NOT_EQ,
     MUL, DIV, MODULO,
     PLUS, MINUS,
     XOR, AND, OR
