@@ -185,7 +185,7 @@
                          implementationClass="org.move.ide.inspections.MvLocalBindingNamingInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Redundant qualifier"
-                         enabledByDefault="true" level="WARNING"
+                         enabledByDefault="false" level="WARNING"
                          implementationClass="org.move.ide.inspections.RedundantQualifiedPathInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Type checking"
