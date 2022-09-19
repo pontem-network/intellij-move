@@ -1,6 +1,8 @@
 package org.move.ide.inspections
 
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.psi.util.childrenOfType
+import com.intellij.psi.util.descendants
 import com.intellij.psi.util.descendantsOfType
 import org.move.ide.inspections.fixes.PhantomFix
 import org.move.lang.core.psi.*
@@ -15,28 +17,28 @@ class PhantomTypeParameterInspection : MvLocalInspectionTool() {
                 val usedTypeParams = mutableSetOf<MvTypeParameter>()
 
                 for (structField in o.fields) {
-                    val fieldUsedTypeParams = mutableListOf<MvTypeParameter>()
+                    val fieldUsedTypeParams = mutableSetOf<MvTypeParameter>()
 
-                    // find all MvTypeParameter used in field declaration
-                    structField.declarationTypeTy(InferenceContext(false))
-                        .visitTyTypeParameterWith { fieldUsedTypeParams.add(it.origin) }
+                    val fieldType = structField.typeAnnotation?.type ?: continue
+                    for (path in fieldType.descendantsOfType<MvPath>()) {
+                        if (path.typeArguments.isNotEmpty()) continue
+                        val typeParam = path.reference?.resolve() as? MvTypeParameter ?: continue
+                        fieldUsedTypeParams.add(typeParam)
+                    }
 
                     // find all MvTypeArgument, check their phantom status
-                    val fieldType = structField.typeAnnotation?.type
-                    if (fieldType != null) {
-                        val paths = fieldType.descendantsOfType<MvPath>()
-                        for (path in paths) {
-                            // stop if empty
-                            if (path.typeArguments.isEmpty()) continue
-                            // determine phantom status of every argument, drop if phantom
-                            val outerStruct = path.reference?.resolve() as? MvStruct ?: continue
-                            for ((i, typeArg) in path.typeArguments.withIndex()) {
-                                val outerTypeParam = outerStruct.typeParameters.getOrNull(i) ?: continue
-                                if (outerTypeParam.isPhantom) {
-                                    val typeParam =
-                                        typeArg.type.moveReference?.resolve() as? MvTypeParameter ?: continue
-                                    fieldUsedTypeParams.remove(typeParam)
-                                }
+                    val paths = fieldType.descendantsOfType<MvPath>()
+                    for (path in paths) {
+                        // stop if empty
+                        if (path.typeArguments.isEmpty()) continue
+                        // determine phantom status of every argument, drop if phantom
+                        val outerStruct = path.reference?.resolve() as? MvStruct ?: continue
+                        for ((i, typeArg) in path.typeArguments.withIndex()) {
+                            val outerTypeParam = outerStruct.typeParameters.getOrNull(i) ?: continue
+                            if (outerTypeParam.isPhantom) {
+                                val typeParam =
+                                    typeArg.type.moveReference?.resolve() as? MvTypeParameter ?: continue
+                                fieldUsedTypeParams.remove(typeParam)
                             }
                         }
                     }
