@@ -215,7 +215,7 @@ fun checkTysCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean = true
     return when {
         expectedTy is TyNever || inferredTy is TyNever -> Compat.Yes
         expectedTy is TyUnknown || inferredTy is TyUnknown -> Compat.Yes
-        expectedTy is TyInfer.TyVar -> {
+        expectedTy is TyInfer.TyVar && inferredTy !is TyInfer.TyVar -> {
             isCompatibleAbilities(expectedTy, inferredTy, msl)
         }
         /* expectedTy !is TyInfer.TyVar && */ inferredTy is TyInfer.TyVar -> {
