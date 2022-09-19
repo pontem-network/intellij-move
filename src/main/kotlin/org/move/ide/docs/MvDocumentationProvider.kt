@@ -32,9 +32,8 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         val buffer = StringBuilder()
         var docElement = element
-//        if (docElement is MvFunctionSignature) docElement = docElement.parent
-//        if (docElement is MvStructSignature) docElement = docElement.parent
-        if (docElement is MvBindingPat
+        if (
+            docElement is MvBindingPat
             && docElement.owner is MvConst
         ) docElement = docElement.owner
         when (docElement) {
@@ -155,7 +154,10 @@ private fun PsiElement.generateDocumentation(
     buffer += prefix
     when (this) {
         is MvType -> {
-            buffer += inferTypeTy(this, InferenceContext(this.isMsl())).typeLabel(this)
+            buffer += inferTypeTy(this, InferenceContext(this.isMsl()))
+                .typeLabel(this)
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
         }
 
         is MvFunctionParameterList ->
