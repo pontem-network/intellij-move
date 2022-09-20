@@ -88,7 +88,7 @@ private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): 
     return TyReference(innerExprTy, mutabilities, ctx.msl)
 }
 
-fun inferCallExprTy(
+private fun inferCallExprTy(
     callExpr: MvCallExpr,
     parentCtx: InferenceContext,
     expectedTy: Ty?

@@ -10,9 +10,9 @@ import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.acquiresTys
-import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.inferTypeTy
 import org.move.lang.core.types.infer.inferenceCtx
+import org.move.lang.core.types.ty.TyUnknown
 
 
 class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
@@ -46,12 +46,15 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val function = o.parent as? MvFunction ?: return
                 val module = function.module ?: return
                 val codeBlock = function.codeBlock ?: return
-                val inferenceCtx = function.inferenceCtx(codeBlock.isMsl())
-                val blockAcquiredTys = codeBlock
-                    .descendantsOfType<MvCallExpr>()
-                    .flatMap { it.acquiresTys(inferenceCtx) }
-                    .map { it.fullnameNoArgs() }
-                    .toSet()
+                val inferenceCtx = function.inferenceCtx(false)
+
+                val acquiredTys = mutableSetOf<String>()
+                for (callExpr in codeBlock.descendantsOfType<MvCallExpr>()) {
+                    val callAcquiresTys =
+                        callExpr.acquiresTys() ?: return
+                    val acqTyNames = callAcquiresTys.map { it.fullnameNoArgs() }
+                    acquiredTys.addAll(acqTyNames)
+                }
 
                 val unusedAcquiresIndices = mutableListOf<Int>()
                 val visitedTypeNames = mutableSetOf<String>()
@@ -71,7 +74,7 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                     }
                     visitedTypeNames.add(typeName)
                     // check for unused
-                    if (typeName !in blockAcquiredTys) {
+                    if (typeName !in acquiredTys) {
                         unusedAcquiresIndices.add(i)
                         continue
                     }

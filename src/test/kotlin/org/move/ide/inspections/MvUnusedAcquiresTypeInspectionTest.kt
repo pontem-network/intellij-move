@@ -77,4 +77,26 @@ class MvUnusedAcquiresTypeInspectionTest : InspectionTestBase(MvUnusedAcquiresTy
         }
     """
     )
+
+    fun `test no unused acquires for borrow_global with dot expr`() = checkWarnings("""
+module 0x1::main {
+    struct StakePool has key {
+        locked_until_secs: u64,
+    }
+    fun get_lockup_secs(pool_address: address): u64 acquires StakePool {
+        borrow_global<StakePool>(pool_address).locked_until_secs
+    }
+}        
+    """)
+
+    fun `test no unused acquires with `() = checkWarnings("""
+module 0x1::main {
+    struct StakePool has key {
+        locked_until_secs: u64,
+    }
+    fun get_lockup_secs(pool_address: address) acquires StakePool {
+        borrow_global<StakePool>(pool_address);
+    }
+}        
+    """)
 }

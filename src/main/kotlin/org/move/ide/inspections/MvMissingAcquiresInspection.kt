@@ -10,8 +10,6 @@ import org.move.ide.presentation.fullnameNoArgs
 import org.move.ide.presentation.nameNoArgs
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.acquiresTys
-import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.infer.inferenceCtx
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -26,8 +24,8 @@ class MvMissingAcquiresInspection : MvLocalInspectionTool() {
                 val module = callExpr.containingModule ?: return
                 val declaredTyFullnames = function.acquiresTys.map { it.fullnameNoArgs() }
 
-                val inferenceCtx = function.inferenceCtx(callExpr.isMsl())
-                val missingTys = callExpr.acquiresTys(inferenceCtx)
+                val acquiresTys = callExpr.acquiresTys() ?: return
+                val missingTys = acquiresTys
                     .filter { it.fullnameNoArgs() !in declaredTyFullnames }
                     .filter { it !is TyUnknown }
                     .filter { it.canBeAcquiredInModule(module) }
