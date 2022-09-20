@@ -260,7 +260,11 @@ fun processLexicalDeclarations(
                         ((entry.name !in visited)
                                 && processor.match(entry).also { visited += entry.name })
                     }
-                    return processorWithShadowing.matchAll(itemVis, namedElements)
+                    return processorWithShadowing.matchAll(
+                        itemVis,
+                        namedElements,
+                        scope.itemImportNames()
+                    )
                 }
 
                 is MvItemSpec -> {
