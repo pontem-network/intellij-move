@@ -579,19 +579,19 @@ class KeywordCompletionTest : CompletionTestCase() {
     }    
     """)
 
-    fun `test bool completion in field initializer`() = doSingleCompletion("""
-module 0x1::main {
-    struct Container<Type> { val: Type }
-    fun main() {
-        Container<bool> { val: fa/*caret*/ };
-    }
-}           
-    """, """
-module 0x1::main {
-    struct Container<Type> { val: Type }
-    fun main() {
-        Container<bool> { val: false/*caret*/ };
-    }
-}           
-    """)
+//    fun `test bool completion in field initializer`() = doSingleCompletion("""
+//module 0x1::main {
+//    struct Container<Type> { val: Type }
+//    fun main() {
+//        Container<bool> { val: fa/*caret*/ };
+//    }
+//}
+//    """, """
+//module 0x1::main {
+//    struct Container<Type> { val: Type }
+//    fun main() {
+//        Container<bool> { val: false/*caret*/ };
+//    }
+//}
+//    """)
 }
