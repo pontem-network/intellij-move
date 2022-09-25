@@ -6,7 +6,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.parentOfType
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.callArgumentExprs
 import org.move.lang.core.psi.ext.valueArguments
 
 /**

@@ -8,8 +8,8 @@ import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.psi.MvType
 import org.move.lang.core.psi.ext.inferredTy
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.infer.ownerInferenceCtx
 import org.move.lang.core.types.infer.inferExpectedTy
+import org.move.lang.core.types.infer.ownerInferenceCtx
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementAndDataInEditor

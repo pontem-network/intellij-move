@@ -5,15 +5,9 @@ import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.MvElementImpl
 import org.move.lang.core.psi.MvStructLitExpr
 import org.move.lang.core.psi.MvStructLitField
-import org.move.lang.core.psi.containingFunction
 import org.move.lang.core.resolve.ref.MvReference
 import org.move.lang.core.resolve.ref.MvStructFieldReferenceImpl
 import org.move.lang.core.resolve.ref.MvStructLitShorthandFieldReferenceImpl
-import org.move.lang.core.types.infer.inferStructLitExpr
-import org.move.lang.core.types.infer.inferenceCtx
-import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyStruct
-import org.move.lang.core.types.ty.TyUnknown
 
 val MvStructLitField.structLitExpr: MvStructLitExpr
     get() = ancestorStrict()!!

@@ -6,7 +6,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
 import org.move.ide.inspections.imports.ItemUsages
 import org.move.ide.inspections.imports.ScopePathUsages
-import org.move.ide.inspections.imports.importInfo
 import org.move.ide.inspections.imports.pathUsages
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict

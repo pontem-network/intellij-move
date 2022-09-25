@@ -12,7 +12,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.acquiresTys
 import org.move.lang.core.types.infer.inferTypeTy
 import org.move.lang.core.types.infer.inferenceCtx
-import org.move.lang.core.types.ty.TyUnknown
 
 
 class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {

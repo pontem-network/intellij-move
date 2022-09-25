@@ -5,10 +5,8 @@
 
 package org.move.utils.tests.annotation
 
-import com.intellij.psi.PsiFile
 import org.intellij.lang.annotations.Language
 import org.move.ide.annotator.MvAnnotator
-import org.move.utils.tests.replaceCaretMarker
 import kotlin.reflect.KClass
 
 abstract class AnnotatorTestCase(

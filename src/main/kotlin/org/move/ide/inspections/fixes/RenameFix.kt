@@ -10,7 +10,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
-import com.intellij.refactoring.RefactoringFactory
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.rename
 import org.move.openapiext.nonBlocking

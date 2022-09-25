@@ -21,8 +21,8 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
 import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.ownerInferenceCtx
 import org.move.lang.core.types.infer.inferExpectedTy
+import org.move.lang.core.types.infer.ownerInferenceCtx
 import org.move.lang.core.types.ty.Ty
 
 abstract class MvPathCompletionProvider : MvCompletionProvider() {

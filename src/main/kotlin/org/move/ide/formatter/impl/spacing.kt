@@ -14,7 +14,6 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.ide.formatter.MvFmtContext
 import org.move.lang.MvElementTypes.*
-import org.move.lang.core.MOVE_BINARY_OPS
 import org.move.lang.core.MOVE_COMMENTS
 import org.move.lang.core.MOVE_KEYWORDS
 import org.move.lang.core.psi.MvAddressBlock

@@ -1,10 +1,6 @@
 package org.move.ide.inspections
 
-import com.intellij.codeInspection.LocalInspectionTool
-import com.intellij.codeInspection.LocalInspectionToolSession
-import com.intellij.codeInspection.LocalQuickFix
-import com.intellij.codeInspection.LocalQuickFixOnPsiElement
-import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.codeInspection.*
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
