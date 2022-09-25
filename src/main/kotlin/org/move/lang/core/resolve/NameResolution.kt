@@ -95,11 +95,11 @@ fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
         return moduleRef
     }
     // module refers to ModuleImport
-    val resolved = resolveSingleItem(moduleRef, setOf(Namespace.MODULE))
+    var resolved = resolveSingleItem(moduleRef, setOf(Namespace.MODULE))
     if (resolved is MvUseAlias) {
-        return (resolved.parent as MvModuleUseSpeck).fqModuleRef
+       resolved = resolved.moduleUseSpeck ?: resolved.useItem
     }
-    if (resolved is MvUseItem && resolved.text == "Self") {
+    if (resolved is MvUseItem && resolved.isSelf) {
         return resolved.moduleImport().fqModuleRef
     }
     if (resolved !is MvModuleUseSpeck) return null
@@ -383,6 +383,7 @@ fun processLexicalDeclarations(
                     listOf(
                         scope.moduleImportNames(),
                         scope.selfItemImports(),
+                        scope.selfItemImportAliases(),
                     ).flatten(),
                 )
                 else -> false

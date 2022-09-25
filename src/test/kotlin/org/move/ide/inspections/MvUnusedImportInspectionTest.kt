@@ -378,13 +378,29 @@ module 0x1::main {
 }        
     """)
 
-    fun `test unused import if imported locally`() = checkWarnings("""
+//    fun `test unused import if imported locally`() = checkWarnings("""
+//module 0x1::string {
+//    public fun call() {}
+//}
+//module 0x1::main {
+//    <warning descr="Unused use item">use 0x1::string;</warning>
+//    fun main() {
+//        use 0x1::string;
+//        string::call();
+//    }
+//}
+//    """)
+
+    fun `test no unused import if used in two local places`() = checkWarnings("""
 module 0x1::string {
     public fun call() {}
 }    
 module 0x1::main {
-    <warning descr="Unused use item">use 0x1::string;</warning>
-    fun main() {
+    use 0x1::string;
+    fun a() {
+        string::call();
+    }
+    fun b() {
         use 0x1::string;
         string::call();
     }

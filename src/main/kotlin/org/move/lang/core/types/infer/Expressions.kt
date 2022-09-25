@@ -36,7 +36,8 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         is MvBangExpr -> TyBool
 
         is MvIfExpr -> inferIfExprTy(expr, parentCtx, expectedTy)
-        is MvWhileExpr -> inferWhileExprTy(expr, parentCtx)
+        is MvWhileExpr -> inferLoopExpr(expr, parentCtx)
+        is MvLoopExpr -> inferLoopExpr(expr, parentCtx)
         is MvReturnExpr -> {
             val fnReturnTy = expr.containingFunction?.returnTypeTy(parentCtx)
             expr.expr?.let { inferExprTy(it, parentCtx, fnReturnTy) }
@@ -408,21 +409,30 @@ private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext, expectedTy: T
     return combineTys(ifExprTy, elseExprTy, ctx.msl)
 }
 
-private fun inferWhileExprTy(whileExpr: MvWhileExpr, ctx: InferenceContext): Ty {
-    val conditionExpr = whileExpr.condition?.expr
-    if (conditionExpr != null) {
-        inferExprTy(conditionExpr, ctx, TyBool)
+private fun inferLoopExpr(expr: MvExpr, ctx: InferenceContext): Ty {
+    if (expr is MvWhileExpr) {
+        val conditionExpr = expr.condition?.expr
+        if (conditionExpr != null) {
+            inferExprTy(conditionExpr, ctx, TyBool)
+        }
     }
-    val whileCodeBlock = whileExpr.codeBlock
-    val whileInlineBlockExpr = whileExpr.inlineBlock?.expr
+    val (codeBlock, inlineBlockExpr) = when (expr) {
+        is MvWhileExpr -> {
+            val conditionExpr = expr.condition?.expr
+            if (conditionExpr != null) {
+                inferExprTy(conditionExpr, ctx, TyBool)
+            }
+            Pair(expr.codeBlock, expr.inlineBlock?.expr)
+        }
+        is MvLoopExpr -> Pair(expr.codeBlock, expr.inlineBlock?.expr)
+        else -> error("unreachable")
+    }
     when {
-        whileCodeBlock != null -> {
+        codeBlock != null -> {
             val blockCtx = ctx.childContext()
-            inferCodeBlockTy(whileCodeBlock, blockCtx, TyUnit)
+            inferCodeBlockTy(codeBlock, blockCtx, TyUnit)
         }
-        whileInlineBlockExpr != null -> {
-            inferExprTy(whileInlineBlockExpr, ctx, TyUnit)
-        }
+        inlineBlockExpr != null -> inferExprTy(inlineBlockExpr, ctx, TyUnit)
     }
     return TyUnit
 }

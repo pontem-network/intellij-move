@@ -33,6 +33,10 @@ val PsiElement.ancestors: Sequence<PsiElement>
         if (it is PsiFile) null else it.parent
     }
 
+inline fun <reified T : PsiElement> PsiElement.ancestorsOfType(): Sequence<T> {
+    return this.ancestors.filterIsInstance<T>()
+}
+
 fun PsiElement.findFirstParent(strict: Boolean = true, cond: Condition<in PsiElement>) =
     PsiTreeUtil.findFirstParent(this, strict, cond)
 

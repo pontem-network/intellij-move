@@ -209,6 +209,36 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
     }    
     """)
 
+    fun `test integer multi statement inside if while block`() = testExpr("""
+    module 0x1::M {
+        fun put(i: u64, val: u64) {}
+        fun main() {
+            let i = 0;
+            while (i < 10) {
+                put(i, 10);
+                i = i + 1;
+            };
+            i;
+          //^ u64  
+        }
+    }    
+    """)
+
+    fun `test integer multi statement inside loop block`() = testExpr("""
+    module 0x1::M {
+        fun put(i: u64, val: u64) {}
+        fun main() {
+            let i = 0;
+            loop {
+                put(i, 10);
+                i = i + 1;
+            };
+            i;
+          //^ u64  
+        }
+    }    
+    """)
+
     fun `test integer multi statement inside else expr block`() = testExpr("""
     module 0x1::M {
         fun put(i: u64, val: u64) {}

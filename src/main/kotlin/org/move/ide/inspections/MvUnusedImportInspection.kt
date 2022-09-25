@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
 import org.move.ide.inspections.imports.ItemUsages
 import org.move.ide.inspections.imports.ScopePathUsages
+import org.move.ide.inspections.imports.importInfo
 import org.move.ide.inspections.imports.pathUsages
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
@@ -101,15 +102,16 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
 }
 
 fun MvElement.isImportedItemUsed(): Boolean {
-    val owner = this.ancestorStrict<MvImportsOwner>() ?: return true
-    val pathUsages = owner.pathUsages.get(this.itemScope)
+    val parentImportsOwner = this.ancestorStrict<MvImportsOwner>() ?: return true
+    val itemScope = this.itemScope
+    val pathUsages = parentImportsOwner.pathUsages.get(itemScope)
+
     return when (this) {
         is MvModuleUseSpeck -> {
             val useAlias = this.useAlias
             val moduleName =
                 (if (useAlias != null) useAlias.name else this.fqModuleRef?.referenceName)
                     ?: return true
-//            val moduleName =  this.fqModuleRef?.referenceName ?: return true
             // null if import is never used
             val usageResolvedItems = pathUsages.nameUsages[moduleName] ?: return false
             if (usageResolvedItems.isEmpty()) {
