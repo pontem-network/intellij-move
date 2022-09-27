@@ -102,4 +102,42 @@ class PhantomTypeParameterInspectionTest : InspectionTestBase(PhantomTypeParamet
         struct R<<error descr="Unused type parameter. Consider declaring it as phantom">T</error>> { val: S<Event<T>> }
     }    
     """)
+
+    fun `test twice nested non-phantom type`() = checkByText(
+        """
+module 0x1::main {
+    struct Value<K, V> has store {
+        key: K,
+        val: V
+    }
+    struct Table<K, V> has store {
+        inner: vector<Value<K, V>>,
+    }
+}        
+    """
+    )
+
+    fun `test three times nested non-phantom type`() = checkByText(
+        """
+module 0x1::main {
+    struct Value<K, V> has store {
+        key: K,
+        val: V
+    }
+    struct Table<K, V> has store {
+        inner: vector<vector<Value<K, V>>>,
+    }
+}        
+    """
+    )
+
+    fun `test deeply nested type`() = checkByText("""
+module 0x1::main {
+    struct Box<T> has copy, drop, store { x: T }
+    struct Box3<T> has copy, drop, store { x: Box<Box<T>> }
+    struct Box7<T> has copy, drop, store { x: Box3<Box3<T>> }
+    struct Box15<T> has copy, drop, store { x: Box7<Box7<T>> }
+    struct Box31<T> has copy, drop, store { x: Box15<Box15<T>> }
+}           
+    """)
 }

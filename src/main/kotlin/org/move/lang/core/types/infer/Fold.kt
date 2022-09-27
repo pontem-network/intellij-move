@@ -5,12 +5,33 @@
 
 package org.move.lang.core.types.infer
 
-import org.move.lang.core.types.ty.Substitution
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyTypeParameter
+import org.move.lang.core.types.ty.TyUnknown
 
-typealias TypeFolder = (Ty) -> Ty
+abstract class TypeFolder {
+    val cache = mutableMapOf<Ty, Ty>()
+    var depth = 0;
+
+    operator fun invoke(ty: Ty): Ty {
+        // workaround for massively deep structs
+        if (depth > 25) return TyUnknown
+
+        val cachedTy = cache[ty]
+        if (cachedTy != null) {
+            return cachedTy
+        } else {
+            val foldedTy = fold(ty)
+            cache[ty] = foldedTy
+            return foldedTy
+        }
+    }
+
+    abstract fun fold(ty: Ty): Ty
+}
+
+//typealias TypeFolder = (Ty) -> Ty
 typealias TypeVisitor = (Ty) -> Boolean
 
 /**
@@ -60,32 +81,25 @@ interface TypeFoldable<out Self> {
 
 /** Deeply replace any [TyInfer] with the function [folder] */
 fun <T> TypeFoldable<T>.foldTyInferWith(folder: (TyInfer) -> Ty): T =
-    foldWith(object : TypeFolder {
-        override fun invoke(ty: Ty): Ty =
-            (if (ty is TyInfer) folder(ty) else ty).innerFoldWith(this)
+    foldWith(object : TypeFolder() {
+        override fun fold(ty: Ty): Ty {
+            val foldedTy = if (ty is TyInfer) folder(ty) else ty
+            return foldedTy.innerFoldWith(this)
+        }
     })
 
 /** Deeply replace any [TyTypeParameter] with the function [folder] */
 fun <T> TypeFoldable<T>.foldTyTypeParameterWith(folder: (TyTypeParameter) -> Ty): T =
-    foldWith(object : TypeFolder {
-        override fun invoke(ty: Ty): Ty =
+    foldWith(object : TypeFolder() {
+        override fun fold(ty: Ty): Ty =
             if (ty is TyTypeParameter) folder(ty) else ty.innerFoldWith(this)
     })
 //
-///** Deeply replace any [TyInfer] with the function [folder] */
-//fun <T> TypeFoldable<T>.foldTyInfersWith(folder: (TyInfer) -> Ty): T =
-//    foldWith(object : TypeFolder {
-//        override fun invoke(ty: Ty): Ty =
-//            (if (ty is TyInfer) folder(ty) else ty).innerFoldWith(this)
-//    })
 
-/**
- * Deeply replace any [TyTypeParameter] by [subst] mapping.
- */
-fun <T> TypeFoldable<T>.substitute(subst: Substitution): T =
-    foldWith(object : TypeFolder {
-        override fun invoke(ty: Ty): Ty =
-            subst[ty] ?: ty.innerFoldWith(this)
+fun <T> TypeFoldable<T>.visitTyTypeParameterWith(visitor: (TyTypeParameter) -> Boolean) =
+    visitWith(object : TypeVisitor {
+        override fun invoke(ty: Ty): Boolean =
+            if (ty is TyTypeParameter) visitor(ty) else ty.innerVisitWith(this)
     })
 
 fun <T> TypeFoldable<T>.containsTyOfClass(classes: List<Class<*>>): Boolean =

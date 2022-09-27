@@ -73,7 +73,7 @@ private val COMPLETION_WEIGHERS: List<Any> = listOf(
      */
     "priority",
 
-    preferTrue(P::isReturnTypeConformsToExpectedType, id = "rust-prefer-matching-expected-type"),
+    preferTrue(P::isReturnTypeConformsToExpectedType, id = "move-prefer-matching-expected-type"),
 //    preferTrue(P::typeHasAllRequiredAbilities, id = "rust-prefer-matching-abilities"),
 //    preferTrue(P::isCompatibleWithContext, id = "rust-prefer-matching-context"),
 

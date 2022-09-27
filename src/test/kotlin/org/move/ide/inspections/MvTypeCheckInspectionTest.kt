@@ -2,28 +2,33 @@ package org.move.ide.inspections
 
 import org.move.utils.tests.annotation.InspectionTestBase
 
-class MvTypeCheckInspectionTest: InspectionTestBase(MvTypeCheckInspection::class) {
-    fun `test incorrect type address passed where &signer is expected`() = checkErrors("""
-        module 0x1::M {
-            fun send(account: &signer) {}
-            
-            fun main(addr: address) {
-                send(<error descr="Invalid argument for parameter 'account': type 'address' is not compatible with '&signer'">addr</error>);
-            }
-        }        
-    """)
+class MvTypeCheckInspectionTest : InspectionTestBase(MvTypeCheckInspection::class) {
+    fun `test incorrect type address passed where &signer is expected`() = checkErrors(
+        """
+module 0x1::M {
+    fun send(account: &signer) {}
+    
+    fun main(addr: address) {
+        send(<error descr="Incompatible type 'address', expected '&signer'">addr</error>);
+    }
+} 
+    """
+    )
 
-    fun `test incorrect type u8 passed where &signer is expected`() = checkErrors("""
-        module 0x1::M {
-            fun send(account: &signer) {}
-            
-            fun main(addr: u8) {
-                send(<error descr="Invalid argument for parameter 'account': type 'u8' is not compatible with '&signer'">addr</error>)
-            }
-        }        
-    """)
+    fun `test incorrect type u8 passed where &signer is expected`() = checkErrors(
+        """
+module 0x1::M {
+    fun send(account: &signer) {}
+    
+    fun main(addr: u8) {
+        send(<error descr="Incompatible type 'u8', expected '&signer'">addr</error>)
+    }
+} 
+    """
+    )
 
-    fun `test no errors if same type`() = checkErrors("""
+    fun `test no errors if same type`() = checkErrors(
+        """
         module 0x1::M {
             fun send(account: &signer) {}
             
@@ -31,9 +36,11 @@ class MvTypeCheckInspectionTest: InspectionTestBase(MvTypeCheckInspection::class
                 send(acc)
             }
         }        
-    """)
+    """
+    )
 
-    fun `test mutable reference compatible with immutable reference`() = checkErrors("""
+    fun `test mutable reference compatible with immutable reference`() = checkErrors(
+        """
     module 0x1::M {
         struct Option<Element> {
             vec: vector<Element>
@@ -50,75 +57,82 @@ class MvTypeCheckInspectionTest: InspectionTestBase(MvTypeCheckInspection::class
 
     fun `test same struct but different generic types`() = checkErrors(
         """
-    module 0x1::M {
-        struct Option<Element> {}
-        fun is_none<Elem>(t: Option<u64>): bool {
-            true
-        }
-        fun main() {
-            let opt = Option<u8> {};
-            is_none(<error descr="Invalid argument for parameter 't': type 'Option<u8>' is not compatible with 'Option<u64>'">opt</error>);
-        } 
-    }    
+module 0x1::M {
+    struct Option<Element> {}
+    fun is_none<Elem>(t: Option<u64>): bool {
+        true
+    }
+    fun main() {
+        let opt = Option<u8> {};
+        is_none(<error descr="Incompatible type 'Option<u8>', expected 'Option<u64>'">opt</error>);
+    } 
+}    
     """
     )
 
     fun `test different generic types for references`() = checkErrors(
         """
-    module 0x1::M {
-        struct Option<Element> {}
-        fun is_none<Elem>(t: &Option<u64>): bool {
-            true
-        }
-        fun main() {
-            let opt = &Option<u8> {};
-            is_none(<error descr="Invalid argument for parameter 't': type '&Option<u8>' is not compatible with '&Option<u64>'">opt</error>);
-        } 
-    }    
+module 0x1::M {
+    struct Option<Element> {}
+    fun is_none<Elem>(t: &Option<u64>): bool {
+        true
+    }
+    fun main() {
+        let opt = &Option<u8> {};
+        is_none(<error descr="Incompatible type '&Option<u8>', expected '&Option<u64>'">opt</error>);
+    } 
+}
     """
     )
 
-    fun `test immutable reference is not compatible with mutable reference`() = checkErrors("""
-    module 0x1::M {
-        struct Option<Element> {
-            vec: vector<Element>
-        }
-        fun is_none<Element>(t: &mut Option<Element>): bool {
-            true
-        }
-        fun main<Element>(opt: &Option<Element>) {
-            is_none(<error descr="Invalid argument for parameter 't': type '&Option<Element>' is not compatible with '&mut Option<Element>'">opt</error>);
-        } 
-    }    
-    """)
-
-    fun `test incorrect type of argument with struct literal`() = checkErrors("""
-    module 0x1::M {
-        struct A {}
-        struct B {}
-        
-        fun use_a(a: A) {}
-        fun main() {
-            use_a(<error descr="Invalid argument for parameter 'a': type 'B' is not compatible with 'A'">B {}</error>)            
-        }
+    fun `test immutable reference is not compatible with mutable reference`() = checkErrors(
+        """
+module 0x1::M {
+    struct Option<Element> {
+        vec: vector<Element>
     }
-    """)
-
-    fun `test incorrect type of argument with call expression`() = checkErrors("""
-    module 0x1::M {
-        struct A {}
-        struct B {}
-        
-        fun use_a(a: A) {}
-        fun get_b(): B { B {} }
-        
-        fun main() {
-            use_a(<error descr="Invalid argument for parameter 'a': type 'B' is not compatible with 'A'">get_b()</error>)            
-        }
+    fun is_none<Element>(t: &mut Option<Element>): bool {
+        true
     }
-    """)
+    fun main<Element>(opt: &Option<Element>) {
+        is_none(<error descr="Incompatible type '&Option<Element>', expected '&mut Option<?Element>'">opt</error>);
+    } 
+}    
+    """
+    )
 
-    fun `test incorrect type of argument with call expression from different module`() = checkErrors("""
+    fun `test incorrect type of argument with struct literal`() = checkErrors(
+        """
+module 0x1::M {
+    struct A {}
+    struct B {}
+    
+    fun use_a(a: A) {}
+    fun main() {
+        use_a(<error descr="Incompatible type 'B', expected 'A'">B {}</error>)            
+    }
+}
+    """
+    )
+
+    fun `test incorrect type of argument with call expression`() = checkErrors(
+        """
+module 0x1::M {
+    struct A {}
+    struct B {}
+    
+    fun use_a(a: A) {}
+    fun get_b(): B { B {} }
+    
+    fun main() {
+        use_a(<error descr="Incompatible type 'B', expected 'A'">get_b()</error>)            
+    }
+}
+    """
+    )
+
+    fun `test incorrect type of argument with call expression from different module`() = checkErrors(
+        """
 module 0x1::Other {
     struct B {}
     public fun get_b(): B { B {} }
@@ -130,12 +144,14 @@ module 0x1::M {
     fun use_a(a: A) {}
     
     fun main() {
-        use_a(<error descr="Invalid argument for parameter 'a': type 'B' is not compatible with 'A'">get_b()</error>)            
+        use_a(<error descr="Incompatible type 'B', expected 'A'">get_b()</error>)            
     }
 }
-    """)
+    """
+    )
 
-    fun `test bytearray is vector of u8`() = checkErrors("""
+    fun `test bytearray is vector of u8`() = checkErrors(
+        """
         module 0x1::M {
             fun send(a: vector<u8>) {}
             fun main() {
@@ -143,9 +159,11 @@ module 0x1::M {
                 send(a)
             }
         }        
-    """)
+    """
+    )
 
-    fun `test no error for compatible generic with explicit parameter`() = checkErrors("""
+    fun `test no error for compatible generic with explicit parameter`() = checkErrors(
+        """
     module 0x1::M {
         struct Diem<CoinType> has store { val: u64 }
         struct Balance<Token> has key {
@@ -160,9 +178,11 @@ module 0x1::M {
             value<Token>(coin)
         }
     }        
-    """)
+    """
+    )
 
-    fun `test no error for compatible generic with inferred parameter`() = checkErrors("""
+    fun `test no error for compatible generic with inferred parameter`() = checkErrors(
+        """
     module 0x1::M {
         struct Diem<CoinType> has store { val: u64 }
         struct Balance<Token> has key {
@@ -177,39 +197,48 @@ module 0x1::M {
             value(coin)
         }
     }        
-    """)
+    """
+    )
 
-    fun `test no return type but returns u8`() = checkErrors("""
+    fun `test no return type but returns u8`() = checkErrors(
+        """
     module 0x1::M {
         fun call() {
             return <error descr="Incompatible type 'integer', expected '()'">1</error>;
         }
     }    
-    """)
+    """
+    )
 
-    fun `test no return type but returns u8 with expression`() = checkErrors("""
+    fun `test no return type but returns u8 with expression`() = checkErrors(
+        """
     module 0x1::M {
         fun call() {
             <error descr="Incompatible type 'integer', expected '()'">1</error>
         }
     }    
-    """)
+    """
+    )
 
-    fun `test if statement returns ()`() = checkErrors("""
+    fun `test if statement returns ()`() = checkErrors(
+        """
     module 0x1::M {
         fun m() {
             if (true) {1} else {2};
         }
     }    
-    """)
+    """
+    )
 
-    fun `test block expr returns ()`() = checkErrors("""
+    fun `test block expr returns ()`() = checkErrors(
+        """
     module 0x1::M {
         fun m() {
             {1};
         }
     }    
-    """)
+    """
+    )
 
     fun `test error on code block if empty block and return type`() = checkErrors(
         """
@@ -231,21 +260,25 @@ module 0x1::M {
     """
     )
 
-    fun `test if condition should be boolean`() = checkErrors("""
+    fun `test if condition should be boolean`() = checkErrors(
+        """
     module 0x1::M {
         fun m() {
             if (<error descr="Incompatible type 'integer', expected 'bool'">1</error>) 1;
         }
     }    
-    """)
+    """
+    )
 
-    fun `test incompatible types from branches`() = checkErrors("""
+    fun `test incompatible types from branches`() = checkErrors(
+        """
     module 0x1::M {
         fun m() {
             if (true) {1} else {<error descr="Incompatible type 'bool', expected 'integer'">true</error>};
         }
     }    
-    """)
+    """
+    )
 
     fun `test no type error with explicit generic as move_to`() = checkErrors(
         """
@@ -269,32 +302,35 @@ module 0x1::M {
     """
     )
 
-    fun `test type check incompatible constraints`() = checkErrors("""
-    module 0x1::M {
-        struct C {}
-        struct D {}
-        fun new<Content>(a: Content, b: Content): Content { a }
-        fun m() {
-            new(C {}, <error descr="Invalid argument for parameter 'b': type 'D' is not compatible with 'C'">D {}</error>);
-        }
-    }    
-    """)
-
-    fun `test error if resolved type requires a reference`() = checkErrors(
+    fun `test type check incompatible constraints`() = checkErrors(
         """
-    module 0x1::M {
-        fun index_of<Element>(v: &vector<Element>, e: &Element): (bool, u64) {
-            (false, 0)
-        }
-        fun m() {
-            let ids: vector<u64>;
-            index_of(&ids, <error descr="Invalid argument for parameter 'e': type 'u64' is not compatible with '&u64'">1u64</error>);
-        }
-    }    
+module 0x1::M {
+    struct C {}
+    struct D {}
+    fun new<Content>(a: Content, b: Content): Content { a }
+    fun m() {
+        new(C {}, <error descr="Incompatible type 'D', expected 'C'">D {}</error>);
+    }
+}
     """
     )
 
-    fun `test return generic tuple from nested callable`() = checkErrors("""
+    fun `test error if resolved type requires a reference`() = checkErrors(
+        """
+module 0x1::M {
+    fun index_of<Element>(v: &vector<Element>, e: &Element): (bool, u64) {
+        (false, 0)
+    }
+    fun m() {
+        let ids: vector<u64>;
+        index_of(&ids, <error descr="Incompatible type 'u64', expected '&u64'">1u64</error>);
+    }
+}    
+    """
+    )
+
+    fun `test return generic tuple from nested callable`() = checkErrors(
+        """
     module 0x1::M {
         struct MintCapability<phantom CoinType> has key, store {}
         struct BurnCapability<phantom CoinType> has key, store {}
@@ -306,29 +342,31 @@ module 0x1::M {
             return (MintCapability<FCoinType>{}, BurnCapability<FCoinType>{})
         }
     }    
-    """)
-
-    fun `test emit event requires mutable reference error`() = checkErrors(
-        """
-    module 0x1::M {
-        struct EventHandle<phantom T: drop + store> has store {
-            counter: u64,
-            guid: vector<u8>,
-        }
-        struct Account has key {
-            handle: EventHandle<Event>
-        }
-        struct Event has store, drop {}
-        fun emit_event<T: drop + store>(handler_ref: &mut EventHandle<T>, msg: T) {}
-        fun m<Type: store + drop>() acquires Account {
-            emit_event(<error descr="Invalid argument for parameter 'handler_ref': type 'EventHandle<Event>' is not compatible with '&mut EventHandle<Event>'">borrow_global_mut<Account>(@0x1).handle</error>, Event {});
-        }
-        
-    }    
     """
     )
 
-    fun `test fields of struct should have abilities of struct`() = checkErrors("""
+    fun `test emit event requires mutable reference error`() = checkErrors(
+        """
+module 0x1::M {
+    struct EventHandle<phantom T: drop + store> has store {
+        counter: u64,
+        guid: vector<u8>,
+    }
+    struct Account has key {
+        handle: EventHandle<Event>
+    }
+    struct Event has store, drop {}
+    fun emit_event<T: drop + store>(handler_ref: &mut EventHandle<T>, msg: T) {}
+    fun m<Type: store + drop>() acquires Account {
+        emit_event(<error descr="Incompatible type 'EventHandle<Event>', expected '&mut EventHandle<?T>'">borrow_global_mut<Account>(@0x1).handle</error>, Event {});
+    }
+    
+}    
+    """
+    )
+
+    fun `test fields of struct should have abilities of struct`() = checkErrors(
+        """
     module 0x1::M {
         struct A {}
         
@@ -336,9 +374,11 @@ module 0x1::M {
             <error descr="The type 'A' does not have the ability 'copy' required by the declared ability 'copy' of the struct 'B'">a: A</error>
         }
     }    
-    """)
+    """
+    )
 
-    fun `test key struct requires store fields`() = checkErrors("""
+    fun `test key struct requires store fields`() = checkErrors(
+        """
     module 0x1::M {
         struct A {}
         
@@ -346,9 +386,11 @@ module 0x1::M {
             <error descr="The type 'A' does not have the ability 'store' required by the declared ability 'key' of the struct 'B'">a: A</error>
         }
     }    
-    """)
+    """
+    )
 
-    fun `test store struct requires store fields`() = checkErrors("""
+    fun `test store struct requires store fields`() = checkErrors(
+        """
     module 0x1::M {
         struct A {}
         
@@ -356,9 +398,11 @@ module 0x1::M {
             <error descr="The type 'A' does not have the ability 'store' required by the declared ability 'store' of the struct 'B'">a: A</error>
         }
     }    
-    """)
+    """
+    )
 
-    fun `test copy struct requires copy fields`() = checkErrors("""
+    fun `test copy struct requires copy fields`() = checkErrors(
+        """
     module 0x1::M {
         struct A {}
         
@@ -366,9 +410,11 @@ module 0x1::M {
             <error descr="The type 'A' does not have the ability 'copy' required by the declared ability 'copy' of the struct 'B'">a: A</error>
         }
     }    
-    """)
+    """
+    )
 
-    fun `test drop struct requires drop fields`() = checkErrors("""
+    fun `test drop struct requires drop fields`() = checkErrors(
+        """
     module 0x1::M {
         struct A {}
         
@@ -376,9 +422,11 @@ module 0x1::M {
             <error descr="The type 'A' does not have the ability 'drop' required by the declared ability 'drop' of the struct 'B'">a: A</error>
         }
     }    
-    """)
+    """
+    )
 
-    fun `test function invocation with explicitly provided generic type`() = checkErrors("""
+    fun `test function invocation with explicitly provided generic type`() = checkErrors(
+        """
     module 0x1::Event {
         struct Message has drop {}
         
@@ -388,9 +436,11 @@ module 0x1::M {
             emit_event<<error descr="The type 'Message' does not have required ability 'store'">Message</error>>()
         }
     }    
-    """)
+    """
+    )
 
-    fun `test struct constructor with explicitly provided generic type`() = checkErrors("""
+    fun `test struct constructor with explicitly provided generic type`() = checkErrors(
+        """
     module 0x1::Event {
         struct Message has drop {}
         
@@ -400,9 +450,11 @@ module 0x1::M {
             Event<<error descr="The type 'Message' does not have required ability 'store'">Message</error>> {};
         }
     }    
-    """)
+    """
+    )
 
-    fun `test type param`() = checkErrors("""
+    fun `test type param`() = checkErrors(
+        """
     module 0x1::Event {
         struct Message has drop {}
         
@@ -412,28 +464,34 @@ module 0x1::M {
             emit_event<<error descr="The type 'M' does not have required ability 'store'">M</error>>()
         }
     }    
-    """)
+    """
+    )
 
 
-    fun `test no required ability 'key' for move_to argument`() = checkErrors("""
+    fun `test no required ability 'key' for move_to argument`() = checkErrors(
+        """
     module 0x1::M {
         struct Res {}
         fun main(s: &signer, r: Res) {
             move_to(s, <error descr="The type 'Res' does not have required ability 'key'">r</error>)
         }
     }    
-    """)
+    """
+    )
 
-    fun `test no error in move_to with resource`() = checkErrors("""
+    fun `test no error in move_to with resource`() = checkErrors(
+        """
     module 0x1::M {
         struct Res has key {}
         fun main(s: &signer, r: Res) {
             move_to<Res>(s, r)
         }
     }    
-    """)
+    """
+    )
 
-    fun `test no required ability for struct for type param`() = checkErrors("""
+    fun `test no required ability for struct for type param`() = checkErrors(
+        """
     module 0x1::M {
         struct Res {}
         fun save<T: key>(r: T) {}
@@ -441,9 +499,11 @@ module 0x1::M {
             save(<error descr="The type 'Res' does not have required ability 'key'">r</error>)
         }
     }    
-    """)
+    """
+    )
 
-    fun `test no error in type param if structure has required abilities`() = checkErrors("""
+    fun `test no error in type param if structure has required abilities`() = checkErrors(
+        """
     module 0x1::M {
         struct Res has key {}
         fun save<T: key>(r: T) {}
@@ -451,45 +511,44 @@ module 0x1::M {
             save(r)
         }
     }    
-    """)
+    """
+    )
 
-    fun `test no error in specs`() = checkErrors("""
+    fun `test no error in specs`() = checkErrors(
+        """
     module 0x1::M {
         fun balance<Token: store>() {}
         spec schema PayFromEnsures<Token> {
             ensures balance<Token>();
         }
     }    
-    """)
+    """
+    )
 
-    fun `test pass primitive type to generic with required abilities`() = checkErrors("""
+    fun `test pass primitive type to generic with required abilities`() = checkErrors(
+        """
     module 0x1::M {
         fun balance<Token: key>(k: Token) {}
         fun m() {
             balance(<error descr="The type 'address' does not have required ability 'key'">@0x1</error>);
         }
     }    
-    """)
+    """
+    )
 
-    fun `test pass generic with abilities when primitive type is expected`() = checkErrors("""
-    module 0x1::M {
-        fun count(val: u8) {}
-        fun balance<Token: key>(k: Token) {
-            count(<error descr="The type 'Token' does not have required ability 'drop'">k</error>);
-        }
-    }    
-    """)
+    fun `test invalid type for field in struct literal`() = checkErrors(
+        """
+module 0x1::M {
+    struct Deal { val: u8 }
+    fun main() {
+        Deal { val: <error descr="Incompatible type 'bool', expected 'u8'">false</error> };
+    }
+}    
+"""
+    )
 
-    fun `test invalid type for field in struct literal`() = checkErrors("""
-    module 0x1::M {
-        struct Deal { val: u8 }
-        fun main() {
-            Deal { val: <error descr="Invalid argument for field 'val': type 'bool' is not compatible with 'u8'">false</error> };
-        }
-    }    
-    """)
-
-    fun `test valid type for field`() = checkErrors("""
+    fun `test valid type for field`() = checkErrors(
+        """
     module 0x1::M {
         struct Deal { val: u8 }
         fun main() {
@@ -497,9 +556,11 @@ module 0x1::M {
             Deal { val: 10u8 };
         }
     }    
-    """)
+    """
+    )
 
-    fun `test no need for explicit type parameter if inferrable from context`() = checkErrors("""
+    fun `test no need for explicit type parameter if inferrable from context`() = checkErrors(
+        """
     module 0x1::M {
         struct Option<Element> has copy, drop, store {}
         public fun none<Element>(): Option<Element> {
@@ -511,9 +572,11 @@ module 0x1::M {
         }
         
     }
-    """)
+    """
+    )
 
-    fun `test no need for vector empty() generic`() = checkErrors("""
+    fun `test no need for vector empty() generic`() = checkErrors(
+        """
     module 0x1::M {
         /// Create an empty vector.
         native public fun empty<Element>(): vector<Element>;
@@ -524,19 +587,23 @@ module 0x1::M {
             CapState { delegates: empty() };
         }
     }    
-    """)
+    """
+    )
 
-    fun `test type error in struct literal field shorthand`() = checkErrors("""
+    fun `test type error in struct literal field shorthand`() = checkErrors(
+        """
     module 0x1::M {
         struct S { a: u8 }
         fun m() {
             let a = true;
-            S { <error descr="Invalid argument for field 'a': type 'bool' is not compatible with 'u8'">a</error> };
+            S { <error descr="Incompatible type 'bool', expected 'u8'">a</error> };
         }
     }    
-    """)
+    """
+    )
 
-    fun `test do not crash type checking invalid number of type params or call params`() = checkErrors("""
+    fun `test do not crash type checking invalid number of type params or call params`() = checkErrors(
+        """
     module 0x1::M {
         struct S<R: key> { val: R }
         fun call(a: u8) {}
@@ -545,34 +612,42 @@ module 0x1::M {
             call(1, 2, 3);
         }
     }    
-    """)
+    """
+    )
 
-    fun `test explicit unit return`() = checkErrors("""
+    fun `test explicit unit return`() = checkErrors(
+        """
     module 0x1::M {
         fun m(): () {}
     }    
-    """)
+    """
+    )
 
-    fun `test if else with references no error if coerceable`() = checkErrors("""
+    fun `test if else with references no error if coerceable`() = checkErrors(
+        """
     module 0x1::M {
         struct S {}
         fun m(s: &S, s_mut: &mut S) {
             (if (cond) s_mut else s);
         }
     }    
-    """)
+    """
+    )
 
-    fun `test incorrect type address passed where &signer is expected in spec`() = checkErrors("""
-        module 0x1::M {
-            fun send(account: &signer) {}
-            
-            spec send {
-                send(<error descr="Invalid argument for parameter 'account': type 'address' is not compatible with '&signer'">@0x1</error>)
-            }
-        }        
-    """)
+    fun `test incorrect type address passed where &signer is expected in spec`() = checkErrors(
+        """
+module 0x1::M {
+    fun send(account: &signer) {}
+    
+    spec send {
+        send(<error descr="Incompatible type 'address', expected '&signer'">@0x1</error>);
+    }
+}   
+    """
+    )
 
-    fun `test signer compatibility in spec`() = checkErrors("""
+    fun `test signer compatibility in spec`() = checkErrors(
+        """
     module 0x1::M {
         fun address_of(account: &signer): address { @0x1 }
         fun send(account: &signer) {}
@@ -580,9 +655,11 @@ module 0x1::M {
             address_of(account);
         }
     }    
-    """)
+    """
+    )
 
-    fun `test vector_u8 is compatible with vector_num inside spec`() = checkErrors("""
+    fun `test vector_u8 is compatible with vector_num inside spec`() = checkErrors(
+        """
     module 0x1::M {
         struct S { 
             val: vector<u8> 
@@ -591,9 +668,11 @@ module 0x1::M {
             S { val: b"" };
         }
     }    
-    """)
+    """
+    )
 
-    fun `test ref equality for generics in call expr`() = checkErrors("""
+    fun `test ref equality for generics in call expr`() = checkErrors(
+        """
     module 0x1::M {
         struct Token<TokenT> {}
         fun call<TokenT>(ref: &Token<TokenT>) {
@@ -603,18 +682,22 @@ module 0x1::M {
             }
         }
     }    
-    """)
+    """
+    )
 
-    fun `test invalid argument to plus expr`() = checkErrors("""
+    fun `test invalid argument to plus expr`() = checkErrors(
+        """
     module 0x1::M {
         fun add(a: bool, b: bool) {
             <error descr="Invalid argument to '+': expected 'u8', 'u64', 'u128', but found 'bool'">a</error> 
             + <error descr="Invalid argument to '+': expected 'u8', 'u64', 'u128', but found 'bool'">b</error>;
         }
     }    
-    """)
+    """
+    )
 
-    fun `test no error if return nested in if and while`() = checkErrors("""
+    fun `test no error if return nested in if and while`() = checkErrors(
+        """
     module 0x1::M {
         fun main(): u8 {
             let i = 0;
@@ -624,18 +707,22 @@ module 0x1::M {
             i
         }
     }    
-    """)
+    """
+    )
 
-    fun `test no error empty return`() = checkErrors("""
+    fun `test no error empty return`() = checkErrors(
+        """
     module 0x1::M {
         fun main() {
             if (true) return
             return 
         }
     }    
-    """)
+    """
+    )
 
-    fun `test no error return tuple from if else`() = checkErrors("""
+    fun `test no error return tuple from if else`() = checkErrors(
+        """
     module 0x1::M {
         fun main(): (u8, u8) {
             if (true) {
@@ -645,9 +732,11 @@ module 0x1::M {
             }
         }
     }    
-    """)
+    """
+    )
 
-    fun `test no error return tuple from nested if else`() = checkErrors("""
+    fun `test no error return tuple from nested if else`() = checkErrors(
+        """
     module 0x1::M {
         fun main(): (u8, u8) {
             if (true) {
@@ -661,9 +750,11 @@ module 0x1::M {
             }
         }
     }    
-    """)
+    """
+    )
 
-    fun `test error add to bool in assignment expr`() = checkErrors("""
+    fun `test error add to bool in assignment expr`() = checkErrors(
+        """
     module 0x1::M {
         fun main() {
             let a = 1u64;
@@ -671,27 +762,33 @@ module 0x1::M {
             a = a + <error descr="Invalid argument to '+': expected 'u8', 'u64', 'u128', but found 'bool'">b</error>;
         }
     }    
-    """)
+    """
+    )
 
-    fun `test error invalid assignment type`() = checkErrors("""
+    fun `test error invalid assignment type`() = checkErrors(
+        """
     module 0x1::M {
         fun main() {
             let a = 1u64;
             a = <error descr="Incompatible type 'bool', expected 'u64'">false</error>;
         }
     }    
-    """)
+    """
+    )
 
-    fun `test tuple unpacking with three elements when two is specified`() = checkErrors("""
+    fun `test tuple unpacking with three elements when two is specified`() = checkErrors(
+        """
     module 0x1::M {
         fun tuple(): (u8, u8, u8) { (1, 1, 1) }
         fun main() {
             let <error descr="Invalid unpacking. Expected tuple binding of length 3: (_, _, _)">(a, b)</error> = tuple();
         }
     }    
-    """)
+    """
+    )
 
-    fun `test tuple unpacking no nested errors`() = checkErrors("""
+    fun `test tuple unpacking no nested errors`() = checkErrors(
+        """
     module 0x1::M {
         struct S { val: u8 }
         fun tuple(): (u8, u8, u8) { (1, 1, 1) }
@@ -699,9 +796,11 @@ module 0x1::M {
             let <error descr="Invalid unpacking. Expected tuple binding of length 3: (_, _, _)">(S { val }, b)</error> = tuple();
         }
     }    
-    """)
+    """
+    )
 
-    fun `test tuple unpacking into struct when tuple pat is expected is specified`() = checkErrors("""
+    fun `test tuple unpacking into struct when tuple pat is expected is specified`() = checkErrors(
+        """
     module 0x1::M {
         struct S { val: u8 }
         fun tuple(): (u8, u8, u8) { (1, 1, 1) }
@@ -709,9 +808,11 @@ module 0x1::M {
             let <error descr="Invalid unpacking. Expected tuple binding of length 3: (_, _, _)">S { val }</error> = tuple();
         }
     }    
-    """)
+    """
+    )
 
-    fun `test unpacking struct into field`() = checkErrors("""
+    fun `test unpacking struct into field`() = checkErrors(
+        """
     module 0x1::M {
         struct S { val: u8 }
         fun s(): S { S { val: 10 } }
@@ -719,9 +820,11 @@ module 0x1::M {
             let s = s();
         }
     }    
-    """)
+    """
+    )
 
-    fun `test error unpacking struct into tuple`() = checkErrors("""
+    fun `test error unpacking struct into tuple`() = checkErrors(
+        """
     module 0x1::M {
         struct S { val: u8 }
         fun s(): S { S { val: 10 } }
@@ -729,14 +832,155 @@ module 0x1::M {
             let <error descr="Invalid unpacking. Expected struct binding of type 0x1::M::S">(a, b)</error> = s();
         }
     }    
-    """)
+    """
+    )
 
-    fun `test error parameter type with return type inferred`() = checkErrors("""
+    fun `test error parameter type with return type inferred`() = checkErrors(
+        """
     module 0x1::M {
         fun identity<T>(a: T): T { a }
         fun main() {
             let a: u8 = <error descr="Incompatible type 'u64', expected 'u8'">identity(1u64)</error>;
         }
     }        
+    """
+    )
+
+    fun `test no error integer should ignore spec blocks`() = checkErrors(
+        """
+    module 0x1::main {
+        spec fun spec_pow(y: u64, x: u64): u64 {
+            if (x == 0) {
+                1
+            } else {
+                y * spec_pow(y, x - 1)
+            }
+        }
+
+        /// Returns 10^degree.
+        public fun pow_10(degree: u8): u64 {
+            let res = 1;
+            let i = 0;
+            while ({
+                spec {
+                    invariant res == spec_pow(10, i);
+                    invariant 0 <= i && i <= degree;
+                };
+                i < degree
+            }) {
+                res = res * 10;
+                i = i + 1;
+            };
+            res
+        }
+    }        
+    """
+    )
+
+    fun `test no error unpacking a struct from move_from`() = checkByText(
+        """
+module 0x1::main {
+    struct Container has key { val: u8 }
+    fun main() {
+        let Container { val } = move_from(source_addr);
+    }
+}        
+    """
+    )
+
+    fun `test vector lit with explicit type and type error`() = checkByText("""
+module 0x1::main {
+    fun main() {
+        vector<u8>[<error descr="Incompatible type 'u64', expected 'u8'">1u64</error>];
+    }
+}        
+    """)
+
+    fun `test vector lit with implicit type and type error`() = checkByText("""
+module 0x1::main {
+    fun main() {
+        vector[1u8, <error descr="Incompatible type 'u64', expected 'u8'">1u64</error>];
+    }
+}        
+    """)
+
+    fun `test call expr with incomplete arguments and explicit type`() = checkByText("""
+    module 0x1::main {
+        fun call<T>(a: T, b: T): T {
+            b        
+        }    
+        fun main() {
+            call<u8>(<error descr="Incompatible type 'u64', expected 'u8'">1u64</error>);
+        }    
+    }        
+    """)
+
+    fun `test call expr with incomplete arguments and implicit type`() = checkByText("""
+    module 0x1::main {
+        fun call<T>(a: T, b: T, c: T): T {
+            b        
+        }    
+        fun main() {
+            call(1u8, <error descr="Incompatible type 'u64', expected 'u8'">1u64</error>);
+        }    
+    }        
+    """)
+
+    fun `test option none is compatible with any option`() = checkByText("""
+module 0x1::option {
+    struct Option<Element> has copy, drop, store {
+        vec: vector<Element>
+    }
+    public fun none<Element>(): Option<Element> {
+        Option { vec: vector::empty() }
+    }
+}        
+module 0x1::main {
+    use 0x1::option;
+    struct IterableValue<K: copy + store + drop> has store {
+        prev: option::Option<K>,
+        next: option::Option<K>,
+    }
+    public fun new() {
+        IterableValue { prev: option::none(), next: option::none() };
+    }
+}        
+    """)
+
+    fun `test deeply nested structure type is unknown due to memory issues`() = checkByText("""
+module 0x1::main {
+    struct Box<T> has copy, drop, store { x: T }
+    struct Box3<T> has copy, drop, store { x: Box<Box<T>> }
+    struct Box7<T> has copy, drop, store { x: Box3<Box3<T>> }
+    struct Box15<T> has copy, drop, store { x: Box7<Box7<T>> }
+    struct Box31<T> has copy, drop, store { x: Box15<Box15<T>> }
+    struct Box63<T> has copy, drop, store { x: Box31<Box31<T>> }
+    
+    fun box3<T>(x: T): Box3<T> {
+        Box3 { x: Box { x: Box { x } } }
+    }
+
+    fun box7<T>(x: T): Box7<T> {
+        Box7 { x: box3(box3(x)) }
+    }
+
+    fun box15<T>(x: T): Box15<T> {
+        Box15 { x: box7(box7(x)) }
+    }
+
+    fun box31<T>(x: T): Box31<T> {
+        Box31 { x: box15(box15(x)) }
+    }
+    
+    fun box63<T>(x: T): Box63<T> {
+        Box63 { x: box31(box31(x)) }
+    }
+
+    fun main() {
+        let a: Box63<u8>;
+        a;
+      //^ unknown  
+    }
+}
     """)
 }

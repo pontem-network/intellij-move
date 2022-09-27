@@ -485,4 +485,32 @@ class ResolveFunctionTest : ResolveTestCase() {
         }
     }
     """)
+
+    fun `test use item inside function block`() = checkByCode("""
+module 0x1::string {
+    public fun utf8() {}
+              //X
+}
+module 0x1::main {
+    fun main() {
+        use 0x1::string::utf8;
+        utf8();
+        //^
+    }
+}        
+    """)
+
+    fun `test resolve with self alias`() = checkByCode("""
+module 0x1::string {
+    public fun utf8() {}
+              //X
+}
+module 0x1::main {
+    use 0x1::string::Self as mystring;
+    fun main() {
+        mystring::utf8();
+                //^
+    }
+}        
+    """)
 }

@@ -3,10 +3,7 @@ package org.move.ide.inspections.imports
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.allModuleSpecBlocks
-import org.move.lang.core.psi.ext.itemScope
-import org.move.lang.core.psi.ext.module
-import org.move.lang.core.psi.ext.moduleSpec
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ItemScope
 
 typealias ItemUsages = MutableMap<String, MutableSet<MvNamedElement>>
@@ -67,31 +64,57 @@ val MvImportsOwner.pathUsages: PathUsages
         return localPathUsages
     }
 
+data class ImportInfo(
+    val mainImports: Map<String, MvElement>,
+    val testImports: Map<String, MvElement>
+) {
+    fun getImports(itemScope: ItemScope): Map<String, MvElement> {
+        return when (itemScope) {
+            ItemScope.MAIN -> mainImports
+            ItemScope.TEST -> testImports
+        }
+    }
+}
+
+val MvImportsOwner.importInfo: ImportInfo
+    get() {
+        return getProjectPsiDependentCache(this) { importsOwner ->
+            val mainImports = mutableMapOf<String, MvElement>()
+            val testImports = mutableMapOf<String, MvElement>()
+            for (useStmt in importsOwner.useStmtList) {
+                val scopeImports = if (useStmt.isTestOnly) testImports else mainImports
+                for (useItem in useStmt.childUseItems) {
+                    val name = useItem.name ?: continue
+                    scopeImports[name] = useItem
+                }
+                val moduleSpeck = useStmt.moduleUseSpeck ?: continue
+                val name = moduleSpeck.name ?: continue
+                scopeImports[name] = moduleSpeck
+            }
+            ImportInfo(mainImports, testImports)
+        }
+    }
+
 private fun MvImportsOwner.localPathUsages(): PathUsages {
-    return getProjectPsiDependentCache(this) {
+    return getProjectPsiDependentCache(this) { importsOwner ->
 
         val mainNameUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
         val mainTypeUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
         val testNameUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
         val testTypeUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
 
-        for (child in it.children) {
-            PsiTreeUtil.processElements(child) { element ->
+        for (child in importsOwner.children) {
+            PsiTreeUtil.processElements(child, MvPath::class.java) { path ->
+                val nameUsages =
+                    if (path.itemScope == ItemScope.TEST) testNameUsages else mainNameUsages
+                val typeUsages =
+                    if (path.itemScope == ItemScope.TEST) testTypeUsages else mainTypeUsages
                 when {
-                    element is MvPathType -> {
-                        val typeUsages =
-                            if (element.itemScope == ItemScope.TEST) testTypeUsages else mainTypeUsages
-                        putUsage(element.path, typeUsages)
-                        true
-                    }
-                    element is MvPath && element.parent !is MvPathType -> {
-                        val nameUsages =
-                            if (element.itemScope == ItemScope.TEST) testNameUsages else mainNameUsages
-                        putUsage(element, nameUsages)
-                        true
-                    }
-                    else -> true
+                    path.moduleRef != null -> putUsage(path, importsOwner, nameUsages)
+                    path.parent is MvPathType -> putUsage(path, importsOwner, typeUsages)
+                    else -> putUsage(path, importsOwner, nameUsages)
                 }
+                true
             }
         }
         PathUsages(
@@ -101,7 +124,14 @@ private fun MvImportsOwner.localPathUsages(): PathUsages {
     }
 }
 
-private fun putUsage(element: MvPath, itemUsages: ItemUsages) {
+private fun putUsage(element: MvPath, currentImportsOwner: MvImportsOwner, itemUsages: ItemUsages) {
+    for (ancestor in element.ancestorsOfType<MvImportsOwner>()) {
+        if (ancestor == currentImportsOwner) break
+
+        val imports = ancestor.importInfo
+
+    }
+
     val moduleRef = element.moduleRef
     when {
         // MODULE::ITEM

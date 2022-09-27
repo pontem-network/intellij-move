@@ -45,9 +45,9 @@ class ImportOptimizer : ImportOptimizer {
         sortImports(importsOwner)
     }
 
-    private fun removeUnusedImports(useStmtOwner: MvImportsOwner) {
-        val psiFactory = useStmtOwner.project.psiFactory
-        val useStmts = useStmtOwner.useStmtList
+    private fun removeUnusedImports(importsOwner: MvImportsOwner) {
+        val psiFactory = importsOwner.project.psiFactory
+        val useStmts = importsOwner.useStmtList
         for (useStmt in useStmts) {
             val moduleSpeck = useStmt.moduleUseSpeck
             if (moduleSpeck != null) {

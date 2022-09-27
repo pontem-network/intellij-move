@@ -34,7 +34,7 @@ class MvTypeHintsPresentationFactory(private val factory: PresentationFactory) {
     ).join()
 
     private fun typeParameterTypeHint(type: TyTypeParameter): InlayPresentation {
-        return text(type.parameter.name)
+        return text(type.origin.name)
     }
 
     private fun parametersHint(kinds: List<Ty>, level: Int): InlayPresentation =

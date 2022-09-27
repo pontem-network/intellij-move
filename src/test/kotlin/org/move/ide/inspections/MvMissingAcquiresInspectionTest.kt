@@ -157,4 +157,15 @@ class MvMissingAcquiresInspectionTest: InspectionTestBase(MvMissingAcquiresInspe
         }
     }
     """)
+
+    fun `test missing acquires for borrow_global with dot expr`() = checkWarnings("""
+module 0x1::main {
+    struct StakePool has key {
+        locked_until_secs: u64,
+    }
+    fun get_lockup_secs(pool_address: address): u64 {
+        <error descr="Function 'get_lockup_secs' is not marked as 'acquires StakePool'">borrow_global<StakePool>(pool_address)</error>.locked_until_secs
+    }
+}        
+    """)
 }

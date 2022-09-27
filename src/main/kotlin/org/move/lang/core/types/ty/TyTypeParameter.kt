@@ -6,12 +6,12 @@ import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.psi.ext.ability
 
 
-data class TyTypeParameter(val parameter: MvTypeParameter) : Ty {
+data class TyTypeParameter(val origin: MvTypeParameter) : Ty {
 
-    val name: String? get() = parameter.name
+    val name: String? get() = origin.name
 
     override fun abilities(): Set<Ability> {
-        return parameter.abilities.mapNotNull { it.ability }.toSet()
+        return origin.abilities.mapNotNull { it.ability }.toSet()
     }
 
     override fun toString(): String = tyToString(this)

@@ -3,7 +3,7 @@ package org.move.lang.types
 import org.move.utils.tests.types.TypificationTestCase
 
 class ExpectedTypeTest : TypificationTestCase() {
-    fun `test function parameter primitive type`() = testExpectedTypeExpr(
+    fun `test function parameter primitive type`() = testExpectedTyExpr(
         """
     module 0x1::Main {
         fun call(a: u8) {}
@@ -15,7 +15,7 @@ class ExpectedTypeTest : TypificationTestCase() {
     """
     )
 
-    fun `test function parameter generic explicit type`() = testExpectedTypeExpr(
+    fun `test function parameter generic explicit type`() = testExpectedTyExpr(
         """
     module 0x1::Main {
         fun call<T>(a: T) {}
@@ -27,7 +27,7 @@ class ExpectedTypeTest : TypificationTestCase() {
     """
     )
 
-    fun `test function parameter gets type from first parameter`() = testExpectedTypeExpr("""
+    fun `test function parameter gets type from first parameter`() = testExpectedTyExpr("""
     module 0x1::Main {
         fun call<T>(a: T, b: T) {}
         fun main() {
@@ -37,7 +37,7 @@ class ExpectedTypeTest : TypificationTestCase() {
     }    
     """)
 
-    fun `test null if too many parameters`() = testExpectedTypeExpr("""
+    fun `test null if too many parameters`() = testExpectedTyExpr("""
     module 0x1::Main {
         fun call<T>(a: T, b: T) {}
         fun main() {
@@ -47,7 +47,7 @@ class ExpectedTypeTest : TypificationTestCase() {
     }    
     """)
 
-    fun `test inferred correctly if not enough parameters`() = testExpectedTypeExpr("""
+    fun `test inferred correctly if not enough parameters`() = testExpectedTyExpr("""
     module 0x1::Main {
         fun call<T>(a: T, b: T, c: T) {}
         fun main() {
@@ -57,7 +57,7 @@ class ExpectedTypeTest : TypificationTestCase() {
     }    
     """)
 
-    fun `test inferred from return type`() = testExpectedTypeExpr("""
+    fun `test inferred from return type`() = testExpectedTyExpr("""
     module 0x1::Main {
         fun identity<T>(a: T): T { a }
         fun main() {
@@ -67,7 +67,7 @@ class ExpectedTypeTest : TypificationTestCase() {
     }    
     """)
 
-    fun `test let statement initializer no pattern explicit type`() = testExpectedTypeExpr(
+    fun `test let statement initializer no pattern explicit type`() = testExpectedTyExpr(
         """
     module 0x1::Main {
         fun main() {
@@ -78,7 +78,7 @@ class ExpectedTypeTest : TypificationTestCase() {
     """
     )
 
-    fun `test let statement struct pattern`() = testExpectedTypeExpr(
+    fun `test let statement struct pattern`() = testExpectedTyExpr(
         """
     module 0x1::Main {
         struct S { val: u8 }
@@ -90,7 +90,31 @@ class ExpectedTypeTest : TypificationTestCase() {
     """
     )
 
-    fun `test struct field literal`() = testExpectedTypeExpr(
+    fun `test let statement struct pattern field explicit type`() = testExpectedTyExpr(
+        """
+    module 0x1::Main {
+        struct S<Type> { val: Type }
+        fun main() {
+            let val: S<u8> = S { val: my_ref };
+                                      //^ u8
+        }
+    }    
+    """
+    )
+
+    fun `test let statement struct pattern field path type`() = testExpectedTyExpr(
+        """
+    module 0x1::Main {
+        struct S<Type> { val: Type }
+        fun main() {
+            let S<u8> { val } = S { val: my_ref };
+                                         //^ u8
+        }
+    }    
+    """
+    )
+
+    fun `test struct field literal`() = testExpectedTyExpr(
         """
     module 0x1::Main {
         struct S { val: u8 }
@@ -102,7 +126,32 @@ class ExpectedTypeTest : TypificationTestCase() {
     """
     )
 
-    fun `test null if inside other expr`() = testExpectedTypeExpr(
+    fun `test struct field literal with generic`() = testExpectedTyExpr(
+        """
+    module 0x1::Main {
+        struct S<Type> { val1: Type }
+        fun main() {
+            S<u8> { val1: my_ref };
+                         //^ u8
+        }
+    }    
+    """
+    )
+
+    fun `test struct field literal with generic inferred from outer context`() = testExpectedTyExpr(
+        """
+    module 0x1::Main {
+        struct S<Type> { val1: Type, val2: Type }
+        fun main() {
+            let a = 1u8;
+            S { val1: a, val2: my_ref };
+                              //^ u8
+        }
+    }    
+    """
+    )
+
+    fun `test null if inside other expr`() = testExpectedTyExpr(
         """
     module 0x1::Main {
         fun call() {
@@ -112,4 +161,35 @@ class ExpectedTypeTest : TypificationTestCase() {
     }    
     """
     )
+
+    fun `test borrow type`() = testExpectedTyExpr("""
+    module 0x1::main {
+        struct LiquidityPool {}
+        fun call(pool: &LiquidityPool) {}
+        fun main() {
+            call(&myref);
+                 //^ 0x1::main::LiquidityPool
+        }
+    }    
+    """)
+
+    fun `test borrow mut type`() = testExpectedTyExpr("""
+    module 0x1::main {
+        struct LiquidityPool {}
+        fun call(pool: &mut LiquidityPool) {}
+        fun main() {
+            call(&mut myref);
+                     //^ 0x1::main::LiquidityPool
+        }
+    }    
+    """)
+
+    fun `test type argument type`() = testExpectedTyType("""
+    module 0x1::main {
+        fun main() {
+            borrow_global<S>();
+                        //^ ?T(key)
+        }
+    }        
+    """)
 }

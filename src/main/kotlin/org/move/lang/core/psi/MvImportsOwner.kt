@@ -1,6 +1,7 @@
 package org.move.lang.core.psi
 
 import org.move.lang.core.psi.ext.address
+import org.move.lang.core.psi.ext.isSelf
 
 interface MvImportsOwner : MvElement {
     val useStmtList: List<MvUseStmt>
@@ -52,7 +53,13 @@ fun MvImportsOwner.itemImportsAliases(): List<MvUseAlias> = itemImports().mapNot
 
 fun MvImportsOwner.selfItemImports(): List<MvUseItem> =
     itemImports()
-        .filter { it.useAlias == null && it.text == "Self" }
+        .filter { it.isSelf }
+        .filter { it.useAlias == null }
+
+fun MvImportsOwner.selfItemImportAliases(): List<MvUseAlias> =
+    itemImports()
+        .filter { it.isSelf }
+        .mapNotNull { it.useAlias }
 
 fun MvImportsOwner.itemImportsWithoutAliases(): List<MvUseItem> =
     itemImports().filter { it.useAlias == null }

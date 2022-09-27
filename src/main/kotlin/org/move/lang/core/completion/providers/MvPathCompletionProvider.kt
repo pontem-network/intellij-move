@@ -12,13 +12,17 @@ import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.ancestors
+import org.move.lang.core.psi.ext.endOffset
+import org.move.lang.core.psi.ext.isSelf
+import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
 import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.functionInferenceCtx
+import org.move.lang.core.types.infer.inferExpectedTy
+import org.move.lang.core.types.infer.ownerInferenceCtx
 import org.move.lang.core.types.ty.Ty
 
 abstract class MvPathCompletionProvider : MvCompletionProvider() {
@@ -37,7 +41,7 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
 
         val moduleRef = pathElement.moduleRef
         val itemVis = itemVis(pathElement)
-        val inferenceCtx = pathElement.functionInferenceCtx()
+        val inferenceCtx = pathElement.ownerInferenceCtx()
         val expectedTy =
             getExpectedTypeForEnclosingPathOrDotExpr(pathElement, inferenceCtx)
         val ctx = CompletionContext(pathElement, itemVis, expectedTy)
@@ -145,8 +149,9 @@ private fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement
         if (element.endOffset < ancestor.endOffset) continue
         if (element.endOffset > ancestor.endOffset) break
         when (ancestor) {
-            is MvRefExpr -> return ancestor.expectedTy(ctx)
-            is MvDotExpr -> return ancestor.expectedTy(ctx)
+            is MvPathType,
+            is MvRefExpr,
+            is MvDotExpr -> return inferExpectedTy(ancestor, ctx)
         }
     }
     return null

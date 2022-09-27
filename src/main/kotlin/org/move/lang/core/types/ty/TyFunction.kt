@@ -11,16 +11,16 @@ class TyFunction(
     val paramTypes: List<Ty>,
     val retType: Ty,
     val acquiresTypes: List<Ty>,
+    val typeArgs: List<Ty>,
 ) : Ty {
-    var solvable: Boolean = true
-
     override fun innerFoldWith(folder: TypeFolder): Ty {
         return TyFunction(
             item,
             typeVars,
             paramTypes.map { it.foldWith(folder) },
             retType.foldWith(folder),
-            acquiresTypes.map { it.foldWith(folder) }
+            acquiresTypes.map { it.foldWith(folder) },
+            typeArgs.map { it.foldWith(folder) }
         )
     }
 

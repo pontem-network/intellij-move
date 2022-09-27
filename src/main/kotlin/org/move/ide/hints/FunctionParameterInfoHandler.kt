@@ -7,16 +7,16 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import org.move.ide.utils.CallInfo
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvCallArgumentList
 import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvStructLitFieldsBlock
+import org.move.lang.core.psi.MvValueArgumentList
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.startOffset
 import org.move.utils.AsyncParameterInfoHandler
 
-class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MvCallArgumentList, ParamsDescription>() {
+class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MvValueArgumentList, ParamsDescription>() {
 
-    override fun findTargetElement(file: PsiFile, offset: Int): MvCallArgumentList? {
+    override fun findTargetElement(file: PsiFile, offset: Int): MvValueArgumentList? {
         val element = file.findElementAt(offset) ?: return null
 //        val callExpr = element.ancestorStrict<MvCallArgumentList>() ?: return null
 //        val block = element.ancestorStrict<MvStructLitFieldsBlock>()
@@ -25,10 +25,10 @@ class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MvCallArgumentLis
 //        return callExpr
     }
 
-    override fun calculateParameterInfo(element: MvCallArgumentList): Array<ParamsDescription>? =
+    override fun calculateParameterInfo(element: MvValueArgumentList): Array<ParamsDescription>? =
         ParamsDescription.findDescription(element)?.let { arrayOf(it) }
 
-    override fun updateParameterInfo(parameterOwner: MvCallArgumentList, context: UpdateParameterInfoContext) {
+    override fun updateParameterInfo(parameterOwner: MvValueArgumentList, context: UpdateParameterInfoContext) {
         if (context.parameterOwner != parameterOwner) {
             context.removeHint()
             return
@@ -73,7 +73,7 @@ class ParamsDescription(val parameters: Array<String>) {
         /**
          * Finds declaration of the func/method and creates description of its arguments
          */
-        fun findDescription(args: MvCallArgumentList): ParamsDescription? {
+        fun findDescription(args: MvValueArgumentList): ParamsDescription? {
             val call = args.parent
             val callInfo = (call as? MvCallExpr)?.let { CallInfo.resolve(it) } ?: return null
 

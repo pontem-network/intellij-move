@@ -13,6 +13,7 @@ import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.module
+import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.ty.Ty
 import javax.swing.Icon
 
@@ -43,7 +44,7 @@ val MvFunction.isTest: Boolean
 
 val MvFunction.acquiresTys: List<Ty>
     get() =
-        this.acquiresType?.pathTypeList.orEmpty().map { it.ty() }
+        this.acquiresType?.pathTypeList.orEmpty().map { it.typeTy(InferenceContext(true)) }
 
 val MvFunction.signatureText: String
     get() {

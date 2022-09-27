@@ -27,13 +27,15 @@ class ConstraintSolver(val ctx: InferenceContext) {
         while (constraints.isNotEmpty()) {
             val constraint = constraints.removeFirst()
             val isSuccessful = processConstraint(constraint)
-            if (!isSuccessful) solvable = false
+            if (!isSuccessful) {
+                solvable = false
+            }
         }
         return solvable
     }
 
     private fun processConstraint(rawConstraint: EqualityConstraint): Boolean {
-        val constraint = rawConstraint.foldTyInferWith(ctx::resolveTyInferFromContext)
+        val constraint = rawConstraint.foldTyInferWith(ctx::resolveTyInfer)
         var ty1 = constraint.ty1
         var ty2 = constraint.ty2
         if (ctx.msl) {

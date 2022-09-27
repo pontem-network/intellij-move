@@ -1,22 +1,50 @@
 package org.move.lang.core.types.infer
 
+import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.declaredTy
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.ty
+import org.move.lang.core.psi.ext.structLitExpr
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.types.ty.TyReference
+import org.move.lang.core.types.ty.TyStruct
 
-fun inferExprExpectedTy(expr: MvExpr, ctx: InferenceContext): Ty? {
-    val owner = expr.parent
+fun inferExpectedTy(element: PsiElement, parentCtx: InferenceContext): Ty? {
+    val owner = element.parent
     return when (owner) {
-        is MvCallArgumentList -> {
+        is MvBorrowExpr -> {
+            val refTy = inferExpectedTy(owner, parentCtx) as? TyReference ?: return null
+            refTy.innerTy()
+        }
+        is MvTypeArgument -> {
+            val typeArgumentList = owner.parent as MvTypeArgumentList
             val paramIndex =
-                owner.children.indexOfFirst { it.textRange.contains(expr.textOffset) }
+                typeArgumentList.children.indexOfFirst { it.textRange.contains(owner.textOffset) }
             if (paramIndex == -1) return null
-
-            val callExpr = owner.parent as? MvCallExpr ?: return null
-            val inferenceCtx = callExpr.functionInferenceCtx(callExpr.isMsl())
+            val path = typeArgumentList.parent as MvPath
+            val ownerExpr = path.parent
+            when (ownerExpr) {
+                is MvCallExpr -> {
+                    val inferenceCtx = ownerExpr.ownerInferenceCtx(ownerExpr.isMsl())
+                    inferenceCtx.callExprTypes[ownerExpr]
+                        ?.typeVars
+                        ?.getOrNull(paramIndex)
+                }
+                is MvStructLitExpr -> {
+                    val inferenceCtx = ownerExpr.ownerInferenceCtx(ownerExpr.isMsl())
+                    (inferenceCtx.exprTypes[ownerExpr] as? TyStruct)
+                        ?.typeArgs
+                        ?.getOrNull(paramIndex)
+                }
+                else -> null
+            }
+        }
+        is MvValueArgument -> {
+            val valueArgumentList = owner.parent as MvValueArgumentList
+            val paramIndex =
+                valueArgumentList.children.indexOfFirst { it.textRange.contains(owner.textOffset) }
+            if (paramIndex == -1) return null
+            val callExpr = valueArgumentList.parent as? MvCallExpr ?: return null
+            val inferenceCtx = callExpr.ownerInferenceCtx(callExpr.isMsl())
             inferenceCtx.callExprTypes[callExpr]
                 ?.paramTypes
                 ?.getOrNull(paramIndex)
@@ -26,21 +54,20 @@ fun inferExprExpectedTy(expr: MvExpr, ctx: InferenceContext): Ty? {
             val initializerParent = owner.parent
             when (initializerParent) {
                 is MvLetStmt -> {
-                    val pat = initializerParent.pat
-                    when (pat) {
-                        is MvBindingPat -> {
-                            val ty = pat.declaredTy(ctx)
-                            if (ty is TyUnknown) null else ty
-                        }
-                        is MvStructPat -> pat.ty()
-                        else -> null
-//                        else -> TyUnknown
-                    }
+                    val patExplicitTy = initializerParent.typeAnnotation?.type?.let { inferTypeTy(it, parentCtx) }
+                    initializerParent.pat
+                        ?.let { inferPatTy(it, parentCtx, patExplicitTy) }
                 }
                 else -> null
             }
         }
-        is MvStructLitField -> owner.ty()
+        is MvStructLitField -> {
+            // only first level field for now, rewrite later as recursive
+            val structLitExpr = owner.structLitExpr
+            val structExpectedTy = inferExpectedTy(structLitExpr, parentCtx)
+            val structTy = inferExprTy(structLitExpr, parentCtx, structExpectedTy) as? TyStruct ?: return null
+            structTy.fieldTy(owner.referenceName)
+        }
         else -> null
     }
 }

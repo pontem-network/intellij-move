@@ -124,6 +124,22 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
         <div class='content'><p>docstring</p></div>"""
     )
 
+    fun `test function signature with return generic`() = doTest("""
+module 0x1::main {
+    struct Box<T> has copy, drop, store { x: T }
+    struct Box3<T> has copy, drop, store { x: Box<Box<T>> }
+    
+    fun box3<T>(x: T): Box3<T> {
+       //^
+        Box3 { x: Box { x: Box { x } } }
+    }
+}        
+    """, expected = """
+<div class='definition'><pre>0x1::main
+fun <b>box3</b>&lt;T&gt;(x: T): Box3&lt;T&gt;</pre></div>
+<div class='content'></div>        
+    """)
+
     private fun doTest(@Language("Move") code: String, @Language("Html") expected: String?) =
         doTest(code, expected, block = MvDocumentationProvider::generateDoc)
 }

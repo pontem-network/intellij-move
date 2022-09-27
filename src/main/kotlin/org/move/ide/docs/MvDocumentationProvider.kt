@@ -10,7 +10,9 @@ import org.move.ide.presentation.text
 import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.infer.functionInferenceCtx
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.inferTypeTy
+import org.move.lang.core.types.infer.ownerInferenceCtx
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.moveProject
 import org.move.stdext.joinToWithBuffer
@@ -30,9 +32,8 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
         val buffer = StringBuilder()
         var docElement = element
-//        if (docElement is MvFunctionSignature) docElement = docElement.parent
-//        if (docElement is MvStructSignature) docElement = docElement.parent
-        if (docElement is MvBindingPat
+        if (
+            docElement is MvBindingPat
             && docElement.owner is MvConst
         ) docElement = docElement.owner
         when (docElement) {
@@ -47,7 +48,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
-                val ctx = docElement.functionInferenceCtx(false)
+                val ctx = docElement.ownerInferenceCtx(false)
                 val type = docElement.inferredTy(ctx).renderForDocs(true)
                 buffer += presentationInfo.type
                 buffer += " "
@@ -128,7 +129,7 @@ fun MvElement.signature(builder: StringBuilder) {
             buffer += this.struct.name ?: angleWrapped("anonymous")
             buffer += "\n"
             buffer.b { it += this.name }
-            buffer += ": ${this.declaredTy(false).renderForDocs(true)}"
+            buffer += ": ${this.declarationTypeTy(InferenceContext(false)).renderForDocs(true)}"
         }
 
         is MvConst -> {
@@ -136,7 +137,7 @@ fun MvElement.signature(builder: StringBuilder) {
             buffer += "\n"
             buffer += "const "
             buffer.b { it += this.bindingPat?.name ?: angleWrapped("unknown") }
-            buffer += ": ${this.declaredTy(false).renderForDocs(false)}"
+            buffer += ": ${this.declarationTy(InferenceContext(false)).renderForDocs(false)}"
             this.initializer?.let { buffer += " ${it.text}" }
         }
 
@@ -153,7 +154,10 @@ private fun PsiElement.generateDocumentation(
     buffer += prefix
     when (this) {
         is MvType -> {
-            buffer += this.ty().typeLabel(this)
+            buffer += inferTypeTy(this, InferenceContext(this.isMsl()))
+                .typeLabel(this)
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
         }
 
         is MvFunctionParameterList ->

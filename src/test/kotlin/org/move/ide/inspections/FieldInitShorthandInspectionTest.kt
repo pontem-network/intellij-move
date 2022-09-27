@@ -33,13 +33,17 @@ class FieldInitShorthandInspectionTest : InspectionTestBase(FieldInitShorthandIn
     fun `test fix for struct pattern`() = checkFixByText(
         "Use pattern shorthand", """
     module 0x1::M {
+        struct S { foo: u8 }
         fun m() {
+            let foo = 1;
             let S { <weak_warning descr="Expression can be simplified">foo: foo/*caret*/</weak_warning> } = call();
         }
     }    
     """, """
     module 0x1::M {
+        struct S { foo: u8 }
         fun m() {
+            let foo = 1;
             let S { foo } = call();
         }
     }    

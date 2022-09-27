@@ -14,6 +14,7 @@ abstract class ChopListIntentionBase<TList : MvElement, TElement : MvElement>(
     elementClass: Class<TElement>,
     @IntentionName intentionText: String
 ) : ListIntentionBase<TList, TElement>(listClass, elementClass, intentionText) {
+
     override fun findApplicableContext(project: Project, editor: Editor, element: PsiElement): TList? {
         val list = element.listContext ?: return null
         val elements = getElements(list)
@@ -53,9 +54,9 @@ class ChopParameterListIntention : ChopListIntentionBase<MvFunctionParameterList
     "Put parameters on separate lines"
 )
 
-class ChopArgumentListIntention : ChopListIntentionBase<MvCallArgumentList, MvExpr>(
-    MvCallArgumentList::class.java,
-    MvExpr::class.java,
+class ChopValueArgumentListIntention : ChopListIntentionBase<MvValueArgumentList, MvValueArgument>(
+    MvValueArgumentList::class.java,
+    MvValueArgument::class.java,
     "Put arguments on separate lines"
 )
 

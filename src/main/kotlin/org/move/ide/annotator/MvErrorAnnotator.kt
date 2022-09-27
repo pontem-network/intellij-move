@@ -3,17 +3,20 @@ package org.move.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
-import org.move.ide.presentation.acquireableIn
+import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullname
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.inferTypeTy
+import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.modules
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
 import org.move.lang.utils.addToHolder
 
-class ErrorAnnotator : MvAnnotator() {
+class MvErrorAnnotator : MvAnnotator() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val moveHolder = MvAnnotationHolder(holder)
         val visitor = object : MvVisitor() {
@@ -109,10 +112,11 @@ class ErrorAnnotator : MvAnnotator() {
                 if (o.path.referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
                     val explicitTypeArgs = o.typeArguments
                     val currentModule = o.containingModule ?: return
+                    val inferenceCtx = InferenceContext(o.isMsl())
                     for (typeArg in explicitTypeArgs) {
-                        val ty = typeArg.type.ty()
-                        if (!ty.acquireableIn(currentModule)) {
-                            val typeName = ty.fullname()
+                        val typeArgTy = inferTypeTy(typeArg.type, inferenceCtx)
+                        if (typeArgTy !is TyUnknown && !typeArgTy.canBeAcquiredInModule(currentModule)) {
+                            val typeName = typeArgTy.fullname()
                             holder.newAnnotation(
                                 HighlightSeverity.ERROR,
                                 "The type '$typeName' was not declared in the current module. " +
@@ -125,12 +129,12 @@ class ErrorAnnotator : MvAnnotator() {
                 }
             }
 
-            override fun visitCallArgumentList(arguments: MvCallArgumentList) {
+            override fun visitValueArgumentList(arguments: MvValueArgumentList) {
                 val callExpr = arguments.parent as? MvCallExpr ?: return
                 val function = callExpr.path.reference?.resolve() as? MvFunction ?: return
 
                 val expectedCount = function.parameters.size
-                val realCount = arguments.exprList.size
+                val realCount = arguments.valueArgumentList.size
                 val errorMessage =
                     "This function takes $expectedCount ${
                         pluralise(
@@ -150,11 +154,12 @@ class ErrorAnnotator : MvAnnotator() {
                         return
                     }
                     realCount > expectedCount -> {
-                        arguments.exprList.drop(expectedCount).forEach {
-                            holder.newAnnotation(HighlightSeverity.ERROR, errorMessage)
-                                .range(it)
-                                .create()
-                        }
+                        arguments.valueArgumentList.drop(expectedCount)
+                            .forEach {
+                                holder.newAnnotation(HighlightSeverity.ERROR, errorMessage)
+                                    .range(it)
+                                    .create()
+                            }
                         return
                     }
                 }

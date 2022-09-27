@@ -1,24 +1,35 @@
 package org.move.utils.tests.types
 
 import org.intellij.lang.annotations.Language
+import org.move.ide.presentation.expectedTyText
 import org.move.ide.presentation.text
+import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvExpr
-import org.move.lang.core.psi.ext.expectedTy
+import org.move.lang.core.psi.MvType
 import org.move.lang.core.psi.ext.inferredTy
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.infer.functionInferenceCtx
+import org.move.lang.core.types.infer.inferExpectedTy
+import org.move.lang.core.types.infer.ownerInferenceCtx
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementAndDataInEditor
 
 abstract class TypificationTestCase : MvTestBase() {
-    protected fun testExpectedTypeExpr(@Language("Move") code: String) {
+    protected fun testExpectedTyExpr(@Language("Move") code: String) {
+        testExpectedType<MvExpr>(code)
+    }
+
+    protected fun testExpectedTyType(@Language("Move") code: String) {
+        testExpectedType<MvType>(code)
+    }
+
+    protected inline fun <reified T: MvElement> testExpectedType(@Language("Move") code: String) {
         InlineFile(myFixture, code, "main.move")
-        val (expr, data) = myFixture.findElementAndDataInEditor<MvExpr>()
+        val (element, data) = myFixture.findElementAndDataInEditor<T>()
         val expectedType = data.trim()
 
-        val ctx = expr.functionInferenceCtx(expr.isMsl())
-        val actualType = expr.expectedTy(ctx)?.text(true) ?: "null"
+        val ctx = element.ownerInferenceCtx(element.isMsl())
+        val actualType = inferExpectedTy(element, ctx)?.expectedTyText() ?: "null"
         check(actualType == expectedType) {
             "Type mismatch. Expected $expectedType, found: $actualType"
         }

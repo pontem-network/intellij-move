@@ -8,10 +8,11 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IElementType
 import org.move.ide.presentation.fullname
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvCallArgumentList
 import org.move.lang.core.psi.MvStructLitField
 import org.move.lang.core.psi.MvStructLitFieldsBlock
+import org.move.lang.core.psi.MvValueArgumentList
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.types.infer.InferenceContext
 import org.move.utils.AsyncParameterInfoHandler
 
 class StructLitFieldsInfoHandler :
@@ -22,7 +23,7 @@ class StructLitFieldsInfoHandler :
 //        val block = element.ancestorStrict<MvStructLitFieldsBlock>() ?: return null
         //        val callExpr = element.ancestorStrict<MvCallArgumentList>()
 //        if (callExpr != null && block.contains(callExpr)) return null
-        return element.ancestorOrSelf(stopAt = MvCallArgumentList::class.java)
+        return element.ancestorOrSelf(stopAt = MvValueArgumentList::class.java)
     }
 
     override fun calculateParameterInfo(element: MvStructLitFieldsBlock): Array<FieldsDescription>? =
@@ -100,7 +101,7 @@ class FieldsDescription(val fields: Array<String>) {
             val struct = block.litExpr.path.maybeStruct ?: return null
             val fieldParams =
                 struct.fieldsMap.entries.map { (name, field) ->
-                    val type = field.declaredTy(false).fullname()
+                    val type = field.declarationTypeTy(InferenceContext(false)).fullname()
                     "$name: $type"
                 }.toTypedArray()
             return FieldsDescription(fieldParams)

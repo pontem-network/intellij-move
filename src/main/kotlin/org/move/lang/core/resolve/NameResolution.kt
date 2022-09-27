@@ -15,6 +15,7 @@ import org.move.lang.modules
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.stdext.chain
+import org.move.stdext.wrapWithList
 
 enum class MslScope {
     NONE, EXPR, LET, LET_POST;
@@ -28,8 +29,6 @@ fun MvElement.isVisibleInScope(itemScope: ItemScope): Boolean {
     return itemScope == ItemScope.TEST
             || this.itemScope == ItemScope.MAIN
 }
-
-//fun MvElement.isVisibleInScopes(itemVis: ItemVis): Boolean = this.visibleInScope(itemVis.itemScope)
 
 val MvElement.mslScope: MslScope
     get() {
@@ -96,11 +95,11 @@ fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
         return moduleRef
     }
     // module refers to ModuleImport
-    val resolved = resolveSingleItem(moduleRef, setOf(Namespace.MODULE))
+    var resolved = resolveSingleItem(moduleRef, setOf(Namespace.MODULE))
     if (resolved is MvUseAlias) {
-        return (resolved.parent as MvModuleUseSpeck).fqModuleRef
+       resolved = resolved.moduleUseSpeck ?: resolved.useItem
     }
-    if (resolved is MvUseItem && resolved.text == "Self") {
+    if (resolved is MvUseItem && resolved.isSelf) {
         return resolved.moduleImport().fqModuleRef
     }
     if (resolved !is MvModuleUseSpeck) return null
@@ -242,7 +241,7 @@ fun processLexicalDeclarations(
                 )
                 is MvScriptBlock -> processor.matchAll(itemVis, scope.itemImportNames())
                 is MvScript -> processor.matchAll(itemVis, scope.constBindings())
-                is MvFunctionLike -> processor.matchAll(itemVis, scope.parameterBindings)
+                is MvFunctionLike -> processor.matchAll(itemVis, scope.parameterBindings())
                 is MvCodeBlock -> {
                     val precedingLetDecls = scope.letStmts
                         // drops all let-statements after the current position
@@ -261,13 +260,17 @@ fun processLexicalDeclarations(
                         ((entry.name !in visited)
                                 && processor.match(entry).also { visited += entry.name })
                     }
-                    return processorWithShadowing.matchAll(itemVis, namedElements)
+                    return processorWithShadowing.matchAll(
+                        itemVis,
+                        namedElements,
+                        scope.itemImportNames()
+                    )
                 }
 
                 is MvItemSpec -> {
                     val item = scope.item
                     when (item) {
-                        is MvFunction -> processor.matchAll(itemVis, item.parameterBindings)
+                        is MvFunction -> processor.matchAll(itemVis, item.parameterBindings())
                         is MvStruct -> processor.matchAll(itemVis, item.fields)
                         else -> false
                     }
@@ -380,6 +383,7 @@ fun processLexicalDeclarations(
                     listOf(
                         scope.moduleImportNames(),
                         scope.selfItemImports(),
+                        scope.selfItemImportAliases(),
                     ).flatten(),
                 )
                 else -> false

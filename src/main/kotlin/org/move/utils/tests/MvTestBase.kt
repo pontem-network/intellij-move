@@ -47,8 +47,8 @@ abstract class MvTestBase : BasePlatformTestCase(),
 //        toTestProject(myFixture.project, myFixture.findFileInTempDir("."))
 
     protected open fun checkEditorAction(
-        @Language("Rust") before: String,
-        @Language("Rust") after: String,
+        @Language("Move") before: String,
+        @Language("Move") after: String,
         actionId: String,
         trimIndent: Boolean = true,
     ) {

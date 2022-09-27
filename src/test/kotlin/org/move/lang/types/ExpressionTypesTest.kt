@@ -498,4 +498,131 @@ class ExpressionTypesTest: TypificationTestCase() {
         }
     }            
     """)
+
+    fun `test integer inference with spec blocks inside block`() = testExpr("""
+    module 0x1::main {
+        spec fun get_num(): num { 1 }
+        fun main() {
+            let myint = 1;
+            myint + 1u8;
+            spec {
+                myint
+                //^ num
+            };
+        }
+    }    
+    """)
+
+    fun `test integer inference with spec blocks outside block`() = testExpr("""
+    module 0x1::main {
+        spec fun get_num(): num { 1 }
+        fun main() {
+            let myint = 1;
+            myint + 1u8;
+            spec {
+                myint + get_num();
+            };
+            myint;
+            //^ u8
+        }
+    }    
+    """)
+
+    fun `test vector lit with explicit type`() = testExpr("""
+    module 0x1::main {
+        fun main() {
+            let vv = vector<u8>[];
+            vv;
+           //^ vector<u8>   
+        }
+    }        
+    """)
+
+    fun `test vector lit with inferred type`() = testExpr("""
+    module 0x1::main {
+        fun main() {
+            let vv = vector[1u8];
+            vv;
+           //^ vector<u8>   
+        }
+    }        
+    """)
+
+    fun `test vector lit with inferred integer type`() = testExpr("""
+    module 0x1::main {
+        fun main() {
+            let vv = vector[1];
+            vv;
+           //^ vector<integer>   
+        }
+    }        
+    """)
+
+    fun `test vector lit with inferred type from call expr`() = testExpr("""
+    module 0x1::main {
+        fun call(a: vector<u8>) {}
+        fun main() {
+            let vv = vector[];
+            call(vv);
+            vv;
+           //^ vector<u8>   
+        }
+    }        
+    """)
+
+    fun `test vector lit with explicit type and type error`() = testExpr("""
+    module 0x1::main {
+        fun main() {
+            let vv = vector<u8>[1u64];
+            vv;
+           //^ vector<u8>   
+        }
+    }        
+    """)
+
+    fun `test vector lit with implicit type and type error`() = testExpr("""
+    module 0x1::main {
+        fun main() {
+            let vv = vector[1u8, 1u64];
+            vv;
+           //^ vector<u8>   
+        }
+    }        
+    """)
+
+    fun `test vector lit inside specs`() = testExpr("""
+    module 0x1::main {
+        spec module {
+            let vv = vector[1];
+            vv;
+           //^ vector<num>   
+        }
+    }        
+    """)
+
+    fun `test call expr with explicit type and type error`() = testExpr("""
+    module 0x1::main {
+        fun call<T>(a: T, b: T): T {
+            b        
+        }    
+        fun main() {
+            let aa = call<u8>(1u64, 1u128);
+            aa;
+          //^ u8  
+        }    
+    }        
+    """)
+
+    fun `test call expr with implicit type and type error`() = testExpr("""
+    module 0x1::main {
+        fun call<T>(a: T, b: T): T {
+            b        
+        }    
+        fun main() {
+            let aa = call(1u8, 1u128);
+            aa;
+          //^ u8  
+        }    
+    }        
+    """)
 }

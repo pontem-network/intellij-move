@@ -4,18 +4,18 @@ import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-val shortPlatformVersion = prop("shortPlatformVersion")
+val platformVersion = prop("shortPlatformVersion")
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
 
 fun prop(name: String): String =
     extra.properties[name] as? String
-        ?: error("Property `$name` is not defined in gradle.properties for environment `$shortPlatformVersion`")
+        ?: error("Property `$name` is not defined in gradle.properties for environment `$platformVersion`")
 
 //val intellijVersion = prop("intellijVersion", "2021.2")
 val kotlinVersion = "1.7.10"
 
-val pluginJarName = "intellij-move-$shortPlatformVersion"
-val pluginVersion = "1.19.0"
+val pluginJarName = "intellij-move-$platformVersion"
+val pluginVersion = "1.20.0"
 val pluginGroup = "org.move"
 
 group = pluginGroup
@@ -62,6 +62,8 @@ allprojects {
     configure<JavaPluginExtension> {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+//        sourceCompatibility = (if (platformVersion == "222") JavaVersion.VERSION_17 else JavaVersion.VERSION_11)
+//        targetCompatibility = (if (platformVersion == "222") JavaVersion.VERSION_17 else JavaVersion.VERSION_11)
     }
 
     sourceSets {
@@ -100,7 +102,7 @@ allprojects {
         }
 
         patchPluginXml {
-            version.set("$pluginVersion.$shortPlatformVersion")
+            version.set("$pluginVersion.$platformVersion")
             changeNotes.set("""
     <body>
         <p><a href="https://github.com/pontem-network/intellij-move/blob/master/changelog/$pluginVersion.md">

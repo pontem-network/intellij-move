@@ -209,6 +209,36 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
     }    
     """)
 
+    fun `test integer multi statement inside if while block`() = testExpr("""
+    module 0x1::M {
+        fun put(i: u64, val: u64) {}
+        fun main() {
+            let i = 0;
+            while (i < 10) {
+                put(i, 10);
+                i = i + 1;
+            };
+            i;
+          //^ u64  
+        }
+    }    
+    """)
+
+    fun `test integer multi statement inside loop block`() = testExpr("""
+    module 0x1::M {
+        fun put(i: u64, val: u64) {}
+        fun main() {
+            let i = 0;
+            loop {
+                put(i, 10);
+                i = i + 1;
+            };
+            i;
+          //^ u64  
+        }
+    }    
+    """)
+
     fun `test integer multi statement inside else expr block`() = testExpr("""
     module 0x1::M {
         fun put(i: u64, val: u64) {}
@@ -264,5 +294,49 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
           //^ u8  
         }
     }    
+    """)
+
+    fun `test struct unpacking type inference`() = testExpr("""
+module 0x1::main {
+    struct Container has key { val: u8 }
+    fun main() {
+        let container = move_from(source_addr);
+        let Container { val } = container;
+                                 //^ 0x1::main::Container        
+    }
+}                
+    """)
+
+    fun `tests struct unpacking incompatible field type`() = testExpr("""
+module 0x1::main {
+    struct Container<Type> { val: Type }
+    fun main() {
+        let Container<u8> { val } = Container<bool> { val: false };
+        val;
+      //^ u8  
+    }
+}        
+    """)
+
+    fun `test struct unpacking compatible field type inference`() = testExpr("""
+module 0x1::main {
+    struct Container<Type> { val: Type }
+    fun main() {
+        let Container { val } = Container<bool> { val: false };
+        val;
+      //^ bool  
+    }
+}        
+    """)
+
+    fun `test struct unpacking with explicit type`() = testExpr("""
+module 0x1::main {
+    struct Container<Type> { val: Type }
+    fun main() {
+        let Container { val }: Container<u8> = call();
+        val;
+      //^ u8
+    }
+}        
     """)
 }

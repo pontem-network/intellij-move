@@ -226,4 +226,15 @@ class ResolveVariablesTest : ResolveTestCase() {
         }
     }    
     """)
+//
+//    fun `test resolve function parameters in specs`() = checkByCode("""
+//    module 0x1::main {
+//        fun call(a: u8, b: u8) {}
+//               //X
+//    }
+//    spec 0x1::main {
+//        spec call(a: u8, b: u8) {}
+//                //^
+//    }
+//    """)
 }

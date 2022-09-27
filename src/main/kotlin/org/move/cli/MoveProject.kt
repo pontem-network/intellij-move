@@ -11,7 +11,6 @@ import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.util.containers.addIfNotNull
 import org.move.cli.manifest.MoveToml
 import org.move.lang.MoveFile
-import org.move.lang.core.psi.ext.wrapWithList
 import org.move.lang.core.types.Address
 import org.move.lang.toMoveFile
 import org.move.lang.toNioPathOrNull
@@ -19,6 +18,7 @@ import org.move.openapiext.common.checkUnitTestMode
 import org.move.openapiext.contentRoots
 import org.move.stdext.chain
 import org.move.stdext.iterateMoveVirtualFiles
+import org.move.stdext.wrapWithList
 import java.nio.file.Path
 
 data class MoveProject(
@@ -45,7 +45,8 @@ data class MoveProject(
 
     fun addresses(): PackageAddresses {
         return CachedValuesManager.getManager(this.project).getCachedValue(this) {
-            val packageName = currentPackage.packageName
+            val packageName = this.currentPackage.packageName
+
             val cumulativeAddresses = PackageAddresses(mutableAddressMap(), placeholderMap())
             for ((depPackage, subst) in this.dependencies) {
                 cumulativeAddresses.extendWith(depPackage.addresses())

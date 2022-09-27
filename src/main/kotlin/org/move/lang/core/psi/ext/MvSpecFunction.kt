@@ -11,6 +11,7 @@ abstract class MvSpecFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(no
                                                     MvSpecFunction {
 
     override fun getIcon(flags: Int): Icon = MoveIcons.FUNCTION
+
 }
 
 abstract class MvSpecInlineFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),

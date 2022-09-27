@@ -4,6 +4,7 @@ import org.move.lang.core.psi.MvAddressRef
 import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.psi.MvUseItem
 import org.move.lang.core.psi.MvUseStmt
+import org.move.stdext.wrapWithList
 
 val MvUseStmt.addressRef: MvAddressRef?
     get() {

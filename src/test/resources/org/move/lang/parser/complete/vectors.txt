@@ -121,7 +121,7 @@ FILE
                   PsiElement(IDENTIFIER)('vector')
                 PsiElement(::)('::')
                 PsiElement(IDENTIFIER)('add')
-              MvCallArgumentListImpl(CALL_ARGUMENT_LIST)
+              MvValueArgumentListImpl(VALUE_ARGUMENT_LIST)
                 PsiElement(()('(')
                 PsiElement())(')')
             PsiElement(;)(';')

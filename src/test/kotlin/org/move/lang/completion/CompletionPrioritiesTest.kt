@@ -95,18 +95,18 @@ module 0x1::Main {
     }    
     """)
 
-//    fun `test resource before non-resource in borrow_global`() = checkCompletionsOrder(
-//        listOf("Coin", "Cat"),
-//        """
-//module 0x1::Main {
-//    struct Cat {}
-//    struct Coin<CoinType> has key {}
-//    fun call() {
-//        borrow_global<C/*caret*/>(@0x1);
-//    }
-//}
-//        """
-//    )
+    fun `test resource before non-resource in borrow_global`() = checkCompletionsOrder(
+        listOf("Coin", "Cat"),
+        """
+module 0x1::Main {
+    struct Cat {}
+    struct Coin<phantom CoinType> has key {}
+    fun call() {
+        borrow_global<C/*caret*/>(@0x1);
+    }
+}
+        """
+    )
 
     fun checkCompletionsOrder(listStart: List<String>, @Language("Move") code: String) {
         val variants = completionFixture.invokeCompletion(code)

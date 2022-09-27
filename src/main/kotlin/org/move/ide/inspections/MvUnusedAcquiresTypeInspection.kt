@@ -6,12 +6,11 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
-import org.move.ide.presentation.acquireableIn
+import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.acquiresTys
-import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.ty
+import org.move.lang.core.types.infer.inferTypeTy
 import org.move.lang.core.types.infer.inferenceCtx
 
 
@@ -46,20 +45,23 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val function = o.parent as? MvFunction ?: return
                 val module = function.module ?: return
                 val codeBlock = function.codeBlock ?: return
-                val ctx = function.inferenceCtx(codeBlock.isMsl())
-                val blockAcquiredTys = codeBlock
-                    .descendantsOfType<MvCallExpr>()
-                    .flatMap { it.acquiresTys(ctx) }
-                    .map { it.fullnameNoArgs() }
-                    .toSet()
+                val inferenceCtx = function.inferenceCtx(false)
+
+                val acquiredTys = mutableSetOf<String>()
+                for (callExpr in codeBlock.descendantsOfType<MvCallExpr>()) {
+                    val callAcquiresTys =
+                        callExpr.acquiresTys() ?: return
+                    val acqTyNames = callAcquiresTys.map { it.fullnameNoArgs() }
+                    acquiredTys.addAll(acqTyNames)
+                }
 
                 val unusedAcquiresIndices = mutableListOf<Int>()
                 val visitedTypeNames = mutableSetOf<String>()
                 val pathTypes = o.pathTypeList
                 for ((i, pathType) in pathTypes.withIndex()) {
                     // check that this acquires is allowed in the context
-                    val ty = pathType.ty()
-                    if (!ty.acquireableIn(module)) {
+                    val ty = inferTypeTy(pathType, inferenceCtx)
+                    if (!ty.canBeAcquiredInModule(module)) {
                         unusedAcquiresIndices.add(i)
                         continue
                     }
@@ -71,7 +73,7 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                     }
                     visitedTypeNames.add(typeName)
                     // check for unused
-                    if (typeName !in blockAcquiredTys) {
+                    if (typeName !in acquiredTys) {
                         unusedAcquiresIndices.add(i)
                         continue
                     }

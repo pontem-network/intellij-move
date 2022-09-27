@@ -62,7 +62,7 @@ val MvNamedElement.completionPriority
         else -> LOCAL_ITEM_PRIORITY
     }
 
-fun MvNamedElement.usages(): Query<PsiReference> =
+fun MvNamedElement.searchReferences(): Query<PsiReference> =
     ReferencesSearch.search(
         this,
         PsiSearchHelper.getInstance(this.project).getUseScope(this)

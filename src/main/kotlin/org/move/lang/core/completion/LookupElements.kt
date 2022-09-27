@@ -13,8 +13,8 @@ import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.containsTyOfClass
-import org.move.lang.core.types.infer.functionInferenceCtx
 import org.move.lang.core.types.infer.instantiateItemTy
+import org.move.lang.core.types.infer.ownerInferenceCtx
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyInfer
@@ -105,7 +105,7 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
             .withTypeText(this.typeAnnotation?.type?.text)
 
         is MvBindingPat -> this.createLookupElementWithIcon()
-            .withTypeText(this.inferredTy(this.functionInferenceCtx(this.isMsl())).text(true))
+            .withTypeText(this.inferredTy(this.ownerInferenceCtx(this.isMsl())).text(true))
 
         is MvSchema -> this.createLookupElementWithIcon()
             .withTypeText(this.containingFile?.name)
@@ -207,7 +207,7 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
                     if (completionContext == null) return@run false
                     val msl = element.isMsl()
                     val inferenceCtx = InferenceContext(msl)
-                    val funcTy = instantiateItemTy(element, msl) as? TyFunction ?: return@run false
+                    val funcTy = instantiateItemTy(element, inferenceCtx) as? TyFunction ?: return@run false
 
                     val expectedTy = completionContext.expectedTy
                     if (expectedTy != null) {

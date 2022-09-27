@@ -21,7 +21,7 @@ import org.move.stdext.MvResult
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
 
-private val LOG = Logger.getInstance("org.rust.openapiext.CommandLineExt")
+private val LOG = Logger.getInstance("org.move.openapiext.CommandLineExt")
 
 //@Suppress("FunctionName")
 //fun GeneralCommandLine(path: Path, vararg args: String) =

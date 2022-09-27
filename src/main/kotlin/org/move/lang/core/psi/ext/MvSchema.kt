@@ -1,6 +1,7 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.*
+import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 
 val MvSchema.specBlock: MvItemSpecBlock? get() = this.childOfType()
@@ -17,9 +18,9 @@ val MvSchema.requiredTypeParams: List<MvTypeParameter>
     get() {
         val usedTypeParams = mutableSetOf<MvTypeParameter>()
         this.fieldStmts
-            .map { it.declaredTy(true) }
+            .map { it.declarationTypeTy(InferenceContext(true)) }
             .forEach {
-                it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.parameter); paramTy }
+                it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.origin); paramTy }
             }
         return this.typeParameters.filter { it !in usedTypeParams }
     }

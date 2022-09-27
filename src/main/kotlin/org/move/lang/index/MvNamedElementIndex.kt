@@ -15,8 +15,8 @@ class MvNamedElementIndex : BaseMoveFileIndex() {
     override fun getName() = KEY
     override fun getVersion() = INDEX_VERSION
     override fun getIndexer() =
-        DataIndexer<String, Void, FileContent> { data ->
-            val file = data.psiFile as? MoveFile ?: return@DataIndexer emptyMap()
+        DataIndexer<String, Void, FileContent> { fileContent ->
+            val file = fileContent.psiFile as? MoveFile ?: return@DataIndexer emptyMap()
             val map = file
                 .descendantsOfType<MvQualifiedNamedElement>()
                 .mapNotNull { it.name }
