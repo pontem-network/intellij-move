@@ -89,4 +89,17 @@ module 0x1::main {
     native fun main(a: u8);
 }        
     """)
+
+    fun `test no unused parameter on uninterpreted spec function`() = checkByText("""
+spec 0x1::main {
+    // An uninterpreted spec function to represent the stake reward formula.
+    spec fun spec_rewards_amount(
+        stake_amount: u64,
+        num_successful_proposals: u64,
+        num_total_proposals: u64,
+        rewards_rate: u64,
+        rewards_rate_denominator: u64,
+    ): u64;
+}        
+    """)
 }

@@ -1154,7 +1154,14 @@ Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl ItemSpecBlock>> {
 
 ItemSpecBlockExpr ::= spec <<msl ItemSpecBlock>>
 
-ItemSpecBlock ::= '{' ItemSpecBlock_items '}' { pin = 1 }
+ItemSpecBlock ::= '{' ItemSpecBlock_items '}'
+{
+    pin = 1
+    implements = [
+        "org.move.lang.core.psi.MvImportsOwner"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvItemSpecBlockMixin"
+}
 private ItemSpecBlock_items ::= (SpecStmt | ExprStmt)* (SpecExprStmt_items | ExprStmt_expr)?
 {
     recoverWhile = ItemSpecBlock_items_recover

@@ -12,7 +12,7 @@ val MvSchema.module: MvModule
         return moduleBlock.parent as MvModule
     }
 
-val MvSchema.typeParams get() = typeParameterList?.typeParameterList.orEmpty()
+//val MvSchema.typeParams get() = typeParameterList?.typeParameterList.orEmpty()
 
 val MvSchema.requiredTypeParams: List<MvTypeParameter>
     get() {
