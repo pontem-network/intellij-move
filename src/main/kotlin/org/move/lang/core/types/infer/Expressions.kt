@@ -44,7 +44,7 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         }
 
         is MvIfExpr -> inferIfExprTy(expr, parentCtx, expectedTy)
-        is MvWhileExpr -> inferLoopExpr(expr, parentCtx)
+        is MvWhileExpr -> inferWhileExpr(expr, parentCtx)
         is MvLoopExpr -> inferLoopExpr(expr, parentCtx)
         is MvReturnExpr -> {
             val fnReturnTy = expr.containingFunction?.returnTypeTy(parentCtx)
@@ -417,24 +417,26 @@ private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext, expectedTy: T
     return combineTys(ifExprTy, elseExprTy, ctx.msl)
 }
 
-private fun inferLoopExpr(expr: MvExpr, ctx: InferenceContext): Ty {
-    if (expr is MvWhileExpr) {
-        val conditionExpr = expr.condition?.expr
-        if (conditionExpr != null) {
-            inferExprTy(conditionExpr, ctx, TyBool)
-        }
+private fun inferWhileExpr(whileExpr: MvWhileExpr, ctx: InferenceContext): Ty {
+    val conditionExpr = whileExpr.condition?.expr
+    if (conditionExpr != null) {
+        inferExprTy(conditionExpr, ctx, TyBool)
     }
-    val (codeBlock, inlineBlockExpr) = when (expr) {
-        is MvWhileExpr -> {
-            val conditionExpr = expr.condition?.expr
-            if (conditionExpr != null) {
-                inferExprTy(conditionExpr, ctx, TyBool)
-            }
-            Pair(expr.codeBlock, expr.inlineBlock?.expr)
+    val codeBlock = whileExpr.codeBlock
+    val inlineBlockExpr = whileExpr.inlineBlock?.expr
+    when {
+        codeBlock != null -> {
+            val blockCtx = ctx.childContext()
+            inferCodeBlockTy(codeBlock, blockCtx, TyUnit)
         }
-        is MvLoopExpr -> Pair(expr.codeBlock, expr.inlineBlock?.expr)
-        else -> error("unreachable")
+        inlineBlockExpr != null -> inferExprTy(inlineBlockExpr, ctx, TyUnit)
     }
+    return TyUnit
+}
+
+private fun inferLoopExpr(loopExpr: MvLoopExpr, ctx: InferenceContext): Ty {
+    val codeBlock = loopExpr.codeBlock
+    val inlineBlockExpr = loopExpr.inlineBlock?.expr
     when {
         codeBlock != null -> {
             val blockCtx = ctx.childContext()
