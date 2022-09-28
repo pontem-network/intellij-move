@@ -6,7 +6,7 @@ import org.move.lang.core.types.infer.ownerInferenceCtx
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
-fun MvExpr.inferExprTy(): Ty {
+fun MvExpr.inferredExprTy(): Ty {
     val msl = this.isMsl()
     val inferenceCtx = this.ownerInferenceCtx(msl) ?: return TyUnknown
 

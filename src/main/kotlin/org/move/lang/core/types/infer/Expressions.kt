@@ -17,7 +17,12 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
             val funcTy = inferCallExprTy(expr, parentCtx, expectedTy) as? TyFunction
             funcTy?.retType ?: TyUnknown
         }
-
+        is MvMacroCallExpr -> {
+            for (argumentExpr in expr.callArgumentExprs) {
+                inferExprTy(argumentExpr, parentCtx)
+            }
+            TyUnknown
+        }
         is MvStructLitExpr -> inferStructLitExpr(expr, parentCtx, expectedTy)
         is MvVectorLitExpr -> inferVectorLitExpr(expr, parentCtx)
 
@@ -33,7 +38,10 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         is MvParensExpr -> expr.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
 
         is MvBinaryExpr -> inferBinaryExprTy(expr, parentCtx)
-        is MvBangExpr -> TyBool
+        is MvBangExpr -> {
+            expr.expr?.let { inferExprTy(it, parentCtx, TyBool) }
+            TyBool
+        }
 
         is MvIfExpr -> inferIfExprTy(expr, parentCtx, expectedTy)
         is MvWhileExpr -> inferLoopExpr(expr, parentCtx)

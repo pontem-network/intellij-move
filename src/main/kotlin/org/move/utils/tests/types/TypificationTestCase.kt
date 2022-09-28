@@ -6,7 +6,7 @@ import org.move.ide.presentation.text
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.psi.MvType
-import org.move.lang.core.psi.ext.inferExprTy
+import org.move.lang.core.psi.ext.inferredExprTy
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferExpectedTy
@@ -75,7 +75,7 @@ abstract class TypificationTestCase : MvTestBase() {
         val expectedType = data.trim()
 
 //        val ctx = InferenceContext(expr.isMsl())
-        val type = expr.inferExprTy().text(true)
+        val type = expr.inferredExprTy().text(true)
         check(type == expectedType) {
             "Type mismatch. Expected $expectedType, found: $type"
         }
