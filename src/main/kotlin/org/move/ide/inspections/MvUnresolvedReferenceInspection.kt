@@ -147,8 +147,8 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         override fun visitDotExpr(dotExpr: MvDotExpr) {
             if (dotExpr.isMsl()) return
 
-            val ty = dotExpr.expr.inferredTy()
-            if (ty is TyUnknown) return
+            val innerExprTy = dotExpr.expr.inferExprTy()
+            if (innerExprTy is TyUnknown) return
 
             val dotField = dotExpr.structDotField
             if (!dotField.resolvable) {

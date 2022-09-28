@@ -1159,6 +1159,7 @@ ItemSpecBlock ::= '{' ItemSpecBlock_items '}'
     pin = 1
     implements = [
         "org.move.lang.core.psi.MvImportsOwner"
+        "org.move.lang.core.types.infer.MvInferenceContextOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecBlockMixin"
 }

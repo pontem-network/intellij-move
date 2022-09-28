@@ -6,8 +6,9 @@ import org.move.ide.presentation.text
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.psi.MvType
-import org.move.lang.core.psi.ext.inferredTy
+import org.move.lang.core.psi.ext.inferExprTy
 import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferExpectedTy
 import org.move.lang.core.types.infer.ownerInferenceCtx
 import org.move.utils.tests.InlineFile
@@ -28,7 +29,7 @@ abstract class TypificationTestCase : MvTestBase() {
         val (element, data) = myFixture.findElementAndDataInEditor<T>()
         val expectedType = data.trim()
 
-        val ctx = element.ownerInferenceCtx(element.isMsl())
+        val ctx = element.ownerInferenceCtx(element.isMsl()) ?: InferenceContext(element.isMsl())
         val actualType = inferExpectedTy(element, ctx)?.expectedTyText() ?: "null"
         check(actualType == expectedType) {
             "Type mismatch. Expected $expectedType, found: $actualType"
@@ -74,7 +75,7 @@ abstract class TypificationTestCase : MvTestBase() {
         val expectedType = data.trim()
 
 //        val ctx = InferenceContext(expr.isMsl())
-        val type = expr.inferredTy().text(true)
+        val type = expr.inferExprTy().text(true)
         check(type == expectedType) {
             "Type mismatch. Expected $expectedType, found: $type"
         }

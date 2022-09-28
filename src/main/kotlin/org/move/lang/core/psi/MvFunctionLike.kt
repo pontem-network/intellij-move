@@ -22,6 +22,8 @@ interface MvFunctionLike : MvTypeParametersOwner,
 
     val returnType: MvReturnType?
 
+    val codeBlock: MvCodeBlock?
+
     override fun parameterBindings(): List<MvBindingPat> =
         this.functionParameterList?.functionParameterList.orEmpty().map { it.bindingPat }
 }

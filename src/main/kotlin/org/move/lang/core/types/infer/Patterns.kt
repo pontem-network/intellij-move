@@ -1,5 +1,6 @@
 package org.move.lang.core.types.infer
 
+import org.move.ide.presentation.fullname
 import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvPat
 import org.move.lang.core.psi.MvStructPat
@@ -77,7 +78,12 @@ fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext)
                             }
                         }
                     }
-                    else -> bind(pat, TyUnknown)
+                    is TyUnknown -> {
+                        pat.fields.map {
+                            it.pat?.let { pat -> bind(pat, TyUnknown) }
+                        }
+                    }
+                    else -> error("unreachable with type ${patTy.fullname()}")
                 }
                 if (ty is TyStruct && pat.fields.size == ty.fieldTys.size) {
                     for (field in pat.fields) {

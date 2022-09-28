@@ -28,10 +28,10 @@ fun MvInferenceContextOwner.inferenceCtx(msl: Boolean): InferenceContext {
     }
 }
 
-fun MvElement.ownerInferenceCtx(msl: Boolean = this.isMsl()): InferenceContext {
+fun MvElement.ownerInferenceCtx(msl: Boolean = this.isMsl()): InferenceContext? {
     val inferenceOwner =
         PsiTreeUtil.getParentOfType(this, MvInferenceContextOwner::class.java, false)
-    return inferenceOwner?.inferenceCtx(msl) ?: InferenceContext(msl)
+    return inferenceOwner?.inferenceCtx(msl)
 }
 
 private fun getOwnerInferenceContext(owner: MvInferenceContextOwner, msl: Boolean): InferenceContext {
@@ -40,7 +40,7 @@ private fun getOwnerInferenceContext(owner: MvInferenceContextOwner, msl: Boolea
         inferenceCtx.bindingTypes[param] = param.inferredTy(inferenceCtx)
     }
     when (owner) {
-        is MvFunction -> {
+        is MvFunctionLike -> {
             owner.codeBlock?.let {
                 inferCodeBlockTy(it, inferenceCtx, owner.returnTypeTy(inferenceCtx))
             }
