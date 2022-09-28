@@ -22,15 +22,17 @@ fun inferPatTy(pat: MvPat, parentCtx: InferenceContext, expectedTy: Ty? = null):
         is MvTuplePat -> {
             val tupleTy = TyTuple(pat.patList.map { TyUnknown })
             if (expectedTy != null) {
-                if (expectedTy is TyTuple && isCompatible(expectedTy, tupleTy)) {
-                    val itemTys = pat.patList.mapIndexed { i, itemPat ->
-                        inferPatTy(
-                            itemPat,
-                            parentCtx,
-                            expectedTy.types[i]
-                        )
+                if (isCompatible(expectedTy, tupleTy)) {
+                    if (expectedTy is TyTuple) {
+                        val itemTys = pat.patList.mapIndexed { i, itemPat ->
+                            inferPatTy(
+                                itemPat,
+                                parentCtx,
+                                expectedTy.types[i]
+                            )
+                        }
+                        return TyTuple(itemTys)
                     }
-                    return TyTuple(itemTys)
                 } else {
                     parentCtx.typeErrors.add(TypeError.InvalidUnpacking(pat, expectedTy))
                 }

@@ -442,5 +442,5 @@ private fun inferLoopExpr(expr: MvExpr, ctx: InferenceContext): Ty {
         }
         inlineBlockExpr != null -> inferExprTy(inlineBlockExpr, ctx, TyUnit)
     }
-    return TyUnit
+    return TyNever
 }

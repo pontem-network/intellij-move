@@ -983,4 +983,31 @@ module 0x1::main {
     }
 }
     """)
+
+    fun `test no invalid unpacking error for unresolved name tuple`() = checkByText("""
+module 0x1::main {
+    fun main() {
+        let (a, b) = call();
+    }
+}        
+    """)
+
+    fun `test no invalid unpacking error for unresolved name struct`() = checkByText("""
+module 0x1::main {
+    struct S { val: u8 }
+    fun main() {
+        let S { val } = call();
+    }
+}        
+    """)
+
+    fun `test loop never returns and not a type error`() = checkByText("""
+module 0x1::main {
+    fun main(): u64 {
+        let a = 1;
+        if (a == 1) return a;
+        loop {}
+    }
+}        
+    """)
 }
