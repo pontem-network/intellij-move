@@ -168,4 +168,19 @@ module 0x1::main {
     }
 }        
     """)
+
+    fun `test missing acquires inside assert macro`() = checkWarnings(
+        """
+module 0x1::main {
+    struct EmergencyConfig has key { is_emergency: bool }
+    fun is_emergency(): bool acquires EmergencyConfig {
+        let config = borrow_global<EmergencyConfig>(@0x1);
+        config.is_emergency
+    }
+    public fun assert_no_emergency() {
+        assert!(!<error descr="Function 'assert_no_emergency' is not marked as 'acquires EmergencyConfig'">is_emergency()</error>, 1);
+    }
+}        
+    """
+    )
 }

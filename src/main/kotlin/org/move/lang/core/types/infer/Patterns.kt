@@ -1,5 +1,6 @@
 package org.move.lang.core.types.infer
 
+import org.move.ide.presentation.fullname
 import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvPat
 import org.move.lang.core.psi.MvStructPat
@@ -21,15 +22,17 @@ fun inferPatTy(pat: MvPat, parentCtx: InferenceContext, expectedTy: Ty? = null):
         is MvTuplePat -> {
             val tupleTy = TyTuple(pat.patList.map { TyUnknown })
             if (expectedTy != null) {
-                if (expectedTy is TyTuple && isCompatible(expectedTy, tupleTy)) {
-                    val itemTys = pat.patList.mapIndexed { i, itemPat ->
-                        inferPatTy(
-                            itemPat,
-                            parentCtx,
-                            expectedTy.types[i]
-                        )
+                if (isCompatible(expectedTy, tupleTy)) {
+                    if (expectedTy is TyTuple) {
+                        val itemTys = pat.patList.mapIndexed { i, itemPat ->
+                            inferPatTy(
+                                itemPat,
+                                parentCtx,
+                                expectedTy.types[i]
+                            )
+                        }
+                        return TyTuple(itemTys)
                     }
-                    return TyTuple(itemTys)
                 } else {
                     parentCtx.typeErrors.add(TypeError.InvalidUnpacking(pat, expectedTy))
                 }
@@ -77,7 +80,12 @@ fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext)
                             }
                         }
                     }
-                    else -> bind(pat, TyUnknown)
+                    is TyUnknown -> {
+                        pat.fields.map {
+                            it.pat?.let { pat -> bind(pat, TyUnknown) }
+                        }
+                    }
+                    else -> error("unreachable with type ${patTy.fullname()}")
                 }
                 if (ty is TyStruct && pat.fields.size == ty.fieldTys.size) {
                     for (field in pat.fields) {

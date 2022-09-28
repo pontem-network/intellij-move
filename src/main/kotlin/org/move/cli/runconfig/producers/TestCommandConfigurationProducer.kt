@@ -40,10 +40,12 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
         private fun findTestFunction(psi: PsiElement, climbUp: Boolean): AptosCommandLineFromContext? {
             val fn = findElement<MvFunction>(psi, climbUp) ?: return null
             if (!fn.isTest) return null
-            val functionName = fn.name ?: return null
+
             val modName = fn.containingModule?.name ?: return null
+            val functionName = fn.name ?: return null
+
             val confName = "Test $modName::$functionName"
-            val command = "move test --filter $functionName"
+            val command = "move test --filter $modName::$functionName"
             val rootPath = fn.moveProject?.contentRootPath ?: return null
             return AptosCommandLineFromContext(fn, confName, AptosCommandLine(command, rootPath))
         }

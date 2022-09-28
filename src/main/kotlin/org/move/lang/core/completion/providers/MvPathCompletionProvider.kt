@@ -12,10 +12,7 @@ import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.ancestors
-import org.move.lang.core.psi.ext.endOffset
-import org.move.lang.core.psi.ext.isSelf
-import org.move.lang.core.psi.ext.itemScope
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
@@ -41,7 +38,7 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
 
         val moduleRef = pathElement.moduleRef
         val itemVis = itemVis(pathElement)
-        val inferenceCtx = pathElement.ownerInferenceCtx()
+        val inferenceCtx = pathElement.ownerInferenceCtx() ?: InferenceContext(pathElement.isMsl())
         val expectedTy =
             getExpectedTypeForEnclosingPathOrDotExpr(pathElement, inferenceCtx)
         val ctx = CompletionContext(pathElement, itemVis, expectedTy)

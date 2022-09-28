@@ -19,9 +19,9 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
             override fun visitIfExpr(ifExpr: MvIfExpr) {
-                val ifTy = ifExpr.returningExpr?.inferredTy() ?: return
+                val ifTy = ifExpr.returningExpr?.inferredExprTy() ?: return
                 val elseExpr = ifExpr.elseExpr ?: return
-                val elseTy = elseExpr.inferredTy()
+                val elseTy = elseExpr.inferredExprTy()
 
                 if (!isCompatible(ifTy, elseTy) && !isCompatible(elseTy, ifTy)) {
                     holder.registerTypeError(

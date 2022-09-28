@@ -105,7 +105,11 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
             .withTypeText(this.typeAnnotation?.type?.text)
 
         is MvBindingPat -> this.createLookupElementWithIcon()
-            .withTypeText(this.inferredTy(this.ownerInferenceCtx(this.isMsl())).text(true))
+            .withTypeText(
+                this.inferredTy(
+                    this.ownerInferenceCtx(this.isMsl()) ?: InferenceContext(this.isMsl())
+                ).text(true)
+            )
 
         is MvSchema -> this.createLookupElementWithIcon()
             .withTypeText(this.containingFile?.name)

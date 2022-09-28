@@ -4,10 +4,11 @@ import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.types.infer.inferExprTy
 import org.move.lang.core.types.infer.ownerInferenceCtx
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnknown
 
-fun MvExpr.inferredTy(): Ty {
+fun MvExpr.inferredExprTy(): Ty {
     val msl = this.isMsl()
-    val inferenceCtx = this.ownerInferenceCtx(msl)
+    val inferenceCtx = this.ownerInferenceCtx(msl) ?: return TyUnknown
 
     val existingTy = inferenceCtx.exprTypes[this]
     if (existingTy != null) {
@@ -15,5 +16,3 @@ fun MvExpr.inferredTy(): Ty {
     }
     return inferExprTy(this, inferenceCtx)
 }
-
-//fun MvExpr.expectedTy(ctx: InferenceContext): Ty? = inferExpectedTy(this, ctx)

@@ -17,7 +17,12 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
             val funcTy = inferCallExprTy(expr, parentCtx, expectedTy) as? TyFunction
             funcTy?.retType ?: TyUnknown
         }
-
+        is MvMacroCallExpr -> {
+            for (argumentExpr in expr.callArgumentExprs) {
+                inferExprTy(argumentExpr, parentCtx)
+            }
+            TyUnknown
+        }
         is MvStructLitExpr -> inferStructLitExpr(expr, parentCtx, expectedTy)
         is MvVectorLitExpr -> inferVectorLitExpr(expr, parentCtx)
 
@@ -33,10 +38,13 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         is MvParensExpr -> expr.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
 
         is MvBinaryExpr -> inferBinaryExprTy(expr, parentCtx)
-        is MvBangExpr -> TyBool
+        is MvBangExpr -> {
+            expr.expr?.let { inferExprTy(it, parentCtx, TyBool) }
+            TyBool
+        }
 
         is MvIfExpr -> inferIfExprTy(expr, parentCtx, expectedTy)
-        is MvWhileExpr -> inferLoopExpr(expr, parentCtx)
+        is MvWhileExpr -> inferWhileExpr(expr, parentCtx)
         is MvLoopExpr -> inferLoopExpr(expr, parentCtx)
         is MvReturnExpr -> {
             val fnReturnTy = expr.containingFunction?.returnTypeTy(parentCtx)
@@ -409,24 +417,13 @@ private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext, expectedTy: T
     return combineTys(ifExprTy, elseExprTy, ctx.msl)
 }
 
-private fun inferLoopExpr(expr: MvExpr, ctx: InferenceContext): Ty {
-    if (expr is MvWhileExpr) {
-        val conditionExpr = expr.condition?.expr
-        if (conditionExpr != null) {
-            inferExprTy(conditionExpr, ctx, TyBool)
-        }
+private fun inferWhileExpr(whileExpr: MvWhileExpr, ctx: InferenceContext): Ty {
+    val conditionExpr = whileExpr.condition?.expr
+    if (conditionExpr != null) {
+        inferExprTy(conditionExpr, ctx, TyBool)
     }
-    val (codeBlock, inlineBlockExpr) = when (expr) {
-        is MvWhileExpr -> {
-            val conditionExpr = expr.condition?.expr
-            if (conditionExpr != null) {
-                inferExprTy(conditionExpr, ctx, TyBool)
-            }
-            Pair(expr.codeBlock, expr.inlineBlock?.expr)
-        }
-        is MvLoopExpr -> Pair(expr.codeBlock, expr.inlineBlock?.expr)
-        else -> error("unreachable")
-    }
+    val codeBlock = whileExpr.codeBlock
+    val inlineBlockExpr = whileExpr.inlineBlock?.expr
     when {
         codeBlock != null -> {
             val blockCtx = ctx.childContext()
@@ -435,4 +432,17 @@ private fun inferLoopExpr(expr: MvExpr, ctx: InferenceContext): Ty {
         inlineBlockExpr != null -> inferExprTy(inlineBlockExpr, ctx, TyUnit)
     }
     return TyUnit
+}
+
+private fun inferLoopExpr(loopExpr: MvLoopExpr, ctx: InferenceContext): Ty {
+    val codeBlock = loopExpr.codeBlock
+    val inlineBlockExpr = loopExpr.inlineBlock?.expr
+    when {
+        codeBlock != null -> {
+            val blockCtx = ctx.childContext()
+            inferCodeBlockTy(codeBlock, blockCtx, TyUnit)
+        }
+        inlineBlockExpr != null -> inferExprTy(inlineBlockExpr, ctx, TyUnit)
+    }
+    return TyNever
 }

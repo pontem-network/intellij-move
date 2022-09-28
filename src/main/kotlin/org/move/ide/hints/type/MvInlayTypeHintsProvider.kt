@@ -91,7 +91,7 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
 //            }
 
             private fun presentTypeForPat(pat: MvPat) {
-                val ctx = pat.ownerInferenceCtx(pat.isMsl())
+                val ctx = pat.ownerInferenceCtx(pat.isMsl()) ?: return
                 for (binding in pat.descendantsOfType<MvBindingPat>()) {
                     if (binding.identifier.text.startsWith("_")) continue
                     if (binding.inferredTy(ctx) is TyUnknown) continue
