@@ -11,7 +11,7 @@ jobs:
         strategy:
             matrix:
                 os: [ ubuntu-latest ]
-                gradle-properties-version: [ 212, 213, 221, 222 ]
+                gradle-properties-version: [ 213, 221, 222 ]
 
         runs-on: ${{ matrix.os }}
         env:
