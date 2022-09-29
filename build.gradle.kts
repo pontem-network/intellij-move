@@ -17,6 +17,8 @@ val kotlinVersion = "1.7.10"
 val pluginJarName = "intellij-move-$platformVersion"
 val pluginVersion = "1.21.0"
 val pluginGroup = "org.move"
+val javaVersion = if (platformVersion < "222") JavaVersion.VERSION_11 else JavaVersion.VERSION_17
+val kotlinJvmTarget = if (platformVersion < "222") "11" else "17"
 
 group = pluginGroup
 version = pluginVersion
@@ -60,22 +62,14 @@ allprojects {
     }
 
     configure<JavaPluginExtension> {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-//        sourceCompatibility = (if (platformVersion == "222") JavaVersion.VERSION_17 else JavaVersion.VERSION_11)
-//        targetCompatibility = (if (platformVersion == "222") JavaVersion.VERSION_17 else JavaVersion.VERSION_11)
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
 
     sourceSets {
         main {
             java.srcDirs("src/main/gen")
-//            kotlin.srcDirs("src/main/kotlin")
-//            resources.srcDirs("src/$platformVersion/main/resources")
         }
-//        test {
-//            kotlin.srcDirs("src/$platformVersion/test/kotlin")
-//            resources.srcDirs("src/$platformVersion/test/resources")
-//        }
     }
 
     val generateMoveLexer = task<GenerateLexerTask>("generateMoveLexer") {
@@ -140,7 +134,7 @@ allprojects {
                 generateMoveLexer, generateMoveParser
             )
             kotlinOptions {
-                jvmTarget = "11"
+                jvmTarget = kotlinJvmTarget
                 languageVersion = "1.7"
                 apiVersion = "1.5"
                 freeCompilerArgs = listOf("-Xjvm-default=all")
@@ -152,11 +146,11 @@ allprojects {
         }
 
         withType<org.jetbrains.intellij.tasks.BuildSearchableOptionsTask> {
-            jbrVersion.set("11_0_9_1b1202.1")
+            jbrVersion.set(prop("jbrVersion"))
         }
 
         withType<org.jetbrains.intellij.tasks.RunIdeTask> {
-            jbrVersion.set("11_0_9_1b1202.1")
+            jbrVersion.set(prop("jbrVersion"))
             ideDir.set(File("/snap/clion/current"))
         }
     }
