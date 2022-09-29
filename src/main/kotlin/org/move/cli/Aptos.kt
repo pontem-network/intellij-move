@@ -24,7 +24,7 @@ class Aptos(val location: Path) {
         return this.location.exists()
     }
 
-    fun toGeneralCommandLine(project: Project, commandLine: AptosCommandLine): GeneralCommandLine {
+    fun toGeneralCommandLine(commandLine: AptosCommandLine): GeneralCommandLine {
         val generalCommandLine =
             GeneralCommandLine(
                 this.location.toString(),

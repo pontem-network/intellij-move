@@ -24,7 +24,7 @@ class AptosCommandLineState(
 
     override fun startProcess(): ProcessHandler {
         val generalCommandLine =
-            this.config.aptos.toGeneralCommandLine(project, commandLine)
+            this.config.aptos.toGeneralCommandLine(commandLine)
 
 //        val params =
 //            ParametersListUtil.parse(commandLine.command).toTypedArray()

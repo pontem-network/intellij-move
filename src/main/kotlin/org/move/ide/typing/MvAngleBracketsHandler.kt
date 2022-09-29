@@ -71,7 +71,7 @@ class MvAngleBracketsBackspaceHandler : BackspaceHandlerDelegate() {
 
     override fun charDeleted(c: Char, file: PsiFile, editor: Editor): Boolean {
         if (!enabled) return false
-        return deleted(c, file, editor)
+        return deleted(editor)
     }
 
     /**
@@ -92,7 +92,7 @@ class MvAngleBracketsBackspaceHandler : BackspaceHandlerDelegate() {
      * @return true whether this handler succeeded and the IDE should stop evaluating
      *         remaining handlers; otherwise, false
      */
-    fun deleted(c: Char, file: PsiFile, editor: Editor): Boolean {
+    fun deleted(editor: Editor): Boolean {
         val balance = calculateBalance(editor)
         if (balance < 0) {
             val offset = editor.caretModel.offset
