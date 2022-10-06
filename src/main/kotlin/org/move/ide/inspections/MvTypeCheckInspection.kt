@@ -34,18 +34,29 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             override fun visitItemSpec(o: MvItemSpec) {
                 val inference = o.inferenceCtx(true)
                 inference.typeErrors
-                    .forEach { holder.registerTypeError(it) }
+                    .forEach {
+                        if (it is TypeError.UnsupportedBinaryOp && it.element.isMsl())
+                            return@forEach
+                        if (it is TypeError.IncompatibleArgumentsToBinaryExpr && it.element.isMsl())
+                            return@forEach
+                        holder.registerTypeError(it)
+                    }
             }
 
             override fun visitCodeBlock(codeBlock: MvCodeBlock) {
                 val fn = codeBlock.parent as? MvFunction ?: return
                 val inference = fn.inferenceCtx(fn.isMsl())
                 inference.typeErrors
-                    .forEach { holder.registerTypeError(it) }
+                    .forEach {
+                        if (it is TypeError.UnsupportedBinaryOp && it.element.isMsl())
+                            return@forEach
+                        if (it is TypeError.IncompatibleArgumentsToBinaryExpr && it.element.isMsl())
+                            return@forEach
+                        holder.registerTypeError(it)
+                    }
             }
 
             override fun visitStructField(field: MvStructField) {
-//                val msl = field.isMsl()
                 val structAbilities = field.struct.tyAbilities
                 if (structAbilities.isEmpty()) return
 

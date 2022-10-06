@@ -310,6 +310,18 @@ sealed class TypeError(open val element: PsiElement) {
         }
     }
 
+    data class IncompatibleArgumentsToBinaryExpr(
+        override val element: PsiElement,
+        val leftTy: Ty,
+        val rightTy: Ty,
+        val op: String,
+    ): TypeError(element) {
+        override fun message(): String {
+            return "Incompatible arguments to '$op': " +
+                    "'${leftTy.text()}' and '${rightTy.text()}'"
+        }
+    }
+
     data class InvalidUnpacking(
         override val element: PsiElement,
         val assignedTy: Ty,

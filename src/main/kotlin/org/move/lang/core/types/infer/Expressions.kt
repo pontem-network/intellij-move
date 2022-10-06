@@ -314,26 +314,30 @@ fun inferLitFieldInitExprTy(litField: MvStructLitField, ctx: InferenceContext, e
 
 private fun inferBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceContext): Ty {
     return when (binaryExpr.binaryOp.op) {
-        "<", ">", "<=", ">=", "==", "!=", "||", "&&", "==>", "<==>" -> inferBoolExprTy(binaryExpr, ctx)
-        "+", "-", "*", "/", "%" -> inferBinaryArithmeticExprTy(binaryExpr, ctx)
+        "<", ">", "<=", ">=" -> inferOrderingBinaryExprTy(binaryExpr, ctx)
+        "+", "-", "*", "/", "%" -> inferArithmeticBinaryExprTy(binaryExpr, ctx)
+        "==", "!=" -> inferEqualityBinaryExprTy(binaryExpr, ctx)
+        "||", "&&" -> inferLogicBinaryExprTy(binaryExpr, ctx)
+        "==>", "<==>" -> TyBool
         else -> TyUnknown
     }
 }
 
-private fun inferBinaryArithmeticExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceContext): Ty {
+private fun inferArithmeticBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceContext): Ty {
     val leftExpr = binaryExpr.left
     val rightExpr = binaryExpr.right
+    val op = binaryExpr.binaryOp.op
 
     var typeErrorEncountered = false
     val leftExprTy = inferExprTy(leftExpr, ctx)
     if (!leftExprTy.supportsArithmeticOp()) {
-        ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(leftExpr, leftExprTy, "+"))
+        ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(leftExpr, leftExprTy, op))
         typeErrorEncountered = true
     }
     if (rightExpr != null) {
         val rightExprTy = inferExprTy(rightExpr, ctx)
         if (!rightExprTy.supportsArithmeticOp()) {
-            ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(rightExpr, rightExprTy, "+"))
+            ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(rightExpr, rightExprTy, op))
             typeErrorEncountered = true
         }
         if (!typeErrorEncountered) {
@@ -343,14 +347,76 @@ private fun inferBinaryArithmeticExprTy(binaryExpr: MvBinaryExpr, ctx: Inference
     return if (typeErrorEncountered) TyUnknown else leftExprTy
 }
 
-private fun inferBoolExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceContext): Ty { return TyBool }
+private fun inferEqualityBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceContext): Ty {
+    val leftExpr = binaryExpr.left
+    val rightExpr = binaryExpr.right
+    val op = binaryExpr.binaryOp.op
+
+    if (rightExpr != null) {
+        val leftExprTy = inferExprTy(leftExpr, ctx)
+        val rightExprTy = inferExprTy(rightExpr, ctx)
+        if (!isCompatible(leftExprTy, rightExprTy)) {
+            ctx.typeErrors.add(
+                TypeError.IncompatibleArgumentsToBinaryExpr(binaryExpr, leftExprTy, rightExprTy, op)
+            )
+        } else {
+            ctx.addConstraint(leftExprTy, rightExprTy)
+        }
+    }
+    return TyBool
+}
+
+private fun inferOrderingBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceContext): Ty {
+    val leftExpr = binaryExpr.left
+    val rightExpr = binaryExpr.right
+    val op = binaryExpr.binaryOp.op
+
+    var typeErrorEncountered = false
+    val leftExprTy = inferExprTy(leftExpr, ctx)
+    if (!leftExprTy.supportsOrdering()) {
+        ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(leftExpr, leftExprTy, op))
+        typeErrorEncountered = true
+    }
+    if (rightExpr != null) {
+        val rightExprTy = inferExprTy(rightExpr, ctx)
+        if (!rightExprTy.supportsOrdering()) {
+            ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(rightExpr, rightExprTy, op))
+            typeErrorEncountered = true
+        }
+        if (!typeErrorEncountered) {
+            ctx.addConstraint(leftExprTy, rightExprTy)
+        }
+    }
+
+    return TyBool
+}
+
+private fun inferLogicBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceContext): Ty {
+    val leftExpr = binaryExpr.left
+    val rightExpr = binaryExpr.right
+
+    inferExprTy(leftExpr, ctx, TyBool)
+    if (rightExpr != null) {
+        inferExprTy(rightExpr, ctx, TyBool)
+    }
+
+    return TyBool
+}
 
 private fun Ty.supportsArithmeticOp(): Boolean {
     return this is TyInteger
             || this is TyNum
-            || this is TyTypeParameter
-            || this is TyInfer
+            || this is TyInfer.IntVar
             || this is TyUnknown
+            || this is TyNever
+}
+
+private fun Ty.supportsOrdering(): Boolean {
+    return this is TyInteger
+            || this is TyNum
+            || this is TyInfer.IntVar
+            || this is TyUnknown
+            || this is TyNever
 }
 
 private fun inferDerefExprTy(derefExpr: MvDerefExpr, ctx: InferenceContext): Ty {
