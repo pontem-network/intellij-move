@@ -26,7 +26,7 @@ val MvUseStmt.addressRef: MvAddressRef?
 
 val MvUseStmt.useGroupLevel: Int
     get() {
-        if (this.isTestOnly) return 4
+        if (this.isTestOnly) return 5
         return this.addressRef?.useGroupLevel ?: -1
     }
 

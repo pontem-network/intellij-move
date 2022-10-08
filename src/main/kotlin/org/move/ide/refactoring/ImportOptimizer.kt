@@ -41,7 +41,7 @@ class ImportOptimizer : ImportOptimizer {
     private fun optimizeImports(importsOwner: MvImportsOwner) {
         removeUnusedImports(importsOwner)
         mergeTestOnlyImportsIntoMainImports(importsOwner)
-        mergeImportsIntoGroups(importsOwner)
+        mergeItemGroups(importsOwner)
         sortImports(importsOwner)
     }
 
@@ -84,7 +84,7 @@ class ImportOptimizer : ImportOptimizer {
             .flatMap { it.childUseItems }
     }
 
-    private fun mergeImportsIntoGroups(useStmtOwner: MvImportsOwner) {
+    private fun mergeItemGroups(useStmtOwner: MvImportsOwner) {
         val psiFactory = useStmtOwner.project.psiFactory
         val leftBrace = useStmtOwner.findFirstChildByType(L_BRACE) ?: return
 
@@ -133,7 +133,17 @@ class ImportOptimizer : ImportOptimizer {
             .groupBy { it.useGroupLevel }
             .map { (groupLevel, items) ->
                 val sortedItems = items
-                    .sortedBy { it.useSpeckText }
+                    .sortedBy {
+                        val address = it.addressRef?.normalizedText
+                        val speck = it.useSpeckText
+                        when (address) {
+                            "aptos_std" ->
+                                speck.replaceRange(0 until "aptos_std".length, "1")
+                            "aptos_framework" ->
+                                speck.replaceRange(0 until "aptos_framework".length, "2")
+                            else -> speck
+                        }
+                    }
                     .mapNotNull { it.copy() as? MvUseStmt }
                 groupLevel to sortedItems
             }

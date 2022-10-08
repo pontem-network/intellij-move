@@ -141,12 +141,18 @@ module 0x1::Main {
     use AAA::M1::SS1;
     use Std::Signer;
     use std::signature;
+    use aptos_std::table;
+    use aptos_std::iter_table;
+    use aptos_framework::coin;
     #[test_only]
     use Std::Errors;
 
     fun call(a: S1, b: S2, c: SS1) {
         Signer::address_of();
         signature;
+        table;
+        iter_table;
+        coin;
     }
 
     #[test]
@@ -166,6 +172,10 @@ module 0x1::Main {
     use Std::Signer;
     use std::signature;
 
+    use aptos_std::iter_table;
+    use aptos_std::table;
+    use aptos_framework::coin;
+
     use AAA::M1::{S1, SS1};
     use BBB::M2::S2;
 
@@ -175,6 +185,9 @@ module 0x1::Main {
     fun call(a: S1, b: S2, c: SS1) {
         Signer::address_of();
         signature;
+        table;
+        iter_table;
+        coin;
     }
 
     #[test]
