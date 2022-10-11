@@ -2,56 +2,55 @@ package org.move.ide.formatter.impl
 
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
-import org.move.ide.formatter.MvFormatterBlock
-import org.move.lang.MvElementTypes.ADDRESS_BLOCK
-import org.move.lang.MvElementTypes.CODE_BLOCK_EXPR
-import org.move.lang.core.psi.*
+import org.move.ide.formatter.MoveFmtBlock
+import org.move.lang.MvElementTypes.*
+import org.move.lang.core.psi.MvExpr
 
-fun MvFormatterBlock.computeIndent(child: ASTNode): Indent? {
+fun MoveFmtBlock.computeChildIndent(childNode: ASTNode): Indent? {
+    val parentNode = node
     val parentPsi = node.psi
-    val elementType = node.elementType
-    val childPsi = child.psi
+    val parentType = node.elementType
     return when {
-        elementType == CODE_BLOCK_EXPR -> Indent.getNoneIndent()
+        // do not indent contents of an address block
+        // address {
+        // module M {
+        // }
+        // }
+        parentType == ADDRESS_BLOCK -> Indent.getNoneIndent()
 
-        // indent blocks
-        node.isDelimitedBlock -> getNormalIndentIfNotCurrentBlockDelimiter(child, node)
+        // indent inline block in else block
+        // if (true)
+        // else
+        //     2 + 2;
+        parentType == ELSE_BLOCK
+                && childNode.elementType == INLINE_BLOCK -> Indent.getContinuationIndent()
 
-        // do not indent statements
-        childPsi.prevSibling == null -> Indent.getNoneIndent()
-        //     let a =
-        //     92;
-        // =>
-        //     let a =
-        //         92;
-        // except if RefExpr as lhs of assignment expr
-//        childPsi is MvExpr
-//                && (parentType == LET_EXPR || parentType == ASSIGNMENT_EXPR || parentType == CONST_DEF) -> Indent.getNormalIndent()
-        childPsi is MvExpr
-                && parentPsi is MvInitializer -> Indent.getNormalIndent()
-//        if (true)
-//            create()
-//        else
-//            delete()
-        parentPsi is MvIfExpr || parentPsi is MvElseBlock -> when (childPsi) {
-            is MvInlineBlock -> Indent.getNormalIndent()
-            else -> Indent.getNoneIndent()
-        }
+        // do not indent else block
+        childNode.elementType == ELSE_BLOCK -> Indent.getNoneIndent()
 
-//        // Indent flat block contents, excluding closing brace
-//        node.isFlatBlock ->
-//            if (childCtx.metLBrace) {
-//                getIndentIfNotDelim(child, node)
-//            } else {
-//                Indent.getNoneIndent()
-//            }
+        // indent every child of the block except for braces
+        // module M {
+        //    struct S {}
+        // }
+        parentType in DELIMITED_BLOCKS -> getNormalIndentIfNotCurrentBlockDelimiter(childNode, parentNode)
 
-        parentPsi is MvCondition -> Indent.getNoneIndent()
+//        //     let a =
+//        //     92;
+//        // =>
+//        //     let a =
+//        //         92;
+        parentType == INITIALIZER -> Indent.getNormalIndent()
 
-        // binary expressions, chain calls
-        // no indent on it's own, use parent indent
+        // in expressions, we need to indent any part of it except for the first one
+        // - binary expressions
+        // 10000
+        //     + 2
+        //     - 3
+        // - field chain calls
+        // get_s()
+        //     .myfield
+        //     .myotherfield
         parentPsi is MvExpr -> Indent.getContinuationWithoutFirstIndent()
-//        parentPsi is MvExpr -> Indent.getIndent(Indent.Type.NONE, true, true)
 
         else -> Indent.getNoneIndent()
     }
@@ -61,9 +60,5 @@ fun getNormalIndentIfNotCurrentBlockDelimiter(child: ASTNode, parent: ASTNode): 
     if (child.isDelimiterOfCurrentBlock(parent)) {
         Indent.getNoneIndent()
     } else {
-        if (parent.elementType == ADDRESS_BLOCK) {
-            Indent.getNoneIndent()
-        } else {
-            Indent.getNormalIndent()
-        }
+        Indent.getNormalIndent()
     }

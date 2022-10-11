@@ -1,5 +1,5 @@
 module 0x1::expressions {
-    fun main() {
+    fun main(): bool {
         if (true
                 && false
         ) {};
@@ -7,11 +7,21 @@ module 0x1::expressions {
         if (
         true
         && false
-        ) {};
+        )
+        true
+        else
+        false;
 
         vector[
         1,
         1,
-        ]
+        ];
+
+        while (true)
+        1 + 1;
+
+        return 1 == 2
+        && (1 == 3
+        && 1 == 4);
     }
 }

@@ -222,3 +222,22 @@ private fun SpacingContext.needsBlankLineBetweenItems(): Boolean {
 
     return true
 }
+
+fun SpacingBuilder.beforeInside(
+    element: IElementType,
+    tokenSet: TokenSet,
+    spacingFun: SpacingBuilder.RuleBuilder.() -> Unit
+) {
+    tokenSet.types.forEach { inType -> beforeInside(element, inType).spacingFun() }
+}
+
+fun SpacingBuilder.afterInside(
+    element: IElementType,
+    tokenSet: TokenSet,
+    spacingFun: SpacingBuilder.RuleBuilder.() -> Unit
+) {
+    tokenSet.types.forEach { inType -> afterInside(element, inType).spacingFun() }
+}
+
+fun SpacingBuilder.RuleBuilder.spacesNoLineBreak(spaces: Int): SpacingBuilder? =
+    spacing(spaces, spaces, 0, false, 0)
