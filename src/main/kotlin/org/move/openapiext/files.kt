@@ -15,6 +15,7 @@ fun Project.allMoveFiles(): List<MoveFile> {
         .map { moveProject ->
             moveProject.processMoveFiles {
                 val filePath = it.virtualFile.path
+
                 if (filePath in visited) return@processMoveFiles true
                 visited.add(filePath)
 

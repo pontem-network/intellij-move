@@ -37,6 +37,7 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
                 script {
                     use 0x1::Module;
                            //^
+                }
             """
             )
         }
@@ -377,4 +378,35 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
             )
         }
     }
+
+    fun `test resolve module from file in local dev-dependency`() = checkByFileTree {
+        moveToml(
+            """
+        [dev-dependencies]
+        Stdlib = { local = "./stdlib" }
+        """
+        )
+        sources {
+            main(
+                """
+                script {
+                    use 0x1::Module;
+                           //^
+                }
+            """
+            )
+        }
+        dir("stdlib") {
+            namedMoveToml("Stdlib")
+            sources {
+                move(
+                    "module.move", """
+                    module 0x1::Module {}
+                              //X
+                """
+                )
+            }
+        }
+    }
+
 }

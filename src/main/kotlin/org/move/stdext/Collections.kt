@@ -193,3 +193,4 @@ fun <T> T?.wrapWithList(): List<T> = this?.let { listOf(it) }.orEmpty()
 fun <T> T?.wrapWithMutableList(): MutableList<T> = this?.let { listOf(it) }.orEmpty().toMutableList()
 
 fun <T> List<T>.withAdded(element: T): List<T> = listOf(this, listOf(element)).flatten()
+fun <T> List<T>.withExtended(list: List<T>): List<T> = listOf(this, list).flatten()
