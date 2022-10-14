@@ -1,6 +1,5 @@
 package org.move.cli.runconfig.producers
 
-import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.AptosCommandLine

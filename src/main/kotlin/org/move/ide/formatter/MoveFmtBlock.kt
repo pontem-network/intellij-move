@@ -5,7 +5,6 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.formatter.common.AbstractBlock
 import org.move.ide.formatter.impl.*
 import org.move.lang.MvElementTypes.*
-import org.move.lang.core.tokenSetOf
 
 private fun ASTNode.isLeafNode(): Boolean = this.firstChildNode == null
 

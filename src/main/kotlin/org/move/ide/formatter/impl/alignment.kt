@@ -1,7 +1,7 @@
 package org.move.ide.formatter.impl
 
-import org.move.ide.formatter.MvAlignmentStrategy
 import org.move.ide.formatter.MoveFmtBlock
+import org.move.ide.formatter.MvAlignmentStrategy
 import org.move.lang.MvElementTypes.*
 
 fun MoveFmtBlock.getAlignmentStrategy(): MvAlignmentStrategy = when (node.elementType) {
