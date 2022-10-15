@@ -23,7 +23,7 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
             }
             TyUnknown
         }
-        is MvStructLitExpr -> inferStructLitExpr(expr, parentCtx, expectedTy)
+        is MvStructLitExpr -> inferStructLitExprTy(expr, parentCtx, expectedTy)
         is MvVectorLitExpr -> inferVectorLitExpr(expr, parentCtx)
 
         is MvDotExpr -> inferDotExprTy(expr, parentCtx)
@@ -177,7 +177,7 @@ private fun inferDotExprTy(dotExpr: MvDotExpr, parentCtx: InferenceContext): Ty 
     return inferenceCtx.resolveTy(structTy.fieldTy(fieldName))
 }
 
-fun inferStructLitExpr(
+fun inferStructLitExprTy(
     litExpr: MvStructLitExpr,
     parentCtx: InferenceContext,
     expectedTy: Ty? = null
@@ -480,6 +480,13 @@ private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext, expectedTy: T
         else -> return TyUnknown
     }
 
+    if (!isCompatible(ifExprTy, elseExprTy) && !isCompatible(elseExprTy, ifExprTy)) {
+        val elseExpr = ifExpr.elseExpr
+        if (elseExpr != null) {
+            ctx.typeErrors.add(TypeError.TypeMismatch(elseExpr, ifExprTy, elseExprTy))
+        }
+        return TyUnknown
+    }
     return combineTys(ifExprTy, elseExprTy, ctx.msl)
 }
 

@@ -1155,4 +1155,29 @@ module 0x1::main {
     }
 }        
     """)
+
+    fun `test if else with different generic parameters`() = checkByText("""
+module 0x1::main {
+    struct G<X, Y> {}
+    fun main<X, Y>() {
+        if (true) {
+            G<X, Y> {}
+        } else {
+            <error descr="Incompatible type 'G<Y, X>', expected 'G<X, Y>'">G<Y, X> {}</error>
+        };
+    }
+}        
+    """)
+
+    fun `test type cannot contain itself`() = checkByText("""
+module 0x1::main {
+    struct S { val: <error descr="Circular reference of type 'S'">S</error> }
+}        
+    """)
+
+    fun `test type cannot contain itself in vector`() = checkByText("""
+module 0x1::main {
+    struct S { val: vector<<error descr="Circular reference of type 'S'">S</error>> }
+}        
+    """)
 }

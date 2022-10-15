@@ -17,5 +17,6 @@ val MvStructField.struct: MvStruct
         fieldsDefBlock?.parent as MvStruct
 
 fun MvStructField.declarationTypeTy(inferenceCtx: InferenceContext): Ty =
-    this.typeAnnotation?.type
+    this.typeAnnotation
+        ?.type
         ?.let { inferTypeTy(it, inferenceCtx) } ?: TyUnknown

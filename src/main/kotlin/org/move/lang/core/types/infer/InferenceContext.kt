@@ -192,7 +192,6 @@ fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Compat {
 
 /// find common denominator for both types
 fun combineTys(ty1: Ty, ty2: Ty, msl: Boolean): Ty {
-    if (!isCompatible(ty1, ty2, msl) && !isCompatible(ty2, ty1, msl)) return TyUnknown
     return when {
         ty1 is TyReference && ty2 is TyReference
                 && isCompatible(ty1.referenced, ty2.referenced, msl) -> {
@@ -233,7 +232,11 @@ fun checkTysCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean = true
 
         expectedTy is TyTypeParameter || inferredTy is TyTypeParameter -> {
             // check abilities
-            Compat.Yes
+            if (expectedTy != inferredTy) {
+                Compat.TypeMismatch(expectedTy, inferredTy)
+            } else {
+                Compat.Yes
+            }
         }
 
         expectedTy is TyUnit && inferredTy is TyUnit -> Compat.Yes
@@ -272,8 +275,30 @@ fun isCompatibleAbilities(expectedTy: Ty, actualTy: Ty, msl: Boolean): Compat {
     }
 }
 
+enum class TypeErrorScope {
+    MAIN, MODULE;
+}
+
 sealed class TypeError(open val element: PsiElement) {
     abstract fun message(): String
+
+    companion object {
+        fun isAllowedTypeError(error: TypeError, typeErrorScope: TypeErrorScope): Boolean {
+            return when (typeErrorScope) {
+                TypeErrorScope.MODULE -> error is CircularType
+                TypeErrorScope.MAIN -> {
+                    if (error is CircularType) return false
+                    if (
+                        (error is UnsupportedBinaryOp || error is IncompatibleArgumentsToBinaryExpr)
+                        && error.element.isMsl()
+                    ) {
+                        return false
+                    }
+                    true
+                }
+            }
+        }
+    }
 
     data class TypeMismatch(
         override val element: PsiElement,
@@ -315,7 +340,7 @@ sealed class TypeError(open val element: PsiElement) {
         val leftTy: Ty,
         val rightTy: Ty,
         val op: String,
-    ): TypeError(element) {
+    ) : TypeError(element) {
         override fun message(): String {
             return "Incompatible arguments to '$op': " +
                     "'${leftTy.text()}' and '${rightTy.text()}'"
@@ -328,6 +353,15 @@ sealed class TypeError(open val element: PsiElement) {
     ) : TypeError(element) {
         override fun message(): String {
             return "Invalid unpacking. Expected ${assignedTy.expectedBindingFormText()}"
+        }
+    }
+
+    data class CircularType(
+        override val element: PsiElement,
+        val structItem: MvStruct
+    ) : TypeError(element) {
+        override fun message(): String {
+            return "Circular reference of type '${structItem.name}'"
         }
     }
 }
