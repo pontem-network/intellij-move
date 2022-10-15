@@ -157,24 +157,19 @@ private fun inferCallExprTy(
     return funcTy
 }
 
-private fun inferDotExprTy(dotExpr: MvDotExpr, parentCtx: InferenceContext): Ty {
+fun inferDotExprStructTy(dotExpr: MvDotExpr, parentCtx: InferenceContext): TyStruct? {
     val objectTy = inferExprTy(dotExpr.expr, parentCtx)
-    val structTy =
-        when (objectTy) {
-            is TyReference -> objectTy.referenced as? TyStruct
-            is TyStruct -> objectTy
-            else -> null
-        } ?: return TyUnknown
-
-    val inferenceCtx = InferenceContext(parentCtx.msl)
-    for ((tyVar, tyArg) in structTy.typeVars.zip(structTy.typeArgs)) {
-        inferenceCtx.addConstraint(tyVar, tyArg)
+    return when (objectTy) {
+        is TyReference -> objectTy.referenced as? TyStruct
+        is TyStruct -> objectTy
+        else -> null
     }
-    // solve constraints, return TyUnknown if cannot
-    if (!inferenceCtx.processConstraints()) return TyUnknown
+}
 
+private fun inferDotExprTy(dotExpr: MvDotExpr, parentCtx: InferenceContext): Ty {
+    val structTy = inferDotExprStructTy(dotExpr, parentCtx) ?: return TyUnknown
     val fieldName = dotExpr.structDotField.referenceName
-    return inferenceCtx.resolveTy(structTy.fieldTy(fieldName))
+    return structTy.fieldTy(fieldName)
 }
 
 fun inferStructLitExprTy(

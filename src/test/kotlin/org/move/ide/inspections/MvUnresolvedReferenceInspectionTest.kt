@@ -337,4 +337,14 @@ spec 0x1::main {
     }
 }
     """)
+
+    fun `test no error for field of reference of unknown type`() = checkByText("""
+module 0x1::main {
+    fun call<T>(t: T): &T { &t }
+    fun main() {
+        let var = call( call {});
+        var.key;
+    }
+}        
+    """)
 }

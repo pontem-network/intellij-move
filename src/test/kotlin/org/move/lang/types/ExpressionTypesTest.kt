@@ -626,33 +626,27 @@ class ExpressionTypesTest: TypificationTestCase() {
     }        
     """)
 
-    fun `test simple map key field`() = testExpr(
+    fun `test simple map vector field`() = testExpr(
         """
 module 0x1::simple_map {
-    struct SimpleMap<Key, Value> has copy, drop, store {
-        data: vector<Element<Key, Value>>,
+    struct SimpleMap<Value> has copy, drop, store {
+        data: vector<Value>,
     }
 
-    struct Element<Key, Value> has copy, drop, store {
-        key: Key,
-        value: Value,
-    }
-    
     /// Create an empty vector.
     native public fun vector_empty<Element>(): vector<Element>;
     
-    public fun create<Key: store, Value: store>(): SimpleMap<Key, Value> {
+    public fun create<FunValue: store>(): SimpleMap<FunValue> {
         SimpleMap {
             data: vector_empty(),
         }
     }
     
     fun main() {
-        let map = create<u64, u64>();
-        let map_element = vector::borrow(&map.data, 1);
-        let key_field = map_element.key;
-        key_field;
-        //^ u64
+        let map = create<u64>();
+        let map_data = &map.data;
+        map_data;
+        //^ &vector<u64>
     }
 }        
     """
