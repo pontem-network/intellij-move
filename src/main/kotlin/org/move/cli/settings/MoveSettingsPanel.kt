@@ -9,9 +9,11 @@ import com.intellij.ui.layout.LayoutBuilder
 import org.move.cli.Aptos
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathField
+import org.move.openapiext.showSettings
 import org.move.stdext.toPathOrNull
 
 class MoveSettingsPanel(
+    private val showDefaultSettingsLink: Boolean,
     private val updateListener: (() -> Unit)? = null
 ) : Disposable {
     private val versionUpdateDebouncer = UiDebouncer(this)
@@ -20,8 +22,8 @@ class MoveSettingsPanel(
         pathField(
             FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
             this,
-            "Aptos binary"
-        ) { update() }
+            "Aptos Binary"
+        ) { onUpdate() }
     private val versionLabel = VersionLabel()
 
     data class Data(val aptosPath: String) {
@@ -34,7 +36,7 @@ class MoveSettingsPanel(
         }
         set(value) {
             aptosPathField.text = value.aptosPath
-            update()
+            onUpdate()
         }
 
     fun attachTo(layout: LayoutBuilder) = with(layout) {
@@ -52,9 +54,14 @@ class MoveSettingsPanel(
             comment("(required)")
         }
         row("Version") { versionLabel() }
+        row("       ") {
+            link("Set default project settings") {
+                ProjectManager.getInstance().defaultProject.showSettings<PerProjectMoveConfigurable>()
+            }.visible(showDefaultSettingsLink)
+        }
     }
 
-    private fun update() {
+    private fun onUpdate() {
         val aptosPath = aptosPathField.text.toPathOrNull()
         versionUpdateDebouncer.run(
             onPooledThread = {

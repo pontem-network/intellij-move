@@ -21,9 +21,10 @@ import javax.swing.JComponent
 
 class MvProjectGeneratorPeer : GeneratorPeerImpl<NewProjectData>() {
 
-    private val moveSettingsPanel = MoveSettingsPanel { checkValid?.run() }
+    private val moveSettingsPanel =
+        MoveSettingsPanel(showDefaultSettingsLink = true) { checkValid?.run() }
 
-    private val aptosInitCheckBox = JBCheckBox("Initialize Aptos", false)
+    private val aptosInitCheckBox = JBCheckBox("Run 'aptos init'", false)
     private val aptosSettingsPanel = AptosSettingsPanel(aptosInitCheckBox.selected)
 
     private var checkValid: Runnable? = null

@@ -90,14 +90,13 @@ class Aptos(val location: Path) {
         return MvResult.Ok(manifest)
     }
 
-    fun version(workingDirectory: Path? = null): String? {
+    fun version(): String? {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
         if (!location.isValidExecutable()) return null
 
         val commandLine = GeneralCommandLine(location.toString())
-            .withWorkDirectory(workingDirectory)
             .withParameters(listOf("--version"))
             .withEnvironment(emptyMap())
             .withCharset(Charsets.UTF_8)

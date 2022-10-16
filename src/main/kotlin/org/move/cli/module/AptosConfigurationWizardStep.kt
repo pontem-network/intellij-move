@@ -19,7 +19,7 @@ class AptosConfigurationWizardStep(
     private val configurationUpdaterConsumer: ((ModuleBuilder.ModuleConfigurationUpdater) -> Unit)? = null
 ) : ModuleWizardStep() {
 
-    private val moveSettingsPanel = MoveSettingsPanel()
+    private val moveSettingsPanel = MoveSettingsPanel(showDefaultSettingsLink = true)
 
     override fun getComponent(): JComponent = panel {
         moveSettingsPanel.attachTo(this)

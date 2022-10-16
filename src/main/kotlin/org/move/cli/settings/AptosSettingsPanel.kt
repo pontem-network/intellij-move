@@ -14,9 +14,9 @@ import org.move.openapiext.pathField
 class AptosSettingsPanel(val panelEnabled: ComponentPredicate) : Disposable {
     private val privateKeyPathField =
         pathField(
-            FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
+            FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor(),
             this,
-            "Private key file"
+            "Private Key File"
         )
     private val faucetUrlField = JBTextField()
     private val restUrlField = JBTextField()

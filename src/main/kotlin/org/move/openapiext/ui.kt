@@ -39,28 +39,15 @@ class UiDebouncer(
 }
 
 @Suppress("UnstableApiUsage")
-fun pathToDirectoryTextField(
-    disposable: Disposable,
-    @NlsContexts.DialogTitle title: String,
-    onTextChanged: () -> Unit = {}
-): TextFieldWithBrowseButton =
-    pathField(
-        FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-        disposable,
-        title,
-        onTextChanged
-    )
-
-
 fun pathField(
     fileChooserDescriptor: FileChooserDescriptor,
     disposable: Disposable,
-    @Suppress("UnstableApiUsage") @NlsContexts.DialogTitle title: String,
+    @NlsContexts.DialogTitle dialogTitle: String,
     onTextChanged: () -> Unit = {}
 ): TextFieldWithBrowseButton {
     val component = TextFieldWithBrowseButton(null, disposable)
     component.addBrowseFolderListener(
-        title, null, null,
+        dialogTitle, null, null,
         fileChooserDescriptor,
         TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT
     )
