@@ -8,6 +8,7 @@ import com.intellij.psi.util.parentOfType
 import org.move.cli.AptosCommandLine
 import org.move.cli.runconfig.AptosCommandConfiguration
 import org.move.cli.runconfig.AptosCommandConfigurationType
+import org.move.cli.settings.moveSettings
 
 
 data class AptosCommandLineFromContext(
@@ -32,7 +33,12 @@ abstract class AptosCommandConfigurationProducer :
         val commandLine = cmdConf.commandLine
         templateConfiguration.command = commandLine.commandWithParams()
         templateConfiguration.workingDirectory = commandLine.workingDirectory
-        templateConfiguration.environmentVariables = commandLine.environmentVariables
+
+        var envVars = commandLine.environmentVariables
+        if (templateConfiguration.project.moveSettings.settingsState.disableTelemetry) {
+            envVars = envVars.with(mapOf("APTOS_DISABLE_TELEMETRY" to "true"))
+        }
+        templateConfiguration.environmentVariables = envVars
         return true
     }
 

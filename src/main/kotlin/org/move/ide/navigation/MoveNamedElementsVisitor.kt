@@ -3,9 +3,7 @@ package org.move.ide.navigation
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiRecursiveVisitor
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.allFunctions
-import org.move.lang.core.psi.ext.constBindings
-import org.move.lang.core.psi.ext.structs
+import org.move.lang.core.psi.ext.*
 
 abstract class MvNamedElementsVisitor : MvVisitor(), PsiRecursiveVisitor {
 
@@ -19,13 +17,19 @@ abstract class MvNamedElementsVisitor : MvVisitor(), PsiRecursiveVisitor {
         processNamedElement(o)
 
         o.allFunctions().forEach { it.accept(this) }
+        o.specFunctions().forEach { it.accept(this) }
         o.structs().forEach { it.accept(this) }
         o.constBindings().forEach { it.accept(this) }
     }
 
     override fun visitFunction(o: MvFunction) = processNamedElement(o)
 
-    override fun visitStruct(o: MvStruct) = processNamedElement(o)
+    override fun visitStruct(o: MvStruct) {
+        processNamedElement(o)
+        for (field in o.fields) {
+            processNamedElement(o)
+        }
+    }
 
     override fun visitBindingPat(o: MvBindingPat) = processNamedElement(o)
 

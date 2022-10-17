@@ -20,7 +20,8 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
         return panel {
             moveProjectSettings.attachTo(this)
             titledRow("") {
-                row { checkBox("Automatically fold specs in opened files", state::foldSpecs) }
+                row { checkBox("Auto-fold specs in opened files", state::foldSpecs) }
+                row { checkBox("Disable telemetry for new Run Configurations", state::disableTelemetry) }
             }
         }
     }
@@ -32,9 +33,7 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
 
     override fun reset() {
         super<BoundConfigurable>.reset()
-        moveProjectSettings.data = MoveSettingsPanel.Data(
-            aptosPath = state.aptosPath,
-        )
+        moveProjectSettings.data = MoveSettingsPanel.Data(state.aptosPath)
     }
 
     override fun isModified(): Boolean {

@@ -1,8 +1,10 @@
 <configurations>
   <configuration name="Publish Main" type="MoveRunConfiguration">
     <option name="command" value="move publish" />
-    <option name="workingDirectory" value="file://$PROJECT_DIR$/../unitTest_ID" />
-    <envs />
+    <option name="workingDirectory" value="file://" />
+    <envs>
+      <env name="APTOS_DISABLE_TELEMETRY" value="true" />
+    </envs>
     <method v="2" />
   </configuration>
 </configurations>
