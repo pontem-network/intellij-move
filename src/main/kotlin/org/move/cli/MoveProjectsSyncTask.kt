@@ -13,6 +13,7 @@ import org.move.openapiext.contentRoots
 import org.move.openapiext.resolveExisting
 import org.move.openapiext.toVirtualFile
 import org.move.stdext.iterateFiles
+import org.move.stdext.withExtended
 import java.util.concurrent.CompletableFuture
 
 class MoveProjectsSyncTask(
@@ -56,7 +57,7 @@ class MoveProjectsSyncTask(
                     val visitedDepIds = mutableSetOf(
                         DepId(rootPackage.contentRoot.path)
                     )
-                    loadDependencies(project, moveToml, deps, visitedDepIds)
+                    loadDependencies(project, moveToml, deps, visitedDepIds, true)
 
                     projects.add(MoveProject(project, rootPackage, deps))
                     true
@@ -69,9 +70,14 @@ class MoveProjectsSyncTask(
             project: Project,
             rootMoveToml: MoveToml,
             deps: MutableList<Pair<MovePackage, RawAddressMap>>,
-            visitedIds: MutableSet<DepId>
+            visitedIds: MutableSet<DepId>,
+            isRoot: Boolean,
         ) {
-            for ((dep, addressMap) in rootMoveToml.deps) {
+            var parsedDeps = rootMoveToml.deps
+            if (isRoot) {
+                parsedDeps = parsedDeps.withExtended(rootMoveToml.dev_deps)
+            }
+            for ((dep, addressMap) in parsedDeps) {
                 val depRoot = dep.localPath()
 
                 val depId = DepId(depRoot.toString())
@@ -88,7 +94,7 @@ class MoveProjectsSyncTask(
 
                 // parse all nested dependencies with their address maps
                 visitedIds.add(depId)
-                loadDependencies(project, depMoveToml, deps, visitedIds)
+                loadDependencies(project, depMoveToml, deps, visitedIds, false)
 
                 deps.add(Pair(depPackage, addressMap))
             }

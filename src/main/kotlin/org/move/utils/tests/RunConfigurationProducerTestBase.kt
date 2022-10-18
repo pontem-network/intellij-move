@@ -45,14 +45,26 @@ abstract class RunConfigurationProducerTestBase(val testDir: String) : MvProject
             configurationContext.configurationsFromContext.orEmpty().map { it.configurationSettings }
         check(configurations.isNotEmpty()) { "No configurations found" }
 
+        val testProject = this.testProject ?: error("testProject not initialized")
+        val testId = testProject.rootDirectory.name
+
         val root = Element("configurations")
         configurations.forEach {
             val confSettings = it as RunnerAndConfigurationSettingsImpl
             val content = confSettings.writeScheme()
+
+            val workingDirectoryChild =
+                content.children.find { c -> c.getAttribute("name")?.value == "workingDirectory" }
+            if (workingDirectoryChild != null) {
+                val workingDirectory = workingDirectoryChild.getAttribute("value")
+                if (workingDirectory != null) {
+                    workingDirectory.value = workingDirectory.value
+                        .replace("file://\$USER_HOME\$", "file://")
+                        .replace("file://\$PROJECT_DIR\$/../$testId", "file://")
+                }
+            }
             root.addContent(content)
         }
-        val testProject = this.testProject ?: error("testProject not initialized")
-        val testId = testProject.rootDirectory.name
         val transformedXml = root.toXmlString().replace(testId, "unitTest_ID")
 
         val testDataPath = "${TestCase.testResourcesPath}/org/move/cli/producers.fixtures/$testDir"

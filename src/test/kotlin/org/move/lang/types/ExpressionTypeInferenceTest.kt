@@ -339,4 +339,26 @@ module 0x1::main {
     }
 }        
     """)
+
+    fun `test integer type inference with boolean ops`() = testExpr("""
+module 0x1::main {
+    fun main(a: u64) {
+        let c = 1;
+        a < c;
+        c;
+      //^ u64  
+    }
+}        
+    """)
+
+    fun `test integer type inference with equal ops`() = testExpr("""
+module 0x1::main {
+    fun main(a: u64) {
+        let c = 1;
+        a == c;
+        c;
+      //^ u64  
+    }
+}        
+    """)
 }

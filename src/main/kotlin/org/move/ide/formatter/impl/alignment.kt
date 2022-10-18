@@ -1,15 +1,15 @@
 package org.move.ide.formatter.impl
 
+import org.move.ide.formatter.MoveFmtBlock
 import org.move.ide.formatter.MvAlignmentStrategy
-import org.move.ide.formatter.MvFormatterBlock
 import org.move.lang.MvElementTypes.*
 
-fun MvFormatterBlock.getAlignmentStrategy(): MvAlignmentStrategy = when (node.elementType) {
+fun MoveFmtBlock.getAlignmentStrategy(): MvAlignmentStrategy = when (node.elementType) {
     FUNCTION_PARAMETER_LIST, VALUE_ARGUMENT_LIST ->
         MvAlignmentStrategy
             .shared()
             .alignUnlessBlockDelim()
-            .alignIf(ctx.commonSettings.ALIGN_MULTILINE_PARAMETERS)
+            .alignIf(blockCtx.commonSettings.ALIGN_MULTILINE_PARAMETERS)
     TYPE_PARAMETER_LIST ->
         MvAlignmentStrategy
             .wrap()

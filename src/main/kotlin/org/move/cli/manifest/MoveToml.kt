@@ -16,7 +16,7 @@ class MoveToml(
     val dev_addresses: RawAddressMap = mutableRawAddressMap(),
 
     val deps: List<Pair<TomlDependency, RawAddressMap>> = emptyList(),
-//    val dev_deps: List<Pair<TomlDependency, RawAddressMap>> = emptyList()
+    val dev_deps: List<Pair<TomlDependency, RawAddressMap>> = emptyList()
 ) {
     val packageName: String? get() = packageTable?.name
 
@@ -63,7 +63,7 @@ class MoveToml(
             val devAddresses = parseAddresses("dev-addresses", tomlFile)
 
             val deps = parseDependencies("dependencies", tomlFile, projectRoot)
-//            val dev_deps = parseDependencies2("dev-dependencies", tomlFile, projectRoot)
+            val dev_deps = parseDependencies("dev-dependencies", tomlFile, projectRoot)
             return MoveToml(
                 tomlFile.project,
                 tomlFile,
@@ -71,7 +71,7 @@ class MoveToml(
                 addresses,
                 devAddresses,
                 deps,
-//                dev_deps
+                dev_deps
             )
         }
 

@@ -12,6 +12,7 @@ import org.move.cli.moveProjects
 import org.move.cli.settings.*
 import org.move.lang.isMoveOrManifest
 import org.move.openapiext.common.isUnitTestMode
+import org.move.openapiext.showSettings
 
 fun updateAllNotifications(project: Project) {
     EditorNotifications.getInstance(project).updateAllNotifications()
@@ -52,7 +53,7 @@ class InvalidAptosBinaryNotification(
         return EditorNotificationPanel().apply {
             text = "Aptos binary path is not provided or invalid"
             createActionLabel("Configure") {
-                project.moveSettings.showMoveSettings()
+                project.showSettings<PerProjectMoveConfigurable>()
             }
             createActionLabel("Do not show again") {
                 disableNotification(file)

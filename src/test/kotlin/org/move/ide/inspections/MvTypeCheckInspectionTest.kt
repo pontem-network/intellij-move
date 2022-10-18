@@ -696,6 +696,28 @@ module 0x1::M {
     """
     )
 
+    fun `test invalid argument to minus expr`() = checkErrors(
+        """
+    module 0x1::M {
+        fun add(a: bool, b: bool) {
+            <error descr="Invalid argument to '-': expected 'u8', 'u64', 'u128', but found 'bool'">a</error> 
+            - <error descr="Invalid argument to '-': expected 'u8', 'u64', 'u128', but found 'bool'">b</error>;
+        }
+    }    
+    """
+    )
+
+    fun `test invalid argument to plus expr for type parameter`() = checkErrors(
+        """
+    module 0x1::M {
+        fun add<T>(a: T, b: T) {
+            <error descr="Invalid argument to '+': expected 'u8', 'u64', 'u128', but found 'T'">a</error> 
+            + <error descr="Invalid argument to '+': expected 'u8', 'u64', 'u128', but found 'T'">b</error>;
+        }
+    }    
+    """
+    )
+
     fun `test no error if return nested in if and while`() = checkErrors(
         """
     module 0x1::M {
@@ -1008,6 +1030,154 @@ module 0x1::main {
         if (a == 1) return a;
         loop {}
     }
+}        
+    """)
+
+    fun `test integer arguments support ordering`() = checkByText("""
+module 0x1::main {
+    fun main(a: u64, b: u8) {
+        let c = 1;
+        a < b;
+        a > b;
+        a >= b;
+        a <= b;
+        a < c;
+        b < c;
+    }
+}        
+    """)
+
+    fun `test cannot order references`() = checkByText("""
+module 0x1::main {
+    fun main(a: &u64, b: &u64) {
+        <error descr="Invalid argument to '<': expected 'u8', 'u64', 'u128', but found '&u64'">a</error> 
+        < <error descr="Invalid argument to '<': expected 'u8', 'u64', 'u128', but found '&u64'">b</error>;
+    }
+}        
+    """)
+
+    fun `test cannot order bools`() = checkByText("""
+module 0x1::main {
+    fun main(a: bool, b: bool) {
+        <error descr="Invalid argument to '<': expected 'u8', 'u64', 'u128', but found 'bool'">a</error> 
+        < <error descr="Invalid argument to '<': expected 'u8', 'u64', 'u128', but found 'bool'">b</error>;
+    }
+}        
+    """)
+
+    fun `test cannot order type parameters`() = checkByText("""
+module 0x1::main {
+    fun main<T>(a: T, b: T) {
+        <error descr="Invalid argument to '<': expected 'u8', 'u64', 'u128', but found 'T'">a</error> 
+        < <error descr="Invalid argument to '<': expected 'u8', 'u64', 'u128', but found 'T'">b</error>;
+    }
+}        
+    """)
+
+    fun `test equality is supported for the same type objects`() = checkByText("""
+module 0x1::main {
+    struct S { val: u8 }
+    fun main<T>(a: T, b: T) {
+        1 == 1;
+        1u8 == 1u8;
+        1u64 == 1u64;
+        false == false;
+        S { val: 10 } == S { val: 20 };
+        a == b;
+    }
+}        
+    """)
+
+    fun `test inequality is supported for the same type objects`() = checkByText("""
+module 0x1::main {
+    struct S { val: u8 }
+    fun main<T>(a: T, b: T) {
+        1 != 1;
+        1u8 != 1u8;
+        1u64 != 1u64;
+        false != false;
+        S { val: 10 } != S { val: 20 };
+        a != b;
+    }
+}        
+    """)
+
+    fun `test any ordering of types is allowed in specs`() = checkByText("""
+module 0x1::liq_stake {
+    spec main {
+        let a = 1;
+        let b = @0x1 < false;
+        let c = a < false;
+    }
+}
+    """)
+
+    fun `test cannot equal completely different types`() = checkByText("""
+module 0x1::main {
+    struct S { val: u64 }
+    fun main() {
+        <error descr="Incompatible arguments to '==': 'integer' and 'bool'">1 == false</error>;
+        <error descr="Incompatible arguments to '==': 'S' and 'bool'">S { val: 10 } == false</error>;
+    }
+}        
+    """)
+
+    fun `test cannot equal different integer types`() = checkByText("""
+module 0x1::main {
+    fun main() {
+        <error descr="Incompatible arguments to '==': 'u8' and 'u64'">1u8 == 1u64</error>;
+    }
+}        
+    """)
+
+    fun `test cannot inequal different integer types`() = checkByText("""
+module 0x1::main {
+    fun main() {
+        <error descr="Incompatible arguments to '!=': 'u8' and 'u64'">1u8 != 1u64</error>;
+    }
+}        
+    """)
+
+    fun `test logic expressions allow booleans`() = checkByText("""
+module 0x1::main {
+    fun main() {
+        true && true;
+        false || false;
+    }
+}        
+    """)
+
+    fun `test logic expressions invalid argument type`() = checkByText("""
+module 0x1::main {
+    fun main() {
+        <error descr="Incompatible type 'u8', expected 'bool'">1u8</error> 
+        && <error descr="Incompatible type 'u64', expected 'bool'">1u64</error>;
+    }
+}        
+    """)
+
+    fun `test if else with different generic parameters`() = checkByText("""
+module 0x1::main {
+    struct G<X, Y> {}
+    fun main<X, Y>() {
+        if (true) {
+            G<X, Y> {}
+        } else {
+            <error descr="Incompatible type 'G<Y, X>', expected 'G<X, Y>'">G<Y, X> {}</error>
+        };
+    }
+}        
+    """)
+
+    fun `test type cannot contain itself`() = checkByText("""
+module 0x1::main {
+    struct S { val: <error descr="Circular reference of type 'S'">S</error> }
+}        
+    """)
+
+    fun `test type cannot contain itself in vector`() = checkByText("""
+module 0x1::main {
+    struct S { val: vector<<error descr="Circular reference of type 'S'">S</error>> }
 }        
     """)
 }

@@ -74,6 +74,7 @@ name = "package"
 version = "0.1.0"
 license = "MIT"
 authors = []
+upgrade_policy = "compatible"
 
 [addresses]
 Std = "_"

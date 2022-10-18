@@ -2,7 +2,7 @@ package org.move.toml
 
 import org.move.utils.tests.MoveTomlCompletionTestBase
 
-class MoveTomlCompletionContributorTest: MoveTomlCompletionTestBase() {
+class MoveTomlCompletionTest: MoveTomlCompletionTestBase() {
     fun `test complete addresses top level`() {
         myFixture.configureByText("Move.toml", "[addr<caret>]")
         val completions = myFixture.completeBasic().map { it.lookupString }

@@ -15,7 +15,11 @@ data class MvFmtContext(
     companion object {
         fun create(settings: CodeStyleSettings): MvFmtContext {
             val commonSettings = settings.getCommonSettings(MoveLanguage)
-            return MvFmtContext(commonSettings, createSpacingBuilder(commonSettings))
+            return MvFmtContext(
+                commonSettings = commonSettings,
+                spacingBuilder = createSpacingBuilder(commonSettings),
+                sharedAlignment = null
+            )
         }
     }
 

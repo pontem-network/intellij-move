@@ -88,8 +88,9 @@ class ConstraintSolver(val ctx: InferenceContext) {
 
                     else -> {
                         // if types are not compatible, constraints are unsolvable
-                        if (!isCompatible(ty1, ty2))
+                        if (!isCompatible(ty1, ty2)) {
                             return false
+                        }
                         // TODO: add
                         // error("type == type should not occur for now")
                     }

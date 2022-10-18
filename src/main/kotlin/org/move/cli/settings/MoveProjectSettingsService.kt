@@ -3,7 +3,6 @@ package org.move.cli.settings
 import com.intellij.configurationStore.serializeObjectInto
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.*
-import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiManager
@@ -45,6 +44,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
     data class State(
         var aptosPath: String = "",
         var foldSpecs: Boolean = false,
+        var disableTelemetry: Boolean = true,
     )
 
     @Volatile
@@ -59,10 +59,6 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
                 notifySettingsChanged(oldState, newState)
             }
         }
-
-    fun showMoveSettings() {
-        ShowSettingsUtil.getInstance().showSettingsDialog(project, PerProjectMoveConfigurable::class.java)
-    }
 
     private fun notifySettingsChanged(
         oldState: State,

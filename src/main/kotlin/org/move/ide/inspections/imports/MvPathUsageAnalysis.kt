@@ -110,9 +110,9 @@ private fun MvImportsOwner.localPathUsages(): PathUsages {
                 val typeUsages =
                     if (path.itemScope == ItemScope.TEST) testTypeUsages else mainTypeUsages
                 when {
-                    path.moduleRef != null -> putUsage(path, importsOwner, nameUsages)
-                    path.parent is MvPathType -> putUsage(path, importsOwner, typeUsages)
-                    else -> putUsage(path, importsOwner, nameUsages)
+                    path.moduleRef != null -> putUsage(path, nameUsages)
+                    path.parent is MvPathType -> putUsage(path, typeUsages)
+                    else -> putUsage(path, nameUsages)
                 }
                 true
             }
@@ -124,14 +124,7 @@ private fun MvImportsOwner.localPathUsages(): PathUsages {
     }
 }
 
-private fun putUsage(element: MvPath, currentImportsOwner: MvImportsOwner, itemUsages: ItemUsages) {
-    for (ancestor in element.ancestorsOfType<MvImportsOwner>()) {
-        if (ancestor == currentImportsOwner) break
-
-        val imports = ancestor.importInfo
-
-    }
-
+private fun putUsage(element: MvPath, itemUsages: ItemUsages) {
     val moduleRef = element.moduleRef
     when {
         // MODULE::ITEM

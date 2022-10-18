@@ -1,8 +1,10 @@
 package org.move.cli.runconfig.producers
 
+import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.AptosCommandLine
+import org.move.cli.MoveProject
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
@@ -12,6 +14,7 @@ import org.move.lang.core.psi.ext.hasTestFunctions
 import org.move.lang.core.psi.ext.isTest
 import org.move.lang.modules
 import org.move.lang.moveProject
+import org.toml.lang.psi.TomlFile
 
 class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
 
@@ -19,19 +22,25 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
 
     companion object {
         fun fromLocation(location: PsiElement, climbUp: Boolean = true): AptosCommandLineFromContext? {
-            return when (location) {
-                is MoveFile -> {
-                    val module = location.modules().firstOrNull() ?: return null
+            return when {
+                location is MoveFile -> {
+                    val module = location.modules().firstOrNull { it.hasTestFunctions() } ?: return null
                     findTestModule(module, climbUp)
                 }
-                is PsiFileSystemItem -> {
+                location is TomlFile && location.name == "Move.toml" -> {
                     val moveProject = location.findMoveProject() ?: return null
-                    val packageName = moveProject.currentPackage.packageName
-                    val rootPath = moveProject.contentRootPath ?: return null
-
-                    val confName = "Test $packageName"
-                    val command = "move test"
-                    AptosCommandLineFromContext(location, confName, AptosCommandLine(command, rootPath))
+                    findTestProject(location, moveProject)
+                }
+                location is PsiDirectory -> {
+                    val moveProject = location.findMoveProject() ?: return null
+                    if (
+                        location.virtualFile == moveProject.currentPackage.contentRoot
+                        || location.virtualFile == moveProject.currentPackage.testsFolder
+                    ) {
+                        findTestProject(location, moveProject)
+                    } else {
+                        null
+                    }
                 }
                 else -> findTestFunction(location, climbUp) ?: findTestModule(location, climbUp)
             }
@@ -59,6 +68,18 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
             val command = "move test --filter $modName"
             val rootPath = mod.moveProject?.contentRootPath ?: return null
             return AptosCommandLineFromContext(mod, confName, AptosCommandLine(command, rootPath))
+        }
+
+        private fun findTestProject(
+            location: PsiFileSystemItem,
+            moveProject: MoveProject
+        ): AptosCommandLineFromContext? {
+            val packageName = moveProject.currentPackage.packageName
+            val rootPath = moveProject.contentRootPath ?: return null
+
+            val confName = "Test $packageName"
+            val command = "move test"
+            return AptosCommandLineFromContext(location, confName, AptosCommandLine(command, rootPath))
         }
     }
 }

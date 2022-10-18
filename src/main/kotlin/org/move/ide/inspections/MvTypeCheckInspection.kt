@@ -6,11 +6,11 @@ import com.intellij.codeInspection.util.InspectionMessage
 import com.intellij.psi.PsiElement
 import org.move.ide.presentation.name
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.TypeError
-import org.move.lang.core.types.infer.inferenceCtx
-import org.move.lang.core.types.infer.isCompatible
+import org.move.lang.core.psi.ext.declarationTypeTy
+import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.struct
+import org.move.lang.core.psi.ext.tyAbilities
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.TyStruct
 
 class MvTypeCheckInspection : MvLocalInspectionTool() {
@@ -18,34 +18,37 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
-            override fun visitIfExpr(ifExpr: MvIfExpr) {
-                val ifTy = ifExpr.returningExpr?.inferredExprTy() ?: return
-                val elseExpr = ifExpr.elseExpr ?: return
-                val elseTy = elseExpr.inferredExprTy()
-
-                if (!isCompatible(ifTy, elseTy) && !isCompatible(elseTy, ifTy)) {
-                    holder.registerTypeError(
-                        elseExpr, "Incompatible type '${elseTy.name()}'" +
-                                ", expected '${ifTy.name()}'"
-                    )
-                }
-            }
-
             override fun visitItemSpec(o: MvItemSpec) {
                 val inference = o.inferenceCtx(true)
                 inference.typeErrors
-                    .forEach { holder.registerTypeError(it) }
+                    .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MAIN) }
+                    .forEach {
+                        holder.registerTypeError(it)
+                    }
             }
 
             override fun visitCodeBlock(codeBlock: MvCodeBlock) {
                 val fn = codeBlock.parent as? MvFunction ?: return
                 val inference = fn.inferenceCtx(fn.isMsl())
                 inference.typeErrors
-                    .forEach { holder.registerTypeError(it) }
+                    .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MAIN) }
+                    .forEach {
+                        holder.registerTypeError(it)
+                    }
+            }
+
+            override fun visitStruct(s: MvStruct) {
+                val ctx = InferenceContext(false)
+                instantiateItemTy(s, ctx)
+
+                ctx.typeErrors
+                    .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MODULE) }
+                    .forEach {
+                        holder.registerTypeError(it)
+                    }
             }
 
             override fun visitStructField(field: MvStructField) {
-//                val msl = field.isMsl()
                 val structAbilities = field.struct.tyAbilities
                 if (structAbilities.isEmpty()) return
 

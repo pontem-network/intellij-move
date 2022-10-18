@@ -12,4 +12,5 @@ class FormatterTest : MvFormatterTestBase() {
     fun `test structs`() = doTest()
     fun `test inner block`() = doTest()
     fun `test expressions`() = doTest()
+    fun `test chop wraps`() = doTest()
 }

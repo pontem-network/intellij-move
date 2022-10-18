@@ -12,18 +12,20 @@ fun prop(name: String): String =
         ?: error("Property `$name` is not defined in gradle.properties for environment `$platformVersion`")
 
 //val intellijVersion = prop("intellijVersion", "2021.2")
-val kotlinVersion = "1.7.10"
+val kotlinVersion = "1.7.20"
 
 val pluginJarName = "intellij-move-$platformVersion"
-val pluginVersion = "1.20.0"
+val pluginVersion = "1.21.0"
 val pluginGroup = "org.move"
+val javaVersion = if (platformVersion < "222") JavaVersion.VERSION_11 else JavaVersion.VERSION_17
+val kotlinJvmTarget = if (platformVersion < "222") "11" else "17"
 
 group = pluginGroup
 version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "1.7.20"
     id("org.jetbrains.intellij") version "1.9.0"
     id("org.jetbrains.grammarkit") version "2021.2.2"
     id("net.saliman.properties") version "1.5.2"
@@ -60,22 +62,14 @@ allprojects {
     }
 
     configure<JavaPluginExtension> {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-//        sourceCompatibility = (if (platformVersion == "222") JavaVersion.VERSION_17 else JavaVersion.VERSION_11)
-//        targetCompatibility = (if (platformVersion == "222") JavaVersion.VERSION_17 else JavaVersion.VERSION_11)
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
 
     sourceSets {
         main {
             java.srcDirs("src/main/gen")
-//            kotlin.srcDirs("src/main/kotlin")
-//            resources.srcDirs("src/$platformVersion/main/resources")
         }
-//        test {
-//            kotlin.srcDirs("src/$platformVersion/test/kotlin")
-//            resources.srcDirs("src/$platformVersion/test/resources")
-//        }
     }
 
     val generateMoveLexer = task<GenerateLexerTask>("generateMoveLexer") {
@@ -140,7 +134,7 @@ allprojects {
                 generateMoveLexer, generateMoveParser
             )
             kotlinOptions {
-                jvmTarget = "11"
+                jvmTarget = kotlinJvmTarget
                 languageVersion = "1.7"
                 apiVersion = "1.5"
                 freeCompilerArgs = listOf("-Xjvm-default=all")
@@ -152,11 +146,11 @@ allprojects {
         }
 
         withType<org.jetbrains.intellij.tasks.BuildSearchableOptionsTask> {
-            jbrVersion.set("11_0_9_1b1202.1")
+            jbrVersion.set(prop("jbrVersion"))
         }
 
         withType<org.jetbrains.intellij.tasks.RunIdeTask> {
-            jbrVersion.set("11_0_9_1b1202.1")
+            jbrVersion.set(prop("jbrVersion"))
             ideDir.set(File("/snap/clion/current"))
         }
     }

@@ -24,7 +24,7 @@ class Aptos(val location: Path) {
         return this.location.exists()
     }
 
-    fun toGeneralCommandLine(project: Project, commandLine: AptosCommandLine): GeneralCommandLine {
+    fun toGeneralCommandLine(commandLine: AptosCommandLine): GeneralCommandLine {
         val generalCommandLine =
             GeneralCommandLine(
                 this.location.toString(),
@@ -90,14 +90,13 @@ class Aptos(val location: Path) {
         return MvResult.Ok(manifest)
     }
 
-    fun version(workingDirectory: Path? = null): String? {
+    fun version(): String? {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
         if (!location.isValidExecutable()) return null
 
         val commandLine = GeneralCommandLine(location.toString())
-            .withWorkDirectory(workingDirectory)
             .withParameters(listOf("--version"))
             .withEnvironment(emptyMap())
             .withCharset(Charsets.UTF_8)
