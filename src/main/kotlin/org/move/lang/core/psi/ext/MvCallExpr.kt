@@ -22,7 +22,6 @@ val MvMacroCallExpr.callArgumentExprs: List<MvExpr>
 fun MvCallExpr.acquiresTys(): List<Ty>? {
     val msl = this.isMsl()
     val inferenceCtx = this.ownerInferenceCtx(msl) ?: return null
-//    val exprTy = inferredExprTy()
     return inferenceCtx.callExprTypes[this]
         ?.acquiresTypes
         ?.takeIf { !it.contains(TyUnknown) }

@@ -14,6 +14,7 @@ import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.module
 import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.inferTypeTy
 import org.move.lang.core.types.ty.Ty
 import javax.swing.Icon
 
@@ -44,7 +45,10 @@ val MvFunction.isTest: Boolean
 
 val MvFunction.acquiresTys: List<Ty>
     get() =
-        this.acquiresType?.pathTypeList.orEmpty().map { it.typeTy(InferenceContext(true)) }
+        this.acquiresType?.pathTypeList.orEmpty().map {
+            // TODO: should be TypeContext from module (see StructField type checking)
+            inferTypeTy(it, InferenceContext(true))
+        }
 
 val MvFunction.signatureText: String
     get() {

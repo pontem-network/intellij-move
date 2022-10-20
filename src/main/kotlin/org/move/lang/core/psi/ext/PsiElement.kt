@@ -141,7 +141,7 @@ val PsiElement.endOffset: Int
 val PsiElement.endOffsetInParent: Int
     get() = startOffsetInParent + textLength
 
-fun PsiElement.rangeWithPrevSpace(prev: PsiElement?) = when (prev) {
+fun PsiElement.rangeWithPrevSpace(prev: PsiElement?): TextRange = when (prev) {
     is PsiWhiteSpace -> textRange.union(prev.textRange)
     else -> textRange
 }

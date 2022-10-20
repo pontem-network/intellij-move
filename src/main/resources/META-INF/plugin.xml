@@ -219,6 +219,10 @@
                          displayName="Address by value inspection"
                          enabledByDefault="true" level="WEAK WARNING"
                          implementationClass="org.move.ide.inspections.AddressByValueImportInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Redundant cast"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.RedundantCastInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>

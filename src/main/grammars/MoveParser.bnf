@@ -31,6 +31,8 @@
 
     consumeTokenMethod("((?!.*_with_recover).*_recover)|(.*_first)|(.*Expr)") = "consumeTokenFast"
 
+    generateTokenAccessors=true
+
     tokens = [
         WHITESPACE='regexp:[ \n\t\r\f]'
 //        EOL_COMMENT='regexp:(//.*\n)|(//.*\R)'
