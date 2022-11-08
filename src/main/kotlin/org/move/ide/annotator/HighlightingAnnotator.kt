@@ -9,7 +9,7 @@ import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 
-val INTEGER_TYPE_IDENTIFIERS = setOf("u8", "u64", "u128")
+val INTEGER_TYPE_IDENTIFIERS = setOf("u8", "u16", "u32", "u64", "u128", "u256")
 val SPEC_INTEGER_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("num")
 val SPEC_ONLY_PRIMITIVE_TYPES = setOf("num")
 val PRIMITIVE_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("bool")

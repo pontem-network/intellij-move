@@ -44,8 +44,8 @@
         POLKADOT_ADDRESS='regexp:[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*'
 
         BOOL_LITERAL='regexp:(true)|(false)'
-        INTEGER_LITERAL='regexp:[0-9]+((u8)|(u64)|(u128))?'
-        HEX_INTEGER_LITERAL='regexp:0x[0-9a-fA-F]+((u8)|(u64)|(u128))?'
+        INTEGER_LITERAL='regexp:[0-9]+((u8)|(u16)|(u32)|(u64)|(u128)|(u256))?'
+        HEX_INTEGER_LITERAL='regexp:0x[0-9a-fA-F]+((u8)|(u16)|(u32)|(u64)|(u128)|(u256))?'
 
         HEX_STRING_LITERAL='regexp:x\"([A-F0-9a-f]*)\"'
         BYTE_STRING_LITERAL='regexp:b"(.*)"'

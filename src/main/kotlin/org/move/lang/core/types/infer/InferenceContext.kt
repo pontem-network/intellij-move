@@ -331,7 +331,7 @@ sealed class TypeError(open val element: PsiElement) {
     ) : TypeError(element) {
         override fun message(): String {
             return "Invalid argument to '$op': " +
-                    "expected 'u8', 'u64', 'u128', but found '${ty.text()}'"
+                    "expected integer type, but found '${ty.text()}'"
         }
     }
 

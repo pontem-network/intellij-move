@@ -49,8 +49,11 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
                      val: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>,
                      val2: <PRIMITIVE_TYPE>u64</PRIMITIVE_TYPE>,
                      val3: <PRIMITIVE_TYPE>u128</PRIMITIVE_TYPE>,
-                     val4: <PRIMITIVE_TYPE>bool</PRIMITIVE_TYPE>,
-                     val5: 0x0::Transaction::bool,
+                     val4: <PRIMITIVE_TYPE>u16</PRIMITIVE_TYPE>,
+                     val5: <PRIMITIVE_TYPE>u32</PRIMITIVE_TYPE>,
+                     val6: <PRIMITIVE_TYPE>u256</PRIMITIVE_TYPE>,
+                     val7: <PRIMITIVE_TYPE>bool</PRIMITIVE_TYPE>,
+                     val8: 0x0::Transaction::bool,
                      ) {
                         let mysigner: <BUILTIN_TYPE>signer</BUILTIN_TYPE>;
                         let signer = 1;
