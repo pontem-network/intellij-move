@@ -9,6 +9,7 @@ import com.intellij.util.PlatformIcons
 import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
+import org.move.lang.core.psi.MvAttr
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
@@ -38,10 +39,13 @@ val MvFunction.visibility: FunctionVisibility
 
 val MvFunction.isEntry: Boolean get() = this.isChildExists(MvElementTypes.ENTRY)
 
-val MvFunction.isTest: Boolean
-    get() = getProjectPsiDependentCache(this) {
-        it.findSingleItemAttr("test") != null
-    }
+val MvFunction.testAttr: MvAttr?
+    get() =
+        getProjectPsiDependentCache(this) {
+            it.findSingleItemAttr("test")
+        }
+
+val MvFunction.isTest: Boolean get() = testAttr != null
 
 val MvFunction.acquiresTys: List<Ty>
     get() =

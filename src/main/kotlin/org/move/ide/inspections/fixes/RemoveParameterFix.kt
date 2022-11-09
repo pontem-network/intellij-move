@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.parentOfType
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.testAttr
 import org.move.lang.core.psi.ext.valueArguments
 
 /**
@@ -27,6 +28,8 @@ class RemoveParameterFix(
         if (parameterIndex == -1) return
 
         parameter.deleteWithSurroundingCommaAndWhitespace()
+
+        removeTestSignerAssignment(function, bindingName)
         removeArguments(function, parameterIndex)
     }
 }
@@ -43,5 +46,21 @@ private fun removeArguments(function: MvFunction, parameterIndex: Int) {
         call.valueArguments
             .getOrNull(parameterIndex)
             ?.deleteWithSurroundingCommaAndWhitespace()
+    }
+}
+
+private fun removeTestSignerAssignment(function: MvFunction, parameterName: String) {
+    val testAttr = function.testAttr
+    if (testAttr != null) {
+        val testAttrItem = testAttr.attrItemList.single()
+        val attrArguments = testAttrItem.attrItemArguments
+        if (attrArguments != null) {
+            val signerAssigment =
+                attrArguments.attrItemArgumentList.find { it.identifier.text == parameterName }
+            signerAssigment?.deleteWithSurroundingCommaAndWhitespace()
+            if (attrArguments.attrItemArgumentList.isEmpty()) {
+                attrArguments.delete()
+            }
+        }
     }
 }
