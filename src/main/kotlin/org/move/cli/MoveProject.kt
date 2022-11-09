@@ -34,12 +34,11 @@ data class MoveProject(
     fun depPackages(): List<MovePackage> = dependencies.map { it.first }.reversed()
 
     fun sourceFolders(): List<VirtualFile> {
-        val folders = mutableListOf<VirtualFile>()
-        folders.addIfNotNull(currentPackage.sourcesFolder)
-        folders.addIfNotNull(currentPackage.testsFolder)
+        val folders = currentPackage.moveFolders().toMutableList()
 
-        val depFolders = dependencies.asReversed().mapNotNull { it.first.sourcesFolder }
+        val depFolders = dependencies.asReversed().flatMap { it.first.moveFolders() }
         folders.addAll(depFolders)
+
         return folders
     }
 

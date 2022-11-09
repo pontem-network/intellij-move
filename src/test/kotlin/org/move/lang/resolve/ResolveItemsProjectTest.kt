@@ -409,4 +409,78 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
         }
     }
 
+    fun `test resolve test only item inside test of nested package sources`() = checkByFileTree {
+        namedMoveToml("RootPackage")
+        tests {
+            move("test_helpers.move", """
+            #[test_only]    
+            module 0x1::test_helpers {
+                public fun helper() {}
+                          //X
+                          
+            }    
+            """)
+        }
+        dir("NestedPackage") {
+            moveToml("""
+            [package]
+            name = "NestedPackage"
+            
+            [dependencies]
+            RootPackage = { local = ".." }
+            """)
+            sources {
+                main("""
+                #[test_only]    
+                module 0x1::main {
+                    use 0x1::test_helpers;
+                    
+                    #[test]
+                    fun test_end_to_end() {
+                        test_helpers::helper();
+                                     //^
+                    }
+                }                    
+                """)
+            }
+        }
+    }
+
+    fun `test resolve test only item inside test of nested package test`() = checkByFileTree {
+        namedMoveToml("RootPackage")
+        tests {
+            move("test_helpers.move", """
+            #[test_only]    
+            module 0x1::test_helpers {
+                public fun helper() {}
+                          //X
+                          
+            }    
+            """)
+        }
+        dir("NestedPackage") {
+            moveToml("""
+            [package]
+            name = "NestedPackage"
+            
+            [dependencies]
+            RootPackage = { local = ".." }
+            """)
+            tests {
+                main("""
+                #[test_only]    
+                module 0x1::main {
+                    use 0x1::test_helpers;
+                    
+                    #[test]
+                    fun test_end_to_end() {
+                        test_helpers::helper();
+                                     //^
+                    }
+                }                    
+                """)
+            }
+        }
+    }
+
 }
