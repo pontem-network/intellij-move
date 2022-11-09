@@ -689,8 +689,8 @@ module 0x1::M {
         """
     module 0x1::M {
         fun add(a: bool, b: bool) {
-            <error descr="Invalid argument to '+': expected 'u8', 'u64', 'u128', but found 'bool'">a</error> 
-            + <error descr="Invalid argument to '+': expected 'u8', 'u64', 'u128', but found 'bool'">b</error>;
+            <error descr="Invalid argument to '+': expected integer type, but found 'bool'">a</error> 
+            + <error descr="Invalid argument to '+': expected integer type, but found 'bool'">b</error>;
         }
     }    
     """
@@ -700,8 +700,8 @@ module 0x1::M {
         """
     module 0x1::M {
         fun add(a: bool, b: bool) {
-            <error descr="Invalid argument to '-': expected 'u8', 'u64', 'u128', but found 'bool'">a</error> 
-            - <error descr="Invalid argument to '-': expected 'u8', 'u64', 'u128', but found 'bool'">b</error>;
+            <error descr="Invalid argument to '-': expected integer type, but found 'bool'">a</error> 
+            - <error descr="Invalid argument to '-': expected integer type, but found 'bool'">b</error>;
         }
     }    
     """
@@ -711,8 +711,8 @@ module 0x1::M {
         """
     module 0x1::M {
         fun add<T>(a: T, b: T) {
-            <error descr="Invalid argument to '+': expected 'u8', 'u64', 'u128', but found 'T'">a</error> 
-            + <error descr="Invalid argument to '+': expected 'u8', 'u64', 'u128', but found 'T'">b</error>;
+            <error descr="Invalid argument to '+': expected integer type, but found 'T'">a</error> 
+            + <error descr="Invalid argument to '+': expected integer type, but found 'T'">b</error>;
         }
     }    
     """
@@ -781,7 +781,7 @@ module 0x1::M {
         fun main() {
             let a = 1u64;
             let b = false;
-            a = a + <error descr="Invalid argument to '+': expected 'u8', 'u64', 'u128', but found 'bool'">b</error>;
+            a = a + <error descr="Invalid argument to '+': expected integer type, but found 'bool'">b</error>;
         }
     }    
     """
@@ -1050,8 +1050,8 @@ module 0x1::main {
     fun `test cannot order references`() = checkByText("""
 module 0x1::main {
     fun main(a: &u64, b: &u64) {
-        <error descr="Invalid argument to '<': expected 'u8', 'u64', 'u128', but found '&u64'">a</error> 
-        < <error descr="Invalid argument to '<': expected 'u8', 'u64', 'u128', but found '&u64'">b</error>;
+        <error descr="Invalid argument to '<': expected integer type, but found '&u64'">a</error> 
+        < <error descr="Invalid argument to '<': expected integer type, but found '&u64'">b</error>;
     }
 }        
     """)
@@ -1059,8 +1059,8 @@ module 0x1::main {
     fun `test cannot order bools`() = checkByText("""
 module 0x1::main {
     fun main(a: bool, b: bool) {
-        <error descr="Invalid argument to '<': expected 'u8', 'u64', 'u128', but found 'bool'">a</error> 
-        < <error descr="Invalid argument to '<': expected 'u8', 'u64', 'u128', but found 'bool'">b</error>;
+        <error descr="Invalid argument to '<': expected integer type, but found 'bool'">a</error> 
+        < <error descr="Invalid argument to '<': expected integer type, but found 'bool'">b</error>;
     }
 }        
     """)
@@ -1068,8 +1068,8 @@ module 0x1::main {
     fun `test cannot order type parameters`() = checkByText("""
 module 0x1::main {
     fun main<T>(a: T, b: T) {
-        <error descr="Invalid argument to '<': expected 'u8', 'u64', 'u128', but found 'T'">a</error> 
-        < <error descr="Invalid argument to '<': expected 'u8', 'u64', 'u128', but found 'T'">b</error>;
+        <error descr="Invalid argument to '<': expected integer type, but found 'T'">a</error> 
+        < <error descr="Invalid argument to '<': expected integer type, but found 'T'">b</error>;
     }
 }        
     """)
@@ -1178,6 +1178,22 @@ module 0x1::main {
     fun `test type cannot contain itself in vector`() = checkByText("""
 module 0x1::main {
     struct S { val: vector<<error descr="Circular reference of type 'S'">S</error>> }
+}        
+    """)
+
+    fun `test cannot sum up bool and u64`() = checkByText("""
+module 0x1::main {
+    fun main() {
+        <error descr="Invalid argument to '+': expected integer type, but found 'bool'">false</error> + 1u64;
+    }
+}        
+    """)
+
+    fun `test cannot sum up u8 and u64`() = checkByText("""
+module 0x1::main {
+    fun main() {
+        <error descr="Incompatible arguments to '+': 'u8' and 'u64'">1u8 + 1u64</error>;
+    }
 }        
     """)
 }

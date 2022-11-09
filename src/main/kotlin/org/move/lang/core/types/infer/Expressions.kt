@@ -335,6 +335,22 @@ private fun inferArithmeticBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: Inference
             ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(rightExpr, rightExprTy, op))
             typeErrorEncountered = true
         }
+
+        if (leftExprTy is TyInteger && rightExprTy is TyInteger) {
+            val compat = isCompatibleIntegers(leftExprTy, rightExprTy)
+            if (compat !is Compat.Yes) {
+                ctx.typeErrors.add(
+                    TypeError.IncompatibleArgumentsToBinaryExpr(
+                        binaryExpr,
+                        leftExprTy,
+                        rightExprTy,
+                        op
+                    )
+                )
+                typeErrorEncountered = true
+            }
+        }
+
         if (!typeErrorEncountered) {
             ctx.addConstraint(leftExprTy, rightExprTy)
         }

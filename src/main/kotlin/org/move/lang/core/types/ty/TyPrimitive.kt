@@ -50,7 +50,7 @@ data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
     }
 
     enum class Kind {
-        NoPrecision, u8, u64, u128, num
+        NoPrecision, u8, u16, u32, u64, u128, u256, num
     }
 
     override fun toString(): String = tyToString(this)

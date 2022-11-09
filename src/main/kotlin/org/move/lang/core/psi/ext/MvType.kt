@@ -9,8 +9,6 @@ import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferTypeTy
 import org.move.lang.core.types.ty.Ty
 
-fun MvType.typeTy(inferenceCtx: InferenceContext): Ty = inferTypeTy(this, inferenceCtx)
-
 val MvType.moveReference: MvReference?
     get() = when (this) {
         is MvPathType -> this.path.reference

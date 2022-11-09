@@ -33,11 +33,15 @@ object PrimitiveTypesCompletionProvider : MvCompletionProvider() {
             primitives = primitives + SPEC_ONLY_PRIMITIVE_TYPES.toList()
         }
         primitives.forEach {
-            var lookup = LookupElementBuilder.create(it).bold()
-            if (lookup.lookupString == "vector") {
-                lookup = lookup.withInsertHandler(AngleBracketsInsertHandler())
+            val lookup = LookupElementBuilder.create(it).bold()
+            val lookupString = lookup.lookupString
+
+            val updatedLookup = when (lookupString) {
+                "vector" -> lookup.withInsertHandler(AngleBracketsInsertHandler())
+                "u16", "u32", "u256" -> lookup.withTypeText("sui only")
+                else -> lookup
             }
-            result.addElement(lookup.withPriority(PRIMITIVE_TYPE_PRIORITY))
+            result.addElement(updatedLookup.withPriority(PRIMITIVE_TYPE_PRIORITY))
         }
     }
 }

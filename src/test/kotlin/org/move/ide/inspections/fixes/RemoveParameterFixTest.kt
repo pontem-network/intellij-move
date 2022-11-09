@@ -3,7 +3,7 @@ package org.move.ide.inspections.fixes
 import org.move.ide.inspections.MvUnusedVariableInspection
 import org.move.utils.tests.annotation.InspectionTestBase
 
-class RemoveParameterFixTest: InspectionTestBase(MvUnusedVariableInspection::class) {
+class RemoveParameterFixTest : InspectionTestBase(MvUnusedVariableInspection::class) {
     fun `test single parameter`() = checkFixByText(
         "Remove parameter", """
     module 0x1::M {
@@ -167,6 +167,42 @@ class RemoveParameterFixTest: InspectionTestBase(MvUnusedVariableInspection::cla
             );
         }
     }    
+    """
+    )
+
+    fun `test remove unused test signer`() = checkFixByText(
+        "Remove parameter",
+        """
+    module 0x1::main {
+        #[test(harvest = @harvest, alice = @alice)]
+        fun test_end_to_end(<warning descr="Unused function parameter">/*caret*/harvest</warning>: signer, alice: signer) {
+            address_of(alice);
+        }
+    }            
+    """, """
+    module 0x1::main {
+        #[test(alice = @alice)]
+        fun test_end_to_end(alice: signer) {
+            address_of(alice);
+        }
+    }            
+    """
+    )
+
+    fun `test remove unused only test signer`() = checkFixByText(
+        "Remove parameter",
+        """
+    module 0x1::main {
+        #[test(harvest = @harvest)]
+        fun test_end_to_end(<warning descr="Unused function parameter">/*caret*/harvest</warning>: signer) {
+        }
+    }            
+    """, """
+    module 0x1::main {
+        #[test]
+        fun test_end_to_end() {
+        }
+    }            
     """
     )
 }

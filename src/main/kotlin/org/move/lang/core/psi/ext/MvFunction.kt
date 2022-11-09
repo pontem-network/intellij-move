@@ -9,11 +9,13 @@ import com.intellij.util.PlatformIcons
 import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
+import org.move.lang.core.psi.MvAttr
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.module
 import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.inferTypeTy
 import org.move.lang.core.types.ty.Ty
 import javax.swing.Icon
 
@@ -37,14 +39,20 @@ val MvFunction.visibility: FunctionVisibility
 
 val MvFunction.isEntry: Boolean get() = this.isChildExists(MvElementTypes.ENTRY)
 
-val MvFunction.isTest: Boolean
-    get() = getProjectPsiDependentCache(this) {
-        it.findSingleItemAttr("test") != null
-    }
+val MvFunction.testAttr: MvAttr?
+    get() =
+        getProjectPsiDependentCache(this) {
+            it.findSingleItemAttr("test")
+        }
+
+val MvFunction.isTest: Boolean get() = testAttr != null
 
 val MvFunction.acquiresTys: List<Ty>
     get() =
-        this.acquiresType?.pathTypeList.orEmpty().map { it.typeTy(InferenceContext(true)) }
+        this.acquiresType?.pathTypeList.orEmpty().map {
+            // TODO: should be TypeContext from module (see StructField type checking)
+            inferTypeTy(it, InferenceContext(true))
+        }
 
 val MvFunction.signatureText: String
     get() {
