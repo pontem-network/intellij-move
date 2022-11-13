@@ -13,7 +13,7 @@ fun processModuleItems(
         var found = when (namespace) {
             Namespace.NAME -> processor.matchAll(
                 itemVis,
-                itemVis.visibilities.flatMap { module.functions(it) },
+                itemVis.visibilities.flatMap { module.visibleFunctions(it) },
                 if (itemVis.isMsl) module.specFunctions() else emptyList(),
                 if (itemVis.isMsl) module.constBindings() else emptyList()
             )

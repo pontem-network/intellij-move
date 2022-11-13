@@ -6,13 +6,13 @@ import com.intellij.ide.util.treeView.smartTree.TreeElement
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.ui.Queryable
 import com.intellij.psi.NavigatablePsiElement
-import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvAddressDef
 import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.ext.functions
+import org.move.lang.core.psi.ext.allFunctions
 import org.move.lang.core.psi.ext.modules
-import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.psi.ext.structs
+import org.move.lang.modules
 import org.move.openapiext.common.isUnitTestMode
 
 class MvStructureViewElement(
@@ -35,30 +35,23 @@ class MvStructureViewElement(
     }
 
     override fun getChildren(): Array<TreeElement> {
-        return when (element) {
+        val items = when (element) {
             is MoveFile -> {
-                val elements =
-                    PsiTreeUtil
-                        .getChildrenOfTypeAsList(element, MvModule::class.java)
-                        .toMutableList<NavigatablePsiElement>()
-                for (addressBlock in element.addressBlocks()) {
-                    elements.addAll(addressBlock.moduleList)
-                }
-                for (scriptBlock in element.scriptBlocks()) {
-                    elements.addAll(scriptBlock.functionList)
-                }
-                elements.map { MvStructureViewElement(it) }.toTypedArray()
+                listOf(
+                    element.modules().toList(),
+                    element.scriptBlocks().flatMap { it.functionList }
+                ).flatten()
             }
-            is MvAddressDef -> {
-                val modules = element.modules()
-                modules.map { MvStructureViewElement(it) }.toTypedArray()
-            }
+            is MvAddressDef -> element.modules()
             is MvModule -> {
-                val allFunctions = element.functions(Visibility.Internal)
-                allFunctions.map { MvStructureViewElement(it) }.toTypedArray()
+                listOf(
+                    element.structs(),
+                    element.allFunctions()
+                ).flatten()
             }
-            else -> emptyArray()
+            else -> emptyList()
         }
+        return items.map { MvStructureViewElement(it) }.toTypedArray()
     }
 
     override fun getValue(): Any {

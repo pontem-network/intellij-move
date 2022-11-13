@@ -117,7 +117,7 @@ fun processFileItems(
             val found = when (namespace) {
                 Namespace.MODULE -> processor.match(itemVis, module)
                 Namespace.NAME -> {
-                    val functions = itemVis.visibilities.flatMap { module.functions(it) }
+                    val functions = itemVis.visibilities.flatMap { module.visibleFunctions(it) }
                     val specFunctions = if (itemVis.isMsl) module.specFunctions() else emptyList()
                     val consts = if (itemVis.isMsl) module.constBindings() else emptyList()
                     processor.matchAll(
