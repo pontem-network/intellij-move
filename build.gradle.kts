@@ -72,6 +72,17 @@ allprojects {
         }
     }
 
+    kotlin {
+        sourceSets {
+            main {
+                kotlin.srcDirs("src/$platformVersion/main/kotlin")
+            }
+//            test {
+//                kotlin.srcDirs("src/$platformVersion/test/kotlin")
+//            }
+        }
+    }
+
     val generateMoveLexer = task<GenerateLexerTask>("generateMoveLexer") {
         source.set("src/main/grammars/MoveLexer.flex")
         targetDir.set("src/main/gen/org/move/lang")
