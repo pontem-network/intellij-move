@@ -15,10 +15,11 @@ import org.move.ide.notifications.updateAllNotifications
 import org.move.openapiext.aptosBuildRunConfigurations
 import org.move.openapiext.aptosRunConfigurations
 import org.move.openapiext.contentRoots
+import javax.swing.Icon
 
 class MoveProjectOpenProcessor : ProjectOpenProcessor() {
-    override fun getName() = "Move"
-    override fun getIcon() = MoveIcons.MOVE
+    override val name: String get() = "Move"
+    override val icon: Icon get() = MoveIcons.MOVE
 
     override fun canOpenProject(file: VirtualFile): Boolean =
         FileUtil.namesEqual(file.name, Consts.MANIFEST_FILE)
