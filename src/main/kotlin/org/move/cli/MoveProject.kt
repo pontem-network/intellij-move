@@ -24,7 +24,7 @@ import java.nio.file.Path
 data class MoveProject(
     val project: Project,
     val currentPackage: MovePackage,
-    val dependencies: List<Pair<MovePackage, RawAddressMap>>
+    val dependencies: List<Pair<MovePackage, RawAddressMap>>,
 ) : UserDataHolderBase() {
 
     val contentRoot: VirtualFile get() = this.currentPackage.contentRoot
@@ -111,7 +111,7 @@ data class MoveProject(
             checkUnitTestMode()
             val contentRoot = project.contentRoots.first()
             val moveToml = MoveToml(project)
-            val movePackage = MovePackage(project, contentRoot, moveToml)
+            val movePackage = MovePackage(project, contentRoot, moveToml, null)
             return MoveProject(
                 project,
                 movePackage,

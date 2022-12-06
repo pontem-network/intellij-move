@@ -39,6 +39,16 @@ object TyNum : TyPrimitive("num") {
 data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
     override fun abilities() = Ability.all()
 
+    fun ulongRange(): ULongRange? {
+        return when (kind) {
+            Kind.u8 -> ULongRange(0u, 255u)
+            Kind.u16 -> ULongRange(0u, 65535u)
+            Kind.u32 -> ULongRange(0u, 4294967295u)
+            Kind.u64 -> ULongRange(0u, 18446744073709551615u)
+            else -> null
+        }
+    }
+
     companion object {
         fun fromName(name: String): TyInteger =
             Kind.values().find { it.name == name }?.let(::TyInteger)!!

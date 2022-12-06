@@ -38,7 +38,6 @@ class AptosCommandConfiguration(
         return AptosCommandLineState(execEnvironment, this, config)
     }
 
-
     override fun writeExternal(element: Element) {
         super.writeExternal(element)
         element.writeString("command", this.command)
@@ -51,6 +50,12 @@ class AptosCommandConfiguration(
         this.command = element.readString("command") ?: return
         this.workingDirectory = element.readPath("workingDirectory") ?: return
         this.environmentVariables = EnvironmentVariablesData.readExternal(element)
+    }
+
+    fun setFromCmd(commandLine: AptosCommandLine) {
+        this.command = commandLine.commandWithParams()
+        this.workingDirectory = commandLine.workingDirectory
+        this.environmentVariables = commandLine.environmentVariables
     }
 
     fun clean(): CleanConfiguration {

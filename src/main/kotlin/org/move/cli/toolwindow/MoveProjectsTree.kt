@@ -2,6 +2,7 @@ package org.move.cli.toolwindow
 
 import com.intellij.ui.treeStructure.SimpleTree
 import org.move.cli.MoveProject
+import org.move.cli.scripts.MoveEntrypointMouseAdapter
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeSelectionModel
 
@@ -20,19 +21,6 @@ class MoveProjectsTree : SimpleTree() {
         showsRootHandles = true
         emptyText.text = "There are no Move projects to display."
         selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
-//        addMouseListener(object : MouseAdapter() {
-//            override fun mouseClicked(e: MouseEvent) {
-//                if (e.clickCount < 2 || !SwingUtilities.isLeftMouseButton(e)) return
-//
-//                val tree = e.source as? MoveProjectsTree ?: return
-//                val node = tree.selectionModel.selectionPath
-//                    ?.lastPathComponent as? DefaultMutableTreeNode ?: return
-//                val scriptFunction =
-//                    (node.userObject as? MoveProjectsTreeStructure.MoveSimpleNode.Entrypoint)?.function
-//                        ?: return
-//                val runScriptDialog = RunScriptDialog(scriptFunction)
-////                runScriptDialog.show()
-//            }
-//        })
+        addMouseListener(MoveEntrypointMouseAdapter())
     }
 }
