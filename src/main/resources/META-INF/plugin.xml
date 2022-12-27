@@ -220,7 +220,7 @@
                          enabledByDefault="true" level="WEAK WARNING"
                          implementationClass="org.move.ide.inspections.AddressByValueImportInspection"/>
         <localInspection language="Move" groupName="Move"
-                         displayName="Redundant cast"
+                         displayName="Redundant type cast"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.move.ide.inspections.RedundantCastInspection"/>
 

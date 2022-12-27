@@ -27,4 +27,14 @@ module 0x1::M {
 
     #[show(book_orders_sdk, book_price_levels_sdk)]
     fun test() {}
+
+    #[expected_failure(abort_code = liquidswap::liquidity_pool::ERR_ADMIN)]
+    fun abort_test() {}
+
+    #[expected_failure(
+        abort_code = liquidity_pool::ERR_ADMIN,
+        location = aptos_framework::ed25519,
+        location = aptos_framework::ed25519::myfunction,
+    )]
+    fun abort_test_2() {}
 }

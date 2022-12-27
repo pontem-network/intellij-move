@@ -95,6 +95,8 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .around(MOVE_KEYWORDS).spaces(1)
 
         .applyForEach(BLOCK_LIKE) { before(it).spaces(1) }
+
+        .before(ACQUIRES_TYPE).spaces(1)
 //        .applyForEach(STRUCT_LITERAL_BLOCKS) { before(it).spaces(0) }
 }
 
