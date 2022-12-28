@@ -483,4 +483,30 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
         }
     }
 
+//    fun `test expected failure location`() = checkByFileTree {
+//        moveToml("""
+//        [package]
+//        name = "Root"
+//
+//        [addresses]
+//        aptos_framework = "0x1"
+//        """)
+//        sources {
+//            move("account.move", """
+//                module aptos_framework::account {}
+//                                          //X
+//            """)
+//            move("account_tests.move", """
+//                module aptos_framework::account_tests {
+//                    #[test]
+//                    #[expected_failure(abort_code = 1, location = aptos_framework::account)]
+//                                                                                  //^
+//                    fun test_abort() {
+//
+//                    }
+//                }
+//            """)
+//        }
+//    }
+
 }

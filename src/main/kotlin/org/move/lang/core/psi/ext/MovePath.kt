@@ -56,16 +56,14 @@ val MvPath.maybeSchema get() = reference?.resolve() as? MvSchema
 abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
 
     override fun getReference(): MvPathReference? {
-        val namespaces = when (this.parent) {
-            is MvSchemaLit, is MvSchemaRef -> setOf(Namespace.SCHEMA)
-            is MvPathType -> setOf(Namespace.TYPE)
-            else -> {
-                if (this.isLocal) {
-                    setOf(Namespace.NAME, Namespace.MODULE)
-                } else {
-                    setOf(Namespace.NAME)
-                }
-            }
+        val parent = this.parent
+        val namespaces = when {
+            parent is MvSchemaLit
+                    || parent is MvSchemaRef -> setOf(Namespace.SCHEMA)
+            parent is MvPathType -> setOf(Namespace.TYPE)
+            parent is MvRefExpr && parent.isErrorConst() -> setOf(Namespace.ERROR_CONST)
+            this.isLocal -> setOf(Namespace.NAME, Namespace.MODULE)
+            else -> setOf(Namespace.NAME)
         }
         return MvPathReferenceImpl(this, namespaces)
     }

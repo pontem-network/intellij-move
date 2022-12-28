@@ -216,6 +216,8 @@ fun processLexicalDeclarations(
                 false
             }
 
+            Namespace.ERROR_CONST -> false
+
             Namespace.NAME -> {
                 if (scope is MvImportsOwner) {
                     if (processor.matchAll(itemVis, scope.itemImportNames())) return true

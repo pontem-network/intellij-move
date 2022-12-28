@@ -19,6 +19,7 @@ fun processModuleItems(
             )
             Namespace.TYPE -> processor.matchAll(itemVis, module.structs())
             Namespace.SCHEMA -> processor.matchAll(itemVis, module.schemas())
+            Namespace.ERROR_CONST -> processor.matchAll(itemVis, module.constBindings())
             else -> false
         }
         if (!found) {
