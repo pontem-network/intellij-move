@@ -38,7 +38,7 @@ class MvUseItemReferenceElement(element: MvUseItem) : MvReferenceCached<MvUseIte
             || (element.useAlias != null && element.text.startsWith("Self as"))
         ) return listOf(module)
 
-        val ns = setOf(Namespace.TYPE, Namespace.NAME, Namespace.SCHEMA)
+        val ns = setOf(Namespace.TYPE, Namespace.NAME, Namespace.SCHEMA, Namespace.ERROR_CONST)
         val vs = Visibility.buildSetOfVisibilities(moduleRef)
         val itemVis = ItemVis(
             ns,

@@ -216,7 +216,21 @@ fun processLexicalDeclarations(
                 false
             }
 
-            Namespace.ERROR_CONST -> false
+            Namespace.ERROR_CONST -> {
+                if (scope is MvImportsOwner) {
+                    if (processor.matchAll(itemVis, scope.itemImportNames())) return true
+                }
+                when (scope) {
+                    is MvModuleBlock -> {
+                        val module = scope.parent as MvModule
+                        processor.matchAll(
+                            itemVis,
+                            module.constBindings(),
+                        )
+                    }
+                    else -> false
+                }
+            }
 
             Namespace.NAME -> {
                 if (scope is MvImportsOwner) {

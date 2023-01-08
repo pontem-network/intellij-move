@@ -167,7 +167,7 @@ class ResolveFunctionTest : ResolveTestCase() {
     """
     )
 
-    fun `test cannot resolve const from import`() = checkByCode(
+    fun `test cannot resolve const from item`() = checkByCode(
         """
         address 0x1 {
         module Original {
@@ -176,7 +176,10 @@ class ResolveFunctionTest : ResolveTestCase() {
         
         module M {
             use 0x1::Original::MY_CONST;
-                             //^ unresolved
+            fun main() {
+                MY_CONST;
+                //^ unresolved
+            }
         }    
         }
     """
