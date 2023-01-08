@@ -15,6 +15,11 @@ fun MvPath.isPrimitiveType(): Boolean =
     this.parent is MvPathType
             && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS.union(BUILTIN_TYPE_IDENTIFIERS)
 
+fun MvPath.isErrorLocation(): Boolean {
+    val attrItem = this.ancestorStrict<MvAttrItem>() ?: return false
+    return attrItem.name == "test"
+}
+
 fun MvPath.isSpecPrimitiveType(): Boolean =
     this.parent is MvPathType
             && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS

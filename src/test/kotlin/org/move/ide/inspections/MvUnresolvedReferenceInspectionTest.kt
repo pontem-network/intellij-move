@@ -347,4 +347,13 @@ module 0x1::main {
     }
 }        
     """)
+
+    fun `test no unresolved reference for named address in location`() = checkByText("""
+#[test_only]        
+module 0x1::string_tests {
+    #[test(location = aptos_framework::coin)]
+    fun test_abort() {
+    }
+}        
+    """)
 }
