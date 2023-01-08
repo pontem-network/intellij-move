@@ -6,6 +6,7 @@ import com.intellij.ui.UIBundle
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.*
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
+import com.intellij.ui.layout.ValidationInfoBuilder
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.ext.inferredTy
 import org.move.lang.core.psi.typeParameters
@@ -56,7 +57,6 @@ fun Row.ulongTextField(range: ULongRange?): Cell<JBTextField> {
             }
         }
     result.component.putClientProperty("dsl.intText.range", range)
-
     return result
 }
 
@@ -117,9 +117,12 @@ class TransactionParametersDialog(
                         val paramName = typeParameter.name ?: continue
                         row(paramName) {
                             textField()
-                                .bindText({ "" }, { typeParams[paramName] = it })
                                 .columns(ARGUMENT_COLUMNS)
                                 .horizontalAlign(HorizontalAlign.RIGHT)
+                                .bindText(
+                                    { typeParams.getOrDefault(paramName, "") },
+                                    { typeParams[paramName] = it })
+                                .validationOnApply(validateNonEmpty("Required type parameter"))
                         }
                     }
                 }
@@ -137,27 +140,22 @@ class TransactionParametersDialog(
                             else -> "unknown"
                         }
                         row(paramName) {
-                            if (paramTy is TyInteger) {
-                                comment(": $paramTyName")
-                                ulongTextField(paramTy.ulongRange())
-                                    .bindText({ "" }, {
-                                        if (it.isNotBlank()) {
-                                            params[paramName] = "$paramTyName:$it"
-                                        }
-                                    })
-                                    .columns(ARGUMENT_COLUMNS)
-                                    .horizontalAlign(HorizontalAlign.RIGHT)
-                            } else {
-                                comment(": $paramTyName")
-                                textField()
-                                    .bindText({ "" }, {
-                                        if (it.isNotBlank()) {
-                                            params[paramName] = "$paramTyName:$it"
-                                        }
-                                    })
-                                    .columns(ARGUMENT_COLUMNS)
-                                    .horizontalAlign(HorizontalAlign.RIGHT)
+                            comment(": $paramTyName")
+                            when (paramTy) {
+                                is TyInteger -> ulongTextField(paramTy.ulongRange())
+                                else -> textField()
                             }
+                                .bindText(
+                                    { params.getOrDefault(paramName, "") },
+                                    {
+                                        if (it.isNotBlank()) {
+                                            params[paramName] = "$paramTyName:$it"
+                                        }
+                                    })
+                                .columns(ARGUMENT_COLUMNS)
+                                .horizontalAlign(HorizontalAlign.RIGHT)
+                                .validationOnApply(validateNonEmpty("Required parameter"))
+
                         }
                     }
                 }
@@ -165,7 +163,7 @@ class TransactionParametersDialog(
             separator()
             if (profiles.isNotEmpty()) {
                 row("Profile:") {
-                    comboBox(profiles)
+                    comboBox(profiles.toTypedArray())
                         .enabled(profiles.size > 1)
                         .bindItem({ profiles[0] }, { selectedProfile = it })
                         .columns(PROFILE_COLUMNS)
@@ -174,16 +172,10 @@ class TransactionParametersDialog(
             }
         }
     }
+}
 
-    override fun doValidateAll(): MutableList<ValidationInfo> {
-        val infos = mutableListOf<ValidationInfo>()
-        if (typeParams.size != scriptFunction.typeParameters.size) {
-            infos.add(ValidationInfo("Missing type arguments"))
-        }
-        if (params.size != scriptFunction.parameterBindings().size - 1) {
-            infos.add(ValidationInfo("Missing value arguments"))
-        }
-        return infos
-
+private fun validateNonEmpty(message: String): ValidationInfoBuilder.(JBTextField) -> ValidationInfo? {
+    return {
+        if (it.text.isNullOrEmpty()) error(message) else null
     }
 }
