@@ -1,5 +1,6 @@
 package org.move.cli
 
+import org.move.cli.manifest.AptosConfigYaml
 import org.move.cli.manifest.MoveToml
 import org.move.openapiext.toPsiFile
 import org.move.openapiext.toVirtualFile
@@ -11,7 +12,7 @@ import org.toml.lang.psi.TomlFile
 import java.nio.file.Paths
 
 class MoveTomlTest : MvTestBase() {
-    fun `test parse move toml file`() {
+    fun `test parse move package`() {
         val moveProjectRoot = Paths.get(TestCase.testResourcesPath).resolve("move_toml_project")
         (project.rootService as TestProjectRootServiceImpl).modifyPath(moveProjectRoot)
 
@@ -29,10 +30,8 @@ class MoveTomlTest : MvTestBase() {
         check(moveToml.addresses["DiemFramework"]!!.first == "0xB1E55ED")
 
         check(moveToml.deps.size == 1)
-//        check(
-//            (moveToml.dependencies["Debug"]?.first as? Dependency.Local)?.absoluteLocalPath!!
-//                .toString()
-//                .endsWith("intellij-move/src/test/resources/move_toml_project/stdlib/Debug.move")
-//        ) { (moveToml.dependencies["Debug"]?.first as? Dependency.Local)?.absoluteLocalPath!! }
+
+        val movePackage = MovePackage.fromMoveToml(moveToml)!!
+        check(movePackage.aptosConfigYaml?.profiles == setOf("default", "emergency"))
     }
 }

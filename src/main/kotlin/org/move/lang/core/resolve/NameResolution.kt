@@ -117,7 +117,7 @@ fun processFileItems(
             val found = when (namespace) {
                 Namespace.MODULE -> processor.match(itemVis, module)
                 Namespace.NAME -> {
-                    val functions = itemVis.visibilities.flatMap { module.functions(it) }
+                    val functions = itemVis.visibilities.flatMap { module.visibleFunctions(it) }
                     val specFunctions = if (itemVis.isMsl) module.specFunctions() else emptyList()
                     val consts = if (itemVis.isMsl) module.constBindings() else emptyList()
                     processor.matchAll(
@@ -214,6 +214,22 @@ fun processLexicalDeclarations(
                     return processor.matchAll(itemVis, schema.fieldBindings)
                 }
                 false
+            }
+
+            Namespace.ERROR_CONST -> {
+                if (scope is MvImportsOwner) {
+                    if (processor.matchAll(itemVis, scope.itemImportNames())) return true
+                }
+                when (scope) {
+                    is MvModuleBlock -> {
+                        val module = scope.parent as MvModule
+                        processor.matchAll(
+                            itemVis,
+                            module.constBindings(),
+                        )
+                    }
+                    else -> false
+                }
             }
 
             Namespace.NAME -> {

@@ -1,5 +1,6 @@
 package org.move.cli.runconfig
 
+import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationTypeUtil
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.SimpleConfigurationType
@@ -17,6 +18,8 @@ class AptosCommandConfigurationType :
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
         return AptosCommandConfiguration(project, this)
     }
+
+    val factory: ConfigurationFactory get() = configurationFactories.single()
 
     companion object {
         fun getInstance() =

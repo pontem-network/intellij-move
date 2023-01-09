@@ -5,7 +5,7 @@ module M {
     fun main_signer(mysigner: &signer) {}
     fun main_signer2(mysigner: &mut signer) {}
 
-    public fun public_main() {}
+    public fun public_main()acquires S {}
 
     public ( script )  fun public_script_main() {}
 

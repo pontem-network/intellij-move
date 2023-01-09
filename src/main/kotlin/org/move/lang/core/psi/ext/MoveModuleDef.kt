@@ -80,7 +80,7 @@ fun MvModule.builtinFunctions(): List<MvFunction> {
     }
 }
 
-fun MvModule.functions(visibility: Visibility): List<MvFunction> =
+fun MvModule.visibleFunctions(visibility: Visibility): List<MvFunction> =
     when (visibility) {
         is Visibility.Public ->
             allNonTestFunctions()
