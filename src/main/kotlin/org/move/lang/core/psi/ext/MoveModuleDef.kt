@@ -21,9 +21,11 @@ fun MvModule.address(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
 
 fun MvModule.fqModule(): FQModule? {
-    val address = this.address()?.toAddress() ?: return null
-    val name = this.name ?: return null
-    return FQModule(address, name)
+    return getProjectPsiDependentCache(this) {
+        val address = this.address()?.toAddress() ?: return@getProjectPsiDependentCache null
+        val name = this.name ?: return@getProjectPsiDependentCache null
+        FQModule(address, name)
+    }
 }
 
 val MvModule.friendModules: Set<FQModule>
@@ -43,9 +45,15 @@ val MvModule.friendModules: Set<FQModule>
 
 fun MvModule.allFunctions(): List<MvFunction> = moduleBlock?.functionList.orEmpty()
 
-fun MvModule.allNonTestFunctions(): List<MvFunction> = allFunctions().filter { !it.isTest }
+fun MvModule.allNonTestFunctions(): List<MvFunction> =
+    getProjectPsiDependentCache(this) {
+        it.allFunctions().filter { f -> !f.isTest }
+    }
 
-fun MvModule.testFunctions(): List<MvFunction> = allFunctions().filter { it.isTest }
+fun MvModule.testFunctions(): List<MvFunction> =
+    getProjectPsiDependentCache(this) {
+        it.allFunctions().filter { f -> f.isTest }
+    }
 
 fun MvModule.builtinFunctions(): List<MvFunction> {
     return getProjectPsiDependentCache(this) {
