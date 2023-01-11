@@ -10,8 +10,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
-import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.rename
+import com.intellij.refactoring.RefactoringFactory
 import org.move.openapiext.nonBlocking
 
 /**
@@ -32,6 +31,6 @@ class RenameFix(
         project.nonBlocking(
             { startElement },
             {
-                (startElement as? MvNamedElement)?.rename(newName)
+                RefactoringFactory.getInstance(project).createRename(it, newName).run()
             })
 }
