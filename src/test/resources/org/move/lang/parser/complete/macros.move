@@ -7,7 +7,7 @@ module 0x1::macros {
     }
 
     inline fun filter<Element: drop>(
-        p: |&Element|bool
+        p: |&Element|
     ) {
         foreach(v, |elem| {
             if (p(&elem)) push_back(&mut result, elem);
