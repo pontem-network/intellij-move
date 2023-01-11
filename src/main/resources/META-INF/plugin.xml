@@ -222,7 +222,7 @@
         <localInspection language="Move" groupName="Move"
                          displayName="Redundant type cast"
                          enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.RedundantCastInspection"/>
+                         implementationClass="org.move.ide.inspections.RedundantTypeCastInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>

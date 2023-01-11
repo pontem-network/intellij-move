@@ -12,7 +12,7 @@ import org.move.lang.core.types.infer.ownerInferenceCtx
 import org.move.lang.core.types.ty.TyInteger
 import org.move.lang.core.types.ty.TyUnknown
 
-class RedundantCastInspection : MvLocalInspectionTool() {
+class RedundantTypeCastInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitCastExpr(castExpr: MvCastExpr) {
             val exprTy = castExpr.expr.inferredExprTy()

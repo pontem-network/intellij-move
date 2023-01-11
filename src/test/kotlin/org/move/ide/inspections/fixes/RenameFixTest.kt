@@ -1,7 +1,6 @@
 package org.move.ide.inspections.fixes
 
 import org.move.ide.inspections.MvUnusedVariableInspection
-import org.move.ide.inspections.RedundantCastInspection
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class RenameFixTest: InspectionTestBase(MvUnusedVariableInspection::class) {
