@@ -37,4 +37,6 @@ class CompleteParsingTest : MvParsingTestCase("complete") {
     fun `test contextual token operators`() = doTest(true)
     fun `test generics`() = doTest(true)
     fun `test annotated literals`() = doTest(true)
+
+    fun `test macros`() = doTest(true)
 }

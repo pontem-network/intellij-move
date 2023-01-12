@@ -19,7 +19,7 @@ class MoveFileHyperlinkFilter(
         val FILE_POSITION_RE =
             Regex("""(?<file>(?:\p{Alpha}:)?[0-9a-z_A-Z\-\\./]+):(?<line>[0-9]+):(?<column>[0-9]+)""")
         val FILE_POSITION_LINE_RE =
-            Regex("""(?<file>(?:\p{Alpha}:)?[0-9a-z_A-Z\-\\./]+):(?<line>[0-9]+):""")
+            Regex("""(?<file>(?:\p{Alpha}:)?[0-9a-z_A-Z\-\\./]+):(?<line>[0-9]+)""")
     }
 
     override fun applyFilter(line: String, entireLength: Int): Filter.Result? {

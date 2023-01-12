@@ -15,7 +15,7 @@ fun prop(name: String): String =
 val kotlinVersion = "1.7.21"
 
 val pluginJarName = "intellij-move-$platformVersion"
-val pluginVersion = "1.23.0"
+val pluginVersion = "1.24.0"
 val pluginGroup = "org.move"
 val javaVersion = if (platformVersion < "222") JavaVersion.VERSION_11 else JavaVersion.VERSION_17
 val kotlinJvmTarget = if (platformVersion < "222") "11" else "17"

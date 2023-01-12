@@ -361,4 +361,28 @@ module 0x1::main {
     }
 }        
     """)
+
+    fun `test tablist map inference`() = testExpr(
+        """
+module 0x1::main {
+    struct Tablist<
+        phantom K: copy + drop + store,
+        phantom V: store
+    > has store {}
+    
+    struct OrderBook has store {}
+    
+    struct OrderBooks has key {
+        map: Tablist<u64, OrderBook>
+    }
+    
+    fun main() acquires OrderBooks {
+        let order_books_map_ref_mut = 
+            &mut borrow_global_mut<OrderBooks>(@0x1).map;
+        order_books_map_ref_mut;
+        //^ &mut 0x1::main::Tablist<u64, 0x1::main::OrderBook>
+    }
+}        
+    """
+    )
 }

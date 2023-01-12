@@ -1,9 +1,9 @@
 package org.move.ide.inspections.fixes
 
-import org.move.ide.inspections.RedundantCastInspection
+import org.move.ide.inspections.RedundantTypeCastInspection
 import org.move.utils.tests.annotation.InspectionTestBase
 
-class RemoveRedundantCastFixTest: InspectionTestBase(RedundantCastInspection::class) {
+class RemoveRedundantCastFixTest: InspectionTestBase(RedundantTypeCastInspection::class) {
     fun `test no cast needed from u64 to u64`() = checkFixByText("Remove redundant cast", """
 module 0x1::main {
     fun main() {

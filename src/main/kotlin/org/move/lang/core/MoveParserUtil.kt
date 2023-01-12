@@ -15,7 +15,7 @@ import org.move.lang.MvElementTypes.*
 import org.move.stdext.makeBitMask
 
 enum class FunModifier {
-    VIS, NATIVE, ENTRY;
+    VIS, NATIVE, ENTRY, INLINE;
 }
 
 @Suppress("UNUSED_PARAMETER")
@@ -219,9 +219,14 @@ object MoveParserUtil : GeneratedParserUtilBase() {
                     nativeEncountered = true
                     b.advanceLexer()
                 }
-                contextualKeyword(b, "entry", ENTRY) -> {
+                entryKeyword(b, level) -> {
                     if (FunModifier.ENTRY !in modifiersLeft) return isParsed()
                     modifiersLeft.remove(FunModifier.ENTRY)
+                    parsed = true
+                }
+                inlineKeyword(b, level) -> {
+                    if (FunModifier.INLINE !in modifiersLeft) return isParsed()
+                    modifiersLeft.remove(FunModifier.INLINE)
                     parsed = true
                 }
                 else -> return isParsed()
@@ -267,6 +272,9 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun entryKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "entry", ENTRY)
+
+    @JvmStatic
+    fun inlineKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "inline", INLINE)
 
     @JvmStatic
     fun schemaKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "schema", SCHEMA_KW)

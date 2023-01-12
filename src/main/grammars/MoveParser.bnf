@@ -108,6 +108,7 @@
         ADDRESS     = 'address_kw'
         HAS     = 'has_kw'
         ENTRY     = 'entry_kw'
+        INLINE     = 'inline_kw'
         FRIEND     = 'friend_kw'
 
         SCRIPT_KW     = 'script_kw'
@@ -202,6 +203,7 @@ private ScriptItem_item ::= UseStmt | Const | FunctionInner
 private address ::= <<addressKeyword>>
 private has ::= <<hasKeyword>>
 private entry ::= <<entryKeyword>>
+private inline ::= <<inlineKeyword>>
 private schema ::= <<schemaKeyword>>
 //private vector ::= <<vectorKeyword>>
 
@@ -243,7 +245,7 @@ private ModuleItem ::= !('}' | <<eof>>) ModuleItem_item
     recoverWhile = Item_recover
 }
 // top-level recovery
-private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec | friend | Attr | entry
+private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec | friend | Attr | entry | inline
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= UseStmt
@@ -351,7 +353,7 @@ NativeStructInner ::= Attr* NativeStructInnerFirst IDENTIFIER TypeParameterList?
 }
 private StructItem ::= StructInner | NativeStructInner
 
-fake Function ::= Attr* native? FunctionVisibilityModifier? entry?
+fake Function ::= Attr* native? FunctionVisibilityModifier? entry? inline?
                     fun? IDENTIFIER? TypeParameterList? FunctionParameterList?
                         ReturnType? AcquiresType?
                         (';' | CodeBlock)?
@@ -571,7 +573,7 @@ TupleType ::= '(' Type ',' (Type ','?)* ')' { pin = 2 }
 //}
 //private TupleTypeItem_recover ::= !(')' | '{' | IDENTIFIER)
 
-LambdaType ::= <<mslOnly '|'>> <<comma_sep_items Type>>? <<mslOnly '|'>> Type { pin = 1 }
+LambdaType ::= '|' <<comma_sep_items Type>>? '|' Type? { pin = 1 }
 
 TypeParameterList ::= '<' TypeParameter_with_recover* '>'
 {

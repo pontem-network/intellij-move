@@ -52,6 +52,7 @@ class KeywordCompletionContributor : CompletionContributor() {
                 *VISIBILITY_MODIFIERS,
                 "native",
                 "entry",
+                "inline",
                 "fun",
                 "struct",
                 "const",
@@ -71,12 +72,7 @@ class KeywordCompletionContributor : CompletionContributor() {
         extend(
             CompletionType.BASIC,
             function().with(MvPsiPatterns.AfterSibling(FUNCTION_VISIBILITY_MODIFIER)),
-            KeywordCompletionProvider("fun")
-        )
-        extend(
-            CompletionType.BASIC,
-            function().with(MvPsiPatterns.AfterSibling(FUNCTION_VISIBILITY_MODIFIER)),
-            KeywordCompletionProvider("entry")
+            KeywordCompletionProvider("fun", "entry", "inline")
         )
         extend(
             CompletionType.BASIC,
