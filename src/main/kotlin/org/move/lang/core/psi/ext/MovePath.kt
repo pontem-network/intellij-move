@@ -17,7 +17,7 @@ fun MvPath.isPrimitiveType(): Boolean =
 
 fun MvPath.isErrorLocation(): Boolean {
     val attrItem = this.ancestorStrict<MvAttrItem>() ?: return false
-    return attrItem.name == "test"
+    return attrItem.name == "expected_failure"
 }
 
 fun MvPath.isSpecPrimitiveType(): Boolean =
