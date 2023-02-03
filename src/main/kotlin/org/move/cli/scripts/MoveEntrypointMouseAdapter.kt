@@ -3,6 +3,7 @@ package org.move.cli.scripts
 import org.move.cli.AptosCommandLine
 import org.move.cli.toolwindow.MoveProjectsTree
 import org.move.cli.toolwindow.MoveProjectsTreeStructure
+import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.ext.toAddress
 import org.move.lang.core.psi.module
 import org.move.lang.core.psi.typeParameters
@@ -24,38 +25,58 @@ class MoveEntrypointMouseAdapter : MouseAdapter() {
                 ?: return
 
         val moveProject = scriptFunction.moveProject ?: return
-        val profiles = moveProject.currentPackage.aptosConfigYaml?.profiles.orEmpty().toList()
-        val paramsDialog = TransactionParametersDialog(scriptFunction, profiles)
+        // TODO: show dialog that user needs to run `aptos init` first for transaction dialog to work
+        val aptosConfig = moveProject.currentPackage.aptosConfigYaml ?: return
+
+        val paramsDialog = TransactionParametersDialog(scriptFunction, aptosConfig.profiles.toList())
         val isOk = paramsDialog.showAndGet()
         if (!isOk) return
 
-        val address = scriptFunction.module?.addressRef?.toAddress(moveProject)?.value ?: return
-        val module = scriptFunction.module?.name ?: return
-        val name = scriptFunction.name ?: return
+        buildAndRunAptosCommandLine(scriptFunction, paramsDialog)
+    }
 
-        val functionTypeParamNames = scriptFunction.typeParameters.mapNotNull { it.name }
-        val sortedTypeParams = paramsDialog.typeParams
-            .entries
-            .sortedBy { (name, _) ->
-                functionTypeParamNames.indexOfFirst { it == name }
-            }.flatMap { (_, value) -> listOf("--type-args", value) }
+    companion object {
+        fun buildAndRunAptosCommandLine(
+            scriptFunction: MvFunction,
+            paramsDialog: TransactionParametersDialog
+        ) {
+            val moveProject = scriptFunction.moveProject ?: return
 
-        val functionParamNames = scriptFunction.parameterBindings().mapNotNull { it.name }
-        val sortedParams = paramsDialog.params.entries
-            .sortedBy { (name, _) ->
-                functionParamNames.indexOfFirst { it == name }
-            }.flatMap { (_, value) -> listOf("--args", value) }
+            val address = scriptFunction.module?.addressRef?.toAddress(moveProject)?.value ?: return
+            val module = scriptFunction.module?.name ?: return
+            val name = scriptFunction.name ?: return
 
-        val profile = paramsDialog.selectedProfile
-        val profileArgs =
-            if (profile != null) listOf("--profile", profile) else listOf()
-        val commandArgs = listOf(
-            profileArgs,
-            listOf("--function-id", "${address}::${module}::${name}"),
-            sortedTypeParams,
-            sortedParams,
-        ).flatten()
-        AptosCommandLine("move run", moveProject.contentRootPath, commandArgs)
-            .run(moveProject, paramsDialog.configurationName)
+            val functionTypeParamNames = scriptFunction.typeParameters.mapNotNull { it.name }
+            val sortedTypeParams = paramsDialog.typeParams
+                .entries
+                .sortedBy { (name, _) ->
+                    functionTypeParamNames.indexOfFirst { it == name }
+                }.flatMap { (_, value) -> listOf("--type-args", maybeQuoteTypeArg(value)) }
+
+            val functionParamNames = scriptFunction.parameterBindings().mapNotNull { it.name }
+            val sortedParams = paramsDialog.params.entries
+                .sortedBy { (name, _) ->
+                    functionParamNames.indexOfFirst { it == name }
+                }.flatMap { (_, value) -> listOf("--args", value) }
+
+            val profile = paramsDialog.selectedProfile
+            val profileArgs =
+                if (profile != null) listOf("--profile", profile) else listOf()
+            val commandArgs = listOf(
+                profileArgs,
+                listOf("--function-id", "${address}::${module}::${name}"),
+                sortedTypeParams,
+                sortedParams,
+            ).flatten()
+            AptosCommandLine("move run", moveProject.contentRootPath, commandArgs)
+                .run(moveProject, paramsDialog.configurationName)
+        }
+
+        fun maybeQuoteTypeArg(typeArg: String): String =
+            if (typeArg.contains('<') || typeArg.contains('>')) {
+                "\"$typeArg\""
+            } else {
+                typeArg
+            }
     }
 }

@@ -77,7 +77,7 @@ class TransactionParametersDialog(
     init {
         title = "Transaction Parameters"
         configurationName = "Run ${scriptFunction.fqName}"
-        selectedProfile = null
+        selectedProfile = if (profiles.contains("default")) "default" else profiles[0]
         init()
     }
 
@@ -165,7 +165,7 @@ class TransactionParametersDialog(
                 row("Profile:") {
                     comboBox(profiles.toTypedArray())
                         .enabled(profiles.size > 1)
-                        .bindItem({ profiles[0] }, { selectedProfile = it })
+                        .bindItem({ selectedProfile ?: profiles[0] }, { selectedProfile = it })
                         .columns(PROFILE_COLUMNS)
                         .horizontalAlign(HorizontalAlign.RIGHT)
                 }
