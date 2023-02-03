@@ -100,7 +100,7 @@ class TransactionParametersDialog(
         return panel {
             row("Run Configuration name: ") {
                 textField()
-                    .bindText({ "Run ${scriptFunction.fqName}" }, { configurationName })
+                    .bindText({ configurationName }, { configurationName = it })
                     .columns(NAME_COLUMNS)
                     .horizontalAlign(HorizontalAlign.RIGHT)
             }
