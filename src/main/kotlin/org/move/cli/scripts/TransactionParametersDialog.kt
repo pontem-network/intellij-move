@@ -163,7 +163,7 @@ class TransactionParametersDialog(
             separator()
             if (profiles.isNotEmpty()) {
                 row("Profile:") {
-                    comboBox(profiles.toTypedArray())
+                    comboBox(profiles)
                         .enabled(profiles.size > 1)
                         .bindItem({ selectedProfile ?: profiles[0] }, { selectedProfile = it })
                         .columns(PROFILE_COLUMNS)
