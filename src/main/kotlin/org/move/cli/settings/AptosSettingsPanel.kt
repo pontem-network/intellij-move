@@ -5,9 +5,9 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.layout.ComponentPredicate
-import com.intellij.ui.layout.LayoutBuilder
-import com.intellij.ui.layout.enableIf
 import com.intellij.util.Urls
 import org.move.openapiext.pathField
 
@@ -37,10 +37,13 @@ class AptosSettingsPanel(val panelEnabled: ComponentPredicate) : Disposable {
             restUrlField.text = value.restUrl
         }
 
-    fun attachTo(layout: LayoutBuilder) = with(layout) {
-        row("Private key file") { privateKeyPathField() }.enableIf(panelEnabled)
-        row("Faucet URL") { faucetUrlField() }.enableIf(panelEnabled)
-        row("Rest API URL") { restUrlField() }.enableIf(panelEnabled)
+    fun attachTo(layout: Panel) = with(layout) {
+        row("Private key file") { cell(privateKeyPathField).horizontalAlign(HorizontalAlign.FILL) }
+            .enabledIf(panelEnabled)
+        row("Faucet URL") { cell(faucetUrlField).horizontalAlign(HorizontalAlign.FILL) }
+            .enabledIf(panelEnabled)
+        row("Rest API URL") { cell(restUrlField).horizontalAlign(HorizontalAlign.FILL) }
+            .enabledIf(panelEnabled)
     }
 
     override fun dispose() {

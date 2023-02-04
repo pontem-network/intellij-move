@@ -6,7 +6,7 @@ import com.intellij.ide.util.projectWizard.WizardContext
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.layout.panel
+import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import org.move.cli.moveProjects
 import org.move.cli.settings.MoveSettingsPanel
@@ -21,9 +21,10 @@ class AptosConfigurationWizardStep(
 
     private val moveSettingsPanel = MoveSettingsPanel(showDefaultSettingsLink = true)
 
-    override fun getComponent(): JComponent = panel {
-        moveSettingsPanel.attachTo(this)
-    }.withBorderIfNeeded()
+    override fun getComponent(): JComponent =
+        panel {
+            moveSettingsPanel.attachTo(this)
+        }.withBorderIfNeeded()
 
     override fun disposeUIResources() = Disposer.dispose(moveSettingsPanel)
 

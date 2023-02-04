@@ -4,8 +4,8 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.layout.CCFlags
-import com.intellij.ui.layout.LayoutBuilder
+import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import org.move.cli.Aptos
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathField
@@ -16,14 +16,13 @@ class MoveSettingsPanel(
     private val showDefaultSettingsLink: Boolean,
     private val updateListener: (() -> Unit)? = null
 ) : Disposable {
-    private val versionUpdateDebouncer = UiDebouncer(this)
-
     private val aptosPathField =
         pathField(
             FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
             this,
             "Aptos Binary"
         ) { onUpdate() }
+    private val versionUpdateDebouncer = UiDebouncer(this)
     private val versionLabel = VersionLabel()
 
     data class Data(val aptosPath: String) {
@@ -39,7 +38,7 @@ class MoveSettingsPanel(
             onUpdate()
         }
 
-    fun attachTo(layout: LayoutBuilder) = with(layout) {
+    fun attachTo(layout: Panel) = with(layout) {
         // Don't use `Project.toolchain` or `Project.rustSettings` here because
         // `getService` can return `null` for default project after dynamic plugin loading.
         // As a result, you can get `java.lang.IllegalStateException`
@@ -50,10 +49,12 @@ class MoveSettingsPanel(
             aptosPath = projectSettings.settingsState.aptosPath,
         )
         row("Aptos CLI") {
-            wrapComponent(aptosPathField)(CCFlags.growX, CCFlags.pushX)
+            cell(aptosPathField)
+                .horizontalAlign(HorizontalAlign.FILL)
+                .resizableColumn()
             comment("(required)")
         }
-        row("Version") { versionLabel() }
+        row("Version") { cell(versionLabel) }
         row("       ") {
             link("Set default project settings") {
                 ProjectManager.getInstance().defaultProject.showSettings<PerProjectMoveConfigurable>()
