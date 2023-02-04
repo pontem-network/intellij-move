@@ -14,8 +14,8 @@ import java.nio.file.Paths
 import javax.swing.JComponent
 
 class MoveRunConfigurationEditor : SettingsEditor<AptosCommandConfiguration>() {
-    private val textField = EditorTextField()
-    private val environmentVariables = EnvironmentVariablesComponent()
+    private val commandTextField = EditorTextField()
+    private val envVarsField = EnvironmentVariablesComponent()
     private val workingDirectory: Path?
         get() = workingDirectoryField.component.text.nullize()?.let { Paths.get(it) }
 
@@ -23,24 +23,24 @@ class MoveRunConfigurationEditor : SettingsEditor<AptosCommandConfiguration>() {
         WorkingDirectoryComponent()
 
     override fun resetEditorFrom(configuration: AptosCommandConfiguration) {
-        textField.text = configuration.command
+        commandTextField.text = configuration.command
         workingDirectoryField.component.text = configuration.workingDirectory?.toString().orEmpty()
-        environmentVariables.envData = configuration.environmentVariables
+        envVarsField.envData = configuration.environmentVariables
     }
 
     override fun applyEditorTo(configuration: AptosCommandConfiguration) {
-        configuration.command = textField.text
+        configuration.command = commandTextField.text
         configuration.workingDirectory = this.workingDirectory
-        configuration.environmentVariables = environmentVariables.envData
+        configuration.environmentVariables = envVarsField.envData
     }
 
     override fun createEditor(): JComponent {
         return panel {
             row("Command:") {
-                textField(growX, pushX)
+                commandTextField(growX, pushX)
             }
-            row(environmentVariables.label) {
-                environmentVariables(growX)
+            row(envVarsField.label) {
+                envVarsField(growX)
             }
             row(workingDirectoryField.label) {
                 workingDirectoryField(growX)
