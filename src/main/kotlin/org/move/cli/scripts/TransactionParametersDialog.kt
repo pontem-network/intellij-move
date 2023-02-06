@@ -117,8 +117,8 @@ class TransactionParametersDialog(
                         val paramName = typeParameter.name ?: continue
                         row(paramName) {
                             textField()
-                                .columns(ARGUMENT_COLUMNS)
-                                .horizontalAlign(HorizontalAlign.RIGHT)
+//                                .columns(ARGUMENT_COLUMNS)
+                                .horizontalAlign(HorizontalAlign.FILL)
                                 .bindText(
                                     { typeParams.getOrDefault(paramName, "") },
                                     { typeParams[paramName] = it })
@@ -152,8 +152,8 @@ class TransactionParametersDialog(
                                             params[paramName] = "$paramTyName:$it"
                                         }
                                     })
-                                .columns(ARGUMENT_COLUMNS)
-                                .horizontalAlign(HorizontalAlign.RIGHT)
+//                                .columns(ARGUMENT_COLUMNS)
+                                .horizontalAlign(HorizontalAlign.FILL)
                                 .validationOnApply(validateNonEmpty("Required parameter"))
 
                         }
