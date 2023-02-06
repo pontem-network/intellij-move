@@ -228,7 +228,7 @@ Module ::= Attr* MODULE_KW (AddressRef '::')? IDENTIFIER ModuleBlock
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvModuleMixin"
-    stubClass = "org.move.lang.core.stubs.impl.MvModuleStub"
+    stubClass = "org.move.lang.core.stubs.MvModuleStub"
     elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
@@ -365,6 +365,8 @@ fake Function ::= Attr* native? FunctionVisibilityModifier? entry? inline?
         "org.move.lang.core.psi.MvFunctionLike"
     ]
     mixin = "org.move.lang.core.psi.ext.MvFunctionMixin"
+    stubClass = "org.move.lang.core.stubs.MvFunctionStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 

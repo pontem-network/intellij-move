@@ -9,8 +9,8 @@ import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.stubs.impl.MvModuleStub
 import org.move.lang.core.types.FQModule
 import org.move.lang.index.MvModuleSpecIndex
 import org.move.lang.moduleSpecs

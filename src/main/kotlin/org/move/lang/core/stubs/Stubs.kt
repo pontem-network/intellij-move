@@ -1,51 +1,75 @@
 package org.move.lang.core.stubs
 
-import com.intellij.extapi.psi.StubBasedPsiElementBase
-import com.intellij.lang.ASTNode
-import com.intellij.psi.PsiElement
-import com.intellij.psi.stubs.IStubElementType
-import com.intellij.psi.stubs.StubElement
-import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvElement
-import org.move.lang.core.psi.MvNameIdentifierOwner
-import org.move.lang.core.psi.MvPsiFactory
-import org.move.lang.core.stubs.impl.MvModuleStub
-import org.move.lang.core.stubs.impl.MvNamedStub
+import com.intellij.psi.stubs.*
+import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvModule
+import org.move.lang.core.psi.impl.MvFunctionImpl
+import org.move.lang.core.psi.impl.MvModuleImpl
+import org.move.utils.readNameAsString
 
-abstract class MvStubbedElementImpl<StubT : StubElement<*>> : StubBasedPsiElementBase<StubT>, MvElement {
-
-    constructor(node: ASTNode) : super(node)
-
-    constructor(stub: StubT, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
-
-    override fun toString(): String = "${javaClass.simpleName}($elementType)"
+interface MvNamedStub {
+    val name: String?
 }
 
-abstract class MvStubbedNamedElementImpl<StubT> : MvStubbedElementImpl<StubT>,
-                                                  MvNameIdentifierOwner
-        where StubT : MvNamedStub, StubT : StubElement<*> {
+class MvModuleStub(
+    parent: StubElement<*>?,
+    elementType: IStubElementType<*, *>,
+    override val name: String?
+) : StubBase<MvModule>(parent, elementType), MvNamedStub {
 
-    constructor(node: ASTNode) : super(node)
+    object Type : MvStubElementType<MvModuleStub, MvModule>("MODULE") {
+        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
+            MvModuleStub(
+                parentStub,
+                this,
+                dataStream.readNameAsString()
+            )
 
-    constructor(stub: StubT, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+        override fun serialize(stub: MvModuleStub, dataStream: StubOutputStream) =
+            with(dataStream) {
+                writeName(stub.name)
+            }
 
-    override fun getNameIdentifier(): PsiElement? = findChildByType(MvElementTypes.IDENTIFIER)
+        override fun createPsi(stub: MvModuleStub): MvModule =
+            MvModuleImpl(stub, this)
 
-    override fun getName(): String? {
-        val stub = greenStub
-        return if (stub !== null) stub.name else nameIdentifier?.text
+        override fun createStub(psi: MvModule, parentStub: StubElement<*>?): MvModuleStub {
+            return MvModuleStub(parentStub, this, psi.name)
+        }
     }
+}
 
-    override fun setName(name: String): PsiElement? {
-        nameIdentifier?.replace(MvPsiFactory(project).identifier(name))
-        return this
+class MvFunctionStub(
+    parent: StubElement<*>?,
+    elementType: IStubElementType<*, *>,
+    override val name: String?
+) : StubBase<MvFunction>(parent, elementType), MvNamedStub {
+
+    object Type : MvStubElementType<MvFunctionStub, MvFunction>("FUNCTION") {
+        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
+            MvFunctionStub(
+                parentStub,
+                this,
+                dataStream.readNameAsString()
+            )
+
+        override fun serialize(stub: MvFunctionStub, dataStream: StubOutputStream) =
+            with(dataStream) {
+                writeName(stub.name)
+            }
+
+        override fun createPsi(stub: MvFunctionStub): MvFunction =
+            MvFunctionImpl(stub, this)
+
+        override fun createStub(psi: MvFunction, parentStub: StubElement<*>?): MvFunctionStub {
+            return MvFunctionStub(parentStub, this, psi.name)
+        }
     }
-
-    override fun getTextOffset(): Int = nameIdentifier?.textOffset ?: super.getTextOffset()
 }
 
 fun factory(name: String): MvStubElementType<*, *> = when (name) {
     "MODULE" -> MvModuleStub.Type
+    "FUNCTION" -> MvFunctionStub.Type
 
     else -> error("Unknown element $name")
 }
