@@ -11,6 +11,8 @@ fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties for environment `$platformVersion`")
 
+
+
 //val intellijVersion = prop("intellijVersion", "2021.2")
 val kotlinVersion = "1.8.10"
 
