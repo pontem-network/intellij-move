@@ -10,9 +10,11 @@ import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
+import com.intellij.psi.tree.IStubFileElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.lang.core.MvTokenType
 import org.move.lang.core.lexer.createMoveLexer
+import org.move.lang.core.stubs.impl.MvFileStub
 import org.move.lang.core.tokenSetOf
 
 class MoveParserDefinition : ParserDefinition {
@@ -45,7 +47,8 @@ class MoveParserDefinition : ParserDefinition {
     }
 
     companion object {
-        val FILE = IFileElementType(MoveLanguage)
+        val FILE = MvFileStub.Type
+//        val FILE = IFileElementType(MoveLanguage)
 
         @JvmField
         val BLOCK_COMMENT = MvTokenType("BLOCK_COMMENT")
@@ -55,5 +58,15 @@ class MoveParserDefinition : ParserDefinition {
 
         @JvmField
         val EOL_DOC_COMMENT = MvTokenType("EOL_DOC_COMMENT")
+
+        /**
+         * Should be increased after any change of lexer rules
+         */
+        const val LEXER_VERSION: Int = 1
+
+        /**
+         * Should be increased after any change of parser rules
+         */
+        const val PARSER_VERSION: Int = LEXER_VERSION + 40
     }
 }

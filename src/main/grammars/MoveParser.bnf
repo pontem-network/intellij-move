@@ -228,6 +228,8 @@ Module ::= Attr* MODULE_KW (AddressRef '::')? IDENTIFIER ModuleBlock
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvModuleMixin"
+    stubClass = "org.move.lang.core.stubs.impl.MvModuleStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
