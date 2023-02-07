@@ -15,7 +15,6 @@ import org.move.lang.MoveFile
 import org.move.lang.MoveLanguage
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.rename
-import org.move.lang.modules
 
 class MvRenameFileProcessor : RenamePsiFileProcessor() {
     override fun createRenameDialog(

@@ -9,6 +9,7 @@ import org.move.ide.inspections.imports.AutoImportFix
 import org.move.ide.inspections.imports.ImportCandidate
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.index.MvNamedElementIndex
+import org.move.lang.index.MvStubbedNamedElementIndex
 
 abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>() {
     abstract val elementPattern: ElementPattern<out PsiElement>

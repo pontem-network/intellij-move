@@ -11,7 +11,6 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferTypeTy
 import org.move.lang.core.types.ty.TyUnknown
-import org.move.lang.modules
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
 import org.move.lang.utils.addToHolder

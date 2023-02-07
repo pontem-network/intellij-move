@@ -44,21 +44,3 @@ abstract class MvStubbedNamedElementImpl<StubT> : MvStubbedElementImpl<StubT>,
 
     override fun getTextOffset(): Int = nameIdentifier?.textOffset ?: super.getTextOffset()
 }
-
-private fun StubInputStream.readNameAsString(): String? = readName()?.string
-private fun StubInputStream.readUTFFastAsNullable(): String? =
-    DataInputOutputUtil.readNullable(this, this::readUTFFast)
-
-private fun StubOutputStream.writeUTFFastAsNullable(value: String?) =
-    DataInputOutputUtil.writeNullable(this, value, this::writeUTFFast)
-
-private fun StubOutputStream.writeLongAsNullable(value: Long?) =
-    DataInputOutputUtil.writeNullable(this, value, this::writeLong)
-
-private fun StubInputStream.readLongAsNullable(): Long? = DataInputOutputUtil.readNullable(this, this::readLong)
-
-private fun StubOutputStream.writeDoubleAsNullable(value: Double?) =
-    DataInputOutputUtil.writeNullable(this, value, this::writeDouble)
-
-private fun StubInputStream.readDoubleAsNullable(): Double? =
-    DataInputOutputUtil.readNullable(this, this::readDouble)

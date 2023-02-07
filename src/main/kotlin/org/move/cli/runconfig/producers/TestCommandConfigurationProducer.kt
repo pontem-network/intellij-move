@@ -12,7 +12,6 @@ import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.findMoveProject
 import org.move.lang.core.psi.ext.hasTestFunctions
 import org.move.lang.core.psi.ext.isTest
-import org.move.lang.modules
 import org.move.lang.moveProject
 import org.toml.lang.psi.TomlFile
 

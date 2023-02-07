@@ -65,6 +65,15 @@ class MoveFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvide
         val defs = PsiTreeUtil.getChildrenOfTypeAsList(this, MvScript::class.java)
         return defs.mapNotNull { it.scriptBlock }.toList()
     }
+
+    fun modules(): Sequence<MvModule> {
+        return getProjectPsiDependentCache(this) {
+            it.childrenOfType<MvModule>()
+                .chain(it.childrenOfType<MvAddressDef>().flatMap { a -> a.modules() })
+        }
+    }
+
+    fun moduleSpecs(): List<MvModuleSpec> = this.childrenOfType()
 }
 
 val VirtualFile.isMoveOrManifest: Boolean get() = this.isMoveFile || this.isMoveTomlManifestFile
@@ -76,15 +85,6 @@ val VirtualFile.isMoveTomlManifestFile: Boolean get() = name == "Move.toml"
 fun VirtualFile.toMoveFile(project: Project): MoveFile? = this.toPsiFile(project) as? MoveFile
 
 fun VirtualFile.toTomlFile(project: Project): TomlFile? = this.toPsiFile(project) as? TomlFile
-
-fun MoveFile.modules(): Sequence<MvModule> {
-    return getProjectPsiDependentCache(this) {
-        it.childrenOfType<MvModule>()
-            .chain(it.childrenOfType<MvAddressDef>().flatMap { a -> a.modules() })
-    }
-}
-
-fun MoveFile.moduleSpecs(): List<MvModuleSpec> = this.childrenOfType()
 
 fun MoveFile.isTempFile(): Boolean =
     this.virtualFile == null

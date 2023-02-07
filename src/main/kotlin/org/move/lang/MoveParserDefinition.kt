@@ -1,6 +1,5 @@
 package org.move.lang
 
-//import org.move.lang.core.stubs.MvFileStub
 import com.intellij.lang.ASTNode
 import com.intellij.lang.ParserDefinition
 import com.intellij.lang.PsiParser
@@ -10,7 +9,6 @@ import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
-import com.intellij.psi.tree.IStubFileElementType
 import com.intellij.psi.tree.TokenSet
 import org.move.lang.core.MvTokenType
 import org.move.lang.core.lexer.createMoveLexer
@@ -26,7 +24,6 @@ class MoveParserDefinition : ParserDefinition {
         return MoveParser()
     }
 
-    //    override fun getFileNodeType(): IFileElementType = MvFileStub.Type
     override fun getFileNodeType(): IFileElementType = FILE
 
     override fun getCommentTokens(): TokenSet {
@@ -48,7 +45,6 @@ class MoveParserDefinition : ParserDefinition {
 
     companion object {
         val FILE = MvFileStub.Type
-//        val FILE = IFileElementType(MoveLanguage)
 
         @JvmField
         val BLOCK_COMMENT = MvTokenType("BLOCK_COMMENT")

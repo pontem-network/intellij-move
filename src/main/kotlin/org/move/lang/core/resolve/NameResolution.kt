@@ -11,7 +11,6 @@ import org.move.lang.core.types.normalizeAddressValue
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
-import org.move.lang.modules
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.stdext.chain

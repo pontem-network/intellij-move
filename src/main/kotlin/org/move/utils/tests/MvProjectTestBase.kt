@@ -3,8 +3,10 @@ package org.move.utils.tests
 import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileFilter
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
+import com.intellij.psi.impl.PsiManagerEx
 import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
@@ -55,6 +57,14 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
                 .resolve(testProject.fileWithCaret).toVirtualFile()
                 ?: error("No file with //^ caret")
         this.configureFromExistingVirtualFile(fileWithCaret)
+    }
+
+    protected fun checkAstNotLoaded(fileFilter: VirtualFileFilter) {
+        PsiManagerEx.getInstanceEx(project).setAssertOnFileLoadingFilter(fileFilter, testRootDisposable)
+    }
+
+    protected fun checkAstNotLoaded() {
+        PsiManagerEx.getInstanceEx(project).setAssertOnFileLoadingFilter(VirtualFileFilter.ALL, testRootDisposable)
     }
 
     protected fun findPsiFile(path: String): PsiFile {

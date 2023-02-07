@@ -11,7 +11,6 @@ import org.move.lang.core.psi.ext.descendantOfTypeStrict
 import org.move.lang.core.psi.ext.equalsTo
 import org.move.lang.core.psi.ext.isShorthand
 import org.move.lang.core.psi.ext.owner
-import org.move.lang.modules
 
 
 class MvRenameProcessor : RenamePsiElementProcessor() {

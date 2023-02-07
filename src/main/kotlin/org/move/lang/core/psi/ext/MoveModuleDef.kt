@@ -13,7 +13,6 @@ import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.FQModule
 import org.move.lang.index.MvModuleSpecIndex
-import org.move.lang.moduleSpecs
 import org.move.lang.moveProject
 import javax.swing.Icon
 
@@ -199,6 +198,7 @@ fun MvModule.allModuleSpecBlocks(): List<MvModuleSpecBlock> {
 
 abstract class MvModuleMixin : MvStubbedNamedElementImpl<MvModuleStub>,
                                MvModule {
+
     constructor(node: ASTNode) : super(node)
 
     constructor(stub: MvModuleStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
