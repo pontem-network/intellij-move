@@ -3,6 +3,7 @@ package org.move.lang.core.stubs
 import com.intellij.psi.stubs.*
 import com.intellij.util.io.DataInputOutputUtil
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.fqRefName
 import org.move.lang.core.psi.impl.*
 import org.move.lang.core.resolve.ref.Visibility
 
@@ -190,6 +191,36 @@ class MvConstStub(
     }
 }
 
+class MvModuleSpecStub(
+    parent: StubElement<*>?,
+    elementType: IStubElementType<*, *>,
+    val moduleName: String?,
+) : StubBase<MvModuleSpec>(parent, elementType) {
+
+    object Type : MvStubElementType<MvModuleSpecStub, MvModuleSpec>("MODULE_SPEC") {
+        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
+            MvModuleSpecStub(
+                parentStub,
+                this,
+                dataStream.readUTFFastAsNullable()
+            )
+
+        override fun serialize(stub: MvModuleSpecStub, dataStream: StubOutputStream) =
+            with(dataStream) {
+                writeUTFFastAsNullable(stub.moduleName)
+            }
+
+        override fun createPsi(stub: MvModuleSpecStub): MvModuleSpec =
+            MvModuleSpecImpl(stub, this)
+
+        override fun createStub(psi: MvModuleSpec, parentStub: StubElement<*>?): MvModuleSpecStub {
+            return MvModuleSpecStub(parentStub, this, psi.fqModuleRef?.fqRefName)
+        }
+
+        override fun indexStub(stub: MvModuleSpecStub, sink: IndexSink) = sink.indexModuleSpecStub(stub)
+    }
+}
+
 
 
 fun factory(name: String): MvStubElementType<*, *> = when (name) {
@@ -199,6 +230,7 @@ fun factory(name: String): MvStubElementType<*, *> = when (name) {
     "STRUCT" -> MvStructStub.Type
     "SCHEMA" -> MvSchemaStub.Type
     "CONST" -> MvConstStub.Type
+    "MODULE_SPEC" -> MvModuleSpecStub.Type
 
     else -> error("Unknown element $name")
 }

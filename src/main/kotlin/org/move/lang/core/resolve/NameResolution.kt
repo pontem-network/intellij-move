@@ -96,7 +96,7 @@ fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
     // module refers to ModuleImport
     var resolved = resolveSingleItem(moduleRef, setOf(Namespace.MODULE))
     if (resolved is MvUseAlias) {
-       resolved = resolved.moduleUseSpeck ?: resolved.useItem
+        resolved = resolved.moduleUseSpeck ?: resolved.useItem
     }
     if (resolved is MvUseItem && resolved.isSelf) {
         return resolved.moduleImport().fqModuleRef
@@ -104,6 +104,46 @@ fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
     if (resolved !is MvModuleUseSpeck) return null
 
     return resolved.fqModuleRef
+}
+
+fun processQualItem(
+    item: MvNamedElement,
+    itemVis: ItemVis,
+    processor: MatchingProcessor<MvQualifiedNamedElement>,
+): Boolean {
+    if (item !is MvQualifiedNamedElement) return false
+    val matched = when {
+        item is MvModule && Namespace.MODULE in itemVis.namespaces
+                || item is MvStruct && Namespace.TYPE in itemVis.namespaces
+                || item is MvSchema && Namespace.SCHEMA in itemVis.namespaces ->
+            processor.match(itemVis, item)
+
+        item is MvFunction && Namespace.NAME in itemVis.namespaces -> {
+            if (item.isTest) return false
+            for (vis in itemVis.visibilities) {
+                when {
+                    vis is Visibility.Public
+                            && item.visibility == FunctionVisibility.PUBLIC -> processor.match(itemVis, item)
+
+                    vis is Visibility.PublicScript
+                            && item.visibility == FunctionVisibility.PUBLIC_SCRIPT ->
+                        processor.match(itemVis, item)
+
+                    vis is Visibility.PublicFriend && item.visibility == FunctionVisibility.PUBLIC_FRIEND -> {
+                        val module = item.module ?: return false
+                        if (vis.currentModule in module.friendModules) {
+                            processor.match(itemVis, item)
+                        }
+                    }
+
+                    vis is Visibility.Internal -> processor.match(itemVis, item)
+                }
+            }
+            false
+        }
+        else -> false
+    }
+    return matched
 }
 
 fun processFileItems(

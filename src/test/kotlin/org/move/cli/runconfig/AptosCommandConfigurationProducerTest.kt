@@ -1,7 +1,5 @@
 package org.move.cli.runconfig
 
-import com.intellij.psi.PsiElement
-import org.move.cli.runconfig.producers.TestCommandConfigurationProducer
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.openapiext.toPsiDirectory
@@ -81,7 +79,7 @@ class AptosCommandConfigurationProducerTest : RunConfigurationProducerTestBase("
                 )
             }
         }
-        val sourcesDir = this.testProject?.rootDirectory?.toPsiDirectory(this.project) ?: error("no root")
+        val sourcesDir = this._testProject?.rootDirectory?.toPsiDirectory(this.project) ?: error("no root")
         checkOnFsItem(sourcesDir)
     }
 

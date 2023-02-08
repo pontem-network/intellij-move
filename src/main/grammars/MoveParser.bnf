@@ -1071,6 +1071,9 @@ ModuleSpec ::= Attr* spec FQModuleRef ModuleSpecBlock
 {
     pin = "spec"
     name = "module spec declaration"
+    mixin = "org.move.lang.core.psi.ext.MvModuleSpecMixin"
+    stubClass = "org.move.lang.core.stubs.MvModuleSpecStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 ModuleSpecBlock ::= '{' ModuleSpecBlock_item_with_recover* '}'

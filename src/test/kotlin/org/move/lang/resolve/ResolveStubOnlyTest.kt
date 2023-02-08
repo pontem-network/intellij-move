@@ -1,6 +1,6 @@
 package org.move.lang.resolve
 
-//class ResolveStubItemsProjectTest : ResolveProjectTestCase() {
+//class ResolveStubOnlyTest : ResolveProjectTestCase() {
 //    fun `test resolve module stubs only from other file in sources folder`() = stubOnlyResolve {
 //        namedMoveToml("MyPackage")
 //        sources {

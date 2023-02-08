@@ -8,6 +8,8 @@ import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.resolve.ref.MvFQModuleReference
 import org.move.lang.core.resolve.ref.MvFQModuleReferenceImpl
 
+val MvFQModuleRef.fqRefName: String get() = "${this.addressRef.text}::${this.referenceName}"
+
 abstract class MvFQModuleRefMixin(node: ASTNode) : MvElementImpl(node),
                                                    MvFQModuleRef {
     override val identifier: PsiElement?

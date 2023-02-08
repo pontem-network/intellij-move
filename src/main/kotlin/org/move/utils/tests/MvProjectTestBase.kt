@@ -18,10 +18,10 @@ import org.move.openapiext.toVirtualFile
 import org.move.utils.tests.base.TestCase
 
 abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuilder<*>>() {
-    var testProject: TestProject? = null
+    var _testProject: TestProject? = null
 
     override fun tearDown() {
-        testProject = null
+        _testProject = null
         super.tearDown()
     }
 
@@ -43,7 +43,7 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
     private fun testProject(fileTree: FileTree): TestProject {
         val rootDirectory = myModule.rootManager.contentRoots.first()
         val testProject = fileTree.toTestProject(myFixture.project, rootDirectory)
-        this.testProject = testProject
+        this._testProject = testProject
         myFixture.configureFromFileWithCaret(testProject)
 
         System.setProperty("user.home", testProject.rootDirectory.path)
@@ -78,7 +78,7 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
     }
 
     private fun findVirtualFile(path: String): VirtualFile {
-        val rootDirectory = this.testProject?.rootDirectory ?: error("no root")
+        val rootDirectory = this._testProject?.rootDirectory ?: error("no root")
         val parts = FileUtil.splitPath(path, '/')
         var res = rootDirectory
         for (part in parts) {
