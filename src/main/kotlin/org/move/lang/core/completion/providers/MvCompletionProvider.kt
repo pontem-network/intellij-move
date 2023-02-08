@@ -22,7 +22,7 @@ abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>()
     ): List<ImportCandidate> {
         val project = parameters.position.project
         val keys = hashSetOf<String>().apply {
-            val names = MvNamedElementIndex.getAllNames(project)
+            val names = MvNamedElementIndex.getAllKeys(project)
             addAll(names)
             removeAll(processedPathNames)
         }

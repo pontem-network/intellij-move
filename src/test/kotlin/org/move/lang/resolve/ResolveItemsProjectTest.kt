@@ -521,4 +521,23 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
 //        }
 //    }
 
+    fun `test cannot resolve module ref that belongs to another project`() = checkByFileTree {
+        dir("another") {
+            namedMoveToml("Another")
+            sources {
+                move("string.move", """
+module 0x1::string {}                    
+                """)
+            }
+        }
+        namedMoveToml("Main")
+        sources {
+            main("""
+module 0x1::main {
+    use 0x1::string;
+            //^ unresolved
+}                
+            """)
+        }
+    }
 }

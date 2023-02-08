@@ -108,8 +108,10 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
             MvNamedElementIndex
                 .processElementsByName(project, targetName, searchScope) { element ->
                     processQualItem(element, itemVis) {
+                        val entryElement = it.element
+                        if (entryElement !is MvQualifiedNamedElement) return@processQualItem false
                         if (it.name == targetName) {
-                            allItems.add(it.element)
+                            allItems.add(entryElement)
                         }
                         false
                     }

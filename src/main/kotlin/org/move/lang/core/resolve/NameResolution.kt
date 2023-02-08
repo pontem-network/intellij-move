@@ -1,5 +1,6 @@
 package org.move.lang.core.resolve
 
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.MoveFile
@@ -11,6 +12,7 @@ import org.move.lang.core.types.normalizeAddressValue
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.stdext.chain
@@ -109,9 +111,8 @@ fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
 fun processQualItem(
     item: MvNamedElement,
     itemVis: ItemVis,
-    processor: MatchingProcessor<MvQualifiedNamedElement>,
+    processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
-    if (item !is MvQualifiedNamedElement) return false
     val matched = when {
         item is MvModule && Namespace.MODULE in itemVis.namespaces
                 || item is MvStruct && Namespace.TYPE in itemVis.namespaces
@@ -208,6 +209,48 @@ fun processFQModuleRef(
         // if not resolved, returns true to indicate that next file should be tried
         !stopped
     }
+}
+
+fun processFQModuleRef(
+    fqModuleRef: MvFQModuleRef,
+    target: String,
+    processor: MatchingProcessor<MvModule>,
+) {
+    val itemVis = ItemVis(
+        namespaces = setOf(Namespace.MODULE),
+        visibilities = Visibility.local(),
+        mslScope = fqModuleRef.mslScope,
+        itemScope = fqModuleRef.itemScope,
+    )
+    val project = fqModuleRef.project
+    val moveProject = fqModuleRef.moveProject ?: return
+
+    val refAddressValue = fqModuleRef.addressRef.toAddress(moveProject)?.let { normalizeAddressValue(it.value) }
+    val moduleProcessor = MatchingProcessor<MvNamedElement> {
+        val entry = SimpleScopeEntry(it.name, it.element as MvModule)
+        // TODO: check belongs to the current project
+        val modAddressValue =
+            entry.element.address()?.toAddress(moveProject)?.let { a -> normalizeAddressValue(a.value) }
+        if (modAddressValue != refAddressValue) return@MatchingProcessor false
+        processor.match(entry)
+    }
+
+    // first search modules in the current file
+    val currentFile = fqModuleRef.containingMoveFile ?: return
+    val stopped = processFileItems(currentFile, itemVis, moduleProcessor)
+    if (stopped) return
+
+    val currentFileScope = GlobalSearchScope.fileScope(currentFile)
+    val searchScope =
+        moveProject.searchScope().intersectWith(GlobalSearchScope.notScope(currentFileScope))
+
+    MvNamedElementIndex
+        .processElementsByName(project, target, searchScope) {
+            val matched = processQualItem(it, itemVis, moduleProcessor)
+            if (matched) return@processElementsByName false
+
+            true
+        }
 }
 
 fun processLexicalDeclarations(
