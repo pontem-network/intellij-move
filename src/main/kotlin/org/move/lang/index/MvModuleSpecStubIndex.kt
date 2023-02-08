@@ -19,11 +19,11 @@ class MvModuleSpecStubIndex : StringStubIndexExtension<MvModuleSpec>() {
 
         fun getElementsByModuleName(
             project: Project,
-            moduleFqName: String,
+            moduleStubText: String,
             scope: GlobalSearchScope = GlobalSearchScope.allScope(project)
         ): Collection<MvModuleSpec> {
             checkCommitIsNotInProgress(project)
-            return getElements(KEY, moduleFqName, project, scope)
+            return getElements(KEY, moduleStubText, project, scope)
         }
     }
 }

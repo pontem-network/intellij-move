@@ -21,6 +21,12 @@ fun MvModule.hasTestFunctions(): Boolean = this.testFunctions().isNotEmpty()
 fun MvModule.address(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
 
+fun MvModule.stubText(): String {
+    val address = this.moveProject
+        ?.let { this.addressRef?.serializedAddressText(it) } ?: "<unknown>"
+    return "$address::${this.name}"
+}
+
 fun MvModule.fqModule(): FQModule? {
     return getProjectPsiDependentCache(this) {
         val address = this.address()?.toAddress() ?: return@getProjectPsiDependentCache null

@@ -3,9 +3,8 @@ package org.move.lang.core.stubs
 import com.intellij.psi.stubs.*
 import com.intellij.util.io.DataInputOutputUtil
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.fqRefName
+import org.move.lang.core.psi.ext.stubText
 import org.move.lang.core.psi.impl.*
-import org.move.lang.core.resolve.ref.Visibility
 
 interface MvNamedStub {
     val name: String?
@@ -214,7 +213,7 @@ class MvModuleSpecStub(
             MvModuleSpecImpl(stub, this)
 
         override fun createStub(psi: MvModuleSpec, parentStub: StubElement<*>?): MvModuleSpecStub {
-            return MvModuleSpecStub(parentStub, this, psi.fqModuleRef?.fqRefName)
+            return MvModuleSpecStub(parentStub, this, psi.fqModuleRef?.stubText())
         }
 
         override fun indexStub(stub: MvModuleSpecStub, sink: IndexSink) = sink.indexModuleSpecStub(stub)

@@ -15,6 +15,14 @@ fun MvAddressRef.toAddress(moveProj: MoveProject? = this.moveProject): Address? 
     return Address.Value(addressLitText)
 }
 
+fun MvAddressRef.serializedAddressText(moveProject: MoveProject): String? {
+    val address = this.toAddress(moveProject) ?: return null
+    return when (address) {
+        is Address.Named -> "${address.name}(${address.value})"
+        is Address.Value -> address.value
+    }
+}
+
 val MvAddressRef.normalizedText: String get() = this.text.lowercase()
 
 val MvAddressRef.useGroupLevel: Int

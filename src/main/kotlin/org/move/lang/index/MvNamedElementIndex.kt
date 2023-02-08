@@ -16,7 +16,7 @@ class MvNamedElementIndex : StringStubIndexExtension<MvNamedElement>() {
 
     companion object {
         val KEY: StubIndexKey<String, MvNamedElement> =
-            StubIndexKey.createIndexKey("org.move.index.StubbedNamedElementIndex")
+            StubIndexKey.createIndexKey("org.move.index.NamedElementIndex")
 
         fun getAllNames(project: Project): Collection<String> {
             checkCommitIsNotInProgress(project)
