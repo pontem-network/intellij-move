@@ -2,7 +2,7 @@ package org.move.lang.core.stubs
 
 import com.intellij.psi.stubs.IndexSink
 import org.move.lang.index.MvModuleSpecStubIndex
-import org.move.lang.index.MvStubbedNamedElementIndex
+import org.move.lang.index.MvNamedElementIndex
 
 fun IndexSink.indexModuleStub(stub: MvModuleStub) {
     indexNamedStub(stub)
@@ -36,6 +36,6 @@ fun IndexSink.indexModuleSpecStub(stub: MvModuleSpecStub) {
 
 private fun IndexSink.indexNamedStub(stub: MvNamedStub) {
     stub.name?.let {
-        occurrence(MvStubbedNamedElementIndex.KEY, it)
+        occurrence(MvNamedElementIndex.KEY, it)
     }
 }

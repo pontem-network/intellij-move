@@ -22,7 +22,6 @@
                   extensions="move"
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
-<!--        <fileBasedIndex implementation="org.move.lang.index.MvNamedElementIndex"/>-->
         <fileBasedIndex implementation="org.move.lang.index.MvModuleSpecIndex"/>
 
         <configurationType
@@ -39,7 +38,7 @@
 
         <stubElementTypeHolder class="org.move.lang.MvElementTypes" />
 
-        <stubIndex implementation="org.move.lang.index.MvStubbedNamedElementIndex" />
+        <stubIndex implementation="org.move.lang.index.MvNamedElementIndex" />
         <stubIndex implementation="org.move.lang.index.MvModuleSpecStubIndex" />
 
         <lang.documentationProvider language="Move"

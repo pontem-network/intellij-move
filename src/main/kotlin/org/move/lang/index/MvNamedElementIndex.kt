@@ -2,49 +2,45 @@ package org.move.lang.index
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.util.descendantsOfType
-import com.intellij.util.indexing.DataIndexer
-import com.intellij.util.indexing.FileBasedIndex
-import com.intellij.util.indexing.FileContent
-import com.intellij.util.indexing.ID
-import org.move.lang.MoveFile
-import org.move.lang.core.psi.MvQualifiedNamedElement
-import org.move.lang.toMoveFile
+import com.intellij.psi.stubs.StringStubIndexExtension
+import com.intellij.psi.stubs.StubIndex
+import com.intellij.psi.stubs.StubIndexKey
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.stubs.impl.MvFileStub
+import org.move.openapiext.checkCommitIsNotInProgress
+import org.move.openapiext.getElements
 
-class MvNamedElementIndex : BaseMoveFileIndex() {
-    override fun getName() = KEY
-    override fun getVersion() = INDEX_VERSION
-    override fun getIndexer() =
-        DataIndexer<String, Void, FileContent> { fileContent ->
-            val file = fileContent.psiFile as? MoveFile ?: return@DataIndexer emptyMap()
-            val map = file
-                .descendantsOfType<MvQualifiedNamedElement>()
-                .mapNotNull { it.name }
-                .associateWith { null }
-            map
-        }
+class MvNamedElementIndex : StringStubIndexExtension<MvNamedElement>() {
+    override fun getVersion(): Int = MvFileStub.Type.stubVersion
+    override fun getKey(): StubIndexKey<String, MvNamedElement> = KEY
 
     companion object {
-        const val INDEX_VERSION = 1
+        val KEY: StubIndexKey<String, MvNamedElement> =
+            StubIndexKey.createIndexKey("org.move.index.StubbedNamedElementIndex")
 
-        val KEY = ID.create<String, Void>("MvNamedElementIndex")
-
-        fun requestRebuild() {
-            FileBasedIndex.getInstance().requestRebuild(KEY)
+        fun getAllNames(project: Project): Collection<String> {
+            checkCommitIsNotInProgress(project)
+            return StubIndex.getInstance().getAllKeys(KEY, project)
         }
 
-        fun getAllKeys(project: Project): Collection<String> {
-            return FileBasedIndex.getInstance().getAllKeys(KEY, project)
-        }
-
-        fun namedElementFiles(
+        fun processElementsByName(
             project: Project,
-            targetName: String,
-            searchScope: GlobalSearchScope
-        ): Collection<MoveFile> {
-            val fileIndex = FileBasedIndex.getInstance()
-            val files = fileIndex.getContainingFiles(KEY, targetName, searchScope)
-            return files.mapNotNull { it.toMoveFile(project) }
+            target: String,
+            scope: GlobalSearchScope = GlobalSearchScope.allScope(project),
+            processor: (MvNamedElement) -> Boolean,
+        ) {
+            checkCommitIsNotInProgress(project)
+            StubIndex.getInstance()
+                .processElements(KEY, target, project, scope, MvNamedElement::class.java, processor)
+        }
+
+        fun findElementsByName(
+            project: Project,
+            target: String,
+            scope: GlobalSearchScope = GlobalSearchScope.allScope(project)
+        ): Collection<MvNamedElement> {
+            checkCommitIsNotInProgress(project)
+            return getElements(KEY, target, project, scope)
         }
     }
 }
