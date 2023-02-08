@@ -9,7 +9,6 @@ import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.mixins.ty
 import org.move.lang.core.types.ty.*
 
 interface MvInferenceContextOwner : MvElement {

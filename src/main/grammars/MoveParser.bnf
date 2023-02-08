@@ -602,7 +602,7 @@ fake TypeParameter ::= phantom? IDENTIFIER? TypeParamBound? {
     implements = [
         "org.move.lang.core.psi.MvNameIdentifierOwner"
     ]
-    mixin = "org.move.lang.core.psi.mixins.MvTypeParameterMixin"
+    mixin = "org.move.lang.core.psi.ext.MvTypeParameterMixin"
 }
 
 private TypeParameterImpl ::= PlainTypeParameter | PhantomTypeParameter
@@ -1164,7 +1164,7 @@ Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl ItemSpecBlock>> {
         "org.move.lang.core.psi.MvQualifiedNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
     ]
-    mixin = "org.move.lang.core.psi.mixins.MvSchemaMixin"
+    mixin = "org.move.lang.core.psi.ext.MvSchemaMixin"
     stubClass = "org.move.lang.core.stubs.MvSchemaStub"
     elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
 }
