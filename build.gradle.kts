@@ -164,7 +164,16 @@ allprojects {
 
         withType<org.jetbrains.intellij.tasks.RunIdeTask> {
             jbrVersion.set(prop("jbrVersion"))
-            ideDir.set(File("/snap/clion/current"))
+//            ideDir.set(File("/snap/clion/current"))
+        }
+    }
+
+    task("resolveDependencies") {
+        doLast {
+            rootProject.allprojects
+                .map { it.configurations }
+                .flatMap { it.filter { c -> c.isCanBeResolved } }
+                .forEach { it.resolve() }
         }
     }
 }
