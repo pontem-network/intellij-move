@@ -49,15 +49,17 @@ fun inferTypeTy(
                         return TyUnknown
                     }
 
-                    val typeArgs = moveType.path.typeArguments.map { inferTypeTy(it.type, inferenceCtx) }
                     val structTy =
                         instantiateItemTy(namedItem, inferenceCtx) as? TyStruct ?: return TyUnknown
 
+                    val typeArgs = moveType.path.typeArguments.map { inferTypeTy(it.type, inferenceCtx) }
                     val ctx = InferenceContext(inferenceCtx.msl)
-                    for ((tyVar, tyArg) in structTy.typeVars.zip(typeArgs)) {
-                        ctx.addConstraint(tyVar, tyArg)
+                    if (typeArgs.isNotEmpty()) {
+                        for ((tyVar, tyArg) in structTy.typeVars.zip(typeArgs)) {
+                            ctx.addConstraint(tyVar, tyArg)
+                        }
+                        ctx.processConstraints()
                     }
-                    ctx.processConstraints()
                     ctx.resolveTy(structTy)
                 }
                 else -> TyUnknown
