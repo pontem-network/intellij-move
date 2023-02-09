@@ -111,11 +111,11 @@ fun instantiateItemTy(item: MvNameIdentifierOwner, inferenceCtx: InferenceContex
             val fieldTys = mutableMapOf<String, Ty>()
             for (field in item.fields) {
                 val fieldName = field.name ?: return TyUnknown
-                val fieldTy = item
+                val rawFieldTy = item
                     .fieldsMap[fieldName]
-                    ?.declarationTypeTy(inferenceCtx)
-                    ?.foldTyTypeParameterWith { findTypeVar(it.origin) }
-                    ?: TyUnknown
+                    ?.typeAnnotation?.type
+                    ?.let { inferTypeTy(it, inferenceCtx) }
+                val fieldTy = rawFieldTy?.foldTyTypeParameterWith { findTypeVar(it.origin) } ?: TyUnknown
                 fieldTys[fieldName] = fieldTy
             }
 

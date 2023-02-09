@@ -377,9 +377,8 @@ module 0x1::main {
     }
     
     fun main() acquires OrderBooks {
-        let order_books_map_ref_mut = 
-            &mut borrow_global_mut<OrderBooks>(@0x1).map;
-        order_books_map_ref_mut;
+        let order_books_map = &mut borrow_global_mut<OrderBooks>(@0x1).map;
+        order_books_map;
         //^ &mut 0x1::main::Tablist<u64, 0x1::main::OrderBook>
     }
 }        

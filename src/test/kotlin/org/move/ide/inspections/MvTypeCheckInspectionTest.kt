@@ -286,7 +286,7 @@ module 0x1::M {
         struct Option<Element> has copy, drop, store {
             element: Element
         }
-        public fun some<Element>(e: Element): Option<Element> {
+        public fun some<SomeElement>(e: SomeElement): Option<SomeElement> {
             Option { element: e }
         }
         struct Vault<VaultContent: store> has key {
