@@ -39,7 +39,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
+//    testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
 }
 
 allprojects {
@@ -149,7 +149,7 @@ allprojects {
             kotlinOptions {
                 jvmTarget = kotlinJvmTarget
                 languageVersion = "1.8"
-                apiVersion = "1.5"
+                apiVersion = "1.6"
                 freeCompilerArgs = listOf("-Xjvm-default=all")
             }
         }
