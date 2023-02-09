@@ -26,8 +26,8 @@ enum class ItemScope {
     MAIN, TEST;
 }
 
-fun MvElement.isVisibleInScope(itemScope: ItemScope): Boolean {
-    return itemScope == ItemScope.TEST
+fun MvElement.isVisibleInScope(expectedItemScope: ItemScope): Boolean {
+    return expectedItemScope == ItemScope.TEST
             || this.itemScope == ItemScope.MAIN
 }
 
