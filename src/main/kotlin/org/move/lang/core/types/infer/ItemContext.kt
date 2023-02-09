@@ -132,82 +132,19 @@ class ItemContext(val msl: Boolean) {
 //            }
             else -> rawItemTy(namedItem, this)
         }
-//        val existing = this.rawItemTyMap[namedItem]
-//        if (existing != null) {
-//
-//        }
-//        val itemTy =
-//            if (existingItemTy == null) {
-//                val itemTy = rawItemTy(namedItem, this)
-//                this.rawItemTyMap[namedItem] = itemTy
-//                itemTy
-//            } else {
-//                existingItemTy
-//            }
-//        return itemTy
-
-//        is TyStruct -> {
-//            val typeVars = existing.item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
-//            return TyStruct(
-//                existing.item,
-//                typeVars,
-//                fieldTys = existing.fieldTys.mapValues { (_, v) ->
-//                    v.foldTyTypeParameterWith {
-//                        findTypeVarForParam(typeVars, it.origin)
-//                    }
-//                },
-//                typeArgs = existing.item.typeParameters.map { findTypeVarForParam(typeVars, it) }
-//            )
-
-
-//        val ty = rawItemTy(namedItem, this)
-//        this.rawItemTyMap[namedItem] = ty
-//        if (existing != null) {
-//            when (existing) {
-//                is TyStruct -> {
-//                    val typeVars = existing.item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
-//                    return TyStruct(
-//                        existing.item,
-//                        typeVars,
-//                        fieldTys = existing.fieldTys.mapValues { (_, v) ->
-//                            v.foldTyTypeParameterWith {
-//                                findTypeVarForParam(typeVars, it.origin)
-//                            }
-//                        },
-//                        typeArgs = existing.item.typeParameters.map { findTypeVarForParam(typeVars, it) }
-//                    )
-////                    return existing
-////                        .foldTyInferWith { if (it is TyInfer.TyVar) TyInfer.TyVar(it.origin) else it }
-////                        .foldTyTypeParameterWith { findTypeVarForParam(typeVars, it.origin) }
-//                }
-////                is TyFunction -> {
-//////                    val typeVars = existing.item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
-//////                    val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
-////
-////                    return existing
-////                        .foldTyInferWith { if (it is TyInfer.TyVar) TyInfer.TyVar(it.origin) else it }
-//////                        .foldTyTypeParameterWith { findTypeVarForParam(typeVars, it.origin) }
-////                }
-////                else -> existing
-//            }
-//        }
-//
-//        return ty
     }
 }
 
 private fun getItemContext(owner: ItemContextOwner, msl: Boolean): ItemContext {
     val itemContext = ItemContext(msl)
-//    when (owner) {
-//        is MvModule -> {
-//            val moduleItems = owner.structs().asSequence() +
-//                    owner.allNonTestFunctions().asSequence() +
-//                    owner.specFunctions().asSequence()
-//            for (item in moduleItems) {
-//                itemContext.rawItemTyMap[item] = rawItemTy(item, itemContext)
-//            }
-//        }
-//    }
+    when (owner) {
+        is MvModule -> {
+            val moduleItems = owner.structs().asSequence()
+            for (item in moduleItems) {
+                itemContext.rawItemTyMap[item] = rawItemTy(item, itemContext)
+            }
+        }
+    }
     return itemContext
 }
 
@@ -220,6 +157,20 @@ private fun findTypeVarForParam(typeVars: List<TyInfer.TyVar>, param: MvTypePara
     return typeVar
 }
 
+//sealed class RawTy {
+//    data class Struct(
+//        val item: MvStruct,
+//        val fieldTys: Map<String, Ty>,
+//    ): RawTy()
+//
+//    data class Function(
+//        val item: MvFunctionLike,
+//        val paramTys: List<Ty>,
+//        val returnTy: Ty,
+//        val acqTys: List<Ty>,
+//    )
+//}
+
 private fun rawItemTy(item: MvNameIdentifierOwner, itemContext: ItemContext): Ty {
     return when (item) {
         is MvStruct -> {
@@ -228,10 +179,7 @@ private fun rawItemTy(item: MvNameIdentifierOwner, itemContext: ItemContext): Ty
             val fieldTys = mutableMapOf<String, Ty>()
             for (field in item.fields) {
                 val fieldName = field.name ?: return TyUnknown
-                val fieldTy = item
-                    .fieldsMap[fieldName]
-//                    ?.declarationTypeTy(inferenceCtx)
-                    ?.typeAnnotation
+                val fieldTy = field.typeAnnotation
                     ?.type
                     ?.let { inferItemTypeTy(it, itemContext) }
                     ?.foldTyTypeParameterWith { findTypeVarForParam(typeVars, it.origin) }
@@ -239,7 +187,8 @@ private fun rawItemTy(item: MvNameIdentifierOwner, itemContext: ItemContext): Ty
                 fieldTys[fieldName] = fieldTy
             }
 
-            val typeArgs = item.typeParameters.map { findTypeVarForParam(typeVars, it) }
+            val typeArgs = typeVars.toList()
+//            val typeArgs = item.typeParameters.map { findTypeVarForParam(typeVars, it) }
             TyStruct(item, typeVars, fieldTys, typeArgs)
         }
 
@@ -264,14 +213,15 @@ private fun rawItemTy(item: MvNameIdentifierOwner, itemContext: ItemContext): Ty
             val acqTys = item.acquiresPathTypes.map {
                 val acqItem =
                     it.path.reference?.resolve() as? MvNameIdentifierOwner ?: return@map TyUnknown
-                rawItemTy(acqItem, itemContext)
+                itemContext.getRawItemTy(acqItem)
                     .foldTyTypeParameterWith { tp -> findTypeVarForParam(typeVars, tp.origin) }
             }
-            val typeArgs = item.typeParameters.map { findTypeVarForParam(typeVars, it) }
+            val typeArgs = typeVars.toList()
+//            val typeArgs = item.typeParameters.map { findTypeVarForParam(typeVars, it) }
             TyFunction(item, typeVars, paramTypes, retTy, acqTys, typeArgs)
         }
 
-        is MvTypeParameter -> item.ty()
+        is MvTypeParameter -> TyTypeParameter(item)
         else -> TyUnknown
     }
 }

@@ -19,7 +19,7 @@ val MvTypeParameter.abilities: List<MvAbility>
         return typeParamBound?.abilityList.orEmpty()
     }
 
-fun MvTypeParameter.ty(): TyTypeParameter = TyTypeParameter(this)
+//fun MvTypeParameter.ty(): TyTypeParameter = TyTypeParameter(this)
 
 abstract class MvTypeParameterMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                                      MvTypeParameter

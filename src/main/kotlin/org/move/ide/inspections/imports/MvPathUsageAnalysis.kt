@@ -64,37 +64,6 @@ val MvImportsOwner.pathUsages: PathUsages
         return localPathUsages
     }
 
-data class ImportInfo(
-    val mainImports: Map<String, MvElement>,
-    val testImports: Map<String, MvElement>
-) {
-    fun getImports(itemScope: ItemScope): Map<String, MvElement> {
-        return when (itemScope) {
-            ItemScope.MAIN -> mainImports
-            ItemScope.TEST -> testImports
-        }
-    }
-}
-
-val MvImportsOwner.importInfo: ImportInfo
-    get() {
-        return getProjectPsiDependentCache(this) { importsOwner ->
-            val mainImports = mutableMapOf<String, MvElement>()
-            val testImports = mutableMapOf<String, MvElement>()
-            for (useStmt in importsOwner.useStmtList) {
-                val scopeImports = if (useStmt.isTestOnly) testImports else mainImports
-                for (useItem in useStmt.childUseItems) {
-                    val name = useItem.name ?: continue
-                    scopeImports[name] = useItem
-                }
-                val moduleSpeck = useStmt.moduleUseSpeck ?: continue
-                val name = moduleSpeck.name ?: continue
-                scopeImports[name] = moduleSpeck
-            }
-            ImportInfo(mainImports, testImports)
-        }
-    }
-
 private fun MvImportsOwner.localPathUsages(): PathUsages {
     return getProjectPsiDependentCache(this) { importsOwner ->
 
@@ -105,10 +74,12 @@ private fun MvImportsOwner.localPathUsages(): PathUsages {
 
         for (child in importsOwner.children) {
             PsiTreeUtil.processElements(child, MvPath::class.java) { path ->
-                val nameUsages =
-                    if (path.itemScope == ItemScope.TEST) testNameUsages else mainNameUsages
-                val typeUsages =
-                    if (path.itemScope == ItemScope.TEST) testTypeUsages else mainTypeUsages
+                val (nameUsages, typeUsages) =
+                    if (path.itemScope == ItemScope.TEST) {
+                        Pair(testNameUsages, testTypeUsages)
+                    } else {
+                        Pair(mainNameUsages, mainTypeUsages)
+                    }
                 when {
                     path.moduleRef != null -> putUsage(path, nameUsages)
                     path.parent is MvPathType -> putUsage(path, typeUsages)

@@ -4,9 +4,10 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementDecorator
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.inferredTy
+import org.move.lang.core.psi.ext.module
 import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.instantiateItemTy
 import org.move.lang.core.types.infer.isCompatible
+import org.move.lang.core.types.infer.itemContext
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -75,7 +76,11 @@ private fun MvNamedElement.asTy(ctx: InferenceContext): Ty =
     when (this) {
 //        is RsFieldDecl -> typeReference?.type
         is MvFunction -> this.returnTypeTy(ctx)
-        is MvStruct -> instantiateItemTy(this, ctx)
+        is MvStruct -> {
+            val itemContext = this.module.itemContext(false)
+            itemContext.getRawItemTy(this)
+//            instantiateItemTy(this, ctx)
+        }
         is MvBindingPat -> this.inferredTy(ctx)
         else -> TyUnknown
     }
