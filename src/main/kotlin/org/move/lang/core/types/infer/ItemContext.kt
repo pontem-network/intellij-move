@@ -63,6 +63,73 @@ class ItemContext(val msl: Boolean) {
                     typeArgs = structTy.item.typeParameters.map { findTypeVarForParam(typeVars, it) }
                 )
             }
+//            is MvFunctionLike -> {
+//                val existing = this.rawItemTyMap[namedItem]
+//                val itemTy = if (existing == null) {
+//                    val itemTy = rawItemTy(namedItem, this)
+//                    this.rawItemTyMap[namedItem] = itemTy
+//                    itemTy
+//                } else {
+//                    existing
+//                }
+//                val functionTy = itemTy as? TyFunction ?: return TyUnknown
+//                val typeVars = functionTy.item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
+//                return TyFunction(
+//                    functionTy.item,
+//                    typeVars,
+//                    paramTypes = functionTy.paramTypes.map {
+//                        it.foldTyInferWith { tyVar ->
+//                            if (tyVar is TyInfer.TyVar) findTypeVarForParam(
+//                                typeVars,
+//                                tyVar.origin?.origin!!
+//                            ) else it
+//                        }
+//                    },
+////                    retType = functionTy.retType.foldWith(object : TypeFolder() {
+////                        override fun fold(ty: Ty): Ty {
+////                            return if (ty is TyInfer.TyVar) findTypeVarForParam(typeVars, ty.origin?.origin!!)
+////                            else ty.innerFoldWith(this)
+////                        }
+////                    }),
+//                    retType = functionTy.retType.foldTyInferWith {
+//                        if (it is TyInfer.TyVar) findTypeVarForParam(typeVars, it.origin?.origin!!) else it
+//                    },
+////                    retType = functionTy.retType.foldTyInferWith {
+////                        if (it is TyInfer.TyVar) findTypeVarForParam(typeVars, it.origin?.origin!!) else it
+////                    },
+//                    acquiresTypes = functionTy.acquiresTypes.map {
+//                        it.foldTyInferWith { tyVar ->
+//                            if (tyVar is TyInfer.TyVar)
+//                                findTypeVarForParam(typeVars, tyVar.origin?.origin!!)
+//                            else it
+//                        }
+//                    },
+//                    typeArgs = functionTy.item.typeParameters.map { findTypeVarForParam(typeVars, it) }
+//                )
+//            }
+////                return functionTy.innerFoldWith(object : TypeFolder() {
+////                    override fun fold(ty: Ty): Ty {
+////                        return when (ty) {
+////                            is TyInfer.TyVar -> findTypeVarForParam(typeVars, ty.origin?.origin!!)
+////                            is TyTypeParameter -> findTypeVarForParam(typeVars, ty.origin)
+////                            else -> ty
+////                        }
+////                    }
+////                })
+////                functionTy.innerFoldWith {
+////                }
+////                TyFunction(
+////                    functionTy.item,
+////                    typeVars,
+////                    paramTypes = functionTy.paramTypes,
+////                    paramTypes = structTy.fieldTys.mapValues { (_, v) ->
+////                        v.foldTyInferWith {
+////                            if (it is TyInfer.TyVar) findTypeVarForParam(typeVars, it.origin?.origin!!) else it
+////                        }
+////                    },
+////                    typeArgs = structTy.item.typeParameters.map { findTypeVarForParam(typeVars, it) }
+////                )
+//            }
             else -> rawItemTy(namedItem, this)
         }
 //        val existing = this.rawItemTyMap[namedItem]
@@ -147,7 +214,8 @@ private fun getItemContext(owner: ItemContextOwner, msl: Boolean): ItemContext {
 private fun findTypeVarForParam(typeVars: List<TyInfer.TyVar>, param: MvTypeParameter): Ty {
     val typeVar = typeVars.find { it.origin?.origin == param }
     if (typeVar == null) {
-        error("No typeVar for parameter \"${param.text}\" in $typeVars")
+        val owner = param.parent.parent as? MvStruct
+        error("no typeVar for parameter \"${param.text}\" in $typeVars (of item ${owner?.fqName})")
     }
     return typeVar
 }

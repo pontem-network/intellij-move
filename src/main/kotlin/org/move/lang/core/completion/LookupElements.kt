@@ -11,10 +11,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.containsTyOfClass
-import org.move.lang.core.types.infer.instantiateItemTy
-import org.move.lang.core.types.infer.ownerInferenceCtx
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyInfer

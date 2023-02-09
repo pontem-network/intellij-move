@@ -110,6 +110,9 @@ private fun inferCallExprTy(
     val path = callExpr.path
     val funcItem = path.reference?.resolve() as? MvFunctionLike ?: return TyUnknown
 
+//    val itemContext = funcItem.module?.itemContext(parentCtx.msl)
+//    var funcTy = (itemContext?.getRawItemTy(funcItem) ?: instantiateItemTy(funcItem, parentCtx))
+//            as? TyFunction ?: return TyUnknown
     var funcTy = instantiateItemTy(funcItem, parentCtx) as? TyFunction ?: return TyUnknown
     val inferenceCtx = InferenceContext(parentCtx.msl)
     // find all types passed as explicit type parameters, create constraints with those
@@ -179,6 +182,7 @@ fun inferStructLitExprTy(
 ): Ty {
     val path = litExpr.path
     val structItem = path.maybeStruct ?: return TyUnknown
+
     val structTy = instantiateItemTy(structItem, parentCtx) as? TyStruct ?: return TyUnknown
 
     val inferenceCtx = InferenceContext(parentCtx.msl)
@@ -223,8 +227,8 @@ fun inferStructLitExprTy(
 
 fun inferStructPatTy(structPat: MvStructPat, parentCtx: InferenceContext, expectedTy: Ty?): Ty {
     val path = structPat.path
-    val struct = structPat.struct ?: return TyUnknown
-    val structTy = instantiateItemTy(struct, parentCtx) as TyStruct
+    val structItem = structPat.struct ?: return TyUnknown
+    val structTy = instantiateItemTy(structItem, parentCtx) as TyStruct
 
     val inferenceCtx = InferenceContext(parentCtx.msl)
     // find all types passed as explicit type parameters, create constraints with those

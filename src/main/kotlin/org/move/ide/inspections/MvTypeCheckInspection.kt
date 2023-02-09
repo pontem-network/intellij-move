@@ -6,10 +6,7 @@ import com.intellij.codeInspection.util.InspectionMessage
 import com.intellij.psi.PsiElement
 import org.move.ide.presentation.name
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.declarationTypeTy
-import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.struct
-import org.move.lang.core.psi.ext.tyAbilities
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.TyStruct
 
@@ -39,7 +36,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
             override fun visitStruct(s: MvStruct) {
                 val ctx = InferenceContext(false)
-                instantiateItemTy(s, ctx)
+                 instantiateItemTy(s, ctx)
 
                 ctx.typeErrors
                     .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MODULE) }

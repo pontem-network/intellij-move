@@ -50,10 +50,10 @@ fun inferTypeTy(
                         return TyUnknown
                     }
 
-//                    val itemContext = namedItem.module.itemContext(inferenceCtx.msl)
+                    val itemContext = namedItem.module.itemContext(inferenceCtx.msl)
                     val structTy =
-//                        itemContext.getRawItemTy(namedItem) as? TyStruct ?: return TyUnknown
-                        instantiateItemTy(namedItem, inferenceCtx) as? TyStruct ?: return TyUnknown
+                        itemContext.getRawItemTy(namedItem) as? TyStruct ?: return TyUnknown
+//                        instantiateItemTy(namedItem, inferenceCtx) as? TyStruct ?: return TyUnknown
 
                     val typeArgs = moveType.path.typeArguments.map { inferTypeTy(it.type, inferenceCtx) }
                     val ctx = InferenceContext(inferenceCtx.msl)
