@@ -4,6 +4,7 @@ import com.intellij.psi.util.parentOfType
 import org.move.ide.annotator.INTEGER_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_INTEGER_TYPE_IDENTIFIERS
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.module
 import org.move.lang.core.psi.ext.mutable
 import org.move.lang.core.psi.ext.typeArguments
 import org.move.lang.core.types.ty.*
@@ -49,7 +50,9 @@ fun inferTypeTy(
                         return TyUnknown
                     }
 
+//                    val itemContext = namedItem.module.itemContext(inferenceCtx.msl)
                     val structTy =
+//                        itemContext.getRawItemTy(namedItem) as? TyStruct ?: return TyUnknown
                         instantiateItemTy(namedItem, inferenceCtx) as? TyStruct ?: return TyUnknown
 
                     val typeArgs = moveType.path.typeArguments.map { inferTypeTy(it.type, inferenceCtx) }
