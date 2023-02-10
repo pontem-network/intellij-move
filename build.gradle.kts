@@ -1,5 +1,6 @@
 import org.jetbrains.grammarkit.tasks.GenerateLexerTask
 import org.jetbrains.grammarkit.tasks.GenerateParserTask
+import org.jetbrains.intellij.tasks.RunIdeTask
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
@@ -28,7 +29,7 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "1.8.10"
-    id("org.jetbrains.intellij") version "1.9.0"
+    id("org.jetbrains.intellij") version "1.12.0"
     id("org.jetbrains.grammarkit") version "2021.2.2"
     id("net.saliman.properties") version "1.5.2"
 }
@@ -162,7 +163,7 @@ allprojects {
             jbrVersion.set(prop("jbrVersion"))
         }
 
-        withType<org.jetbrains.intellij.tasks.RunIdeTask> {
+        named("runIde", RunIdeTask::class.java) {
             jbrVersion.set(prop("jbrVersion"))
             ideDir.set(File("/snap/clion/current"))
         }
