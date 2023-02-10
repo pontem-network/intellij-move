@@ -38,7 +38,6 @@ object PrimitiveTypesCompletionProvider : MvCompletionProvider() {
 
             val updatedLookup = when (lookupString) {
                 "vector" -> lookup.withInsertHandler(AngleBracketsInsertHandler())
-                "u16", "u32", "u256" -> lookup.withTypeText("sui only")
                 else -> lookup
             }
             result.addElement(updatedLookup.withPriority(PRIMITIVE_TYPE_PRIORITY))

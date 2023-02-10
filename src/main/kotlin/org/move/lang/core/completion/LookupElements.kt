@@ -11,10 +11,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.containsTyOfClass
-import org.move.lang.core.types.infer.instantiateItemTy
-import org.move.lang.core.types.infer.ownerInferenceCtx
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyInfer
@@ -104,12 +101,13 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
         is MvStructField -> this.createLookupElementWithIcon()
             .withTypeText(this.typeAnnotation?.type?.text)
 
-        is MvBindingPat -> this.createLookupElementWithIcon()
-            .withTypeText(
-                this.inferredTy(
-                    this.ownerInferenceCtx(this.isMsl()) ?: InferenceContext(this.isMsl())
-                ).text(true)
-            )
+        is MvBindingPat -> {
+            val msl = this.isMsl()
+            val inferenceCtx = this.ownerInferenceCtx(msl) ?: InferenceContext(msl)
+            val itemContext = this.itemContextOwner?.itemContext(msl) ?: ItemContext(msl)
+            this.createLookupElementWithIcon()
+                .withTypeText(this.inferBindingTy(inferenceCtx, itemContext).text(true))
+        }
 
         is MvSchema -> this.createLookupElementWithIcon()
             .withTypeText(this.containingFile?.name)
@@ -210,9 +208,11 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
 
                     if (completionContext == null) return@run false
                     val msl = element.isMsl()
-                    val inferenceCtx = InferenceContext(msl)
-                    val funcTy = instantiateItemTy(element, inferenceCtx) as? TyFunction ?: return@run false
 
+                    val itemContext = element.module?.itemContext(msl) ?: ItemContext(msl)
+                    val funcTy = itemContext.getItemTy(element) as? TyFunction ?: return@run false
+
+                    val inferenceCtx = InferenceContext(msl)
                     val expectedTy = completionContext.expectedTy
                     if (expectedTy != null) {
                         inferenceCtx.addConstraint(funcTy.retType, expectedTy)

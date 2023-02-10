@@ -54,7 +54,7 @@ class CreateMoveFileActionTest : MvProjectTestBase() {
         moduleName: String,
         @Language("Move") expectedText: String
     ) {
-        val dir = this.testProject?.rootDirectory
+        val dir = this._testProject?.rootDirectory
             ?.findChild("sources")
             ?.toPsiDirectory(this.project)!!
 

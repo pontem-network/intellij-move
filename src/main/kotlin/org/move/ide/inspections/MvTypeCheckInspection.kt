@@ -6,10 +6,7 @@ import com.intellij.codeInspection.util.InspectionMessage
 import com.intellij.psi.PsiElement
 import org.move.ide.presentation.name
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.declarationTypeTy
-import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.struct
-import org.move.lang.core.psi.ext.tyAbilities
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.TyStruct
 
@@ -38,10 +35,10 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitStruct(s: MvStruct) {
-                val ctx = InferenceContext(false)
-                instantiateItemTy(s, ctx)
+                val itemContext = s.module.itemContext(false)
+                itemContext.getItemTy(s)
 
-                ctx.typeErrors
+                itemContext.typeErrors
                     .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MODULE) }
                     .forEach {
                         holder.registerTypeError(it)
@@ -52,7 +49,9 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 val structAbilities = field.struct.tyAbilities
                 if (structAbilities.isEmpty()) return
 
-                val fieldTy = field.declarationTypeTy(InferenceContext(false)) as? TyStruct ?: return
+                val itemContext = field.struct.module.itemContext(false)
+                val fieldTy = field.fieldAnnotationTy(itemContext) as? TyStruct ?: return
+
                 for (ability in structAbilities) {
                     val requiredAbility = ability.requires()
                     if (requiredAbility !in fieldTy.abilities()) {

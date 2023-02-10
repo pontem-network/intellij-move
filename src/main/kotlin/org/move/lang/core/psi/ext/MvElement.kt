@@ -30,16 +30,14 @@ fun PsiFileSystemItem.findMoveProject(): MoveProject? {
 val MvElement.itemScope: ItemScope
     get() {
         return getProjectPsiDependentCache(this) {
-            run {
-                val testOnly = it.ancestors
-                    .filterIsInstance<MvDocAndAttributeOwner>()
-                    .any { el -> el.isTestOnly }
-                if (testOnly) return@run ItemScope.TEST
-
-                val insideTestFunction = it.ancestorOrSelf<MvFunction>()?.isTest ?: false
-                if (insideTestFunction) return@run ItemScope.TEST
-
-                return@run ItemScope.MAIN
+            for (ancestor in (sequenceOf(it) + it.ancestors)) {
+                when {
+                    ancestor is MvFunction && ancestor.isTest ->
+                        return@getProjectPsiDependentCache ItemScope.TEST
+                    ancestor is MvDocAndAttributeOwner && ancestor.isTestOnly ->
+                        return@getProjectPsiDependentCache ItemScope.TEST
+                }
             }
+            ItemScope.MAIN
         }
     }

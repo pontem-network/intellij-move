@@ -3,8 +3,10 @@ package org.move.utils.tests
 import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileFilter
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
+import com.intellij.psi.impl.PsiManagerEx
 import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
@@ -16,10 +18,10 @@ import org.move.openapiext.toVirtualFile
 import org.move.utils.tests.base.TestCase
 
 abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuilder<*>>() {
-    var testProject: TestProject? = null
+    var _testProject: TestProject? = null
 
     override fun tearDown() {
-        testProject = null
+        _testProject = null
         super.tearDown()
     }
 
@@ -41,7 +43,7 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
     private fun testProject(fileTree: FileTree): TestProject {
         val rootDirectory = myModule.rootManager.contentRoots.first()
         val testProject = fileTree.toTestProject(myFixture.project, rootDirectory)
-        this.testProject = testProject
+        this._testProject = testProject
         myFixture.configureFromFileWithCaret(testProject)
 
         System.setProperty("user.home", testProject.rootDirectory.path)
@@ -57,6 +59,14 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
         this.configureFromExistingVirtualFile(fileWithCaret)
     }
 
+    protected fun checkAstNotLoaded(fileFilter: VirtualFileFilter) {
+        PsiManagerEx.getInstanceEx(project).setAssertOnFileLoadingFilter(fileFilter, testRootDisposable)
+    }
+
+    protected fun checkAstNotLoaded() {
+        PsiManagerEx.getInstanceEx(project).setAssertOnFileLoadingFilter(VirtualFileFilter.ALL, testRootDisposable)
+    }
+
     protected fun findPsiFile(path: String): PsiFile {
         val vFile = findVirtualFile(path)
         return vFile.toPsiFile(this.project) ?: error("$path is not a file")
@@ -68,7 +78,7 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
     }
 
     private fun findVirtualFile(path: String): VirtualFile {
-        val rootDirectory = this.testProject?.rootDirectory ?: error("no root")
+        val rootDirectory = this._testProject?.rootDirectory ?: error("no root")
         val parts = FileUtil.splitPath(path, '/')
         var res = rootDirectory
         for (part in parts) {

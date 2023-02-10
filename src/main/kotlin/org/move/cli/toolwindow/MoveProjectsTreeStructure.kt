@@ -15,7 +15,6 @@ import org.move.lang.core.psi.ext.entryFunctions
 import org.move.lang.core.psi.ext.isTest
 import org.move.lang.core.psi.ext.isTestOnly
 import org.move.lang.core.psi.ext.testFunctions
-import org.move.lang.modules
 import org.move.stdext.iterateMoveFiles
 
 class MoveProjectsTreeStructure(

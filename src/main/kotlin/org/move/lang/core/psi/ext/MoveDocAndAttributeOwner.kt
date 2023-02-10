@@ -24,7 +24,7 @@ interface MvDocAndAttributeOwner : MvElement, NavigatablePsiElement {
 fun MvDocAndAttributeOwner.findSingleItemAttr(name: String): MvAttr? =
     this.attrList.find {
         it.attrItemList.size == 1
-                && it.attrItemList.first().identifier.text == name
+                && it.attrItemList.first().identifier.textMatches(name)
     }
 
 val MvDocAndAttributeOwner.isTestOnly: Boolean

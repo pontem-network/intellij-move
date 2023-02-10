@@ -12,7 +12,6 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.allFunctions
 import org.move.lang.core.psi.ext.modules
 import org.move.lang.core.psi.ext.structs
-import org.move.lang.modules
 import org.move.openapiext.common.isUnitTestMode
 
 class MvStructureViewElement(

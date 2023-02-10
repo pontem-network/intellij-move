@@ -112,7 +112,7 @@ class AptosToolWindow(private val project: Project) {
 
         const val APTOS_TOOLBAR_PLACE: String = "Aptos Toolbar"
 
-        private const val ID: String = "Move"
+//        private const val ID: String = "Aptos"
 
 //        fun initializeToolWindow(project: Project) {
 //            try {

@@ -8,9 +8,12 @@ import com.intellij.ui.dsl.builder.*
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.layout.ValidationInfoBuilder
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.ext.inferredTy
+import org.move.lang.core.psi.ext.inferBindingTy
+import org.move.lang.core.psi.module
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.ItemContext
+import org.move.lang.core.types.infer.itemContext
 import org.move.lang.core.types.ty.TyAddress
 import org.move.lang.core.types.ty.TyBool
 import org.move.lang.core.types.ty.TyInteger
@@ -77,7 +80,7 @@ class TransactionParametersDialog(
     init {
         title = "Transaction Parameters"
         configurationName = "Run ${scriptFunction.fqName}"
-        selectedProfile = null
+        selectedProfile = if (profiles.contains("default")) "default" else profiles[0]
         init()
     }
 
@@ -100,12 +103,13 @@ class TransactionParametersDialog(
         return panel {
             row("Run Configuration name: ") {
                 textField()
-                    .bindText({ "Run ${scriptFunction.fqName}" }, { configurationName })
+                    .bindText({ configurationName }, { configurationName = it })
                     .columns(NAME_COLUMNS)
                     .horizontalAlign(HorizontalAlign.RIGHT)
             }
             val typeParameters = scriptFunction.typeParameters
             val parameters = scriptFunction.parameterBindings().drop(1)
+            val itemContext = scriptFunction.module?.itemContext(false) ?: ItemContext(false)
 
             if (typeParameters.isNotEmpty() || parameters.isNotEmpty()) {
                 separator()
@@ -117,8 +121,8 @@ class TransactionParametersDialog(
                         val paramName = typeParameter.name ?: continue
                         row(paramName) {
                             textField()
-                                .columns(ARGUMENT_COLUMNS)
-                                .horizontalAlign(HorizontalAlign.RIGHT)
+//                                .columns(ARGUMENT_COLUMNS)
+                                .horizontalAlign(HorizontalAlign.FILL)
                                 .bindText(
                                     { typeParams.getOrDefault(paramName, "") },
                                     { typeParams[paramName] = it })
@@ -131,7 +135,7 @@ class TransactionParametersDialog(
                 group("Value Arguments") {
                     for (parameter in parameters) {
                         val paramName = parameter.name ?: continue
-                        val paramTy = parameter.inferredTy(InferenceContext(false))
+                        val paramTy = parameter.inferBindingTy(InferenceContext(false), itemContext)
                         val paramTyName = when (paramTy) {
                             is TyInteger -> paramTy.kind.name
                             is TyAddress -> "address"
@@ -152,8 +156,8 @@ class TransactionParametersDialog(
                                             params[paramName] = "$paramTyName:$it"
                                         }
                                     })
-                                .columns(ARGUMENT_COLUMNS)
-                                .horizontalAlign(HorizontalAlign.RIGHT)
+//                                .columns(ARGUMENT_COLUMNS)
+                                .horizontalAlign(HorizontalAlign.FILL)
                                 .validationOnApply(validateNonEmpty("Required parameter"))
 
                         }
@@ -163,9 +167,9 @@ class TransactionParametersDialog(
             separator()
             if (profiles.isNotEmpty()) {
                 row("Profile:") {
-                    comboBox(profiles.toTypedArray())
+                    comboBox(profiles)
                         .enabled(profiles.size > 1)
-                        .bindItem({ profiles[0] }, { selectedProfile = it })
+                        .bindItem({ selectedProfile ?: profiles[0] }, { selectedProfile = it })
                         .columns(PROFILE_COLUMNS)
                         .horizontalAlign(HorizontalAlign.RIGHT)
                 }

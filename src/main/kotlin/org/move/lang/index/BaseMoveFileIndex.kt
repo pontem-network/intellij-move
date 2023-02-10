@@ -14,7 +14,7 @@ abstract class BaseMoveFileIndex : ScalarIndexExtension<String>() {
     companion object {
         fun requestRebuildIndices() {
             MvModuleSpecIndex.requestRebuild()
-            MvNamedElementIndex.requestRebuild()
+//            MvNamedElementIndex.requestRebuild()
         }
     }
 }

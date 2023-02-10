@@ -10,7 +10,6 @@ import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingMoveFile
 import org.move.lang.isTempFile
-import org.move.lang.moduleSpecs
 import org.move.lang.toMoveFile
 import org.move.openapiext.common.isUnitTestMode
 
@@ -34,10 +33,6 @@ class MvModuleSpecIndex : BaseMoveFileIndex() {
         fun requestRebuild() {
             FileBasedIndex.getInstance().requestRebuild(KEY)
         }
-
-//        fun getAllKeys(project: Project): Collection<String> {
-//            return FileBasedIndex.getInstance().getAllKeys(MvNamedElementIndex.KEY, project)
-//        }
 
         fun moduleSpecFiles(
             project: Project,

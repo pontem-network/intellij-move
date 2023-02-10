@@ -15,9 +15,9 @@ class MvFQModuleReferenceImpl(
 ) : MvReferenceCached<MvFQModuleRef>(element), MvFQModuleReference {
 
     override fun resolveInner(): List<MvNamedElement> {
-        val referenceName = element.referenceName
+        val referenceName = element.referenceName ?: return emptyList()
         var resolved: MvModule? = null
-        processFQModuleRef(element) {
+        processFQModuleRef(element, referenceName) {
             if (it.name == referenceName) {
                 resolved = it.element
                 true

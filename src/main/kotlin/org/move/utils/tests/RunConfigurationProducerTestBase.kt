@@ -45,7 +45,7 @@ abstract class RunConfigurationProducerTestBase(val testDir: String) : MvProject
             configurationContext.configurationsFromContext.orEmpty().map { it.configurationSettings }
         check(configurations.isNotEmpty()) { "No configurations found" }
 
-        val testProject = this.testProject ?: error("testProject not initialized")
+        val testProject = this._testProject ?: error("testProject not initialized")
         val testId = testProject.rootDirectory.name
 
         val root = Element("configurations")

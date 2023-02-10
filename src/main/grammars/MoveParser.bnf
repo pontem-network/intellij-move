@@ -226,8 +226,11 @@ Module ::= Attr* MODULE_KW (AddressRef '::')? IDENTIFIER ModuleBlock
         "org.move.lang.core.psi.MvQualifiedNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.move.lang.core.types.infer.ItemContextOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvModuleMixin"
+    stubClass = "org.move.lang.core.stubs.MvModuleStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
@@ -263,6 +266,9 @@ Const ::= Attr* CONST_KW BindingPat TypeAnnotation Initializer ';'
     implements = [
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
     ]
+    mixin = "org.move.lang.core.psi.ext.MvConstMixin"
+    stubClass = "org.move.lang.core.stubs.MvConstStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
@@ -277,6 +283,8 @@ fake SpecFunction ::= Attr* spec native? fun IDENTIFIER? TypeParameterList?
         "org.move.lang.core.psi.MvFunctionLike"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSpecFunctionMixin"
+    stubClass = "org.move.lang.core.stubs.MvSpecFunctionStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 private SpecFunctionItem ::= SpecFunctionInner
@@ -334,6 +342,8 @@ fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? Abilities
         "org.move.lang.core.psi.MvNameIdentifierOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructMixin"
+    stubClass = "org.move.lang.core.stubs.MvStructStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
 }
 
 private StructInnerFirst ::= STRUCT_KW
@@ -363,6 +373,8 @@ fake Function ::= Attr* native? FunctionVisibilityModifier? entry? inline?
         "org.move.lang.core.psi.MvFunctionLike"
     ]
     mixin = "org.move.lang.core.psi.ext.MvFunctionMixin"
+    stubClass = "org.move.lang.core.stubs.MvFunctionStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 
@@ -591,7 +603,7 @@ fake TypeParameter ::= phantom? IDENTIFIER? TypeParamBound? {
     implements = [
         "org.move.lang.core.psi.MvNameIdentifierOwner"
     ]
-    mixin = "org.move.lang.core.psi.mixins.MvTypeParameterMixin"
+    mixin = "org.move.lang.core.psi.ext.MvTypeParameterMixin"
 }
 
 private TypeParameterImpl ::= PlainTypeParameter | PhantomTypeParameter
@@ -1060,6 +1072,9 @@ ModuleSpec ::= Attr* spec FQModuleRef ModuleSpecBlock
 {
     pin = "spec"
     name = "module spec declaration"
+    mixin = "org.move.lang.core.psi.ext.MvModuleSpecMixin"
+    stubClass = "org.move.lang.core.stubs.MvModuleSpecStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 ModuleSpecBlock ::= '{' ModuleSpecBlock_item_with_recover* '}'
@@ -1153,7 +1168,9 @@ Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl ItemSpecBlock>> {
         "org.move.lang.core.psi.MvQualifiedNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
     ]
-    mixin = "org.move.lang.core.psi.mixins.MvSchemaMixin"
+    mixin = "org.move.lang.core.psi.ext.MvSchemaMixin"
+    stubClass = "org.move.lang.core.stubs.MvSchemaStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
 }
 
 ItemSpecBlockExpr ::= spec <<msl ItemSpecBlock>>

@@ -8,8 +8,10 @@ import org.move.ide.presentation.expectedBindingFormText
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.mixins.ty
+import org.move.lang.core.psi.ext.inferBindingTy
+import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.itemSpecBlock
+import org.move.lang.core.psi.ext.rightBrace
 import org.move.lang.core.types.ty.*
 
 interface MvInferenceContextOwner : MvElement {
@@ -36,13 +38,14 @@ fun MvElement.ownerInferenceCtx(msl: Boolean = this.isMsl()): InferenceContext? 
 
 private fun getOwnerInferenceContext(owner: MvInferenceContextOwner, msl: Boolean): InferenceContext {
     val inferenceCtx = InferenceContext(msl)
+    val itemContext = owner.itemContextOwner?.itemContext(msl) ?: ItemContext(msl)
     for (param in owner.parameterBindings()) {
-        inferenceCtx.bindingTypes[param] = param.inferredTy(inferenceCtx)
+        inferenceCtx.bindingTypes[param] = param.inferBindingTy(inferenceCtx, itemContext)
     }
     when (owner) {
         is MvFunctionLike -> {
             owner.codeBlock?.let {
-                inferCodeBlockTy(it, inferenceCtx, owner.returnTypeTy(inferenceCtx))
+                inferCodeBlockTy(it, inferenceCtx, owner.returnTypeTy(itemContext))
             }
         }
         is MvItemSpec -> {
@@ -92,69 +95,15 @@ fun inferStmt(stmt: MvStmt, blockCtx: InferenceContext) {
         is MvExprStmt -> inferExprTy(stmt.expr, blockCtx)
         is MvSpecExprStmt -> inferExprTy(stmt.expr, blockCtx)
         is MvLetStmt -> {
-            val explicitTy = stmt.typeAnnotation?.type?.let { inferTypeTy(it, blockCtx) }
+            val explicitTy = stmt.typeAnnotation?.type?.let {
+                val itemContext = stmt.itemContextOwner?.itemContext(blockCtx.msl) ?: ItemContext(blockCtx.msl)
+                itemContext.getTypeTy(it)
+            }
             val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, blockCtx, explicitTy) }
             val pat = stmt.pat ?: return
             val patTy = inferPatTy(pat, blockCtx, explicitTy ?: initializerTy)
             collectBindings(pat, patTy, blockCtx)
         }
-    }
-}
-
-fun instantiateItemTy(item: MvNameIdentifierOwner, inferenceCtx: InferenceContext): Ty {
-    return when (item) {
-        is MvStruct -> {
-            val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
-            fun findTypeVar(parameter: MvTypeParameter): Ty {
-                return typeVars.find { it.origin?.origin == parameter }!!
-            }
-
-            val fieldTys = mutableMapOf<String, Ty>()
-            for (field in item.fields) {
-                val fieldName = field.name ?: return TyUnknown
-                val fieldTy = item
-                    .fieldsMap[fieldName]
-                    ?.declarationTypeTy(inferenceCtx)
-                    ?.foldTyTypeParameterWith { findTypeVar(it.origin) }
-                    ?: TyUnknown
-                fieldTys[fieldName] = fieldTy
-            }
-
-            val typeArgs = item.typeParameters.map { findTypeVar(it) }
-            TyStruct(item, typeVars, fieldTys, typeArgs)
-        }
-
-        is MvFunctionLike -> {
-            val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
-            fun findTypeVar(parameter: MvTypeParameter): Ty {
-                return typeVars.find { it.origin?.origin == parameter }!!
-            }
-
-            val paramTypes = mutableListOf<Ty>()
-            for (param in item.parameters) {
-                val paramType = param.typeAnnotation?.type
-                    ?.let { inferTypeTy(it, inferenceCtx) }
-                    ?.foldTyTypeParameterWith { findTypeVar(it.origin) } ?: TyUnknown
-                paramTypes.add(paramType)
-            }
-            val returnMvType = item.returnType?.type
-            val retTy = if (returnMvType == null) {
-                TyUnit
-            } else {
-                inferTypeTy(returnMvType, inferenceCtx).foldTyTypeParameterWith { findTypeVar(it.origin) }
-            }
-            val acqTys = item.acquiresPathTypes.map {
-                val acqItem =
-                    it.path.reference?.resolve() as? MvNameIdentifierOwner ?: return@map TyUnknown
-                instantiateItemTy(acqItem, inferenceCtx)
-                    .foldTyTypeParameterWith { tp -> findTypeVar(tp.origin) }
-            }
-            val typeArgs = item.typeParameters.map { findTypeVar(it) }
-            TyFunction(item, typeVars, paramTypes, retTy, acqTys, typeArgs)
-        }
-
-        is MvTypeParameter -> item.ty()
-        else -> TyUnknown
     }
 }
 
@@ -369,7 +318,6 @@ sealed class TypeError(open val element: PsiElement) {
 class InferenceContext(val msl: Boolean) {
     var exprTypes = concurrentMapOf<MvExpr, Ty>()
     val patTypes = mutableMapOf<MvPat, Ty>()
-    var typeTypes = mutableMapOf<MvType, Ty>()
 
     var callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
     val bindingTypes = concurrentMapOf<MvBindingPat, Ty>()
@@ -395,10 +343,6 @@ class InferenceContext(val msl: Boolean) {
 
     fun cachePatTy(pat: MvPat, ty: Ty) {
         this.patTypes[pat] = ty
-    }
-
-    fun cacheTypeTy(type: MvType, ty: Ty) {
-        this.typeTypes[type] = ty
     }
 
     fun cacheCallExprTy(expr: MvCallExpr, ty: TyFunction) {
@@ -429,7 +373,6 @@ class InferenceContext(val msl: Boolean) {
     fun childContext(): InferenceContext {
         val childContext = InferenceContext(this.msl)
         childContext.exprTypes = this.exprTypes
-        childContext.typeTypes = this.typeTypes
         childContext.callExprTypes = this.callExprTypes
         childContext.typeErrors = this.typeErrors
         return childContext

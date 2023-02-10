@@ -72,6 +72,7 @@ class MvPathReferenceImpl(
         val moduleRef = element.moduleRef
         // first, see whether it's a fully qualified path (ADDRESS::MODULE::NAME) and try to resolve those
         if (moduleRef is MvFQModuleRef) {
+            // TODO: can be replaced with index call
             val module = moduleRef.reference?.resolve() as? MvModule
                 ?: return emptyList()
             return resolveModuleItem(module, refName, itemVis)
@@ -86,6 +87,7 @@ class MvPathReferenceImpl(
                 )
             }
             val fqModuleRef = resolveIntoFQModuleRef(moduleRef) ?: return emptyList()
+            // TODO: can be replaced with index call
             val module = fqModuleRef.reference?.resolve() as? MvModule
                 ?: return emptyList()
             return resolveModuleItem(module, refName, itemVis)
@@ -102,6 +104,7 @@ class MvPathReferenceImpl(
                 is MvUseItem -> {
                     // find corresponding FQModuleRef from imports and resolve
                     val modRef = item.moduleImport().fqModuleRef
+                    // TODO: index call
                     val module = modRef.reference?.resolve() as? MvModule
                         ?: return emptyList()
                     return resolveModuleItem(module, refName, itemVis)

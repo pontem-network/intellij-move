@@ -11,8 +11,6 @@ import org.move.lang.MoveFile
 import org.move.lang.MvElementTypes.L_BRACE
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.moduleSpecs
-import org.move.lang.modules
 
 class ImportOptimizer : ImportOptimizer {
     override fun supports(file: PsiFile) = file is MoveFile

@@ -5,7 +5,8 @@ import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.layout.panel
+import com.intellij.ui.dsl.builder.bindSelected
+import com.intellij.ui.dsl.builder.panel
 
 class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move Language"),
                                                          SearchableConfigurable {
@@ -19,9 +20,15 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
     override fun createPanel(): DialogPanel {
         return panel {
             moveProjectSettings.attachTo(this)
-            titledRow("") {
-                row { checkBox("Auto-fold specs in opened files", state::foldSpecs) }
-                row { checkBox("Disable telemetry for new Run Configurations", state::disableTelemetry) }
+            group {
+                row {
+                    checkBox("Auto-fold specs in opened files")
+                        .bindSelected(state::foldSpecs)
+                }
+                row {
+                    checkBox("Disable telemetry for new Run Configurations")
+                        .bindSelected(state::disableTelemetry)
+                }
             }
         }
     }

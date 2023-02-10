@@ -412,25 +412,30 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
     fun `test resolve test only item inside test of nested package sources`() = checkByFileTree {
         namedMoveToml("RootPackage")
         tests {
-            move("test_helpers.move", """
+            move(
+                "test_helpers.move", """
             #[test_only]    
             module 0x1::test_helpers {
                 public fun helper() {}
                           //X
                           
             }    
-            """)
+            """
+            )
         }
         dir("NestedPackage") {
-            moveToml("""
+            moveToml(
+                """
             [package]
             name = "NestedPackage"
             
             [dependencies]
             RootPackage = { local = ".." }
-            """)
+            """
+            )
             sources {
-                main("""
+                main(
+                    """
                 #[test_only]    
                 module 0x1::main {
                     use 0x1::test_helpers;
@@ -441,7 +446,8 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
                                      //^
                     }
                 }                    
-                """)
+                """
+                )
             }
         }
     }
@@ -449,25 +455,30 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
     fun `test resolve test only item inside test of nested package test`() = checkByFileTree {
         namedMoveToml("RootPackage")
         tests {
-            move("test_helpers.move", """
+            move(
+                "test_helpers.move", """
             #[test_only]    
             module 0x1::test_helpers {
                 public fun helper() {}
                           //X
                           
             }    
-            """)
+            """
+            )
         }
         dir("NestedPackage") {
-            moveToml("""
+            moveToml(
+                """
             [package]
             name = "NestedPackage"
             
             [dependencies]
             RootPackage = { local = ".." }
-            """)
+            """
+            )
             tests {
-                main("""
+                main(
+                    """
                 #[test_only]    
                 module 0x1::main {
                     use 0x1::test_helpers;
@@ -478,7 +489,8 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
                                      //^
                     }
                 }                    
-                """)
+                """
+                )
             }
         }
     }
@@ -509,4 +521,23 @@ class ResolveItemsProjectTest : ResolveProjectTestCase() {
 //        }
 //    }
 
+    fun `test cannot resolve module ref that belongs to another project`() = checkByFileTree {
+        dir("another") {
+            namedMoveToml("Another")
+            sources {
+                move("string.move", """
+module 0x1::string {}                    
+                """)
+            }
+        }
+        namedMoveToml("Main")
+        sources {
+            main("""
+module 0x1::main {
+    use 0x1::string;
+            //^ unresolved
+}                
+            """)
+        }
+    }
 }

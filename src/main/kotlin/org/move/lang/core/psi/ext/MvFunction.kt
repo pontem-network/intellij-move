@@ -4,6 +4,7 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.editor.colors.TextAttributesKey
+import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.util.PlatformIcons
 import org.move.ide.MoveIcons
@@ -12,10 +13,10 @@ import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.MvAttr
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvItemSpec
-import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.module
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.inferTypeTy
+import org.move.lang.core.stubs.MvFunctionStub
+import org.move.lang.core.stubs.MvStubbedNamedElementImpl
+import org.move.lang.core.types.infer.ItemContext
 import org.move.lang.core.types.ty.Ty
 import javax.swing.Icon
 
@@ -47,12 +48,10 @@ val MvFunction.testAttr: MvAttr?
 
 val MvFunction.isTest: Boolean get() = testAttr != null
 
-val MvFunction.acquiresTys: List<Ty>
-    get() =
-        this.acquiresType?.pathTypeList.orEmpty().map {
-            // TODO: should be TypeContext from module (see StructField type checking)
-            inferTypeTy(it, InferenceContext(true))
-        }
+fun MvFunction.getAcquiresTys(itemContext: ItemContext): List<Ty> =
+    this.acquiresType?.pathTypeList.orEmpty().map {
+        itemContext.getTypeTy(it)
+    }
 
 val MvFunction.signatureText: String
     get() {
@@ -85,8 +84,12 @@ fun MvFunction.outerItemSpecs(): List<MvItemSpec> {
         .filter { it.itemSpecRef?.referenceName == functionName }
 }
 
-abstract class MvFunctionMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
-                                                MvFunction {
+abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
+                                 MvFunction {
+    constructor(node: ASTNode) : super(node)
+
+    constructor(stub: MvFunctionStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+
     var builtIn = false
 
     override val fqName: String

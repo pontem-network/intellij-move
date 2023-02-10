@@ -8,10 +8,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.collectBindings
-import org.move.lang.core.types.infer.inferExprTy
-import org.move.lang.core.types.infer.inferTypeTy
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.Icon
@@ -24,22 +21,22 @@ val MvBindingPat.owner: PsiElement?
                 || it is MvSchemaFieldStmt
     }
 
-fun MvBindingPat.inferredTy(parentCtx: InferenceContext): Ty {
+fun MvBindingPat.inferBindingTy(parentCtx: InferenceContext, itemContext: ItemContext): Ty {
     val existingTy = parentCtx.bindingTypes[this]
     if (existingTy != null) {
         return existingTy
     }
     val owner = this.owner
     return when (owner) {
-        is MvFunctionParameter -> owner.declarationTypeTy(parentCtx)
-        is MvConst -> owner.declarationTy(parentCtx)
+        is MvFunctionParameter -> owner.paramAnnotationTy(itemContext)
+        is MvConst -> owner.constAnnotationTy(itemContext)
         is MvLetStmt -> {
             if (parentCtx.bindingTypes.containsKey(this)) return parentCtx.bindingTypes[this]!!
 
             val pat = owner.pat ?: return TyUnknown
             val explicitType = owner.typeAnnotation?.type
             if (explicitType != null) {
-                val explicitTy = inferTypeTy(explicitType, parentCtx)
+                val explicitTy = itemContext.getTypeTy(explicitType)
                 collectBindings(pat, explicitTy, parentCtx)
                 return parentCtx.bindingTypes[this] ?: TyUnknown
             }
@@ -47,7 +44,7 @@ fun MvBindingPat.inferredTy(parentCtx: InferenceContext): Ty {
             collectBindings(pat, inferredTy, parentCtx)
             return parentCtx.bindingTypes[this] ?: TyUnknown
         }
-        is MvSchemaFieldStmt -> owner.declarationTypeTy(parentCtx)
+        is MvSchemaFieldStmt -> owner.annotationTy(itemContext)
         else -> TyUnknown
     }
 }

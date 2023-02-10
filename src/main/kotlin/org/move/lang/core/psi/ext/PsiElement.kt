@@ -8,7 +8,9 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
+import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
+import org.move.lang.core.stubs.impl.MvFileStub
 
 fun PsiElement.hasChild(tokenType: IElementType): Boolean = childrenByType(tokenType).toList().isNotEmpty()
 
@@ -69,8 +71,8 @@ inline fun <reified T : PsiElement> PsiElement.stubAncestorStrict(): T? =
  */
 val PsiElement.elementType: IElementType
     // XXX: be careful not to switch to AST
-//    get() = if (this is RsFile) RsFileStub.Type else PsiUtilCore.getElementType(this)
-    get() = PsiUtilCore.getElementType(this)
+    get() = if (this is MoveFile) MvFileStub.Type else PsiUtilCore.getElementType(this)
+//    get() = PsiUtilCore.getElementType(this)
 
 /**
  * Checks whether this node contains [descendant] one

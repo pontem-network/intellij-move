@@ -9,9 +9,8 @@ import com.intellij.psi.util.descendantsOfType
 import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.acquiresTys
-import org.move.lang.core.types.infer.inferTypeTy
-import org.move.lang.core.types.infer.inferenceCtx
+import org.move.lang.core.psi.ext.inferAcquiresTys
+import org.move.lang.core.types.infer.itemContext
 
 
 class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
@@ -45,12 +44,13 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val function = o.parent as? MvFunction ?: return
                 val module = function.module ?: return
                 val codeBlock = function.codeBlock ?: return
-                val inferenceCtx = function.inferenceCtx(false)
+
+                val itemContext = module.itemContext(false)
 
                 val acquiredTys = mutableSetOf<String>()
                 for (callExpr in codeBlock.descendantsOfType<MvCallExpr>()) {
                     val callAcquiresTys =
-                        callExpr.acquiresTys() ?: return
+                        callExpr.inferAcquiresTys() ?: return
                     val acqTyNames = callAcquiresTys.map { it.fullnameNoArgs() }
                     acquiredTys.addAll(acqTyNames)
                 }
@@ -60,7 +60,7 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val pathTypes = o.pathTypeList
                 for ((i, pathType) in pathTypes.withIndex()) {
                     // check that this acquires is allowed in the context
-                    val ty = inferTypeTy(pathType, inferenceCtx)
+                    val ty = itemContext.getTypeTy(pathType)
                     if (!ty.canBeAcquiredInModule(module)) {
                         unusedAcquiresIndices.add(i)
                         continue

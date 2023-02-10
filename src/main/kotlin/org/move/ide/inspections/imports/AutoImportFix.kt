@@ -19,6 +19,7 @@ import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.moveProject
 import org.move.openapiext.checkWriteAccessAllowed
+import org.move.openapiext.common.checkUnitTestMode
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.runWriteCommandAction
 
@@ -91,18 +92,33 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
             itemFilter: (MvQualifiedNamedElement) -> Boolean = { true }
         ): List<ImportCandidate> {
             val (contextElement, itemVis) = context
+
+            val project = contextElement.project
             val moveProject = contextElement.moveProject ?: return emptyList()
             val searchScope = moveProject.searchScope()
-            val files = MvNamedElementIndex
-                .namedElementFiles(contextElement.project, targetName, searchScope)
-                .toMutableList()
+
+            val allItems = mutableListOf<MvQualifiedNamedElement>()
             if (isUnitTestMode) {
                 // always add current file in tests
                 val currentFile = contextElement.containingFile as? MoveFile ?: return emptyList()
-                files.add(0, currentFile)
+                val items = currentFile.qualifiedItems(targetName, itemVis)
+                allItems.addAll(items)
             }
-            return files
-                .flatMap { it.qualifiedItems(targetName, itemVis) }
+
+            MvNamedElementIndex
+                .processElementsByName(project, targetName, searchScope) { element ->
+                    processQualItem(element, itemVis) {
+                        val entryElement = it.element
+                        if (entryElement !is MvQualifiedNamedElement) return@processQualItem false
+                        if (it.name == targetName) {
+                            allItems.add(entryElement)
+                        }
+                        false
+                    }
+                    true
+                }
+
+            return allItems
                 .filter(itemFilter)
                 .mapNotNull { el -> el.fqPath?.let { ImportCandidate(el, it) } }
         }
@@ -124,7 +140,12 @@ data class ImportContext private constructor(
             val vs = if (contextElement.containingScript != null) {
                 setOf(Visibility.Public, Visibility.PublicScript)
             } else {
-                setOf(Visibility.Public)
+                val module = contextElement.containingModule?.fqModule()
+                if (module != null) {
+                    setOf(Visibility.Public, Visibility.PublicFriend(module))
+                } else {
+                    setOf(Visibility.Public)
+                }
             }
             val itemVis = ItemVis(
                 namespaces = ns,
@@ -206,6 +227,7 @@ class ImportInsertHandler(
 }
 
 fun MoveFile.qualifiedItems(targetName: String, itemVis: ItemVis): List<MvQualifiedNamedElement> {
+    checkUnitTestMode()
     val elements = mutableListOf<MvQualifiedNamedElement>()
     processFileItems(this, itemVis) {
         if (it.element is MvQualifiedNamedElement && it.name == targetName) {

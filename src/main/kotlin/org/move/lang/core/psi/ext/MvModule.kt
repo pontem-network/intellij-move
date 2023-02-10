@@ -4,14 +4,15 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
+import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.stubs.MvModuleStub
+import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.FQModule
 import org.move.lang.index.MvModuleSpecIndex
-import org.move.lang.moduleSpecs
 import org.move.lang.moveProject
 import javax.swing.Icon
 
@@ -19,6 +20,12 @@ fun MvModule.hasTestFunctions(): Boolean = this.testFunctions().isNotEmpty()
 
 fun MvModule.address(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
+
+fun MvModule.stubText(): String {
+    val address = this.moveProject
+        ?.let { this.addressRef?.serializedAddressText(it) } ?: "<unknown>"
+    return "$address::${this.name}"
+}
 
 fun MvModule.fqModule(): FQModule? {
     return getProjectPsiDependentCache(this) {
@@ -195,8 +202,13 @@ fun MvModule.allModuleSpecBlocks(): List<MvModuleSpecBlock> {
     return this.allModuleSpecs().mapNotNull { it.moduleSpecBlock }
 }
 
-abstract class MvModuleMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
-                                              MvModule {
+abstract class MvModuleMixin : MvStubbedNamedElementImpl<MvModuleStub>,
+                               MvModule {
+
+    constructor(node: ASTNode) : super(node)
+
+    constructor(stub: MvModuleStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+
     override fun getIcon(flags: Int): Icon = MoveIcons.MODULE
 
     override fun getPresentation(): ItemPresentation? {
@@ -216,8 +228,4 @@ abstract class MvModuleMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
             val module = this.name ?: "<unknown>"
             return address + module
         }
-
-//    override val useStmts: List<MvUseStmt>
-//        get() =
-//            moduleBlock?.useStmtList.orEmpty()
 }

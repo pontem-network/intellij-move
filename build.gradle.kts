@@ -1,5 +1,6 @@
 import org.jetbrains.grammarkit.tasks.GenerateLexerTask
 import org.jetbrains.grammarkit.tasks.GenerateParserTask
+import org.jetbrains.intellij.tasks.RunIdeTask
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
@@ -11,11 +12,13 @@ fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties for environment `$platformVersion`")
 
+
+
 //val intellijVersion = prop("intellijVersion", "2021.2")
-val kotlinVersion = "1.7.21"
+val kotlinVersion = "1.8.10"
 
 val pluginJarName = "intellij-move-$platformVersion"
-val pluginVersion = "1.24.0"
+val pluginVersion = "1.25.0"
 val pluginGroup = "org.move"
 val javaVersion = if (platformVersion < "222") JavaVersion.VERSION_11 else JavaVersion.VERSION_17
 val kotlinJvmTarget = if (platformVersion < "222") "11" else "17"
@@ -25,8 +28,8 @@ version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.7.21"
-    id("org.jetbrains.intellij") version "1.9.0"
+    kotlin("jvm") version "1.8.10"
+    id("org.jetbrains.intellij") version "1.12.0"
     id("org.jetbrains.grammarkit") version "2021.2.2"
     id("net.saliman.properties") version "1.5.2"
 }
@@ -37,7 +40,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
+//    testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
 }
 
 allprojects {
@@ -146,8 +149,8 @@ allprojects {
             )
             kotlinOptions {
                 jvmTarget = kotlinJvmTarget
-                languageVersion = "1.7"
-                apiVersion = "1.5"
+                languageVersion = "1.8"
+                apiVersion = "1.6"
                 freeCompilerArgs = listOf("-Xjvm-default=all")
             }
         }
@@ -162,7 +165,20 @@ allprojects {
 
         withType<org.jetbrains.intellij.tasks.RunIdeTask> {
             jbrVersion.set(prop("jbrVersion"))
-            ideDir.set(File("/snap/clion/current"))
+
+            val clionDir = File("/snap/clion/current")
+            if (clionDir.exists()) {
+                ideDir.set(clionDir)
+            }
+        }
+    }
+
+    task("resolveDependencies") {
+        doLast {
+            rootProject.allprojects
+                .map { it.configurations }
+                .flatMap { it.filter { c -> c.isCanBeResolved } }
+                .forEach { it.resolve() }
         }
     }
 }

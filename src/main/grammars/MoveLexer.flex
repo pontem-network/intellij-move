@@ -59,9 +59,9 @@ WHITE_SPACE      = {WHITE_SPACE_CHAR}+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Comments
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-EOL_DOC_LINE  = {LINE_WS}*("///".*)
+//EOL_DOC_LINE  = {LINE_WS}*("///".*)
 EOL_DOC_COMMENT =  ("///".*)
-OUTER_EOL_DOC = ({EOL_DOC_LINE}{EOL_WS})*{EOL_DOC_LINE}
+//OUTER_EOL_DOC = ({EOL_DOC_LINE}{EOL_WS})*{EOL_DOC_LINE}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Literals
@@ -75,7 +75,8 @@ BOOL_LITERAL=(true)|(false)
 INTEGER_LITERAL=[0-9]+[a-zA-Z0-9]*
 HEX_INTEGER_LITERAL=0x[0-9a-fA-F]+[a-zA-Z0-9]*
 HEX_STRING_LITERAL=x\" ( [A-F0-9a-f]* ) (\")?
-BYTE_STRING_LITERAL=b\" ( [^\"\n] )* (\")?
+BYTE_STRING_LITERAL=b\" ( [^\\\"\n] | \\[^] )* (\")?
+//BYTE_STRING_LITERAL=b\" ( [^\"\n] | (\\\")] )* (\")?
 
 IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
 

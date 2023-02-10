@@ -24,10 +24,4 @@ fun interface MatchingProcessor<T : MvNamedElement> {
         listOf(*collections)
             .flatten()
             .any { match(itemVis, it) }
-
-//    private fun match(element: MvNamedElement): Boolean {
-//        val name = element.name ?: return false
-//        val entry = SimpleScopeEntry(name, element)
-//        return match(entry)
-//    }
 }
