@@ -163,9 +163,13 @@ allprojects {
             jbrVersion.set(prop("jbrVersion"))
         }
 
-        named("runIde", RunIdeTask::class.java) {
+        withType<org.jetbrains.intellij.tasks.RunIdeTask> {
             jbrVersion.set(prop("jbrVersion"))
-            ideDir.set(File("/snap/clion/current"))
+
+            val clionDir = File("/snap/clion/current")
+            if (clionDir.exists()) {
+                ideDir.set(clionDir)
+            }
         }
     }
 
