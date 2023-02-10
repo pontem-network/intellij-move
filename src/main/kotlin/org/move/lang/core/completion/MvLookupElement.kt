@@ -78,7 +78,7 @@ private fun MvNamedElement.asTy(ctx: InferenceContext): Ty =
         is MvFunction -> this.returnTypeTy(ctx)
         is MvStruct -> {
             val itemContext = this.module.itemContext(false)
-            itemContext.getRawItemTy(this)
+            itemContext.getItemTy(this)
 //            instantiateItemTy(this, ctx)
         }
         is MvBindingPat -> this.inferredTy(ctx)

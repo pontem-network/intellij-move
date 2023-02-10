@@ -30,107 +30,53 @@ fun ItemContextOwner.itemContext(msl: Boolean): ItemContext {
 }
 
 class ItemContext(val msl: Boolean) {
-    val rawItemTyMap = mutableMapOf<MvNameIdentifierOwner, Ty>()
+    val tyTemplateMap = mutableMapOf<MvNameIdentifierOwner, TyTemplate>()
     val typeTyMap = mutableMapOf<MvType, Ty>()
 
     val typeErrors = mutableListOf<TypeError>()
 
-//    fun getTypeTy(type: MvType): Ty {
-//        return inferItemTypeTy(type, this)
-//    }
+    fun getTypeTy(type: MvType): Ty {
+        return inferItemTypeTy(type, this)
+    }
 
-    fun getRawItemTy(namedItem: MvNameIdentifierOwner): Ty {
+    fun getBuiltinTypeTy(pathType: MvPathType): Ty {
+        val existing = this.typeTyMap[pathType]
+        if (existing != null) {
+            return existing
+        } else {
+            val ty = inferItemBuiltinTypeTy(pathType, this)
+            this.typeTyMap[pathType] = ty
+            return ty
+        }
+    }
+
+    fun getItemTy(namedItem: MvNameIdentifierOwner): Ty {
         return when (namedItem) {
             is MvStruct -> {
-                val existing = this.rawItemTyMap[namedItem]
-                val itemTy = if (existing == null) {
-                    val itemTy = rawItemTy(namedItem, this)
-                    this.rawItemTyMap[namedItem] = itemTy
-                    itemTy
+                val existing = this.tyTemplateMap[namedItem]
+                val tyTemplate = if (existing == null) {
+                    val itemTyTemplate = tyTemplate(namedItem, this)
+                    this.tyTemplateMap[namedItem] = itemTyTemplate
+                    itemTyTemplate
                 } else {
                     existing
                 }
-                val structTy = itemTy as? TyStruct ?: return TyUnknown
-                val typeVars = structTy.item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
-                TyStruct(
-                    structTy.item,
-                    typeVars,
-                    fieldTys = structTy.fieldTys.mapValues { (_, v) ->
-                        v.foldTyInferWith {
-                            if (it is TyInfer.TyVar) findTypeVarForParam(typeVars, it.origin?.origin!!) else it
-                        }
-                    },
-                    typeArgs = structTy.item.typeParameters.map { findTypeVarForParam(typeVars, it) }
-                )
+                val structTyTemplate = tyTemplate as? TyTemplate.Struct ?: return TyUnknown
+                return structTyTemplate.toTy(this)
             }
-//            is MvFunctionLike -> {
-//                val existing = this.rawItemTyMap[namedItem]
-//                val itemTy = if (existing == null) {
-//                    val itemTy = rawItemTy(namedItem, this)
-//                    this.rawItemTyMap[namedItem] = itemTy
-//                    itemTy
-//                } else {
-//                    existing
-//                }
-//                val functionTy = itemTy as? TyFunction ?: return TyUnknown
-//                val typeVars = functionTy.item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
-//                return TyFunction(
-//                    functionTy.item,
-//                    typeVars,
-//                    paramTypes = functionTy.paramTypes.map {
-//                        it.foldTyInferWith { tyVar ->
-//                            if (tyVar is TyInfer.TyVar) findTypeVarForParam(
-//                                typeVars,
-//                                tyVar.origin?.origin!!
-//                            ) else it
-//                        }
-//                    },
-////                    retType = functionTy.retType.foldWith(object : TypeFolder() {
-////                        override fun fold(ty: Ty): Ty {
-////                            return if (ty is TyInfer.TyVar) findTypeVarForParam(typeVars, ty.origin?.origin!!)
-////                            else ty.innerFoldWith(this)
-////                        }
-////                    }),
-//                    retType = functionTy.retType.foldTyInferWith {
-//                        if (it is TyInfer.TyVar) findTypeVarForParam(typeVars, it.origin?.origin!!) else it
-//                    },
-////                    retType = functionTy.retType.foldTyInferWith {
-////                        if (it is TyInfer.TyVar) findTypeVarForParam(typeVars, it.origin?.origin!!) else it
-////                    },
-//                    acquiresTypes = functionTy.acquiresTypes.map {
-//                        it.foldTyInferWith { tyVar ->
-//                            if (tyVar is TyInfer.TyVar)
-//                                findTypeVarForParam(typeVars, tyVar.origin?.origin!!)
-//                            else it
-//                        }
-//                    },
-//                    typeArgs = functionTy.item.typeParameters.map { findTypeVarForParam(typeVars, it) }
-//                )
-//            }
-////                return functionTy.innerFoldWith(object : TypeFolder() {
-////                    override fun fold(ty: Ty): Ty {
-////                        return when (ty) {
-////                            is TyInfer.TyVar -> findTypeVarForParam(typeVars, ty.origin?.origin!!)
-////                            is TyTypeParameter -> findTypeVarForParam(typeVars, ty.origin)
-////                            else -> ty
-////                        }
-////                    }
-////                })
-////                functionTy.innerFoldWith {
-////                }
-////                TyFunction(
-////                    functionTy.item,
-////                    typeVars,
-////                    paramTypes = functionTy.paramTypes,
-////                    paramTypes = structTy.fieldTys.mapValues { (_, v) ->
-////                        v.foldTyInferWith {
-////                            if (it is TyInfer.TyVar) findTypeVarForParam(typeVars, it.origin?.origin!!) else it
-////                        }
-////                    },
-////                    typeArgs = structTy.item.typeParameters.map { findTypeVarForParam(typeVars, it) }
-////                )
-//            }
-            else -> rawItemTy(namedItem, this)
+            is MvFunctionLike -> {
+                val existing = this.tyTemplateMap[namedItem]
+                val itemTy = if (existing == null) {
+                    val itemTyTemplate = tyTemplate(namedItem, this)
+                    this.tyTemplateMap[namedItem] = itemTyTemplate
+                    itemTyTemplate
+                } else {
+                    existing
+                }
+                val template = itemTy as? TyTemplate.Function ?: return TyUnknown
+                return template.toTy(this)
+            }
+            else -> TyUnknown
         }
     }
 }
@@ -139,9 +85,11 @@ private fun getItemContext(owner: ItemContextOwner, msl: Boolean): ItemContext {
     val itemContext = ItemContext(msl)
     when (owner) {
         is MvModule -> {
-            val moduleItems = owner.structs().asSequence()
+            val moduleItems = owner.structs().asSequence() +
+                    owner.allNonTestFunctions().asSequence() +
+                    owner.specFunctions().asSequence()
             for (item in moduleItems) {
-                itemContext.rawItemTyMap[item] = rawItemTy(item, itemContext)
+                itemContext.tyTemplateMap[item] = tyTemplate(item, itemContext)
             }
         }
     }
@@ -157,72 +105,95 @@ private fun findTypeVarForParam(typeVars: List<TyInfer.TyVar>, param: MvTypePara
     return typeVar
 }
 
-//sealed class RawTy {
-//    data class Struct(
-//        val item: MvStruct,
-//        val fieldTys: Map<String, Ty>,
-//    ): RawTy()
-//
-//    data class Function(
-//        val item: MvFunctionLike,
-//        val paramTys: List<Ty>,
-//        val returnTy: Ty,
-//        val acqTys: List<Ty>,
-//    )
-//}
+sealed class TyTemplate {
+    abstract fun toTy(itemContext: ItemContext): Ty
 
-private fun rawItemTy(item: MvNameIdentifierOwner, itemContext: ItemContext): Ty {
+    data class Struct(
+        val item: MvStruct,
+        val fieldTys: Map<String, Ty>,
+    ): TyTemplate() {
+        override fun toTy(itemContext: ItemContext): Ty {
+            val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
+            val fieldTys = this.fieldTys.mapValues {(_, ty) ->
+                ty.foldTyTypeParameterWith { findTypeVarForParam(typeVars, it.origin) }
+            }
+            val typeArgs = typeVars.toList()
+            return TyStruct(item, typeVars, fieldTys, typeArgs)
+        }
+    }
+
+    data class Function(
+        val item: MvFunctionLike,
+        val paramTys: List<Ty>,
+        val returnTy: Ty,
+        val acqTys: List<Ty>,
+    ): TyTemplate() {
+        override fun toTy(itemContext: ItemContext): Ty {
+            val typeVars = this.item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
+            val paramTys = this.paramTys.map {
+                it.foldTyTypeParameterWith { tp -> findTypeVarForParam(typeVars, tp.origin) }
+            }
+            val returnTy = this.returnTy.foldTyTypeParameterWith { findTypeVarForParam(typeVars, it.origin) }
+            val acqTys = this.acqTys.map {
+                it.foldTyTypeParameterWith { tp -> findTypeVarForParam(typeVars, tp.origin) }
+            }
+            val typeArgs = typeVars.toList()
+            return TyFunction(item, typeVars, paramTys, returnTy, acqTys, typeArgs)
+        }
+    }
+
+    object Unknown: TyTemplate() {
+        override fun toTy(itemContext: ItemContext): Ty = TyUnknown
+    }
+}
+
+private fun tyTemplate(item: MvNameIdentifierOwner, itemContext: ItemContext): TyTemplate {
     return when (item) {
         is MvStruct -> {
-            val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
-
             val fieldTys = mutableMapOf<String, Ty>()
             for (field in item.fields) {
-                val fieldName = field.name ?: return TyUnknown
+                val fieldName = field.name ?: return TyTemplate.Unknown
                 val fieldTy = field.typeAnnotation
                     ?.type
-                    ?.let { inferItemTypeTy(it, itemContext) }
-                    ?.foldTyTypeParameterWith { findTypeVarForParam(typeVars, it.origin) }
+                    ?.let { itemContext.getTypeTy(it) }
+//                    ?.let { inferItemTypeTy(it, itemContext) }
                     ?: TyUnknown
                 fieldTys[fieldName] = fieldTy
             }
 
-            val typeArgs = typeVars.toList()
-//            val typeArgs = item.typeParameters.map { findTypeVarForParam(typeVars, it) }
-            TyStruct(item, typeVars, fieldTys, typeArgs)
+            TyTemplate.Struct(item, fieldTys)
         }
 
         is MvFunctionLike -> {
-            val typeVars = item.typeParameters.map { TyInfer.TyVar(TyTypeParameter(it)) }
-
             val paramTypes = mutableListOf<Ty>()
             for (param in item.parameters) {
                 val paramType = param.typeAnnotation?.type
-                    ?.let { inferItemTypeTy(it, itemContext) }
-                    ?.foldTyTypeParameterWith { findTypeVarForParam(typeVars, it.origin) } ?: TyUnknown
+                    ?.let { itemContext.getTypeTy(it) } ?: TyUnknown
+//                    ?.let { inferItemTypeTy(it, itemContext) } ?: TyUnknown
                 paramTypes.add(paramType)
             }
             val returnMvType = item.returnType?.type
             val retTy = if (returnMvType == null) {
                 TyUnit
             } else {
-                val returnTy = inferItemTypeTy(returnMvType, itemContext)
+                val returnTy = itemContext.getTypeTy(returnMvType)
+//                val returnTy = inferItemTypeTy(returnMvType, itemContext)
                 returnTy
-                    .foldTyTypeParameterWith { findTypeVarForParam(typeVars, it.origin) }
             }
             val acqTys = item.acquiresPathTypes.map {
                 val acqItem =
                     it.path.reference?.resolve() as? MvNameIdentifierOwner ?: return@map TyUnknown
-                itemContext.getRawItemTy(acqItem)
-                    .foldTyTypeParameterWith { tp -> findTypeVarForParam(typeVars, tp.origin) }
+                when (acqItem) {
+                    is MvStruct -> itemContext.getItemTy(acqItem)
+                    is MvTypeParameter -> TyTypeParameter(acqItem)
+                    else -> TyUnknown
+                }
             }
-            val typeArgs = typeVars.toList()
-//            val typeArgs = item.typeParameters.map { findTypeVarForParam(typeVars, it) }
-            TyFunction(item, typeVars, paramTypes, retTy, acqTys, typeArgs)
+            TyTemplate.Function(item, paramTypes, retTy, acqTys)
         }
 
-        is MvTypeParameter -> TyTypeParameter(item)
-        else -> TyUnknown
+//        is MvTypeParameter -> TyTypeParameter(item)
+        else -> TyTemplate.Unknown
     }
 }
 
@@ -230,10 +201,15 @@ private fun inferItemTypeTy(
     moveType: MvType,
     itemContext: ItemContext,
 ): Ty {
+//    val existing = itemContext.typeTyMap[moveType]
+//    if (existing != null) {
+//        return existing
+//    }
     val ty = when (moveType) {
         is MvPathType -> run {
             val namedItem =
-                moveType.path.reference?.resolve() ?: return@run inferItemBuiltinTypeTy(moveType, itemContext)
+                moveType.path.reference?.resolve() ?: return@run itemContext.getBuiltinTypeTy(moveType)
+//                moveType.path.reference?.resolve() ?: return@run inferItemBuiltinTypeTy(moveType, itemContext)
             when (namedItem) {
                 is MvTypeParameter -> TyTypeParameter(namedItem)
                 is MvStruct -> {
@@ -244,10 +220,10 @@ private fun inferItemTypeTy(
                         return TyUnknown
                     }
 
-                    val typeArgs = moveType.path.typeArguments.map { inferItemTypeTy(it.type, itemContext) }
+                    val typeArgs = moveType.path.typeArguments.map { itemContext.getTypeTy(it.type) }
+//                        .map { inferItemTypeTy(it.type, itemContext) }
 
-                    val rawStructTy = itemContext.getRawItemTy(namedItem) as? TyStruct
-                        ?: return TyUnknown
+                    val rawStructTy = itemContext.getItemTy(namedItem) as? TyStruct ?: return TyUnknown
 
                     val ctx = InferenceContext(itemContext.msl)
                     if (rawStructTy.typeVars.isNotEmpty()) {
@@ -266,16 +242,19 @@ private fun inferItemTypeTy(
             val mutabilities = RefPermissions.valueOf(moveType.mutable)
             val innerTypeRef = moveType.type
                 ?: return@run TyReference(TyUnknown, mutabilities, itemContext.msl)
-            val innerTy = inferItemTypeTy(innerTypeRef, itemContext)
+            val innerTy = itemContext.getTypeTy(innerTypeRef)
+//            val innerTy = inferItemTypeTy(innerTypeRef, itemContext)
             TyReference(innerTy, mutabilities, itemContext.msl)
         }
         is MvTupleType -> {
-            val innerTypes = moveType.typeList.map { inferItemTypeTy(it, itemContext) }
+            val innerTypes = moveType.typeList.map { itemContext.getTypeTy(it) }
+//            val innerTypes = moveType.typeList.map { inferItemTypeTy(it, itemContext) }
             TyTuple(innerTypes)
         }
         is MvUnitType -> TyUnit
         else -> TyUnknown
     }
+//    itemContext.typeTyMap[moveType] = ty
     return ty
 }
 
@@ -297,7 +276,8 @@ private fun inferItemBuiltinTypeTy(pathType: MvPathType, itemContext: ItemContex
             val itemTy = pathType.path.typeArguments
                 .firstOrNull()
                 ?.type
-                ?.let { inferItemTypeTy(it, itemContext) } ?: TyUnknown
+                ?.let { itemContext.getTypeTy(it) } ?: TyUnknown
+//                ?.let { inferItemTypeTy(it, itemContext) } ?: TyUnknown
             return TyVector(itemTy)
         }
         else -> TyUnknown

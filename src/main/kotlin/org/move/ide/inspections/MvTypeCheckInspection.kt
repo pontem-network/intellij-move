@@ -37,7 +37,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             override fun visitStruct(s: MvStruct) {
 //                val ctx = InferenceContext(false)
                 val itemContext = s.module.itemContext(false)
-                itemContext.getRawItemTy(s)
+                itemContext.getItemTy(s)
 //                instantiateItemTy(s, ctx)
 
                 itemContext.typeErrors
