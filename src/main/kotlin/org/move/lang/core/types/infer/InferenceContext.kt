@@ -318,7 +318,6 @@ sealed class TypeError(open val element: PsiElement) {
 class InferenceContext(val msl: Boolean) {
     var exprTypes = concurrentMapOf<MvExpr, Ty>()
     val patTypes = mutableMapOf<MvPat, Ty>()
-    var typeTypes = mutableMapOf<MvType, Ty>()
 
     var callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
     val bindingTypes = concurrentMapOf<MvBindingPat, Ty>()
@@ -344,10 +343,6 @@ class InferenceContext(val msl: Boolean) {
 
     fun cachePatTy(pat: MvPat, ty: Ty) {
         this.patTypes[pat] = ty
-    }
-
-    fun cacheTypeTy(type: MvType, ty: Ty) {
-        this.typeTypes[type] = ty
     }
 
     fun cacheCallExprTy(expr: MvCallExpr, ty: TyFunction) {
@@ -378,7 +373,6 @@ class InferenceContext(val msl: Boolean) {
     fun childContext(): InferenceContext {
         val childContext = InferenceContext(this.msl)
         childContext.exprTypes = this.exprTypes
-        childContext.typeTypes = this.typeTypes
         childContext.callExprTypes = this.callExprTypes
         childContext.typeErrors = this.typeErrors
         return childContext
