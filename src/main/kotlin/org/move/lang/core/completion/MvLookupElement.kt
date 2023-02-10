@@ -3,11 +3,8 @@ package org.move.lang.core.completion
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementDecorator
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.inferredTy
-import org.move.lang.core.psi.ext.module
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.isCompatible
-import org.move.lang.core.types.infer.itemContext
+import org.move.lang.core.psi.ext.inferBindingTy
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -72,15 +69,16 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
     return props
 }
 
-private fun MvNamedElement.asTy(ctx: InferenceContext): Ty =
-    when (this) {
+private fun MvNamedElement.asTy(ctx: InferenceContext): Ty {
+    val msl = false
+    val itemContext = this.itemContextOwner?.itemContext(msl) ?: ItemContext(msl)
+    return when (this) {
 //        is RsFieldDecl -> typeReference?.type
-        is MvFunction -> this.returnTypeTy(ctx)
+        is MvFunction -> this.returnTypeTy(itemContext)
         is MvStruct -> {
-            val itemContext = this.module.itemContext(false)
             itemContext.getItemTy(this)
-//            instantiateItemTy(this, ctx)
         }
-        is MvBindingPat -> this.inferredTy(ctx)
+        is MvBindingPat -> this.inferBindingTy(ctx, itemContext)
         else -> TyUnknown
     }
+}

@@ -35,10 +35,8 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitStruct(s: MvStruct) {
-//                val ctx = InferenceContext(false)
                 val itemContext = s.module.itemContext(false)
                 itemContext.getItemTy(s)
-//                instantiateItemTy(s, ctx)
 
                 itemContext.typeErrors
                     .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MODULE) }
@@ -51,7 +49,9 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                 val structAbilities = field.struct.tyAbilities
                 if (structAbilities.isEmpty()) return
 
-                val fieldTy = field.declarationTypeTy(InferenceContext(false)) as? TyStruct ?: return
+                val itemContext = field.struct.module.itemContext(false)
+                val fieldTy = field.fieldAnnotationTy(itemContext) as? TyStruct ?: return
+
                 for (ability in structAbilities) {
                     val requiredAbility = ability.requires()
                     if (requiredAbility !in fieldTy.abilities()) {

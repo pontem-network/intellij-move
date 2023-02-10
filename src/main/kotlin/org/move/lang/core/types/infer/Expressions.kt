@@ -10,8 +10,9 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         return existingTy
     }
 
+    val itemContext = expr.itemContextOwner?.itemContext(parentCtx.msl) ?: ItemContext(parentCtx.msl)
     var exprTy = when (expr) {
-        is MvRefExpr -> inferRefExprTy(expr, parentCtx)
+        is MvRefExpr -> inferRefExprTy(expr, parentCtx, itemContext)
         is MvBorrowExpr -> inferBorrowExprTy(expr, parentCtx)
         is MvCallExpr -> {
             val funcTy = inferCallExprTy(expr, parentCtx, expectedTy) as? TyFunction
@@ -24,7 +25,7 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
             TyUnknown
         }
         is MvStructLitExpr -> inferStructLitExprTy(expr, parentCtx, expectedTy)
-        is MvVectorLitExpr -> inferVectorLitExpr(expr, parentCtx)
+        is MvVectorLitExpr -> inferVectorLitExpr(expr, parentCtx, itemContext)
 
         is MvDotExpr -> inferDotExprTy(expr, parentCtx)
         is MvDerefExpr -> inferDerefExprTy(expr, parentCtx)
@@ -34,7 +35,7 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         is MvMoveExpr -> expr.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
         is MvCopyExpr -> expr.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
 
-        is MvCastExpr -> inferTypeTy(expr.type, parentCtx)
+        is MvCastExpr -> itemContext.getTypeTy(expr.type)
         is MvParensExpr -> expr.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
 
         is MvBinaryExpr -> inferBinaryExprTy(expr, parentCtx)
@@ -47,7 +48,7 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         is MvWhileExpr -> inferWhileExpr(expr, parentCtx)
         is MvLoopExpr -> inferLoopExpr(expr, parentCtx)
         is MvReturnExpr -> {
-            val fnReturnTy = expr.containingFunction?.returnTypeTy(parentCtx)
+            val fnReturnTy = expr.containingFunction?.returnTypeTy(itemContext)
             expr.expr?.let { inferExprTy(it, parentCtx, fnReturnTy) }
             TyNever
         }
@@ -84,10 +85,10 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
     return exprTy
 }
 
-private fun inferRefExprTy(refExpr: MvRefExpr, ctx: InferenceContext): Ty {
+private fun inferRefExprTy(refExpr: MvRefExpr, ctx: InferenceContext, itemContext: ItemContext): Ty {
     val binding =
         refExpr.path.reference?.resolve() as? MvBindingPat ?: return TyUnknown
-    return binding.inferredTy(ctx)
+    return binding.inferBindingTy(ctx, itemContext)
 }
 
 private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): Ty {
@@ -112,14 +113,13 @@ private fun inferCallExprTy(
 
     val itemContext = funcItem.module?.itemContext(parentCtx.msl) ?: ItemContext(parentCtx.msl)
     var funcTy = itemContext.getItemTy(funcItem) as? TyFunction ?: return TyUnknown
-//    var funcTy = instantiateItemTy(funcItem, parentCtx) as? TyFunction ?: return TyUnknown
 
     val inferenceCtx = InferenceContext(parentCtx.msl)
     // find all types passed as explicit type parameters, create constraints with those
     if (path.typeArguments.isNotEmpty()) {
         if (path.typeArguments.size != funcTy.typeVars.size) return TyUnknown
         for ((typeVar, typeArg) in funcTy.typeVars.zip(path.typeArguments)) {
-            val typeArgTy = inferTypeTy(typeArg.type, parentCtx)
+            val typeArgTy = itemContext.getTypeTy(typeArg.type)
 
             // check compat for abilities
             val compat = isCompatibleAbilities(typeVar, typeArgTy, path.isMsl())
@@ -185,14 +185,13 @@ fun inferStructLitExprTy(
 
     val itemContext = structItem.module.itemContext(parentCtx.msl)
     val structTy = itemContext.getItemTy(structItem) as? TyStruct ?: return TyUnknown
-//    val structTy = instantiateItemTy(structItem, parentCtx) as? TyStruct ?: return TyUnknown
 
     val inferenceCtx = InferenceContext(parentCtx.msl)
     // find all types passed as explicit type parameters, create constraints with those
     if (path.typeArguments.isNotEmpty()) {
         if (path.typeArguments.size != structTy.typeVars.size) return TyUnknown
         for ((typeVar, typeArg) in structTy.typeVars.zip(path.typeArguments)) {
-            val typeArgTy = inferTypeTy(typeArg.type, parentCtx)
+            val typeArgTy = itemContext.getTypeTy(typeArg.type)
 
             // check compat for abilities
             val compat = isCompatibleAbilities(typeVar, typeArgTy, path.isMsl())
@@ -216,7 +215,7 @@ fun inferStructLitExprTy(
     for (field in litExpr.fields) {
         val fieldName = field.referenceName
         val fieldTy = structTy.fieldTys[fieldName] ?: TyUnknown
-        inferLitFieldInitExprTy(field, parentCtx, fieldTy)
+        inferLitFieldInitExprTy(field, parentCtx, itemContext, fieldTy)
     }
     if (expectedTy != null) {
         inferenceCtx.addConstraint(structTy, expectedTy)
@@ -233,14 +232,13 @@ fun inferStructPatTy(structPat: MvStructPat, parentCtx: InferenceContext, expect
 
     val itemContext = structItem.module.itemContext(parentCtx.msl)
     val structTy = itemContext.getItemTy(structItem) as? TyStruct ?: return TyUnknown
-//    val structTy = instantiateItemTy(structItem, parentCtx) as TyStruct
 
     val inferenceCtx = InferenceContext(parentCtx.msl)
     // find all types passed as explicit type parameters, create constraints with those
     if (path.typeArguments.isNotEmpty()) {
         if (path.typeArguments.size != structTy.typeVars.size) return TyUnknown
         for ((typeVar, typeArg) in structTy.typeVars.zip(path.typeArguments)) {
-            val typeArgTy = inferTypeTy(typeArg.type, parentCtx)
+            val typeArgTy = itemContext.getTypeTy(typeArg.type)
 
             // check compat for abilities
             val compat = isCompatibleAbilities(typeVar, typeArgTy, path.isMsl())
@@ -273,12 +271,14 @@ fun inferStructPatTy(structPat: MvStructPat, parentCtx: InferenceContext, expect
     return inferenceCtx.resolveTy(structTy)
 }
 
-fun inferVectorLitExpr(litExpr: MvVectorLitExpr, parentCtx: InferenceContext): Ty {
+fun inferVectorLitExpr(litExpr: MvVectorLitExpr, parentCtx: InferenceContext, itemContext: ItemContext): Ty {
     var tyVector = TyVector(TyInfer.TyVar())
-    val inferenceCtx = InferenceContext(litExpr.isMsl())
+    val msl = litExpr.isMsl()
+    val inferenceCtx = InferenceContext(msl)
     val typeArgument = litExpr.typeArgument
+
     if (typeArgument != null) {
-        val ty = inferTypeTy(typeArgument.type, parentCtx)
+        val ty = itemContext.getTypeTy(typeArgument.type)
         inferenceCtx.addConstraint(tyVector.item, ty)
     }
     val exprs = litExpr.vectorLitItems.exprList
@@ -294,14 +294,19 @@ fun inferVectorLitExpr(litExpr: MvVectorLitExpr, parentCtx: InferenceContext): T
     return tyVector
 }
 
-fun inferLitFieldInitExprTy(litField: MvStructLitField, ctx: InferenceContext, expectedTy: Ty?): Ty {
+fun inferLitFieldInitExprTy(
+    litField: MvStructLitField,
+    ctx: InferenceContext,
+    itemContext: ItemContext,
+    expectedTy: Ty?
+): Ty {
     val initExpr = litField.expr
     return if (initExpr == null) {
         // find type of binding
         val binding =
             litField.reference.multiResolve().filterIsInstance<MvBindingPat>().firstOrNull()
                 ?: return TyUnknown
-        val bindingTy = binding.inferredTy(ctx)
+        val bindingTy = binding.inferBindingTy(ctx, itemContext)
         if (expectedTy != null) {
             if (!isCompatible(expectedTy, bindingTy, ctx.msl)) {
                 ctx.typeErrors.add(TypeError.TypeMismatch(litField, expectedTy, bindingTy))

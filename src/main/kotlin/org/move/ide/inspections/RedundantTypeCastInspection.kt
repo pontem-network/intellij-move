@@ -7,8 +7,7 @@ import org.move.ide.inspections.fixes.RemoveRedundantCastFix
 import org.move.lang.core.psi.MvCastExpr
 import org.move.lang.core.psi.MvVisitor
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.infer.inferTypeTy
-import org.move.lang.core.types.infer.ownerInferenceCtx
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.TyInteger
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -25,8 +24,8 @@ class RedundantTypeCastInspection : MvLocalInspectionTool() {
             // TODO: different rules for msl, no need for any casts at all
             if (msl) return
 
-            val inferenceCtx = castExpr.ownerInferenceCtx(false) ?: return
-            val castTy = inferTypeTy(castExpr.type, inferenceCtx)
+            val itemContext = castExpr.itemContextOwner?.itemContext(false) ?: ItemContext(false)
+            val castTy = itemContext.getTypeTy(castExpr.type)
             if (castTy is TyUnknown) return
 
             if (exprTy == castTy) {

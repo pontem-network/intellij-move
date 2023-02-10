@@ -101,12 +101,13 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
         is MvStructField -> this.createLookupElementWithIcon()
             .withTypeText(this.typeAnnotation?.type?.text)
 
-        is MvBindingPat -> this.createLookupElementWithIcon()
-            .withTypeText(
-                this.inferredTy(
-                    this.ownerInferenceCtx(this.isMsl()) ?: InferenceContext(this.isMsl())
-                ).text(true)
-            )
+        is MvBindingPat -> {
+            val msl = this.isMsl()
+            val inferenceCtx = this.ownerInferenceCtx(msl) ?: InferenceContext(msl)
+            val itemContext = this.itemContextOwner?.itemContext(msl) ?: ItemContext(msl)
+            this.createLookupElementWithIcon()
+                .withTypeText(this.inferBindingTy(inferenceCtx, itemContext).text(true))
+        }
 
         is MvSchema -> this.createLookupElementWithIcon()
             .withTypeText(this.containingFile?.name)
@@ -210,7 +211,6 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
 
                     val itemContext = element.module?.itemContext(msl) ?: ItemContext(msl)
                     val funcTy = itemContext.getItemTy(element) as? TyFunction ?: return@run false
-//                    val funcTy = instantiateItemTy(element, inferenceCtx) as? TyFunction ?: return@run false
 
                     val inferenceCtx = InferenceContext(msl)
                     val expectedTy = completionContext.expectedTy

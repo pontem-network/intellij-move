@@ -13,13 +13,10 @@ import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.MvAttr
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvItemSpec
-import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.module
 import org.move.lang.core.stubs.MvFunctionStub
-import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.inferTypeTy
+import org.move.lang.core.types.infer.ItemContext
 import org.move.lang.core.types.ty.Ty
 import javax.swing.Icon
 
@@ -51,12 +48,10 @@ val MvFunction.testAttr: MvAttr?
 
 val MvFunction.isTest: Boolean get() = testAttr != null
 
-val MvFunction.acquiresTys: List<Ty>
-    get() =
-        this.acquiresType?.pathTypeList.orEmpty().map {
-            // TODO: should be TypeContext from module (see StructField type checking)
-            inferTypeTy(it, InferenceContext(true))
-        }
+fun MvFunction.getAcquiresTys(itemContext: ItemContext): List<Ty> =
+    this.acquiresType?.pathTypeList.orEmpty().map {
+        itemContext.getTypeTy(it)
+    }
 
 val MvFunction.signatureText: String
     get() {

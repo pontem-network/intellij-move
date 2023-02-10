@@ -3,19 +3,17 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.IStubElementType
 import org.move.lang.core.psi.MvConst
-import org.move.lang.core.psi.MvFunctionLike
 import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.module
 import org.move.lang.core.stubs.MvConstStub
-import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.inferTypeTy
+import org.move.lang.core.types.infer.ItemContext
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
-fun MvConst.declarationTy(inferenceCtx: InferenceContext): Ty =
-    this.typeAnnotation?.type?.let { inferTypeTy(it, inferenceCtx) } ?: TyUnknown
+fun MvConst.constAnnotationTy(itemContext: ItemContext): Ty {
+    return this.typeAnnotation?.type
+        ?.let { itemContext.getTypeTy(it) } ?: TyUnknown
+}
 
 val MvConst.module: MvModule?
     get() {

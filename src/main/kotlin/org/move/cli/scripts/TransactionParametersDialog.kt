@@ -8,9 +8,12 @@ import com.intellij.ui.dsl.builder.*
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.layout.ValidationInfoBuilder
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.ext.inferredTy
+import org.move.lang.core.psi.ext.inferBindingTy
+import org.move.lang.core.psi.module
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.ItemContext
+import org.move.lang.core.types.infer.itemContext
 import org.move.lang.core.types.ty.TyAddress
 import org.move.lang.core.types.ty.TyBool
 import org.move.lang.core.types.ty.TyInteger
@@ -106,6 +109,7 @@ class TransactionParametersDialog(
             }
             val typeParameters = scriptFunction.typeParameters
             val parameters = scriptFunction.parameterBindings().drop(1)
+            val itemContext = scriptFunction.module?.itemContext(false) ?: ItemContext(false)
 
             if (typeParameters.isNotEmpty() || parameters.isNotEmpty()) {
                 separator()
@@ -131,7 +135,7 @@ class TransactionParametersDialog(
                 group("Value Arguments") {
                     for (parameter in parameters) {
                         val paramName = parameter.name ?: continue
-                        val paramTy = parameter.inferredTy(InferenceContext(false))
+                        val paramTy = parameter.inferBindingTy(InferenceContext(false), itemContext)
                         val paramTyName = when (paramTy) {
                             is TyInteger -> paramTy.kind.name
                             is TyAddress -> "address"

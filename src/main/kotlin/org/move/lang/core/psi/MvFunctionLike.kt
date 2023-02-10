@@ -2,12 +2,9 @@ package org.move.lang.core.psi
 
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
-import org.move.lang.core.psi.ext.declarationTypeTy
+import org.move.lang.core.psi.ext.paramAnnotationTy
 import org.move.lang.core.psi.ext.hasChild
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.MvInferenceContextOwner
-import org.move.lang.core.types.infer.foldTyTypeParameterWith
-import org.move.lang.core.types.infer.inferTypeTy
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
 import org.move.lang.core.types.ty.TyUnknown
@@ -32,20 +29,22 @@ val MvFunctionLike.isNative get() = hasChild(MvElementTypes.NATIVE)
 
 val MvFunctionLike.parameters get() = this.functionParameterList?.functionParameterList.orEmpty()
 
-fun MvFunctionLike.returnTypeTy(inferenceCtx: InferenceContext): Ty {
+fun MvFunctionLike.returnTypeTy(itemContext: ItemContext): Ty {
     val returnTypeElement = this.returnType
     return if (returnTypeElement == null) {
         TyUnit
     } else {
-        returnTypeElement.type?.let { inferTypeTy(it, inferenceCtx) } ?: TyUnknown
+        returnTypeElement.type?.let { itemContext.getTypeTy(it) } ?: TyUnknown
     }
 }
 
 val MvFunctionLike.typeParamsUsedOnlyInReturnType: List<MvTypeParameter>
     get() {
+        val msl = false
+        val itemContext = this.module?.itemContext(msl) ?: ItemContext(msl)
         val usedTypeParams = mutableSetOf<MvTypeParameter>()
         this.parameters
-            .map { it.declarationTypeTy(InferenceContext(false)) }
+            .map { it.paramAnnotationTy(itemContext) }
             .forEach {
                 it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.origin); paramTy }
             }
@@ -55,10 +54,11 @@ val MvFunctionLike.typeParamsUsedOnlyInReturnType: List<MvTypeParameter>
 val MvFunctionLike.requiredTypeParams: List<MvTypeParameter>
     get() {
         val usedTypeParams = mutableSetOf<MvTypeParameter>()
-        val inferenceCtx = InferenceContext(false)
+        val msl = false
+        val itemContext = this.module?.itemContext(msl) ?: ItemContext(msl)
         this.parameters
-            .map { it.declarationTypeTy(inferenceCtx) }
-            .withAdded(this.returnTypeTy(inferenceCtx))
+            .map { it.paramAnnotationTy(itemContext) }
+            .withAdded(this.returnTypeTy(itemContext))
             .forEach {
                 it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.origin); paramTy }
             }
