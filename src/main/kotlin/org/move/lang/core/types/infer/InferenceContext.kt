@@ -18,22 +18,27 @@ interface MvInferenceContextOwner : MvElement {
     fun parameterBindings(): List<MvBindingPat>
 }
 
-fun MvInferenceContextOwner.inferenceCtx(msl: Boolean): InferenceContext {
+fun MvElement.ownerInferenceCtx(msl: Boolean): InferenceContext? {
     return if (msl) {
         getProjectPsiDependentCache(this) {
-            getOwnerInferenceContext(it, true)
+            val inferenceOwner =
+                PsiTreeUtil.getParentOfType(it, MvInferenceContextOwner::class.java, false)
+            inferenceOwner?.let { owner ->
+                getOwnerInferenceContext(owner, true)
+            }
         }
     } else {
         getProjectPsiDependentCache(this) {
-            getOwnerInferenceContext(it, false)
+            val inferenceOwner =
+                PsiTreeUtil.getParentOfType(it, MvInferenceContextOwner::class.java, false)
+            inferenceOwner?.let { owner ->
+                getOwnerInferenceContext(owner, false)
+            }
         }
     }
-}
-
-fun MvElement.ownerInferenceCtx(msl: Boolean = this.isMsl()): InferenceContext? {
-    val inferenceOwner =
-        PsiTreeUtil.getParentOfType(this, MvInferenceContextOwner::class.java, false)
-    return inferenceOwner?.inferenceCtx(msl)
+//    val inferenceOwner =
+//        PsiTreeUtil.getParentOfType(this, MvInferenceContextOwner::class.java, false)
+//    return inferenceOwner?.inferenceCtx(msl)
 }
 
 private fun getOwnerInferenceContext(owner: MvInferenceContextOwner, msl: Boolean): InferenceContext {

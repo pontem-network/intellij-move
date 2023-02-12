@@ -1,11 +1,7 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.lang.ASTNode
-import com.intellij.psi.stubs.IStubElementType
 import org.move.lang.core.psi.MvConst
 import org.move.lang.core.psi.MvModule
-import org.move.lang.core.stubs.MvConstStub
-import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.infer.ItemContext
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
@@ -21,17 +17,17 @@ val MvConst.module: MvModule?
         return moduleBlock.parent as? MvModule
     }
 
-abstract class MvConstMixin: MvStubbedNamedElementImpl<MvConstStub>,
-                             MvConst {
+//abstract class MvConstMixin: MvElementImpl,
+//                             MvConst {
+//
+//    constructor(node: ASTNode) : super(node)
 
-    constructor(node: ASTNode) : super(node)
+//    constructor(stub: MvConstStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 
-    constructor(stub: MvConstStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
-
-    override val fqName: String
-        get() {
-            val moduleFqName = this.module?.fqName?.let { "$it::" }
-            val name = this.name ?: "<unknown>"
-            return moduleFqName + name
-        }
-}
+//    override val fqName: String
+//        get() {
+//            val moduleFqName = this.module?.fqName?.let { "$it::" }
+//            val name = this.bindingPat?.name ?: "<unknown>"
+//            return moduleFqName + name
+//        }
+//}

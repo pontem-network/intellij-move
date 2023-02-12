@@ -58,7 +58,7 @@ fun processItems(
 ): Boolean {
     return walkUpThroughScopes(
         element,
-        stopAfter = { it is MvModule || it is MvScript }
+        stopAfter = { it is MvModule }
     ) { cameFrom, scope ->
         processLexicalDeclarations(
             scope, cameFrom, itemVis, processor

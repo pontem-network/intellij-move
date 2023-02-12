@@ -24,15 +24,19 @@ interface MvDocAndAttributeOwner : MvElement, NavigatablePsiElement {
     }
 }
 
-fun MvDocAndAttributeOwner.findSingleItemAttr(name: String): MvAttr? =
-    this.attrList.find {
-        it.attrItemList.size == 1
-                && it.attrItemList.first().identifier.textMatches(name)
-    }
+//fun MvDocAndAttributeOwner.findSingleItemAttr(name: String): MvAttr? =
+//    this.attrList.find {
+//        it.attrItemList.size == 1
+//                && it.attrItemList.first().identifier.textMatches(name)
+//    }
 
 val MvDocAndAttributeOwner.isTestOnly: Boolean
-    get() = getProjectPsiDependentCache(this) {
-        it.findSingleItemAttr("test_only") != null
+    get() {
+        val stub = attributeStub
+        return stub?.isTestOnly
+            ?: getProjectPsiDependentCache(this) {
+                it.queryAttributes.hasAttrItem("test_only")
+            }
     }
 
 inline val MvDocAndAttributeOwner.attributeStub: MvAttributeOwnerStub?
@@ -67,7 +71,6 @@ class QueryAttributes(
         return this.attrItems.find { it.name == attributeName }
     }
 
-    // only single item attributes
     val attrItems: Sequence<MvAttrItem> get() = this.attributes.flatMap { it.attrItemList }
 
     override fun toString(): String =

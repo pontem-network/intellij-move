@@ -9,7 +9,6 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
     if (existingTy != null) {
         return existingTy
     }
-
     val itemContext = expr.itemContextOwner?.itemContext(parentCtx.msl) ?: ItemContext(parentCtx.msl)
     var exprTy = when (expr) {
         is MvRefExpr -> inferRefExprTy(expr, parentCtx, itemContext)

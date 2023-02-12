@@ -64,33 +64,34 @@ fun MvModule.testFunctions(): List<MvFunction> =
 
 fun MvModule.builtinFunctions(): List<MvFunction> {
     return getProjectPsiDependentCache(this) {
+        val project = it.project
         listOf(
             builtinFunction(
                 """
             /// Removes `T` from address and returns it. 
             /// Aborts if address does not hold a `T`.
             native fun move_from<T: key>(addr: address): T acquires T;
-            """, it.project
+            """, project
             ),
             builtinFunction(
                 """
             /// Publishes `T` under `signer.address`. 
             /// Aborts if `signer.address` already holds a `T`.
             native fun move_to<T: key>(acc: &signer, res: T);
-            """, it.project
+            """, project
             ),
-            builtinFunction("native fun borrow_global<T: key>(addr: address): &T acquires T;", it.project),
+            builtinFunction("native fun borrow_global<T: key>(addr: address): &T acquires T;", project),
             builtinFunction(
                 "native fun borrow_global_mut<T: key>(addr: address): &mut T acquires T;",
-                it.project
+                project
             ),
             builtinFunction(
                 """
             /// Returns `true` if a `T` is stored under address
             native fun exists<T: key>(addr: address): bool;
-            """, it.project
+            """, project
             ),
-            builtinFunction("native fun freeze<S>(mut_ref: &mut S): &S;", it.project),
+            builtinFunction("native fun freeze<S>(mut_ref: &mut S): &S;", project),
         )
     }
 }
@@ -133,34 +134,35 @@ fun MvModule.schemas(): List<MvSchema> = moduleBlock?.schemaList.orEmpty()
 
 fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
     return getProjectPsiDependentCache(this) {
+        val project = it.project
         listOf(
-            builtinSpecFunction("spec native fun max_u8(): num;", it.project),
-            builtinSpecFunction("spec native fun max_u64(): num;", it.project),
-            builtinSpecFunction("spec native fun max_u128(): num;", it.project),
-            builtinSpecFunction("spec native fun global<T: key>(addr: address): T;", it.project),
-            builtinSpecFunction("spec native fun old<T>(_: T): T;", it.project),
+            builtinSpecFunction("spec native fun max_u8(): num;", project),
+            builtinSpecFunction("spec native fun max_u64(): num;", project),
+            builtinSpecFunction("spec native fun max_u128(): num;", project),
+            builtinSpecFunction("spec native fun global<T: key>(addr: address): T;", project),
+            builtinSpecFunction("spec native fun old<T>(_: T): T;", project),
             builtinSpecFunction(
                 "spec native fun update_field<S, F, V>(s: S, fname: F, val: V): S;",
-                it.project
+                project
             ),
-            builtinSpecFunction("spec native fun TRACE<T>(_: T): T;", it.project),
+            builtinSpecFunction("spec native fun TRACE<T>(_: T): T;", project),
             // vector functions
-            builtinSpecFunction("spec native fun len<T>(_: vector<T>): num;", it.project),
+            builtinSpecFunction("spec native fun len<T>(_: vector<T>): num;", project),
             builtinSpecFunction(
                 "spec native fun concat<T>(v1: vector<T>, v2: vector<T>): vector<T>;",
-                it.project
+                project
             ),
-            builtinSpecFunction("spec native fun contains<T>(v: vector<T>, e: T): bool;", it.project),
-            builtinSpecFunction("spec native fun index_of<T>(_: vector<T>, _: T): num;", it.project),
-            builtinSpecFunction("spec native fun range<T>(_: vector<T>): range;", it.project),
-            builtinSpecFunction("spec native fun in_range<T>(_: vector<T>, _: num): bool;", it.project),
+            builtinSpecFunction("spec native fun contains<T>(v: vector<T>, e: T): bool;", project),
+            builtinSpecFunction("spec native fun index_of<T>(_: vector<T>, _: T): num;", project),
+            builtinSpecFunction("spec native fun range<T>(_: vector<T>): range;", project),
+            builtinSpecFunction("spec native fun in_range<T>(_: vector<T>, _: num): bool;", project),
         )
     }
 }
 
 fun MvModule.specFunctions(): List<MvSpecFunction> = moduleBlock?.specFunctionList.orEmpty()
 
-fun MvModule.consts(): List<MvConst> = moduleBlock?.constList.orEmpty()
+//fun MvModule.consts(): List<MvConst> = moduleBlock?.constList.orEmpty()
 
 fun MvModule.constBindings(): List<MvBindingPat> =
     moduleBlock?.constList.orEmpty().mapNotNull { it.bindingPat }

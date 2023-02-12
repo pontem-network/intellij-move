@@ -38,7 +38,8 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
 
         val moduleRef = pathElement.moduleRef
         val itemVis = itemVis(pathElement)
-        val inferenceCtx = pathElement.ownerInferenceCtx() ?: InferenceContext(pathElement.isMsl())
+        val msl = pathElement.isMsl()
+        val inferenceCtx = pathElement.ownerInferenceCtx(msl) ?: InferenceContext(msl)
         val expectedTy =
             getExpectedTypeForEnclosingPathOrDotExpr(pathElement, inferenceCtx)
         val ctx = CompletionContext(pathElement, itemVis, expectedTy)

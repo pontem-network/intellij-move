@@ -16,7 +16,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
             override fun visitItemSpec(o: MvItemSpec) {
-                val inference = o.inferenceCtx(true)
+                val inference = o.ownerInferenceCtx(true) ?: return
                 inference.typeErrors
                     .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MAIN) }
                     .forEach {
@@ -26,7 +26,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
             override fun visitCodeBlock(codeBlock: MvCodeBlock) {
                 val fn = codeBlock.parent as? MvFunction ?: return
-                val inference = fn.inferenceCtx(fn.isMsl())
+                val inference = fn.ownerInferenceCtx(fn.isMsl()) ?: return
                 inference.typeErrors
                     .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MAIN) }
                     .forEach {

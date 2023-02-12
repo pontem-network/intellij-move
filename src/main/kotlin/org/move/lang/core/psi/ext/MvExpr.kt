@@ -10,9 +10,9 @@ fun MvExpr.inferredExprTy(): Ty {
     val msl = this.isMsl()
     val inferenceCtx = this.ownerInferenceCtx(msl) ?: return TyUnknown
 
-    val existingTy = inferenceCtx.exprTypes[this]
-    if (existingTy != null) {
-        return existingTy
-    }
+//    val existingTy = inferenceCtx.exprTypes[this]
+//    if (existingTy != null) {
+//        return existingTy
+//    }
     return inferExprTy(this, inferenceCtx)
 }

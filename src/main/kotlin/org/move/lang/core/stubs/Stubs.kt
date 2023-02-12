@@ -15,18 +15,29 @@ interface MvNamedStub {
 interface MvAttributeOwnerStub {
     val hasAttrs: Boolean
 
+    val isTestOnly: Boolean
+
     companion object {
         val ATTRS_MASK: Int = makeBitMask(0)
-        const val USED_BITS: Int = 1
+        val TEST_ONLY_MASK: Int = makeBitMask(1)
+        const val USED_BITS: Int = 2
 
         fun extractFlags(element: MvDocAndAttributeOwner): Int =
             extractFlags(element.queryAttributes)
 
         fun extractFlags(query: QueryAttributes): Int {
-            val hasAttrs = query.attrItems.iterator().hasNext()
+            var hasAttrs = false
+            var testOnly = false
+            for (attrItem in query.attrItems) {
+                hasAttrs = true
+                if (attrItem.name == "test_only") {
+                    testOnly = true
+                }
+            }
 
             var flags = 0
             flags = BitUtil.set(flags, ATTRS_MASK, hasAttrs)
+            flags = BitUtil.set(flags, TEST_ONLY_MASK, testOnly)
             return flags
         }
     }
@@ -41,6 +52,9 @@ abstract class MvAttributeOwnerStubBase<T : MvElement>(
     override val hasAttrs: Boolean
         get() = BitUtil.isSet(flags, MvAttributeOwnerStub.ATTRS_MASK)
 
+    override val isTestOnly: Boolean
+        get() = BitUtil.isSet(flags, MvAttributeOwnerStub.TEST_ONLY_MASK)
+
     protected abstract val flags: Int
 }
 
@@ -50,8 +64,6 @@ class MvModuleStub(
     override val name: String?,
     override val flags: Int
 ) : MvAttributeOwnerStubBase<MvModule>(parent, elementType), MvNamedStub {
-
-    val isTestOnly: Boolean get() = BitUtil.isSet(flags, TEST_ONLY_MASK)
 
     object Type : MvStubElementType<MvModuleStub, MvModule>("MODULE") {
         override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
@@ -74,17 +86,11 @@ class MvModuleStub(
         override fun createStub(psi: MvModule, parentStub: StubElement<*>?): MvModuleStub {
             val attrs = QueryAttributes(psi.attrList.asSequence())
 
-            var flags = MvAttributeOwnerStub.extractFlags(attrs)
-            flags = BitUtil.set(flags, TEST_ONLY_MASK, attrs.isTestOnly)
-
+            val flags = MvAttributeOwnerStub.extractFlags(attrs)
             return MvModuleStub(parentStub, this, psi.name, flags)
         }
 
         override fun indexStub(stub: MvModuleStub, sink: IndexSink) = sink.indexModuleStub(stub)
-    }
-
-    companion object {
-        private val TEST_ONLY_MASK: Int = makeBitMask(MvAttributeOwnerStub.USED_BITS + 0)
     }
 }
 
@@ -95,7 +101,6 @@ class MvFunctionStub(
     override val flags: Int
 ) : MvAttributeOwnerStubBase<MvFunction>(parent, elementType), MvNamedStub {
 
-    val isTestOnly: Boolean get() = BitUtil.isSet(flags, TEST_ONLY_MASK)
     val isTest: Boolean get() = BitUtil.isSet(flags, TEST_MASK)
 
     object Type : MvStubElementType<MvFunctionStub, MvFunction>("FUNCTION") {
@@ -120,9 +125,7 @@ class MvFunctionStub(
             val attrs = QueryAttributes(psi.attrList.asSequence())
 
             var flags = MvAttributeOwnerStub.extractFlags(attrs)
-            flags = BitUtil.set(flags, TEST_ONLY_MASK, attrs.isTestOnly)
             flags = BitUtil.set(flags, TEST_MASK, attrs.isTest)
-
             return MvFunctionStub(parentStub, this, psi.name, flags)
         }
 
@@ -130,7 +133,6 @@ class MvFunctionStub(
     }
 
     companion object {
-        private val TEST_ONLY_MASK: Int = makeBitMask(MvAttributeOwnerStub.USED_BITS + 0)
         private val TEST_MASK: Int = makeBitMask(MvAttributeOwnerStub.USED_BITS + 1)
     }
 }
@@ -225,35 +227,35 @@ class MvSchemaStub(
     }
 }
 
-class MvConstStub(
-    parent: StubElement<*>?,
-    elementType: IStubElementType<*, *>,
-    override val name: String?
-) : StubBase<MvConst>(parent, elementType), MvNamedStub {
-
-    object Type : MvStubElementType<MvConstStub, MvConst>("CONST") {
-        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
-            MvConstStub(
-                parentStub,
-                this,
-                dataStream.readNameAsString()
-            )
-
-        override fun serialize(stub: MvConstStub, dataStream: StubOutputStream) =
-            with(dataStream) {
-                writeName(stub.name)
-            }
-
-        override fun createPsi(stub: MvConstStub): MvConst =
-            MvConstImpl(stub, this)
-
-        override fun createStub(psi: MvConst, parentStub: StubElement<*>?): MvConstStub {
-            return MvConstStub(parentStub, this, psi.name)
-        }
-
-        override fun indexStub(stub: MvConstStub, sink: IndexSink) = sink.indexConstStub(stub)
-    }
-}
+//class MvConstStub(
+//    parent: StubElement<*>?,
+//    elementType: IStubElementType<*, *>,
+//    override val name: String?
+//) : StubBase<MvConst>(parent, elementType), MvNamedStub {
+//
+//    object Type : MvStubElementType<MvConstStub, MvConst>("CONST") {
+//        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
+//            MvConstStub(
+//                parentStub,
+//                this,
+//                dataStream.readNameAsString()
+//            )
+//
+//        override fun serialize(stub: MvConstStub, dataStream: StubOutputStream) =
+//            with(dataStream) {
+//                writeName(stub.name)
+//            }
+//
+//        override fun createPsi(stub: MvConstStub): MvConst =
+//            MvConstImpl(stub, this)
+//
+//        override fun createStub(psi: MvConst, parentStub: StubElement<*>?): MvConstStub {
+//            return MvConstStub(parentStub, this, psi.bindingPat?.name)
+//        }
+//
+//        override fun indexStub(stub: MvConstStub, sink: IndexSink) = sink.indexConstStub(stub)
+//    }
+//}
 
 class MvModuleSpecStub(
     parent: StubElement<*>?,
@@ -292,7 +294,7 @@ fun factory(name: String): MvStubElementType<*, *> = when (name) {
     "SPEC_FUNCTION" -> MvSpecFunctionStub.Type
     "STRUCT" -> MvStructStub.Type
     "SCHEMA" -> MvSchemaStub.Type
-    "CONST" -> MvConstStub.Type
+//    "CONST" -> MvConstStub.Type
     "MODULE_SPEC" -> MvModuleSpecStub.Type
 
     else -> error("Unknown element $name")

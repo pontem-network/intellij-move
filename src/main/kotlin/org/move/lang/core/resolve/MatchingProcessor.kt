@@ -21,7 +21,7 @@ fun interface MatchingProcessor<T : MvNamedElement> {
     }
 
     fun matchAll(itemVis: ItemVis, vararg collections: Iterable<T>): Boolean =
-        listOf(*collections)
+        sequenceOf(*collections)
             .flatten()
             .any { match(itemVis, it) }
 }
