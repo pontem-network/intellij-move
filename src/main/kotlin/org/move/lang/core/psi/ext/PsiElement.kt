@@ -1,9 +1,11 @@
 package org.move.lang.core.psi.ext
 
+import com.intellij.extapi.psi.StubBasedPsiElementBase
 import com.intellij.openapi.util.Condition
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiFileImpl
+import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiTreeUtil
@@ -206,3 +208,7 @@ fun PsiElement.isMsl(): Boolean {
 
 fun PsiElement.cameBefore(element: PsiElement) =
     PsiUtilCore.compareElementsByPosition(this, element) <= 0
+
+@Suppress("UNCHECKED_CAST")
+inline val <T : StubElement<*>> StubBasedPsiElement<T>.greenStub: T?
+    get() = (this as? StubBasedPsiElementBase<T>)?.greenStub

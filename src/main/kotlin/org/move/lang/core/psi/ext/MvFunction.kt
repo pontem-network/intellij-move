@@ -5,15 +5,11 @@ import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.stubs.IStubElementType
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.util.PlatformIcons
 import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvAttr
-import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.MvItemSpec
-import org.move.lang.core.psi.module
+import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.infer.ItemContext
@@ -40,13 +36,15 @@ val MvFunction.visibility: FunctionVisibility
 
 val MvFunction.isEntry: Boolean get() = this.isChildExists(MvElementTypes.ENTRY)
 
-val MvFunction.testAttr: MvAttr?
-    get() =
-        getProjectPsiDependentCache(this) {
-            it.findSingleItemAttr("test")
-        }
+val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
 
-val MvFunction.isTest: Boolean get() = testAttr != null
+val MvFunction.isTest: Boolean get() {
+    val stub = greenStub
+    return stub?.isTest
+        ?: (queryAttributes.isTest)
+}
+
+val QueryAttributes.isTest: Boolean get() = this.hasAttrItem("test")
 
 fun MvFunction.getAcquiresTys(itemContext: ItemContext): List<Ty> =
     this.acquiresType?.pathTypeList.orEmpty().map {
