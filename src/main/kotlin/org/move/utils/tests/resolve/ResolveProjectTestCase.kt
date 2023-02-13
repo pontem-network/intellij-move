@@ -66,13 +66,17 @@ abstract class ResolveProjectTestCase : MvProjectTestBase() {
         }
         val resolved = refElement.checkedResolve(offset)
 
+        // Turn off virtual file filter to show element text
+        // because it requires access to virtual file
+        checkAstNotLoaded(VirtualFileFilter.NONE)
+
         val fileWithNamedElement =
             testProject.rootDirectory.toNioPath()
                 .resolve(testProject.fileWithNamedElement).toVirtualFile()
+                ?.toPsiFile(this.project)
                 ?: error("No file with //X caret")
-        myFixture.configureFromExistingVirtualFile(fileWithNamedElement)
 
-        val target = myFixture.findElementInEditor(targetClass, "X")
+        val target = findElementInFile(fileWithNamedElement, targetClass, "X")
 
         // Turn off virtual file filter to show element text
         // because it requires access to virtual file
