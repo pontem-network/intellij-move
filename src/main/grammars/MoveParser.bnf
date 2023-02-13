@@ -281,6 +281,7 @@ fake SpecFunction ::= Attr* spec native? fun IDENTIFIER? TypeParameterList?
 {
     implements = [
         "org.move.lang.core.psi.MvFunctionLike"
+        "org.move.lang.core.psi.MslScopeElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSpecFunctionMixin"
     stubClass = "org.move.lang.core.stubs.MvSpecFunctionStub"
@@ -1082,6 +1083,7 @@ ModuleSpecBlock ::= '{' ModuleSpecBlock_item_with_recover* '}'
     pin = 1
     implements = [
         "org.move.lang.core.psi.MvImportsOwner"
+        "org.move.lang.core.psi.MslScopeElement"
     ]
 }
 
@@ -1104,6 +1106,7 @@ ItemSpec ::= spec ItemSpecRef ItemSpecTypeParameterList? ItemSpecFunctionParamet
     pin = 1
     implements = [
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
+        "org.move.lang.core.psi.MslScopeElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecMixin"
 }
@@ -1167,13 +1170,18 @@ Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl ItemSpecBlock>> {
         "org.move.lang.core.psi.MvTypeParametersOwner"
         "org.move.lang.core.psi.MvQualifiedNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.psi.MslScopeElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSchemaMixin"
     stubClass = "org.move.lang.core.stubs.MvSchemaStub"
     elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
 }
 
-ItemSpecBlockExpr ::= spec <<msl ItemSpecBlock>>
+ItemSpecBlockExpr ::= spec <<msl ItemSpecBlock>> {
+    implements = [
+        "org.move.lang.core.psi.MslScopeElement"
+    ]
+}
 
 ItemSpecBlock ::= '{' ItemSpecBlock_items '}'
 {

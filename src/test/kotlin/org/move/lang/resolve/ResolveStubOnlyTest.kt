@@ -48,4 +48,29 @@ class ResolveStubOnlyTest : ResolveProjectTestCase() {
         }
     }
 
+//    fun `test stub resolve module function`() = stubOnlyResolve {
+//        namedMoveToml("MyPackage")
+//        sources {
+//            move(
+//                "module.move", """
+//            module 0x1::Module {
+//                public fun call() {}
+//                          //X
+//            }
+//            """
+//            )
+//            move(
+//                "main.move", """
+//            script {
+//                use 0x1::Module;
+//                fun main() {
+//                    Module::call();
+//                          //^
+//                }
+//            }
+//            """
+//            )
+//        }
+//    }
+
 }
