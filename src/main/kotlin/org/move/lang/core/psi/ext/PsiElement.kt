@@ -7,7 +7,6 @@ import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiFileImpl
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.tree.IElementType
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.MoveFile
@@ -189,22 +188,6 @@ fun PsiElement.isErrorElement(): Boolean =
 
 fun PsiElement.equalsTo(another: PsiElement): Boolean =
     PsiManager.getInstance(this.project).areElementsEquivalent(this, another)
-
-fun PsiElement.isMsl(): Boolean {
-    return getProjectPsiDependentCache(this) {
-        if (it !is MvElement) return@getProjectPsiDependentCache false
-
-        // use items always non-msl, otherwise import resolution doesn't work correctly
-        if (it is MvUseItem) return@getProjectPsiDependentCache false
-
-        var element = it
-        while (element != null) {
-            if (element is MslScopeElement) return@getProjectPsiDependentCache true
-            element = element.parent
-        }
-        false
-    }
-}
 
 fun PsiElement.cameBefore(element: PsiElement) =
     PsiUtilCore.compareElementsByPosition(this, element) <= 0

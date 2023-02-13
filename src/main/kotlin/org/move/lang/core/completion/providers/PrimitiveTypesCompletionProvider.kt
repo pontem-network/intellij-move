@@ -13,6 +13,7 @@ import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.AngleBracketsInsertHandler
 import org.move.lang.core.completion.PRIMITIVE_TYPE_PRIORITY
 import org.move.lang.core.completion.withPriority
+import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.ext.isMsl
 
 object PrimitiveTypesCompletionProvider : MvCompletionProvider() {
@@ -29,7 +30,9 @@ object PrimitiveTypesCompletionProvider : MvCompletionProvider() {
         context: ProcessingContext,
         result: CompletionResultSet,
     ) {
-        if (parameters.position.parent.isMsl()) {
+        val pos = parameters.position
+        val parent = pos.parent
+        if (parent is MvElement && parent.isMsl()) {
             primitives = primitives + SPEC_ONLY_PRIMITIVE_TYPES.toList()
         }
         primitives.forEach {

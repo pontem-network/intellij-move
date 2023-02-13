@@ -6,10 +6,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.MoveProject
 import org.move.cli.moveProjects
 import org.move.lang.MoveFile
-import org.move.lang.core.psi.MvAssignmentExpr
-import org.move.lang.core.psi.MvElement
-import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.MvInitializer
+import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ItemScope
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
@@ -41,3 +38,19 @@ val MvElement.itemScope: ItemScope
             ItemScope.MAIN
         }
     }
+
+fun MvElement.isMsl(): Boolean {
+    return getProjectPsiDependentCache(this) {
+        // use items always non-msl, otherwise import resolution doesn't work correctly
+        if (it is MvUseItem)
+            return@getProjectPsiDependentCache false
+
+        var element = it
+        while (element != null) {
+            if (element is MslScopeElement)
+                return@getProjectPsiDependentCache true
+            element = element.parent as? MvElement
+        }
+        false
+    }
+}

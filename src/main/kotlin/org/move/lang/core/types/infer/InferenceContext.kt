@@ -234,9 +234,10 @@ sealed class TypeError(open val element: PsiElement) {
                 TypeErrorScope.MODULE -> error is CircularType
                 TypeErrorScope.MAIN -> {
                     if (error is CircularType) return false
+                    val element = error.element
                     if (
                         (error is UnsupportedBinaryOp || error is IncompatibleArgumentsToBinaryExpr)
-                        && error.element.isMsl()
+                        && (element is MvElement && element.isMsl())
                     ) {
                         return false
                     }
