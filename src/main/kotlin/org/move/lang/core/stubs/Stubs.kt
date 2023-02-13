@@ -294,7 +294,7 @@ class MvModuleSpecStub(
             MvModuleSpecImpl(stub, this)
 
         override fun createStub(psi: MvModuleSpec, parentStub: StubElement<*>?): MvModuleSpecStub {
-            return MvModuleSpecStub(parentStub, this, psi.fqModuleRef?.stubText())
+            return MvModuleSpecStub(parentStub, this, psi.fqModuleRef?.referenceName)
         }
 
         override fun indexStub(stub: MvModuleSpecStub, sink: IndexSink) = sink.indexModuleSpecStub(stub)

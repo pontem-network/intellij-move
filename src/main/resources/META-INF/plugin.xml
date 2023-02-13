@@ -22,7 +22,6 @@
                   extensions="move"
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
-        <fileBasedIndex implementation="org.move.lang.index.MvModuleSpecIndex"/>
 
         <configurationType
                 implementation="org.move.cli.runconfig.AptosCommandConfigurationType"/>
@@ -39,7 +38,7 @@
         <stubElementTypeHolder class="org.move.lang.MvElementTypes" />
 
         <stubIndex implementation="org.move.lang.index.MvNamedElementIndex" />
-        <stubIndex implementation="org.move.lang.index.MvModuleSpecStubIndex" />
+        <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
         <lang.documentationProvider language="Move"
                                     implementationClass="org.move.ide.docs.MvDocumentationProvider"/>

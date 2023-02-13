@@ -29,8 +29,8 @@ fun MvModule.stubText(): String {
 
 fun MvModule.fqModule(): FQModule? {
     return getProjectPsiDependentCache(this) {
-        val address = this.addressRef()?.toAddress() ?: return@getProjectPsiDependentCache null
-        val name = this.name ?: return@getProjectPsiDependentCache null
+        val address = it.addressRef()?.toAddress() ?: return@getProjectPsiDependentCache null
+        val name = it.name ?: return@getProjectPsiDependentCache null
         FQModule(address, name)
     }
 }
@@ -189,14 +189,18 @@ fun MvModule.allModuleSpecs(): List<MvModuleSpec> {
     return getProjectPsiDependentCache(this) {
         val currentModule = it.fqModule() ?: return@getProjectPsiDependentCache emptyList()
         val moveProject = it.moveProject ?: return@getProjectPsiDependentCache emptyList()
-        val specFiles =
-            MvModuleSpecIndex.moduleSpecFiles(it.project, it, moveProject.searchScope())
-        specFiles
-            .flatMap { f -> f.moduleSpecs() }
+        val moduleName = it.name ?: return@getProjectPsiDependentCache emptyList()
+        val file = it.containingMoveFile ?: return@getProjectPsiDependentCache emptyList()
+
+        val searchScope = moveProject.searchScope()
+        val moduleSpecs = file.moduleSpecs().asSequence() +
+                MvModuleSpecIndex.getElementsByModuleName(it.project, moduleName, searchScope).asSequence()
+        moduleSpecs
             .filter { moduleSpec ->
                 val module = moduleSpec.fqModuleRef?.reference?.resolve() as? MvModule ?: return@filter false
                 currentModule == module.fqModule()
             }
+            .toList()
     }
 }
 

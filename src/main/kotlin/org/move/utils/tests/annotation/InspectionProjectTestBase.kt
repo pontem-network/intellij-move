@@ -3,7 +3,6 @@ package org.move.utils.tests.annotation
 import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.testFramework.PlatformTestUtil
 import org.intellij.lang.annotations.Language
-import org.move.lang.index.BaseMoveFileIndex
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.TreeBuilder
@@ -41,7 +40,6 @@ abstract class InspectionProjectTestBase(
     ) {
         testProject(code)
 
-        BaseMoveFileIndex.requestRebuildIndices()
         PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
 
         annotationFixture.codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
@@ -63,7 +61,6 @@ abstract class InspectionProjectTestBase(
     ) {
         testProject(before)
 
-        BaseMoveFileIndex.requestRebuildIndices()
         PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
 
         annotationFixture.codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
