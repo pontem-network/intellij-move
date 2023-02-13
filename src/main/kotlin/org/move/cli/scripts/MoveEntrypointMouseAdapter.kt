@@ -4,9 +4,9 @@ import org.move.cli.AptosCommandLine
 import org.move.cli.toolwindow.MoveProjectsTree
 import org.move.cli.toolwindow.MoveProjectsTreeStructure
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.ext.toAddress
 import org.move.lang.core.psi.module
 import org.move.lang.core.psi.typeParameters
+import org.move.lang.core.types.address
 import org.move.lang.moveProject
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -40,9 +40,9 @@ class MoveEntrypointMouseAdapter : MouseAdapter() {
             scriptFunction: MvFunction,
             paramsDialog: TransactionParametersDialog
         ) {
-            val moveProject = scriptFunction.moveProject ?: return
+            val moveProj = scriptFunction.moveProject ?: return
 
-            val address = scriptFunction.module?.addressRef?.toAddress(moveProject)?.value ?: return
+            val address = scriptFunction.module?.address(moveProj)?.canonicalValue ?: return
             val module = scriptFunction.module?.name ?: return
             val name = scriptFunction.name ?: return
 
@@ -68,8 +68,8 @@ class MoveEntrypointMouseAdapter : MouseAdapter() {
                 sortedTypeParams,
                 sortedParams,
             ).flatten()
-            AptosCommandLine("move run", moveProject.contentRootPath, commandArgs)
-                .run(moveProject, paramsDialog.configurationName)
+            AptosCommandLine("move run", moveProj.contentRootPath, commandArgs)
+                .run(moveProj, paramsDialog.configurationName)
         }
 
         fun maybeQuoteTypeArg(typeArg: String): String =

@@ -9,12 +9,6 @@ import org.move.lang.core.resolve.ref.MvFQModuleReference
 import org.move.lang.core.resolve.ref.MvFQModuleReferenceImpl
 import org.move.lang.moveProject
 
-fun MvFQModuleRef.stubText(): String? {
-    val moveProject = this.moveProject ?: return null
-    val addressName = this.addressRef.serializedAddressText(moveProject) ?: "<unknown>"
-    return "$addressName::${this.referenceName}"
-}
-
 abstract class MvFQModuleRefMixin(node: ASTNode) : MvElementImpl(node),
                                                    MvFQModuleRef {
     override val identifier: PsiElement?

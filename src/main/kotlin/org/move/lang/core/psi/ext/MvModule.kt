@@ -12,6 +12,7 @@ import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.FQModule
+import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleSpecIndex
 import org.move.lang.moveProject
 import javax.swing.Icon
@@ -21,29 +22,22 @@ fun MvModule.hasTestFunctions(): Boolean = this.testFunctions().isNotEmpty()
 fun MvModule.addressRef(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
 
-fun MvModule.stubText(): String {
-    val address = this.moveProject
-        ?.let { this.addressRef?.serializedAddressText(it) } ?: "<unknown>"
-    return "$address::${this.name}"
-}
-
 fun MvModule.fqModule(): FQModule? {
-    return getProjectPsiDependentCache(this) {
-        val address = it.addressRef()?.toAddress() ?: return@getProjectPsiDependentCache null
-        val name = it.name ?: return@getProjectPsiDependentCache null
-        FQModule(address, name)
-    }
+    val moveProj = this.moveProject ?: return null
+    val address = this.address(moveProj) ?: return null
+    val name = this.name ?: return null
+    return FQModule(address, name)
 }
 
-val MvModule.friendModules: Set<FQModule>
+val MvModule.declaredFriendModules: Set<FQModule>
     get() {
         val block = this.moduleBlock ?: return emptySet()
-        val moduleRefs = block.friendDeclList.mapNotNull { it.fqModuleRef }
+        val friendModuleRefs = block.friendDeclList.mapNotNull { it.fqModuleRef }
+        val moveProj = block.moveProject
 
         val friends = mutableSetOf<FQModule>()
-        for (moduleRef in moduleRefs) {
-            val proj = moduleRef.moveProject ?: continue
-            val address = moduleRef.addressRef.toAddress(proj) ?: continue
+        for (moduleRef in friendModuleRefs) {
+            val address = moduleRef.addressRef.address(moveProj) ?: continue
             val identifier = moduleRef.identifier?.text ?: continue
             friends.add(FQModule(address, identifier))
         }
@@ -105,7 +99,7 @@ fun MvModule.visibleFunctions(visibility: Visibility): List<MvFunction> =
             allNonTestFunctions()
                 .filter { it.visibility == FunctionVisibility.PUBLIC_SCRIPT }
         is Visibility.PublicFriend -> {
-            if (visibility.currentModule in this.friendModules) {
+            if (visibility.currentModule in this.declaredFriendModules) {
                 allNonTestFunctions().filter { it.visibility == FunctionVisibility.PUBLIC_FRIEND }
             } else {
                 emptyList()
@@ -219,7 +213,8 @@ abstract class MvModuleMixin : MvStubbedNamedElementImpl<MvModuleStub>,
 
     override fun getPresentation(): ItemPresentation? {
         val name = this.name ?: return null
-        val locationString = this.addressRef()?.toAddress()?.text() ?: ""
+        val moveProj = this.moveProject
+        val locationString = this.address(moveProj)?.text() ?: ""
         return PresentationData(
             name,
             locationString,

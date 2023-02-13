@@ -8,7 +8,9 @@ import org.move.ide.presentation.fullname
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.itemContext
+import org.move.lang.core.types.stubAddress
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
@@ -194,13 +196,13 @@ class MvErrorAnnotator : MvAnnotator() {
 
     private fun checkModuleDef(holder: MvAnnotationHolder, mod: MvModule) {
         val moveProj = mod.moveProject ?: return
-        val addressIdent = mod.addressRef()?.toAddress(moveProj) ?: return
+        val addressIdent = mod.address(moveProj) ?: return
         val modIdent = Pair(addressIdent, mod.name)
         val file = mod.containingMoveFile ?: return
         val duplicateIdents =
             file.modules()
                 .filter { it.name != null }
-                .groupBy { Pair(it.addressRef()?.toAddress(), it.name) }
+                .groupBy { Pair(it.address(moveProj), it.name) }
                 .filter { it.value.size > 1 }
                 .map { it.key }
                 .toSet()

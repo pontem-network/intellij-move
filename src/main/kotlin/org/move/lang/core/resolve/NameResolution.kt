@@ -8,7 +8,9 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.types.normalizeAddressValue
+import org.move.lang.core.types.address
+import org.move.lang.core.types.psiStubAddress
+import org.move.lang.core.types.stubAddress
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
@@ -133,7 +135,7 @@ fun processQualItem(
 
                     vis is Visibility.PublicFriend && item.visibility == FunctionVisibility.PUBLIC_FRIEND -> {
                         val module = item.module ?: return false
-                        if (vis.currentModule in module.friendModules) {
+                        if (vis.currentModule in module.declaredFriendModules) {
                             processor.match(itemVis, item)
                         }
                     }
@@ -186,14 +188,14 @@ fun processFQModuleRef(
         mslScope = fqModuleRef.mslScope,
         itemScope = fqModuleRef.itemScope,
     )
-    val moveProject = fqModuleRef.moveProject ?: return
+    val moveProj = fqModuleRef.moveProject ?: return
+    val refAddress = fqModuleRef.addressRef.address(moveProj)?.canonicalValue
 
-    val refAddressValue = fqModuleRef.addressRef.toAddress(moveProject)?.let { normalizeAddressValue(it.value) }
     val moduleProcessor = MatchingProcessor<MvNamedElement> {
         val entry = SimpleScopeEntry(it.name, it.element as MvModule)
-        val modAddressValue =
-            entry.element.addressRef()?.toAddress(moveProject)?.let { a -> normalizeAddressValue(a.value) }
-        if (modAddressValue != refAddressValue) return@MatchingProcessor false
+        val modAddress = entry.element.address(moveProj)?.canonicalValue
+        if (modAddress != refAddress)
+            return@MatchingProcessor false
         processor.match(entry)
     }
 
@@ -202,7 +204,7 @@ fun processFQModuleRef(
     var stopped = processFileItems(currentFile, itemVis, moduleProcessor)
     if (stopped) return
 
-    moveProject.processMoveFiles { moveFile ->
+    moveProj.processMoveFiles { moveFile ->
         // skip current file as it's processed already
         if (moveFile.toNioPathOrNull() == currentFile.toNioPathOrNull())
             return@processMoveFiles true
@@ -224,15 +226,15 @@ fun processFQModuleRef(
         itemScope = fqModuleRef.itemScope,
     )
     val project = fqModuleRef.project
-    val moveProject = fqModuleRef.moveProject ?: return
+    val moveProj = fqModuleRef.moveProject ?: return
 
-    val refAddressValue = fqModuleRef.addressRef.toAddress(moveProject)?.let { normalizeAddressValue(it.value) }
+    val refAddress = fqModuleRef.addressRef.address(moveProj)?.canonicalValue
     val moduleProcessor = MatchingProcessor<MvNamedElement> {
         val entry = SimpleScopeEntry(it.name, it.element as MvModule)
         // TODO: check belongs to the current project
-        val modAddressValue =
-            entry.element.addressRef()?.toAddress(moveProject)?.let { a -> normalizeAddressValue(a.value) }
-        if (modAddressValue != refAddressValue) return@MatchingProcessor false
+        val modAddress = entry.element.address(moveProj)?.canonicalValue
+
+        if (modAddress != refAddress) return@MatchingProcessor false
         processor.match(entry)
     }
 
@@ -243,7 +245,7 @@ fun processFQModuleRef(
 
     val currentFileScope = GlobalSearchScope.fileScope(currentFile)
     val searchScope =
-        moveProject.searchScope().intersectWith(GlobalSearchScope.notScope(currentFileScope))
+        moveProj.searchScope().intersectWith(GlobalSearchScope.notScope(currentFileScope))
 
     MvNamedElementIndex
         .processElementsByName(project, target, searchScope) {
