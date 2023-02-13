@@ -34,7 +34,9 @@ inline fun <reified T : PsiElement> PsiElement.stubChildrenOfType(): List<T> {
 
 val PsiElement.ancestors: Sequence<PsiElement>
     get() = generateSequence(this) {
-        if (it is PsiFile) null else it.parent
+        if (it is PsiFile)
+            null
+        else it.parent
     }
 
 inline fun <reified T : PsiElement> PsiElement.ancestorsOfType(): Sequence<T> {
@@ -195,26 +197,14 @@ fun PsiElement.isMsl(): Boolean {
         // use items always non-msl, otherwise import resolution doesn't work correctly
         if (it is MvUseItem) return@getProjectPsiDependentCache false
 
-        if (it is MvSpecFunction
-            || it is MvItemSpecBlockExpr
-            || it is MvSchema
-            || it is MvItemSpec
-            || it is MvModuleSpecBlock
-        ) {
-            return@getProjectPsiDependentCache true
+        val specElement = PsiTreeUtil.findFirstParent(it, false) { parent ->
+            parent is MvSpecFunction
+                    || parent is MvItemSpecBlockExpr
+                    || parent is MvSchema
+                    || parent is MvItemSpec
+                    || parent is MvModuleSpecBlock
         }
-
-        // reuse other caches
-        it.parent?.isMsl()
-
-//        val specElement = PsiTreeUtil.findFirstParent(it, false) { parent ->
-//            parent is MvSpecFunction
-//                    || parent is MvItemSpecBlockExpr
-//                    || parent is MvSchema
-//                    || parent is MvItemSpec
-//                    || parent is MvModuleSpecBlock
-//        }
-//        specElement != null
+        specElement != null
     }
 }
 

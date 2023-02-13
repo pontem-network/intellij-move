@@ -88,7 +88,7 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
             .withTypeText(this.returnType?.type?.text ?: "()")
 
         is MvModule -> this.createLookupElementWithIcon()
-            .withTailText(this.address()?.let { " ${it.text}" } ?: "")
+            .withTailText(this.addressRef()?.let { " ${it.text}" } ?: "")
             .withTypeText(this.containingFile?.name)
 
         is MvStruct -> {

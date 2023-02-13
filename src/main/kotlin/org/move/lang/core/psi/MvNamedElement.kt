@@ -12,7 +12,7 @@ import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.completion.BUILTIN_ITEM_PRIORITY
 import org.move.lang.core.completion.LOCAL_ITEM_PRIORITY
-import org.move.lang.core.psi.ext.address
+import org.move.lang.core.psi.ext.addressRef
 import org.move.lang.core.psi.ext.findLastChildByType
 
 interface MvNamedElement : MvElement,
@@ -59,14 +59,14 @@ val MvQualifiedNamedElement.fqPath: FqPath?
     get() {
         return when (this) {
             is MvModule -> {
-                val address = this.address()?.text ?: return null
+                val address = this.addressRef()?.text ?: return null
                 val moduleName = this.name ?: return null
                 FqPath(address, moduleName, null)
             }
 
             else -> {
                 val module = this.containingModule ?: return null
-                val address = module.address()?.text ?: return null
+                val address = module.addressRef()?.text ?: return null
                 val moduleName = module.name ?: return null
                 val elementName = this.name ?: return null
                 FqPath(address, moduleName, elementName)

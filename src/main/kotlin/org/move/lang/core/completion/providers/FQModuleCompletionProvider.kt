@@ -9,7 +9,7 @@ import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvFQModuleRef
-import org.move.lang.core.psi.ext.address
+import org.move.lang.core.psi.ext.addressRef
 import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.psi.ext.toAddress
 import org.move.lang.core.resolve.ItemVis
@@ -46,7 +46,7 @@ object FQModuleCompletionProvider : MvCompletionProvider() {
         val positionAddress = fqModuleRef.addressRef.toAddress()
         processFQModuleRef(fqModuleRef) {
             val module = it.element
-            if (positionAddress == module.address()?.toAddress()) {
+            if (positionAddress == module.addressRef()?.toAddress()) {
                 val lookup = module.createLookupElement(completionContext)
                 result.addElement(lookup)
             }

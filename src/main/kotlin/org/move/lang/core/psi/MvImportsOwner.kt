@@ -1,6 +1,7 @@
 package org.move.lang.core.psi
 
-import org.move.lang.core.psi.ext.address
+import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
+import org.move.lang.core.psi.ext.addressRef
 import org.move.lang.core.psi.ext.isSelf
 
 interface MvImportsOwner : MvElement {
@@ -13,8 +14,11 @@ fun MvImportsOwner.items(): Sequence<MvElement> {
         .filter { it !is MvAttr }
 }
 
-fun MvImportsOwner.moduleImports(): List<MvModuleUseSpeck> =
-    useStmtList.mapNotNull { it.moduleUseSpeck }
+fun MvImportsOwner.moduleImports(): List<MvModuleUseSpeck> {
+    return getProjectPsiDependentCache(this) {
+        useStmtList.mapNotNull { it.moduleUseSpeck }
+    }
+}
 
 fun MvImportsOwner.moduleImportNames(): List<MvNamedElement> =
     listOf(
@@ -29,16 +33,21 @@ fun MvImportsOwner.moduleImportsNoAliases(): List<MvModuleUseSpeck> =
 fun MvImportsOwner.moduleImportsAliases(): List<MvUseAlias> =
     moduleImports().mapNotNull { it.useAlias }
 
-fun MvImportsOwner.itemImports(): List<MvUseItem> =
-    useStmtList
-        .mapNotNull { it.itemUseSpeck }
-        .flatMap {
-            val item = it.useItem
-            if (item != null) {
-                listOf(item)
-            } else
-                it.useItemGroup?.useItemList.orEmpty()
-        }
+fun MvImportsOwner.itemImports(): List<MvUseItem> {
+    return getProjectPsiDependentCache(this) { importsOwner ->
+        importsOwner
+            .useStmtList
+            .mapNotNull { it.itemUseSpeck }
+            .flatMap {
+                val item = it.useItem
+                if (item != null) {
+                    listOf(item)
+                } else
+                    it.useItemGroup?.useItemList.orEmpty()
+            }
+
+    }
+}
 
 fun MvImportsOwner.itemImportNames(): List<MvNamedElement> =
     listOf(
@@ -61,16 +70,12 @@ fun MvImportsOwner.selfItemImportAliases(): List<MvUseAlias> =
         .filter { it.isSelf }
         .mapNotNull { it.useAlias }
 
-fun MvImportsOwner.itemImportsWithoutAliases(): List<MvUseItem> =
-    itemImports().filter { it.useAlias == null }
-
-
 fun MvImportsOwner.shortestPathText(item: MvNamedElement): String? {
     val itemName = item.name ?: return null
     // local
     if (this == item.containingImportsOwner) return itemName
 
-    for (itemImport in this.itemImportsWithoutAliases()) {
+    for (itemImport in this.itemImportsNoAliases()) {
         val importedItem = itemImport.reference.resolve() ?: continue
         if (importedItem == item) {
             return itemName
@@ -84,6 +89,6 @@ fun MvImportsOwner.shortestPathText(item: MvNamedElement): String? {
             return "$moduleName::$itemName"
         }
     }
-    val addressName = module.address()?.text ?: return null
+    val addressName = module.addressRef()?.text ?: return null
     return "$addressName::$moduleName::$itemName"
 }

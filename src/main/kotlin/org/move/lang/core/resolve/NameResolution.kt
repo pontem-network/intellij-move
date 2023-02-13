@@ -80,9 +80,10 @@ fun resolveLocalItem(
         visibilities = Visibility.local(),
         itemScope = element.itemScope,
     )
+    val referenceName = element.referenceName
     var resolved: MvNamedElement? = null
     processItems(element, itemVis) {
-        if (it.name == element.referenceName) {
+        if (it.name == referenceName) {
             resolved = it.element
             return@processItems true
         }
@@ -191,7 +192,7 @@ fun processFQModuleRef(
     val moduleProcessor = MatchingProcessor<MvNamedElement> {
         val entry = SimpleScopeEntry(it.name, it.element as MvModule)
         val modAddressValue =
-            entry.element.address()?.toAddress(moveProject)?.let { a -> normalizeAddressValue(a.value) }
+            entry.element.addressRef()?.toAddress(moveProject)?.let { a -> normalizeAddressValue(a.value) }
         if (modAddressValue != refAddressValue) return@MatchingProcessor false
         processor.match(entry)
     }
@@ -230,7 +231,7 @@ fun processFQModuleRef(
         val entry = SimpleScopeEntry(it.name, it.element as MvModule)
         // TODO: check belongs to the current project
         val modAddressValue =
-            entry.element.address()?.toAddress(moveProject)?.let { a -> normalizeAddressValue(a.value) }
+            entry.element.addressRef()?.toAddress(moveProject)?.let { a -> normalizeAddressValue(a.value) }
         if (modAddressValue != refAddressValue) return@MatchingProcessor false
         processor.match(entry)
     }

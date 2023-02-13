@@ -24,19 +24,10 @@ interface MvDocAndAttributeOwner : MvElement, NavigatablePsiElement {
     }
 }
 
-//fun MvDocAndAttributeOwner.findSingleItemAttr(name: String): MvAttr? =
-//    this.attrList.find {
-//        it.attrItemList.size == 1
-//                && it.attrItemList.first().identifier.textMatches(name)
-//    }
-
 val MvDocAndAttributeOwner.isTestOnly: Boolean
     get() {
         val stub = attributeStub
-        return stub?.isTestOnly
-            ?: getProjectPsiDependentCache(this) {
-                it.queryAttributes.hasAttrItem("test_only")
-            }
+        return stub?.isTestOnly ?: queryAttributes.isTestOnly
     }
 
 inline val MvDocAndAttributeOwner.attributeStub: MvAttributeOwnerStub?

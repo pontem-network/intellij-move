@@ -18,7 +18,7 @@ import javax.swing.Icon
 
 fun MvModule.hasTestFunctions(): Boolean = this.testFunctions().isNotEmpty()
 
-fun MvModule.address(): MvAddressRef? =
+fun MvModule.addressRef(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
 
 fun MvModule.stubText(): String {
@@ -29,7 +29,7 @@ fun MvModule.stubText(): String {
 
 fun MvModule.fqModule(): FQModule? {
     return getProjectPsiDependentCache(this) {
-        val address = this.address()?.toAddress() ?: return@getProjectPsiDependentCache null
+        val address = this.addressRef()?.toAddress() ?: return@getProjectPsiDependentCache null
         val name = this.name ?: return@getProjectPsiDependentCache null
         FQModule(address, name)
     }
@@ -215,7 +215,7 @@ abstract class MvModuleMixin : MvStubbedNamedElementImpl<MvModuleStub>,
 
     override fun getPresentation(): ItemPresentation? {
         val name = this.name ?: return null
-        val locationString = this.address()?.toAddress()?.text() ?: ""
+        val locationString = this.addressRef()?.toAddress()?.text() ?: ""
         return PresentationData(
             name,
             locationString,
@@ -226,7 +226,7 @@ abstract class MvModuleMixin : MvStubbedNamedElementImpl<MvModuleStub>,
 
     override val fqName: String
         get() {
-            val address = this.address()?.text?.let { "$it::" } ?: ""
+            val address = this.addressRef()?.text?.let { "$it::" } ?: ""
             val module = this.name ?: "<unknown>"
             return address + module
         }

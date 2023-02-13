@@ -27,7 +27,7 @@ val MvUseItem.moduleName: String
         return useStmt?.itemUseSpeck?.fqModuleRef?.referenceName.orEmpty()
     }
 
-val MvUseItem.isSelf: Boolean get() = this.identifier.text == "Self"
+val MvUseItem.isSelf: Boolean get() = this.identifier.textMatches("Self")
 
 class MvUseItemReferenceElement(element: MvUseItem) : MvReferenceCached<MvUseItem>(element) {
     override fun resolveInner(): List<MvNamedElement> {

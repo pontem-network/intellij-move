@@ -98,10 +98,19 @@ class MvFunctionStub(
     parent: StubElement<*>?,
     elementType: IStubElementType<*, *>,
     override val name: String?,
-    override val flags: Int
+    override val flags: Int,
+    private val vis: Int
 ) : MvAttributeOwnerStubBase<MvFunction>(parent, elementType), MvNamedStub {
 
     val isTest: Boolean get() = BitUtil.isSet(flags, TEST_MASK)
+
+    val visibility: FunctionVisibility
+        get() {
+            for (value in FunctionVisibility.values()) {
+                if (value.ordinal == this.vis) return value
+            }
+            error("Invalid value")
+        }
 
     object Type : MvStubElementType<MvFunctionStub, MvFunction>("FUNCTION") {
         override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
@@ -109,13 +118,15 @@ class MvFunctionStub(
                 parentStub,
                 this,
                 dataStream.readNameAsString(),
-                dataStream.readInt()
+                dataStream.readInt(),
+                dataStream.readInt(),
             )
 
         override fun serialize(stub: MvFunctionStub, dataStream: StubOutputStream) =
             with(dataStream) {
                 writeName(stub.name)
                 writeInt(stub.flags)
+                writeInt(stub.vis)
             }
 
         override fun createPsi(stub: MvFunctionStub): MvFunction =
@@ -126,7 +137,10 @@ class MvFunctionStub(
 
             var flags = MvAttributeOwnerStub.extractFlags(attrs)
             flags = BitUtil.set(flags, TEST_MASK, attrs.isTest)
-            return MvFunctionStub(parentStub, this, psi.name, flags)
+
+            val visibility = psi.visibilityFromPsi().ordinal
+
+            return MvFunctionStub(parentStub, this, psi.name, flags, visibility)
         }
 
         override fun indexStub(stub: MvFunctionStub, sink: IndexSink) = sink.indexFunctionStub(stub)
