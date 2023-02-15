@@ -27,6 +27,8 @@
     name(".+BinOp")="operator"
     name(".*Expr")="expression"
 
+    extraRoot(".*CodeFragmentElement")=true
+
     extends(".*Stmt")=Stmt
 
     consumeTokenMethod("((?!.*_with_recover).*_recover)|(.*_first)|(.*Expr)") = "consumeTokenFast"
@@ -159,6 +161,8 @@
 //   * rules are PascalCase: StructItem
 //   * recovery related rules are PascalCase_with_snake_suffix: Item_recover
 File ::= (NamedAddressDef | Script | AddressDef | Module | ModuleSpec)*
+
+QualPathCodeFragmentElement ::= FQModulePathIdent? TypeArgumentList?
 
 Attr ::= '#' '[' <<comma_sep_items AttrItem>> ']' { pin = 1 }
 AttrItem ::= IDENTIFIER AttrItemArguments?

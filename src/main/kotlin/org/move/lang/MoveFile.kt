@@ -35,8 +35,7 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
     return null
 }
 
-val PsiElement.moveProject: MoveProject?
-    get() = project.moveProjects.findMoveProject(this)
+val PsiElement.moveProject: MoveProject? get() = project.moveProjects.findMoveProject(this)
 
 fun VirtualFile.hasChild(name: String) = this.findChild(name) != null
 
@@ -52,9 +51,11 @@ fun PsiFile.toNioPathOrNull(): Path? {
     return this.originalFile.virtualFile.toNioPathOrNull()
 }
 
-class MoveFile(fileViewProvider: FileViewProvider) : PsiFileBase(fileViewProvider, MoveLanguage) {
-
+abstract class MoveFileBase(fileViewProvider: FileViewProvider): PsiFileBase(fileViewProvider, MoveLanguage) {
     override fun getFileType(): FileType = MoveFileType
+}
+
+class MoveFile(fileViewProvider: FileViewProvider) : MoveFileBase(fileViewProvider) {
 
     fun addressBlocks(): List<MvAddressBlock> {
         val defs = PsiTreeUtil.getChildrenOfTypeAsList(this, MvAddressDef::class.java)

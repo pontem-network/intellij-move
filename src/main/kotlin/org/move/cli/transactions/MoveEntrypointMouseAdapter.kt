@@ -1,4 +1,4 @@
-package org.move.cli.scripts
+package org.move.cli.transactions
 
 import org.move.cli.AptosCommandLine
 import org.move.cli.toolwindow.MoveProjectsTree
@@ -20,19 +20,24 @@ class MoveEntrypointMouseAdapter : MouseAdapter() {
         val tree = e.source as? MoveProjectsTree ?: return
         val node = tree.selectionModel.selectionPath
             ?.lastPathComponent as? DefaultMutableTreeNode ?: return
-        val scriptFunction =
+        val entryFunction =
             (node.userObject as? MoveProjectsTreeStructure.MoveSimpleNode.Entrypoint)?.function
                 ?: return
 
-        val moveProject = scriptFunction.moveProject ?: return
+        val moveProject = entryFunction.moveProject ?: return
         // TODO: show dialog that user needs to run `aptos init` first for transaction dialog to work
         val aptosConfig = moveProject.currentPackage.aptosConfigYaml ?: return
 
-        val paramsDialog = TransactionParametersDialog(scriptFunction, aptosConfig.profiles.toList())
+        val paramsDialog = TransactionParametersDialog(entryFunction, aptosConfig.profiles.toList())
         val isOk = paramsDialog.showAndGet()
         if (!isOk) return
 
-        buildAndRunAptosCommandLine(scriptFunction, paramsDialog)
+        val cacheService = entryFunction.project.cacheService
+        for ((name, value) in paramsDialog.typeParams.entries) {
+            cacheService.cacheTypeParameter(name, value)
+        }
+
+        buildAndRunAptosCommandLine(entryFunction, paramsDialog)
     }
 
     companion object {

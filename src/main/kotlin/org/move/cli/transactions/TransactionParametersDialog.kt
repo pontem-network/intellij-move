@@ -1,12 +1,17 @@
-package org.move.cli.scripts
+package org.move.cli.transactions
 
+import com.intellij.openapi.components.service
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.ui.LanguageTextField
+import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.ui.UIBundle
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.*
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.layout.ValidationInfoBuilder
+import com.intellij.util.PsiErrorElementUtil
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.ext.inferBindingTy
 import org.move.lang.core.psi.module
@@ -18,30 +23,14 @@ import org.move.lang.core.types.ty.TyAddress
 import org.move.lang.core.types.ty.TyBool
 import org.move.lang.core.types.ty.TyInteger
 import org.move.lang.core.types.ty.TyVector
+import org.move.utils.ui.MoveTextFieldWithCompletion
+import org.move.utils.ui.bindText
+import org.move.utils.ui.registerValidationRequestor
 import javax.swing.JComponent
 
 const val NAME_COLUMNS = 42
 const val ARGUMENT_COLUMNS = 36
 const val PROFILE_COLUMNS = 24
-
-//class TypeParamsCache : TextCompletionCache<String>,
-//                        SimplePersistentStateComponent<TypeParamsCache.State>(State(emptyList())) {
-//
-//    data class State(var items: MutableList<String>) : BaseState()
-//
-//    override fun setItems(items: MutableCollection<String>) {
-//        // do nothing
-//    }
-//
-//    override fun getItems(prefix: String, parameters: CompletionParameters?): MutableCollection<String> {
-//        return state.items.filter { prefix in it }.toMutableList()
-//    }
-//
-//    override fun updateCache(prefix: String, parameters: CompletionParameters?) {
-//        TODO("Not yet implemented")
-//    }
-//
-//}
 
 fun Row.ulongTextField(range: ULongRange?): Cell<JBTextField> {
     val result = cell(JBTextField())
@@ -63,10 +52,6 @@ fun Row.ulongTextField(range: ULongRange?): Cell<JBTextField> {
     return result
 }
 
-//fun <T : EditorTextField> Cell<T>.bindText(getter: () -> String, setter: (String) -> Unit): Cell<T> {
-//    return bind(EditorTextField::getText, EditorTextField::setText, MutableProperty(getter, setter))
-//}
-
 class TransactionParametersDialog(
     val scriptFunction: MvFunction,
     val profiles: List<String>,
@@ -84,22 +69,8 @@ class TransactionParametersDialog(
         init()
     }
 
-    //    fun typeParamTextField(): TextFieldWithAutoCompletion<String> {
-//        return TextFieldWithAutoCompletionWithCache.create(
-//            TypeParamsCache(),
-//            false,
-//            scriptFunction.project,
-//            null,
-//            true,
-//            ""
-//        )
-//    }
-//    fun paramTextField(): LanguageTextField {
-//        val textField = LanguageTextField(MoveLanguage, scriptFunction.project, "")
-//        return textField
-//    }
-
     override fun createCenterPanel(): JComponent {
+        val cacheService = scriptFunction.project.service<RunTransactionCacheService>()
         return panel {
             row("Run Configuration name: ") {
                 textField()
@@ -120,13 +91,16 @@ class TransactionParametersDialog(
                     for (typeParameter in scriptFunction.typeParameters) {
                         val paramName = typeParameter.name ?: continue
                         row(paramName) {
-                            textField()
+                            val previousValues = cacheService.getTypeParameterCache(paramName)
+                            cell(typeParameterTextField(previousValues))
 //                                .columns(ARGUMENT_COLUMNS)
                                 .horizontalAlign(HorizontalAlign.FILL)
                                 .bindText(
                                     { typeParams.getOrDefault(paramName, "") },
                                     { typeParams[paramName] = it })
-                                .validationOnApply(validateNonEmpty("Required type parameter"))
+                                .registerValidationRequestor()
+                                .validationOnApply(validateEditorTextNonEmpty("Required type parameter"))
+                                .validationOnApply(validateParseErrors("Invalid type"))
                         }
                     }
                 }
@@ -176,10 +150,40 @@ class TransactionParametersDialog(
             }
         }
     }
+
+    private fun typeParameterTextField(variants: Collection<String>): LanguageTextField {
+        val project = scriptFunction.project
+        // TODO: add TYPE icon
+        val completionProvider = TextFieldWithAutoCompletion.StringsCompletionProvider(variants, null)
+        return MoveTextFieldWithCompletion(
+            project,
+            "",
+            completionProvider,
+            scriptFunction,
+        )
+    }
 }
 
 private fun validateNonEmpty(message: String): ValidationInfoBuilder.(JBTextField) -> ValidationInfo? {
     return {
         if (it.text.isNullOrEmpty()) error(message) else null
+    }
+}
+
+private fun validateEditorTextNonEmpty(message: String): ValidationInfoBuilder.(LanguageTextField) -> ValidationInfo? {
+    return {
+        if (it.text.isEmpty()) error(message) else null
+
+    }
+}
+
+private fun validateParseErrors(message: String): ValidationInfoBuilder.(LanguageTextField) -> ValidationInfo? {
+    return {
+        FileDocumentManager.getInstance().getFile(it.document)
+            ?.let { file ->
+                if (PsiErrorElementUtil.hasErrors(it.project, file)) {
+                    error(message)
+                } else null
+            }
     }
 }
