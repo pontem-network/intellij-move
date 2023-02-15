@@ -29,6 +29,8 @@
                 implementation="org.move.cli.runconfig.producers.TestCommandConfigurationProducer"/>
         <runConfigurationProducer
                 implementation="org.move.cli.runconfig.producers.PublishCommandConfigurationProducer"/>
+<!--        <runConfigurationProducer-->
+<!--                implementation="org.move.cli.runconfig.producers.RunTransactionConfigurationProducer"/>-->
         <runLineMarkerContributor language="Move"
                                   implementationClass="org.move.ide.lineMarkers.AptosCommandLineMarkerContributor"/>
 
