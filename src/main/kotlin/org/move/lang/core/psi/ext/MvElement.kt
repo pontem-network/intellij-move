@@ -1,13 +1,12 @@
 package org.move.lang.core.psi.ext
 
+import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiFileSystemItem
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
-import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.*
 import org.move.cli.MoveProject
 import org.move.cli.moveProjects
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ItemScope
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 
@@ -24,33 +23,23 @@ fun PsiFileSystemItem.findMoveProject(): MoveProject? {
     return project.moveProjects.findMoveProject(path)
 }
 
-val MvElement.itemScope: ItemScope
-    get() {
-        return getProjectPsiDependentCache(this) {
-            for (ancestor in (sequenceOf(it) + it.ancestors)) {
-                when {
-                    ancestor is MvFunction && ancestor.isTest ->
-                        return@getProjectPsiDependentCache ItemScope.TEST
-                    ancestor is MvDocAndAttributeOwner && ancestor.isTestOnly ->
-                        return@getProjectPsiDependentCache ItemScope.TEST
-                }
-            }
-            ItemScope.MAIN
-        }
-    }
+val IS_MSL_KEY: Key<CachedValue<Boolean>> = Key.create("org.move.cache.IS_MSL_KEY")
 
 fun MvElement.isMsl(): Boolean {
-    return getProjectPsiDependentCache(this) {
-        // use items always non-msl, otherwise import resolution doesn't work correctly
-        if (it is MvUseItem)
-            return@getProjectPsiDependentCache false
+    // use items always non-msl, otherwise import resolution doesn't work correctly
+    if (this is MvUseItem) return false
 
-        var element = it
+    val context = this
+    return CachedValuesManager.getCachedValue(context, IS_MSL_KEY) {
+        var element: MvElement? = context
+        var isMsl = false
         while (element != null) {
-            if (element is MslScopeElement)
-                return@getProjectPsiDependentCache true
+            if (element is MslScopeElement) {
+                isMsl = true
+                break
+            }
             element = element.parent as? MvElement
         }
-        false
+        CachedValueProvider.Result.create(isMsl, PsiModificationTracker.MODIFICATION_COUNT)
     }
 }

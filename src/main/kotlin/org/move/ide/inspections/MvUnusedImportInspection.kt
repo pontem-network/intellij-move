@@ -9,10 +9,8 @@ import org.move.ide.inspections.imports.ScopePathUsages
 import org.move.ide.inspections.imports.pathUsages
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
-import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.psi.ext.moduleName
 import org.move.lang.core.psi.ext.speck
-import org.move.lang.core.resolve.ItemScope
 
 class MvUnusedImportInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =

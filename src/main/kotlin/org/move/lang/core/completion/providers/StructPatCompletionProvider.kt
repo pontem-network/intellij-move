@@ -10,7 +10,7 @@ import org.move.lang.core.completion.createCompletionLookupElement
 import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvLetStmt
 import org.move.lang.core.psi.containingModule
-import org.move.lang.core.psi.ext.itemScope
+import org.move.lang.core.psi.itemScope
 import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslScope

@@ -9,8 +9,6 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.address
-import org.move.lang.core.types.psiStubAddress
-import org.move.lang.core.types.stubAddress
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
@@ -22,15 +20,6 @@ import org.move.stdext.wrapWithList
 
 enum class MslScope {
     NONE, EXPR, LET, LET_POST;
-}
-
-enum class ItemScope {
-    MAIN, TEST;
-}
-
-fun MvElement.isVisibleInScope(expectedItemScope: ItemScope): Boolean {
-    return expectedItemScope == ItemScope.TEST
-            || this.itemScope == ItemScope.MAIN
 }
 
 val MvElement.mslScope: MslScope

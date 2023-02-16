@@ -2,6 +2,7 @@ package org.move.lang.core.resolve
 
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.isVisibleInScope
 
 data class SimpleScopeEntry<T : MvNamedElement>(
     val name: String,

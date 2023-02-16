@@ -4,7 +4,6 @@ import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ItemScope
 
 typealias ItemUsages = MutableMap<String, MutableSet<MvNamedElement>>
 

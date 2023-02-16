@@ -9,7 +9,7 @@ import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvFQModuleRef
-import org.move.lang.core.psi.ext.itemScope
+import org.move.lang.core.psi.itemScope
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslScope
 import org.move.lang.core.resolve.processFQModuleRef
