@@ -14,7 +14,7 @@ import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.stubs.MvStructStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.stubs.ext.childrenStubsOfType
-import org.move.lang.core.types.FQModule
+import org.move.lang.core.types.Address
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleSpecIndex
 import org.move.lang.moveProject
@@ -24,6 +24,8 @@ fun MvModule.hasTestFunctions(): Boolean = this.testFunctions().isNotEmpty()
 
 fun MvModule.addressRef(): MvAddressRef? =
     this.addressRef ?: (this.ancestorStrict<MvAddressDef>())?.addressRef
+
+data class FQModule(val address: Address, val name: String)
 
 fun MvModule.fqModule(): FQModule? {
     val moveProj = this.moveProject ?: return null
