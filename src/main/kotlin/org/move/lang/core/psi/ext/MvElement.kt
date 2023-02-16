@@ -1,8 +1,8 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiFileSystemItem
-import com.intellij.psi.util.*
+import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
+import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.MoveProject
 import org.move.cli.moveProjects
 import org.move.lang.MoveFile
@@ -23,23 +23,24 @@ fun PsiFileSystemItem.findMoveProject(): MoveProject? {
     return project.moveProjects.findMoveProject(path)
 }
 
-val IS_MSL_KEY: Key<CachedValue<Boolean>> = Key.create("org.move.cache.IS_MSL_KEY")
-
 fun MvElement.isMsl(): Boolean {
-    // use items always non-msl, otherwise import resolution doesn't work correctly
-    if (this is MvUseItem) return false
-
-    val context = this
-    return CachedValuesManager.getCachedValue(context, IS_MSL_KEY) {
-        var element: MvElement? = context
-        var isMsl = false
+    return getProjectPsiDependentCache(this) {
+        var element = it
         while (element != null) {
-            if (element is MslScopeElement) {
-                isMsl = true
-                break
-            }
+            // use items always non-msl, otherwise import resolution doesn't work correctly
+            if (element is MvUseItem) return@getProjectPsiDependentCache false
+
+            // module items
+            if (element is MvModule
+                || element is MvFunction
+                || element is MvStruct
+            )
+                return@getProjectPsiDependentCache false
+
+            if (element is MslScopeElement) return@getProjectPsiDependentCache true
+
             element = element.parent as? MvElement
         }
-        CachedValueProvider.Result.create(isMsl, PsiModificationTracker.MODIFICATION_COUNT)
+        false
     }
 }

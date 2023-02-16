@@ -9,8 +9,11 @@ import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.stubs.MvFunctionStub
 import org.move.lang.core.stubs.MvModuleStub
+import org.move.lang.core.stubs.MvStructStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
+import org.move.lang.core.stubs.ext.childrenStubsOfType
 import org.move.lang.core.types.FQModule
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleSpecIndex
@@ -44,14 +47,20 @@ val MvModule.declaredFriendModules: Set<FQModule>
         return friends
     }
 
-fun MvModule.allFunctions(): List<MvFunction> = moduleBlock?.functionList.orEmpty()
+fun MvModule.allFunctions(): List<MvFunction> {
+    val stub = greenStub
+    return stub?.childrenStubsOfType<MvFunctionStub>()?.map { it.psi }
+        ?: moduleBlock?.functionList.orEmpty()
+}
 
 fun MvModule.allNonTestFunctions(): List<MvFunction> =
+//    allFunctions().filter { f -> !f.isTest }
     getProjectPsiDependentCache(this) {
         it.allFunctions().filter { f -> !f.isTest }
     }
 
 fun MvModule.testFunctions(): List<MvFunction> =
+//    allFunctions().filter { f -> f.isTest }
     getProjectPsiDependentCache(this) {
         it.allFunctions().filter { f -> f.isTest }
     }
@@ -122,7 +131,11 @@ fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
     return project.psiFactory.specFunction(trimmedText, moduleName = "builtin_spec_functions")
 }
 
-fun MvModule.structs(): List<MvStruct> = moduleBlock?.structList.orEmpty()
+fun MvModule.structs(): List<MvStruct> {
+    val stub = greenStub
+    return stub?.childrenStubsOfType<MvStructStub>()?.map { it.psi }
+        ?: moduleBlock?.structList.orEmpty()
+}
 
 fun MvModule.schemas(): List<MvSchema> = moduleBlock?.schemaList.orEmpty()
 

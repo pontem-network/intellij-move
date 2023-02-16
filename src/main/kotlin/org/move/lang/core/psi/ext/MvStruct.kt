@@ -38,6 +38,10 @@ fun MvStruct.getField(fieldName: String): MvStructField? =
 
 val MvStruct.module: MvModule
     get() {
+        val moduleStub = greenStub?.parentStub as? MvModuleStub
+        if (moduleStub != null) {
+            return moduleStub.psi
+        }
         val moduleBlock = this.parent
         return moduleBlock.parent as MvModule
     }

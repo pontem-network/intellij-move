@@ -2,8 +2,10 @@ package org.move.lang.core.psi
 
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
+import org.move.lang.core.psi.ext.greenStub
 import org.move.lang.core.psi.ext.paramAnnotationTy
 import org.move.lang.core.psi.ext.hasChild
+import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnit
@@ -68,6 +70,12 @@ val MvFunctionLike.requiredTypeParams: List<MvTypeParameter>
 
 val MvFunctionLike.module: MvModule?
     get() {
+        if (this is MvFunction) {
+            val moduleStub = greenStub?.parentStub as? MvModuleStub
+            if (moduleStub != null) {
+                return moduleStub.psi
+            }
+        }
         val moduleBlock = this.parent
         return moduleBlock.parent as? MvModule
     }

@@ -195,27 +195,30 @@ class MvSpecFunctionStub(
 class MvStructStub(
     parent: StubElement<*>?,
     elementType: IStubElementType<*, *>,
-    override val name: String?
-) : StubBase<MvStruct>(parent, elementType), MvNamedStub {
+    override val name: String?,
+    override val flags: Int,
+) : MvAttributeOwnerStubBase<MvStruct>(parent, elementType), MvNamedStub {
 
     object Type : MvStubElementType<MvStructStub, MvStruct>("STRUCT") {
-        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
-            MvStructStub(
-                parentStub,
-                this,
-                dataStream.readNameAsString()
-            )
+        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?): MvStructStub {
+            val name = dataStream.readNameAsString()
+            val flags = dataStream.readInt()
+            return MvStructStub(parentStub, this, name, flags)
+        }
 
         override fun serialize(stub: MvStructStub, dataStream: StubOutputStream) =
             with(dataStream) {
                 writeName(stub.name)
+                writeInt(stub.flags)
             }
 
         override fun createPsi(stub: MvStructStub): MvStruct =
             MvStructImpl(stub, this)
 
         override fun createStub(psi: MvStruct, parentStub: StubElement<*>?): MvStructStub {
-            return MvStructStub(parentStub, this, psi.name)
+            val attrs = QueryAttributes(psi.attrList.asSequence())
+            val flags = MvAttributeOwnerStub.extractFlags(attrs)
+            return MvStructStub(parentStub, this, psi.name, flags)
         }
 
         override fun indexStub(stub: MvStructStub, sink: IndexSink) = sink.indexStructStub(stub)

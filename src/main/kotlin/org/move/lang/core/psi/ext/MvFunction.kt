@@ -58,8 +58,7 @@ val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("te
 val MvFunction.isTest: Boolean
     get() {
         val stub = greenStub
-        return stub?.isTest
-            ?: (queryAttributes.isTest)
+        return stub?.isTest ?: queryAttributes.isTest
     }
 
 val QueryAttributes.isTest: Boolean get() = this.hasAttrItem("test")

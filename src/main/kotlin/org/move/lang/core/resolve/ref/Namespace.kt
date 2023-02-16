@@ -27,7 +27,6 @@ sealed class Visibility {
                     vs.add(PublicFriend(asFriendModule))
                 }
             }
-
             val containingFun = element.containingFunction
             if (containingModule == null
                 || (containingFun?.visibility == FunctionVisibility.PUBLIC_SCRIPT)
