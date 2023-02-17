@@ -195,3 +195,5 @@ fun PsiElement.cameBefore(element: PsiElement) =
 @Suppress("UNCHECKED_CAST")
 inline val <T : StubElement<*>> StubBasedPsiElement<T>.greenStub: T?
     get() = (this as? StubBasedPsiElementBase<T>)?.greenStub
+
+fun <T: PsiElement> T.smartPointer() = SmartPointerManager.createPointer(this)

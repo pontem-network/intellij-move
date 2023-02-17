@@ -101,8 +101,8 @@ fun MvModule.builtinFunctions(): List<MvFunction> {
     }
 }
 
-fun MvModule.visibleFunctions(visibility: Visibility): List<MvFunction> =
-    when (visibility) {
+fun MvModule.visibleFunctions(visibility: Visibility): List<MvFunction> {
+    return when (visibility) {
         is Visibility.Public ->
             allNonTestFunctions()
                 .filter { it.visibility == FunctionVisibility.PUBLIC }
@@ -110,14 +110,22 @@ fun MvModule.visibleFunctions(visibility: Visibility): List<MvFunction> =
             allNonTestFunctions()
                 .filter { it.visibility == FunctionVisibility.PUBLIC_SCRIPT }
         is Visibility.PublicFriend -> {
-            if (visibility.currentModule in this.declaredFriendModules) {
+            val friendFunctions =
                 allNonTestFunctions().filter { it.visibility == FunctionVisibility.PUBLIC_FRIEND }
+            if (friendFunctions.isEmpty()) return emptyList()
+
+            val currentModule = visibility.currentModule.element
+            if (currentModule != null
+                && currentModule.fqModule() in this.declaredFriendModules
+            ) {
+                friendFunctions
             } else {
                 emptyList()
             }
         }
         is Visibility.Internal -> allNonTestFunctions()
     }
+}
 
 fun MvModule.entryFunctions(): List<MvFunction> = this.allFunctions().filter { it.isEntry }
 
@@ -134,9 +142,11 @@ fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
 }
 
 fun MvModule.structs(): List<MvStruct> {
-    val stub = greenStub
-    return stub?.childrenStubsOfType<MvStructStub>()?.map { it.psi }
-        ?: moduleBlock?.structList.orEmpty()
+    return getProjectPsiDependentCache(this) {
+        val stub = it.greenStub
+        stub?.childrenStubsOfType<MvStructStub>()?.map { s -> s.psi }
+            ?: it.moduleBlock?.structList.orEmpty()
+    }
 }
 
 fun MvModule.schemas(): List<MvSchema> = moduleBlock?.schemaList.orEmpty()
@@ -171,10 +181,10 @@ fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
 
 fun MvModule.specFunctions(): List<MvSpecFunction> = moduleBlock?.specFunctionList.orEmpty()
 
-//fun MvModule.consts(): List<MvConst> = moduleBlock?.constList.orEmpty()
-
 fun MvModule.constBindings(): List<MvBindingPat> =
-    moduleBlock?.constList.orEmpty().mapNotNull { it.bindingPat }
+    getProjectPsiDependentCache(this) {
+        it.moduleBlock?.constList.orEmpty().mapNotNull { c -> c.bindingPat }
+    }
 
 val MvModuleBlock.module: MvModule get() = this.parent as MvModule
 
@@ -196,14 +206,16 @@ fun MvModuleSpecBlock.moduleItemSpecs() =
 
 fun MvModule.allModuleSpecs(): List<MvModuleSpec> {
     return getProjectPsiDependentCache(this) {
-        val currentModule = it.fqModule() ?: return@getProjectPsiDependentCache emptyList()
         val moveProject = it.moveProject ?: return@getProjectPsiDependentCache emptyList()
         val moduleName = it.name ?: return@getProjectPsiDependentCache emptyList()
         val file = it.containingMoveFile ?: return@getProjectPsiDependentCache emptyList()
 
         val searchScope = moveProject.searchScope()
-        val moduleSpecs = file.moduleSpecs().asSequence() +
-                MvModuleSpecIndex.getElementsByModuleName(it.project, moduleName, searchScope).asSequence()
+        val moduleSpecs = file.moduleSpecs() +
+                MvModuleSpecIndex.getElementsByModuleName(it.project, moduleName, searchScope)
+        if (moduleSpecs.isEmpty()) return@getProjectPsiDependentCache emptyList()
+
+        val currentModule = it.fqModule() ?: return@getProjectPsiDependentCache emptyList()
         moduleSpecs
             .filter { moduleSpec ->
                 val module = moduleSpec.fqModuleRef?.reference?.resolve() as? MvModule ?: return@filter false

@@ -123,8 +123,9 @@ fun processQualItem(
                         processor.match(itemVis, item)
 
                     vis is Visibility.PublicFriend && item.visibility == FunctionVisibility.PUBLIC_FRIEND -> {
-                        val module = item.module ?: return false
-                        if (vis.currentModule in module.declaredFriendModules) {
+                        val itemModule = item.module ?: return false
+                        val currentModule = vis.currentModule.element ?: return false
+                        if (currentModule.fqModule() in itemModule.declaredFriendModules) {
                             processor.match(itemVis, item)
                         }
                     }
