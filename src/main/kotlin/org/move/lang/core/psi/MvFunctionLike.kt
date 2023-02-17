@@ -43,7 +43,7 @@ fun MvFunctionLike.returnTypeTy(itemContext: ItemContext): Ty {
 val MvFunctionLike.typeParamsUsedOnlyInReturnType: List<MvTypeParameter>
     get() {
         val msl = false
-        val itemContext = this.module?.itemContext(msl) ?: ItemContext(msl)
+        val itemContext = this.module?.itemContext(msl) ?: project.itemContext(msl)
         val usedTypeParams = mutableSetOf<MvTypeParameter>()
         this.parameters
             .map { it.paramAnnotationTy(itemContext) }
@@ -57,7 +57,7 @@ val MvFunctionLike.requiredTypeParams: List<MvTypeParameter>
     get() {
         val usedTypeParams = mutableSetOf<MvTypeParameter>()
         val msl = false
-        val itemContext = this.module?.itemContext(msl) ?: ItemContext(msl)
+        val itemContext = this.module?.itemContext(msl) ?: project.itemContext(msl)
         this.parameters
             .map { it.paramAnnotationTy(itemContext) }
             .withAdded(this.returnTypeTy(itemContext))

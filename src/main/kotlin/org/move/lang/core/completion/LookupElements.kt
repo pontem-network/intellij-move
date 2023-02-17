@@ -104,7 +104,7 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
         is MvBindingPat -> {
             val msl = this.isMsl()
             val inferenceCtx = this.ownerInferenceCtx(msl) ?: InferenceContext(msl)
-            val itemContext = this.itemContextOwner?.itemContext(msl) ?: ItemContext(msl)
+            val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
             this.createLookupElementWithIcon()
                 .withTypeText(this.inferBindingTy(inferenceCtx, itemContext).text(true))
         }
@@ -209,7 +209,7 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
                     if (completionContext == null) return@run false
                     val msl = element.isMsl()
 
-                    val itemContext = element.module?.itemContext(msl) ?: ItemContext(msl)
+                    val itemContext = element.module?.itemContext(msl) ?: element.project.itemContext(msl)
                     val funcTy = itemContext.getItemTy(element) as? TyFunction ?: return@run false
 
                     val inferenceCtx = InferenceContext(msl)

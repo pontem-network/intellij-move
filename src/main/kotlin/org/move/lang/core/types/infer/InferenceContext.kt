@@ -8,11 +8,9 @@ import org.move.ide.presentation.expectedBindingFormText
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.inferBindingTy
-import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.itemSpecBlock
-import org.move.lang.core.psi.ext.rightBrace
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
+import org.move.utils.recursionGuard
 
 interface MvInferenceContextOwner : MvElement {
     fun parameterBindings(): List<MvBindingPat>
@@ -35,7 +33,7 @@ fun MvElement.ownerInferenceCtx(msl: Boolean): InferenceContext? {
 
 private fun getOwnerInferenceContext(owner: MvInferenceContextOwner, msl: Boolean): InferenceContext {
     val inferenceCtx = InferenceContext(msl)
-    val itemContext = owner.itemContextOwner?.itemContext(msl) ?: ItemContext(msl)
+    val itemContext = owner.itemContextOwner?.itemContext(msl) ?: owner.project.itemContext(msl)
     for (param in owner.parameterBindings()) {
         inferenceCtx.bindingTypes[param] = param.inferBindingTy(inferenceCtx, itemContext)
     }
@@ -93,7 +91,7 @@ fun inferStmt(stmt: MvStmt, blockCtx: InferenceContext) {
         is MvSpecExprStmt -> inferExprTy(stmt.expr, blockCtx)
         is MvLetStmt -> {
             val explicitTy = stmt.typeAnnotation?.type?.let {
-                val itemContext = stmt.itemContextOwner?.itemContext(blockCtx.msl) ?: ItemContext(blockCtx.msl)
+                val itemContext = stmt.itemContext(blockCtx.msl)
                 itemContext.getTypeTy(it)
             }
             val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, blockCtx, explicitTy) }

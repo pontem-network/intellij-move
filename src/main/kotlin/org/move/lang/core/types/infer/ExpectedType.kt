@@ -56,7 +56,7 @@ fun inferExpectedTy(element: PsiElement, parentCtx: InferenceContext): Ty? {
                 is MvLetStmt -> {
                     val patExplicitTy = initializerParent.typeAnnotation?.type?.let {
                         val itemContext =
-                            it.itemContextOwner?.itemContext(parentCtx.msl) ?: ItemContext(parentCtx.msl)
+                            it.itemContextOwner?.itemContext(parentCtx.msl) ?: it.project.itemContext(parentCtx.msl)
                         itemContext.getTypeTy(it)
                     }
                     initializerParent.pat

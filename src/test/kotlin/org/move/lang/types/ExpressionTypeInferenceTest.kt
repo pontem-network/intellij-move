@@ -376,6 +376,11 @@ module 0x1::main {
         map: Tablist<u64, OrderBook>
     }
     
+    fun call() {
+        let a = 1 + 1;
+        a;
+    }
+    
     fun main() acquires OrderBooks {
         let order_books_map = &mut borrow_global_mut<OrderBooks>(@0x1).map;
         order_books_map;
@@ -384,4 +389,18 @@ module 0x1::main {
 }        
     """
     )
+
+    fun `test inference integer with msl block`() = testExpr("""
+    module 0x1::mod {
+        fun call() {
+            let a = 1;
+            spec {
+                a = a + 1;
+                a;
+            };
+            a;
+          //^ integer  
+        }
+    }    
+    """)
 }

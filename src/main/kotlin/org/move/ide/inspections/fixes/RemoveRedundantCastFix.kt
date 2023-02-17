@@ -13,7 +13,7 @@ class RemoveRedundantCastFix(castExpr: MvCastExpr) : MvLocalQuickFixOnPsiElement
 
     override fun stillApplicable(project: Project, file: PsiFile, element: MvCastExpr): Boolean {
         val itemContext =
-            element.itemContextOwner?.itemContext(false) ?: ItemContext(false)
+            element.itemContextOwner?.itemContext(false) ?: project.itemContext(false)
         return element.expr.inferredExprTy() == itemContext.getTypeTy(element.type)
     }
 

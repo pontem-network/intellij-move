@@ -75,7 +75,7 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
 
             private fun presentTypeForPat(pat: MvPat) {
                 val msl = pat.isMsl()
-                val itemContext = pat.containingModule?.itemContext(msl) ?: ItemContext(msl)
+                val itemContext = pat.containingModule?.itemContext(msl) ?: pat.project.itemContext(msl)
                 val inferenceCtx = pat.ownerInferenceCtx(msl) ?: return
 
                 for (binding in pat.descendantsOfType<MvBindingPat>()) {

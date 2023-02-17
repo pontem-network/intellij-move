@@ -46,10 +46,10 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
-
                 val inferenceCtx =
                     docElement.ownerInferenceCtx(false) ?: InferenceContext(false)
-                val itemContext = docElement.itemContextOwner?.itemContext(false) ?: ItemContext(false)
+                val project = docElement.project
+                val itemContext = docElement.itemContextOwner?.itemContext(false) ?: project.itemContext(false)
 
                 val type = docElement.inferBindingTy(inferenceCtx, itemContext).renderForDocs(true)
                 buffer += presentationInfo.type
@@ -108,7 +108,7 @@ fun generateFunction(function: MvFunction, buffer: StringBuilder) {
 fun MvElement.signature(builder: StringBuilder) {
     val buffer = StringBuilder()
     val msl = this.isMsl()
-    val itemContext = this.itemContextOwner?.itemContext(msl) ?: ItemContext(msl)
+    val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
     when (this) {
         is MvFunction -> generateFunction(this, buffer)
         is MvModule -> {
@@ -159,7 +159,7 @@ private fun PsiElement.generateDocumentation(
     when (this) {
         is MvType -> {
             val msl = this.isMsl()
-            val itemContext = this.itemContextOwner?.itemContext(msl) ?: ItemContext(msl)
+            val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
             buffer += itemContext.getTypeTy(this)
                 .typeLabel(this)
                 .replace("<", "&lt;")

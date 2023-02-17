@@ -23,7 +23,6 @@ import org.move.lang.core.psi.module
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.ItemContext
 import org.move.lang.core.types.infer.itemContext
 import org.move.lang.core.types.ty.TyAddress
 import org.move.lang.core.types.ty.TyBool
@@ -58,7 +57,8 @@ class RunTransactionDialog(
     }
 
     override fun createCenterPanel(): JComponent {
-        val cacheService = entryFunction.project.service<RunTransactionCacheService>()
+        val project = entryFunction.project
+        val cacheService = project.service<RunTransactionCacheService>()
         return panel {
             row("Run Configuration name: ") {
                 textField()
@@ -68,7 +68,7 @@ class RunTransactionDialog(
             }
             val typeParameters = entryFunction.typeParameters
             val parameters = entryFunction.parameterBindings().drop(1)
-            val itemContext = entryFunction.module?.itemContext(false) ?: ItemContext(false)
+            val itemContext = entryFunction.module?.itemContext(false) ?: project.itemContext(false)
 
             if (typeParameters.isNotEmpty() || parameters.isNotEmpty()) {
                 separator()

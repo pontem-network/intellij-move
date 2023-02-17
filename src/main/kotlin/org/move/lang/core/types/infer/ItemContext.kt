@@ -1,12 +1,40 @@
 package org.move.lang.core.types.infer
 
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.UserDataHolderBase
+import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.psi.util.parentOfType
 import org.move.ide.annotator.INTEGER_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_INTEGER_TYPE_IDENTIFIERS
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
+
+@Service(Service.Level.PROJECT)
+class DefaultItemContextService(val project: Project) : UserDataHolderBase() {
+    fun get(msl: Boolean): ItemContext {
+        val cacheManager = CachedValuesManager.getManager(project)
+        return if (msl) {
+            cacheManager.getCachedValue(this) {
+                val builtinModule = project.psiFactory.inlineModule("0x1", "builtins", "")
+                val itemContext = ItemContext(builtinModule, true)
+                CachedValueProvider.Result.create(itemContext, PsiModificationTracker.MODIFICATION_COUNT)
+            }
+        } else {
+            cacheManager.getCachedValue(this) {
+                val builtinModule = project.psiFactory.inlineModule("0x1", "builtins", "")
+                val itemContext = ItemContext(builtinModule, false)
+                CachedValueProvider.Result.create(itemContext, PsiModificationTracker.MODIFICATION_COUNT)
+            }
+        }
+    }
+}
+
+fun Project.itemContext(msl: Boolean): ItemContext = service<DefaultItemContextService>().get(msl)
 
 fun ItemContextOwner.itemContext(msl: Boolean): ItemContext {
     val itemContext = if (msl) {
@@ -21,7 +49,7 @@ fun ItemContextOwner.itemContext(msl: Boolean): ItemContext {
     return itemContext
 }
 
-class ItemContext(val msl: Boolean) {
+class ItemContext(val owner: ItemContextOwner, val msl: Boolean) {
     val tyTemplateMap = mutableMapOf<MvNameIdentifierOwner, TyTemplate>()
     val typeTyMap = mutableMapOf<MvType, Ty>()
 
@@ -79,12 +107,11 @@ class ItemContext(val msl: Boolean) {
 }
 
 private fun getItemContext(owner: ItemContextOwner, msl: Boolean): ItemContext {
-    val itemContext = ItemContext(msl)
+    val itemContext = ItemContext(owner, msl)
     when (owner) {
         is MvModule -> {
-            val moduleItems = owner.structs().asSequence() +
-                    owner.builtinFunctions() +
-                    owner.allFunctions().filter { it.visibility == FunctionVisibility.PUBLIC }
+            val moduleItems = owner.structs() +
+                    owner.allNonTestFunctions().filter { it.visibility == FunctionVisibility.PUBLIC }
             for (item in moduleItems) {
                 itemContext.tyTemplateMap[item] = tyTemplate(item, itemContext)
             }
@@ -208,16 +235,15 @@ private fun inferItemTypeTy(
 
                     val rawStructTy = itemContext.getItemTy(namedItem) as? TyStruct ?: return TyUnknown
 
-                    val typeArgs = moveType.path.typeArguments.map { itemContext.getTypeTy(it.type) }
                     val ctx = InferenceContext(itemContext.msl)
                     if (rawStructTy.typeVars.isNotEmpty()) {
+                        val typeArgs = moveType.path.typeArguments.map { itemContext.getTypeTy(it.type) }
                         for ((tyVar, tyArg) in rawStructTy.typeVars.zip(typeArgs)) {
                             ctx.addConstraint(tyVar, tyArg)
                         }
                         ctx.processConstraints()
                     }
-                    val structTy = ctx.resolveTy(rawStructTy)
-                    structTy
+                    ctx.resolveTy(rawStructTy)
                 }
                 else -> TyUnknown
             }

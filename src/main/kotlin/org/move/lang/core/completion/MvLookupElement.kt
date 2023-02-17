@@ -71,7 +71,7 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
 
 private fun MvNamedElement.asTy(ctx: InferenceContext): Ty {
     val msl = false
-    val itemContext = this.itemContextOwner?.itemContext(msl) ?: ItemContext(msl)
+    val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
     return when (this) {
 //        is RsFieldDecl -> typeReference?.type
         is MvFunction -> this.returnTypeTy(itemContext)

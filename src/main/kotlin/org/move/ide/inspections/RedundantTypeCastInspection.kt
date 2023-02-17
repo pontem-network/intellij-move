@@ -24,7 +24,7 @@ class RedundantTypeCastInspection : MvLocalInspectionTool() {
             // TODO: different rules for msl, no need for any casts at all
             if (msl) return
 
-            val itemContext = castExpr.itemContextOwner?.itemContext(false) ?: ItemContext(false)
+            val itemContext = castExpr.itemContextOwner?.itemContext(false) ?: castExpr.project.itemContext(false)
             val castTy = itemContext.getTypeTy(castExpr.type)
             if (castTy is TyUnknown) return
 

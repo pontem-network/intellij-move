@@ -9,7 +9,7 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
     if (existingTy != null) {
         return existingTy
     }
-    val itemContext = expr.itemContextOwner?.itemContext(parentCtx.msl) ?: ItemContext(parentCtx.msl)
+    val itemContext = expr.itemContextOwner?.itemContext(parentCtx.msl) ?: expr.project.itemContext(parentCtx.msl)
     var exprTy = when (expr) {
         is MvRefExpr -> inferRefExprTy(expr, parentCtx, itemContext)
         is MvBorrowExpr -> inferBorrowExprTy(expr, parentCtx)
@@ -110,10 +110,11 @@ private fun inferCallExprTy(
     val path = callExpr.path
     val funcItem = path.reference?.resolve() as? MvFunctionLike ?: return TyUnknown
 
-    val itemContext = funcItem.module?.itemContext(parentCtx.msl) ?: ItemContext(parentCtx.msl)
+    val itemContext = funcItem.module?.itemContext(parentCtx.msl) ?: callExpr.project.itemContext(parentCtx.msl)
     var funcTy = itemContext.getItemTy(funcItem) as? TyFunction ?: return TyUnknown
 
     val inferenceCtx = InferenceContext(parentCtx.msl)
+    val callExprMsl = callExpr.isMsl()
     // find all types passed as explicit type parameters, create constraints with those
     if (path.typeArguments.isNotEmpty()) {
         if (path.typeArguments.size != funcTy.typeVars.size) return TyUnknown
@@ -121,7 +122,7 @@ private fun inferCallExprTy(
             val typeArgTy = itemContext.getTypeTy(typeArg.type)
 
             // check compat for abilities
-            val compat = isCompatibleAbilities(typeVar, typeArgTy, path.isMsl())
+            val compat = isCompatibleAbilities(typeVar, typeArgTy, callExprMsl)
             val isCompat = when (compat) {
                 is Compat.AbilitiesMismatch -> {
                     parentCtx.typeErrors.add(
