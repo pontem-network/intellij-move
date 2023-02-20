@@ -18,6 +18,7 @@ import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.ItemContext
 import org.move.lang.core.types.infer.itemContext
 import org.move.lang.core.types.infer.ownerInferenceCtx
+import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -80,20 +81,25 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
 
                 for (binding in pat.descendantsOfType<MvBindingPat>()) {
                     if (binding.identifier.text.startsWith("_")) continue
-                    if (binding.inferBindingTy(inferenceCtx, itemContext) is TyUnknown) continue
-                    presentTypeForBinding(binding, inferenceCtx, itemContext)
+
+                    val bindingTy = binding.inferBindingTy(inferenceCtx, itemContext)
+                    if (bindingTy is TyUnknown) continue
+
+                    presentTypeForBinding(binding, bindingTy)
                 }
             }
 
             private fun presentTypeForBinding(
                 binding: MvBindingPat,
-                ctx: InferenceContext,
-                itemContext: ItemContext
+                bindingTy: Ty
             ) {
-                val bindingTy = binding.inferBindingTy(ctx, itemContext)
-                val presentation =
-                    typeHintsFactory.typeHint(bindingTy)
-                sink.addInlineElement(binding.endOffset, false, presentation, false)
+                val presentation = typeHintsFactory.typeHint(bindingTy)
+                sink.addInlineElement(
+                    binding.endOffset,
+                    false,
+                    presentation,
+                    false
+                )
             }
         }
 

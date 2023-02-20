@@ -26,6 +26,7 @@ abstract class MvCompletionProvider : CompletionProvider<CompletionParameters>()
             addAll(names)
             removeAll(processedPathNames)
         }
+
         return result.prefixMatcher.sortMatching(keys)
             .flatMap {
                 AutoImportFix.getImportCandidates(importContext, it)

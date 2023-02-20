@@ -57,7 +57,6 @@ data class LookupElementProperties(
 
 fun lookupProperties(element: MvNamedElement, context: CompletionContext): LookupElementProperties {
     val ctx = InferenceContext(context.itemVis.isMsl)
-//    val ctx = element.functionInferenceCtx(context.itemVis.isMsl)
     var props = LookupElementProperties()
     val expectedTy = context.expectedTy
     if (expectedTy != null) {

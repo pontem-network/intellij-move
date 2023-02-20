@@ -29,7 +29,6 @@ fun MvBindingPat.inferBindingTy(parentCtx: InferenceContext, itemContext: ItemCo
     val owner = this.owner
     return when (owner) {
         is MvFunctionParameter -> owner.paramTypeTy(itemContext)
-//        is MvConst -> owner.constAnnotationTy(itemContext)
         is MvLetStmt -> {
             if (parentCtx.bindingTypes.containsKey(this)) return parentCtx.bindingTypes[this]!!
 

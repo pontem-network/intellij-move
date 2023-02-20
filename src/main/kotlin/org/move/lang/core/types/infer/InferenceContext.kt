@@ -8,23 +8,34 @@ import org.move.ide.presentation.expectedBindingFormText
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.inferBindingTy
+import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.itemSpecBlock
+import org.move.lang.core.psi.ext.rightBrace
 import org.move.lang.core.types.ty.*
-import org.move.utils.recursionGuard
 
 interface MvInferenceContextOwner : MvElement {
     fun parameterBindings(): List<MvBindingPat>
 }
+
+//private val INFERENCE_KEY_NON_MSL: Key<CachedValue<InferenceContext>> = Key.create("INFERENCE_KEY_NON_MSL")
+//private val INFERENCE_KEY_MSL: Key<CachedValue<InferenceContext>> = Key.create("INFERENCE_KEY_MSL")
 
 fun MvElement.ownerInferenceCtx(msl: Boolean): InferenceContext? {
     val inferenceOwner =
         PsiTreeUtil.getParentOfType(this, MvInferenceContextOwner::class.java, false)
             ?: return null
     return if (msl) {
+//        project.cacheManager.cache(inferenceOwner, INFERENCE_KEY_MSL) {
+//            inferenceOwner.createCachedResult(getOwnerInferenceContext(inferenceOwner, true))
+//        }
         getProjectPsiDependentCache(inferenceOwner) {
             getOwnerInferenceContext(it, true)
         }
     } else {
+//        project.cacheManager.cache(inferenceOwner, INFERENCE_KEY_NON_MSL) {
+//            inferenceOwner.createCachedResult(getOwnerInferenceContext(inferenceOwner, false))
+//        }
         getProjectPsiDependentCache(inferenceOwner) {
             getOwnerInferenceContext(it, false)
         }

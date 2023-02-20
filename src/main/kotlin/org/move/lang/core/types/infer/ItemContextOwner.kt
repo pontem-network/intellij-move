@@ -1,14 +1,17 @@
 package org.move.lang.core.types.infer
 
 import com.intellij.injected.editor.VirtualFileWindow
+import com.intellij.openapi.util.Key
+import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
-import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.MvCodeFragment
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvModificationTrackerOwner
 import org.move.lang.core.psi.ext.contextOrSelf
 import org.move.lang.core.psi.moveStructureModificationTracker
+import org.move.utils.cache
+import org.move.utils.cacheManager
 
 interface ItemContextOwner : MvElement
 
@@ -20,27 +23,23 @@ val MvElement.itemContextOwner: ItemContextOwner?
 fun MvElement.itemContext(msl: Boolean): ItemContext =
     itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
 
+private val ITEM_CONTEXT_KEY_MSL: Key<CachedValue<ItemContext>> = Key.create("ITEM_CONTEXT_KEY_MSL")
+private val ITEM_CONTEXT_KEY_NON_MSL: Key<CachedValue<ItemContext>> = Key.create("ITEM_CONTEXT_KEY_NON_MSL")
+
 fun ItemContextOwner.itemContext(msl: Boolean): ItemContext {
     val itemContext = if (msl) {
-        CachedValuesManager.getCachedValue(this) {
+        this.project.cacheManager.cache(this, ITEM_CONTEXT_KEY_MSL) {
             createCachedResult(getItemContext(this, true))
         }
-//        CachedValuesManager.getProjectPsiDependentCache(this) {
-//            getItemContext(it, true)
-//        }
     } else {
-        CachedValuesManager.getCachedValue(this) {
+        this.project.cacheManager.cache(this, ITEM_CONTEXT_KEY_NON_MSL) {
             createCachedResult(getItemContext(this, false))
         }
-//        createCachedResult(getItemContext(this, false))
-//        CachedValuesManager.getProjectPsiDependentCache(this) {
-//            getItemContext(it, false)
-//        }
     }
     return itemContext
 }
 
-fun <T> ItemContextOwner.createCachedResult(value: T): CachedValueProvider.Result<T> {
+fun <T> MvElement.createCachedResult(value: T): CachedValueProvider.Result<T> {
     val structureModificationTracker = project.moveStructureModificationTracker
     return when {
         // The case of injected language. Injected PSI don't have its own event system, so can only
@@ -63,15 +62,11 @@ fun <T> ItemContextOwner.createCachedResult(value: T): CachedValueProvider.Resul
         // CachedValueProvider.Result can accept a ModificationTracker as a dependency, so the
         // cached value will be invalidated if the modification counter is incremented.
         else -> {
-            CachedValueProvider.Result.create(value, structureModificationTracker)
-//            val modificationTracker = contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
-//            CachedValueProvider.Result.create(
-//                value,
-//                listOfNotNull(
-//                    structureModificationTracker,
-//                    modificationTracker
-//                )
-//            )
+            val modificationTracker = contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
+            CachedValueProvider.Result.create(
+                value,
+                listOfNotNull(structureModificationTracker, modificationTracker)
+            )
         }
     }
 }
