@@ -23,6 +23,11 @@
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
 
+        <!-- PSI managing -->
+
+        <projectService serviceInterface="org.move.lang.core.psi.MvPsiManager"
+                        serviceImplementation="org.move.lang.core.psi.MvPsiManagerImpl"/>
+
         <configurationType
                 implementation="org.move.cli.runconfig.AptosCommandConfigurationType"/>
         <runConfigurationProducer

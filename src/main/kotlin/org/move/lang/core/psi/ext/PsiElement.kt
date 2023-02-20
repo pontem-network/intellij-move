@@ -197,3 +197,18 @@ inline val <T : StubElement<*>> StubBasedPsiElement<T>.greenStub: T?
     get() = (this as? StubBasedPsiElementBase<T>)?.greenStub
 
 fun <T: PsiElement> T.smartPointer() = SmartPointerManager.createPointer(this)
+
+val PsiElement.stubParent: PsiElement?
+    get() {
+        if (this is StubBasedPsiElement<*>) {
+            val stub = this.greenStub
+            if (stub != null) return stub.parentStub?.psi
+        }
+        return parent
+    }
+
+/**
+ * Same as [ancestorOrSelf], but with "fake" parent links. See [org.rust.lang.core.macros.RsExpandedElement].
+ */
+inline fun <reified T : PsiElement> PsiElement.contextOrSelf(): T? =
+    PsiTreeUtil.getContextOfType(this, T::class.java, /* strict */ false)

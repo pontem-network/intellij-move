@@ -92,7 +92,7 @@ class MoveProjectsService(val project: Project) : Disposable {
         }
     }
 
-    private fun findMoveProject(file: VirtualFile): MoveProject? {
+    fun findMoveProject(file: VirtualFile): MoveProject? {
         val cached = this.projectsIndex.get(file)
         if (cached is IndexEntry.Present) return cached.value
 
@@ -124,7 +124,6 @@ class MoveProjectsService(val project: Project) : Disposable {
         this.projectsIndex.put(file, IndexEntry.Present(resProject))
         return resProject
     }
-
 
     /**
      * The heart of the plugin Project model. Care must be taken to ensure

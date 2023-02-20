@@ -6,13 +6,13 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.resolve.processFQModuleRef
 import org.move.stdext.wrapWithList
 
-interface MvFQModuleReference : MvReference {
-    override fun resolve(): MvNamedElement?
-}
+interface MvFQModuleReference : MvReference
 
 class MvFQModuleReferenceImpl(
     element: MvFQModuleRef,
 ) : MvReferenceCached<MvFQModuleRef>(element), MvFQModuleReference {
+
+    override val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL
 
     override fun resolveInner(): List<MvNamedElement> {
         val referenceName = element.referenceName ?: return emptyList()

@@ -4,6 +4,8 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.editor.colors.TextAttributesKey
+import com.intellij.openapi.util.SimpleModificationTracker
+import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.util.PlatformIcons
 import org.move.ide.MoveIcons
@@ -113,6 +115,21 @@ abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
             val name = this.name ?: "<unknown>"
             return moduleFqName + name
         }
+
+    override val modificationTracker: SimpleModificationTracker =
+        SimpleModificationTracker()
+
+    override fun incModificationCount(element: PsiElement): Boolean {
+        val shouldInc = codeBlock?.isAncestorOf(element) == true
+//        item inside the function
+//                && PsiTreeUtil.findChildOfAnyType(
+//                    element,
+//                    false,
+//                    MvNamedElement::class.java,
+//                ) == null
+        if (shouldInc) modificationTracker.incModificationCount()
+        return shouldInc
+    }
 
     override fun canNavigate(): Boolean = !builtIn
     override fun canNavigateToSource(): Boolean = !builtIn

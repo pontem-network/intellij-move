@@ -36,45 +36,34 @@ class DefaultItemContextService(val project: Project) : UserDataHolderBase() {
 
 fun Project.itemContext(msl: Boolean): ItemContext = service<DefaultItemContextService>().get(msl)
 
-fun ItemContextOwner.itemContext(msl: Boolean): ItemContext {
-    val itemContext = if (msl) {
-        CachedValuesManager.getProjectPsiDependentCache(this) {
-            getItemContext(it, true)
-        }
-    } else {
-        CachedValuesManager.getProjectPsiDependentCache(this) {
-            getItemContext(it, false)
-        }
-    }
-    return itemContext
-}
-
 class ItemContext(val owner: ItemContextOwner, val msl: Boolean) {
     val tyTemplateMap = mutableMapOf<MvNameIdentifierOwner, TyTemplate>()
-    val typeTyMap = mutableMapOf<MvType, Ty>()
+//    val typeTyMap = mutableMapOf<MvType, Ty>()
 
     val typeErrors = mutableListOf<TypeError>()
 
     fun getTypeTy(type: MvType): Ty {
-        val existing = this.typeTyMap[type]
-        if (existing != null) {
-            return existing
-        } else {
-            val ty = inferItemTypeTy(type, this)
-            this.typeTyMap[type] = ty
-            return ty
-        }
+        return inferItemTypeTy(type, this)
+//        val existing = this.typeTyMap[type]
+//        if (existing != null) {
+//            return existing
+//        } else {
+//            val ty = inferItemTypeTy(type, this)
+//            this.typeTyMap[type] = ty
+//            return ty
+//        }
     }
 
     fun getBuiltinTypeTy(pathType: MvPathType): Ty {
-        val existing = this.typeTyMap[pathType]
-        if (existing != null) {
-            return existing
-        } else {
-            val ty = inferItemBuiltinTypeTy(pathType, this)
-            this.typeTyMap[pathType] = ty
-            return ty
-        }
+        return inferItemBuiltinTypeTy(pathType, this)
+//        val existing = this.typeTyMap[pathType]
+//        if (existing != null) {
+//            return existing
+//        } else {
+//            val ty = inferItemBuiltinTypeTy(pathType, this)
+//            this.typeTyMap[pathType] = ty
+//            return ty
+//        }
     }
 
     fun getItemTy(namedItem: MvNameIdentifierOwner): Ty {
@@ -106,7 +95,7 @@ class ItemContext(val owner: ItemContextOwner, val msl: Boolean) {
     }
 }
 
-private fun getItemContext(owner: ItemContextOwner, msl: Boolean): ItemContext {
+fun getItemContext(owner: ItemContextOwner, msl: Boolean): ItemContext {
     val itemContext = ItemContext(owner, msl)
     when (owner) {
         is MvModule -> {

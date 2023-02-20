@@ -376,6 +376,7 @@ fake Function ::= Attr* native? FunctionVisibilityModifier? entry? inline?
     implements = [
         "org.move.lang.core.psi.MvQualifiedNamedElement"
         "org.move.lang.core.psi.MvFunctionLike"
+        "org.move.lang.core.psi.MvModificationTrackerOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvFunctionMixin"
     stubClass = "org.move.lang.core.stubs.MvFunctionStub"
