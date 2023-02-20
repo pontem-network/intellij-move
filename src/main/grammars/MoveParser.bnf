@@ -264,15 +264,16 @@ private ModuleItem_item ::= UseStmt
                             | Schema
                             | ItemSpec
 
-Const ::= Attr* CONST_KW BindingPat TypeAnnotation Initializer ';'
+Const ::= Attr* CONST_KW IDENTIFIER TypeAnnotation Initializer ';'
 {
     pin = "CONST_KW"
     implements = [
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.move.lang.core.psi.MvNameIdentifierOwner"
     ]
-//    mixin = "org.move.lang.core.psi.ext.MvConstMixin"
-//    stubClass = "org.move.lang.core.stubs.MvConstStub"
-//    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
+    mixin = "org.move.lang.core.psi.ext.MvConstMixin"
+    stubClass = "org.move.lang.core.stubs.MvConstStub"
+    elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
 }
 

@@ -6,7 +6,7 @@ import org.move.lang.core.types.infer.ItemContext
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
-fun MvFunctionParameter.paramAnnotationTy(itemContext: ItemContext): Ty =
+fun MvFunctionParameter.paramTypeTy(itemContext: ItemContext): Ty =
     this.typeAnnotation
         ?.type
         ?.let { itemContext.getTypeTy(it) } ?: TyUnknown

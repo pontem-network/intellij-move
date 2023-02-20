@@ -17,7 +17,7 @@ val MvBindingPat.owner: PsiElement?
     get() = PsiTreeUtil.findFirstParent(this) {
         it is MvLetStmt
                 || it is MvFunctionParameter
-                || it is MvConst
+//                || it is MvConst
                 || it is MvSchemaFieldStmt
     }
 
@@ -28,8 +28,8 @@ fun MvBindingPat.inferBindingTy(parentCtx: InferenceContext, itemContext: ItemCo
     }
     val owner = this.owner
     return when (owner) {
-        is MvFunctionParameter -> owner.paramAnnotationTy(itemContext)
-        is MvConst -> owner.constAnnotationTy(itemContext)
+        is MvFunctionParameter -> owner.paramTypeTy(itemContext)
+//        is MvConst -> owner.constAnnotationTy(itemContext)
         is MvLetStmt -> {
             if (parentCtx.bindingTypes.containsKey(this)) return parentCtx.bindingTypes[this]!!
 

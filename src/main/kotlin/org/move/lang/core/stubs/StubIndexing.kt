@@ -24,9 +24,9 @@ fun IndexSink.indexSchemaStub(stub: MvSchemaStub) {
     indexNamedStub(stub)
 }
 
-//fun IndexSink.indexConstStub(stub: MvConstStub) {
-//    indexNamedStub(stub)
-//}
+fun IndexSink.indexConstStub(stub: MvConstStub) {
+    indexNamedStub(stub)
+}
 
 fun IndexSink.indexModuleSpecStub(stub: MvModuleSpecStub) {
     stub.moduleName?.let {

@@ -101,6 +101,13 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
         is MvStructField -> this.createLookupElementWithIcon()
             .withTypeText(this.typeAnnotation?.type?.text)
 
+        is MvConst -> {
+            val msl = this.isMsl()
+            val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
+            this.createLookupElementWithIcon()
+                .withTypeText(itemContext.getConstTy(this).text(true))
+        }
+
         is MvBindingPat -> {
             val msl = this.isMsl()
             val inferenceCtx = this.ownerInferenceCtx(msl) ?: InferenceContext(msl)

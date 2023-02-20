@@ -10,7 +10,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.itemContext
-import org.move.lang.core.types.stubAddress
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
@@ -213,14 +212,14 @@ class MvErrorAnnotator : MvAnnotator() {
     }
 
     private fun checkConstDef(holder: MvAnnotationHolder, const: MvConst) {
-        val binding = const.bindingPat ?: return
+//        val binding = const.bindingPat ?: return
         val owner = const.parent?.parent ?: return
-        val allBindings = when (owner) {
-            is MvModule -> owner.constBindings()
-            is MvScript -> owner.constBindings()
+        val allConsts = when (owner) {
+            is MvModule -> owner.consts()
+            is MvScript -> owner.consts()
             else -> return
         }
-        checkDuplicates(holder, binding, allBindings.asSequence())
+        checkDuplicates(holder, const, allConsts.asSequence())
     }
 }
 

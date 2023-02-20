@@ -38,9 +38,22 @@ fun Project.itemContext(msl: Boolean): ItemContext = service<DefaultItemContextS
 
 class ItemContext(val owner: ItemContextOwner, val msl: Boolean) {
     val tyTemplateMap = mutableMapOf<MvNameIdentifierOwner, TyTemplate>()
+    val constTyMap = mutableMapOf<MvConst, Ty>()
 //    val typeTyMap = mutableMapOf<MvType, Ty>()
 
     val typeErrors = mutableListOf<TypeError>()
+
+    fun getConstTy(const: MvConst): Ty {
+        val existing = this.constTyMap[const]
+        if (existing != null) {
+            return existing
+        } else {
+            val ty = const.typeAnnotation?.type
+                ?.let { inferItemTypeTy(it, this) } ?: TyUnknown
+            this.constTyMap[const] = ty
+            return ty
+        }
+    }
 
     fun getTypeTy(type: MvType): Ty {
         return inferItemTypeTy(type, this)

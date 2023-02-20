@@ -140,8 +140,8 @@ fun MvElement.signature(builder: StringBuilder) {
             buffer += this.containingModule!!.fqName
             buffer += "\n"
             buffer += "const "
-            buffer.b { it += this.bindingPat?.name ?: angleWrapped("unknown") }
-            buffer += ": ${this.constAnnotationTy(itemContext).renderForDocs(false)}"
+            buffer.b { it += this.name ?: angleWrapped("unknown") }
+            buffer += ": ${itemContext.getConstTy(this).renderForDocs(false)}"
             this.initializer?.let { buffer += " ${it.text}" }
         }
 

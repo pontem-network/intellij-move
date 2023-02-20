@@ -173,10 +173,14 @@ fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
 
 fun MvModule.specFunctions(): List<MvSpecFunction> = moduleBlock?.specFunctionList.orEmpty()
 
-fun MvModule.constBindings(): List<MvBindingPat> =
+fun MvModule.consts(): List<MvConst> =
     getProjectPsiDependentCache(this) {
-        it.moduleBlock?.constList.orEmpty().mapNotNull { c -> c.bindingPat }
+        it.moduleBlock?.constList.orEmpty()
     }
+//fun MvModule.constBindings(): List<MvBindingPat> =
+//    getProjectPsiDependentCache(this) {
+//        it.moduleBlock?.constList.orEmpty().mapNotNull { c -> c.bindingPat }
+//    }
 
 val MvModuleBlock.module: MvModule get() = this.parent as MvModule
 

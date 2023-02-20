@@ -78,6 +78,7 @@ private fun MvNamedElement.asTy(ctx: InferenceContext): Ty {
         is MvStruct -> {
             itemContext.getItemTy(this)
         }
+        is MvConst -> itemContext.getConstTy(this)
         is MvBindingPat -> this.inferBindingTy(ctx, itemContext)
         else -> TyUnknown
     }

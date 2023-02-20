@@ -16,7 +16,7 @@ abstract class MvNamingInspection(private val elementTitle: String) : MvLocalIns
 class MvConstNamingInspection : MvNamingInspection("Constant") {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitConst(o: MvConst) {
-            val ident = o.bindingPat?.identifier ?: return
+            val ident = o.identifier ?: return
             val name = ident.text
             if (!name.startsWithUpperCaseLetter()) {
                 holder.registerProblem(

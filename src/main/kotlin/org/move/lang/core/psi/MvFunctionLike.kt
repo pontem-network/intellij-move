@@ -3,7 +3,7 @@ package org.move.lang.core.psi
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
 import org.move.lang.core.psi.ext.greenStub
-import org.move.lang.core.psi.ext.paramAnnotationTy
+import org.move.lang.core.psi.ext.paramTypeTy
 import org.move.lang.core.psi.ext.hasChild
 import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.types.infer.*
@@ -46,7 +46,7 @@ val MvFunctionLike.typeParamsUsedOnlyInReturnType: List<MvTypeParameter>
         val itemContext = this.module?.itemContext(msl) ?: project.itemContext(msl)
         val usedTypeParams = mutableSetOf<MvTypeParameter>()
         this.parameters
-            .map { it.paramAnnotationTy(itemContext) }
+            .map { it.paramTypeTy(itemContext) }
             .forEach {
                 it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.origin); paramTy }
             }
@@ -59,7 +59,7 @@ val MvFunctionLike.requiredTypeParams: List<MvTypeParameter>
         val msl = false
         val itemContext = this.module?.itemContext(msl) ?: project.itemContext(msl)
         this.parameters
-            .map { it.paramAnnotationTy(itemContext) }
+            .map { it.paramTypeTy(itemContext) }
             .withAdded(this.returnTypeTy(itemContext))
             .forEach {
                 it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.origin); paramTy }

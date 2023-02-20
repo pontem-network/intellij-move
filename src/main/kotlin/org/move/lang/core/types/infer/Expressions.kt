@@ -85,9 +85,15 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
 }
 
 private fun inferRefExprTy(refExpr: MvRefExpr, ctx: InferenceContext, itemContext: ItemContext): Ty {
-    val binding =
-        refExpr.path.reference?.resolve() as? MvBindingPat ?: return TyUnknown
-    return binding.inferBindingTy(ctx, itemContext)
+    val item = refExpr.path.reference?.resolve()
+    return when (item) {
+        is MvBindingPat -> item.inferBindingTy(ctx, itemContext)
+        is MvConst -> itemContext.getConstTy(item)
+        else -> TyUnknown
+    }
+//    val binding =
+//        refExpr.path.reference?.resolve() as? MvBindingPat ?: return TyUnknown
+//    return binding.inferBindingTy(ctx, itemContext)
 }
 
 private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): Ty {

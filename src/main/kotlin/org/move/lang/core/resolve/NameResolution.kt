@@ -152,7 +152,7 @@ fun processFileItems(
                 Namespace.NAME -> {
                     val functions = itemVis.visibilities.flatMap { module.visibleFunctions(it) }
                     val specFunctions = if (itemVis.isMsl) module.specFunctions() else emptyList()
-                    val consts = if (itemVis.isMsl) module.constBindings() else emptyList()
+                    val consts = if (itemVis.isMsl) module.consts() else emptyList()
                     processor.matchAll(
                         itemVis,
                         functions, specFunctions, consts
@@ -300,7 +300,7 @@ fun processLexicalDeclarations(
                         val module = scope.parent as MvModule
                         processor.matchAll(
                             itemVis,
-                            module.constBindings(),
+                            module.consts(),
                         )
                     }
                     else -> false
@@ -319,7 +319,7 @@ fun processLexicalDeclarations(
                             module.allNonTestFunctions(),
                             module.builtinFunctions(),
                             module.structs(),
-                            module.constBindings(),
+                            module.consts(),
                             if (itemVis.isMsl) {
                                 listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
                             } else {
@@ -332,7 +332,7 @@ fun processLexicalDeclarations(
                         scope.schemaList,
                         scope.specFunctionList,
                     )
-                    is MvScript -> processor.matchAll(itemVis, scope.constBindings())
+                    is MvScript -> processor.matchAll(itemVis, scope.consts())
                     is MvFunctionLike -> processor.matchAll(itemVis, scope.parameterBindings())
                     is MvCodeBlock -> {
                         val precedingLetDecls = scope.letStmts

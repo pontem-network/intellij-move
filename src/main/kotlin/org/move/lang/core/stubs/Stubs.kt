@@ -255,35 +255,35 @@ class MvSchemaStub(
     }
 }
 
-//class MvConstStub(
-//    parent: StubElement<*>?,
-//    elementType: IStubElementType<*, *>,
-//    override val name: String?
-//) : StubBase<MvConst>(parent, elementType), MvNamedStub {
-//
-//    object Type : MvStubElementType<MvConstStub, MvConst>("CONST") {
-//        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
-//            MvConstStub(
-//                parentStub,
-//                this,
-//                dataStream.readNameAsString()
-//            )
-//
-//        override fun serialize(stub: MvConstStub, dataStream: StubOutputStream) =
-//            with(dataStream) {
-//                writeName(stub.name)
-//            }
-//
-//        override fun createPsi(stub: MvConstStub): MvConst =
-//            MvConstImpl(stub, this)
-//
-//        override fun createStub(psi: MvConst, parentStub: StubElement<*>?): MvConstStub {
-//            return MvConstStub(parentStub, this, psi.bindingPat?.name)
-//        }
-//
-//        override fun indexStub(stub: MvConstStub, sink: IndexSink) = sink.indexConstStub(stub)
-//    }
-//}
+class MvConstStub(
+    parent: StubElement<*>?,
+    elementType: IStubElementType<*, *>,
+    override val name: String?
+) : StubBase<MvConst>(parent, elementType), MvNamedStub {
+
+    object Type : MvStubElementType<MvConstStub, MvConst>("CONST") {
+        override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?) =
+            MvConstStub(
+                parentStub,
+                this,
+                dataStream.readNameAsString()
+            )
+
+        override fun serialize(stub: MvConstStub, dataStream: StubOutputStream) =
+            with(dataStream) {
+                writeName(stub.name)
+            }
+
+        override fun createPsi(stub: MvConstStub): MvConst =
+            MvConstImpl(stub, this)
+
+        override fun createStub(psi: MvConst, parentStub: StubElement<*>?): MvConstStub {
+            return MvConstStub(parentStub, this, psi.name)
+        }
+
+        override fun indexStub(stub: MvConstStub, sink: IndexSink) = sink.indexConstStub(stub)
+    }
+}
 
 class MvModuleSpecStub(
     parent: StubElement<*>?,
@@ -322,7 +322,7 @@ fun factory(name: String): MvStubElementType<*, *> = when (name) {
     "SPEC_FUNCTION" -> MvSpecFunctionStub.Type
     "STRUCT" -> MvStructStub.Type
     "SCHEMA" -> MvSchemaStub.Type
-//    "CONST" -> MvConstStub.Type
+    "CONST" -> MvConstStub.Type
     "MODULE_SPEC" -> MvModuleSpecStub.Type
 
     else -> error("Unknown element $name")
