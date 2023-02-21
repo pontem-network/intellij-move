@@ -12,8 +12,7 @@ import org.move.lang.core.psi.MvStructLitField
 import org.move.lang.core.psi.MvStructLitFieldsBlock
 import org.move.lang.core.psi.MvValueArgumentList
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.itemContext
+import org.move.lang.core.types.infer.outerItemContext
 import org.move.utils.AsyncParameterInfoHandler
 
 class StructLitFieldsInfoHandler :
@@ -100,10 +99,11 @@ class FieldsDescription(val fields: Array<String>) {
     companion object {
         fun fromStructLitBlock(block: MvStructLitFieldsBlock): FieldsDescription? {
             val struct = block.litExpr.path.maybeStruct ?: return null
-            val itemContext = struct.module.itemContext(false)
+            val msl = block.isMsl()
+            val itemContext = struct.outerItemContext(msl)
             val fieldParams =
                 struct.fieldsMap.entries.map { (name, field) ->
-                    val type = field.fieldAnnotationTy(itemContext).fullname()
+                    val type = itemContext.getStructFieldItemTy(field).fullname()
                     "$name: $type"
                 }.toTypedArray()
             return FieldsDescription(fieldParams)

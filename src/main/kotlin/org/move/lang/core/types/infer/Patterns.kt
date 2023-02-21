@@ -1,11 +1,10 @@
 package org.move.lang.core.types.infer
 
 import org.move.ide.presentation.fullname
-import org.move.lang.core.psi.MvBindingPat
-import org.move.lang.core.psi.MvPat
-import org.move.lang.core.psi.MvStructPat
-import org.move.lang.core.psi.MvTuplePat
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.annotationTy
 import org.move.lang.core.psi.ext.fields
+import org.move.lang.core.psi.ext.owner
 import org.move.lang.core.psi.ext.pat
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyStruct
@@ -48,6 +47,36 @@ fun inferPatTy(pat: MvPat, parentCtx: InferenceContext, expectedTy: Ty? = null):
     }
     parentCtx.cachePatTy(pat, patTy)
     return patTy
+}
+
+fun inferBindingPatTy(bindingPat: MvBindingPat, parentCtx: InferenceContext, itemContext: ItemContext): Ty {
+//    val existingTy = parentCtx.bindingTypes[this]
+//    if (existingTy != null) {
+//        return existingTy
+//    }
+    val owner = bindingPat.owner
+    return when (owner) {
+        is MvFunctionParameter -> {
+            owner.typeAnnotation
+                ?.type
+                ?.let { parentCtx.getTypeTy(it) }
+                ?: TyUnknown
+        }
+        is MvLetStmt -> {
+            val pat = owner.pat ?: return TyUnknown
+            val explicitType = owner.typeAnnotation?.type
+            if (explicitType != null) {
+                val explicitTy = parentCtx.getTypeTy(explicitType)
+                collectBindings(pat, explicitTy, parentCtx)
+                return parentCtx.bindingTypes[bindingPat] ?: TyUnknown
+            }
+            val inferredTy = owner.initializer?.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
+            collectBindings(pat, inferredTy, parentCtx)
+            return parentCtx.bindingTypes[bindingPat] ?: TyUnknown
+        }
+        is MvSchemaFieldStmt -> owner.annotationTy(parentCtx)
+        else -> TyUnknown
+    }
 }
 
 fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext) {

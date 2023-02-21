@@ -1,7 +1,6 @@
 package org.move.cli
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.manifest.AptosConfigYaml
 import org.move.cli.manifest.MoveToml

@@ -9,7 +9,7 @@ import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.address
-import org.move.lang.core.types.infer.itemContext
+import org.move.lang.core.types.infer.maybeInferenceContext
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
@@ -111,9 +111,9 @@ class MvErrorAnnotator : MvAnnotator() {
                 if (o.path.referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
                     val explicitTypeArgs = o.typeArguments
                     val currentModule = o.containingModule ?: return
-                    val itemContext = currentModule.itemContext(false)
+                    val inferenceCtx = o.maybeInferenceContext(false) ?: return
                     for (typeArg in explicitTypeArgs) {
-                        val typeArgTy = itemContext.getTypeTy(typeArg.type)
+                        val typeArgTy = inferenceCtx.getTypeTy(typeArg.type)
                         if (typeArgTy !is TyUnknown && !typeArgTy.canBeAcquiredInModule(currentModule)) {
                             val typeName = typeArgTy.fullname()
                             holder.newAnnotation(

@@ -53,6 +53,7 @@ fun MvNamedElement.createLookupElementWithIcon(): LookupElementBuilder {
         .withLookupString(this.name ?: "")
 }
 
+@Suppress("UnusedReceiverParameter")
 fun MvModule.createSelfLookup(): LookupElement {
     return LookupElementBuilder
         .create("Self")
@@ -110,10 +111,11 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
 
         is MvBindingPat -> {
             val msl = this.isMsl()
-            val inferenceCtx = this.ownerInferenceCtx(msl) ?: InferenceContext(msl)
-            val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
+//            val inferenceCtx = this.maybeInferenceContext(msl) ?: InferenceContext(msl)
+//            val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
+            val inferenceCtx = this.inferenceContext(msl)
             this.createLookupElementWithIcon()
-                .withTypeText(this.inferBindingTy(inferenceCtx, itemContext).text(true))
+                .withTypeText(inferenceCtx.getBindingPatTy(this).text(true))
         }
 
         is MvSchema -> this.createLookupElementWithIcon()
@@ -219,7 +221,7 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
                     val itemContext = element.module?.itemContext(msl) ?: element.project.itemContext(msl)
                     val funcTy = itemContext.getItemTy(element) as? TyFunction ?: return@run false
 
-                    val inferenceCtx = InferenceContext(msl)
+                    val inferenceCtx = InferenceContext(msl, itemContext)
                     val expectedTy = completionContext.expectedTy
                     if (expectedTy != null) {
                         inferenceCtx.addConstraint(funcTy.retType, expectedTy)

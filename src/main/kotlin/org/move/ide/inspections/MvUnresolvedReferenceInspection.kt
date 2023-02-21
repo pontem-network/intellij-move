@@ -8,7 +8,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.MvReferenceElement
 import org.move.lang.core.types.infer.inferDotExprStructTy
-import org.move.lang.core.types.infer.ownerInferenceCtx
+import org.move.lang.core.types.infer.maybeInferenceContext
 
 class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
@@ -149,7 +149,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         override fun visitDotExpr(dotExpr: MvDotExpr) {
             if (dotExpr.isMsl()) return
 
-            val inferenceCtx = dotExpr.ownerInferenceCtx(false) ?: return
+            val inferenceCtx = dotExpr.maybeInferenceContext(false) ?: return
             inferDotExprStructTy(dotExpr, inferenceCtx) ?: return
 
             val dotField = dotExpr.structDotField

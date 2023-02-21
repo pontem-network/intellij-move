@@ -5,7 +5,6 @@ import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.lang.MoveParserDefinition
 import org.move.lang.core.psi.MvAttr
 import org.move.lang.core.psi.MvAttrItem

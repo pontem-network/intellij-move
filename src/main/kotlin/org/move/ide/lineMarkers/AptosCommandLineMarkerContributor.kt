@@ -6,16 +6,13 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.psi.PsiElement
 import org.move.cli.runconfig.producers.PublishCommandConfigurationProducer
 import org.move.cli.runconfig.producers.TestCommandConfigurationProducer
-import org.move.cli.transactions.RunTransactionDialog
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNameIdentifierOwner
 import org.move.lang.core.psi.ext.elementType
-import org.move.lang.core.psi.ext.isEntry
 import org.move.lang.core.psi.ext.isTest
-import org.move.lang.moveProject
 
 class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
     override fun getInfo(element: PsiElement): Info? {

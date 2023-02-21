@@ -17,7 +17,6 @@ import org.move.openapiext.toVirtualFile
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.TestProject
-import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 import kotlin.math.min
 

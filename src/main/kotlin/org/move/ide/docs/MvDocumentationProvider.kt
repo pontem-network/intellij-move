@@ -10,7 +10,10 @@ import org.move.ide.presentation.text
 import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.infer.*
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.inferenceContext
+import org.move.lang.core.types.infer.maybeInferenceContext
+import org.move.lang.core.types.infer.outerItemContext
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.moveProject
 import org.move.stdext.joinToWithBuffer
@@ -46,12 +49,13 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
-                val inferenceCtx =
-                    docElement.ownerInferenceCtx(false) ?: InferenceContext(false)
-                val project = docElement.project
-                val itemContext = docElement.itemContextOwner?.itemContext(false) ?: project.itemContext(false)
-
-                val type = docElement.inferBindingTy(inferenceCtx, itemContext).renderForDocs(true)
+//                val project = docElement.project
+                val inferenceCtx = docElement.inferenceContext(false)
+//                val itemContext = docElement.itemContextOwner?.itemContext(false) ?: project.itemContext(false)
+//                val inferenceCtx =
+//                    docElement.ownerInferenceCtx(false) ?: InferenceContext(false, itemContext)
+                val type = inferenceCtx.getBindingPatTy(docElement).renderForDocs(true)
+//                val type = docElement.inferBindingTy(inferenceCtx, itemContext).renderForDocs(true)
                 buffer += presentationInfo.type
                 buffer += " "
                 buffer.b { it += presentationInfo.name }
@@ -108,7 +112,6 @@ fun generateFunction(function: MvFunction, buffer: StringBuilder) {
 fun MvElement.signature(builder: StringBuilder) {
     val buffer = StringBuilder()
     val msl = this.isMsl()
-    val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
     when (this) {
         is MvFunction -> generateFunction(this, buffer)
         is MvModule -> {
@@ -128,16 +131,19 @@ fun MvElement.signature(builder: StringBuilder) {
         }
 
         is MvStructField -> {
-            buffer += this.containingModule!!.fqName
+            val module = this.struct.module
+            val itemContext = this.struct.outerItemContext(msl)
+            buffer += module.fqName
             buffer += "::"
             buffer += this.struct.name ?: angleWrapped("anonymous")
             buffer += "\n"
             buffer.b { it += this.name }
-            buffer += ": ${this.fieldAnnotationTy(itemContext).renderForDocs(true)}"
+            buffer += ": ${itemContext.getStructFieldItemTy(this).renderForDocs(true)}"
         }
 
         is MvConst -> {
-            buffer += this.containingModule!!.fqName
+            val itemContext = this.outerItemContext(msl)
+            buffer += this.module?.fqName ?: "script"
             buffer += "\n"
             buffer += "const "
             buffer.b { it += this.name ?: angleWrapped("unknown") }
@@ -159,8 +165,8 @@ private fun PsiElement.generateDocumentation(
     when (this) {
         is MvType -> {
             val msl = this.isMsl()
-            val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
-            buffer += itemContext.getTypeTy(this)
+            val inferenceCtx = this.maybeInferenceContext(msl) ?: InferenceContext.default(msl, this)
+            buffer += inferenceCtx.getTypeTy(this)
                 .typeLabel(this)
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")

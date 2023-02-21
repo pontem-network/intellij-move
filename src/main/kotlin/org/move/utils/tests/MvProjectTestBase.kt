@@ -2,7 +2,6 @@ package org.move.utils.tests
 
 import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileFilter
 import com.intellij.psi.PsiDirectory

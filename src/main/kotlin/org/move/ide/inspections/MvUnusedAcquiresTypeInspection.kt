@@ -10,7 +10,7 @@ import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.inferAcquiresTys
-import org.move.lang.core.types.infer.itemContext
+import org.move.lang.core.types.infer.inferenceContext
 
 
 class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
@@ -45,7 +45,7 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val module = function.module ?: return
                 val codeBlock = function.codeBlock ?: return
 
-                val itemContext = module.itemContext(false)
+                val inferenceCtx = function.inferenceContext(false)
 
                 val acquiredTys = mutableSetOf<String>()
                 for (callExpr in codeBlock.descendantsOfType<MvCallExpr>()) {
@@ -60,7 +60,7 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val pathTypes = o.pathTypeList
                 for ((i, pathType) in pathTypes.withIndex()) {
                     // check that this acquires is allowed in the context
-                    val ty = itemContext.getTypeTy(pathType)
+                    val ty = inferenceCtx.getTypeTy(pathType)
                     if (!ty.canBeAcquiredInModule(module)) {
                         unusedAcquiresIndices.add(i)
                         continue

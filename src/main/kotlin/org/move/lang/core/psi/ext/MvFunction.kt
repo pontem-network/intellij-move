@@ -17,8 +17,6 @@ import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.module
 import org.move.lang.core.stubs.MvFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.infer.ItemContext
-import org.move.lang.core.types.ty.Ty
 import javax.swing.Icon
 
 enum class FunctionVisibility {
@@ -64,11 +62,6 @@ val MvFunction.isTest: Boolean
     }
 
 val QueryAttributes.isTest: Boolean get() = this.hasAttrItem("test")
-
-fun MvFunction.getAcquiresTys(itemContext: ItemContext): List<Ty> =
-    this.acquiresType?.pathTypeList.orEmpty().map {
-        itemContext.getTypeTy(it)
-    }
 
 val MvFunction.signatureText: String
     get() {

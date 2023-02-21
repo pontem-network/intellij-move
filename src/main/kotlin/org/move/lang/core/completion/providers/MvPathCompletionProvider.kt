@@ -12,14 +12,18 @@ import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.ancestors
+import org.move.lang.core.psi.ext.endOffset
+import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferExpectedTy
-import org.move.lang.core.types.infer.ownerInferenceCtx
+import org.move.lang.core.types.infer.itemContext
+import org.move.lang.core.types.infer.maybeInferenceContext
 import org.move.lang.core.types.ty.Ty
 
 abstract class MvPathCompletionProvider : MvCompletionProvider() {
@@ -39,9 +43,8 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
         val moduleRef = pathElement.moduleRef
         val itemVis = itemVis(pathElement)
         val msl = pathElement.isMsl()
-        val inferenceCtx = pathElement.ownerInferenceCtx(msl) ?: InferenceContext(msl)
-        val expectedTy =
-            getExpectedTypeForEnclosingPathOrDotExpr(pathElement, inferenceCtx)
+        val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(pathElement, msl)
+
         val ctx = CompletionContext(pathElement, itemVis, expectedTy)
 
         if (moduleRef != null) {
@@ -142,14 +145,19 @@ object SchemasCompletionProvider : MvPathCompletionProvider() {
     }
 }
 
-private fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement, ctx: InferenceContext): Ty? {
+private fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement, msl: Boolean): Ty? {
     for (ancestor in element.ancestors) {
         if (element.endOffset < ancestor.endOffset) continue
         if (element.endOffset > ancestor.endOffset) break
         when (ancestor) {
             is MvPathType,
             is MvRefExpr,
-            is MvDotExpr -> return inferExpectedTy(ancestor, ctx)
+            is MvDotExpr -> {
+                val inferenceCtx =
+                    (ancestor as MvElement).maybeInferenceContext(msl)
+                        ?: InferenceContext(msl, ancestor.itemContext(msl))
+                return inferExpectedTy(ancestor, inferenceCtx)
+            }
         }
     }
     return null

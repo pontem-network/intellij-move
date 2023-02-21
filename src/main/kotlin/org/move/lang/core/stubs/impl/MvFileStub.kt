@@ -1,6 +1,5 @@
 package org.move.lang.core.stubs.impl
 
-import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiFile
 import com.intellij.psi.StubBuilder
 import com.intellij.psi.impl.source.tree.TreeUtil

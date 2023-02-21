@@ -1,6 +1,5 @@
 package org.move.lang.core.resolve.ref
 
-import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvModule

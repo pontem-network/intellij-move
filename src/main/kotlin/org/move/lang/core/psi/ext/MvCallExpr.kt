@@ -1,7 +1,7 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.types.infer.ownerInferenceCtx
+import org.move.lang.core.types.infer.maybeInferenceContext
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -21,7 +21,7 @@ val MvMacroCallExpr.callArgumentExprs: List<MvExpr>
 
 fun MvCallExpr.inferAcquiresTys(): List<Ty>? {
     val msl = this.isMsl()
-    val inferenceCtx = this.ownerInferenceCtx(msl) ?: return null
+    val inferenceCtx = this.maybeInferenceContext(msl) ?: return null
     return inferenceCtx.callExprTypes[this]
         ?.acquiresTypes
         ?.takeIf { !it.contains(TyUnknown) }

@@ -10,7 +10,8 @@ import org.move.lang.core.psi.ext.inferredExprTy
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferExpectedTy
-import org.move.lang.core.types.infer.ownerInferenceCtx
+import org.move.lang.core.types.infer.itemContext
+import org.move.lang.core.types.infer.maybeInferenceContext
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementAndDataInEditor
@@ -29,7 +30,9 @@ abstract class TypificationTestCase : MvTestBase() {
         val (element, data) = myFixture.findElementAndDataInEditor<T>()
         val expectedType = data.trim()
 
-        val ctx = element.ownerInferenceCtx(element.isMsl()) ?: InferenceContext(element.isMsl())
+        val msl = element.isMsl()
+        val ctx = element.maybeInferenceContext(msl) ?: InferenceContext(msl, element.itemContext(msl))
+
         val actualType = inferExpectedTy(element, ctx)?.expectedTyText() ?: "null"
         check(actualType == expectedType) {
             "Type mismatch. Expected $expectedType, found: $actualType"

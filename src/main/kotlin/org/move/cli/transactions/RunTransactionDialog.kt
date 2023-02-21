@@ -18,7 +18,6 @@ import org.move.cli.AptosCommandLine
 import org.move.cli.MoveProject
 import org.move.cli.runconfig.producers.AptosCommandLineFromContext
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.ext.inferBindingTy
 import org.move.lang.core.psi.module
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.address
@@ -94,10 +93,12 @@ class RunTransactionDialog(
                 }
             }
             if (parameters.isNotEmpty()) {
+                val inferenceCtx = InferenceContext(false, itemContext)
                 group("Value Arguments") {
                     for (parameter in parameters) {
                         val paramName = parameter.name ?: continue
-                        val paramTy = parameter.inferBindingTy(InferenceContext(false), itemContext)
+                        val paramTy = inferenceCtx.getBindingPatTy(parameter)
+//                        val paramTy = parameter.inferBindingTy(InferenceContext(false), itemContext)
                         val paramTyName = when (paramTy) {
                             is TyInteger -> paramTy.kind.name
                             is TyAddress -> "address"

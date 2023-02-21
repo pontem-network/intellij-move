@@ -10,14 +10,9 @@ import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvLetStmt
 import org.move.lang.core.psi.MvPat
-import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.endOffset
-import org.move.lang.core.psi.ext.inferBindingTy
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.ItemContext
-import org.move.lang.core.types.infer.itemContext
-import org.move.lang.core.types.infer.ownerInferenceCtx
+import org.move.lang.core.types.infer.inferenceContext
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.JComponent
@@ -76,16 +71,14 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
 
             private fun presentTypeForPat(pat: MvPat) {
                 val msl = pat.isMsl()
-                val itemContext = pat.containingModule?.itemContext(msl) ?: pat.project.itemContext(msl)
-                val inferenceCtx = pat.ownerInferenceCtx(msl) ?: return
+                val inferenceCtx = pat.inferenceContext(msl)
+                for (bindingPat in pat.descendantsOfType<MvBindingPat>()) {
+                    if (bindingPat.identifier.text.startsWith("_")) continue
 
-                for (binding in pat.descendantsOfType<MvBindingPat>()) {
-                    if (binding.identifier.text.startsWith("_")) continue
-
-                    val bindingTy = binding.inferBindingTy(inferenceCtx, itemContext)
+                    val bindingTy = inferenceCtx.getBindingPatTy(bindingPat)
                     if (bindingTy is TyUnknown) continue
 
-                    presentTypeForBinding(binding, bindingTy)
+                    presentTypeForBinding(bindingPat, bindingTy)
                 }
             }
 

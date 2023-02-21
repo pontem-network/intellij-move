@@ -1,17 +1,21 @@
 package org.move.lang.core.types.infer
 
 import com.intellij.injected.editor.VirtualFileWindow
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.RecursionManager
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.MvCodeFragment
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvModificationTrackerOwner
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.contextOrSelf
 import org.move.lang.core.psi.moveStructureModificationTracker
 import org.move.utils.cache
 import org.move.utils.cacheManager
+import org.move.utils.recursionGuard
 
 interface ItemContextOwner : MvElement
 
@@ -25,15 +29,20 @@ fun MvElement.itemContext(msl: Boolean): ItemContext =
 
 private val ITEM_CONTEXT_KEY_MSL: Key<CachedValue<ItemContext>> = Key.create("ITEM_CONTEXT_KEY_MSL")
 private val ITEM_CONTEXT_KEY_NON_MSL: Key<CachedValue<ItemContext>> = Key.create("ITEM_CONTEXT_KEY_NON_MSL")
+private val ITEM_CONTEXT_GUARD: Key<CachedValue<ItemContext>> = Key.create("ITEM_CONTEXT_GUARD")
 
 fun ItemContextOwner.itemContext(msl: Boolean): ItemContext {
     val itemContext = if (msl) {
         this.project.cacheManager.cache(this, ITEM_CONTEXT_KEY_MSL) {
-            createCachedResult(getItemContext(this, true))
+            val itemContext = recursionGuard(ITEM_CONTEXT_GUARD, { getItemContext(this, true) })
+                ?: error("nested itemContext inference for ${(this as? MvModule)?.fqName}")
+            createCachedResult(itemContext)
         }
     } else {
         this.project.cacheManager.cache(this, ITEM_CONTEXT_KEY_NON_MSL) {
-            createCachedResult(getItemContext(this, false))
+            val itemContext = recursionGuard(ITEM_CONTEXT_GUARD, { getItemContext(this, false) })
+                ?: error("nested itemContext inference for ${(this as? MvModule)?.fqName}")
+            createCachedResult(itemContext)
         }
     }
     return itemContext

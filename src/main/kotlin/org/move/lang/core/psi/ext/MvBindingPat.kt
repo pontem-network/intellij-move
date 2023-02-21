@@ -8,45 +8,14 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
-import org.move.lang.core.types.infer.*
-import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.Icon
 
 val MvBindingPat.owner: PsiElement?
     get() = PsiTreeUtil.findFirstParent(this) {
         it is MvLetStmt
                 || it is MvFunctionParameter
-//                || it is MvConst
                 || it is MvSchemaFieldStmt
     }
-
-fun MvBindingPat.inferBindingTy(parentCtx: InferenceContext, itemContext: ItemContext): Ty {
-    val existingTy = parentCtx.bindingTypes[this]
-    if (existingTy != null) {
-        return existingTy
-    }
-    val owner = this.owner
-    return when (owner) {
-        is MvFunctionParameter -> owner.paramTypeTy(itemContext)
-        is MvLetStmt -> {
-            if (parentCtx.bindingTypes.containsKey(this)) return parentCtx.bindingTypes[this]!!
-
-            val pat = owner.pat ?: return TyUnknown
-            val explicitType = owner.typeAnnotation?.type
-            if (explicitType != null) {
-                val explicitTy = itemContext.getTypeTy(explicitType)
-                collectBindings(pat, explicitTy, parentCtx)
-                return parentCtx.bindingTypes[this] ?: TyUnknown
-            }
-            val inferredTy = owner.initializer?.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
-            collectBindings(pat, inferredTy, parentCtx)
-            return parentCtx.bindingTypes[this] ?: TyUnknown
-        }
-        is MvSchemaFieldStmt -> owner.annotationTy(itemContext)
-        else -> TyUnknown
-    }
-}
 
 abstract class MvBindingPatMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
                                                   MvBindingPat {

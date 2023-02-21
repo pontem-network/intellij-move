@@ -2,7 +2,6 @@ package org.move.lang.core.completion
 
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.completion.impl.CompletionSorterImpl
-import com.intellij.psi.PsiCodeFragment
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.providers.*
 import org.move.lang.core.completion.sort.COMPLETION_WEIGHERS_GROUPED

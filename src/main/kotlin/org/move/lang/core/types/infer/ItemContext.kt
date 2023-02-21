@@ -7,9 +7,6 @@ import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
-import com.intellij.psi.util.parentOfType
-import org.move.ide.annotator.INTEGER_TYPE_IDENTIFIERS
-import org.move.ide.annotator.SPEC_INTEGER_TYPE_IDENTIFIERS
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
@@ -21,13 +18,13 @@ class DefaultItemContextService(val project: Project) : UserDataHolderBase() {
         return if (msl) {
             cacheManager.getCachedValue(this) {
                 val builtinModule = project.psiFactory.inlineModule("0x1", "builtins", "")
-                val itemContext = ItemContext(builtinModule, true)
+                val itemContext = ItemContext(true, builtinModule)
                 CachedValueProvider.Result.create(itemContext, PsiModificationTracker.MODIFICATION_COUNT)
             }
         } else {
             cacheManager.getCachedValue(this) {
                 val builtinModule = project.psiFactory.inlineModule("0x1", "builtins", "")
-                val itemContext = ItemContext(builtinModule, false)
+                val itemContext = ItemContext(false, builtinModule)
                 CachedValueProvider.Result.create(itemContext, PsiModificationTracker.MODIFICATION_COUNT)
             }
         }
@@ -36,10 +33,9 @@ class DefaultItemContextService(val project: Project) : UserDataHolderBase() {
 
 fun Project.itemContext(msl: Boolean): ItemContext = service<DefaultItemContextService>().get(msl)
 
-class ItemContext(val owner: ItemContextOwner, val msl: Boolean) {
+class ItemContext(val msl: Boolean, val owner: ItemContextOwner) {
     val tyTemplateMap = mutableMapOf<MvNameIdentifierOwner, TyTemplate>()
     val constTyMap = mutableMapOf<MvConst, Ty>()
-//    val typeTyMap = mutableMapOf<MvType, Ty>()
 
     val typeErrors = mutableListOf<TypeError>()
 
@@ -55,29 +51,15 @@ class ItemContext(val owner: ItemContextOwner, val msl: Boolean) {
         }
     }
 
-    fun getTypeTy(type: MvType): Ty {
-        return inferItemTypeTy(type, this)
-//        val existing = this.typeTyMap[type]
-//        if (existing != null) {
-//            return existing
-//        } else {
-//            val ty = inferItemTypeTy(type, this)
-//            this.typeTyMap[type] = ty
-//            return ty
-//        }
+    fun getStructItemTy(struct: MvStruct): TyStruct = getItemTy(struct) as TyStruct
+
+    fun getStructFieldItemTy(structField: MvStructField): Ty {
+        val struct = structField.struct
+        val fieldName = structField.name ?: return TyUnknown
+        return getStructItemTy(struct).fieldTy(fieldName)
     }
 
-    fun getBuiltinTypeTy(pathType: MvPathType): Ty {
-        return inferItemBuiltinTypeTy(pathType, this)
-//        val existing = this.typeTyMap[pathType]
-//        if (existing != null) {
-//            return existing
-//        } else {
-//            val ty = inferItemBuiltinTypeTy(pathType, this)
-//            this.typeTyMap[pathType] = ty
-//            return ty
-//        }
-    }
+    fun getFunctionItemTy(function: MvFunctionLike): TyFunction = getItemTy(function) as TyFunction
 
     fun getItemTy(namedItem: MvNameIdentifierOwner): Ty {
         return when (namedItem) {
@@ -109,13 +91,20 @@ class ItemContext(val owner: ItemContextOwner, val msl: Boolean) {
 }
 
 fun getItemContext(owner: ItemContextOwner, msl: Boolean): ItemContext {
-    val itemContext = ItemContext(owner, msl)
+    val itemContext = ItemContext(msl, owner)
     when (owner) {
         is MvModule -> {
             val moduleItems = owner.structs() +
                     owner.allNonTestFunctions().filter { it.visibility == FunctionVisibility.PUBLIC }
             for (item in moduleItems) {
                 itemContext.tyTemplateMap[item] = tyTemplate(item, itemContext)
+            }
+
+            val consts = owner.consts()
+            for (const in consts) {
+                itemContext.constTyMap[const] =
+                    const.typeAnnotation?.type
+                        ?.let { inferItemTypeTy(it, itemContext) } ?: TyUnknown
             }
         }
     }
@@ -178,10 +167,10 @@ private fun tyTemplate(item: MvNameIdentifierOwner, itemContext: ItemContext): T
         is MvStruct -> {
             val fieldTys = mutableMapOf<String, Ty>()
             for (field in item.fields) {
-                val fieldName = field.name ?: return TyTemplate.Unknown
+                val fieldName = field.name ?: continue
                 val fieldTy = field.typeAnnotation
                     ?.type
-                    ?.let { itemContext.getTypeTy(it) }
+                    ?.let { inferItemTypeTy(it, itemContext) }
                     ?: TyUnknown
                 fieldTys[fieldName] = fieldTy
             }
@@ -192,21 +181,24 @@ private fun tyTemplate(item: MvNameIdentifierOwner, itemContext: ItemContext): T
             val paramTypes = mutableListOf<Ty>()
             for (param in item.parameters) {
                 val paramType = param.typeAnnotation?.type
-                    ?.let { itemContext.getTypeTy(it) } ?: TyUnknown
+                    ?.let { inferItemTypeTy(it, itemContext) } ?: TyUnknown
                 paramTypes.add(paramType)
             }
-            val returnMvType = item.returnType?.type
-            val retTy = if (returnMvType == null) {
+            val returnType = item.returnType?.type
+            val retTy = if (returnType == null) {
                 TyUnit
             } else {
-                val returnTy = itemContext.getTypeTy(returnMvType)
+                val returnTy = inferItemTypeTy(returnType, itemContext)
                 returnTy
             }
             val acqTys = item.acquiresPathTypes.map {
                 val acqItem =
                     it.path.reference?.resolve() as? MvNameIdentifierOwner ?: return@map TyUnknown
                 when (acqItem) {
-                    is MvStruct -> itemContext.getItemTy(acqItem)
+                    is MvStruct -> {
+                        itemContext.getStructItemTy(acqItem)
+//                        acqItem.outerItemContext(itemContext.msl, itemContext).getItemTy(acqItem)
+                    }
                     is MvTypeParameter -> TyTypeParameter(acqItem)
                     else -> TyUnknown
                 }
@@ -217,73 +209,19 @@ private fun tyTemplate(item: MvNameIdentifierOwner, itemContext: ItemContext): T
     }
 }
 
-private fun inferItemTypeTy(
-    moveType: MvType,
-    itemContext: ItemContext,
-): Ty {
-    val ty = when (moveType) {
-        is MvPathType -> run {
-            val namedItem =
-                moveType.path.reference?.resolve() ?: return@run itemContext.getBuiltinTypeTy(moveType)
-            when (namedItem) {
-                is MvTypeParameter -> TyTypeParameter(namedItem)
-                is MvStruct -> {
-                    // check that it's not a recursive type
-                    val parentStruct = moveType.parentOfType<MvStruct>()
-                    if (parentStruct != null && namedItem == parentStruct) {
-                        itemContext.typeErrors.add(TypeError.CircularType(moveType, parentStruct))
-                        return TyUnknown
-                    }
-
-                    val rawStructTy = itemContext.getItemTy(namedItem) as? TyStruct ?: return TyUnknown
-
-                    val ctx = InferenceContext(itemContext.msl)
-                    if (rawStructTy.typeVars.isNotEmpty()) {
-                        val typeArgs = moveType.path.typeArguments.map { itemContext.getTypeTy(it.type) }
-                        for ((tyVar, tyArg) in rawStructTy.typeVars.zip(typeArgs)) {
-                            ctx.addConstraint(tyVar, tyArg)
-                        }
-                        ctx.processConstraints()
-                    }
-                    ctx.resolveTy(rawStructTy)
-                }
-                else -> TyUnknown
-            }
+fun MvNameIdentifierOwner.outerItemContext(msl: Boolean): ItemContext {
+    val itemContext = when (this) {
+        is MvConst -> {
+            // TODO: add ItemContextOwner to MvScript
+            this.module?.itemContext(msl)
         }
-        is MvRefType -> run {
-            val mutabilities = RefPermissions.valueOf(moveType.mutable)
-            val innerTypeRef = moveType.type
-                ?: return@run TyReference(TyUnknown, mutabilities, itemContext.msl)
-            val innerTy = itemContext.getTypeTy(innerTypeRef)
-            TyReference(innerTy, mutabilities, itemContext.msl)
+        is MvFunctionLike -> {
+            // TODO: add ItemContextOwner to MvScript and to MvModuleSpec
+            this.module?.itemContext(msl)
         }
-        is MvTupleType -> {
-            val innerTypes = moveType.typeList.map { itemContext.getTypeTy(it) }
-            TyTuple(innerTypes)
-        }
-        is MvUnitType -> TyUnit
-        else -> TyUnknown
+        is MvStruct -> this.module.itemContext(msl)
+        is MvStructField -> this.struct.module.itemContext(msl)
+        else -> null
     }
-    return ty
-}
-
-private fun inferItemBuiltinTypeTy(pathType: MvPathType, itemContext: ItemContext): Ty {
-    val refName = pathType.path.referenceName ?: return TyUnknown
-    if (itemContext.msl && refName in SPEC_INTEGER_TYPE_IDENTIFIERS) return TyInteger.fromName("num")
-
-    val ty = when (refName) {
-        in INTEGER_TYPE_IDENTIFIERS -> TyInteger.fromName(refName)
-        "bool" -> TyBool
-        "address" -> TyAddress
-        "signer" -> TySigner
-        "vector" -> {
-            val itemTy = pathType.path.typeArguments
-                .firstOrNull()
-                ?.type
-                ?.let { itemContext.getTypeTy(it) } ?: TyUnknown
-            return TyVector(itemTy)
-        }
-        else -> TyUnknown
-    }
-    return ty
+    return itemContext ?: project.itemContext(msl)
 }
