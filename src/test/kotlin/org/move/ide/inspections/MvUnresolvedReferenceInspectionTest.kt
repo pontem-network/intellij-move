@@ -186,7 +186,27 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
         fun call(): Coin { Coin { value: 1 } }
         fun m() {
             Coin { value: _ } = call();
+        }
+    }    
+    """)
+
+    fun `test no unresolved reference for correct destructuring`() = checkByText("""
+    module 0x1::M {
+        struct Coin { value: u64 }
+        fun call(): Coin { Coin { value: 1 } }
+        fun m() {
+            let val;
             Coin { value: val } = call();
+        }
+    }    
+    """)
+
+    fun `test unresolved reference for unbound destructured value`() = checkByText("""
+    module 0x1::M {
+        struct Coin { value: u64 }
+        fun call(): Coin { Coin { value: 1 } }
+        fun m() {
+            Coin { value: <error descr="Unresolved reference: `val`">val</error> } = call();
         }
     }    
     """)
@@ -368,12 +388,12 @@ module 0x1::string_tests {
 }        
     """)
 
-//    fun `test lhs of dot assignment`() = checkByText("""
-//module 0x1::mod {
-//    struct S { val: u8 }
-//    fun main() {
-//        <error descr="Unresolved reference: `s`">s</error>.val = 1;
-//    }
-//}
-//    """)
+    fun `test lhs of dot assignment`() = checkByText("""
+module 0x1::mod {
+    struct S { val: u8 }
+    fun main() {
+        <error descr="Unresolved reference: `s`">s</error>.val = 1;
+    }
+}
+    """)
 }

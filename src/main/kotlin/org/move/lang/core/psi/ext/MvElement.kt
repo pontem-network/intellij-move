@@ -10,7 +10,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 
-fun MvElement.isInsideAssignmentLeft(): Boolean {
+fun MvElement.isInsideAssignmentLhs(): Boolean {
     val parent = PsiTreeUtil.findFirstParent(this, false) {
         it is MvAssignmentExpr || it is MvInitializer
     }

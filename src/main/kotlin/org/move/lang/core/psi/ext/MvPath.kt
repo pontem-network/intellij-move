@@ -43,7 +43,7 @@ val MvPath.isUpdateFieldArg2: Boolean
 
 val MvPath.identifierName: String? get() = identifier?.text
 
-val MvPath.colonColon get() = this.findFirstChildByType(MvElementTypes.COLON_COLON)
+//val MvPath.colonColon get() = this.findFirstChildByType(MvElementTypes.COLON_COLON)
 
 val MvPath.isLocal: Boolean
     get() =

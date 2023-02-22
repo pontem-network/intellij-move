@@ -56,7 +56,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             if (path.isUpdateFieldArg2) return
             if (path.isPrimitiveType()) return
             if (path.isMsl() && path.isSpecPrimitiveType()) return
-            if (path.isInsideAssignmentLeft()) return
+            if (path.textMatches("_") && path.isInsideAssignmentLhs()) return
             if (path.text == "assert") return
             if (path.isErrorLocation()) return
 

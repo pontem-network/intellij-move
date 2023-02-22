@@ -637,14 +637,14 @@ Pat ::= DerefPat
         | BorrowPat
         | TuplePat
         | StructPat
-        | DotPat
+//        | DotPat
         | WildPat
         | BindingPat
 
 WildPat ::= '_'
 DerefPat ::= '*' Pat
 BorrowPat ::= '&' Pat
-DotPat ::= IDENTIFIER '.' IDENTIFIER { pin = 2 }
+//DotPat ::= IDENTIFIER '.' IDENTIFIER { pin = 2 }
 
 BindingPat ::= IDENTIFIER {
     implements = [
