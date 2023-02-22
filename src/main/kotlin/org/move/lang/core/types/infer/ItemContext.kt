@@ -3,13 +3,19 @@ package org.move.lang.core.types.infer
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.RecursionGuard
+import com.intellij.openapi.util.RecursionManager
 import com.intellij.openapi.util.UserDataHolderBase
+import com.intellij.psi.PsiElement
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
+
+private val guard: RecursionGuard<PsiElement> =
+    RecursionManager.createGuard("org.move.lang.core.types.RecursiveStructs")
 
 @Service(Service.Level.PROJECT)
 class DefaultItemContextService(val project: Project) : UserDataHolderBase() {
@@ -51,12 +57,14 @@ class ItemContext(val msl: Boolean, val owner: ItemContextOwner) {
         }
     }
 
-    fun getStructItemTy(struct: MvStruct): TyStruct = getItemTy(struct) as TyStruct
+    // nullability happens if struct is recursive
+    fun getStructItemTy(struct: MvStruct): TyStruct? = getItemTy(struct) as? TyStruct
 
     fun getStructFieldItemTy(structField: MvStructField): Ty {
         val struct = structField.struct
         val fieldName = structField.name ?: return TyUnknown
-        return getStructItemTy(struct).fieldTy(fieldName)
+        val structItemTy = getStructItemTy(struct) ?: return TyUnknown
+        return structItemTy.fieldTy(fieldName)
     }
 
     fun getFunctionItemTy(function: MvFunctionLike): TyFunction = getItemTy(function) as TyFunction
@@ -80,7 +88,9 @@ class ItemContext(val msl: Boolean, val owner: ItemContextOwner) {
     fun getTemplateTy(namedItem: MvNameIdentifierOwner): TyTemplate {
         val existing = this.tyTemplateMap[namedItem]
         val itemTy = if (existing == null) {
-            val itemTyTemplate = tyTemplate(namedItem, this)
+            val itemTyTemplate =
+                guard.doPreventingRecursion(namedItem, false) { tyTemplate(namedItem, this) }
+                    ?: return TyTemplate.Unknown
             this.tyTemplateMap[namedItem] = itemTyTemplate
             itemTyTemplate
         } else {
@@ -195,10 +205,7 @@ private fun tyTemplate(item: MvNameIdentifierOwner, itemContext: ItemContext): T
                 val acqItem =
                     it.path.reference?.resolve() as? MvNameIdentifierOwner ?: return@map TyUnknown
                 when (acqItem) {
-                    is MvStruct -> {
-                        itemContext.getStructItemTy(acqItem)
-//                        acqItem.outerItemContext(itemContext.msl, itemContext).getItemTy(acqItem)
-                    }
+                    is MvStruct -> itemContext.getStructItemTy(acqItem) ?: TyUnknown
                     is MvTypeParameter -> TyTypeParameter(acqItem)
                     else -> TyUnknown
                 }

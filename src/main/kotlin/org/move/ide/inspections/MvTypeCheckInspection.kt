@@ -28,20 +28,18 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                     }
             }
 
-            override fun visitCodeBlock(codeBlock: MvCodeBlock) {
-                val fn = codeBlock.parent as? MvFunction ?: return
-                val inference = fn.maybeInferenceContext(fn.isMsl()) ?: return
-                inference.typeErrors
+            override fun visitFunction(o: MvFunction) {
+                val msl = o.isMsl()
+                val inferenceCtx = o.inferenceContext(msl)
+                inferenceCtx.typeErrors
                     .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MAIN) }
                     .forEach {
                         holder.registerTypeError(it)
                     }
             }
 
-            override fun visitStruct(s: MvStruct) {
-                val itemContext = s.module.itemContext(false)
-                itemContext.getItemTy(s)
-
+            override fun visitModule(module: MvModule) {
+                val itemContext = module.itemContext(false)
                 itemContext.typeErrors
                     .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MODULE) }
                     .forEach {

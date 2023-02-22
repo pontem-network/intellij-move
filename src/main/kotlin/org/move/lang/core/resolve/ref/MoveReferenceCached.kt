@@ -19,10 +19,6 @@ abstract class MvReferenceCached<T : MvReferenceElement>(element: T) : MvReferen
             .getInstance(element.project)
             .resolveWithCaching(element, cacheDependency, Resolver)
             .orEmpty()
-//        return ResolveCache
-//            .getInstance(element.project)
-//            .resolveWithCaching(this, Resolver, true, incompleteCode)
-//            .orEmpty()
     }
 
     protected open val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE

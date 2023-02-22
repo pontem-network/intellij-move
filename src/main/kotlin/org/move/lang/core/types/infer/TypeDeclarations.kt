@@ -23,9 +23,7 @@ fun inferItemTypeTy(moveType: MvType, itemContext: ItemContext): Ty {
                         return TyUnknown
                     }
 
-                    val rawStructTy = itemContext.getStructItemTy(namedItem)
-//                        .outerItemContext(itemContext.msl, itemContext)
-//                        .getStructItemTy(namedItem)
+                    val rawStructTy = itemContext.getStructItemTy(namedItem) ?: return TyUnknown
 
                     val ctx = InferenceContext(itemContext.msl, itemContext)
                     if (rawStructTy.typeVars.isNotEmpty()) {
