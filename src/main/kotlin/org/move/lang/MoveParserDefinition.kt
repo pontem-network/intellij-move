@@ -63,6 +63,6 @@ class MoveParserDefinition : ParserDefinition {
         /**
          * Should be increased after any change of parser rules
          */
-        const val PARSER_VERSION: Int = LEXER_VERSION + 41
+        const val PARSER_VERSION: Int = LEXER_VERSION + 42
     }
 }

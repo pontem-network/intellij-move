@@ -1128,8 +1128,8 @@ private ItemSpecTypeParameter_with_recover ::= !'>' ItemSpecTypeParameter (',' |
 }
 private ItemSpecTypeParameter_recover ::= !('>' | '(' | '{' | phantom | IDENTIFIER)
 
-ItemSpecTypeParameter ::= IDENTIFIER {
-    pin = 2
+ItemSpecTypeParameter ::= IDENTIFIER TypeParamBound? {
+    pin = 1
 //    implements = [
 //        "org.move.lang.core.resolve.MvMandatoryReferenceElement"
 //    ]
