@@ -3,7 +3,6 @@ package org.move.lang.core.types.infer
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.CachedValue
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.rd.util.concurrentMapOf
 import org.move.ide.presentation.expectedBindingFormText
@@ -16,7 +15,7 @@ import org.move.lang.core.psi.ext.rightBrace
 import org.move.lang.core.types.ty.*
 import org.move.utils.cache
 import org.move.utils.cacheManager
-import java.lang.ref.SoftReference
+import org.move.utils.createCachedResult
 
 interface MvInferenceContextOwner : MvElement {
     fun parameterBindings(): List<MvBindingPat>

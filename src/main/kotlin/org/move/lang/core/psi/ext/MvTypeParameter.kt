@@ -14,7 +14,7 @@ val MvTypeParameter.typeParamType: TyTypeParameter
         return TyTypeParameter(this)
     }
 
-val MvTypeParameter.abilities: List<MvAbility>
+val MvTypeParameter.abilityBounds: List<MvAbility>
     get() {
         return typeParamBound?.abilityList.orEmpty()
     }

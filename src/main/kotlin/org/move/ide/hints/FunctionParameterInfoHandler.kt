@@ -5,7 +5,7 @@ import com.intellij.lang.parameterInfo.ParameterInfoUtils
 import com.intellij.lang.parameterInfo.UpdateParameterInfoContext
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
-import org.move.ide.utils.CallInfo
+import org.move.ide.utils.FunctionSignature
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvStructLitFieldsBlock
@@ -74,10 +74,9 @@ class ParamsDescription(val parameters: Array<String>) {
          * Finds declaration of the func/method and creates description of its arguments
          */
         fun findDescription(args: MvValueArgumentList): ParamsDescription? {
-            val call = args.parent
-            val callInfo = (call as? MvCallExpr)?.let { CallInfo.resolve(it) } ?: return null
-
-            val params = callInfo.parameters.map { "${it.name}: ${it.type}" }
+            val signature =
+                (args.parent as? MvCallExpr)?.let { FunctionSignature.resolve(it) } ?: return null
+            val params = signature.parameters.map { "${it.name}: ${it.type}" }
             return ParamsDescription(params.toTypedArray())
         }
     }

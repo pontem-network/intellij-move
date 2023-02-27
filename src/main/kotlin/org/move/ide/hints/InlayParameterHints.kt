@@ -2,7 +2,7 @@ package org.move.ide.hints
 
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.psi.PsiElement
-import org.move.ide.utils.CallInfo
+import org.move.ide.utils.FunctionSignature
 import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvRefExpr
 import org.move.lang.core.psi.MvStructLitExpr
@@ -14,8 +14,8 @@ object InlayParameterHints {
     fun provideHints(elem: PsiElement): List<InlayInfo> {
         if (elem !is MvCallExpr) return emptyList()
 
-        val callInfo = CallInfo.resolve(elem) ?: return emptyList()
-        return callInfo.parameters
+        val signature = FunctionSignature.resolve(elem) ?: return emptyList()
+        return signature.parameters
             .map { it.name }
             .zip(elem.callArgumentExprs)
             // don't show argument, if just function call / variable / struct literal

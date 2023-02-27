@@ -52,13 +52,15 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
         editor: Editor,
         settings: Settings,
         sink: InlayHintsSink
-    ): InlayHintsCollector =
-        object : FactoryInlayHintsCollector(editor) {
+    ): InlayHintsCollector {
+        val project = file.project
+        return object : FactoryInlayHintsCollector(editor) {
 
             val typeHintsFactory = MvTypeHintsPresentationFactory(factory)
 
             override fun collect(element: PsiElement, editor: Editor, sink: InlayHintsSink): Boolean {
-                if (file.project.service<DumbService>().isDumb) return true
+                if (project.service<DumbService>().isDumb) return true
+
                 when {
                     settings.showForVariables && element is MvLetStmt -> {
                         val pat = element.pat ?: return true
@@ -95,6 +97,7 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
                 )
             }
         }
+    }
 
     data class Settings(
         var showForVariables: Boolean = true,

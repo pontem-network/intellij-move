@@ -68,7 +68,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
                 buffer += presentationInfo.type
                 buffer += " "
                 buffer.b { it += presentationInfo.name }
-                val abilities = docElement.abilities
+                val abilities = docElement.abilityBounds
                 if (abilities.isNotEmpty()) {
                     abilities.joinToWithBuffer(buffer, " + ", ": ") { generateDocumentation(it) }
                 }
@@ -193,7 +193,7 @@ private fun PsiElement.generateDocumentation(
             buffer += this.identifier?.text
             val bound = this.typeParamBound
             if (bound != null) {
-                abilities.joinToWithBuffer(buffer, " + ", ": ") { generateDocumentation(it) }
+                abilityBounds.joinToWithBuffer(buffer, " + ", ": ") { generateDocumentation(it) }
             }
         }
 
