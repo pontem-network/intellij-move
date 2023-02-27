@@ -1130,10 +1130,10 @@ private ItemSpecTypeParameter_recover ::= !('>' | '(' | '{' | phantom | IDENTIFI
 
 ItemSpecTypeParameter ::= IDENTIFIER TypeParamBound? {
     pin = 1
-//    implements = [
-//        "org.move.lang.core.resolve.MvMandatoryReferenceElement"
-//    ]
-//    mixin = "org.move.lang.core.psi.ext.MvItemSpecTypeParameterMixin"
+    implements = [
+        "org.move.lang.core.resolve.MvItemSpecParameterReferenceElement"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvItemSpecTypeParameterMixin"
 }
 
 ItemSpecFunctionParameterList ::= '(' ItemSpecFunctionParameter_with_recover* ')' { pin = 1 }
@@ -1146,10 +1146,10 @@ private ItemSpecFunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER)
 
 ItemSpecFunctionParameter ::= IDENTIFIER TypeAnnotation {
     pin = 1
-//    implements = [
-//        "org.move.lang.core.resolve.MvMandatoryReferenceElement"
-//    ]
-//    mixin = "org.move.lang.core.psi.ext.MvItemSpecFunctionParameterMixin"
+    implements = [
+        "org.move.lang.core.resolve.MvItemSpecParameterReferenceElement"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvItemSpecFunctionParameterMixin"
 }
 
 ItemSpecRef ::= MODULE_KW | IDENTIFIER
