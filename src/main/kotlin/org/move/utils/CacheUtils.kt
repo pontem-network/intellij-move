@@ -4,14 +4,15 @@ import com.intellij.injected.editor.VirtualFileWindow
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolder
+import com.intellij.psi.PsiElement
+import com.intellij.psi.stubs.StubBase
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
+import com.intellij.psi.util.PsiModificationTracker
 import org.move.lang.core.psi.MvCodeFragment
 import org.move.lang.core.psi.MvElement
-import org.move.lang.core.psi.MvModificationTrackerOwner
-import org.move.lang.core.psi.ext.contextOrSelf
-import org.move.lang.core.psi.moveStructureModificationTracker
 
 val Project.cacheManager: CachedValuesManager get() = CachedValuesManager.getManager(this)
 
@@ -23,8 +24,7 @@ fun <T> CachedValuesManager.cache(
     return getCachedValue(dataHolder, key, provider, false)
 }
 
-fun <T> MvElement.createCachedResult(value: T): CachedValueProvider.Result<T> {
-    val structureModificationTracker = project.moveStructureModificationTracker
+fun <T> MvElement.cacheResult(value: T, dependencies: List<Any>): CachedValueProvider.Result<T> {
     return when {
         // The case of injected language. Injected PSI don't have its own event system, so can only
         // handle evens from outer PSI. For example, Rust language is injected to Kotlin's string
@@ -33,24 +33,25 @@ fun <T> MvElement.createCachedResult(value: T): CachedValueProvider.Result<T> {
         containingFile.virtualFile is VirtualFileWindow -> {
             CachedValueProvider.Result.create(
                 value,
-                com.intellij.psi.util.PsiModificationTracker.MODIFICATION_COUNT
+                PsiModificationTracker.MODIFICATION_COUNT
             )
         }
 
         // Invalidate cached value of code fragment on any PSI change
         this is MvCodeFragment -> CachedValueProvider.Result.create(
             value,
-            com.intellij.psi.util.PsiModificationTracker.MODIFICATION_COUNT
+            PsiModificationTracker.MODIFICATION_COUNT
         )
 
-        // CachedValueProvider.Result can accept a ModificationTracker as a dependency, so the
-        // cached value will be invalidated if the modification counter is incremented.
-        else -> {
-            val modificationTracker = contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
-            CachedValueProvider.Result.create(
-                value,
-                listOfNotNull(structureModificationTracker, modificationTracker)
-            )
-        }
+        else -> CachedValueProvider.Result.create(value, dependencies)
     }
 }
+
+//class CacheUtils {
+//    companion object {
+//        fun <E : PsiElement, T> cachePsiDependent(context: E, provider: (E) -> T): T {
+////            val psi = if (context is StubBase<*>) context.psi as E else context
+//            return getProjectPsiDependentCache(context, provider)
+//        }
+//    }
+//}

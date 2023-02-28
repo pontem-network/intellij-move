@@ -25,6 +25,7 @@ import com.intellij.util.messages.Topic
 import org.move.cli.settings.MoveProjectSettingsService
 import org.move.cli.settings.MoveSettingsChangedEvent
 import org.move.cli.settings.MoveSettingsListener
+import org.move.lang.core.psi.movePsiManager
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.toVirtualFile
@@ -60,7 +61,9 @@ class MoveProjectsService(val project: Project) : Disposable {
 
     fun refreshAllProjects() {
         LOG.info("Project state refresh started")
-        modifyProjects { doRefresh(project) }
+        modifyProjects {
+            doRefresh(project)
+        }
     }
 
     fun findMoveProject(psiElement: PsiElement): MoveProject? {
@@ -161,14 +164,17 @@ class MoveProjectsService(val project: Project) : Disposable {
         invokeAndWaitIfNeeded {
             runWriteAction {
                 projectsIndex.resetIndex()
+
                 PsiManager.getInstance(project).dropPsiCaches()
+                project.movePsiManager.incStructureModificationCount()
 
                 // In unit tests roots change is done by the test framework in most cases
                 runOnlyInNonLightProject(project) {
                     ProjectRootManagerEx.getInstanceEx(project)
                         .makeRootsChange(EmptyRunnable.getInstance(), false, true)
                 }
-                project.messageBus.syncPublisher(MOVE_PROJECTS_TOPIC)
+                project.messageBus
+                    .syncPublisher(MOVE_PROJECTS_TOPIC)
                     .moveProjectsUpdated(this, projects)
             }
         }

@@ -9,13 +9,14 @@ import org.move.ide.presentation.expectedBindingFormText
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.contextOrSelf
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.itemSpecBlock
 import org.move.lang.core.psi.ext.rightBrace
 import org.move.lang.core.types.ty.*
 import org.move.utils.cache
 import org.move.utils.cacheManager
-import org.move.utils.createCachedResult
+import org.move.utils.cacheResult
 
 interface MvInferenceContextOwner : MvElement {
     fun parameterBindings(): List<MvBindingPat>
@@ -30,14 +31,33 @@ fun MvElement.maybeInferenceContext(msl: Boolean): InferenceContext? {
             ?: return null
     return if (msl) {
         project.cacheManager.cache(inferenceOwner, INFERENCE_KEY_MSL) {
-            inferenceOwner.createCachedResult(getOwnerInferenceContext(inferenceOwner, true))
+            val localModificationTracker =
+                inferenceOwner.contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
+            val cacheDependencies: List<Any> =
+                listOfNotNull(
+                    inferenceOwner.project.moveStructureModificationTracker,
+                    localModificationTracker
+                )
+            inferenceOwner.cacheResult(
+                getOwnerInferenceContext(inferenceOwner, true), cacheDependencies
+            )
         }
 //        getProjectPsiDependentCache(inferenceOwner) {
 //            getOwnerInferenceContext(it, true)
 //        }
     } else {
         project.cacheManager.cache(inferenceOwner, INFERENCE_KEY_NON_MSL) {
-            inferenceOwner.createCachedResult(getOwnerInferenceContext(inferenceOwner, false))
+            val localModificationTracker =
+                inferenceOwner.contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
+            val cacheDependencies: List<Any> =
+                listOfNotNull(
+                    inferenceOwner.project.moveStructureModificationTracker,
+                    localModificationTracker
+                )
+            inferenceOwner.cacheResult(
+                getOwnerInferenceContext(inferenceOwner, false), cacheDependencies
+            )
+//            inferenceOwner.cacheResult(getOwnerInferenceContext(inferenceOwner, false))
         }
 //        getProjectPsiDependentCache(inferenceOwner) {
 //            getOwnerInferenceContext(it, false)

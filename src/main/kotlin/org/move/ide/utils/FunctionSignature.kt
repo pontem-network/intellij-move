@@ -7,13 +7,10 @@ package org.move.ide.utils
 
 import com.intellij.openapi.util.Key
 import com.intellij.psi.util.CachedValue
-import org.move.lang.core.psi.MvCallExpr
-import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.parameters
-import org.move.lang.core.psi.typeParameters
+import com.intellij.psi.util.CachedValueProvider
+import org.move.lang.core.psi.*
 import org.move.utils.cache
 import org.move.utils.cacheManager
-import org.move.utils.createCachedResult
 
 private val SIGNATURE_KEY: Key<CachedValue<FunctionSignature?>> = Key.create("SIGNATURE_KEY")
 
@@ -34,7 +31,10 @@ val MvFunction.signature: FunctionSignature?
                 FunctionSignature.Parameter(paramName, paramType.text)
             }
         val signature = FunctionSignature(typeParameters, parameters)
-        this.createCachedResult(signature)
+        CachedValueProvider.Result.create(
+            signature,
+            project.moveStructureModificationTracker
+        )
     }
 
 data class FunctionSignature(

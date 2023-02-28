@@ -12,7 +12,7 @@ class MvFQModuleReferenceImpl(
     element: MvFQModuleRef,
 ) : MvReferenceCached<MvFQModuleRef>(element), MvFQModuleReference {
 
-    override val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL
+    override val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE
 
     override fun resolveInner(): List<MvNamedElement> {
         val referenceName = element.referenceName ?: return emptyList()

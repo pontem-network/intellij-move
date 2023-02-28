@@ -70,13 +70,13 @@ val MvFunctionLike.module: MvModule?
                 return moduleStub.psi
             }
         }
-        val moduleBlock = this.parent
+        val moduleBlock = this.parent ?: return null
         return moduleBlock.parent as? MvModule
     }
 
 val MvFunctionLike.script: MvScript?
     get() {
-        val scriptBlock = this.parent
+        val scriptBlock = this.parent ?: return null
         return scriptBlock.parent as? MvScript
     }
 

@@ -1,7 +1,7 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.psi.PsiFileSystemItem
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
+import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.MoveProject
 import org.move.cli.moveProjects
@@ -24,8 +24,8 @@ fun PsiFileSystemItem.findMoveProject(): MoveProject? {
 }
 
 fun MvElement.isMsl(): Boolean {
-    return getProjectPsiDependentCache(this) {
-        var element = it
+    return CachedValuesManager.getProjectPsiDependentCache(this) {
+        var element: MvElement? = it
         while (element != null) {
             // use items always non-msl, otherwise import resolution doesn't work correctly
             if (element is MvUseItem) return@getProjectPsiDependentCache false

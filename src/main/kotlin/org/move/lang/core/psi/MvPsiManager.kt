@@ -100,6 +100,7 @@ class MvPsiManagerImpl(val project: Project) : MvPsiManager, Disposable {
 
     init {
         PsiManager.getInstance(project).addPsiTreeChangeListener(CacheInvalidator(), this)
+
         project.messageBus.connect().subscribe(ProjectTopics.PROJECT_ROOTS, object : ModuleRootListener {
             override fun rootsChanged(event: ModuleRootEvent) {
                 incStructureModificationCount()

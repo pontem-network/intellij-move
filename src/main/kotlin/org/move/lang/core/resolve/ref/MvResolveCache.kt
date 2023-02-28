@@ -110,7 +110,7 @@ class MvResolveCache(project: Project) : Disposable {
 //    }
 
     private fun refineDependency(key: PsiElement, dep: ResolveCacheDependency): ResolveCacheDependency =
-        when (key.containingFile.virtualFile) {
+        when (key.containingFile?.virtualFile) {
             // If virtualFile is null then event system is not enabled for this PSI file (see
             // PsiFileImpl.getVirtualFile) and we can't track PSI modifications, so depend on
             // any change. This is a case of completion, for example

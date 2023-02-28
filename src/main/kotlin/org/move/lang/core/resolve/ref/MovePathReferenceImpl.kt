@@ -59,7 +59,7 @@ class MvPathReferenceImpl(
     val namespaces: Set<Namespace>,
 ) : MvReferenceCached<MvPath>(element), MvPathReference {
 
-    override val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL
+    override val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE
 
     override fun resolveInner(): List<MvNamedElement> {
         val vs = Visibility.buildSetOfVisibilities(element)
