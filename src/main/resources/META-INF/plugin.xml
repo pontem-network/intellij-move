@@ -238,6 +238,10 @@
                          displayName="Redundant type cast"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.move.ide.inspections.RedundantTypeCastInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Function signature mismatch"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.ItemSpecSignatureInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>

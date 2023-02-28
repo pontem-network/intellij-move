@@ -530,8 +530,8 @@ private fun handleModuleItemSpecs(
     handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean
 ): Boolean {
     val moduleItemSpecs = when (scope) {
-        is MvModuleBlock -> scope.moduleItemSpecs()
-        is MvModuleSpecBlock -> scope.moduleItemSpecs()
+        is MvModuleBlock -> scope.moduleItemSpecList
+        is MvModuleSpecBlock -> scope.moduleItemSpecList
         else -> emptyList()
     }
     for (moduleItemSpec in moduleItemSpecs.filter { it != cameFrom }) {

@@ -171,7 +171,6 @@ class MvPsiManagerImpl(val project: Project) : MvPsiManager, Disposable {
         file: PsiFile,
         psi: PsiElement,
         isChildrenChange: Boolean,
-//        isWhitespaceOrComment: Boolean
     ) {
         // We find the nearest parent item or macro call (because macro call can produce items)
         // If found item implements RsModificationTrackerOwner, we increment its own

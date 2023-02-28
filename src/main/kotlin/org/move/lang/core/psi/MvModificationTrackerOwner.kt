@@ -31,8 +31,12 @@ interface MvModificationTrackerOwner : MvElement {
 }
 
 fun PsiElement.findModificationTrackerOwner(strict: Boolean): MvModificationTrackerOwner? {
-    return findContextOfType(strict, MvNamedElement::class)
-            as? MvModificationTrackerOwner
+    val context = findContextOfType(
+        strict,
+        MvNamedElement::class,
+        MvItemSpec::class,
+    )
+    return context as? MvModificationTrackerOwner
 }
 
 // We have to process contexts without index access because accessing indices during PSI event processing is slow.

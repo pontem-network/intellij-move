@@ -18,10 +18,8 @@ import org.move.lang.core.psi.ext.findLastChildByType
 interface MvNamedElement : MvElement,
                            PsiNamedElement,
                            NavigatablePsiElement {
-    val nameElement: PsiElement?
-        get() {
-            return getProjectPsiDependentCache(this) { it.findLastChildByType(IDENTIFIER) }
-        }
+
+    val nameElement: PsiElement? get() = this.findLastChildByType(IDENTIFIER)
 
     val fqName: String
 }

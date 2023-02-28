@@ -1,11 +1,11 @@
 FILE
   MvModuleImpl(MODULE)
-    PsiElement(module_kw)('module')
+    PsiElement(module)('module')
     PsiErrorElement:<address ref> or IDENTIFIER expected, got 'module'
       <empty list>
   PsiWhiteSpace('\n')
   MvModuleImpl(MODULE)
-    PsiElement(module_kw)('module')
+    PsiElement(module)('module')
     PsiWhiteSpace(' ')
     MvAddressRefImpl(ADDRESS_REF)
       MvNamedAddressImpl(NAMED_ADDRESS)

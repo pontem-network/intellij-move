@@ -5,16 +5,21 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.MvItemSpecParameterReferenceElement
 import org.move.lang.core.resolve.ref.MvReference
 import org.move.lang.core.resolve.ref.MvReferenceCached
+import org.move.lang.core.resolve.ref.ResolveCacheDependency
 
 val MvItemSpecFunctionParameter.parameterList get() = this.parent as? MvItemSpecFunctionParameterList
 
-val MvItemSpecFunctionParameter.itemSpec: MvItemSpec? get() = parameterList?.parent as? MvItemSpec
+val MvItemSpecFunctionParameter.itemSpec: MvItemSpec?
+    get() =
+        parameterList?.parent?.parent as? MvItemSpec
 
 val MvItemSpecTypeParameter.parameterList get() = this.parent as? MvItemSpecTypeParameterList
 
-val MvItemSpecTypeParameter.itemSpec: MvItemSpec? get() = parameterList?.parent as? MvItemSpec
+val MvItemSpecTypeParameter.itemSpec: MvItemSpec?
+    get() =
+        parameterList?.parent?.parent as? MvItemSpec
 
-class MvItemSpecFunctionParameterReferenceImpl(
+class MvItemSpecParameterReferenceImpl(
     element: MvItemSpecParameterReferenceElement,
 ) : MvReferenceCached<MvItemSpecParameterReferenceElement>(element) {
 
@@ -51,13 +56,13 @@ class MvItemSpecFunctionParameterReferenceImpl(
 abstract class MvItemSpecFunctionParameterMixin(node: ASTNode) : MvElementImpl(node),
                                                                  MvItemSpecFunctionParameter {
     override fun getReference(): MvReference {
-        return MvItemSpecFunctionParameterReferenceImpl(this)
+        return MvItemSpecParameterReferenceImpl(this)
     }
 }
 
 abstract class MvItemSpecTypeParameterMixin(node: ASTNode) : MvElementImpl(node),
                                                              MvItemSpecTypeParameter {
     override fun getReference(): MvReference {
-        return MvItemSpecFunctionParameterReferenceImpl(this)
+        return MvItemSpecParameterReferenceImpl(this)
     }
 }

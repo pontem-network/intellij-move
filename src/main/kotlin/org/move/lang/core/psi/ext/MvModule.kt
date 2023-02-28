@@ -184,9 +184,9 @@ fun MvModule.consts(): List<MvConst> =
 
 val MvModuleBlock.module: MvModule get() = this.parent as MvModule
 
-fun MvModuleBlock.moduleItemSpecs() =
-    this.childrenOfType<MvItemSpec>()
-        .filter { it.itemSpecRef?.moduleKw != null }
+fun MvModuleBlock.moduleItemSpecs() = this.moduleItemSpecList
+//    this.childrenOfType<MvItemSpec>()
+//        .filter { it.itemSpecRef?.moduleKw != null }
 
 val MvModuleSpec.module: MvModule? get() = this.fqModuleRef?.reference?.resolve() as? MvModule
 
@@ -196,9 +196,9 @@ fun MvModuleBlock.itemSpecs() = this.childrenOfType<MvItemSpec>()
 
 fun MvModuleSpecBlock.itemSpecs() = this.childrenOfType<MvItemSpec>()
 
-fun MvModuleSpecBlock.moduleItemSpecs() =
-    this.itemSpecs()
-        .filter { it.itemSpecRef?.moduleKw != null }
+//fun MvModuleSpecBlock.moduleItemSpecs() =
+//    this.itemSpecs()
+//        .filter { it.itemSpecRef?.moduleKw != null }
 
 fun MvModule.allModuleSpecs(): List<MvModuleSpec> {
     return getProjectPsiDependentCache(this) {

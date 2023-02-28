@@ -1,4 +1,4 @@
 package org.move.lang.core.psi
 
-interface MslScopeElement {
+interface MslScopeElement : MvElement {
 }

@@ -6,10 +6,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNamedElementImpl
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslScope
-import org.move.lang.core.resolve.ref.MvReferenceCached
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.resolve.ref.resolveModuleItem
+import org.move.lang.core.resolve.ref.*
 
 fun MvUseItem.moduleImport(): MvItemUseSpeck =
     ancestorStrict() ?: error("ItemImport outside ModuleItemsImport")
@@ -30,6 +27,7 @@ val MvUseItem.moduleName: String
 val MvUseItem.isSelf: Boolean get() = this.identifier.textMatches("Self")
 
 class MvUseItemReferenceElement(element: MvUseItem) : MvReferenceCached<MvUseItem>(element) {
+
     override fun resolveInner(): List<MvNamedElement> {
         val moduleRef = element.moduleImport().fqModuleRef
         val module =

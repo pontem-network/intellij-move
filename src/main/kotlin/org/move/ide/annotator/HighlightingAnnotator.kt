@@ -53,6 +53,7 @@ class HighlightingAnnotator : MvAnnotator() {
     private fun highlightIdentifier(element: MvElement): MvColor? {
         if (element is MvAbility) return MvColor.ABILITY
         if (element is MvTypeParameter) return MvColor.TYPE_PARAMETER
+        if (element is MvItemSpecTypeParameter) return MvColor.TYPE_PARAMETER
         if (element is MvModuleRef && element.isSelf) return MvColor.KEYWORD
         if (element is MvUseItem && element.text == "Self") return MvColor.KEYWORD
         if (element is MvFunction) return MvColor.FUNCTION_DEF

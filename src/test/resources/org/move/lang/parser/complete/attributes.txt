@@ -7,7 +7,7 @@ FILE
         PsiElement(IDENTIFIER)('test')
       PsiElement(])(']')
     PsiWhiteSpace('\n')
-    PsiElement(module_kw)('module')
+    PsiElement(module)('module')
     PsiWhiteSpace(' ')
     MvAddressRefImpl(ADDRESS_REF)
       PsiElement(DIEM_ADDRESS)('0x1')
