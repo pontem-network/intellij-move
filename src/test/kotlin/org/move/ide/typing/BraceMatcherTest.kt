@@ -30,6 +30,12 @@ class BraceMatcherTest : MvTypingTestCase() {
 
     fun `test match angle brackets`() = doMatch("script { fun main/*caret*/<T>(x: u8) {}}", ">")
 
+    fun `test match angle with abilities`() =
+        doMatch("script { fun main/*caret*/<T: drop + store>(x: u8) {}}", ">")
+
+    fun `test match angle with phantom`() =
+        doMatch("script { fun main/*caret*/<phantom T>(x: u8) {}}", ">")
+
     fun `test no match`() {
         noMatch("script { fun main() { let a = 4 /*caret*/< 5 && 2 > 1; } }")
         noMatch("script { fun main() { let a = 4 /*caret*/<< 5 || 2 >> 1; } }")

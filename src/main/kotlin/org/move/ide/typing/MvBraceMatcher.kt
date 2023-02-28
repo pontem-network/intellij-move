@@ -152,13 +152,14 @@ class MvBraceMatcher : PairedBraceMatcherAdapter(MvPairedBraceMatcher(), MoveLan
                 COMMA,
 //                SEMICOLON,
 //                QUOTE_IDENTIFIER,
-//                PLUS,
+                PLUS,
                 COLON,
 //                EQ,
                 COLON_COLON,
 //                INTEGER_LITERAL,
 //                AND, MUT, CONST, MUL,
 //                EXCL
+                PHANTOM
             )
         )
     }
