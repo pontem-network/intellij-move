@@ -541,4 +541,30 @@ module 0x1::main {
     }
 }
     """)
+
+    fun `test inline function lambda variable`() = checkByCode("""
+module 0x1::m {
+    public inline fun for_each<Element>(o: Element, f: |Element|) {}
+    fun main() {
+        for_each(1, |value|
+                     //X
+            value
+            //^
+        )
+    }
+}        
+    """)
+
+    fun `test inline function lambda two variables`() = checkByCode("""
+module 0x1::m {
+    public inline fun for_each<Element>(o: Element, f: |Element|) {}
+    fun main() {
+        for_each(1, |value1, value2|
+                           //X
+            value2
+            //^
+        )
+    }
+}        
+    """)
 }

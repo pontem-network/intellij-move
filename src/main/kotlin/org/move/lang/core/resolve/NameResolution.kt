@@ -334,6 +334,7 @@ fun processLexicalDeclarations(
                     )
                     is MvScript -> processor.matchAll(itemVis, scope.consts())
                     is MvFunctionLike -> processor.matchAll(itemVis, scope.parameterBindings())
+                    is MvLambdaExpr -> processor.matchAll(itemVis, scope.bindingPatList)
                     is MvCodeBlock -> {
                         val precedingLetDecls = scope.letStmts
                             // drops all let-statements after the current position

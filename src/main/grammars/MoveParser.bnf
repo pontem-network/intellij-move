@@ -927,7 +927,8 @@ private StructLitFieldInit ::= ':' Expr { pin = 1 }
 
 ParensExpr ::= '(' Expr !':' ')'
 
-LambdaExpr ::= '|' <<comma_sep_items IDENTIFIER>> '|' Expr { pin = 1 }
+LambdaExpr ::= '|' <<comma_sep_items BindingPat>> '|' Expr { pin = 1 }
+
 RangeExpr ::= Expr '..' Expr
 
 TupleLitExpr ::= '(' Expr ',' <<comma_sep_items Expr>>? ')' { pin = 3 }
