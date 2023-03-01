@@ -403,4 +403,64 @@ module 0x1::main {
         }
     }    
     """)
+
+    fun `test lambda type type`() = testExpr(
+        """
+    module 0x1::mod {
+        public inline fun fold<Accumulator, Element>(elem: Element, func: |Element| Accumulator): Accumulator {
+            func;
+            //^ |Element| Accumulator
+        }
+    }        
+    """
+    )
+
+//    fun `test lambda expr type`() = testExpr("""
+//    module 0x1::mod {
+//        public inline fun fold<Accumulator, Element>(elem: Element, f: |Element| Accumulator): Accumulator {
+//            let accum = f(elem);
+//            accum;
+//             //^ Accumulator
+//        }
+//    }
+//    """)
+//
+//    fun `test lambda expr call expr inference`() = testExpr("""
+//    module 0x1::mod {
+//        public inline fun fold<Accumulator, Element>(elem: Element, f: |Element| Accumulator): Accumulator {
+//            f(elem)
+//        }
+//        public fun main() {
+//            let num = fold(1u64, |a| a);
+//            num;
+//            //^ u64
+//        }
+//    }
+//    """)
+//
+//    fun `test lambda expr nested call expr inference`() = testExpr(
+//        """
+//    module 0x1::mod {
+//        struct Option<Element> has copy, drop, store {
+//            element: Element
+//        }
+//        public fun destroy_some<Element>(t: Option<Element>): Element {
+//            t.element
+//        }
+//        public inline fun fold<Accumulator, Element>(
+//            o: Option<Element>,
+//            init: Accumulator,
+//            f: |Accumulator,Element|Accumulator
+//        ): Accumulator {
+//            f(init, destroy_some(o))
+//        }
+//
+//        fun main() {
+//            let num = fold(Option { element: 1u64 }, 1, |a, b| a + b);
+//            num;
+//            //^ u64
+//        }
+//    }
+//    """
+//    )
 }

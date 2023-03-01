@@ -567,4 +567,14 @@ module 0x1::m {
     }
 }        
     """)
+
+    fun `test resolve lambda function call expr`() = checkByCode("""
+module 0x1::mod {
+    public inline fun fold<Accumulator, Element>(elem: Element, func: |Element| Accumulator): Accumulator {
+                                                               //X
+        func(elem);
+        //^
+    }
+}        
+    """)
 }

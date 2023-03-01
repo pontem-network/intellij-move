@@ -593,7 +593,8 @@ TupleType ::= '(' Type ',' (Type ','?)* ')' { pin = 2 }
 //}
 //private TupleTypeItem_recover ::= !(')' | '{' | IDENTIFIER)
 
-LambdaType ::= '|' <<comma_sep_items Type>>? '|' Type? { pin = 1 }
+LambdaType ::= '|' <<comma_sep_items LambdaTypeParam>>? '|' Type? { pin = 1 }
+LambdaTypeParam ::= Type
 
 TypeParameterList ::= '<' TypeParameter_with_recover* '>'
 {

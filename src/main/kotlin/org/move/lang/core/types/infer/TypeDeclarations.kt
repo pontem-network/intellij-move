@@ -5,6 +5,8 @@ import org.move.ide.annotator.INTEGER_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_INTEGER_TYPE_IDENTIFIERS
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.mutable
+import org.move.lang.core.psi.ext.paramTypes
+import org.move.lang.core.psi.ext.returnType
 import org.move.lang.core.psi.ext.typeArguments
 import org.move.lang.core.types.ty.*
 
@@ -50,6 +52,16 @@ fun inferItemTypeTy(moveType: MvType, itemContext: ItemContext): Ty {
             TyTuple(innerTypes)
         }
         is MvUnitType -> TyUnit
+        is MvLambdaType -> {
+            val paramTys = moveType.paramTypes.map { inferItemTypeTy(it, itemContext) }
+            val returnType = moveType.returnType
+            val retTy = if (returnType == null) {
+                TyUnit
+            } else {
+                inferItemTypeTy(returnType, itemContext)
+            }
+            TyLambda(paramTys, retTy)
+        }
         else -> TyUnknown
     }
     return ty

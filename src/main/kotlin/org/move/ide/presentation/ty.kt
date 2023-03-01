@@ -126,18 +126,18 @@ private fun render(
     return when (ty) {
         is TyFunction -> {
             val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
-            var s = if (ty.retType is TyUnit) params else "$params -> ${ty.retType}"
+            var s = if (ty.retType is TyUnit) params else "$params -> ${r(ty.retType)}"
             if (ty.acquiresTypes.isNotEmpty()) {
                 s += ty.acquiresTypes.joinToString(", ", " acquires ", transform = r)
             }
             s
         }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
-        is TyVector -> "vector<${render(ty.item, level, unknown, anonymous, integer, typeVar, fq)}>"
-        is TyReference -> "${if (ty.permissions.contains(RefPermissions.WRITE)) "&mut " else "&"}${
-            render(ty.referenced, level, unknown, anonymous, integer, typeVar, fq)
-        }"
-//        is TyTraitObject -> ty.trait.name ?: anonymous
+        is TyVector -> "vector<${r(ty.item)}>"
+        is TyReference -> {
+            val prefix = if (ty.permissions.contains(RefPermissions.WRITE)) "&mut " else "&"
+            "$prefix${r(ty.referenced)}"
+        }
         is TyTypeParameter -> ty.name ?: anonymous
         is TyStruct -> {
             val name = if (fq) ty.item.fqName else (ty.item.name ?: anonymous)
@@ -149,6 +149,13 @@ private fun render(
         is TyInfer -> when (ty) {
             is TyInfer.TyVar -> typeVar(ty)
             is TyInfer.IntVar -> integer
+        }
+        is TyLambda -> {
+            val params = ty.paramTypes.joinToString(",", "|", "|", transform = r)
+            if (ty.returnType is TyUnit)
+                params
+            else
+                "$params ${r(ty.returnType)}"
         }
         else -> error("unreachable")
     }
