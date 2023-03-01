@@ -34,7 +34,7 @@ class MvErrorAnnotator : MvAnnotator() {
                 val realCount = path.typeArguments.size
                 val parent = path.parent
                 when {
-                    item == null && path.identifierName == "vector" -> {
+                    item == null && path.isLocal && path.identifierName == "vector" -> {
                         val expectedCount = 1
                         if (realCount != expectedCount) {
                             MvDiagnostic

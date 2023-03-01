@@ -51,14 +51,19 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitPath(path: MvPath) {
+            // skip specs for now, too many false-positives
             if (path.isMsl()) return
-            if (path.isMsl() && path.isResult) return
-            if (path.isUpdateFieldArg2) return
+//            if (path.isMsl() && path.isResult) return
+//            if (path.isMsl() && path.isSpecPrimitiveType()) return
+//            if (path.isUpdateFieldArg2) return
+
             if (path.isPrimitiveType()) return
-            if (path.isMsl() && path.isSpecPrimitiveType()) return
+            // destructuring assignment like `Coin { val1: _ } = get_coin()`
             if (path.textMatches("_") && path.isInsideAssignmentLhs()) return
+            // assert macro
             if (path.text == "assert") return
-            if (path.isErrorLocation()) return
+            // attribute values are special case
+            if (path.hasAncestor<MvAttrItem>()) return
 
             val moduleRef = path.moduleRef
             if (moduleRef != null) {

@@ -4,7 +4,6 @@ import com.intellij.lang.ASTNode
 import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
 import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
-import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.MvReferenceElement
 import org.move.lang.core.resolve.ref.MvPathReference
@@ -15,10 +14,10 @@ fun MvPath.isPrimitiveType(): Boolean =
     this.parent is MvPathType
             && this.referenceName in PRIMITIVE_TYPE_IDENTIFIERS.union(BUILTIN_TYPE_IDENTIFIERS)
 
-fun MvPath.isErrorLocation(): Boolean {
-    val attrItem = this.ancestorStrict<MvAttrItem>() ?: return false
-    return attrItem.name == "expected_failure"
-}
+//fun MvPath.isAttrItem(): Boolean {
+//    val attrItem = this.ancestorStrict<MvAttrItem>() ?: return false
+//    return attrItem.name == "expected_failure"
+//}
 
 fun MvPath.isSpecPrimitiveType(): Boolean =
     this.parent is MvPathType

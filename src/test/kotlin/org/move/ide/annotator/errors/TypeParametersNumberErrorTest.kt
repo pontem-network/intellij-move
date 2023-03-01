@@ -11,6 +11,11 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
             let b: <error descr="Invalid instantiation of 'vector'. Expected 1 type argument(s) but got 0">vector</error>;
             let c: <error descr="Invalid instantiation of 'vector'. Expected 1 type argument(s) but got 3">vector<u8, u8, u8></error>;
             }
+            
+            #[test(location = std::vector)]
+            fun test_a() {
+                
+            }
         }    
     """)
 

@@ -396,4 +396,12 @@ module 0x1::mod {
     }
 }
     """)
+
+    fun `test no unresolved reference for attribute items`() = checkByText("""
+module 0x1::m {
+    #[resource_group(scope = global)]
+    /// A shared resource group for storing object resources together in storage.
+    struct ObjectGroup { }
+}        
+    """)
 }
