@@ -27,6 +27,7 @@ object MoveIcons {
 
     val PUBLISH = AllIcons.Actions.Upload
     val TEST = AllIcons.RunConfigurations.TestState.Run
+    val RUN_TRANSACTION = AllIcons.Nodes.RunnableMark
     val TEST_GREEN = AllIcons.RunConfigurations.TestState.Green2
     val TEST_RED = AllIcons.RunConfigurations.TestState.Red2
 

@@ -6,6 +6,7 @@ import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiParserFacade
 import org.move.lang.MoveFile
 import org.move.lang.MoveFileType
+import org.move.lang.core.psi.ext.childOfType
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
 
 val Project.psiFactory get() = MvPsiFactory(this)
@@ -104,6 +105,18 @@ class MvPsiFactory(private val project: Project) {
     fun function(text: String, moduleName: String = "_Dummy"): MvFunction =
         createFromText("module $moduleName { $text } ")
             ?: error("Failed to create a function from text: `$text`")
+
+    fun functions(text: String, moduleName: String = "_Dummy"): List<MvFunction> {
+        val dummyFile = PsiFileFactory.getInstance(project)
+            .createFileFromText(
+                "$moduleName.move",
+                MoveFileType,
+                "module $moduleName { $text }"
+            ) as MoveFile
+        val functions = dummyFile.childOfType<MvModule>()?.moduleBlock?.functionList.orEmpty()
+        return functions
+    }
+
 
     fun addressRef(text: String): MvAddressRef =
         createFromText("module $text::Main {} ")

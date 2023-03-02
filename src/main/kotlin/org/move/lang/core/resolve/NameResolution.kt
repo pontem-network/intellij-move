@@ -8,7 +8,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.types.normalizeAddressValue
+import org.move.lang.core.types.address
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
@@ -20,15 +20,6 @@ import org.move.stdext.wrapWithList
 
 enum class MslScope {
     NONE, EXPR, LET, LET_POST;
-}
-
-enum class ItemScope {
-    MAIN, TEST;
-}
-
-fun MvElement.isVisibleInScope(expectedItemScope: ItemScope): Boolean {
-    return expectedItemScope == ItemScope.TEST
-            || this.itemScope == ItemScope.MAIN
 }
 
 val MvElement.mslScope: MslScope
@@ -58,7 +49,7 @@ fun processItems(
 ): Boolean {
     return walkUpThroughScopes(
         element,
-        stopAfter = { it is MvModule || it is MvScript }
+        stopAfter = { it is MvModule }
     ) { cameFrom, scope ->
         processLexicalDeclarations(
             scope, cameFrom, itemVis, processor
@@ -80,9 +71,10 @@ fun resolveLocalItem(
         visibilities = Visibility.local(),
         itemScope = element.itemScope,
     )
+    val referenceName = element.referenceName
     var resolved: MvNamedElement? = null
     processItems(element, itemVis) {
-        if (it.name == element.referenceName) {
+        if (it.name == referenceName) {
             resolved = it.element
             return@processItems true
         }
@@ -131,8 +123,9 @@ fun processQualItem(
                         processor.match(itemVis, item)
 
                     vis is Visibility.PublicFriend && item.visibility == FunctionVisibility.PUBLIC_FRIEND -> {
-                        val module = item.module ?: return false
-                        if (vis.currentModule in module.friendModules) {
+                        val itemModule = item.module ?: return false
+                        val currentModule = vis.currentModule.element ?: return false
+                        if (currentModule.fqModule() in itemModule.declaredFriendModules) {
                             processor.match(itemVis, item)
                         }
                     }
@@ -159,7 +152,7 @@ fun processFileItems(
                 Namespace.NAME -> {
                     val functions = itemVis.visibilities.flatMap { module.visibleFunctions(it) }
                     val specFunctions = if (itemVis.isMsl) module.specFunctions() else emptyList()
-                    val consts = if (itemVis.isMsl) module.constBindings() else emptyList()
+                    val consts = if (itemVis.isMsl) module.consts() else emptyList()
                     processor.matchAll(
                         itemVis,
                         functions, specFunctions, consts
@@ -185,14 +178,14 @@ fun processFQModuleRef(
         mslScope = fqModuleRef.mslScope,
         itemScope = fqModuleRef.itemScope,
     )
-    val moveProject = fqModuleRef.moveProject ?: return
+    val moveProj = fqModuleRef.moveProject ?: return
+    val refAddress = fqModuleRef.addressRef.address(moveProj)?.canonicalValue
 
-    val refAddressValue = fqModuleRef.addressRef.toAddress(moveProject)?.let { normalizeAddressValue(it.value) }
     val moduleProcessor = MatchingProcessor<MvNamedElement> {
         val entry = SimpleScopeEntry(it.name, it.element as MvModule)
-        val modAddressValue =
-            entry.element.address()?.toAddress(moveProject)?.let { a -> normalizeAddressValue(a.value) }
-        if (modAddressValue != refAddressValue) return@MatchingProcessor false
+        val modAddress = entry.element.address(moveProj)?.canonicalValue
+        if (modAddress != refAddress)
+            return@MatchingProcessor false
         processor.match(entry)
     }
 
@@ -201,7 +194,7 @@ fun processFQModuleRef(
     var stopped = processFileItems(currentFile, itemVis, moduleProcessor)
     if (stopped) return
 
-    moveProject.processMoveFiles { moveFile ->
+    moveProj.processMoveFiles { moveFile ->
         // skip current file as it's processed already
         if (moveFile.toNioPathOrNull() == currentFile.toNioPathOrNull())
             return@processMoveFiles true
@@ -223,15 +216,15 @@ fun processFQModuleRef(
         itemScope = fqModuleRef.itemScope,
     )
     val project = fqModuleRef.project
-    val moveProject = fqModuleRef.moveProject ?: return
+    val moveProj = fqModuleRef.moveProject ?: return
 
-    val refAddressValue = fqModuleRef.addressRef.toAddress(moveProject)?.let { normalizeAddressValue(it.value) }
+    val refAddress = fqModuleRef.addressRef.address(moveProj)?.canonicalValue
     val moduleProcessor = MatchingProcessor<MvNamedElement> {
         val entry = SimpleScopeEntry(it.name, it.element as MvModule)
         // TODO: check belongs to the current project
-        val modAddressValue =
-            entry.element.address()?.toAddress(moveProject)?.let { a -> normalizeAddressValue(a.value) }
-        if (modAddressValue != refAddressValue) return@MatchingProcessor false
+        val modAddress = entry.element.address(moveProj)?.canonicalValue
+
+        if (modAddress != refAddress) return@MatchingProcessor false
         processor.match(entry)
     }
 
@@ -242,7 +235,7 @@ fun processFQModuleRef(
 
     val currentFileScope = GlobalSearchScope.fileScope(currentFile)
     val searchScope =
-        moveProject.searchScope().intersectWith(GlobalSearchScope.notScope(currentFileScope))
+        moveProj.searchScope().intersectWith(GlobalSearchScope.notScope(currentFileScope))
 
     MvNamedElementIndex
         .processElementsByName(project, target, searchScope) {
@@ -307,7 +300,7 @@ fun processLexicalDeclarations(
                         val module = scope.parent as MvModule
                         processor.matchAll(
                             itemVis,
-                            module.constBindings(),
+                            module.consts(),
                         )
                     }
                     else -> false
@@ -326,7 +319,7 @@ fun processLexicalDeclarations(
                             module.allNonTestFunctions(),
                             module.builtinFunctions(),
                             module.structs(),
-                            module.constBindings(),
+                            module.consts(),
                             if (itemVis.isMsl) {
                                 listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
                             } else {
@@ -339,8 +332,9 @@ fun processLexicalDeclarations(
                         scope.schemaList,
                         scope.specFunctionList,
                     )
-                    is MvScript -> processor.matchAll(itemVis, scope.constBindings())
+                    is MvScript -> processor.matchAll(itemVis, scope.consts())
                     is MvFunctionLike -> processor.matchAll(itemVis, scope.parameterBindings())
+                    is MvLambdaExpr -> processor.matchAll(itemVis, scope.bindingPatList)
                     is MvCodeBlock -> {
                         val precedingLetDecls = scope.letStmts
                             // drops all let-statements after the current position
@@ -537,8 +531,8 @@ private fun handleModuleItemSpecs(
     handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean
 ): Boolean {
     val moduleItemSpecs = when (scope) {
-        is MvModuleBlock -> scope.moduleItemSpecs()
-        is MvModuleSpecBlock -> scope.moduleItemSpecs()
+        is MvModuleBlock -> scope.moduleItemSpecList
+        is MvModuleSpecBlock -> scope.moduleItemSpecList
         else -> emptyList()
     }
     for (moduleItemSpec in moduleItemSpecs.filter { it != cameFrom }) {

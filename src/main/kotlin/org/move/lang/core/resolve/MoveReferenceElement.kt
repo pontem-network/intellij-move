@@ -73,3 +73,5 @@ interface MvStructFieldReferenceElement : MvMandatoryReferenceElement
 interface MvStructFieldLitReferenceElement : MvMandatoryReferenceElement
 
 interface MvSchemaRefFieldReferenceElement : MvMandatoryReferenceElement
+
+interface MvItemSpecParameterReferenceElement: MvMandatoryReferenceElement

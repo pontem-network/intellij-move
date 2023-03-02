@@ -8,7 +8,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.MvReferenceElement
 import org.move.lang.core.types.infer.inferDotExprStructTy
-import org.move.lang.core.types.infer.ownerInferenceCtx
+import org.move.lang.core.types.infer.maybeInferenceContext
 
 class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
@@ -51,14 +51,19 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitPath(path: MvPath) {
+            // skip specs for now, too many false-positives
             if (path.isMsl()) return
-            if (path.isMsl() && path.isResult) return
-            if (path.isUpdateFieldArg2) return
+//            if (path.isMsl() && path.isResult) return
+//            if (path.isMsl() && path.isSpecPrimitiveType()) return
+//            if (path.isUpdateFieldArg2) return
+
             if (path.isPrimitiveType()) return
-            if (path.isMsl() && path.isSpecPrimitiveType()) return
-            if (path.isInsideAssignmentLeft()) return
+            // destructuring assignment like `Coin { val1: _ } = get_coin()`
+            if (path.textMatches("_") && path.isInsideAssignmentLhs()) return
+            // assert macro
             if (path.text == "assert") return
-            if (path.isErrorLocation()) return
+            // attribute values are special case
+            if (path.hasAncestor<MvAttrItem>()) return
 
             val moduleRef = path.moduleRef
             if (moduleRef != null) {
@@ -149,7 +154,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         override fun visitDotExpr(dotExpr: MvDotExpr) {
             if (dotExpr.isMsl()) return
 
-            val inferenceCtx = dotExpr.ownerInferenceCtx(false) ?: return
+            val inferenceCtx = dotExpr.maybeInferenceContext(false) ?: return
             inferDotExprStructTy(dotExpr, inferenceCtx) ?: return
 
             val dotField = dotExpr.structDotField

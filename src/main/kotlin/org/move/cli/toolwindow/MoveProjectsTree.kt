@@ -2,7 +2,7 @@ package org.move.cli.toolwindow
 
 import com.intellij.ui.treeStructure.SimpleTree
 import org.move.cli.MoveProject
-import org.move.cli.scripts.MoveEntrypointMouseAdapter
+import org.move.cli.transactions.MoveEntrypointMouseAdapter
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeSelectionModel
 

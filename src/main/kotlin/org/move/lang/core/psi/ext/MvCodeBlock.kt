@@ -12,8 +12,7 @@ val MvCodeBlock.returningExpr: MvExpr? get() = this.expr
 
 val MvCodeBlock.rightBrace: PsiElement? get() = this.findLastChildByType(R_BRACE)
 
-val MvCodeBlock.letStmts: List<MvLetStmt>
-    get() = stmtList.filterIsInstance<MvLetStmt>()
+val MvCodeBlock.letStmts: List<MvLetStmt> get() = stmtList.filterIsInstance<MvLetStmt>()
 
 abstract class MvCodeBlockMixin(node: ASTNode) : MvElementImpl(node), MvCodeBlock {
 

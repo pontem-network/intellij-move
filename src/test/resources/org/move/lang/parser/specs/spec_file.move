@@ -11,4 +11,7 @@ spec sender::my_module {
     spec schema AbortsIfNotGenesis {
         aborts_if !is_genesis() with error::INVALID_STATE;
     }
+
+    spec write_to_event_store<T: drop + store>() {
+    }
 }

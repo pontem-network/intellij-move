@@ -6,7 +6,6 @@ import com.intellij.psi.util.descendantsOfType
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.stubs.MvStructStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
@@ -38,6 +37,10 @@ fun MvStruct.getField(fieldName: String): MvStructField? =
 
 val MvStruct.module: MvModule
     get() {
+        val moduleStub = greenStub?.parentStub as? MvModuleStub
+        if (moduleStub != null) {
+            return moduleStub.psi
+        }
         val moduleBlock = this.parent
         return moduleBlock.parent as MvModule
     }

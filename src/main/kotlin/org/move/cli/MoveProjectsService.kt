@@ -25,7 +25,7 @@ import com.intellij.util.messages.Topic
 import org.move.cli.settings.MoveProjectSettingsService
 import org.move.cli.settings.MoveSettingsChangedEvent
 import org.move.cli.settings.MoveSettingsListener
-import org.move.lang.index.BaseMoveFileIndex
+import org.move.lang.core.psi.movePsiManager
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.toVirtualFile
@@ -61,7 +61,9 @@ class MoveProjectsService(val project: Project) : Disposable {
 
     fun refreshAllProjects() {
         LOG.info("Project state refresh started")
-        modifyProjects { doRefresh(project) }
+        modifyProjects {
+            doRefresh(project)
+        }
     }
 
     fun findMoveProject(psiElement: PsiElement): MoveProject? {
@@ -93,7 +95,7 @@ class MoveProjectsService(val project: Project) : Disposable {
         }
     }
 
-    private fun findMoveProject(file: VirtualFile): MoveProject? {
+    fun findMoveProject(file: VirtualFile): MoveProject? {
         val cached = this.projectsIndex.get(file)
         if (cached is IndexEntry.Present) return cached.value
 
@@ -125,7 +127,6 @@ class MoveProjectsService(val project: Project) : Disposable {
         this.projectsIndex.put(file, IndexEntry.Present(resProject))
         return resProject
     }
-
 
     /**
      * The heart of the plugin Project model. Care must be taken to ensure
@@ -165,14 +166,15 @@ class MoveProjectsService(val project: Project) : Disposable {
                 projectsIndex.resetIndex()
 
                 PsiManager.getInstance(project).dropPsiCaches()
-                BaseMoveFileIndex.requestRebuildIndices()
+                project.movePsiManager.incStructureModificationCount()
 
                 // In unit tests roots change is done by the test framework in most cases
                 runOnlyInNonLightProject(project) {
                     ProjectRootManagerEx.getInstanceEx(project)
                         .makeRootsChange(EmptyRunnable.getInstance(), false, true)
                 }
-                project.messageBus.syncPublisher(MOVE_PROJECTS_TOPIC)
+                project.messageBus
+                    .syncPublisher(MOVE_PROJECTS_TOPIC)
                     .moveProjectsUpdated(this, projects)
             }
         }

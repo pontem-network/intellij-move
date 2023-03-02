@@ -1,17 +1,18 @@
 package org.move.lang.core.resolve.ref
 
+import com.intellij.psi.SmartPsiElementPointer
 import org.move.lang.core.psi.MvElement
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingFunction
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.FunctionVisibility
-import org.move.lang.core.psi.ext.fqModule
+import org.move.lang.core.psi.ext.smartPointer
 import org.move.lang.core.psi.ext.visibility
-import org.move.lang.core.types.FQModule
 
 sealed class Visibility {
     object Public : Visibility()
     object PublicScript : Visibility()
-    class PublicFriend(val currentModule: FQModule) : Visibility()
+    class PublicFriend(val currentModule: SmartPsiElementPointer<MvModule>) : Visibility()
     object Internal : Visibility()
 
     companion object {
@@ -22,12 +23,8 @@ sealed class Visibility {
             val vs = mutableSetOf<Visibility>(Public)
             val containingModule = element.containingModule
             if (containingModule != null) {
-                val asFriendModule = containingModule.fqModule()
-                if (asFriendModule != null) {
-                    vs.add(PublicFriend(asFriendModule))
-                }
+                vs.add(PublicFriend(containingModule.smartPointer()))
             }
-
             val containingFun = element.containingFunction
             if (containingModule == null
                 || (containingFun?.visibility == FunctionVisibility.PUBLIC_SCRIPT)

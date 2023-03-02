@@ -6,8 +6,8 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvSchemaStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
+import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
-import org.move.lang.core.types.infer.itemContext
 
 val MvSchema.specBlock: MvItemSpecBlock? get() = this.childOfType()
 
@@ -17,15 +17,12 @@ val MvSchema.module: MvModule
         return moduleBlock.parent as MvModule
     }
 
-//val MvSchema.typeParams get() = typeParameterList?.typeParameterList.orEmpty()
-
 val MvSchema.requiredTypeParams: List<MvTypeParameter>
     get() {
         val usedTypeParams = mutableSetOf<MvTypeParameter>()
-        val itemContext = this.module.itemContext(true)
+        val inferenceCtx = InferenceContext.default(true, this)
         this.fieldStmts
-            .map { it.annotationTy(itemContext) }
-//            .map { it.annotationTy(InferenceContext(true)) }
+            .map { it.annotationTy(inferenceCtx) }
             .forEach {
                 it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.origin); paramTy }
             }

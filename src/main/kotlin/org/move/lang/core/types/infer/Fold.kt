@@ -102,6 +102,12 @@ fun <T> TypeFoldable<T>.visitTyTypeParameterWith(visitor: (TyTypeParameter) -> B
             if (ty is TyTypeParameter) visitor(ty) else ty.innerVisitWith(this)
     })
 
+fun <T> TypeFoldable<T>.visitTyVarWith(visitor: (TyInfer.TyVar) -> Boolean) =
+    visitWith(object : TypeVisitor {
+        override fun invoke(ty: Ty): Boolean =
+            if (ty is TyInfer.TyVar) visitor(ty) else ty.innerVisitWith(this)
+    })
+
 fun <T> TypeFoldable<T>.containsTyOfClass(classes: List<Class<*>>): Boolean =
     visitWith(object : TypeVisitor {
         override fun invoke(ty: Ty): Boolean =

@@ -577,4 +577,22 @@ module 0x1::M {
     struct S {}
 }        
     """)
+
+    fun `test spec item indent`() = doTestByText("""
+    module 0x1::main {
+        fun call(account: &signer) {}
+    }        
+    spec 0x1::main {
+        spec call(account: &signer) {/*caret*/}
+    }
+    """, """
+    module 0x1::main {
+        fun call(account: &signer) {}
+    }        
+    spec 0x1::main {
+        spec call(account: &signer) {
+            /*caret*/
+        }
+    }
+    """)
 }

@@ -7,7 +7,6 @@ import org.move.lang.core.psi.MvSpecFunction
 import org.move.lang.core.psi.MvSpecInlineFunction
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.module
-import org.move.lang.core.stubs.MvConstStub
 import org.move.lang.core.stubs.MvSpecFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import javax.swing.Icon

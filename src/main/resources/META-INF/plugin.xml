@@ -22,7 +22,11 @@
                   extensions="move"
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
-        <fileBasedIndex implementation="org.move.lang.index.MvModuleSpecIndex"/>
+
+        <!-- PSI managing -->
+
+        <projectService serviceInterface="org.move.lang.core.psi.MvPsiManager"
+                        serviceImplementation="org.move.lang.core.psi.MvPsiManagerImpl"/>
 
         <configurationType
                 implementation="org.move.cli.runconfig.AptosCommandConfigurationType"/>
@@ -30,6 +34,8 @@
                 implementation="org.move.cli.runconfig.producers.TestCommandConfigurationProducer"/>
         <runConfigurationProducer
                 implementation="org.move.cli.runconfig.producers.PublishCommandConfigurationProducer"/>
+<!--        <runConfigurationProducer-->
+<!--                implementation="org.move.cli.runconfig.producers.RunTransactionConfigurationProducer"/>-->
         <runLineMarkerContributor language="Move"
                                   implementationClass="org.move.ide.lineMarkers.AptosCommandLineMarkerContributor"/>
 
@@ -39,7 +45,7 @@
         <stubElementTypeHolder class="org.move.lang.MvElementTypes" />
 
         <stubIndex implementation="org.move.lang.index.MvNamedElementIndex" />
-        <stubIndex implementation="org.move.lang.index.MvModuleSpecStubIndex" />
+        <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
         <lang.documentationProvider language="Move"
                                     implementationClass="org.move.ide.docs.MvDocumentationProvider"/>
@@ -59,6 +65,8 @@
                            implementationClass="org.move.ide.typing.MvQuoteHandler"/>
         <typedHandler implementation="org.move.ide.typing.MvAngleBraceTypedHandler"
                       id="MvAngleBracketsHandler"/>
+        <typedHandler implementation="org.move.ide.typing.MoveTextFieldTypedHandler"
+                      id="MoveTextFieldTypedHandler"/>
         <typedHandler implementation="org.move.ide.typing.MvTypedHandler"
                       id="MvTypedHandler"/>
         <enterHandlerDelegate implementation="org.move.ide.typing.MvEnterInLineCommentHandler"
@@ -100,6 +108,8 @@
                                 implementationClass="org.move.lang.core.completion.CommonCompletionContributor"/>
         <completion.contributor language="Move"
                                 implementationClass="org.move.lang.core.completion.KeywordCompletionContributor"/>
+        <completion.contributor language="Move"
+                                implementationClass="org.move.lang.core.completion.MoveTextFieldCompletionContributor"/>
         <completion.contributor language="TOML"
                                 implementationClass="org.move.toml.completion.MoveTomlCompletionContributor"/>
         <weigher key="completion"
@@ -228,6 +238,10 @@
                          displayName="Redundant type cast"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.move.ide.inspections.RedundantTypeCastInspection"/>
+        <localInspection language="Move" groupName="Move"
+                         displayName="Function signature mismatch"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.ItemSpecSignatureInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>

@@ -140,9 +140,9 @@ data class ImportContext private constructor(
             val vs = if (contextElement.containingScript != null) {
                 setOf(Visibility.Public, Visibility.PublicScript)
             } else {
-                val module = contextElement.containingModule?.fqModule()
+                val module = contextElement.containingModule
                 if (module != null) {
-                    setOf(Visibility.Public, Visibility.PublicFriend(module))
+                    setOf(Visibility.Public, Visibility.PublicFriend(module.smartPointer()))
                 } else {
                     setOf(Visibility.Public)
                 }

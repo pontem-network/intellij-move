@@ -15,11 +15,11 @@ fun processModuleItems(
                 itemVis,
                 itemVis.visibilities.flatMap { module.visibleFunctions(it) },
                 if (itemVis.isMsl) module.specFunctions() else emptyList(),
-                if (itemVis.isMsl) module.constBindings() else emptyList()
+                if (itemVis.isMsl) module.consts() else emptyList()
             )
             Namespace.TYPE -> processor.matchAll(itemVis, module.structs())
             Namespace.SCHEMA -> processor.matchAll(itemVis, module.schemas())
-            Namespace.ERROR_CONST -> processor.matchAll(itemVis, module.constBindings())
+            Namespace.ERROR_CONST -> processor.matchAll(itemVis, module.consts())
             else -> false
         }
         if (!found) {
@@ -58,6 +58,8 @@ class MvPathReferenceImpl(
     element: MvPath,
     val namespaces: Set<Namespace>,
 ) : MvReferenceCached<MvPath>(element), MvPathReference {
+
+    override val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE
 
     override fun resolveInner(): List<MvNamedElement> {
         val vs = Visibility.buildSetOfVisibilities(element)

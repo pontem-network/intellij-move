@@ -24,13 +24,13 @@ fun inferExpectedTy(element: PsiElement, parentCtx: InferenceContext): Ty? {
             val ownerExpr = path.parent
             when (ownerExpr) {
                 is MvCallExpr -> {
-                    val inferenceCtx = ownerExpr.ownerInferenceCtx(ownerExpr.isMsl()) ?: return null
+                    val inferenceCtx = ownerExpr.maybeInferenceContext(ownerExpr.isMsl()) ?: return null
                     inferenceCtx.callExprTypes[ownerExpr]
                         ?.typeVars
                         ?.getOrNull(paramIndex)
                 }
                 is MvStructLitExpr -> {
-                    val inferenceCtx = ownerExpr.ownerInferenceCtx(ownerExpr.isMsl()) ?: return null
+                    val inferenceCtx = ownerExpr.maybeInferenceContext(ownerExpr.isMsl()) ?: return null
                     (inferenceCtx.exprTypes[ownerExpr] as? TyStruct)
                         ?.typeArgs
                         ?.getOrNull(paramIndex)
@@ -44,7 +44,7 @@ fun inferExpectedTy(element: PsiElement, parentCtx: InferenceContext): Ty? {
                 valueArgumentList.children.indexOfFirst { it.textRange.contains(owner.textOffset) }
             if (paramIndex == -1) return null
             val callExpr = valueArgumentList.parent as? MvCallExpr ?: return null
-            val inferenceCtx = callExpr.ownerInferenceCtx(callExpr.isMsl()) ?: return null
+            val inferenceCtx = callExpr.maybeInferenceContext(callExpr.isMsl()) ?: return null
             inferenceCtx.callExprTypes[callExpr]
                 ?.paramTypes
                 ?.getOrNull(paramIndex)
@@ -54,13 +54,10 @@ fun inferExpectedTy(element: PsiElement, parentCtx: InferenceContext): Ty? {
             val initializerParent = owner.parent
             when (initializerParent) {
                 is MvLetStmt -> {
-                    val patExplicitTy = initializerParent.typeAnnotation?.type?.let {
-                        val itemContext =
-                            it.itemContextOwner?.itemContext(parentCtx.msl) ?: ItemContext(parentCtx.msl)
-                        itemContext.getTypeTy(it)
-                    }
+                    val explicitTy =
+                        initializerParent.typeAnnotation?.type?.let { parentCtx.getTypeTy(it) }
                     initializerParent.pat
-                        ?.let { inferPatTy(it, parentCtx, patExplicitTy) }
+                        ?.let { inferPatTy(it, parentCtx, explicitTy) }
                 }
                 else -> null
             }

@@ -1196,4 +1196,28 @@ module 0x1::main {
     }
 }        
     """)
+
+    fun `test recursive structs`() = checkByText("""
+module 0x42::M0 {
+    struct Foo { f: <error descr="Circular reference of type 'Foo'">Foo</error> }
+
+    struct Cup<T> { f: T }
+    struct Bar { f: Cup<<error descr="Circular reference of type 'Bar'">Bar</error>> }
+
+    struct X { y: vector<Y> }
+    struct Y { x: vector<X> }
+
+}
+
+module 0x42::M1 {
+    use 0x42::M0;
+
+    struct Foo { f: M0::Cup<<error descr="Circular reference of type 'Foo'">Foo</error>> }
+
+    struct A { b: B }
+    struct B { c: C }
+    struct C { d: vector<D> }
+    struct D { x: M0::Cup<M0::Cup<M0::Cup<A>>> }
+}
+    """)
 }

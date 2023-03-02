@@ -1,6 +1,5 @@
 package org.move.lang.core.stubs.impl
 
-import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiFile
 import com.intellij.psi.StubBuilder
 import com.intellij.psi.impl.source.tree.TreeUtil
@@ -18,7 +17,7 @@ class MvFileStub(file: MoveFile?) : PsiFileStubImpl<MoveFile>(file) {
     override fun getType() = Type
 
     object Type : IStubFileElementType<MvFileStub>(MoveLanguage) {
-        private const val STUB_VERSION = 5
+        private const val STUB_VERSION = 12
 
         // Bump this number if Stub structure changes
         override fun getStubVersion(): Int = MoveParserDefinition.PARSER_VERSION + STUB_VERSION

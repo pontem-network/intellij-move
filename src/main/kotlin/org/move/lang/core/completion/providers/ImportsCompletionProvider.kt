@@ -13,9 +13,9 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvUseItem
 import org.move.lang.core.psi.MvUseItemGroup
 import org.move.lang.core.psi.ext.isSelf
-import org.move.lang.core.psi.ext.itemScope
 import org.move.lang.core.psi.ext.moduleImport
 import org.move.lang.core.psi.ext.names
+import org.move.lang.core.psi.itemScope
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslScope
 import org.move.lang.core.resolve.ref.Namespace

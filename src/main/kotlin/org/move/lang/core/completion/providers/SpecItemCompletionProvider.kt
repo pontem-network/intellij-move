@@ -8,7 +8,7 @@ import org.move.lang.core.completion.addSuffix
 import org.move.lang.core.completion.alreadyHasSpace
 import org.move.lang.core.completion.createLookupElementWithIcon
 import org.move.lang.core.psi.MvItemSpecRef
-import org.move.lang.core.psi.ext.itemScope
+import org.move.lang.core.psi.itemScope
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslScope
 import org.move.lang.core.resolve.processItems

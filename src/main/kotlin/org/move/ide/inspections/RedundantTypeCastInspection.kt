@@ -6,8 +6,10 @@ import com.intellij.openapi.util.TextRange
 import org.move.ide.inspections.fixes.RemoveRedundantCastFix
 import org.move.lang.core.psi.MvCastExpr
 import org.move.lang.core.psi.MvVisitor
-import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.infer.*
+import org.move.lang.core.psi.ext.endOffsetInParent
+import org.move.lang.core.psi.ext.inferredExprTy
+import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.types.infer.inferenceContext
 import org.move.lang.core.types.ty.TyInteger
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -24,8 +26,9 @@ class RedundantTypeCastInspection : MvLocalInspectionTool() {
             // TODO: different rules for msl, no need for any casts at all
             if (msl) return
 
-            val itemContext = castExpr.itemContextOwner?.itemContext(false) ?: ItemContext(false)
-            val castTy = itemContext.getTypeTy(castExpr.type)
+//            val itemContext = castExpr.itemContextOwner?.itemContext(false) ?: castExpr.project.itemContext(false)
+            val inferenceCtx = castExpr.inferenceContext(false)
+            val castTy = inferenceCtx.getTypeTy(castExpr.type)
             if (castTy is TyUnknown) return
 
             if (exprTy == castTy) {

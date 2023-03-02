@@ -554,4 +554,30 @@ class ResolveSpecsTest: ResolveTestCase() {
         }
     }
     """)
+
+    fun `test spec item function parameter`() = checkByCode("""
+    module 0x1::main {
+        fun call(account: &signer) {}
+                 //X
+    }        
+    spec 0x1::main {
+        spec call(account: &signer) {
+                    //^
+        
+        }
+    }
+    """)
+
+    fun `test spec item type parameter`() = checkByCode("""
+    module 0x1::main {
+        fun call<CoinType>() {}
+                 //X
+    }        
+    spec 0x1::main {
+        spec call<CoinType>() {
+                    //^
+        
+        }
+    }
+    """)
 }

@@ -53,10 +53,11 @@ class HighlightingAnnotator : MvAnnotator() {
     private fun highlightIdentifier(element: MvElement): MvColor? {
         if (element is MvAbility) return MvColor.ABILITY
         if (element is MvTypeParameter) return MvColor.TYPE_PARAMETER
+        if (element is MvItemSpecTypeParameter) return MvColor.TYPE_PARAMETER
         if (element is MvModuleRef && element.isSelf) return MvColor.KEYWORD
         if (element is MvUseItem && element.text == "Self") return MvColor.KEYWORD
         if (element is MvFunction) return MvColor.FUNCTION_DEF
-        if (element is MvBindingPat && element.owner is MvConst) return MvColor.CONSTANT_DEF
+        if (element is MvConst) return MvColor.CONSTANT_DEF
         if (element is MvModule) return MvColor.MODULE_DEF
         if (element is MvVectorLitExpr) return MvColor.VECTOR_LITERAL
 
@@ -91,12 +92,11 @@ class HighlightingAnnotator : MvAnnotator() {
                 }
             }
             is MvRefExpr -> {
-                val resolved = path.reference?.resolve() as? MvBindingPat ?: return null
-                val owner = resolved.owner
-                when (owner) {
-                    is MvConst -> return MvColor.CONSTANT
-                    is MvLetStmt,
-                    is MvFunctionParameter -> return MvColor.VARIABLE
+                val resolved = path.reference?.resolve() ?: return null
+                if (resolved is MvConst) {
+                    return MvColor.CONSTANT
+                } else {
+                    return MvColor.VARIABLE
                 }
             }
         }

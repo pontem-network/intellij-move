@@ -1,10 +1,10 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.MvSchemaFieldStmt
-import org.move.lang.core.types.infer.ItemContext
+import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
-fun MvSchemaFieldStmt.annotationTy(itemContext: ItemContext): Ty =
+fun MvSchemaFieldStmt.annotationTy(inferenceCtx: InferenceContext): Ty =
     this.typeAnnotation.type
-        ?.let { itemContext.getTypeTy(it) } ?: TyUnknown
+        ?.let { inferenceCtx.getTypeTy(it) } ?: TyUnknown

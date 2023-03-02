@@ -5,9 +5,6 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.stubs.StubElement
-import com.intellij.psi.stubs.StubInputStream
-import com.intellij.psi.stubs.StubOutputStream
-import com.intellij.util.io.DataInputOutputUtil
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvNameIdentifierOwner

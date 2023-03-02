@@ -1,6 +1,6 @@
 FILE
   MvModuleImpl(MODULE)
-    PsiElement(module_kw)('module')
+    PsiElement(module)('module')
     PsiWhiteSpace(' ')
     PsiElement(IDENTIFIER)('M1')
     PsiWhiteSpace(' ')

@@ -13,7 +13,7 @@ import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.containingModuleSpec
 import org.move.lang.core.psi.ext.equalsTo
-import org.move.lang.core.psi.ext.itemScope
+import org.move.lang.core.psi.itemScope
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslScope
 import org.move.lang.core.resolve.processItems

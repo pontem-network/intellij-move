@@ -8,7 +8,8 @@ import org.move.ide.presentation.fullname
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.infer.itemContext
+import org.move.lang.core.types.address
+import org.move.lang.core.types.infer.maybeInferenceContext
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
@@ -33,7 +34,7 @@ class MvErrorAnnotator : MvAnnotator() {
                 val realCount = path.typeArguments.size
                 val parent = path.parent
                 when {
-                    item == null && path.identifierName == "vector" -> {
+                    item == null && path.isLocal && path.identifierName == "vector" -> {
                         val expectedCount = 1
                         if (realCount != expectedCount) {
                             MvDiagnostic
@@ -110,9 +111,9 @@ class MvErrorAnnotator : MvAnnotator() {
                 if (o.path.referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
                     val explicitTypeArgs = o.typeArguments
                     val currentModule = o.containingModule ?: return
-                    val itemContext = currentModule.itemContext(false)
+                    val inferenceCtx = o.maybeInferenceContext(false) ?: return
                     for (typeArg in explicitTypeArgs) {
-                        val typeArgTy = itemContext.getTypeTy(typeArg.type)
+                        val typeArgTy = inferenceCtx.getTypeTy(typeArg.type)
                         if (typeArgTy !is TyUnknown && !typeArgTy.canBeAcquiredInModule(currentModule)) {
                             val typeName = typeArgTy.fullname()
                             holder.newAnnotation(
@@ -194,13 +195,13 @@ class MvErrorAnnotator : MvAnnotator() {
 
     private fun checkModuleDef(holder: MvAnnotationHolder, mod: MvModule) {
         val moveProj = mod.moveProject ?: return
-        val addressIdent = mod.address()?.toAddress(moveProj) ?: return
+        val addressIdent = mod.address(moveProj) ?: return
         val modIdent = Pair(addressIdent, mod.name)
         val file = mod.containingMoveFile ?: return
         val duplicateIdents =
             file.modules()
                 .filter { it.name != null }
-                .groupBy { Pair(it.address()?.toAddress(), it.name) }
+                .groupBy { Pair(it.address(moveProj), it.name) }
                 .filter { it.value.size > 1 }
                 .map { it.key }
                 .toSet()
@@ -211,14 +212,14 @@ class MvErrorAnnotator : MvAnnotator() {
     }
 
     private fun checkConstDef(holder: MvAnnotationHolder, const: MvConst) {
-        val binding = const.bindingPat ?: return
+//        val binding = const.bindingPat ?: return
         val owner = const.parent?.parent ?: return
-        val allBindings = when (owner) {
-            is MvModule -> owner.constBindings()
-            is MvScript -> owner.constBindings()
+        val allConsts = when (owner) {
+            is MvModule -> owner.consts()
+            is MvScript -> owner.consts()
             else -> return
         }
-        checkDuplicates(holder, binding, allBindings.asSequence())
+        checkDuplicates(holder, const, allConsts.asSequence())
     }
 }
 

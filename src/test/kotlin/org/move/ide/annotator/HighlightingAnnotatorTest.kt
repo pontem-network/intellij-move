@@ -115,6 +115,7 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
             acquires <TYPE_PARAMETER>U</TYPE_PARAMETER> {
                 let a: <TYPE_PARAMETER>U</TYPE_PARAMETER> = 1;
             }
+            spec main<<TYPE_PARAMETER>U</TYPE_PARAMETER>, <TYPE_PARAMETER>V</TYPE_PARAMETER>>() {}
             spec schema MySchema<<TYPE_PARAMETER>Type</TYPE_PARAMETER>> {}
             spec module {
                 apply MySchema<<TYPE_PARAMETER>Type</TYPE_PARAMETER>> to *<<TYPE_PARAMETER>Type</TYPE_PARAMETER>>;

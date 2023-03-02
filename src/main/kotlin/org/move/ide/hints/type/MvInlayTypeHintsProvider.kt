@@ -10,14 +10,10 @@ import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvLetStmt
 import org.move.lang.core.psi.MvPat
-import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.endOffset
-import org.move.lang.core.psi.ext.inferBindingTy
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.ItemContext
-import org.move.lang.core.types.infer.itemContext
-import org.move.lang.core.types.infer.ownerInferenceCtx
+import org.move.lang.core.types.infer.inferenceContext
+import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -56,13 +52,15 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
         editor: Editor,
         settings: Settings,
         sink: InlayHintsSink
-    ): InlayHintsCollector =
-        object : FactoryInlayHintsCollector(editor) {
+    ): InlayHintsCollector {
+        val project = file.project
+        return object : FactoryInlayHintsCollector(editor) {
 
             val typeHintsFactory = MvTypeHintsPresentationFactory(factory)
 
             override fun collect(element: PsiElement, editor: Editor, sink: InlayHintsSink): Boolean {
-                if (file.project.service<DumbService>().isDumb) return true
+                if (project.service<DumbService>().isDumb) return true
+
                 when {
                     settings.showForVariables && element is MvLetStmt -> {
                         val pat = element.pat ?: return true
@@ -75,27 +73,31 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
 
             private fun presentTypeForPat(pat: MvPat) {
                 val msl = pat.isMsl()
-                val itemContext = pat.containingModule?.itemContext(msl) ?: ItemContext(msl)
-                val inferenceCtx = pat.ownerInferenceCtx(msl) ?: return
+                val inferenceCtx = pat.inferenceContext(msl)
+                for (bindingPat in pat.descendantsOfType<MvBindingPat>()) {
+                    if (bindingPat.identifier.text.startsWith("_")) continue
 
-                for (binding in pat.descendantsOfType<MvBindingPat>()) {
-                    if (binding.identifier.text.startsWith("_")) continue
-                    if (binding.inferBindingTy(inferenceCtx, itemContext) is TyUnknown) continue
-                    presentTypeForBinding(binding, inferenceCtx, itemContext)
+                    val bindingTy = inferenceCtx.getBindingPatTy(bindingPat)
+                    if (bindingTy is TyUnknown) continue
+
+                    presentTypeForBinding(bindingPat, bindingTy)
                 }
             }
 
             private fun presentTypeForBinding(
                 binding: MvBindingPat,
-                ctx: InferenceContext,
-                itemContext: ItemContext
+                bindingTy: Ty
             ) {
-                val bindingTy = binding.inferBindingTy(ctx, itemContext)
-                val presentation =
-                    typeHintsFactory.typeHint(bindingTy)
-                sink.addInlineElement(binding.endOffset, false, presentation, false)
+                val presentation = typeHintsFactory.typeHint(bindingTy)
+                sink.addInlineElement(
+                    binding.endOffset,
+                    false,
+                    presentation,
+                    false
+                )
             }
         }
+    }
 
     data class Settings(
         var showForVariables: Boolean = true,

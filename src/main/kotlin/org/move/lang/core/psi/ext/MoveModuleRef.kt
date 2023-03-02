@@ -15,9 +15,8 @@ val MvModuleRef.isSelf: Boolean
                 && this.containingModule != null
 
 abstract class MvModuleRefMixin(node: ASTNode) : MvElementImpl(node), MvModuleRef {
-    override fun getReference(): MvReference? {
-        return MvModuleReferenceImpl(this)
-    }
+
+    override fun getReference(): MvReference? = MvModuleReferenceImpl(this)
 }
 
 //abstract class MvImportedModuleRefMixin(node: ASTNode) : MvReferenceElementImpl(node),

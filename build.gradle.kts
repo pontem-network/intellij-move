@@ -1,6 +1,5 @@
 import org.jetbrains.grammarkit.tasks.GenerateLexerTask
 import org.jetbrains.grammarkit.tasks.GenerateParserTask
-import org.jetbrains.intellij.tasks.RunIdeTask
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
@@ -18,7 +17,7 @@ fun prop(name: String): String =
 val kotlinVersion = "1.8.10"
 
 val pluginJarName = "intellij-move-$platformVersion"
-val pluginVersion = "1.25.0"
+val pluginVersion = "1.26.0"
 val pluginGroup = "org.move"
 val javaVersion = if (platformVersion < "222") JavaVersion.VERSION_11 else JavaVersion.VERSION_17
 val kotlinJvmTarget = if (platformVersion < "222") "11" else "17"

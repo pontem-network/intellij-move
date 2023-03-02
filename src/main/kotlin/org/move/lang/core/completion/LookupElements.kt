@@ -53,6 +53,7 @@ fun MvNamedElement.createLookupElementWithIcon(): LookupElementBuilder {
         .withLookupString(this.name ?: "")
 }
 
+@Suppress("UnusedReceiverParameter")
 fun MvModule.createSelfLookup(): LookupElement {
     return LookupElementBuilder
         .create("Self")
@@ -88,7 +89,7 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
             .withTypeText(this.returnType?.type?.text ?: "()")
 
         is MvModule -> this.createLookupElementWithIcon()
-            .withTailText(this.address()?.let { " ${it.text}" } ?: "")
+            .withTailText(this.addressRef()?.let { " ${it.text}" } ?: "")
             .withTypeText(this.containingFile?.name)
 
         is MvStruct -> {
@@ -101,12 +102,20 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
         is MvStructField -> this.createLookupElementWithIcon()
             .withTypeText(this.typeAnnotation?.type?.text)
 
+        is MvConst -> {
+            val msl = this.isMsl()
+            val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
+            this.createLookupElementWithIcon()
+                .withTypeText(itemContext.getConstTy(this).text(true))
+        }
+
         is MvBindingPat -> {
             val msl = this.isMsl()
-            val inferenceCtx = this.ownerInferenceCtx(msl) ?: InferenceContext(msl)
-            val itemContext = this.itemContextOwner?.itemContext(msl) ?: ItemContext(msl)
+//            val inferenceCtx = this.maybeInferenceContext(msl) ?: InferenceContext(msl)
+//            val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
+            val inferenceCtx = this.inferenceContext(msl)
             this.createLookupElementWithIcon()
-                .withTypeText(this.inferBindingTy(inferenceCtx, itemContext).text(true))
+                .withTypeText(inferenceCtx.getBindingPatTy(this).text(true))
         }
 
         is MvSchema -> this.createLookupElementWithIcon()
@@ -209,10 +218,10 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
                     if (completionContext == null) return@run false
                     val msl = element.isMsl()
 
-                    val itemContext = element.module?.itemContext(msl) ?: ItemContext(msl)
+                    val itemContext = element.module?.itemContext(msl) ?: element.project.itemContext(msl)
                     val funcTy = itemContext.getItemTy(element) as? TyFunction ?: return@run false
 
-                    val inferenceCtx = InferenceContext(msl)
+                    val inferenceCtx = InferenceContext(msl, itemContext)
                     val expectedTy = completionContext.expectedTy
                     if (expectedTy != null) {
                         inferenceCtx.addConstraint(funcTy.retType, expectedTy)

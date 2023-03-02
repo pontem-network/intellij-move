@@ -1,11 +1,12 @@
 package org.move.lang.core.psi.ext
 
+import com.intellij.extapi.psi.StubBasedPsiElementBase
 import com.intellij.openapi.util.Condition
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiFileImpl
+import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.tree.IElementType
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.MoveFile
@@ -32,7 +33,9 @@ inline fun <reified T : PsiElement> PsiElement.stubChildrenOfType(): List<T> {
 
 val PsiElement.ancestors: Sequence<PsiElement>
     get() = generateSequence(this) {
-        if (it is PsiFile) null else it.parent
+        if (it is PsiFile)
+            null
+        else it.parent
     }
 
 inline fun <reified T : PsiElement> PsiElement.ancestorsOfType(): Sequence<T> {
@@ -186,23 +189,26 @@ fun PsiElement.isErrorElement(): Boolean =
 fun PsiElement.equalsTo(another: PsiElement): Boolean =
     PsiManager.getInstance(this.project).areElementsEquivalent(this, another)
 
-fun PsiElement.isMsl(): Boolean {
-    return getProjectPsiDependentCache(this) {
-        if (it !is MvElement) return@getProjectPsiDependentCache false
-
-        // use items always non-msl, otherwise import resolution doesn't work correctly
-        if (it is MvUseItem) return@getProjectPsiDependentCache false
-
-        val specElement = PsiTreeUtil.findFirstParent(it, false) { parent ->
-            parent is MvSpecFunction
-                    || parent is MvItemSpecBlockExpr
-                    || parent is MvSchema
-                    || parent is MvItemSpec
-                    || parent is MvModuleSpecBlock
-        }
-        specElement != null
-    }
-}
-
 fun PsiElement.cameBefore(element: PsiElement) =
     PsiUtilCore.compareElementsByPosition(this, element) <= 0
+
+@Suppress("UNCHECKED_CAST")
+inline val <T : StubElement<*>> StubBasedPsiElement<T>.greenStub: T?
+    get() = (this as? StubBasedPsiElementBase<T>)?.greenStub
+
+fun <T: PsiElement> T.smartPointer() = SmartPointerManager.createPointer(this)
+
+val PsiElement.stubParent: PsiElement?
+    get() {
+        if (this is StubBasedPsiElement<*>) {
+            val stub = this.greenStub
+            if (stub != null) return stub.parentStub?.psi
+        }
+        return parent
+    }
+
+/**
+ * Same as [ancestorOrSelf], but with "fake" parent links. See [org.rust.lang.core.macros.RsExpandedElement].
+ */
+inline fun <reified T : PsiElement> PsiElement.contextOrSelf(): T? =
+    PsiTreeUtil.getContextOfType(this, T::class.java, /* strict */ false)

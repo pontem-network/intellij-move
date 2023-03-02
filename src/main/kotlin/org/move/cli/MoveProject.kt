@@ -8,7 +8,6 @@ import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
-import com.intellij.util.containers.addIfNotNull
 import org.move.cli.manifest.MoveToml
 import org.move.lang.MoveFile
 import org.move.lang.core.types.Address

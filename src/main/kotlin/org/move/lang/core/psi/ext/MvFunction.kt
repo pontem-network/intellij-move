@@ -4,20 +4,19 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.editor.colors.TextAttributesKey
+import com.intellij.openapi.util.SimpleModificationTracker
+import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.util.PlatformIcons
 import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvAttr
+import org.move.lang.core.psi.MvAttrItem
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.module
 import org.move.lang.core.stubs.MvFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.infer.ItemContext
-import org.move.lang.core.types.ty.Ty
 import javax.swing.Icon
 
 enum class FunctionVisibility {
@@ -25,33 +24,44 @@ enum class FunctionVisibility {
     PUBLIC,
     PUBLIC_FRIEND,
     PUBLIC_SCRIPT;
+
+    companion object {
+        fun fromInt(ordinal: Int): FunctionVisibility {
+            for (value in FunctionVisibility.values()) {
+                if (value.ordinal == ordinal) return value
+            }
+            error("Invalid value")
+        }
+    }
 }
 
 val MvFunction.visibility: FunctionVisibility
     get() {
-        val visibility = this.functionVisibilityModifier ?: return FunctionVisibility.PRIVATE
-        return when {
-            visibility.hasChild(MvElementTypes.FRIEND) -> FunctionVisibility.PUBLIC_FRIEND
-            visibility.hasChild(MvElementTypes.SCRIPT_KW) -> FunctionVisibility.PUBLIC_SCRIPT
-            visibility.hasChild(MvElementTypes.PUBLIC) -> FunctionVisibility.PUBLIC
-            else -> FunctionVisibility.PRIVATE
-        }
+        val stub = greenStub
+        return stub?.visibility ?: visibilityFromPsi()
     }
+
+fun MvFunction.visibilityFromPsi(): FunctionVisibility {
+    val visibility = this.functionVisibilityModifier ?: return FunctionVisibility.PRIVATE
+    return when {
+        visibility.hasChild(MvElementTypes.FRIEND) -> FunctionVisibility.PUBLIC_FRIEND
+        visibility.hasChild(MvElementTypes.SCRIPT_KW) -> FunctionVisibility.PUBLIC_SCRIPT
+        visibility.hasChild(MvElementTypes.PUBLIC) -> FunctionVisibility.PUBLIC
+        else -> FunctionVisibility.PRIVATE
+    }
+}
 
 val MvFunction.isEntry: Boolean get() = this.isChildExists(MvElementTypes.ENTRY)
 
-val MvFunction.testAttr: MvAttr?
-    get() =
-        getProjectPsiDependentCache(this) {
-            it.findSingleItemAttr("test")
-        }
+val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
 
-val MvFunction.isTest: Boolean get() = testAttr != null
-
-fun MvFunction.getAcquiresTys(itemContext: ItemContext): List<Ty> =
-    this.acquiresType?.pathTypeList.orEmpty().map {
-        itemContext.getTypeTy(it)
+val MvFunction.isTest: Boolean
+    get() {
+        val stub = greenStub
+        return stub?.isTest ?: queryAttributes.isTest
     }
+
+val QueryAttributes.isTest: Boolean get() = this.hasAttrItem("test")
 
 val MvFunction.signatureText: String
     get() {
@@ -98,6 +108,21 @@ abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
             val name = this.name ?: "<unknown>"
             return moduleFqName + name
         }
+
+    override val modificationTracker: SimpleModificationTracker =
+        SimpleModificationTracker()
+
+    override fun incModificationCount(element: PsiElement): Boolean {
+        val shouldInc = codeBlock?.isAncestorOf(element) == true
+//        item inside the function
+//                && PsiTreeUtil.findChildOfAnyType(
+//                    element,
+//                    false,
+//                    MvNamedElement::class.java,
+//                ) == null
+        if (shouldInc) modificationTracker.incModificationCount()
+        return shouldInc
+    }
 
     override fun canNavigate(): Boolean = !builtIn
     override fun canNavigateToSource(): Boolean = !builtIn

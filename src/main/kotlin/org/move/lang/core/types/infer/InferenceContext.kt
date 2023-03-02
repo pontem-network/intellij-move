@@ -1,51 +1,87 @@
 package org.move.lang.core.types.infer
 
+import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
+import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.rd.util.concurrentMapOf
 import org.move.ide.presentation.expectedBindingFormText
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.inferBindingTy
+import org.move.lang.core.psi.ext.contextOrSelf
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.itemSpecBlock
 import org.move.lang.core.psi.ext.rightBrace
 import org.move.lang.core.types.ty.*
+import org.move.utils.cache
+import org.move.utils.cacheManager
+import org.move.utils.cacheResult
 
 interface MvInferenceContextOwner : MvElement {
     fun parameterBindings(): List<MvBindingPat>
 }
 
-fun MvInferenceContextOwner.inferenceCtx(msl: Boolean): InferenceContext {
+private val INFERENCE_KEY_NON_MSL: Key<CachedValue<InferenceContext>> = Key.create("INFERENCE_KEY_NON_MSL")
+private val INFERENCE_KEY_MSL: Key<CachedValue<InferenceContext>> = Key.create("INFERENCE_KEY_MSL")
+
+fun MvElement.maybeInferenceContext(msl: Boolean): InferenceContext? {
+    val inferenceOwner =
+        PsiTreeUtil.getParentOfType(this, MvInferenceContextOwner::class.java, false)
+            ?: return null
     return if (msl) {
-        getProjectPsiDependentCache(this) {
-            getOwnerInferenceContext(it, true)
+        project.cacheManager.cache(inferenceOwner, INFERENCE_KEY_MSL) {
+            val localModificationTracker =
+                inferenceOwner.contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
+            val cacheDependencies: List<Any> =
+                listOfNotNull(
+                    inferenceOwner.project.moveStructureModificationTracker,
+                    localModificationTracker
+                )
+            inferenceOwner.cacheResult(
+                getOwnerInferenceContext(inferenceOwner, true), cacheDependencies
+            )
         }
+//        getProjectPsiDependentCache(inferenceOwner) {
+//            getOwnerInferenceContext(it, true)
+//        }
     } else {
-        getProjectPsiDependentCache(this) {
-            getOwnerInferenceContext(it, false)
+        project.cacheManager.cache(inferenceOwner, INFERENCE_KEY_NON_MSL) {
+            val localModificationTracker =
+                inferenceOwner.contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
+            val cacheDependencies: List<Any> =
+                listOfNotNull(
+                    inferenceOwner.project.moveStructureModificationTracker,
+                    localModificationTracker
+                )
+            inferenceOwner.cacheResult(
+                getOwnerInferenceContext(inferenceOwner, false), cacheDependencies
+            )
+//            inferenceOwner.cacheResult(getOwnerInferenceContext(inferenceOwner, false))
         }
+//        getProjectPsiDependentCache(inferenceOwner) {
+//            getOwnerInferenceContext(it, false)
+//        }
     }
 }
 
-fun MvElement.ownerInferenceCtx(msl: Boolean = this.isMsl()): InferenceContext? {
-    val inferenceOwner =
-        PsiTreeUtil.getParentOfType(this, MvInferenceContextOwner::class.java, false)
-    return inferenceOwner?.inferenceCtx(msl)
+fun MvElement.inferenceContext(msl: Boolean): InferenceContext {
+    val ctx = this.maybeInferenceContext(msl)
+    // NOTE: use default case just for the safety, should never happen in the correct code
+    return ctx ?: InferenceContext(msl, project.itemContext(msl))
 }
 
 private fun getOwnerInferenceContext(owner: MvInferenceContextOwner, msl: Boolean): InferenceContext {
-    val inferenceCtx = InferenceContext(msl)
-    val itemContext = owner.itemContextOwner?.itemContext(msl) ?: ItemContext(msl)
+    val itemContext = owner.itemContextOwner?.itemContext(msl) ?: owner.project.itemContext(msl)
+    val inferenceCtx = InferenceContext(msl, itemContext)
     for (param in owner.parameterBindings()) {
-        inferenceCtx.bindingTypes[param] = param.inferBindingTy(inferenceCtx, itemContext)
+        inferenceCtx.bindingTypes[param] = inferBindingPatTy(param, inferenceCtx, itemContext)
     }
     when (owner) {
         is MvFunctionLike -> {
             owner.codeBlock?.let {
-                inferCodeBlockTy(it, inferenceCtx, owner.returnTypeTy(itemContext))
+                val retTy = (itemContext.getItemTy(owner) as? TyFunction)?.retType
+                inferCodeBlockTy(it, inferenceCtx, retTy)
             }
         }
         is MvItemSpec -> {
@@ -95,10 +131,7 @@ fun inferStmt(stmt: MvStmt, blockCtx: InferenceContext) {
         is MvExprStmt -> inferExprTy(stmt.expr, blockCtx)
         is MvSpecExprStmt -> inferExprTy(stmt.expr, blockCtx)
         is MvLetStmt -> {
-            val explicitTy = stmt.typeAnnotation?.type?.let {
-                val itemContext = stmt.itemContextOwner?.itemContext(blockCtx.msl) ?: ItemContext(blockCtx.msl)
-                itemContext.getTypeTy(it)
-            }
+            val explicitTy = stmt.typeAnnotation?.type?.let { blockCtx.getTypeTy(it) }
             val initializerTy = stmt.initializer?.expr?.let { inferExprTy(it, blockCtx, explicitTy) }
             val pat = stmt.pat ?: return
             val patTy = inferPatTy(pat, blockCtx, explicitTy ?: initializerTy)
@@ -237,9 +270,10 @@ sealed class TypeError(open val element: PsiElement) {
                 TypeErrorScope.MODULE -> error is CircularType
                 TypeErrorScope.MAIN -> {
                     if (error is CircularType) return false
+                    val element = error.element
                     if (
                         (error is UnsupportedBinaryOp || error is IncompatibleArgumentsToBinaryExpr)
-                        && error.element.isMsl()
+                        && (element is MvElement && element.isMsl())
                     ) {
                         return false
                     }
@@ -315,9 +349,10 @@ sealed class TypeError(open val element: PsiElement) {
     }
 }
 
-class InferenceContext(val msl: Boolean) {
+class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
     var exprTypes = concurrentMapOf<MvExpr, Ty>()
     val patTypes = mutableMapOf<MvPat, Ty>()
+    val typeTypes = mutableMapOf<MvType, Ty>()
 
     var callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
     val bindingTypes = concurrentMapOf<MvBindingPat, Ty>()
@@ -349,6 +384,17 @@ class InferenceContext(val msl: Boolean) {
         this.callExprTypes[expr] = ty
     }
 
+    fun getTypeTy(type: MvType): Ty {
+        val existing = this.typeTypes[type]
+        if (existing != null) {
+            return existing
+        } else {
+            val ty = inferItemTypeTy(type, itemContext)
+            this.typeTypes[type] = ty
+            return ty
+        }
+    }
+
     fun resolveTyVarsFromContext(ctx: InferenceContext) {
         for ((expr, ty) in this.exprTypes.entries) {
             this.exprTypes[expr] = ctx.resolveTy(ty)
@@ -370,11 +416,28 @@ class InferenceContext(val msl: Boolean) {
         }
     }
 
+    fun getBindingPatTy(pat: MvBindingPat): Ty {
+        val existing = this.bindingTypes[pat]
+        if (existing != null) {
+            return existing
+        } else {
+            val ty = inferBindingPatTy(pat, this, this.itemContext)
+            bindingTypes[pat] = ty
+            return ty
+        }
+    }
+
     fun childContext(): InferenceContext {
-        val childContext = InferenceContext(this.msl)
+        val childContext = InferenceContext(this.msl, itemContext)
         childContext.exprTypes = this.exprTypes
         childContext.callExprTypes = this.callExprTypes
+//        childContext.typeTypes = this.typeTypes
         childContext.typeErrors = this.typeErrors
         return childContext
+    }
+
+    companion object {
+        fun default(msl: Boolean, element: MvElement): InferenceContext =
+            InferenceContext(msl, element.itemContext(msl))
     }
 }
