@@ -21,7 +21,7 @@ FILE
           PsiWhiteSpace(' ')
           MvStructFieldImpl(STRUCT_FIELD)
             PsiElement(IDENTIFIER)('u8')
-            PsiErrorElement:':' expected, got ','
+            PsiErrorElement:<type annotation> expected, got ','
               <empty list>
           PsiElement(,)(',')
           PsiWhiteSpace('\n        ')
@@ -94,6 +94,35 @@ FILE
           PsiWhiteSpace('\n    ')
           PsiElement(})('}')
       PsiWhiteSpace('\n\n    ')
+      MvStructImpl(STRUCT)
+        PsiElement(struct_kw)('struct')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('NoTypesFields')
+        PsiWhiteSpace(' ')
+        MvStructBlockImpl(STRUCT_BLOCK)
+          PsiElement({)('{')
+          PsiWhiteSpace('\n        ')
+          MvStructFieldImpl(STRUCT_FIELD)
+            PsiElement(IDENTIFIER)('field1')
+            PsiErrorElement:<type annotation> expected, got ','
+              <empty list>
+          PsiElement(,)(',')
+          PsiWhiteSpace('\n        ')
+          MvStructFieldImpl(STRUCT_FIELD)
+            PsiElement(IDENTIFIER)('field2')
+            MvTypeAnnotationImpl(TYPE_ANNOTATION)
+              PsiElement(:)(':')
+              PsiErrorElement:<type> expected, got ','
+                <empty list>
+          PsiElement(,)(',')
+          PsiWhiteSpace('\n        ')
+          MvStructFieldImpl(STRUCT_FIELD)
+            PsiElement(IDENTIFIER)('field3')
+            PsiErrorElement:<type annotation> expected, got '}'
+              <empty list>
+          PsiWhiteSpace('\n    ')
+          PsiElement(})('}')
+      PsiWhiteSpace('\n\n    ')
       MvFunctionImpl(FUNCTION)
         PsiElement(fun)('fun')
         PsiWhiteSpace(' ')
@@ -119,7 +148,7 @@ FILE
                   PsiElement(IDENTIFIER)('my')
                   MvStructPatFieldBindingImpl(STRUCT_PAT_FIELD_BINDING)
                     PsiElement(:)(':')
-                    PsiErrorElement:<pat> expected, got '}'
+                    PsiErrorElement:<pattern> expected, got '}'
                       <empty list>
                 PsiWhiteSpace('  ')
                 PsiElement(})('}')
@@ -145,7 +174,7 @@ FILE
                   PsiElement(IDENTIFIER)('my')
                   MvStructPatFieldBindingImpl(STRUCT_PAT_FIELD_BINDING)
                     PsiElement(:)(':')
-                    PsiErrorElement:<pat> expected, got ','
+                    PsiErrorElement:<pattern> expected, got ','
                       <empty list>
                 PsiWhiteSpace(' ')
                 PsiElement(,)(',')
@@ -177,7 +206,7 @@ FILE
                   PsiElement(IDENTIFIER)('my')
                   MvStructPatFieldBindingImpl(STRUCT_PAT_FIELD_BINDING)
                     PsiElement(:)(':')
-                    PsiErrorElement:<pat> expected, got ','
+                    PsiErrorElement:<pattern> expected, got ','
                       <empty list>
                 PsiWhiteSpace(' ')
                 PsiElement(,)(',')
@@ -186,7 +215,7 @@ FILE
                   PsiElement(IDENTIFIER)('my_field')
                   MvStructPatFieldBindingImpl(STRUCT_PAT_FIELD_BINDING)
                     PsiElement(:)(':')
-                    PsiErrorElement:<pat> expected, got ','
+                    PsiErrorElement:<pattern> expected, got ','
                       <empty list>
                 PsiWhiteSpace(' ')
                 PsiElement(,)(',')

@@ -17,15 +17,14 @@
 
     extends(".*Expr")=Expr
     extends(".*Pat")=Pat
-//    extends(".*Predicate")=Predicate_item
     extends("(Lambda|Ref|Path|Tuple|Unit)Type")=Type
-//    extends(".*SpecDef")=AnySpec
 
     elementType(".+BinExpr")=BinaryExpr
     elementType(".+BinOp")=BinaryOp
 
     name(".+BinOp")="operator"
     name(".*Expr")="expression"
+    name(".*Pat")="pattern"
 
     extraRoot(".*CodeFragmentElement")=true
 
@@ -568,7 +567,10 @@ UseAlias ::= as IDENTIFIER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Types
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-TypeAnnotation ::= ':' Type { pin = 1 }
+TypeAnnotation ::= ':' Type {
+    pin = 1
+    name = "type annotation"
+}
 
 Type ::= RefType | PathType | TupleType | LambdaType | UnitType
 
@@ -639,7 +641,6 @@ Pat ::= DerefPat
         | BorrowPat
         | TuplePat
         | StructPat
-//        | DotPat
         | WildPat
         | BindingPat
 

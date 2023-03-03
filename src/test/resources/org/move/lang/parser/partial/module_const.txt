@@ -11,7 +11,7 @@ FILE
         PsiElement(const_kw)('const')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('MY_CONST')
-        PsiErrorElement:':' expected, got 'const'
+        PsiErrorElement:<type annotation> expected, got 'const'
           <empty list>
       PsiWhiteSpace('\n\n    ')
       MvConstImpl(CONST)
@@ -68,8 +68,38 @@ FILE
           PsiWhiteSpace(' ')
           MvLitExprImpl(LIT_EXPR)
             PsiElement(INTEGER_LITERAL)('1')
-        PsiErrorElement:'::', ';', <operator>, '=' or '[' expected, got 'fun'
+        PsiErrorElement:'::', ';', <operator>, '=' or '[' expected, got 'const'
           <empty list>
+      PsiWhiteSpace('\n\n    ')
+      MvConstImpl(CONST)
+        PsiElement(const_kw)('const')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('CONST_NO_TYPE')
+        PsiErrorElement:<type annotation> expected, got '='
+          <empty list>
+        PsiWhiteSpace(' ')
+        MvInitializerImpl(INITIALIZER)
+          PsiElement(=)('=')
+          PsiWhiteSpace(' ')
+          MvLitExprImpl(LIT_EXPR)
+            PsiElement(INTEGER_LITERAL)('1')
+        PsiElement(;)(';')
+      PsiWhiteSpace('\n\n    ')
+      MvConstImpl(CONST)
+        PsiElement(const_kw)('const')
+        PsiWhiteSpace(' ')
+        PsiElement(IDENTIFIER)('CONST_NO_TYPE_WITH_COMMA')
+        MvTypeAnnotationImpl(TYPE_ANNOTATION)
+          PsiElement(:)(':')
+          PsiErrorElement:<type> expected, got '='
+            <empty list>
+        PsiWhiteSpace(' ')
+        MvInitializerImpl(INITIALIZER)
+          PsiElement(=)('=')
+          PsiWhiteSpace(' ')
+          MvLitExprImpl(LIT_EXPR)
+            PsiElement(INTEGER_LITERAL)('1')
+        PsiElement(;)(';')
       PsiWhiteSpace('\n\n    ')
       MvFunctionImpl(FUNCTION)
         PsiElement(fun)('fun')

@@ -134,14 +134,14 @@ FILE
           MvSpecExprStmtImpl(SPEC_EXPR_STMT)
             MvAssertSpecExprImpl(ASSERT_SPEC_EXPR)
               PsiElement(assert_kw)('assert')
-              PsiErrorElement:':' or <expression> expected, got ';'
+              PsiErrorElement:<expression> or <type annotation> expected, got ';'
                 <empty list>
             PsiElement(;)(';')
           PsiWhiteSpace('\n        ')
           MvSpecExprStmtImpl(SPEC_EXPR_STMT)
             MvAssumeSpecExprImpl(ASSUME_SPEC_EXPR)
               PsiElement(assume_kw)('assume')
-              PsiErrorElement:':' or <expression> expected, got ';'
+              PsiErrorElement:<expression> or <type annotation> expected, got ';'
                 <empty list>
             PsiElement(;)(';')
           PsiWhiteSpace('\n        ')

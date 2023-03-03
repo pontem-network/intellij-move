@@ -16,7 +16,7 @@ FILE
           MvFunctionParameterImpl(FUNCTION_PARAMETER)
             MvBindingPatImpl(BINDING_PAT)
               PsiElement(IDENTIFIER)('a')
-            PsiErrorElement:':' expected, got ','
+            PsiErrorElement:<type annotation> expected, got ','
               <empty list>
           PsiElement(,)(',')
           PsiElement())(')')
@@ -45,7 +45,7 @@ FILE
           MvFunctionParameterImpl(FUNCTION_PARAMETER)
             MvBindingPatImpl(BINDING_PAT)
               PsiElement(IDENTIFIER)('b')
-            PsiErrorElement:':' expected, got ')'
+            PsiErrorElement:<type annotation> expected, got ')'
               <empty list>
           PsiElement())(')')
         PsiWhiteSpace(' ')
@@ -178,7 +178,7 @@ FILE
           MvFunctionParameterImpl(FUNCTION_PARAMETER)
             MvBindingPatImpl(BINDING_PAT)
               PsiElement(IDENTIFIER)('a')
-            PsiErrorElement:':' expected, got 'b'
+            PsiErrorElement:<type annotation> expected, got 'b'
               <empty list>
           PsiWhiteSpace(' ')
           MvFunctionParameterImpl(FUNCTION_PARAMETER)
