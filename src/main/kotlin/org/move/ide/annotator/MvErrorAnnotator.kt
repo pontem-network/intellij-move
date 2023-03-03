@@ -9,7 +9,9 @@ import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.address
+import org.move.lang.core.types.infer.inferenceContext
 import org.move.lang.core.types.infer.maybeInferenceContext
+import org.move.lang.core.types.ty.TyLambda
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
@@ -107,12 +109,32 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                 }
             }
 
-            override fun visitCallExpr(o: MvCallExpr) {
-                if (o.isMsl()) return
-                if (o.path.referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
-                    val explicitTypeArgs = o.typeArguments
-                    val currentModule = o.containingModule ?: return
-                    val inferenceCtx = o.maybeInferenceContext(false) ?: return
+            override fun visitCallExpr(callExpr: MvCallExpr) {
+                val msl = callExpr.isMsl()
+                if (msl) return
+
+                val referenceName = callExpr.path.referenceName ?: return
+                val item = callExpr.path.reference?.resolve() ?: return
+                when (item) {
+                    is MvBindingPat -> {
+                        val ty = callExpr.inferenceContext(msl).getBindingPatTy(item)
+                        if (ty !is TyLambda) {
+                            MvDiagnostic.ItemIsNotCallable(callExpr.path, referenceName)
+                                .addToHolder(moveHolder)
+                            return
+                        }
+                    }
+                    !is MvFunctionLike -> {
+                        MvDiagnostic.ItemIsNotCallable(callExpr.path, referenceName)
+                            .addToHolder(moveHolder)
+                        return
+                    }
+                }
+
+                if (item is MvFunction && referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
+                    val explicitTypeArgs = callExpr.typeArguments
+                    val currentModule = callExpr.containingModule ?: return
+                    val inferenceCtx = callExpr.maybeInferenceContext(false) ?: return
                     for (typeArg in explicitTypeArgs) {
                         val typeArgTy = inferenceCtx.getTypeTy(typeArg.type)
                         if (typeArgTy !is TyUnknown && !typeArgTy.canBeAcquiredInModule(currentModule)) {
@@ -122,7 +144,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                                 "The type '$typeName' was not declared in the current module. " +
                                         "Global storage access is internal to the module"
                             )
-                                .range(o.path)
+                                .range(callExpr.path)
                                 .create()
                         }
                     }
