@@ -62,7 +62,8 @@ abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
     override fun getReference(): MvPathReference? {
         val parent = this.parent
         val namespaces = when {
-            parent is MvSchemaLit
+            parent is MvRefExpr && this.hasAncestor<MvIncludeStmt>() -> setOf(Namespace.NAME, Namespace.SCHEMA)
+            parent is MvSchemaLitExpr
                     || parent is MvSchemaRef -> setOf(Namespace.SCHEMA)
             parent is MvPathType -> setOf(Namespace.TYPE)
             parent is MvRefExpr && parent.isErrorConst() -> setOf(Namespace.ERROR_CONST)
@@ -77,7 +78,7 @@ fun MvReferenceElement.namespaces(): Set<Namespace> {
     val parent = this.parent
     return when (parent) {
         is MvPathType -> setOf(Namespace.TYPE)
-        is MvSchemaLit, is MvSchemaRef -> setOf(Namespace.SCHEMA)
+        is MvSchemaLitExpr, is MvSchemaRef -> setOf(Namespace.SCHEMA)
         else ->
             when (this) {
                 is MvModuleRef -> setOf(Namespace.MODULE)

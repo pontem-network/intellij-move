@@ -3,6 +3,7 @@ package org.move.lang.core.completion.providers
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
+import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
@@ -133,7 +134,10 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
 object SchemasCompletionProvider : MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
-            MvPsiPatterns.schemaRef()
+            StandardPatterns.or(
+                MvPsiPatterns.schemaRef(), MvPsiPatterns.pathInsideIncludeStmt()
+            )
+
 
     override fun itemVis(pathElement: MvPath): ItemVis {
         return ItemVis(

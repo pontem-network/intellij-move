@@ -125,7 +125,7 @@ FILE
           MvIncludeStmtImpl(INCLUDE_STMT)
             PsiElement(include_kw)('include')
             PsiWhiteSpace(' ')
-            MvSchemaLitImpl(SCHEMA_LIT)
+            MvRefExprImpl(REF_EXPR)
               MvPathImpl(PATH)
                 PsiElement(IDENTIFIER)('Schema')
             PsiErrorElement:'!', '::', ';', <, <operator>, '=', '[' or '{' expected, got 'assert'
