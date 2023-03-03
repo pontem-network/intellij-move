@@ -27,6 +27,8 @@ Root
    Entrypoint(0x1::M::init)
   Modules
    Module(0x1::M)
+  Views
+   View(0x1::M::get_coin_value)
     """) {
         moveToml("""
         [package]
@@ -37,6 +39,8 @@ Root
         """)
         sources { main("""
             module 0x1::M {
+                #[view]
+                public fun get_coin_value(): u64 {}
                 entry fun init() { /*caret*/ }
             }    
         """) }

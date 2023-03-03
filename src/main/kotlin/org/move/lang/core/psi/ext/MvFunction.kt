@@ -53,6 +53,8 @@ fun MvFunction.visibilityFromPsi(): FunctionVisibility {
 
 val MvFunction.isEntry: Boolean get() = this.isChildExists(MvElementTypes.ENTRY)
 
+val MvFunction.isView: Boolean get() = queryAttributes.getAttrItem("view") != null
+
 val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
 
 val MvFunction.isTest: Boolean

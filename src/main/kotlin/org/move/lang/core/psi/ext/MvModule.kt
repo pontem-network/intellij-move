@@ -121,6 +121,8 @@ fun MvModule.visibleFunctions(visibility: Visibility): List<MvFunction> {
 
 fun MvModule.entryFunctions(): List<MvFunction> = this.allFunctions().filter { it.isEntry }
 
+fun MvModule.viewFunctions(): List<MvFunction> = this.allFunctions().filter { it.isView }
+
 fun builtinFunction(text: String, project: Project): MvFunction {
     val trimmedText = text.trimIndent()
     val function = project.psiFactory.function(trimmedText, moduleName = "builtins")
