@@ -21,7 +21,7 @@ class MoveEntrypointMouseAdapter : MouseAdapter() {
 
         val moveProject = entryFunction.moveProject ?: return
 
-        val paramsDialog = RunTransactionDialog.showAndGetOk(entryFunction, moveProject) ?: return
+        val paramsDialog = RunTransactionDialog.showAndWaitTillOk(entryFunction, moveProject) ?: return
         paramsDialog
             .toAptosCommandLineFromContext()
             ?.createRunConfigurationAndRun(moveProject)

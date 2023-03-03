@@ -1,5 +1,8 @@
 package org.move.cli.transactions
 
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.ui.DialogWrapper
@@ -192,12 +195,24 @@ class RunTransactionDialog(
     }
 
     companion object {
-        fun showAndGetOk(
+        fun showAndWaitTillOk(
             entryFunction: MvFunction,
             moveProject: MoveProject
         ): RunTransactionDialog? {
-            // TODO: show dialog that user needs to run `aptos init` first for transaction dialog to work
-            val aptosConfig = moveProject.currentPackage.aptosConfigYaml ?: return null
+            val project = moveProject.project
+            // TODO: show notification that user needs to run `aptos init` first for transaction dialog to work
+            val aptosConfig = moveProject.currentPackage.aptosConfigYaml
+            if (aptosConfig == null) {
+                // ask user to run `aptos init` first
+                val notif = NotificationGroupManager.getInstance()
+                    .getNotificationGroup("Missing Aptos Init")
+                    .createNotification(
+                        "Aptos account is not initialized, run `aptos init` first",
+                        NotificationType.WARNING
+                    )
+                Notifications.Bus.notify(notif, project)
+                return null
+            }
 
             val profiles = aptosConfig.profiles.toList()
             val dialog = RunTransactionDialog(entryFunction, moveProject, profiles)

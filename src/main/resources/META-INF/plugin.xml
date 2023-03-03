@@ -277,6 +277,7 @@
 
         <!-- Notifications -->
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>
+        <notificationGroup id="Missing Aptos Init" displayType="BALLOON"/>
         <editorNotificationProvider
                 implementation="org.move.ide.notifications.InvalidAptosBinaryNotification"/>
 
