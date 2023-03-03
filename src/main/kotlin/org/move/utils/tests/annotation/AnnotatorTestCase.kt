@@ -6,11 +6,11 @@
 package org.move.utils.tests.annotation
 
 import org.intellij.lang.annotations.Language
-import org.move.ide.annotator.MvAnnotator
+import org.move.ide.annotator.MvAnnotatorBase
 import kotlin.reflect.KClass
 
 abstract class AnnotatorTestCase(
-    private val annotatorClass: KClass<out MvAnnotator>
+    private val annotatorClass: KClass<out MvAnnotatorBase>
 ) : MvAnnotationTestCase() {
 
     override fun createAnnotationFixture(): MvAnnotationTestFixture = MvAnnotationTestFixture(

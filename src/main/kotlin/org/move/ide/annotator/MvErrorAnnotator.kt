@@ -15,7 +15,7 @@ import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
 import org.move.lang.utils.addToHolder
 
-class MvErrorAnnotator : MvAnnotator() {
+class MvErrorAnnotator : MvAnnotatorBase() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val moveHolder = MvAnnotationHolder(holder)
         val visitor = object : MvVisitor() {

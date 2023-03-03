@@ -14,7 +14,7 @@ import com.intellij.util.containers.ContainerUtil
 import org.jetbrains.annotations.TestOnly
 import org.move.openapiext.common.isUnitTestMode
 
-abstract class MvAnnotator : Annotator {
+abstract class MvAnnotatorBase : Annotator {
     final override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (!isUnitTestMode || javaClass in enabledAnnotators) {
             annotateInternal(element, holder)
@@ -24,10 +24,10 @@ abstract class MvAnnotator : Annotator {
     protected abstract fun annotateInternal(element: PsiElement, holder: AnnotationHolder)
 
     companion object {
-        private val enabledAnnotators: MutableSet<Class<out MvAnnotator>> = ContainerUtil.newConcurrentSet()
+        private val enabledAnnotators: MutableSet<Class<out MvAnnotatorBase>> = ContainerUtil.newConcurrentSet()
 
         @TestOnly
-        fun enableAnnotator(annotatorClass: Class<out MvAnnotator>, parentDisposable: Disposable) {
+        fun enableAnnotator(annotatorClass: Class<out MvAnnotatorBase>, parentDisposable: Disposable) {
             enabledAnnotators += annotatorClass
             Disposer.register(
                 parentDisposable,
