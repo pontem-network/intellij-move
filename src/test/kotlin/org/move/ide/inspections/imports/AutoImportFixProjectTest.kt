@@ -21,7 +21,7 @@ class AutoImportFixProjectTest : InspectionProjectTestBase(MvUnresolvedReference
                     "Main.move", """
             module 0x1::Main {
                 fun main() {
-                    <error descr="Unresolved reference: `call`">/*caret*/call</error>();
+                    <error descr="Unresolved function: `call`">/*caret*/call</error>();
                 }
             }    
             """
@@ -72,7 +72,7 @@ class AutoImportFixProjectTest : InspectionProjectTestBase(MvUnresolvedReference
                     "Main.move", """
             module 0x1::Main {
                 fun main() {
-                    <error descr="Unresolved reference: `call`">/*caret*/call</error>();
+                    <error descr="Unresolved function: `call`">/*caret*/call</error>();
                 }
             }    
             """
@@ -120,7 +120,7 @@ class AutoImportFixProjectTest : InspectionProjectTestBase(MvUnresolvedReference
                     "Main.move", """
             module 0x1::Main {
                 fun main() {
-                    <error descr="Unresolved reference: `call`">/*caret*/call</error>();
+                    <error descr="Unresolved function: `call`">/*caret*/call</error>();
                 }
             }    
             """

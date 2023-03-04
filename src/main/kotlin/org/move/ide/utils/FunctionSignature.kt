@@ -9,6 +9,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.name
 import org.move.utils.cache
 import org.move.utils.cacheManager
 
@@ -23,12 +24,8 @@ val MvFunction.signature: FunctionSignature?
             }
         val parameters = this.parameters
             .map { param ->
-                val paramName = param.bindingPat.name
-                val paramType = param.typeAnnotation?.type
-                if (paramName == null || paramType == null) {
-                    return@cache null
-                }
-                FunctionSignature.Parameter(paramName, paramType.text)
+                val paramType = param.type ?: return@cache null
+                FunctionSignature.Parameter(param.name, paramType.text)
             }
         val signature = FunctionSignature(typeParameters, parameters)
         CachedValueProvider.Result.create(

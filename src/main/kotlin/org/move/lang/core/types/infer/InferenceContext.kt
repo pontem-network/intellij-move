@@ -9,18 +9,13 @@ import org.move.ide.presentation.expectedBindingFormText
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.contextOrSelf
-import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.itemSpecBlock
-import org.move.lang.core.psi.ext.rightBrace
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
 import org.move.utils.cache
 import org.move.utils.cacheManager
 import org.move.utils.cacheResult
 
-interface MvInferenceContextOwner : MvElement {
-    fun parameterBindings(): List<MvBindingPat>
-}
+interface MvInferenceContextOwner : MvElement {}
 
 private val INFERENCE_KEY_NON_MSL: Key<CachedValue<InferenceContext>> = Key.create("INFERENCE_KEY_NON_MSL")
 private val INFERENCE_KEY_MSL: Key<CachedValue<InferenceContext>> = Key.create("INFERENCE_KEY_MSL")
@@ -74,8 +69,15 @@ fun MvElement.inferenceContext(msl: Boolean): InferenceContext {
 private fun getOwnerInferenceContext(owner: MvInferenceContextOwner, msl: Boolean): InferenceContext {
     val itemContext = owner.itemContextOwner?.itemContext(msl) ?: owner.project.itemContext(msl)
     val inferenceCtx = InferenceContext(msl, itemContext)
-    for (param in owner.parameterBindings()) {
-        inferenceCtx.bindingTypes[param] = inferBindingPatTy(param, inferenceCtx, itemContext)
+
+    val params = when (owner) {
+        is MvFunctionLike -> owner.parameters
+        is MvItemSpec -> owner.funcItem?.parameters.orEmpty()
+        else -> emptyList()
+    }
+    for (param in params) {
+        val binding = param.bindingPat
+        inferenceCtx.bindingTypes[binding] = inferBindingPatTy(binding, inferenceCtx)
     }
     when (owner) {
         is MvFunctionLike -> {
@@ -421,7 +423,7 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
         if (existing != null) {
             return existing
         } else {
-            val ty = inferBindingPatTy(pat, this, this.itemContext)
+            val ty = inferBindingPatTy(pat, this)
             bindingTypes[pat] = ty
             return ty
         }

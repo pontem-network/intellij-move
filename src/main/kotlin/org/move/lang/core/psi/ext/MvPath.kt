@@ -67,6 +67,7 @@ abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
                     || parent is MvSchemaRef -> setOf(Namespace.SCHEMA)
             parent is MvPathType -> setOf(Namespace.TYPE)
             parent is MvRefExpr && parent.isErrorConst() -> setOf(Namespace.ERROR_CONST)
+            parent is MvCallExpr -> setOf(Namespace.FUNCTION)
             this.isLocal -> setOf(Namespace.NAME, Namespace.MODULE)
             else -> setOf(Namespace.NAME)
         }
@@ -82,8 +83,8 @@ fun MvReferenceElement.namespaces(): Set<Namespace> {
         else ->
             when (this) {
                 is MvModuleRef -> setOf(Namespace.MODULE)
-                is MvPath -> setOf(Namespace.NAME)
-                else -> Namespace.allNames()
+                is MvPath -> setOf(Namespace.NAME, Namespace.FUNCTION)
+                else -> Namespace.all()
             }
     }
 }

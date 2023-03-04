@@ -6,10 +6,6 @@ import org.move.lang.core.psi.MvSchemaLitField
 
 val MvSchemaLitExpr.schema: MvSchema? get() = this.path.reference?.resolve() as? MvSchema
 
-val MvSchemaLitExpr.fields: List<MvSchemaLitField>
-    get() =
-        schemaFieldsBlock?.schemaLitFieldList.orEmpty()
+val MvSchemaLitExpr.fields: List<MvSchemaLitField> get() = schemaFieldsBlock.schemaLitFieldList
 
-val MvSchemaLitExpr.fieldNames: List<String>
-    get() =
-        fields.map { it.referenceName }
+val MvSchemaLitExpr.fieldNames: List<String> get() = fields.map { it.referenceName }

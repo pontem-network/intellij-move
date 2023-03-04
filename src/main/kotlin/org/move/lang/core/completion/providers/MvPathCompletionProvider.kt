@@ -117,6 +117,23 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
     }
 }
 
+object FunctionsCompletionProvider : MvPathCompletionProvider() {
+    override val elementPattern: ElementPattern<PsiElement>
+        get() =
+            MvPsiPatterns.path()
+                .andNot(MvPsiPatterns.pathType())
+                .andNot(MvPsiPatterns.schemaRef())
+
+    override fun itemVis(pathElement: MvPath): ItemVis {
+        return ItemVis(
+            setOf(Namespace.FUNCTION),
+            Visibility.none(),
+            mslScope = pathElement.mslScope,
+            itemScope = pathElement.itemScope,
+        )
+    }
+}
+
 object TypesCompletionProvider : MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = MvPsiPatterns.pathType()

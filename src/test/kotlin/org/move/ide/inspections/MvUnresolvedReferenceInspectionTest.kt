@@ -14,7 +14,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
     fun `test unresolved function call`() = checkByText("""
         module 0x1::M {
             fun main() {
-                <error descr="Unresolved reference: `call`">call</error>();
+                <error descr="Unresolved function: `call`">call</error>();
             }
         }
     """)
@@ -24,7 +24,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
             use 0x1::<error descr="Unresolved reference: `Module`">Module</error>::call;
 
             fun main() {
-                <error descr="Unresolved reference: `call`">call</error>();
+                <error descr="Unresolved function: `call`">call</error>();
             }
         }
     """)
@@ -149,7 +149,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
         module 0x1::M {
             use 0x1::Other;
             fun main() {
-                Other::<error descr="Unresolved reference: `emit`">emit</error>();
+                Other::<error descr="Unresolved function: `emit`">emit</error>();
             }
         }
     }
@@ -162,7 +162,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
             fun deposit<Token> () {}
 
             fun main() {
-                deposit<<error descr="Unresolved reference: `PONT`">PONT</error>>()
+                deposit<<error descr="Unresolved type: `PONT`">PONT</error>>()
             }
         }    
         """
@@ -358,11 +358,20 @@ spec 0x1::main {
 }
     """)
 
+    fun `test no error for field of item of unknown type`() = checkByText("""
+module 0x1::main {
+    fun main() {
+        let var = (1 + false);
+        var.key;
+    }
+}        
+    """)
+
     fun `test no error for field of reference of unknown type`() = checkByText("""
 module 0x1::main {
     fun call<T>(t: T): &T { &t }
     fun main() {
-        let var = call( call {});
+        let var = &(1 + false);
         var.key;
     }
 }        

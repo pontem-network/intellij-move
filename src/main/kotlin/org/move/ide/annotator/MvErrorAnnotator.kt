@@ -9,9 +9,7 @@ import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.address
-import org.move.lang.core.types.infer.inferenceContext
 import org.move.lang.core.types.infer.maybeInferenceContext
-import org.move.lang.core.types.ty.TyLambda
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
@@ -113,39 +111,20 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                 val msl = callExpr.isMsl()
                 if (msl) return
 
-                val referenceName = callExpr.path.referenceName ?: return
-                val item = callExpr.path.reference?.resolve() ?: return
-                when (item) {
-                    is MvBindingPat -> {
-                        val ty = callExpr.inferenceContext(msl).getBindingPatTy(item)
-                        if (ty !is TyLambda) {
-                            MvDiagnostic.ItemIsNotCallable(callExpr.path, referenceName)
-                                .addToHolder(moveHolder)
-                            return
-                        }
-                    }
-                    !is MvFunctionLike -> {
-                        MvDiagnostic.ItemIsNotCallable(callExpr.path, referenceName)
-                            .addToHolder(moveHolder)
-                        return
-                    }
-                }
+                val path = callExpr.path
+                val referenceName = path.referenceName ?: return
+                val item = path.reference?.resolve() ?: return
 
                 if (item is MvFunction && referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
-                    val explicitTypeArgs = callExpr.typeArguments
+                    val explicitTypeArgs = path.typeArguments
                     val currentModule = callExpr.containingModule ?: return
                     val inferenceCtx = callExpr.maybeInferenceContext(false) ?: return
                     for (typeArg in explicitTypeArgs) {
                         val typeArgTy = inferenceCtx.getTypeTy(typeArg.type)
                         if (typeArgTy !is TyUnknown && !typeArgTy.canBeAcquiredInModule(currentModule)) {
                             val typeName = typeArgTy.fullname()
-                            holder.newAnnotation(
-                                HighlightSeverity.ERROR,
-                                "The type '$typeName' was not declared in the current module. " +
-                                        "Global storage access is internal to the module"
-                            )
-                                .range(callExpr.path)
-                                .create()
+                            MvDiagnostic.StorageAccessIsNotAllowed(path, typeName)
+                                .addToHolder(moveHolder)
                         }
                     }
                 }
@@ -259,14 +238,14 @@ private fun checkMissingFields(
 
 private fun checkDuplicates(
     holder: MvAnnotationHolder,
-    element: MvNameIdentifierOwner,
+    element: MvNamedElement,
     scopeNamedChildren: Sequence<MvNamedElement> = element.parent.namedChildren(),
 ) {
     val duplicateNamedChildren = getDuplicatedNamedChildren(scopeNamedChildren)
     if (element.name !in duplicateNamedChildren.map { it.name }) {
         return
     }
-    val identifier = element.nameIdentifier ?: element
+    val identifier = element.nameElement ?: element
     holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${element.name}`")
 }
 

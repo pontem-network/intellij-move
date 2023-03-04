@@ -14,10 +14,6 @@ val MvItemSpec.itemSpecBlock: MvItemSpecBlock? get() = this.childOfType()
 
 abstract class MvItemSpecMixin(node: ASTNode) : MvElementImpl(node),
                                                 MvItemSpec {
-    override fun parameterBindings(): List<MvBindingPat> {
-        return this.funcItem?.parameterBindings().orEmpty()
-    }
-
     override val modificationTracker: SimpleModificationTracker = SimpleModificationTracker()
 
     override fun incModificationCount(element: PsiElement): Boolean {

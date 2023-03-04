@@ -10,6 +10,4 @@ abstract class MvItemSpecBlockMixin(node: ASTNode) : MvElementImpl(node),
                                                      MvItemSpecBlock {
     override val useStmtList: List<MvUseStmt>
         get() = this.stmtList.filterIsInstance<MvUseStmt>()
-
-    override fun parameterBindings(): List<MvBindingPat> = emptyList()
 }

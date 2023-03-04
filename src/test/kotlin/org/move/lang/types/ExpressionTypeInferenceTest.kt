@@ -404,12 +404,11 @@ module 0x1::main {
     }    
     """)
 
-    fun `test lambda type type`() = testExpr(
+    fun `test lambda type type`() = testBinding(
         """
     module 0x1::mod {
         public inline fun fold<Accumulator, Element>(elem: Element, func: |Element| Accumulator): Accumulator {
-            func;
-            //^ |Element| Accumulator
+                                                                    //^ |Element| Accumulator
         }
     }        
     """

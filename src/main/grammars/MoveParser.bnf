@@ -270,6 +270,7 @@ Const ::= Attr* CONST_KW IDENTIFIER TypeAnnotation Initializer ';'
     implements = [
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvConstMixin"
     stubClass = "org.move.lang.core.stubs.MvConstStub"
@@ -444,7 +445,12 @@ private FunctionParameter_with_recover ::= !(')' | '{' | ';') FunctionParameter 
 }
 private FunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER)
 
-FunctionParameter ::= BindingPat TypeAnnotation { pin = 1 }
+FunctionParameter ::= BindingPat TypeAnnotation {
+    pin = 1
+    implements = [
+        "org.move.lang.core.psi.MvTypeAnnotationOwner"
+    ]
+}
 
 // u8 | (u8,) | (u8, u8) | (u8, u8,)
 // tuples only allowed as a return types
@@ -502,8 +508,9 @@ StructField ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
 {
     pin = 2
     implements = [
-        "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.psi.MvMandatoryNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructFieldMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
@@ -651,7 +658,7 @@ BorrowPat ::= '&' Pat
 
 BindingPat ::= IDENTIFIER {
     implements = [
-        "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.psi.MvMandatoryNameIdentifierOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvBindingPatMixin"
 }
@@ -1165,6 +1172,7 @@ ItemSpecFunctionParameter ::= IDENTIFIER TypeAnnotation {
     pin = 1
     implements = [
         "org.move.lang.core.resolve.MvItemSpecParameterReferenceElement"
+        "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecFunctionParameterMixin"
 }
@@ -1272,7 +1280,9 @@ private SpecStmt ::= UseStmt
 SchemaFieldStmt ::= BindingPat TypeAnnotation ';'
 {
     pin = 2
-//    implements = [ "org.move.lang.core.psi.MvNameIdentifierOwner" ]
+    implements = [
+        "org.move.lang.core.psi.MvTypeAnnotationOwner"
+    ]
 //    mixin = "org.move.lang.core.psi.ext.MvSchemaFieldStmtMixin"
 }
 

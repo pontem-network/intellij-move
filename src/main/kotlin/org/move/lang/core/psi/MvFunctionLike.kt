@@ -4,10 +4,10 @@ import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
 import org.move.lang.core.psi.ext.greenStub
 import org.move.lang.core.psi.ext.hasChild
+import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.stubs.MvModuleStub
-import org.move.lang.core.types.infer.MvInferenceContextOwner
-import org.move.lang.core.types.infer.outerItemContext
-import org.move.lang.core.types.infer.visitTyVarWith
+import org.move.lang.core.types.infer.*
+import org.move.lang.core.types.ty.TyLambda
 import org.move.stdext.withAdded
 
 interface MvFunctionLike : MvTypeParametersOwner,
@@ -20,14 +20,31 @@ interface MvFunctionLike : MvTypeParametersOwner,
     val returnType: MvReturnType?
 
     val codeBlock: MvCodeBlock?
-
-    override fun parameterBindings(): List<MvBindingPat> =
-        this.functionParameterList?.functionParameterList.orEmpty().map { it.bindingPat }
 }
 
 val MvFunctionLike.isNative get() = hasChild(MvElementTypes.NATIVE)
 
 val MvFunctionLike.parameters get() = this.functionParameterList?.functionParameterList.orEmpty()
+
+val MvFunctionLike.allParamsAsBindings: List<MvBindingPat> get() = this.parameters.map { it.bindingPat }
+
+val MvFunctionLike.valueParamsAsBindings: List<MvBindingPat>
+    get() {
+        val itemContext = this.outerItemContext(this.isMsl())
+        val parameters = this.parameters
+        return parameters
+            .filter { it.typeTy(itemContext) !is TyLambda }
+            .map { it.bindingPat }
+    }
+
+val MvFunctionLike.lambdaParamsAsBindings: List<MvBindingPat>
+    get() {
+        val itemContext = this.outerItemContext(this.isMsl())
+        val parameters = this.parameters
+        return parameters
+            .filter { it.typeTy(itemContext) is TyLambda }
+            .map { it.bindingPat }
+    }
 
 val MvFunctionLike.typeParamsUsedOnlyInReturnType: List<MvTypeParameter>
     get() {

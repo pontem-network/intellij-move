@@ -73,17 +73,19 @@ sealed class MvDiagnostic(
         }
     }
 
-    class ItemIsNotCallable(
+    class StorageAccessIsNotAllowed(
         path: MvPath,
-        private val referenceName: String,
+        private val typeName: String,
     ) : MvDiagnostic(path) {
 
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
                 ERROR,
-                "'$referenceName' is not callable"
+                "The type '$typeName' was not declared in the current module. " +
+                        "Global storage access is internal to the module"
             )
         }
+
     }
 }
 

@@ -6,7 +6,10 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNamedElementImpl
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslScope
-import org.move.lang.core.resolve.ref.*
+import org.move.lang.core.resolve.ref.MvReferenceCached
+import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.resolve.ref.resolveModuleItem
 
 fun MvUseItem.moduleImport(): MvItemUseSpeck =
     ancestorStrict() ?: error("ItemImport outside ModuleItemsImport")
@@ -36,7 +39,13 @@ class MvUseItemReferenceElement(element: MvUseItem) : MvReferenceCached<MvUseIte
             || (element.useAlias != null && element.text.startsWith("Self as"))
         ) return listOf(module)
 
-        val ns = setOf(Namespace.TYPE, Namespace.NAME, Namespace.SCHEMA, Namespace.ERROR_CONST)
+        val ns = setOf(
+            Namespace.TYPE,
+            Namespace.NAME,
+            Namespace.FUNCTION,
+            Namespace.SCHEMA,
+            Namespace.ERROR_CONST
+        )
         val vs = Visibility.buildSetOfVisibilities(moduleRef)
         val itemVis = ItemVis(
             ns,

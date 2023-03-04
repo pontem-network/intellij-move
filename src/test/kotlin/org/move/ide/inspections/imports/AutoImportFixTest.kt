@@ -12,7 +12,7 @@ module 0x1::M {
 }
 script {
     fun main() {
-        <error descr="Unresolved reference: `call`">/*caret*/call</error>();
+        <error descr="Unresolved function: `call`">/*caret*/call</error>();
     }
 }
     """,
@@ -90,7 +90,7 @@ module 0x1::Main {
     use 0x1::M;
     
     fun main() {
-        M::<error descr="Unresolved reference: `value`">/*caret*/value</error>();
+        M::<error descr="Unresolved function: `value`">/*caret*/value</error>();
     }
 }        
     """
@@ -106,7 +106,7 @@ module 0x1::Main {
     use 0x1::M::S;
     
     fun main() {
-        <error descr="Unresolved reference: `call`">/*caret*/call</error>();
+        <error descr="Unresolved function: `call`">/*caret*/call</error>();
     }
 }
     """, """
@@ -134,7 +134,7 @@ module 0x1::M2 {
 }
 module 0x1::Main {
     public fun main() {
-        <error descr="Unresolved reference: `call`">/*caret*/call</error>();
+        <error descr="Unresolved function: `call`">/*caret*/call</error>();
     }
 }
     """, setOf("0x1::M1::call", "0x1::M2::call"), "0x1::M1::call", """
@@ -187,7 +187,7 @@ module 0x1::Token {
 module 0x1::Main {
     use 0x1::Token;
     
-    fun main(a: <error descr="Unresolved reference: `Token`">/*caret*/Token</error>) {
+    fun main(a: <error descr="Unresolved type: `Token`">/*caret*/Token</error>) {
         Token::call();
     }
 }
@@ -217,7 +217,7 @@ module 0x1::Main {
         use 0x1::AnotherCoin;
         
         fun call() {
-            AnotherCoin::<error descr="Unresolved reference: `initialize`">/*caret*/initialize</error>();
+            AnotherCoin::<error descr="Unresolved function: `initialize`">/*caret*/initialize</error>();
         }
     }
     """
@@ -233,7 +233,7 @@ module 0x1::Main {
     module 0x1::MinterTests {
         #[test]
         fun test_a() {
-            <error descr="Unresolved reference: `get_weekly_emission`">/*caret*/get_weekly_emission</error>();
+            <error descr="Unresolved function: `get_weekly_emission`">/*caret*/get_weekly_emission</error>();
         }    
     }
     """, """
@@ -263,7 +263,7 @@ module 0x1::Main {
     module 0x1::MinterTests {
         #[test]
         fun my_fun() {
-            <error descr="Unresolved reference: `get_weekly_emission`">/*caret*/get_weekly_emission</error>();
+            <error descr="Unresolved function: `get_weekly_emission`">/*caret*/get_weekly_emission</error>();
         }    
     }
     """, """
@@ -292,7 +292,7 @@ module 0x1::main {
     use 0x1::minter::mint;
     
     public fun main() {
-        <error descr="Unresolved reference: `mint`">/*caret*/mint</error>();    
+        <error descr="Unresolved function: `mint`">/*caret*/mint</error>();    
     }
     
     #[test_only]
@@ -330,7 +330,7 @@ module 0x1::main {
     use 0x1::minter::{Self, mint};
     
     public fun main() {
-        <error descr="Unresolved reference: `mint`">/*caret*/mint</error>();    
+        <error descr="Unresolved function: `mint`">/*caret*/mint</error>();    
     }
     
     #[test_only]
@@ -367,7 +367,7 @@ module 0x1::m1 {
 module 0x1::m2 {
     #[test_only]
     fun main() {
-        <error descr="Unresolved reference: `test_a`">/*caret*/test_a</error>();
+        <error descr="Unresolved function: `test_a`">/*caret*/test_a</error>();
     }
 }
     """)

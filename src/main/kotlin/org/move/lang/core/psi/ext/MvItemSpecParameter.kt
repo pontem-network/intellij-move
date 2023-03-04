@@ -30,7 +30,7 @@ class MvItemSpecParameterReferenceImpl(
                 val funcItem = element.itemSpec?.funcItem
                 if (funcItem != null) {
                     val refName = element.referenceName
-                    for (bindingPat in funcItem.parameterBindings()) {
+                    for (bindingPat in funcItem.allParamsAsBindings) {
                         if (bindingPat.name == refName) {
                             return listOf(bindingPat)
                         }
