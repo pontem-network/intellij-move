@@ -14,5 +14,9 @@ script {
         let Generic<R> {} = g;
         let Generic<R> { g } = g;
         let Generic<R> { g: R { f: f3 } } = g;
+
+        let a: (u8) = 1;
+        let a: (((u8))) = 1;
+        let b: ((u8, u8)) = (1, 1);
     }
 }

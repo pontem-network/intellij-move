@@ -52,6 +52,7 @@ fun inferItemTypeTy(moveType: MvType, itemContext: ItemContext): Ty {
             TyTuple(innerTypes)
         }
         is MvUnitType -> TyUnit
+        is MvParensType -> inferItemTypeTy(moveType.type, itemContext)
         is MvLambdaType -> {
             val paramTys = moveType.paramTypes.map { inferItemTypeTy(it, itemContext) }
             val returnType = moveType.returnType

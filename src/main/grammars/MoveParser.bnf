@@ -17,7 +17,7 @@
 
     extends(".*Expr")=Expr
     extends(".*Pat")=Pat
-    extends("(Lambda|Ref|Path|Tuple|Unit)Type")=Type
+    extends("(Lambda|Ref|Path|Tuple|Unit|Parens)Type")=Type
 
     elementType(".+BinExpr")=BinaryExpr
     elementType(".+BinOp")=BinaryOp
@@ -579,7 +579,8 @@ TypeAnnotation ::= ':' Type {
     name = "type annotation"
 }
 
-Type ::= RefType | PathType | TupleType | LambdaType | UnitType
+Type ::= RefType | PathType | TupleType | LambdaType | UnitType | ParensType
+ParensType ::= '(' Type ')' { pin = 2 }
 
 UnitType ::= '(' ')'
 RefType ::= RefTypeStart Type
@@ -593,7 +594,7 @@ PathType ::= Path
     name = "type"
 }
 
-TupleType ::= '(' Type ',' (Type ','?)* ')' { pin = 2 }
+TupleType ::= '(' Type ',' (Type ','?)* ')' { pin = 3 }
 //TupleType ::= ('(' !')') TupleTypeItem_with_recover+ ')' { pin = 1 }
 //private TupleTypeItem_with_recover ::= !')' Type (',' | &')')
 //{
