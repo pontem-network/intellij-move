@@ -23,7 +23,6 @@ module M {
     fun main_1(): (u8 {}
     fun main_2(): (u8, {}
     fun main_3(): (u8, u8 {}
-    fun main_4(): (u u8) {}
     fun main_5() acq
     fun main_6() acquires {}
     fun main_7() acquires U,,{}

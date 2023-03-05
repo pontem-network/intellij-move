@@ -580,7 +580,7 @@ TypeAnnotation ::= ':' Type {
 }
 
 Type ::= RefType | PathType | TupleType | LambdaType | UnitType | ParensType
-ParensType ::= '(' Type ')' { pin = 2 }
+ParensType ::= '(' (Type !',') ')' { pin = 2 }
 
 UnitType ::= '(' ')'
 RefType ::= RefTypeStart Type

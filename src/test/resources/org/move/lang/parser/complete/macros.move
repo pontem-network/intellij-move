@@ -13,4 +13,10 @@ module 0x1::macros {
             if (p(&elem)) push_back(&mut result, elem);
         });
     }
+
+    inline fun fold<Element>(a: (Element),
+                             f: (|Element| Element),
+                             g: |Element, (|Element| Element)| Element): Element {
+        f(a, g)
+    }
 }
