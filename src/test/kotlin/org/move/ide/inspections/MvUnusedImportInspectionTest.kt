@@ -452,4 +452,23 @@ module 0x1::main {
     }
 }        
     """)
+
+    fun `test no unused import on dot object with same name as module`() = checkWarnings("""
+module 0x1::m {
+    #[view]
+    public fun call() {}
+}        
+module 0x1::main {
+    use 0x1::m;
+    public entry fun main() {
+        if (m::call()) m::call();
+    }
+}
+spec 0x1::main {
+    spec main {
+        let m = 1;
+        m.addr = 1;
+    }    
+}
+    """)
 }
