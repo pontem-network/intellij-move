@@ -28,7 +28,7 @@ class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
                         TestCommandConfigurationProducer.fromLocation(parent, climbUp = false)
                     if (config != null) {
                         return Info(
-                            MoveIcons.TEST,
+                            MoveIcons.RUN_TEST_ITEM,
                             { config.configurationName },
                             *contextActions()
                         )
@@ -61,7 +61,7 @@ class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
             val testConfig = TestCommandConfigurationProducer.fromLocation(parent, climbUp = false)
             if (testConfig != null) {
                 return Info(
-                    MoveIcons.TEST,
+                    MoveIcons.RUN_ALL_TESTS_IN_ITEM,
                     { testConfig.configurationName },
                     *contextActions()
                 )
