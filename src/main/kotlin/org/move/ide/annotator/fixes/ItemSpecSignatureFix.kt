@@ -15,7 +15,7 @@ class ItemSpecSignatureFix(
 ) :
     LocalQuickFixAndIntentionActionOnPsiElement(itemSpec) {
 
-    override fun getText(): String = "Add explicit function signature"
+    override fun getText(): String = "Fix item signature"
     override fun getFamilyName(): String = text
 
     override fun invoke(

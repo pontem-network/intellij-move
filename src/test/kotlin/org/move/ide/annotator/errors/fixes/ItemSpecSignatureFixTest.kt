@@ -5,7 +5,7 @@ import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class ItemSpecSignatureFixTest : AnnotatorTestCase(MvErrorAnnotator::class) {
     fun `test add signature for item one param`() = checkFixByText(
-        "Add explicit function signature", """
+        "Fix item signature", """
 module 0x1::mod {
     fun call(a: address) {}
 }        
@@ -23,7 +23,7 @@ spec 0x1::mod {
     )
 
     fun `test add signature for item one invalid param`() = checkFixByText(
-        "Add explicit function signature", """
+        "Fix item signature", """
 module 0x1::mod {
     fun call(a: address) {}
 }        
@@ -41,7 +41,7 @@ spec 0x1::mod {
     )
 
     fun `test add signature for item one type param no bounds`() = checkFixByText(
-        "Add explicit function signature", """
+        "Fix item signature", """
 module 0x1::mod {
     fun call<T>() {}
 }        
@@ -59,7 +59,7 @@ spec 0x1::mod {
     )
 
     fun `test add signature for item one spec param with bounds`() = checkFixByText(
-        "Add explicit function signature", """
+        "Fix item signature", """
 module 0x1::mod {
     fun call<T: drop>() {}
 }        

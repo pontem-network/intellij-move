@@ -1039,11 +1039,11 @@ FQModuleRef ::= AddressRef '::' IDENTIFIER
 }
 
 AddressRef ::= NamedAddress
+                | DIEM_ADDRESS
+                | INTEGER_LITERAL
                 | PLACEHOLDER_ADDRESS
                 | BECH32_ADDRESS
                 | POLKADOT_ADDRESS
-                | DIEM_ADDRESS
-                | INTEGER_LITERAL
 NamedAddress ::= IDENTIFIER
 {
     implements = ["org.move.lang.core.resolve.NamedAddressReferenceElement"]
