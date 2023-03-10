@@ -3,13 +3,11 @@ package org.move.utils
 import com.intellij.injected.editor.VirtualFileWindow
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.util.UserDataHolder
-import com.intellij.psi.PsiElement
-import com.intellij.psi.stubs.StubBase
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiModificationTracker
 import org.move.lang.core.psi.MvCodeFragment
 import org.move.lang.core.psi.MvElement
@@ -46,6 +44,20 @@ fun <T> MvElement.cacheResult(value: T, dependencies: List<Any>): CachedValuePro
         else -> CachedValueProvider.Result.create(value, dependencies)
     }
 }
+
+val MvElement.containingFileModificationTracker: ModificationTracker?
+    get() =
+        this.containingFile?.originalFile?.virtualFile
+
+fun <T> MvElement.psiFileTrackedCachedResult(value: T): CachedValueProvider.Result<T> {
+    val fileModificationTracker = this.containingFileModificationTracker
+    return if (fileModificationTracker != null) {
+        CachedValueProvider.Result.create(value, fileModificationTracker)
+    } else {
+        CachedValueProvider.Result.create(value, PsiModificationTracker.MODIFICATION_COUNT)
+    }
+}
+
 
 //class CacheUtils {
 //    companion object {

@@ -28,7 +28,7 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "1.8.10"
-    id("org.jetbrains.intellij") version "1.13.1"
+    id("org.jetbrains.intellij") version "1.13.2"
     id("org.jetbrains.grammarkit") version "2021.2.2"
     id("net.saliman.properties") version "1.5.2"
 }
@@ -165,9 +165,11 @@ allprojects {
         withType<org.jetbrains.intellij.tasks.RunIdeTask> {
             jbrVersion.set(prop("jbrVersion"))
 
-            val clionDir = File("/snap/clion/current")
-            if (clionDir.exists()) {
-                ideDir.set(clionDir)
+            if (environment.getOrDefault("CLION_LOCAL", "false") == "true") {
+                val clionDir = File("/snap/clion/current")
+                if (clionDir.exists()) {
+                    ideDir.set(clionDir)
+                }
             }
         }
     }

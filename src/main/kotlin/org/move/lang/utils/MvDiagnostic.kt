@@ -1,22 +1,36 @@
 package org.move.lang.utils
 
+import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.util.InspectionMessage
 import com.intellij.lang.annotation.HighlightSeverity
-import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import org.move.ide.annotator.MvAnnotationHolder
+import org.move.ide.annotator.fixes.ItemSpecSignatureFix
+import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.ext.endOffset
+import org.move.lang.core.psi.ext.itemSpecBlock
 import org.move.lang.core.psi.ext.startOffset
 import org.move.lang.utils.Severity.*
 
 sealed class MvDiagnostic(
     val element: PsiElement,
-    val endElement: PsiElement? = null
+    val textRange: TextRange
 ) {
+    constructor(element: PsiElement) : this(element, element.textRange)
+
+    constructor(element: PsiElement, endElement: PsiElement) :
+            this(
+                element,
+                TextRange(
+                    element.startOffset,
+                    endElement.endOffset
+                )
+            )
+
     abstract fun prepare(): PreparedAnnotation
 
 //    class TypeError(
@@ -85,7 +99,26 @@ sealed class MvDiagnostic(
                         "Global storage access is internal to the module"
             )
         }
+    }
 
+    class FunctionSignatureMismatch(itemSpec: MvItemSpec) :
+        MvDiagnostic(
+            itemSpec,
+            TextRange(
+                itemSpec.itemSpecRef?.startOffset ?: itemSpec.startOffset,
+                itemSpec.itemSpecSignature?.endOffset
+                    ?: itemSpec.itemSpecBlock?.startOffset?.dec()
+                    ?: itemSpec.endOffset
+            )
+        ) {
+
+        override fun prepare(): PreparedAnnotation {
+            return PreparedAnnotation(
+                WARN,
+                "Function signature mismatch",
+                fixes = listOf(ItemSpecSignatureFix(element as MvItemSpec))
+            )
+        }
     }
 }
 
@@ -111,21 +144,21 @@ class PreparedAnnotation(
     val severity: Severity,
     @InspectionMessage val header: String,
     @Suppress("UnstableApiUsage") @NlsContexts.Tooltip val description: String = "",
-//    val fixes: List<LocalQuickFix> = emptyList(),
-    val textAttributes: TextAttributesKey? = null
+    val fixes: List<IntentionAction> = emptyList(),
+//    val textAttributes: TextAttributesKey? = null
 )
 
 fun MvDiagnostic.addToHolder(moveHolder: MvAnnotationHolder) {
     val prepared = prepare()
 
-    val textRange = if (endElement != null) {
-        TextRange.create(
-            element.startOffset,
-            endElement.endOffset
-        )
-    } else {
-        element.textRange
-    }
+//    val textRange = if (endElement != null) {
+//        TextRange.create(
+//            element.startOffset,
+//            endElement.endOffset
+//        )
+//    } else {
+//        element.textRange
+//    }
 
     val holder = moveHolder.holder
     var ann = holder.newAnnotation(
@@ -135,14 +168,17 @@ fun MvDiagnostic.addToHolder(moveHolder: MvAnnotationHolder) {
     if (prepared.description.isNotBlank()) {
         ann = ann.tooltip(prepared.description)
     }
-    ann
-        .highlightType(prepared.severity.toProblemHighlightType())
+    ann.highlightType(prepared.severity.toProblemHighlightType())
         .range(textRange)
-        .create()
 
+    for (fix in prepared.fixes) {
+        ann.newFix(fix).registerFix()
+    }
+
+    ann.create()
 //    for (fix in prepared.fixes) {
 //        if (fix is IntentionAction) {
-//            ann.registerFix(fix)
+//            ann.newFix(fix)
 //        } else {
 //            val descriptor = InspectionManager.getInstance(element.project)
 //                .createProblemDescriptor(

@@ -5,6 +5,8 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullname
+import org.move.ide.utils.functionSignature
+import org.move.ide.utils.signature
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -79,7 +81,8 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                         } else {
                             // if no type args are passed, check whether all type params are inferrable
                             if (item.requiredTypeParams.isNotEmpty() && realCount != expectedCount) {
-                                MvDiagnostic.CannotInferType(path)
+                                MvDiagnostic
+                                    .CannotInferType(path)
                                     .addToHolder(moveHolder)
                             }
                         }
@@ -123,10 +126,24 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                         val typeArgTy = inferenceCtx.getTypeTy(typeArg.type)
                         if (typeArgTy !is TyUnknown && !typeArgTy.canBeAcquiredInModule(currentModule)) {
                             val typeName = typeArgTy.fullname()
-                            MvDiagnostic.StorageAccessIsNotAllowed(path, typeName)
+                            MvDiagnostic
+                                .StorageAccessIsNotAllowed(path, typeName)
                                 .addToHolder(moveHolder)
                         }
                     }
+                }
+            }
+
+            override fun visitItemSpec(itemSpec: MvItemSpec) {
+                val funcItem = itemSpec.funcItem ?: return
+                val funcSignature = funcItem.signature ?: return
+                val itemSpecSignature = itemSpec.itemSpecSignature ?: return
+
+                val specSignature = itemSpecSignature.functionSignature
+                if (funcSignature != specSignature) {
+                    MvDiagnostic
+                        .FunctionSignatureMismatch(itemSpec)
+                        .addToHolder(moveHolder)
                 }
             }
 
