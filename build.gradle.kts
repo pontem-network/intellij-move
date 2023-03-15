@@ -39,7 +39,9 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
-//    testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
+    implementation("io.sentry:sentry:5.5.2") {
+        exclude("org.slf4j")
+    }
 }
 
 allprojects {

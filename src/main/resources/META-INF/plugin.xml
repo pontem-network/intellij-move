@@ -309,6 +309,8 @@
             <category>Move</category>
         </intentionAction>
 
+        <errorHandler implementation="org.move.cli.PontemSentryErrorReporter" />
+
     </extensions>
 
     <projectListeners>
