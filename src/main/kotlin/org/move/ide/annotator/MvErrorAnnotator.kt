@@ -114,6 +114,9 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                 val msl = callExpr.isMsl()
                 if (msl) return
 
+                val outerFunction = callExpr.containingFunction ?: return
+                if (outerFunction.isInline) return
+
                 val path = callExpr.path
                 val referenceName = path.referenceName ?: return
                 val item = path.reference?.resolve() ?: return

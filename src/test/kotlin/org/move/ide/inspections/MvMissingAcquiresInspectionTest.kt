@@ -183,4 +183,24 @@ module 0x1::main {
 }        
     """
     )
+
+    fun `test inline functions do not need acquires`() = checkWarnings("""
+module 0x1::main {
+    inline fun borrow_object<T: key>(source_object: &Object<T>): &T {
+        borrow_global<T>(object::object_address(source_object))
+    }
+}        
+    """)
+
+//    fun `test outer function requires acquires through inline function`() = checkWarnings("""
+//module 0x1::main {
+//    struct S has key {}
+//    fun call() {
+//        <error descr="Function 'call' is not marked as 'acquires S'">borrow_object<S>()</error>;
+//    }
+//    inline fun borrow_object<T: key>(source_object: &Object<T>): &T {
+//        borrow_global<T>(object::object_address(source_object))
+//    }
+//}
+//    """)
 }

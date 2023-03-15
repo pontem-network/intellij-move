@@ -37,4 +37,27 @@ class BuiltinCallErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) {
         }
     }
     """)
+
+    fun `test no error for the inline function`() = checkErrors("""
+module 0x1::main {
+    inline fun borrow_object<T: key>(source_object: &Object<T>): &T {
+        borrow_global<T>(object::object_address(source_object))
+    }
+}        
+    """)
+
+//    fun `test outer function with acquiring inline function`() = checkErrors("""
+//module 0x1::string {
+//    struct String {}
+//}
+//module 0x1::main {
+//    use 0x1::string::String;
+//    fun call() {
+//        borrow_object<String>(@0x1);
+//    }
+//    inline fun borrow_object<T: key>(addr: address): &T {
+//        borrow_global<T>(addr)
+//    }
+//}
+//    """)
 }
