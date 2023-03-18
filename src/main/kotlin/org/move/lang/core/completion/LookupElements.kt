@@ -15,6 +15,7 @@ import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyInfer
+import org.move.lang.core.types.ty.TyUnknown
 
 const val KEYWORD_PRIORITY = 80.0
 
@@ -223,7 +224,7 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
 
                     val inferenceCtx = InferenceContext(msl, itemContext)
                     val expectedTy = completionContext.expectedTy
-                    if (expectedTy != null) {
+                    if (expectedTy != null && expectedTy !is TyUnknown) {
                         inferenceCtx.addConstraint(funcTy.retType, expectedTy)
                     }
                     inferenceCtx.processConstraints()

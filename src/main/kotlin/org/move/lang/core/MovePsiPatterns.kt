@@ -154,7 +154,11 @@ object MvPsiPatterns {
 
     fun schemaRef(): PsiElementPattern.Capture<PsiElement> =
         path()
-            .withSuperParent<MvSchemaLit>(2)
+            .withSuperParent<MvSchemaLitExpr>(2)
+
+    fun pathInsideIncludeStmt(): PsiElementPattern.Capture<PsiElement> =
+        path()
+            .withAncestor(5, psiElement<MvIncludeStmt>())
 
     fun nameTypeIdentifier(): PsiElementPattern.Capture<PsiElement> =
         pathType()

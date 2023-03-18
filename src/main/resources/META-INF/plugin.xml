@@ -23,6 +23,9 @@
                   implementationClass="org.move.lang.MoveFileType"
                   fieldName="INSTANCE"/>
 
+        <codeInsight.lineMarkerProvider language="Move"
+                                        implementationClass="org.move.ide.lineMarkers.ItemSpecsLineMarkerProvider" />
+
         <!-- PSI managing -->
 
         <projectService serviceInterface="org.move.lang.core.psi.MvPsiManager"
@@ -238,10 +241,6 @@
                          displayName="Redundant type cast"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.move.ide.inspections.RedundantTypeCastInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Function signature mismatch"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.ItemSpecSignatureInspection"/>
 
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>
@@ -277,6 +276,7 @@
 
         <!-- Notifications -->
         <notificationGroup id="Move Plugin" displayType="BALLOON"/>
+        <notificationGroup id="Missing Aptos Init" displayType="BALLOON"/>
         <editorNotificationProvider
                 implementation="org.move.ide.notifications.InvalidAptosBinaryNotification"/>
 
@@ -309,6 +309,8 @@
             <category>Move</category>
         </intentionAction>
 
+        <errorHandler implementation="org.move.cli.PontemSentryErrorReporter" />
+
     </extensions>
 
     <projectListeners>
@@ -326,7 +328,7 @@
         </action>
         <action id="Move.RefreshAllProjects"
                 description="Update Move project information"
-                text="Update Move projects"
+                text="Update Move Projects"
                 class="org.move.ide.actions.RefreshMoveProjectsAction"
                 icon="AllIcons.Actions.Refresh"/>
 

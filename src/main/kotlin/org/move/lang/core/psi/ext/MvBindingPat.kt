@@ -7,6 +7,7 @@ import com.intellij.psi.search.SearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.impl.MvMandatoryNameIdentifierOwnerImpl
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import javax.swing.Icon
 
@@ -17,7 +18,7 @@ val MvBindingPat.owner: PsiElement?
                 || it is MvSchemaFieldStmt
     }
 
-abstract class MvBindingPatMixin(node: ASTNode) : MvNameIdentifierOwnerImpl(node),
+abstract class MvBindingPatMixin(node: ASTNode) : MvMandatoryNameIdentifierOwnerImpl(node),
                                                   MvBindingPat {
     override fun getIcon(flags: Int): Icon =
         when (this.owner) {

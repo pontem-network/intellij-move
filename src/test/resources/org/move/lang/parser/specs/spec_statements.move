@@ -35,6 +35,8 @@ module 0x1::M {
         include true ==> MySchema;
         include vote.agree != agree ==> CheckChangeVote<TokenT, ActionT>{vote, proposer_address};
 
+        include if (true) MySchema else MySchema;
+
         native fun serialize<MoveValue>(v: &MoveValue): vector<u8>;
     }
 

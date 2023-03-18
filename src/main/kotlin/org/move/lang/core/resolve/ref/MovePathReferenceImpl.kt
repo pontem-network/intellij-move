@@ -13,9 +13,12 @@ fun processModuleItems(
         var found = when (namespace) {
             Namespace.NAME -> processor.matchAll(
                 itemVis,
+                if (itemVis.isMsl) module.consts() else emptyList()
+            )
+            Namespace.FUNCTION -> processor.matchAll(
+                itemVis,
                 itemVis.visibilities.flatMap { module.visibleFunctions(it) },
                 if (itemVis.isMsl) module.specFunctions() else emptyList(),
-                if (itemVis.isMsl) module.consts() else emptyList()
             )
             Namespace.TYPE -> processor.matchAll(itemVis, module.structs())
             Namespace.SCHEMA -> processor.matchAll(itemVis, module.schemas())

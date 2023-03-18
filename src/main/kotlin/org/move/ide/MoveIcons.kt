@@ -6,9 +6,9 @@ import javax.swing.Icon
 
 object MoveIcons {
     val MOVE = load("/icons/move.svg")
-    val APTOS = load("/icons/aptos.svg")
 
-//    val MOVE_BYTECODE = load("/icons/mv.svg")
+    val APTOS = load("/icons/aptos.svg")
+    val APTOS_DARK = load("/icons/aptos_dark.svg")
 
     val ADDRESS = load("/icons/annotationtype.png")
     val MODULE = load("/icons/module.svg")
@@ -26,10 +26,19 @@ object MoveIcons {
     val PARAMETER = AllIcons.Nodes.Parameter
 
     val PUBLISH = AllIcons.Actions.Upload
-    val TEST = AllIcons.RunConfigurations.TestState.Run
+
+    val RUN_TEST_ITEM = AllIcons.RunConfigurations.TestState.Run
+    val RUN_ALL_TESTS_IN_ITEM = AllIcons.RunConfigurations.TestState.Run_run
+
     val RUN_TRANSACTION = AllIcons.Nodes.RunnableMark
     val TEST_GREEN = AllIcons.RunConfigurations.TestState.Green2
     val TEST_RED = AllIcons.RunConfigurations.TestState.Red2
+
+    val ITEM_SPECS_GUTTER = load("/icons/down.svg")
+    val ITEM_SPECS_GUTTER_DARK = load("/icons/down_dark.svg")
+
+    val SPEC_SOURCE_MODULE_GUTTER = load("/icons/up.svg")
+    val SPEC_SOURCE_MODULE_GUTTER_DARK = load("/icons/up_dark.svg")
 
     private fun load(path: String): Icon = IconLoader.getIcon(path, MoveIcons::class.java)
 }

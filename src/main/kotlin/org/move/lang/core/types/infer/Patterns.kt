@@ -49,16 +49,11 @@ fun inferPatTy(pat: MvPat, parentCtx: InferenceContext, expectedTy: Ty? = null):
     return patTy
 }
 
-fun inferBindingPatTy(bindingPat: MvBindingPat, parentCtx: InferenceContext, itemContext: ItemContext): Ty {
-//    val existingTy = parentCtx.bindingTypes[this]
-//    if (existingTy != null) {
-//        return existingTy
-//    }
+fun inferBindingPatTy(bindingPat: MvBindingPat, parentCtx: InferenceContext): Ty {
     val owner = bindingPat.owner
     return when (owner) {
         is MvFunctionParameter -> {
-            owner.typeAnnotation
-                ?.type
+            owner.type
                 ?.let { parentCtx.getTypeTy(it) }
                 ?: TyUnknown
         }
@@ -72,7 +67,8 @@ fun inferBindingPatTy(bindingPat: MvBindingPat, parentCtx: InferenceContext, ite
             }
             val inferredTy = owner.initializer?.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
             collectBindings(pat, inferredTy, parentCtx)
-            return parentCtx.bindingTypes[bindingPat] ?: TyUnknown
+            return parentCtx.bindingTypes[bindingPat]
+                ?: error("Should be assigned in the previous step")
         }
         is MvSchemaFieldStmt -> owner.annotationTy(parentCtx)
         else -> TyUnknown

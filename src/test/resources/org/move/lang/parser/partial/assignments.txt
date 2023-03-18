@@ -28,6 +28,42 @@ FILE
                 <empty list>
             PsiWhiteSpace(' ')
             PsiElement(;)(';')
+          PsiWhiteSpace('\n        ')
+          MvLetStmtImpl(LET_STMT)
+            PsiElement(let)('let')
+            PsiWhiteSpace(' ')
+            MvBindingPatImpl(BINDING_PAT)
+              PsiElement(IDENTIFIER)('a')
+            MvTypeAnnotationImpl(TYPE_ANNOTATION)
+              PsiElement(:)(':')
+              PsiErrorElement:<type> expected, got '='
+                <empty list>
+            PsiWhiteSpace(' ')
+            MvInitializerImpl(INITIALIZER)
+              PsiElement(=)('=')
+              PsiWhiteSpace(' ')
+              MvLitExprImpl(LIT_EXPR)
+                PsiElement(INTEGER_LITERAL)('1')
+            PsiElement(;)(';')
+          PsiWhiteSpace('\n        ')
+          MvLetStmtImpl(LET_STMT)
+            PsiElement(let)('let')
+            PsiWhiteSpace(' ')
+            MvBindingPatImpl(BINDING_PAT)
+              PsiElement(IDENTIFIER)('a')
+            MvTypeAnnotationImpl(TYPE_ANNOTATION)
+              PsiElement(:)(':')
+              PsiWhiteSpace(' ')
+              MvPathTypeImpl(PATH_TYPE)
+                MvPathImpl(PATH)
+                  PsiElement(IDENTIFIER)('u8')
+            PsiErrorElement:'::', ';', < or '=' expected, got '1'
+              <empty list>
+          PsiWhiteSpace(' ')
+          MvExprStmtImpl(EXPR_STMT)
+            MvLitExprImpl(LIT_EXPR)
+              PsiElement(INTEGER_LITERAL)('1')
+            PsiElement(;)(';')
           PsiWhiteSpace('\n\n        ')
           MvExprStmtImpl(EXPR_STMT)
             MvCallExprImpl(CALL_EXPR)
@@ -61,7 +97,7 @@ FILE
           PsiWhiteSpace('\n        ')
           MvLetStmtImpl(LET_STMT)
             PsiElement(let)('let')
-          PsiErrorElement:'&', '(', '*', ':', ';', <path>, '=', IDENTIFIER or _ expected, got '('
+          PsiErrorElement:'(', ';', <path>, <pattern>, <type annotation>, '=' or _ expected, got '('
             <empty list>
           PsiWhiteSpace(' ')
           MvExprStmtImpl(EXPR_STMT)

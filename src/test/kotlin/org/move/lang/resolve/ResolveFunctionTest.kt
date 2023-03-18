@@ -577,4 +577,25 @@ module 0x1::mod {
     }
 }        
     """)
+
+    fun `test cannot resolve function to parameter`() = checkByCode("""
+module 0x1::mod {
+    public inline fun fold<Accumulator, Element>(elem: Element, func: |Element| Accumulator): Accumulator {
+        elem(1);
+        //^ unresolved
+    }
+}        
+    """)
+
+    fun `test functions have separate namespace from variables`() = checkByCode("""
+module 0x1::mod {
+    fun name() {}
+       //X
+    fun main() {
+        let name = 1;
+        name();
+         //^       
+    }
+}        
+    """)
 }

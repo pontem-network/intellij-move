@@ -7,6 +7,7 @@ import org.move.ide.inspections.imports.AutoImportFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.MvReferenceElement
+import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.inferDotExprStructTy
 import org.move.lang.core.types.infer.maybeInferenceContext
 
@@ -16,15 +17,26 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
     override val isSyntaxOnly get() = false
 
-    private fun ProblemsHolder.registerProblem(
+    private fun ProblemsHolder.registerUnresolvedReferenceError(
         element: MvReferenceElement
     ) {
         val candidates = AutoImportFix.findApplicableContext(element)?.candidates.orEmpty()
         if (candidates.isEmpty() && ignoreWithoutQuickFix) return
 
-        val referenceName = element.referenceName
-        val description =
-            if (referenceName == null) "Unresolved reference" else "Unresolved reference: `$referenceName`"
+        val referenceName = element.referenceName ?: return
+        val namespace = element.namespaces().singleOrNull()
+        val description = when (namespace) {
+            Namespace.TYPE -> "Unresolved type: `$referenceName`"
+//            Namespace.SCHEMA -> "Unresolved schema `$referenceName`"
+            else -> {
+                val parent = element.parent
+                if (parent is MvCallExpr) {
+                    "Unresolved function: `$referenceName`"
+                } else {
+                    "Unresolved reference: `$referenceName`"
+                }
+            }
+        }
         val highlightedElement = element.referenceNameElement ?: element
         val fix = if (candidates.isNotEmpty()) AutoImportFix(element) else null
         registerProblem(
@@ -42,11 +54,12 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             // skip this check, as it will be checked in MvPath visitor
             if (moduleRef.ancestorStrict<MvPath>() != null) return
 
+            // skip those two, checked in UseSpeck checks later
             if (moduleRef.ancestorStrict<MvUseStmt>() != null) return
             if (moduleRef is MvFQModuleRef) return
 
             if (moduleRef.unresolved) {
-                holder.registerProblem(moduleRef)
+                holder.registerUnresolvedReferenceError(moduleRef)
             }
         }
 
@@ -69,12 +82,12 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             if (moduleRef != null) {
                 if (moduleRef is MvFQModuleRef) return
                 if (moduleRef.unresolved) {
-                    holder.registerProblem(moduleRef)
+                    holder.registerUnresolvedReferenceError(moduleRef)
                     return
                 }
             }
             if (path.unresolved) {
-                holder.registerProblem(path)
+                holder.registerUnresolvedReferenceError(path)
             }
         }
 

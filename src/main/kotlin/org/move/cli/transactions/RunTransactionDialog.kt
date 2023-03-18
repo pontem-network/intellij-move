@@ -1,5 +1,8 @@
 package org.move.cli.transactions
 
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.ui.DialogWrapper
@@ -17,9 +20,8 @@ import com.intellij.util.PsiErrorElementUtil
 import org.move.cli.AptosCommandLine
 import org.move.cli.MoveProject
 import org.move.cli.runconfig.producers.AptosCommandLineFromContext
-import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.module
-import org.move.lang.core.psi.typeParameters
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.name
 import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.itemContext
@@ -34,7 +36,7 @@ import org.move.utils.ui.ulongTextField
 import javax.swing.JComponent
 
 const val NAME_COLUMNS = 42
-const val ARGUMENT_COLUMNS = 36
+//const val ARGUMENT_COLUMNS = 36
 const val PROFILE_COLUMNS = 24
 
 class RunTransactionDialog(
@@ -66,10 +68,10 @@ class RunTransactionDialog(
                     .horizontalAlign(HorizontalAlign.RIGHT)
             }
             val typeParameters = entryFunction.typeParameters
-            val parameters = entryFunction.parameterBindings().drop(1)
+            val parameterBindings = entryFunction.allParamsAsBindings.drop(1)
             val itemContext = entryFunction.module?.itemContext(false) ?: project.itemContext(false)
 
-            if (typeParameters.isNotEmpty() || parameters.isNotEmpty()) {
+            if (typeParameters.isNotEmpty() || parameterBindings.isNotEmpty()) {
                 separator()
             }
 
@@ -92,13 +94,12 @@ class RunTransactionDialog(
                     }
                 }
             }
-            if (parameters.isNotEmpty()) {
+            if (parameterBindings.isNotEmpty()) {
                 val inferenceCtx = InferenceContext(false, itemContext)
                 group("Value Arguments") {
-                    for (parameter in parameters) {
-                        val paramName = parameter.name ?: continue
+                    for (parameter in parameterBindings) {
+                        val paramName = parameter.name
                         val paramTy = inferenceCtx.getBindingPatTy(parameter)
-//                        val paramTy = parameter.inferBindingTy(InferenceContext(false), itemContext)
                         val paramTyName = when (paramTy) {
                             is TyInteger -> paramTy.kind.name
                             is TyAddress -> "address"
@@ -169,7 +170,7 @@ class RunTransactionDialog(
                 )
             }
 
-        val functionParamNames = entryFunction.parameterBindings().mapNotNull { it.name }
+        val functionParamNames = entryFunction.parameters.map { it.name }
         val sortedParams = this.params.entries
             .sortedBy { (name, _) ->
                 functionParamNames.indexOfFirst { it == name }
@@ -192,12 +193,24 @@ class RunTransactionDialog(
     }
 
     companion object {
-        fun showAndGetOk(
+        fun showAndWaitTillOk(
             entryFunction: MvFunction,
             moveProject: MoveProject
         ): RunTransactionDialog? {
-            // TODO: show dialog that user needs to run `aptos init` first for transaction dialog to work
-            val aptosConfig = moveProject.currentPackage.aptosConfigYaml ?: return null
+            val project = moveProject.project
+            // TODO: show notification that user needs to run `aptos init` first for transaction dialog to work
+            val aptosConfig = moveProject.currentPackage.aptosConfigYaml
+            if (aptosConfig == null) {
+                // ask user to run `aptos init` first
+                val notif = NotificationGroupManager.getInstance()
+                    .getNotificationGroup("Missing Aptos Init")
+                    .createNotification(
+                        "Aptos account is not initialized, run `aptos init` first",
+                        NotificationType.WARNING
+                    )
+                Notifications.Bus.notify(notif, project)
+                return null
+            }
 
             val profiles = aptosConfig.profiles.toList()
             val dialog = RunTransactionDialog(entryFunction, moveProject, profiles)

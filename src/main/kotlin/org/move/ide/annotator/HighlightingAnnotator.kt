@@ -25,7 +25,7 @@ val SPEC_BUILTIN_FUNCTIONS = setOf(
     "in_range", "update_field", "old", "TRACE"
 )
 
-class HighlightingAnnotator : MvAnnotator() {
+class HighlightingAnnotator : MvAnnotatorBase() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val color = when {
             element is LeafPsiElement -> highlightLeaf(element)

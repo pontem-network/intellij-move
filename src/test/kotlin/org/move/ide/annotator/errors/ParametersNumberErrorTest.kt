@@ -18,7 +18,7 @@ class ParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) {
         }    
     """)
 
-    fun `test invalid number of parameters`() = checkErrors("""
+    fun `test invalid number of parameters local`() = checkErrors("""
         module 0x1::M {
             fun params_0() {}
             fun params_1(val: u8) {}
@@ -29,6 +29,30 @@ class ParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) {
                 params_1(<error descr="This function takes 1 parameter but 0 parameters were supplied">)</error>;
                 params_1(1, <error descr="This function takes 1 parameter but 2 parameters were supplied">4</error>);
                 params_3(5, 1<error descr="This function takes 3 parameters but 2 parameters were supplied">)</error>;
+            }
+        }    
+    """)
+
+    fun `test invalid number of parameters with import`() = checkErrors("""
+        module 0x1::p {
+            public fun params_3(val: u8, val2: u64, s: &signer) {}
+        }
+        module 0x1::M {
+            use 0x1::p::params_3;
+            fun main() {
+                params_3(5, 1<error descr="This function takes 3 parameters but 2 parameters were supplied">)</error>;
+            }
+        }    
+    """)
+
+    fun `test invalid number of parameters with import alias`() = checkErrors("""
+        module 0x1::p {
+            public fun params_3(val: u8, val2: u64, s: &signer) {}
+        }
+        module 0x1::M {
+            use 0x1::p::params_3 as params_alias;
+            fun main() {
+                params_alias(5, 1<error descr="This function takes 3 parameters but 2 parameters were supplied">)</error>;
             }
         }    
     """)

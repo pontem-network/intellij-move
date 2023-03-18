@@ -12,6 +12,12 @@ module M {
         my_field: u8
     }
 
+    struct NoTypesFields {
+        field1,
+        field2:,
+        field3
+    }
+
     fun main() {
         let T { my:  } = 1;
         let T { my: , my_field } = 1;

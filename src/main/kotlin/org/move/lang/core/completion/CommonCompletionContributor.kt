@@ -11,6 +11,7 @@ class CommonCompletionContributor : CompletionContributor() {
     init {
         extend(CompletionType.BASIC, PrimitiveTypesCompletionProvider)
         extend(CompletionType.BASIC, NamesCompletionProvider)
+        extend(CompletionType.BASIC, FunctionsCompletionProvider)
         extend(CompletionType.BASIC, SchemasCompletionProvider)
         extend(CompletionType.BASIC, SpecItemCompletionProvider)
         extend(CompletionType.BASIC, AddressesCompletionProvider)
@@ -25,7 +26,7 @@ class CommonCompletionContributor : CompletionContributor() {
         extend(
             CompletionType.BASIC,
             MvPsiPatterns.ability(),
-            TraitsCompletionProvider
+            AbilitiesCompletionProvider
         )
         extend(CompletionType.BASIC, MacrosCompletionProvider)
     }

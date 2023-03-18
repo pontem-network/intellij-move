@@ -17,15 +17,14 @@
 
     extends(".*Expr")=Expr
     extends(".*Pat")=Pat
-//    extends(".*Predicate")=Predicate_item
-    extends("(Lambda|Ref|Path|Tuple|Unit)Type")=Type
-//    extends(".*SpecDef")=AnySpec
+    extends("(Lambda|Ref|Path|Tuple|Unit|Parens)Type")=Type
 
     elementType(".+BinExpr")=BinaryExpr
     elementType(".+BinOp")=BinaryOp
 
     name(".+BinOp")="operator"
     name(".*Expr")="expression"
+    name(".*Pat")="pattern"
 
     extraRoot(".*CodeFragmentElement")=true
 
@@ -271,6 +270,7 @@ Const ::= Attr* CONST_KW IDENTIFIER TypeAnnotation Initializer ';'
     implements = [
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvConstMixin"
     stubClass = "org.move.lang.core.stubs.MvConstStub"
@@ -445,7 +445,12 @@ private FunctionParameter_with_recover ::= !(')' | '{' | ';') FunctionParameter 
 }
 private FunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER)
 
-FunctionParameter ::= BindingPat TypeAnnotation { pin = 1 }
+FunctionParameter ::= BindingPat TypeAnnotation {
+    pin = 1
+    implements = [
+        "org.move.lang.core.psi.MvTypeAnnotationOwner"
+    ]
+}
 
 // u8 | (u8,) | (u8, u8) | (u8, u8,)
 // tuples only allowed as a return types
@@ -503,8 +508,9 @@ StructField ::= Attr* IDENTIFIER TypeAnnotation &(',' | '}')
 {
     pin = 2
     implements = [
-        "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.psi.MvMandatoryNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructFieldMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
@@ -568,9 +574,13 @@ UseAlias ::= as IDENTIFIER
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Types
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-TypeAnnotation ::= ':' Type { pin = 1 }
+TypeAnnotation ::= ':' Type {
+    pin = 1
+    name = "type annotation"
+}
 
-Type ::= RefType | PathType | TupleType | LambdaType | UnitType
+Type ::= RefType | PathType | TupleType | LambdaType | UnitType | ParensType
+ParensType ::= '(' (Type !',') ')' { pin = 2 }
 
 UnitType ::= '(' ')'
 RefType ::= RefTypeStart Type
@@ -584,7 +594,7 @@ PathType ::= Path
     name = "type"
 }
 
-TupleType ::= '(' Type ',' (Type ','?)* ')' { pin = 2 }
+TupleType ::= '(' Type ',' (Type ','?)* ')' { pin = 3 }
 //TupleType ::= ('(' !')') TupleTypeItem_with_recover+ ')' { pin = 1 }
 //private TupleTypeItem_with_recover ::= !')' Type (',' | &')')
 //{
@@ -639,7 +649,6 @@ Pat ::= DerefPat
         | BorrowPat
         | TuplePat
         | StructPat
-//        | DotPat
         | WildPat
         | BindingPat
 
@@ -650,7 +659,7 @@ BorrowPat ::= '&' Pat
 
 BindingPat ::= IDENTIFIER {
     implements = [
-        "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.psi.MvMandatoryNameIdentifierOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvBindingPatMixin"
 }
@@ -809,7 +818,7 @@ private AtomExpr ::=
                     AnnotatedExpr
                     | TupleLitExpr
                     | ParensExpr
-                    | StructLitExpr
+                    | StructOrSchemaLitExpr
                     | VectorLitExpr
                     | DotExpr
                     | IndexExpr
@@ -882,8 +891,8 @@ private ImplyBinExpr_items ::= ImplyBinExpr | PartialImplyBinExpr
 ImplyBinExpr ::= Expr ImplyBinOp Expr
 PartialImplyBinExpr ::= Expr PartialImplyBinOp Expr
 
-ImplyBinOp ::= <<implyMslOnly eqeq_gt>>
-PartialImplyBinOp ::= <<implyMslOnly lt_eqeq_gt>>
+ImplyBinOp ::= <<mslOnly eqeq_gt>>
+PartialImplyBinOp ::= <<mslOnly lt_eqeq_gt>>
 
 BangExpr ::= '!' Expr
 DerefExpr ::= '*' Expr
@@ -906,7 +915,8 @@ VectorLitItems ::= '[' <<comma_sep_items Expr>>? ']'
     pin = 1
 }
 
-StructLitExpr ::= Path StructLitFieldsBlock
+private StructOrSchemaLitExpr ::= StructLitExpr | SchemaLitExpr
+StructLitExpr ::= <<checkStructAllowed>> Path StructLitFieldsBlock
 StructLitFieldsBlock ::= '{' StructLitField_with_recover* '}' { pin = 1 }
 
 private StructLitField_with_recover ::= !'}' StructLitField (',' | &'}')
@@ -980,7 +990,7 @@ IndexExpr ::= Expr IndexArg
 // Do not inline this rule, it breaks expression parsing
 private IndexArg ::= '[' Expr ']'
 
-RefExpr ::= Path
+RefExpr ::= Path !'{'
 
 //private Path ::= QualPath | LocalPath
 //fake Path ::= (ModuleRef '::')? IDENTIFIER? TypeArgumentList?
@@ -1029,11 +1039,11 @@ FQModuleRef ::= AddressRef '::' IDENTIFIER
 }
 
 AddressRef ::= NamedAddress
+                | DIEM_ADDRESS
+                | INTEGER_LITERAL
                 | PLACEHOLDER_ADDRESS
                 | BECH32_ADDRESS
                 | POLKADOT_ADDRESS
-                | DIEM_ADDRESS
-                | INTEGER_LITERAL
 NamedAddress ::= IDENTIFIER
 {
     implements = ["org.move.lang.core.resolve.NamedAddressReferenceElement"]
@@ -1163,6 +1173,7 @@ ItemSpecFunctionParameter ::= IDENTIFIER TypeAnnotation {
     pin = 1
     implements = [
         "org.move.lang.core.resolve.MvItemSpecParameterReferenceElement"
+        "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecFunctionParameterMixin"
 }
@@ -1245,7 +1256,7 @@ private SpecStmt ::= UseStmt
 //                               | RequiresSpecStmt
 //                               | EnsuresSpecStmt
 //                               | ModifiesSpecStmt
-                               | IncludeStmts
+                               | IncludeStmt
 //                               | IncludeStmts
 //                               | InvariantSpecStmt
 //                               | AxiomSpecStmt
@@ -1270,7 +1281,9 @@ private SpecStmt ::= UseStmt
 SchemaFieldStmt ::= BindingPat TypeAnnotation ';'
 {
     pin = 2
-//    implements = [ "org.move.lang.core.psi.MvNameIdentifierOwner" ]
+    implements = [
+        "org.move.lang.core.psi.MvTypeAnnotationOwner"
+    ]
 //    mixin = "org.move.lang.core.psi.ext.MvSchemaFieldStmtMixin"
 }
 
@@ -1299,35 +1312,9 @@ RequiresSpecExpr ::= requires MODULE_KW? Expr { pin = 1 }
 EnsuresSpecExpr ::= ensures SpecExpr { pin = 1 }
 ModifiesSpecExpr ::= modifies Expr { pin = 1 }
 
-//IncludeStmt ::= include SpecVisibility? IncludeStmtTail ';'
-//private IncludeStmtTail ::= (Expr eqeq_gt)? SchemaLit
+IncludeStmt ::= include SpecVisibility? <<includeStmtMode Expr>> ';' { pin = 1 }
 
-//IncludeStmt ::= include SpecVisibility? (ImplySchemaLit | SchemaLit) ';'
-//{
-//    pin = 1
-//}
-//ImplySchemaLit ::= <<noImply Expr>> <<mslOnly eqeq_gt>> SchemaLit
-
-fake IncludeStmt ::= include SpecVisibility? Expr? eqeq_gt? SchemaLit? ';'?
-
-private IncludeStmts ::= IncludeImplySchemaStmt | IncludeSchemaStmt
-IncludeSchemaStmt ::= include SpecVisibility? SchemaLit ';'
-//IncludeSchemaStmt ::= include SpecVisibility? SchemaLit ';'
-{
-    pin = 1
-//    rightAssociative = true
-    elementType = IncludeStmt
-//    recoverWhile = IncludeSchemaStmt_recover
-}
-//private IncludeSchemaStmt_recover ::= !SpecExprStmt_first
-IncludeImplySchemaStmt ::= include SpecVisibility? <<noImply Expr>> <<mslOnly eqeq_gt>> SchemaLit ';'
-{
-    pin = 4
-    elementType = IncludeStmt
-//    recoverWhile = SpecExprStmt_recover
-}
-//ImplyExprFirst ::= Expr
-SchemaLit ::= Path SchemaFieldsBlock?
+SchemaLitExpr ::= <<checkSchemaAllowed>> Path SchemaFieldsBlock
 
 SchemaFieldsBlock ::= '{' SchemaField_with_recover* '}' { pin = 1 }
 private SchemaField_with_recover ::= !'}' SchemaLitField (',' | &'}')

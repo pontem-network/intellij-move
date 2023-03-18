@@ -2,7 +2,15 @@ package org.move.lang.core.types.infer
 
 import org.move.lang.core.types.ty.*
 
-data class EqualityConstraint(val ty1: Ty, val ty2: Ty) : TypeFoldable<EqualityConstraint> {
+data class EqualityConstraint(var ty1: Ty, var ty2: Ty) : TypeFoldable<EqualityConstraint> {
+    init {
+        // always sort TyUnknown to the right
+        if (ty1 is TyUnknown && ty2 !is TyUnknown) {
+            ty1 = ty2
+            ty2 = TyUnknown
+        }
+    }
+
     override fun innerFoldWith(folder: TypeFolder): EqualityConstraint =
         EqualityConstraint(ty1.foldWith(folder), ty2.foldWith(folder))
 
@@ -73,9 +81,15 @@ class ConstraintSolver(val ctx: InferenceContext) {
                     ty1 is TyVector && ty2 is TyVector -> {
                         constraints.add(0, EqualityConstraint(ty1.item, ty2.item))
                     }
+                    ty1 is TyVector && ty2 is TyUnknown -> {
+                        constraints.add(0, EqualityConstraint(ty1.item, TyUnknown))
+                    }
 
                     ty1 is TyReference && ty2 is TyReference -> {
                         constraints.add(0, EqualityConstraint(ty1.referenced, ty2.referenced))
+                    }
+                    ty1 is TyReference && ty2 is TyUnknown -> {
+                        constraints.add(0, EqualityConstraint(ty1.referenced, TyUnknown))
                     }
 
                     ty1 is TyStruct && ty2 is TyStruct && ty1.item == ty2.item -> {
@@ -85,14 +99,25 @@ class ConstraintSolver(val ctx: InferenceContext) {
                                 .map { (t1, t2) -> EqualityConstraint(t1, t2) }
                         constraints.addAll(0, cs)
                     }
+                    ty1 is TyStruct && ty2 is TyUnknown -> {
+                        val cs = ty1.typeArgs.map { arg -> EqualityConstraint(arg, TyUnknown) }
+                        constraints.addAll(0, cs)
+                    }
 
                     else -> {
                         // if types are not compatible, constraints are unsolvable
                         if (!isCompatible(ty1, ty2)) {
                             return false
                         }
+                        // no variables to solve
+                        if (
+                            !(ty1.visitWith { it is TyInfer.TyVar })
+                            && !(ty2.visitWith { it is TyInfer.TyVar })
+                        ) {
+                            return true
+                        }
                         // TODO: add
-                        // error("type == type should not occur for now")
+//                        error("Constraint $ty1 == $ty2 is not supported")
                     }
                 }
             }

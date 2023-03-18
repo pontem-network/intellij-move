@@ -3,15 +3,12 @@ package org.move.utils.tests.types
 import org.intellij.lang.annotations.Language
 import org.move.ide.presentation.expectedTyText
 import org.move.ide.presentation.text
+import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.psi.MvType
-import org.move.lang.core.psi.ext.inferredExprTy
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.inferExpectedTy
-import org.move.lang.core.types.infer.itemContext
-import org.move.lang.core.types.infer.maybeInferenceContext
+import org.move.lang.core.types.infer.*
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementAndDataInEditor
@@ -25,7 +22,7 @@ abstract class TypificationTestCase : MvTestBase() {
         testExpectedType<MvType>(code)
     }
 
-    protected inline fun <reified T: MvElement> testExpectedType(@Language("Move") code: String) {
+    protected inline fun <reified T : MvElement> testExpectedType(@Language("Move") code: String) {
         InlineFile(myFixture, code, "main.move")
         val (element, data) = myFixture.findElementAndDataInEditor<T>()
         val expectedType = data.trim()
@@ -45,6 +42,31 @@ abstract class TypificationTestCase : MvTestBase() {
     ) {
         InlineFile(myFixture, code, "main.move")
         check()
+//        if (!allowErrors) checkNoInferenceErrors()
+//        checkAllExpressionsTypified()
+    }
+
+    protected fun testBinding(
+        @Language("Move") code: String,
+//        allowErrors: Boolean = false
+    ) {
+        InlineFile(myFixture, code, "main.move")
+        val (bindingPat, data) = myFixture.findElementAndDataInEditor<MvBindingPat>()
+//        val expectedTypes = data.split("|").map(String::trim)
+        val expectedType = data.trim()
+
+//        val ctx = InferenceContext(expr.isMsl())
+        val msl = bindingPat.isMsl()
+        val inferenceCtx = bindingPat.maybeInferenceContext(msl) ?: error("No InferenceContextOwner at the caret")
+
+        val type = inferenceCtx.getBindingPatTy(bindingPat).text(true)
+        check(type == expectedType) {
+            "Type mismatch. Expected $expectedType, found: $type"
+        }
+//        check(type in expectedType) {
+//            "Type mismatch. Expected one of $expectedType, found: $type. $description"
+//        }
+
 //        if (!allowErrors) checkNoInferenceErrors()
 //        checkAllExpressionsTypified()
     }
@@ -77,8 +99,10 @@ abstract class TypificationTestCase : MvTestBase() {
 //        val expectedTypes = data.split("|").map(String::trim)
         val expectedType = data.trim()
 
-//        val ctx = InferenceContext(expr.isMsl())
-        val type = expr.inferredExprTy().text(true)
+        val msl = expr.isMsl()
+        val inferenceCtx = expr.maybeInferenceContext(msl) ?: error("No InferenceContextOwner at the caret")
+
+        val type = inferExprTy(expr, inferenceCtx).text(true)
         check(type == expectedType) {
             "Type mismatch. Expected $expectedType, found: $type"
         }

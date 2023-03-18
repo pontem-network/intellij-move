@@ -49,7 +49,7 @@ object ImportsCompletionProvider : MvCompletionProvider() {
             moduleRef.isSelf -> setOf(Visibility.Internal)
             else -> Visibility.buildSetOfVisibilities(itemImport)
         }
-        val ns = setOf(Namespace.NAME, Namespace.TYPE)
+        val ns = setOf(Namespace.NAME, Namespace.TYPE, Namespace.FUNCTION)
         val itemVis = ItemVis(
             ns, vs,
             mslScope = itemImport.mslScope,

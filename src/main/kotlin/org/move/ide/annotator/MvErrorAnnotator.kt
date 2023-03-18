@@ -5,6 +5,8 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullname
+import org.move.ide.utils.functionSignature
+import org.move.ide.utils.signature
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -15,7 +17,7 @@ import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
 import org.move.lang.utils.addToHolder
 
-class MvErrorAnnotator : MvAnnotator() {
+class MvErrorAnnotator : MvAnnotatorBase() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val moveHolder = MvAnnotationHolder(holder)
         val visitor = object : MvVisitor() {
@@ -79,12 +81,14 @@ class MvErrorAnnotator : MvAnnotator() {
                         } else {
                             // if no type args are passed, check whether all type params are inferrable
                             if (item.requiredTypeParams.isNotEmpty() && realCount != expectedCount) {
-                                MvDiagnostic.CannotInferType(path)
+                                MvDiagnostic
+                                    .CannotInferType(path)
                                     .addToHolder(moveHolder)
                             }
                         }
                     }
-                    item is MvSchema && parent is MvSchemaLit -> {
+                    item is MvSchema
+                            && (parent is MvSchemaLitExpr || parent is MvRefExpr) -> {
                         val expectedCount = item.typeParameters.size
                         if (realCount != 0) {
                             // if any type param is passed, inference is disabled, so check fully
@@ -106,31 +110,49 @@ class MvErrorAnnotator : MvAnnotator() {
                 }
             }
 
-            override fun visitCallExpr(o: MvCallExpr) {
-                if (o.isMsl()) return
-                if (o.path.referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
-                    val explicitTypeArgs = o.typeArguments
-                    val currentModule = o.containingModule ?: return
-                    val inferenceCtx = o.maybeInferenceContext(false) ?: return
+            override fun visitCallExpr(callExpr: MvCallExpr) {
+                val msl = callExpr.isMsl()
+                if (msl) return
+
+                val outerFunction = callExpr.containingFunction ?: return
+                if (outerFunction.isInline) return
+
+                val path = callExpr.path
+                val referenceName = path.referenceName ?: return
+                val item = path.reference?.resolve() ?: return
+
+                if (item is MvFunction && referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
+                    val explicitTypeArgs = path.typeArguments
+                    val currentModule = callExpr.containingModule ?: return
+                    val inferenceCtx = callExpr.maybeInferenceContext(false) ?: return
                     for (typeArg in explicitTypeArgs) {
                         val typeArgTy = inferenceCtx.getTypeTy(typeArg.type)
                         if (typeArgTy !is TyUnknown && !typeArgTy.canBeAcquiredInModule(currentModule)) {
                             val typeName = typeArgTy.fullname()
-                            holder.newAnnotation(
-                                HighlightSeverity.ERROR,
-                                "The type '$typeName' was not declared in the current module. " +
-                                        "Global storage access is internal to the module"
-                            )
-                                .range(o.path)
-                                .create()
+                            MvDiagnostic
+                                .StorageAccessIsNotAllowed(path, typeName)
+                                .addToHolder(moveHolder)
                         }
                     }
                 }
             }
 
+            override fun visitItemSpec(itemSpec: MvItemSpec) {
+                val funcItem = itemSpec.funcItem ?: return
+                val funcSignature = funcItem.signature ?: return
+                val itemSpecSignature = itemSpec.itemSpecSignature ?: return
+
+                val specSignature = itemSpecSignature.functionSignature
+                if (funcSignature != specSignature) {
+                    MvDiagnostic
+                        .FunctionSignatureMismatch(itemSpec)
+                        .addToHolder(moveHolder)
+                }
+            }
+
             override fun visitValueArgumentList(arguments: MvValueArgumentList) {
                 val callExpr = arguments.parent as? MvCallExpr ?: return
-                val function = callExpr.path.reference?.resolve() as? MvFunction ?: return
+                val function = callExpr.path.reference?.resolveWithAliases() as? MvFunction ?: return
 
                 val expectedCount = function.parameters.size
                 val realCount = arguments.valueArgumentList.size
@@ -236,14 +258,14 @@ private fun checkMissingFields(
 
 private fun checkDuplicates(
     holder: MvAnnotationHolder,
-    element: MvNameIdentifierOwner,
+    element: MvNamedElement,
     scopeNamedChildren: Sequence<MvNamedElement> = element.parent.namedChildren(),
 ) {
     val duplicateNamedChildren = getDuplicatedNamedChildren(scopeNamedChildren)
     if (element.name !in duplicateNamedChildren.map { it.name }) {
         return
     }
-    val identifier = element.nameIdentifier ?: element
+    val identifier = element.nameElement ?: element
     holder.createErrorAnnotation(identifier, "Duplicate definitions with name `${element.name}`")
 }
 

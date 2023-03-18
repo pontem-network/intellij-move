@@ -62,9 +62,8 @@ class ItemContext(val msl: Boolean, val owner: ItemContextOwner) {
 
     fun getStructFieldItemTy(structField: MvStructField): Ty {
         val struct = structField.struct
-        val fieldName = structField.name ?: return TyUnknown
         val structItemTy = getStructItemTy(struct) ?: return TyUnknown
-        return structItemTy.fieldTy(fieldName)
+        return structItemTy.fieldTy(structField.name)
     }
 
     fun getFunctionItemTy(function: MvFunctionLike): TyFunction = getItemTy(function) as TyFunction
@@ -177,12 +176,7 @@ private fun tyTemplate(item: MvNameIdentifierOwner, itemContext: ItemContext): T
         is MvStruct -> {
             val fieldTys = mutableMapOf<String, Ty>()
             for (field in item.fields) {
-                val fieldName = field.name ?: continue
-                val fieldTy = field.typeAnnotation
-                    ?.type
-                    ?.let { inferItemTypeTy(it, itemContext) }
-                    ?: TyUnknown
-                fieldTys[fieldName] = fieldTy
+                fieldTys[field.name] = field.typeTy(itemContext)
             }
             TyTemplate.Struct(item, fieldTys)
         }
@@ -190,8 +184,7 @@ private fun tyTemplate(item: MvNameIdentifierOwner, itemContext: ItemContext): T
         is MvFunctionLike -> {
             val paramTypes = mutableListOf<Ty>()
             for (param in item.parameters) {
-                val paramType = param.typeAnnotation?.type
-                    ?.let { inferItemTypeTy(it, itemContext) } ?: TyUnknown
+                val paramType = param.typeTy(itemContext)
                 paramTypes.add(paramType)
             }
             val returnType = item.returnType?.type

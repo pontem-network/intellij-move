@@ -11,7 +11,8 @@ class AttrItemArgumentReferenceImpl(
 ) : MvReferenceCached<MvAttrItemArgument>(element) {
 
     override fun resolveInner(): List<MvNamedElement> {
-        return ownerFunction.parameterBindings()
+        return ownerFunction.parameters
+            .map { it.bindingPat }
             .filter { it.name == element.referenceName }
     }
 }

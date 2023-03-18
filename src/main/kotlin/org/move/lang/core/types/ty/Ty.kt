@@ -19,6 +19,10 @@ enum class Ability {
         }
     }
 
+    override fun toString(): String {
+        return super.toString().lowercase()
+    }
+
     companion object {
         fun none(): Set<Ability> = setOf()
         fun all(): Set<Ability> = setOf(DROP, COPY, STORE, KEY)

@@ -3,6 +3,7 @@ package org.move.lang.core.completion.providers
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
+import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
@@ -116,6 +117,23 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
     }
 }
 
+object FunctionsCompletionProvider : MvPathCompletionProvider() {
+    override val elementPattern: ElementPattern<PsiElement>
+        get() =
+            MvPsiPatterns.path()
+                .andNot(MvPsiPatterns.pathType())
+                .andNot(MvPsiPatterns.schemaRef())
+
+    override fun itemVis(pathElement: MvPath): ItemVis {
+        return ItemVis(
+            setOf(Namespace.FUNCTION),
+            Visibility.none(),
+            mslScope = pathElement.mslScope,
+            itemScope = pathElement.itemScope,
+        )
+    }
+}
+
 object TypesCompletionProvider : MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = MvPsiPatterns.pathType()
@@ -133,7 +151,10 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
 object SchemasCompletionProvider : MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
-            MvPsiPatterns.schemaRef()
+            StandardPatterns.or(
+                MvPsiPatterns.schemaRef(), MvPsiPatterns.pathInsideIncludeStmt()
+            )
+
 
     override fun itemVis(pathElement: MvPath): ItemVis {
         return ItemVis(

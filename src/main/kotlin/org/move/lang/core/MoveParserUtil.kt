@@ -12,6 +12,7 @@ import com.intellij.util.BitUtil
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 import org.move.lang.MvElementTypes.*
+import org.move.lang.core.MoveParserUtil.setFlag
 import org.move.stdext.makeBitMask
 
 enum class FunModifier {
@@ -147,18 +148,21 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun noImply(b: PsiBuilder, level: Int, parser: Parser): Boolean {
-        b.noImply = ENABLED
+    fun includeStmtMode(b: PsiBuilder, level: Int, parser: Parser): Boolean {
+        val oldFlags = b.flags
+        val newFlags = oldFlags
+            .setFlag(SCHEMA_LIT_ALLOWED, true)
+        b.flags = newFlags
         val result = parser.parse(b, level)
-        b.noImply = DISABLED
+        b.flags = oldFlags
         return result
     }
 
     @JvmStatic
-    fun implyMslOnly(b: PsiBuilder, level: Int, parser: Parser): Boolean {
-        if (b.mslLevel == 0 || BitUtil.isSet(b.noImply, ENABLED)) return false
-        return parser.parse(b, level)
-    }
+    fun checkStructAllowed(b: PsiBuilder, level: Int): Boolean = !checkSchemaAllowed(b, level)
+
+    @JvmStatic
+    fun checkSchemaAllowed(b: PsiBuilder, level: Int): Boolean = BitUtil.isSet(b.flags, SCHEMA_LIT_ALLOWED)
 
     @JvmStatic
     fun functionModifierSet(
@@ -366,17 +370,22 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     fun toKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "to", TO)
 
     private val FLAGS: Key<Int> = Key("MoveParserUtil.FLAGS")
+    private var PsiBuilder.flags: Int
+        get() = getUserData(FLAGS) ?: TOP_LEVEL
+        set(value) = putUserData(FLAGS, value)
 
-    private val ENABLED: Int = makeBitMask(1)
-    private val DISABLED: Int = makeBitMask(0)
+    private fun Int.setFlag(flag: Int, mode: Boolean): Int =
+        BitUtil.set(this, flag, mode)
 
+    // flags
+    private val TOP_LEVEL: Int = makeBitMask(0)
+    private val SCHEMA_LIT_ALLOWED: Int = makeBitMask(1)
+
+    // msl
+    private val MSL_LEVEL: Key<Int> = Key("MoveParserUtil.MSL_LEVEL")
     private var PsiBuilder.mslLevel: Int
-        get() = getUserData(FLAGS) ?: 0
-        set(value) = putUserData(FLAGS, value)
-
-    private var PsiBuilder.noImply: Int
-        get() = getUserData(FLAGS) ?: DISABLED
-        set(value) = putUserData(FLAGS, value)
+        get() = getUserData(MSL_LEVEL) ?: 0
+        set(value) = putUserData(MSL_LEVEL, value)
 
     private fun contextualKeyword(
         b: PsiBuilder,

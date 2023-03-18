@@ -5,7 +5,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.MvItemSpecParameterReferenceElement
 import org.move.lang.core.resolve.ref.MvReference
 import org.move.lang.core.resolve.ref.MvReferenceCached
-import org.move.lang.core.resolve.ref.ResolveCacheDependency
 
 val MvItemSpecFunctionParameter.parameterList get() = this.parent as? MvItemSpecFunctionParameterList
 
@@ -19,6 +18,10 @@ val MvItemSpecTypeParameter.itemSpec: MvItemSpec?
     get() =
         parameterList?.parent?.parent as? MvItemSpec
 
+val MvItemSpecTypeParameter.bounds: List<MvAbility>
+    get() =
+        typeParamBound?.abilityList.orEmpty()
+
 class MvItemSpecParameterReferenceImpl(
     element: MvItemSpecParameterReferenceElement,
 ) : MvReferenceCached<MvItemSpecParameterReferenceElement>(element) {
@@ -30,7 +33,7 @@ class MvItemSpecParameterReferenceImpl(
                 val funcItem = element.itemSpec?.funcItem
                 if (funcItem != null) {
                     val refName = element.referenceName
-                    for (bindingPat in funcItem.parameterBindings()) {
+                    for (bindingPat in funcItem.allParamsAsBindings) {
                         if (bindingPat.name == refName) {
                             return listOf(bindingPat)
                         }

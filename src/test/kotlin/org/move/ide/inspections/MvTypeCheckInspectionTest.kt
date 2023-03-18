@@ -1220,4 +1220,27 @@ module 0x42::M1 {
     struct D { x: M0::Cup<M0::Cup<M0::Cup<A>>> }
 }
     """)
+
+    fun `test no error for table borrow mut of unknown type`() = checkByText("""
+module 0x1::table {
+    /// Type of tables
+    struct Table<phantom K: copy + drop, V> has store {
+        inner: V 
+    }
+    public fun borrow_mut<K: copy + drop, V>(table: &mut Table<K, V>, key: K): &mut V {
+        &mut table.inner
+    }
+}
+module 0x1::pool {
+    use 0x1::table;
+    struct Pool {
+        shares: Unknown
+    }
+    fun call(pool: &mut Pool) {
+        let value = table::borrow_mut(&mut pool.shares, @0x1);
+        let unref = *value;
+        1u128 - unref;
+    }
+}        
+    """)
 }

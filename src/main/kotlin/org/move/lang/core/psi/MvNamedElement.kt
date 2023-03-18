@@ -1,10 +1,8 @@
 package org.move.lang.core.psi
 
-import com.intellij.lang.ASTNode
 import com.intellij.psi.*
 import com.intellij.psi.search.PsiSearchHelper
 import com.intellij.psi.search.searches.ReferencesSearch
-import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.refactoring.listeners.RefactoringElementListener
 import com.intellij.refactoring.rename.RenameUtil
 import com.intellij.util.Query
@@ -24,21 +22,12 @@ interface MvNamedElement : MvElement,
     val fqName: String
 }
 
-abstract class MvNamedElementImpl(node: ASTNode) : MvElementImpl(node),
-                                                   MvNamedElement {
-    override fun getName(): String? = nameElement?.text
+interface MvMandatoryNamedElement : MvNamedElement {
+    val identifier: PsiElement
 
-    override fun setName(name: String): PsiElement {
-        val newIdentifier = project.psiFactory.identifier(name)
-        nameElement?.replace(newIdentifier)
-        return this
-    }
+    override val nameElement: PsiElement get() = identifier
 
-    override fun getNavigationElement(): PsiElement = nameElement ?: this
-
-    override fun getTextOffset(): Int = nameElement?.textOffset ?: super.getTextOffset()
-
-    override val fqName: String get() = "<unknown>"
+    override fun getName(): String
 }
 
 interface MvQualifiedNamedElement : MvNamedElement

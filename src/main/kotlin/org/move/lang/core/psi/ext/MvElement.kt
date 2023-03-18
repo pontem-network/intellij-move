@@ -23,6 +23,8 @@ fun PsiFileSystemItem.findMoveProject(): MoveProject? {
     return project.moveProjects.findMoveProject(path)
 }
 
+//private val MSL_KEY: Key<CachedValue<FunctionSignature?>> = Key.create("SIGNATURE_KEY")
+
 fun MvElement.isMsl(): Boolean {
     return CachedValuesManager.getProjectPsiDependentCache(this) {
         var element: MvElement? = it

@@ -15,13 +15,13 @@ import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.impl.BaseFixture
 import junit.framework.TestCase
 import org.intellij.lang.annotations.Language
-import org.move.ide.annotator.MvAnnotator
+import org.move.ide.annotator.MvAnnotatorBase
 import kotlin.reflect.KClass
 
 class MvAnnotationTestFixture(
     private val testCase: TestCase,
     val codeInsightFixture: CodeInsightTestFixture,
-    private val annotatorClasses: List<KClass<out MvAnnotator>> = emptyList(),
+    private val annotatorClasses: List<KClass<out MvAnnotatorBase>> = emptyList(),
     private val inspectionClasses: List<KClass<out InspectionProfileEntry>> = emptyList(),
 ) : BaseFixture() {
     val project: Project get() = codeInsightFixture.project
@@ -30,7 +30,7 @@ class MvAnnotationTestFixture(
     override fun setUp() {
         super.setUp()
         annotatorClasses.forEach {
-            MvAnnotator.enableAnnotator(
+            MvAnnotatorBase.enableAnnotator(
                 it.java,
                 testRootDisposable
             )

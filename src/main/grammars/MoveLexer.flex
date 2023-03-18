@@ -149,8 +149,8 @@ IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
       "phantom"            { return PHANTOM; }
       "spec"           { return SPEC; }
 
-  {PLACEHOLDER_ADDRESS}          { return PLACEHOLDER_ADDRESS; }
   {DIEM_ADDRESS}          { return DIEM_ADDRESS; }
+  {PLACEHOLDER_ADDRESS}          { return PLACEHOLDER_ADDRESS; }
   {BECH32_ADDRESS}          { return BECH32_ADDRESS; }
   {POLKADOT_ADDRESS}          { return POLKADOT_ADDRESS; }
 

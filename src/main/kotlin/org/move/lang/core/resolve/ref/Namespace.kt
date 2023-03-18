@@ -38,6 +38,7 @@ sealed class Visibility {
 
 enum class Namespace {
     NAME,
+    FUNCTION,
     TYPE,
     SPEC_ITEM,
     SCHEMA,
@@ -48,7 +49,7 @@ enum class Namespace {
     ERROR_CONST;
 
     companion object {
-        fun allNames(): Set<Namespace> {
+        fun all(): Set<Namespace> {
             return setOf(NAME, TYPE, SCHEMA, MODULE)
         }
 

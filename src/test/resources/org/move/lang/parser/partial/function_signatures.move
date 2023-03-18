@@ -16,22 +16,21 @@ module M {
     native public(script)
     native public fun
 
-    fun main(a b: u8) {}
-    fun main(, b: u8) {}
-    fun main(a: &, b: u8) {}
+    fun main_01(a b: u8) {}
+    fun main_02(, b: u8) {}
+    fun main_03(a: &, b: u8) {}
 
-    fun main(): (u8 {}
-    fun main(): (u8, {}
-    fun main(): (u8, u8 {}
-    fun main(): (u u8) {}
-    fun main() acq
-    fun main() acquires {}
-    fun main() acquires U,,{}
-    fun main() acquires U V{}
+    fun main_1(): (u8 {}
+    fun main_2(): (u8, {}
+    fun main_3(): (u8, u8 {}
+    fun main_5() acq
+    fun main_6() acquires {}
+    fun main_7() acquires U,,{}
+    fun main_8() acquires U V{}
 
-    fun main<() {}
-    fun main<U() {}
-    fun main<U,V,() {}
-    fun main<U V>() {}
-    fun main<U:, V: store+, T:drop+>() {}
+    fun main_11<() {}
+    fun main_12<U() {}
+    fun main_13<U,V,() {}
+    fun main_14<U V>() {}
+    fun main_15<U:, V: store+, T:drop+>() {}
 }

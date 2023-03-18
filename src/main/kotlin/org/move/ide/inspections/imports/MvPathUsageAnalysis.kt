@@ -14,14 +14,25 @@ data class ScopePathUsages(
     val typeUsages: ItemUsages,
 ) {
     fun updateFrom(other: ScopePathUsages) {
-        nameUsages.putAll(other.nameUsages)
-        typeUsages.putAll(other.typeUsages)
+        nameUsages.updateFromOther(other.nameUsages)
+        typeUsages.updateFromOther(other.typeUsages)
     }
 
     fun all(): ItemUsages {
-        val usages = nameUsages.toMutableMap()
-        usages.putAll(typeUsages)
-        return usages
+        val allUsages: ItemUsages = mutableMapOf()
+        allUsages.updateFromOther(nameUsages)
+        allUsages.updateFromOther(typeUsages)
+        return allUsages
+    }
+
+    companion object {
+        private fun ItemUsages.updateFromOther(other: ItemUsages) {
+            for ((otherKey, otherValue) in other.entries) {
+                val usages = this.getOrDefault(otherKey, mutableSetOf())
+                usages.addAll(otherValue)
+                this[otherKey] = usages
+            }
+        }
     }
 }
 

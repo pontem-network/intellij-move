@@ -6,16 +6,19 @@ import org.move.lang.core.types.infer.DAGNodeOrValue
 import org.move.lang.core.types.infer.DAGValue
 
 sealed class TyInfer : Ty {
+    // Note these classes must NOT be `data` classes and must provide equality by identity
     class TyVar(
         val origin: TyTypeParameter? = null,
         override var next: DAGNodeOrValue = DAGValue(null)
     ) : TyInfer(), DAGNode {
+
         override fun abilities(): Set<Ability> = origin?.abilities() ?: Ability.none()
     }
 
     class IntVar(
         override var next: DAGNodeOrValue = DAGValue(null)
     ) : TyInfer(), DAGNode {
+
         override fun abilities(): Set<Ability> = Ability.all()
     }
 
