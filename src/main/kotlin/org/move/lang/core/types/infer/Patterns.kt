@@ -67,7 +67,8 @@ fun inferBindingPatTy(bindingPat: MvBindingPat, parentCtx: InferenceContext): Ty
             }
             val inferredTy = owner.initializer?.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
             collectBindings(pat, inferredTy, parentCtx)
-            return parentCtx.bindingTypes[bindingPat] ?: TyUnknown
+            return parentCtx.bindingTypes[bindingPat]
+                ?: error("Should be assigned in the previous step")
         }
         is MvSchemaFieldStmt -> owner.annotationTy(parentCtx)
         else -> TyUnknown

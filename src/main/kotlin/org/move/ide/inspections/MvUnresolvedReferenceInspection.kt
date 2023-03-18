@@ -54,6 +54,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             // skip this check, as it will be checked in MvPath visitor
             if (moduleRef.ancestorStrict<MvPath>() != null) return
 
+            // skip those two, checked in UseSpeck checks later
             if (moduleRef.ancestorStrict<MvUseStmt>() != null) return
             if (moduleRef is MvFQModuleRef) return
 

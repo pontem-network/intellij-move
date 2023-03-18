@@ -13,7 +13,7 @@ import org.move.lang.core.types.ty.*
 fun inferItemTypeTy(moveType: MvType, itemContext: ItemContext): Ty {
     val ty = when (moveType) {
         is MvPathType -> run {
-            val namedItem = moveType.path.reference?.resolve()
+            val namedItem = moveType.path.reference?.resolveWithAliases()
                     ?: return@run inferItemBuiltinTypeTy(moveType, itemContext)
             when (namedItem) {
                 is MvTypeParameter -> TyTypeParameter(namedItem)

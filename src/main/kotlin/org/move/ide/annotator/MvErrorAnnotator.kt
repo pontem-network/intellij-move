@@ -152,7 +152,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
 
             override fun visitValueArgumentList(arguments: MvValueArgumentList) {
                 val callExpr = arguments.parent as? MvCallExpr ?: return
-                val function = callExpr.path.reference?.resolve() as? MvFunction ?: return
+                val function = callExpr.path.reference?.resolveWithAliases() as? MvFunction ?: return
 
                 val expectedCount = function.parameters.size
                 val realCount = arguments.valueArgumentList.size

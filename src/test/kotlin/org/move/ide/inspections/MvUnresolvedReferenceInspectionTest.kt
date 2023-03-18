@@ -19,7 +19,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
         }
     """)
 
-    fun `test test unresolved module member`() = checkByText("""
+    fun `test unresolved module member`() = checkByText("""
         script {
             use 0x1::<error descr="Unresolved reference: `Module`">Module</error>::call;
 
