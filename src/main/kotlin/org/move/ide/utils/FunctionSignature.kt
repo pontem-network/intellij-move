@@ -45,7 +45,7 @@ data class FunctionSignature(
 
     companion object {
         fun resolve(callExpr: MvCallExpr): FunctionSignature? {
-            val function = callExpr.path.reference?.resolve() as? MvFunction
+            val function = callExpr.path.reference?.resolveWithAliases() as? MvFunction
             return function?.signature
         }
 

@@ -103,6 +103,18 @@ class PhantomTypeParameterInspectionTest : InspectionTestBase(PhantomTypeParamet
     }    
     """)
 
+    fun `test error if only used in phantom positions in nested types with alias`() = checkByText("""
+    module 0x1::event {
+        struct Event<phantom T> {}
+    }        
+    module 0x1::M {
+        use 0x1::event::Event as MyEvent;
+        
+        struct S<T> { val: T }
+        struct R<<error descr="Unused type parameter. Consider declaring it as phantom">T</error>> { val: S<MyEvent<T>> }
+    }    
+    """)
+
     fun `test twice nested non-phantom type`() = checkByText(
         """
 module 0x1::main {

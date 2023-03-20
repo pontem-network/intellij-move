@@ -13,14 +13,16 @@ import org.move.utils.AsyncParameterInfoHandler
 
 class TypeParameterInfoHandler :
     AsyncParameterInfoHandler<MvTypeArgumentList, TypeParamsDescription>() {
+
     override fun findTargetElement(file: PsiFile, offset: Int): MvTypeArgumentList? =
         file.findElementAt(offset)?.ancestorStrict()
 
     override fun calculateParameterInfo(element: MvTypeArgumentList): Array<TypeParamsDescription>? {
-        val owner =
-            (element.parent as? MvPath)
-                ?.reference?.resolve() ?: return null
+        val parentPath = element.parent as? MvPath ?: return null
+        val owner = parentPath.reference?.resolveWithAliases() ?: return null
+        // if zero type parameters
         if (owner !is MvTypeParametersOwner) return null
+
         return arrayOf(typeParamsDescription(owner.typeParameters))
     }
 

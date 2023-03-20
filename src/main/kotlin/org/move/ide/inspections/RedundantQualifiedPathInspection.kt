@@ -18,12 +18,15 @@ class RedundantQualifiedPathInspection : MvLocalInspectionTool() {
                 val pathText = path.text
                     .replace(path.typeArgumentList?.text.orEmpty(), "")
                     .replace(Regex("\\s"), "")
-                val item = path.reference?.resolve() ?: return
+                val item = path.reference?.resolveWithAliases() ?: return
 
                 val importsOwner = path.containingScript?.scriptBlock
                     ?: path.containingModule?.moduleBlock
                     ?: return
                 val shortestPathText = importsOwner.shortestPathText(item) ?: return
+                // if aliases are involved, could lead to bugs
+                if (!pathText.endsWith(shortestPathText)) return
+
                 val diff = pathText.length - shortestPathText.length
                 if (diff > 0) {
                     if (pathText.substring(0, diff) == "Self::") return

@@ -108,9 +108,9 @@ class MvPathReferenceImpl(
                 // item import
                 is MvUseItem -> {
                     // find corresponding FQModuleRef from imports and resolve
-                    val modRef = item.moduleImport().fqModuleRef
+                    val fqModRef = item.useSpeck().fqModuleRef
                     // TODO: index call
-                    val module = modRef.reference?.resolve() as? MvModule
+                    val module = fqModRef.reference?.resolve() as? MvModule
                         ?: return emptyList()
                     return resolveModuleItem(module, refName, itemVis)
                 }

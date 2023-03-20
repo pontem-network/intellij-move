@@ -53,9 +53,9 @@ val MvPath.isQual: Boolean get() = !this.isLocal
 val MvPath.typeArguments: List<MvTypeArgument>
     get() = typeArgumentList?.typeArgumentList.orEmpty()
 
-val MvPath.maybeStruct get() = reference?.resolve() as? MvStruct
+val MvPath.maybeStruct get() = reference?.resolveWithAliases() as? MvStruct
 
-val MvPath.maybeSchema get() = reference?.resolve() as? MvSchema
+val MvPath.maybeSchema get() = reference?.resolveWithAliases() as? MvSchema
 
 abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
 

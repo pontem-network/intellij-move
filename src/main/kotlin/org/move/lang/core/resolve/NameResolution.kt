@@ -94,7 +94,7 @@ fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
         resolved = resolved.moduleUseSpeck ?: resolved.useItem
     }
     if (resolved is MvUseItem && resolved.isSelf) {
-        return resolved.moduleImport().fqModuleRef
+        return resolved.useSpeck().fqModuleRef
     }
     if (resolved !is MvModuleUseSpeck) return null
 

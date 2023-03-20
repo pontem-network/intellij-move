@@ -48,6 +48,18 @@ class TypeParameterInfoHandlerTest :
         } 
     """, "R: store", 0)
 
+    fun `test aliased function`() = checkByText("""
+        module 0x1::mod {
+            public fun call<R: store>() {}
+        }
+        module M {
+            use 0x1::mod::call as mycall;
+            fun main() {
+                mycall</*caret*/>()
+            }
+        } 
+    """, "R: store", 0)
+
     fun `test function index 0`() = checkByText("""
         module M {
             fun call<R: store, S: copy>() {}

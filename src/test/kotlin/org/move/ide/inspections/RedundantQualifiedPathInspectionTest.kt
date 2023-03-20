@@ -120,6 +120,20 @@ class RedundantQualifiedPathInspectionTest : InspectionTestBase(RedundantQualifi
     """
     )
 
+    fun `test no error if qualified path and method imported with alias`() = checkWarnings("""
+    module 0x1::M {
+        public fun call() {}
+    }    
+    module 0x1::M2 {
+        use 0x1::M;
+        use 0x1::M::call as mycall_mycall_mycall;
+        fun m() {
+            mycall_mycall_mycall();
+        }
+    }    
+    """
+    )
+
     fun `test error method imported is higher priority`() = checkFixByText(
         "Remove redundant qualifier", """
     module 0x1::M {
