@@ -354,7 +354,19 @@ class KeywordCompletionTest : CompletionTestCase() {
         }
     """, """
         module 0x1::M {
-            fun main() acquires /*caret*/{}
+            fun main() acquires /*caret*/ {}
+        }
+    """
+    )
+
+    fun `test acquires keyword with space`() = doSingleCompletion(
+        """
+        module 0x1::M {
+            fun main() acq/*caret*/ {}
+        }
+    """, """
+        module 0x1::M {
+            fun main() acquires /*caret*/ {}
         }
     """
     )

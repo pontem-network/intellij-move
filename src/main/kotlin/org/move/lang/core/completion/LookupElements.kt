@@ -178,7 +178,11 @@ private val InsertionContext.hasAngleBrackets: Boolean
     get() = nextCharIs('<')
 
 fun InsertionContext.nextCharIs(c: Char): Boolean =
-    document.charsSequence.indexOfSkippingSpace(c, tailOffset) != null
+    nextCharIs(c, 0)
+//    document.charsSequence.indexOfSkippingSpace(c, tailOffset) != null
+
+fun InsertionContext.nextCharIs(c: Char, offset: Int): Boolean =
+    document.charsSequence.indexOfSkippingSpace(c, tailOffset + offset) != null
 
 private fun CharSequence.indexOfSkippingSpace(c: Char, startIndex: Int): Int? {
     for (i in startIndex until this.length) {
