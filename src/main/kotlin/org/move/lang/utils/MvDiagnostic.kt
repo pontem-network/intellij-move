@@ -9,6 +9,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import org.move.ide.annotator.MvAnnotationHolder
 import org.move.ide.annotator.fixes.ItemSpecSignatureFix
+import org.move.lang.core.psi.MvCastExpr
 import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.ext.endOffset
