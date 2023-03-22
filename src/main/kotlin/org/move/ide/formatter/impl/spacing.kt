@@ -38,8 +38,6 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
 
         .afterInside(AND, PATH_TYPE).spacing(0, 0, 0, false, 0)
         .afterInside(AND, BORROW_EXPR).spacing(0, 0, 0, false, 0)
-        .afterInside(AND, BORROW_PAT).spacing(0, 0, 0, false, 0)
-
         .afterInside(MUL, DEREF_EXPR).spacing(0, 0, 0, false, 0)
 
         //== empty parens
