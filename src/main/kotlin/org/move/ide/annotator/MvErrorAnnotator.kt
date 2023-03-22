@@ -202,6 +202,15 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                     moveHolder, nameElement, o.fieldNames.toSet(), struct
                 )
             }
+
+            override fun visitCastExpr(castExpr: MvCastExpr) {
+                val parent = castExpr.parent
+                if (parent !is MvParensExpr) {
+                    MvDiagnostic
+                        .ParensAreRequiredForCastExpr(castExpr)
+                        .addToHolder(moveHolder)
+                }
+            }
         }
         element.accept(visitor)
     }

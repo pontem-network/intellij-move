@@ -10,7 +10,6 @@ import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.InspectionTestUtil
 import com.intellij.testFramework.PsiTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
@@ -130,5 +129,35 @@ class MvAnnotationTestFixture(
         applyQuickFix(fixName)
         codeInsightFixture.checkResult(replaceCaretMarker(after.trimIndent()))
         PsiTestUtil.checkFileStructure(file)
+    }
+
+    fun checkAvailableFixes(
+        fixPrefix: String,
+        fixes: List<String>,
+        @Language("Move") code: String,
+        checkWarn: Boolean = true,
+        checkInfo: Boolean = false,
+        checkWeakWarn: Boolean = false,
+    ) {
+        kotlin.check(code.contains("/*caret*/")) {
+            "No /*caret*/ comment, add it to the place where fix is expected"
+        }
+        configureByText(code)
+        codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
+
+        val fixNames = codeInsightFixture.filterAvailableIntentions(fixPrefix).map { it.text }
+        kotlin.check(fixes == fixNames) {
+            "Cannot find fixes ${fixNamesToString(fixes)} in ${fixNamesToString(fixNames)}"
+        }
+    }
+
+    companion object {
+        private fun fixNamesToString(intentionNames: List<String>): String {
+            return intentionNames.joinToString(
+                prefix = "[",
+                postfix = "]",
+                transform = { name -> "\"$name\"" }
+            )
+        }
     }
 }
