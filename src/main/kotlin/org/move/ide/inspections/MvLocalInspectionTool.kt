@@ -1,6 +1,7 @@
 package org.move.ide.inspections
 
 import com.intellij.codeInspection.*
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
@@ -46,11 +47,38 @@ abstract class MvLocalInspectionTool : LocalInspectionTool() {
     }
 }
 
+abstract class DiagnosticFix<T : PsiElement>(element: T) :
+    LocalQuickFixAndIntentionActionOnPsiElement(element) {
+
+    override fun getStartElement(): T {
+        @Suppress("UNCHECKED_CAST")
+        return super.getStartElement() as T
+    }
+
+    override fun invoke(
+        project: Project,
+        file: PsiFile,
+        editor: Editor?,
+        startElement: PsiElement,
+        endElement: PsiElement
+    ) {
+        @Suppress("UNCHECKED_CAST")
+        val element = startElement as T
+        if (stillApplicable(project, file, element)) {
+            invoke(project, file, element)
+        }
+    }
+
+    abstract fun stillApplicable(project: Project, file: PsiFile, element: T): Boolean
+
+    abstract fun invoke(project: Project, file: PsiFile, element: T)
+}
+
 abstract class InspectionQuickFix(val fixName: String) : LocalQuickFix {
     override fun getFamilyName(): String = fixName
 }
 
-abstract class MvLocalQuickFixOnPsiElement<T: PsiElement>(psiElement: T): LocalQuickFixOnPsiElement(psiElement) {
+abstract class MvLocalQuickFixOnPsiElement<T : PsiElement>(psiElement: T) : LocalQuickFixOnPsiElement(psiElement) {
     override fun invoke(project: Project, file: PsiFile, startElement: PsiElement, endElement: PsiElement) {
         @Suppress("UNCHECKED_CAST")
         val element = startElement as T

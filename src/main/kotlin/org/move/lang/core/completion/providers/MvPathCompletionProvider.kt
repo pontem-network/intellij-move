@@ -49,7 +49,7 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
         val ctx = CompletionContext(pathElement, itemVis, expectedTy)
 
         if (moduleRef != null) {
-            val module = moduleRef.reference?.resolve() as? MvModule
+            val module = moduleRef.reference?.resolveWithAliases() as? MvModule
                 ?: return
             val vs = when {
                 moduleRef.isSelf -> setOf(Visibility.Internal)

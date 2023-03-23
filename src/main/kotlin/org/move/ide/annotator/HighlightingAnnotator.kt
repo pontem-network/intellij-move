@@ -72,13 +72,13 @@ class HighlightingAnnotator : MvAnnotatorBase() {
                 if (identifierName in SPEC_ONLY_PRIMITIVE_TYPES && path.isMsl()) return MvColor.PRIMITIVE_TYPE
                 if (identifierName in BUILTIN_TYPE_IDENTIFIERS) return MvColor.BUILTIN_TYPE
 
-                val resolved = path.reference?.resolve()
-                if (resolved is MvTypeParameter) {
+                val item = path.reference?.resolve()
+                if (item is MvTypeParameter) {
                     return MvColor.TYPE_PARAMETER
                 }
             }
             is MvCallExpr -> {
-                val resolved = path.reference?.resolve() as? MvFunctionLike
+                val resolved = path.reference?.resolveWithAliases() as? MvFunctionLike
                 if (resolved != null) {
                     return when {
                         resolved is MvSpecFunction

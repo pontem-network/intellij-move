@@ -645,16 +645,14 @@ TypeArgument ::= Type
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Patterns (destructuring)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Pat ::= DerefPat
-        | BorrowPat
-        | TuplePat
+Pat ::= TuplePat
         | StructPat
         | WildPat
         | BindingPat
 
 WildPat ::= '_'
-DerefPat ::= '*' Pat
-BorrowPat ::= '&' Pat
+//DerefPat ::= '*' Pat
+//BorrowPat ::= '&' Pat
 //DotPat ::= IDENTIFIER '.' IDENTIFIER { pin = 2 }
 
 BindingPat ::= IDENTIFIER {

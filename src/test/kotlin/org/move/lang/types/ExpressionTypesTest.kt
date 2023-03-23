@@ -726,4 +726,18 @@ module 0x1::pool {
 }
     """
     )
+
+    fun `test call expr from alias`() = testExpr("""
+module 0x1::string {
+    public fun call(): u8 {}
+}        
+module 0x1::main {
+    use 0x1::string::call as mycall;
+    fun main() {
+        let a = mycall();
+        a;
+      //^ u8  
+    }
+}
+    """)
 }

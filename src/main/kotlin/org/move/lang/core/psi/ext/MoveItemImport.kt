@@ -11,7 +11,7 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.resolveModuleItem
 
-fun MvUseItem.moduleImport(): MvItemUseSpeck =
+fun MvUseItem.useSpeck(): MvItemUseSpeck =
     ancestorStrict() ?: error("ItemImport outside ModuleItemsImport")
 
 val MvUseItem.speck: MvElement?
@@ -32,7 +32,7 @@ val MvUseItem.isSelf: Boolean get() = this.identifier.textMatches("Self")
 class MvUseItemReferenceElement(element: MvUseItem) : MvReferenceCached<MvUseItem>(element) {
 
     override fun resolveInner(): List<MvNamedElement> {
-        val moduleRef = element.moduleImport().fqModuleRef
+        val moduleRef = element.useSpeck().fqModuleRef
         val module =
             moduleRef.reference?.resolve() as? MvModule ?: return emptyList()
         if ((element.useAlias == null && element.text == "Self")

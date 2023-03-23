@@ -12,7 +12,7 @@ import org.move.lang.core.psi.ext.descendantOfTypeStrict
 
 val Project.psiFactory get() = MvPsiFactory(this)
 
-class MvPsiFactory(private val project: Project) {
+class MvPsiFactory(val project: Project) {
     fun itemSpecSignature(signature: FunctionSignature): MvItemSpecSignature {
         val typeParams = signature.typeParameters
         val typeParamsText =
@@ -64,7 +64,11 @@ class MvPsiFactory(private val project: Project) {
 
     fun const(text: String): MvConst =
         createFromText("module _IntellijPreludeDummy { $text }")
-            ?: error("")
+            ?: error("Failed to create const")
+
+    inline fun <reified T: MvExpr> expr(text: String): T =
+        createFromText("module _IntellijPreludeDummy { fun call() { let _ = $text; } }")
+            ?: error("Failed to create expr")
 
     fun useStmt(speckText: String, testOnly: Boolean): MvUseStmt {
         return createFromText("module _IntellijPreludeDummy { ${if (testOnly) "#[test_only]\n" else ""}use $speckText; }")
@@ -143,7 +147,7 @@ class MvPsiFactory(private val project: Project) {
 
     fun createNewline(): PsiElement = createWhitespace("\n")
 
-    private inline fun <reified T : MvElement> createFromText(code: CharSequence): T? {
+    inline fun <reified T : MvElement> createFromText(code: CharSequence): T? {
         val dummyFile = PsiFileFactory.getInstance(project)
             .createFileFromText(
                 "DUMMY.move",

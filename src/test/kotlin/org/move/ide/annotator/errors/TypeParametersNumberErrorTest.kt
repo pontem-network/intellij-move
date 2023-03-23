@@ -39,6 +39,18 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
         }    
     """)
 
+    fun `test no type arguments expected for imported alias`() = checkErrors("""
+        module 0x1::string {
+            struct MyStruct { field: u8 }
+        }
+        module 0x1::M {
+            use 0x1::string::MyStruct as Struct;            
+            fun m() {
+                let a: <error descr="Invalid instantiation of '0x1::string::MyStruct'. Expected 0 type argument(s) but got 1">Struct<u8></error>;
+            }
+        }    
+    """)
+
     fun `test resource could be inferred for move_to`() = checkErrors("""
         module 0x1::M {
             fun main(s: signer) {

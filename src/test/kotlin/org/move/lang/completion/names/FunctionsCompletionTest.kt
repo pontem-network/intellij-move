@@ -357,4 +357,26 @@ class FunctionsCompletionTest : CompletionTestCase() {
         }
     }    
     """)
+
+    fun `test complete function from module alias`() = doSingleCompletion("""
+    module 0x1::string {
+        public fun call() {}
+    }    
+    module 0x1::main {
+        use 0x1::string as mystring;
+        fun main() {
+            mystring::ca/*caret*/
+        }
+    }    
+    """, """
+    module 0x1::string {
+        public fun call() {}
+    }    
+    module 0x1::main {
+        use 0x1::string as mystring;
+        fun main() {
+            mystring::call()/*caret*/
+        }
+    }    
+    """)
 }

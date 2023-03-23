@@ -35,9 +35,6 @@ interface PsiMandatoryReferenceElement : PsiElement {
         get() = identifier.text
 
     override fun getReference(): PsiReference
-
-    val isUnresolved: Boolean
-        get() = reference.resolve() == null
 }
 
 interface NamedAddressReferenceElement : PsiMandatoryReferenceElement {

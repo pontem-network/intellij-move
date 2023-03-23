@@ -91,6 +91,18 @@ class ParameterInfoHandlerTest
         }
     """, "addr: address", 0)
 
+    fun `test aliased function`() = checkByText("""
+        module 0x1::string {
+            public fun call(addr: address) {}
+        }
+        module M {
+            use 0x1::string::call as mycall;
+            fun main() {
+                mycall(/*caret*/);
+            }    
+        }
+    """, "addr: address", 0)
+
     fun `test not applied within declaration`() = checkByText("""
         module M {
             fun foo(val1/*caret*/: u8, val2: u8) {}

@@ -17,10 +17,17 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
     """)
 
     fun `test function calls annotated`() = checkHighlighting("""
+    module 0x1::string {
+        public fun mycall() {}
+    }    
     module M {
+        use 0x1::string::mycall as mycall_alias;
+        
         fun <FUNCTION_DEF>call</FUNCTION_DEF>(x: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>) {}
         fun <FUNCTION_DEF>main</FUNCTION_DEF>() {
             <FUNCTION_CALL>call</FUNCTION_CALL>(1)
+            <FUNCTION_CALL>mycall_alias</FUNCTION_CALL>()
+            
         }
     }    
     """)

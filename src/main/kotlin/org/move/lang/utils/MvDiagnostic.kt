@@ -1,6 +1,8 @@
 package org.move.lang.utils
 
 import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.codeInspection.InspectionManager
+import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.util.InspectionMessage
 import com.intellij.lang.annotation.HighlightSeverity
@@ -9,11 +11,11 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import org.move.ide.annotator.MvAnnotationHolder
 import org.move.ide.annotator.fixes.ItemSpecSignatureFix
+import org.move.ide.annotator.fixes.WrapWithParensExprFix
+import org.move.lang.core.psi.MvCastExpr
 import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.MvPath
-import org.move.lang.core.psi.ext.endOffset
-import org.move.lang.core.psi.ext.itemSpecBlock
-import org.move.lang.core.psi.ext.startOffset
+import org.move.lang.core.psi.ext.*
 import org.move.lang.utils.Severity.*
 
 sealed class MvDiagnostic(
@@ -120,6 +122,18 @@ sealed class MvDiagnostic(
             )
         }
     }
+
+    class ParensAreRequiredForCastExpr(castExpr: MvCastExpr) : MvDiagnostic(castExpr) {
+        override fun prepare(): PreparedAnnotation {
+            val castExpr = element as MvCastExpr
+            return PreparedAnnotation(
+                ERROR,
+                "Parentheses are required for the cast expr",
+                fixes = listOf(WrapWithParensExprFix(castExpr))
+            )
+        }
+
+    }
 }
 
 enum class Severity {
@@ -144,53 +158,40 @@ class PreparedAnnotation(
     val severity: Severity,
     @InspectionMessage val header: String,
     @Suppress("UnstableApiUsage") @NlsContexts.Tooltip val description: String = "",
-    val fixes: List<IntentionAction> = emptyList(),
+    val fixes: List<LocalQuickFix> = emptyList(),
 //    val textAttributes: TextAttributesKey? = null
 )
 
 fun MvDiagnostic.addToHolder(moveHolder: MvAnnotationHolder) {
     val prepared = prepare()
 
-//    val textRange = if (endElement != null) {
-//        TextRange.create(
-//            element.startOffset,
-//            endElement.endOffset
-//        )
-//    } else {
-//        element.textRange
-//    }
-
     val holder = moveHolder.holder
-    var ann = holder.newAnnotation(
+    val ann = holder.newAnnotation(
         prepared.severity.toHighlightSeverity(),
         prepared.header
     )
     if (prepared.description.isNotBlank()) {
-        ann = ann.tooltip(prepared.description)
+        ann.tooltip(prepared.description)
     }
     ann.highlightType(prepared.severity.toProblemHighlightType())
         .range(textRange)
 
+    val message = prepared.description
     for (fix in prepared.fixes) {
-        ann.newFix(fix).registerFix()
+        if (fix is IntentionAction) {
+            ann.withFix(fix)
+        } else {
+            val descriptor = InspectionManager.getInstance(element.project)
+                .createProblemDescriptor(
+                    element,
+                    element,
+                    message,
+                    prepared.severity.toProblemHighlightType(),
+                    true,
+                    fix
+                )
+            ann.newLocalQuickFix(fix, descriptor).registerFix()
+        }
     }
-
     ann.create()
-//    for (fix in prepared.fixes) {
-//        if (fix is IntentionAction) {
-//            ann.newFix(fix)
-//        } else {
-//            val descriptor = InspectionManager.getInstance(element.project)
-//                .createProblemDescriptor(
-//                    element,
-//                    endElement ?: element,
-//                    ann.message,
-//                    prepared.severity.toProblemHighlightType(),
-//                    true,
-//                    fix
-//                )
-//
-//            ann.registerFix(fix, null, null, descriptor)
-//        }
-//    }
 }

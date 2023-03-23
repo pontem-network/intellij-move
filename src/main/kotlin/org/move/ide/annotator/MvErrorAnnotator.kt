@@ -32,7 +32,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
             override fun visitStructField(o: MvStructField) = checkDuplicates(moveHolder, o)
 
             override fun visitPath(path: MvPath) {
-                val item = path.reference?.resolve()
+                val item = path.reference?.resolveWithAliases()
                 val realCount = path.typeArguments.size
                 val parent = path.parent
                 when {
@@ -201,6 +201,15 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                 checkMissingFields(
                     moveHolder, nameElement, o.fieldNames.toSet(), struct
                 )
+            }
+
+            override fun visitCastExpr(castExpr: MvCastExpr) {
+                val parent = castExpr.parent
+                if (parent !is MvParensExpr) {
+                    MvDiagnostic
+                        .ParensAreRequiredForCastExpr(castExpr)
+                        .addToHolder(moveHolder)
+                }
             }
         }
         element.accept(visitor)

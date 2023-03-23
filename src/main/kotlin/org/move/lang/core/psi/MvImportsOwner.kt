@@ -51,11 +51,11 @@ fun MvImportsOwner.itemImports(): List<MvUseItem> {
 
 fun MvImportsOwner.itemImportNames(): List<MvNamedElement> =
     listOf(
-        itemImportsNoAliases(),
+        useItemsNoAliases(),
         itemImportsAliases(),
     ).flatten()
 
-fun MvImportsOwner.itemImportsNoAliases(): List<MvUseItem> =
+fun MvImportsOwner.useItemsNoAliases(): List<MvUseItem> =
     itemImports().filter { it.useAlias == null }
 
 fun MvImportsOwner.itemImportsAliases(): List<MvUseAlias> = itemImports().mapNotNull { it.useAlias }
@@ -75,8 +75,8 @@ fun MvImportsOwner.shortestPathText(item: MvNamedElement): String? {
     // local
     if (this == item.containingImportsOwner) return itemName
 
-    for (itemImport in this.itemImportsNoAliases()) {
-        val importedItem = itemImport.reference.resolve() ?: continue
+    for (useItem in this.useItemsNoAliases()) {
+        val importedItem = useItem.reference.resolve() ?: continue
         if (importedItem == item) {
             return itemName
         }

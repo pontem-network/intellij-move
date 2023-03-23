@@ -2,7 +2,7 @@ package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isSelf
-import org.move.lang.core.psi.ext.moduleImport
+import org.move.lang.core.psi.ext.useSpeck
 import org.move.lang.core.resolve.resolveSingleItem
 import org.move.stdext.wrapWithList
 
@@ -18,7 +18,7 @@ class MvModuleReferenceImpl(
             return resolved.wrapWithList()
         }
         val moduleRef = when {
-            resolved is MvUseItem && resolved.text == "Self" -> resolved.moduleImport().fqModuleRef
+            resolved is MvUseItem && resolved.text == "Self" -> resolved.useSpeck().fqModuleRef
             resolved is MvModuleUseSpeck -> resolved.fqModuleRef
             else -> return emptyList()
         }

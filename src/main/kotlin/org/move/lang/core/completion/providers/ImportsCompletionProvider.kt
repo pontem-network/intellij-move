@@ -13,7 +13,7 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvUseItem
 import org.move.lang.core.psi.MvUseItemGroup
 import org.move.lang.core.psi.ext.isSelf
-import org.move.lang.core.psi.ext.moduleImport
+import org.move.lang.core.psi.ext.useSpeck
 import org.move.lang.core.psi.ext.names
 import org.move.lang.core.psi.itemScope
 import org.move.lang.core.resolve.ItemVis
@@ -34,7 +34,7 @@ object ImportsCompletionProvider : MvCompletionProvider() {
         result: CompletionResultSet
     ) {
         val itemImport = parameters.position.parent as MvUseItem
-        val moduleRef = itemImport.moduleImport().fqModuleRef
+        val moduleRef = itemImport.useSpeck().fqModuleRef
 
         if (parameters.position !== itemImport.referenceNameElement) return
         val referredModule = moduleRef.reference?.resolve() as? MvModule

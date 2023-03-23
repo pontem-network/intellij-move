@@ -186,9 +186,9 @@ fun MvModule.consts(): List<MvConst> =
 
 val MvModuleBlock.module: MvModule get() = this.parent as MvModule
 
-fun MvModuleBlock.moduleItemSpecs() = this.moduleItemSpecList
-//    this.childrenOfType<MvItemSpec>()
-//        .filter { it.itemSpecRef?.moduleKw != null }
+//fun MvModuleBlock.moduleItemSpecs() = this.moduleItemSpecList
+////    this.childrenOfType<MvItemSpec>()
+////        .filter { it.itemSpecRef?.moduleKw != null }
 
 val MvModuleSpec.module: MvModule? get() = this.fqModuleRef?.reference?.resolve() as? MvModule
 
