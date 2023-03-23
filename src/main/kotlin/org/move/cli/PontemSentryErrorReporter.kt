@@ -16,6 +16,7 @@ import com.intellij.util.Consumer
 import io.sentry.Sentry
 import io.sentry.SentryEvent
 import io.sentry.SentryLevel
+import io.sentry.UserFeedback
 import io.sentry.protocol.Message
 import io.sentry.protocol.SentryId
 import org.move.openapiext.project
@@ -48,8 +49,12 @@ class PontemSentryErrorReporter : ErrorReportSubmitter() {
                     // io
                     val sentryEventId = Sentry.captureEvent(sentryEvent)
                     if (successfullySent(sentryEventId)) {
-                        // io
-//                        captureUserFeedback(sentryEventId, additionalInfo)
+                        if (additionalInfo != null) {
+                            val userFeedback = UserFeedback(sentryEventId)
+                            userFeedback.comments = additionalInfo
+                            // io
+                            Sentry.captureUserFeedback(userFeedback)
+                        }
                         onSuccess(project, consumer::consume)
                     }
                 } catch (e: Exception) {
@@ -66,6 +71,7 @@ class PontemSentryErrorReporter : ErrorReportSubmitter() {
             val sentryEvent = SentryEvent()
             sentryEvent.level = SentryLevel.ERROR
 
+
             val plugin = IdeErrorsDialog.getPlugin(event)
             sentryEvent.contexts["Plugin Info"] = mapOf(
                 "Platform" to ApplicationInfo.getInstance().fullApplicationName,
@@ -74,8 +80,10 @@ class PontemSentryErrorReporter : ErrorReportSubmitter() {
             sentryEvent.contexts["Stacktrace"] = mapOf("Value" to event.throwableText)
 
             val sentryMessage = Message()
-            sentryMessage.formatted = event.throwableText.split('\n').getOrNull(0)
+            sentryMessage.formatted = event.errorMessage
             sentryEvent.message = sentryMessage
+
+            sentryEvent.fingerprints = listOf("{{ default }}", event.errorMessage)
 
             return sentryEvent
         }
@@ -85,6 +93,8 @@ class PontemSentryErrorReporter : ErrorReportSubmitter() {
         }
     }
 }
+
+private val IdeaLoggingEvent.errorMessage: String? get() = throwableText.split('\n').getOrNull(0)
 
 private fun onSuccess(project: Project?, callback: Consumer<in SubmittedReportInfo>) {
     val reportInfo = SubmittedReportInfo(SubmittedReportInfo.SubmissionStatus.NEW_ISSUE)
