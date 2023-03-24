@@ -16,7 +16,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.util.io.systemIndependentPath
-import org.move.cli.runconfig.MvCapturingProcessHandler
+import org.move.cli.runConfigurations.MvCapturingProcessHandler
 import org.move.stdext.MvResult
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path

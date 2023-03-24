@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-package org.move.cli.runconfig
+package org.move.cli.runConfigurations
 
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine

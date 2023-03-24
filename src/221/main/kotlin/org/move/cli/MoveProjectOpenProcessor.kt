@@ -6,7 +6,8 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.PlatformProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenProcessor
-import org.move.cli.runconfig.addDefaultBuildRunConfiguration
+import org.move.cli.runConfigurations.addDefaultBuildRunConfiguration
+import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.cli.settings.aptosPath
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
@@ -15,7 +16,6 @@ import org.move.ide.notifications.updateAllNotifications
 import org.move.openapiext.aptosBuildRunConfigurations
 import org.move.openapiext.aptosRunConfigurations
 import org.move.openapiext.contentRoots
-import javax.swing.Icon
 
 class MoveProjectOpenProcessor : ProjectOpenProcessor() {
     override fun getName(): String = "Move"

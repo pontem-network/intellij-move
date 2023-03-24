@@ -1,5 +1,5 @@
 <configurations>
-  <configuration name="Publish Main" type="MoveRunConfiguration">
+  <configuration name="Publish Main" type="AptosRunConfiguration" factoryName="AnyCommand">
     <option name="command" value="move publish" />
     <option name="workingDirectory" value="file://" />
     <envs>

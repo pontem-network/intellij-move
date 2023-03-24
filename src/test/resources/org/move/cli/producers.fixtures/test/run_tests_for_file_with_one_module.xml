@@ -1,5 +1,5 @@
 <configurations>
-  <configuration name="Test Main" type="MoveRunConfiguration">
+  <configuration name="Test Main" type="AptosRunConfiguration" factoryName="AnyCommand">
     <option name="command" value="move test --filter Main" />
     <option name="workingDirectory" value="file:///mypackage" />
     <envs>

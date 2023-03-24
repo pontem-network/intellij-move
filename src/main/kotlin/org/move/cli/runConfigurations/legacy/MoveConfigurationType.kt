@@ -1,4 +1,4 @@
-package org.move.cli.runconfig
+package org.move.cli.runConfigurations.legacy
 
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationTypeUtil
@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NotNullLazyValue
 import org.move.ide.MoveIcons
 
-class AptosCommandConfigurationType :
+class MoveConfigurationType :
     SimpleConfigurationType(
         "MoveRunConfiguration",
         "Move",
@@ -16,13 +16,13 @@ class AptosCommandConfigurationType :
         NotNullLazyValue.createConstantValue(MoveIcons.MOVE)
     ) {
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return AptosCommandConfiguration(project, this)
+        return MoveCommandConfiguration(project, this)
     }
 
     val factory: ConfigurationFactory get() = configurationFactories.single()
 
     companion object {
         fun getInstance() =
-            ConfigurationTypeUtil.findConfigurationType(AptosCommandConfigurationType::class.java)
+            ConfigurationTypeUtil.findConfigurationType(MoveConfigurationType::class.java)
     }
 }

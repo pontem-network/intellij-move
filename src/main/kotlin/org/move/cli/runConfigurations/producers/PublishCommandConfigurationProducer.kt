@@ -1,7 +1,7 @@
-package org.move.cli.runconfig.producers
+package org.move.cli.runConfigurations.producers
 
 import com.intellij.psi.PsiElement
-import org.move.cli.AptosCommandLine
+import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.isTest
@@ -23,12 +23,10 @@ class PublishCommandConfigurationProducer : AptosCommandConfigurationProducer() 
 
             val rootPath = location.moveProject?.contentRootPath ?: return null
             val modName = mod.name ?: return null
-
-            val command = "move publish"
             return AptosCommandLineFromContext(
                 location,
                 "Publish $modName",
-                AptosCommandLine(command, rootPath)
+                Aptos.CommandLine("move publish", workingDirectory = rootPath)
             )
         }
     }

@@ -1,11 +1,11 @@
-package org.move.cli.runconfig
+package org.move.cli.runConfigurations
 
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.openapiext.toPsiDirectory
 import org.move.utils.tests.RunConfigurationProducerTestBase
 
-class AptosCommandConfigurationProducerTest : RunConfigurationProducerTestBase("test") {
+class MoveCommandConfigurationProducerTest : RunConfigurationProducerTestBase("test") {
     fun `test test run for function`() {
         testProject {
             namedMoveToml("MyPackage")

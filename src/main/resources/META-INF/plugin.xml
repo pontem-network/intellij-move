@@ -32,13 +32,15 @@
                         serviceImplementation="org.move.lang.core.psi.MvPsiManagerImpl"/>
 
         <configurationType
-                implementation="org.move.cli.runconfig.AptosCommandConfigurationType"/>
+                implementation="org.move.cli.runConfigurations.legacy.MoveConfigurationType"/>
+        <configurationType
+                implementation="org.move.cli.runConfigurations.aptos.AptosConfigurationType"/>
         <runConfigurationProducer
-                implementation="org.move.cli.runconfig.producers.TestCommandConfigurationProducer"/>
+                implementation="org.move.cli.runConfigurations.producers.TestCommandConfigurationProducer"/>
         <runConfigurationProducer
-                implementation="org.move.cli.runconfig.producers.PublishCommandConfigurationProducer"/>
+                implementation="org.move.cli.runConfigurations.producers.PublishCommandConfigurationProducer"/>
 <!--        <runConfigurationProducer-->
-<!--                implementation="org.move.cli.runconfig.producers.RunTransactionConfigurationProducer"/>-->
+<!--                implementation="org.move.cli.runConfigurations.producers.RunTransactionConfigurationProducer"/>-->
         <runLineMarkerContributor language="Move"
                                   implementationClass="org.move.ide.lineMarkers.AptosCommandLineMarkerContributor"/>
 
@@ -251,7 +253,7 @@
         <moduleType id="MOVE_MODULE"
                     implementationClass="org.move.cli.module.MvModuleType"/>
         <moduleBuilder builderClass="org.move.cli.module.MvModuleBuilder"/>
-        <projectTaskRunner implementation="org.move.cli.runconfig.buildtool.AptosBuildTaskRunner" />
+        <projectTaskRunner implementation="org.move.cli.runConfigurations.AptosBuildTaskRunner" />
 
         <projectOpenProcessor id="Move" implementation="org.move.cli.MoveProjectOpenProcessor"/>
         <directoryProjectGenerator implementation="org.move.ide.newProject.MvDirectoryProjectGenerator" />

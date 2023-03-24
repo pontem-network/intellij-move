@@ -1,10 +1,10 @@
-package org.move.cli.runconfig.producers
+package org.move.cli.runConfigurations.producers
 
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
-import org.move.cli.AptosCommandLine
 import org.move.cli.MoveProject
+import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
@@ -53,9 +53,13 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
             val functionName = fn.name ?: return null
 
             val confName = "Test $modName::$functionName"
-            val command = "move test --filter $modName::$functionName"
+            val subCommand = "move test --filter $modName::$functionName"
             val rootPath = fn.moveProject?.contentRootPath ?: return null
-            return AptosCommandLineFromContext(fn, confName, AptosCommandLine(command, rootPath))
+            return AptosCommandLineFromContext(
+                fn,
+                confName,
+                Aptos.CommandLine(subCommand, workingDirectory = rootPath)
+            )
         }
 
         private fun findTestModule(psi: PsiElement, climbUp: Boolean): AptosCommandLineFromContext? {
@@ -66,7 +70,11 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
             val confName = "Test $modName"
             val command = "move test --filter $modName"
             val rootPath = mod.moveProject?.contentRootPath ?: return null
-            return AptosCommandLineFromContext(mod, confName, AptosCommandLine(command, rootPath))
+            return AptosCommandLineFromContext(
+                mod,
+                confName,
+                Aptos.CommandLine(command, workingDirectory = rootPath)
+            )
         }
 
         private fun findTestProject(
@@ -78,7 +86,11 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
 
             val confName = "Test $packageName"
             val command = "move test"
-            return AptosCommandLineFromContext(location, confName, AptosCommandLine(command, rootPath))
+            return AptosCommandLineFromContext(
+                location,
+                confName,
+                Aptos.CommandLine(command, workingDirectory = rootPath)
+            )
         }
     }
 }

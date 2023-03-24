@@ -1,25 +1,14 @@
-package org.move.cli.runconfig
+package org.move.cli.runConfigurations
 
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import org.move.cli.runConfigurations.aptos.AptosConfigurationType
+import org.move.cli.runConfigurations.legacy.MoveCommandConfiguration
 import org.move.stdext.toPath
 
 private val LOG = logger<Project>()
-
-//fun RunManager.createAptosCommandRunConfiguration(
-//    aptosCommandLine: AptosCommandLine,
-//    name: String? = null
-//): RunnerAndConfigurationSettings {
-//    val runnerAndConfigurationSettings = createConfiguration(
-//        name ?: aptosCommandLine.command,
-//        AptosCommandConfigurationType::class.java
-//    )
-//    val configuration = runnerAndConfigurationSettings.configuration as AptosCommandRunConfiguration
-//    configuration.setFromCmd(aptosCommandLine)
-//    return runnerAndConfigurationSettings
-//}
 
 fun Project.addDefaultBuildRunConfiguration(isSelected: Boolean = false): RunnerAndConfigurationSettings {
     val runManager = RunManager.getInstance(this)
@@ -35,12 +24,12 @@ fun Project.addDefaultBuildRunConfiguration(isSelected: Boolean = false): Runner
 }
 
 private class DefaultRunConfigurationFactory(val runManager: RunManager, val project: Project) {
-    private val aptosProjectName = project.name.replace(' ', '_')
+//    private val aptosProjectName = project.name.replace(' ', '_')
 
     fun createAptosBuildConfiguration(): RunnerAndConfigurationSettings =
-        runManager.createConfiguration("Build", AptosCommandConfigurationType::class.java)
+        runManager.createConfiguration("Build", AptosConfigurationType::class.java)
             .apply {
-                (configuration as? AptosCommandConfiguration)?.apply {
+                (configuration as? MoveCommandConfiguration)?.apply {
                     command = "move compile"
                     workingDirectory = project.basePath?.toPath()
                 }

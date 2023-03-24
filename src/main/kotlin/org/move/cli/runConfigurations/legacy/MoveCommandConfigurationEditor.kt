@@ -1,4 +1,4 @@
-package org.move.cli.runconfig
+package org.move.cli.runConfigurations.legacy
 
 import com.intellij.execution.ExecutionBundle
 import com.intellij.execution.configuration.EnvironmentVariablesComponent
@@ -13,7 +13,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.JComponent
 
-class MoveRunConfigurationEditor : SettingsEditor<AptosCommandConfiguration>() {
+class MoveCommandConfigurationEditor : SettingsEditor<MoveCommandConfiguration>() {
     private val commandTextField = EditorTextField()
     private val envVarsField = EnvironmentVariablesComponent()
     private val workingDirectory: Path?
@@ -22,13 +22,13 @@ class MoveRunConfigurationEditor : SettingsEditor<AptosCommandConfiguration>() {
     val workingDirectoryField: LabeledComponent<TextFieldWithBrowseButton> =
         WorkingDirectoryComponent()
 
-    override fun resetEditorFrom(configuration: AptosCommandConfiguration) {
+    override fun resetEditorFrom(configuration: MoveCommandConfiguration) {
         commandTextField.text = configuration.command
         workingDirectoryField.component.text = configuration.workingDirectory?.toString().orEmpty()
         envVarsField.envData = configuration.environmentVariables
     }
 
-    override fun applyEditorTo(configuration: AptosCommandConfiguration) {
+    override fun applyEditorTo(configuration: MoveCommandConfiguration) {
         configuration.command = commandTextField.text
         configuration.workingDirectory = this.workingDirectory
         configuration.environmentVariables = envVarsField.envData

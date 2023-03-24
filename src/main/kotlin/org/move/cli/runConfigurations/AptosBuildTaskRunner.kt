@@ -1,4 +1,4 @@
-package org.move.cli.runconfig.buildtool
+package org.move.cli.runConfigurations
 
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.impl.RunConfigurationBeforeRunProvider
@@ -8,7 +8,6 @@ import com.intellij.task.*
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.resolvedPromise
 import org.move.cli.moveProjectRoot
-import org.move.cli.runconfig.addDefaultBuildRunConfiguration
 import org.move.openapiext.aptosBuildRunConfigurations
 import org.move.openapiext.runManager
 

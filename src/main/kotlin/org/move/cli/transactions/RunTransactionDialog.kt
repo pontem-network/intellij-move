@@ -17,9 +17,9 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.layout.ValidationInfoBuilder
 import com.intellij.util.PsiErrorElementUtil
-import org.move.cli.AptosCommandLine
 import org.move.cli.MoveProject
-import org.move.cli.runconfig.producers.AptosCommandLineFromContext
+import org.move.cli.runConfigurations.aptos.Aptos
+import org.move.cli.runConfigurations.producers.AptosCommandLineFromContext
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.name
 import org.move.lang.core.types.address
@@ -36,6 +36,7 @@ import org.move.utils.ui.ulongTextField
 import javax.swing.JComponent
 
 const val NAME_COLUMNS = 42
+
 //const val ARGUMENT_COLUMNS = 36
 const val PROFILE_COLUMNS = 24
 
@@ -186,7 +187,11 @@ class RunTransactionDialog(
             sortedParams,
         ).flatten()
         val commandLine =
-            AptosCommandLine("move run", moveProject.contentRootPath, commandArgs)
+            Aptos.CommandLine(
+                "move run",
+                workingDirectory = moveProject.contentRootPath,
+                arguments = commandArgs
+            )
         return AptosCommandLineFromContext(
             entryFunction, this.configurationName, commandLine
         )
