@@ -34,7 +34,7 @@ fun Ty.expectedBindingFormText(): String {
             "tuple binding of length ${this.types.size}: $expectedForm"
         }
         is TyStruct -> "struct binding of type ${this.text(true)}"
-        else -> "a single type"
+        else -> "a single variable"
     }
 }
 

@@ -857,6 +857,18 @@ module 0x1::M {
     """
     )
 
+    fun `test error unpacking struct into struct when single var is expected`() = checkErrors(
+        """
+    module 0x1::M {
+        struct S { val: u8 }
+        fun s(): u8 { 1 }
+        fun main() {
+            let <error descr="Invalid unpacking. Expected a single variable">(a, b)</error> = s();
+        }
+    }    
+    """
+    )
+
     fun `test error parameter type with return type inferred`() = checkErrors(
         """
     module 0x1::M {
