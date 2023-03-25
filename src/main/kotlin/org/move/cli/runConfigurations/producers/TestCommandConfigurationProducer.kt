@@ -4,7 +4,7 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.MoveProject
-import org.move.cli.runConfigurations.aptos.Aptos
+import org.move.cli.runConfigurations.aptos.AptosCommandLine
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
@@ -58,7 +58,7 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
             return AptosCommandLineFromContext(
                 fn,
                 confName,
-                Aptos.CommandLine(subCommand, workingDirectory = rootPath)
+                AptosCommandLine(subCommand, workingDirectory = rootPath)
             )
         }
 
@@ -73,7 +73,7 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
             return AptosCommandLineFromContext(
                 mod,
                 confName,
-                Aptos.CommandLine(command, workingDirectory = rootPath)
+                AptosCommandLine(command, workingDirectory = rootPath)
             )
         }
 
@@ -89,7 +89,7 @@ class TestCommandConfigurationProducer : AptosCommandConfigurationProducer() {
             return AptosCommandLineFromContext(
                 location,
                 confName,
-                Aptos.CommandLine(command, workingDirectory = rootPath)
+                AptosCommandLine(command, workingDirectory = rootPath)
             )
         }
     }

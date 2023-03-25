@@ -1,12 +1,8 @@
 package org.move.cli.runConfigurations.aptos
 
-import com.intellij.execution.configuration.EnvironmentVariablesData
-import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.SystemInfo
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.io.isDirectory
 import org.move.cli.Consts
@@ -14,39 +10,13 @@ import org.move.cli.settings.aptosPath
 import org.move.cli.settings.isValidExecutable
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
-import org.move.stdext.MvResult
-import org.move.stdext.isExecutableFile
-import org.move.stdext.toPathOrNull
-import org.move.stdext.unwrapOrElse
+import org.move.stdext.*
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
 
 class Aptos(val location: Path) {
-    data class CommandLine(
-        val subCommand: String?,
-        val arguments: List<String> = emptyList(),
-        val workingDirectory: Path? = null,
-        val environmentVariables: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
-    ) {
-        fun joinedCommand(): String {
-            return StringUtil.join(listOfNotNull(subCommand, *arguments.toTypedArray()), " ")
-        }
-
-        fun toGeneralCommandLine(aptos: Aptos): GeneralCommandLine {
-            val generalCommandLine = GeneralCommandLine()
-                .withExePath(aptos.location.toString())
-                // subcommand can be null
-                .withParameters(listOfNotNull(subCommand))
-                .withParameters(this.arguments)
-                .withWorkDirectory(this.workingDirectory?.toString())
-                .withCharset(Charsets.UTF_8)
-            this.environmentVariables.configureCommandLine(generalCommandLine, true)
-            return generalCommandLine
-        }
-    }
-
     fun init(
         project: Project,
         owner: Disposable,
@@ -57,7 +27,7 @@ class Aptos(val location: Path) {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        val commandLine = CommandLine(
+        val commandLine = AptosCommandLine(
             "init",
             arguments = listOf(
                 "--private-key-file", privateKeyPath,
@@ -80,7 +50,7 @@ class Aptos(val location: Path) {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        val commandLine = CommandLine(
+        val commandLine = AptosCommandLine(
             "move",
             listOf(
                 "init",
@@ -105,7 +75,7 @@ class Aptos(val location: Path) {
         }
         if (!location.isValidExecutable()) return null
 
-        val commandLine = CommandLine(
+        val commandLine = AptosCommandLine(
             null,
             listOf("--version"),
             workingDirectory = null,
@@ -144,9 +114,5 @@ class Aptos(val location: Path) {
                 .filter { it.isNotEmpty() }
                 .mapNotNull { it.toPathOrNull() }
         }
-
-        private fun executableName(toolName: String): String =
-            if (SystemInfo.isWindows) "$toolName.exe" else toolName
-
     }
 }

@@ -1,5 +1,5 @@
 <configurations>
-  <configuration name="Test MyPackage" type="AptosRunConfiguration" factoryName="AnyCommand">
+  <configuration name="Test MyPackage" type="AptosCommandConfiguration" factoryName="AnyCommand">
     <option name="command" value="move test" />
     <option name="workingDirectory" value="file://" />
     <envs>

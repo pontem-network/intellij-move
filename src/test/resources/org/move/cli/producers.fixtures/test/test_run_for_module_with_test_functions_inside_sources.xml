@@ -1,5 +1,5 @@
 <configurations>
-  <configuration name="Test Main" type="AptosRunConfiguration" factoryName="AnyCommand">
+  <configuration name="Test Main" type="AptosCommandConfiguration" factoryName="AnyCommand">
     <option name="command" value="move test --filter Main" />
     <option name="workingDirectory" value="file://" />
     <envs>

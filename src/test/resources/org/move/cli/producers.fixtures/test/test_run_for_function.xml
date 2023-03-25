@@ -1,5 +1,5 @@
 <configurations>
-  <configuration name="Test MoveTests::test_add" type="AptosRunConfiguration" factoryName="AnyCommand">
+  <configuration name="Test MoveTests::test_add" type="AptosCommandConfiguration" factoryName="AnyCommand">
     <option name="command" value="move test --filter MoveTests::test_add" />
     <option name="workingDirectory" value="file://" />
     <envs>

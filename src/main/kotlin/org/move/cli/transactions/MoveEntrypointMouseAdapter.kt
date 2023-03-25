@@ -3,6 +3,7 @@ package org.move.cli.transactions
 import org.move.cli.toolwindow.MoveProjectsTree
 import org.move.cli.toolwindow.MoveProjectsTreeStructure
 import org.move.lang.moveProject
+import org.move.stdext.execute
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.SwingUtilities
@@ -22,8 +23,14 @@ class MoveEntrypointMouseAdapter : MouseAdapter() {
         val moveProject = entryFunction.moveProject ?: return
 
         val paramsDialog = RunTransactionDialog.showAndWaitTillOk(entryFunction, moveProject) ?: return
-        paramsDialog
-            .toAptosCommandLineFromContext()
-            ?.createRunConfigurationAndRun(moveProject)
+
+        val commandLine = paramsDialog.toAptosCommandLine() ?: return
+        val configurationName = paramsDialog.configurationName
+        val runConfiguration = commandLine.createRunConfiguration(
+            moveProject,
+            configurationName,
+            save = true
+        )
+        runConfiguration.execute()
     }
 }

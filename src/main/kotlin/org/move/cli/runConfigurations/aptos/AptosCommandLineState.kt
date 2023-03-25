@@ -11,7 +11,7 @@ import java.nio.file.Path
 class AptosCommandLineState(
     execEnv: ExecutionEnvironment,
     private val aptosPath: Path,
-    private val commandLine: Aptos.CommandLine
+    private val commandLine: AptosCommandLine
 ) :
     CommandLineState(execEnv) {
 

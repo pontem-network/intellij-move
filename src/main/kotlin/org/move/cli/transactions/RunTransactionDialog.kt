@@ -18,8 +18,7 @@ import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.layout.ValidationInfoBuilder
 import com.intellij.util.PsiErrorElementUtil
 import org.move.cli.MoveProject
-import org.move.cli.runConfigurations.aptos.Aptos
-import org.move.cli.runConfigurations.producers.AptosCommandLineFromContext
+import org.move.cli.runConfigurations.aptos.AptosCommandLine
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.name
 import org.move.lang.core.types.address
@@ -46,7 +45,8 @@ class RunTransactionDialog(
     val profiles: List<String>,
 ) : DialogWrapper(entryFunction.project) {
 
-    private var configurationName: String
+    var configurationName: String
+
     private var selectedProfile: String?
     private val typeParams = mutableMapOf<String, String>()
     private val params = mutableMapOf<String, String>()
@@ -154,7 +154,7 @@ class RunTransactionDialog(
         )
     }
 
-    fun toAptosCommandLineFromContext(): AptosCommandLineFromContext? {
+    fun toAptosCommandLine(): AptosCommandLine? {
         val address = entryFunction.module?.address(moveProject)?.canonicalValue ?: return null
         val module = entryFunction.module?.name ?: return null
         val name = entryFunction.name ?: return null
@@ -186,14 +186,10 @@ class RunTransactionDialog(
             sortedTypeParams,
             sortedParams,
         ).flatten()
-        val commandLine =
-            Aptos.CommandLine(
-                "move run",
-                workingDirectory = moveProject.contentRootPath,
-                arguments = commandArgs
-            )
-        return AptosCommandLineFromContext(
-            entryFunction, this.configurationName, commandLine
+        return AptosCommandLine(
+            "move run",
+            workingDirectory = moveProject.contentRootPath,
+            arguments = commandArgs
         )
     }
 
