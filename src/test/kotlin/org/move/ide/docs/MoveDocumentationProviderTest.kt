@@ -12,7 +12,7 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
         }
     }
     """, expected = """
-        <div class='definition'><pre>builtins
+        <div class='definition'><pre>0x0::builtins
         native fun <b>move_from</b>&lt;T: key&gt;(addr: address): T</pre></div>
         <div class='content'><p>Removes `T` from address and returns it. </p>
         <p>Aborts if address does not hold a `T`.</p></div>

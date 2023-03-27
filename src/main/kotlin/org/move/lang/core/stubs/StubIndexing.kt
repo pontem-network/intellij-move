@@ -1,6 +1,7 @@
 package org.move.lang.core.stubs
 
 import com.intellij.psi.stubs.IndexSink
+import org.move.lang.index.MvFQFunctionIndex
 import org.move.lang.index.MvModuleSpecIndex
 import org.move.lang.index.MvNamedElementIndex
 
@@ -10,6 +11,9 @@ fun IndexSink.indexModuleStub(stub: MvModuleStub) {
 
 fun IndexSink.indexFunctionStub(stub: MvFunctionStub) {
     indexNamedStub(stub)
+//    stub.name?.let {
+//        occurrence(MvFQFunctionIndex.KEY, it)
+//    }
 }
 
 fun IndexSink.indexSpecFunctionStub(stub: MvSpecFunctionStub) {

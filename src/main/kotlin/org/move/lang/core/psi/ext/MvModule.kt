@@ -15,6 +15,7 @@ import org.move.lang.core.stubs.MvStructStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.stubs.ext.childrenStubsOfType
 import org.move.lang.core.types.Address
+import org.move.lang.core.types.ItemFQName
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleSpecIndex
 import org.move.lang.moveProject
@@ -248,10 +249,10 @@ abstract class MvModuleMixin : MvStubbedNamedElementImpl<MvModuleStub>,
         )
     }
 
-    override val fqName: String
+    override val fqName: ItemFQName
         get() {
-            val address = this.addressRef()?.text?.let { "$it::" } ?: ""
-            val module = this.name ?: "<unknown>"
-            return address + module
+            val address = this.address(this.moveProject) ?: Address.Value("0x0")
+            val itemName = this.name ?: "<unknown>"
+            return ItemFQName(address, null, itemName)
         }
 }

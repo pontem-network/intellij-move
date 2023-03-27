@@ -391,9 +391,9 @@ module 0x1::m2 {
         withMockImportItemUi(object : ImportItemUi {
             override fun chooseItem(items: List<ImportCandidate>, callback: (ImportCandidate) -> Unit) {
                 chooseItemWasCalled = true
-                val actualItems = items.mapTo(HashSet()) { it.fqPath.toString() }
+                val actualItems = items.mapTo(HashSet()) { it.fqName.editorText() }
                 assertEquals(expectedElements, actualItems)
-                val selectedValue = items.find { it.fqPath.toString() == choice }
+                val selectedValue = items.find { it.fqName.editorText() == choice }
                     ?: error("Can't find `$choice` in `$actualItems`")
                 callback(selectedValue)
             }

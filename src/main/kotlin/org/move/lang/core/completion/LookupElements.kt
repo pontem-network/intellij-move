@@ -13,7 +13,6 @@ import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -223,8 +222,9 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
                     if (completionContext == null) return@run false
                     val msl = element.isMsl()
 
-                    val itemContext = element.module?.itemContext(msl) ?: element.project.itemContext(msl)
-                    val funcTy = itemContext.getItemTy(element) as? TyFunction ?: return@run false
+                    val itemContext =
+                        element.module?.itemContext(msl) ?: element.project.itemContext(msl)
+                    val funcTy = itemContext.getFunctionItemTy(element)
 
                     val inferenceCtx = InferenceContext(msl, itemContext)
                     val expectedTy = completionContext.expectedTy

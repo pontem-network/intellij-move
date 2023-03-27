@@ -48,7 +48,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                         if (parent.ancestorStrict<MvAcquiresType>() != null) return
 
                         val expectedCount = item.typeParameters.size
-                        val label = item.fqName
+                        val label = item.fqName.editorText()
                         if (expectedCount != realCount) {
                             MvDiagnostic
                                 .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
@@ -61,7 +61,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                         if (realCount != 0) {
                             // if any type param is passed, inference is disabled, so check fully
                             if (realCount != expectedCount) {
-                                val label = item.fqName
+                                val label = item.fqName.editorText()
                                 MvDiagnostic
                                     .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
                                     .addToHolder(moveHolder)
@@ -73,7 +73,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                         if (realCount != 0) {
                             // if any type param is passed, inference is disabled, so check fully
                             if (realCount != expectedCount) {
-                                val label = item.fqName
+                                val label = item.fqName.editorText()
                                 MvDiagnostic
                                     .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
                                     .addToHolder(moveHolder)
@@ -93,7 +93,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                         if (realCount != 0) {
                             // if any type param is passed, inference is disabled, so check fully
                             if (realCount != expectedCount) {
-                                val label = item.fqName
+                                val label = item.fqName.editorText()
                                 MvDiagnostic
                                     .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
                                     .addToHolder(moveHolder)
@@ -102,7 +102,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                             // if no type args are passed, check whether all type params are inferrable
                             if (item.requiredTypeParams.isNotEmpty() && realCount != expectedCount) {
                                 MvDiagnostic
-                                    .TypeArgumentsNumberMismatch(path, item.fqName, expectedCount, realCount)
+                                    .TypeArgumentsNumberMismatch(path, item.fqName.editorText(), expectedCount, realCount)
                                     .addToHolder(moveHolder)
                             }
                         }
@@ -152,7 +152,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
 
             override fun visitValueArgumentList(arguments: MvValueArgumentList) {
                 val callExpr = arguments.parent as? MvCallExpr ?: return
-                val function = callExpr.path.reference?.resolveWithAliases() as? MvFunction ?: return
+                val function = callExpr.path.reference?.resolveWithAliases() as? MvFunctionLike ?: return
 
                 val expectedCount = function.parameters.size
                 val realCount = arguments.valueArgumentList.size

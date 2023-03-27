@@ -44,7 +44,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
     data class State(
         var aptosPath: String = "",
         var foldSpecs: Boolean = false,
-        var disableTelemetry: Boolean = false,
+        var disableTelemetry: Boolean = true,
     )
 
     @Volatile

@@ -50,6 +50,7 @@
         <stubElementTypeHolder class="org.move.lang.MvElementTypes" />
 
         <stubIndex implementation="org.move.lang.index.MvNamedElementIndex" />
+<!--        <stubIndex implementation="org.move.lang.index.MvFQFunctionIndex" />-->
         <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
         <lang.documentationProvider language="Move"

@@ -215,7 +215,7 @@ fun MvNameIdentifierOwner.outerItemContext(msl: Boolean): ItemContext {
             // TODO: add ItemContextOwner to MvScript
             this.module?.itemContext(msl)
         }
-        is MvFunctionLike -> {
+        is MvFunction -> {
             // TODO: add ItemContextOwner to MvScript and to MvModuleSpec
             this.module?.itemContext(msl)
         }

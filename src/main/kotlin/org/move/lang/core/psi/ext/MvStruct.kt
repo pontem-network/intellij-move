@@ -2,13 +2,13 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.IStubElementType
-import com.intellij.psi.util.descendantsOfType
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.stubs.MvStructStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
+import org.move.lang.core.types.ItemFQName
 import org.move.lang.core.types.ty.Ability
 import org.move.stdext.withAdded
 import javax.swing.Icon
@@ -21,12 +21,10 @@ val MvStruct.fieldsMap: Map<String, MvStructField>
         return fields.associateBy { it.identifier.text }
     }
 
-val MvStruct.fieldNames: List<String>
-    get() = fields.mapNotNull { it.name }
+val MvStruct.fieldNames: List<String> get() = fields.map { it.name }
 
-fun MvStruct.getField(fieldName: String): MvStructField? =
-    this.descendantsOfType<MvStructField>()
-        .find { it.name == fieldName }
+//fun MvStruct.getField(fieldName: String): MvStructField? =
+//    this.descendantsOfType<MvStructField>().find { it.name == fieldName }
 
 //val MvStruct.fqName: String
 //    get() {
@@ -80,10 +78,10 @@ abstract class MvStructMixin : MvStubbedNamedElementImpl<MvStructStub>,
 
     override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT
 
-    override val fqName: String
+    override val fqName: ItemFQName
         get() {
-            val moduleFqName = "${this.module.fqName}::"
-            val name = this.name ?: "<unknown>"
-            return moduleFqName + name
+            val moduleFQName = this.module.fqName
+            val itemName = this.name ?: "<unknown_struct>"
+            return ItemFQName(moduleFQName.address, moduleFQName.itemName, itemName)
         }
 }

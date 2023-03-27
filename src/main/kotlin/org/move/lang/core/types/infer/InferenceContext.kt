@@ -15,7 +15,7 @@ import org.move.utils.cache
 import org.move.utils.cacheManager
 import org.move.utils.cacheResult
 
-interface MvInferenceContextOwner : MvElement {}
+interface MvInferenceContextOwner : MvElement
 
 private val INFERENCE_KEY_NON_MSL: Key<CachedValue<InferenceContext>> = Key.create("INFERENCE_KEY_NON_MSL")
 private val INFERENCE_KEY_MSL: Key<CachedValue<InferenceContext>> = Key.create("INFERENCE_KEY_MSL")
@@ -37,9 +37,6 @@ fun MvElement.maybeInferenceContext(msl: Boolean): InferenceContext? {
                 getOwnerInferenceContext(inferenceOwner, true), cacheDependencies
             )
         }
-//        getProjectPsiDependentCache(inferenceOwner) {
-//            getOwnerInferenceContext(it, true)
-//        }
     } else {
         project.cacheManager.cache(inferenceOwner, INFERENCE_KEY_NON_MSL) {
             val localModificationTracker =
@@ -52,11 +49,7 @@ fun MvElement.maybeInferenceContext(msl: Boolean): InferenceContext? {
             inferenceOwner.cacheResult(
                 getOwnerInferenceContext(inferenceOwner, false), cacheDependencies
             )
-//            inferenceOwner.cacheResult(getOwnerInferenceContext(inferenceOwner, false))
         }
-//        getProjectPsiDependentCache(inferenceOwner) {
-//            getOwnerInferenceContext(it, false)
-//        }
     }
 }
 
@@ -71,7 +64,7 @@ private fun getOwnerInferenceContext(owner: MvInferenceContextOwner, msl: Boolea
     val inferenceCtx = InferenceContext(msl, itemContext)
 
     val params = when (owner) {
-        is MvFunctionLike -> owner.parameters
+        is MvFunction -> owner.parameters
         is MvItemSpec -> owner.funcItem?.parameters.orEmpty()
         else -> emptyList()
     }
@@ -80,7 +73,7 @@ private fun getOwnerInferenceContext(owner: MvInferenceContextOwner, msl: Boolea
         inferenceCtx.bindingTypes[binding] = inferBindingPatTy(binding, inferenceCtx)
     }
     when (owner) {
-        is MvFunctionLike -> {
+        is MvFunction -> {
             owner.codeBlock?.let {
                 val retTy = (itemContext.getItemTy(owner) as? TyFunction)?.retType
                 inferCodeBlockTy(it, inferenceCtx, retTy)

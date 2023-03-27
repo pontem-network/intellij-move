@@ -6,14 +6,14 @@ import org.move.lang.core.psi.ext.greenStub
 import org.move.lang.core.psi.ext.hasChild
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.stubs.MvModuleStub
-import org.move.lang.core.types.infer.*
+import org.move.lang.core.types.infer.outerItemContext
+import org.move.lang.core.types.infer.visitTyVarWith
 import org.move.lang.core.types.ty.TyLambda
 import org.move.stdext.withAdded
 
-interface MvFunctionLike : MvTypeParametersOwner,
-                           MvNameIdentifierOwner,
-                           MvDocAndAttributeOwner,
-                           MvInferenceContextOwner {
+interface MvFunctionLike : MvNameIdentifierOwner,
+                           MvTypeParametersOwner,
+                           MvDocAndAttributeOwner {
 
     val functionParameterList: MvFunctionParameterList?
 
@@ -45,6 +45,13 @@ val MvFunctionLike.lambdaParamsAsBindings: List<MvBindingPat>
             .filter { it.typeTy(itemContext) is TyLambda }
             .map { it.bindingPat }
     }
+
+val MvFunctionLike.acquiresPathTypes: List<MvPathType>
+    get() =
+        when (this) {
+            is MvFunction -> this.acquiresType?.pathTypeList.orEmpty()
+            else -> emptyList()
+        }
 
 val MvFunctionLike.typeParamsUsedOnlyInReturnType: List<MvTypeParameter>
     get() {
@@ -78,28 +85,23 @@ val MvFunctionLike.requiredTypeParams: List<MvTypeParameter>
         return this.typeParameters.filter { it !in usedTypeParams }
     }
 
-
 val MvFunctionLike.module: MvModule?
-    get() {
-        if (this is MvFunction) {
-            val moduleStub = greenStub?.parentStub as? MvModuleStub
-            if (moduleStub != null) {
-                return moduleStub.psi
+    get() =
+        when (this) {
+            is MvFunction -> {
+                val moduleStub = greenStub?.parentStub as? MvModuleStub
+                if (moduleStub != null) {
+                    moduleStub.psi
+                } else {
+                    this.parent.parent as? MvModule
+                }
             }
+            // TODO:
+            else -> null
         }
-        val moduleBlock = this.parent ?: return null
-        return moduleBlock.parent as? MvModule
-    }
 
 val MvFunctionLike.script: MvScript?
     get() {
         val scriptBlock = this.parent ?: return null
         return scriptBlock.parent as? MvScript
     }
-
-val MvFunctionLike.acquiresPathTypes: List<MvPathType>
-    get() =
-        when (this) {
-            is MvFunction -> this.acquiresType?.pathTypeList.orEmpty()
-            else -> emptyList()
-        }

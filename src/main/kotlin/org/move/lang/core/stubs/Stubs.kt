@@ -6,8 +6,12 @@ import com.intellij.util.io.DataInputOutputUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.impl.*
+import org.move.lang.core.types.ItemFQName
 import org.move.lang.core.types.StubAddress
 import org.move.lang.core.types.psiStubAddress
+import org.move.openapiext.readNameAsString
+import org.move.openapiext.readUTFFastAsNullable
+import org.move.openapiext.writeUTFFastAsNullable
 import org.move.stdext.makeBitMask
 
 interface MvNamedStub {
@@ -115,7 +119,8 @@ class MvFunctionStub(
     elementType: IStubElementType<*, *>,
     override val name: String?,
     override val flags: Int,
-    val visibility: FunctionVisibility
+    val visibility: FunctionVisibility,
+    val fqName: ItemFQName,
 ) : MvAttributeOwnerStubBase<MvFunction>(parent, elementType), MvNamedStub {
 
     val isTest: Boolean get() = BitUtil.isSet(flags, TEST_MASK)
@@ -124,10 +129,14 @@ class MvFunctionStub(
         override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?): MvFunctionStub {
             val name = dataStream.readNameAsString()
             val flags = dataStream.readInt()
+
             val vis = dataStream.readInt()
             val visibility = FunctionVisibility.values()
                 .find { it.ordinal == vis } ?: error("Invalid vis value $vis")
-            return MvFunctionStub(parentStub, this, name, flags, visibility)
+
+            val fqName = ItemFQName.deserialize(dataStream)
+
+            return MvFunctionStub(parentStub, this, name, flags, visibility, fqName)
         }
 
         override fun serialize(stub: MvFunctionStub, dataStream: StubOutputStream) =
@@ -135,6 +144,7 @@ class MvFunctionStub(
                 writeName(stub.name)
                 writeInt(stub.flags)
                 writeInt(stub.visibility.ordinal)
+                ItemFQName.serialize(stub.fqName, this)
             }
 
         override fun createPsi(stub: MvFunctionStub): MvFunction =
@@ -145,12 +155,14 @@ class MvFunctionStub(
 
             var flags = MvAttributeOwnerStub.extractFlags(attrs)
             flags = BitUtil.set(flags, TEST_MASK, attrs.isTest)
+
             return MvFunctionStub(
                 parentStub,
                 this,
                 psi.name,
                 flags,
-                psi.visibilityFromPsi()
+                visibility = psi.visibilityFromPsi(),
+                fqName = psi.itemFQNameFromPsi()
             )
         }
 
@@ -327,21 +339,3 @@ fun factory(name: String): MvStubElementType<*, *> = when (name) {
 
     else -> error("Unknown element $name")
 }
-
-private fun StubInputStream.readNameAsString(): String? = readName()?.string
-private fun StubInputStream.readUTFFastAsNullable(): String? =
-    DataInputOutputUtil.readNullable(this, this::readUTFFast)
-
-private fun StubOutputStream.writeUTFFastAsNullable(value: String?) =
-    DataInputOutputUtil.writeNullable(this, value, this::writeUTFFast)
-
-private fun StubOutputStream.writeLongAsNullable(value: Long?) =
-    DataInputOutputUtil.writeNullable(this, value, this::writeLong)
-
-private fun StubInputStream.readLongAsNullable(): Long? = DataInputOutputUtil.readNullable(this, this::readLong)
-
-private fun StubOutputStream.writeDoubleAsNullable(value: Double?) =
-    DataInputOutputUtil.writeNullable(this, value, this::writeDouble)
-
-private fun StubInputStream.readDoubleAsNullable(): Double? =
-    DataInputOutputUtil.readNullable(this, this::readDouble)

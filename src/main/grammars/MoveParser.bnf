@@ -268,8 +268,9 @@ Const ::= Attr* CONST_KW IDENTIFIER TypeAnnotation Initializer ';'
 {
     pin = "CONST_KW"
     implements = [
-        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
+        "org.move.lang.core.psi.MvQualifiedNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
         "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvConstMixin"
@@ -286,7 +287,9 @@ fake SpecFunction ::= Attr* spec native? fun IDENTIFIER? TypeParameterList?
                         (';' | CodeBlock)?
 {
     implements = [
+        "org.move.lang.core.psi.MvQualifiedNamedElement"
         "org.move.lang.core.psi.MvFunctionLike"
+        "org.move.lang.core.types.infer.MvInferenceContextOwner"
         "org.move.lang.core.psi.MslScopeElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSpecFunctionMixin"
@@ -316,6 +319,7 @@ fake SpecInlineFunction ::= Attr* native? fun IDENTIFIER? TypeParameterList?
 {
     implements = [
         "org.move.lang.core.psi.MvFunctionLike"
+        "org.move.lang.core.types.infer.MvInferenceContextOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSpecInlineFunctionMixin"
     hooks = [ leftBinder = "ADJACENT_LINE_COMMENTS" ]
@@ -378,6 +382,7 @@ fake Function ::= Attr* native? FunctionVisibilityModifier? entry? inline?
     implements = [
         "org.move.lang.core.psi.MvQualifiedNamedElement"
         "org.move.lang.core.psi.MvFunctionLike"
+        "org.move.lang.core.types.infer.MvInferenceContextOwner"
         "org.move.lang.core.psi.MvModificationTrackerOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvFunctionMixin"

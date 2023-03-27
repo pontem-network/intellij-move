@@ -7,6 +7,7 @@ import org.move.lang.core.psi.MvConst
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.stubs.MvConstStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
+import org.move.lang.core.types.ItemFQName
 import javax.swing.Icon
 
 val MvConst.module: MvModule?
@@ -22,11 +23,11 @@ abstract class MvConstMixin : MvStubbedNamedElementImpl<MvConstStub>,
 
     constructor(stub: MvConstStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 
-    override val fqName: String
+    override val fqName: ItemFQName
         get() {
-            val moduleFqName = this.module?.fqName?.let { "$it::" }
-            val name = this.name ?: "<unknown>"
-            return moduleFqName + name
+            val moduleFQName = this.module?.fqName ?: ItemFQName.DEFAULT_MOD_FQ_NAME
+            val itemName = this.name ?: "<unknown>"
+            return ItemFQName(moduleFQName.address, moduleFQName.itemName, itemName)
         }
 
     override fun getIcon(flags: Int): Icon? = MoveIcons.CONST

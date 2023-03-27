@@ -10,6 +10,7 @@ import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.inferAcquiresTys
+import org.move.lang.core.psi.ext.module
 import org.move.lang.core.types.infer.inferenceContext
 
 

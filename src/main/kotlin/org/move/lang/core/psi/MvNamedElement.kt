@@ -12,14 +12,13 @@ import org.move.lang.core.completion.BUILTIN_ITEM_PRIORITY
 import org.move.lang.core.completion.LOCAL_ITEM_PRIORITY
 import org.move.lang.core.psi.ext.addressRef
 import org.move.lang.core.psi.ext.findLastChildByType
+import org.move.lang.core.types.ItemFQName
 
 interface MvNamedElement : MvElement,
                            PsiNamedElement,
                            NavigatablePsiElement {
 
     val nameElement: PsiElement? get() = this.findLastChildByType(IDENTIFIER)
-
-    val fqName: String
 }
 
 interface MvMandatoryNamedElement : MvNamedElement {
@@ -30,7 +29,9 @@ interface MvMandatoryNamedElement : MvNamedElement {
     override fun getName(): String
 }
 
-interface MvQualifiedNamedElement : MvNamedElement
+interface MvQualifiedNamedElement : MvNamedElement {
+    val fqName: ItemFQName
+}
 
 data class FqPath(val address: String, val module: String, val item: String?) {
     override fun toString(): String {
@@ -42,24 +43,24 @@ data class FqPath(val address: String, val module: String, val item: String?) {
     }
 }
 
-val MvQualifiedNamedElement.fqPath: FqPath?
-    get() {
-        return when (this) {
-            is MvModule -> {
-                val address = this.addressRef()?.text ?: return null
-                val moduleName = this.name ?: return null
-                FqPath(address, moduleName, null)
-            }
-
-            else -> {
-                val module = this.containingModule ?: return null
-                val address = module.addressRef()?.text ?: return null
-                val moduleName = module.name ?: return null
-                val elementName = this.name ?: return null
-                FqPath(address, moduleName, elementName)
-            }
-        }
-    }
+//val MvFQNamedElement.fqPath: FqPath?
+//    get() {
+//        return when (this) {
+//            is MvModule -> {
+//                val address = this.addressRef()?.text ?: return null
+//                val moduleName = this.name ?: return null
+//                FqPath(address, moduleName, null)
+//            }
+//
+//            else -> {
+//                val module = this.containingModule ?: return null
+//                val address = module.addressRef()?.text ?: return null
+//                val moduleName = module.name ?: return null
+//                val elementName = this.name ?: return null
+//                FqPath(address, moduleName, elementName)
+//            }
+//        }
+//    }
 
 val MvNamedElement.completionPriority
     get() = when {

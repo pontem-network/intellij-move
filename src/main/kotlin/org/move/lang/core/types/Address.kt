@@ -87,10 +87,11 @@ sealed class StubAddress {
     }
 }
 
-val MvModule.stubAddress: StubAddress get() {
-    val stub = greenStub
-    return stub?.address ?: this.psiStubAddress()
-}
+val MvModule.stubAddress: StubAddress
+    get() {
+        val stub = greenStub
+        return stub?.address ?: this.psiStubAddress()
+    }
 
 fun MvModule.address(proj: MoveProject?): Address? = this.stubAddress.asAddress(proj)
 

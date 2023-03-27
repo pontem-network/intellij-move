@@ -11,6 +11,7 @@ import org.move.ide.presentation.nameNoArgs
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.inferAcquiresTys
 import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.module
 import org.move.lang.core.types.infer.itemContext
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown

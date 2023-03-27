@@ -66,7 +66,7 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
 //        val typeContext =
         val ty = when (element) {
 //        is RsFieldDecl -> typeReference?.type
-            is MvFunctionLike -> {
+            is MvFunction -> {
                 val itemContext = element.outerItemContext(msl)
                 (itemContext.getItemTy(element) as? TyFunction)?.retType ?: TyUnknown
             }

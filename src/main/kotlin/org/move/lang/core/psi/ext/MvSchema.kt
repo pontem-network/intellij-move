@@ -6,15 +6,16 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvSchemaStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
+import org.move.lang.core.types.ItemFQName
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 
 val MvSchema.specBlock: MvItemSpecBlock? get() = this.childOfType()
 
-val MvSchema.module: MvModule
+val MvSchema.module: MvModule?
     get() {
         val moduleBlock = this.parent
-        return moduleBlock.parent as MvModule
+        return moduleBlock.parent as? MvModule
     }
 
 val MvSchema.requiredTypeParams: List<MvTypeParameter>
@@ -42,10 +43,10 @@ abstract class MvSchemaMixin : MvStubbedNamedElementImpl<MvSchemaStub>,
 
     override fun getIcon(flags: Int) = MoveIcons.SCHEMA
 
-    override val fqName: String
+    override val fqName: ItemFQName
         get() {
-            val moduleFqName = "${this.module.fqName}::"
-            val name = this.name ?: "<unknown>"
-            return moduleFqName + name
+            val moduleFQName = this.module?.fqName ?: ItemFQName.DEFAULT_MOD_FQ_NAME
+            val itemName = this.name ?: "<unknown_schema>"
+            return ItemFQName(moduleFQName.address, moduleFQName.itemName, itemName)
         }
 }

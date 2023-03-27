@@ -20,6 +20,7 @@ import com.intellij.util.PsiErrorElementUtil
 import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.aptos.AptosCommandLine
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.module
 import org.move.lang.core.psi.ext.name
 import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.InferenceContext
@@ -70,7 +71,8 @@ class RunTransactionDialog(
             }
             val typeParameters = entryFunction.typeParameters
             val parameterBindings = entryFunction.allParamsAsBindings.drop(1)
-            val itemContext = entryFunction.module?.itemContext(false) ?: project.itemContext(false)
+            val itemContext =
+                entryFunction.module?.itemContext(false) ?: project.itemContext(false)
 
             if (typeParameters.isNotEmpty() || parameterBindings.isNotEmpty()) {
                 separator()

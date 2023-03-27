@@ -39,11 +39,11 @@ val MvElement.containingModuleSpec: MvModuleSpec? get() = ancestorStrict()
 
 val MvElement.containingImportsOwner get() = ancestorOrSelf<MvImportsOwner>()
 
-val MvElement.containingModuleOrScript: MvElement?
-    get() {
-        return this.findFirstParent(false) { it is MvScript || it is MvModule }
-                as? MvElement
-    }
+//val MvElement.containingModuleOrScript: MvElement?
+//    get() {
+//        return this.findFirstParent(false) { it is MvScript || it is MvModule }
+//                as? MvElement
+//    }
 
 /**
  * Delete the element along with a neighbour comma.
