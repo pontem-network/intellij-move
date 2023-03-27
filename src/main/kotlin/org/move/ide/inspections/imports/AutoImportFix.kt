@@ -90,7 +90,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
         fun getImportCandidates(
             context: ImportContext,
             targetName: String,
-            itemFilter: (MvQualifiedNamedElement) -> Boolean = { true }
+            itemFilter: (MvQualNamedElement) -> Boolean = { true }
         ): List<ImportCandidate> {
             val (contextElement, itemVis) = context
 
@@ -98,7 +98,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
             val moveProject = contextElement.moveProject ?: return emptyList()
             val searchScope = moveProject.searchScope()
 
-            val allItems = mutableListOf<MvQualifiedNamedElement>()
+            val allItems = mutableListOf<MvQualNamedElement>()
             if (isUnitTestMode) {
                 // always add current file in tests
                 val currentFile = contextElement.containingFile as? MoveFile ?: return emptyList()
@@ -110,7 +110,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
                 .processElementsByName(project, targetName, searchScope) { element ->
                     processQualItem(element, itemVis) {
                         val entryElement = it.element
-                        if (entryElement !is MvQualifiedNamedElement) return@processQualItem false
+                        if (entryElement !is MvQualNamedElement) return@processQualItem false
                         if (it.name == targetName) {
                             allItems.add(entryElement)
                         }
@@ -159,7 +159,7 @@ data class ImportContext private constructor(
     }
 }
 
-data class ImportCandidate(val element: MvQualifiedNamedElement, val fqName: ItemFQName)
+data class ImportCandidate(val element: MvQualNamedElement, val fqName: ItemFQName)
 
 fun ImportCandidate.import(context: MvElement) {
     checkWriteAccessAllowed()
@@ -227,11 +227,11 @@ class ImportInsertHandler(
     }
 }
 
-fun MoveFile.qualifiedItems(targetName: String, itemVis: ItemVis): List<MvQualifiedNamedElement> {
+fun MoveFile.qualifiedItems(targetName: String, itemVis: ItemVis): List<MvQualNamedElement> {
     checkUnitTestMode()
-    val elements = mutableListOf<MvQualifiedNamedElement>()
+    val elements = mutableListOf<MvQualNamedElement>()
     processFileItems(this, itemVis) {
-        if (it.element is MvQualifiedNamedElement && it.name == targetName) {
+        if (it.element is MvQualNamedElement && it.name == targetName) {
             elements.add(it.element)
         }
         false

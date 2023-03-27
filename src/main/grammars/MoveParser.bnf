@@ -226,7 +226,7 @@ Module ::= Attr* MODULE_KW (AddressRef '::')? IDENTIFIER ModuleBlock
     pin = "MODULE_KW"
     name = "module declaration"
     implements = [
-        "org.move.lang.core.psi.MvQualifiedNamedElement"
+        "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
         "org.move.lang.core.types.infer.ItemContextOwner"
@@ -268,7 +268,7 @@ Const ::= Attr* CONST_KW IDENTIFIER TypeAnnotation Initializer ';'
 {
     pin = "CONST_KW"
     implements = [
-        "org.move.lang.core.psi.MvQualifiedNamedElement"
+        "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
         "org.move.lang.core.psi.MvTypeAnnotationOwner"
@@ -287,7 +287,7 @@ fake SpecFunction ::= Attr* spec native? fun IDENTIFIER? TypeParameterList?
                         (';' | CodeBlock)?
 {
     implements = [
-        "org.move.lang.core.psi.MvQualifiedNamedElement"
+        "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvFunctionLike"
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
         "org.move.lang.core.psi.MslScopeElement"
@@ -347,7 +347,7 @@ fake Struct ::= Attr* native? STRUCT_KW IDENTIFIER? TypeParameterList? Abilities
                         (';' | StructBlock)?
 {
     implements = [
-        "org.move.lang.core.psi.MvQualifiedNamedElement"
+        "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
         "org.move.lang.core.psi.MvTypeParametersOwner"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
@@ -380,7 +380,7 @@ fake Function ::= Attr* native? FunctionVisibilityModifier? entry? inline?
                         (';' | CodeBlock)?
 {
     implements = [
-        "org.move.lang.core.psi.MvQualifiedNamedElement"
+        "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvFunctionLike"
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
         "org.move.lang.core.psi.MvModificationTrackerOwner"
@@ -1203,7 +1203,7 @@ Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl ItemSpecBlock>> {
     pin = 1
     implements = [
         "org.move.lang.core.psi.MvTypeParametersOwner"
-        "org.move.lang.core.psi.MvQualifiedNamedElement"
+        "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.MslScopeElement"
     ]
