@@ -26,6 +26,8 @@ data class ItemFQName(
     companion object {
         val DEFAULT_MOD_FQ_NAME: ItemFQName =
             ItemFQName(Address.Value("0x0"), null, "default")
+        val DEFAULT_ITEM_FQ_NAME: ItemFQName =
+            ItemFQName(Address.Value("0x0"), "default", "default_item")
 
         fun serialize(fqName: ItemFQName, dataStream: StubOutputStream) {
             with(dataStream) {

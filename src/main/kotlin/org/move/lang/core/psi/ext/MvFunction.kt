@@ -17,7 +17,6 @@ import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.module
 import org.move.lang.core.stubs.MvFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.Address
 import org.move.lang.core.types.ItemFQName
 import javax.swing.Icon
 
@@ -51,10 +50,6 @@ fun MvFunction.visibilityFromPsi(): FunctionVisibility {
         visibility.hasChild(MvElementTypes.PUBLIC) -> FunctionVisibility.PUBLIC
         else -> FunctionVisibility.PRIVATE
     }
-}
-
-fun MvFunction.itemFQNameFromPsi(): ItemFQName {
-    return ItemFQName(Address.Value("0x1"), "unknown", "unknown")
 }
 
 val MvFunction.isEntry: Boolean get() = this.isChildExists(MvElementTypes.ENTRY)

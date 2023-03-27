@@ -162,7 +162,7 @@ class MvFunctionStub(
                 psi.name,
                 flags,
                 visibility = psi.visibilityFromPsi(),
-                fqName = psi.itemFQNameFromPsi()
+                fqName = psi.fqName
             )
         }
 
