@@ -17,11 +17,13 @@ import org.move.stdext.isExecutableFile
 import org.move.stdext.toPathOrNull
 import org.move.stdext.unwrapOrElse
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.exists
 
 class Aptos(val location: Path) {
     fun isValidLocation(): Boolean {
-        return this.location.exists()
+        return Files.exists(this.location)
     }
 
     fun toGeneralCommandLine(commandLine: AptosCommandLine): GeneralCommandLine {

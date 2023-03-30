@@ -27,3 +27,5 @@ private inline fun pathOrNull(block: () -> Path): Path? {
 fun Path.isExecutableFile(): Boolean {
     return !this.isDirectory() && Files.isExecutable(this)
 }
+
+fun Path.exists(): Boolean = Files.exists(this)

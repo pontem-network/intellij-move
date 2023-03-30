@@ -1,7 +1,7 @@
 package org.move.cli
 
 import com.intellij.openapi.externalSystem.model.ProjectSystemId
-import com.intellij.util.io.exists
+import org.move.stdext.exists
 import java.nio.file.Path
 
 object MvProjectLayout {
