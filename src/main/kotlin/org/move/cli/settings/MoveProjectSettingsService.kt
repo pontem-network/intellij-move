@@ -6,11 +6,11 @@ import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiManager
-import com.intellij.util.io.exists
 import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
+import org.move.stdext.exists
 import org.move.stdext.isExecutableFile
 import org.move.stdext.toPathOrNull
 import java.nio.file.Path
