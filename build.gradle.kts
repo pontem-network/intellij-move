@@ -42,6 +42,7 @@ dependencies {
     implementation("io.sentry:sentry:5.5.2") {
         exclude("org.slf4j")
     }
+    implementation("com.github.ajalt.clikt:clikt:3.5.2")
 }
 
 allprojects {

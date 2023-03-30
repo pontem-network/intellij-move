@@ -8,6 +8,8 @@ data class AptosConfigYaml(
     val configYamlPath: Path,
     val profiles: Set<String>
 ) {
+    fun runProfiles(): List<String> = profiles.toList()
+
     companion object {
         fun fromPath(configYamlPath: Path): AptosConfigYaml? {
             val yaml = Yaml().load<Map<String, Any>>(configYamlPath.readText())

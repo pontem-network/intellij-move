@@ -12,9 +12,7 @@ import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.*
 import java.io.File
-import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.exists
 
 class Aptos(val location: Path) {
     fun init(

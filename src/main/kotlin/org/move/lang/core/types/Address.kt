@@ -11,6 +11,7 @@ const val MAX_LENGTH = 32
 sealed class Address(open val value: String) {
 
     val canonicalValue: String get() = normalizeValue(this.value)
+    val shortenedValue: String get() = shortenValue(this.value, 8)
 
     abstract fun text(): String
 
@@ -55,6 +56,16 @@ sealed class Address(open val value: String) {
                 text.substring(2 until text.length)
             }
             return "0x" + trimmed.padStart(MAX_LENGTH, '0')
+        }
+
+        private fun shortenValue(text: String, maxLength: Int): String {
+            if (!text.startsWith("0")) return text
+            val trimmed = if (!text.startsWith("0x")) {
+                text.substring(1 until text.length)
+            } else {
+                text.substring(2 until text.length)
+            }
+            return "0x" + trimmed.trimStart('0')
         }
     }
 }

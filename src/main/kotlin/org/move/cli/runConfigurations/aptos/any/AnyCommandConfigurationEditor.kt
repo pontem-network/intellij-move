@@ -1,26 +1,19 @@
 package org.move.cli.runConfigurations.aptos.any
 
-import com.intellij.execution.ExecutionBundle
 import com.intellij.execution.configuration.EnvironmentVariablesComponent
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
-import com.intellij.openapi.ui.LabeledComponent
-import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.layout.panel
-import com.intellij.util.text.nullize
+import org.move.utils.ui.WorkingDirectoryField
 import java.nio.file.Path
-import java.nio.file.Paths
 import javax.swing.JComponent
 
 class AnyCommandConfigurationEditor : SettingsEditor<AnyCommandConfiguration>() {
     private val commandTextField = EditorTextField()
     private val envVarsField = EnvironmentVariablesComponent()
-    private val workingDirectory: Path?
-        get() = workingDirectoryField.component.text.nullize()?.let { Paths.get(it) }
+    val workingDirectoryField = WorkingDirectoryField()
 
-    val workingDirectoryField: LabeledComponent<TextFieldWithBrowseButton> =
-        WorkingDirectoryComponent()
+    private val workingDirectory: Path? get() = workingDirectoryField.toPath()
 
     override fun resetEditorFrom(configuration: AnyCommandConfiguration) {
         commandTextField.text = configuration.command
@@ -45,18 +38,6 @@ class AnyCommandConfigurationEditor : SettingsEditor<AnyCommandConfiguration>() 
             row(workingDirectoryField.label) {
                 workingDirectoryField(growX)
             }
-        }
-    }
-
-    private class WorkingDirectoryComponent : LabeledComponent<TextFieldWithBrowseButton>() {
-        init {
-            component = TextFieldWithBrowseButton().apply {
-                val fileChooser = FileChooserDescriptorFactory.createSingleFolderDescriptor().apply {
-                    title = ExecutionBundle.message("select.working.directory.message")
-                }
-                addBrowseFolderListener(null, null, null, fileChooser)
-            }
-            text = ExecutionBundle.message("run.configuration.working.directory.label")
         }
     }
 }

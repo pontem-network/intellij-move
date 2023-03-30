@@ -15,6 +15,8 @@ class AnyCommandConfigurationFactory(
 
     override fun getId(): String = "AnyCommand"
 
+    override fun getName(): String = "other"
+
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
         return AnyCommandConfiguration(project, this)
     }

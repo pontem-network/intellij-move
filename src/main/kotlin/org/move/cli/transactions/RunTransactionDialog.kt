@@ -4,23 +4,17 @@ import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import com.intellij.openapi.components.service
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.TextFieldWithAutoCompletion
-import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.bindItem
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
-import com.intellij.ui.layout.ValidationInfoBuilder
-import com.intellij.util.PsiErrorElementUtil
 import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.aptos.AptosCommandLine
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.module
 import org.move.lang.core.psi.ext.name
 import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.InferenceContext
@@ -29,10 +23,7 @@ import org.move.lang.core.types.ty.TyAddress
 import org.move.lang.core.types.ty.TyBool
 import org.move.lang.core.types.ty.TyInteger
 import org.move.lang.core.types.ty.TyVector
-import org.move.utils.ui.MoveTextFieldWithCompletion
-import org.move.utils.ui.bindText
-import org.move.utils.ui.registerValidationRequestor
-import org.move.utils.ui.ulongTextField
+import org.move.utils.ui.*
 import javax.swing.JComponent
 
 const val NAME_COLUMNS = 42
@@ -234,29 +225,5 @@ class RunTransactionDialog(
                 typeArg
             }
 
-    }
-}
-
-private fun validateNonEmpty(message: String): ValidationInfoBuilder.(JBTextField) -> ValidationInfo? {
-    return {
-        if (it.text.isNullOrEmpty()) error(message) else null
-    }
-}
-
-private fun validateEditorTextNonEmpty(message: String): ValidationInfoBuilder.(LanguageTextField) -> ValidationInfo? {
-    return {
-        if (it.text.isEmpty()) error(message) else null
-
-    }
-}
-
-private fun validateParseErrors(message: String): ValidationInfoBuilder.(LanguageTextField) -> ValidationInfo? {
-    return {
-        FileDocumentManager.getInstance().getFile(it.document)
-            ?.let { file ->
-                if (PsiErrorElementUtil.hasErrors(it.project, file)) {
-                    error(message)
-                } else null
-            }
     }
 }

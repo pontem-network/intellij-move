@@ -2,7 +2,6 @@ package org.move.lang.core.stubs
 
 import com.intellij.psi.stubs.*
 import com.intellij.util.BitUtil
-import com.intellij.util.io.DataInputOutputUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.impl.*
@@ -124,6 +123,8 @@ class MvFunctionStub(
 ) : MvAttributeOwnerStubBase<MvFunction>(parent, elementType), MvNamedStub {
 
     val isTest: Boolean get() = BitUtil.isSet(flags, TEST_MASK)
+    val isEntry: Boolean get() = BitUtil.isSet(flags, IS_ENTRY_MASK)
+    val isView: Boolean get() = BitUtil.isSet(flags, IS_VIEW_MASK)
 
     object Type : MvStubElementType<MvFunctionStub, MvFunction>("FUNCTION") {
         override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?): MvFunctionStub {
@@ -155,6 +156,8 @@ class MvFunctionStub(
 
             var flags = MvAttributeOwnerStub.extractFlags(attrs)
             flags = BitUtil.set(flags, TEST_MASK, attrs.isTest)
+            flags = BitUtil.set(flags, IS_ENTRY_MASK, psi.isEntry)
+            flags = BitUtil.set(flags, IS_VIEW_MASK, psi.isView)
 
             return MvFunctionStub(
                 parentStub,
@@ -171,6 +174,8 @@ class MvFunctionStub(
 
     companion object {
         private val TEST_MASK: Int = makeBitMask(MvAttributeOwnerStub.USED_BITS + 1)
+        private val IS_ENTRY_MASK: Int = makeBitMask(MvAttributeOwnerStub.USED_BITS + 2)
+        private val IS_VIEW_MASK: Int = makeBitMask(MvAttributeOwnerStub.USED_BITS + 3)
     }
 }
 

@@ -1,7 +1,5 @@
 package org.move.cli.runConfigurations.legacy
 
-import com.intellij.execution.RunManager
-import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.openapi.util.text.StringUtil
 import java.nio.file.Path

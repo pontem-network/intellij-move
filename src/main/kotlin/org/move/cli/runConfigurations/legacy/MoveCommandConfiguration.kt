@@ -7,10 +7,10 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.util.execution.ParametersListUtil
-import com.intellij.util.io.exists
 import org.jdom.Element
 import org.move.cli.*
 import org.move.cli.settings.aptosPath
+import org.move.stdext.exists
 import java.nio.file.Path
 
 class MoveCommandConfiguration(
@@ -58,17 +58,14 @@ class MoveCommandConfiguration(
         val workingDirectory = workingDirectory
             ?: return CleanConfiguration.error("No working directory specified")
 
-        val cmd = run {
-            val parsed = ParsedCommand.parse(command)
-                ?: return CleanConfiguration.error("No command specified")
-            MoveCommandLine(
-                parsed.command,
-                workingDirectory,
-                parsed.additionalArguments,
-                environmentVariables
-            )
-        }
-
+        val parsed = ParsedCommand.parse(command)
+            ?: return CleanConfiguration.error("No command specified")
+        val cmd = MoveCommandLine(
+            parsed.command,
+            workingDirectory,
+            parsed.additionalArguments,
+            environmentVariables
+        )
         val aptosPath = project.aptosPath
             ?: return CleanConfiguration.error("No Aptos CLI specified")
 
@@ -99,8 +96,8 @@ class MoveCommandConfiguration(
         companion object {
             fun parse(rawCommand: String): ParsedCommand? {
                 val args = ParametersListUtil.parse(rawCommand)
-                val command = args.firstOrNull { !it.startsWith("+") } ?: return null
-                val additionalArguments = args.drop(args.indexOf(command) + 1)
+                val command = args.firstOrNull() ?: return null
+                val additionalArguments = args.drop(1)
                 return ParsedCommand(command, additionalArguments)
             }
         }
