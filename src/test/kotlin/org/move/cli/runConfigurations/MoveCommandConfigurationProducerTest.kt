@@ -156,21 +156,7 @@ class MoveCommandConfigurationProducerTest : RunConfigurationProducerTestBase("t
         checkOnElement<MvFunction>()
     }
 
-    fun `test publish module`() {
-        testProject {
-            namedMoveToml("MyPackage")
-            sources {
-                move(
-                    "main.move", """
-                module 0x1::/*caret*/Main {}                    
-                """
-                )
-            }
-        }
-        checkOnElement<MvModule>()
-    }
-
-    fun `test publish and test for module with test function`() {
+    fun `test run tests for module with test function`() {
         testProject {
             namedMoveToml("MyPackage")
             sources {
@@ -186,21 +172,6 @@ class MoveCommandConfigurationProducerTest : RunConfigurationProducerTestBase("t
             }
         }
         checkOnElement<MvModule>()
-    }
-
-    fun `test no publish action if test_only`() {
-        testProject {
-            namedMoveToml("MyPackage")
-            sources {
-                move(
-                    "main.move", """
-                #[test_only]    
-                module 0x1::/*caret*/Main {}                    
-                """
-                )
-            }
-        }
-        checkNoConfigurationOnElement<MvModule>()
     }
 
     fun `test run tests for move toml file`() {

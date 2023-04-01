@@ -4,7 +4,6 @@ import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.psi.PsiElement
-import org.move.cli.runConfigurations.producers.PublishCommandConfigurationProducer
 import org.move.cli.runConfigurations.producers.TestCommandConfigurationProducer
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes.IDENTIFIER
@@ -49,15 +48,6 @@ class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
             }
         }
         if (parent is MvModule) {
-            val publishConfig =
-                PublishCommandConfigurationProducer.fromLocation(parent, false)
-            if (publishConfig != null) {
-                return Info(
-                    MoveIcons.PUBLISH,
-                    { publishConfig.configurationName },
-                    *ExecutorAction.getActions(1)
-                )
-            }
             val testConfig = TestCommandConfigurationProducer.fromLocation(parent, climbUp = false)
             if (testConfig != null) {
                 return Info(
