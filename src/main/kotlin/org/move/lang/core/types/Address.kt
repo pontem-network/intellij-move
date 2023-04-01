@@ -1,8 +1,6 @@
 package org.move.lang.core.types
 
-import com.intellij.openapi.project.Project
 import org.move.cli.MoveProject
-import org.move.cli.moveProjects
 import org.move.lang.core.psi.MvAddressRef
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.addressRef
@@ -17,7 +15,7 @@ sealed class Address(open val value: String) {
 
     abstract fun text(): String
 
-    data class Value(override val value: String) : Address(value) {
+    class Value(override val value: String) : Address(value) {
         override fun text(): String = value
 
         override fun equals(other: Any?): Boolean {
@@ -32,7 +30,7 @@ sealed class Address(open val value: String) {
         }
     }
 
-    data class Named(val name: String, override val value: String) : Address(value) {
+    class Named(val name: String, override val value: String) : Address(value) {
         override fun text(): String {
             return "$name = $value"
         }

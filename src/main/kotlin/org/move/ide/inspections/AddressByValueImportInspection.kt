@@ -18,15 +18,15 @@ class AddressByValueImportInspection : MvLocalInspectionTool() {
                 // no error if unresolved by value (default)
                 val module = moduleRef.reference?.resolve() as? MvModule ?: return
 
-                val moveProj = moduleRef.moveProject
-                val refAddress = moduleRef.addressRef.address(moveProj) ?: return
+                val moveProj = moduleRef.moveProject ?: return
 
-                if (refAddress.value == Consts.ADDR_PLACEHOLDER) return
+                val refAddress = moduleRef.addressRef.address(moveProj) ?: return
                 if (refAddress !is Address.Named) return
+                if (refAddress.value == Consts.ADDR_PLACEHOLDER) return
 
                 val modAddress = module.address(moveProj) ?: return
-                if (modAddress.value == Consts.ADDR_PLACEHOLDER) return
                 if (modAddress !is Address.Named) return
+                if (modAddress.value == Consts.ADDR_PLACEHOLDER) return
 
                 if (refAddress != modAddress) {
                     holder.registerProblem(
