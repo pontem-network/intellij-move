@@ -5,9 +5,9 @@ import com.intellij.util.BitUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.impl.*
-import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.StubAddress
 import org.move.lang.core.types.psiStubAddress
+import org.move.lang.moveProject
 import org.move.openapiext.readNameAsString
 import org.move.openapiext.readUTFFastAsNullable
 import org.move.openapiext.writeUTFFastAsNullable
@@ -119,7 +119,7 @@ class MvFunctionStub(
     override val name: String?,
     override val flags: Int,
     val visibility: FunctionVisibility,
-    val qualName: ItemQualName?,
+    val qualName: String?,
 ) : MvAttributeOwnerStubBase<MvFunction>(parent, elementType), MvNamedStub {
 
     val isTest: Boolean get() = BitUtil.isSet(flags, TEST_MASK)
@@ -135,9 +135,10 @@ class MvFunctionStub(
             val visibility = FunctionVisibility.values()
                 .find { it.ordinal == vis } ?: error("Invalid vis value $vis")
 
-            val fqName = ItemQualName.deserialize(dataStream)
+//            val fqName = ItemQualName.deserialize(dataStream)
+            val qualName = dataStream.readUTFFastAsNullable()
 
-            return MvFunctionStub(parentStub, this, name, flags, visibility, fqName)
+            return MvFunctionStub(parentStub, this, name, flags, visibility, qualName)
         }
 
         override fun serialize(stub: MvFunctionStub, dataStream: StubOutputStream) =
@@ -145,7 +146,8 @@ class MvFunctionStub(
                 writeName(stub.name)
                 writeInt(stub.flags)
                 writeInt(stub.visibility.ordinal)
-                ItemQualName.serialize(stub.qualName, this)
+                writeUTFFastAsNullable(stub.qualName)
+//                ItemQualName.serialize(stub.qualName, this)
             }
 
         override fun createPsi(stub: MvFunctionStub): MvFunction =
@@ -165,7 +167,7 @@ class MvFunctionStub(
                 psi.name,
                 flags,
                 visibility = psi.visibilityFromPsi(),
-                qualName = psi.qualName
+                qualName = psi.qualName?.cmdText()
             )
         }
 

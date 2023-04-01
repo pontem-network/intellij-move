@@ -2,6 +2,8 @@ package org.move.lang.core.types
 
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
+import org.move.lang.core.psi.MvQualNamedElement
+import org.move.lang.moveProject
 import org.move.openapiext.readUTFFastAsNullable
 import org.move.openapiext.writeUTFFastAsNullable
 
@@ -19,12 +21,12 @@ data class ItemQualName(
     }
 
     fun cmdText(): String {
-        val addressText = address.canonicalValue
+        val addressText = address.canonicalValue(null)
         return listOfNotNull(addressText, moduleName, itemName).joinToString("::")
     }
 
     fun shortCmdText(): String {
-        val addressText = address.shortenedValue
+        val addressText = address.shortenedValue(null)
         return listOfNotNull(addressText, moduleName, itemName).joinToString("::")
     }
 

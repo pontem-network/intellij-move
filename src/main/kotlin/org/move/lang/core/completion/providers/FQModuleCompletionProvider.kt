@@ -15,6 +15,7 @@ import org.move.lang.core.resolve.mslScope
 import org.move.lang.core.resolve.processFQModuleRef
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.types.Address
 import org.move.lang.core.types.address
 import org.move.lang.core.withParent
 import org.move.lang.moveProject
@@ -49,7 +50,8 @@ object FQModuleCompletionProvider : MvCompletionProvider() {
 
         processFQModuleRef(fqModuleRef) {
             val module = it.element
-            if (positionAddress == module.address(moveProj)) {
+            val moduleAddress = module.address(moveProj)
+            if (Address.eq(positionAddress, moduleAddress)) {
                 val lookup = module.createLookupElement(completionContext)
                 result.addElement(lookup)
             }

@@ -13,7 +13,7 @@ fun IndexSink.indexFunctionStub(stub: MvFunctionStub) {
     indexNamedStub(stub)
     if (stub.isEntry && !stub.isTest) {
         stub.qualName?.let {
-            occurrence(MvEntryFunctionIndex.KEY, it.cmdText())
+            occurrence(MvEntryFunctionIndex.KEY, it)
         }
     }
 }

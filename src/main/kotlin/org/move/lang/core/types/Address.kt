@@ -10,44 +10,57 @@ const val MAX_LENGTH = 32
 
 sealed class Address(open val value: String) {
 
-    val canonicalValue: String get() = normalizeValue(this.value)
-    val shortenedValue: String get() = shortenValue(this.value, 8)
-
+    abstract fun canonicalValue(moveProject: MoveProject?): String
     abstract fun text(): String
 
+    fun shortenedValue(moveProject: MoveProject?): String = shortenValue(canonicalValue(moveProject), 8)
+
     class Value(override val value: String) : Address(value) {
+        override fun canonicalValue(moveProject: MoveProject?): String {
+            return normalizeValue(this.value)
+        }
+
         override fun text(): String = value
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other !is Value) return false
             if (this.hashCode() != other.hashCode()) return false
-            return normalizeValue(value) == normalizeValue(other.value)
+            return eq(this, other)
         }
 
-        override fun hashCode(): Int {
-            return normalizeValue(value).hashCode()
-        }
+        override fun hashCode(): Int = normalizeValue(value).hashCode()
     }
 
     class Named(val name: String, override val value: String) : Address(value) {
-        override fun text(): String {
-            return "$name = $value"
+        override fun canonicalValue(moveProject: MoveProject?): String {
+            return normalizeValue(this.value)
         }
+
+        override fun text(): String = "$name = $value"
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other !is Named) return false
             if (this.hashCode() != other.hashCode()) return false
-            return Pair(name, normalizeValue(value)) == Pair(name, normalizeValue(other.value))
+            return eq(this, other)
         }
 
-        override fun hashCode(): Int {
-            return (name + value).hashCode()
-        }
+        override fun hashCode(): Int = name.hashCode()
     }
 
     companion object {
+        fun eq(left: Address?, right: Address?): Boolean {
+            if (left === right) return true
+            if (left == null && right == null) return true
+            return when {
+                left is Value && right is Value -> normalizeValue(left.value) == normalizeValue(right.value)
+                left is Named && right is Named ->
+                    Pair(left.name, normalizeValue(left.value)) == Pair(right.name, normalizeValue(left.value))
+                else -> false
+            }
+        }
+
         private fun normalizeValue(text: String): String {
             if (!text.startsWith("0")) return text
             val trimmed = if (!text.startsWith("0x")) {

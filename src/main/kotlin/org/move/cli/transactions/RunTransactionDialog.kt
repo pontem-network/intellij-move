@@ -148,7 +148,7 @@ class RunTransactionDialog(
     }
 
     fun toAptosCommandLine(): AptosCommandLine? {
-        val address = entryFunction.module?.address(moveProject)?.canonicalValue ?: return null
+        val address = entryFunction.module?.address(moveProject)?.canonicalValue(moveProject) ?: return null
         val module = entryFunction.module?.name ?: return null
         val name = entryFunction.name ?: return null
 

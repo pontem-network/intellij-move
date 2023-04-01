@@ -185,12 +185,12 @@ fun processFQModuleRef(
         itemScope = fqModuleRef.itemScope,
     )
     val moveProj = fqModuleRef.moveProject ?: return
-    val refAddress = fqModuleRef.addressRef.address(moveProj)?.canonicalValue
+    val refAddressText = fqModuleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
 
     val moduleProcessor = MatchingProcessor<MvNamedElement> {
         val entry = SimpleScopeEntry(it.name, it.element as MvModule)
-        val modAddress = entry.element.address(moveProj)?.canonicalValue
-        if (modAddress != refAddress)
+        val modAddressText = entry.element.address(moveProj)?.canonicalValue(moveProj)
+        if (modAddressText != refAddressText)
             return@MatchingProcessor false
         processor.match(entry)
     }
@@ -224,11 +224,11 @@ fun processFQModuleRef(
     val project = fqModuleRef.project
     val moveProj = fqModuleRef.moveProject ?: return
 
-    val refAddress = fqModuleRef.addressRef.address(moveProj)?.canonicalValue
+    val refAddress = fqModuleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
     val moduleProcessor = MatchingProcessor<MvNamedElement> {
         val entry = SimpleScopeEntry(it.name, it.element as MvModule)
         // TODO: check belongs to the current project
-        val modAddress = entry.element.address(moveProj)?.canonicalValue
+        val modAddress = entry.element.address(moveProj)?.canonicalValue(moveProj)
 
         if (modAddress != refAddress) return@MatchingProcessor false
         processor.match(entry)

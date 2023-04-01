@@ -28,7 +28,7 @@ class AddressByValueImportInspection : MvLocalInspectionTool() {
                 if (modAddress !is Address.Named) return
                 if (modAddress.value == Consts.ADDR_PLACEHOLDER) return
 
-                if (refAddress != modAddress) {
+                if (!Address.eq(refAddress, modAddress)) {
                     holder.registerProblem(
                         moduleRef,
                         "Module is declared with a different address `${modAddress.name}`",
