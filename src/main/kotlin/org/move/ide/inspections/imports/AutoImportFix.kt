@@ -16,7 +16,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.types.ItemFQName
+import org.move.lang.core.types.ItemQualName
 import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.moveProject
 import org.move.openapiext.checkWriteAccessAllowed
@@ -121,7 +121,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
 
             return allItems
                 .filter(itemFilter)
-                .map { ImportCandidate(it, it.fqName) }
+                .map { ImportCandidate(it, it.qualName) }
         }
     }
 }
@@ -159,7 +159,7 @@ data class ImportContext private constructor(
     }
 }
 
-data class ImportCandidate(val element: MvQualNamedElement, val fqName: ItemFQName)
+data class ImportCandidate(val element: MvQualNamedElement, val qualName: ItemQualName)
 
 fun ImportCandidate.import(context: MvElement) {
     checkWriteAccessAllowed()
@@ -169,10 +169,10 @@ fun ImportCandidate.import(context: MvElement) {
         ?: return
     val insertTestOnly = insertionScope.itemScope == ItemScope.MAIN
             && context.itemScope == ItemScope.TEST
-    insertionScope.insertUseItem(psiFactory, fqName, insertTestOnly)
+    insertionScope.insertUseItem(psiFactory, qualName, insertTestOnly)
 }
 
-private fun MvImportsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: ItemFQName, testOnly: Boolean) {
+private fun MvImportsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: ItemQualName, testOnly: Boolean) {
     val newUseStmt = psiFactory.useStmt(usePath.editorText(), testOnly)
     if (this.tryGroupWithOtherUseItems(psiFactory, newUseStmt, testOnly)) return
 

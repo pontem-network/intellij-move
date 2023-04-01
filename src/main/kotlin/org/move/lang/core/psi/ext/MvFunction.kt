@@ -17,7 +17,7 @@ import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.module
 import org.move.lang.core.stubs.MvFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.ItemFQName
+import org.move.lang.core.types.ItemQualName
 import javax.swing.Icon
 
 enum class FunctionVisibility {
@@ -117,11 +117,11 @@ abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
 
     var builtIn = false
 
-    override val fqName: ItemFQName
+    override val qualName: ItemQualName
         get() {
-            val moduleFQName = this.module?.fqName ?: ItemFQName.DEFAULT_MOD_FQ_NAME
+            val moduleFQName = this.module?.qualName ?: ItemQualName.DEFAULT_MOD_FQ_NAME
             val itemName = this.name ?: "<unknown>"
-            return ItemFQName(moduleFQName.address, moduleFQName.itemName, itemName)
+            return ItemQualName(moduleFQName.address, moduleFQName.itemName, itemName)
         }
 
     override val modificationTracker: SimpleModificationTracker =

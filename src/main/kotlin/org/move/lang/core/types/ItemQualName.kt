@@ -2,11 +2,10 @@ package org.move.lang.core.types
 
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
-import org.move.cli.runConfigurations.aptos.run.Transaction
 import org.move.openapiext.readUTFFastAsNullable
 import org.move.openapiext.writeUTFFastAsNullable
 
-data class ItemFQName(
+data class ItemQualName(
     val address: Address,
     val moduleName: String?,
     val itemName: String
@@ -35,28 +34,28 @@ data class ItemFQName(
 //    }
 
     companion object {
-        val DEFAULT_MOD_FQ_NAME: ItemFQName =
-            ItemFQName(Address.Value("0x0"), null, "default")
-        val DEFAULT_ITEM_FQ_NAME: ItemFQName =
-            ItemFQName(Address.Value("0x0"), "default", "default_item")
+        val DEFAULT_MOD_FQ_NAME: ItemQualName =
+            ItemQualName(Address.Value("0x0"), null, "default")
+//        val DEFAULT_ITEM_FQ_NAME: ItemFullyQualName =
+//            ItemFullyQualName(Address.Value("0x0"), "default", "default_item")
 
-        fun fromCmdText(text: String): ItemFQName? {
+        fun fromCmdText(text: String): ItemQualName? {
             val parts = text.split("::")
             val address = parts.getOrNull(0) ?: return null
             val moduleName = parts.getOrNull(1) ?: return null
             val itemName = parts.getOrNull(2) ?: return null
-            return ItemFQName(Address.Value(address), moduleName, itemName)
+            return ItemQualName(Address.Value(address), moduleName, itemName)
         }
 
-        fun serialize(fqName: ItemFQName, dataStream: StubOutputStream) {
+        fun serialize(qualName: ItemQualName, dataStream: StubOutputStream) {
             with(dataStream) {
-                writeUTFFast(fqName.address.text())
-                writeUTFFastAsNullable(fqName.moduleName)
-                writeUTFFast(fqName.itemName)
+                writeUTFFast(qualName.address.text())
+                writeUTFFastAsNullable(qualName.moduleName)
+                writeUTFFast(qualName.itemName)
             }
         }
 
-        fun deserialize(dataStream: StubInputStream): ItemFQName {
+        fun deserialize(dataStream: StubInputStream): ItemQualName {
             val addressText = dataStream.readUTFFast()
             val address =
                 if ("=" in addressText) {
@@ -69,7 +68,7 @@ data class ItemFQName(
                 }
             val moduleName = dataStream.readUTFFastAsNullable()
             val itemName = dataStream.readUTFFast()
-            return ItemFQName(address, moduleName, itemName)
+            return ItemQualName(address, moduleName, itemName)
         }
     }
 }

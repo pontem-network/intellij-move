@@ -5,7 +5,7 @@ import com.intellij.util.BitUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.impl.*
-import org.move.lang.core.types.ItemFQName
+import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.StubAddress
 import org.move.lang.core.types.psiStubAddress
 import org.move.openapiext.readNameAsString
@@ -119,7 +119,7 @@ class MvFunctionStub(
     override val name: String?,
     override val flags: Int,
     val visibility: FunctionVisibility,
-    val fqName: ItemFQName,
+    val fqName: ItemQualName,
 ) : MvAttributeOwnerStubBase<MvFunction>(parent, elementType), MvNamedStub {
 
     val isTest: Boolean get() = BitUtil.isSet(flags, TEST_MASK)
@@ -135,7 +135,7 @@ class MvFunctionStub(
             val visibility = FunctionVisibility.values()
                 .find { it.ordinal == vis } ?: error("Invalid vis value $vis")
 
-            val fqName = ItemFQName.deserialize(dataStream)
+            val fqName = ItemQualName.deserialize(dataStream)
 
             return MvFunctionStub(parentStub, this, name, flags, visibility, fqName)
         }
@@ -145,7 +145,7 @@ class MvFunctionStub(
                 writeName(stub.name)
                 writeInt(stub.flags)
                 writeInt(stub.visibility.ordinal)
-                ItemFQName.serialize(stub.fqName, this)
+                ItemQualName.serialize(stub.fqName, this)
             }
 
         override fun createPsi(stub: MvFunctionStub): MvFunction =
@@ -165,7 +165,7 @@ class MvFunctionStub(
                 psi.name,
                 flags,
                 visibility = psi.visibilityFromPsi(),
-                fqName = psi.fqName
+                fqName = psi.qualName
             )
         }
 

@@ -21,11 +21,11 @@ class RunCommandConfigurationProducer : CommandConfigurationProducerBase() {
 
             val commandLine = AptosCommandLine(
                 "move run",
-                arguments = listOf("--function-id", entryFunction.fqName.cmdText()),
+                arguments = listOf("--function-id", entryFunction.qualName.cmdText()),
             )
             return CommandLineFromContext(
                 entryFunction,
-                "Run ${entryFunction.fqName.shortCmdText()}",
+                "Run ${entryFunction.qualName.shortCmdText()}",
                 commandLine
             )
         }

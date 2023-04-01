@@ -124,7 +124,7 @@ private fun findTypeVarForParam(typeVars: List<TyInfer.TyVar>, param: MvTypePara
     val typeVar = typeVars.find { it.origin?.origin == param }
     if (typeVar == null) {
         val owner = param.parent.parent as? MvStruct
-        error("no typeVar for parameter \"${param.text}\" in $typeVars (of item ${owner?.fqName})")
+        error("no typeVar for parameter \"${param.text}\" in $typeVars (of item ${owner?.qualName})")
     }
     return typeVar
 }

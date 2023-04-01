@@ -140,7 +140,7 @@ fun isCompatibleReferences(expectedTy: TyReference, inferredTy: TyReference, msl
 }
 
 fun isCompatibleStructs(expectedTy: TyStruct, inferredTy: TyStruct, msl: Boolean): Compat {
-    val isCompat = expectedTy.item.fqName == inferredTy.item.fqName
+    val isCompat = expectedTy.item.qualName == inferredTy.item.qualName
             && expectedTy.typeArgs.size == inferredTy.typeArgs.size
             && expectedTy.typeArgs.zip(inferredTy.typeArgs).all { isCompatible(it.first, it.second, msl) }
     return if (isCompat) {

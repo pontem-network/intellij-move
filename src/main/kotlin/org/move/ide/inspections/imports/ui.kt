@@ -33,7 +33,7 @@ fun showItemsToImportChooser(
     val itemImportUi = if (isUnitTestMode) {
         MOCK
             ?: error(
-                "Multiple items: ${items.map { it.fqName.editorText() }}. " +
+                "Multiple items: ${items.map { it.qualName.editorText() }}. " +
                         "You should set mock ui via `withMockImportItemUi`"
             )
     } else {
@@ -78,7 +78,7 @@ private class PopupImportItemUi(private val project: Project, private val dataCo
                 }
 
                 override fun getTextFor(value: ImportCandidatePsiElement): String =
-                    value.importCandidate.fqName.editorText()
+                    value.importCandidate.qualName.editorText()
 
                 override fun getIconFor(value: ImportCandidatePsiElement): Icon =
                     value.importCandidate.element.getIcon(0)
@@ -129,7 +129,7 @@ private class RsImportCandidateCellRenderer : DefaultPsiElementCellRenderer() {
     override fun getContainerText(element: PsiElement, name: String): String? {
         val importCandidate = element.importCandidate
         return if (importCandidate != null) {
-            val fqName = importCandidate.fqName
+            val fqName = importCandidate.qualName
             val container = if (fqName.moduleName == null) {
                 fqName.address.text()
             } else {

@@ -9,7 +9,7 @@ import org.move.lang.core.psi.MvSpecInlineFunction
 import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.stubs.MvSpecFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.ItemFQName
+import org.move.lang.core.types.ItemQualName
 import javax.swing.Icon
 
 val MvSpecFunction.module: MvModule?
@@ -28,11 +28,11 @@ abstract class MvSpecFunctionMixin : MvStubbedNamedElementImpl<MvSpecFunctionStu
 
     constructor(stub: MvSpecFunctionStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 
-    override val fqName: ItemFQName
+    override val qualName: ItemQualName
         get() {
-            val moduleFQName = this.module?.fqName ?: ItemFQName.DEFAULT_MOD_FQ_NAME
+            val moduleFQName = this.module?.qualName ?: ItemQualName.DEFAULT_MOD_FQ_NAME
             val itemName = this.name ?: "<unknown_spec_function>"
-            return ItemFQName(moduleFQName.address, moduleFQName.itemName, itemName)
+            return ItemQualName(moduleFQName.address, moduleFQName.itemName, itemName)
         }
 
     override fun getIcon(flags: Int): Icon = MoveIcons.FUNCTION

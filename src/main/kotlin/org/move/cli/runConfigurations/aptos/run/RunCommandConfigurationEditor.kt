@@ -14,7 +14,7 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.layout.ComponentPredicate
 import org.move.lang.core.psi.MvElement
-import org.move.lang.core.types.ItemFQName
+import org.move.lang.core.types.ItemQualName
 import org.move.lang.index.MvEntryFunctionIndex
 import org.move.utils.ui.MoveTextFieldWithCompletion
 import org.move.utils.ui.WorkingDirectoryField
@@ -84,10 +84,10 @@ class RunCommandConfigurationEditor(
                 // TODO: disable button if previous function is not modified
                 button("Change Function") {
                     val functionIdText = functionIdField.text.trim()
-                    val itemFQName = ItemFQName.fromCmdText(functionIdText)
-                    if (itemFQName != null) {
+                    val qualName = ItemQualName.fromCmdText(functionIdText)
+                    if (qualName != null) {
                         val function =
-                            MvEntryFunctionIndex.getFunction(project, itemFQName.cmdText())
+                            MvEntryFunctionIndex.getFunction(project, qualName.cmdText())
                         if (function != null) {
                             transaction = Transaction.template(function)
                             refreshLabels()

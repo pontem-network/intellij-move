@@ -10,7 +10,7 @@ import org.move.ide.presentation.text
 import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.ItemFQName
+import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferenceContext
 import org.move.lang.core.types.infer.maybeInferenceContext
@@ -99,7 +99,7 @@ fun MvDocAndAttributeOwner.documentationAsHtml(): String {
 fun generateFunction(function: MvFunction, buffer: StringBuilder) {
     val module = function.module
     if (module != null) {
-        buffer += module.fqName.editorText()
+        buffer += module.qualName.editorText()
         buffer += "\n"
     }
     if (function.isNative) buffer += "native "
@@ -117,11 +117,11 @@ fun MvElement.signature(builder: StringBuilder) {
         is MvFunction -> generateFunction(this, buffer)
         is MvModule -> {
             buffer += "module "
-            buffer += this.fqName.editorText()
+            buffer += this.qualName.editorText()
         }
 
         is MvStruct -> {
-            buffer += this.module.fqName.editorText()
+            buffer += this.module.qualName.editorText()
             buffer += "\n"
 
             buffer += "struct "
@@ -134,7 +134,7 @@ fun MvElement.signature(builder: StringBuilder) {
         is MvStructField -> {
             val module = this.struct.module
             val itemContext = this.struct.outerItemContext(msl)
-            buffer += module.fqName.editorText()
+            buffer += module.qualName.editorText()
             buffer += "::"
             buffer += this.struct.name ?: angleWrapped("anonymous")
             buffer += "\n"
@@ -144,7 +144,7 @@ fun MvElement.signature(builder: StringBuilder) {
 
         is MvConst -> {
             val itemContext = this.outerItemContext(msl)
-            buffer += (this.module?.fqName ?: ItemFQName.DEFAULT_MOD_FQ_NAME).editorText()
+            buffer += (this.module?.qualName ?: ItemQualName.DEFAULT_MOD_FQ_NAME).editorText()
             buffer += "\n"
             buffer += "const "
             buffer.b { it += this.name ?: angleWrapped("unknown") }

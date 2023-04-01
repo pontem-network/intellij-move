@@ -8,7 +8,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.stubs.MvStructStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.ItemFQName
+import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.ty.Ability
 import org.move.stdext.withAdded
 import javax.swing.Icon
@@ -78,10 +78,10 @@ abstract class MvStructMixin : MvStubbedNamedElementImpl<MvStructStub>,
 
     override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT
 
-    override val fqName: ItemFQName
+    override val qualName: ItemQualName
         get() {
-            val moduleFQName = this.module.fqName
+            val moduleFQName = this.module.qualName
             val itemName = this.name ?: "<unknown_struct>"
-            return ItemFQName(moduleFQName.address, moduleFQName.itemName, itemName)
+            return ItemQualName(moduleFQName.address, moduleFQName.itemName, itemName)
         }
 }

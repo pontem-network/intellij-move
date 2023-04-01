@@ -119,7 +119,7 @@ module 0x1::Main {
     fun checkFqCompletionsOrder(listStart: List<String>, @Language("Move") code: String) {
         val variants = completionFixture.invokeCompletion(code)
         val lookupStrings =
-            variants.map { (it.psiElement as? MvQualNamedElement)?.fqName?.editorText() ?: it.lookupString }
+            variants.map { (it.psiElement as? MvQualNamedElement)?.qualName?.editorText() ?: it.lookupString }
         checkValidPrefix(listStart, lookupStrings)
     }
 

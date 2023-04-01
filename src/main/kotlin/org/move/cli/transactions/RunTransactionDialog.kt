@@ -45,7 +45,7 @@ class RunTransactionDialog(
 
     init {
         title = "Transaction Parameters"
-        configurationName = "Run ${entryFunction.fqName}"
+        configurationName = "Run ${entryFunction.qualName}"
         selectedProfile = if (profiles.contains("default")) "default" else profiles[0]
         init()
     }

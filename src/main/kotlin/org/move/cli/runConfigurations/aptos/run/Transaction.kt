@@ -5,12 +5,12 @@ import org.move.cli.runConfigurations.aptos.AptosCommandLine
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.allParamsAsBindings
 import org.move.lang.core.psi.typeParameters
-import org.move.lang.core.types.ItemFQName
+import org.move.lang.core.types.ItemQualName
 import org.move.lang.index.MvEntryFunctionIndex
 import java.nio.file.Path
 
 data class Transaction(
-    var functionId: ItemFQName,
+    var functionId: ItemQualName,
     val typeParams: MutableMap<String, String?>,
     val params: MutableMap<String, String?>,
 //    var selectedProfile: String? = null,
@@ -54,7 +54,7 @@ data class Transaction(
                 nullParams[parameterName] = null
             }
 
-            return Transaction(entryFunction.fqName, nullTypeParams, nullParams)
+            return Transaction(entryFunction.qualName, nullTypeParams, nullParams)
         }
 
         sealed class Result<T> {

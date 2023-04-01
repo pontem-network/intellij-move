@@ -11,7 +11,7 @@ import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.completion.BUILTIN_ITEM_PRIORITY
 import org.move.lang.core.completion.LOCAL_ITEM_PRIORITY
 import org.move.lang.core.psi.ext.findLastChildByType
-import org.move.lang.core.types.ItemFQName
+import org.move.lang.core.types.ItemQualName
 
 interface MvNamedElement : MvElement,
                            PsiNamedElement,
@@ -29,7 +29,7 @@ interface MvMandatoryNamedElement : MvNamedElement {
 }
 
 interface MvQualNamedElement : MvNamedElement {
-    val fqName: ItemFQName
+    val qualName: ItemQualName
 }
 
 val MvNamedElement.completionPriority

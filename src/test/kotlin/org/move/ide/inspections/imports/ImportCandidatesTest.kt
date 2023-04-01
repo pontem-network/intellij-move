@@ -159,7 +159,7 @@ module 0x1::main {
 
         val candidates =
             AutoImportFix.getImportCandidates(ImportContext.Companion.from(refElement), targetName)
-                .map { it.fqName.editorText() }
+                .map { it.qualName.editorText() }
         if (data == "[]") {
             check(candidates.isEmpty()) { "Non-empty candidates: $candidates" }
             return

@@ -8,7 +8,7 @@ import com.intellij.psi.stubs.StubIndexKey
 import com.intellij.util.Processors
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.stubs.impl.MvFileStub
-import org.move.lang.core.types.ItemFQName
+import org.move.lang.core.types.ItemQualName
 import org.move.openapiext.checkCommitIsNotInProgress
 import org.move.openapiext.getElements
 
@@ -55,7 +55,7 @@ class MvEntryFunctionIndex : StringStubIndexExtension<MvFunction>() {
         ): Collection<String> {
             val keys = getAllKeys(project, scope)
             return keys.mapNotNull {
-                ItemFQName.fromCmdText(it)?.shortCmdText()
+                ItemQualName.fromCmdText(it)?.shortCmdText()
             }
         }
 

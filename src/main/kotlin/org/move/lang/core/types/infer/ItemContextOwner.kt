@@ -29,13 +29,13 @@ fun ItemContextOwner.itemContext(msl: Boolean): ItemContext {
     val itemContext = if (msl) {
         this.project.cacheManager.cache(this, ITEM_CONTEXT_KEY_MSL) {
             val itemContext = recursionGuard(ITEM_CONTEXT_GUARD, { getItemContext(this, true) })
-                ?: error("nested itemContext inference for ${(this as? MvModule)?.fqName}")
+                ?: error("nested itemContext inference for ${(this as? MvModule)?.qualName}")
             this.createCachedResult(itemContext)
         }
     } else {
         this.project.cacheManager.cache(this, ITEM_CONTEXT_KEY_NON_MSL) {
             val itemContext = recursionGuard(ITEM_CONTEXT_GUARD, { getItemContext(this, false) })
-                ?: error("nested itemContext inference for ${(this as? MvModule)?.fqName}")
+                ?: error("nested itemContext inference for ${(this as? MvModule)?.qualName}")
             this.createCachedResult(itemContext)
         }
     }

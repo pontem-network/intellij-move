@@ -6,7 +6,7 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvSchemaStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.ItemFQName
+import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 
@@ -43,10 +43,10 @@ abstract class MvSchemaMixin : MvStubbedNamedElementImpl<MvSchemaStub>,
 
     override fun getIcon(flags: Int) = MoveIcons.SCHEMA
 
-    override val fqName: ItemFQName
+    override val qualName: ItemQualName
         get() {
-            val moduleFQName = this.module?.fqName ?: ItemFQName.DEFAULT_MOD_FQ_NAME
+            val moduleFQName = this.module?.qualName ?: ItemQualName.DEFAULT_MOD_FQ_NAME
             val itemName = this.name ?: "<unknown_schema>"
-            return ItemFQName(moduleFQName.address, moduleFQName.itemName, itemName)
+            return ItemQualName(moduleFQName.address, moduleFQName.itemName, itemName)
         }
 }
