@@ -24,7 +24,7 @@ data class ItemFQName(
         return listOfNotNull(addressText, moduleName, itemName).joinToString("::")
     }
 
-    fun completionText(): String {
+    fun shortCmdText(): String {
         val addressText = address.shortenedValue
         return listOfNotNull(addressText, moduleName, itemName).joinToString("::")
     }

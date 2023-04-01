@@ -34,7 +34,7 @@ data class RunCommandParser(
             } catch (e: CliktError) {
                 return null
             }
-            val functionId = runParser.functionId ?: return null
+            val functionId = runParser.functionId
             val profile = runParser.profile ?: "default"
             return RunCommandParser(functionId, runParser.typeParams, runParser.params, profile)
         }

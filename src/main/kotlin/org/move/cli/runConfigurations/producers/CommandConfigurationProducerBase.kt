@@ -6,25 +6,21 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
 import org.move.cli.runConfigurations.aptos.AptosCommandLine
-import org.move.cli.runConfigurations.aptos.AptosConfigurationType
+import org.move.cli.runConfigurations.aptos.CommandConfigurationBase
 import org.move.cli.runConfigurations.aptos.any.AnyCommandConfiguration
-import org.move.cli.runConfigurations.aptos.any.AnyCommandConfigurationFactory
 import org.move.cli.settings.moveSettings
 
-data class AptosCommandLineFromContext(
-    val sourceElement: PsiElement,
-    val configurationName: String,
-    val commandLine: AptosCommandLine
-)
+abstract class CommandConfigurationProducerBase :
+    LazyRunConfigurationProducer<CommandConfigurationBase>() {
 
-abstract class AptosCommandConfigurationProducer :
-    LazyRunConfigurationProducer<AnyCommandConfiguration>() {
-
-    override fun getConfigurationFactory() =
-        AnyCommandConfigurationFactory(AptosConfigurationType.getInstance())
+    data class CommandLineFromContext(
+        val sourceElement: PsiElement,
+        val configurationName: String,
+        val commandLine: AptosCommandLine
+    )
 
     override fun setupConfigurationFromContext(
-        templateConfiguration: AnyCommandConfiguration,
+        templateConfiguration: CommandConfigurationBase,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {
@@ -44,7 +40,7 @@ abstract class AptosCommandConfigurationProducer :
     }
 
     override fun isConfigurationFromContext(
-        configuration: AnyCommandConfiguration,
+        configuration: CommandConfigurationBase,
         context: ConfigurationContext
     ): Boolean {
         val location = context.psiLocation ?: return false
@@ -55,7 +51,7 @@ abstract class AptosCommandConfigurationProducer :
                 && configuration.environmentVariables == cmdConf.commandLine.environmentVariables
     }
 
-    abstract fun configFromLocation(location: PsiElement): AptosCommandLineFromContext?
+    abstract fun configFromLocation(location: PsiElement): CommandLineFromContext?
 
     companion object {
         inline fun <reified T : PsiElement> findElement(base: PsiElement, climbUp: Boolean): T? {

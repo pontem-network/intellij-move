@@ -1,0 +1,9 @@
+<configurations>
+  <configuration name="Run 0x1::mod1::call" type="AptosCommandConfiguration" factoryName="TransactionCommand">
+    <option name="command" value="move run --function-id 0x00000000000000000000000000000001::mod1::call" />
+    <envs>
+      <env name="APTOS_DISABLE_TELEMETRY" value="true" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</configurations>

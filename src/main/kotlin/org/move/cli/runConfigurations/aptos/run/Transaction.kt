@@ -65,14 +65,9 @@ data class Transaction(
         fun parseFromCommand(project: Project, command: String): Transaction? {
             val runCommandParser =
                 RunCommandParser.parse(command) ?: return null
-//                RunCommandParser.parse(command) ?: throw ConfigurationException("Malformed command")
 
-            val functionId = ItemFQName.fromCmdText(runCommandParser.functionId)
-                ?: return null
-//                ?: throw ConfigurationException("Malformed functionId")
-            val entryFunction =
-                MvEntryFunctionIndex.getFunction(project, functionId.cmdText())
-                    ?: return null
+            val functionId = runCommandParser.functionId
+            val entryFunction = MvEntryFunctionIndex.getFunction(project, functionId) ?: return null
 
             val transaction = template(entryFunction)
 

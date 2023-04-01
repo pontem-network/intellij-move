@@ -235,4 +235,40 @@ class MoveCommandConfigurationProducerTest : RunConfigurationProducerTestBase("t
         val mainFile = findPsiFile("mypackage/sources/main.move")
         checkOnFsItem(mainFile)
     }
+
+    fun `test no run transaction on non entry function`() {
+        testProject {
+            dir("mypackage") {
+                namedMoveToml("MyPackage")
+                sources {
+                    move(
+                        "main.move", """
+                module 0x1::mod1 {
+                    /*caret*/public fun call() {}
+                }                            
+                """
+                    )
+                }
+            }
+        }
+        checkNoConfigurationOnElement<MvFunction>()
+    }
+
+    fun `test run transaction for entry function`() {
+        testProject {
+            dir("mypackage") {
+                namedMoveToml("MyPackage")
+                sources {
+                    move(
+                        "main.move", """
+                module 0x1::mod1 {
+                    /*caret*/public entry fun call() {}
+                }                            
+                """
+                    )
+                }
+            }
+        }
+        checkOnElement<MvFunction>()
+    }
 }

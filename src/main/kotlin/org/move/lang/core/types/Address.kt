@@ -1,6 +1,8 @@
 package org.move.lang.core.types
 
+import com.intellij.openapi.project.Project
 import org.move.cli.MoveProject
+import org.move.cli.moveProjects
 import org.move.lang.core.psi.MvAddressRef
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.addressRef
@@ -83,9 +85,9 @@ sealed class StubAddress {
         }
     }
 
-    fun asAddress(proj: MoveProject?): Address? {
+    fun asAddress(moveProject: MoveProject?): Address? {
         return when (this) {
-            is Named -> proj?.getNamedAddress(this.name)
+            is Named -> moveProject?.getNamedAddress(this.name)
             is Value -> Address.Value(this.value)
             is Unknown -> null
         }

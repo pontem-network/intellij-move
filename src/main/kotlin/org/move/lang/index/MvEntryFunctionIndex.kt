@@ -55,7 +55,7 @@ class MvEntryFunctionIndex : StringStubIndexExtension<MvFunction>() {
         ): Collection<String> {
             val keys = getAllKeys(project, scope)
             return keys.mapNotNull {
-                ItemFQName.fromCmdText(it)?.completionText()
+                ItemFQName.fromCmdText(it)?.shortCmdText()
             }
         }
 

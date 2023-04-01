@@ -37,8 +37,8 @@
                 implementation="org.move.cli.runConfigurations.aptos.AptosConfigurationType"/>
         <runConfigurationProducer
                 implementation="org.move.cli.runConfigurations.producers.TestCommandConfigurationProducer"/>
-<!--        <runConfigurationProducer-->
-<!--                implementation="org.move.cli.runConfigurations.producers.RunTransactionConfigurationProducer"/>-->
+        <runConfigurationProducer
+                implementation="org.move.cli.runConfigurations.producers.RunCommandConfigurationProducer"/>
         <runLineMarkerContributor language="Move"
                                   implementationClass="org.move.ide.lineMarkers.AptosCommandLineMarkerContributor"/>
 

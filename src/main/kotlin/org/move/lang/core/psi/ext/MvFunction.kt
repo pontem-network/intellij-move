@@ -52,11 +52,19 @@ fun MvFunction.visibilityFromPsi(): FunctionVisibility {
     }
 }
 
-val MvFunction.isEntry: Boolean get() = this.isChildExists(MvElementTypes.ENTRY)
+val MvFunction.isEntry: Boolean get() {
+    val stub = greenStub
+    return stub?.isEntry ?: this.isChildExists(MvElementTypes.ENTRY)
+}
 
 val MvFunction.isInline: Boolean get() = this.isChildExists(MvElementTypes.INLINE)
 
-val MvFunction.isView: Boolean get() = queryAttributes.getAttrItem("view") != null
+val MvFunction.isView: Boolean
+    get() {
+        val stub = greenStub
+        return stub?.isView ?: queryAttributes.isView
+    }
+
 
 val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
 
@@ -67,6 +75,8 @@ val MvFunction.isTest: Boolean
     }
 
 val QueryAttributes.isTest: Boolean get() = this.hasAttrItem("test")
+
+val QueryAttributes.isView: Boolean get() = this.hasAttrItem("view")
 
 val MvFunction.signatureText: String
     get() {
