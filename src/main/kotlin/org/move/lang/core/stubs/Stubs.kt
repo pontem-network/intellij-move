@@ -119,7 +119,7 @@ class MvFunctionStub(
     override val name: String?,
     override val flags: Int,
     val visibility: FunctionVisibility,
-    val fqName: ItemQualName,
+    val qualName: ItemQualName?,
 ) : MvAttributeOwnerStubBase<MvFunction>(parent, elementType), MvNamedStub {
 
     val isTest: Boolean get() = BitUtil.isSet(flags, TEST_MASK)
@@ -145,7 +145,7 @@ class MvFunctionStub(
                 writeName(stub.name)
                 writeInt(stub.flags)
                 writeInt(stub.visibility.ordinal)
-                ItemQualName.serialize(stub.fqName, this)
+                ItemQualName.serialize(stub.qualName, this)
             }
 
         override fun createPsi(stub: MvFunctionStub): MvFunction =
@@ -165,7 +165,7 @@ class MvFunctionStub(
                 psi.name,
                 flags,
                 visibility = psi.visibilityFromPsi(),
-                fqName = psi.qualName
+                qualName = psi.qualName
             )
         }
 

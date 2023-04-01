@@ -47,16 +47,16 @@ data class ItemQualName(
             return ItemQualName(Address.Value(address), moduleName, itemName)
         }
 
-        fun serialize(qualName: ItemQualName, dataStream: StubOutputStream) {
+        fun serialize(qualName: ItemQualName?, dataStream: StubOutputStream) {
             with(dataStream) {
-                writeUTFFast(qualName.address.text())
-                writeUTFFastAsNullable(qualName.moduleName)
-                writeUTFFast(qualName.itemName)
+                writeUTFFastAsNullable(qualName?.address?.text())
+                writeUTFFastAsNullable(qualName?.moduleName)
+                writeUTFFastAsNullable(qualName?.itemName)
             }
         }
 
-        fun deserialize(dataStream: StubInputStream): ItemQualName {
-            val addressText = dataStream.readUTFFast()
+        fun deserialize(dataStream: StubInputStream): ItemQualName? {
+            val addressText = dataStream.readUTFFastAsNullable() ?: return null
             val address =
                 if ("=" in addressText) {
                     val parts = addressText.split("=")
@@ -67,7 +67,7 @@ data class ItemQualName(
                     Address.Value(addressText)
                 }
             val moduleName = dataStream.readUTFFastAsNullable()
-            val itemName = dataStream.readUTFFast()
+            val itemName = dataStream.readUTFFastAsNullable() ?: return null
             return ItemQualName(address, moduleName, itemName)
         }
     }

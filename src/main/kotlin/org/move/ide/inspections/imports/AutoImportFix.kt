@@ -121,7 +121,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
 
             return allItems
                 .filter(itemFilter)
-                .map { ImportCandidate(it, it.qualName) }
+                .mapNotNull { item -> item.qualName?.let { ImportCandidate(item, it) } }
         }
     }
 }

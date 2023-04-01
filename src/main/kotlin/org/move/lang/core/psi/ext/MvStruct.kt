@@ -78,10 +78,10 @@ abstract class MvStructMixin : MvStubbedNamedElementImpl<MvStructStub>,
 
     override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT
 
-    override val qualName: ItemQualName
+    override val qualName: ItemQualName?
         get() {
-            val moduleFQName = this.module.qualName
-            val itemName = this.name ?: "<unknown_struct>"
+            val itemName = this.name ?: return null
+            val moduleFQName = this.module.qualName ?: return null
             return ItemQualName(moduleFQName.address, moduleFQName.itemName, itemName)
         }
 }

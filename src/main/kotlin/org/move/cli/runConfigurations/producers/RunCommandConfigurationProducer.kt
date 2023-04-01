@@ -18,14 +18,15 @@ class RunCommandConfigurationProducer : CommandConfigurationProducerBase() {
         fun fromLocation(location: PsiElement): CommandLineFromContext? {
             val entryFunction =
                 findElement<MvFunction>(location, true)?.takeIf { it.isEntry } ?: return null
+            val functionQualName = entryFunction.qualName ?: return null
 
             val commandLine = AptosCommandLine(
                 "move run",
-                arguments = listOf("--function-id", entryFunction.qualName.cmdText()),
+                arguments = listOf("--function-id", functionQualName.cmdText()),
             )
             return CommandLineFromContext(
                 entryFunction,
-                "Run ${entryFunction.qualName.shortCmdText()}",
+                "Run ${functionQualName.shortCmdText()}",
                 commandLine
             )
         }

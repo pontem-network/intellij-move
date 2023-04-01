@@ -29,7 +29,7 @@ interface MvMandatoryNamedElement : MvNamedElement {
 }
 
 interface MvQualNamedElement : MvNamedElement {
-    val qualName: ItemQualName
+    val qualName: ItemQualName?
 }
 
 val MvNamedElement.completionPriority

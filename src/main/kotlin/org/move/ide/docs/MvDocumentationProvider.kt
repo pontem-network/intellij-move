@@ -99,7 +99,7 @@ fun MvDocAndAttributeOwner.documentationAsHtml(): String {
 fun generateFunction(function: MvFunction, buffer: StringBuilder) {
     val module = function.module
     if (module != null) {
-        buffer += module.qualName.editorText()
+        buffer += module.qualName?.editorText() ?: "unknown"
         buffer += "\n"
     }
     if (function.isNative) buffer += "native "
@@ -117,11 +117,11 @@ fun MvElement.signature(builder: StringBuilder) {
         is MvFunction -> generateFunction(this, buffer)
         is MvModule -> {
             buffer += "module "
-            buffer += this.qualName.editorText()
+            buffer += this.qualName?.editorText() ?: "unknown"
         }
 
         is MvStruct -> {
-            buffer += this.module.qualName.editorText()
+            buffer += this.module.qualName?.editorText() ?: "unknown"
             buffer += "\n"
 
             buffer += "struct "
@@ -134,7 +134,7 @@ fun MvElement.signature(builder: StringBuilder) {
         is MvStructField -> {
             val module = this.struct.module
             val itemContext = this.struct.outerItemContext(msl)
-            buffer += module.qualName.editorText()
+            buffer += module.qualName?.editorText() ?: "unknown"
             buffer += "::"
             buffer += this.struct.name ?: angleWrapped("anonymous")
             buffer += "\n"

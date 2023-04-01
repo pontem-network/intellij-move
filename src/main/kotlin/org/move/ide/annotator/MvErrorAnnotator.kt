@@ -35,75 +35,79 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                 val item = path.reference?.resolveWithAliases()
                 val realCount = path.typeArguments.size
                 val parent = path.parent
-                when {
-                    item == null && path.isLocal && path.identifierName == "vector" -> {
-                        val expectedCount = 1
-                        if (realCount != expectedCount) {
-                            MvDiagnostic
-                                .TypeArgumentsNumberMismatch(path, "vector", expectedCount, realCount)
-                                .addToHolder(moveHolder)
-                        }
+                if (item == null && path.isLocal && path.identifierName == "vector") {
+                    val expectedCount = 1
+                    if (realCount != expectedCount) {
+                        MvDiagnostic
+                            .TypeArgumentsNumberMismatch(path, "vector", expectedCount, realCount)
+                            .addToHolder(moveHolder)
                     }
-                    item is MvStruct && parent is MvPathType -> {
-                        if (parent.ancestorStrict<MvAcquiresType>() != null) return
+                } else {
+                    val qualItem = item as? MvQualNamedElement ?: return
+                    val qualName = qualItem.qualName ?: return
+                    when {
+                        qualItem is MvStruct && parent is MvPathType -> {
+                            if (parent.ancestorStrict<MvAcquiresType>() != null) return
 
-                        val expectedCount = item.typeParameters.size
-                        val label = item.qualName.editorText()
-                        if (expectedCount != realCount) {
-                            MvDiagnostic
-                                .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
-                                .addToHolder(moveHolder)
-                        }
-                    }
-                    item is MvStruct && parent is MvStructLitExpr -> {
-                        // phantom type params
-                        val expectedCount = item.typeParameters.size
-                        if (realCount != 0) {
-                            // if any type param is passed, inference is disabled, so check fully
-                            if (realCount != expectedCount) {
-                                val label = item.qualName.editorText()
+                            val expectedCount = qualItem.typeParameters.size
+                            if (expectedCount != realCount) {
                                 MvDiagnostic
-                                    .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
+                                    .TypeArgumentsNumberMismatch(path, qualName.editorText(), expectedCount, realCount)
                                     .addToHolder(moveHolder)
                             }
                         }
-                    }
-                    item is MvFunction && parent is MvCallExpr -> {
-                        val expectedCount = item.typeParameters.size
-                        if (realCount != 0) {
-                            // if any type param is passed, inference is disabled, so check fully
-                            if (realCount != expectedCount) {
-                                val label = item.qualName.editorText()
-                                MvDiagnostic
-                                    .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
-                                    .addToHolder(moveHolder)
-                            }
-                        } else {
-                            // if no type args are passed, check whether all type params are inferrable
-                            if (item.requiredTypeParams.isNotEmpty() && realCount != expectedCount) {
-                                MvDiagnostic
-                                    .CannotInferType(path)
-                                    .addToHolder(moveHolder)
+                        qualItem is MvStruct && parent is MvStructLitExpr -> {
+                            // phantom type params
+                            val expectedCount = qualItem.typeParameters.size
+                            if (realCount != 0) {
+                                // if any type param is passed, inference is disabled, so check fully
+                                if (realCount != expectedCount) {
+                                    MvDiagnostic
+                                        .TypeArgumentsNumberMismatch(path, qualName.editorText(), expectedCount, realCount)
+                                        .addToHolder(moveHolder)
+                                }
                             }
                         }
-                    }
-                    item is MvSchema
-                            && (parent is MvSchemaLitExpr || parent is MvRefExpr) -> {
-                        val expectedCount = item.typeParameters.size
-                        if (realCount != 0) {
-                            // if any type param is passed, inference is disabled, so check fully
-                            if (realCount != expectedCount) {
-                                val label = item.qualName.editorText()
-                                MvDiagnostic
-                                    .TypeArgumentsNumberMismatch(path, label, expectedCount, realCount)
-                                    .addToHolder(moveHolder)
+                        qualItem is MvFunction && parent is MvCallExpr -> {
+                            val expectedCount = qualItem.typeParameters.size
+                            if (realCount != 0) {
+                                // if any type param is passed, inference is disabled, so check fully
+                                if (realCount != expectedCount) {
+                                    MvDiagnostic
+                                        .TypeArgumentsNumberMismatch(path, qualName.editorText(), expectedCount, realCount)
+                                        .addToHolder(moveHolder)
+                                }
+                            } else {
+                                // if no type args are passed, check whether all type params are inferrable
+                                if (qualItem.requiredTypeParams.isNotEmpty() && realCount != expectedCount) {
+                                    MvDiagnostic
+                                        .CannotInferType(path)
+                                        .addToHolder(moveHolder)
+                                }
                             }
-                        } else {
-                            // if no type args are passed, check whether all type params are inferrable
-                            if (item.requiredTypeParams.isNotEmpty() && realCount != expectedCount) {
-                                MvDiagnostic
-                                    .TypeArgumentsNumberMismatch(path, item.qualName.editorText(), expectedCount, realCount)
-                                    .addToHolder(moveHolder)
+                        }
+                        qualItem is MvSchema
+                                && (parent is MvSchemaLitExpr || parent is MvRefExpr) -> {
+                            val expectedCount = qualItem.typeParameters.size
+                            if (realCount != 0) {
+                                // if any type param is passed, inference is disabled, so check fully
+                                if (realCount != expectedCount) {
+                                    MvDiagnostic
+                                        .TypeArgumentsNumberMismatch(path, qualName.editorText(), expectedCount, realCount)
+                                        .addToHolder(moveHolder)
+                                }
+                            } else {
+                                // if no type args are passed, check whether all type params are inferrable
+                                if (qualItem.requiredTypeParams.isNotEmpty() && realCount != expectedCount) {
+                                    MvDiagnostic
+                                        .TypeArgumentsNumberMismatch(
+                                            path,
+                                            qualName.editorText(),
+                                            expectedCount,
+                                            realCount
+                                        )
+                                        .addToHolder(moveHolder)
+                                }
                             }
                         }
                     }

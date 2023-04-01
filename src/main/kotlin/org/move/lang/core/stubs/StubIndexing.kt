@@ -12,9 +12,8 @@ fun IndexSink.indexModuleStub(stub: MvModuleStub) {
 fun IndexSink.indexFunctionStub(stub: MvFunctionStub) {
     indexNamedStub(stub)
     if (stub.isEntry && !stub.isTest) {
-        stub.name?.let {
-            val fqName = stub.fqName
-            occurrence(MvEntryFunctionIndex.KEY, fqName.cmdText())
+        stub.qualName?.let {
+            occurrence(MvEntryFunctionIndex.KEY, it.cmdText())
         }
     }
 }

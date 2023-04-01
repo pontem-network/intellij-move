@@ -54,7 +54,8 @@ data class Transaction(
                 nullParams[parameterName] = null
             }
 
-            return Transaction(entryFunction.qualName, nullTypeParams, nullParams)
+            val qualName = entryFunction.qualName ?: error("qualName should not be null, checked before")
+            return Transaction(qualName, nullTypeParams, nullParams)
         }
 
         sealed class Result<T> {
