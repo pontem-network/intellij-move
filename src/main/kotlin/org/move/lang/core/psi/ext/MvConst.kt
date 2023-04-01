@@ -25,7 +25,7 @@ abstract class MvConstMixin : MvStubbedNamedElementImpl<MvConstStub>,
 
     override val qualName: ItemQualName
         get() {
-            val moduleFQName = this.module?.qualName ?: ItemQualName.DEFAULT_MOD_FQ_NAME
+            val moduleFQName = this.module?.qualName ?: ItemQualName.ANY_SCRIPT
             val itemName = this.name ?: "<unknown>"
             return ItemQualName(moduleFQName.address, moduleFQName.itemName, itemName)
         }

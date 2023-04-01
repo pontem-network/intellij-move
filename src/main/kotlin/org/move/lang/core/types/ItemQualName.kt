@@ -36,8 +36,8 @@ data class ItemQualName(
     companion object {
         val DEFAULT_MOD_FQ_NAME: ItemQualName =
             ItemQualName(Address.Value("0x0"), null, "default")
-//        val DEFAULT_ITEM_FQ_NAME: ItemFullyQualName =
-//            ItemFullyQualName(Address.Value("0x0"), "default", "default_item")
+        val ANY_SCRIPT: ItemQualName =
+            ItemQualName(Address.Value("0x0"), null, "script")
 
         fun fromCmdText(text: String): ItemQualName? {
             val parts = text.split("::")
