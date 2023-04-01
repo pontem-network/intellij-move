@@ -44,7 +44,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
                 val moveProject = docElement.moveProject ?: return null
                 val refName = docElement.referenceName
                 val named = moveProject.getNamedAddress(refName) ?: return null
-                return "$refName = \"${named.value}\""
+                return "$refName = \"${named.value()}\""
             }
 
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)

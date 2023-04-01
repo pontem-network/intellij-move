@@ -8,14 +8,14 @@ import org.move.lang.core.psi.ext.greenStub
 
 const val MAX_LENGTH = 32
 
-sealed class Address(open val value: String) {
+sealed class Address {
 
     abstract fun canonicalValue(moveProject: MoveProject?): String
     abstract fun text(): String
 
-    fun shortenedValue(moveProject: MoveProject?): String = shortenValue(canonicalValue(moveProject), 8)
+    fun shortenedValue(moveProject: MoveProject?): String = shortenValue(canonicalValue(moveProject))
 
-    class Value(override val value: String) : Address(value) {
+    class Value(val value: String) : Address() {
         override fun canonicalValue(moveProject: MoveProject?): String {
             return normalizeValue(this.value)
         }
@@ -32,12 +32,19 @@ sealed class Address(open val value: String) {
         override fun hashCode(): Int = normalizeValue(value).hashCode()
     }
 
-    class Named(val name: String, override val value: String) : Address(value) {
-        override fun canonicalValue(moveProject: MoveProject?): String {
-            return normalizeValue(this.value)
+    class Named(val name: String, private val _value: String?, private val declMoveProject: MoveProject?) : Address() {
+        fun value(moveProject: MoveProject? = null): String {
+            return _value
+                ?: this.declMoveProject?.getNamedAddressValue(name)
+                ?: moveProject?.getNamedAddressValue(name)
+                ?: UNKNOWN
         }
 
-        override fun text(): String = "$name = $value"
+        override fun canonicalValue(moveProject: MoveProject?): String {
+            return normalizeValue(this.value(moveProject))
+        }
+
+        override fun text(): String = "$name = ${value()}"
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -50,13 +57,18 @@ sealed class Address(open val value: String) {
     }
 
     companion object {
+        const val UNKNOWN: String = "0x0"
+
         fun eq(left: Address?, right: Address?): Boolean {
             if (left === right) return true
             if (left == null && right == null) return true
             return when {
                 left is Value && right is Value -> normalizeValue(left.value) == normalizeValue(right.value)
                 left is Named && right is Named ->
-                    Pair(left.name, normalizeValue(left.value)) == Pair(right.name, normalizeValue(left.value))
+                    Pair(left.name, normalizeValue(left.value())) == Pair(
+                        right.name,
+                        normalizeValue(right.value())
+                    )
                 else -> false
             }
         }
@@ -71,7 +83,7 @@ sealed class Address(open val value: String) {
             return "0x" + trimmed.padStart(MAX_LENGTH, '0')
         }
 
-        private fun shortenValue(text: String, maxLength: Int): String {
+        private fun shortenValue(text: String): String {
             if (!text.startsWith("0")) return text
             val trimmed = if (!text.startsWith("0x")) {
                 text.substring(1 until text.length)
@@ -98,7 +110,13 @@ sealed class StubAddress {
 
     fun asAddress(moveProject: MoveProject?): Address? {
         return when (this) {
-            is Named -> moveProject?.getNamedAddress(this.name)
+            is Named -> {
+                if (moveProject == null) {
+                    Address.Named(this.name, null, null)
+                } else {
+                    moveProject.getNamedAddress(this.name)
+                }
+            }
             is Value -> Address.Value(this.value)
             is Unknown -> null
         }

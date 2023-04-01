@@ -22,11 +22,11 @@ class AddressByValueImportInspection : MvLocalInspectionTool() {
 
                 val refAddress = moduleRef.addressRef.address(moveProj) ?: return
                 if (refAddress !is Address.Named) return
-                if (refAddress.value == Consts.ADDR_PLACEHOLDER) return
+                if (refAddress.value() == Consts.ADDR_PLACEHOLDER) return
 
                 val modAddress = module.address(moveProj) ?: return
                 if (modAddress !is Address.Named) return
-                if (modAddress.value == Consts.ADDR_PLACEHOLDER) return
+                if (modAddress.value() == Consts.ADDR_PLACEHOLDER) return
 
                 if (!Address.eq(refAddress, modAddress)) {
                     holder.registerProblem(

@@ -71,9 +71,11 @@ data class MoveProject(
         return map
     }
 
+    fun getNamedAddressValue(name: String): String? = addressValues()[name]?.value
+
     fun getNamedAddress(name: String): Address.Named? {
-        val addressVal = addressValues()[name] ?: return null
-        return Address.Named(name, addressVal.value)
+        val value = getNamedAddressValue(name) ?: return null
+        return Address.Named(name, value, this)
     }
 
     fun searchScope(): GlobalSearchScope {

@@ -1,11 +1,6 @@
 package org.move.lang.core.types
 
-import com.intellij.psi.stubs.StubInputStream
-import com.intellij.psi.stubs.StubOutputStream
-import org.move.lang.core.psi.MvQualNamedElement
-import org.move.lang.moveProject
-import org.move.openapiext.readUTFFastAsNullable
-import org.move.openapiext.writeUTFFastAsNullable
+import org.move.cli.MoveProject
 
 data class ItemQualName(
     val address: Address,
@@ -20,8 +15,8 @@ data class ItemQualName(
         return listOfNotNull(addressText, moduleName, itemName).joinToString("::")
     }
 
-    fun cmdText(): String {
-        val addressText = address.canonicalValue(null)
+    fun cmdText(moveProject: MoveProject? = null): String {
+        val addressText = address.canonicalValue(moveProject)
         return listOfNotNull(addressText, moduleName, itemName).joinToString("::")
     }
 
@@ -47,30 +42,6 @@ data class ItemQualName(
             val moduleName = parts.getOrNull(1) ?: return null
             val itemName = parts.getOrNull(2) ?: return null
             return ItemQualName(Address.Value(address), moduleName, itemName)
-        }
-
-        fun serialize(qualName: ItemQualName?, dataStream: StubOutputStream) {
-            with(dataStream) {
-                writeUTFFastAsNullable(qualName?.address?.text())
-                writeUTFFastAsNullable(qualName?.moduleName)
-                writeUTFFastAsNullable(qualName?.itemName)
-            }
-        }
-
-        fun deserialize(dataStream: StubInputStream): ItemQualName? {
-            val addressText = dataStream.readUTFFastAsNullable() ?: return null
-            val address =
-                if ("=" in addressText) {
-                    val parts = addressText.split("=")
-                    val name = parts[0].trim()
-                    val value = parts[1].trim()
-                    Address.Named(name, value)
-                } else {
-                    Address.Value(addressText)
-                }
-            val moduleName = dataStream.readUTFFastAsNullable()
-            val itemName = dataStream.readUTFFastAsNullable() ?: return null
-            return ItemQualName(address, moduleName, itemName)
         }
     }
 }

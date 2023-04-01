@@ -17,6 +17,7 @@ import org.move.lang.core.stubs.ext.childrenStubsOfType
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.address
+import org.move.lang.core.types.stubAddress
 import org.move.lang.index.MvModuleSpecIndex
 import org.move.lang.moveProject
 import javax.swing.Icon
@@ -249,10 +250,10 @@ abstract class MvModuleMixin : MvStubbedNamedElementImpl<MvModuleStub>,
         )
     }
 
-    override val qualName: ItemQualName
+    override val qualName: ItemQualName?
         get() {
+            val itemName = this.name ?: return null
             val address = this.address(this.moveProject) ?: Address.Value("0x0")
-            val itemName = this.name ?: "<unknown>"
             return ItemQualName(address, null, itemName)
         }
 }
