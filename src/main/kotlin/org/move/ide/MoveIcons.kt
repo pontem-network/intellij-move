@@ -30,7 +30,7 @@ object MoveIcons {
     val RUN_TEST_ITEM = AllIcons.RunConfigurations.TestState.Run
     val RUN_ALL_TESTS_IN_ITEM = AllIcons.RunConfigurations.TestState.Run_run
 
-    val RUN_TRANSACTION = AllIcons.Nodes.RunnableMark
+    val RUN_TRANSACTION_ITEM = AllIcons.Nodes.RunnableMark
     val TEST_GREEN = AllIcons.RunConfigurations.TestState.Green2
     val TEST_RED = AllIcons.RunConfigurations.TestState.Red2
 

@@ -4,6 +4,7 @@ import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.psi.PsiElement
+import org.move.cli.runConfigurations.producers.RunCommandConfigurationProducer
 import org.move.cli.runConfigurations.producers.TestCommandConfigurationProducer
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes.IDENTIFIER
@@ -11,6 +12,7 @@ import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNameIdentifierOwner
 import org.move.lang.core.psi.ext.elementType
+import org.move.lang.core.psi.ext.isEntry
 import org.move.lang.core.psi.ext.isTest
 
 class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
@@ -33,18 +35,16 @@ class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
                         )
                     }
                 }
-//                parent.isEntry -> {
-//                    val moveProject = parent.moveProject ?: return null
-//                    val paramsDialog =
-//                        RunTransactionDialog.showAndGetOk(parent, moveProject) ?: return null
-//                    val commandLineFromContext = paramsDialog.toAptosCommandLineFromContext()
-//                    val runTransactionCommandLine = paramsDialog.toAptosCommandLine() ?: return null
-//                    runTransactionCommandLine.run(
-//                        moveProject,
-//                        paramsDialog.configurationName,
-//                        saveConfiguration = true
-//                    )
-//                }
+                parent.isEntry -> {
+                    val config = RunCommandConfigurationProducer.fromLocation(parent)
+                    if (config != null) {
+                        return Info(
+                            MoveIcons.RUN_TRANSACTION_ITEM,
+                            { config.configurationName },
+                            *contextActions()
+                        )
+                    }
+                }
             }
         }
         if (parent is MvModule) {
