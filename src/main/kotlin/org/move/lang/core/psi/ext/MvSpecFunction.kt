@@ -28,11 +28,11 @@ abstract class MvSpecFunctionMixin : MvStubbedNamedElementImpl<MvSpecFunctionStu
 
     constructor(stub: MvSpecFunctionStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 
-    override val qualName: ItemQualName
+    override val qualName: ItemQualName?
         get() {
-            val moduleFQName = this.module?.qualName ?: ItemQualName.DEFAULT_MOD_FQ_NAME
-            val itemName = this.name ?: "<unknown_spec_function>"
-            return ItemQualName(moduleFQName.address, moduleFQName.itemName, itemName)
+            val itemName = this.name ?: return null
+            val moduleFQName = this.module?.qualName ?: return null
+            return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
 
     override fun getIcon(flags: Int): Icon = MoveIcons.FUNCTION

@@ -254,6 +254,6 @@ abstract class MvModuleMixin : MvStubbedNamedElementImpl<MvModuleStub>,
         get() {
             val itemName = this.name ?: return null
             val address = this.address(this.moveProject) ?: Address.Value("0x0")
-            return ItemQualName(address, null, itemName)
+            return ItemQualName(this, address, null, itemName)
         }
 }

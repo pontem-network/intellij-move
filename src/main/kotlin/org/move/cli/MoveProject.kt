@@ -8,9 +8,11 @@ import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
+import org.move.cli.manifest.AptosConfigYaml
 import org.move.cli.manifest.MoveToml
 import org.move.lang.MoveFile
 import org.move.lang.core.types.Address
+import org.move.lang.core.types.AddressLit
 import org.move.lang.toMoveFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.checkUnitTestMode
@@ -78,6 +80,18 @@ data class MoveProject(
         return Address.Named(name, value, this)
     }
 
+    fun getAddressNamesForValue(addressValue: String): List<String> {
+        val addressLit = AddressLit(addressValue)
+        val names = mutableListOf<String>()
+        for ((name, value) in addresses().values.entries) {
+            val canonicalValue = value.literal.canonical()
+            if (canonicalValue == addressLit.canonical()) {
+                names.add(name)
+            }
+        }
+        return names
+    }
+
     fun searchScope(): GlobalSearchScope {
         var searchScope = GlobalSearchScope.EMPTY_SCOPE
         for (folder in sourceFolders()) {
@@ -86,6 +100,10 @@ data class MoveProject(
         }
         return searchScope
     }
+
+    val aptosConfigYaml: AptosConfigYaml? get() = this.currentPackage.aptosConfigYaml
+
+    val profiles: Set<String> = this.aptosConfigYaml?.profiles.orEmpty()
 
     fun processMoveFiles(processFile: (MoveFile) -> Boolean) {
         val folders = sourceFolders()

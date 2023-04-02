@@ -5,13 +5,6 @@ import org.move.utils.tests.MvDocumentationProviderProjectTestCase
 class MvNamedAddressDocumentationTest : MvDocumentationProviderProjectTestCase() {
     fun `test value of named address accessible from documentation`() = doTestByFileTree(
         {
-            build {
-                dir("UserInfo") {
-                    buildInfoYaml(
-                        mapOf("Std" to "0000000000000000000000000000000000000000000000000000000000000042")
-                    )
-                }
-            }
             moveToml(
                 """
     [package]

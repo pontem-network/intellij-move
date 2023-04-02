@@ -82,6 +82,6 @@ abstract class MvStructMixin : MvStubbedNamedElementImpl<MvStructStub>,
         get() {
             val itemName = this.name ?: return null
             val moduleFQName = this.module.qualName ?: return null
-            return ItemQualName(moduleFQName.address, moduleFQName.itemName, itemName)
+            return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
 }

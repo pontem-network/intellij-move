@@ -43,10 +43,10 @@ abstract class MvSchemaMixin : MvStubbedNamedElementImpl<MvSchemaStub>,
 
     override fun getIcon(flags: Int) = MoveIcons.SCHEMA
 
-    override val qualName: ItemQualName
+    override val qualName: ItemQualName?
         get() {
-            val moduleFQName = this.module?.qualName ?: ItemQualName.DEFAULT_MOD_FQ_NAME
-            val itemName = this.name ?: "<unknown_schema>"
-            return ItemQualName(moduleFQName.address, moduleFQName.itemName, itemName)
+            val itemName = this.name ?: return null
+            val moduleFQName = this.module?.qualName ?: return null
+            return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
 }

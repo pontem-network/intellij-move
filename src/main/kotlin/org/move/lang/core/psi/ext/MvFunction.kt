@@ -11,10 +11,7 @@ import com.intellij.util.PlatformIcons
 import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvAttrItem
-import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.MvItemSpec
-import org.move.lang.core.psi.module
+import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
@@ -52,10 +49,11 @@ fun MvFunction.visibilityFromPsi(): FunctionVisibility {
     }
 }
 
-val MvFunction.isEntry: Boolean get() {
-    val stub = greenStub
-    return stub?.isEntry ?: this.isChildExists(MvElementTypes.ENTRY)
-}
+val MvFunction.isEntry: Boolean
+    get() {
+        val stub = greenStub
+        return stub?.isEntry ?: this.isChildExists(MvElementTypes.ENTRY)
+    }
 
 val MvFunction.isInline: Boolean get() = this.isChildExists(MvElementTypes.INLINE)
 
@@ -109,6 +107,8 @@ fun MvFunction.outerItemSpecs(): List<MvItemSpec> {
         .filter { it.itemSpecRef?.referenceName == functionName }
 }
 
+val MvFunction.transactionParameters: List<MvFunctionParameter> get() = this.parameters.drop(1)
+
 abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
                                  MvFunction {
     constructor(node: ASTNode) : super(node)
@@ -117,11 +117,11 @@ abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
 
     var builtIn = false
 
-    override val qualName: ItemQualName
+    override val qualName: ItemQualName?
         get() {
-            val moduleFQName = this.module?.qualName ?: ItemQualName.DEFAULT_MOD_FQ_NAME
-            val itemName = this.name ?: "<unknown>"
-            return ItemQualName(moduleFQName.address, moduleFQName.itemName, itemName)
+            val itemName = this.name ?: return null
+            val moduleFQName = this.module?.qualName ?: return null
+            return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
 
     override val modificationTracker: SimpleModificationTracker =

@@ -10,7 +10,6 @@ import org.move.ide.presentation.text
 import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferenceContext
 import org.move.lang.core.types.infer.maybeInferenceContext
@@ -44,7 +43,9 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
                 val moveProject = docElement.moveProject ?: return null
                 val refName = docElement.referenceName
                 val named = moveProject.getNamedAddress(refName) ?: return null
-                return "$refName = \"${named.value()}\""
+                val address =
+                    named.addressLit(moveProject)?.original ?: angleWrapped("unassigned")
+                return "$refName = \"$address\""
             }
 
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
@@ -144,7 +145,7 @@ fun MvElement.signature(builder: StringBuilder) {
 
         is MvConst -> {
             val itemContext = this.outerItemContext(msl)
-            buffer += (this.module?.qualName ?: ItemQualName.DEFAULT_MOD_FQ_NAME).editorText()
+            buffer += this.module?.qualName?.editorText() ?: angleWrapped("unknown")
             buffer += "\n"
             buffer += "const "
             buffer.b { it += this.name ?: angleWrapped("unknown") }

@@ -6,75 +6,103 @@ import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.DialogPanel
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.builder.whenItemSelectedFromUi
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.layout.ComponentPredicate
+import org.move.cli.moveProjects
 import org.move.lang.core.psi.MvElement
-import org.move.lang.core.types.ItemQualName
 import org.move.lang.index.MvEntryFunctionIndex
 import org.move.utils.ui.MoveTextFieldWithCompletion
-import org.move.utils.ui.WorkingDirectoryField
+import java.nio.file.Path
 import javax.swing.JComponent
 import javax.swing.JLabel
 
 class RunCommandConfigurationEditor(
     val project: Project,
-    private var command: String
+    private var command: String,
+    private var workingDirectory: Path?,
 ) : SettingsEditor<RunCommandConfiguration>() {
 
-    private var transaction: Transaction? = null
+    private var transaction: Transaction
 
     private val commandTextField = EditorTextField("")
-    private val workingDirectoryField = WorkingDirectoryField()
     private val environmentVariablesField = EnvironmentVariablesComponent()
 
     private val typeParametersLabel = JLabel("")
     private val parametersLabel = JLabel("")
 
+    private val profilesComboBox: ComboBox<Profile> = ComboBox()
 
     init {
         commandTextField.isViewer = true
+        project.moveProjects.allProjects
+            .forEach { proj ->
+                val projectProfiles = proj.aptosConfigYaml?.profiles.orEmpty()
+                projectProfiles.forEach { profileName ->
+                    val profile = Profile(profileName, proj)
+                    profilesComboBox.addItem(profile)
+                }
+            }
+        transaction = Transaction.empty(profilesComboBox.selectedItem as Profile)
+
     }
 
     private val functionIdField: TextFieldWithAutoCompletion<String> =
         textFieldWithCompletion(
-            transaction?.functionId?.cmdText() ?: "",
+            transaction.functionId?.cmdText() ?: "",
             MvEntryFunctionIndex.getAllKeysForCompletion(project)
         )
 
     override fun applyEditorTo(s: RunCommandConfiguration) {
         s.command = command
+        s.workingDirectory = workingDirectory
     }
 
     override fun resetEditorFrom(s: RunCommandConfiguration) {
         this.command = s.command
+        this.workingDirectory = s.workingDirectory
     }
 
     override fun createEditor(): JComponent {
         val editorPanel = createEditorPanel()
-        return DumbService.getInstance(project).wrapGently(editorPanel, project)
+        return DumbService.getInstance(project).wrapGently(editorPanel, this)
     }
 
     private fun createEditorPanel(): JComponent {
-        val parsedTransaction = Transaction.parseFromCommand(project, command)
-        transaction = parsedTransaction
+        val parsedTransaction =
+            Transaction.parseFromCommand(project, command, workingDirectory) ?: TODO("Invalid command")
 
-        functionIdField.text = parsedTransaction?.functionId?.cmdText() ?: ""
-        refreshLabels()
+        transaction.functionId = parsedTransaction.functionId
+        transaction.profile = parsedTransaction.profile ?: transaction.profile
+        transaction.typeParams = parsedTransaction.typeParams
+        transaction.params = parsedTransaction.params
 
-        lateinit var editorPanel: DialogPanel
-        editorPanel = panel {
+        functionIdField.text = parsedTransaction.functionId?.cmdText() ?: ""
+        refreshEditorState()
+
+        val editorPanel = panel {
             row("Command (generated):") {
                 cell(commandTextField)
                     .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
             }
             separator()
-            row("Function:") {
+            row("Profile:") {
+                @Suppress("UnstableApiUsage")
+                cell(profilesComboBox)
+                    .horizontalAlign(HorizontalAlign.FILL)
+                    .resizableColumn()
+                    .whenItemSelectedFromUi {
+                        transaction.profile = it
+                        refreshEditorState()
+                    }
+            }
+            row("Transaction FunctionId:") {
                 cell(functionIdField)
                     .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
@@ -82,34 +110,29 @@ class RunCommandConfigurationEditor(
             }
             row {
                 // TODO: disable button if previous function is not modified
-                button("Change Function") {
-                    val functionIdText = functionIdField.text.trim()
-                    val qualName = ItemQualName.fromCmdText(functionIdText)
-                    if (qualName != null) {
-                        val function =
-                            MvEntryFunctionIndex.getFunction(project, qualName.cmdText())
-                        if (function != null) {
-                            transaction = Transaction.template(function)
-                            refreshLabels()
-                            return@button
-                        }
+                // TODO: disable button is profile is not set
+                button("Apply FunctionId Change") {
+                    val functionId = functionIdField.text.trim()
+                    val profile = transaction.profile
+                    val entryFunction = MvEntryFunctionIndex.getEntryFunction(project, functionId)
+                    if (profile == null || entryFunction == null) {
+                        // TODO: show error popup requiring profile + functionId correct
+                        transaction = Transaction.empty(transaction.profile)
+                    } else {
+                        transaction = Transaction.template(profile, entryFunction)
                     }
-                    // TODO: show error and don't apply the change
-                    transaction = null
-                    refreshLabels()
+                    refreshEditorState()
                 }
             }
             separator()
-            row("Type Parameters:") { cell(typeParametersLabel) }
-            row("Parameters:") { cell(parametersLabel) }
+            row("Transaction Type Parameters:") { cell(typeParametersLabel) }
+            row("Transaction Parameters:") { cell(parametersLabel) }
             row {
                 // TODO: add popup if function id is not selected or invalid
                 button("Edit Parameters") {
-                    val fqName = transaction?.functionId?.cmdText() ?: return@button
-                    val entryFunction = MvEntryFunctionIndex.getFunction(project, fqName)
+                    val fqName = transaction.functionId?.cmdText() ?: return@button
+                    val entryFunction = MvEntryFunctionIndex.getEntryFunction(project, fqName)
                     if (entryFunction == null) return@button
-
-                    val transaction = transaction ?: return@button
 
                     // TODO: button inactive if no params required
                     val parametersDialog = TransactionParametersDialog(
@@ -119,35 +142,32 @@ class RunCommandConfigurationEditor(
                     val ok = parametersDialog.showAndGet()
                     if (!ok) return@button
 
-                    refreshLabels()
+                    refreshEditorState()
                 }
-            }
-            // TODO: validation
-            separator()
-            row(workingDirectoryField.label) {
-                cell(workingDirectoryField)
-                    .horizontalAlign(HorizontalAlign.FILL)
-            }
-            row("Profile") {
-                textField()
-                    .horizontalAlign(HorizontalAlign.FILL)
             }
             row(environmentVariablesField.label) {
                 cell(environmentVariablesField)
                     .horizontalAlign(HorizontalAlign.FILL)
             }
         }
-        editorPanel.registerValidators(this.project)
+        editorPanel.registerValidators(this)
         return editorPanel
     }
 
-    fun refreshLabels() {
-        val commandText = transaction?.commandText() ?: ""
+    fun refreshEditorState() {
+        val commandText = generateCommandText()
+
         command = commandText
+        workingDirectory = transaction.profile?.moveProject?.contentRootPath
 
         commandTextField.text = commandText
-        typeParametersLabel.text = transaction?.typeParams?.map { "${it.key}=" }?.joinToString(", ") ?: "null"
-        parametersLabel.text = transaction?.params?.map { "${it.key}=" }?.joinToString(", ") ?: "null"
+        typeParametersLabel.text = transaction.typeParams.map { "${it.key}=" }.joinToString(", ")
+        parametersLabel.text = transaction.params.map { "${it.key}=" }.joinToString(", ")
+    }
+
+    private fun generateCommandText(): String {
+        val commandLine = transaction.toAptosCommandLine() ?: TODO("Invalid generated command")
+        return commandLine.joinedCommand()
     }
 
 //    private fun validateFunctionId(): ValidationInfoBuilder.(TextFieldWithAutoCompletion<String>) -> ValidationInfo? {
@@ -193,10 +213,6 @@ class RunCommandConfigurationEditor(
     }
 }
 
-
-fun EditorTextField.enteredTextSatisfies(predicate: (String) -> Boolean): ComponentPredicate {
-    return EditorFieldPredicate(this, predicate)
-}
 
 private class EditorFieldPredicate(
     private val component: EditorTextField,

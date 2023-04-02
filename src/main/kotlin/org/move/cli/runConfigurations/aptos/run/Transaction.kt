@@ -1,44 +1,66 @@
 package org.move.cli.runConfigurations.aptos.run
 
 import com.intellij.openapi.project.Project
+import org.move.cli.MoveProject
+import org.move.cli.moveProjects
 import org.move.cli.runConfigurations.aptos.AptosCommandLine
-import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.allParamsAsBindings
-import org.move.lang.core.psi.typeParameters
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.transactionParameters
 import org.move.lang.core.types.ItemQualName
 import org.move.lang.index.MvEntryFunctionIndex
 import java.nio.file.Path
 
-data class Transaction(
-    var functionId: ItemQualName,
-    val typeParams: MutableMap<String, String?>,
-    val params: MutableMap<String, String?>,
-//    var selectedProfile: String? = null,
+data class Profile(
+    val name: String,
+    val moveProject: MoveProject,
 ) {
-    fun toAptosCommandLine(workingDirectory: Path?): AptosCommandLine {
+    override fun toString(): String {
+        val packageIdent =
+            moveProject.currentPackage.packageName.takeIf { it.isNotBlank() }
+                ?: this.moveProject.contentRoot.name
+        return "$name[$packageIdent]"
+    }
+}
+
+data class Transaction(
+    var functionId: ItemQualName?,
+    var profile: Profile?,
+    var typeParams: MutableMap<String, String?>,
+    var params: MutableMap<String, String?>,
+) {
+    fun toAptosCommandLine(): AptosCommandLine? {
+        val profile = this.profile ?: return null
+        val functionId = this.functionId?.cmdText(profile.moveProject) ?: return null
+
         val typeParams = this.typeParams.mapNotNull { it.value }.flatMap { listOf("--type-args", it) }
         val params = this.params.mapNotNull { it.value }.flatMap { listOf("--args", it) }
 
-//        val profile = this.selectedProfile
-//        val profileArgs =
-//            if (profile != null) listOf("--profile", profile) else listOf()
+        val workDir = profile.moveProject.contentRootPath
         val commandArgs = listOf(
-//            profileArgs,
-            listOf("--function-id", functionId.cmdText()),
+            listOf("--profile", profile.name),
+            listOf("--function-id", functionId),
             typeParams,
             params
         ).flatten()
         return AptosCommandLine(
             "move run",
-            workingDirectory = workingDirectory,
+            workingDirectory = workDir,
             arguments = commandArgs
         )
     }
 
-    fun commandText(): String = this.toAptosCommandLine(null).joinedCommand()
+    fun hasRequiredParameters(): Boolean {
+        val entryFunction = functionId?.item as? MvFunction ?: return true
+        return entryFunction.typeParameters.isNotEmpty()
+                || entryFunction.transactionParameters.isNotEmpty()
+    }
 
     companion object {
-        fun template(entryFunction: MvFunction): Transaction {
+        fun empty(profile: Profile?): Transaction {
+            return Transaction(null, profile, mutableMapOf(), mutableMapOf())
+        }
+
+        fun template(profile: Profile, entryFunction: MvFunction): Transaction {
             val typeParameterNames = entryFunction.typeParameters.mapNotNull { it.name }
 
             val nullTypeParams = mutableMapOf<String, String?>()
@@ -55,7 +77,7 @@ data class Transaction(
             }
 
             val qualName = entryFunction.qualName ?: error("qualName should not be null, checked before")
-            return Transaction(qualName, nullTypeParams, nullParams)
+            return Transaction(qualName, profile, nullTypeParams, nullParams)
         }
 
         sealed class Result<T> {
@@ -63,14 +85,34 @@ data class Transaction(
             data class Err<T>(val message: String) : Result<T>()
         }
 
-        fun parseFromCommand(project: Project, command: String): Transaction? {
+        fun parseFromCommand(project: Project, command: String, workingDirectory: Path?): Transaction? {
             val runCommandParser =
                 RunCommandParser.parse(command) ?: return null
 
+            val profileName = runCommandParser.profile
+            val moveProject = workingDirectory?.let { project.moveProjects.findMoveProject(it) }
+            if (moveProject == null) {
+                TODO("Try all projects for their profiles, use the first one")
+            }
             val functionId = runCommandParser.functionId
-            val entryFunction = MvEntryFunctionIndex.getFunction(project, functionId) ?: return null
+            val (addressValue, _, _) = ItemQualName.split(functionId) ?: return null
+            val namedAddresses = moveProject.getAddressNamesForValue(addressValue)
 
-            val transaction = template(entryFunction)
+            var entryFunction = MvEntryFunctionIndex.getEntryFunction(project, functionId)
+            if (entryFunction == null) {
+                entryFunction = namedAddresses
+                    .map {
+                        val modifiedFunctionId = functionId.replace(addressValue, it)
+                        MvEntryFunctionIndex.getEntryFunction(project, modifiedFunctionId)
+                    }
+                    .firstOrNull() ?: return null
+            }
+
+            val config = moveProject.aptosConfigYaml ?: TODO("Project is not `aptos init`ed")
+            if (profileName !in config.profiles) {
+                TODO("Invalid profile, use the default one, or first one if there's no default")
+            }
+            val transaction = template(Profile(profileName, moveProject), entryFunction)
 
             val typeParameterNames = entryFunction.typeParameters.mapNotNull { it.name }
             for ((name, value) in typeParameterNames.zip(runCommandParser.typeArgs)) {
@@ -82,12 +124,6 @@ data class Transaction(
             for ((name, value) in parameterNames.zip(runCommandParser.args)) {
                 transaction.params[name] = value
             }
-
-            //            val movePackage =
-//                entryFunction.moveProject?.currentPackage
-//                    ?: return Result.Err("Function does not belong to a package")
-//            val profiles =
-//                movePackage.aptosConfigYaml?.runProfiles().orEmpty()
 
             return transaction
         }

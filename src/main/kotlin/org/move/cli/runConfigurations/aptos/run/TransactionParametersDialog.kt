@@ -8,10 +8,8 @@ import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import org.move.cli.transactions.RunTransactionCacheService
-import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.allParamsAsBindings
-import org.move.lang.core.psi.module
-import org.move.lang.core.psi.typeParameters
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.transactionParameters
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.itemContext
 import org.move.lang.core.types.ty.TyAddress
@@ -37,7 +35,7 @@ class TransactionParametersDialog(
 
         return panel {
             val typeParameters = entryFunction.typeParameters
-            val parameterBindings = entryFunction.allParamsAsBindings.drop(1)
+            val parameters = entryFunction.transactionParameters.map { it.bindingPat }
             val itemContext =
                 entryFunction.module?.itemContext(false) ?: project.itemContext(false)
 
@@ -55,7 +53,7 @@ class TransactionParametersDialog(
 //                                .columns(ARGUMENT_COLUMNS)
                                 .horizontalAlign(HorizontalAlign.FILL)
                                 .bindText(
-                                    { transaction.typeParams.get(paramName) ?: "" },
+                                    { transaction.typeParams[paramName] ?: "" },
                                     { transaction.typeParams[paramName] = it })
                                 .registerValidationRequestor()
                                 .validationOnApply(validateEditorTextNonEmpty("Required type parameter"))
@@ -64,10 +62,10 @@ class TransactionParametersDialog(
                     }
                 }
             }
-            if (parameterBindings.isNotEmpty()) {
+            if (parameters.isNotEmpty()) {
                 val inferenceCtx = InferenceContext(false, itemContext)
                 group("Value Arguments") {
-                    for (parameter in parameterBindings) {
+                    for (parameter in parameters) {
                         val paramName = parameter.name
                         val paramTy = inferenceCtx.getBindingPatTy(parameter)
                         val paramTyName = when (paramTy) {
@@ -84,7 +82,7 @@ class TransactionParametersDialog(
                                 else -> textField()
                             }
                                 .bindText(
-                                    { transaction.params.get(paramName) ?: "" },
+                                    { transaction.params[paramName] ?: "" },
                                     {
                                         if (it.isNotBlank()) {
                                             transaction.params[paramName] = "$paramTyName:$it"

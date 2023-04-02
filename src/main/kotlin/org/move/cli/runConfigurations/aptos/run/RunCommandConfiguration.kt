@@ -18,7 +18,11 @@ class RunCommandConfiguration(
         }
     }
 
+    fun getTransaction(): Transaction? {
+        return Transaction.parseFromCommand(project, command, workingDirectory)
+    }
+
     override fun getConfigurationEditor(): RunCommandConfigurationEditor {
-        return RunCommandConfigurationEditor(project, command)
+        return RunCommandConfigurationEditor(project, command, workingDirectory)
     }
 }

@@ -1,13 +1,16 @@
 package org.move.lang.core.stubs
 
+import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.*
 import com.intellij.util.BitUtil
+import org.move.cli.MoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.impl.*
 import org.move.lang.core.types.StubAddress
+import org.move.lang.core.types.deserializeStubAddress
 import org.move.lang.core.types.psiStubAddress
-import org.move.lang.moveProject
+import org.move.lang.core.types.serializeStubAddress
 import org.move.openapiext.readNameAsString
 import org.move.openapiext.readUTFFastAsNullable
 import org.move.openapiext.writeUTFFastAsNullable
@@ -76,27 +79,16 @@ class MvModuleStub(
             val name = dataStream.readNameAsString()
             val flags = dataStream.readInt()
 
-            val addressInt = dataStream.readInt()
-            val address = when (addressInt) {
-                StubAddress.UNKNOWN_INT -> StubAddress.Unknown
-                StubAddress.VALUE_INT -> StubAddress.Value(dataStream.readUTFFast())
-                StubAddress.NAMED_INT -> StubAddress.Named(dataStream.readUTFFast())
-                else -> error("Invalid value")
-            }
+            val stubAddress = dataStream.deserializeStubAddress()
 
-            return MvModuleStub(parentStub, this, name, flags, address)
+            return MvModuleStub(parentStub, this, name, flags, stubAddress)
         }
 
         override fun serialize(stub: MvModuleStub, dataStream: StubOutputStream) =
             with(dataStream) {
                 writeName(stub.name)
                 writeInt(stub.flags)
-                writeInt(stub.address.asInt())
-                when (stub.address) {
-                    is StubAddress.Value -> writeUTFFast(stub.address.value)
-                    is StubAddress.Named -> writeUTFFast(stub.address.name)
-                    is StubAddress.Unknown -> {}
-                }
+                serializeStubAddress(stub.address)
             }
 
         override fun createPsi(stub: MvModuleStub): MvModule =
@@ -119,12 +111,36 @@ class MvFunctionStub(
     override val name: String?,
     override val flags: Int,
     val visibility: FunctionVisibility,
-    val qualName: String?,
+    val address: StubAddress,
+    val moduleName: String?,
 ) : MvAttributeOwnerStubBase<MvFunction>(parent, elementType), MvNamedStub {
 
     val isTest: Boolean get() = BitUtil.isSet(flags, TEST_MASK)
     val isEntry: Boolean get() = BitUtil.isSet(flags, IS_ENTRY_MASK)
     val isView: Boolean get() = BitUtil.isSet(flags, IS_VIEW_MASK)
+
+    val unresolvedQualName: String?
+        get() {
+            val addressText = when (address) {
+                is StubAddress.Value -> address.value
+                is StubAddress.Named -> address.name
+                else -> return null
+            }
+            val moduleName = this.moduleName ?: return null
+            val itemName = this.name ?: return null
+            return "$addressText::$moduleName::$itemName"
+        }
+
+    fun resolvedQualName(moveProject: MoveProject): String? {
+        val addressText = when (address) {
+            is StubAddress.Value -> address.value
+            is StubAddress.Named -> moveProject.getNamedAddressValue(address.name) ?: return null
+            else -> return null
+        }
+        val moduleName = this.moduleName ?: return null
+        val itemName = this.name ?: return null
+        return "$addressText::$moduleName::$itemName"
+    }
 
     object Type : MvStubElementType<MvFunctionStub, MvFunction>("FUNCTION") {
         override fun deserialize(dataStream: StubInputStream, parentStub: StubElement<*>?): MvFunctionStub {
@@ -135,10 +151,18 @@ class MvFunctionStub(
             val visibility = FunctionVisibility.values()
                 .find { it.ordinal == vis } ?: error("Invalid vis value $vis")
 
-//            val fqName = ItemQualName.deserialize(dataStream)
-            val qualName = dataStream.readUTFFastAsNullable()
+            val stubAddress = dataStream.deserializeStubAddress()
+            val moduleName = dataStream.readUTFFastAsNullable()
 
-            return MvFunctionStub(parentStub, this, name, flags, visibility, qualName)
+            return MvFunctionStub(
+                parentStub,
+                this,
+                name,
+                flags,
+                visibility,
+                stubAddress,
+                moduleName
+            )
         }
 
         override fun serialize(stub: MvFunctionStub, dataStream: StubOutputStream) =
@@ -146,8 +170,8 @@ class MvFunctionStub(
                 writeName(stub.name)
                 writeInt(stub.flags)
                 writeInt(stub.visibility.ordinal)
-                writeUTFFastAsNullable(stub.qualName)
-//                ItemQualName.serialize(stub.qualName, this)
+                serializeStubAddress(stub.address)
+                writeUTFFastAsNullable(stub.moduleName)
             }
 
         override fun createPsi(stub: MvFunctionStub): MvFunction =
@@ -161,13 +185,18 @@ class MvFunctionStub(
             flags = BitUtil.set(flags, IS_ENTRY_MASK, psi.isEntry)
             flags = BitUtil.set(flags, IS_VIEW_MASK, psi.isView)
 
+            val moduleStub = parentStub as? MvModuleStub
+            val moduleAddress = moduleStub?.address ?: StubAddress.Unknown
+            val moduleName = moduleStub?.name
+
             return MvFunctionStub(
                 parentStub,
                 this,
                 psi.name,
                 flags,
                 visibility = psi.visibilityFromPsi(),
-                qualName = psi.qualName?.cmdText()
+                address = moduleAddress,
+                moduleName = moduleName,
             )
         }
 

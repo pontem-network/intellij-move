@@ -1,5 +1,6 @@
 package org.move.cli
 
+import org.move.lang.core.types.AddressLit
 import org.move.openapiext.singleSegmentOrNull
 import org.move.openapiext.stringValue
 import org.toml.lang.psi.TomlKeySegment
@@ -18,6 +19,8 @@ data class AddressVal(
             return this.placeholderKeyValue?.singleSegmentOrNull()
                 ?: this.keyValue?.singleSegmentOrNull()
         }
+
+    val literal: AddressLit get() = AddressLit(value)
 }
 
 data class PlaceholderVal(

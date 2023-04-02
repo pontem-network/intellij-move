@@ -23,11 +23,11 @@ abstract class MvConstMixin : MvStubbedNamedElementImpl<MvConstStub>,
 
     constructor(stub: MvConstStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 
-    override val qualName: ItemQualName
+    override val qualName: ItemQualName?
         get() {
-            val moduleFQName = this.module?.qualName ?: ItemQualName.ANY_SCRIPT
-            val itemName = this.name ?: "<unknown>"
-            return ItemQualName(moduleFQName.address, moduleFQName.itemName, itemName)
+            val itemName = this.name ?: return null
+            val moduleFQName = this.module?.qualName ?: return null
+            return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
 
     override fun getIcon(flags: Int): Icon? = MoveIcons.CONST

@@ -7,6 +7,7 @@ import com.intellij.psi.stubs.StubIndex
 import com.intellij.psi.stubs.StubIndexKey
 import com.intellij.util.Processors
 import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.ext.isEntry
 import org.move.lang.core.stubs.impl.MvFileStub
 import org.move.lang.core.types.ItemQualName
 import org.move.openapiext.checkCommitIsNotInProgress
@@ -18,27 +19,27 @@ class MvEntryFunctionIndex : StringStubIndexExtension<MvFunction>() {
 
     companion object {
         val KEY: StubIndexKey<String, MvFunction> =
-            StubIndexKey.createIndexKey("org.move.index.MvEntryFunctionIndex")
+            StubIndexKey.createIndexKey("org.move.index.MvFunctionIndex")
 
-        fun getFunction(
+        fun getEntryFunction(
             project: Project,
-            qualName: String,
+            functionId: String,
             scope: GlobalSearchScope = GlobalSearchScope.allScope(project)
         ): MvFunction? {
             checkCommitIsNotInProgress(project)
-            val allFunctions = getElements(KEY, qualName, project, scope)
-            return allFunctions.firstOrNull()
+            val allFunctions = getElements(KEY, functionId, project, scope)
+            return allFunctions.firstOrNull { it.isEntry }
         }
 
-        fun hasFunction(
-            project: Project,
-            qualName: String,
-            scope: GlobalSearchScope = GlobalSearchScope.allScope(project)
-        ): Boolean {
-            checkCommitIsNotInProgress(project)
-            val allFunctions = getElements(KEY, qualName, project, scope)
-            return allFunctions.isNotEmpty()
-        }
+//        fun hasFunction(
+//            project: Project,
+//            qualName: String,
+//            scope: GlobalSearchScope = GlobalSearchScope.allScope(project)
+//        ): Boolean {
+//            checkCommitIsNotInProgress(project)
+//            val allFunctions = getElements(KEY, qualName, project, scope)
+//            return allFunctions.isNotEmpty()
+//        }
 
 //        fun findFunctionsByQualName(
 //            project: Project,
@@ -54,9 +55,7 @@ class MvEntryFunctionIndex : StringStubIndexExtension<MvFunction>() {
             scope: GlobalSearchScope = GlobalSearchScope.allScope(project)
         ): Collection<String> {
             val keys = getAllKeys(project, scope)
-            return keys.mapNotNull {
-                ItemQualName.fromCmdText(it)?.shortCmdText()
-            }
+            return keys.mapNotNull { ItemQualName.qualNameForCompletion(it) }
         }
 
         fun getAllKeys(
