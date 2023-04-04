@@ -1,9 +1,14 @@
 package org.move.cli.transactions
 
+import com.intellij.execution.Location
+import com.intellij.execution.PsiLocation
+import com.intellij.execution.actions.RunContextAction
+import com.intellij.execution.executors.DefaultRunExecutor
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import org.move.cli.toolwindow.MoveProjectsTree
 import org.move.cli.toolwindow.MoveProjectsTreeStructure
-import org.move.lang.moveProject
-import org.move.stdext.execute
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.SwingUtilities
@@ -16,21 +21,16 @@ class MoveEntrypointMouseAdapter : MouseAdapter() {
         val tree = e.source as? MoveProjectsTree ?: return
         val node = tree.selectionModel.selectionPath
             ?.lastPathComponent as? DefaultMutableTreeNode ?: return
-        val entryFunction =
+        val function =
             (node.userObject as? MoveProjectsTreeStructure.MoveSimpleNode.Entrypoint)?.function
                 ?: return
 
-        val moveProject = entryFunction.moveProject ?: return
+        val dataContext =
+            SimpleDataContext.getSimpleContext(Location.DATA_KEY, PsiLocation.fromPsiElement(function))
+        val actionEvent =
+            AnActionEvent.createFromDataContext(ActionPlaces.TOOLWINDOW_CONTENT, null, dataContext)
 
-        val paramsDialog = RunTransactionDialog.showAndWaitTillOk(entryFunction, moveProject) ?: return
-
-        val commandLine = paramsDialog.toAptosCommandLine() ?: return
-        val configurationName = paramsDialog.configurationName
-        val runConfiguration = commandLine.createRunConfiguration(
-            moveProject,
-            configurationName,
-            save = true
-        )
-        runConfiguration.execute()
+        val executor = DefaultRunExecutor.getRunExecutorInstance()
+        RunContextAction(executor).actionPerformed(actionEvent)
     }
 }
