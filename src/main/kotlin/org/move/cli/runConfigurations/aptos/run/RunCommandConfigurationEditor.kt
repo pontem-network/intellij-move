@@ -1,13 +1,16 @@
 package org.move.cli.runConfigurations.aptos.run
 
 import com.intellij.execution.configuration.EnvironmentVariablesComponent
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.MessageType
 import com.intellij.ui.EditorTextField
+import com.intellij.ui.JBColor
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.ui.dsl.builder.panel
@@ -19,6 +22,7 @@ import org.move.lang.core.psi.MvElement
 import org.move.lang.index.MvEntryFunctionIndex
 import org.move.utils.ui.MoveTextFieldWithCompletion
 import java.nio.file.Path
+import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
 
@@ -36,10 +40,14 @@ class RunCommandConfigurationEditor(
     private val typeParametersLabel = JLabel("")
     private val parametersLabel = JLabel("")
 
+    private val editParametersButton = JButton("Edit Parameters")
+    private val errorLabel = JLabel("")
+
     private val profilesComboBox: ComboBox<Profile> = ComboBox()
 
     init {
         commandTextField.isViewer = true
+        errorLabel.foreground = JBColor.RED
         project.moveProjects.allProjects
             .forEach { proj ->
                 val projectProfiles = proj.aptosConfigYaml?.profiles.orEmpty()
@@ -50,6 +58,21 @@ class RunCommandConfigurationEditor(
             }
         transaction = Transaction.empty(profilesComboBox.selectedItem as Profile)
 
+        editParametersButton.addActionListener {
+            val functionId = transaction.functionId?.cmdText() ?: return@addActionListener
+            val entryFunction = MvEntryFunctionIndex.getEntryFunction(project, functionId)
+            if (entryFunction == null) return@addActionListener
+
+            // TODO: button inactive if no params required
+            val parametersDialog = TransactionParametersDialog(
+                entryFunction,
+                transaction,
+            )
+            val ok = parametersDialog.showAndGet()
+            if (!ok) return@addActionListener
+
+            refreshEditorState()
+        }
     }
 
     private val functionIdField: TextFieldWithAutoCompletion<String> =
@@ -74,8 +97,13 @@ class RunCommandConfigurationEditor(
     }
 
     private fun createEditorPanel(): JComponent {
-        val parsedTransaction =
-            Transaction.parseFromCommand(project, command, workingDirectory) ?: TODO("Invalid command")
+        val parsedTransaction = Transaction.parseFromCommand(project, command, workingDirectory)
+        if (parsedTransaction == null) {
+            setErrorText("Cannot parse serialized command")
+            return panel {
+                row { cell(errorLabel) }
+            }
+        }
 
         transaction.functionId = parsedTransaction.functionId
         transaction.profile = parsedTransaction.profile ?: transaction.profile
@@ -102,13 +130,17 @@ class RunCommandConfigurationEditor(
                         refreshEditorState()
                     }
             }
-            row("Transaction FunctionId:") {
+            row("Entry Function:") {
+                // TODO: try to change it into combo box with search over the functions,
+                // TODO: then there will be no need for Apply Change button
+                // TODO: change comment into "required" popup
                 cell(functionIdField)
                     .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
                 comment("(required)")
             }
             row {
+                // TODO: validate if function id is not selected or invalid
                 // TODO: disable button if previous function is not modified
                 // TODO: disable button is profile is not set
                 button("Apply FunctionId Change") {
@@ -124,37 +156,26 @@ class RunCommandConfigurationEditor(
                     refreshEditorState()
                 }
             }
+            row("Type Parameters:") { cell(typeParametersLabel) }
+            row("Parameters:") { cell(parametersLabel) }
+            row { cell(editParametersButton) }
             separator()
-            row("Transaction Type Parameters:") { cell(typeParametersLabel) }
-            row("Transaction Parameters:") { cell(parametersLabel) }
-            row {
-                // TODO: add popup if function id is not selected or invalid
-                button("Edit Parameters") {
-                    val fqName = transaction.functionId?.cmdText() ?: return@button
-                    val entryFunction = MvEntryFunctionIndex.getEntryFunction(project, fqName)
-                    if (entryFunction == null) return@button
-
-                    // TODO: button inactive if no params required
-                    val parametersDialog = TransactionParametersDialog(
-                        entryFunction,
-                        transaction,
-                    )
-                    val ok = parametersDialog.showAndGet()
-                    if (!ok) return@button
-
-                    refreshEditorState()
-                }
-            }
             row(environmentVariablesField.label) {
                 cell(environmentVariablesField)
                     .horizontalAlign(HorizontalAlign.FILL)
             }
+            row { cell(errorLabel) }
         }
         editorPanel.registerValidators(this)
         return editorPanel
     }
 
-    fun refreshEditorState() {
+    private fun refreshEditorState() {
+        fireEditorStateChanged()
+        validateEditor()
+        editParametersButton.isEnabled =
+            transaction.functionId != null && transaction.hasRequiredParameters()
+
         val commandText = generateCommandText()
 
         command = commandText
@@ -163,6 +184,16 @@ class RunCommandConfigurationEditor(
         commandTextField.text = commandText
         typeParametersLabel.text = transaction.typeParams.map { "${it.key}=" }.joinToString(", ")
         parametersLabel.text = transaction.params.map { "${it.key}=" }.joinToString(", ")
+    }
+
+    private fun validateEditor() {
+        setErrorText("")
+    }
+
+    private fun setErrorText(text: String) {
+        errorLabel.text = text
+        errorLabel.foreground = MessageType.ERROR.titleForeground
+        errorLabel.icon = if (text.isBlank()) null else AllIcons.Actions.Lightning
     }
 
     private fun generateCommandText(): String {
