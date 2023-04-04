@@ -2,8 +2,6 @@ package org.move.cli.runConfigurations.aptos.run
 
 import com.intellij.execution.configuration.EnvironmentVariablesComponent
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.editor.event.DocumentEvent
-import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -11,16 +9,12 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.MessageType
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.JBColor
-import com.intellij.ui.LanguageTextField
 import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.builder.whenItemSelectedFromUi
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
-import com.intellij.ui.layout.ComponentPredicate
 import org.move.cli.moveProjects
-import org.move.lang.core.psi.MvElement
 import org.move.lang.index.MvEntryFunctionIndex
-import org.move.utils.ui.MoveTextFieldWithCompletion
+import org.move.utils.ui.whenItemSelectedFromUi
 import java.nio.file.Path
 import javax.swing.JButton
 import javax.swing.JComponent
@@ -121,7 +115,6 @@ class RunCommandConfigurationEditor(
             }
             separator()
             row("Profile:") {
-                @Suppress("UnstableApiUsage")
                 cell(profilesComboBox)
                     .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
