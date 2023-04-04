@@ -1,11 +1,12 @@
 package org.move.ide.inspections
 
-import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.openapi.project.Project
 import org.move.cli.Consts
-import org.move.lang.core.psi.*
+import org.move.ide.inspections.fixes.ChangeAddressNameFix
+import org.move.lang.core.psi.MvModule
+import org.move.lang.core.psi.MvModuleUseSpeck
+import org.move.lang.core.psi.MvVisitor
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.address
 import org.move.lang.moveProject
@@ -33,22 +34,7 @@ class AddressByValueImportInspection : MvLocalInspectionTool() {
                         moduleRef,
                         "Module is declared with a different address `${modAddress.name}`",
                         ProblemHighlightType.WEAK_WARNING,
-                        object : InspectionQuickFix("Change address to `${modAddress.name}`") {
-                            override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-                                val ref = descriptor.psiElement as MvFQModuleRef
-
-                                // resolve by value
-                                val mod = ref.reference?.resolve() as? MvModule ?: return
-                                val proj = mod.moveProject ?: return
-
-                                val modAddressRef = mod.addressRef ?: return
-                                if (ref.addressRef.address(proj) != mod.address(proj)) {
-                                    val newAddressRef = project.psiFactory.addressRef(modAddressRef.text)
-                                    ref.addressRef.replace(newAddressRef)
-                                }
-                            }
-
-                        }
+                        ChangeAddressNameFix(moduleRef, modAddress.name),
                     )
                 }
             }

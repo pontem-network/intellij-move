@@ -1,16 +1,14 @@
 package org.move.ide.inspections
 
-import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
+import org.move.ide.inspections.fixes.RemoveAcquiresFix
 import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.inferAcquiresTys
-import org.move.lang.core.psi.ext.module
 import org.move.lang.core.types.infer.inferenceContext
 
 
@@ -21,23 +19,7 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 ref,
                 "Unused acquires clause",
                 ProblemHighlightType.LIKE_UNUSED_SYMBOL,
-                object : InspectionQuickFix("Remove acquires") {
-                    override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-                        val element = descriptor.psiElement
-                        when (element) {
-                            is MvAcquiresType -> element.delete()
-                            is MvPathType -> {
-                                val acquiresType = element.parent as MvAcquiresType
-                                val typeNames =
-                                    acquiresType.pathTypeList
-                                        .filter { it != element }
-                                        .joinToString(", ") { it.text }
-                                val newAcquiresType = project.psiFactory.acquires("acquires $typeNames")
-                                acquiresType.replace(newAcquiresType)
-                            }
-                        }
-                    }
-                }
+                RemoveAcquiresFix(ref)
             )
         }
         return object : MvVisitor() {

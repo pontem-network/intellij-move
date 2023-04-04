@@ -6,7 +6,6 @@ import com.intellij.psi.util.descendantsOfType
 import org.move.ide.inspections.fixes.RemoveParameterFix
 import org.move.ide.inspections.fixes.RenameFix
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.owner
 
 class MvUnusedVariableInspection : MvLocalInspectionTool() {

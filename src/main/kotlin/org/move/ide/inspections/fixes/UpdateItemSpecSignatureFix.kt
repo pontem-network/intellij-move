@@ -1,12 +1,11 @@
 package org.move.ide.inspections.fixes
 
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import org.move.ide.inspections.MvLocalQuickFixOnPsiElement
+import org.move.ide.inspections.DiagnosticFix
 import org.move.lang.core.psi.MvItemSpec
 
-class UpdateItemSpecSignatureFix(itemSpec: MvItemSpec) : MvLocalQuickFixOnPsiElement<MvItemSpec>(itemSpec) {
+class UpdateItemSpecSignatureFix(itemSpec: MvItemSpec) : DiagnosticFix<MvItemSpec>(itemSpec) {
 
     override fun getFamilyName(): String {
         TODO("Not yet implemented")
