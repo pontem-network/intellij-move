@@ -49,18 +49,15 @@ class RunCommandConfigurationProducer : CommandConfigurationProducerBase() {
             val functionQualName = entryFunction.qualName ?: return null
 
             val moveProject = entryFunction.moveProject ?: return null
-            val profileName = moveProject.profiles.firstOrNull() ?: return null
+            val profileName = moveProject.profiles.firstOrNull()
             val workingDirectory = moveProject.contentRootPath
 
             val functionId = functionQualName.cmdText()
-            val commandLine = AptosCommandLine(
-                "move run",
-                arguments = listOf(
-                    "--profile", profileName,
-                    "--function-id", functionId
-                ),
-                workingDirectory = workingDirectory
-            )
+            val arguments = mutableListOf("--function-id", functionId)
+            if (profileName != null) {
+                arguments.addAll(listOf("--profile", profileName))
+            }
+            val commandLine = AptosCommandLine("move run", arguments, workingDirectory)
             return CommandLineFromContext(
                 entryFunction,
                 "Run ${ItemQualName.qualNameForCompletion(functionId)}",

@@ -7,9 +7,10 @@ import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
-import org.move.cli.transactions.RunTransactionCacheService
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.ext.transactionParameters
+import org.move.lang.core.psi.module
+import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.itemContext
 import org.move.lang.core.types.ty.TyAddress
@@ -22,7 +23,7 @@ import javax.swing.JComponent
 class TransactionParametersDialog(
     val entryFunction: MvFunction,
     val transaction: Transaction,
-) : DialogWrapper(entryFunction.project, false) {
+) : DialogWrapper(entryFunction.project, false, IdeModalityType.PROJECT) {
 
     init {
         title = "Transaction Parameters"
@@ -39,10 +40,6 @@ class TransactionParametersDialog(
             val itemContext =
                 entryFunction.module?.itemContext(false) ?: project.itemContext(false)
 
-//            if (typeParameters.isNotEmpty() || parameterBindings.isNotEmpty()) {
-//                separator()
-//            }
-
             if (typeParameters.isNotEmpty()) {
                 group("Type Arguments") {
                     for (typeParameter in entryFunction.typeParameters) {
@@ -50,7 +47,6 @@ class TransactionParametersDialog(
                         row(paramName) {
                             val previousValues = cacheService.getTypeParameterCache(paramName)
                             cell(typeParameterTextField(previousValues))
-//                                .columns(ARGUMENT_COLUMNS)
                                 .horizontalAlign(HorizontalAlign.FILL)
                                 .bindText(
                                     { transaction.typeParams[paramName] ?: "" },
@@ -88,7 +84,6 @@ class TransactionParametersDialog(
                                             transaction.params[paramName] = "$paramTyName:$it"
                                         }
                                     })
-//                                .columns(ARGUMENT_COLUMNS)
                                 .horizontalAlign(HorizontalAlign.FILL)
                                 .validationOnApply(validateNonEmpty("Required parameter"))
 

@@ -201,19 +201,6 @@ class RunCommandConfigurationEditor(
         return commandLine.joinedCommand()
     }
 
-//    private fun validateFunctionId(): ValidationInfoBuilder.(TextFieldWithAutoCompletion<String>) -> ValidationInfo? {
-//        return {
-//            if (!MvEntryFunctionIndex.hasFunction(project, it.text)) {
-//                functionId = null
-//                error("Invalid entry function")
-//            } else {
-//                functionIdText = it.text
-//                null
-//            }
-//        }
-//    }
-
-
     private fun textFieldWithCompletion(
         initialValue: String,
         variants: Collection<String>
@@ -226,38 +213,5 @@ class RunCommandConfigurationEditor(
             initialValue
         )
         return textField
-    }
-
-    private fun qualPathFieldWithCompletion(
-        element: MvElement,
-        variants: Collection<String>
-    ): LanguageTextField {
-        val project = element.project
-        // TODO: add TYPE icon
-        val completionProvider = TextFieldWithAutoCompletion.StringsCompletionProvider(variants, null)
-        return MoveTextFieldWithCompletion(
-            project,
-            "",
-            completionProvider,
-            element,
-        )
-    }
-}
-
-
-private class EditorFieldPredicate(
-    private val component: EditorTextField,
-    private val predicate: (String) -> Boolean
-) : ComponentPredicate() {
-    override fun invoke(): Boolean = predicate(component.text)
-
-    override fun addListener(listener: (Boolean) -> Unit) {
-        component.document.addDocumentListener(
-            object : DocumentListener {
-                override fun documentChanged(event: DocumentEvent) {
-                    listener(invoke())
-                }
-            }
-        )
     }
 }

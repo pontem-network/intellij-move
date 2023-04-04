@@ -1,4 +1,4 @@
-package org.move.cli.transactions
+package org.move.cli.runConfigurations.aptos.run
 
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project

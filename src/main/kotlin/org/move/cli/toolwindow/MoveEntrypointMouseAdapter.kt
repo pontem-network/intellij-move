@@ -1,4 +1,4 @@
-package org.move.cli.transactions
+package org.move.cli.toolwindow
 
 import com.intellij.execution.Location
 import com.intellij.execution.PsiLocation
