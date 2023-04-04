@@ -11,6 +11,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
 import com.intellij.refactoring.RefactoringFactory
+import org.move.ide.inspections.DiagnosticFix
 import org.move.openapiext.nonBlocking
 
 /**
@@ -22,15 +23,16 @@ import org.move.openapiext.nonBlocking
 class RenameFix(
     element: PsiNamedElement,
     val newName: String,
-    private val fixName: String = "Rename to $newName"
-) : LocalQuickFixOnPsiElement(element) {
-    override fun getText() = fixName
+) : DiagnosticFix<PsiNamedElement>(element) {
+
+    override fun getText() = "Rename to $newName"
     override fun getFamilyName() = "Rename element"
 
-    override fun invoke(project: Project, file: PsiFile, startElement: PsiElement, endElement: PsiElement) =
+    override fun invoke(project: Project, file: PsiFile, element: PsiNamedElement) {
         project.nonBlocking(
-            { startElement },
+            { element },
             {
                 RefactoringFactory.getInstance(project).createRename(it, newName).run()
             })
+    }
 }

@@ -1,10 +1,10 @@
 package org.move.ide.inspections.fixes
 
-import com.intellij.codeInspection.LocalQuickFixOnPsiElement
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.parentOfType
+import org.move.ide.inspections.DiagnosticFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.testAttrItem
 import org.move.lang.core.psi.ext.valueArguments
@@ -15,13 +15,13 @@ import org.move.lang.core.psi.ext.valueArguments
 class RemoveParameterFix(
     binding: MvBindingPat,
     private val bindingName: String
-) : LocalQuickFixOnPsiElement(binding) {
+) : DiagnosticFix<MvBindingPat>(binding) {
+
     override fun getText() = "Remove parameter `$bindingName`"
     override fun getFamilyName() = "Remove parameter"
 
-    override fun invoke(project: Project, file: PsiFile, startElement: PsiElement, endElement: PsiElement) {
-        val binding = startElement as? MvBindingPat ?: return
-        val parameter = binding.parent as? MvFunctionParameter ?: return
+    override fun invoke(project: Project, file: PsiFile, element: MvBindingPat) {
+        val parameter = element.parent as? MvFunctionParameter ?: return
         val function = parameter.parentOfType<MvFunction>() ?: return
 
         val parameterIndex = function.parameters.indexOf(parameter)

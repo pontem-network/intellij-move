@@ -94,6 +94,15 @@ abstract class DiagnosticIntentionFix<T : PsiElement>(element: T) :
     override fun generatePreview(project: Project, previewDescriptor: ProblemDescriptor): IntentionPreviewInfo =
         IntentionPreviewInfo.EMPTY
 
+    override fun getFamilyName(): String = text
+
+    override fun isAvailable(
+        project: Project,
+        file: PsiFile,
+        startElement: PsiElement,
+        endElement: PsiElement
+    ): Boolean = stillApplicable(project, file, getStartElement())
+
     override fun invoke(
         project: Project,
         file: PsiFile,
@@ -108,7 +117,7 @@ abstract class DiagnosticIntentionFix<T : PsiElement>(element: T) :
         }
     }
 
-    abstract fun stillApplicable(project: Project, file: PsiFile, element: T): Boolean
+    open fun stillApplicable(project: Project, file: PsiFile, element: T): Boolean = true
 
     abstract fun invoke(project: Project, file: PsiFile, element: T)
 }
