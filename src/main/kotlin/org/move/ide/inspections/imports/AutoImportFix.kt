@@ -3,8 +3,10 @@ package org.move.ide.inspections.imports
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.intention.HighPriorityAction
+import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInspection.LocalQuickFixOnPsiElement
+import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
@@ -26,6 +28,12 @@ import org.move.openapiext.runWriteCommandAction
 
 class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), HighPriorityAction {
     private var isConsumed: Boolean = false
+
+    override fun generatePreview(
+        project: Project,
+        previewDescriptor: ProblemDescriptor
+    ): IntentionPreviewInfo =
+        IntentionPreviewInfo.EMPTY
 
     override fun getFamilyName() = NAME
     override fun getText() = familyName
@@ -56,6 +64,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
                 chooseItemAndImport(project, it, candidates, refElement)
             }
         }
+        isConsumed = true
     }
 
     private fun chooseItemAndImport(
