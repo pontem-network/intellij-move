@@ -13,20 +13,17 @@ import org.move.lang.core.psi.module
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.itemContext
-import org.move.lang.core.types.ty.TyAddress
-import org.move.lang.core.types.ty.TyBool
 import org.move.lang.core.types.ty.TyInteger
-import org.move.lang.core.types.ty.TyVector
 import org.move.utils.ui.*
 import javax.swing.JComponent
 
-class TransactionParametersDialog(
+class FunctionParametersDialog(
     val entryFunction: MvFunction,
     val transaction: Transaction,
 ) : DialogWrapper(entryFunction.project, false, IdeModalityType.PROJECT) {
 
     init {
-        title = "Transaction Parameters"
+        title = "Function Parameters"
         init()
     }
 

@@ -58,7 +58,7 @@ class RunCommandConfigurationEditor(
             if (entryFunction == null) return@addActionListener
 
             // TODO: button inactive if no params required
-            val parametersDialog = TransactionParametersDialog(
+            val parametersDialog = FunctionParametersDialog(
                 entryFunction,
                 transaction,
             )
