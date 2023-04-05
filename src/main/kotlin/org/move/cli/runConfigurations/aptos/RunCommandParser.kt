@@ -1,4 +1,4 @@
-package org.move.cli.runConfigurations.aptos.run
+package org.move.cli.runConfigurations.aptos
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError

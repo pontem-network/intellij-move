@@ -1,9 +1,8 @@
-package org.move.cli.runConfigurations.aptos.run
+package org.move.cli.runConfigurations.aptos
 
 import com.intellij.openapi.project.Project
 import org.move.cli.MoveProject
 import org.move.cli.moveProjects
-import org.move.cli.runConfigurations.aptos.AptosCommandLine
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.allParamsAsBindings
 import org.move.lang.core.psi.ext.transactionParameters

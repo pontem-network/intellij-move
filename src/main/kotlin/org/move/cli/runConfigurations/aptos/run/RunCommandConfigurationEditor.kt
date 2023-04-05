@@ -13,6 +13,9 @@ import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import org.move.cli.moveProjects
+import org.move.cli.runConfigurations.aptos.FunctionParametersDialog
+import org.move.cli.runConfigurations.aptos.Profile
+import org.move.cli.runConfigurations.aptos.Transaction
 import org.move.lang.index.MvEntryFunctionIndex
 import org.move.utils.ui.whenItemSelectedFromUi
 import java.nio.file.Path

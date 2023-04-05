@@ -1,4 +1,4 @@
-package org.move.cli.runConfigurations.aptos.run
+package org.move.cli.runConfigurations.aptos
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.ui.DialogWrapper
