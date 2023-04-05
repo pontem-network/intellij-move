@@ -17,9 +17,9 @@ import org.move.lang.core.types.ty.TyInteger
 import org.move.utils.ui.*
 import javax.swing.JComponent
 
-class FunctionParametersDialog(
+class FunctionCallParametersDialog(
     val entryFunction: MvFunction,
-    val transaction: Transaction,
+    val functionCall: FunctionCall,
 ) : DialogWrapper(entryFunction.project, false, IdeModalityType.PROJECT) {
 
     init {
@@ -46,8 +46,8 @@ class FunctionParametersDialog(
                             cell(typeParameterTextField(previousValues))
                                 .horizontalAlign(HorizontalAlign.FILL)
                                 .bindText(
-                                    { transaction.typeParams[paramName] ?: "" },
-                                    { transaction.typeParams[paramName] = it })
+                                    { functionCall.typeParams[paramName] ?: "" },
+                                    { functionCall.typeParams[paramName] = it })
                                 .registerValidationRequestor()
                                 .validationOnApply(validateEditorTextNonEmpty("Required type parameter"))
                                 .validationOnApply(validateParseErrors("Invalid type format"))
@@ -61,7 +61,7 @@ class FunctionParametersDialog(
                     for (parameter in parameters) {
                         val paramName = parameter.name
                         val paramTy = inferenceCtx.getBindingPatTy(parameter)
-                        val paramTyName = TransactionParam.tyTypeName(paramTy)
+                        val paramTyName = FunctionCallParam.tyTypeName(paramTy)
                         row(paramName) {
                             comment(": $paramTyName")
                             when (paramTy) {
@@ -69,10 +69,10 @@ class FunctionParametersDialog(
                                 else -> textField()
                             }
                                 .bindText(
-                                    { transaction.params[paramName]?.value ?: "" },
+                                    { functionCall.params[paramName]?.value ?: "" },
                                     {
                                         if (it.isNotBlank()) {
-                                            transaction.params[paramName] = TransactionParam(it, paramTyName)
+                                            functionCall.params[paramName] = FunctionCallParam(it, paramTyName)
                                         }
                                     })
                                 .horizontalAlign(HorizontalAlign.FILL)

@@ -25,7 +25,7 @@ data class Profile(
     }
 }
 
-data class TransactionParam(val value: String, val type: String) {
+data class FunctionCallParam(val value: String, val type: String) {
     fun cmdText(): String = "$type:$value"
 
     companion object {
@@ -42,11 +42,11 @@ data class TransactionParam(val value: String, val type: String) {
 }
 
 
-data class Transaction(
+data class FunctionCall(
     var functionId: ItemQualName?,
     var profile: Profile?,
     var typeParams: MutableMap<String, String?>,
-    var params: MutableMap<String, TransactionParam?>,
+    var params: MutableMap<String, FunctionCallParam?>,
 ) {
     fun toAptosCommandLine(): AptosCommandLine? {
         val profile = this.profile ?: return null
@@ -76,11 +76,11 @@ data class Transaction(
     }
 
     companion object {
-        fun empty(profile: Profile?): Transaction {
-            return Transaction(null, profile, mutableMapOf(), mutableMapOf())
+        fun empty(profile: Profile?): FunctionCall {
+            return FunctionCall(null, profile, mutableMapOf(), mutableMapOf())
         }
 
-        fun template(profile: Profile, entryFunction: MvFunction): Transaction {
+        fun template(profile: Profile, entryFunction: MvFunction): FunctionCall {
             val typeParameterNames = entryFunction.typeParameters.mapNotNull { it.name }
 
             val nullTypeParams = mutableMapOf<String, String?>()
@@ -91,13 +91,13 @@ data class Transaction(
             val parameterBindings = entryFunction.allParamsAsBindings.drop(1)
             val parameterNames = parameterBindings.map { it.name }
 
-            val nullParams = mutableMapOf<String, TransactionParam?>()
+            val nullParams = mutableMapOf<String, FunctionCallParam?>()
             for (parameterName in parameterNames) {
                 nullParams[parameterName] = null
             }
 
             val qualName = entryFunction.qualName ?: error("qualName should not be null, checked before")
-            return Transaction(qualName, profile, nullTypeParams, nullParams)
+            return FunctionCall(qualName, profile, nullTypeParams, nullParams)
         }
 
         sealed class Result<T> {
@@ -105,7 +105,7 @@ data class Transaction(
             data class Err<T>(val message: String) : Result<T>()
         }
 
-        fun parseFromCommand(project: Project, command: String, workingDirectory: Path?): Transaction? {
+        fun parseFromCommand(project: Project, command: String, workingDirectory: Path?): FunctionCall? {
             val runCommandParser =
                 RunCommandParser.parse(command) ?: return null
 
@@ -144,7 +144,7 @@ data class Transaction(
             for ((binding, value) in parameterBindings.zip(runCommandParser.args)) {
                 val name = binding.name
                 val ty = inferenceCtx.getBindingPatTy(binding)
-                transaction.params[name] = TransactionParam(value, TransactionParam.tyTypeName(ty))
+                transaction.params[name] = FunctionCallParam(value, FunctionCallParam.tyTypeName(ty))
             }
 
             return transaction

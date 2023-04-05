@@ -13,9 +13,9 @@ import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import org.move.cli.moveProjects
-import org.move.cli.runConfigurations.aptos.FunctionParametersDialog
+import org.move.cli.runConfigurations.aptos.FunctionCallParametersDialog
 import org.move.cli.runConfigurations.aptos.Profile
-import org.move.cli.runConfigurations.aptos.Transaction
+import org.move.cli.runConfigurations.aptos.FunctionCall
 import org.move.lang.index.MvEntryFunctionIndex
 import org.move.utils.ui.whenItemSelectedFromUi
 import java.nio.file.Path
@@ -29,7 +29,7 @@ class RunCommandConfigurationEditor(
     private var workingDirectory: Path?,
 ) : SettingsEditor<RunCommandConfiguration>() {
 
-    private var transaction: Transaction
+    private var functionCall: FunctionCall
 
     private val commandTextField = EditorTextField("")
     private val environmentVariablesField = EnvironmentVariablesComponent()
@@ -53,17 +53,17 @@ class RunCommandConfigurationEditor(
                     profilesComboBox.addItem(profile)
                 }
             }
-        transaction = Transaction.empty(profilesComboBox.selectedItem as Profile)
+        functionCall = FunctionCall.empty(profilesComboBox.selectedItem as Profile)
 
         editParametersButton.addActionListener {
-            val functionId = transaction.functionId?.cmdText() ?: return@addActionListener
+            val functionId = functionCall.functionId?.cmdText() ?: return@addActionListener
             val entryFunction = MvEntryFunctionIndex.getEntryFunction(project, functionId)
             if (entryFunction == null) return@addActionListener
 
             // TODO: button inactive if no params required
-            val parametersDialog = FunctionParametersDialog(
+            val parametersDialog = FunctionCallParametersDialog(
                 entryFunction,
-                transaction,
+                functionCall,
             )
             val ok = parametersDialog.showAndGet()
             if (!ok) return@addActionListener
@@ -74,7 +74,7 @@ class RunCommandConfigurationEditor(
 
     private val functionIdField: TextFieldWithAutoCompletion<String> =
         textFieldWithCompletion(
-            transaction.functionId?.cmdText() ?: "",
+            functionCall.functionId?.cmdText() ?: "",
             MvEntryFunctionIndex.getAllKeysForCompletion(project)
         )
 
@@ -94,20 +94,20 @@ class RunCommandConfigurationEditor(
     }
 
     private fun createEditorPanel(): JComponent {
-        val parsedTransaction = Transaction.parseFromCommand(project, command, workingDirectory)
-        if (parsedTransaction == null) {
+        val parsedFunctionCall = FunctionCall.parseFromCommand(project, command, workingDirectory)
+        if (parsedFunctionCall == null) {
             setErrorText("Cannot parse serialized command")
             return panel {
                 row { cell(errorLabel) }
             }
         }
 
-        transaction.functionId = parsedTransaction.functionId
-        transaction.profile = parsedTransaction.profile ?: transaction.profile
-        transaction.typeParams = parsedTransaction.typeParams
-        transaction.params = parsedTransaction.params
+        functionCall.functionId = parsedFunctionCall.functionId
+        functionCall.profile = parsedFunctionCall.profile ?: functionCall.profile
+        functionCall.typeParams = parsedFunctionCall.typeParams
+        functionCall.params = parsedFunctionCall.params
 
-        functionIdField.text = parsedTransaction.functionId?.cmdText() ?: ""
+        functionIdField.text = parsedFunctionCall.functionId?.cmdText() ?: ""
         refreshEditorState()
 
         val editorPanel = panel {
@@ -122,7 +122,7 @@ class RunCommandConfigurationEditor(
                     .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
                     .whenItemSelectedFromUi {
-                        transaction.profile = it
+                        functionCall.profile = it
                         refreshEditorState()
                     }
             }
@@ -141,13 +141,13 @@ class RunCommandConfigurationEditor(
                 // TODO: disable button is profile is not set
                 button("Apply FunctionId Change") {
                     val functionId = functionIdField.text.trim()
-                    val profile = transaction.profile
+                    val profile = functionCall.profile
                     val entryFunction = MvEntryFunctionIndex.getEntryFunction(project, functionId)
                     if (profile == null || entryFunction == null) {
                         // TODO: show error popup requiring profile + functionId correct
-                        transaction = Transaction.empty(transaction.profile)
+                        functionCall = FunctionCall.empty(functionCall.profile)
                     } else {
-                        transaction = Transaction.template(profile, entryFunction)
+                        functionCall = FunctionCall.template(profile, entryFunction)
                     }
                     refreshEditorState()
                 }
@@ -170,19 +170,19 @@ class RunCommandConfigurationEditor(
         fireEditorStateChanged()
         validateEditor()
         editParametersButton.isEnabled =
-            transaction.functionId != null && transaction.hasRequiredParameters()
+            functionCall.functionId != null && functionCall.hasRequiredParameters()
 
         val commandText = generateCommandText()
 
         command = commandText
-        workingDirectory = transaction.profile?.moveProject?.contentRootPath
+        workingDirectory = functionCall.profile?.moveProject?.contentRootPath
 
         commandTextField.text = commandText
         typeParametersLabel.text =
-            transaction.typeParams.map { "${it.key}=${it.value ?: ""}" }
+            functionCall.typeParams.map { "${it.key}=${it.value ?: ""}" }
                 .joinToString(", ")
         parametersLabel.text =
-            transaction.params.map { "${it.key}=${it.value?.value ?: ""}" }
+            functionCall.params.map { "${it.key}=${it.value?.value ?: ""}" }
                 .joinToString(", ")
     }
 
@@ -197,7 +197,7 @@ class RunCommandConfigurationEditor(
     }
 
     private fun generateCommandText(): String {
-        val commandLine = transaction.toAptosCommandLine() ?: TODO("Invalid generated command")
+        val commandLine = functionCall.toAptosCommandLine() ?: TODO("Invalid generated command")
         return commandLine.joinedCommand()
     }
 
