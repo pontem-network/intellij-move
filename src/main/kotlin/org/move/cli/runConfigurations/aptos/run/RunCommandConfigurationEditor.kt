@@ -175,8 +175,12 @@ class RunCommandConfigurationEditor(
         workingDirectory = transaction.profile?.moveProject?.contentRootPath
 
         commandTextField.text = commandText
-        typeParametersLabel.text = transaction.typeParams.map { "${it.key}=" }.joinToString(", ")
-        parametersLabel.text = transaction.params.map { "${it.key}=" }.joinToString(", ")
+        typeParametersLabel.text =
+            transaction.typeParams.map { "${it.key}=${it.value ?: ""}" }
+                .joinToString(", ")
+        parametersLabel.text =
+            transaction.params.map { "${it.key}=${it.value?.value ?: ""}" }
+                .joinToString(", ")
     }
 
     private fun validateEditor() {

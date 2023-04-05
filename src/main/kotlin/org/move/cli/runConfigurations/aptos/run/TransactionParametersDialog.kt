@@ -64,13 +64,7 @@ class TransactionParametersDialog(
                     for (parameter in parameters) {
                         val paramName = parameter.name
                         val paramTy = inferenceCtx.getBindingPatTy(parameter)
-                        val paramTyName = when (paramTy) {
-                            is TyInteger -> paramTy.kind.name
-                            is TyAddress -> "address"
-                            is TyBool -> "bool"
-                            is TyVector -> "vector"
-                            else -> "unknown"
-                        }
+                        val paramTyName = TransactionParam.tyTypeName(paramTy)
                         row(paramName) {
                             comment(": $paramTyName")
                             when (paramTy) {
@@ -78,10 +72,10 @@ class TransactionParametersDialog(
                                 else -> textField()
                             }
                                 .bindText(
-                                    { transaction.params[paramName] ?: "" },
+                                    { transaction.params[paramName]?.value ?: "" },
                                     {
                                         if (it.isNotBlank()) {
-                                            transaction.params[paramName] = "$paramTyName:$it"
+                                            transaction.params[paramName] = TransactionParam(it, paramTyName)
                                         }
                                     })
                                 .horizontalAlign(HorizontalAlign.FILL)

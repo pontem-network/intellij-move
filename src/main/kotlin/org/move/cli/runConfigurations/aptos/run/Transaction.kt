@@ -4,9 +4,13 @@ import com.intellij.openapi.project.Project
 import org.move.cli.MoveProject
 import org.move.cli.moveProjects
 import org.move.cli.runConfigurations.aptos.AptosCommandLine
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.allParamsAsBindings
 import org.move.lang.core.psi.ext.transactionParameters
+import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.ItemQualName
+import org.move.lang.core.types.infer.inferenceContext
+import org.move.lang.core.types.ty.*
 import org.move.lang.index.MvEntryFunctionIndex
 import java.nio.file.Path
 
@@ -18,22 +22,39 @@ data class Profile(
         val packageIdent =
             moveProject.currentPackage.packageName.takeIf { it.isNotBlank() }
                 ?: this.moveProject.contentRoot.name
-        return "$name[$packageIdent]"
+        return "$name ($packageIdent)"
     }
 }
+
+data class TransactionParam(val value: String, val type: String) {
+    fun cmdText(): String = "$type:$value"
+
+    companion object {
+        fun tyTypeName(ty: Ty): String {
+            return when (ty) {
+                is TyInteger -> ty.kind.name
+                is TyAddress -> "address"
+                is TyBool -> "bool"
+                is TyVector -> "vector"
+                else -> "unknown"
+            }
+        }
+    }
+}
+
 
 data class Transaction(
     var functionId: ItemQualName?,
     var profile: Profile?,
     var typeParams: MutableMap<String, String?>,
-    var params: MutableMap<String, String?>,
+    var params: MutableMap<String, TransactionParam?>,
 ) {
     fun toAptosCommandLine(): AptosCommandLine? {
         val profile = this.profile ?: return null
         val functionId = this.functionId?.cmdText(profile.moveProject) ?: return null
 
         val typeParams = this.typeParams.mapNotNull { it.value }.flatMap { listOf("--type-args", it) }
-        val params = this.params.mapNotNull { it.value }.flatMap { listOf("--args", it) }
+        val params = this.params.mapNotNull { it.value?.cmdText() }.flatMap { listOf("--args", it) }
 
         val workDir = profile.moveProject.contentRootPath
         val commandArgs = listOf(
@@ -71,7 +92,7 @@ data class Transaction(
             val parameterBindings = entryFunction.allParamsAsBindings.drop(1)
             val parameterNames = parameterBindings.map { it.name }
 
-            val nullParams = mutableMapOf<String, String?>()
+            val nullParams = mutableMapOf<String, TransactionParam?>()
             for (parameterName in parameterNames) {
                 nullParams[parameterName] = null
             }
@@ -120,9 +141,11 @@ data class Transaction(
             }
 
             val parameterBindings = entryFunction.allParamsAsBindings.drop(1)
-            val parameterNames = parameterBindings.map { it.name }
-            for ((name, value) in parameterNames.zip(runCommandParser.args)) {
-                transaction.params[name] = value
+            val inferenceCtx = entryFunction.inferenceContext(false)
+            for ((binding, value) in parameterBindings.zip(runCommandParser.args)) {
+                val name = binding.name
+                val ty = inferenceCtx.getBindingPatTy(binding)
+                transaction.params[name] = TransactionParam(value, TransactionParam.tyTypeName(ty))
             }
 
             return transaction
