@@ -7,7 +7,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.intellij.util.execution.ParametersListUtil
 
-data class RunCommandParser(
+data class FunctionCallParser(
     val functionId: String,
     val typeArgs: List<String>,
     val args: List<String>,
@@ -22,7 +22,7 @@ data class RunCommandParser(
             override fun run() {}
         }
 
-        fun parse(rawCommand: String): RunCommandParser? {
+        fun parse(rawCommand: String): FunctionCallParser? {
             val command = ParametersListUtil.parse(rawCommand).joinToString(" ")
             if (!command.startsWith("move run")) return null
 
@@ -36,7 +36,7 @@ data class RunCommandParser(
             }
             val functionId = runParser.functionId
             val profile = runParser.profile ?: "default"
-            return RunCommandParser(functionId, runParser.typeParams, runParser.params, profile)
+            return FunctionCallParser(functionId, runParser.typeParams, runParser.params, profile)
         }
     }
 }

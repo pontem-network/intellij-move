@@ -4,6 +4,7 @@ import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.ConfigurationFromContext
 import com.intellij.execution.impl.RunDialog
 import org.move.cli.runConfigurations.aptos.FunctionCallConfigurationBase
+import org.move.cli.runConfigurations.aptos.run.RunCommandConfiguration
 
 abstract class FunctionCallConfigurationProducerBase<T : FunctionCallConfigurationBase> :
     CommandConfigurationProducerBase() {
@@ -14,15 +15,15 @@ abstract class FunctionCallConfigurationProducerBase<T : FunctionCallConfigurati
         startRunnable: Runnable
     ) {
         @Suppress("UNCHECKED_CAST")
-        val runCommandConfiguration = configuration.configuration as T
+        val functionCallConfiguration = configuration.configuration as T
         val configMissing =
-            runCommandConfiguration.functionCall()?.hasRequiredParameters() ?: true
+            functionCallConfiguration.functionCall()?.hasRequiredParameters() ?: true
         if (configMissing) {
             val ok =
                 RunDialog.editConfiguration(
                     context.project,
                     configuration.configurationSettings,
-                    "Edit Transaction Parameters"
+                    "Edit Function Parameters"
                 )
             if (!ok) {
                 return

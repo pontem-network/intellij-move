@@ -10,7 +10,6 @@ import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.infer.inferenceContext
 import org.move.lang.core.types.ty.*
-import org.move.lang.index.MvEntryFunctionIndex
 import java.nio.file.Path
 
 data class Profile(
@@ -48,7 +47,7 @@ data class FunctionCall(
     var typeParams: MutableMap<String, String?>,
     var params: MutableMap<String, FunctionCallParam?>,
 ) {
-    fun toAptosCommandLine(): AptosCommandLine? {
+    fun toAptosCommandLine(subCommand: String): AptosCommandLine? {
         val profile = this.profile ?: return null
         val functionId = this.functionId?.cmdText(profile.moveProject) ?: return null
 
@@ -63,16 +62,17 @@ data class FunctionCall(
             params
         ).flatten()
         return AptosCommandLine(
-            "move run",
+            subCommand,
             workingDirectory = workDir,
             arguments = commandArgs
         )
     }
 
     fun hasRequiredParameters(): Boolean {
-        val entryFunction = functionId?.item as? MvFunction ?: return true
-        return entryFunction.typeParameters.isNotEmpty()
-                || entryFunction.transactionParameters.isNotEmpty()
+        val function = functionId?.item as? MvFunction ?: return true
+        // TODO: view function does not have first signer as a param
+        return function.typeParameters.isNotEmpty()
+                || function.transactionParameters.isNotEmpty()
     }
 
     companion object {
@@ -80,15 +80,15 @@ data class FunctionCall(
             return FunctionCall(null, profile, mutableMapOf(), mutableMapOf())
         }
 
-        fun template(profile: Profile, entryFunction: MvFunction): FunctionCall {
-            val typeParameterNames = entryFunction.typeParameters.mapNotNull { it.name }
+        fun template(profile: Profile, function: MvFunction): FunctionCall {
+            val typeParameterNames = function.typeParameters.mapNotNull { it.name }
 
             val nullTypeParams = mutableMapOf<String, String?>()
             for (typeParameterName in typeParameterNames) {
                 nullTypeParams[typeParameterName] = null
             }
 
-            val parameterBindings = entryFunction.allParamsAsBindings.drop(1)
+            val parameterBindings = function.allParamsAsBindings.drop(1)
             val parameterNames = parameterBindings.map { it.name }
 
             val nullParams = mutableMapOf<String, FunctionCallParam?>()
@@ -96,34 +96,34 @@ data class FunctionCall(
                 nullParams[parameterName] = null
             }
 
-            val qualName = entryFunction.qualName ?: error("qualName should not be null, checked before")
+            val qualName = function.qualName ?: error("qualName should not be null, checked before")
             return FunctionCall(qualName, profile, nullTypeParams, nullParams)
         }
 
-        sealed class Result<T> {
-            data class Ok<T>(val value: T) : Result<T>()
-            data class Err<T>(val message: String) : Result<T>()
-        }
+        fun parseFromCommand(
+            project: Project,
+            command: String,
+            workingDirectory: Path?,
+            getFunction: (Project, String) -> MvFunction?
+        ): FunctionCall? {
+            val callArgs =
+                FunctionCallParser.parse(command) ?: return null
 
-        fun parseFromCommand(project: Project, command: String, workingDirectory: Path?): FunctionCall? {
-            val runCommandParser =
-                RunCommandParser.parse(command) ?: return null
-
-            val profileName = runCommandParser.profile
+            val profileName = callArgs.profile
             val moveProject = workingDirectory?.let { project.moveProjects.findMoveProject(it) }
             if (moveProject == null) {
                 TODO("Try all projects for their profiles, use the first one")
             }
-            val functionId = runCommandParser.functionId
+            val functionId = callArgs.functionId
             val (addressValue, _, _) = ItemQualName.split(functionId) ?: return null
             val namedAddresses = moveProject.getAddressNamesForValue(addressValue)
 
-            var entryFunction = MvEntryFunctionIndex.getEntryFunction(project, functionId)
-            if (entryFunction == null) {
-                entryFunction = namedAddresses
+            var function = getFunction(project, functionId)
+            if (function == null) {
+                function = namedAddresses
                     .map {
                         val modifiedFunctionId = functionId.replace(addressValue, it)
-                        MvEntryFunctionIndex.getEntryFunction(project, modifiedFunctionId)
+                        getFunction(project, modifiedFunctionId)
                     }
                     .firstOrNull() ?: return null
             }
@@ -132,16 +132,16 @@ data class FunctionCall(
             if (profileName !in config.profiles) {
                 TODO("Invalid profile, use the default one, or first one if there's no default")
             }
-            val transaction = template(Profile(profileName, moveProject), entryFunction)
+            val transaction = template(Profile(profileName, moveProject), function)
 
-            val typeParameterNames = entryFunction.typeParameters.mapNotNull { it.name }
-            for ((name, value) in typeParameterNames.zip(runCommandParser.typeArgs)) {
+            val typeParameterNames = function.typeParameters.mapNotNull { it.name }
+            for ((name, value) in typeParameterNames.zip(callArgs.typeArgs)) {
                 transaction.typeParams[name] = value
             }
 
-            val parameterBindings = entryFunction.allParamsAsBindings.drop(1)
-            val inferenceCtx = entryFunction.inferenceContext(false)
-            for ((binding, value) in parameterBindings.zip(runCommandParser.args)) {
+            val parameterBindings = function.allParamsAsBindings.drop(1)
+            val inferenceCtx = function.inferenceContext(false)
+            for ((binding, value) in parameterBindings.zip(callArgs.args)) {
                 val name = binding.name
                 val ty = inferenceCtx.getBindingPatTy(binding)
                 transaction.params[name] = FunctionCallParam(value, FunctionCallParam.tyTypeName(ty))
