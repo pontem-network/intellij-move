@@ -12,11 +12,11 @@ import org.move.lang.core.types.ty.TyUnknown
 
 abstract class TypeFolder {
     val cache = mutableMapOf<Ty, Ty>()
-    var depth = 0;
+    var depth = 0
 
     operator fun invoke(ty: Ty): Ty {
-        // workaround for massively deep structs
-        if (depth > 25) return TyUnknown
+        // workaround for recursive structs, folding gives up at some point
+        if (depth > MAX_RECURSION_DEPTH) return TyUnknown
 
         val cachedTy = cache[ty]
         if (cachedTy != null) {
@@ -29,6 +29,10 @@ abstract class TypeFolder {
     }
 
     abstract fun fold(ty: Ty): Ty
+
+    companion object {
+        const val MAX_RECURSION_DEPTH = 25
+    }
 }
 
 //typealias TypeFolder = (Ty) -> Ty

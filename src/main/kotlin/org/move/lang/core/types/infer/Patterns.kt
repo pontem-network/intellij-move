@@ -98,7 +98,7 @@ fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext)
                             }
                             ty is TyStruct && pat.fields.size == ty.fieldTys.size -> {
                                 for (field in pat.fields) {
-                                    val fieldTy = ty.fieldTys[field.referenceName] ?: TyUnknown
+                                    val fieldTy = ty.fieldTy(field.referenceName)
                                     field.pat?.let { bind(it, fieldTy) }
                                 }
                             }
@@ -113,7 +113,7 @@ fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext)
                 }
                 if (ty is TyStruct && pat.fields.size == ty.fieldTys.size) {
                     for (field in pat.fields) {
-                        val fieldTy = ty.fieldTys[field.referenceName] ?: TyUnknown
+                        val fieldTy = ty.fieldTy(field.referenceName)
                         field.pat?.let { bind(it, fieldTy) }
                     }
                 } else {

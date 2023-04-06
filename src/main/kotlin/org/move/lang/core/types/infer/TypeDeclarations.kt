@@ -11,10 +11,10 @@ import org.move.lang.core.psi.ext.typeArguments
 import org.move.lang.core.types.ty.*
 
 fun inferItemTypeTy(moveType: MvType, itemContext: ItemContext): Ty {
-    val ty = when (moveType) {
-        is MvPathType -> run {
+    return when (moveType) {
+        is MvPathType -> {
             val namedItem = moveType.path.reference?.resolveWithAliases()
-                    ?: return@run inferItemBuiltinTypeTy(moveType, itemContext)
+                    ?: return inferItemBuiltinTypeTy(moveType, itemContext)
             when (namedItem) {
                 is MvTypeParameter -> TyTypeParameter(namedItem)
                 is MvStruct -> {
@@ -35,15 +35,16 @@ fun inferItemTypeTy(moveType: MvType, itemContext: ItemContext): Ty {
                         }
                         ctx.processConstraints()
                     }
-                    ctx.resolveTy(rawStructTy)
+                    val structTy = ctx.resolveTy(rawStructTy)
+                    structTy
                 }
                 else -> TyUnknown
             }
         }
-        is MvRefType -> run {
+        is MvRefType -> {
             val mutabilities = RefPermissions.valueOf(moveType.mutable)
             val refInnerType = moveType.type
-                ?: return@run TyReference(TyUnknown, mutabilities, itemContext.msl)
+                ?: return TyReference(TyUnknown, mutabilities, itemContext.msl)
             val innerTy = inferItemTypeTy(refInnerType, itemContext)
             TyReference(innerTy, mutabilities, itemContext.msl)
         }
@@ -65,7 +66,6 @@ fun inferItemTypeTy(moveType: MvType, itemContext: ItemContext): Ty {
         }
         else -> TyUnknown
     }
-    return ty
 }
 
 fun inferItemBuiltinTypeTy(pathType: MvPathType, itemContext: ItemContext): Ty {

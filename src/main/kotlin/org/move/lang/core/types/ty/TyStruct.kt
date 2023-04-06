@@ -5,6 +5,7 @@ import org.move.lang.core.psi.MvStruct
 import org.move.lang.core.psi.ext.tyAbilities
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
+import org.move.lang.core.types.infer.UnificationTable
 
 data class TyStruct(
     val item: MvStruct,

@@ -224,17 +224,17 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
 
                     val itemContext =
                         element.module?.itemContext(msl) ?: element.project.itemContext(msl)
-                    val funcTy = itemContext.getFunctionItemTy(element)
+                    val rawFuncTy = itemContext.getFunctionItemTy(element)
 
                     val inferenceCtx = InferenceContext(msl, itemContext)
                     val expectedTy = completionContext.expectedTy
                     if (expectedTy != null && expectedTy !is TyUnknown) {
-                        inferenceCtx.addConstraint(funcTy.retType, expectedTy)
+                        inferenceCtx.addConstraint(rawFuncTy.retType, expectedTy)
                     }
                     inferenceCtx.processConstraints()
 
-                    val resolvedTy = inferenceCtx.resolveTy(funcTy)
-                    !resolvedTy.containsTyOfClass(listOf(TyInfer::class.java))
+                    val funcTy = inferenceCtx.resolveTy(rawFuncTy)
+                    !funcTy.containsTyOfClass(listOf(TyInfer::class.java))
                 }
 
                 var suffix = ""

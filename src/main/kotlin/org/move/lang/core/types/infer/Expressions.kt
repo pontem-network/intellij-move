@@ -221,7 +221,7 @@ fun inferStructLitExprTy(
     }
     for (field in litExpr.fields) {
         val fieldName = field.referenceName
-        val fieldTy = structTy.fieldTys[fieldName] ?: TyUnknown
+        val fieldTy = structTy.fieldTy(fieldName)
         inferLitFieldInitExprTy(field, parentCtx, fieldTy)
     }
     if (expectedTy != null) {

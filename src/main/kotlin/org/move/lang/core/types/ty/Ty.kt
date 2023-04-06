@@ -4,8 +4,6 @@ import org.move.lang.core.types.infer.TypeFoldable
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
 
-typealias Substitution = Map<TyTypeParameter, Ty>
-
 enum class Ability {
     DROP, COPY, STORE, KEY;
 
@@ -29,7 +27,7 @@ enum class Ability {
     }
 }
 
-val emptySubstitution: Substitution = emptyMap()
+//val emptySubstitution: Substitution = emptyMap()
 
 interface Ty : TypeFoldable<Ty> {
 
@@ -44,7 +42,7 @@ interface Ty : TypeFoldable<Ty> {
     /**
      * Bindings between formal type parameters and actual type arguments.
      */
-    val typeParameterValues: Substitution get() = emptySubstitution
+//    val tyInferValues: Substitution get() = emptySubstitution
 
     /**
      * User visible string representation of a type
