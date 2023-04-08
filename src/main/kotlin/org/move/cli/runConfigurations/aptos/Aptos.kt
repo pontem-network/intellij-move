@@ -59,12 +59,12 @@ class Aptos(val location: Path) {
         )
         commandLine.toGeneralCommandLine(this)
             .execute(owner)
-            .unwrapOrElse { return MvResult.Err(it) }
+            .unwrapOrElse { return RsResult.Err(it) }
         fullyRefreshDirectory(rootDirectory)
 
         val manifest =
             checkNotNull(rootDirectory.findChild(Consts.MANIFEST_FILE)) { "Can't find the manifest file" }
-        return MvResult.Ok(manifest)
+        return RsResult.Ok(manifest)
     }
 
     fun version(): String? {

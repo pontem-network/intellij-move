@@ -1,16 +1,18 @@
 package org.move.lang.core.types.infer
 
 import com.intellij.openapi.util.Key
-import com.intellij.psi.PsiElement
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.rd.util.concurrentMapOf
-import org.move.ide.presentation.expectedBindingFormText
-import org.move.ide.presentation.name
-import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.contextOrSelf
+import org.move.lang.core.psi.ext.funcItem
+import org.move.lang.core.psi.ext.itemSpecBlock
+import org.move.lang.core.psi.ext.rightBrace
 import org.move.lang.core.types.ty.*
+import org.move.stdext.RsResult
+import org.move.stdext.RsResult.Err
+import org.move.stdext.RsResult.Ok
 import org.move.utils.cache
 import org.move.utils.cacheManager
 import org.move.utils.cacheResult
@@ -156,15 +158,16 @@ fun isCompatibleTuples(expectedTy: TyTuple, inferredTy: TyTuple, msl: Boolean): 
     return if (isCompat) Compat.Yes else Compat.TypeMismatch(expectedTy, inferredTy)
 }
 
-fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Compat {
+fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean {
     val isCompat = expectedTy.kind == TyInteger.DEFAULT_KIND
             || inferredTy.kind == TyInteger.DEFAULT_KIND
             || expectedTy.kind == inferredTy.kind
-    return if (isCompat) {
-        Compat.Yes
-    } else {
-        Compat.TypeMismatch(expectedTy, inferredTy)
-    }
+    return isCompat
+//    return if (isCompat) {
+//        Compat.Yes
+//    } else {
+//        Compat.TypeMismatch(expectedTy, inferredTy)
+//    }
 }
 
 /// find common denominator for both types
@@ -185,7 +188,7 @@ fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean = true): Boo
     return compat == Compat.Yes
 }
 
-fun checkTysCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean = true): Compat {
+fun checkTysCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean): Compat {
     val expectedTy = rawExpectedTy.mslTy()
     val inferredTy = rawInferredTy.mslTy()
     return when {
@@ -217,7 +220,14 @@ fun checkTysCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean = true
         }
 
         expectedTy is TyUnit && inferredTy is TyUnit -> Compat.Yes
-        expectedTy is TyInteger && inferredTy is TyInteger -> isCompatibleIntegers(expectedTy, inferredTy)
+        expectedTy is TyInteger && inferredTy is TyInteger -> {
+            val compat = isCompatibleIntegers(expectedTy, inferredTy)
+            if (!compat) {
+                Compat.TypeMismatch(expectedTy, inferredTy)
+            } else {
+                Compat.Yes
+            }
+        }
         expectedTy is TyPrimitive && inferredTy is TyPrimitive
                 && expectedTy.name == inferredTy.name -> Compat.Yes
 
@@ -233,6 +243,15 @@ fun checkTysCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean = true
         expectedTy is TyTuple && inferredTy is TyTuple -> isCompatibleTuples(expectedTy, inferredTy, msl)
         else -> Compat.TypeMismatch(expectedTy, inferredTy)
     }
+}
+
+typealias RelateResult = RsResult<Unit, CombineTypeError>
+
+private inline fun RelateResult.and(rhs: () -> RelateResult): RelateResult = if (isOk) rhs() else this
+
+sealed class CombineTypeError {
+    class TypeMismatch(val ty1: Ty, val ty2: Ty) : CombineTypeError()
+    class AbilitiesMismatch(val abilities: Set<Ability>) : CombineTypeError()
 }
 
 sealed class Compat {
@@ -252,98 +271,6 @@ fun isCompatibleAbilities(expectedTy: Ty, actualTy: Ty, msl: Boolean): Compat {
     }
 }
 
-enum class TypeErrorScope {
-    MAIN, MODULE;
-}
-
-sealed class TypeError(open val element: PsiElement) {
-    abstract fun message(): String
-
-    companion object {
-        fun isAllowedTypeError(error: TypeError, typeErrorScope: TypeErrorScope): Boolean {
-            return when (typeErrorScope) {
-                TypeErrorScope.MODULE -> error is CircularType
-                TypeErrorScope.MAIN -> {
-                    if (error is CircularType) return false
-                    val element = error.element
-                    if (
-                        (error is UnsupportedBinaryOp || error is IncompatibleArgumentsToBinaryExpr)
-                        && (element is MvElement && element.isMsl())
-                    ) {
-                        return false
-                    }
-                    true
-                }
-            }
-        }
-    }
-
-    data class TypeMismatch(
-        override val element: PsiElement,
-        val expectedTy: Ty,
-        val actualTy: Ty
-    ) : TypeError(element) {
-        override fun message(): String {
-            return when (element) {
-                is MvReturnExpr -> "Invalid return type '${actualTy.name()}', expected '${expectedTy.name()}'"
-                else -> "Incompatible type '${actualTy.name()}', expected '${expectedTy.name()}'"
-            }
-        }
-    }
-
-    data class AbilitiesMismatch(
-        override val element: PsiElement,
-        val elementTy: Ty,
-        val missingAbilities: Set<Ability>
-    ) : TypeError(element) {
-        override fun message(): String {
-            return "The type '${elementTy.text()}' " +
-                    "does not have required ability '${missingAbilities.map { it.label() }.first()}'"
-        }
-    }
-
-    data class UnsupportedBinaryOp(
-        override val element: PsiElement,
-        val ty: Ty,
-        val op: String
-    ) : TypeError(element) {
-        override fun message(): String {
-            return "Invalid argument to '$op': " +
-                    "expected integer type, but found '${ty.text()}'"
-        }
-    }
-
-    data class IncompatibleArgumentsToBinaryExpr(
-        override val element: PsiElement,
-        val leftTy: Ty,
-        val rightTy: Ty,
-        val op: String,
-    ) : TypeError(element) {
-        override fun message(): String {
-            return "Incompatible arguments to '$op': " +
-                    "'${leftTy.text()}' and '${rightTy.text()}'"
-        }
-    }
-
-    data class InvalidUnpacking(
-        override val element: PsiElement,
-        val assignedTy: Ty,
-    ) : TypeError(element) {
-        override fun message(): String {
-            return "Invalid unpacking. Expected ${assignedTy.expectedBindingFormText()}"
-        }
-    }
-
-    data class CircularType(
-        override val element: PsiElement,
-        val structItem: MvStruct
-    ) : TypeError(element) {
-        override fun message(): String {
-            return "Circular reference of type '${structItem.name}'"
-        }
-    }
-}
-
 class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
     var exprTypes = concurrentMapOf<MvExpr, Ty>()
     val patTypes = mutableMapOf<MvPat, Ty>()
@@ -354,7 +281,7 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
 
     var typeErrors = mutableListOf<TypeError>()
 
-    val unificationTable = UnificationTable<TyInfer.TyVar, Ty>()
+    val varUnificationTable = UnificationTable<TyInfer.TyVar, Ty>()
     val intUnificationTable = UnificationTable<TyInfer.IntVar, Ty>()
 
     private val solver = ConstraintSolver(this)
@@ -390,6 +317,158 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
         }
     }
 
+    fun combineTypes(ty1: Ty, ty2: Ty): RelateResult {
+        return combineTypesResolved(shallowResolve(ty1), shallowResolve(ty2))
+    }
+
+    private fun combineTypesResolved(ty1: Ty, ty2: Ty): RelateResult {
+        return when {
+            ty1 is TyInfer.TyVar -> combineTyVar(ty1, ty2)
+            ty2 is TyInfer.TyVar -> combineTyVar(ty2, ty1)
+            else -> when {
+                ty1 is TyInfer.IntVar -> combineIntVar(ty1, ty2)
+                ty2 is TyInfer.IntVar -> combineIntVar(ty2, ty1)
+                else -> combineTypesNoVars(ty1, ty2)
+            }
+        }
+    }
+
+    private fun <T : Ty> combineTypePairs(pairs: List<Pair<T, T>>): RelateResult {
+        var canUnify: RelateResult = Ok(Unit)
+        for ((ty1, ty2) in pairs) {
+            canUnify = combineTypes(ty1, ty2).and { canUnify }
+        }
+        return canUnify
+    }
+
+    private fun combineTyVar(ty1: TyInfer.TyVar, ty2: Ty): RelateResult {
+        val compat = isCompatibleAbilities(ty1, ty2, this.msl)
+        if (compat is Compat.AbilitiesMismatch) {
+            return Err(CombineTypeError.AbilitiesMismatch(compat.abilities))
+        }
+        when (ty2) {
+            is TyInfer.TyVar -> {
+                varUnificationTable.unifyVarVar(ty1, ty2)
+            }
+            else -> {
+                val ty1r = varUnificationTable.findRoot(ty1)
+                val isTy2ContainsTy1 = ty2.visitWith(object : TypeVisitor {
+                    override fun invoke(ty: Ty): Boolean = when {
+                        ty is TyInfer.TyVar && varUnificationTable.findRoot(ty) == ty1r -> true
+                        ty.visitWith { it is TyInfer } -> ty.innerVisitWith(this)
+                        else -> false
+                    }
+                })
+                if (isTy2ContainsTy1) {
+                    // "E0308 cyclic type of infinite size"
+                    varUnificationTable.unifyVarValue(ty1r, TyUnknown)
+                } else {
+                    varUnificationTable.unifyVarValue(ty1r, ty2)
+                }
+            }
+        }
+        return Ok(Unit)
+    }
+
+    private fun combineIntVar(ty1: TyInfer, ty2: Ty): RelateResult {
+        when (ty1) {
+            is TyInfer.IntVar -> when (ty2) {
+                is TyInfer.IntVar -> intUnificationTable.unifyVarVar(ty1, ty2)
+                is TyInteger -> intUnificationTable.unifyVarValue(ty1, ty2)
+                else -> return Err(CombineTypeError.TypeMismatch(ty1, ty2))
+            }
+            is TyInfer.TyVar -> error("unreachable")
+        }
+        return Ok(Unit)
+    }
+
+    fun combineTypesNoVars(ty1: Ty, ty2: Ty): RelateResult {
+        val ty1msl = ty1.mslTy()
+        val ty2msl = ty2.mslTy()
+        return when {
+            ty1 === ty2 -> Ok(Unit)
+            ty1msl is TyNever || ty2msl is TyNever -> Ok(Unit)
+            ty1msl is TyUnknown || ty2msl is TyUnknown -> Ok(Unit)
+//            ty1msl is TyInfer.TyVar && ty2msl !is TyInfer.TyVar -> {
+//                isCompatibleAbilities(ty1msl, ty2msl, msl)
+//            }
+//            /* expectedTy !is TyInfer.TyVar && */ ty2msl is TyInfer.TyVar -> {
+//                // todo: should always be false
+//                // todo: can it ever occur anyway?
+//                Compat.Yes
+//            }
+//            ty1msl is TyInfer.IntVar && (ty2msl is TyInfer.IntVar || ty2msl is TyInteger) -> {
+//                Compat.Yes
+//            }
+
+//            ty2msl is TyInfer.IntVar && ty1msl is TyInteger -> {
+//                Compat.Yes
+//            }
+
+//            ty1msl is TyTypeParameter || ty2msl is TyTypeParameter -> {
+//                // check abilities
+//                if (ty1msl != ty2msl) {
+//                    Compat.TypeMismatch(ty1msl, ty2msl)
+//                } else {
+//                    Compat.Yes
+//                }
+//            }
+            ty1msl is TyTypeParameter && ty2msl is TyTypeParameter && ty1msl == ty2msl -> Ok(Unit)
+            ty1msl is TyUnit && ty2msl is TyUnit -> Ok(Unit)
+            ty1msl is TyInteger && ty2msl is TyInteger -> {
+                val compat = isCompatibleIntegers(ty1msl, ty2msl)
+                if (compat) {
+                    Ok(Unit)
+                } else {
+                    Err(CombineTypeError.TypeMismatch(ty1msl, ty2msl))
+                }
+            }
+            ty1msl is TyPrimitive && ty2msl is TyPrimitive && ty1msl.name == ty2msl.name -> Ok(Unit)
+
+//            ty1msl is TyVector && ty2msl is TyVector
+//                    && isCompatible(ty1msl.item, ty2msl.item, msl) -> Compat.Yes
+            ty1msl is TyVector && ty2msl is TyVector -> combineTypes(ty1msl.item, ty2msl.item)
+
+            ty1msl is TyReference && ty2msl is TyReference
+                    // inferredTy permissions should be a superset of expectedTy permissions
+                    && (ty1msl.permissions - ty2msl.permissions).isEmpty() ->
+                combineTypes(ty1msl.referenced, ty2msl.referenced)
+
+            ty1msl is TyStruct && ty2msl is TyStruct && ty1msl.item == ty2msl.item ->
+                combineTypePairs(ty1msl.typeArgs.zip(ty2msl.typeArgs))
+
+            ty1msl is TyTuple && ty2msl is TyTuple && ty1msl.types.size == ty2msl.types.size ->
+                combineTypePairs(ty1msl.types.zip(ty2msl.types))
+
+            else -> Err(CombineTypeError.TypeMismatch(ty1msl, ty2msl))
+        }
+    }
+
+    private fun shallowResolve(ty: Ty): Ty {
+        if (ty !is TyInfer) return ty
+
+        return when (ty) {
+            is TyInfer.IntVar -> intUnificationTable.findValue(ty) ?: ty
+            is TyInfer.TyVar -> varUnificationTable.findValue(ty)?.let(this::shallowResolve) ?: ty
+        }
+    }
+
+    private fun <T : TypeFoldable<T>> resolveTypeVarsIfPossible(ty: T): T {
+        return ty.foldTyInferWith(this::shallowResolve)
+    }
+
+    private fun fullyResolve(ty: Ty): Ty {
+        fun go(ty: Ty): Ty {
+            if (ty !is TyInfer) return ty
+
+            return when (ty) {
+                is TyInfer.IntVar -> intUnificationTable.findValue(ty) ?: TyInteger.default()
+                is TyInfer.TyVar -> varUnificationTable.findValue(ty)?.let(::go) ?: ty.origin ?: TyUnknown
+            }
+        }
+        return ty.foldTyInferWith(::go)
+    }
+
     fun resolveTyVarsFromContext(ctx: InferenceContext) {
         for ((expr, ty) in this.exprTypes.entries) {
             this.exprTypes[expr] = ctx.resolveTy(ty)
@@ -406,7 +485,7 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
     fun resolveTyInfer(ty: Ty): Ty {
         if (ty !is TyInfer) return ty
         return when (ty) {
-            is TyInfer.TyVar -> unificationTable.findValue(ty)?.let(this::resolveTyInfer) ?: ty
+            is TyInfer.TyVar -> varUnificationTable.findValue(ty)?.let(this::resolveTyInfer) ?: ty
             is TyInfer.IntVar -> intUnificationTable.findValue(ty)?.let(this::resolveTyInfer) ?: ty
         }
     }

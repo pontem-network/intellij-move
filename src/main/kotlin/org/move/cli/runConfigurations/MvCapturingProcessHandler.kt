@@ -9,7 +9,7 @@ import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.util.io.BaseOutputReader
-import org.move.stdext.MvResult
+import org.move.stdext.RsResult
 
 class MvCapturingProcessHandler private constructor(commandLine: GeneralCommandLine) :
     CapturingProcessHandler(commandLine) {
@@ -17,11 +17,11 @@ class MvCapturingProcessHandler private constructor(commandLine: GeneralCommandL
     override fun readerOptions(): BaseOutputReader.Options = BaseOutputReader.Options.BLOCKING
 
     companion object {
-        fun startProcess(commandLine: GeneralCommandLine): MvResult<MvCapturingProcessHandler, ExecutionException> {
+        fun startProcess(commandLine: GeneralCommandLine): RsResult<MvCapturingProcessHandler, ExecutionException> {
             return try {
-                MvResult.Ok(MvCapturingProcessHandler(commandLine))
+                RsResult.Ok(MvCapturingProcessHandler(commandLine))
             } catch (e: ExecutionException) {
-                MvResult.Err(e)
+                RsResult.Err(e)
             }
         }
     }

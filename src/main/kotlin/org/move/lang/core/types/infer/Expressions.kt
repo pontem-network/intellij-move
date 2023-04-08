@@ -358,7 +358,7 @@ private fun inferArithmeticBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: Inference
 
         if (leftExprTy is TyInteger && rightExprTy is TyInteger) {
             val compat = isCompatibleIntegers(leftExprTy, rightExprTy)
-            if (compat !is Compat.Yes) {
+            if (!compat) {
                 ctx.typeErrors.add(
                     TypeError.IncompatibleArgumentsToBinaryExpr(
                         binaryExpr,
