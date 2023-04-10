@@ -32,8 +32,7 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
 
                 val acquiredTys = mutableSetOf<String>()
                 for (callExpr in codeBlock.descendantsOfType<MvCallExpr>()) {
-                    val callAcquiresTys =
-                        callExpr.inferAcquiresTys() ?: return
+                    val callAcquiresTys = callExpr.inferAcquiresTys() ?: return
                     val acqTyNames = callAcquiresTys.map { it.fullnameNoArgs() }
                     acquiredTys.addAll(acqTyNames)
                 }

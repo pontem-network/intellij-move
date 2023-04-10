@@ -116,7 +116,7 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
         fun call() {
             let v = vector_empty();
             v;
-          //^ vector<?Element>  
+          //^ vector<Element>  
         }
     }        
     """)

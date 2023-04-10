@@ -66,8 +66,8 @@ fun Ty.expectedTyText(): String {
     return render(
         this,
         level = 3,
-        typeVar = {
-            val name = "?${it.origin?.name ?: "_"}"
+        typeParam = {
+            val name = it.origin.name ?: "_"
             val abilities =
                 it.abilities()
                     .toList().sorted()
@@ -95,7 +95,7 @@ private fun render(
     unknown: String = "<unknown>",
     anonymous: String = "<anonymous>",
     integer: String = "integer",
-    typeVar: (TyInfer.TyVar) -> String = { "?${it.origin?.name ?: "_"}" },
+    typeParam: (TyTypeParameter) -> String = { it.name ?: anonymous },
     fq: Boolean = false
 ): String {
     check(level >= 0)
@@ -121,7 +121,7 @@ private fun render(
 
     if (level == 0) return "_"
 
-    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, typeVar, fq) }
+    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, typeParam, fq) }
 
     return when (ty) {
         is TyFunction -> {
@@ -138,7 +138,8 @@ private fun render(
             val prefix = if (ty.permissions.contains(RefPermissions.WRITE)) "&mut " else "&"
             "$prefix${r(ty.referenced)}"
         }
-        is TyTypeParameter -> ty.name ?: anonymous
+//        is TyTypeParameter -> ty.name ?: anonymous
+        is TyTypeParameter -> typeParam(ty)
         is TyStruct -> {
             val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
             val args =
@@ -147,7 +148,7 @@ private fun render(
             name + args
         }
         is TyInfer -> when (ty) {
-            is TyInfer.TyVar -> typeVar(ty)
+            is TyInfer.TyVar -> "?${ty.origin?.name ?: "_"}"
             is TyInfer.IntVar -> integer
         }
         is TyLambda -> {

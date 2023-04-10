@@ -10,10 +10,7 @@ import org.move.ide.presentation.text
 import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.inferenceContext
-import org.move.lang.core.types.infer.maybeInferenceContext
-import org.move.lang.core.types.infer.outerItemContext
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.moveProject
 import org.move.stdext.joinToWithBuffer
@@ -52,11 +49,13 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
             is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
 //                val project = docElement.project
-                val inferenceCtx = docElement.inferenceContext(false)
+                val inference = docElement.inference(false) ?: return null
+//                val inferenceCtx = docElement.inferenceContext(false)
 //                val itemContext = docElement.itemContextOwner?.itemContext(false) ?: project.itemContext(false)
 //                val inferenceCtx =
 //                    docElement.ownerInferenceCtx(false) ?: InferenceContext(false, itemContext)
-                val type = inferenceCtx.getBindingPatTy(docElement).renderForDocs(true)
+                val type = inference.getPatType(docElement).renderForDocs(true)
+//                val type = inferenceCtx.getBindingPatTy(docElement).renderForDocs(true)
 //                val type = docElement.inferBindingTy(inferenceCtx, itemContext).renderForDocs(true)
                 buffer += presentationInfo.type
                 buffer += " "

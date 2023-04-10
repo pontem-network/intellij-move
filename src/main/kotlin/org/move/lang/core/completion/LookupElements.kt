@@ -229,7 +229,7 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
                     val inferenceCtx = InferenceContext(msl, itemContext)
                     val expectedTy = completionContext.expectedTy
                     if (expectedTy != null && expectedTy !is TyUnknown) {
-                        inferenceCtx.addConstraint(rawFuncTy.retType, expectedTy)
+                        inferenceCtx.registerEquateObligation(rawFuncTy.retType, expectedTy)
                     }
                     inferenceCtx.processConstraints()
 

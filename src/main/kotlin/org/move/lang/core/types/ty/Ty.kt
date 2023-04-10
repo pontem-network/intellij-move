@@ -29,6 +29,10 @@ enum class Ability {
 
 //val emptySubstitution: Substitution = emptyMap()
 
+val TypeFoldable<*>.hasTyInfer get() = visitWith { it is TyInfer }
+
+val TypeFoldable<*>.needsSubst get(): Boolean = visitWith { it is TyTypeParameter }
+
 interface Ty : TypeFoldable<Ty> {
 
     override fun foldWith(folder: TypeFolder): Ty = folder(this)

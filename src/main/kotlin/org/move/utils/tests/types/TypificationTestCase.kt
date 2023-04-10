@@ -27,10 +27,12 @@ abstract class TypificationTestCase : MvTestBase() {
         val (element, data) = myFixture.findElementAndDataInEditor<T>()
         val expectedType = data.trim()
 
-        val msl = element.isMsl()
-        val ctx = element.maybeInferenceContext(msl) ?: InferenceContext(msl, element.itemContext(msl))
+//        val ctx = element.maybeInferenceContext(msl) ?: InferenceContext(msl, element.itemContext(msl))
 
-        val actualType = inferExpectedTy(element, ctx)?.expectedTyText() ?: "null"
+        val msl = element.isMsl()
+        val inference = element.inference(msl) ?: error("No inference at caret element")
+
+        val actualType = inferExpectedTy(element, inference)?.expectedTyText() ?: "null"
         check(actualType == expectedType) {
             "Type mismatch. Expected $expectedType, found: $actualType"
         }
@@ -57,11 +59,13 @@ abstract class TypificationTestCase : MvTestBase() {
 
 //        val ctx = InferenceContext(expr.isMsl())
         val msl = bindingPat.isMsl()
-        val inferenceCtx = bindingPat.maybeInferenceContext(msl) ?: error("No InferenceContextOwner at the caret")
+        val inference = bindingPat.inference(msl) ?: error("No InferenceContextOwner at the caret")
+//        val inferenceCtx = bindingPat.maybeInferenceContext(msl) ?: error("No InferenceContextOwner at the caret")
 
-        val type = inferenceCtx.getBindingPatTy(bindingPat).text(true)
-        check(type == expectedType) {
-            "Type mismatch. Expected $expectedType, found: $type"
+//        val type = inferenceCtx.getBindingPatTy(bindingPat).text(true)
+        val actualType = inference.getPatType(bindingPat).text(true)
+        check(actualType == expectedType) {
+            "Type mismatch. Expected $expectedType, found: $actualType"
         }
 //        check(type in expectedType) {
 //            "Type mismatch. Expected one of $expectedType, found: $type. $description"
@@ -100,11 +104,14 @@ abstract class TypificationTestCase : MvTestBase() {
         val expectedType = data.trim()
 
         val msl = expr.isMsl()
-        val inferenceCtx = expr.maybeInferenceContext(msl) ?: error("No InferenceContextOwner at the caret")
+        val inference = expr.inference(msl) ?: error("No inference owner at the caret position")
+//        inference.getExprType()
+//        val inferenceCtx = expr.maybeInferenceContext(msl) ?: error("No InferenceContextOwner at the caret")
 
-        val type = inferExprTy(expr, inferenceCtx).text(true)
-        check(type == expectedType) {
-            "Type mismatch. Expected $expectedType, found: $type"
+//        val exprType = inferExprTy(expr, inferenceCtx).text(true)
+        val actualType = inference.getExprType(expr).text(true)
+        check(actualType == expectedType) {
+            "Type mismatch. Expected $expectedType, found: $actualType"
         }
 //        check(type in expectedType) {
 //            "Type mismatch. Expected one of $expectedType, found: $type. $description"

@@ -42,7 +42,7 @@ typealias TypeVisitor = (Ty) -> Boolean
  * Despite a scary name, [TypeFoldable] is a rather simple thing.
  *
  * It allows to map type variables within a type (or another object,
- * containing a type, like a [EqualityConstraint]) to other types.
+ * containing a type, like a [EqualObligation]) to other types.
  */
 interface TypeFoldable<out Self> {
     /**
@@ -76,8 +76,8 @@ interface TypeFoldable<out Self> {
      */
     fun innerFoldWith(folder: TypeFolder): Self
 
-    /** Similar to [innerVisitWith], but just visit types without folding */
-    fun visitWith(visitor: TypeVisitor): Boolean
+    /** Similar to [superVisitWith], but just visit types without folding */
+    fun visitWith(visitor: TypeVisitor): Boolean = innerVisitWith(visitor)
 
     /** Similar to [foldWith], but just visit types without folding */
     fun innerVisitWith(visitor: TypeVisitor): Boolean

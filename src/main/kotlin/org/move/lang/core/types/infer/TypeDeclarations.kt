@@ -27,15 +27,17 @@ fun inferItemTypeTy(moveType: MvType, itemContext: ItemContext): Ty {
 
                     val rawStructTy = itemContext.getStructItemTy(namedItem) ?: return TyUnknown
 
+                    // TODO: use substitutions with cache somehow here
                     val ctx = InferenceContext(itemContext.msl, itemContext)
                     if (rawStructTy.typeVars.isNotEmpty()) {
                         val typeArgs = moveType.path.typeArguments.map { inferItemTypeTy(it.type, itemContext) }
                         for ((tyVar, tyArg) in rawStructTy.typeVars.zip(typeArgs)) {
-                            ctx.addConstraint(tyVar, tyArg)
+                            ctx.registerEquateObligation(tyVar, tyArg)
                         }
                         ctx.processConstraints()
                     }
                     val structTy = ctx.resolveTy(rawStructTy)
+//                    val structTy = ctx.resolveTy(rawStructTy)
                     structTy
                 }
                 else -> TyUnknown

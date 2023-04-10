@@ -5,17 +5,16 @@ import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.rd.util.concurrentMapOf
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.contextOrSelf
-import org.move.lang.core.psi.ext.funcItem
-import org.move.lang.core.psi.ext.itemSpecBlock
-import org.move.lang.core.psi.ext.rightBrace
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
 import org.move.stdext.RsResult
 import org.move.stdext.RsResult.Err
 import org.move.stdext.RsResult.Ok
 import org.move.utils.cache
 import org.move.utils.cacheManager
 import org.move.utils.cacheResult
+import org.move.utils.recursionGuard
 
 interface MvInferenceContextOwner : MvElement
 
@@ -249,6 +248,14 @@ typealias RelateResult = RsResult<Unit, CombineTypeError>
 
 private inline fun RelateResult.and(rhs: () -> RelateResult): RelateResult = if (isOk) rhs() else this
 
+typealias CoerceResult = RsResult<CoerceOk, CombineTypeError>
+
+data class CoerceOk(
+    val obligations: List<Obligation> = emptyList()
+)
+
+fun RelateResult.into(): CoerceResult = map { CoerceOk() }
+
 sealed class CombineTypeError {
     class TypeMismatch(val ty1: Ty, val ty2: Ty) : CombineTypeError()
     class AbilitiesMismatch(val abilities: Set<Ability>) : CombineTypeError()
@@ -271,40 +278,182 @@ fun isCompatibleAbilities(expectedTy: Ty, actualTy: Ty, msl: Boolean): Compat {
     }
 }
 
+data class InferenceResult(
+    private val exprTypes: Map<MvExpr, Ty>,
+    private val patTypes: Map<MvPat, Ty>,
+    private val exprExpectedTypes: Map<MvExpr, Ty>,
+    private val acquiredTypes: Map<MvCallExpr, List<Ty>>,
+    val typeErrors: List<TypeError>
+) {
+    fun getExprType(expr: MvExpr): Ty = exprTypes[expr] ?: error("Expr `${expr.text}` is never inferred")
+    fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: error("Pat `${pat.text}` is never inferred")
+    fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
+    fun getAcquiredTypes(expr: MvCallExpr): List<Ty> = acquiredTypes[expr] ?: emptyList()
+
+//    companion object {
+//        @JvmStatic
+//        val EMPTY: InferenceResult = InferenceResult(
+//            emptyMap(),
+//            emptyMap(),
+////            emptyMap(),
+////            emptyMap(),
+//            emptyList(),
+//        )
+//    }
+}
+
+fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
+    val itemContext = element.itemContext(msl)
+    val inferenceCtx = InferenceContext(msl, itemContext)
+    return recursionGuard(element, { inferenceCtx.infer(element, msl) }, memoize = false)
+        ?: error("Can not run nested type inference")
+}
+
+fun MvInferenceContextOwner.inference(msl: Boolean): InferenceResult = inferTypesIn(this, msl)
+
+fun MvExpr.getInferenceType(msl: Boolean) = this.inference(msl)?.getExprType(this) ?: TyUnknown
+
+fun MvElement.inference(msl: Boolean): InferenceResult? {
+    val contextOwner = this.ancestorOrSelf<MvInferenceContextOwner>() ?: return null
+    return contextOwner.inference(msl)
+}
+
 class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
     var exprTypes = concurrentMapOf<MvExpr, Ty>()
     val patTypes = mutableMapOf<MvPat, Ty>()
     val typeTypes = mutableMapOf<MvType, Ty>()
 
-    var callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
+//    var callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
     val bindingTypes = concurrentMapOf<MvBindingPat, Ty>()
+
+    private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
+    private val acquiredTypes = mutableMapOf<MvCallExpr, List<Ty>>()
 
     var typeErrors = mutableListOf<TypeError>()
 
     val varUnificationTable = UnificationTable<TyInfer.TyVar, Ty>()
     val intUnificationTable = UnificationTable<TyInfer.IntVar, Ty>()
 
-    private val solver = ConstraintSolver(this)
+    val fulfill = FulfillmentContext(this)
 
-    fun addConstraint(ty1: Ty, ty2: Ty) {
-        solver.registerConstraint(EqualityConstraint(ty1, ty2))
+    fun startSnapshot(): Snapshot = CombinedSnapshot(
+        intUnificationTable.startSnapshot(),
+        varUnificationTable.startSnapshot(),
+    )
+
+    inline fun <T> probe(action: () -> T): T {
+        val snapshot = startSnapshot()
+        try {
+            return action()
+        } finally {
+            snapshot.rollback()
+        }
+    }
+
+    inline fun <T : Any> commitIfNotNull(action: () -> T?): T? {
+        val snapshot = startSnapshot()
+        val result = action()
+        if (result == null) snapshot.rollback() else snapshot.commit()
+        return result
+    }
+
+    fun infer(owner: MvInferenceContextOwner, msl: Boolean): InferenceResult {
+        val returnTy = when (owner) {
+            is MvFunctionLike -> (itemContext.getItemTy(owner) as? TyFunction)?.retType ?: TyUnknown
+            else -> TyUnknown
+        }
+        val inference = TypeInferenceWalker(this, msl, returnTy)
+
+        inference.extractParameterBindings(owner)
+
+        when (owner) {
+            is MvFunctionLike -> {
+                owner.codeBlock?.let {
+                    inference.inferFnBody(it)
+//                    inference.inferCodeBlockTy(it, Expectation.maybeHasType(returnTy))
+                }
+            }
+//            is MvSpecFunction -> {
+//                owner.codeBlock?.let {
+//                    val retTy = (itemContext.getItemTy(owner) as? TyFunction)?.retType
+//                    val inference = TypeInferenceWalker(this, retTy, msl)
+//                    inference.inferCodeBlockTy(it, Expectation.maybeHasType(retTy))
+//                }
+//            }
+            is MvItemSpec -> {
+                owner.itemSpecBlock?.let { inference.inferSpecBlock(it) }
+            }
+            is MvModuleItemSpec -> owner.itemSpecBlock?.let { inference.inferSpecBlock(it) }
+            is MvSchema -> owner.specBlock?.let { inference.inferSpecBlock(it) }
+        }
+
+        fulfill.selectWherePossible()
+
+//        fallbackUnresolvedTypeVarsIfPossible()
+//
+//        fulfill.selectWherePossible()
+
+        exprTypes.replaceAll { _, ty -> fullyResolve(ty) }
+        patTypes.replaceAll { _, ty -> fullyResolve(ty) }
+
+        exprExpectedTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
+        acquiredTypes.replaceAll { _, tys -> tys.map { fullyResolve(it) } }
+        typeErrors.replaceAll { it }
+
+        return InferenceResult(exprTypes, patTypes, exprExpectedTypes, acquiredTypes, typeErrors)
+    }
+
+//    private fun fallbackUnresolvedTypeVarsIfPossible() {
+//        val allTypes = exprTypes.values.asSequence() + patTypes.values.asSequence()
+//        for (ty in allTypes) {
+//            ty.visitInferTys { tyInfer ->
+//                val rty = shallowResolve(tyInfer)
+//                if (rty is TyInfer) {
+//                    fallbackIfPossible(rty)
+//                }
+//                false
+//            }
+//        }
+//    }
+
+//    private fun fallbackIfPossible(ty: TyInfer) {
+//        when (ty) {
+//            is TyInfer.IntVar -> intUnificationTable.unifyVarValue(ty, TyInteger.default())
+//            is TyInfer.TyVar -> Unit
+//        }
+//    }
+
+    fun isTypeInferred(expr: MvExpr): Boolean {
+        return exprTypes.containsKey(expr)
+    }
+
+    fun registerEquateObligation(ty1: Ty, ty2: Ty) {
+        fulfill.registerObligation(Obligation.Equate(ty1, ty2))
     }
 
     fun processConstraints(): Boolean {
-        return solver.processConstraints()
+        return fulfill.selectUntilError()
     }
 
-    fun cacheExprTy(expr: MvExpr, ty: Ty) {
+    fun writeExprTy(expr: MvExpr, ty: Ty) {
         this.exprTypes[expr] = ty
     }
 
-    fun cachePatTy(pat: MvPat, ty: Ty) {
+    fun writePatTy(pat: MvPat, ty: Ty) {
         this.patTypes[pat] = ty
     }
 
-    fun cacheCallExprTy(expr: MvCallExpr, ty: TyFunction) {
-        this.callExprTypes[expr] = ty
+    fun writeExprExpectedTy(expr: MvExpr, ty: Ty) {
+        this.exprExpectedTypes[expr] = ty
     }
+
+    fun writeAcquiredTypes(callExpr: MvCallExpr, tys: List<Ty>) {
+        this.acquiredTypes[callExpr] = tys
+    }
+
+//    fun cacheCallExprTy(expr: MvCallExpr, ty: TyFunction) {
+//        this.callExprTypes[expr] = ty
+//    }
 
     fun getTypeTy(type: MvType): Ty {
         val existing = this.typeTypes[type]
@@ -317,11 +466,57 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
         }
     }
 
+//    fun tryCoerce(inferred: Ty, expected: Ty): CoerceResult {
+//        if (inferred === expected) {
+//            return Ok(CoerceOk())
+//        }
+//        if (inferred == TyNever) {
+//            return Ok(CoerceOk())
+//        }
+//        if (inferred is TyInfer.TyVar) {
+//            return combineTypes(inferred, expected).into()
+//        }
+//        val unsize = commitIfNotNull { coerceUnsized(inferred, expected) }
+//        if (unsize != null) {
+//            return Ok(unsize)
+//        }
+//        return when {
+//            // Coerce reference to pointer
+//            inferred is TyReference && expected is TyPointer &&
+//                    coerceMutability(inferred.mutability, expected.mutability) -> {
+//                combineTypes(inferred.referenced, expected.referenced).map {
+//                    CoerceOk(
+//                        adjustments = listOf(
+//                            Adjustment.Deref(inferred.referenced, overloaded = null),
+//                            Adjustment.BorrowPointer(expected)
+//                        )
+//                    )
+//                }
+//            }
+//            // Coerce mutable pointer to const pointer
+//            inferred is TyPointer && inferred.mutability.isMut
+//                    && expected is TyPointer && !expected.mutability.isMut -> {
+//                combineTypes(inferred.referenced, expected.referenced).map {
+//                    CoerceOk(adjustments = listOf(Adjustment.MutToConstPointer(expected)))
+//                }
+//            }
+//            // Coerce references
+//            inferred is TyReference && expected is TyReference &&
+//                    coerceMutability(inferred.mutability, expected.mutability) -> {
+//                coerceReference(inferred, expected)
+//            }
+//            else -> combineTypes(inferred, expected).into()
+//        }
+//    }
+
     fun combineTypes(ty1: Ty, ty2: Ty): RelateResult {
         return combineTypesResolved(shallowResolve(ty1), shallowResolve(ty2))
     }
 
+    @Suppress("NAME_SHADOWING")
     private fun combineTypesResolved(ty1: Ty, ty2: Ty): RelateResult {
+        val ty1 = ty1.mslTy()
+        val ty2 = ty2.mslTy()
         return when {
             ty1 is TyInfer.TyVar -> combineTyVar(ty1, ty2)
             ty2 is TyInfer.TyVar -> combineTyVar(ty2, ty1)
@@ -347,15 +542,13 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
             return Err(CombineTypeError.AbilitiesMismatch(compat.abilities))
         }
         when (ty2) {
-            is TyInfer.TyVar -> {
-                varUnificationTable.unifyVarVar(ty1, ty2)
-            }
+            is TyInfer.TyVar -> varUnificationTable.unifyVarVar(ty1, ty2)
             else -> {
                 val ty1r = varUnificationTable.findRoot(ty1)
                 val isTy2ContainsTy1 = ty2.visitWith(object : TypeVisitor {
                     override fun invoke(ty: Ty): Boolean = when {
                         ty is TyInfer.TyVar && varUnificationTable.findRoot(ty) == ty1r -> true
-                        ty.visitWith { it is TyInfer } -> ty.innerVisitWith(this)
+                        ty.hasTyInfer -> ty.innerVisitWith(this)
                         else -> false
                     }
                 })
@@ -383,8 +576,8 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
     }
 
     fun combineTypesNoVars(ty1: Ty, ty2: Ty): RelateResult {
-        val ty1msl = ty1.mslTy()
-        val ty2msl = ty2.mslTy()
+        val ty1msl = ty1
+        val ty2msl = ty2
         return when {
             ty1 === ty2 -> Ok(Unit)
             ty1msl is TyNever || ty2msl is TyNever -> Ok(Unit)
@@ -444,7 +637,80 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
         }
     }
 
-    private fun shallowResolve(ty: Ty): Ty {
+    fun tryCoerce(inferred: Ty, expected: Ty): CoerceResult {
+        if (inferred === expected) {
+            return Ok(CoerceOk())
+        }
+//        if (inferred == TyNever) {
+//            return Ok(CoerceOk(adjustments = listOf(Adjustment.NeverToAny(expected))))
+//        }
+        if (inferred is TyInfer.TyVar) {
+            return combineTypes(inferred, expected).into()
+        }
+//        val unsize = commitIfNotNull { coerceUnsized(inferred, expected) }
+//        if (unsize != null) {
+//            return Ok(unsize)
+//        }
+        return when {
+            // Coerce reference to pointer
+//            inferred is TyReference && expected is TyPointer &&
+//                    coerceMutability(inferred.mutability, expected.mutability) -> {
+//                combineTypes(inferred.referenced, expected.referenced).map {
+//                    CoerceOk(
+//                        adjustments = listOf(
+//                            Adjustment.Deref(inferred.referenced, overloaded = null),
+//                            Adjustment.BorrowPointer(expected)
+//                        )
+//                    )
+//                }
+//            }
+//            // Coerce mutable pointer to const pointer
+//            inferred is TyPointer && inferred.mutability.isMut
+//                    && expected is TyPointer && !expected.mutability.isMut -> {
+//                combineTypes(inferred.referenced, expected.referenced).map {
+//                    CoerceOk(adjustments = listOf(Adjustment.MutToConstPointer(expected)))
+//                }
+//            }
+            // Coerce references
+            inferred is TyReference && expected is TyReference &&
+                    coerceMutability(inferred, expected) -> {
+                tryCoerce(inferred.referenced, expected.referenced)
+            }
+            else -> combineTypes(inferred, expected).into()
+        }
+    }
+
+//    /**
+//     * Reborrows `&mut A` to `&mut B` and `&(mut) A` to `&B`.
+//     * To match `A` with `B`, autoderef will be performed
+//     */
+//    private fun coerceReference(inferred: TyReference, expected: TyReference): CoerceResult {
+//        val autoderef = lookup.coercionSequence(inferred)
+//        for (derefTy in autoderef.drop(1)) {
+//            // TODO proper handling of lifetimes
+//            val derefTyRef = TyReference(derefTy, expected.mutability, expected.region)
+//            if (combineTypesIfOk(derefTyRef, expected)) {
+//                // Deref `&a` to `a` and then reborrow as `&a`. No-op. See rustc's `coerce_borrowed_pointer`
+//                val isTrivialReborrow = autoderef.stepCount() == 1
+//                        && inferred.mutability == expected.mutability
+//                        && !expected.mutability.isMut
+//
+//                if (!isTrivialReborrow) {
+//                    val adjustments = autoderef.steps().toAdjustments(items) +
+//                            listOf(Adjustment.BorrowReference(derefTyRef))
+//                    return Ok(CoerceOk(adjustments))
+//                }
+//                return Ok(CoerceOk())
+//            }
+//        }
+//
+//        return Err(TypeMismatch(inferred, expected))
+//    }
+
+//    private fun coerceMutability(from: Mutability, to: Mutability): Boolean =
+//        from == to || from.isMut && !to.isMut
+
+    fun shallowResolve(ty: Ty): Ty {
         if (ty !is TyInfer) return ty
 
         return when (ty) {
@@ -453,11 +719,11 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
         }
     }
 
-    private fun <T : TypeFoldable<T>> resolveTypeVarsIfPossible(ty: T): T {
+    fun <T : TypeFoldable<T>> resolveTypeVarsIfPossible(ty: T): T {
         return ty.foldTyInferWith(this::shallowResolve)
     }
 
-    private fun fullyResolve(ty: Ty): Ty {
+    private fun <T : TypeFoldable<T>> fullyResolve(value: T): T {
         fun go(ty: Ty): Ty {
             if (ty !is TyInfer) return ty
 
@@ -466,7 +732,35 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
                 is TyInfer.TyVar -> varUnificationTable.findValue(ty)?.let(::go) ?: ty.origin ?: TyUnknown
             }
         }
-        return ty.foldTyInferWith(::go)
+        return value.foldTyInferWith(::go)
+    }
+
+    /**
+     * Similar to [fullyResolve], but replaces unresolved [TyInfer.TyVar] to its [TyInfer.TyVar.origin]
+     * instead of [TyUnknown]
+     */
+    fun <T : TypeFoldable<T>> fullyResolveWithOrigins(value: T): T {
+        return value.foldWith(fullTypeWithOriginsResolver)
+    }
+
+    private inner class FullTypeWithOriginsResolver : TypeFolder() {
+        override fun fold(ty: Ty): Ty {
+            if (!ty.hasTyInfer) return ty
+            return when (val res = shallowResolve(ty)) {
+                is TyUnknown -> (ty as? TyInfer.TyVar)?.origin ?: TyUnknown
+                is TyInfer.TyVar -> res.origin ?: TyUnknown
+                is TyInfer -> TyUnknown
+                else -> res.innerFoldWith(this)
+            }
+        }
+    }
+
+    private val fullTypeWithOriginsResolver: FullTypeWithOriginsResolver = FullTypeWithOriginsResolver()
+
+    fun addTypeError(typeError: TypeError) {
+        if (typeError.element.containingFile.isPhysical) {
+            typeErrors.add(typeError)
+        }
     }
 
     fun resolveTyVarsFromContext(ctx: InferenceContext) {
@@ -490,6 +784,8 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
         }
     }
 
+    fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: error("No pat in context")
+
     fun getBindingPatTy(pat: MvBindingPat): Ty {
         val existing = this.bindingTypes[pat]
         if (existing != null) {
@@ -504,7 +800,7 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
     fun childContext(): InferenceContext {
         val childContext = InferenceContext(this.msl, itemContext)
         childContext.exprTypes = this.exprTypes
-        childContext.callExprTypes = this.callExprTypes
+//        childContext.callExprTypes = this.callExprTypes
 //        childContext.typeTypes = this.typeTypes
         childContext.typeErrors = this.typeErrors
         return childContext

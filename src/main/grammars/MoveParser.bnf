@@ -1126,6 +1126,7 @@ ModuleItemSpec ::= spec MODULE_KW <<msl ItemSpecBlock>>
 {
     pin = 2
     implements = [
+        "org.move.lang.core.types.infer.MvInferenceContextOwner"
         "org.move.lang.core.psi.MslScopeElement"
     ]
 }
@@ -1205,6 +1206,7 @@ Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl ItemSpecBlock>> {
         "org.move.lang.core.psi.MvTypeParametersOwner"
         "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
+        "org.move.lang.core.types.infer.MvInferenceContextOwner"
         "org.move.lang.core.psi.MslScopeElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSchemaMixin"
@@ -1223,7 +1225,7 @@ ItemSpecBlock ::= '{' ItemSpecBlock_items '}'
     pin = 1
     implements = [
         "org.move.lang.core.psi.MvImportsOwner"
-        "org.move.lang.core.types.infer.MvInferenceContextOwner"
+//        "org.move.lang.core.types.infer.MvInferenceContextOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecBlockMixin"
 }

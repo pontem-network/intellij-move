@@ -14,8 +14,6 @@ enum class RefPermissions {
     READ,
     WRITE;
 
-    val isMut: Boolean get() = this == READ
-
     companion object {
         fun valueOf(mutable: Boolean): Set<RefPermissions> =
             if (mutable) setOf(READ, WRITE) else setOf(READ)
@@ -24,6 +22,8 @@ enum class RefPermissions {
 
 data class TyReference(val referenced: Ty, val permissions: Set<RefPermissions>, val msl: Boolean) : Ty {
     override fun abilities() = setOf(Ability.COPY, Ability.DROP)
+
+    val isMut: Boolean get() = this.permissions.contains(RefPermissions.WRITE)
 
     fun innerTy(): Ty {
         return if (referenced is TyReference) {
@@ -48,4 +48,10 @@ data class TyReference(val referenced: Ty, val permissions: Set<RefPermissions>,
         referenced.visitWith(visitor)
 
     override fun toString(): String = tyToString(this)
+
+    companion object {
+        fun coerceMutability(from: TyReference, to: TyReference): Boolean {
+            return from == to || from.isMut && !to.isMut
+        }
+    }
 }

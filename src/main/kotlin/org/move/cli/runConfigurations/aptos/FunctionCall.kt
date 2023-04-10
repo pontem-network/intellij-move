@@ -8,7 +8,7 @@ import org.move.lang.core.psi.allParamsAsBindings
 import org.move.lang.core.psi.ext.transactionParameters
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.ItemQualName
-import org.move.lang.core.types.infer.inferenceContext
+import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.*
 import java.nio.file.Path
 
@@ -140,10 +140,12 @@ data class FunctionCall(
             }
 
             val parameterBindings = function.allParamsAsBindings.drop(1)
-            val inferenceCtx = function.inferenceContext(false)
+            val inference = function.inference(false)
+//            val inferenceCtx = function.inferenceContext(false)
             for ((binding, value) in parameterBindings.zip(callArgs.args)) {
                 val name = binding.name
-                val ty = inferenceCtx.getBindingPatTy(binding)
+                val ty = inference.getPatType(binding)
+//                val ty = inferenceCtx.getBindingPatTy(binding)
                 transaction.params[name] = FunctionCallParam(value, FunctionCallParam.tyTypeName(ty))
             }
 

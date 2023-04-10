@@ -59,9 +59,9 @@ class ResolveStructFieldsTest : ResolveTestCase() {
               //X  
             }
             
-            public fun is_none<Element>(t: &Option<Element>): bool {
-                Vector::is_empty(&t.vec)
-                                  //^
+            public fun is_none<Element>(t: &Option<Element>) {
+                &t.vec;
+                  //^
             }
         }    
     """
@@ -76,8 +76,8 @@ class ResolveStructFieldsTest : ResolveTestCase() {
             }
             
             public fun is_none<Element>(t: &mut Option<Element>): bool {
-                Vector::is_empty(&t.vec)
-                                  //^
+                &t.vec;
+                  //^
             }
         }    
     """

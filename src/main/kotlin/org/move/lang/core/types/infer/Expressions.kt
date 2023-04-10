@@ -79,11 +79,11 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
             is Compat.TypeMismatch -> {
                 parentCtx.typeErrors.add(TypeError.TypeMismatch(expr, expectedTy, exprTy))
             }
-            else -> parentCtx.addConstraint(exprTy, expectedTy)
+            else -> parentCtx.registerEquateObligation(exprTy, expectedTy)
         }
     }
 
-    parentCtx.cacheExprTy(expr, exprTy)
+    parentCtx.writeExprTy(expr, exprTy)
     return exprTy
 }
 
@@ -111,10 +111,10 @@ private fun inferCallExprTy(
     parentCtx: InferenceContext,
     expectedTy: Ty?
 ): Ty {
-    val existingTy = parentCtx.callExprTypes[callExpr]
-    if (existingTy != null) {
-        return existingTy
-    }
+//    val existingTy = parentCtx.callExprTypes[callExpr]
+//    if (existingTy != null) {
+//        return existingTy
+//    }
 
     val path = callExpr.path
     val funcItem = path.reference?.resolveWithAliases() as? MvFunctionLike ?: return TyUnknown
@@ -145,7 +145,7 @@ private fun inferCallExprTy(
 
                 else -> true
             }
-            inferenceCtx.addConstraint(typeVar, if (isCompat) typeArgTy else TyUnknown)
+            inferenceCtx.registerEquateObligation(typeVar, if (isCompat) typeArgTy else TyUnknown)
         }
     }
     // find all types of passed expressions, create constraints with those
@@ -155,16 +155,16 @@ private fun inferCallExprTy(
 
         val paramTy = funcTy.paramTypes.getOrNull(i) ?: break
         val argumentExprTy = inferExprTy(argumentExpr, parentCtx, paramTy)
-        inferenceCtx.addConstraint(paramTy, argumentExprTy)
+        inferenceCtx.registerEquateObligation(paramTy, argumentExprTy)
     }
     if (expectedTy != null) {
-        inferenceCtx.addConstraint(funcTy.retType, expectedTy)
+        inferenceCtx.registerEquateObligation(funcTy.retType, expectedTy)
     }
 
     inferenceCtx.processConstraints()
     funcTy = inferenceCtx.resolveTy(funcTy) as TyFunction
 
-    parentCtx.cacheCallExprTy(callExpr, funcTy)
+//    parentCtx.cacheCallExprTy(callExpr, funcTy)
     return funcTy
 }
 
@@ -216,7 +216,7 @@ fun inferStructLitExprTy(
 
                 else -> true
             }
-            inferenceCtx.addConstraint(typeVar, if (isCompat) typeArgTy else TyUnknown)
+            inferenceCtx.registerEquateObligation(typeVar, if (isCompat) typeArgTy else TyUnknown)
         }
     }
     for (field in litExpr.fields) {
@@ -225,55 +225,10 @@ fun inferStructLitExprTy(
         inferLitFieldInitExprTy(field, parentCtx, fieldTy)
     }
     if (expectedTy != null) {
-        inferenceCtx.addConstraint(structTy, expectedTy)
+        inferenceCtx.registerEquateObligation(structTy, expectedTy)
     }
     inferenceCtx.processConstraints()
 
-    parentCtx.resolveTyVarsFromContext(inferenceCtx)
-    return inferenceCtx.resolveTy(structTy)
-}
-
-fun inferStructPatTy(structPat: MvStructPat, parentCtx: InferenceContext, expectedTy: Ty?): Ty {
-    val path = structPat.path
-    val structItem = structPat.struct ?: return TyUnknown
-
-    val structTy = structItem.outerItemContext(parentCtx.msl).getStructItemTy(structItem)
-        ?: return TyUnknown
-
-    val inferenceCtx = InferenceContext(parentCtx.msl, parentCtx.itemContext)
-    // find all types passed as explicit type parameters, create constraints with those
-    if (path.typeArguments.isNotEmpty()) {
-        if (path.typeArguments.size != structTy.typeVars.size) return TyUnknown
-        for ((typeVar, typeArg) in structTy.typeVars.zip(path.typeArguments)) {
-            val typeArgTy = parentCtx.getTypeTy(typeArg.type)
-
-            // check compat for abilities
-            val compat = isCompatibleAbilities(typeVar, typeArgTy, path.isMsl())
-            val isCompat = when (compat) {
-                is Compat.AbilitiesMismatch -> {
-                    parentCtx.typeErrors.add(
-                        TypeError.AbilitiesMismatch(
-                            typeArg,
-                            typeArgTy,
-                            compat.abilities
-                        )
-                    )
-                    false
-                }
-
-                else -> true
-            }
-            inferenceCtx.addConstraint(typeVar, if (isCompat) typeArgTy else TyUnknown)
-        }
-    }
-    if (expectedTy != null) {
-        if (isCompatible(expectedTy, structTy)) {
-            inferenceCtx.addConstraint(structTy, expectedTy)
-        } else {
-            parentCtx.typeErrors.add(TypeError.InvalidUnpacking(structPat, expectedTy))
-        }
-    }
-    inferenceCtx.processConstraints()
     parentCtx.resolveTyVarsFromContext(inferenceCtx)
     return inferenceCtx.resolveTy(structTy)
 }
@@ -286,7 +241,7 @@ fun inferVectorLitExpr(litExpr: MvVectorLitExpr, parentCtx: InferenceContext): T
 
     if (typeArgument != null) {
         val ty = parentCtx.getTypeTy(typeArgument.type)
-        inferenceCtx.addConstraint(tyVector.item, ty)
+        inferenceCtx.registerEquateObligation(tyVector.item, ty)
     }
     val exprs = litExpr.vectorLitItems.exprList
     for (expr in exprs) {
@@ -294,7 +249,7 @@ fun inferVectorLitExpr(litExpr: MvVectorLitExpr, parentCtx: InferenceContext): T
         tyVector = inferenceCtx.resolveTy(tyVector) as TyVector
 
         val exprTy = inferExprTy(expr, parentCtx, tyVector.item)
-        inferenceCtx.addConstraint(tyVector.item, exprTy)
+        inferenceCtx.registerEquateObligation(tyVector.item, exprTy)
     }
     inferenceCtx.processConstraints()
     tyVector = inferenceCtx.resolveTy(tyVector) as TyVector
@@ -317,7 +272,7 @@ fun inferLitFieldInitExprTy(
             if (!isCompatible(expectedTy, bindingPatTy, ctx.msl)) {
                 ctx.typeErrors.add(TypeError.TypeMismatch(litField, expectedTy, bindingPatTy))
             } else {
-                ctx.addConstraint(bindingPatTy, expectedTy)
+                ctx.registerEquateObligation(bindingPatTy, expectedTy)
             }
         }
         bindingPatTy
@@ -372,7 +327,7 @@ private fun inferArithmeticBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: Inference
         }
 
         if (!typeErrorEncountered) {
-            ctx.addConstraint(leftExprTy, rightExprTy)
+            ctx.registerEquateObligation(leftExprTy, rightExprTy)
         }
     }
     return if (typeErrorEncountered) TyUnknown else leftExprTy
@@ -391,7 +346,7 @@ private fun inferEqualityBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceCo
                 TypeError.IncompatibleArgumentsToBinaryExpr(binaryExpr, leftExprTy, rightExprTy, op)
             )
         } else {
-            ctx.addConstraint(leftExprTy, rightExprTy)
+            ctx.registerEquateObligation(leftExprTy, rightExprTy)
         }
     }
     return TyBool
@@ -415,7 +370,7 @@ private fun inferOrderingBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceCo
             typeErrorEncountered = true
         }
         if (!typeErrorEncountered) {
-            ctx.addConstraint(leftExprTy, rightExprTy)
+            ctx.registerEquateObligation(leftExprTy, rightExprTy)
         }
     }
 

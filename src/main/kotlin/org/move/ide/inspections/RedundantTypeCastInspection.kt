@@ -8,7 +8,7 @@ import org.move.lang.core.psi.MvCastExpr
 import org.move.lang.core.psi.MvVisitor
 import org.move.lang.core.psi.ext.endOffsetInParent
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.infer.inferExprTy
+import org.move.lang.core.types.infer.getInferenceType
 import org.move.lang.core.types.infer.inferenceContext
 import org.move.lang.core.types.ty.TyInteger
 import org.move.lang.core.types.ty.TyUnknown
@@ -19,10 +19,12 @@ class RedundantTypeCastInspection : MvLocalInspectionTool() {
             val msl = castExpr.isMsl()
             // TODO: different rules for msl, no need for any casts at all
             if (msl) return
+
             val inferenceCtx = castExpr.inferenceContext(msl)
 
             val objectExpr = castExpr.expr
-            val objectExprTy = inferExprTy(objectExpr, inferenceCtx)
+            val objectExprTy = objectExpr.getInferenceType(false)
+//            val objectExprTy = inferExprTy(objectExpr, inferenceCtx)
             if (objectExprTy is TyUnknown) return
 
             // cannot be redundant cast for untyped integer

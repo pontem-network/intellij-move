@@ -9,8 +9,7 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.address
-import org.move.lang.core.types.infer.inferExprTy
-import org.move.lang.core.types.infer.maybeInferenceContext
+import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
@@ -265,9 +264,10 @@ fun processLexicalDeclarations(
                 val receiverExpr = dotExpr.expr
 
                 val msl = receiverExpr.isMsl()
-                val inferenceCtx = receiverExpr.maybeInferenceContext(msl) ?: return false
+                val receiverTy = receiverExpr.inference(msl)?.getExprType(receiverExpr) ?: return false
+//                val inferenceCtx = receiverExpr.maybeInferenceContext(msl) ?: return false
 
-                val receiverTy = inferExprTy(receiverExpr, inferenceCtx)
+//                val receiverTy = inferExprTy(receiverExpr, inferenceCtx)
                 val innerTy = when (receiverTy) {
                     is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
                     is TyStruct -> receiverTy

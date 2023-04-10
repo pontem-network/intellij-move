@@ -52,7 +52,12 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                             val expectedCount = qualItem.typeParameters.size
                             if (expectedCount != realCount) {
                                 MvDiagnostic
-                                    .TypeArgumentsNumberMismatch(path, qualName.editorText(), expectedCount, realCount)
+                                    .TypeArgumentsNumberMismatch(
+                                        path,
+                                        qualName.editorText(),
+                                        expectedCount,
+                                        realCount
+                                    )
                                     .addToHolder(moveHolder)
                             }
                         }
@@ -63,7 +68,12 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                                 // if any type param is passed, inference is disabled, so check fully
                                 if (realCount != expectedCount) {
                                     MvDiagnostic
-                                        .TypeArgumentsNumberMismatch(path, qualName.editorText(), expectedCount, realCount)
+                                        .TypeArgumentsNumberMismatch(
+                                            path,
+                                            qualName.editorText(),
+                                            expectedCount,
+                                            realCount
+                                        )
                                         .addToHolder(moveHolder)
                                 }
                             }
@@ -74,7 +84,12 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                                 // if any type param is passed, inference is disabled, so check fully
                                 if (realCount != expectedCount) {
                                     MvDiagnostic
-                                        .TypeArgumentsNumberMismatch(path, qualName.editorText(), expectedCount, realCount)
+                                        .TypeArgumentsNumberMismatch(
+                                            path,
+                                            qualName.editorText(),
+                                            expectedCount,
+                                            realCount
+                                        )
                                         .addToHolder(moveHolder)
                                 }
                             } else {
@@ -93,7 +108,12 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                                 // if any type param is passed, inference is disabled, so check fully
                                 if (realCount != expectedCount) {
                                     MvDiagnostic
-                                        .TypeArgumentsNumberMismatch(path, qualName.editorText(), expectedCount, realCount)
+                                        .TypeArgumentsNumberMismatch(
+                                            path,
+                                            qualName.editorText(),
+                                            expectedCount,
+                                            realCount
+                                        )
                                         .addToHolder(moveHolder)
                                 }
                             } else {

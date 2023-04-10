@@ -21,11 +21,9 @@ import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.inferExpectedTy
-import org.move.lang.core.types.infer.itemContext
-import org.move.lang.core.types.infer.maybeInferenceContext
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnknown
 
 abstract class MvPathCompletionProvider : MvCompletionProvider() {
 
@@ -174,10 +172,12 @@ private fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement
             is MvPathType,
             is MvRefExpr,
             is MvDotExpr -> {
-                val inferenceCtx =
-                    (ancestor as MvElement).maybeInferenceContext(msl)
-                        ?: InferenceContext(msl, ancestor.itemContext(msl))
-                return inferExpectedTy(ancestor, inferenceCtx)
+                val inference = (ancestor as MvElement).inference(msl) ?: return TyUnknown
+
+//                val inferenceCtx =
+//                    (ancestor as MvElement).maybeInferenceContext(msl)
+//                        ?: InferenceContext(msl, ancestor.itemContext(msl))
+                return inferExpectedTy(ancestor, inference)
             }
         }
     }

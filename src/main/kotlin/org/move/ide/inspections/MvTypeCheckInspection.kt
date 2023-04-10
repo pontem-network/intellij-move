@@ -30,8 +30,10 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
 
             override fun visitFunction(o: MvFunction) {
                 val msl = o.isMsl()
+//                val inference = o.inference(msl)
                 val inferenceCtx = o.inferenceContext(msl)
                 inferenceCtx.typeErrors
+//                inference.typeErrors
                     .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MAIN) }
                     .forEach {
                         holder.registerTypeError(it)
