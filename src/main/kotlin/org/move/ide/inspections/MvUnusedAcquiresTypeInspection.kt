@@ -8,8 +8,9 @@ import org.move.ide.inspections.fixes.RemoveAcquiresFix
 import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.inferAcquiresTys
-import org.move.lang.core.types.infer.inferenceContext
+import org.move.lang.core.types.infer.inference
+import org.move.lang.core.types.infer.outerItemContext
+import org.move.lang.core.types.infer.rawType
 
 
 class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
@@ -28,11 +29,15 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val module = function.module ?: return
                 val codeBlock = function.codeBlock ?: return
 
-                val inferenceCtx = function.inferenceContext(false)
+                val itemContext = function.outerItemContext(false)
+                val inference = function.inference(false)
+
+//                val inferenceCtx = function.inferenceContext(false)
 
                 val acquiredTys = mutableSetOf<String>()
                 for (callExpr in codeBlock.descendantsOfType<MvCallExpr>()) {
-                    val callAcquiresTys = callExpr.inferAcquiresTys() ?: return
+                    val callAcquiresTys = inference.getAcquiredTypes(callExpr)
+//                    val callAcquiresTys = callExpr.inferAcquiresTys() ?: return
                     val acqTyNames = callAcquiresTys.map { it.fullnameNoArgs() }
                     acquiredTys.addAll(acqTyNames)
                 }
@@ -42,7 +47,7 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val pathTypes = o.pathTypeList
                 for ((i, pathType) in pathTypes.withIndex()) {
                     // check that this acquires is allowed in the context
-                    val ty = inferenceCtx.getTypeTy(pathType)
+                    val ty = itemContext.rawType(pathType)
                     if (!ty.canBeAcquiredInModule(module)) {
                         unusedAcquiresIndices.add(i)
                         continue

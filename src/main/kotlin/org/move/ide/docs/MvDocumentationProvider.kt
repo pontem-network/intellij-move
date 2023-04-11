@@ -166,8 +166,10 @@ private fun PsiElement.generateDocumentation(
     when (this) {
         is MvType -> {
             val msl = this.isMsl()
-            val inferenceCtx = this.maybeInferenceContext(msl) ?: InferenceContext.default(msl, this)
-            buffer += inferenceCtx.getTypeTy(this)
+            val itemContext = this.itemContext(msl)
+//            val inferenceCtx = this.maybeInferenceContext(msl) ?: InferenceContext.default(msl, this)
+//            buffer += inferenceCtx.getTypeTy(this)
+            buffer += itemContext.rawType(this)
                 .typeLabel(this)
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")

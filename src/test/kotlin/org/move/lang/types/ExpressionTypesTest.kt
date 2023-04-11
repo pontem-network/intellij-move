@@ -740,4 +740,40 @@ module 0x1::main {
     }
 }
     """)
+
+    fun `test binding inside if block`() = testExpr("""
+module 0x1::main {
+    fun main() {
+        if (true) {
+            let in = 1;
+            in;
+          //^ integer  
+        }
+    }
+}        
+    """)
+
+    fun `test binding inside else block`() = testExpr("""
+module 0x1::main {
+    fun main() {
+        if (true) {} else {
+            let in = 1;
+            in;
+          //^ integer  
+        }
+    }
+}        
+    """)
+
+    fun `test binding inside code block`() = testExpr("""
+module 0x1::main {
+    fun main() {
+        let b = {
+            let in = 1;
+            in;
+          //^ integer  
+        };
+    }
+}        
+    """)
 }

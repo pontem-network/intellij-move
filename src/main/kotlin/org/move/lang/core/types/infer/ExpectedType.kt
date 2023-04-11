@@ -72,26 +72,26 @@ fun inferExpectedTy(element: PsiElement, inference: InferenceResult): Ty? {
 //////                ?.getOrNull(paramIndex)
 //                }
 
-        is MvInitializer -> {
-            val initializerParent = owner.parent
-            when (initializerParent) {
-                is MvLetStmt -> {
-//                    val explicitTy =
-//                        initializerParent.typeAnnotation?.type?.let { parentCtx.getTypeTy(it) }
-                    initializerParent.pat?.let { inference.getPatType(it) }
-//                        ?.let { inferPatTy(it, parentCtx, explicitTy) }
-                }
-                else -> null
-            }
-        }
-        is MvStructLitField -> {
-            // only first level field for now, rewrite later as recursive
-            val structLitExpr = owner.structLitExpr
-//            val structExpectedTy = inferExpectedTy(structLitExpr, inference)
-            val structTy = inference.getExprType(structLitExpr) as? TyStruct ?: return null
-//            val structTy = inferExprTy(structLitExpr, parentCtx, structExpectedTy) as? TyStruct ?: return null
-            structTy.fieldTy(owner.referenceName)
-        }
+//        is MvInitializer -> {
+//            val initializerParent = owner.parent
+//            when (initializerParent) {
+//                is MvLetStmt -> {
+////                    val explicitTy =
+////                        initializerParent.typeAnnotation?.type?.let { parentCtx.getTypeTy(it) }
+//                    initializerParent.pat?.let { inference.getPatType(it) }
+////                        ?.let { inferPatTy(it, parentCtx, explicitTy) }
+//                }
+//                else -> null
+//            }
+//        }
+//        is MvStructLitField -> {
+//            // only first level field for now, rewrite later as recursive
+//            val structLitExpr = owner.structLitExpr
+////            val structExpectedTy = inferExpectedTy(structLitExpr, inference)
+//            val structTy = inference.getExprType(structLitExpr) as? TyStruct ?: return null
+////            val structTy = inferExprTy(structLitExpr, parentCtx, structExpectedTy) as? TyStruct ?: return null
+//            structTy.fieldTy(owner.referenceName)
+//        }
         else -> if (element is MvExpr) inference.getExpectedType(element) else null
     }
 //    return when (element) {

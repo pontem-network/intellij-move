@@ -15,6 +15,10 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
+import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnit
+import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.Icon
 
 enum class FunctionVisibility {
@@ -108,6 +112,23 @@ fun MvFunction.outerItemSpecs(): List<MvItemSpec> {
 }
 
 val MvFunction.transactionParameters: List<MvFunctionParameter> get() = this.parameters.drop(1)
+
+//fun MvFunctionLike.type(msl: Boolean): TyFunction {
+//    val paramTypes = mutableListOf<Ty>()
+//
+////        val self = selfParameter
+////        if (self != null) {
+////            paramTypes += self.typeOfValue
+////        }
+//
+//    paramTypes += parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
+//    return TyFunction(paramTypes, rawReturnType(msl))
+//}
+
+fun MvFunctionLike.rawReturnType(msl: Boolean): Ty {
+    val retType = returnType ?: return TyUnit
+    return retType.type?.loweredType(msl) ?: TyUnknown
+}
 
 abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
                                  MvFunction {

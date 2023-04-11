@@ -143,8 +143,8 @@ private fun render(
         is TyStruct -> {
             val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
             val args =
-                if (ty.typeArgs.isEmpty()) ""
-                else ty.typeArgs.joinToString(", ", "<", ">", transform = r)
+                if (ty.typeArguments.isEmpty()) ""
+                else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
             name + args
         }
         is TyInfer -> when (ty) {

@@ -66,10 +66,12 @@ fun Map<TyTypeParameter, Ty>.toTypeSubst(): Substitution = Substitution(typeSubs
  */
 fun <T : TypeFoldable<T>> TypeFoldable<T>.substitute(subst: Substitution): T =
     foldWith(object : TypeFolder() {
-        override fun fold(ty: Ty): Ty = when {
-            ty is TyTypeParameter -> subst[ty] ?: ty
-            ty.needsSubst -> ty.innerFoldWith(this)
-            else -> ty
+        override fun fold(ty: Ty): Ty {
+            return when {
+                ty is TyTypeParameter -> subst[ty] ?: ty
+                ty.needsSubst -> ty.innerFoldWith(this)
+                else -> ty
+            }
         }
     })
 

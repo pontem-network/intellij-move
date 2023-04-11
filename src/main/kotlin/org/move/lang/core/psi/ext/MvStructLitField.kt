@@ -2,9 +2,7 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvElementImpl
-import org.move.lang.core.psi.MvStructLitExpr
-import org.move.lang.core.psi.MvStructLitField
+import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvReference
 import org.move.lang.core.resolve.ref.MvStructFieldReferenceImpl
 import org.move.lang.core.resolve.ref.MvStructLitShorthandFieldReferenceImpl
@@ -14,6 +12,12 @@ val MvStructLitField.structLitExpr: MvStructLitExpr
 
 val MvStructLitField.isShorthand: Boolean
     get() = !hasChild(MvElementTypes.COLON)
+
+inline fun <reified T : MvElement> MvStructLitField.resolveToElement(): T? =
+    reference.multiResolve().filterIsInstance<T>().singleOrNull()
+
+fun MvStructLitField.resolveToDeclaration(): MvStructField? = resolveToElement()
+fun MvStructLitField.resolveToBinding(): MvBindingPat? = resolveToElement()
 
 abstract class MvStructLitFieldMixin(node: ASTNode) : MvElementImpl(node),
                                                       MvStructLitField {

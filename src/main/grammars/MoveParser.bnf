@@ -920,6 +920,9 @@ VectorLitItems ::= '[' <<comma_sep_items Expr>>? ']'
 
 private StructOrSchemaLitExpr ::= StructLitExpr | SchemaLitExpr
 StructLitExpr ::= <<checkStructAllowed>> Path StructLitFieldsBlock
+{
+    implements = ["org.move.lang.core.psi.ext.PathExpr"]
+}
 StructLitFieldsBlock ::= '{' StructLitField_with_recover* '}' { pin = 1 }
 
 private StructLitField_with_recover ::= !'}' StructLitField (',' | &'}')
@@ -956,7 +959,10 @@ LitExpr ::= HEX_INTEGER_LITERAL
                 | AddressLit
 AddressLit ::= '@' AddressRef { pin = 1 }
 
-CallExpr ::= (Path &'(') ValueArgumentList { pin = 1 }
+CallExpr ::= (Path &'(') ValueArgumentList {
+    pin = 1
+    implements = ["org.move.lang.core.psi.ext.PathExpr"]
+}
 ValueArgumentList ::= '(' ValueArgumentList_items? ')' { pin = 1 }
 private ValueArgumentList_items ::= <<comma_sep_items ValueArgument>>
 {
@@ -993,7 +999,9 @@ IndexExpr ::= Expr IndexArg
 // Do not inline this rule, it breaks expression parsing
 private IndexArg ::= '[' Expr ']'
 
-RefExpr ::= Path !'{'
+RefExpr ::= Path !'{' {
+    implements = ["org.move.lang.core.psi.ext.PathExpr"]
+}
 
 //private Path ::= QualPath | LocalPath
 //fake Path ::= (ModuleRef '::')? IDENTIFIER? TypeArgumentList?

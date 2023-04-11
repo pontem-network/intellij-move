@@ -4,7 +4,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
 
-fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = null): Ty {
+fun inferExprTyOld(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = null): Ty {
     val existingTy = parentCtx.exprTypes[expr]
     if (existingTy != null) {
         return existingTy
@@ -19,7 +19,7 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         }
         is MvMacroCallExpr -> {
             for (argumentExpr in expr.callArgumentExprs) {
-                inferExprTy(argumentExpr, parentCtx)
+                inferExprTyOld(argumentExpr, parentCtx)
             }
             TyUnknown
         }
@@ -31,15 +31,15 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
         is MvLitExpr -> inferLitExprTy(expr, parentCtx)
         is MvTupleLitExpr -> inferTupleLitExprTy(expr, parentCtx)
 
-        is MvMoveExpr -> expr.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
-        is MvCopyExpr -> expr.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
+        is MvMoveExpr -> expr.expr?.let { inferExprTyOld(it, parentCtx) } ?: TyUnknown
+        is MvCopyExpr -> expr.expr?.let { inferExprTyOld(it, parentCtx) } ?: TyUnknown
 
         is MvCastExpr -> parentCtx.getTypeTy(expr.type)
-        is MvParensExpr -> expr.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
+        is MvParensExpr -> expr.expr?.let { inferExprTyOld(it, parentCtx) } ?: TyUnknown
 
         is MvBinaryExpr -> inferBinaryExprTy(expr, parentCtx)
         is MvBangExpr -> {
-            expr.expr?.let { inferExprTy(it, parentCtx, TyBool) }
+            expr.expr?.let { inferExprTyOld(it, parentCtx, TyBool) }
             TyBool
         }
 
@@ -51,15 +51,15 @@ fun inferExprTy(expr: MvExpr, parentCtx: InferenceContext, expectedTy: Ty? = nul
                 (itemContext.getItemTy(it) as? TyFunction)?.retType
             }
 //            val fnReturnTy = expr.containingFunction?.returnTypeTy(itemContext)
-            expr.expr?.let { inferExprTy(it, parentCtx, fnReturnTy) }
+            expr.expr?.let { inferExprTyOld(it, parentCtx, fnReturnTy) }
             TyNever
         }
         is MvCodeBlockExpr -> {
             inferCodeBlockTy(expr.codeBlock, parentCtx.childContext(), expectedTy)
         }
         is MvAssignmentExpr -> {
-            val lhsExprTy = inferExprTy(expr.expr, parentCtx, null)
-            expr.initializer.expr?.let { inferExprTy(it, parentCtx, lhsExprTy) }
+            val lhsExprTy = inferExprTyOld(expr.expr, parentCtx, null)
+            expr.initializer.expr?.let { inferExprTyOld(it, parentCtx, lhsExprTy) }
             TyUnit
         }
         else -> TyUnknown
@@ -101,7 +101,7 @@ private fun inferRefExprTy(refExpr: MvRefExpr, ctx: InferenceContext): Ty {
 
 private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext): Ty {
     val innerExpr = borrowExpr.expr ?: return TyUnknown
-    val innerExprTy = inferExprTy(innerExpr, ctx)
+    val innerExprTy = inferExprTyOld(innerExpr, ctx)
     val mutabilities = RefPermissions.valueOf(borrowExpr.isMut)
     return TyReference(innerExprTy, mutabilities, ctx.msl)
 }
@@ -154,7 +154,7 @@ private fun inferCallExprTy(
         funcTy = inferenceCtx.resolveTy(funcTy) as TyFunction
 
         val paramTy = funcTy.paramTypes.getOrNull(i) ?: break
-        val argumentExprTy = inferExprTy(argumentExpr, parentCtx, paramTy)
+        val argumentExprTy = inferExprTyOld(argumentExpr, parentCtx, paramTy)
         inferenceCtx.registerEquateObligation(paramTy, argumentExprTy)
     }
     if (expectedTy != null) {
@@ -169,7 +169,7 @@ private fun inferCallExprTy(
 }
 
 fun inferDotExprStructTy(dotExpr: MvDotExpr, parentCtx: InferenceContext): TyStruct? {
-    val objectTy = inferExprTy(dotExpr.expr, parentCtx)
+    val objectTy = inferExprTyOld(dotExpr.expr, parentCtx)
     return when (objectTy) {
         is TyReference -> objectTy.referenced as? TyStruct
         is TyStruct -> objectTy
@@ -248,7 +248,7 @@ fun inferVectorLitExpr(litExpr: MvVectorLitExpr, parentCtx: InferenceContext): T
         inferenceCtx.processConstraints()
         tyVector = inferenceCtx.resolveTy(tyVector) as TyVector
 
-        val exprTy = inferExprTy(expr, parentCtx, tyVector.item)
+        val exprTy = inferExprTyOld(expr, parentCtx, tyVector.item)
         inferenceCtx.registerEquateObligation(tyVector.item, exprTy)
     }
     inferenceCtx.processConstraints()
@@ -278,7 +278,7 @@ fun inferLitFieldInitExprTy(
         bindingPatTy
     } else {
         // find type of expression
-        inferExprTy(initExpr, ctx, expectedTy)
+        inferExprTyOld(initExpr, ctx, expectedTy)
     }
 }
 
@@ -299,13 +299,13 @@ private fun inferArithmeticBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: Inference
     val op = binaryExpr.binaryOp.op
 
     var typeErrorEncountered = false
-    val leftExprTy = inferExprTy(leftExpr, ctx)
+    val leftExprTy = inferExprTyOld(leftExpr, ctx)
     if (!leftExprTy.supportsArithmeticOp()) {
         ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(leftExpr, leftExprTy, op))
         typeErrorEncountered = true
     }
     if (rightExpr != null) {
-        val rightExprTy = inferExprTy(rightExpr, ctx)
+        val rightExprTy = inferExprTyOld(rightExpr, ctx)
         if (!rightExprTy.supportsArithmeticOp()) {
             ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(rightExpr, rightExprTy, op))
             typeErrorEncountered = true
@@ -339,8 +339,8 @@ private fun inferEqualityBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceCo
     val op = binaryExpr.binaryOp.op
 
     if (rightExpr != null) {
-        val leftExprTy = inferExprTy(leftExpr, ctx)
-        val rightExprTy = inferExprTy(rightExpr, ctx)
+        val leftExprTy = inferExprTyOld(leftExpr, ctx)
+        val rightExprTy = inferExprTyOld(rightExpr, ctx)
         if (!isCompatible(leftExprTy, rightExprTy)) {
             ctx.typeErrors.add(
                 TypeError.IncompatibleArgumentsToBinaryExpr(binaryExpr, leftExprTy, rightExprTy, op)
@@ -358,13 +358,13 @@ private fun inferOrderingBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceCo
     val op = binaryExpr.binaryOp.op
 
     var typeErrorEncountered = false
-    val leftExprTy = inferExprTy(leftExpr, ctx)
+    val leftExprTy = inferExprTyOld(leftExpr, ctx)
     if (!leftExprTy.supportsOrdering()) {
         ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(leftExpr, leftExprTy, op))
         typeErrorEncountered = true
     }
     if (rightExpr != null) {
-        val rightExprTy = inferExprTy(rightExpr, ctx)
+        val rightExprTy = inferExprTyOld(rightExpr, ctx)
         if (!rightExprTy.supportsOrdering()) {
             ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(rightExpr, rightExprTy, op))
             typeErrorEncountered = true
@@ -381,9 +381,9 @@ private fun inferLogicBinaryExprTy(binaryExpr: MvBinaryExpr, ctx: InferenceConte
     val leftExpr = binaryExpr.left
     val rightExpr = binaryExpr.right
 
-    inferExprTy(leftExpr, ctx, TyBool)
+    inferExprTyOld(leftExpr, ctx, TyBool)
     if (rightExpr != null) {
-        inferExprTy(rightExpr, ctx, TyBool)
+        inferExprTyOld(rightExpr, ctx, TyBool)
     }
 
     return TyBool
@@ -407,12 +407,12 @@ private fun Ty.supportsOrdering(): Boolean {
 
 private fun inferDerefExprTy(derefExpr: MvDerefExpr, ctx: InferenceContext): Ty {
     val exprTy =
-        derefExpr.expr?.let { inferExprTy(it, ctx) }
+        derefExpr.expr?.let { inferExprTyOld(it, ctx) }
     return (exprTy as? TyReference)?.referenced ?: TyUnknown
 }
 
 private fun inferTupleLitExprTy(tupleExpr: MvTupleLitExpr, ctx: InferenceContext): Ty {
-    val types = tupleExpr.exprList.map { inferExprTy(it, ctx) }
+    val types = tupleExpr.exprList.map { inferExprTyOld(it, ctx) }
     return TyTuple(types)
 }
 
@@ -436,7 +436,7 @@ private fun inferLitExprTy(litExpr: MvLitExpr, ctx: InferenceContext): Ty {
 private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext, expectedTy: Ty?): Ty {
     val conditionExpr = ifExpr.condition?.expr
     if (conditionExpr != null) {
-        inferExprTy(conditionExpr, ctx, TyBool)
+        inferExprTyOld(conditionExpr, ctx, TyBool)
     }
 
     val ifCodeBlock = ifExpr.codeBlock
@@ -447,7 +447,7 @@ private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext, expectedTy: T
             inferCodeBlockTy(ifCodeBlock, blockCtx, expectedTy)
         }
         ifInlineBlockExpr != null -> {
-            inferExprTy(ifInlineBlockExpr, ctx, expectedTy)
+            inferExprTyOld(ifInlineBlockExpr, ctx, expectedTy)
         }
         else -> return TyUnknown
     }
@@ -461,7 +461,7 @@ private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext, expectedTy: T
             inferCodeBlockTy(elseCodeBlock, blockCtx, expectedTy)
         }
         elseInlineBlockExpr != null -> {
-            inferExprTy(elseInlineBlockExpr, ctx, expectedTy)
+            inferExprTyOld(elseInlineBlockExpr, ctx, expectedTy)
         }
         else -> return TyUnknown
     }
@@ -479,7 +479,7 @@ private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext, expectedTy: T
 private fun inferWhileExpr(whileExpr: MvWhileExpr, ctx: InferenceContext): Ty {
     val conditionExpr = whileExpr.condition?.expr
     if (conditionExpr != null) {
-        inferExprTy(conditionExpr, ctx, TyBool)
+        inferExprTyOld(conditionExpr, ctx, TyBool)
     }
     val codeBlock = whileExpr.codeBlock
     val inlineBlockExpr = whileExpr.inlineBlock?.expr
@@ -488,7 +488,7 @@ private fun inferWhileExpr(whileExpr: MvWhileExpr, ctx: InferenceContext): Ty {
             val blockCtx = ctx.childContext()
             inferCodeBlockTy(codeBlock, blockCtx, TyUnit)
         }
-        inlineBlockExpr != null -> inferExprTy(inlineBlockExpr, ctx, TyUnit)
+        inlineBlockExpr != null -> inferExprTyOld(inlineBlockExpr, ctx, TyUnit)
     }
     return TyUnit
 }
@@ -501,7 +501,7 @@ private fun inferLoopExpr(loopExpr: MvLoopExpr, ctx: InferenceContext): Ty {
             val blockCtx = ctx.childContext()
             inferCodeBlockTy(codeBlock, blockCtx, TyUnit)
         }
-        inlineBlockExpr != null -> inferExprTy(inlineBlockExpr, ctx, TyUnit)
+        inlineBlockExpr != null -> inferExprTyOld(inlineBlockExpr, ctx, TyUnit)
     }
     return TyNever
 }

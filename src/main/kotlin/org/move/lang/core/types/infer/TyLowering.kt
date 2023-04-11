@@ -1,0 +1,115 @@
+package org.move.lang.core.types.infer
+
+import org.move.ide.annotator.INTEGER_TYPE_IDENTIFIERS
+import org.move.ide.annotator.SPEC_INTEGER_TYPE_IDENTIFIERS
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.mutable
+import org.move.lang.core.psi.ext.paramTypes
+import org.move.lang.core.psi.ext.returnType
+import org.move.lang.core.psi.ext.typeArguments
+import org.move.lang.core.types.ty.*
+
+fun MvType.loweredType(msl: Boolean): Ty = TyLowering.lowerType(this, msl)
+
+class TyLowering {
+    fun lowerTy(moveType: MvType, msl: Boolean): Ty {
+        return when (moveType) {
+            is MvPathType -> {
+                val namedItem = moveType.path.reference?.resolveWithAliases()
+                if (namedItem == null) {
+                    return lowerPrimitiveTy(moveType, msl)
+                }
+//                val subst = emptySubstitution
+                val (_, subst) = instantiatePathGenerics(moveType.path, namedItem, msl)
+                when (namedItem) {
+                    is MvStruct -> {
+                        TyUnknown
+                    }
+                    else -> TyUnknown
+                }
+            }
+            is MvRefType -> {
+                val mutabilities = RefPermissions.valueOf(moveType.mutable)
+                val refInnerType = moveType.type
+                    ?: return TyReference(TyUnknown, mutabilities, msl)
+                val innerTy = lowerTy(refInnerType, msl)
+                TyReference(innerTy, mutabilities, msl)
+            }
+            is MvTupleType -> {
+                val innerTypes = moveType.typeList.map { lowerTy(it, msl) }
+                TyTuple(innerTypes)
+            }
+            is MvUnitType -> TyUnit
+            is MvParensType -> lowerTy(moveType.type, msl)
+            is MvLambdaType -> {
+                val paramTys = moveType.paramTypes.map { lowerTy(it, msl) }
+                val returnType = moveType.returnType
+                val retTy = if (returnType == null) {
+                    TyUnit
+                } else {
+                    lowerTy(returnType, msl)
+                }
+                TyLambda(paramTys, retTy)
+            }
+            else -> TyUnknown
+        }
+    }
+
+    private fun lowerPrimitiveTy(pathType: MvPathType, msl: Boolean): Ty {
+        val refName = pathType.path.referenceName ?: return TyUnknown
+        if (msl && refName in SPEC_INTEGER_TYPE_IDENTIFIERS) return TyInteger.fromName("num")
+
+        val ty = when (refName) {
+            in INTEGER_TYPE_IDENTIFIERS -> TyInteger.fromName(refName)
+            "bool" -> TyBool
+            "address" -> TyAddress
+            "signer" -> TySigner
+            "vector" -> {
+                val argType = pathType.path.typeArguments.firstOrNull()?.type
+                val itemTy = argType?.let { lowerTy(it, msl) } ?: TyUnknown
+                return TyVector(itemTy)
+            }
+            else -> TyUnknown
+        }
+        return ty
+    }
+
+    private fun <T : MvElement> instantiatePathGenerics(
+        path: MvPath,
+        namedItem: T,
+//        subst: Substitution,
+        msl: Boolean
+    ): BoundElement<T> {
+        if (namedItem !is MvTypeParametersOwner) return BoundElement(namedItem)
+
+        val psiSubstitution = pathPsiSubst(path, namedItem)
+
+        val typeSubst = hashMapOf<TyTypeParameter, Ty>()
+        for ((param, value) in psiSubstitution.typeSubst.entries) {
+            val paramTy = TyTypeParameter(param)
+            val valueTy = when (value) {
+                is RsPsiSubstitution.Value.Present -> lowerTy(value.value, msl)
+                is RsPsiSubstitution.Value.OptionalAbsent -> paramTy
+                is RsPsiSubstitution.Value.RequiredAbsent -> TyUnknown
+            }
+            typeSubst[paramTy] = valueTy
+        }
+        val newSubst = Substitution(typeSubst)
+        return BoundElement(namedItem, newSubst)
+    }
+
+    companion object {
+        fun lowerType(type: MvType, msl: Boolean): Ty {
+            return TyLowering().lowerTy(type, msl)
+        }
+
+        fun <T : MvElement> lowerPathGenerics(
+            path: MvPath,
+            element: T,
+//            subst: Substitution,
+            msl: Boolean
+        ): BoundElement<T> {
+            return TyLowering().instantiatePathGenerics(path, element, msl)
+        }
+    }
+}

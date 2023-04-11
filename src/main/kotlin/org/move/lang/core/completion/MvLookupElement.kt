@@ -3,7 +3,7 @@ package org.move.lang.core.completion
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementDecorator
 import org.move.lang.core.psi.*
-import org.move.lang.core.types.infer.inferenceContext
+import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.infer.outerItemContext
 import org.move.lang.core.types.ty.TyFunction
@@ -77,8 +77,11 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
                 element.outerItemContext(msl).getConstTy(element)
             }
             is MvBindingPat -> {
-                val inferenceCtx = element.inferenceContext(msl)
-                inferenceCtx.getBindingPatTy(element)
+                val inference = element.inference(msl)
+                inference?.getPatType(element) ?: TyUnknown
+//                inference.getPatType(element)
+//                val inferenceCtx = element.inferenceContext(msl)
+//                inferenceCtx.getBindingPatTy(element)
             }
 //            is MvBindingPat -> this.inferBindingTy(ctx, itemContext)
             else -> TyUnknown

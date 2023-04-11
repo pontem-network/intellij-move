@@ -1,8 +1,6 @@
 package org.move.lang.core.types.ty
 
-import org.move.lang.core.types.infer.TypeFoldable
-import org.move.lang.core.types.infer.TypeFolder
-import org.move.lang.core.types.infer.TypeVisitor
+import org.move.lang.core.types.infer.*
 
 enum class Ability {
     DROP, COPY, STORE, KEY;
@@ -46,7 +44,7 @@ interface Ty : TypeFoldable<Ty> {
     /**
      * Bindings between formal type parameters and actual type arguments.
      */
-//    val tyInferValues: Substitution get() = emptySubstitution
+    open val typeParameterValues: Substitution get() = emptySubstitution
 
     /**
      * User visible string representation of a type

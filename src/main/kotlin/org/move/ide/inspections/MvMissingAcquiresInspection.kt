@@ -9,8 +9,8 @@ import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.ide.presentation.nameNoArgs
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.inferAcquiresTys
 import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.itemContext
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
@@ -32,7 +32,9 @@ class MvMissingAcquiresInspection : MvLocalInspectionTool() {
                     .acquiresTypes
                     .map { it.fullnameNoArgs() }
 
-                val acquiresTys = callExpr.inferAcquiresTys() ?: return
+                val inference = function.inference(msl)
+                val acquiresTys = inference.getAcquiredTypes(callExpr)
+//                val acquiresTys = callExpr.inferAcquiresTys() ?: return
                 val missingTys = acquiresTys
                     .filter { it.fullnameNoArgs() !in declaredTyFullnames }
                     .filter { it !is TyUnknown }

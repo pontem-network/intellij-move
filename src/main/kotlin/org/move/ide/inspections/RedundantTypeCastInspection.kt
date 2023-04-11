@@ -8,8 +8,7 @@ import org.move.lang.core.psi.MvCastExpr
 import org.move.lang.core.psi.MvVisitor
 import org.move.lang.core.psi.ext.endOffsetInParent
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.infer.getInferenceType
-import org.move.lang.core.types.infer.inferenceContext
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.TyInteger
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -20,17 +19,20 @@ class RedundantTypeCastInspection : MvLocalInspectionTool() {
             // TODO: different rules for msl, no need for any casts at all
             if (msl) return
 
-            val inferenceCtx = castExpr.inferenceContext(msl)
+            val itemContext = castExpr.itemContext(msl)
+//            val inferenceCtx = castExpr.inferenceContext(msl)
 
-            val objectExpr = castExpr.expr
-            val objectExprTy = objectExpr.getInferenceType(false)
+            val inference = castExpr.inference(msl) ?: return
+
+//            val objectExpr = castExpr.expr
+            val objectExprTy = inference.getExprType(castExpr.expr)
 //            val objectExprTy = inferExprTy(objectExpr, inferenceCtx)
             if (objectExprTy is TyUnknown) return
 
             // cannot be redundant cast for untyped integer
             if (objectExprTy is TyInteger && (objectExprTy.kind == TyInteger.DEFAULT_KIND)) return
 
-            val castTypeTy = inferenceCtx.getTypeTy(castExpr.type)
+            val castTypeTy = itemContext.rawType(castExpr.type)
             if (castTypeTy is TyUnknown) return
 
             if (objectExprTy == castTypeTy) {

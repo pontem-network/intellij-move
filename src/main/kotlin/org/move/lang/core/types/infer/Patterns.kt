@@ -162,7 +162,7 @@ fun inferBindingPatTy(bindingPat: MvBindingPat, parentCtx: InferenceContext): Ty
                 collectBindings(pat, explicitTy, parentCtx)
                 return parentCtx.bindingTypes[bindingPat] ?: TyUnknown
             }
-            val inferredTy = owner.initializer?.expr?.let { inferExprTy(it, parentCtx) } ?: TyUnknown
+            val inferredTy = owner.initializer?.expr?.let { inferExprTyOld(it, parentCtx) } ?: TyUnknown
             collectBindings(pat, inferredTy, parentCtx)
             return parentCtx.bindingTypes[bindingPat] ?: TyUnknown
         }

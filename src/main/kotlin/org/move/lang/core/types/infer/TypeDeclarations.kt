@@ -10,6 +10,8 @@ import org.move.lang.core.psi.ext.returnType
 import org.move.lang.core.psi.ext.typeArguments
 import org.move.lang.core.types.ty.*
 
+fun ItemContext.rawType(moveType: MvType): Ty = inferItemTypeTy(moveType, this)
+
 fun inferItemTypeTy(moveType: MvType, itemContext: ItemContext): Ty {
     return when (moveType) {
         is MvPathType -> {
