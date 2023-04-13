@@ -18,7 +18,7 @@ val MvStruct.fields: List<MvStructField>
 
 val MvStruct.fieldsMap: Map<String, MvStructField>
     get() {
-        return fields.associateBy { it.identifier.text }
+        return fields.associateBy { it.name }
     }
 
 val MvStruct.fieldNames: List<String> get() = fields.map { it.name }

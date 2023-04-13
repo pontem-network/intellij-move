@@ -3,10 +3,7 @@ package org.move.lang.core.types.infer
 import org.move.ide.presentation.fullname
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyStruct
-import org.move.lang.core.types.ty.TyTuple
-import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.types.ty.*
 
 fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext) {
     fun bind(pat: MvPat, ty: Ty) {
@@ -28,11 +25,11 @@ fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext)
                 when (patTy) {
                     is TyStruct -> {
                         when {
-                            ty is TyUnknown -> pat.fields.map {
+                            ty is TyUnknown -> pat.patFields.map {
                                 it.pat?.let { pat -> bind(pat, TyUnknown) }
                             }
-                            ty is TyStruct && pat.fields.size == ty.fieldTys.size -> {
-                                for (field in pat.fields) {
+                            ty is TyStruct && pat.patFields.size == ty.fieldTys.size -> {
+                                for (field in pat.patFields) {
                                     val fieldTy = ty.fieldTy(field.referenceName)
                                     field.pat?.let { bind(it, fieldTy) }
                                 }
@@ -40,19 +37,19 @@ fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext)
                         }
                     }
                     is TyUnknown -> {
-                        pat.fields.map {
+                        pat.patFields.map {
                             it.pat?.let { pat -> bind(pat, TyUnknown) }
                         }
                     }
                     else -> error("unreachable with type ${patTy.fullname()}")
                 }
-                if (ty is TyStruct && pat.fields.size == ty.fieldTys.size) {
-                    for (field in pat.fields) {
+                if (ty is TyStruct && pat.patFields.size == ty.fieldTys.size) {
+                    for (field in pat.patFields) {
                         val fieldTy = ty.fieldTy(field.referenceName)
                         field.pat?.let { bind(it, fieldTy) }
                     }
                 } else {
-                    pat.fields.map {
+                    pat.patFields.map {
                         it.pat?.let { pat -> bind(pat, TyUnknown) }
                     }
                 }
@@ -60,6 +57,38 @@ fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext)
         }
     }
     bind(pattern, inferredTy)
+}
+
+fun MvPat.extractBindings(fctx: TypeInferenceWalker, ty: Ty) {
+    when (this) {
+        is MvBindingPat -> {
+            fctx.ctx.patTypes[this] = ty
+        }
+        is MvStructPat -> {
+            val structItem = this.structItem ?: (ty as? TyStruct2)?.item ?: return
+
+            val structFields = structItem.fields.associateBy { it.name }
+            for (patField in this.patFields) {
+                val kind = patField.kind
+                val fieldType = structFields[kind.fieldName]
+                    ?.type
+                    ?.loweredType(fctx.msl)
+                    ?.substituteOrUnknown(ty.typeParameterValues)
+                    ?: TyUnknown
+                when (kind) {
+                    is PatFieldKind.Full -> kind.pat.extractBindings(fctx, fieldType)
+                    is PatFieldKind.Shorthand -> fctx.ctx.writePatTy(kind.binding, fieldType)
+                }
+            }
+        }
+        is MvTuplePat -> {
+            val types = (ty as? TyTuple)?.types.orEmpty()
+            for ((idx, p) in patList.withIndex()) {
+                val patType = types.getOrNull(idx) ?: TyUnknown
+                p.extractBindings(fctx, patType)
+            }
+        }
+    }
 }
 
 fun inferPatTy(pat: MvPat, parentCtx: InferenceContext, expectedTy: Ty? = null): Ty {
@@ -103,7 +132,7 @@ fun inferPatTy(pat: MvPat, parentCtx: InferenceContext, expectedTy: Ty? = null):
 
 fun inferStructPatTy(structPat: MvStructPat, parentCtx: InferenceContext, expectedTy: Ty?): Ty {
     val path = structPat.path
-    val structItem = structPat.struct ?: return TyUnknown
+    val structItem = structPat.structItem ?: return TyUnknown
 
     val structTy = structItem.outerItemContext(parentCtx.msl).getStructItemTy(structItem)
         ?: return TyUnknown

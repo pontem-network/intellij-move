@@ -8,7 +8,7 @@ import org.move.ide.presentation.name
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.module
-import org.move.lang.core.psi.ext.struct
+import org.move.lang.core.psi.ext.structItem
 import org.move.lang.core.psi.ext.tyAbilities
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.TyStruct
@@ -50,10 +50,10 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitStructField(field: MvStructField) {
-                val structAbilities = field.struct.tyAbilities
+                val structAbilities = field.structItem.tyAbilities
                 if (structAbilities.isEmpty()) return
 
-                val itemContext = field.struct.module.itemContext(false)
+                val itemContext = field.structItem.module.itemContext(false)
                 val fieldTy = itemContext.getStructFieldItemTy(field)
                     // explicit generic type of field has all abilities available
                     .foldTyInferWith { TyUnknown }
@@ -65,7 +65,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
                         val message =
                             "The type '${fieldTy.name()}' does not have the ability '${requiredAbility.label()}' " +
                                     "required by the declared ability '${ability.label()}' " +
-                                    "of the struct '${TyStruct(field.struct, listOf(), mapOf(), listOf()).name()}'"
+                                    "of the struct '${TyStruct(field.structItem, listOf(), mapOf(), listOf()).name()}'"
                         holder.registerTypeError(field, message)
                         return
                     }

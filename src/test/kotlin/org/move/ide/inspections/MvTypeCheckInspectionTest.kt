@@ -1255,4 +1255,15 @@ module 0x1::pool {
     }
 }        
     """)
+
+    fun `test no error for nested struct literal and explicit type`() = checkByText("""
+    module 0x1::M {
+        struct Option<Element> { element: Element } 
+        struct S { id: Option<u64> }
+
+        fun m() {
+            S { id: Option { element: 1u64 } };
+        }
+    }    
+    """)
 }

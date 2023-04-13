@@ -8,7 +8,7 @@ package org.move.lang.core.types.ty
 import org.move.ide.presentation.tyToString
 
 
-object TyUnknown : Ty {
+object TyUnknown : Ty() {
     override fun abilities() = Ability.all()
     override fun toString(): String = tyToString(this)
 }

@@ -4,7 +4,7 @@ import com.intellij.psi.PsiElement
 import org.move.ide.presentation.tyToString
 
 
-abstract class TyPrimitive(val name: String) : Ty {
+abstract class TyPrimitive(val name: String) : Ty() {
     override fun abilities() = setOf(Ability.DROP, Ability.COPY, Ability.STORE)
 }
 

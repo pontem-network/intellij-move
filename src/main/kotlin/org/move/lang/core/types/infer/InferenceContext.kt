@@ -171,14 +171,13 @@ fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean 
 }
 
 /// find common denominator for both types
-fun combineTys(ty1: Ty, ty2: Ty, msl: Boolean): Ty {
+fun intersectTypes(ty1: Ty, ty2: Ty, msl: Boolean): Ty {
     return when {
         ty1 is TyReference && ty2 is TyReference
                 && isCompatible(ty1.referenced, ty2.referenced, msl) -> {
             val combined = ty1.permissions.intersect(ty2.permissions)
             TyReference(ty1.referenced, combined, ty1.msl || ty2.msl)
         }
-
         else -> ty1
     }
 }
@@ -416,7 +415,10 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
 
     fun infer(owner: MvInferenceContextOwner, msl: Boolean): InferenceResult {
         val returnTy = when (owner) {
-            is MvFunctionLike -> (itemContext.getItemTy(owner) as? TyFunction)?.retType ?: TyUnknown
+            is MvFunctionLike -> {
+                (itemContext.getItemTy(owner) as? TyFunction)?.retType ?: TyUnknown
+            }
+//            is MvFunctionLike -> (itemContext.getItemTy(owner) as? TyFunction)?.retType ?: TyUnknown
             else -> TyUnknown
         }
         val inference = TypeInferenceWalker(this, msl, returnTy)
@@ -482,21 +484,20 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
 
     fun instantiateBounds(
         element: MvTypeParametersOwner,
-//        selfTy: Ty? = null,
         subst: Substitution = emptySubstitution
     ): Substitution {
-        val map = run {
-            val typeSubst = element
-                .generics
-                .associateWith { typeVarForParam(it) }
+        val typeSubst = element
+            .generics
+            .associateWith { typeVarForParam(it) }
 //                .let { if (selfTy != null) it + (TyTypeParameter.self() to selfTy) else it }
 //            val constSubst = element
 //                .constGenerics
 //                .associateWith { constVarForParam(it) }
-            subst + Substitution(typeSubst = typeSubst)
-        }
-//        val obligations = element.obl
-//        instantiateBounds(element.predicates, map).forEach(fulfillmentContext::registerObligation)
+        val map = subst + typeSubst.toTypeSubst()
+//        val map = run {
+//        }
+////        val obligations = element.obl
+////        instantiateBounds(element.predicates, map).forEach(fulfillmentContext::registerObligation)
         return map
     }
 
@@ -730,10 +731,12 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
                     && (ty1msl.permissions - ty2msl.permissions).isEmpty() ->
                 combineTypes(ty1msl.referenced, ty2msl.referenced)
 
-            ty1msl is TyStruct && ty2msl is TyStruct && ty1msl.item == ty2msl.item ->
+            ty1msl is TyStruct2 && ty2msl is TyStruct2
+                    && ty1msl.item == ty2msl.item ->
                 combineTypePairs(ty1msl.typeArguments.zip(ty2msl.typeArguments))
 
-            ty1msl is TyTuple && ty2msl is TyTuple && ty1msl.types.size == ty2msl.types.size ->
+            ty1msl is TyTuple && ty2msl is TyTuple
+                    && ty1msl.types.size == ty2msl.types.size ->
                 combineTypePairs(ty1msl.types.zip(ty2msl.types))
 
             else -> Err(CombineTypeError.TypeMismatch(ty1msl, ty2msl))

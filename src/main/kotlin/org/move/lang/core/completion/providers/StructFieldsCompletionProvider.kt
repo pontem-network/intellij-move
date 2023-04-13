@@ -49,7 +49,7 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
                 val structPat = element.structPat
                 addFieldsToCompletion(
                     structPat.path.maybeStruct ?: return,
-                    structPat.fieldNames,
+                    structPat.patFieldNames,
                     result
                 )
             }

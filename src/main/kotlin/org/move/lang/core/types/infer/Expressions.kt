@@ -473,7 +473,7 @@ private fun inferIfExprTy(ifExpr: MvIfExpr, ctx: InferenceContext, expectedTy: T
         }
         return TyUnknown
     }
-    return combineTys(ifExprTy, elseExprTy, ctx.msl)
+    return intersectTypes(ifExprTy, elseExprTy, ctx.msl)
 }
 
 private fun inferWhileExpr(whileExpr: MvWhileExpr, ctx: InferenceContext): Ty {

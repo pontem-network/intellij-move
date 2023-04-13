@@ -61,7 +61,7 @@ class ItemContext(val msl: Boolean, val owner: ItemContextOwner) {
     fun getStructItemTy(struct: MvStruct): TyStruct? = getItemTy(struct) as? TyStruct
 
     fun getStructFieldItemTy(structField: MvStructField): Ty {
-        val struct = structField.struct
+        val struct = structField.structItem
         val structItemTy = getStructItemTy(struct) ?: return TyUnknown
         return structItemTy.fieldTy(structField.name)
     }
@@ -220,7 +220,7 @@ fun MvNameIdentifierOwner.outerItemContext(msl: Boolean): ItemContext {
             this.module?.itemContext(msl)
         }
         is MvStruct -> this.module.itemContext(msl)
-        is MvStructField -> this.struct.module.itemContext(msl)
+        is MvStructField -> this.structItem.module.itemContext(msl)
         else -> null
     }
     return itemContext ?: project.itemContext(msl)

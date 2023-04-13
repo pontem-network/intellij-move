@@ -687,7 +687,7 @@ StructPatField ::= (BindingPat !':') | (IDENTIFIER StructPatFieldBinding)
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructPatFieldMixin"
 }
-StructPatFieldBinding ::= ':' Pat { pin = 1 }
+StructPatFieldBinding ::= ':' Pat
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Stmts

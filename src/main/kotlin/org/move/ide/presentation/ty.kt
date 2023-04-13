@@ -132,6 +132,14 @@ private fun render(
             }
             s
         }
+        is TyFunction2 -> {
+            val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
+            var s = if (ty.retType is TyUnit) params else "$params -> ${r(ty.retType)}"
+            if (ty.acquiresTypes.isNotEmpty()) {
+                s += ty.acquiresTypes.joinToString(", ", " acquires ", transform = r)
+            }
+            s
+        }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
         is TyVector -> "vector<${r(ty.item)}>"
         is TyReference -> {
@@ -141,6 +149,13 @@ private fun render(
 //        is TyTypeParameter -> ty.name ?: anonymous
         is TyTypeParameter -> typeParam(ty)
         is TyStruct -> {
+            val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
+            val args =
+                if (ty.typeArguments.isEmpty()) ""
+                else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
+            name + args
+        }
+        is TyStruct2 -> {
             val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
             val args =
                 if (ty.typeArguments.isEmpty()) ""

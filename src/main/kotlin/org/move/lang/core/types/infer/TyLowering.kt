@@ -22,9 +22,8 @@ class TyLowering {
 //                val subst = emptySubstitution
                 val (_, subst) = instantiatePathGenerics(moveType.path, namedItem, msl)
                 when (namedItem) {
-                    is MvStruct -> {
-                        TyUnknown
-                    }
+                    is MvStruct -> TyStruct2.valueOf(namedItem).substitute(subst)
+                    is MvTypeParameter -> TyTypeParameter(namedItem)
                     else -> TyUnknown
                 }
             }
@@ -108,8 +107,8 @@ class TyLowering {
             element: T,
 //            subst: Substitution,
             msl: Boolean
-        ): BoundElement<T> {
-            return TyLowering().instantiatePathGenerics(path, element, msl)
+        ): Substitution {
+            return TyLowering().instantiatePathGenerics(path, element, msl).subst
         }
     }
 }

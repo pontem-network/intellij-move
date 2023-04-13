@@ -26,7 +26,7 @@ sealed class Expectation {
      */
 //    class ExpectRvalueLikeUnsized(val ty: Ty) : Expectation()
 
-    private fun resolve(ctx: InferenceContext): Expectation {
+    fun resolve(ctx: InferenceContext): Expectation {
         return when (this) {
             is ExpectHasType -> ExpectHasType(ctx.resolveTypeVarsIfPossible(ty))
 //            is ExpectCastableToType -> ExpectCastableToType(ctx.resolveTypeVarsIfPossible(ty))

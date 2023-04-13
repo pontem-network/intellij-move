@@ -11,7 +11,7 @@ data class TyStruct(
     val typeVars: List<TyInfer.TyVar>,
     val fieldTys: Map<String, Ty>,
     var typeArguments: List<Ty>
-) : Ty {
+) : Ty() {
     override fun abilities(): Set<Ability> = this.item.tyAbilities
 
     override fun innerFoldWith(folder: TypeFolder): Ty {

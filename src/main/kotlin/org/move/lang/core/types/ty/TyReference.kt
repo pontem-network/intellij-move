@@ -20,7 +20,7 @@ enum class RefPermissions {
     }
 }
 
-data class TyReference(val referenced: Ty, val permissions: Set<RefPermissions>, val msl: Boolean) : Ty {
+data class TyReference(val referenced: Ty, val permissions: Set<RefPermissions>, val msl: Boolean) : Ty() {
     override fun abilities() = setOf(Ability.COPY, Ability.DROP)
 
     val isMut: Boolean get() = this.permissions.contains(RefPermissions.WRITE)

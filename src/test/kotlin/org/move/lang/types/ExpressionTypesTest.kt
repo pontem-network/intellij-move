@@ -236,7 +236,7 @@ class ExpressionTypesTest: TypificationTestCase() {
         fun m() {
             let a = if (true) 1;
             a;
-          //^ <unknown>  
+          //^ () 
         }
     }    
     """)
@@ -441,7 +441,7 @@ class ExpressionTypesTest: TypificationTestCase() {
         struct R has copy {  }
         fun main() {
             S<R> {};
-          //^ 0x1::M::S<<unknown>>  
+          //^ 0x1::M::S<Message>  
         }
     }    
     """)

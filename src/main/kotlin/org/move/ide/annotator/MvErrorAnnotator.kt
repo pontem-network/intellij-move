@@ -217,7 +217,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
             override fun visitStructPat(o: MvStructPat) {
                 val nameElement = o.path.referenceNameElement ?: return
                 val refStruct = o.path.maybeStruct ?: return
-                val fieldNames = o.fields.map { it.referenceName }
+                val fieldNames = o.patFields.map { it.referenceName }
                 checkMissingFields(
                     moveHolder, nameElement, fieldNames.toSet(), refStruct
                 )

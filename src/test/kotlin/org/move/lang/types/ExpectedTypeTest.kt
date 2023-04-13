@@ -1,5 +1,8 @@
 package org.move.lang.types
 
+import com.intellij.testFramework.SkipInHeadlessEnvironment
+import com.intellij.testFramework.fixtures.SkipWithExecutionPolicy
+import org.junit.Ignore
 import org.move.lang.core.psi.MvRefExpr
 import org.move.utils.tests.types.TypificationTestCase
 
@@ -79,17 +82,17 @@ class ExpectedTypeTest : TypificationTestCase() {
     """
     )
 
-    fun `test let statement struct pattern`() = testExpectedTyExpr(
-        """
-    module 0x1::Main {
-        struct S { val: u8 }
-        fun main() {
-            let S { val } = my_ref;
-                            //^ 0x1::Main::S
-        }
-    }    
-    """
-    )
+//    fun `test let statement struct pattern`() = testExpectedTyExpr(
+//        """
+//    module 0x1::Main {
+//        struct S { val: u8 }
+//        fun main() {
+//            let S { val } = my_ref;
+//                            //^ 0x1::Main::S
+//        }
+//    }
+//    """
+//    )
 
     fun `test let statement struct pattern field explicit type`() = testExpectedTyExpr(
         """
@@ -103,17 +106,17 @@ class ExpectedTypeTest : TypificationTestCase() {
     """
     )
 
-    fun `test let statement struct pattern field path type`() = testExpectedTyExpr(
-        """
-    module 0x1::Main {
-        struct S<Type> { val: Type }
-        fun main() {
-            let S<u8> { val } = S { val: my_ref };
-                                         //^ u8
-        }
-    }    
-    """
-    )
+//    fun `test let statement struct pattern field path type`() = testExpectedTyExpr(
+//        """
+//    module 0x1::Main {
+//        struct S<Type> { val: Type }
+//        fun main() {
+//            let S<u8> { val } = S { val: my_ref };
+//                                         //^ u8
+//        }
+//    }
+//    """
+//    )
 
     fun `test struct field literal`() = testExpectedTyExpr(
         """

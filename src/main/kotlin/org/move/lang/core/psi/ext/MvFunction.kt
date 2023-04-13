@@ -17,6 +17,7 @@ import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyFunction2
 import org.move.lang.core.types.ty.TyUnit
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.Icon
@@ -113,17 +114,12 @@ fun MvFunction.outerItemSpecs(): List<MvItemSpec> {
 
 val MvFunction.transactionParameters: List<MvFunctionParameter> get() = this.parameters.drop(1)
 
-//fun MvFunctionLike.type(msl: Boolean): TyFunction {
-//    val paramTypes = mutableListOf<Ty>()
-//
-////        val self = selfParameter
-////        if (self != null) {
-////            paramTypes += self.typeOfValue
-////        }
-//
-//    paramTypes += parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
-//    return TyFunction(paramTypes, rawReturnType(msl))
-//}
+fun MvFunctionLike.type(msl: Boolean): TyFunction2 {
+    val paramTypes = parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
+    val acquiresTypes = this.acquiresPathTypes.map { it.loweredType(msl) }
+    val retType = rawReturnType(msl)
+    return TyFunction2(paramTypes, acquiresTypes, retType)
+}
 
 fun MvFunctionLike.rawReturnType(msl: Boolean): Ty {
     val retType = returnType ?: return TyUnit

@@ -27,11 +27,13 @@ enum class Ability {
 
 //val emptySubstitution: Substitution = emptyMap()
 
-val TypeFoldable<*>.hasTyInfer get() = visitWith { it is TyInfer }
+val TypeFoldable<*>.hasTyInfer get() = true
+//val TypeFoldable<*>.hasTyInfer get() = visitWith { it is TyInfer }
 
-val TypeFoldable<*>.needsSubst get(): Boolean = visitWith { it is TyTypeParameter }
+val TypeFoldable<*>.needsSubst get(): Boolean = true
+//val TypeFoldable<*>.needsSubst get(): Boolean = visitWith { it is TyTypeParameter }
 
-interface Ty : TypeFoldable<Ty> {
+abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
 
     override fun foldWith(folder: TypeFolder): Ty = folder(this)
 
@@ -49,9 +51,9 @@ interface Ty : TypeFoldable<Ty> {
     /**
      * User visible string representation of a type
      */
-    override fun toString(): String
+    abstract override fun toString(): String
 
-    fun abilities(): Set<Ability>
+    abstract fun abilities(): Set<Ability>
 }
 
 val Ty.isTypeParam: Boolean get() = this is TyInfer || this is TyTypeParameter
