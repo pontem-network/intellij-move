@@ -714,6 +714,9 @@ private SpecExprStmt_items ::= AssumeSpecExpr | AssertSpecExpr | AbortsIfSpecExp
 
 private post ::= <<postKeyword>>
 fake LetStmt ::= let post? Pat? TypeAnnotation? Initializer? ';'?
+{
+    implements = ["org.move.lang.core.psi.MvTypeAnnotationOwner"]
+}
 
 LetMoveStmt ::= let Pat TypeAnnotation? Initializer? ';'
 {
@@ -758,7 +761,10 @@ CodeBlockExpr ::= CodeBlock
 CodeBlock ::= '{' CodeBlock_items '}'
 {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvImportsOwner" ]
+    implements = [
+        "org.move.lang.core.psi.MvImportsOwner"
+        "org.move.lang.core.psi.AnyBlock"
+    ]
     mixin = "org.move.lang.core.psi.ext.MvCodeBlockMixin"
 }
 
@@ -1114,6 +1120,7 @@ ModuleSpecBlock ::= '{' ModuleSpecBlock_item_with_recover* '}'
     implements = [
         "org.move.lang.core.psi.MvImportsOwner"
         "org.move.lang.core.psi.MslScopeElement"
+        "org.move.lang.core.psi.AnyBlock"
     ]
 }
 
@@ -1233,6 +1240,7 @@ ItemSpecBlock ::= '{' ItemSpecBlock_items '}'
     pin = 1
     implements = [
         "org.move.lang.core.psi.MvImportsOwner"
+        "org.move.lang.core.psi.AnyBlock"
 //        "org.move.lang.core.types.infer.MvInferenceContextOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecBlockMixin"
@@ -1352,7 +1360,7 @@ private PatternIdent ::= <<patternIdent>>
 //fake FunctionPatternIdent ::= ('*' | IDENTIFIER)+
 FunctionPattern ::= PatternVis? PatternIdent TypeParameterList? {
     pin = 2
-    implements = [ "org.move.lang.core.psi.MvTypeParametersOwner" ]
+//    implements = [ "org.move.lang.core.psi.MvTypeParametersOwner" ]
 }
 //FunctionPattern ::= (public | internal)? IDENTIFIER TypeArgumentList? { pin = 2 }
 

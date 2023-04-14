@@ -45,28 +45,28 @@ class ItemContext(val msl: Boolean, val owner: ItemContextOwner) {
 
     val typeErrors = mutableListOf<TypeError>()
 
-    fun getConstTy(const: MvConst): Ty {
-        val existing = this.constTyMap[const]
-        if (existing != null) {
-            return existing
-        } else {
-            val ty = const.typeAnnotation?.type
-                ?.let { inferItemTypeTy(it, this) } ?: TyUnknown
-            this.constTyMap[const] = ty
-            return ty
-        }
-    }
+//    fun getConstTy(const: MvConst): Ty {
+//        val existing = this.constTyMap[const]
+//        if (existing != null) {
+//            return existing
+//        } else {
+//            val ty = const.typeAnnotation?.type
+//                ?.let { inferItemTypeTy(it, this) } ?: TyUnknown
+//            this.constTyMap[const] = ty
+//            return ty
+//        }
+//    }
 
     // nullability happens if struct is recursive
     fun getStructItemTy(struct: MvStruct): TyStruct? = getItemTy(struct) as? TyStruct
 
-    fun getStructFieldItemTy(structField: MvStructField): Ty {
-        val struct = structField.structItem
-        val structItemTy = getStructItemTy(struct) ?: return TyUnknown
-        return structItemTy.fieldTy(structField.name)
-    }
+//    fun getStructFieldItemTy(structField: MvStructField): Ty {
+//        val struct = structField.structItem
+//        val structItemTy = getStructItemTy(struct) ?: return TyUnknown
+//        return structItemTy.fieldTy(structField.name)
+//    }
 
-    fun getFunctionItemTy(function: MvFunctionLike): TyFunction = getItemTy(function) as TyFunction
+//    fun getFunctionItemTy(function: MvFunctionLike): TyFunction = getItemTy(function) as TyFunction
 
     fun getItemTy(namedItem: MvNameIdentifierOwner): Ty {
         return when (namedItem) {

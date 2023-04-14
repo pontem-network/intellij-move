@@ -9,10 +9,8 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.ext.transactionParameters
-import org.move.lang.core.psi.module
 import org.move.lang.core.psi.typeParameters
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.itemContext
+import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyInteger
 import org.move.utils.ui.*
 import javax.swing.JComponent
@@ -34,8 +32,10 @@ class FunctionCallParametersDialog(
         return panel {
             val typeParameters = entryFunction.typeParameters
             val parameters = entryFunction.transactionParameters.map { it.bindingPat }
-            val itemContext =
-                entryFunction.module?.itemContext(false) ?: project.itemContext(false)
+            val msl = false
+            val inference = entryFunction.inference(msl)
+//            val itemContext =
+//                entryFunction.module?.itemContext(msl) ?: project.itemContext(msl)
 
             if (typeParameters.isNotEmpty()) {
                 group("Type Arguments") {
@@ -56,11 +56,12 @@ class FunctionCallParametersDialog(
                 }
             }
             if (parameters.isNotEmpty()) {
-                val inferenceCtx = InferenceContext(false, itemContext)
+//                val inferenceCtx = InferenceContext(false, itemContext)
                 group("Value Arguments") {
                     for (parameter in parameters) {
                         val paramName = parameter.name
-                        val paramTy = inferenceCtx.getBindingPatTy(parameter)
+                        val paramTy = inference.getPatType(parameter)
+//                        val paramTy = inferenceCtx.getBindingPatTy(parameter)
                         val paramTyName = FunctionCallParam.tyTypeName(paramTy)
                         row(paramName) {
                             comment(": $paramTyName")

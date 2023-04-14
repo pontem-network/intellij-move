@@ -507,7 +507,7 @@ class ResolveSpecsTest: ResolveTestCase() {
     }
     spec 0x1::main {
         spec fun spec_now() {
-            global<S>(@0x1).val
+            global<S>(@0x1).val;
                            //^ 
         }
     } 

@@ -9,8 +9,7 @@ import org.move.ide.presentation.canBeAcquiredInModule
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.infer.outerItemContext
-import org.move.lang.core.types.infer.rawType
+import org.move.lang.core.types.infer.loweredType
 
 
 class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
@@ -29,14 +28,18 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val module = function.module ?: return
                 val codeBlock = function.codeBlock ?: return
 
-                val itemContext = function.outerItemContext(false)
+//                val itemContext = function.outerItemContext(false)
                 val inference = function.inference(false)
+                val outerTypeParameters = function.tyInfers
 
 //                val inferenceCtx = function.inferenceContext(false)
 
                 val acquiredTys = mutableSetOf<String>()
                 for (callExpr in codeBlock.descendantsOfType<MvCallExpr>()) {
-                    val callAcquiresTys = inference.getAcquiredTypes(callExpr)
+                    val callAcquiresTys = inference.getAcquiredTypes(
+                        callExpr,
+                        outerSubst = outerTypeParameters
+                    )
 //                    val callAcquiresTys = callExpr.inferAcquiresTys() ?: return
                     val acqTyNames = callAcquiresTys.map { it.fullnameNoArgs() }
                     acquiredTys.addAll(acqTyNames)
@@ -47,7 +50,8 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val pathTypes = o.pathTypeList
                 for ((i, pathType) in pathTypes.withIndex()) {
                     // check that this acquires is allowed in the context
-                    val ty = itemContext.rawType(pathType)
+                    val ty = pathType.loweredType(false)
+//                    val ty = itemContext.rawType(pathType)
                     if (!ty.canBeAcquiredInModule(module)) {
                         unusedAcquiresIndices.add(i)
                         continue

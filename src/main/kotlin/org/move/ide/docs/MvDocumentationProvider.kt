@@ -12,6 +12,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.stdext.joinToWithBuffer
 
@@ -133,22 +134,24 @@ fun MvElement.signature(builder: StringBuilder) {
 
         is MvStructField -> {
             val module = this.structItem.module
-            val itemContext = this.structItem.outerItemContext(msl)
+//            val itemContext = this.structItem.outerItemContext(msl)
             buffer += module.qualName?.editorText() ?: "unknown"
             buffer += "::"
             buffer += this.structItem.name ?: angleWrapped("anonymous")
             buffer += "\n"
             buffer.b { it += this.name }
-            buffer += ": ${itemContext.getStructFieldItemTy(this).renderForDocs(true)}"
+            buffer += ": ${(this.type?.loweredType(msl) ?: TyUnknown).renderForDocs(true)}"
+//            buffer += ": ${itemContext.getStructFieldItemTy(this).renderForDocs(true)}"
         }
 
         is MvConst -> {
-            val itemContext = this.outerItemContext(msl)
+//            val itemContext = this.outerItemContext(msl)
             buffer += this.module?.qualName?.editorText() ?: angleWrapped("unknown")
             buffer += "\n"
             buffer += "const "
             buffer.b { it += this.name ?: angleWrapped("unknown") }
-            buffer += ": ${itemContext.getConstTy(this).renderForDocs(false)}"
+            buffer += ": ${(this.type?.loweredType(msl) ?: TyUnknown).renderForDocs(false)}"
+//            buffer += ": ${itemContext.getConstTy(this).renderForDocs(false)}"
             this.initializer?.let { buffer += " ${it.text}" }
         }
 
@@ -166,10 +169,11 @@ private fun PsiElement.generateDocumentation(
     when (this) {
         is MvType -> {
             val msl = this.isMsl()
-            val itemContext = this.itemContext(msl)
+//            val itemContext = this.itemContext(msl)
 //            val inferenceCtx = this.maybeInferenceContext(msl) ?: InferenceContext.default(msl, this)
 //            buffer += inferenceCtx.getTypeTy(this)
-            buffer += itemContext.rawType(this)
+//            buffer += itemContext.rawType(this)
+            buffer += this.loweredType(msl)
                 .typeLabel(this)
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")

@@ -1,9 +1,7 @@
 package org.move.lang.core.psi
 
-import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.ItemContext
 import org.move.lang.core.types.infer.inferItemTypeTy
-import org.move.lang.core.types.infer.itemContext
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 

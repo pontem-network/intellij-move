@@ -7,7 +7,9 @@ import org.move.ide.presentation.text
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvReturnExpr
 import org.move.lang.core.psi.MvStruct
+import org.move.lang.core.psi.MvStructField
 import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.structItem
 import org.move.lang.core.types.ty.Ability
 import org.move.lang.core.types.ty.Ty
 
@@ -15,8 +17,10 @@ enum class TypeErrorScope {
     MAIN, MODULE;
 }
 
-sealed class TypeError(open val element: PsiElement) {
+sealed class TypeError(open val element: PsiElement): TypeFoldable<TypeError> {
     abstract fun message(): String
+
+    override fun innerVisitWith(visitor: TypeVisitor): Boolean = true
 
     companion object {
         fun isAllowedTypeError(error: TypeError, typeErrorScope: TypeErrorScope): Boolean {
@@ -48,6 +52,10 @@ sealed class TypeError(open val element: PsiElement) {
                 else -> "Incompatible type '${actualTy.name()}', expected '${expectedTy.name()}'"
             }
         }
+
+        override fun innerFoldWith(folder: TypeFolder): TypeError {
+            return TypeMismatch(element, folder(expectedTy), folder(actualTy))
+        }
     }
 
     data class AbilitiesMismatch(
@@ -59,6 +67,27 @@ sealed class TypeError(open val element: PsiElement) {
             return "The type '${elementTy.text()}' " +
                     "does not have required ability '${missingAbilities.map { it.label() }.first()}'"
         }
+
+        override fun innerFoldWith(folder: TypeFolder): TypeError {
+            return AbilitiesMismatch(element, folder(elementTy), missingAbilities)
+        }
+    }
+
+    data class FieldAbilityRequired(
+        override val element: MvStructField,
+        val fieldTy: Ty,
+        val declared: Ability,
+        val missing: Ability,
+    ): TypeError(element) {
+        override fun message(): String {
+            return "The type '${fieldTy.name()}' does not have the ability '${missing.label()}' " +
+                        "required by the declared ability '${declared.label()}' " +
+                        "of the struct '${element.structItem.name}'"
+        }
+
+        override fun innerFoldWith(folder: TypeFolder): TypeError {
+            return FieldAbilityRequired(element, folder(fieldTy), declared, missing)
+        }
     }
 
     data class UnsupportedBinaryOp(
@@ -69,6 +98,10 @@ sealed class TypeError(open val element: PsiElement) {
         override fun message(): String {
             return "Invalid argument to '$op': " +
                     "expected integer type, but found '${ty.text()}'"
+        }
+
+        override fun innerFoldWith(folder: TypeFolder): TypeError {
+            return UnsupportedBinaryOp(element, folder(ty), op)
         }
     }
 
@@ -82,6 +115,10 @@ sealed class TypeError(open val element: PsiElement) {
             return "Incompatible arguments to '$op': " +
                     "'${leftTy.text()}' and '${rightTy.text()}'"
         }
+
+        override fun innerFoldWith(folder: TypeFolder): TypeError {
+            return IncompatibleArgumentsToBinaryExpr(element, folder(leftTy), folder(rightTy), op)
+        }
     }
 
     data class InvalidUnpacking(
@@ -90,6 +127,10 @@ sealed class TypeError(open val element: PsiElement) {
     ) : TypeError(element) {
         override fun message(): String {
             return "Invalid unpacking. Expected ${assignedTy.expectedBindingFormText()}"
+        }
+
+        override fun innerFoldWith(folder: TypeFolder): TypeError {
+            return InvalidUnpacking(element, folder(assignedTy))
         }
     }
 
@@ -100,5 +141,7 @@ sealed class TypeError(open val element: PsiElement) {
         override fun message(): String {
             return "Circular reference of type '${structItem.name}'"
         }
+
+        override fun innerFoldWith(folder: TypeFolder): TypeError = this
     }
 }

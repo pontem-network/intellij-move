@@ -13,7 +13,7 @@ import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyInfer
+import org.move.lang.core.types.ty.TyFunction2
 import org.move.lang.core.types.ty.TyUnknown
 
 const val KEYWORD_PRIORITY = 80.0
@@ -104,9 +104,9 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
 
         is MvConst -> {
             val msl = this.isMsl()
-            val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
+            val constTy = this.type?.loweredType(msl) ?: TyUnknown
             this.createLookupElementWithIcon()
-                .withTypeText(itemContext.getConstTy(this).text(true))
+                .withTypeText(constTy.text(true))
         }
 
         is MvBindingPat -> {
@@ -215,39 +215,36 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
 
         when (element) {
             is MvFunctionLike -> {
-                val allTypesInferred = run {
+                val requiresExplicitTypes = run {
                     // explicit type arguments required
-                    if (element.requiredTypeParams.isNotEmpty()) return@run false
-                    // all type arguments inferrable from function parameters
-                    if (element.typeParamsUsedOnlyInReturnType.isEmpty()) return@run true
+//                    if (element.requiredTypeParams.isNotEmpty()) return@run false
+//                    // all type arguments inferrable from function parameters
+//                    if (element.typeParamsUsedOnlyInReturnType.isEmpty()) return@run true
 
-                    if (completionContext == null) return@run false
+//                    if (completionContext == null) return@run false
                     val msl = element.isMsl()
+                    val callTy = element.declaredType(msl).substitute(element.tyInfers) as TyFunction2
 
-                    val itemContext =
-                        element.module?.itemContext(msl) ?: element.project.itemContext(msl)
-                    val rawFuncTy = itemContext.getFunctionItemTy(element)
-
-                    val inferenceCtx = InferenceContext(msl, itemContext)
-                    val expectedTy = completionContext.expectedTy
+                    val inferenceCtx = InferenceContext(msl)
+                    callTy.paramTypes.forEach { inferenceCtx.combineTypes(it, TyUnknown) }
+                    val expectedTy = completionContext?.expectedTy
                     if (expectedTy != null && expectedTy !is TyUnknown) {
-                        inferenceCtx.registerEquateObligation(rawFuncTy.retType, expectedTy)
+                        inferenceCtx.combineTypes(callTy.retType, expectedTy)
                     }
-                    inferenceCtx.processConstraints()
-
-                    val funcTy = inferenceCtx.resolveTy(rawFuncTy)
-                    !funcTy.containsTyOfClass(listOf(TyInfer::class.java))
+                    (inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyFunction2)
+                        .substitution
+                        .containsTypeVarOrTypeParameter()
                 }
 
                 var suffix = ""
-                if (!context.hasAngleBrackets && !allTypesInferred) {
+                if (!context.hasAngleBrackets && requiresExplicitTypes) {
                     suffix += "<>"
                 }
                 if (!context.hasAngleBrackets && !context.hasCallParens) {
                     suffix += "()"
                 }
                 val offset = when {
-                    element.parameters.isNotEmpty() || !allTypesInferred -> 1
+                    element.parameters.isNotEmpty() || requiresExplicitTypes -> 1
                     else -> 2
                 }
 

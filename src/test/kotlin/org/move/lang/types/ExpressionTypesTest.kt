@@ -265,6 +265,7 @@ class ExpressionTypesTest: TypificationTestCase() {
     module 0x1::M {
         struct S {}
         fun m(s: &S, s_mut: &mut S) {
+            let cond = true;
             (if (cond) s_mut else s);
           //^ &0x1::M::S  
         }
@@ -441,7 +442,7 @@ class ExpressionTypesTest: TypificationTestCase() {
         struct R has copy {  }
         fun main() {
             S<R> {};
-          //^ 0x1::M::S<Message>  
+          //^ 0x1::M::S<0x1::M::R>  
         }
     }    
     """)

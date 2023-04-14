@@ -1,14 +1,10 @@
 package org.move.lang.core.psi
 
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
-import org.move.lang.core.psi.ext.greenStub
-import org.move.lang.core.psi.ext.hasChild
-import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.stubs.MvModuleStub
-import org.move.lang.core.types.infer.outerItemContext
-import org.move.lang.core.types.infer.visitTyVarWith
-import org.move.lang.core.types.ty.TyLambda
+import org.move.lang.core.types.infer.*
+import org.move.lang.core.types.ty.*
 import org.move.stdext.withAdded
 
 interface MvFunctionLike : MvNameIdentifierOwner,
@@ -20,6 +16,20 @@ interface MvFunctionLike : MvNameIdentifierOwner,
     val returnType: MvReturnType?
 
     val codeBlock: MvCodeBlock?
+
+    override fun declaredType(msl: Boolean): TyFunction2 {
+        val typeParameters = this.tyTypeParams
+        val paramTypes = parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
+        val acquiresTypes = this.acquiresPathTypes.map { it.loweredType(msl) }
+        val retType = rawReturnType(msl)
+        return TyFunction2(
+            this,
+            typeParameters,
+            paramTypes,
+            acquiresTypes,
+            retType
+        )
+    }
 }
 
 val MvFunctionLike.isNative get() = hasChild(MvElementTypes.NATIVE)
@@ -30,19 +40,22 @@ val MvFunctionLike.allParamsAsBindings: List<MvBindingPat> get() = this.paramete
 
 val MvFunctionLike.valueParamsAsBindings: List<MvBindingPat>
     get() {
-        val itemContext = this.outerItemContext(this.isMsl())
+//        val itemContext = this.outerItemContext(this.isMsl())
+        val msl = this.isMsl()
         val parameters = this.parameters
         return parameters
-            .filter { it.typeTy(itemContext) !is TyLambda }
+            .filter { it.type?.loweredType(msl) !is TyLambda }
             .map { it.bindingPat }
     }
 
 val MvFunctionLike.lambdaParamsAsBindings: List<MvBindingPat>
     get() {
-        val itemContext = this.outerItemContext(this.isMsl())
+        val msl = this.isMsl()
+//        val itemContext = this.outerItemContext(this.isMsl())
         val parameters = this.parameters
         return parameters
-            .filter { it.typeTy(itemContext) is TyLambda }
+            .filter { it.type?.loweredType(msl) is TyLambda }
+//            .filter { it.typeTy(itemContext) is TyLambda }
             .map { it.bindingPat }
     }
 
@@ -53,37 +66,37 @@ val MvFunctionLike.acquiresPathTypes: List<MvPathType>
             else -> emptyList()
         }
 
-val MvFunctionLike.typeParamsUsedOnlyInReturnType: List<MvTypeParameter>
-    get() {
-        val msl = false
-        val itemContext = this.outerItemContext(msl)
-        val funcTy = itemContext.getFunctionItemTy(this)
+//val MvFunctionLike.typeParamsUsedOnlyInReturnType: List<MvTypeParameter>
+//    get() {
+//        val msl = false
+//        val funcTy = this.declaredType(msl)
+//
+//        val usedTypeParams = mutableSetOf<MvTypeParameter>()
+//        funcTy.paramTypes
+//            .forEach {
+//                it.visitTyVarWith { tyVar ->
+//                    tyVar.origin?.origin?.let { o -> usedTypeParams.add(o) }; false
+//                }
+//            }
+//        return this.typeParameters.filter { it !in usedTypeParams }
+//    }
 
-        val usedTypeParams = mutableSetOf<MvTypeParameter>()
-        funcTy.paramTypes
-            .forEach {
-                it.visitTyVarWith { tyVar ->
-                    tyVar.origin?.origin?.let { o -> usedTypeParams.add(o) }; false
-                }
-            }
-        return this.typeParameters.filter { it !in usedTypeParams }
-    }
-
-val MvFunctionLike.requiredTypeParams: List<MvTypeParameter>
-    get() {
-        val usedTypeParams = mutableSetOf<MvTypeParameter>()
-        val msl = false
-        val itemContext = this.outerItemContext(msl)
-        val funcTy = itemContext.getFunctionItemTy(this)
-        funcTy.paramTypes
-            .withAdded(funcTy.retType)
-            .forEach {
-                it.visitTyVarWith { tyVar ->
-                    tyVar.origin?.origin?.let { o -> usedTypeParams.add(o) }; false
-                }
-            }
-        return this.typeParameters.filter { it !in usedTypeParams }
-    }
+//val MvFunctionLike.requiredTypeParams: List<MvTypeParameter>
+//    get() {
+//        val usedTypeParams = mutableSetOf<MvTypeParameter>()
+//        val msl = false
+////        val itemContext = this.outerItemContext(msl)
+////        val funcTy = itemContext.getFunctionItemTy(this)
+//        val funcTy = this.declaredType(msl)
+//        funcTy.paramTypes
+//            .withAdded(funcTy.retType)
+//            .forEach {
+//                it.visitTyVarWith { tyVar ->
+//                    tyVar.origin?.origin?.let { o -> usedTypeParams.add(o) }; false
+//                }
+//            }
+//        return this.typeParameters.filter { it !in usedTypeParams }
+//    }
 
 val MvFunctionLike.module: MvModule?
     get() =

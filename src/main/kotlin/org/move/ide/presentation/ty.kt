@@ -15,7 +15,7 @@ fun Ty.canBeAcquiredInModule(mod: MvModule): Boolean {
 private val Ty.declaringModule: MvModule?
     get() = when (this) {
         is TyReference -> this.referenced.declaringModule
-        is TyStruct -> this.item.containingModule
+        is TyStruct2 -> this.item.containingModule
         else -> null
     }
 
@@ -33,7 +33,7 @@ fun Ty.expectedBindingFormText(): String {
             val expectedForm = this.types.joinToString(", ", "(", ")") { "_" }
             "tuple binding of length ${this.types.size}: $expectedForm"
         }
-        is TyStruct -> "struct binding of type ${this.text(true)}"
+        is TyStruct2 -> "struct binding of type ${this.text(true)}"
         else -> "a single variable"
     }
 }
@@ -124,14 +124,14 @@ private fun render(
     val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, typeParam, fq) }
 
     return when (ty) {
-        is TyFunction -> {
-            val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
-            var s = if (ty.retType is TyUnit) params else "$params -> ${r(ty.retType)}"
-            if (ty.acquiresTypes.isNotEmpty()) {
-                s += ty.acquiresTypes.joinToString(", ", " acquires ", transform = r)
-            }
-            s
-        }
+//        is TyFunction -> {
+//            val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
+//            var s = if (ty.retType is TyUnit) params else "$params -> ${r(ty.retType)}"
+//            if (ty.acquiresTypes.isNotEmpty()) {
+//                s += ty.acquiresTypes.joinToString(", ", " acquires ", transform = r)
+//            }
+//            s
+//        }
         is TyFunction2 -> {
             val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
             var s = if (ty.retType is TyUnit) params else "$params -> ${r(ty.retType)}"
@@ -173,6 +173,6 @@ private fun render(
             else
                 "$params ${r(ty.returnType)}"
         }
-        else -> error("unreachable")
+        else -> error("unimplemented for type ${ty.javaClass.name}")
     }
 }

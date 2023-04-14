@@ -44,6 +44,12 @@ open class Substitution(val typeSubst: Map<TyTypeParameter, Ty> = emptyMap()) : 
 
     fun visitValues(visitor: TypeVisitor): Boolean = types.any { it.visitWith(visitor) }
 
+    fun containsTypeVarOrTypeParameter(): Boolean {
+        return this.typeSubst.any { (param, ty) ->
+            ty is TyInfer.TyVar || param == ty
+        }
+    }
+
     override fun equals(other: Any?): Boolean = when {
         this === other -> true
         javaClass != other?.javaClass -> false

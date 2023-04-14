@@ -2,7 +2,6 @@ package org.move.lang.core.types.infer
 
 import com.intellij.openapi.util.Key
 import com.intellij.psi.util.CachedValue
-import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.rd.util.concurrentMapOf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -18,129 +17,129 @@ import org.move.utils.recursionGuard
 
 interface MvInferenceContextOwner : MvElement
 
-private val INFERENCE_KEY_NON_MSL: Key<CachedValue<InferenceContext>> = Key.create("INFERENCE_KEY_NON_MSL")
-private val INFERENCE_KEY_MSL: Key<CachedValue<InferenceContext>> = Key.create("INFERENCE_KEY_MSL")
+//private val INFERENCE_KEY_NON_MSL: Key<CachedValue<InferenceContext>> = Key.create("INFERENCE_KEY_NON_MSL")
+//private val INFERENCE_KEY_MSL: Key<CachedValue<InferenceContext>> = Key.create("INFERENCE_KEY_MSL")
 
-fun MvElement.maybeInferenceContext(msl: Boolean): InferenceContext? {
-    val inferenceOwner =
-        PsiTreeUtil.getParentOfType(this, MvInferenceContextOwner::class.java, false)
-            ?: return null
-    return if (msl) {
-        project.cacheManager.cache(inferenceOwner, INFERENCE_KEY_MSL) {
-            val localModificationTracker =
-                inferenceOwner.contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
-            val cacheDependencies: List<Any> =
-                listOfNotNull(
-                    inferenceOwner.project.moveStructureModificationTracker,
-                    localModificationTracker
-                )
-            inferenceOwner.cacheResult(
-                getOwnerInferenceContext(inferenceOwner, true), cacheDependencies
-            )
-        }
-    } else {
-        project.cacheManager.cache(inferenceOwner, INFERENCE_KEY_NON_MSL) {
-            val localModificationTracker =
-                inferenceOwner.contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
-            val cacheDependencies: List<Any> =
-                listOfNotNull(
-                    inferenceOwner.project.moveStructureModificationTracker,
-                    localModificationTracker
-                )
-            inferenceOwner.cacheResult(
-                getOwnerInferenceContext(inferenceOwner, false), cacheDependencies
-            )
-        }
-    }
-}
+//fun MvElement.maybeInferenceContext(msl: Boolean): InferenceContext? {
+//    val inferenceOwner =
+//        PsiTreeUtil.getParentOfType(this, MvInferenceContextOwner::class.java, false)
+//            ?: return null
+//    return if (msl) {
+//        project.cacheManager.cache(inferenceOwner, INFERENCE_KEY_MSL) {
+//            val localModificationTracker =
+//                inferenceOwner.contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
+//            val cacheDependencies: List<Any> =
+//                listOfNotNull(
+//                    inferenceOwner.project.moveStructureModificationTracker,
+//                    localModificationTracker
+//                )
+//            inferenceOwner.cacheResult(
+//                getOwnerInferenceContext(inferenceOwner, true), cacheDependencies
+//            )
+//        }
+//    } else {
+//        project.cacheManager.cache(inferenceOwner, INFERENCE_KEY_NON_MSL) {
+//            val localModificationTracker =
+//                inferenceOwner.contextOrSelf<MvModificationTrackerOwner>()?.modificationTracker
+//            val cacheDependencies: List<Any> =
+//                listOfNotNull(
+//                    inferenceOwner.project.moveStructureModificationTracker,
+//                    localModificationTracker
+//                )
+//            inferenceOwner.cacheResult(
+//                getOwnerInferenceContext(inferenceOwner, false), cacheDependencies
+//            )
+//        }
+//    }
+//}
 
-fun MvElement.inferenceContext(msl: Boolean): InferenceContext {
-    val ctx = this.maybeInferenceContext(msl)
-    // NOTE: use default case just for the safety, should never happen in the correct code
-    return ctx ?: InferenceContext(msl, project.itemContext(msl))
-}
+//fun MvElement.inferenceContext(msl: Boolean): InferenceContext {
+//    val ctx = this.maybeInferenceContext(msl)
+//    // NOTE: use default case just for the safety, should never happen in the correct code
+//    return ctx ?: InferenceContext(msl, project.itemContext(msl))
+//}
 
-private fun getOwnerInferenceContext(owner: MvInferenceContextOwner, msl: Boolean): InferenceContext {
-    val itemContext = owner.itemContextOwner?.itemContext(msl) ?: owner.project.itemContext(msl)
-    val inferenceCtx = InferenceContext(msl, itemContext)
+//private fun getOwnerInferenceContext(owner: MvInferenceContextOwner, msl: Boolean): InferenceContext {
+//    val itemContext = owner.itemContextOwner?.itemContext(msl) ?: owner.project.itemContext(msl)
+//    val inferenceCtx = InferenceContext(msl, itemContext)
+//
+////    val params = when (owner) {
+////        is MvFunction -> owner.parameters
+////        is MvItemSpec -> owner.funcItem?.parameters.orEmpty()
+////        else -> emptyList()
+////    }
+////    for (param in params) {
+////        val binding = param.bindingPat
+////        inferenceCtx.bindingTypes[binding] = inferBindingPatTy(binding, inferenceCtx)
+////    }
+//    when (owner) {
+//        is MvFunction -> {
+//            owner.codeBlock?.let {
+//                val retTy = (itemContext.getItemTy(owner) as? TyFunction)?.retType
+//                inferCodeBlockTy(it, inferenceCtx, retTy)
+//            }
+//        }
+//        is MvItemSpec -> {
+//            owner.itemSpecBlock?.let { inferSpecBlockStmts(it, inferenceCtx) }
+//        }
+//    }
+//    return inferenceCtx
+//}
 
-    val params = when (owner) {
-        is MvFunction -> owner.parameters
-        is MvItemSpec -> owner.funcItem?.parameters.orEmpty()
-        else -> emptyList()
-    }
-    for (param in params) {
-        val binding = param.bindingPat
-        inferenceCtx.bindingTypes[binding] = inferBindingPatTy(binding, inferenceCtx)
-    }
-    when (owner) {
-        is MvFunction -> {
-            owner.codeBlock?.let {
-                val retTy = (itemContext.getItemTy(owner) as? TyFunction)?.retType
-                inferCodeBlockTy(it, inferenceCtx, retTy)
-            }
-        }
-        is MvItemSpec -> {
-            owner.itemSpecBlock?.let { inferSpecBlockStmts(it, inferenceCtx) }
-        }
-    }
-    return inferenceCtx
-}
+//fun inferCodeBlockTy(block: MvCodeBlock, blockCtx: InferenceContext, expectedTy: Ty?): Ty {
+//    for (stmt in block.stmtList) {
+//        inferStmt(stmt, blockCtx)
+//        blockCtx.processConstraints()
+//        blockCtx.resolveTyVarsFromContext(blockCtx)
+//    }
+//    val tailExpr = block.expr
+//    if (tailExpr == null) {
+//        if (expectedTy != null && expectedTy !is TyUnit) {
+//            blockCtx.typeErrors.add(
+//                TypeError.TypeMismatch(
+//                    block.rightBrace ?: block,
+//                    expectedTy,
+//                    TyUnit
+//                )
+//            )
+//            return TyUnknown
+//        }
+//        return TyUnit
+//    } else {
+//        val tailExprTy = inferExprTyOld(tailExpr, blockCtx, expectedTy)
+//        blockCtx.processConstraints()
+//        blockCtx.resolveTyVarsFromContext(blockCtx)
+//        return tailExprTy
+//    }
+//}
 
-fun inferCodeBlockTy(block: MvCodeBlock, blockCtx: InferenceContext, expectedTy: Ty?): Ty {
-    for (stmt in block.stmtList) {
-        inferStmt(stmt, blockCtx)
-        blockCtx.processConstraints()
-        blockCtx.resolveTyVarsFromContext(blockCtx)
-    }
-    val tailExpr = block.expr
-    if (tailExpr == null) {
-        if (expectedTy != null && expectedTy !is TyUnit) {
-            blockCtx.typeErrors.add(
-                TypeError.TypeMismatch(
-                    block.rightBrace ?: block,
-                    expectedTy,
-                    TyUnit
-                )
-            )
-            return TyUnknown
-        }
-        return TyUnit
-    } else {
-        val tailExprTy = inferExprTyOld(tailExpr, blockCtx, expectedTy)
-        blockCtx.processConstraints()
-        blockCtx.resolveTyVarsFromContext(blockCtx)
-        return tailExprTy
-    }
-}
+//fun inferSpecBlockStmts(block: MvItemSpecBlock, blockCtx: InferenceContext) {
+//    for (stmt in block.stmtList) {
+//        inferStmt(stmt, blockCtx)
+//        blockCtx.processConstraints()
+//        blockCtx.resolveTyVarsFromContext(blockCtx)
+//    }
+//}
 
-fun inferSpecBlockStmts(block: MvItemSpecBlock, blockCtx: InferenceContext) {
-    for (stmt in block.stmtList) {
-        inferStmt(stmt, blockCtx)
-        blockCtx.processConstraints()
-        blockCtx.resolveTyVarsFromContext(blockCtx)
-    }
-}
-
-fun inferStmt(stmt: MvStmt, blockCtx: InferenceContext) {
-    when (stmt) {
-        is MvExprStmt -> inferExprTyOld(stmt.expr, blockCtx)
-        is MvSpecExprStmt -> inferExprTyOld(stmt.expr, blockCtx)
-        is MvLetStmt -> {
-            val explicitTy = stmt.typeAnnotation?.type?.let { blockCtx.getTypeTy(it) }
-            val initializerTy = stmt.initializer?.expr?.let { inferExprTyOld(it, blockCtx, explicitTy) }
-            val pat = stmt.pat ?: return
-            val patTy = inferPatTy(pat, blockCtx, explicitTy ?: initializerTy)
-            collectBindings(pat, patTy, blockCtx)
-        }
-    }
-}
+//fun inferStmt(stmt: MvStmt, blockCtx: InferenceContext) {
+//    when (stmt) {
+//        is MvExprStmt -> inferExprTyOld(stmt.expr, blockCtx)
+//        is MvSpecExprStmt -> inferExprTyOld(stmt.expr, blockCtx)
+//        is MvLetStmt -> {
+//            val explicitTy = stmt.typeAnnotation?.type?.let { blockCtx.getTypeTy(it) }
+//            val initializerTy = stmt.initializer?.expr?.let { inferExprTyOld(it, blockCtx, explicitTy) }
+//            val pat = stmt.pat ?: return
+//            val patTy = inferPatTy(pat, blockCtx, explicitTy ?: initializerTy)
+//            collectBindings(pat, patTy, blockCtx)
+//        }
+//    }
+//}
 
 fun isCompatibleReferences(expectedTy: TyReference, inferredTy: TyReference, msl: Boolean): Compat {
     return checkTysCompatible(expectedTy.referenced, inferredTy.referenced, msl)
 }
 
-fun isCompatibleStructs(expectedTy: TyStruct, inferredTy: TyStruct, msl: Boolean): Compat {
+fun isCompatibleStructs(expectedTy: TyStruct2, inferredTy: TyStruct2, msl: Boolean): Compat {
     val isCompat = expectedTy.item.qualName == inferredTy.item.qualName
             && expectedTy.typeArguments.size == inferredTy.typeArguments.size
             && expectedTy.typeArguments.zip(inferredTy.typeArguments)
@@ -171,16 +170,16 @@ fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean 
 }
 
 /// find common denominator for both types
-fun intersectTypes(ty1: Ty, ty2: Ty, msl: Boolean): Ty {
-    return when {
-        ty1 is TyReference && ty2 is TyReference
-                && isCompatible(ty1.referenced, ty2.referenced, msl) -> {
-            val combined = ty1.permissions.intersect(ty2.permissions)
-            TyReference(ty1.referenced, combined, ty1.msl || ty2.msl)
-        }
-        else -> ty1
-    }
-}
+//fun intersectTypes(ty1: Ty, ty2: Ty, msl: Boolean): Ty {
+//    return when {
+//        ty1 is TyReference && ty2 is TyReference
+//                && isCompatible(ty1.referenced, ty2.referenced, msl) -> {
+//            val combined = ty1.permissions.intersect(ty2.permissions)
+//            TyReference(ty1.referenced, combined, ty1.msl || ty2.msl)
+//        }
+//        else -> ty1
+//    }
+//}
 
 fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean = true): Boolean {
     val compat = checkTysCompatible(rawExpectedTy, rawInferredTy, msl)
@@ -238,7 +237,7 @@ fun checkTysCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean): Comp
                 && (expectedTy.permissions - inferredTy.permissions).isEmpty() ->
             isCompatibleReferences(expectedTy, inferredTy, msl)
 
-        expectedTy is TyStruct && inferredTy is TyStruct -> isCompatibleStructs(expectedTy, inferredTy, msl)
+        expectedTy is TyStruct2 && inferredTy is TyStruct2 -> isCompatibleStructs(expectedTy, inferredTy, msl)
         expectedTy is TyTuple && inferredTy is TyTuple -> isCompatibleTuples(expectedTy, inferredTy, msl)
         else -> Compat.TypeMismatch(expectedTy, inferredTy)
     }
@@ -283,15 +282,22 @@ data class InferenceResult(
     private val patTypes: Map<MvPat, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
     private val acquiredTypes: Map<MvCallExpr, List<Ty>>,
+    private val callExprTypes: Map<MvCallExpr, Ty>,
     private val resolvedPaths: Map<MvPath, List<ResolvedPath>>,
     val typeErrors: List<TypeError>
 ) {
     fun getExprType(expr: MvExpr): Ty = exprTypes[expr] ?: error("Expr `${expr.text}` is never inferred")
     fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: error("Pat `${pat.text}` is never inferred")
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
-    fun getAcquiredTypes(expr: MvCallExpr): List<Ty> {
-        return acquiredTypes[expr]?.takeIf { !it.contains(TyUnknown) } ?: emptyList()
+    fun getAcquiredTypes(expr: MvCallExpr, outerSubst: Substitution? = null): List<Ty> {
+        val acquiresTypes = acquiredTypes[expr]?.takeIf { !it.contains(TyUnknown) } ?: emptyList()
+        return if (outerSubst != null) {
+            acquiresTypes.map { it.substituteOrUnknown(outerSubst) }
+        } else {
+            acquiresTypes
+        }
     }
+    fun getCallExprType(expr: MvCallExpr): Ty? = callExprTypes[expr]
 //    fun getResolvedPath(path: MvPath): List<ResolvedPath> = resolvedPaths[path] ?: emptyList()
 
 //    companion object {
@@ -307,8 +313,7 @@ data class InferenceResult(
 }
 
 fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
-    val itemContext = element.itemContext(msl)
-    val inferenceCtx = InferenceContext(msl, itemContext)
+    val inferenceCtx = InferenceContext(msl)
     return recursionGuard(element, { inferenceCtx.infer(element, msl) }, memoize = false)
         ?: error("Can not run nested type inference")
 }
@@ -373,16 +378,16 @@ sealed class ResolvedPath(
     }
 }
 
-class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
-    var exprTypes = concurrentMapOf<MvExpr, Ty>()
+class InferenceContext(val msl: Boolean) {
+    val exprTypes = concurrentMapOf<MvExpr, Ty>()
     val patTypes = mutableMapOf<MvPat, Ty>()
-    val typeTypes = mutableMapOf<MvType, Ty>()
+//    val typeTypes = mutableMapOf<MvType, Ty>()
 
-    //    var callExprTypes = mutableMapOf<MvCallExpr, TyFunction>()
-    val bindingTypes = concurrentMapOf<MvBindingPat, Ty>()
+//    val bindingTypes = concurrentMapOf<MvBindingPat, Ty>()
 
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
     private val acquiredTypes = mutableMapOf<MvCallExpr, List<Ty>>()
+    private val callExprTypes = mutableMapOf<MvCallExpr, Ty>()
     private val resolvedPaths: MutableMap<MvPath, List<ResolvedPath>> = hashMapOf()
 
     var typeErrors = mutableListOf<TypeError>()
@@ -415,10 +420,7 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
 
     fun infer(owner: MvInferenceContextOwner, msl: Boolean): InferenceResult {
         val returnTy = when (owner) {
-            is MvFunctionLike -> {
-                (itemContext.getItemTy(owner) as? TyFunction)?.retType ?: TyUnknown
-            }
-//            is MvFunctionLike -> (itemContext.getItemTy(owner) as? TyFunction)?.retType ?: TyUnknown
+            is MvFunctionLike -> owner.rawReturnType(msl)
             else -> TyUnknown
         }
         val inference = TypeInferenceWalker(this, msl, returnTy)
@@ -426,24 +428,12 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
         inference.extractParameterBindings(owner)
 
         when (owner) {
-            is MvFunctionLike -> {
-                owner.codeBlock?.let {
-                    inference.inferFnBody(it)
-//                    inference.inferCodeBlockTy(it, Expectation.maybeHasType(returnTy))
-                }
-            }
-//            is MvSpecFunction -> {
-//                owner.codeBlock?.let {
-//                    val retTy = (itemContext.getItemTy(owner) as? TyFunction)?.retType
-//                    val inference = TypeInferenceWalker(this, retTy, msl)
-//                    inference.inferCodeBlockTy(it, Expectation.maybeHasType(retTy))
-//                }
-//            }
+            is MvFunctionLike -> owner.codeBlock?.let { inference.inferFnBody(it) }
             is MvItemSpec -> {
-                owner.itemSpecBlock?.let { inference.inferSpecBlock(it) }
+                owner.itemSpecBlock?.let { inference.inferSpec(it) }
             }
-            is MvModuleItemSpec -> owner.itemSpecBlock?.let { inference.inferSpecBlock(it) }
-            is MvSchema -> owner.specBlock?.let { inference.inferSpecBlock(it) }
+            is MvModuleItemSpec -> owner.itemSpecBlock?.let { inference.inferSpec(it) }
+            is MvSchema -> owner.specBlock?.let { inference.inferSpec(it) }
         }
 
         fulfill.selectWherePossible()
@@ -457,15 +447,17 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
 
         exprExpectedTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
         acquiredTypes.replaceAll { _, tys -> tys.map { fullyResolve(it) } }
+        callExprTypes.replaceAll { _, ty -> fullyResolve(ty) }
         resolvedPaths.values.asSequence().flatten()
             .forEach { it.subst = it.subst.foldValues(fullTypeWithOriginsResolver) }
-        typeErrors.replaceAll { it }
+        typeErrors.replaceAll { err -> fullyResolve(err) }
 
         return InferenceResult(
             exprTypes,
             patTypes,
             exprExpectedTypes,
             acquiredTypes,
+            callExprTypes,
             resolvedPaths,
             typeErrors
         )
@@ -481,27 +473,6 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
 //            .map { normalizeAssociatedTypesIn(it, recursionDepth) }
 //            .flatMap { it.obligations.asSequence() + Obligation(recursionDepth, it.value) }
     }
-
-    fun instantiateBounds(
-        element: MvTypeParametersOwner,
-        subst: Substitution = emptySubstitution
-    ): Substitution {
-        val typeSubst = element
-            .generics
-            .associateWith { typeVarForParam(it) }
-//                .let { if (selfTy != null) it + (TyTypeParameter.self() to selfTy) else it }
-//            val constSubst = element
-//                .constGenerics
-//                .associateWith { constVarForParam(it) }
-        val map = subst + typeSubst.toTypeSubst()
-//        val map = run {
-//        }
-////        val obligations = element.obl
-////        instantiateBounds(element.predicates, map).forEach(fulfillmentContext::registerObligation)
-        return map
-    }
-
-    fun typeVarForParam(ty: TyTypeParameter): Ty = TyInfer.TyVar(ty)
 
 //    private fun fallbackUnresolvedTypeVarsIfPossible() {
 //        val allTypes = exprTypes.values.asSequence() + patTypes.values.asSequence()
@@ -551,6 +522,10 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
         this.acquiredTypes[callExpr] = tys
     }
 
+    fun writeCallExprType(callExpr: MvCallExpr, ty: Ty) {
+        this.callExprTypes[callExpr] = ty
+    }
+
     fun writePath(path: MvPath, resolved: List<ResolvedPath>) {
         resolvedPaths[path] = resolved
     }
@@ -559,16 +534,16 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
 //        this.callExprTypes[expr] = ty
 //    }
 
-    fun getTypeTy(type: MvType): Ty {
-        val existing = this.typeTypes[type]
-        if (existing != null) {
-            return existing
-        } else {
-            val ty = inferItemTypeTy(type, itemContext)
-            this.typeTypes[type] = ty
-            return ty
-        }
-    }
+//    fun getTypeTy(type: MvType): Ty {
+//        val existing = this.typeTypes[type]
+//        if (existing != null) {
+//            return existing
+//        } else {
+//            val ty = inferItemTypeTy(type, itemContext)
+//            this.typeTypes[type] = ty
+//            return ty
+//        }
+//    }
 
 //    fun tryCoerce(inferred: Ty, expected: Ty): CoerceResult {
 //        if (inferred === expected) {
@@ -747,16 +722,9 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
         if (inferred === expected) {
             return Ok(CoerceOk())
         }
-//        if (inferred == TyNever) {
-//            return Ok(CoerceOk(adjustments = listOf(Adjustment.NeverToAny(expected))))
-//        }
         if (inferred is TyInfer.TyVar) {
             return combineTypes(inferred, expected).into()
         }
-//        val unsize = commitIfNotNull { coerceUnsized(inferred, expected) }
-//        if (unsize != null) {
-//            return Ok(unsize)
-//        }
         return when {
             // Coerce reference to pointer
 //            inferred is TyReference && expected is TyPointer &&
@@ -869,14 +837,14 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
         }
     }
 
-    fun resolveTyVarsFromContext(ctx: InferenceContext) {
-        for ((expr, ty) in this.exprTypes.entries) {
-            this.exprTypes[expr] = ctx.resolveTy(ty)
-        }
-        for ((binding, ty) in this.bindingTypes.entries) {
-            this.bindingTypes[binding] = ctx.resolveTy(ty)
-        }
-    }
+//    fun resolveTyVarsFromContext(ctx: InferenceContext) {
+//        for ((expr, ty) in this.exprTypes.entries) {
+//            this.exprTypes[expr] = ctx.resolveTy(ty)
+//        }
+//        for ((binding, ty) in this.bindingTypes.entries) {
+//            this.bindingTypes[binding] = ctx.resolveTy(ty)
+//        }
+//    }
 
     fun resolveTy(ty: Ty): Ty {
         return ty.foldTyInferWith(this::resolveTyInfer)
@@ -892,28 +860,28 @@ class InferenceContext(val msl: Boolean, val itemContext: ItemContext) {
 
     fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: error("No pat in context")
 
-    fun getBindingPatTy(pat: MvBindingPat): Ty {
-        val existing = this.bindingTypes[pat]
-        if (existing != null) {
-            return existing
-        } else {
-            val ty = inferBindingPatTy(pat, this)
-            bindingTypes[pat] = ty
-            return ty
-        }
-    }
+//    fun getBindingPatTy(pat: MvBindingPat): Ty {
+//        val existing = this.bindingTypes[pat]
+//        if (existing != null) {
+//            return existing
+//        } else {
+//            val ty = inferBindingPatTy(pat, this)
+//            bindingTypes[pat] = ty
+//            return ty
+//        }
+//    }
 
-    fun childContext(): InferenceContext {
-        val childContext = InferenceContext(this.msl, itemContext)
-        childContext.exprTypes = this.exprTypes
-//        childContext.callExprTypes = this.callExprTypes
-//        childContext.typeTypes = this.typeTypes
-        childContext.typeErrors = this.typeErrors
-        return childContext
-    }
+//    fun childContext(): InferenceContext {
+//        val childContext = InferenceContext(this.msl, itemContext)
+//        childContext.exprTypes = this.exprTypes
+////        childContext.callExprTypes = this.callExprTypes
+////        childContext.typeTypes = this.typeTypes
+//        childContext.typeErrors = this.typeErrors
+//        return childContext
+//    }
 
-    companion object {
-        fun default(msl: Boolean, element: MvElement): InferenceContext =
-            InferenceContext(msl, element.itemContext(msl))
-    }
+//    companion object {
+//        fun default(msl: Boolean, element: MvElement): InferenceContext =
+//            InferenceContext(msl, element.itemContext(msl))
+//    }
 }

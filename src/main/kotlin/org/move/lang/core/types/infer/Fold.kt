@@ -18,6 +18,7 @@ abstract class TypeFolder {
         // workaround for recursive structs, folding gives up at some point
         if (depth > MAX_RECURSION_DEPTH) return TyUnknown
 
+//        return fold(ty)
         val cachedTy = cache[ty]
         if (cachedTy != null) {
             return cachedTy

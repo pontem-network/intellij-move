@@ -20,4 +20,8 @@ data class TyTuple(val types: List<Ty>) : Ty() {
         types.any(visitor)
 
     override fun toString(): String = tyToString(this)
+
+    companion object {
+        fun unknown(arity: Int): TyTuple = TyTuple(generateSequence { TyUnknown }.take(arity).toList())
+    }
 }

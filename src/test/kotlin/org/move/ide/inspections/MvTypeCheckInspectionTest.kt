@@ -962,7 +962,7 @@ module 0x1::main {
 
     fun `test option none is compatible with any option`() = checkByText("""
 module 0x1::option {
-    struct Option<Element> has copy, drop, store {
+    struct Option<Element: copy + drop + store> has copy, drop, store {
         vec: vector<Element>
     }
     public fun none<Element>(): Option<Element> {
@@ -983,7 +983,7 @@ module 0x1::main {
 
     fun `test deeply nested structure type is unknown due to memory issues`() = checkByText("""
 module 0x1::main {
-    struct Box<T> has copy, drop, store { x: T }
+    struct Box<T> has copy, drop, store { <error descr="The type 'T' does not have the ability 'copy' required by the declared ability 'copy' of the struct 'Box'">x: T</error>  }
     struct Box3<T> has copy, drop, store { x: Box<Box<T>> }
     struct Box7<T> has copy, drop, store { x: Box3<Box3<T>> }
     struct Box15<T> has copy, drop, store { x: Box7<Box7<T>> }
@@ -1265,5 +1265,14 @@ module 0x1::pool {
             S { id: Option { element: 1u64 } };
         }
     }    
+    """)
+
+    fun `test if else with expected type`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let a = 1;
+                a = <error descr="Incompatible type 'bool', expected 'integer'">if (true) false else true</error>;
+            }
+        }        
     """)
 }

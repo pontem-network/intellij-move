@@ -8,10 +8,6 @@ import org.move.lang.core.types.ty.*
 fun inferExpectedTy(element: PsiElement, inference: InferenceResult): Ty? {
     val owner = element.parent
     return when (owner) {
-//        is MvBorrowExpr -> {
-//            val refTy = inferExpectedTy(owner.expr, inference) as? TyReference ?: return null
-//            refTy.innerTy()
-//        }
         is MvTypeArgument -> {
             val typeArgumentList = owner.parent as MvTypeArgumentList
             val paramIndex =
@@ -20,8 +16,7 @@ fun inferExpectedTy(element: PsiElement, inference: InferenceResult): Ty? {
 
             val path = typeArgumentList.parent as MvPath
             val genericItem = path.reference?.resolveWithAliases() as? MvTypeParametersOwner ?: return null
-            genericItem.typeParameters.getOrNull(paramIndex)
-                ?.let { TyTypeParameter(it) }
+            genericItem.typeParameters.getOrNull(paramIndex)?.let { TyTypeParameter(it) }
 //            val ownerExpr = path.parent as? MvExpr ?: return null
 
 //            val msl = ownerExpr.isMsl()

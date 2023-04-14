@@ -11,7 +11,7 @@ import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyReference
-import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.core.types.ty.TyStruct2
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.moveProject
@@ -265,15 +265,12 @@ fun processLexicalDeclarations(
 
                 val msl = receiverExpr.isMsl()
                 val receiverTy = receiverExpr.inference(msl)?.getExprType(receiverExpr) ?: return false
-//                val inferenceCtx = receiverExpr.maybeInferenceContext(msl) ?: return false
-
-//                val receiverTy = inferExprTy(receiverExpr, inferenceCtx)
                 val innerTy = when (receiverTy) {
-                    is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
-                    is TyStruct -> receiverTy
+                    is TyReference -> receiverTy.innerTy() as? TyStruct2 ?: TyUnknown
+                    is TyStruct2 -> receiverTy
                     else -> TyUnknown
                 }
-                if (innerTy !is TyStruct) return false
+                if (innerTy !is TyStruct2) return false
 
                 val structItem = innerTy.item
                 val dotExprModule = dotExpr.namespaceModule ?: return false
@@ -398,7 +395,7 @@ fun processLexicalDeclarations(
                         val namedElements = visibleLetDecls
                             .asReversed()
                             .flatMap { it.pat?.bindings.orEmpty() }
-                            // add inline functions
+                        // add inline functions
 //                            .chain(scope.inlineFunctions().asReversed())
 
                         // skip shadowed (already visited) elements
@@ -537,7 +534,8 @@ fun processLexicalDeclarations(
                     }
                     is MvApplySchemaStmt -> {
                         val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
-                        val patternTypeParams = toPatterns.flatMap { it.typeParameters }
+                        val patternTypeParams =
+                            toPatterns.flatMap { it.typeParameterList?.typeParameterList.orEmpty() }
                         processor.matchAll(itemVis, patternTypeParams)
                     }
 

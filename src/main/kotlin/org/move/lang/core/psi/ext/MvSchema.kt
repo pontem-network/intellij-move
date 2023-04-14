@@ -7,8 +7,12 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvSchemaStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
-import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.emptySubstitution
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
+import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.ty.GenericTy
+import org.move.lang.core.types.ty.TySchema
+import org.move.lang.core.types.ty.TyUnknown
 
 val MvSchema.specBlock: MvItemSpecBlock? get() = this.childOfType()
 
@@ -21,9 +25,10 @@ val MvSchema.module: MvModule?
 val MvSchema.requiredTypeParams: List<MvTypeParameter>
     get() {
         val usedTypeParams = mutableSetOf<MvTypeParameter>()
-        val inferenceCtx = InferenceContext.default(true, this)
+//        val inferenceCtx = InferenceContext.default(true, this)
         this.fieldStmts
-            .map { it.annotationTy(inferenceCtx) }
+            .map { it.type?.loweredType(true) ?: TyUnknown }
+//            .map { it.annotationTy(inferenceCtx) }
             .forEach {
                 it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.origin); paramTy }
             }
@@ -49,4 +54,6 @@ abstract class MvSchemaMixin : MvStubbedNamedElementImpl<MvSchemaStub>,
             val moduleFQName = this.module?.qualName ?: return null
             return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
+
+    override fun declaredType(msl: Boolean): GenericTy = TySchema(this, emptySubstitution)
 }

@@ -9,7 +9,9 @@ import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.stubs.MvStructStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
+import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.ty.Ability
+import org.move.lang.core.types.ty.TyStruct2
 import org.move.stdext.withAdded
 import javax.swing.Icon
 
@@ -84,4 +86,8 @@ abstract class MvStructMixin : MvStubbedNamedElementImpl<MvStructStub>,
             val moduleFQName = this.module.qualName ?: return null
             return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
+
+    override fun declaredType(msl: Boolean): TyStruct2 {
+        return TyStruct2(this, this.tyTypeParams, this.generics)
+    }
 }

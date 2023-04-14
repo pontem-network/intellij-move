@@ -148,7 +148,7 @@ class ResolveStructFieldsTest : ResolveTestCase() {
             let v = vector_empty();
             let item = ValidatorInfo { field: 10 };
             vector_push_back(&mut v, item);
-            vector_borrow_mut(&mut v, 10).field
+            vector_borrow_mut(&mut v, 10).field;
                                           //^
         }
     }        

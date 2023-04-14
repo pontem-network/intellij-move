@@ -11,8 +11,9 @@ import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.address
-import org.move.lang.core.types.infer.outerItemContext
-import org.move.lang.core.types.infer.rawType
+import org.move.lang.core.types.infer.inference
+import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.ty.TyFunction2
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
@@ -34,6 +35,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
 
             override fun visitPath(path: MvPath) {
                 val item = path.reference?.resolveWithAliases()
+                val msl = path.isMsl()
                 val realCount = path.typeArguments.size
                 val parent = path.parent
                 if (item == null && path.isLocal && path.identifierName == "vector") {
@@ -94,8 +96,12 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                                         .addToHolder(moveHolder)
                                 }
                             } else {
+                                val callTy = parent.inference(msl)?.getCallExprType(parent)
+                                        as? TyFunction2 ?: return
+                                val requiresExplicit = callTy.substitution.containsTypeVarOrTypeParameter()
+
                                 // if no type args are passed, check whether all type params are inferrable
-                                if (qualItem.requiredTypeParams.isNotEmpty() && realCount != expectedCount) {
+                                if (requiresExplicit && realCount != expectedCount) {
                                     MvDiagnostic
                                         .CannotInferType(path)
                                         .addToHolder(moveHolder)
@@ -146,7 +152,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                 val referenceName = path.referenceName ?: return
                 val item = path.reference?.resolve() ?: return
 
-                val itemContext = outerFunction.outerItemContext(msl)
+//                val itemContext = outerFunction.outerItemContext(msl)
 
                 if (item is MvFunction && referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
                     val explicitTypeArgs = path.typeArguments
@@ -154,7 +160,8 @@ class MvErrorAnnotator : MvAnnotatorBase() {
 //                    val inferenceCtx = callExpr.maybeInferenceContext(false) ?: return
                     for (typeArg in explicitTypeArgs) {
 //                        val typeArgTy = inferenceCtx.getTypeTy(typeArg.type)
-                        val typeArgTy = itemContext.rawType(typeArg.type)
+                        val typeArgTy = typeArg.type.loweredType(msl)
+//                        val typeArgTy = itemContext.rawType(typeArg.type)
                         if (typeArgTy !is TyUnknown && !typeArgTy.canBeAcquiredInModule(currentModule)) {
                             val typeName = typeArgTy.fullname()
                             MvDiagnostic

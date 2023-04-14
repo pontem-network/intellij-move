@@ -19,7 +19,8 @@ data class TyStruct(
         return TyStruct(
             item,
             typeVars,
-            fieldTys.mapValues { it.value.foldWith(folder) },
+            fieldTys,
+//            fieldTys.mapValues { it.value.foldWith(folder) },
             typeArguments.map { it.foldWith(folder) }
         )
     }

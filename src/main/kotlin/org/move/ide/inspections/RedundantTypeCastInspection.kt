@@ -19,7 +19,7 @@ class RedundantTypeCastInspection : MvLocalInspectionTool() {
             // TODO: different rules for msl, no need for any casts at all
             if (msl) return
 
-            val itemContext = castExpr.itemContext(msl)
+//            val itemContext = castExpr.itemContext(msl)
 //            val inferenceCtx = castExpr.inferenceContext(msl)
 
             val inference = castExpr.inference(msl) ?: return
@@ -32,7 +32,8 @@ class RedundantTypeCastInspection : MvLocalInspectionTool() {
             // cannot be redundant cast for untyped integer
             if (objectExprTy is TyInteger && (objectExprTy.kind == TyInteger.DEFAULT_KIND)) return
 
-            val castTypeTy = itemContext.rawType(castExpr.type)
+            val castTypeTy = castExpr.type.loweredType(msl)
+//            val castTypeTy = itemContext.rawType(castExpr.type)
             if (castTypeTy is TyUnknown) return
 
             if (objectExprTy == castTypeTy) {
