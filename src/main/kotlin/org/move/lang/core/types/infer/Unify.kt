@@ -31,7 +31,7 @@ class UnificationTable<K : Node, V> {
     private val undoLog: MutableList<UndoLogEntry> = mutableListOf()
 
     @Suppress("UNCHECKED_CAST")
-    private data class Root<out K: Node, out V>(val key: K) {
+    private data class Root<out K : Node, out V>(val key: K) {
         private val varValue: VarValue<V> = key.parent as VarValue<V>
         val rank: Int get() = varValue.rank
         val value: V? get() = varValue.value
@@ -84,6 +84,7 @@ class UnificationTable<K : Node, V> {
     fun findValue(key: K): V? = get(key).value
 
     fun unifyVarVar(key1: K, key2: K): K {
+//        println("unify var-var $key1: $key2")
         val node1 = get(key1)
         val node2 = get(key2)
 
@@ -103,6 +104,7 @@ class UnificationTable<K : Node, V> {
     }
 
     fun unifyVarValue(key: K, value: V) {
+//        println("unify var-value $key: $value")
         val node = get(key)
         if (node.value != null && node.value != value) error("unification error") // must be solved on the upper level
 
@@ -120,7 +122,7 @@ class UnificationTable<K : Node, V> {
         return SnapshotImpl(undoLog.size - 1)
     }
 
-    private inner class SnapshotImpl(val position: Int): Snapshot {
+    private inner class SnapshotImpl(val position: Int) : Snapshot {
         override fun commit() {
             assertOpenSnapshot(this)
             if (position == 0) {
@@ -130,10 +132,10 @@ class UnificationTable<K : Node, V> {
             }
         }
 
-        override fun rollback(){
-            val snapshoted = undoLog.subList(position + 1, undoLog.size)
-            snapshoted.reversed().forEach(UndoLogEntry::rollback)
-            snapshoted.clear()
+        override fun rollback() {
+            val snapshotted = undoLog.subList(position + 1, undoLog.size)
+            snapshotted.reversed().forEach(UndoLogEntry::rollback)
+            snapshotted.clear()
 
             val last = undoLog.removeAt(undoLog.size - 1)
             check(last is UndoLogEntry.OpenSnapshot)
@@ -161,12 +163,14 @@ private sealed class UndoLogEntry {
             error("Cannot rollback an uncommitted snapshot")
         }
     }
+
     object CommittedSnapshot : UndoLogEntry() {
         override fun rollback() {
             // This occurs when there are nested snapshots and
             // the inner is committed but outer is rolled back.
         }
     }
+
     data class SetParent(val node: Node, val oldParent: NodeOrValue) : UndoLogEntry() {
         override fun rollback() {
             node.parent = oldParent

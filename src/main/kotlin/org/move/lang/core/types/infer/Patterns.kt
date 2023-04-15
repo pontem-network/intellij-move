@@ -1,9 +1,11 @@
 package org.move.lang.core.types.infer
 
-import org.move.ide.presentation.fullname
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyStruct2
+import org.move.lang.core.types.ty.TyTuple
+import org.move.lang.core.types.ty.TyUnknown
 
 //fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext) {
 //    fun bind(pat: MvPat, ty: Ty) {
@@ -67,7 +69,8 @@ fun MvPat.extractBindings(fctx: TypeInferenceWalker, ty: Ty) {
         is MvStructPat -> {
             val structItem = this.structItem ?: (ty as? TyStruct2)?.item ?: return
             val patTy = TyStruct2.valueOf(structItem)
-            if (!isCompatible(ty, patTy)) {
+            if (!isCompatible(ty, patTy, fctx.msl)) {
+//            if (!isCompatible(ty, patTy, fctx.msl)) {
                 fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
             }
             val structFields = structItem.fields.associateBy { it.name }
@@ -86,7 +89,7 @@ fun MvPat.extractBindings(fctx: TypeInferenceWalker, ty: Ty) {
         }
         is MvTuplePat -> {
             val patTy = TyTuple.unknown(patList.size)
-            if (!isCompatible(ty, patTy)) {
+            if (!isCompatible(ty, patTy, fctx.msl)) {
                 fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
             }
             val expectedTypes = (ty as? TyTuple)?.types.orEmpty()

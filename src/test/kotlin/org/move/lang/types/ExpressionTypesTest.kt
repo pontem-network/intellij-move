@@ -777,4 +777,60 @@ module 0x1::main {
     }
 }        
     """)
+
+    fun `test bit and`() = testExpr("""
+module 0x1::main {
+    fun main() {
+        (1 & 1);
+      //^ integer  
+    }
+}        
+    """)
+
+    fun `test bit or`() = testExpr("""
+module 0x1::main {
+    fun main() {
+        (1 | 1);
+      //^ integer  
+    }
+}        
+    """)
+
+    fun `test bit shift left`() = testExpr("""
+module 0x1::main {
+    fun main() {
+        (1 << 1);
+      //^ integer  
+    }
+}        
+    """)
+
+    fun `test bit shift right`() = testExpr("""
+module 0x1::main {
+    fun main() {
+        (1 >> 1);
+      //^ integer  
+    }
+}        
+    """)
+
+    fun `test bit ^`() = testExpr("""
+module 0x1::main {
+    fun main() {
+        (1 ^ 1);
+      //^ integer  
+    }
+}        
+    """)
+
+    fun `test infer result for spec`() = testExpr("""
+module 0x1::main {
+    struct S { val: u8 }
+    fun call(): S { S { val: 1 } }
+    spec call {
+        ensures result.val == 1;
+                      //^ u8
+    }
+}        
+    """)
 }

@@ -14,8 +14,7 @@ class MvDotStructFieldAccessReferenceImpl(
     element: MvStructFieldReferenceElement
 ) : MvReferenceCached<MvStructFieldReferenceElement>(element) {
 
-    override fun resolveInner(): List<MvNamedElement> =
-        resolveLocalItem(element, setOf(Namespace.DOT_FIELD))
+    override fun resolveInner(): List<MvNamedElement> = resolveLocalItem(element, setOf(Namespace.DOT_FIELD))
 }
 
 abstract class MvStructDotMixin(node: ASTNode) : MvElementImpl(node),

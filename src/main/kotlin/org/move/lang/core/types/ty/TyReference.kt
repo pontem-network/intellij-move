@@ -50,8 +50,8 @@ data class TyReference(val referenced: Ty, val permissions: Set<RefPermissions>,
     override fun toString(): String = tyToString(this)
 
     companion object {
-        fun coerceMutability(from: TyReference, to: TyReference): Boolean {
-            return from == to || from.isMut && !to.isMut
+        fun coerceMutability(inferred: TyReference, expected: TyReference): Boolean {
+            return inferred.isMut || !expected.isMut
         }
     }
 }

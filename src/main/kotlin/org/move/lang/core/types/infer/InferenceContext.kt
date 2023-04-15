@@ -135,10 +135,6 @@ interface MvInferenceContextOwner : MvElement
 //    }
 //}
 
-fun isCompatibleReferences(expectedTy: TyReference, inferredTy: TyReference, msl: Boolean): Compat {
-    return checkTysCompatible(expectedTy.referenced, inferredTy.referenced, msl)
-}
-
 fun isCompatibleStructs(expectedTy: TyStruct2, inferredTy: TyStruct2, msl: Boolean): Compat {
     val isCompat = expectedTy.item.qualName == inferredTy.item.qualName
             && expectedTy.typeArguments.size == inferredTy.typeArguments.size
@@ -158,10 +154,9 @@ fun isCompatibleTuples(expectedTy: TyTuple, inferredTy: TyTuple, msl: Boolean): 
 }
 
 fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean {
-    val isCompat = expectedTy.kind == TyInteger.DEFAULT_KIND
+    return expectedTy.kind == TyInteger.DEFAULT_KIND
             || inferredTy.kind == TyInteger.DEFAULT_KIND
             || expectedTy.kind == inferredTy.kind
-    return isCompat
 //    return if (isCompat) {
 //        Compat.Yes
 //    } else {
@@ -181,14 +176,13 @@ fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean 
 //    }
 //}
 
-fun isCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean = true): Boolean {
-    val compat = checkTysCompatible(rawExpectedTy, rawInferredTy, msl)
-    return compat == Compat.Yes
+fun isCompatible(expectedTy: Ty, inferredTy: Ty, msl: Boolean): Boolean {
+    return InferenceContext(msl).combineTypes(expectedTy, inferredTy).isOk
 }
 
 fun checkTysCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean): Compat {
-    val expectedTy = rawExpectedTy.mslTy()
-    val inferredTy = rawInferredTy.mslTy()
+    val expectedTy = rawExpectedTy.mslScopeRefined(msl)
+    val inferredTy = rawInferredTy.mslScopeRefined(msl)
     return when {
         expectedTy is TyNever || inferredTy is TyNever -> Compat.Yes
         expectedTy is TyUnknown || inferredTy is TyUnknown -> Compat.Yes
@@ -235,7 +229,7 @@ fun checkTysCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean): Comp
         expectedTy is TyReference && inferredTy is TyReference
                 // inferredTy permissions should be a superset of expectedTy permissions
                 && (expectedTy.permissions - inferredTy.permissions).isEmpty() ->
-            isCompatibleReferences(expectedTy, inferredTy, msl)
+            checkTysCompatible(expectedTy, inferredTy, msl)
 
         expectedTy is TyStruct2 && inferredTy is TyStruct2 -> isCompatibleStructs(expectedTy, inferredTy, msl)
         expectedTy is TyTuple && inferredTy is TyTuple -> isCompatibleTuples(expectedTy, inferredTy, msl)
@@ -297,6 +291,7 @@ data class InferenceResult(
             acquiresTypes
         }
     }
+
     fun getCallExprType(expr: MvCallExpr): Ty? = callExprTypes[expr]
 //    fun getResolvedPath(path: MvPath): List<ResolvedPath> = resolvedPaths[path] ?: emptyList()
 
@@ -314,7 +309,7 @@ data class InferenceResult(
 
 fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
     val inferenceCtx = InferenceContext(msl)
-    return recursionGuard(element, { inferenceCtx.infer(element, msl) }, memoize = false)
+    return recursionGuard(element, { inferenceCtx.infer(element) }, memoize = false)
         ?: error("Can not run nested type inference")
 }
 
@@ -378,7 +373,7 @@ sealed class ResolvedPath(
     }
 }
 
-class InferenceContext(val msl: Boolean) {
+class InferenceContext(var msl: Boolean) {
     val exprTypes = concurrentMapOf<MvExpr, Ty>()
     val patTypes = mutableMapOf<MvPat, Ty>()
 //    val typeTypes = mutableMapOf<MvType, Ty>()
@@ -418,12 +413,12 @@ class InferenceContext(val msl: Boolean) {
         return result
     }
 
-    fun infer(owner: MvInferenceContextOwner, msl: Boolean): InferenceResult {
+    fun infer(owner: MvInferenceContextOwner): InferenceResult {
         val returnTy = when (owner) {
             is MvFunctionLike -> owner.rawReturnType(msl)
             else -> TyUnknown
         }
-        val inference = TypeInferenceWalker(this, msl, returnTy)
+        val inference = TypeInferenceWalker(this, returnTy)
 
         inference.extractParameterBindings(owner)
 
@@ -464,15 +459,15 @@ class InferenceContext(val msl: Boolean) {
     }
 
 
-    fun instantiateBounds(
-        bounds: List<Obligation>,
-        subst: Substitution = emptySubstitution,
-//        recursionDepth: Int = 0
-    ): Sequence<Obligation> {
-        return bounds.asSequence().map { it.substitute(subst) }
-//            .map { normalizeAssociatedTypesIn(it, recursionDepth) }
-//            .flatMap { it.obligations.asSequence() + Obligation(recursionDepth, it.value) }
-    }
+//    fun instantiateBounds(
+//        bounds: List<Obligation>,
+//        subst: Substitution = emptySubstitution,
+////        recursionDepth: Int = 0
+//    ): Sequence<Obligation> {
+//        return bounds.asSequence().map { it.substitute(subst) }
+////            .map { normalizeAssociatedTypesIn(it, recursionDepth) }
+////            .flatMap { it.obligations.asSequence() + Obligation(recursionDepth, it.value) }
+//    }
 
 //    private fun fallbackUnresolvedTypeVarsIfPossible() {
 //        val allTypes = exprTypes.values.asSequence() + patTypes.values.asSequence()
@@ -594,8 +589,8 @@ class InferenceContext(val msl: Boolean) {
 
     @Suppress("NAME_SHADOWING")
     private fun combineTypesResolved(ty1: Ty, ty2: Ty): RelateResult {
-        val ty1 = ty1.mslTy()
-        val ty2 = ty2.mslTy()
+        val ty1 = ty1.mslScopeRefined(msl)
+        val ty2 = ty2.mslScopeRefined(msl)
         return when {
             ty1 is TyInfer.TyVar -> combineTyVar(ty1, ty2)
             ty2 is TyInfer.TyVar -> combineTyVar(ty2, ty1)
@@ -703,7 +698,7 @@ class InferenceContext(val msl: Boolean) {
 
             ty1msl is TyReference && ty2msl is TyReference
                     // inferredTy permissions should be a superset of expectedTy permissions
-                    && (ty1msl.permissions - ty2msl.permissions).isEmpty() ->
+                    && coerceMutability(ty1msl, ty2msl) ->
                 combineTypes(ty1msl.referenced, ty2msl.referenced)
 
             ty1msl is TyStruct2 && ty2msl is TyStruct2
@@ -722,36 +717,18 @@ class InferenceContext(val msl: Boolean) {
         if (inferred === expected) {
             return Ok(CoerceOk())
         }
-        if (inferred is TyInfer.TyVar) {
-            return combineTypes(inferred, expected).into()
-        }
-        return when {
-            // Coerce reference to pointer
-//            inferred is TyReference && expected is TyPointer &&
-//                    coerceMutability(inferred.mutability, expected.mutability) -> {
-//                combineTypes(inferred.referenced, expected.referenced).map {
-//                    CoerceOk(
-//                        adjustments = listOf(
-//                            Adjustment.Deref(inferred.referenced, overloaded = null),
-//                            Adjustment.BorrowPointer(expected)
-//                        )
-//                    )
-//                }
-//            }
-//            // Coerce mutable pointer to const pointer
-//            inferred is TyPointer && inferred.mutability.isMut
-//                    && expected is TyPointer && !expected.mutability.isMut -> {
-//                combineTypes(inferred.referenced, expected.referenced).map {
-//                    CoerceOk(adjustments = listOf(Adjustment.MutToConstPointer(expected)))
-//                }
-//            }
-            // Coerce references
-            inferred is TyReference && expected is TyReference &&
-                    coerceMutability(inferred, expected) -> {
-                tryCoerce(inferred.referenced, expected.referenced)
-            }
-            else -> combineTypes(inferred, expected).into()
-        }
+//        if (inferred is TyInfer.TyVar) {
+//            return combineTypes(inferred, expected).into()
+//        }
+        return combineTypes(inferred, expected).into()
+//        return when {
+//            // Coerce references
+////            inferred is TyReference && expected is TyReference
+////                    && coerceMutability(inferred, expected) -> {
+////                tryCoerce(inferred.referenced, expected.referenced)
+////            }
+//            else -> combineTypes(inferred, expected).into()
+//        }
     }
 
 //    /**

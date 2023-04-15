@@ -74,6 +74,14 @@ fun Ty.expectedTyText(): String {
                     .joinToString(", ", "(", ")") { a -> a.label() }
             "$name$abilities"
         },
+        tyVar = {
+            val name = it.origin?.name ?: "_"
+            val abilities =
+                it.abilities()
+                    .toList().sorted()
+                    .joinToString(", ", "(", ")") { a -> a.label() }
+            "?$name$abilities"
+        },
         fq = true
     )
 }
@@ -96,6 +104,7 @@ private fun render(
     anonymous: String = "<anonymous>",
     integer: String = "integer",
     typeParam: (TyTypeParameter) -> String = { it.name ?: anonymous },
+    tyVar: (TyInfer.TyVar) -> String = { "?${it.origin?.name ?: "_"}" },
     fq: Boolean = false
 ): String {
     check(level >= 0)
@@ -121,7 +130,7 @@ private fun render(
 
     if (level == 0) return "_"
 
-    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, typeParam, fq) }
+    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, typeParam, tyVar, fq) }
 
     return when (ty) {
 //        is TyFunction -> {
@@ -163,7 +172,7 @@ private fun render(
             name + args
         }
         is TyInfer -> when (ty) {
-            is TyInfer.TyVar -> "?${ty.origin?.name ?: "_"}"
+            is TyInfer.TyVar -> tyVar(ty)
             is TyInfer.IntVar -> integer
         }
         is TyLambda -> {

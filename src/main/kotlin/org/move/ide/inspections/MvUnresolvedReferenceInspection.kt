@@ -8,6 +8,9 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.types.infer.inference
+import org.move.lang.core.types.ty.TyStruct2
+import org.move.lang.core.types.ty.TyUnknown
 
 class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
@@ -165,9 +168,9 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         override fun visitDotExpr(dotExpr: MvDotExpr) {
             if (dotExpr.isMsl()) return
 
-//            val inference = dotExpr.inference(false) ?: return
-//            val inferenceCtx = dotExpr.maybeInferenceContext(false) ?: return
-//            inferDotExprStructTy(dotExpr, inferenceCtx) ?: return
+            val receiverTy = dotExpr.inference(false)?.getExprType(dotExpr.expr)
+            // disable inspection is object is unresolved
+            if (receiverTy is TyUnknown) return
 
             val dotField = dotExpr.structDotField
             if (!dotField.resolvable) {

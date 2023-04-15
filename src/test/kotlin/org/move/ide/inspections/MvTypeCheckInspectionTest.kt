@@ -95,7 +95,7 @@ module 0x1::M {
         true
     }
     fun main<Element>(opt: &Option<Element>) {
-        is_none(<error descr="Incompatible type '&Option<Element>', expected '&mut Option<?Element>'">opt</error>);
+        is_none(<error descr="Incompatible type '&Option<Element>', expected '&mut Option<Element>'">opt</error>);
     } 
 }    
     """
@@ -274,7 +274,7 @@ module 0x1::M {
         """
     module 0x1::M {
         fun m() {
-            if (true) {1} else {<error descr="Incompatible type 'bool', expected 'integer'">true</error>};
+            if (true) {1} else <error descr="Incompatible type 'bool', expected 'integer'">{true}</error>;
         }
     }    
     """
@@ -671,7 +671,7 @@ module 0x1::M {
     """
     )
 
-    fun `test ref equality for generics in call expr`() = checkErrors(
+    fun `test ref equality for generics in spec call expr`() = checkErrors(
         """
     module 0x1::M {
         struct Token<TokenT> {}
@@ -874,7 +874,7 @@ module 0x1::M {
     module 0x1::M {
         fun identity<T>(a: T): T { a }
         fun main() {
-            let a: u8 = <error descr="Incompatible type 'u64', expected 'u8'">identity(1u64)</error>;
+            let a: u8 = identity(<error descr="Incompatible type 'u64', expected 'u8'">1u64</error>);
         }
     }        
     """

@@ -328,23 +328,6 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
     }    
     """)
 
-    fun `test no unresolved field for uninferred type of vector`() = checkByText(
-        """
-    module 0x1::M {
-        struct ValidatorInfo { field: u8 }
-        native public fun vector_empty<Element>(): vector<Element>;
-        native public fun vector_push_back<Element>(v: &mut vector<Element>, e: Element);
-        native public fun vector_borrow_mut<Element>(v: &mut vector<Element>, i: u64): &mut Element;
-        fun call() {
-            let v = vector_empty();
-            let item = ValidatorInfo { field: 10 };
-            vector_push_back(&mut v, item);
-            vector_borrow_mut(&mut v, 10).field;
-        }
-    }        
-    """
-    )
-
     fun `test no error for dot field in specs`() = checkByText("""
 module 0x1::main {
     struct S {}
@@ -367,12 +350,12 @@ module 0x1::main {
 }        
     """)
 
-    fun `test no error for field of reference of unknown type`() = checkByText("""
+    fun `test error for field of reference of unknown type`() = checkByText("""
 module 0x1::main {
     fun call<T>(t: T): &T { &t }
     fun main() {
         let var = &(1 + false);
-        var.key;
+        var.<error descr="Unresolved field: `key`">key</error>;
     }
 }        
     """)

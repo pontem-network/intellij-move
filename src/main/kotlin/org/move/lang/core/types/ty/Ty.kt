@@ -1,7 +1,6 @@
 package org.move.lang.core.types.ty
 
 import org.move.lang.core.psi.MvTypeParametersOwner
-import org.move.lang.core.psi.tyInfers
 import org.move.lang.core.types.infer.*
 
 enum class Ability {
@@ -58,9 +57,22 @@ abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
     abstract fun abilities(): Set<Ability>
 }
 
-val Ty.isTypeParam: Boolean get() = this is TyInfer || this is TyTypeParameter
+//val Ty.isTypeParam: Boolean get() = this is TyInfer || this is TyTypeParameter
 
-fun Ty.mslTy(): Ty = if (this is TyReference && this.msl) this.innermostTy() else this
+//fun Ty.mslTy(msl: Boolean): Ty = if (this is TyReference && msl) this.innermostTy() else this
+
+fun Ty.mslScopeRefined(msl: Boolean): Ty {
+    var ty = this
+    if (!msl) return ty
+
+    if (this is TyReference) {
+        ty = this.innermostTy()
+    }
+    if (ty is TyInteger) {
+        ty = TyNum
+    }
+    return ty
+}
 
 abstract class GenericTy(
     open val item: MvTypeParametersOwner,
@@ -68,8 +80,8 @@ abstract class GenericTy(
     flags: TypeFlags,
 ) : Ty(flags) {
 
-    fun withTyInfers(): GenericTy {
-        val tyInfers = this.item.tyInfers
-        return this.foldTyTypeParameterWith { tyInfers[it] ?: it } as GenericTy
-    }
+//    fun withTyInfers(): GenericTy {
+//        val tyInfers = this.item.tyInfers
+//        return this.foldTyTypeParameterWith { tyInfers[it] ?: it } as GenericTy
+//    }
 }

@@ -42,6 +42,14 @@ data class ItemVis(
     val isMsl get() = mslScope != MslScope.NONE
 }
 
+fun processStructFields(
+    struct: MvStruct,
+    fieldName: String,
+    processor: MatchingProcessor<MvNamedElement>,
+): Boolean {
+    return true
+}
+
 fun processItems(
     element: MvElement,
     itemVis: ItemVis,
@@ -270,7 +278,7 @@ fun processLexicalDeclarations(
                     is TyStruct2 -> receiverTy
                     else -> TyUnknown
                 }
-                if (innerTy !is TyStruct2) return false
+                if (innerTy !is TyStruct2) return true
 
                 val structItem = innerTy.item
                 val dotExprModule = dotExpr.namespaceModule ?: return false

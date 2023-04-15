@@ -3,10 +3,7 @@ package org.move.lang.core.completion
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementDecorator
 import org.move.lang.core.psi.*
-import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.infer.isCompatible
-import org.move.lang.core.types.infer.loweredType
-import org.move.lang.core.types.infer.outerItemContext
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.TyUnknown
 
 fun LookupElement.toMvLookupElement(properties: LookupElementProperties): MvLookupElement =
@@ -66,7 +63,8 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
 //        val typeContext =
         val ty = when (element) {
 //        is RsFieldDecl -> typeReference?.type
-            is MvTypeParametersOwner -> element.declaredType(msl)
+            is MvFunctionLike -> element.declaredType(msl).retType
+            is MvStruct -> element.declaredType(msl)
 //            is MvFunction -> {
 //                element.declaredType(msl)
 ////                val itemContext = element.outerItemContext(msl)
