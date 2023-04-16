@@ -581,7 +581,7 @@ class ResolveSpecsTest: ResolveTestCase() {
     }
     """)
 
-    fun `test infer result for spec`() = checkByCode("""
+    fun `test result field for spec`() = checkByCode("""
 module 0x1::main {
     struct S { val: u8 }
                //X

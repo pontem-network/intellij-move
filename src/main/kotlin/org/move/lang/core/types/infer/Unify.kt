@@ -84,7 +84,6 @@ class UnificationTable<K : Node, V> {
     fun findValue(key: K): V? = get(key).value
 
     fun unifyVarVar(key1: K, key2: K): K {
-//        println("unify var-var $key1: $key2")
         val node1 = get(key1)
         val node2 = get(key2)
 
@@ -104,7 +103,6 @@ class UnificationTable<K : Node, V> {
     }
 
     fun unifyVarValue(key: K, value: V) {
-//        println("unify var-value $key: $value")
         val node = get(key)
         if (node.value != null && node.value != value) error("unification error") // must be solved on the upper level
 

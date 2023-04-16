@@ -829,8 +829,39 @@ module 0x1::main {
     fun call(): S { S { val: 1 } }
     spec call {
         ensures result.val == 1;
-                      //^ u8
+                      //^ num
     }
 }        
+    """)
+
+    fun `test struct unpacking type`() = testExpr("""
+        module 0x1::m {
+            struct S<CoinType> { amount: CoinType }
+            fun call<CallCoinType>(s: S<CallCoinType>) {
+                let S { amount: my_amount } = s;
+                my_amount;
+                //^ CallCoinType
+            }
+        }               
+    """)
+
+    fun `test type of binding of tuple of single variable`() = testExpr("""
+        module 0x1::m {
+            fun call() {
+                let (a) = 1;
+                a;
+              //^ integer  
+            }
+        }        
+    """)
+
+    fun `test type of binding of tuple of single variable with comma`() = testExpr("""
+        module 0x1::m {
+            fun call() {
+                let (a,) = 1;
+                a;
+              //^ integer  
+            }
+        }        
     """)
 }

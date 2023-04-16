@@ -10,16 +10,18 @@ import org.move.lang.core.resolve.ref.MvReferenceCached
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.resolveLocalItem
 
-class MvDotStructFieldAccessReferenceImpl(
+class MvStructDotFieldReferenceImpl(
     element: MvStructFieldReferenceElement
 ) : MvReferenceCached<MvStructFieldReferenceElement>(element) {
 
-    override fun resolveInner(): List<MvNamedElement> = resolveLocalItem(element, setOf(Namespace.DOT_FIELD))
+    override fun resolveInner(): List<MvNamedElement> {
+        return resolveLocalItem(element, setOf(Namespace.DOT_FIELD))
+    }
 }
 
 abstract class MvStructDotMixin(node: ASTNode) : MvElementImpl(node),
                                                  MvStructDotField {
     override fun getReference(): MvReference {
-        return MvDotStructFieldAccessReferenceImpl(this)
+        return MvStructDotFieldReferenceImpl(this)
     }
 }

@@ -1322,15 +1322,30 @@ PragmaAttribute ::= IDENTIFIER ('=' Expr)?
 
 
 
-AbortsIfSpecExpr ::= aborts_if Expr AbortsIfWith? { pin = 1 }
+AbortsIfSpecExpr ::= aborts_if Expr AbortsIfWith? {
+    pin = 1
+    implements = [ "org.move.lang.core.psi.MvBoolConditionSpecExpr" ]
+}
 AbortsIfWith ::= with Expr { pin = 1 }
 
 AbortsWithSpecExpr ::= aborts_with <<comma_sep_items Expr>> { pin = 1 }
 
-AssertSpecExpr ::= assert Expr { pin = 1 }
-AssumeSpecExpr ::= assume Expr { pin = 1 }
-RequiresSpecExpr ::= requires MODULE_KW? Expr { pin = 1 }
-EnsuresSpecExpr ::= ensures SpecExpr { pin = 1 }
+AssertSpecExpr ::= assert Expr {
+    pin = 1
+    implements = [ "org.move.lang.core.psi.MvBoolConditionSpecExpr" ]
+}
+AssumeSpecExpr ::= assume Expr {
+    pin = 1
+    implements = [ "org.move.lang.core.psi.MvBoolConditionSpecExpr" ]
+}
+RequiresSpecExpr ::= requires MODULE_KW? Expr {
+    pin = 1
+    implements = [ "org.move.lang.core.psi.MvBoolConditionSpecExpr" ]
+}
+EnsuresSpecExpr ::= ensures SpecExpr {
+    pin = 1
+    implements = [ "org.move.lang.core.psi.MvBoolConditionSpecExpr" ]
+}
 ModifiesSpecExpr ::= modifies Expr { pin = 1 }
 
 IncludeStmt ::= include SpecVisibility? <<includeStmtMode Expr>> ';' { pin = 1 }
@@ -1368,7 +1383,10 @@ private InvariantModifier ::= <<invariantModifierKeyword>>
 InvariantSpecExpr ::= invariant InvariantModifier? TypeParameterList? Expr { pin = 1 }
 
 //AxiomSpecStmt ::= AxiomSpecExpr ';'
-AxiomSpecExpr ::= axiom TypeParameterList? Expr { pin = 1 }
+AxiomSpecExpr ::= axiom TypeParameterList? Expr {
+    pin = 1
+    implements = [ "org.move.lang.core.psi.MvBoolConditionSpecExpr" ]
+}
 
 SpecVisibility ::= '[' SpecVisibility_items ']' { pin = 1 }
 private SpecVisibility_items ::= SpecVisibilityModifier ( ',' SpecVisibilityModifier )* ','?
@@ -1390,7 +1408,9 @@ EmitsSpecExpr ::= emits SpecExpr to SpecExpr EmitsCondition? { pin = 1 }
 //private EmitsStmt_body ::= Expr to Expr EmitsCondition?
 //{ recoverWhile = ExprStmt_recover }
 
-EmitsCondition ::= if Expr { pin = 1 }
+EmitsCondition ::= if Expr {
+    pin = 1
+}
 
 ApplySchemaStmt ::= apply SchemaRef ApplyTo ApplyExcept? ';' { pin = 1 }
 ApplyTo ::= to <<comma_sep_items FunctionPattern>> { pin = 1 }
@@ -1416,7 +1436,6 @@ SpecVisRestrictedExpr ::= SpecVisibility Expr
 QuantWhere ::= where Expr
 {
     pin = 1
-//    rightAssociative = true
 }
 
 ForallQuantExpr ::= <<mslOnly forall>> QuantBindings QuantWhere? ':' Expr

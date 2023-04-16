@@ -180,4 +180,18 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
         }
     }        
     """)
+
+    fun `test no need for explicit type infer from return type`() = checkErrors(
+        """
+        module 0x1::m {
+            struct Coin<CoinType> { val: u8 }
+            struct S<X> { coins: Coin<X> }
+            struct BTC {}
+            fun coin_zero<ZeroCoinType>(): Coin<ZeroCoinType> { Coin<ZeroCoinType> { val: 0 } }
+            fun call<CallCoinType>() {
+                S<CallCoinType> { coins: coin_zero() };
+            }
+        }        
+    """
+    )
 }

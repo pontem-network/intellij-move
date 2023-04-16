@@ -214,43 +214,7 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
         val element = item.psiElement as? MvElement ?: return
 
         when (element) {
-            is MvFunctionLike -> {
-                val requiresExplicitTypes = run {
-                    // explicit type arguments required
-//                    if (element.requiredTypeParams.isNotEmpty()) return@run false
-//                    // all type arguments inferrable from function parameters
-//                    if (element.typeParamsUsedOnlyInReturnType.isEmpty()) return@run true
-
-//                    if (completionContext == null) return@run false
-                    val msl = element.isMsl()
-                    val callTy = element.declaredType(msl).substitute(element.tyInfers) as TyFunction2
-
-                    val inferenceCtx = InferenceContext(msl)
-                    callTy.paramTypes.forEach { inferenceCtx.combineTypes(it, TyUnknown) }
-                    val expectedTy = completionContext?.expectedTy
-                    if (expectedTy != null && expectedTy !is TyUnknown) {
-                        inferenceCtx.combineTypes(callTy.retType, expectedTy)
-                    }
-                    (inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyFunction2)
-                        .substitution
-                        .containsTypeVarOrTypeParameter()
-                }
-
-                var suffix = ""
-                if (!context.hasAngleBrackets && requiresExplicitTypes) {
-                    suffix += "<>"
-                }
-                if (!context.hasAngleBrackets && !context.hasCallParens) {
-                    suffix += "()"
-                }
-                val offset = when {
-                    element.parameters.isNotEmpty() || requiresExplicitTypes -> 1
-                    else -> 2
-                }
-
-                document.insertString(context.selectionEndOffset, suffix)
-                EditorModificationUtil.moveCaretRelatively(context.editor, offset)
-            }
+            is MvFunctionLike -> handleFunctionInsert(context, element)
             is MvSchema -> {
                 if (element.hasTypeParameters) {
                     if (!context.hasAngleBrackets) {
@@ -272,5 +236,38 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
                 }
             }
         }
+    }
+
+    private fun handleFunctionInsert(context: InsertionContext, element: MvFunctionLike) {
+        val requiresExplicitTypes = run {
+            val msl = element.isMsl()
+            val callTy = element.declaredType(msl).substitute(element.tyInfers) as TyFunction2
+
+            val inferenceCtx = InferenceContext(msl)
+            callTy.paramTypes.forEach { inferenceCtx.combineTypes(it, TyUnknown) }
+            val expectedTy = completionContext?.expectedTy
+            if (expectedTy != null && expectedTy !is TyUnknown) {
+                inferenceCtx.combineTypes(callTy.retType, expectedTy)
+            }
+            (inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyFunction2)
+                .substitution
+                .containsTypeVarOrOwnTypeParameter()
+        }
+
+        var suffix = ""
+        if (!context.hasAngleBrackets && requiresExplicitTypes) {
+            suffix += "<>"
+        }
+        if (!context.hasAngleBrackets && !context.hasCallParens) {
+            suffix += "()"
+        }
+
+        val offset = when {
+            element.parameters.isNotEmpty() || requiresExplicitTypes -> 1
+            else -> 2
+        }
+
+        context.document.insertString(context.selectionEndOffset, suffix)
+        EditorModificationUtil.moveCaretRelatively(context.editor, offset)
     }
 }

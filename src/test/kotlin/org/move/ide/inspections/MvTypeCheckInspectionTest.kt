@@ -283,10 +283,10 @@ module 0x1::M {
     fun `test no type error with explicit generic as move_to`() = checkErrors(
         """
     module 0x1::M {
-        struct Option<Element> has copy, drop, store {
+        struct Option<Element: store> has store {
             element: Element
         }
-        public fun some<SomeElement>(e: SomeElement): Option<SomeElement> {
+        public fun some<SomeElement: store>(e: SomeElement): Option<SomeElement> {
             Option { element: e }
         }
         struct Vault<VaultContent: store> has key {
@@ -358,7 +358,7 @@ module 0x1::M {
     struct Event has store, drop {}
     fun emit_event<T: drop + store>(handler_ref: &mut EventHandle<T>, msg: T) {}
     fun m<Type: store + drop>() acquires Account {
-        emit_event(<error descr="Incompatible type 'EventHandle<Event>', expected '&mut EventHandle<?T>'">borrow_global_mut<Account>(@0x1).handle</error>, Event {});
+        emit_event(<error descr="Incompatible type 'EventHandle<Event>', expected '&mut EventHandle<Event>'">borrow_global_mut<Account>(@0x1).handle</error>, Event {});
     }
     
 }    
@@ -563,7 +563,7 @@ module 0x1::M {
         """
     module 0x1::M {
         struct Option<Element> has copy, drop, store {}
-        public fun none<Element>(): Option<Element> {
+        public fun none<NoneElement>(): Option<NoneElement> {
             Option {}
         }
         struct S { field: Option<address> }
@@ -922,23 +922,28 @@ module 0x1::main {
     """
     )
 
-    fun `test vector lit with explicit type and type error`() = checkByText("""
+    fun `test vector lit with explicit type and type error`() = checkByText(
+        """
 module 0x1::main {
     fun main() {
         vector<u8>[<error descr="Incompatible type 'u64', expected 'u8'">1u64</error>];
     }
 }        
-    """)
+    """
+    )
 
-    fun `test vector lit with implicit type and type error`() = checkByText("""
+    fun `test vector lit with implicit type and type error`() = checkByText(
+        """
 module 0x1::main {
     fun main() {
         vector[1u8, <error descr="Incompatible type 'u64', expected 'u8'">1u64</error>];
     }
 }        
-    """)
+    """
+    )
 
-    fun `test call expr with incomplete arguments and explicit type`() = checkByText("""
+    fun `test call expr with incomplete arguments and explicit type`() = checkByText(
+        """
     module 0x1::main {
         fun call<T>(a: T, b: T): T {
             b        
@@ -947,9 +952,11 @@ module 0x1::main {
             call<u8>(<error descr="Incompatible type 'u64', expected 'u8'">1u64</error>);
         }    
     }        
-    """)
+    """
+    )
 
-    fun `test call expr with incomplete arguments and implicit type`() = checkByText("""
+    fun `test call expr with incomplete arguments and implicit type`() = checkByText(
+        """
     module 0x1::main {
         fun call<T>(a: T, b: T, c: T): T {
             b        
@@ -958,14 +965,16 @@ module 0x1::main {
             call(1u8, <error descr="Incompatible type 'u64', expected 'u8'">1u64</error>);
         }    
     }        
-    """)
+    """
+    )
 
-    fun `test option none is compatible with any option`() = checkByText("""
+    fun `test option none is compatible with any option`() = checkByText(
+        """
 module 0x1::option {
     struct Option<Element: copy + drop + store> has copy, drop, store {
         vec: vector<Element>
     }
-    public fun none<Element>(): Option<Element> {
+    public fun none<Element: copy + drop + store>(): Option<Element> {
         Option { vec: vector::empty() }
     }
 }        
@@ -979,9 +988,11 @@ module 0x1::main {
         IterableValue { prev: option::none(), next: option::none() };
     }
 }        
-    """)
+    """
+    )
 
-    fun `test deeply nested structure type is unknown due to memory issues`() = checkByText("""
+    fun `test deeply nested structure type is unknown due to memory issues`() = checkByText(
+        """
 module 0x1::main {
     struct Box<T> has copy, drop, store { <error descr="The type 'T' does not have the ability 'copy' required by the declared ability 'copy' of the struct 'Box'">x: T</error>  }
     struct Box3<T> has copy, drop, store { x: Box<Box<T>> }
@@ -1016,26 +1027,32 @@ module 0x1::main {
       //^ unknown  
     }
 }
-    """)
+    """
+    )
 
-    fun `test no invalid unpacking error for unresolved name tuple`() = checkByText("""
+    fun `test no invalid unpacking error for unresolved name tuple`() = checkByText(
+        """
 module 0x1::main {
     fun main() {
         let (a, b) = call();
     }
 }        
-    """)
+    """
+    )
 
-    fun `test no invalid unpacking error for unresolved name struct`() = checkByText("""
+    fun `test no invalid unpacking error for unresolved name struct`() = checkByText(
+        """
 module 0x1::main {
     struct S { val: u8 }
     fun main() {
         let S { val } = call();
     }
 }        
-    """)
+    """
+    )
 
-    fun `test loop never returns and not a type error`() = checkByText("""
+    fun `test loop never returns and not a type error`() = checkByText(
+        """
 module 0x1::main {
     fun main(): u64 {
         let a = 1;
@@ -1043,9 +1060,11 @@ module 0x1::main {
         loop {}
     }
 }        
-    """)
+    """
+    )
 
-    fun `test integer arguments support ordering`() = checkByText("""
+    fun `test integer arguments support ordering`() = checkByText(
+        """
 module 0x1::main {
     fun main(a: u64, b: u8) {
         let c = 1;
@@ -1057,36 +1076,44 @@ module 0x1::main {
         b < c;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test cannot order references`() = checkByText("""
+    fun `test cannot order references`() = checkByText(
+        """
 module 0x1::main {
     fun main(a: &u64, b: &u64) {
         <error descr="Invalid argument to '<': expected integer type, but found '&u64'">a</error> 
         < <error descr="Invalid argument to '<': expected integer type, but found '&u64'">b</error>;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test cannot order bools`() = checkByText("""
+    fun `test cannot order bools`() = checkByText(
+        """
 module 0x1::main {
     fun main(a: bool, b: bool) {
         <error descr="Invalid argument to '<': expected integer type, but found 'bool'">a</error> 
         < <error descr="Invalid argument to '<': expected integer type, but found 'bool'">b</error>;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test cannot order type parameters`() = checkByText("""
+    fun `test cannot order type parameters`() = checkByText(
+        """
 module 0x1::main {
     fun main<T>(a: T, b: T) {
         <error descr="Invalid argument to '<': expected integer type, but found 'T'">a</error> 
         < <error descr="Invalid argument to '<': expected integer type, but found 'T'">b</error>;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test equality is supported for the same type objects`() = checkByText("""
+    fun `test equality is supported for the same type objects`() = checkByText(
+        """
 module 0x1::main {
     struct S { val: u8 }
     fun main<T>(a: T, b: T) {
@@ -1098,9 +1125,11 @@ module 0x1::main {
         a == b;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test inequality is supported for the same type objects`() = checkByText("""
+    fun `test inequality is supported for the same type objects`() = checkByText(
+        """
 module 0x1::main {
     struct S { val: u8 }
     fun main<T>(a: T, b: T) {
@@ -1112,9 +1141,11 @@ module 0x1::main {
         a != b;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test any ordering of types is allowed in specs`() = checkByText("""
+    fun `test any ordering of types is allowed in specs`() = checkByText(
+        """
 module 0x1::liq_stake {
     spec main {
         let a = 1;
@@ -1122,9 +1153,11 @@ module 0x1::liq_stake {
         let c = a < false;
     }
 }
-    """)
+    """
+    )
 
-    fun `test cannot equal completely different types`() = checkByText("""
+    fun `test cannot equal completely different types`() = checkByText(
+        """
 module 0x1::main {
     struct S { val: u64 }
     fun main() {
@@ -1132,84 +1165,104 @@ module 0x1::main {
         <error descr="Incompatible arguments to '==': 'S' and 'bool'">S { val: 10 } == false</error>;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test cannot equal different integer types`() = checkByText("""
+    fun `test cannot equal different integer types`() = checkByText(
+        """
 module 0x1::main {
     fun main() {
         <error descr="Incompatible arguments to '==': 'u8' and 'u64'">1u8 == 1u64</error>;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test cannot inequal different integer types`() = checkByText("""
+    fun `test cannot inequal different integer types`() = checkByText(
+        """
 module 0x1::main {
     fun main() {
         <error descr="Incompatible arguments to '!=': 'u8' and 'u64'">1u8 != 1u64</error>;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test logic expressions allow booleans`() = checkByText("""
+    fun `test logic expressions allow booleans`() = checkByText(
+        """
 module 0x1::main {
     fun main() {
         true && true;
         false || false;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test logic expressions invalid argument type`() = checkByText("""
+    fun `test logic expressions invalid argument type`() = checkByText(
+        """
 module 0x1::main {
     fun main() {
         <error descr="Incompatible type 'u8', expected 'bool'">1u8</error> 
         && <error descr="Incompatible type 'u64', expected 'bool'">1u64</error>;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test if else with different generic parameters`() = checkByText("""
+    fun `test if else with different generic parameters`() = checkByText(
+        """
 module 0x1::main {
     struct G<X, Y> {}
     fun main<X, Y>() {
         if (true) {
             G<X, Y> {}
-        } else {
-            <error descr="Incompatible type 'G<Y, X>', expected 'G<X, Y>'">G<Y, X> {}</error>
-        };
+        } else <error descr="Incompatible type 'G<Y, X>', expected 'G<X, Y>'">{
+            G<Y, X> {}
+        }</error>;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test type cannot contain itself`() = checkByText("""
+    fun `test type cannot contain itself`() = checkByText(
+        """
 module 0x1::main {
     struct S { val: <error descr="Circular reference of type 'S'">S</error> }
 }        
-    """)
+    """
+    )
 
-    fun `test type cannot contain itself in vector`() = checkByText("""
+    fun `test type cannot contain itself in vector`() = checkByText(
+        """
 module 0x1::main {
     struct S { val: vector<<error descr="Circular reference of type 'S'">S</error>> }
 }        
-    """)
+    """
+    )
 
-    fun `test cannot sum up bool and u64`() = checkByText("""
+    fun `test cannot sum up bool and u64`() = checkByText(
+        """
 module 0x1::main {
     fun main() {
         <error descr="Invalid argument to '+': expected integer type, but found 'bool'">false</error> + 1u64;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test cannot sum up u8 and u64`() = checkByText("""
+    fun `test cannot sum up u8 and u64`() = checkByText(
+        """
 module 0x1::main {
     fun main() {
         <error descr="Incompatible arguments to '+': 'u8' and 'u64'">1u8 + 1u64</error>;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test recursive structs`() = checkByText("""
+    fun `test recursive structs`() = checkByText(
+        """
 module 0x42::M0 {
     struct Foo { f: <error descr="Circular reference of type 'Foo'">Foo</error> }
 
@@ -1231,15 +1284,17 @@ module 0x42::M1 {
     struct C { d: vector<D> }
     struct D { x: M0::Cup<M0::Cup<M0::Cup<A>>> }
 }
-    """)
+    """
+    )
 
-    fun `test no error for table borrow mut of unknown type`() = checkByText("""
+    fun `test no error for table borrow mut of unknown type`() = checkByText(
+        """
 module 0x1::table {
     /// Type of tables
-    struct Table<phantom K: copy + drop, V> has store {
+    struct Table<phantom K: copy + drop, V: store> has store {
         inner: V 
     }
-    public fun borrow_mut<K: copy + drop, V>(table: &mut Table<K, V>, key: K): &mut V {
+    public fun borrow_mut<K: copy + drop, V: store>(table: &mut Table<K, V>, key: K): &mut V {
         &mut table.inner
     }
 }
@@ -1251,12 +1306,14 @@ module 0x1::pool {
     fun call(pool: &mut Pool) {
         let value = table::borrow_mut(&mut pool.shares, @0x1);
         let unref = *value;
-        1u128 - unref;
+        1u128 - <error descr="Invalid argument to '-': expected integer type, but found 'V'">unref</error>;
     }
 }        
-    """)
+    """
+    )
 
-    fun `test no error for nested struct literal and explicit type`() = checkByText("""
+    fun `test no error for nested struct literal and explicit type`() = checkByText(
+        """
     module 0x1::M {
         struct Option<Element> { element: Element } 
         struct S { id: Option<u64> }
@@ -1265,14 +1322,76 @@ module 0x1::pool {
             S { id: Option { element: 1u64 } };
         }
     }    
-    """)
+    """
+    )
 
-    fun `test if else with expected type`() = checkByText("""
+    fun `test if else with expected type`() = checkByText(
+        """
         module 0x1::m {
             fun main() {
                 let a = 1;
                 a = <error descr="Incompatible type 'bool', expected 'integer'">if (true) false else true</error>;
             }
         }        
+    """
+    )
+
+    fun `test uninitialized integer with binary expr`() = checkByText(
+        """
+        module 0x1::m {
+            fun main() {
+                let lt;
+                if (true) {
+                    lt = 1;
+                } else {
+                    lt = 2;
+                };
+                lt - 1;
+            }
+        }        
+    """
+    )
+
+    fun `test no invalid unpacking for full struct pat`() = checkByText(
+        """
+        module 0x1::m {
+            struct S<phantom CoinType> { amount: u8 }
+            fun call<CallCoinType>(s: S<CallCoinType>) {
+                let S { amount: my_amount } = s;
+            }
+        }        
+    """
+    )
+
+    fun `test no invalid unpacking for shorthand struct pat`() = checkByText(
+        """
+        module 0x1::m {
+            struct S<phantom CoinType> { amount: u8 }
+            fun call<CallCoinType>(s: S<CallCoinType>) {
+                let S { amount } = s;
+            }
+        }        
+    """
+    )
+
+    fun `test no invalid unpacking for variable in parens`() = checkByText("""
+        module 0x1::m {
+            fun call() {
+                let (a) = 1;
+            }
+        }        
     """)
+
+    fun `test check type of assigning value in tuple assignment`() = checkByText(
+        """
+        module 0x1::m {
+            struct Coin<CoinType> { val: u8 }
+            fun coin_zero<CoinType>(): Coin<CoinType> { Coin { val: 0 } }
+            fun call<CallCoinType>() {
+                let a = 0;
+                (a, _) = <error descr="Incompatible type '(Coin<CallCoinType>, <unknown>)', expected '(integer, <unknown>)'">(coin_zero<CallCoinType>(), 2)</error>;
+            }
+        }        
+    """
+    )
 }

@@ -180,62 +180,62 @@ fun isCompatible(expectedTy: Ty, inferredTy: Ty, msl: Boolean): Boolean {
     return InferenceContext(msl).combineTypes(expectedTy, inferredTy).isOk
 }
 
-fun checkTysCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean): Compat {
-    val expectedTy = rawExpectedTy.mslScopeRefined(msl)
-    val inferredTy = rawInferredTy.mslScopeRefined(msl)
-    return when {
-        expectedTy is TyNever || inferredTy is TyNever -> Compat.Yes
-        expectedTy is TyUnknown || inferredTy is TyUnknown -> Compat.Yes
-        expectedTy is TyInfer.TyVar && inferredTy !is TyInfer.TyVar -> {
-            isCompatibleAbilities(expectedTy, inferredTy, msl)
-        }
-        /* expectedTy !is TyInfer.TyVar && */ inferredTy is TyInfer.TyVar -> {
-            // todo: should always be false
-            // todo: can it ever occur anyway?
-            Compat.Yes
-        }
-        expectedTy is TyInfer.IntVar && (inferredTy is TyInfer.IntVar || inferredTy is TyInteger) -> {
-            Compat.Yes
-        }
-
-        inferredTy is TyInfer.IntVar && expectedTy is TyInteger -> {
-            Compat.Yes
-        }
-
-        expectedTy is TyTypeParameter || inferredTy is TyTypeParameter -> {
-            // check abilities
-            if (expectedTy != inferredTy) {
-                Compat.TypeMismatch(expectedTy, inferredTy)
-            } else {
-                Compat.Yes
-            }
-        }
-
-        expectedTy is TyUnit && inferredTy is TyUnit -> Compat.Yes
-        expectedTy is TyInteger && inferredTy is TyInteger -> {
-            val compat = isCompatibleIntegers(expectedTy, inferredTy)
-            if (!compat) {
-                Compat.TypeMismatch(expectedTy, inferredTy)
-            } else {
-                Compat.Yes
-            }
-        }
-        expectedTy is TyPrimitive && inferredTy is TyPrimitive
-                && expectedTy.name == inferredTy.name -> Compat.Yes
-
-        expectedTy is TyVector && inferredTy is TyVector
-                && isCompatible(expectedTy.item, inferredTy.item, msl) -> Compat.Yes
-
-        expectedTy is TyReference && inferredTy is TyReference
-                // inferredTy permissions should be a superset of expectedTy permissions
-                && (expectedTy.permissions - inferredTy.permissions).isEmpty() ->
-            checkTysCompatible(expectedTy, inferredTy, msl)
-
-        expectedTy is TyStruct2 && inferredTy is TyStruct2 -> isCompatibleStructs(expectedTy, inferredTy, msl)
-        expectedTy is TyTuple && inferredTy is TyTuple -> isCompatibleTuples(expectedTy, inferredTy, msl)
-        else -> Compat.TypeMismatch(expectedTy, inferredTy)
-    }
-}
+//fun checkTysCompatible(rawExpectedTy: Ty, rawInferredTy: Ty, msl: Boolean): Compat {
+//    val expectedTy = rawExpectedTy.mslScopeRefined(msl)
+//    val inferredTy = rawInferredTy.mslScopeRefined(msl)
+//    return when {
+//        expectedTy is TyNever || inferredTy is TyNever -> Compat.Yes
+//        expectedTy is TyUnknown || inferredTy is TyUnknown -> Compat.Yes
+//        expectedTy is TyInfer.TyVar && inferredTy !is TyInfer.TyVar -> {
+//            isCompatibleAbilities(expectedTy, inferredTy, msl)
+//        }
+//        /* expectedTy !is TyInfer.TyVar && */ inferredTy is TyInfer.TyVar -> {
+//            // todo: should always be false
+//            // todo: can it ever occur anyway?
+//            Compat.Yes
+//        }
+//        expectedTy is TyInfer.IntVar && (inferredTy is TyInfer.IntVar || inferredTy is TyInteger) -> {
+//            Compat.Yes
+//        }
+//
+//        inferredTy is TyInfer.IntVar && expectedTy is TyInteger -> {
+//            Compat.Yes
+//        }
+//
+//        expectedTy is TyTypeParameter || inferredTy is TyTypeParameter -> {
+//            // check abilities
+//            if (expectedTy != inferredTy) {
+//                Compat.TypeMismatch(expectedTy, inferredTy)
+//            } else {
+//                Compat.Yes
+//            }
+//        }
+//
+//        expectedTy is TyUnit && inferredTy is TyUnit -> Compat.Yes
+//        expectedTy is TyInteger && inferredTy is TyInteger -> {
+//            val compat = isCompatibleIntegers(expectedTy, inferredTy)
+//            if (!compat) {
+//                Compat.TypeMismatch(expectedTy, inferredTy)
+//            } else {
+//                Compat.Yes
+//            }
+//        }
+//        expectedTy is TyPrimitive && inferredTy is TyPrimitive
+//                && expectedTy.name == inferredTy.name -> Compat.Yes
+//
+//        expectedTy is TyVector && inferredTy is TyVector
+//                && isCompatible(expectedTy.item, inferredTy.item, msl) -> Compat.Yes
+//
+//        expectedTy is TyReference && inferredTy is TyReference
+//                // inferredTy permissions should be a superset of expectedTy permissions
+//                && (expectedTy.permissions - inferredTy.permissions).isEmpty() ->
+//            checkTysCompatible(expectedTy, inferredTy, msl)
+//
+//        expectedTy is TyStruct2 && inferredTy is TyStruct2 -> isCompatibleStructs(expectedTy, inferredTy, msl)
+//        expectedTy is TyTuple && inferredTy is TyTuple -> isCompatibleTuples(expectedTy, inferredTy, msl)
+//        else -> Compat.TypeMismatch(expectedTy, inferredTy)
+//    }
+//}
 
 typealias RelateResult = RsResult<Unit, CombineTypeError>
 
@@ -525,6 +525,41 @@ class InferenceContext(var msl: Boolean) {
         resolvedPaths[path] = resolved
     }
 
+    fun <T : GenericTy> instantiatePath(
+        path: MvPath,
+        genericItem: MvTypeParametersOwner
+    ): Pair<T, Substitution> {
+        val typeParameters = genericItem.tyInfers
+
+        @Suppress("UNCHECKED_CAST")
+        val itemTy =
+            TyLowering.lowerPath(path, msl).substitute(typeParameters) as T
+        // check abilities on the passed type arguments
+        itemTy.substitution.typeSubst.entries.withIndex()
+            .forEach { (i, entry) ->
+                val (paramTy, ty) = entry
+                if (ty !is TyInfer.TyVar) {
+                    val compat = isCompatibleAbilities(paramTy, ty, msl)
+                    if (compat is Compat.AbilitiesMismatch) {
+                        val pathArgument = path.typeArguments.getOrNull(i) ?: return@forEach
+                        reportTypeError(TypeError.AbilitiesMismatch(pathArgument, ty, compat.abilities))
+                    }
+                }
+            }
+        unifySubst(typeParameters, itemTy.substitution)
+        return Pair(itemTy, typeParameters)
+    }
+
+    fun unifySubst(subst1: Substitution, subst2: Substitution) {
+        subst1.typeSubst.forEach { (k, v1) ->
+            subst2[k]?.let { v2 ->
+                if (k != v1 && v1 !is TyTypeParameter && v1 !is TyUnknown) {
+                    combineTypes(v2, v1)
+                }
+            }
+        }
+    }
+
 //    fun cacheCallExprTy(expr: MvCallExpr, ty: TyFunction) {
 //        this.callExprTypes[expr] = ty
 //    }
@@ -641,7 +676,7 @@ class InferenceContext(var msl: Boolean) {
         when (ty1) {
             is TyInfer.IntVar -> when (ty2) {
                 is TyInfer.IntVar -> intUnificationTable.unifyVarVar(ty1, ty2)
-                is TyInteger -> intUnificationTable.unifyVarValue(ty1, ty2)
+                is TyInteger, is TyUnknown -> intUnificationTable.unifyVarValue(ty1, ty2)
                 else -> return Err(CombineTypeError.TypeMismatch(ty1, ty2))
             }
             is TyInfer.TyVar -> error("unreachable")
@@ -682,13 +717,15 @@ class InferenceContext(var msl: Boolean) {
 //            }
             ty1msl is TyTypeParameter && ty2msl is TyTypeParameter && ty1msl == ty2msl -> Ok(Unit)
             ty1msl is TyUnit && ty2msl is TyUnit -> Ok(Unit)
-            ty1msl is TyInteger && ty2msl is TyInteger -> {
-                val compat = isCompatibleIntegers(ty1msl, ty2msl)
-                if (compat) {
-                    Ok(Unit)
-                } else {
-                    Err(CombineTypeError.TypeMismatch(ty1msl, ty2msl))
-                }
+            ty1msl is TyInteger && ty2msl is TyInteger && ty1msl == ty2msl -> {
+                Ok(Unit)
+//                ty1msl == ty2msl
+//                val compat = isCompatibleIntegers(ty1msl, ty2msl)
+//                if (compat) {
+//                    Ok(Unit)
+//                } else {
+//                    Err(CombineTypeError.TypeMismatch(ty1msl, ty2msl))
+//                }
             }
             ty1msl is TyPrimitive && ty2msl is TyPrimitive && ty1msl.name == ty2msl.name -> Ok(Unit)
 
@@ -807,6 +844,13 @@ class InferenceContext(var msl: Boolean) {
     }
 
     private val fullTypeWithOriginsResolver: FullTypeWithOriginsResolver = FullTypeWithOriginsResolver()
+
+    fun reportTypeError(typeError: TypeError) {
+        val element = typeError.element
+        if (typeErrors.all { !element.isAncestorOf(it.element) }) {
+            addTypeError(typeError)
+        }
+    }
 
     fun addTypeError(typeError: TypeError) {
         if (typeError.element.containingFile.isPhysical) {

@@ -42,14 +42,6 @@ data class ItemVis(
     val isMsl get() = mslScope != MslScope.NONE
 }
 
-fun processStructFields(
-    struct: MvStruct,
-    fieldName: String,
-    processor: MatchingProcessor<MvNamedElement>,
-): Boolean {
-    return true
-}
-
 fun processItems(
     element: MvElement,
     itemVis: ItemVis,

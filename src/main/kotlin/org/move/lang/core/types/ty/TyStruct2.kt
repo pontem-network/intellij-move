@@ -39,8 +39,4 @@ data class TyStruct2(
     override fun innerVisitWith(visitor: TypeVisitor): Boolean {
         return typeArguments.any { it.visitWith(visitor) } || substitution.visitValues(visitor)
     }
-
-    companion object {
-        fun valueOf(item: MvStruct): TyStruct2 = item.declaredType(false) as TyStruct2
-    }
 }

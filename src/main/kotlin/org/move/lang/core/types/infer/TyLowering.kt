@@ -14,31 +14,7 @@ fun MvType.loweredType(msl: Boolean): Ty = TyLowering.lowerType(this, msl)
 class TyLowering {
     fun lowerTy(moveType: MvType, msl: Boolean): Ty {
         return when (moveType) {
-            is MvPathType -> {
-                lowerPath(moveType.path, msl)
-//                val namedItem = moveType.path.reference?.resolveWithAliases()
-//                if (namedItem == null) {
-//                    return lowerPrimitiveTy(moveType, msl)
-//                }
-////                val subst = emptySubstitution
-//                when (namedItem) {
-//                    is MvTypeParameter -> TyTypeParameter(namedItem)
-//                    is MvTypeParametersOwner -> {
-//                        val baseTy = namedItem.declaredType(msl)
-//                        val explicitArguments = lowerPathGenerics(moveType.path, namedItem, msl)
-//                        baseTy
-//                    }
-//                    else -> TyUnknown
-//                }
-//                val typeParameters = baseTy.substitution
-
-//                val (_, subst) = instantiatePathGenerics(moveType.path, namedItem, msl)
-//                when (namedItem) {
-//                    is MvStruct -> TyStruct2.valueOf(namedItem).substitute(subst)
-//                    is MvTypeParameter -> TyTypeParameter(namedItem)
-//                    else -> TyUnknown
-//                }
-            }
+            is MvPathType -> lowerPath(moveType.path, msl)
             is MvRefType -> {
                 val mutabilities = RefPermissions.valueOf(moveType.mutable)
                 val refInnerType = moveType.type
@@ -133,14 +109,5 @@ class TyLowering {
         fun lowerPath(path: MvPath, msl: Boolean): Ty {
             return TyLowering().lowerPath(path, msl)
         }
-
-//        fun <T : MvElement> lowerPathGenerics(
-//            path: MvPath,
-//            element: T,
-////            subst: Substitution,
-//            msl: Boolean
-//        ): Substitution {
-//            return TyLowering().instantiatePathGenerics(path, element, msl).subst
-//        }
     }
 }

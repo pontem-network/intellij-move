@@ -98,10 +98,10 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                             } else {
                                 val callTy = parent.inference(msl)?.getCallExprType(parent)
                                         as? TyFunction2 ?: return
-                                val requiresExplicit = callTy.substitution.containsTypeVarOrTypeParameter()
+                                val requiresExplicit = callTy.substitution.containsTypeVarOrOwnTypeParameter()
 
                                 // if no type args are passed, check whether all type params are inferrable
-                                if (requiresExplicit && realCount != expectedCount) {
+                                if (requiresExplicit) {
                                     MvDiagnostic
                                         .CannotInferType(path)
                                         .addToHolder(moveHolder)

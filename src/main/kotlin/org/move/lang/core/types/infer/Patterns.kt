@@ -68,9 +68,8 @@ fun MvPat.extractBindings(fctx: TypeInferenceWalker, ty: Ty) {
         }
         is MvStructPat -> {
             val structItem = this.structItem ?: (ty as? TyStruct2)?.item ?: return
-            val patTy = TyStruct2.valueOf(structItem)
+            val (patTy, _) = fctx.ctx.instantiatePath<TyStruct2>(this.path, structItem);
             if (!isCompatible(ty, patTy, fctx.msl)) {
-//            if (!isCompatible(ty, patTy, fctx.msl)) {
                 fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
             }
             val structFields = structItem.fields.associateBy { it.name }
@@ -88,11 +87,19 @@ fun MvPat.extractBindings(fctx: TypeInferenceWalker, ty: Ty) {
             }
         }
         is MvTuplePat -> {
-            val patTy = TyTuple.unknown(patList.size)
-            if (!isCompatible(ty, patTy, fctx.msl)) {
-                fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
+            if (patList.size == 1 && ty !is TyTuple) {
+                // let (a) = 1;
+                // let (a,) = 1;
+                patList.single().extractBindings(fctx, ty)
+                return
             }
-            val expectedTypes = (ty as? TyTuple)?.types.orEmpty()
+            val patTy = TyTuple.unknown(patList.size)
+            val expectedTypes = if (!isCompatible(ty, patTy, fctx.msl)) {
+                fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
+                emptyList()
+            } else {
+                (ty as? TyTuple)?.types.orEmpty()
+            }
             for ((idx, p) in patList.withIndex()) {
                 val patType = expectedTypes.getOrNull(idx) ?: TyUnknown
                 p.extractBindings(fctx, patType)
