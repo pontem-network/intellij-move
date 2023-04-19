@@ -3,7 +3,7 @@ package org.move.lang.core.types.ty
 import org.move.ide.presentation.tyToString
 import org.move.lang.core.types.infer.*
 
-sealed class TyInfer : Ty() {
+sealed class TyInfer : Ty(HAS_TY_INFER_MASK) {
     // Note these classes must NOT be `data` classes and must provide equality by identity
     class TyVar(
         val origin: TyTypeParameter? = null,

@@ -23,7 +23,7 @@ class FieldInitShorthandInspection : MvLocalInspectionTool() {
         override fun visitStructPatField(field: MvStructPatField) {
             val ident = field.identifier ?: return
             val fieldBinding = field.structPatFieldBinding ?: return
-            if (ident.text == fieldBinding.pat?.text.orEmpty()) {
+            if (ident.text == fieldBinding.pat.text.orEmpty()) {
                 holder.registerProblem(
                     field,
                     "Expression can be simplified",

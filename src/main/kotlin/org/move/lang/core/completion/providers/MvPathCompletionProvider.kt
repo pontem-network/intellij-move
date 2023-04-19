@@ -173,10 +173,6 @@ private fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement
             is MvRefExpr,
             is MvDotExpr -> {
                 val inference = (ancestor as MvElement).inference(msl) ?: return TyUnknown
-
-//                val inferenceCtx =
-//                    (ancestor as MvElement).maybeInferenceContext(msl)
-//                        ?: InferenceContext(msl, ancestor.itemContext(msl))
                 return inferExpectedTy(ancestor, inference)
             }
         }

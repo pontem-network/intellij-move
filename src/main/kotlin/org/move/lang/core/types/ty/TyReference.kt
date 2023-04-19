@@ -20,7 +20,11 @@ enum class RefPermissions {
     }
 }
 
-data class TyReference(val referenced: Ty, val permissions: Set<RefPermissions>, val msl: Boolean) : Ty() {
+data class TyReference(
+    val referenced: Ty,
+    val permissions: Set<RefPermissions>,
+    val msl: Boolean
+) : Ty(referenced.flags) {
     override fun abilities() = setOf(Ability.COPY, Ability.DROP)
 
     val isMut: Boolean get() = this.permissions.contains(RefPermissions.WRITE)
@@ -50,6 +54,8 @@ data class TyReference(val referenced: Ty, val permissions: Set<RefPermissions>,
     override fun toString(): String = tyToString(this)
 
     companion object {
+        fun ref(ty: Ty, msl: Boolean): TyReference = TyReference(ty, setOf(RefPermissions.READ), msl)
+
         fun coerceMutability(inferred: TyReference, expected: TyReference): Boolean {
             return inferred.isMut || !expected.isMut
         }

@@ -2,10 +2,7 @@ package org.move.lang.core.types.infer
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyStruct2
-import org.move.lang.core.types.ty.TyTuple
-import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.types.ty.*
 
 //fun collectBindings(pattern: MvPat, inferredTy: Ty, parentCtx: InferenceContext) {
 //    fun bind(pat: MvPat, ty: Ty) {
@@ -60,6 +57,14 @@ import org.move.lang.core.types.ty.TyUnknown
 //    }
 //    bind(pattern, inferredTy)
 //}
+
+fun MvPat.anonymousTyVar(): Ty {
+    return when (this) {
+        is MvBindingPat -> TyInfer.TyVar()
+        is MvTuplePat -> TyTuple(this.patList.map { TyInfer.TyVar() })
+        else -> TyUnknown
+    }
+}
 
 fun MvPat.extractBindings(fctx: TypeInferenceWalker, ty: Ty) {
     when (this) {

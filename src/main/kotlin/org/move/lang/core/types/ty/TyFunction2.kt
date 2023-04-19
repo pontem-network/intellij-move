@@ -15,7 +15,7 @@ data class TyFunction2(
 ) : GenericTy(
     item,
     substitution,
-    mergeFlags(paramTypes) or retType.flags or mergeFlags(acquiresTypes)
+    mergeFlags(paramTypes) or mergeFlags(acquiresTypes) or retType.flags
 ) {
 
     override fun innerFoldWith(folder: TypeFolder): Ty {

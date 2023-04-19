@@ -9,8 +9,9 @@ import org.move.ide.presentation.tyToString
 
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
+import org.move.lang.core.types.infer.mergeFlags
 
-data class TyTuple(val types: List<Ty>) : Ty() {
+data class TyTuple(val types: List<Ty>) : Ty(mergeFlags(types)) {
     override fun abilities() = Ability.all()
 
     override fun innerFoldWith(folder: TypeFolder): Ty =

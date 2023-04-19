@@ -103,7 +103,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                                 // if no type args are passed, check whether all type params are inferrable
                                 if (requiresExplicit) {
                                     MvDiagnostic
-                                        .CannotInferType(path)
+                                        .NeedsTypeAnnotation(path)
                                         .addToHolder(moveHolder)
                                 }
                             }

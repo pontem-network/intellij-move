@@ -2,15 +2,12 @@ package org.move.ide.inspections
 
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.codeInspection.util.InspectionMessage
-import com.intellij.psi.PsiElement
-import org.move.ide.presentation.name
+import com.intellij.psi.util.descendantsOfType
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.structItem
-import org.move.lang.core.psi.ext.tyAbilities
-import org.move.lang.core.types.infer.*
-import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.types.infer.TypeError
+import org.move.lang.core.types.infer.inference
 
 class MvTypeCheckInspection : MvLocalInspectionTool() {
     override val isSyntaxOnly: Boolean get() = true
@@ -19,9 +16,17 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
         object : MvVisitor() {
             override fun visitItemSpec(o: MvItemSpec) {
                 val inference = o.inference(true)
-//                val inference = o.maybeInferenceContext(true) ?: return
                 inference.typeErrors
-                    .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MAIN) }
+                    .filter { TypeError.isAllowedTypeError(it) }
+                    .forEach {
+                        holder.registerTypeError(it)
+                    }
+            }
+
+            override fun visitModuleItemSpec(o: MvModuleItemSpec) {
+                val inference = o.inference(true)
+                inference.typeErrors
+                    .filter { TypeError.isAllowedTypeError(it) }
                     .forEach {
                         holder.registerTypeError(it)
                     }
@@ -30,55 +35,23 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             override fun visitFunction(o: MvFunction) {
                 val msl = o.isMsl()
                 val inference = o.inference(msl)
-//                val inferenceCtx = o.inferenceContext(msl)
                 inference.typeErrors
-//                inference.typeErrors
-                    .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MAIN) }
-                    .forEach {
-                        holder.registerTypeError(it)
-                    }
-            }
-
-            override fun visitModule(module: MvModule) {
-                val itemContext = module.itemContext(false)
-                itemContext.typeErrors
-                    .filter { TypeError.isAllowedTypeError(it, TypeErrorScope.MODULE) }
+                    .filter { TypeError.isAllowedTypeError(it) }
                     .forEach {
                         holder.registerTypeError(it)
                     }
             }
 
             override fun visitStructField(field: MvStructField) {
-                val structAbilities = field.structItem.tyAbilities
-                if (structAbilities.isEmpty()) return
-
-//                val itemContext = field.structItem.module.itemContext(false)
-                val fieldTy = field.type?.loweredType(false) ?: TyUnknown
-//                val fieldTy = itemContext.getStructFieldItemTy(field)
-//                    // explicit generic type of field has all abilities available
-//                    .foldTyInferWith { TyUnknown }
-
-                val fieldAbilities = fieldTy.abilities()
-                for (ability in structAbilities) {
-                    val requiredAbility = ability.requires()
-                    if (requiredAbility !in fieldAbilities) {
-                        val message =
-                            "The type '${fieldTy.name()}' does not have the ability '${requiredAbility.label()}' " +
-                                    "required by the declared ability '${ability.label()}' " +
-                                    "of the struct '${field.structItem.name}'"
-                        holder.registerTypeError(field, message)
-                        return
+                val structItem = field.structItem
+                for (innerType in field.type?.descendantsOfType<MvPathType>().orEmpty()) {
+                    val typeItem = innerType.path.reference?.resolve() as? MvStruct ?: continue
+                    if (typeItem == structItem) {
+                        holder.registerTypeError(TypeError.CircularType(innerType, structItem))
                     }
                 }
             }
         }
-
-    fun ProblemsHolder.registerTypeError(
-        element: PsiElement,
-        @InspectionMessage message: String,
-    ) {
-        this.registerProblem(element, message, ProblemHighlightType.GENERIC_ERROR)
-    }
 
     fun ProblemsHolder.registerTypeError(typeError: TypeError) {
         this.registerProblem(

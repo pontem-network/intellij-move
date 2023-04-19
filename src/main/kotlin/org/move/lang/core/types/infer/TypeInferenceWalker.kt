@@ -133,7 +133,7 @@ class TypeInferenceWalker(
             is MvLetStmt -> {
                 val explicitTy = stmt.type?.loweredType(msl)
                 val expr = stmt.initializer?.expr
-
+                val pat = stmt.pat
                 val inferredTy =
                     if (expr != null) {
                         val inferredTy = inferExprTy(expr, ctx, Expectation.maybeHasType(explicitTy))
@@ -144,9 +144,9 @@ class TypeInferenceWalker(
                         }
                         coercedTy
                     } else {
-                        TyInfer.TyVar()
+                        pat?.anonymousTyVar() ?: TyUnknown
                     }
-                stmt.pat?.extractBindings(
+                pat?.extractBindings(
                     this,
                     explicitTy ?: resolveTypeVarsWithObligations(inferredTy)
                 )
@@ -184,20 +184,23 @@ class TypeInferenceWalker(
 
         expected.tyAsNullable(ctx)?.let {
             when (expr) {
-                is MvRefExpr, is MvDotExpr, is MvCallExpr -> ctx.writeExprExpectedTy(expr, it)
+                is MvStructLitExpr,
+                is MvRefExpr,
+                is MvDotExpr,
+                is MvCallExpr -> ctx.writeExprExpectedTy(expr, it)
             }
         }
 
         val exprTy = when (expr) {
             is MvRefExpr -> inferRefExprTy(expr)
-            is MvBorrowExpr -> inferBorrowExprTy(expr, parentCtx, expected)
-            is MvCallExpr -> inferCallExprTy(expr, parentCtx, expected)
+            is MvBorrowExpr -> inferBorrowExprTy(expr, expected)
+            is MvCallExpr -> inferCallExprTy(expr, expected)
             is MvMacroCallExpr -> inferMacroCallExprTy(expr)
             is MvStructLitExpr -> inferStructLitExprTy(expr, expected)
             is MvVectorLitExpr -> inferVectorLitExpr(expr, expected)
 
             is MvDotExpr -> inferDotExprTy(expr)
-            is MvDerefExpr -> inferDerefExprTy(expr, parentCtx)
+            is MvDerefExpr -> inferDerefExprTy(expr)
             is MvLitExpr -> inferLitExprTy(expr)
             is MvTupleLitExpr -> inferTupleLitExprTy(expr, expected)
 
@@ -253,12 +256,12 @@ class TypeInferenceWalker(
             }
         }
         val item = refExpr.path.reference?.resolveWithAliases()
-        val inferredTy = when (item) {
+        val ty = when (item) {
             is MvBindingPat -> ctx.getPatType(item)
             is MvConst -> item.type?.loweredType(msl) ?: TyUnknown
             else -> TyUnknown
         }
-        return inferredTy
+        return ty
     }
 
     private fun inferAssignmentExprTy(assignExpr: MvAssignmentExpr): Ty {
@@ -267,7 +270,7 @@ class TypeInferenceWalker(
         return TyUnit
     }
 
-    private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, ctx: InferenceContext, expected: Expectation): Ty {
+    private fun inferBorrowExprTy(borrowExpr: MvBorrowExpr, expected: Expectation): Ty {
         val innerExpr = borrowExpr.expr ?: return TyUnknown
         val expectedInnerTy = (expected.onlyHasTy(ctx) as? TyReference)?.referenced
         val hint = Expectation.maybeHasType(expectedInnerTy)
@@ -277,11 +280,7 @@ class TypeInferenceWalker(
         return TyReference(innerExprTy, mutabilities, ctx.msl)
     }
 
-    private fun inferCallExprTy(
-        callExpr: MvCallExpr,
-        parentCtx: InferenceContext,
-        expected: Expectation
-    ): Ty {
+    private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expectation): Ty {
         val path = callExpr.path
         val genericItem = path.reference?.resolveWithAliases() as? MvFunctionLike
         val baseTy =
@@ -296,8 +295,8 @@ class TypeInferenceWalker(
 
         inferArgumentTypes(funcTy.paramTypes, expectedInputTys, callExpr.callArgumentExprs)
 
-        parentCtx.writeAcquiredTypes(callExpr, funcTy.acquiresTypes)
-        parentCtx.writeCallExprType(callExpr, funcTy)
+        ctx.writeAcquiredTypes(callExpr, funcTy.acquiresTypes)
+        ctx.writeCallExprType(callExpr, funcTy)
 
         return funcTy.retType
     }
@@ -312,10 +311,10 @@ class TypeInferenceWalker(
             val expectedInputTy = expectedInputTys.getOrNull(i) ?: formalInputTy
 
             val expectation = Expectation.maybeHasType(expectedInputTy)
-            val inferredTy = inferExprTy(argExpr, ctx, expectation)
+            val actualTy = inferExprTy(argExpr, ctx, expectation)
             val coercedTy =
                 resolveTypeVarsWithObligations(expectation.onlyHasTy(ctx) ?: formalInputTy)
-            coerce(argExpr, inferredTy, coercedTy)
+            coerce(argExpr, actualTy, coercedTy)
 
             // retrieve obligations
             ctx.combineTypes(formalInputTy, coercedTy)
@@ -340,14 +339,13 @@ class TypeInferenceWalker(
         formalRet: Ty,
         formalArgs: List<Ty>,
     ): List<Ty> {
-        @Suppress("NAME_SHADOWING")
-        val formalRet = resolveTypeVarsWithObligations(formalRet)
+        val resolvedFormalRet = resolveTypeVarsWithObligations(formalRet)
         val retTy = expectedRet.onlyHasTy(ctx) ?: return emptyList()
         // Rustc does `fudge` instead of `probe` here. But `fudge` seems useless in our simplified type inference
         // because we don't produce new type variables during unification
         // https://github.com/rust-lang/rust/blob/50cf76c24bf6f266ca6d253a/compiler/rustc_infer/src/infer/fudge.rs#L98
         return ctx.probe {
-            if (ctx.combineTypes(retTy, formalRet).isOk) {
+            if (ctx.combineTypes(retTy, resolvedFormalRet).isOk) {
                 formalArgs.map { ctx.resolveTypeVarsIfPossible(it) }
             } else {
                 emptyList()
@@ -388,10 +386,6 @@ class TypeInferenceWalker(
             is RsResult.Err -> when (val err = coerceResult.err) {
                 is CombineTypeError.TypeMismatch -> {
                     checkTypeMismatch(err, element, inferred, expected)
-                    false
-                }
-                is CombineTypeError.AbilitiesMismatch -> {
-                    reportTypeError(TypeError.AbilitiesMismatch(element, inferred, err.abilities))
                     false
                 }
             }
@@ -732,14 +726,20 @@ class TypeInferenceWalker(
                 || ty is TyNever
     }
 
-    private fun inferDerefExprTy(derefExpr: MvDerefExpr, ctx: InferenceContext): Ty {
-        val exprTy =
-            derefExpr.expr?.let { inferExprTy(it, ctx) }
+    private fun inferDerefExprTy(derefExpr: MvDerefExpr): Ty {
+        val exprTy = derefExpr.expr?.inferType()
         return (exprTy as? TyReference)?.referenced ?: TyUnknown
     }
 
     private fun inferTupleLitExprTy(tupleExpr: MvTupleLitExpr, expected: Expectation): Ty {
-        val types = tupleExpr.exprList.map { inferExprTy(it, ctx) }
+        val types = tupleExpr.exprList.mapIndexed { i, ty ->
+            val expectedTy = (expected.onlyHasTy(ctx) as? TyTuple)?.types?.getOrNull(i)
+            if (expectedTy != null) {
+                ty.inferTypeCoercableTo(expectedTy)
+            } else {
+                ty.inferType()
+            }
+        }
         return TyTuple(types)
     }
 
@@ -750,7 +750,6 @@ class TypeInferenceWalker(
             litExpr.integerLiteral != null || litExpr.hexIntegerLiteral != null -> {
                 if (ctx.msl) return TyNum
                 val literal = (litExpr.integerLiteral ?: litExpr.hexIntegerLiteral)!!
-//            return TyInteger.fromSuffixedLiteral(literal) ?: TyInteger(TyInteger.DEFAULT_KIND)
                 return TyInteger.fromSuffixedLiteral(literal) ?: TyInfer.IntVar()
             }
 

@@ -864,4 +864,42 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test deref type with generics`() = testExpr("""
+        module 0x1::m {
+            struct Coin<CoinType> { val: u8 }
+            struct BTC {}
+            fun main() {
+                let a = &&mut Coin { val: 10 };
+                let b: Coin<BTC> = **a;
+                a;
+              //^ &&mut 0x1::m::Coin<_>  
+            }        
+        } 
+    """)
+
+    fun `test infer integer with explicit tuple literal type in let statement`() = testExpr("""
+        module 0x1::m {
+            fun call<Element>(v: Element): Element {}
+            fun main() {
+                let u = 1;
+                let (a, b): (u8, u8) = (call(u), call(u));
+                u;
+              //^ u8  
+            }        
+        } 
+    """)
+
+    fun `test infer integer with explicit tuple literal type in assignment`() = testExpr("""
+        module 0x1::m {
+            fun call<Element>(v: Element): Element {}
+            fun main() {
+                let u = 1;
+                let (a, b): (u8, u8);
+                (a, b) = (call(u), call(u));
+                u;
+              //^ u8  
+            }        
+        } 
+    """)
 }

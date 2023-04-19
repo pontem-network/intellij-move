@@ -4,16 +4,13 @@ import org.move.ide.presentation.tyToString
 import org.move.lang.core.psi.MvStruct
 import org.move.lang.core.psi.ext.tyAbilities
 import org.move.lang.core.psi.typeParameters
-import org.move.lang.core.types.infer.Substitution
-import org.move.lang.core.types.infer.TypeFolder
-import org.move.lang.core.types.infer.TypeVisitor
-import org.move.lang.core.types.infer.mergeFlags
+import org.move.lang.core.types.infer.*
 
 data class TyStruct2(
     override val item: MvStruct,
     override val substitution: Substitution,
     val typeArguments: List<Ty>,
-) : GenericTy(item, substitution, mergeFlags(typeArguments)) {
+) : GenericTy(item, substitution, mergeFlags(typeArguments) or HAS_TY_STRUCT_MASK) {
 
     override fun abilities(): Set<Ability> = this.item.tyAbilities
 

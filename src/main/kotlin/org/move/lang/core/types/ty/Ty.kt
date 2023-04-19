@@ -2,6 +2,9 @@ package org.move.lang.core.types.ty
 
 import org.move.lang.core.psi.MvTypeParametersOwner
 import org.move.lang.core.types.infer.*
+import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_INFER_VISITOR
+import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_STRUCT_VISITOR
+import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_TYPE_PARAMETER_VISITOR
 
 enum class Ability {
     DROP, COPY, STORE, KEY;
@@ -26,13 +29,11 @@ enum class Ability {
     }
 }
 
-//val emptySubstitution: Substitution = emptyMap()
+val TypeFoldable<*>.hasTyInfer get() = visitWith(HAS_TY_INFER_VISITOR)
+val TypeFoldable<*>.hasTyTypeParameters get() = visitWith(HAS_TY_TYPE_PARAMETER_VISITOR)
+val TypeFoldable<*>.hasTyStruct get() = visitWith(HAS_TY_STRUCT_VISITOR)
 
-val TypeFoldable<*>.hasTyInfer get() = true
-//val TypeFoldable<*>.hasTyInfer get() = visitWith { it is TyInfer }
-
-val TypeFoldable<*>.needsSubst get(): Boolean = true
-//val TypeFoldable<*>.needsSubst get(): Boolean = visitWith { it is TyTypeParameter }
+val TypeFoldable<*>.needsSubst get(): Boolean = this.hasTyTypeParameters
 
 abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
 
@@ -48,6 +49,8 @@ abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
      * Bindings between formal type parameters and actual type arguments.
      */
     open val typeParameterValues: Substitution get() = emptySubstitution
+
+    fun deref(): Ty = if (this is TyReference) this.referenced else TyUnknown
 
     /**
      * User visible string representation of a type
@@ -78,10 +81,4 @@ abstract class GenericTy(
     open val item: MvTypeParametersOwner,
     open val substitution: Substitution,
     flags: TypeFlags,
-) : Ty(flags) {
-
-//    fun withTyInfers(): GenericTy {
-//        val tyInfers = this.item.tyInfers
-//        return this.foldTyTypeParameterWith { tyInfers[it] ?: it } as GenericTy
-//    }
-}
+) : Ty(mergeFlags(substitution.types) or flags)

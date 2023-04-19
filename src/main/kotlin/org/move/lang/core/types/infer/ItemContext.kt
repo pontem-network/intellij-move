@@ -43,7 +43,7 @@ class ItemContext(val msl: Boolean, val owner: ItemContextOwner) {
     val tyTemplateMap = mutableMapOf<MvNameIdentifierOwner, TyTemplate>()
     val constTyMap = mutableMapOf<MvConst, Ty>()
 
-    val typeErrors = mutableListOf<TypeError>()
+//    val typeErrors = mutableListOf<TypeError>()
 
 //    fun getConstTy(const: MvConst): Ty {
 //        val existing = this.constTyMap[const]

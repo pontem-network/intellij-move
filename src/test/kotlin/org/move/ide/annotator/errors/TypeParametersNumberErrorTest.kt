@@ -194,4 +194,20 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
         }        
     """
     )
+
+    fun `test binding receives type in the separate block`() = checkErrors("""
+        module 0x1::m {
+            struct Option<phantom Element> {}
+            fun some<Element>(m: Element): Option<Element> {}
+            fun none<Element>(): Option<Element> {}
+            fun main() {
+                let (opt1, opt2);
+                if (true) {
+                    (opt1, opt2) = (some(1u8), some(1u8));
+                } else {
+                    (opt1, opt2) = (none(), none());
+                }
+            }
+        }        
+    """)
 }

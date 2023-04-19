@@ -211,6 +211,10 @@
                          enabledByDefault="true" level="ERROR"
                          implementationClass="org.move.ide.inspections.MvTypeCheckInspection"/>
         <localInspection language="Move" groupName="Move"
+                         displayName="Ability checking"
+                         enabledByDefault="true" level="ERROR"
+                         implementationClass="org.move.ide.inspections.MvAbilityCheckInspection"/>
+        <localInspection language="Move" groupName="Move"
                          displayName="Missing acquires"
                          enabledByDefault="true" level="ERROR"
                          implementationClass="org.move.ide.inspections.MvMissingAcquiresInspection"/>

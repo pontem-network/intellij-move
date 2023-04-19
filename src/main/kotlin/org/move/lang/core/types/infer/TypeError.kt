@@ -23,21 +23,15 @@ sealed class TypeError(open val element: PsiElement): TypeFoldable<TypeError> {
     override fun innerVisitWith(visitor: TypeVisitor): Boolean = true
 
     companion object {
-        fun isAllowedTypeError(error: TypeError, typeErrorScope: TypeErrorScope): Boolean {
-            return when (typeErrorScope) {
-                TypeErrorScope.MODULE -> error is CircularType
-                TypeErrorScope.MAIN -> {
-                    if (error is CircularType) return false
-                    val element = error.element
-                    if (
-                        (error is UnsupportedBinaryOp || error is IncompatibleArgumentsToBinaryExpr)
-                        && (element is MvElement && element.isMsl())
-                    ) {
-                        return false
-                    }
-                    true
-                }
+        fun isAllowedTypeError(error: TypeError): Boolean {
+            val element = error.element
+            if (
+                (error is UnsupportedBinaryOp || error is IncompatibleArgumentsToBinaryExpr)
+                && (element is MvElement && element.isMsl())
+            ) {
+                return false
             }
+            return true
         }
     }
 
@@ -58,37 +52,22 @@ sealed class TypeError(open val element: PsiElement): TypeFoldable<TypeError> {
         }
     }
 
-    data class AbilitiesMismatch(
-        override val element: PsiElement,
-        val elementTy: Ty,
-        val missingAbilities: Set<Ability>
-    ) : TypeError(element) {
-        override fun message(): String {
-            return "The type '${elementTy.text()}' " +
-                    "does not have required ability '${missingAbilities.map { it.label() }.first()}'"
-        }
-
-        override fun innerFoldWith(folder: TypeFolder): TypeError {
-            return AbilitiesMismatch(element, folder(elementTy), missingAbilities)
-        }
-    }
-
-    data class FieldAbilityRequired(
-        override val element: MvStructField,
-        val fieldTy: Ty,
-        val declared: Ability,
-        val missing: Ability,
-    ): TypeError(element) {
-        override fun message(): String {
-            return "The type '${fieldTy.name()}' does not have the ability '${missing.label()}' " +
-                        "required by the declared ability '${declared.label()}' " +
-                        "of the struct '${element.structItem.name}'"
-        }
-
-        override fun innerFoldWith(folder: TypeFolder): TypeError {
-            return FieldAbilityRequired(element, folder(fieldTy), declared, missing)
-        }
-    }
+//    data class FieldAbilityRequired(
+//        override val element: MvStructField,
+//        val fieldTy: Ty,
+//        val declared: Ability,
+//        val missing: Ability,
+//    ): TypeError(element) {
+//        override fun message(): String {
+//            return "The type '${fieldTy.name()}' does not have the ability '${missing.label()}' " +
+//                        "required by the declared ability '${declared.label()}' " +
+//                        "of the struct '${element.structItem.name}'"
+//        }
+//
+//        override fun innerFoldWith(folder: TypeFolder): TypeError {
+//            return FieldAbilityRequired(element, folder(fieldTy), declared, missing)
+//        }
+//    }
 
     data class UnsupportedBinaryOp(
         override val element: PsiElement,

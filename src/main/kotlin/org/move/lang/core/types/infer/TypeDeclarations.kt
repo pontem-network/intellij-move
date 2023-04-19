@@ -1,6 +1,5 @@
 package org.move.lang.core.types.infer
 
-import com.intellij.psi.util.parentOfType
 import org.move.ide.annotator.INTEGER_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_INTEGER_TYPE_IDENTIFIERS
 import org.move.lang.core.psi.*
@@ -10,37 +9,35 @@ import org.move.lang.core.psi.ext.returnType
 import org.move.lang.core.psi.ext.typeArguments
 import org.move.lang.core.types.ty.*
 
-//fun ItemContext.rawType(moveType: MvType): Ty = inferItemTypeTy(moveType, this)
-
 fun inferItemTypeTy(moveType: MvType, itemContext: ItemContext): Ty {
     return when (moveType) {
         is MvPathType -> {
             val namedItem = moveType.path.reference?.resolveWithAliases()
-                    ?: return inferItemBuiltinTypeTy(moveType, itemContext)
+                ?: return inferItemBuiltinTypeTy(moveType, itemContext)
             when (namedItem) {
                 is MvTypeParameter -> TyTypeParameter(namedItem)
                 is MvStruct -> {
                     // check that it's not a recursive type
-                    val parentStruct = moveType.parentOfType<MvStruct>()
-                    if (parentStruct != null && namedItem == parentStruct) {
-                        itemContext.typeErrors.add(TypeError.CircularType(moveType, parentStruct))
-                        return TyUnknown
-                    }
+//                    val parentStruct = moveType.parentOfType<MvStruct>()
+//                    if (parentStruct != null && namedItem == parentStruct) {
+//                        itemContext.typeErrors.add(TypeError.CircularType(moveType, parentStruct))
+//                        return TyUnknown
+//                    }
 
                     val rawStructTy = itemContext.getStructItemTy(namedItem) ?: return TyUnknown
 
                     // TODO: use substitutions with cache somehow here
-                    val ctx = InferenceContext(itemContext.msl)
-                    if (rawStructTy.typeVars.isNotEmpty()) {
-                        val typeArgs = moveType.path.typeArguments.map { inferItemTypeTy(it.type, itemContext) }
-                        for ((tyVar, tyArg) in rawStructTy.typeVars.zip(typeArgs)) {
-                            ctx.registerEquateObligation(tyVar, tyArg)
-                        }
-                        ctx.processConstraints()
-                    }
-                    val structTy = ctx.resolveTy(rawStructTy)
+//                    val ctx = InferenceContext(itemContext.msl)
+//                    if (rawStructTy.typeVars.isNotEmpty()) {
+//                        val typeArgs = moveType.path.typeArguments.map { inferItemTypeTy(it.type, itemContext) }
+//                        for ((tyVar, tyArg) in rawStructTy.typeVars.zip(typeArgs)) {
+//                            ctx.registerEquateObligation(tyVar, tyArg)
+//                        }
+//                        ctx.processConstraints()
+//                    }
 //                    val structTy = ctx.resolveTy(rawStructTy)
-                    structTy
+//                    val structTy = ctx.resolveTy(rawStructTy)
+                    rawStructTy
                 }
                 else -> TyUnknown
             }

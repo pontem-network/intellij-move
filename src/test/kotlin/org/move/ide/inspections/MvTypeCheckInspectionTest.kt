@@ -365,177 +365,6 @@ module 0x1::M {
     """
     )
 
-    fun `test fields of struct should have abilities of struct`() = checkErrors(
-        """
-    module 0x1::M {
-        struct A {}
-        
-        struct B has copy {
-            <error descr="The type 'A' does not have the ability 'copy' required by the declared ability 'copy' of the struct 'B'">a: A</error>
-        }
-    }    
-    """
-    )
-
-    fun `test key struct requires store fields`() = checkErrors(
-        """
-    module 0x1::M {
-        struct A {}
-        
-        struct B has key {
-            <error descr="The type 'A' does not have the ability 'store' required by the declared ability 'key' of the struct 'B'">a: A</error>
-        }
-    }    
-    """
-    )
-
-    fun `test store struct requires store fields`() = checkErrors(
-        """
-    module 0x1::M {
-        struct A {}
-        
-        struct B has store {
-            <error descr="The type 'A' does not have the ability 'store' required by the declared ability 'store' of the struct 'B'">a: A</error>
-        }
-    }    
-    """
-    )
-
-    fun `test copy struct requires copy fields`() = checkErrors(
-        """
-    module 0x1::M {
-        struct A {}
-        
-        struct B has copy {
-            <error descr="The type 'A' does not have the ability 'copy' required by the declared ability 'copy' of the struct 'B'">a: A</error>
-        }
-    }    
-    """
-    )
-
-    fun `test drop struct requires drop fields`() = checkErrors(
-        """
-    module 0x1::M {
-        struct A {}
-        
-        struct B has drop {
-            <error descr="The type 'A' does not have the ability 'drop' required by the declared ability 'drop' of the struct 'B'">a: A</error>
-        }
-    }    
-    """
-    )
-
-    fun `test function invocation with explicitly provided generic type`() = checkErrors(
-        """
-    module 0x1::Event {
-        struct Message has drop {}
-        
-        public fun emit_event<T: store + drop>() {}
-        
-        public fun main() {
-            emit_event<<error descr="The type 'Message' does not have required ability 'store'">Message</error>>()
-        }
-    }    
-    """
-    )
-
-    fun `test struct constructor with explicitly provided generic type`() = checkErrors(
-        """
-    module 0x1::Event {
-        struct Message has drop {}
-        
-        struct Event<Message: store + drop> {}
-        
-        public fun main() {
-            Event<<error descr="The type 'Message' does not have required ability 'store'">Message</error>> {};
-        }
-    }    
-    """
-    )
-
-    fun `test type param`() = checkErrors(
-        """
-    module 0x1::Event {
-        struct Message has drop {}
-        
-        public fun emit_event<T: store + drop>() {}
-        
-        public fun main<M: drop>() {
-            emit_event<<error descr="The type 'M' does not have required ability 'store'">M</error>>()
-        }
-    }    
-    """
-    )
-
-
-    fun `test no required ability 'key' for move_to argument`() = checkErrors(
-        """
-    module 0x1::M {
-        struct Res {}
-        fun main(s: &signer, r: Res) {
-            move_to(s, <error descr="The type 'Res' does not have required ability 'key'">r</error>)
-        }
-    }    
-    """
-    )
-
-    fun `test no error in move_to with resource`() = checkErrors(
-        """
-    module 0x1::M {
-        struct Res has key {}
-        fun main(s: &signer, r: Res) {
-            move_to<Res>(s, r)
-        }
-    }    
-    """
-    )
-
-    fun `test no required ability for struct for type param`() = checkErrors(
-        """
-    module 0x1::M {
-        struct Res {}
-        fun save<T: key>(r: T) {}
-        fun main(r: Res) {
-            save(<error descr="The type 'Res' does not have required ability 'key'">r</error>)
-        }
-    }    
-    """
-    )
-
-    fun `test no error in type param if structure has required abilities`() = checkErrors(
-        """
-    module 0x1::M {
-        struct Res has key {}
-        fun save<T: key>(r: T) {}
-        fun main(r: Res) {
-            save(r)
-        }
-    }    
-    """
-    )
-
-    fun `test no error in specs`() = checkErrors(
-        """
-    module 0x1::M {
-        fun balance<Token: store>() {}
-        spec schema PayFromEnsures<Token> {
-            ensures balance<Token>();
-        }
-    }    
-    """
-    )
-
-    fun `test pass primitive type to generic with required abilities`() = checkErrors(
-        """
-    module 0x1::M {
-        fun balance<Token: key>(k: Token) {}
-        fun m() {
-            balance(<error descr="The type 'address' does not have required ability 'key'">@0x1</error>);
-        }
-    }    
-    """
-    )
-
     fun `test invalid type for field in struct literal`() = checkErrors(
         """
 module 0x1::M {
@@ -994,7 +823,7 @@ module 0x1::main {
     fun `test deeply nested structure type is unknown due to memory issues`() = checkByText(
         """
 module 0x1::main {
-    struct Box<T> has copy, drop, store { <error descr="The type 'T' does not have the ability 'copy' required by the declared ability 'copy' of the struct 'Box'">x: T</error>  }
+    struct Box<T> has copy, drop, store { x: T }
     struct Box3<T> has copy, drop, store { x: Box<Box<T>> }
     struct Box7<T> has copy, drop, store { x: Box3<Box3<T>> }
     struct Box15<T> has copy, drop, store { x: Box7<Box7<T>> }
@@ -1389,9 +1218,27 @@ module 0x1::pool {
             fun coin_zero<CoinType>(): Coin<CoinType> { Coin { val: 0 } }
             fun call<CallCoinType>() {
                 let a = 0;
-                (a, _) = <error descr="Incompatible type '(Coin<CallCoinType>, <unknown>)', expected '(integer, <unknown>)'">(coin_zero<CallCoinType>(), 2)</error>;
+                (a, _) = (<error descr="Incompatible type 'Coin<CallCoinType>', expected 'integer'">coin_zero<CallCoinType>()</error>, 2);
             }
         }        
     """
     )
+
+    fun `test deref type error`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let a = &&mut 1;
+                let b: bool = <error descr="Incompatible type 'integer', expected 'bool'">**a</error>;
+            }        
+        } 
+    """)
+
+    fun `test shift left with u64`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let a = 1u64;
+                a << 1;
+            }        
+        } 
+    """)
 }

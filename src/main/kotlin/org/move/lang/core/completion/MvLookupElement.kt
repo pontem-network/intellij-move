@@ -3,7 +3,10 @@ package org.move.lang.core.completion
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementDecorator
 import org.move.lang.core.psi.*
-import org.move.lang.core.types.infer.*
+import org.move.lang.core.types.infer.compatAbilities
+import org.move.lang.core.types.infer.inference
+import org.move.lang.core.types.infer.isCompatible
+import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.TyUnknown
 
 fun LookupElement.toMvLookupElement(properties: LookupElementProperties): MvLookupElement =
@@ -61,7 +64,7 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
 //        val itemContext = element.itemContextOwner?.itemContext(msl) ?: element.project.itemContext(msl)
 //        val ctx = InferenceContext(msl, itemContext)
 //        val typeContext =
-        val ty = when (element) {
+        val itemTy = when (element) {
 //        is RsFieldDecl -> typeReference?.type
             is MvFunctionLike -> element.declaredType(msl).retType
             is MvStruct -> element.declaredType(msl)
@@ -81,8 +84,11 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
             }
             else -> TyUnknown
         }
+        // it is required for the TyInfer.TyVar to always have a different underlying unification table
+//        val ty = if (expectedTy is TyInfer.TyVar) TyInfer.TyVar(expectedTy.origin) else expectedTy
+        val isCompat = isCompatible(expectedTy, itemTy, msl) && compatAbilities(expectedTy, itemTy, msl)
         props = props.copy(
-            isReturnTypeConformsToExpectedType = isCompatible(context.expectedTy, ty, msl)
+            isReturnTypeConformsToExpectedType = isCompat
         )
     }
     return props
