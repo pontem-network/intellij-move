@@ -157,13 +157,6 @@ private fun render(
         }
 //        is TyTypeParameter -> ty.name ?: anonymous
         is TyTypeParameter -> typeParam(ty)
-        is TyStruct -> {
-            val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
-            val args =
-                if (ty.typeArguments.isEmpty()) ""
-                else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
-            name + args
-        }
         is TyStruct2 -> {
             val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
             val args =

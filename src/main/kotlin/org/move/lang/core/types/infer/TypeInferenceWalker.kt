@@ -79,43 +79,6 @@ class TypeInferenceWalker(
         }
     }
 
-//    fun inferBlockType(block: AnyBlock, expected: Expectation, coerce: Boolean = false): Ty {
-//        for (stmt in block.stmtList) {
-//            processStatement(stmt)
-//        }
-//        val tailExpr = block.expr
-//        val expectedTy = expected.onlyHasTy(ctx)
-//        return if (tailExpr == null) {
-//            if (coerce && expectedTy != null) {
-//                // type error
-//                reportTypeMismatch(block.rBrace ?: block, expectedTy, TyUnit)
-//            }
-//            TyUnit
-//        } else {
-//            if (coerce && expectedTy != null) {
-//                tailExpr.inferTypeCoercableTo(expectedTy)
-//            } else {
-//                tailExpr.inferType(expectedTy)
-//            }
-//        }
-//    }
-
-//    fun inferSpecBlockTy(block: MvItemSpecBlock, expectedTy: Ty? = null): Ty {
-//        for (stmt in block.stmtList) {
-//            processStatement(stmt)
-//        }
-//        val tailExpr = block.expr
-//        if (tailExpr == null) {
-//            if (expectedTy != null && expectedTy !is TyUnit) {
-//                reportTypeMismatch(block.rBrace ?: block, expectedTy, TyUnit)
-//                return TyUnknown
-//            }
-//            return TyUnit
-//        } else {
-//            return tailExpr.inferType(expectedTy)
-//        }
-//    }
-
     private fun resolveTypeVarsWithObligations(ty: Ty): Ty {
         if (!ty.hasTyInfer) return ty
         val tyRes = ctx.resolveTypeVarsIfPossible(ty)
@@ -353,24 +316,6 @@ class TypeInferenceWalker(
         }
     }
 
-//    fun getCombinedType(types: List<Pair<MvElement, Ty>>, coerce: Boolean = false): Ty {
-//        if (types.isEmpty()) return TyUnknown
-//        var truncatedTy: Ty? = null
-//        for ((element, ty) in types) {
-//            if (truncatedTy == null) {
-//                truncatedTy = ty
-//                continue
-//            }
-//            val coerced = if (coerce) coerce(element, ty, truncatedTy) else true
-//            if (coerced) {
-//
-//            }
-//        }
-//        return types.reduce { acc, ty ->
-//            if (coerce(acc, ty))
-//        }
-//    }
-
     // combineTypes with errors
     fun coerce(element: PsiElement, inferred: Ty, expected: Ty): Boolean =
         coerceResolved(
@@ -442,62 +387,12 @@ class TypeInferenceWalker(
     private fun MvStructLitField.type(msl: Boolean) =
         this.resolveToDeclaration()?.type?.loweredType(msl)
 
-//    private fun inferTypeType(type: MvType): BoundElement<MvE> {
-//
-//    }
-
-//    private fun inferPath(path: MvPath): Ty {
-//        // resolve to item
-//        val item = path.reference?.resolveWithAliases() as? MvTypeParametersOwner ?: return TyUnknown
-//
-////        val (namedItem, subst) = TyLowering.lowerPathGenerics(path, item, emptySubstitution, msl)
-////        val subst = item.generics.associateWith { TyInfer.TyVar(it) }.toTypeSubst()
-//
-////        val typeParameters = item?.generics.orEmpty()
-////        val typeArguments = path.typeArguments.map { if (it is MvPathType) inferPath(it.path) else it }
-//
-//        if (path.typeArguments.isNotEmpty()) {
-//            if (path.typeArguments.size != structTy.typeVars.size) return TyUnknown
-//            for ((typeVar, typeArg) in structTy.typeVars.zip(path.typeArguments)) {
-//                val typeArgTy = parentCtx.getTypeTy(typeArg.type)
-//
-//                // check compat for abilities
-//                val compat = isCompatibleAbilities(typeVar, typeArgTy, path.isMsl())
-//                val isCompat = when (compat) {
-//                    is Compat.AbilitiesMismatch -> {
-//                        parentCtx.typeErrors.add(
-//                            TypeError.AbilitiesMismatch(
-//                                typeArg,
-//                                typeArgTy,
-//                                compat.abilities
-//                            )
-//                        )
-//                        false
-//                    }
-//
-//                    else -> true
-//                }
-//                inferenceCtx.registerEquateObligation(typeVar, if (isCompat) typeArgTy else TyUnknown)
-//            }
-//        }
-//    }
-
-//    private val MvStructLitField.type: Ty get() = resolveToDeclaration()?.typeReference?.rawType ?: TyUnknown
-
     fun inferVectorLitExpr(litExpr: MvVectorLitExpr, expected: Expectation): Ty {
         val tyVar = TyInfer.TyVar()
         val explicitTy = litExpr.typeArgument?.type?.loweredType(msl)
         if (explicitTy != null) {
             ctx.combineTypes(tyVar, explicitTy)
         }
-//        val tyVector =
-//            if (explicitTy != null) {
-//                TyVector(explicitTy)
-//            } else TyVector(tyVar)
-//
-//        expected.onlyHasTy(ctx)?.let {
-//            ctx.combineTypes(tyVector, it)
-//        }
 
         val exprs = litExpr.vectorLitItems.exprList
         val formalInputs = generateSequence { ctx.resolveTypeVarsIfPossible(tyVar) }.take(exprs.size).toList()
@@ -506,100 +401,7 @@ class TypeInferenceWalker(
         inferArgumentTypes(formalInputs, expectedInputTys, exprs)
 
         return ctx.resolveTypeVarsIfPossible(TyVector(tyVar))
-
-//        for (expr in exprs) {
-////            val exprTy = expr.inferType(explicitTy)
-////            val exprTy = inferExprTy(expr, parentCtx, Expectation.maybeHasType(tyVector.item))
-////            inferenceCtx.registerEquateObligation(tyVector.item, exprTy)
-//        }
-
-//        expected.onlyHasTy(ctx)?.let { expectedTy ->
-//            unifySubst(typeParameters, expectedTy.typeParameterValues)
-//        }
-
-//        val subst = TyLowering.lowerPathGenerics(path, genericItem, msl)
-//        unifySubst(subst, typeParameters)
-//
-//        val type = when (genericItem) {
-//            is MvStruct -> TyStruct2.valueOf(genericItem)
-//            is MvFunctionLike -> genericItem.type(msl)
-//            else -> TyUnknown
-//        }.substitute(typeParameters)
-//        return Pair(type, typeParameters)
-
-//        val path = litExpr.path
-//        val structItem = path.maybeStruct
-//        if (structItem == null) {
-//            for (field in litExpr.fields) {
-//                field.expr?.let { inferExprTy(it, ctx) }
-//            }
-//            return TyUnknown
-//        }
-//
-//        val (structTy, typeParameters) = inferPathType(path, structItem, expected)
-//        litExpr.fields.forEach { field ->
-//            val fieldTy = field.type(msl)?.substitute(typeParameters) ?: TyUnknown
-//            val expr = field.expr
-//
-//            if (expr != null) {
-//                expr.inferTypeCoercableTo(fieldTy)
-//            } else {
-//                val bindingTy = field.resolveToBinding()?.let { ctx.getPatType(it) } ?: TyUnknown
-//                coerce(field, bindingTy, fieldTy)
-//            }
-//        }
-//
-//        return structTy
-//
-//        var tyVector = TyVector(TyInfer.TyVar())
-//
-//        val inferenceCtx = InferenceContext(parentCtx.msl, parentCtx.itemContext)
-//        val typeArgument = litExpr.typeArgument
-//
-//        if (typeArgument != null) {
-//            val ty = typeArgument.type.loweredType(msl)
-////            val ty = parentCtx.getTypeTy(typeArgument.type)
-//            inferenceCtx.registerEquateObligation(tyVector.item, ty)
-//        }
-//        val exprs = litExpr.vectorLitItems.exprList
-//        for (expr in exprs) {
-////            inferenceCtx.processConstraints()
-////            tyVector = inferenceCtx.resolveTy(tyVector) as TyVector
-//
-//            val exprTy = inferExprTy(expr, parentCtx, Expectation.maybeHasType(tyVector.item))
-//            inferenceCtx.registerEquateObligation(tyVector.item, exprTy)
-//        }
-////        inferenceCtx.processConstraints()
-////        tyVector = inferenceCtx.resolveTy(tyVector) as TyVector
-//        return tyVector
     }
-
-//    fun inferLitFieldInitExprTy(
-//        litField: MvStructLitField,
-//        ctx: InferenceContext,
-//        expected: Expectation
-//    ): Ty {
-//        val initExpr = litField.expr
-//        return if (initExpr == null) {
-//            val expectedTy = expected.onlyHasTy(ctx)
-//            // find type of binding
-//            val bindingPat =
-//                litField.reference.multiResolve().filterIsInstance<MvBindingPat>().firstOrNull()
-//                    ?: return TyUnknown
-//            val bindingPatTy = ctx.getPatType(bindingPat)
-//            if (expectedTy != null) {
-//                if (!isCompatible(expectedTy, bindingPatTy, ctx.msl)) {
-//                    ctx.typeErrors.add(TypeError.TypeMismatch(litField, expectedTy, bindingPatTy))
-//                } else {
-//                    ctx.registerEquateObligation(bindingPatTy, expectedTy)
-//                }
-//            }
-//            bindingPatTy
-//        } else {
-//            // find type of expression
-//            inferExprTy(initExpr, ctx, expected)
-//        }
-//    }
 
     private fun inferBinaryExprTy(binaryExpr: MvBinaryExpr): Ty {
         return when (binaryExpr.binaryOp.op) {

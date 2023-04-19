@@ -229,7 +229,6 @@ Module ::= Attr* MODULE_KW (AddressRef '::')? IDENTIFIER ModuleBlock
         "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.ext.MvDocAndAttributeOwner"
-        "org.move.lang.core.types.infer.ItemContextOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvModuleMixin"
     stubClass = "org.move.lang.core.stubs.MvModuleStub"
