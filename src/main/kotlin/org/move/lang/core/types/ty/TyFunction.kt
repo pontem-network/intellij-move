@@ -6,7 +6,7 @@ import org.move.lang.core.psi.MvFunctionLike
 import org.move.lang.core.psi.psiFactory
 import org.move.lang.core.types.infer.*
 
-data class TyFunction2(
+data class TyFunction(
     override val item: MvFunctionLike,
     override val substitution: Substitution,
     val paramTypes: List<Ty>,
@@ -19,7 +19,7 @@ data class TyFunction2(
 ) {
 
     override fun innerFoldWith(folder: TypeFolder): Ty {
-        return TyFunction2(
+        return TyFunction(
             item,
             substitution.foldValues(folder),
             paramTypes.map { it.foldWith(folder) },
@@ -39,9 +39,9 @@ data class TyFunction2(
     override fun toString(): String = tyToString(this)
 
     companion object {
-        fun unknownTyFunction(project: Project, numParams: Int): TyFunction2 {
+        fun unknownTyFunction(project: Project, numParams: Int): TyFunction {
             val fakeFunction = project.psiFactory.function("fun __fake()")
-            return TyFunction2(
+            return TyFunction(
                 fakeFunction,
                 emptySubstitution,
                 generateSequence { TyUnknown }.take(numParams).toList(),

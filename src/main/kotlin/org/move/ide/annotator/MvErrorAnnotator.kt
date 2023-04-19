@@ -13,7 +13,7 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
-import org.move.lang.core.types.ty.TyFunction2
+import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
@@ -97,7 +97,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                                 }
                             } else {
                                 val callTy = parent.inference(msl)?.getCallExprType(parent)
-                                        as? TyFunction2 ?: return
+                                        as? TyFunction ?: return
                                 val requiresExplicit = callTy.substitution.containsTypeVarOrOwnTypeParameter()
 
                                 // if no type args are passed, check whether all type params are inferrable

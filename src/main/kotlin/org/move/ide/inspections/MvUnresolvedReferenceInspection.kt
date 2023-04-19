@@ -9,7 +9,7 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.ty.TyStruct2
+import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
 
 class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {

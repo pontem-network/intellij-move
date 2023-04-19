@@ -248,10 +248,10 @@ class TypeInferenceWalker(
         val genericItem = path.reference?.resolveWithAliases() as? MvFunctionLike
         val baseTy =
             genericItem?.let {
-                val (itemTy, _) = ctx.instantiatePath<TyFunction2>(path, it)
+                val (itemTy, _) = ctx.instantiatePath<TyFunction>(path, it)
                 itemTy
-            } ?: TyFunction2.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
-        val funcTy = ctx.resolveTypeVarsIfPossible(baseTy) as TyFunction2
+            } ?: TyFunction.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
+        val funcTy = ctx.resolveTypeVarsIfPossible(baseTy) as TyFunction
 
         val expectedInputTys =
             expectedInputsForExpectedOutput(expected, funcTy.retType, funcTy.paramTypes)
@@ -340,8 +340,8 @@ class TypeInferenceWalker(
     private fun inferDotExprTy(dotExpr: MvDotExpr): Ty {
         val baseTy = resolveTypeVarsWithObligations(dotExpr.expr.inferType())
         val structTy = when (baseTy) {
-            is TyReference -> baseTy.innermostTy() as? TyStruct2
-            is TyStruct2 -> baseTy
+            is TyReference -> baseTy.innermostTy() as? TyStruct
+            is TyStruct -> baseTy
             else -> null
         } ?: return TyUnknown
 
@@ -364,7 +364,7 @@ class TypeInferenceWalker(
             return TyUnknown
         }
 
-        val (structTy, typeParameters) = ctx.instantiatePath<TyStruct2>(path, structItem)
+        val (structTy, typeParameters) = ctx.instantiatePath<TyStruct>(path, structItem)
         expected.onlyHasTy(ctx)?.let { expectedTy ->
             ctx.unifySubst(typeParameters, expectedTy.typeParameterValues)
         }

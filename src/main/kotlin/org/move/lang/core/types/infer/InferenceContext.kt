@@ -417,7 +417,7 @@ class InferenceContext(var msl: Boolean, private val unify: Boolean) {
                     && coerceMutability(ty1msl, ty2msl) ->
                 combineTypes(ty1msl.referenced, ty2msl.referenced)
 
-            ty1msl is TyStruct2 && ty2msl is TyStruct2
+            ty1msl is TyStruct && ty2msl is TyStruct
                     && ty1msl.item == ty2msl.item ->
                 combineTypePairs(ty1msl.typeArguments.zip(ty2msl.typeArguments))
 

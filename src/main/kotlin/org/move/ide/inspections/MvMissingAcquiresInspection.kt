@@ -7,7 +7,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isInline
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.ty.TyStruct2
+import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyTypeParameter
 
 class MvMissingAcquiresInspection : MvLocalInspectionTool() {
@@ -38,7 +38,7 @@ class MvMissingAcquiresInspection : MvLocalInspectionTool() {
                     .mapNotNull { ty ->
                         when (ty) {
                             is TyTypeParameter -> if (!declaredItems.any { it == ty.origin }) ty.origin else null
-                            is TyStruct2 -> {
+                            is TyStruct -> {
                                 val notAcquired = ty.item.containingModule == currentModule
                                         && !declaredItems.any { it == ty.item }
                                 if (notAcquired) ty.item else null

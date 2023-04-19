@@ -17,12 +17,12 @@ interface MvFunctionLike : MvNameIdentifierOwner,
 
     val codeBlock: MvCodeBlock?
 
-    override fun declaredType(msl: Boolean): TyFunction2 {
+    override fun declaredType(msl: Boolean): TyFunction {
         val typeParameters = this.tyTypeParams
         val paramTypes = parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
         val acquiresTypes = this.acquiresPathTypes.map { it.loweredType(msl) }
         val retType = rawReturnType(msl)
-        return TyFunction2(
+        return TyFunction(
             this,
             typeParameters,
             paramTypes,

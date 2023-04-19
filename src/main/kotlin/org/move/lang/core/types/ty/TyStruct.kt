@@ -6,7 +6,7 @@ import org.move.lang.core.psi.ext.tyAbilities
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.*
 
-data class TyStruct2(
+data class TyStruct(
     override val item: MvStruct,
     override val substitution: Substitution,
     val typeArguments: List<Ty>,
@@ -15,7 +15,7 @@ data class TyStruct2(
     override fun abilities(): Set<Ability> = this.item.tyAbilities
 
     override fun innerFoldWith(folder: TypeFolder): Ty {
-        return TyStruct2(
+        return TyStruct(
             item,
             substitution.foldValues(folder),
             typeArguments.map { it.foldWith(folder) }

@@ -10,7 +10,7 @@ import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.stubs.MvSpecFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
-import org.move.lang.core.types.ty.TyFunction2
+import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.Icon
 

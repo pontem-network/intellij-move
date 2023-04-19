@@ -11,7 +11,7 @@ import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyReference
-import org.move.lang.core.types.ty.TyStruct2
+import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.moveProject
@@ -266,11 +266,11 @@ fun processLexicalDeclarations(
                 val msl = receiverExpr.isMsl()
                 val receiverTy = receiverExpr.inference(msl)?.getExprType(receiverExpr) ?: return false
                 val innerTy = when (receiverTy) {
-                    is TyReference -> receiverTy.innerTy() as? TyStruct2 ?: TyUnknown
-                    is TyStruct2 -> receiverTy
+                    is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
+                    is TyStruct -> receiverTy
                     else -> TyUnknown
                 }
-                if (innerTy !is TyStruct2) return true
+                if (innerTy !is TyStruct) return true
 
                 val structItem = innerTy.item
                 val dotExprModule = dotExpr.namespaceModule ?: return false

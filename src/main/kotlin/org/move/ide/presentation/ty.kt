@@ -15,7 +15,7 @@ fun Ty.canBeAcquiredInModule(mod: MvModule): Boolean {
 private val Ty.declaringModule: MvModule?
     get() = when (this) {
         is TyReference -> this.referenced.declaringModule
-        is TyStruct2 -> this.item.containingModule
+        is TyStruct -> this.item.containingModule
         else -> null
     }
 
@@ -33,7 +33,7 @@ fun Ty.expectedBindingFormText(): String {
             val expectedForm = this.types.joinToString(", ", "(", ")") { "_" }
             "tuple binding of length ${this.types.size}: $expectedForm"
         }
-        is TyStruct2 -> "struct binding of type ${this.text(true)}"
+        is TyStruct -> "struct binding of type ${this.text(true)}"
         else -> "a single variable"
     }
 }
@@ -141,7 +141,7 @@ private fun render(
 //            }
 //            s
 //        }
-        is TyFunction2 -> {
+        is TyFunction -> {
             val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
             var s = if (ty.retType is TyUnit) params else "$params -> ${r(ty.retType)}"
             if (ty.acquiresTypes.isNotEmpty()) {
@@ -157,7 +157,7 @@ private fun render(
         }
 //        is TyTypeParameter -> ty.name ?: anonymous
         is TyTypeParameter -> typeParam(ty)
-        is TyStruct2 -> {
+        is TyStruct -> {
             val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
             val args =
                 if (ty.typeArguments.isEmpty()) ""

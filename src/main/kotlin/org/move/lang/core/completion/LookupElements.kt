@@ -13,7 +13,7 @@ import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyFunction2
+import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
 
 const val KEYWORD_PRIORITY = 80.0
@@ -241,7 +241,7 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
     private fun handleFunctionInsert(context: InsertionContext, element: MvFunctionLike) {
         val requiresExplicitTypes = run {
             val msl = element.isMsl()
-            val callTy = element.declaredType(msl).substitute(element.tyInfers) as TyFunction2
+            val callTy = element.declaredType(msl).substitute(element.tyInfers) as TyFunction
 
             val inferenceCtx = InferenceContext(msl, unify = true)
             callTy.paramTypes.forEach { inferenceCtx.combineTypes(it, TyUnknown) }
@@ -249,7 +249,7 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
             if (expectedTy != null && expectedTy !is TyUnknown) {
                 inferenceCtx.combineTypes(callTy.retType, expectedTy)
             }
-            (inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyFunction2)
+            (inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyFunction)
                 .substitution
                 .containsTypeVarOrOwnTypeParameter()
         }
