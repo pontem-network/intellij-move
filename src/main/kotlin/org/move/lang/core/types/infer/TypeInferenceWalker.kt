@@ -99,7 +99,7 @@ class TypeInferenceWalker(
                 val pat = stmt.pat
                 val inferredTy =
                     if (expr != null) {
-                        val inferredTy = inferExprTy(expr, ctx, Expectation.maybeHasType(explicitTy))
+                        val inferredTy = inferExprTy(expr, Expectation.maybeHasType(explicitTy))
                         val coercedTy = if (explicitTy != null && coerce(expr, inferredTy, explicitTy)) {
                             explicitTy
                         } else {
@@ -125,11 +125,11 @@ class TypeInferenceWalker(
     }
 
     private fun MvExpr.inferType(expected: Ty?): Ty {
-        return inferExprTy(this, ctx, Expectation.maybeHasType(expected))
+        return inferExprTy(this, Expectation.maybeHasType(expected))
     }
 
     private fun MvExpr.inferType(expected: Expectation = Expectation.NoExpectation): Ty {
-        return inferExprTy(this, ctx, expected)
+        return inferExprTy(this, expected)
     }
 
     private fun MvExpr.inferTypeCoercableTo(expected: Ty): Ty {
@@ -139,18 +139,17 @@ class TypeInferenceWalker(
 
     private fun inferExprTy(
         expr: MvExpr,
-        parentCtx: InferenceContext,
         expected: Expectation = Expectation.NoExpectation
     ): Ty {
         ProgressManager.checkCanceled()
-        if (parentCtx.isTypeInferred(expr)) error("Trying to infer expression type twice")
+        if (ctx.isTypeInferred(expr)) error("Trying to infer expression type twice")
 
-        expected.tyAsNullable(ctx)?.let {
+        expected.tyAsNullable(this.ctx)?.let {
             when (expr) {
                 is MvStructLitExpr,
                 is MvRefExpr,
                 is MvDotExpr,
-                is MvCallExpr -> ctx.writeExprExpectedTy(expr, it)
+                is MvCallExpr -> this.ctx.writeExprExpectedTy(expr, it)
             }
         }
 
@@ -175,8 +174,8 @@ class TypeInferenceWalker(
             is MvCastExpr -> {
                 expr.expr.inferType()
                 val ty = expr.type.loweredType(msl)
-                expected.onlyHasTy(ctx)?.let {
-                    ctx.combineTypes(it, ty)
+                expected.onlyHasTy(this.ctx)?.let {
+                    this.ctx.combineTypes(it, ty)
                 }
                 ty
             }
@@ -202,7 +201,7 @@ class TypeInferenceWalker(
         }
 
         val refinedExprTy = exprTy.mslScopeRefined(msl)
-        parentCtx.writeExprTy(expr, refinedExprTy)
+        ctx.writeExprTy(expr, refinedExprTy)
         return refinedExprTy
     }
 
@@ -238,7 +237,7 @@ class TypeInferenceWalker(
         val expectedInnerTy = (expected.onlyHasTy(ctx) as? TyReference)?.referenced
         val hint = Expectation.maybeHasType(expectedInnerTy)
 
-        val innerExprTy = inferExprTy(innerExpr, ctx, hint)
+        val innerExprTy = inferExprTy(innerExpr, hint)
         val mutabilities = RefPermissions.valueOf(borrowExpr.isMut)
         return TyReference(innerExprTy, mutabilities, ctx.msl)
     }
@@ -274,7 +273,7 @@ class TypeInferenceWalker(
             val expectedInputTy = expectedInputTys.getOrNull(i) ?: formalInputTy
 
             val expectation = Expectation.maybeHasType(expectedInputTy)
-            val actualTy = inferExprTy(argExpr, ctx, expectation)
+            val actualTy = inferExprTy(argExpr, expectation)
             val coercedTy =
                 resolveTypeVarsWithObligations(expectation.onlyHasTy(ctx) ?: formalInputTy)
             coerce(argExpr, actualTy, coercedTy)
@@ -359,7 +358,7 @@ class TypeInferenceWalker(
         val structItem = path.maybeStruct
         if (structItem == null) {
             for (field in litExpr.fields) {
-                field.expr?.let { inferExprTy(it, ctx) }
+                field.expr?.let { inferExprTy(it) }
             }
             return TyUnknown
         }
@@ -422,18 +421,18 @@ class TypeInferenceWalker(
         var typeErrorEncountered = false
         val leftTy = leftExpr.inferType()
         if (!leftTy.supportsArithmeticOp()) {
-            ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(leftExpr, leftTy, op))
+            ctx.reportTypeError(TypeError.UnsupportedBinaryOp(leftExpr, leftTy, op))
             typeErrorEncountered = true
         }
         if (rightExpr != null) {
             val rightTy = rightExpr.inferType()
             if (!rightTy.supportsArithmeticOp()) {
-                ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(rightExpr, rightTy, op))
+                ctx.reportTypeError(TypeError.UnsupportedBinaryOp(rightExpr, rightTy, op))
                 typeErrorEncountered = true
             }
 
             if (!typeErrorEncountered && ctx.combineTypes(leftTy, rightTy).isErr) {
-                ctx.typeErrors.add(
+                ctx.reportTypeError(
                     TypeError.IncompatibleArgumentsToBinaryExpr(
                         binaryExpr,
                         leftTy,
@@ -453,10 +452,10 @@ class TypeInferenceWalker(
         val op = binaryExpr.binaryOp.op
 
         if (rightExpr != null) {
-            val leftTy = inferExprTy(leftExpr, ctx)
-            val rightTy = inferExprTy(rightExpr, ctx)
+            val leftTy = inferExprTy(leftExpr)
+            val rightTy = inferExprTy(rightExpr)
             if (ctx.combineTypes(leftTy, rightTy).isErr) {
-                ctx.typeErrors.add(
+                ctx.reportTypeError(
                     TypeError.IncompatibleArgumentsToBinaryExpr(binaryExpr, leftTy, rightTy, op)
                 )
             }
@@ -470,15 +469,15 @@ class TypeInferenceWalker(
         val op = binaryExpr.binaryOp.op
 
         var typeErrorEncountered = false
-        val leftTy = inferExprTy(leftExpr, ctx)
+        val leftTy = inferExprTy(leftExpr)
         if (!leftTy.supportsOrdering()) {
-            ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(leftExpr, leftTy, op))
+            ctx.reportTypeError(TypeError.UnsupportedBinaryOp(leftExpr, leftTy, op))
             typeErrorEncountered = true
         }
         if (rightExpr != null) {
-            val rightTy = inferExprTy(rightExpr, ctx)
+            val rightTy = inferExprTy(rightExpr)
             if (!rightTy.supportsOrdering()) {
-                ctx.typeErrors.add(TypeError.UnsupportedBinaryOp(rightExpr, rightTy, op))
+                ctx.reportTypeError(TypeError.UnsupportedBinaryOp(rightExpr, rightTy, op))
                 typeErrorEncountered = true
             }
             if (!typeErrorEncountered) {

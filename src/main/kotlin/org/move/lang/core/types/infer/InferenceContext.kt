@@ -67,6 +67,9 @@ data class InferenceResult(
     fun getExprType(expr: MvExpr): Ty = exprTypes[expr] ?: error("Expr `${expr.text}` is never inferred")
     fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: error("Pat `${pat.text}` is never inferred")
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
+    fun getCallExprType(expr: MvCallExpr): Ty? = callExprTypes[expr]
+    fun getPathType(path: MvPath): GenericTy? = pathTypes[path]
+
     fun getAcquiredTypes(expr: MvCallExpr, outerSubst: Substitution? = null): List<Ty> {
         val acquiresTypes = acquiredTypes[expr]?.takeIf { !it.contains(TyUnknown) } ?: emptyList()
         return if (outerSubst != null) {
@@ -76,21 +79,6 @@ data class InferenceResult(
         }
     }
 
-    fun getCallExprType(expr: MvCallExpr): Ty? = callExprTypes[expr]
-    fun getResolvedPathType(path: MvPath): GenericTy? = pathTypes[path]
-
-//    fun getResolvedPath(path: MvPath): List<ResolvedPath> = resolvedPaths[path] ?: emptyList()
-
-//    companion object {
-//        @JvmStatic
-//        val EMPTY: InferenceResult = InferenceResult(
-//            emptyMap(),
-//            emptyMap(),
-////            emptyMap(),
-////            emptyMap(),
-//            emptyList(),
-//        )
-//    }
 }
 
 fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
@@ -134,46 +122,23 @@ fun MvElement.inference(msl: Boolean): InferenceResult? {
     return contextOwner.inference(msl)
 }
 
-sealed class ResolvedPath(
-    val element: MvElement,
-    var subst: Substitution = emptySubstitution,
-    val isVisible: Boolean = true
-) {
-//    class AssocItem(
-//        override val element: RsAbstractable,
-//        val source: TraitImplSource
-//    ) : ResolvedPath()
-
-    companion object {
-//        fun from(entry: ScopeEntry, context: RsElement): ResolvedPath {
-//            return if (entry is AssocItemScopeEntry) {
-//                AssocItem(entry.element, entry.source)
-//            } else {
-//                val isVisible = entry.isVisibleFrom(context.containingMod)
-//                Item(entry.element, isVisible)
-//            }
-//        }
-
-//        fun from(entry: AssocItemScopeEntry): ResolvedPath =
-//            AssocItem(entry.element, entry.source)
-    }
-}
-
 class InferenceContext(var msl: Boolean, private val unify: Boolean) {
-    val exprTypes = concurrentMapOf<MvExpr, Ty>()
-    val patTypes = mutableMapOf<MvPat, Ty>()
 
+    private val exprTypes = concurrentMapOf<MvExpr, Ty>()
+    private val patTypes = mutableMapOf<MvPat, Ty>()
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
     private val acquiredTypes = mutableMapOf<MvCallExpr, List<Ty>>()
     private val callExprTypes = mutableMapOf<MvCallExpr, Ty>()
     private val pathTypes = mutableMapOf<MvPath, GenericTy>()
 
-    var typeErrors = mutableListOf<TypeError>()
+    private val typeErrors = mutableListOf<TypeError>()
 
     val varUnificationTable = UnificationTable<TyInfer.TyVar, Ty>()
     val intUnificationTable = UnificationTable<TyInfer.IntVar, Ty>()
 
     val fulfill = FulfillmentContext(this)
+
+    fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: error("Pat `${pat.text}` is never inferred")
 
     fun startSnapshot(): Snapshot = CombinedSnapshot(
         intUnificationTable.startSnapshot(),
@@ -187,13 +152,6 @@ class InferenceContext(var msl: Boolean, private val unify: Boolean) {
         } finally {
             snapshot.rollback()
         }
-    }
-
-    inline fun <T : Any> commitIfNotNull(action: () -> T?): T? {
-        val snapshot = startSnapshot()
-        val result = action()
-        if (result == null) snapshot.rollback() else snapshot.commit()
-        return result
     }
 
     fun infer(owner: MvInferenceContextOwner): InferenceResult {
@@ -265,14 +223,6 @@ class InferenceContext(var msl: Boolean, private val unify: Boolean) {
         return exprTypes.containsKey(expr)
     }
 
-    fun registerEquateObligation(ty1: Ty, ty2: Ty) {
-        fulfill.registerObligation(Obligation.Equate(ty1, ty2))
-    }
-
-    fun processConstraints(): Boolean {
-        return fulfill.selectUntilError()
-    }
-
     fun writeExprTy(expr: MvExpr, ty: Ty) {
         this.exprTypes[expr] = ty
     }
@@ -293,17 +243,13 @@ class InferenceContext(var msl: Boolean, private val unify: Boolean) {
         this.callExprTypes[callExpr] = ty
     }
 
-    fun writePath(path: MvPath, ty: GenericTy) {
-        pathTypes[path] = ty
-    }
-
     @Suppress("UNCHECKED_CAST")
     fun <T : GenericTy> instantiatePath(
         path: MvPath,
         genericItem: MvTypeParametersOwner
     ): Pair<T, Substitution> {
-        var itemTy = TyLowering.lowerPath(path, msl)
-        writePath(path, itemTy as T)
+        var itemTy =
+            this.pathTypes.getOrPut(path) { TyLowering.lowerPath(path, msl) as T }
 
         val typeParameters = genericItem.tyInfers
         itemTy = itemTy.substitute(typeParameters) as T
@@ -396,14 +342,6 @@ class InferenceContext(var msl: Boolean, private val unify: Boolean) {
             ty1msl is TyNever || ty2msl is TyNever -> Ok(Unit)
             ty1msl is TyUnknown || ty2msl is TyUnknown -> Ok(Unit)
 
-//            ty1msl is TyTypeParameter || ty2msl is TyTypeParameter -> {
-//                // check abilities
-//                if (ty1msl != ty2msl) {
-//                    Compat.TypeMismatch(ty1msl, ty2msl)
-//                } else {
-//                    Compat.Yes
-//                }
-//            }
             ty1msl is TyTypeParameter && ty2msl is TyTypeParameter && ty1msl == ty2msl -> Ok(Unit)
             ty1msl is TyUnit && ty2msl is TyUnit -> Ok(Unit)
             ty1msl is TyInteger && ty2msl is TyInteger
@@ -433,49 +371,8 @@ class InferenceContext(var msl: Boolean, private val unify: Boolean) {
         if (inferred === expected) {
             return Ok(CoerceOk())
         }
-//        if (inferred is TyInfer.TyVar) {
-//            return combineTypes(inferred, expected).into()
-//        }
         return combineTypes(inferred, expected).into()
-//        return when {
-//            // Coerce references
-////            inferred is TyReference && expected is TyReference
-////                    && coerceMutability(inferred, expected) -> {
-////                tryCoerce(inferred.referenced, expected.referenced)
-////            }
-//            else -> combineTypes(inferred, expected).into()
-//        }
     }
-
-//    /**
-//     * Reborrows `&mut A` to `&mut B` and `&(mut) A` to `&B`.
-//     * To match `A` with `B`, autoderef will be performed
-//     */
-//    private fun coerceReference(inferred: TyReference, expected: TyReference): CoerceResult {
-//        val autoderef = lookup.coercionSequence(inferred)
-//        for (derefTy in autoderef.drop(1)) {
-//            // TODO proper handling of lifetimes
-//            val derefTyRef = TyReference(derefTy, expected.mutability, expected.region)
-//            if (combineTypesIfOk(derefTyRef, expected)) {
-//                // Deref `&a` to `a` and then reborrow as `&a`. No-op. See rustc's `coerce_borrowed_pointer`
-//                val isTrivialReborrow = autoderef.stepCount() == 1
-//                        && inferred.mutability == expected.mutability
-//                        && !expected.mutability.isMut
-//
-//                if (!isTrivialReborrow) {
-//                    val adjustments = autoderef.steps().toAdjustments(items) +
-//                            listOf(Adjustment.BorrowReference(derefTyRef))
-//                    return Ok(CoerceOk(adjustments))
-//                }
-//                return Ok(CoerceOk())
-//            }
-//        }
-//
-//        return Err(TypeMismatch(inferred, expected))
-//    }
-
-//    private fun coerceMutability(from: Mutability, to: Mutability): Boolean =
-//        from == to || from.isMut && !to.isMut
 
     fun shallowResolve(ty: Ty): Ty {
         if (ty !is TyInfer) return ty
@@ -526,62 +423,11 @@ class InferenceContext(var msl: Boolean, private val unify: Boolean) {
 
     fun reportTypeError(typeError: TypeError) {
         val element = typeError.element
-        if (typeErrors.all { !element.isAncestorOf(it.element) }) {
-            addTypeError(typeError)
-        }
-    }
-
-    fun addTypeError(typeError: TypeError) {
-        if (typeError.element.containingFile.isPhysical) {
+        if (
+            typeErrors.all { !element.isAncestorOf(it.element) }
+            && typeError.element.containingFile.isPhysical
+        ) {
             typeErrors.add(typeError)
         }
     }
-
-//    fun resolveTyVarsFromContext(ctx: InferenceContext) {
-//        for ((expr, ty) in this.exprTypes.entries) {
-//            this.exprTypes[expr] = ctx.resolveTy(ty)
-//        }
-//        for ((binding, ty) in this.bindingTypes.entries) {
-//            this.bindingTypes[binding] = ctx.resolveTy(ty)
-//        }
-//    }
-
-    fun resolveTy(ty: Ty): Ty {
-        return ty.foldTyInferWith(this::resolveTyInfer)
-    }
-
-    fun resolveTyInfer(ty: Ty): Ty {
-        if (ty !is TyInfer) return ty
-        return when (ty) {
-            is TyInfer.TyVar -> varUnificationTable.findValue(ty)?.let(this::resolveTyInfer) ?: ty
-            is TyInfer.IntVar -> intUnificationTable.findValue(ty)?.let(this::resolveTyInfer) ?: ty
-        }
-    }
-
-    fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: error("No pat in context")
-
-//    fun getBindingPatTy(pat: MvBindingPat): Ty {
-//        val existing = this.bindingTypes[pat]
-//        if (existing != null) {
-//            return existing
-//        } else {
-//            val ty = inferBindingPatTy(pat, this)
-//            bindingTypes[pat] = ty
-//            return ty
-//        }
-//    }
-
-//    fun childContext(): InferenceContext {
-//        val childContext = InferenceContext(this.msl, itemContext)
-//        childContext.exprTypes = this.exprTypes
-////        childContext.callExprTypes = this.callExprTypes
-////        childContext.typeTypes = this.typeTypes
-//        childContext.typeErrors = this.typeErrors
-//        return childContext
-//    }
-
-//    companion object {
-//        fun default(msl: Boolean, element: MvElement): InferenceContext =
-//            InferenceContext(msl, element.itemContext(msl))
-//    }
 }
