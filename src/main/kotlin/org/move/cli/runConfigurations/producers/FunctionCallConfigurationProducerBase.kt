@@ -4,7 +4,6 @@ import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.ConfigurationFromContext
 import com.intellij.execution.impl.RunDialog
 import org.move.cli.runConfigurations.aptos.FunctionCallConfigurationBase
-import org.move.cli.runConfigurations.aptos.run.RunCommandConfiguration
 
 abstract class FunctionCallConfigurationProducerBase<T : FunctionCallConfigurationBase> :
     CommandConfigurationProducerBase() {

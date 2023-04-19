@@ -6,8 +6,6 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder
 import com.intellij.psi.PsiElement
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.ext.allModuleSpecs
 import org.move.lang.core.psi.ext.innerItemSpecs
 import org.move.lang.core.psi.ext.outerItemSpecs
 import javax.swing.Icon

@@ -8,7 +8,8 @@ import org.move.lang.core.psi.MvCastExpr
 import org.move.lang.core.psi.MvVisitor
 import org.move.lang.core.psi.ext.endOffsetInParent
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.infer.*
+import org.move.lang.core.types.infer.inference
+import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.TyInteger
 import org.move.lang.core.types.ty.TyUnknown
 

@@ -7,7 +7,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
 import org.move.cli.runConfigurations.aptos.AptosCommandLine
 import org.move.cli.runConfigurations.aptos.CommandConfigurationBase
-import org.move.cli.runConfigurations.aptos.any.AnyCommandConfiguration
 import org.move.cli.settings.moveSettings
 
 abstract class CommandConfigurationProducerBase :

@@ -3,7 +3,6 @@ package org.move.lang.core.types.infer
 import com.intellij.psi.PsiElement
 import com.intellij.psi.ResolveResult
 import org.move.lang.core.psi.MvElement
-import org.move.lang.core.psi.MvTypeParameter
 import org.move.lang.core.psi.MvTypeParametersOwner
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.ty.Ty

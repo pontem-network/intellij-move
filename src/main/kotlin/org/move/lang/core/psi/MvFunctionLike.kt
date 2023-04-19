@@ -3,9 +3,10 @@ package org.move.lang.core.psi
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.stubs.MvModuleStub
-import org.move.lang.core.types.infer.*
-import org.move.lang.core.types.ty.*
-import org.move.stdext.withAdded
+import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.ty.TyFunction
+import org.move.lang.core.types.ty.TyLambda
+import org.move.lang.core.types.ty.TyUnknown
 
 interface MvFunctionLike : MvNameIdentifierOwner,
                            MvTypeParametersOwner,

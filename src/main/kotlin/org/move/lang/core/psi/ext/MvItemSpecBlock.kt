@@ -1,7 +1,6 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvElementImpl
 import org.move.lang.core.psi.MvItemSpecBlock
 import org.move.lang.core.psi.MvUseStmt

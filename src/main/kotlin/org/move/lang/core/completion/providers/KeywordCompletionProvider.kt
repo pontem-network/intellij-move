@@ -1,6 +1,5 @@
 package org.move.lang.core.completion.providers
 
-import com.intellij.codeInsight.codeVision.editorLensContextKey
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet

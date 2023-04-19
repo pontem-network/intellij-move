@@ -17,7 +17,6 @@ import org.move.lang.core.stubs.ext.childrenStubsOfType
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.address
-import org.move.lang.core.types.stubAddress
 import org.move.lang.index.MvModuleSpecIndex
 import org.move.lang.moveProject
 import javax.swing.Icon

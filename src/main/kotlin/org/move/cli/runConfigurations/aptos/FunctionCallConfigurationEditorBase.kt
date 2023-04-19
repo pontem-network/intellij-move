@@ -2,16 +2,13 @@ package org.move.cli.runConfigurations.aptos
 
 import com.intellij.execution.configuration.EnvironmentVariablesComponent
 import com.intellij.icons.AllIcons
-import com.intellij.lang.Language
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.MessageType
-import com.intellij.ui.EditorTextField
 import com.intellij.ui.JBColor
-import com.intellij.ui.LanguageTextField
 import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE

@@ -9,7 +9,6 @@ import org.move.lang.core.stubs.MvModuleStub
 import org.move.lang.core.stubs.MvStructStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
-import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.ty.Ability
 import org.move.lang.core.types.ty.TyStruct
 import org.move.stdext.withAdded

@@ -12,7 +12,6 @@ import com.intellij.util.BitUtil
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 import org.move.lang.MvElementTypes.*
-import org.move.lang.core.MoveParserUtil.setFlag
 import org.move.stdext.makeBitMask
 
 enum class FunModifier {

@@ -1,6 +1,5 @@
 package org.move.lang.core.stubs
 
-import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.*
 import com.intellij.util.BitUtil
 import org.move.cli.MoveProject

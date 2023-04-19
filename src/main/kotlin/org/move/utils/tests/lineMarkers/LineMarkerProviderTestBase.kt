@@ -1,9 +1,7 @@
 package org.move.utils.tests.lineMarkers
 
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvTestBase
-import org.move.utils.tests.fileTree
 
 abstract class LineMarkerProviderTestBase : MvTestBase() {
 

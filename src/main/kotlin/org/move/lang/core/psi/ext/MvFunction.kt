@@ -15,10 +15,8 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
-import org.move.lang.core.types.infer.Substitution
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnit
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.Icon

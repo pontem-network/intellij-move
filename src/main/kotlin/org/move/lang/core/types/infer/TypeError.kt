@@ -7,10 +7,7 @@ import org.move.ide.presentation.text
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvReturnExpr
 import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.MvStructField
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.structItem
-import org.move.lang.core.types.ty.Ability
 import org.move.lang.core.types.ty.Ty
 
 enum class TypeErrorScope {

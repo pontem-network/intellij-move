@@ -5,7 +5,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyTypeParameter
-import org.move.lang.core.types.ty.TyUnknown
 
 fun inferExpectedTy(element: PsiElement, inference: InferenceResult): Ty? {
     val owner = element.parent
