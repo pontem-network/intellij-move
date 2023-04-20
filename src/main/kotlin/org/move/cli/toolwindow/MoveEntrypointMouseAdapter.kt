@@ -19,9 +19,16 @@ class MoveEntrypointMouseAdapter : MouseAdapter() {
         val tree = e.source as? MoveProjectsTree ?: return
         val node = tree.selectionModel.selectionPath
             ?.lastPathComponent as? DefaultMutableTreeNode ?: return
-        val function =
-            (node.userObject as? MoveProjectsTreeStructure.MoveSimpleNode.Entrypoint)?.function
-                ?: return
+        val userObject = node.userObject
+        val function = when (userObject) {
+            is MoveProjectsTreeStructure.MoveSimpleNode.Entrypoint -> {
+                userObject.function
+            }
+            is MoveProjectsTreeStructure.MoveSimpleNode.View -> {
+                userObject.function
+            }
+            else -> return
+        }
 
         val dataContext =
             SimpleDataContext.getSimpleContext(Location.DATA_KEY, PsiLocation.fromPsiElement(function))

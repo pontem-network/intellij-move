@@ -67,6 +67,7 @@ val MvFunction.isView: Boolean
         return stub?.isView ?: queryAttributes.isView
     }
 
+fun MvFunction.functionId(): String? = this.qualName?.cmdText()
 
 val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
 

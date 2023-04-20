@@ -34,9 +34,6 @@ class FunctionCallParametersDialog(
             val parameters = entryFunction.transactionParameters.map { it.bindingPat }
             val msl = false
             val inference = entryFunction.inference(msl)
-//            val itemContext =
-//                entryFunction.module?.itemContext(msl) ?: project.itemContext(msl)
-
             if (typeParameters.isNotEmpty()) {
                 group("Type Arguments") {
                     for (typeParameter in entryFunction.typeParameters) {
@@ -56,24 +53,24 @@ class FunctionCallParametersDialog(
                 }
             }
             if (parameters.isNotEmpty()) {
-//                val inferenceCtx = InferenceContext(false, itemContext)
                 group("Value Arguments") {
                     for (parameter in parameters) {
                         val paramName = parameter.name
                         val paramTy = inference.getPatType(parameter)
-//                        val paramTy = inferenceCtx.getBindingPatTy(parameter)
                         val paramTyName = FunctionCallParam.tyTypeName(paramTy)
                         row(paramName) {
                             comment(": $paramTyName")
-                            when (paramTy) {
+                            val paramField = when (paramTy) {
                                 is TyInteger -> ulongTextField(paramTy.ulongRange())
                                 else -> textField()
                             }
+                            paramField
                                 .bindText(
-                                    { functionCall.params[paramName]?.value ?: "" },
+                                    { functionCall.valueParams[paramName]?.value ?: "" },
                                     {
                                         if (it.isNotBlank()) {
-                                            functionCall.params[paramName] = FunctionCallParam(it, paramTyName)
+                                            functionCall.valueParams[paramName] =
+                                                FunctionCallParam(it, paramTyName)
                                         }
                                     })
                                 .horizontalAlign(HorizontalAlign.FILL)

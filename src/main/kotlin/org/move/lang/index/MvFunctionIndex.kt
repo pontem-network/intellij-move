@@ -6,6 +6,7 @@ import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
 import com.intellij.psi.stubs.StubIndexKey
 import com.intellij.util.Processors
+import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.ext.isEntry
 import org.move.lang.core.stubs.impl.MvFileStub
@@ -13,7 +14,7 @@ import org.move.lang.core.types.ItemQualName
 import org.move.openapiext.checkCommitIsNotInProgress
 import org.move.openapiext.getElements
 
-class MvEntryFunctionIndex : StringStubIndexExtension<MvFunction>() {
+class MvFunctionIndex : StringStubIndexExtension<MvFunction>() {
     override fun getKey() = KEY
     override fun getVersion(): Int = MvFileStub.Type.stubVersion
 
@@ -31,24 +32,37 @@ class MvEntryFunctionIndex : StringStubIndexExtension<MvFunction>() {
             return allFunctions.firstOrNull { it.isEntry }
         }
 
-//        fun hasFunction(
-//            project: Project,
-//            qualName: String,
-//            scope: GlobalSearchScope = GlobalSearchScope.allScope(project)
-//        ): Boolean {
-//            checkCommitIsNotInProgress(project)
-//            val allFunctions = getElements(KEY, qualName, project, scope)
-//            return allFunctions.isNotEmpty()
-//        }
+        fun getFunctionByFunctionId(
+            moveProject: MoveProject,
+            functionId: String,
+            scope: GlobalSearchScope = GlobalSearchScope.allScope(moveProject.project),
+            itemFilter: (MvFunction) -> Boolean = { _ -> true }
+        ): MvFunction? {
+            val project = moveProject.project
+            checkCommitIsNotInProgress(project)
 
-//        fun findFunctionsByQualName(
-//            project: Project,
-//            targetFQName: String,
-//            scope: GlobalSearchScope = GlobalSearchScope.allScope(project)
-//        ): Collection<MvFunction> {
-//            checkCommitIsNotInProgress(project)
-//            return getElements(KEY, targetFQName, project, scope)
-//        }
+            return getFunction(project, functionId, scope, itemFilter)
+                ?: run {
+                    val addressValue = ItemQualName.split(functionId)?.first ?: return@run null
+                    val namedAddresses = moveProject.getAddressNamesForValue(addressValue)
+                    namedAddresses
+                        .map {
+                            val modifiedFunctionId = functionId.replace(addressValue, it)
+                            getFunction(project, modifiedFunctionId, scope, itemFilter)
+                        }
+                        .firstOrNull()
+                }
+        }
+
+        private fun getFunction(
+            project: Project,
+            functionId: String,
+            scope: GlobalSearchScope = GlobalSearchScope.allScope(project),
+            itemFilter: (MvFunction) -> Boolean = { _ -> true }
+        ): MvFunction? {
+            val allFunctions = getElements(KEY, functionId, project, scope)
+            return allFunctions.firstOrNull(itemFilter)
+        }
 
         fun getAllKeysForCompletion(
             project: Project,

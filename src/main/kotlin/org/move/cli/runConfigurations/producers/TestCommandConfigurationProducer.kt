@@ -59,9 +59,11 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
 
             val confName = "Test $modName::$functionName"
             val subCommand = "move test --filter $modName::$functionName"
-            val rootPath = fn.moveProject?.contentRootPath ?: return null
+            val moveProject = fn.moveProject ?: return null
+            val rootPath = moveProject.contentRootPath ?: return null
             return CommandLineFromContext(
                 fn,
+                moveProject,
                 confName,
                 AptosCommandLine(subCommand, workingDirectory = rootPath)
             )
@@ -74,9 +76,11 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
             val modName = mod.name ?: return null
             val confName = "Test $modName"
             val command = "move test --filter $modName"
-            val rootPath = mod.moveProject?.contentRootPath ?: return null
+            val moveProject = mod.moveProject ?: return null
+            val rootPath = moveProject.contentRootPath ?: return null
             return CommandLineFromContext(
                 mod,
+                moveProject,
                 confName,
                 AptosCommandLine(command, workingDirectory = rootPath)
             )
@@ -93,6 +97,7 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
             val command = "move test"
             return CommandLineFromContext(
                 location,
+                moveProject,
                 confName,
                 AptosCommandLine(command, workingDirectory = rootPath)
             )

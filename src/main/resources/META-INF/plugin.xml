@@ -48,7 +48,7 @@
         <stubElementTypeHolder class="org.move.lang.MvElementTypes" />
 
         <stubIndex implementation="org.move.lang.index.MvNamedElementIndex" />
-        <stubIndex implementation="org.move.lang.index.MvEntryFunctionIndex" />
+        <stubIndex implementation="org.move.lang.index.MvFunctionIndex" />
         <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
         <lang.documentationProvider language="Move"
@@ -280,8 +280,7 @@
                 implementation="org.move.cli.module.BuildLibraryRootsProvider"/>
 
         <!-- Notifications -->
-        <notificationGroup id="Move Plugin" displayType="BALLOON"/>
-        <notificationGroup id="Missing Aptos Init" displayType="BALLOON"/>
+        <notificationGroup id="Move Language" displayType="BALLOON"/>
         <editorNotificationProvider
                 implementation="org.move.ide.notifications.InvalidAptosBinaryNotification"/>
 

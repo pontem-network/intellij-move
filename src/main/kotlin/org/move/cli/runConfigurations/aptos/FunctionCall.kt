@@ -1,16 +1,20 @@
 package org.move.cli.runConfigurations.aptos
 
-import com.intellij.openapi.project.Project
+import com.intellij.notification.NotificationType
 import org.move.cli.MoveProject
-import org.move.cli.moveProjects
+import org.move.ide.actions.InitializeAptosAccountAction
+import org.move.ide.notifications.Notifications
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.allParamsAsBindings
+import org.move.lang.core.psi.ext.isEntry
+import org.move.lang.core.psi.ext.isView
 import org.move.lang.core.psi.ext.transactionParameters
+import org.move.lang.core.psi.parameters
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.*
-import java.nio.file.Path
+import org.move.stdext.RsResult
 
 data class Profile(
     val name: String,
@@ -40,19 +44,22 @@ data class FunctionCallParam(val value: String, val type: String) {
     }
 }
 
+data class CommandError(val message: String)
 
 data class FunctionCall(
     var functionId: ItemQualName?,
     var profile: Profile?,
     var typeParams: MutableMap<String, String?>,
-    var params: MutableMap<String, FunctionCallParam?>,
+    var valueParams: MutableMap<String, FunctionCallParam?>,
 ) {
-    fun toAptosCommandLine(subCommand: String): AptosCommandLine? {
-        val profile = this.profile ?: return null
-        val functionId = this.functionId?.cmdText(profile.moveProject) ?: return null
+    fun toAptosCommandLine(subCommand: String): RsResult<AptosCommandLine, CommandError> {
+        val profile = this.profile ?: return RsResult.Err(CommandError("Profile is null"))
+        val functionId =
+            this.functionId?.cmdText(profile.moveProject)
+                ?: return RsResult.Err(CommandError("FunctionId is null"))
 
         val typeParams = this.typeParams.mapNotNull { it.value }.flatMap { listOf("--type-args", it) }
-        val params = this.params.mapNotNull { it.value?.cmdText() }.flatMap { listOf("--args", it) }
+        val params = this.valueParams.mapNotNull { it.value?.cmdText() }.flatMap { listOf("--args", it) }
 
         val workDir = profile.moveProject.contentRootPath
         val commandArgs = listOf(
@@ -61,18 +68,22 @@ data class FunctionCall(
             typeParams,
             params
         ).flatten()
-        return AptosCommandLine(
-            subCommand,
-            workingDirectory = workDir,
-            arguments = commandArgs
+        return RsResult.Ok(
+            AptosCommandLine(
+                subCommand,
+                workingDirectory = workDir,
+                arguments = commandArgs
+            )
         )
     }
 
-    fun hasRequiredParameters(): Boolean {
+    fun functionHasParameters(): Boolean {
         val function = functionId?.item as? MvFunction ?: return true
-        // TODO: view function does not have first signer as a param
-        return function.typeParameters.isNotEmpty()
-                || function.transactionParameters.isNotEmpty()
+        return when {
+            function.isView -> function.typeParameters.isNotEmpty() || function.parameters.isNotEmpty()
+            function.isEntry -> function.typeParameters.isNotEmpty() || function.transactionParameters.isNotEmpty()
+            else -> true
+        }
     }
 
     companion object {
@@ -101,35 +112,44 @@ data class FunctionCall(
         }
 
         fun parseFromCommand(
-            project: Project,
+            moveProject: MoveProject,
             command: String,
-            workingDirectory: Path?,
-            getFunction: (Project, String) -> MvFunction?
+            getFunction: (MoveProject, String) -> MvFunction?
         ): FunctionCall? {
-            val callArgs =
-                FunctionCallParser.parse(command) ?: return null
+            val project = moveProject.project
+            val callArgs = FunctionCallParser.parse(command) ?: return null
 
             val profileName = callArgs.profile
-            val moveProject = workingDirectory?.let { project.moveProjects.findMoveProject(it) }
-            if (moveProject == null) {
-                TODO("Try all projects for their profiles, use the first one")
-            }
+//            val moveProject = workingDirectory?.let { project.moveProjects.findMoveProject(it) }
+//            if (moveProject == null) {
+//                TODO("Try all projects for their profiles, use the first one")
+//            }
             val functionId = callArgs.functionId
-            val (addressValue, _, _) = ItemQualName.split(functionId) ?: return null
-            val namedAddresses = moveProject.getAddressNamesForValue(addressValue)
+            val function = getFunction(moveProject, functionId) ?: return null
+//            if (function == null) {
+//                val addressValue = ItemQualName.split(functionId)?.first ?: return null
+//                val namedAddresses = moveProject.getAddressNamesForValue(addressValue)
+//                function = namedAddresses
+//                    .map {
+//                        val modifiedFunctionId = functionId.replace(addressValue, it)
+//                        getFunction(moveProject, modifiedFunctionId)
+//                    }
+//                    .firstOrNull() ?: return null
+//            }
 
-            var function = getFunction(project, functionId)
-            if (function == null) {
-                function = namedAddresses
-                    .map {
-                        val modifiedFunctionId = functionId.replace(addressValue, it)
-                        getFunction(project, modifiedFunctionId)
-                    }
-                    .firstOrNull() ?: return null
+            val aptosConfig = moveProject.aptosConfigYaml
+            if (aptosConfig == null) {
+                Notifications.pluginNotifications()
+                    .createNotification(
+                        "Aptos account is not initialized for the current project",
+                        NotificationType.WARNING
+                    )
+                    .addAction(InitializeAptosAccountAction("Configure"))
+                    .notify(project)
+                return null
             }
 
-            val config = moveProject.aptosConfigYaml ?: TODO("Project is not `aptos init`ed")
-            if (profileName !in config.profiles) {
+            if (profileName !in aptosConfig.profiles) {
                 TODO("Invalid profile, use the default one, or first one if there's no default")
             }
             val transaction = template(Profile(profileName, moveProject), function)
@@ -146,7 +166,7 @@ data class FunctionCall(
                 val name = binding.name
                 val ty = inference.getPatType(binding)
 //                val ty = inferenceCtx.getBindingPatTy(binding)
-                transaction.params[name] = FunctionCallParam(value, FunctionCallParam.tyTypeName(ty))
+                transaction.valueParams[name] = FunctionCallParam(value, FunctionCallParam.tyTypeName(ty))
             }
 
             return transaction

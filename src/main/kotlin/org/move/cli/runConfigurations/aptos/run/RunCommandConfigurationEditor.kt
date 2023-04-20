@@ -1,29 +1,26 @@
 package org.move.cli.runConfigurations.aptos.run
 
 import com.intellij.openapi.project.Project
+import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.aptos.FunctionCallConfigurationEditorBase
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.index.MvEntryFunctionIndex
-import java.nio.file.Path
+import org.move.lang.index.MvFunctionIndex
+import org.move.stdext.RsResult
 
 class RunCommandConfigurationEditor(
     project: Project,
     command: String,
-    workingDirectory: Path?,
+    moveProject: MoveProject?,
 ) :
-    FunctionCallConfigurationEditorBase<RunCommandConfiguration>(project, command, workingDirectory) {
+    FunctionCallConfigurationEditorBase<RunCommandConfiguration>(project, command, moveProject, "move run") {
 
     override fun getFunctionCompletionVariants(project: Project): Collection<String> {
-        return MvEntryFunctionIndex.getAllKeysForCompletion(project)
+        return MvFunctionIndex.getAllKeysForCompletion(project)
     }
 
-    override fun getFunction(project: Project, functionId: String): MvFunction? {
-        return RunCommandConfiguration.getEntryFunction(project, functionId)
-    }
-
-    override fun generateCommand(): String {
-        val commandLine = functionCall.toAptosCommandLine("move run")
-            ?: error("Cannot generate command")
-        return commandLine.joinedCommand()
+    override fun getFunction(moveProject: MoveProject, functionId: String): MvFunction? {
+        return RunCommandConfiguration.getEntryFunction(moveProject, functionId)
     }
 }
+
+fun String.quoted(): String = "\"$this\""

@@ -5,7 +5,7 @@ import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.notification.NotificationType
-import org.move.ide.notifications.MvNotifications
+import org.move.ide.notifications.Notifications
 
 fun RunnerAndConfigurationSettings.execute() {
     val configuration = this.configuration
@@ -14,7 +14,7 @@ fun RunnerAndConfigurationSettings.execute() {
     val runner = ProgramRunner.getRunner(executor.id, configuration)
     val finalExecutor = if (runner == null) {
         val executableName = executableName("aptos")
-        MvNotifications.pluginNotifications()
+        Notifications.pluginNotifications()
             .createNotification(
                 "${executor.actionName} action is not available for `$executableName`",
                 NotificationType.WARNING
