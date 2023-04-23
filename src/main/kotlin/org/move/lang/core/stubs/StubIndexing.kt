@@ -15,14 +15,12 @@ fun IndexSink.indexFunctionStub(stub: MvFunctionStub) {
     indexNamedStub(stub)
     if (stub.isEntry && !stub.isTest) {
         stub.unresolvedQualName?.let {
-//            println("adding $it to the MvFunctionIndex index")
             occurrence(MvEntryFunctionIndex.KEY, it)
         }
         val function = stub.psi as MvFunction
         function.moveProject?.let { proj ->
             stub.resolvedQualName(proj)
                 ?.let {
-//                    println("adding $it to the MvFunctionIndex index")
                     occurrence(MvEntryFunctionIndex.KEY, it)
                 }
         }

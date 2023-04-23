@@ -17,7 +17,6 @@ import org.move.lang.core.psi.ext.transactionParameters
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyInteger
-import org.move.openapiext.addTextChangeListener
 import org.move.utils.ui.*
 import java.util.function.Supplier
 import javax.swing.JButton
@@ -155,71 +154,69 @@ class FunctionCallPanel(
 
     private fun getInnerPanel(): JPanel {
         val function = this.item
-        val cacheService = project.service<RunTransactionCacheService>()
         val outerPanel = this
         return panel {
             val typeParameters = function.typeParameters
-            val parameters = function.transactionParameters.map { it.bindingPat }
-            val msl = false
-            val inference = function.inference(msl)
+            val parameters = handler.getFunctionParameters(function).map { it.bindingPat }
 
-            row("Function (required)") {
+            row("Function") {
                 cell(functionCompletionField)
                     .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
                 cell(functionApplyButton)
             }
-
+            if (typeParameters.isNotEmpty() || parameters.isNotEmpty()) {
+                separator()
+            }
             if (typeParameters.isNotEmpty()) {
-                group("Type Arguments") {
-                    for (typeParameter in function.typeParameters) {
-                        val paramName = typeParameter.name ?: continue
-                        row(paramName) {
-                            val completionVariants = cacheService.getTypeParameterCache(paramName)
-                            val initialValue = outerPanel.typeParams[paramName] ?: ""
+                val cacheService = project.service<RunTransactionCacheService>()
+                for (typeParameter in function.typeParameters) {
+                    val paramName = typeParameter.name ?: continue
+                    row(paramName) {
+                        val completionVariants = cacheService.getTypeParameterCache(paramName)
+                        val initialValue = outerPanel.typeParams[paramName] ?: ""
 
-                            val typeParameterTextField = TypeParameterTextField(
-                                project,
-                                function,
-                                initialValue,
-                                completionVariants
-                            )
-                            typeParameterTextField
-                                .addDefaultValidator(outerPanel)
-                                .revalidate()
-                            typeParameterTextField.addDocumentListener(object : DocumentListener {
-                                override fun documentChanged(event: DocumentEvent) {
-                                    outerPanel.typeParams[paramName] = event.document.text
-                                    fireChangeEvent()
-                                }
-                            })
-                            cell(typeParameterTextField)
-                                .horizontalAlign(HorizontalAlign.FILL)
-                        }
+                        val typeParameterTextField = TypeParameterTextField(
+                            project,
+                            function,
+                            initialValue,
+                            completionVariants
+                        )
+                        typeParameterTextField
+                            .addDefaultValidator(outerPanel)
+                            .revalidate()
+                        typeParameterTextField.addDocumentListener(object : DocumentListener {
+                            override fun documentChanged(event: DocumentEvent) {
+                                outerPanel.typeParams[paramName] = event.document.text
+                                fireChangeEvent()
+                            }
+                        })
+                        cell(typeParameterTextField)
+                            .horizontalAlign(HorizontalAlign.FILL)
                     }
                 }
             }
             if (parameters.isNotEmpty()) {
-                group("Value Arguments") {
-                    for (parameter in parameters) {
-                        val paramName = parameter.name
-                        val paramTy = inference.getPatType(parameter)
-                        val paramTyName = FunctionCallParam.tyTypeName(paramTy)
-                        row(paramName) {
-                            comment(": $paramTyName")
-                            val paramField = when (paramTy) {
-                                is TyInteger -> ulongTextField(paramTy.ulongRange())
-                                else -> textField()
-                            }
-                            paramField.component.text = outerPanel.valueParams[paramName]?.value
-                            paramField
-                                .horizontalAlign(HorizontalAlign.FILL)
-                                .whenTextChangedFromUi {
-                                    outerPanel.valueParams[paramName] = FunctionCallParam(it, paramTyName)
-                                    fireChangeEvent()
-                                }
-
+                val msl = false
+                val inference = function.inference(msl)
+                for (parameter in parameters) {
+                    val paramName = parameter.name
+                    val paramTy = inference.getPatType(parameter)
+                    val paramTyName = FunctionCallParam.tyTypeName(paramTy)
+                    row(paramName) {
+                        comment(": $paramTyName")
+                        val paramField = when (paramTy) {
+                            is TyInteger -> ulongTextField(paramTy.ulongRange())
+                            else -> textField()
                         }
+                        paramField.component.text = outerPanel.valueParams[paramName]?.value
+                        paramField
+                            .horizontalAlign(HorizontalAlign.FILL)
+                            .whenTextChangedFromUi {
+                                outerPanel.valueParams[paramName] = FunctionCallParam(it, paramTyName)
+                                fireChangeEvent()
+                            }
+
                     }
                 }
             }

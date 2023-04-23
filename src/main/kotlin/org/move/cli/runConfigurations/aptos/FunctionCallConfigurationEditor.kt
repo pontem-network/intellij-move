@@ -1,6 +1,7 @@
 package org.move.cli.runConfigurations.aptos
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.components.service
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.ui.ComboBox
@@ -165,34 +166,34 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
         accountComboBox.isEnabled = accountComboBox.model.size > 1
     }
 
-    private fun validateEditor() {
-        val functionCall = this.functionCall
-        if (functionCall == null) {
-            setErrorText("FunctionId is required")
-            return
-        }
-        val functionItemName = functionCall.itemName()
-        if (functionItemName == null) {
-            setErrorText("FunctionId is required")
-            return
-        }
-        val function = handler.getFunction(moveProject, functionItemName)
-        if (function == null) {
-            setErrorText("Cannot resolve function from functionId")
-            return
-        }
-        val typeParams = functionCall.typeParams.filterValues { it == null }
-        if (typeParams.isNotEmpty()) {
-            setErrorText("Missing required type parameters: ${typeParams.keys.joinToString()}")
-            return
-        }
-        val valueParams = functionCall.valueParams.filterValues { it == null }
-        if (valueParams.isNotEmpty()) {
-            setErrorText("Missing required value parameters: ${valueParams.keys.joinToString()}")
-            return
-        }
-        setErrorText("")
-    }
+//    private fun validateEditor() {
+//        val functionCall = this.functionCall
+//        if (functionCall == null) {
+//            setErrorText("FunctionId is required")
+//            return
+//        }
+//        val functionItemName = functionCall.itemName()
+//        if (functionItemName == null) {
+//            setErrorText("FunctionId is required")
+//            return
+//        }
+//        val function = handler.getFunction(moveProject, functionItemName)
+//        if (function == null) {
+//            setErrorText("Cannot resolve function from functionId")
+//            return
+//        }
+//        val typeParams = functionCall.typeParams.filterValues { it == null }
+//        if (typeParams.isNotEmpty()) {
+//            setErrorText("Missing required type parameters: ${typeParams.keys.joinToString()}")
+//            return
+//        }
+//        val valueParams = functionCall.valueParams.filterValues { it == null }
+//        if (valueParams.isNotEmpty()) {
+//            setErrorText("Missing required value parameters: ${valueParams.keys.joinToString()}")
+//            return
+//        }
+//        setErrorText("")
+//    }
 
     private fun setErrorText(text: String) {
         errorLabel.text = text

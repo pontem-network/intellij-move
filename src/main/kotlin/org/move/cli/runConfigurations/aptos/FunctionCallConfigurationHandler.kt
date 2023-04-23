@@ -2,6 +2,7 @@ package org.move.cli.runConfigurations.aptos
 
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvFunctionParameter
 import org.move.lang.core.psi.allParamsAsBindings
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.inference
@@ -16,6 +17,8 @@ abstract class FunctionCallConfigurationHandler {
     abstract fun getFunction(moveProject: MoveProject, functionQualName: String): MvFunction?
 
     abstract fun getFunctionByCmdName(moveProject: MoveProject, functionCmdName: String): MvFunction?
+
+    abstract fun getFunctionParameters(function: MvFunction): List<MvFunctionParameter>
 
     fun generateCommand(
         moveProject: MoveProject,

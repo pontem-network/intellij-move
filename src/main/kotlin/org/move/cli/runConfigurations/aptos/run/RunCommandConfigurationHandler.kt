@@ -4,7 +4,9 @@ import com.intellij.psi.stubs.StubIndex
 import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.aptos.FunctionCallConfigurationHandler
 import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvFunctionParameter
 import org.move.lang.core.psi.ext.isEntry
+import org.move.lang.core.psi.ext.transactionParameters
 import org.move.lang.index.MvEntryFunctionIndex
 import org.move.lang.moveProject
 
@@ -18,6 +20,10 @@ class RunCommandConfigurationHandler : FunctionCallConfigurationHandler() {
 
     override fun getFunctionByCmdName(moveProject: MoveProject, functionCmdName: String): MvFunction? {
         return getEntryFunction(moveProject, functionCmdName)
+    }
+
+    override fun getFunctionParameters(function: MvFunction): List<MvFunctionParameter> {
+        return function.transactionParameters
     }
 
     override fun getFunctionCompletionVariants(moveProject: MoveProject): Collection<String> {
