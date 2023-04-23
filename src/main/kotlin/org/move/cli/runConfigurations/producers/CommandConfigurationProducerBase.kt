@@ -13,12 +13,6 @@ import org.move.cli.settings.moveSettings
 abstract class CommandConfigurationProducerBase :
     LazyRunConfigurationProducer<CommandConfigurationBase>() {
 
-    data class CommandLineFromContext(
-        val sourceElement: PsiElement,
-        val configurationName: String,
-        val commandLine: AptosCommandLine
-    )
-
     override fun setupConfigurationFromContext(
         templateConfiguration: CommandConfigurationBase,
         context: ConfigurationContext,

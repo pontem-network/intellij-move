@@ -22,12 +22,12 @@ data class FunctionCallParser(
             override fun run() {}
         }
 
-        fun parse(rawCommand: String): FunctionCallParser? {
+        fun parse(rawCommand: String, expectedSubcommand: String): FunctionCallParser? {
             val command = ParametersListUtil.parse(rawCommand).joinToString(" ")
-            if (!command.startsWith("move run")) return null
+            if (!command.startsWith(expectedSubcommand)) return null
 
             val arguments =
-                command.drop("move run".length + 1).let { ParametersListUtil.parse(it) }
+                command.drop(expectedSubcommand.length + 1).let { ParametersListUtil.parse(it) }
             val runParser = Parser()
             try {
                 runParser.parse(arguments)

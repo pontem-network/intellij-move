@@ -4,6 +4,8 @@ import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.psi.PsiElement
+import org.move.cli.runConfigurations.aptos.run.RunCommandConfigurationHandler
+import org.move.cli.runConfigurations.aptos.view.ViewCommandConfigurationHandler
 import org.move.cli.runConfigurations.producers.RunCommandConfigurationProducer
 import org.move.cli.runConfigurations.producers.TestCommandConfigurationProducer
 import org.move.ide.MoveIcons
@@ -14,6 +16,7 @@ import org.move.lang.core.psi.MvNameIdentifierOwner
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.isEntry
 import org.move.lang.core.psi.ext.isTest
+import org.move.lang.core.psi.ext.isView
 
 class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
     override fun getInfo(element: PsiElement): Info? {
@@ -36,10 +39,20 @@ class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
                     }
                 }
                 parent.isEntry -> {
-                    val config = RunCommandConfigurationProducer.fromLocation(parent)
+                    val config = RunCommandConfigurationHandler().configurationFromLocation(parent)
                     if (config != null) {
                         return Info(
                             MoveIcons.RUN_TRANSACTION_ITEM,
+                            { config.configurationName },
+                            *contextActions()
+                        )
+                    }
+                }
+                parent.isView -> {
+                    val config = ViewCommandConfigurationHandler().configurationFromLocation(parent)
+                    if (config != null) {
+                        return Info(
+                            MoveIcons.VIEW_FUNCTION_ITEM,
                             { config.configurationName },
                             *contextActions()
                         )

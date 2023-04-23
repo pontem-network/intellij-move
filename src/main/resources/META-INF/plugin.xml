@@ -39,6 +39,8 @@
                 implementation="org.move.cli.runConfigurations.producers.TestCommandConfigurationProducer"/>
         <runConfigurationProducer
                 implementation="org.move.cli.runConfigurations.producers.RunCommandConfigurationProducer"/>
+        <runConfigurationProducer
+                implementation="org.move.cli.runConfigurations.producers.ViewCommandConfigurationProducer"/>
         <runLineMarkerContributor language="Move"
                                   implementationClass="org.move.ide.lineMarkers.AptosCommandLineMarkerContributor"/>
 
@@ -49,6 +51,7 @@
 
         <stubIndex implementation="org.move.lang.index.MvNamedElementIndex" />
         <stubIndex implementation="org.move.lang.index.MvEntryFunctionIndex" />
+        <stubIndex implementation="org.move.lang.index.MvViewFunctionIndex" />
         <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
         <lang.documentationProvider language="Move"

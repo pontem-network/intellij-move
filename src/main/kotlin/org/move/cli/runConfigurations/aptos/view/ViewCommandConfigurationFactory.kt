@@ -1,19 +1,19 @@
-package org.move.cli.runConfigurations.aptos.run
+package org.move.cli.runConfigurations.aptos.view
 
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
 
-class RunCommandConfigurationFactory(
+class ViewCommandConfigurationFactory(
     configurationType: ConfigurationType
 ) : ConfigurationFactory(configurationType) {
 
-    override fun getId(): String = "RunCommand"
+    override fun getId(): String = "ViewCommand"
 
-    override fun getName(): String = "run"
+    override fun getName(): String = "view"
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return RunCommandConfiguration(project, this)
+        return ViewCommandConfiguration(project, this)
     }
 }

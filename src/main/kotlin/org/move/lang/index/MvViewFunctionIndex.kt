@@ -9,27 +9,26 @@ import com.intellij.util.Processors
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.ext.isEntry
+import org.move.lang.core.psi.ext.isView
 import org.move.lang.core.stubs.impl.MvFileStub
 import org.move.lang.core.types.ItemQualName
 import org.move.openapiext.checkCommitIsNotInProgress
 import org.move.openapiext.getElements
 
-class MvEntryFunctionIndex : StringStubIndexExtension<MvFunction>() {
+class MvViewFunctionIndex : StringStubIndexExtension<MvFunction>() {
     override fun getKey() = KEY
     override fun getVersion(): Int = MvFileStub.Type.stubVersion
 
     companion object {
         val KEY: StubIndexKey<String, MvFunction> =
-            StubIndexKey.createIndexKey("org.move.index.MvEntryFunctionIndex")
+            StubIndexKey.createIndexKey("org.move.index.MvViewFunctionIndex")
 
-        fun getEntryFunction(
+        fun getViewFunction(
             project: Project,
             functionId: String,
             scope: GlobalSearchScope = GlobalSearchScope.allScope(project)
         ): MvFunction? {
-            checkCommitIsNotInProgress(project)
-            val allFunctions = getElements(KEY, functionId, project, scope)
-            return allFunctions.firstOrNull { it.isEntry }
+            return getFunction(project, functionId, scope) { it.isView }
         }
 
         fun getFunctionByFunctionId(
@@ -60,6 +59,7 @@ class MvEntryFunctionIndex : StringStubIndexExtension<MvFunction>() {
             scope: GlobalSearchScope = GlobalSearchScope.allScope(project),
             itemFilter: (MvFunction) -> Boolean = { _ -> true }
         ): MvFunction? {
+            checkCommitIsNotInProgress(project)
             val allFunctions = getElements(KEY, functionId, project, scope)
             return allFunctions.firstOrNull(itemFilter)
         }

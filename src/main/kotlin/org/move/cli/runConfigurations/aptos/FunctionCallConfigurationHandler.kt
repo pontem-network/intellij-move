@@ -1,16 +1,49 @@
 package org.move.cli.runConfigurations.aptos
 
+import com.intellij.psi.PsiElement
 import org.move.cli.MoveProject
+import org.move.cli.runConfigurations.producers.CommandConfigurationProducerBase
+import org.move.cli.runConfigurations.producers.CommandLineFromContext
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvFunctionParameter
-import org.move.lang.core.psi.allParamsAsBindings
+import org.move.lang.core.psi.ext.functionId
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.inference
+import org.move.lang.moveProject
 import org.move.stdext.RsResult
 
 abstract class FunctionCallConfigurationHandler {
 
     abstract val subCommand: String
+
+    abstract fun functionPredicate(function: MvFunction): Boolean
+
+    abstract fun configurationName(functionId: String): String
+
+    fun configurationFromLocation(location: PsiElement): CommandLineFromContext? {
+        val function =
+            CommandConfigurationProducerBase.findElement<MvFunction>(location, true)
+                ?.takeIf(this::functionPredicate)
+                ?: return null
+        val functionId = function.functionId() ?: return null
+
+        val moveProject = function.moveProject ?: return null
+        val profileName = moveProject.profiles.firstOrNull()
+        val workingDirectory = moveProject.contentRootPath
+
+        val arguments = mutableListOf<String>()
+        if (profileName != null) {
+            arguments.addAll(listOf("--profile", profileName))
+        }
+        arguments.addAll(listOf("--function-id", functionId))
+
+        val commandLine = AptosCommandLine(subCommand, arguments, workingDirectory)
+        return CommandLineFromContext(
+            function,
+            configurationName(functionId),
+            commandLine
+        )
+    }
 
     abstract fun getFunctionCompletionVariants(moveProject: MoveProject): Collection<String>
 
@@ -46,7 +79,8 @@ abstract class FunctionCallConfigurationHandler {
         moveProject: MoveProject,
         command: String
     ): RsResult<Pair<String, FunctionCall>, String> {
-        val callArgs = FunctionCallParser.parse(command) ?: return RsResult.Err("malformed arguments")
+        val callArgs = FunctionCallParser.parse(command, subCommand)
+            ?: return RsResult.Err("malformed arguments")
 
         val profileName = callArgs.profile
 
@@ -77,7 +111,7 @@ abstract class FunctionCallConfigurationHandler {
             transaction.typeParams[name] = value
         }
 
-        val parameterBindings = function.allParamsAsBindings.drop(1)
+        val parameterBindings = getFunctionParameters(function).map { it.bindingPat }
         val inference = function.inference(false)
         for ((binding, valueWithType) in parameterBindings.zip(callArgs.args)) {
             val name = binding.name
