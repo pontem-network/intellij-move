@@ -80,7 +80,7 @@ abstract class FunctionCallConfigurationHandler {
         command: String
     ): RsResult<Pair<String, FunctionCall>, String> {
         val callArgs = FunctionCallParser.parse(command, subCommand)
-            ?: return RsResult.Err("malformed arguments")
+            ?: return RsResult.Err("malformed command arguments")
 
         val profileName = callArgs.profile
 

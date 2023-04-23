@@ -13,29 +13,4 @@ class RunCommandConfigurationProducer : FunctionCallConfigurationProducerBase<Ru
 
     override fun configFromLocation(location: PsiElement) =
         RunCommandConfigurationHandler().configurationFromLocation(location)
-
-//    companion object {
-//        fun fromLocation(location: PsiElement): CommandLineFromContext? {
-//            val entryFunction =
-//                findElement<MvFunction>(location, true)?.takeIf { it.isEntry } ?: return null
-//            val functionId = entryFunction.functionId() ?: return null
-//
-//            val moveProject = entryFunction.moveProject ?: return null
-//            val profileName = moveProject.profiles.firstOrNull()
-//            val workingDirectory = moveProject.contentRootPath
-//
-//            val arguments = mutableListOf<String>()
-//            if (profileName != null) {
-//                arguments.addAll(listOf("--profile", profileName))
-//            }
-//            arguments.addAll(listOf("--function-id", functionId))
-//
-//            val commandLine = AptosCommandLine("move run", arguments, workingDirectory)
-//            return CommandLineFromContext(
-//                entryFunction,
-//                "Run ${ItemQualName.qualNameForCompletion(functionId)}",
-//                commandLine
-//            )
-//        }
-//    }
 }
