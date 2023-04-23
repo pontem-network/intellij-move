@@ -6,22 +6,19 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.MessageType
+import com.intellij.openapi.util.Disposer
 import com.intellij.ui.JBColor
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
-import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.dsl.gridLayout.VerticalAlign
 import org.move.cli.MoveProject
 import org.move.cli.moveProjects
-import org.move.lang.core.psi.MvFunction
 import org.move.stdext.RsResult
 import org.move.utils.ui.whenItemSelectedFromUi
-import java.awt.BorderLayout
 import javax.swing.JComponent
 import javax.swing.JLabel
-import javax.swing.JPanel
 
 data class MoveProjectItem(val moveProject: MoveProject) {
     override fun toString(): String {
@@ -43,7 +40,7 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
     private val projectComboBox: ComboBox<MoveProjectItem> = ComboBox()
     private val accountComboBox: ComboBox<String> = ComboBox()
 
-    private val functionParametersPanel = FunctionCallPanel(handler, moveProject)
+    private val functionCallPanel = FunctionCallPanel(handler, moveProject)
 
     private val errorLabel = JLabel("")
 
@@ -61,18 +58,18 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
         fillAccountsComboBox()
 
         val editor = this
-        functionParametersPanel.addFunctionCallListener(object : FunctionCallPanel.FunctionCallListener {
+        functionCallPanel.addFunctionCallListener(object : FunctionCallPanel.FunctionCallListener {
             override fun functionCallChanged(functionCall: FunctionCall) {
                 editor.functionCall = functionCall
             }
         })
-        functionParametersPanel.reset(moveProject)
+        functionCallPanel.reset(moveProject)
     }
 
     override fun resetEditorFrom(s: T) {
         val moveProject = s.workingDirectory?.let { project.moveProjects.findMoveProject(it) }
         if (moveProject == null) {
-            setErrorText("Cannot deserialize Run Configuration")
+            setErrorText("Deserialization error: no Aptos project found in the specified working directory")
             editorPanel.isVisible = false
             this.signerAccount = null
             this.functionCall = null
@@ -84,7 +81,8 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
         val (profile, functionCall) = when (res) {
             is RsResult.Ok -> res.ok
             is RsResult.Err -> {
-                setErrorText(res.err)
+                setErrorText("Deserialization error: ${res.err}")
+                editorPanel.isVisible = false
                 signerAccount = null
                 functionCall = null
                 return
@@ -93,7 +91,7 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
         this.signerAccount = profile
         this.accountComboBox.selectedItem = profile
 
-        functionParametersPanel.updateFromFunctionCall(functionCall)
+        functionCallPanel.updateFromFunctionCall(functionCall)
     }
 
     override fun applyEditorTo(s: T) {
@@ -108,6 +106,10 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
         } else {
             s.command = ""
         }
+    }
+
+    override fun disposeEditor() {
+        Disposer.dispose(functionCallPanel)
     }
 
     override fun createEditor(): JComponent {
@@ -133,7 +135,7 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
                     .whenItemSelectedFromUi {
                         moveProject = it.moveProject
                         fillAccountsComboBox()
-                        functionParametersPanel.reset(moveProject)
+                        functionCallPanel.reset(moveProject)
                     }
             }
             row("Account") {
@@ -145,7 +147,7 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             }
             separator()
             row {
-                cell(functionParametersPanel)
+                cell(functionCallPanel)
                     .verticalAlign(VerticalAlign.FILL)
                     .horizontalAlign(HorizontalAlign.FILL)
             }

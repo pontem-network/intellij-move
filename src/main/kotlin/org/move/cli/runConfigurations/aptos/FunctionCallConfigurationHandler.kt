@@ -43,17 +43,17 @@ abstract class FunctionCallConfigurationHandler {
         moveProject: MoveProject,
         command: String
     ): RsResult<Pair<String, FunctionCall>, String> {
-        val callArgs = FunctionCallParser.parse(command) ?: return RsResult.Err("Malformed arguments")
+        val callArgs = FunctionCallParser.parse(command) ?: return RsResult.Err("malformed arguments")
 
         val profileName = callArgs.profile
 
         val functionId = callArgs.functionId
         val function = getFunctionByCmdName(moveProject, functionId)
-            ?: return RsResult.Err("Function with this functionId does not exist in the current project")
+            ?: return RsResult.Err("function with this functionId does not exist in the current project")
 
         val aptosConfig = moveProject.aptosConfigYaml
         if (aptosConfig == null) {
-            return RsResult.Err("Aptos account is not initialized for the current project")
+            return RsResult.Err("aptos account is not initialized for the current project")
 //            Notifications.pluginNotifications()
 //                .createNotification(
 //                    "Aptos account is not initialized for the current project",
@@ -76,8 +76,9 @@ abstract class FunctionCallConfigurationHandler {
 
         val parameterBindings = function.allParamsAsBindings.drop(1)
         val inference = function.inference(false)
-        for ((binding, value) in parameterBindings.zip(callArgs.args)) {
+        for ((binding, valueWithType) in parameterBindings.zip(callArgs.args)) {
             val name = binding.name
+            val value = valueWithType.split(':')[1]
             val ty = inference.getPatType(binding)
             transaction.valueParams[name] = FunctionCallParam(value, FunctionCallParam.tyTypeName(ty))
         }

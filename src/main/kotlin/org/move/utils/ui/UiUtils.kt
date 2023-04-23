@@ -5,12 +5,14 @@ import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.LabeledComponent
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.ui.validation.DialogValidationRequestor
-import com.intellij.ui.*
+import com.intellij.ui.EditorTextComponent
+import com.intellij.ui.EditorTextField
+import com.intellij.ui.LanguageTextField
+import com.intellij.ui.UIBundle
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Cell
 import com.intellij.ui.dsl.builder.MutableProperty
@@ -81,7 +83,6 @@ fun validateNonEmpty(message: String): ValidationInfoBuilder.(JBTextField) -> Va
 fun validateEditorTextNonEmpty(message: String): ValidationInfoBuilder.(LanguageTextField) -> ValidationInfo? {
     return {
         if (it.text.isEmpty()) error(message) else null
-
     }
 }
 
@@ -94,6 +95,16 @@ fun validateParseErrors(message: String): ValidationInfoBuilder.(LanguageTextFie
                 } else null
             }
     }
+}
+
+fun LanguageTextField.hasParseErrors(): Boolean {
+    return FileDocumentManager.getInstance().getFile(this.document)
+        ?.let { file ->
+            PsiErrorElementUtil.hasErrors(this.project, file)
+//            if (PsiErrorElementUtil.hasErrors(field.project, file)) {
+//                false
+//            } else true
+        } ?: false
 }
 
 class WorkingDirectoryField : LabeledComponent<TextFieldWithBrowseButton>() {
