@@ -10,7 +10,6 @@ import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.ext.functionId
 import org.move.lang.core.psi.ext.isEntry
 import org.move.lang.core.types.ItemQualName
-import org.move.lang.index.MvFunctionIndex
 import org.move.lang.moveProject
 
 class RunCommandConfigurationProducer : FunctionCallConfigurationProducerBase<RunCommandConfiguration>() {
@@ -38,7 +37,6 @@ class RunCommandConfigurationProducer : FunctionCallConfigurationProducerBase<Ru
             val commandLine = AptosCommandLine("move run", arguments, workingDirectory)
             return CommandLineFromContext(
                 entryFunction,
-                moveProject,
                 "Run ${ItemQualName.qualNameForCompletion(functionId)}",
                 commandLine
             )

@@ -15,7 +15,6 @@ abstract class CommandConfigurationProducerBase :
 
     data class CommandLineFromContext(
         val sourceElement: PsiElement,
-        val moveProject: MoveProject,
         val configurationName: String,
         val commandLine: AptosCommandLine
     )

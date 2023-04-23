@@ -14,7 +14,7 @@ import org.move.lang.core.types.ItemQualName
 import org.move.openapiext.checkCommitIsNotInProgress
 import org.move.openapiext.getElements
 
-class MvFunctionIndex : StringStubIndexExtension<MvFunction>() {
+class MvEntryFunctionIndex : StringStubIndexExtension<MvFunction>() {
     override fun getKey() = KEY
     override fun getVersion(): Int = MvFileStub.Type.stubVersion
 

@@ -8,7 +8,8 @@ import org.move.lang.core.psi.MvFunction
 
 abstract class FunctionCallConfigurationBase(
     project: Project,
-    factory: ConfigurationFactory
+    factory: ConfigurationFactory,
+    val configurationHandler: FunctionCallConfigurationHandler,
 ) : CommandConfigurationBase(project, factory) {
 
     var moveProject: MoveProject?
@@ -18,9 +19,7 @@ abstract class FunctionCallConfigurationBase(
         }
 
     fun functionCall(): FunctionCall? {
-        val moveProj = moveProject ?: return null
-        return FunctionCall.parseFromCommand(moveProj, command, this::getFunction)
+        val moveProject = moveProject ?: return null
+        return configurationHandler.parseCommand(moveProject, command).unwrapOrNull()?.second
     }
-
-    abstract fun getFunction(moveProject: MoveProject, functionId: String): MvFunction?
 }

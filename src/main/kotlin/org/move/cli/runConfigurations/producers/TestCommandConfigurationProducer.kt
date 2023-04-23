@@ -63,7 +63,6 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
             val rootPath = moveProject.contentRootPath ?: return null
             return CommandLineFromContext(
                 fn,
-                moveProject,
                 confName,
                 AptosCommandLine(subCommand, workingDirectory = rootPath)
             )
@@ -80,7 +79,6 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
             val rootPath = moveProject.contentRootPath ?: return null
             return CommandLineFromContext(
                 mod,
-                moveProject,
                 confName,
                 AptosCommandLine(command, workingDirectory = rootPath)
             )
@@ -97,7 +95,6 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
             val command = "move test"
             return CommandLineFromContext(
                 location,
-                moveProject,
                 confName,
                 AptosCommandLine(command, workingDirectory = rootPath)
             )

@@ -40,6 +40,11 @@ sealed class RsResult<out T, out E> {
             throw IllegalStateException("called `RsResult.unwrap()` on an `Err` value: $err")
         }
     }
+
+    fun unwrapOrNull(): T? = when (this) {
+        is Ok -> ok
+        is Err -> null
+    }
 }
 
 inline fun <T, E, U> RsResult<T, E>.andThen(action: (T) -> RsResult<U, E>): RsResult<U, E> = when (this) {
