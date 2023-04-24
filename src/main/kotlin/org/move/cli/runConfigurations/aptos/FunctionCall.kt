@@ -3,6 +3,7 @@ package org.move.cli.runConfigurations.aptos
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.allParamsAsBindings
+import org.move.lang.core.psi.ext.functionId
 import org.move.lang.core.psi.ext.isEntry
 import org.move.lang.core.psi.ext.isView
 import org.move.lang.core.psi.ext.transactionParameters
@@ -32,9 +33,9 @@ data class FunctionCall(
     val valueParams: MutableMap<String, FunctionCallParam?>
 ) {
     fun itemName(): String? = item.qualName?.editorText()
-    fun functionId(moveProject: MoveProject): String? = item.qualName?.cmdText(moveProject)
+    fun functionId(moveProject: MoveProject): String? = item.functionId(moveProject)
 
-    fun functionHasParameters(): Boolean {
+    fun parametersRequired(): Boolean {
         val fn = item
         return when {
             fn.isView -> fn.typeParameters.isNotEmpty() || fn.parameters.isNotEmpty()

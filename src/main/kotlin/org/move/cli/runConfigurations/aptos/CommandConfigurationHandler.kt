@@ -25,9 +25,9 @@ abstract class CommandConfigurationHandler {
             CommandConfigurationProducerBase.findElement<MvFunction>(location, true)
                 ?.takeIf(this::functionPredicate)
                 ?: return null
-        val functionId = function.functionId() ?: return null
-
         val moveProject = function.moveProject ?: return null
+
+        val functionId = function.functionId(moveProject) ?: return null
         val profileName = moveProject.profiles.firstOrNull()
         val workingDirectory = moveProject.contentRootPath
 
@@ -79,9 +79,11 @@ abstract class CommandConfigurationHandler {
         moveProject: MoveProject,
         command: String
     ): RsResult<Pair<String, FunctionCall>, String> {
-        val callArgs = FunctionCallParser.parse(command, subCommand)
-            ?: return RsResult.Err("malformed command arguments")
-
+        val res = FunctionCallParser.parse(command, subCommand)
+        val callArgs = when (res) {
+            is RsResult.Ok -> res.ok
+            is RsResult.Err -> return RsResult.Err("malformed command error '${res.err}'")
+        }
         val profileName = callArgs.profile
 
         val functionId = callArgs.functionId
@@ -90,11 +92,11 @@ abstract class CommandConfigurationHandler {
 
         val aptosConfig = moveProject.aptosConfigYaml
         if (aptosConfig == null) {
-            return RsResult.Err("aptos account is not initialized for the current project")
+            return RsResult.Err("Aptos account is not initialized for the current project")
         }
 
         if (profileName !in aptosConfig.profiles) {
-            return RsResult.Err("Account used in the command is not part of project accounts")
+            return RsResult.Err("account '$profileName' is not present in the project's accounts")
         }
         val transaction = FunctionCall.template(function)
 

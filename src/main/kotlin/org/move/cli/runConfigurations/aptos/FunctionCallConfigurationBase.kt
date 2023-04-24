@@ -17,8 +17,10 @@ abstract class FunctionCallConfigurationBase(
             workingDirectory = value?.contentRootPath
         }
 
-    fun functionCall(): FunctionCall? {
-        val moveProject = moveProject ?: return null
-        return configurationHandler.parseCommand(moveProject, command).unwrapOrNull()?.second
+    fun firstRunShouldOpenEditor(): Boolean {
+        val moveProject = moveProject ?: return true
+        val functionCall = configurationHandler
+            .parseCommand(moveProject, command).unwrapOrNull()?.second ?: return true
+        return functionCall.parametersRequired()
     }
 }

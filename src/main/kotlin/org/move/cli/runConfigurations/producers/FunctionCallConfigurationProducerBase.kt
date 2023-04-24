@@ -15,10 +15,9 @@ abstract class FunctionCallConfigurationProducerBase<T : FunctionCallConfigurati
     ) {
         @Suppress("UNCHECKED_CAST")
         val functionCallConfiguration = configuration.configuration as T
-        val functionCall = functionCallConfiguration.functionCall()
 
-        val incomplete = functionCall?.functionHasParameters() ?: true
-        if (incomplete) {
+        val openEditor = functionCallConfiguration.firstRunShouldOpenEditor()
+        if (openEditor) {
             val ok =
                 RunDialog.editConfiguration(
                     context.project,

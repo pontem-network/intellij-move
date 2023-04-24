@@ -6,6 +6,7 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.intellij.util.execution.ParametersListUtil
+import org.move.stdext.RsResult
 
 data class FunctionCallParser(
     val functionId: String,
@@ -22,21 +23,23 @@ data class FunctionCallParser(
             override fun run() {}
         }
 
-        fun parse(rawCommand: String, expectedSubcommand: String): FunctionCallParser? {
+        fun parse(rawCommand: String, subcommand: String): RsResult<FunctionCallParser, String> {
             val command = ParametersListUtil.parse(rawCommand).joinToString(" ")
-            if (!command.startsWith(expectedSubcommand)) return null
+            if (!command.startsWith(subcommand))
+                return RsResult.Err("does not start with '$subcommand'")
 
             val arguments =
-                command.drop(expectedSubcommand.length + 1).let { ParametersListUtil.parse(it) }
+                command.drop(subcommand.length + 1).let { ParametersListUtil.parse(it) }
             val runParser = Parser()
             try {
                 runParser.parse(arguments)
             } catch (e: CliktError) {
-                return null
+                return RsResult.Err(e.message ?: "")
             }
             val functionId = runParser.functionId
             val profile = runParser.profile ?: "default"
-            return FunctionCallParser(functionId, runParser.typeParams, runParser.params, profile)
+            val parser = FunctionCallParser(functionId, runParser.typeParams, runParser.params, profile)
+            return RsResult.Ok(parser)
         }
     }
 }

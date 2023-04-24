@@ -8,6 +8,7 @@ import com.intellij.openapi.util.SimpleModificationTracker
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.util.PlatformIcons
+import org.move.cli.MoveProject
 import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
@@ -67,7 +68,7 @@ val MvFunction.isView: Boolean
         return stub?.isView ?: queryAttributes.isView
     }
 
-fun MvFunction.functionId(): String? = this.qualName?.cmdText()
+fun MvFunction.functionId(moveProject: MoveProject): String? = qualName?.cmdText(moveProject)
 
 val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
 

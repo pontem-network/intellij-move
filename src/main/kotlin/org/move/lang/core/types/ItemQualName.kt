@@ -2,7 +2,6 @@ package org.move.lang.core.types
 
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvQualNamedElement
-import org.move.lang.moveProject
 
 data class ItemQualName(
     val item: MvQualNamedElement,
@@ -18,24 +17,10 @@ data class ItemQualName(
         return listOfNotNull(addressText, moduleName, itemName).joinToString("::")
     }
 
-    fun cmdText(moveProject: MoveProject? = null): String {
+    fun cmdText(moveProject: MoveProject): String {
         val addressText = when (address) {
-            is Address.Value -> address.addressLit().canonical()
-            is Address.Named -> {
-                val addressMoveProject = moveProject ?: item.moveProject ?: error("No move project found")
-                address.addressLit(addressMoveProject)?.canonical()
-            }
-        }
-        return listOfNotNull(addressText, moduleName, itemName).joinToString("::")
-    }
-
-    fun cmdTextFromProject(moveProject: MoveProject): String {
-        val addressText = when (address) {
-            is Address.Value -> address.addressLit().canonical()
-            is Address.Named -> {
-                val moveProject = item.moveProject ?: error("No MoveProject found")
-                address.addressLit(moveProject)?.canonical()
-            }
+            is Address.Named -> address.addressLit(moveProject)?.short()
+            is Address.Value -> address.addressLit().short()
         }
         return listOfNotNull(addressText, moduleName, itemName).joinToString("::")
     }

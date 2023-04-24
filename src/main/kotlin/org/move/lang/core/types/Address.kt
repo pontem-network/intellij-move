@@ -12,7 +12,7 @@ import org.move.lang.core.types.AddressLit.Companion.normalizeValue
 const val MAX_LENGTH = 32
 
 class AddressLit(val original: String) {
-    fun canonical(): String = normalizeValue(this.original)
+    fun canonical(): String = normalizeValue(original)
     fun short(): String = shortenValue(original)
 
     companion object {
