@@ -5,7 +5,7 @@ import org.move.lang.core.psi.MvModule
 import org.move.openapiext.toPsiDirectory
 import org.move.utils.tests.RunConfigurationProducerTestBase
 
-class MoveCommandConfigurationProducerTest : RunConfigurationProducerTestBase("test") {
+class TestCommandConfigurationProducerTest : RunConfigurationProducerTestBase("test") {
     fun `test test run for function`() {
         testProject {
             namedMoveToml("MyPackage")
