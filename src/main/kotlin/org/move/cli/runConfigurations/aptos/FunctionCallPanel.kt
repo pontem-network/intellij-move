@@ -13,7 +13,6 @@ import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.ui.components.BorderLayoutPanel
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.ext.transactionParameters
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyInteger
@@ -51,7 +50,7 @@ class TypeParameterTextField(
 }
 
 class FunctionCallPanel(
-    val handler: FunctionCallConfigurationHandler,
+    val handler: CommandConfigurationHandler,
     var moveProject: MoveProject,
 ) :
     BorderLayoutPanel(), Disposable {

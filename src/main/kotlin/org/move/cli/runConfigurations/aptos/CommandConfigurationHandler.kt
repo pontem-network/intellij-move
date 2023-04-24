@@ -12,7 +12,7 @@ import org.move.lang.core.types.infer.inference
 import org.move.lang.moveProject
 import org.move.stdext.RsResult
 
-abstract class FunctionCallConfigurationHandler {
+abstract class CommandConfigurationHandler {
 
     abstract val subCommand: String
 
@@ -91,14 +91,6 @@ abstract class FunctionCallConfigurationHandler {
         val aptosConfig = moveProject.aptosConfigYaml
         if (aptosConfig == null) {
             return RsResult.Err("aptos account is not initialized for the current project")
-//            Notifications.pluginNotifications()
-//                .createNotification(
-//                    "Aptos account is not initialized for the current project",
-//                    NotificationType.WARNING
-//                )
-//                .addAction(InitializeAptosAccountAction("Configure"))
-//                .notify(project)
-//            return null
         }
 
         if (profileName !in aptosConfig.profiles) {

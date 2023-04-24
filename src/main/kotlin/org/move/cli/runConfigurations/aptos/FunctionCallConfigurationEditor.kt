@@ -1,7 +1,6 @@
 package org.move.cli.runConfigurations.aptos
 
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.components.service
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.ui.ComboBox
@@ -28,7 +27,7 @@ data class MoveProjectItem(val moveProject: MoveProject) {
 }
 
 class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
-    private val handler: FunctionCallConfigurationHandler,
+    private val handler: CommandConfigurationHandler,
     private var moveProject: MoveProject,
 ) :
     SettingsEditor<T>() {

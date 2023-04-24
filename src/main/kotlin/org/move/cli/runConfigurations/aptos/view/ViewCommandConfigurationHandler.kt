@@ -1,7 +1,7 @@
 package org.move.cli.runConfigurations.aptos.view
 
 import org.move.cli.MoveProject
-import org.move.cli.runConfigurations.aptos.FunctionCallConfigurationHandler
+import org.move.cli.runConfigurations.aptos.CommandConfigurationHandler
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvFunctionParameter
 import org.move.lang.core.psi.ext.isTest
@@ -9,7 +9,7 @@ import org.move.lang.core.psi.ext.isView
 import org.move.lang.core.psi.parameters
 import org.move.lang.index.MvViewFunctionIndex
 
-class ViewCommandConfigurationHandler : FunctionCallConfigurationHandler() {
+class ViewCommandConfigurationHandler : CommandConfigurationHandler() {
 
     override val subCommand: String get() = "move view"
 

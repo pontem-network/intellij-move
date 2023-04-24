@@ -4,12 +4,11 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.openapi.project.Project
 import org.move.cli.MoveProject
 import org.move.cli.moveProjects
-import org.move.lang.core.psi.MvFunction
 
 abstract class FunctionCallConfigurationBase(
     project: Project,
     factory: ConfigurationFactory,
-    val configurationHandler: FunctionCallConfigurationHandler,
+    val configurationHandler: CommandConfigurationHandler,
 ) : CommandConfigurationBase(project, factory) {
 
     var moveProject: MoveProject?

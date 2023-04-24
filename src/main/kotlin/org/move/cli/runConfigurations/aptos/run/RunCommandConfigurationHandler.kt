@@ -1,7 +1,7 @@
 package org.move.cli.runConfigurations.aptos.run
 
 import org.move.cli.MoveProject
-import org.move.cli.runConfigurations.aptos.FunctionCallConfigurationHandler
+import org.move.cli.runConfigurations.aptos.CommandConfigurationHandler
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvFunctionParameter
 import org.move.lang.core.psi.ext.isEntry
@@ -9,7 +9,7 @@ import org.move.lang.core.psi.ext.isTest
 import org.move.lang.core.psi.ext.transactionParameters
 import org.move.lang.index.MvEntryFunctionIndex
 
-class RunCommandConfigurationHandler : FunctionCallConfigurationHandler() {
+class RunCommandConfigurationHandler : CommandConfigurationHandler() {
 
     override val subCommand: String get() = "move run"
 
