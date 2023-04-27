@@ -3,6 +3,7 @@ package org.move.lang.core.types.infer
 import com.intellij.openapi.util.Key
 import com.intellij.psi.util.CachedValue
 import com.jetbrains.rd.util.concurrentMapOf
+import org.move.cli.settings.pluginDevelopmentMode
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
@@ -64,8 +65,24 @@ data class InferenceResult(
     private val pathTypes: Map<MvPath, GenericTy>,
     val typeErrors: List<TypeError>
 ) {
-    fun getExprType(expr: MvExpr): Ty = exprTypes[expr] ?: error("Expr `${expr.text}` is never inferred")
-    fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: error("Pat `${pat.text}` is never inferred")
+    fun getExprType(expr: MvExpr): Ty =
+        exprTypes[expr] ?: run {
+            if (expr.project.pluginDevelopmentMode) {
+                error(expr.typeErrorText)
+            } else {
+                TyUnknown
+            }
+        }
+
+    fun getPatType(pat: MvPat): Ty =
+        patTypes[pat] ?: run {
+            if (pat.project.pluginDevelopmentMode) {
+                error(pat.typeErrorText)
+            } else {
+                TyUnknown
+            }
+        }
+
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallExprType(expr: MvCallExpr): Ty? = callExprTypes[expr]
     fun getPathType(path: MvPath): GenericTy? = pathTypes[path]
@@ -78,8 +95,30 @@ data class InferenceResult(
             acquiresTypes
         }
     }
-
 }
+
+private val MvElement.typeErrorText: String
+    get() {
+        var text = "${this.elementType} `${this.text}` is never inferred."
+        val stmt = this.ancestorStrict<MvStmt>() ?: return text
+
+        text += "Context:\n"
+        text += "...\n"
+        val leftSibling = stmt.getPrevNonCommentSibling()
+        text += leftSibling?.text ?: ""
+        text += "\n"
+        val rangeInStmt = this.textRangeInAncestor(stmt)
+        text += stmt.text.replaceRange(
+            IntRange(rangeInStmt.startOffset, rangeInStmt.endOffset - 1),
+            "[${this.text}]"
+        )
+        text += "\n"
+        val rightSibling = stmt.getNextNonCommentSibling()
+        text += rightSibling?.text ?: ""
+        text += "\n..."
+
+        return text
+    }
 
 fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
     val inferenceCtx = InferenceContext(msl, unify = true)

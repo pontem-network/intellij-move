@@ -3,10 +3,13 @@ package org.move.utils.ui
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.invokeLater
-import com.intellij.openapi.observable.util.whenKeyReleased
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.PopupMenuListenerAdapter
 import com.intellij.ui.dsl.builder.Cell
+import java.awt.Component
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
+import java.awt.event.KeyListener
 import javax.swing.JComboBox
 import javax.swing.event.PopupMenuEvent
 import javax.swing.event.PopupMenuListener
@@ -47,6 +50,18 @@ fun JTextComponent.whenTextChangedFromUi(parentDisposable: Disposable? = null, l
     }
 }
 
+fun Component.whenKeyReleased(parentDisposable: Disposable? = null, listener: (KeyEvent) -> Unit) {
+    addKeyListener(parentDisposable, object : KeyAdapter() {
+        override fun keyReleased(e: KeyEvent) = listener(e)
+    })
+}
+
+fun Component.addKeyListener(parentDisposable: Disposable? = null, listener: KeyListener) {
+    addKeyListener(listener)
+    parentDisposable?.whenDisposed {
+        removeKeyListener(listener)
+    }
+}
 
 fun JComboBox<*>.whenPopupMenuWillBecomeInvisible(
     parentDisposable: Disposable? = null,

@@ -29,6 +29,11 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
                     checkBox("Disable telemetry for new Run Configurations")
                         .bindSelected(state::disableTelemetry)
                 }
+                row {
+                    checkBox("Enable development mode")
+                        .bindSelected(state::developmentMode)
+                    comment("Disables some fallbacks to explicitly crash or highlight errors")
+                }
             }
         }
     }
