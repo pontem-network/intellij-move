@@ -10,12 +10,11 @@ abstract class MvNamedElementsVisitor : MvVisitor(), PsiRecursiveVisitor {
     override fun visitFile(file: PsiFile) = file.acceptChildren(this)
 
     override fun visitAddressDef(o: MvAddressDef) {
-        o.addressBlock?.moduleList?.map { it.accept(this) }
+        o.modules().forEach { it.accept(this) }
     }
 
     override fun visitModule(o: MvModule) {
         processNamedElement(o)
-
         o.allFunctions().forEach { it.accept(this) }
         o.specFunctions().forEach { it.accept(this) }
         o.structs().forEach { it.accept(this) }
@@ -23,15 +22,14 @@ abstract class MvNamedElementsVisitor : MvVisitor(), PsiRecursiveVisitor {
     }
 
     override fun visitFunction(o: MvFunction) = processNamedElement(o)
+    override fun visitSpecFunction(o: MvSpecFunction) = processNamedElement(o)
 
     override fun visitStruct(o: MvStruct) {
         processNamedElement(o)
-        for (field in o.fields) {
-            processNamedElement(o)
-        }
+        o.fields.forEach { processNamedElement(it) }
     }
 
-    override fun visitBindingPat(o: MvBindingPat) = processNamedElement(o)
+    override fun visitConst(o: MvConst) = processNamedElement(o)
 
     abstract fun processNamedElement(element: MvNamedElement)
 }
