@@ -824,8 +824,7 @@ private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
                       | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
 private AtomExpr ::=
                     AnnotatedExpr
-                    | TupleLitExpr
-                    | ParensExpr
+                    | TupleLitOrParenExpr
                     | StructOrSchemaLitExpr
                     | VectorLitExpr
                     | DotExpr
@@ -947,13 +946,35 @@ StructLitField ::= IDENTIFIER StructLitFieldInit?
 
 private StructLitFieldInit ::= ':' Expr { pin = 1 }
 
-ParensExpr ::= '(' Expr !':' ')'
+fake TupleLitExpr ::= '(' Expr+ ')' {
+    pin = 2
+}
+fake ParensExpr ::= '(' Expr ')' {
+    pin = 1
+}
+
+TupleLitOrParenExpr ::= '(' Expr (TupleLitExprUpper | ')') {
+    pin = 1
+    elementType = ParensExpr
+}
+upper TupleLitExprUpper ::= ',' [ Expr (',' Expr)* ','? ] ')' {
+    pin = 1
+    elementType = TupleLitExpr
+}
+
+//ParensExpr ::= '(' Expr !':' ')'
+//TupleLitExpr ::= '(' Expr ',' <<comma_sep_items Expr>>? ')' { pin = 3 }
+
+//TupleOrParenExpr ::= OuterAttr* '(' AnyExpr (TupleExprUpper | ')') {
+//  pin = 2
+//  elementType = ParenExpr
+//}
+//upper TupleExprUpper ::= ',' [ AnyExpr (',' AnyExpr)* ','? ] ')' { pin = 1 elementType = TupleExpr }
 
 LambdaExpr ::= '|' <<comma_sep_items BindingPat>> '|' Expr { pin = 1 }
 
 RangeExpr ::= Expr '..' Expr
 
-TupleLitExpr ::= '(' Expr ',' <<comma_sep_items Expr>>? ')' { pin = 3 }
 
 private HEX_INTEGER_LITERAL ::= <<hexIntegerLiteral>>
 LitExpr ::= HEX_INTEGER_LITERAL
