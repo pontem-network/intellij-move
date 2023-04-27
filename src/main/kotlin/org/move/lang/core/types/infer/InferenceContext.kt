@@ -74,6 +74,9 @@ data class InferenceResult(
             }
         }
 
+    /// Explicitly allow uninferred expr
+    fun getExprTypeOrUnknown(expr: MvExpr): Ty = exprTypes[expr] ?: TyUnknown
+
     fun getPatType(pat: MvPat): Ty =
         patTypes[pat] ?: run {
             if (pat.project.pluginDevelopmentMode) {
@@ -82,6 +85,9 @@ data class InferenceResult(
                 TyUnknown
             }
         }
+
+    /// Explicitly allow uninferred pat
+    fun getPatTypeOrUnknown(pat: MvPat): Ty = patTypes[pat] ?: TyUnknown
 
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallExprType(expr: MvCallExpr): Ty? = callExprTypes[expr]

@@ -2,6 +2,7 @@ package org.move.utils.tests.completion
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
+import org.move.cli.settings.moveSettings
 
 abstract class CompletionTestCase : BasePlatformTestCase() {
     lateinit var completionFixture: MvCompletionTestFixture
