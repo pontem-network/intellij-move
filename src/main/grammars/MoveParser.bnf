@@ -1323,7 +1323,7 @@ PragmaAttribute ::= IDENTIFIER ('=' Expr)?
 
 AbortsIfSpecExpr ::= aborts_if Expr AbortsIfWith? {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvBoolConditionSpecExpr" ]
+    implements = [ "org.move.lang.core.psi.MvBoolSpecExpr" ]
 }
 AbortsIfWith ::= with Expr { pin = 1 }
 
@@ -1331,19 +1331,19 @@ AbortsWithSpecExpr ::= aborts_with <<comma_sep_items Expr>> { pin = 1 }
 
 AssertSpecExpr ::= assert Expr {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvBoolConditionSpecExpr" ]
+    implements = [ "org.move.lang.core.psi.MvBoolSpecExpr" ]
 }
 AssumeSpecExpr ::= assume Expr {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvBoolConditionSpecExpr" ]
+    implements = [ "org.move.lang.core.psi.MvBoolSpecExpr" ]
 }
 RequiresSpecExpr ::= requires MODULE_KW? Expr {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvBoolConditionSpecExpr" ]
+    implements = [ "org.move.lang.core.psi.MvBoolSpecExpr" ]
 }
 EnsuresSpecExpr ::= ensures SpecExpr {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvBoolConditionSpecExpr" ]
+    implements = [ "org.move.lang.core.psi.MvBoolSpecExpr" ]
 }
 ModifiesSpecExpr ::= modifies Expr { pin = 1 }
 
@@ -1379,12 +1379,15 @@ FunctionPattern ::= PatternVis? PatternIdent TypeParameterList? {
 //FunctionPattern ::= (public | internal)? IDENTIFIER TypeArgumentList? { pin = 2 }
 
 private InvariantModifier ::= <<invariantModifierKeyword>>
-InvariantSpecExpr ::= invariant InvariantModifier? TypeParameterList? Expr { pin = 1 }
+InvariantSpecExpr ::= invariant InvariantModifier? TypeParameterList? Expr {
+    pin = 1
+    implements = [ "org.move.lang.core.psi.MvBoolSpecExpr" ]
+}
 
 //AxiomSpecStmt ::= AxiomSpecExpr ';'
 AxiomSpecExpr ::= axiom TypeParameterList? Expr {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvBoolConditionSpecExpr" ]
+    implements = [ "org.move.lang.core.psi.MvBoolSpecExpr" ]
 }
 
 SpecVisibility ::= '[' SpecVisibility_items ']' { pin = 1 }

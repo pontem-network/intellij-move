@@ -1,5 +1,5 @@
 package org.move.lang.core.psi
 
-interface MvBoolConditionSpecExpr : MvExpr {
+interface MvBoolSpecExpr : MvExpr {
     val expr: MvExpr?
 }

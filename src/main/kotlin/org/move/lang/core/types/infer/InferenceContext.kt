@@ -103,12 +103,12 @@ data class InferenceResult(
     }
 }
 
-private val MvElement.typeErrorText: String
+internal val MvElement.typeErrorText: String
     get() {
         var text = "${this.elementType} `${this.text}` is never inferred."
         val stmt = this.ancestorStrict<MvStmt>() ?: return text
 
-        text += "Context:\n"
+        text += "\nContext:\n"
         text += "...\n"
         val leftSibling = stmt.getPrevNonCommentSibling()
         text += leftSibling?.text ?: ""

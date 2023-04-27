@@ -709,7 +709,7 @@ module 0x1::M {
     """
     )
 
-    fun `test no error integer should ignore spec blocks`() = checkErrors(
+    fun `test all integers are nums in spec blocks`() = checkErrors(
         """
     module 0x1::main {
         spec fun spec_pow(y: u64, x: u64): u64 {
@@ -1240,5 +1240,28 @@ module 0x1::pool {
                 a << 1;
             }        
         } 
+    """)
+
+    fun `test abort expr requires an integer type`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                abort 1;
+                abort 1u8;
+                abort 1u64;
+                abort <error descr="Incompatible type 'bool', expected 'integer'">false</error>;
+            }
+        }        
+    """)
+
+    fun `test aborts if with requires an integer type`() = checkByText("""
+        module 0x1::m {
+            fun call() {}
+            spec call {
+                aborts_if true with 1;
+                aborts_if true with 1u8;
+                aborts_if true with 1u64;
+                aborts_if true with <error descr="Incompatible type 'bool', expected 'integer'">false</error>;
+            }
+        }        
     """)
 }

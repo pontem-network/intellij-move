@@ -2,6 +2,7 @@ package org.move.lang.core.types.infer
 
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.PsiElement
+import org.move.cli.settings.pluginDevelopmentMode
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
@@ -194,10 +195,27 @@ class TypeInferenceWalker(
                 expr.expr?.inferTypeCoercableTo(returnTy)
                 TyNever
             }
+            is MvContinueExpr -> TyNever
+            is MvBreakExpr -> TyNever
+            is MvAbortExpr -> {
+                expr.expr?.inferTypeCoercableTo(TyInteger.default())
+                TyNever
+            }
             is MvCodeBlockExpr -> expr.codeBlock.inferBlockType(expected)
             is MvAssignmentExpr -> inferAssignmentExprTy(expr)
-            is MvBoolConditionSpecExpr -> inferBoolConditionSpecExpr(expr)
-            else -> TyUnknown
+            is MvBoolSpecExpr -> {
+                inferBoolSpecExpr(expr)
+                when (expr) {
+                    is MvAbortsIfSpecExpr -> expr.abortsIfWith?.expr?.inferTypeCoercableTo(TyInteger.default())
+                }
+                TyUnit
+            }
+            is MvModifiesSpecExpr -> {
+                expr.expr?.inferType()
+                TyUnit
+            }
+            else ->
+                if (expr.project.pluginDevelopmentMode) error(expr.typeErrorText) else TyUnknown
         }
 
         val refinedExprTy = exprTy.mslScopeRefined(msl)
@@ -205,7 +223,7 @@ class TypeInferenceWalker(
         return refinedExprTy
     }
 
-    private fun inferBoolConditionSpecExpr(expr: MvBoolConditionSpecExpr): Ty {
+    private fun inferBoolSpecExpr(expr: MvBoolSpecExpr): Ty {
         return expr.expr?.inferTypeCoercableTo(TyBool) ?: TyUnknown
     }
 
@@ -553,7 +571,6 @@ class TypeInferenceWalker(
                 val literal = (litExpr.integerLiteral ?: litExpr.hexIntegerLiteral)!!
                 return TyInteger.fromSuffixedLiteral(literal) ?: TyInfer.IntVar()
             }
-
             litExpr.byteStringLiteral != null -> TyByteString(ctx.msl)
             litExpr.hexStringLiteral != null -> TyHexString(ctx.msl)
             else -> TyUnknown

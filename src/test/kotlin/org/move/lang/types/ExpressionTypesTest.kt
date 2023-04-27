@@ -902,4 +902,56 @@ module 0x1::main {
             }        
         } 
     """)
+
+    fun `test integer parameter has type num in inline spec block`() = testExpr("""
+        module 0x1::m {
+            fun main(degree: u8) {
+                spec {
+                    degree;
+                    //^ num
+                }
+            }
+        }        
+    """)
+
+    fun `test continue expr never type`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                while (true) {
+                    continue 
+                    //^ <never>
+                }
+            }
+        }        
+    """)
+
+    fun `test break expr never type`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                while (true) {
+                    break  
+                    //^ <never>
+                }
+            }
+        }        
+    """)
+
+    fun `test abort expr never type`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                abort 1  
+                //^ <never>
+            }
+        }        
+    """)
+
+    fun `test modifies expr`() = testExpr("""
+        module 0x1::m {
+            struct Coin has key {}
+            spec module {
+                modifies (global<Coin>(@0x1));
+                       //^ 0x1::m::Coin
+            }
+        }        
+    """)
 }

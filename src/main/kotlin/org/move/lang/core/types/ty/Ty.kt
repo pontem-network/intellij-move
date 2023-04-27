@@ -71,7 +71,7 @@ fun Ty.mslScopeRefined(msl: Boolean): Ty {
     if (this is TyReference) {
         ty = this.innermostTy()
     }
-    if (ty is TyInteger) {
+    if (ty is TyInteger || ty is TyInfer.IntVar) {
         ty = TyNum
     }
     return ty

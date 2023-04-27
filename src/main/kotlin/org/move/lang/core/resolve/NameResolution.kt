@@ -263,7 +263,8 @@ fun processLexicalDeclarations(
                 val dotExpr = scope as? MvDotExpr ?: return false
                 val receiverExpr = dotExpr.expr
 
-                val inference = receiverExpr.inference(receiverExpr.isMsl()) ?: return false
+                val msl = receiverExpr.isMsl()
+                val inference = receiverExpr.inference(msl) ?: return false
                 // uninferred expr is allowed for the `object.IntellijIdeaRulezzz` case:
                 // there's an obvious dot expr, but I can't make it pin on '.'
                 val receiverTy = inference.getExprTypeOrUnknown(receiverExpr)
@@ -275,8 +276,10 @@ fun processLexicalDeclarations(
                 if (innerTy !is TyStruct) return true
 
                 val structItem = innerTy.item
-                val dotExprModule = dotExpr.namespaceModule ?: return false
-                if (structItem.containingModule != dotExprModule) return false
+                if (!msl) {
+                    val dotExprModule = dotExpr.namespaceModule ?: return false
+                    if (structItem.containingModule != dotExprModule) return false
+                }
 
                 val fields = structItem.fields
                 return processor.matchAll(itemVis, fields)
