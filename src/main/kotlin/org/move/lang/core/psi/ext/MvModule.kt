@@ -63,7 +63,6 @@ fun MvModule.allNonTestFunctions(): List<MvFunction> =
     }
 
 fun MvModule.testFunctions(): List<MvFunction> =
-//    allFunctions().filter { f -> f.isTest }
     getProjectPsiDependentCache(this) {
         it.allFunctions().filter { f -> f.isTest }
     }

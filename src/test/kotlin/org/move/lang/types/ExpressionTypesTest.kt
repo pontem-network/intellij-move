@@ -963,4 +963,14 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test num type`() = testExpr("""
+        module 0x1::m {
+            spec module {
+                let a: num;
+                a;
+              //^ num  
+            }
+        }        
+    """)
 }
