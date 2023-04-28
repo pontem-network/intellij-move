@@ -13,7 +13,7 @@ import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.itemScope
 import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.MslScope
+import org.move.lang.core.resolve.MslLetScope
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.ref.processModuleItems
@@ -37,7 +37,7 @@ object StructPatCompletionProvider : MvCompletionProvider() {
         val itemVis = ItemVis(
             namespaces = setOf(Namespace.TYPE),
             visibilities = setOf(Visibility.Internal),
-            mslScope = MslScope.NONE,
+            mslLetScope = MslLetScope.NONE,
             itemScope = bindingPat.itemScope,
         )
         processModuleItems(module, itemVis) {

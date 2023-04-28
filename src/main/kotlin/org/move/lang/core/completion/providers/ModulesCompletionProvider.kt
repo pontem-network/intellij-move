@@ -15,7 +15,7 @@ import org.move.lang.core.psi.containingModuleSpec
 import org.move.lang.core.psi.ext.equalsTo
 import org.move.lang.core.psi.itemScope
 import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.mslScope
+import org.move.lang.core.resolve.mslLetScope
 import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
@@ -42,7 +42,7 @@ object ModulesCompletionProvider : MvCompletionProvider() {
             ItemVis(
                 setOf(Namespace.MODULE),
                 visibilities = Visibility.local(),
-                mslScope = refElement.mslScope,
+                mslLetScope = refElement.mslLetScope,
                 itemScope = refElement.itemScope,
             )
         val ctx = CompletionContext(refElement, itemVis)

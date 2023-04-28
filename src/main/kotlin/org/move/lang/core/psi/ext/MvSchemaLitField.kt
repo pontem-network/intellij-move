@@ -10,7 +10,7 @@ import org.move.lang.core.resolve.resolveLocalItem
 
 val MvSchemaLitField.isShorthand get() = !hasChild(MvElementTypes.COLON)
 
-val MvSchemaLitField.schemaLit: MvSchemaLitExpr? get() = ancestorStrict(MvItemSpecBlock::class.java)
+val MvSchemaLitField.schemaLit: MvSchemaLitExpr? get() = ancestorStrict(MvSpecCodeBlock::class.java)
 
 class MvSchemaFieldReferenceImpl(
     element: MvSchemaLitField

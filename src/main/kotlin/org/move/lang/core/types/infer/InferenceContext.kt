@@ -108,20 +108,14 @@ internal val MvElement.typeErrorText: String
         var text = "${this.elementType} `${this.text}` is never inferred."
         val stmt = this.ancestorStrict<MvStmt>() ?: return text
 
-        text += "\nContext:\n"
-        text += "...\n"
-        val leftSibling = stmt.getPrevNonCommentSibling()
-        text += leftSibling?.text ?: ""
-        text += "\n"
         val rangeInStmt = this.textRangeInAncestor(stmt)
-        text += stmt.text.replaceRange(
+        val stmtText = stmt.text.replaceRange(
             IntRange(rangeInStmt.startOffset, rangeInStmt.endOffset - 1),
             "[${this.text}]"
         )
-        text += "\n"
-        val rightSibling = stmt.getNextNonCommentSibling()
-        text += rightSibling?.text ?: ""
-        text += "\n..."
+        text += """
+            Context: `$stmtText`
+        """.trimIndent()
 
         return text
     }

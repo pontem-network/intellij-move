@@ -51,7 +51,7 @@ object MvPsiPatterns {
     fun anySpecStart() = psiElementInside<MvItemSpec>().and(onStmtBeginning("spec"))
 //    fun anySpecStart() = psiElementInside<>().and(onStmtBeginning("spec"))
 
-    fun itemSpecStmt(): PsiElementPattern.Capture<PsiElement> = psiElementInside<MvItemSpecBlock>()
+    fun itemSpecStmt(): PsiElementPattern.Capture<PsiElement> = psiElementInside<MvSpecCodeBlock>()
 
     fun itemSpecRef(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvItemSpecRef>()
 

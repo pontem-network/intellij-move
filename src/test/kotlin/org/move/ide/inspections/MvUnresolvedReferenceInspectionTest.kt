@@ -398,4 +398,22 @@ module 0x1::m {
     struct ObjectGroup { }
 }        
     """)
+
+    fun `test spec builtin const unresolved outside spec`() = checkByText("""
+module 0x1::m {
+    fun main() {
+        <error descr="Unresolved reference: `MAX_U128`">MAX_U128</error>;
+    }
+}
+    """)
+
+    fun `test spec builtin const in spec`() = checkByText("""
+module 0x1::m {
+    fun main() {
+        spec {
+            MAX_U128;
+        }
+    }
+}
+    """)
 }

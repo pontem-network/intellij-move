@@ -66,6 +66,9 @@ class MvPsiFactory(val project: Project) {
         createFromText("module _IntellijPreludeDummy { $text }")
             ?: error("Failed to create const")
 
+    fun builtinConst(text: String): MvConst =
+        createFromText("module spec_builtins { $text }") ?: error("Failed to create const")
+
     inline fun <reified T: MvExpr> expr(text: String): T =
         createFromText("module _IntellijPreludeDummy { fun call() { let _ = $text; } }")
             ?: error("Failed to create expr")
@@ -132,7 +135,6 @@ class MvPsiFactory(val project: Project) {
         val functions = dummyFile.childOfType<MvModule>()?.moduleBlock?.functionList.orEmpty()
         return functions
     }
-
 
     fun addressRef(text: String): MvAddressRef =
         createFromText("module $text::Main {} ")

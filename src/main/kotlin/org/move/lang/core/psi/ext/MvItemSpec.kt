@@ -9,9 +9,9 @@ val MvItemSpec.item: MvNamedElement? get() = this.itemSpecRef?.reference?.resolv
 
 val MvItemSpec.funcItem get() = this.item as? MvFunction
 
-val MvModuleItemSpec.itemSpecBlock: MvItemSpecBlock? get() = this.childOfType()
-val MvItemSpec.itemSpecBlock: MvItemSpecBlock? get() = this.childOfType()
-val MvItemSpecBlockExpr.specBlock: MvItemSpecBlock? get() = this.childOfType()
+val MvModuleItemSpec.itemSpecBlock: MvSpecCodeBlock? get() = this.childOfType()
+val MvItemSpec.itemSpecBlock: MvSpecCodeBlock? get() = this.childOfType()
+val MvItemSpecBlockExpr.specBlock: MvSpecCodeBlock? get() = this.childOfType()
 
 abstract class MvItemSpecMixin(node: ASTNode) : MvElementImpl(node),
                                                 MvItemSpec {

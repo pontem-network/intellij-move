@@ -14,7 +14,7 @@ import org.move.lang.core.types.ty.GenericTy
 import org.move.lang.core.types.ty.TySchema
 import org.move.lang.core.types.ty.TyUnknown
 
-val MvSchema.specBlock: MvItemSpecBlock? get() = this.childOfType()
+val MvSchema.specBlock: MvSpecCodeBlock? get() = this.childOfType()
 
 val MvSchema.module: MvModule?
     get() {

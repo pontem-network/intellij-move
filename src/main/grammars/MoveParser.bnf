@@ -1157,7 +1157,7 @@ private ModuleSpecBlock_item_recover ::= !('}' | <<eof>> | spec | use)
 
 //AnySpec ::= ItemSpec | ModuleKeywordSpec
 
-ModuleItemSpec ::= spec MODULE_KW <<msl ItemSpecBlock>>
+ModuleItemSpec ::= spec MODULE_KW <<msl SpecCodeBlock>>
 {
     pin = 2
     implements = [
@@ -1165,7 +1165,7 @@ ModuleItemSpec ::= spec MODULE_KW <<msl ItemSpecBlock>>
         "org.move.lang.core.psi.MslScopeElement"
     ]
 }
-ItemSpec ::= (spec !MODULE_KW) ItemSpecRef ItemSpecSignature? <<msl ItemSpecBlock>>
+ItemSpec ::= (spec !MODULE_KW) ItemSpecRef ItemSpecSignature? <<msl SpecCodeBlock>>
 {
     pin = 1
     implements = [
@@ -1235,7 +1235,7 @@ ItemSpecRef ::= IDENTIFIER
 ////    extends = AnySpec
 //}
 
-Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl ItemSpecBlock>> {
+Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl SpecCodeBlock>> {
     pin = 1
     implements = [
         "org.move.lang.core.psi.MvTypeParametersOwner"
@@ -1249,13 +1249,13 @@ Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl ItemSpecBlock>> {
     elementTypeFactory = "org.move.lang.core.stubs.StubsKt.factory"
 }
 
-ItemSpecBlockExpr ::= spec <<msl ItemSpecBlock>> {
+ItemSpecBlockExpr ::= spec <<msl SpecCodeBlock>> {
     implements = [
         "org.move.lang.core.psi.MslScopeElement"
     ]
 }
 
-ItemSpecBlock ::= '{' ItemSpecBlock_items '}'
+SpecCodeBlock ::= '{' ItemSpecBlock_items '}'
 {
     pin = 1
     implements = [
@@ -1263,7 +1263,7 @@ ItemSpecBlock ::= '{' ItemSpecBlock_items '}'
         "org.move.lang.core.psi.AnyBlock"
 //        "org.move.lang.core.types.infer.MvInferenceContextOwner"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvItemSpecBlockMixin"
+    mixin = "org.move.lang.core.psi.ext.MvSpecCodeBlockMixin"
 }
 private ItemSpecBlock_items ::= (SpecStmt | ExprStmt)* (SpecExprStmt_items | ExprStmt_expr)?
 {

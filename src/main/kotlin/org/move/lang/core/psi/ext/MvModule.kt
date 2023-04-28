@@ -124,13 +124,6 @@ fun MvModule.entryFunctions(): List<MvFunction> = this.allFunctions().filter { i
 
 fun MvModule.viewFunctions(): List<MvFunction> = this.allFunctions().filter { it.isView }
 
-fun builtinFunction(text: String, project: Project): MvFunction {
-    val trimmedText = text.trimIndent()
-    val function = project.psiFactory.function(trimmedText, moduleName = "builtins")
-    (function as MvFunctionMixin).builtIn = true
-    return function
-}
-
 fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
     val trimmedText = text.trimIndent()
     return project.psiFactory.specFunction(trimmedText, moduleName = "builtin_spec_functions")
@@ -176,14 +169,7 @@ fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
 
 fun MvModule.specFunctions(): List<MvSpecFunction> = moduleBlock?.specFunctionList.orEmpty()
 
-fun MvModule.consts(): List<MvConst> =
-    getProjectPsiDependentCache(this) {
-        it.moduleBlock?.constList.orEmpty()
-    }
-//fun MvModule.constBindings(): List<MvBindingPat> =
-//    getProjectPsiDependentCache(this) {
-//        it.moduleBlock?.constList.orEmpty().mapNotNull { c -> c.bindingPat }
-//    }
+fun MvModule.consts(): List<MvConst> = this.moduleBlock?.constList.orEmpty()
 
 val MvModuleBlock.module: MvModule get() = this.parent as MvModule
 

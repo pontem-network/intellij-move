@@ -69,7 +69,7 @@ class MvPathReferenceImpl(
         val itemVis = ItemVis(
             namespaces,
             vs,
-            element.mslScope,
+            element.mslLetScope,
             itemScope = element.itemScope,
         )
 

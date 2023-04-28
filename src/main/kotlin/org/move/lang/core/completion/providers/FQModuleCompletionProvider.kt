@@ -11,7 +11,7 @@ import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.psi.itemScope
 import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.mslScope
+import org.move.lang.core.resolve.mslLetScope
 import org.move.lang.core.resolve.processFQModuleRef
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
@@ -40,7 +40,7 @@ object FQModuleCompletionProvider : MvCompletionProvider() {
         val itemVis = ItemVis(
             namespaces = setOf(Namespace.MODULE),
             visibilities = Visibility.none(),
-            mslScope = fqModuleRef.mslScope,
+            mslLetScope = fqModuleRef.mslLetScope,
             itemScope = fqModuleRef.itemScope,
         )
         val completionContext = CompletionContext(fqModuleRef, itemVis)
