@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiParserFacade
+import org.intellij.lang.annotations.Language
 import org.move.ide.utils.FunctionSignature
 import org.move.lang.MoveFile
 import org.move.lang.MoveFileType
@@ -60,64 +61,78 @@ class MvPsiFactory(val project: Project) {
 //            ?: error("Failed to create expression from text: `$text`")
 //
 //    fun tryCreateExpression(text: CharSequence): MvExpr? =
-//        createFromText("module _IntellijPreludeDummy { fun m() { let _ = $text; } }")
+//        createFromText("module 0x1::_DummyModule { fun m() { let _ = $text; } }")
 
     fun const(text: String): MvConst =
-        createFromText("module _IntellijPreludeDummy { $text }")
+        createFromText("module 0x1::_DummyModule { $text }")
             ?: error("Failed to create const")
 
+    @Suppress("InvalidModuleDeclaration")
     fun builtinConst(text: String): MvConst =
         createFromText("module spec_builtins { $text }") ?: error("Failed to create const")
 
-    inline fun <reified T: MvExpr> expr(text: String): T =
-        createFromText("module _IntellijPreludeDummy { fun call() { let _ = $text; } }")
+    inline fun <reified T : MvExpr> expr(text: String): T =
+        createFromText("module 0x1::_DummyModule { fun call() { let _ = $text; } }")
             ?: error("Failed to create expr")
 
     fun useStmt(speckText: String, testOnly: Boolean): MvUseStmt {
-        return createFromText("module _IntellijPreludeDummy { ${if (testOnly) "#[test_only]\n" else ""}use $speckText; }")
+        return createFromText("module 0x1::_DummyModule { ${if (testOnly) "#[test_only]\n" else ""}use $speckText; }")
             ?: error("Failed to create an item import from text: `$speckText`")
     }
 
     fun itemUseSpeck(fqModuleText: String, names: List<String>): MvItemUseSpeck {
         assert(names.isNotEmpty())
         return if (names.size == 1) {
-            createFromText("module _IntellijPreludeDummy { use $fqModuleText::${names.first()}; }")
+            createFromText("module 0x1::_DummyModule { use $fqModuleText::${names.first()}; }")
                 ?: error("")
         } else {
             val namesText = names.joinToString(", ", "{", "}")
-            createFromText("module _IntellijPreludeDummy { use $fqModuleText::$namesText; }")
+            createFromText("module 0x1::_DummyModule { use $fqModuleText::$namesText; }")
                 ?: error("")
         }
     }
 
     fun useItemGroup(names: List<String>): MvUseItemGroup {
         val namesText = names.joinToString(", ")
-        return createFromText("module _IntellijPreludeDummy { use 0x1::Module::{$namesText}; }")
+        return createFromText("module 0x1::_DummyModule { use 0x1::Module::{$namesText}; }")
             ?: error("Failed to create an item import from text: `$namesText`")
     }
 
     fun useItem(text: String): MvUseItem {
-        return createFromText("module _IntellijPreludeDummy { use 0x1::Module::$text; }")
+        return createFromText("module 0x1::_DummyModule { use 0x1::Module::$text; }")
             ?: error("Failed to create an item import from text: `$text`")
     }
 
     fun acquires(text: String): MvAcquiresType {
-        return createFromText("module _IntellijPreludeDummy { fun main() $text {}}")
+        return createFromText("module 0x1::_DummyModule { fun main() $text {}}")
             ?: error("Failed to create a method member from text: `$text`")
     }
 
     fun bindingPat(text: String): MvBindingPat {
-        return createFromText("module _IntellijPreludeDummy { fun main() { let S { $text } = 1; }}")
+        return createFromText("module 0x1::_DummyModule { fun main() { let S { $text } = 1; }}")
             ?: error("Failed to create a MvBindingPat from text: `$text`")
     }
 
+    @Suppress("InvalidModuleDeclaration")
+    fun specFunctionParameter(text: String): MvFunctionParameter {
+        return createFromText(
+            """
+            module spec_builtins {
+                spec module {
+                    fun _dummy($text)
+                }
+            }
+            """.trimIndent()
+        ) ?: error("Failed to create a MvFunctionParameter from text: `$text`")
+    }
+
     fun typeParameter(text: String): MvTypeParameter {
-        return createFromText("module _IntellijPreludeDummy { struct S<$text> {}}")
+        return createFromText("module 0x1::_DummyModule { struct S<$text> {}}")
             ?: error("Failed to create a type parameter from text: `$text`")
     }
 
     fun path(text: String): MvPath {
-        return createFromText("module _IntellijPreludeDummy { fun main() { $text(); } } ")
+        return createFromText("module 0x1::_DummyModule { fun main() { $text(); } } ")
             ?: error("`$text`")
     }
 
@@ -149,7 +164,7 @@ class MvPsiFactory(val project: Project) {
 
     fun createNewline(): PsiElement = createWhitespace("\n")
 
-    inline fun <reified T : MvElement> createFromText(code: CharSequence): T? {
+    inline fun <reified T : MvElement> createFromText(@Language("Move") code: CharSequence): T? {
         val dummyFile = PsiFileFactory.getInstance(project)
             .createFileFromText(
                 "DUMMY.move",

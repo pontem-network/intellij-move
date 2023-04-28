@@ -70,7 +70,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             if (path.isMsl() && !path.project.pluginDevelopmentMode) {
                 return
             }
-            if (path.isMsl() && path.isResult) return
+//            if (path.isMsl() && path.isResult) return
             if (path.isMsl() && path.isSpecPrimitiveType()) return
             if (path.isUpdateFieldArg2) return
 

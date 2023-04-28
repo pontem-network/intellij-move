@@ -25,8 +25,6 @@ fun MvPath.isSpecPrimitiveType(): Boolean =
         .union(BUILTIN_TYPE_IDENTIFIERS)
         .union(SPEC_ONLY_PRIMITIVE_TYPES)
 
-val MvPath.isResult: Boolean get() = this.textMatches("result") || this.text.startsWith("result_")
-
 val MvPath.isUpdateFieldArg2: Boolean
     get() {
         if (!this.isMsl()) return false
@@ -41,8 +39,6 @@ val MvPath.isUpdateFieldArg2: Boolean
     }
 
 val MvPath.identifierName: String? get() = identifier?.text
-
-//val MvPath.colonColon get() = this.findFirstChildByType(MvElementTypes.COLON_COLON)
 
 val MvPath.isLocal: Boolean
     get() =

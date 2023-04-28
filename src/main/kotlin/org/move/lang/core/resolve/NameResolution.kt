@@ -338,7 +338,13 @@ fun processLexicalDeclarations(
                     is MvItemSpec -> {
                         val item = scope.item
                         when (item) {
-                            is MvFunction -> processor.matchAll(itemVis, item.valueParamsAsBindings)
+                            is MvFunction -> {
+                                processor.matchAll(
+                                    itemVis,
+                                    item.valueParamsAsBindings,
+                                    item.specResultParameters.map { it.bindingPat },
+                                )
+                            }
                             is MvStruct -> processor.matchAll(itemVis, item.fields)
                             else -> false
                         }
@@ -396,13 +402,6 @@ fun processLexicalDeclarations(
                                 // if inside SpecCodeBlock, match also with builtin spec consts
                                 scope is MvSpecCodeBlock
                                         && processorWithShadowing.matchAll(itemVis, scope.builtinSpecConsts()))
-//                        val matched = processorWithShadowing.matchAll(itemVis, namedElements)
-//                        if (!matched && scope is MvSpecCodeBlock) {
-//                            // try builtin consts
-//                            processorWithShadowing.matchAll(itemVis, scope.builtinSpecConsts())
-//                        } else {
-//                            matched
-//                        }
                     }
                     else -> false
                 }

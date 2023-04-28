@@ -7,6 +7,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
 import org.move.stdext.RsResult
+import org.move.stdext.chain
 
 class TypeInferenceWalker(
     val ctx: InferenceContext,
@@ -33,7 +34,12 @@ class TypeInferenceWalker(
         val bindings = when (owner) {
             is MvFunction -> owner.allParamsAsBindings
             is MvSpecFunction -> owner.allParamsAsBindings
-            is MvItemSpec -> owner.funcItem?.allParamsAsBindings.orEmpty()
+            is MvItemSpec -> {
+                val funcItem = owner.funcItem
+                funcItem?.allParamsAsBindings
+                    ?.chain(funcItem.specResultParameters.map { it.bindingPat })
+                    ?.toList().orEmpty()
+            }
             is MvSchema -> owner.fieldStmts.map { it.bindingPat }
             else -> emptyList()
         }

@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.util.SimpleModificationTracker
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
+import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.util.PlatformIcons
 import org.move.cli.MoveProject
 import org.move.ide.MoveIcons
@@ -127,6 +128,32 @@ fun MvFunctionLike.rawReturnType(msl: Boolean): Ty {
     val retType = returnType ?: return TyUnit
     return retType.type?.loweredType(msl) ?: TyUnknown
 }
+
+val MvFunctionLike.specResultParameters: List<MvFunctionParameter>
+    get() {
+        return getProjectPsiDependentCache(this) {
+            val retType = it.returnType
+            val psiFactory = it.project.psiFactory
+            if (retType == null) {
+                emptyList()
+            } else {
+                val retTypeType = retType.type
+                when (retTypeType) {
+                    null -> emptyList()
+                    is MvTupleType -> {
+                        val bindings = retTypeType.typeList
+                            .mapIndexed { i, type ->
+                                psiFactory.specFunctionParameter("result_${i + 1}: ${type.text}")
+                            }
+                        bindings
+                    }
+                    else -> {
+                        listOf(psiFactory.specFunctionParameter("result: ${retTypeType.text}"))
+                    }
+                }
+            }
+        }
+    }
 
 abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
                                  MvFunction {
