@@ -1008,7 +1008,7 @@ FILE
             MvPathImpl(PATH)
               PsiElement(IDENTIFIER)('u64')
         PsiWhiteSpace(' ')
-        MvCodeBlockImpl(CODE_BLOCK)
+        MvSpecCodeBlockImpl(SPEC_CODE_BLOCK)
           PsiElement({)('{')
           PsiWhiteSpace('\n        ')
           MvChooseQuantExprImpl(CHOOSE_QUANT_EXPR)

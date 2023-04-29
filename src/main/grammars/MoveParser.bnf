@@ -300,7 +300,7 @@ private SpecFunctionItem ::= SpecFunctionInner
                             | NativeSpecFunctionInner
 
 SpecFunctionInner ::= Attr* spec fun IDENTIFIER TypeParameterList?
-                       FunctionParameterList ReturnType? (<<msl CodeBlock>> | ';')
+                       FunctionParameterList ReturnType? (<<msl SpecCodeBlock>> | ';')
 {
     pin = 3
     elementType = SpecFunction
