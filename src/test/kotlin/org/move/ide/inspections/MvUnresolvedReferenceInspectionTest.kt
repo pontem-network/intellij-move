@@ -430,4 +430,12 @@ module 0x1::m {
             }
         }        
     """)
+
+    fun `test no unresolved reference in pragma`() = checkByText("""
+        module 0x1::m {
+            spec module {
+                pragma intrinsic = map;
+            }
+        }        
+    """)
 }

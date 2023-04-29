@@ -21,6 +21,9 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
     private fun ProblemsHolder.registerUnresolvedReferenceError(
         element: MvReferenceElement
     ) {
+        // no errors in pragmas
+        if (element.hasAncestor<MvPragmaSpecStmt>()) return
+
         val candidates = AutoImportFix.findApplicableContext(element)?.candidates.orEmpty()
         if (candidates.isEmpty() && ignoreWithoutQuickFix) return
 

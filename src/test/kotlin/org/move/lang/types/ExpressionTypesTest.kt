@@ -1095,4 +1095,14 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test spec expr with visibility inferred`() = testExpr("""
+        module 0x1::m {
+            spec module {
+                let i = false;
+                invariant [suspendable] i;
+                                      //^ bool
+            }
+        }        
+    """)
 }
