@@ -10,14 +10,11 @@ import org.move.lang.core.types.infer.TypeError
 import org.move.lang.core.types.infer.inference
 
 class MvTypeCheckInspection : MvLocalInspectionTool() {
-    override val isSyntaxOnly: Boolean get() = true
-
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
             override fun visitItemSpec(o: MvItemSpec) {
                 val inference = o.inference(true)
                 inference.typeErrors
-                    .filter { TypeError.isAllowedTypeError(it) }
                     .forEach {
                         holder.registerTypeError(it)
                     }
@@ -26,17 +23,38 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             override fun visitModuleItemSpec(o: MvModuleItemSpec) {
                 val inference = o.inference(true)
                 inference.typeErrors
-                    .filter { TypeError.isAllowedTypeError(it) }
                     .forEach {
                         holder.registerTypeError(it)
                     }
             }
 
             override fun visitFunction(o: MvFunction) {
-                val msl = o.isMsl()
-                val inference = o.inference(msl)
+                val inference = o.inference(o.isMsl())
                 inference.typeErrors
-                    .filter { TypeError.isAllowedTypeError(it) }
+                    .forEach {
+                        holder.registerTypeError(it)
+                    }
+            }
+
+            override fun visitSpecFunction(o: MvSpecFunction) {
+                val inference = o.inference(true)
+                inference.typeErrors
+                    .forEach {
+                        holder.registerTypeError(it)
+                    }
+            }
+
+            override fun visitSpecInlineFunction(o: MvSpecInlineFunction) {
+                val inference = o.inference(true)
+                inference.typeErrors
+                    .forEach {
+                        holder.registerTypeError(it)
+                    }
+            }
+
+            override fun visitSchema(o: MvSchema) {
+                val inference = o.inference(true)
+                inference.typeErrors
                     .forEach {
                         holder.registerTypeError(it)
                     }

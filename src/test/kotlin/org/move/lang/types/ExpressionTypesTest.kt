@@ -1105,4 +1105,15 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test spec vector slice`() = testExpr("""
+        module 0x1::m {
+            spec module {
+                let v = vector[true, false];
+                let slice = v[0..1];
+                slice;
+                //^ vector<bool>
+            }
+        }        
+    """)
 }

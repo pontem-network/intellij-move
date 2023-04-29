@@ -592,4 +592,38 @@ module 0x1::main {
     }
 }        
     """)
+
+    fun `test resolve native fun defined in spec module`() = checkByCode("""
+        module 0x1::m {
+            spec module {
+                native fun serialize<MoveValue>(v: &MoveValue): vector<u8>;
+                            //X
+            }
+        }
+        module 0x1::main {
+            use 0x1::m;
+            spec module {
+                m::serialize(&true);
+                   //^
+            }
+        }
+    """)
+
+    fun `test resolve spec fun defined in another module spec`() = checkByCode("""
+        module 0x1::m {
+        }
+        spec 0x1::m {
+            spec fun spec_now_microseconds(): u64 {
+                      //X
+                1
+            }            
+        }
+        module 0x1::main {
+            use 0x1::m;
+            spec module {
+                m::spec_now_microseconds();
+                     //^
+            }
+        }
+    """)
 }

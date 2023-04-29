@@ -93,9 +93,6 @@ data class InferenceResult(
         error(message = pat.typeErrorText)
     }
 
-    /// Explicitly allow uninferred pat
-    fun getPatTypeOrUnknown(pat: MvPat): Ty = patTypes[pat] ?: TyUnknown
-
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallExprType(expr: MvCallExpr): Ty? = callExprTypes[expr]
     fun getPathType(path: MvPath): GenericTy? = pathTypes[path]

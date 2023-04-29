@@ -435,13 +435,17 @@ class TypeInferenceWalker(
     }
 
     private fun inferIndexExprTy(indexExpr: MvIndexExpr): Ty {
-        indexExpr.exprList.drop(1).first().inferTypeCoercableTo(TyInteger.DEFAULT)
-
         val receiverExpr = indexExpr.exprList.first()
         val receiverTy = receiverExpr.inferType()
         coerce(receiverExpr, receiverTy, TyVector(TyUnknown))
 
-        return (receiverTy as? TyVector)?.item ?: TyUnknown
+        val posExpr = indexExpr.exprList.drop(1).first()
+        val posTy = posExpr.inferType()
+        return when (posTy) {
+            is TyIntegerRange -> (receiverTy as? TyVector) ?: TyUnknown
+            is TyNum -> (receiverTy as? TyVector)?.item ?: TyUnknown
+            else -> TyUnknown
+        }
     }
 
     private fun inferQuantExprTy(quantExpr: MvQuantExpr): Ty {

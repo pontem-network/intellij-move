@@ -973,18 +973,6 @@ module 0x1::main {
     """
     )
 
-    fun `test any ordering of types is allowed in specs`() = checkByText(
-        """
-module 0x1::liq_stake {
-    spec main {
-        let a = 1;
-        let b = @0x1 < false;
-        let c = a < false;
-    }
-}
-    """
-    )
-
     fun `test cannot equal completely different types`() = checkByText(
         """
 module 0x1::main {
@@ -1273,4 +1261,31 @@ module 0x1::pool {
             }
         }        
     """)
+
+    fun `test type check function param in func spec`() = checkByText("""
+        module 0x1::m {
+            fun call(val: bool) {}
+            spec call { 
+                <error descr="Invalid argument to '+': expected integer type, but found 'bool'">val</error> + 1;
+            }
+        }        
+    """)
+
+    fun `test type check function result in func spec`() = checkByText("""
+        module 0x1::m {
+            fun call(): bool { true }
+            spec call {
+                <error descr="Invalid argument to '+': expected integer type, but found 'bool'">result</error> + 1;
+            }
+        }        
+    """)
+
+        fun `test spec vector slice`() = checkByText("""
+            module 0x1::m {
+                spec module {
+                    let v = vector[true, false];
+                    v[0..1];
+                }
+            }        
+        """)
 }

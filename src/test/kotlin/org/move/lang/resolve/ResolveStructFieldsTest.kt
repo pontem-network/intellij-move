@@ -171,4 +171,37 @@ class ResolveStructFieldsTest : ResolveTestCase() {
             } 
         }
     """)
+
+    fun `test struct from another module can be created in specs`() = checkByCode("""
+        module 0x1::m {
+            struct Coin { val: u8 }
+                  //X
+        }
+        module 0x1::main {
+            use 0x1::m;
+            spec module {
+                let _ = m::Coin { val: 10 };
+                           //^
+            }
+        }
+    """)
+
+    fun `test resolve field from include schema`() = checkByCode(
+        """
+        module 0x1::m {
+            struct S { val: u8 }
+                      //X
+            spec schema MySchema {
+                schema_val: u8;
+            }
+            spec module {
+                let s = S { val: 10 };
+                include MySchema {
+                    schema_val: s.val
+                                 //^
+                }
+            }
+        }        
+    """
+    )
 }

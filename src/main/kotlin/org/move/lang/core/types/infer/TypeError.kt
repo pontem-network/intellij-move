@@ -19,19 +19,6 @@ sealed class TypeError(open val element: PsiElement): TypeFoldable<TypeError> {
 
     override fun innerVisitWith(visitor: TypeVisitor): Boolean = true
 
-    companion object {
-        fun isAllowedTypeError(error: TypeError): Boolean {
-            val element = error.element
-            if (
-                (error is UnsupportedBinaryOp || error is IncompatibleArgumentsToBinaryExpr)
-                && (element is MvElement && element.isMsl())
-            ) {
-                return false
-            }
-            return true
-        }
-    }
-
     data class TypeMismatch(
         override val element: PsiElement,
         val expectedTy: Ty,
