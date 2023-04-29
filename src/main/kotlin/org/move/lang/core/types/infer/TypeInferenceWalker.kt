@@ -220,6 +220,10 @@ class TypeInferenceWalker(
                 expr.expr?.inferType()
                 TyUnit
             }
+            is MvAbortsWithSpecExpr -> {
+                expr.exprList.forEach { it.inferTypeCoercableTo(TyInteger.default()) }
+                TyUnit
+            }
             else ->
                 if (expr.project.pluginDevelopmentMode) error(expr.typeErrorText) else TyUnknown
         }

@@ -1264,4 +1264,13 @@ module 0x1::pool {
             }
         }        
     """)
+
+    fun `test aborts with requires integer`() = checkByText("""
+        module 0x1::m {
+            fun call() {}
+            spec call {
+                aborts_with <error descr="Incompatible type 'bool', expected 'integer'">false</error>;
+            }
+        }        
+    """)
 }
