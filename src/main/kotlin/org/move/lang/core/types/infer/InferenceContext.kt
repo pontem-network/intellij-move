@@ -36,7 +36,7 @@ fun compatAbilities(expectedTy: Ty, actualTy: Ty, msl: Boolean): Boolean {
 }
 
 fun isCompatible(expectedTy: Ty, actualTy: Ty, msl: Boolean): Boolean {
-    val inferenceCtx = InferenceContext(msl, unify = false)
+    val inferenceCtx = InferenceContext(msl, skipUnification = true)
     return inferenceCtx.combineTypes(expectedTy, actualTy).isOk
 }
 
@@ -125,7 +125,7 @@ internal val MvElement.typeErrorText: String
     }
 
 fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
-    val inferenceCtx = InferenceContext(msl, unify = true)
+    val inferenceCtx = InferenceContext(msl)
     return recursionGuard(element, { inferenceCtx.infer(element) }, memoize = false)
         ?: error("Can not run nested type inference")
 }
@@ -165,7 +165,10 @@ fun MvElement.inference(msl: Boolean): InferenceResult? {
     return contextOwner.inference(msl)
 }
 
-class InferenceContext(var msl: Boolean, private val unify: Boolean) {
+class InferenceContext(
+    var msl: Boolean,
+    private val skipUnification: Boolean = false
+) {
 
     private val exprTypes = concurrentMapOf<MvExpr, Ty>()
     private val patTypes = mutableMapOf<MvPat, Ty>()
@@ -340,7 +343,7 @@ class InferenceContext(var msl: Boolean, private val unify: Boolean) {
 
     private fun combineTyVar(ty1: TyInfer.TyVar, ty2: Ty): RelateResult {
         // skip unification for isCompatible check to prevent bugs
-        if (!unify) return Ok(Unit)
+        if (skipUnification) return Ok(Unit)
         when (ty2) {
             is TyInfer.TyVar -> varUnificationTable.unifyVarVar(ty1, ty2)
             else -> {
@@ -365,7 +368,7 @@ class InferenceContext(var msl: Boolean, private val unify: Boolean) {
 
     private fun combineIntVar(ty1: TyInfer, ty2: Ty): RelateResult {
         // skip unification for isCompatible check to prevent bugs
-        if (!unify) return Ok(Unit)
+        if (skipUnification) return Ok(Unit)
         when (ty1) {
             is TyInfer.IntVar -> when (ty2) {
                 is TyInfer.IntVar -> intUnificationTable.unifyVarVar(ty1, ty2)

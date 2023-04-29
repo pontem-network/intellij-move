@@ -243,7 +243,7 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
             val msl = element.isMsl()
             val callTy = element.declaredType(msl).substitute(element.tyInfers) as TyFunction
 
-            val inferenceCtx = InferenceContext(msl, unify = true)
+            val inferenceCtx = InferenceContext(msl)
             callTy.paramTypes.forEach { inferenceCtx.combineTypes(it, TyUnknown) }
             val expectedTy = completionContext?.expectedTy
             if (expectedTy != null && expectedTy !is TyUnknown) {
