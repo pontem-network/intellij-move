@@ -283,7 +283,7 @@ Const ::= Attr* CONST_KW IDENTIFIER TypeAnnotation Initializer ';'
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 fake SpecFunction ::= Attr* spec native? fun IDENTIFIER? TypeParameterList?
                         FunctionParameterList? ReturnType?
-                        (';' | CodeBlock)?
+                        (';' | SpecCodeBlock)?
 {
     implements = [
         "org.move.lang.core.psi.MvQualNamedElement"
@@ -314,10 +314,11 @@ NativeSpecFunctionInner ::= Attr* spec (native fun) IDENTIFIER TypeParameterList
 
 fake SpecInlineFunction ::= Attr* native? fun IDENTIFIER? TypeParameterList?
                                 FunctionParameterList? ReturnType?
-                                (CodeBlock | ';')?
+                                (SpecCodeBlock | ';')?
 {
     implements = [
         "org.move.lang.core.psi.MvFunctionLike"
+        "org.move.lang.core.psi.MslScopeElement"
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSpecInlineFunctionMixin"
@@ -328,7 +329,7 @@ private SpecInlineFunctionImpl ::= SpecInlineFunctionInner
 //                                    | UninterpretedSpecInlineFunctionInner
 
 SpecInlineFunctionInner ::= fun IDENTIFIER TypeParameterList?
-                             FunctionParameterList ReturnType? (<<msl CodeBlock>> | ';')
+                             FunctionParameterList ReturnType? (<<msl SpecCodeBlock>> | ';')
 {
     pin = 1
     elementType = SpecInlineFunction
@@ -729,11 +730,11 @@ LetMslStmt ::= (let post?) Pat TypeAnnotation? Initializer? ';'
 }
 
 ExprStmt ::= (ExprStmt_expr !('}')) ';' { pin = 1 }
-private ExprStmt_expr ::= IfExpr
-                            | LoopExpr
-                            | WhileExpr
-                            | ItemSpecBlockExpr
+private ExprStmt_expr ::= ItemSpecBlockExpr
                             | Expr
+//IfExpr
+//                            | LoopExpr
+//                            | WhileExpr
 {
     recoverWhile = "ExprStmt_recover"
 }

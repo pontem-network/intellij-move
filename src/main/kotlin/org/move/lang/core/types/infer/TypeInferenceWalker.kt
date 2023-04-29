@@ -167,6 +167,7 @@ class TypeInferenceWalker(
             is MvMacroCallExpr -> inferMacroCallExprTy(expr)
             is MvStructLitExpr -> inferStructLitExprTy(expr, expected)
             is MvVectorLitExpr -> inferVectorLitExpr(expr, expected)
+            is MvIndexExpr -> inferIndexExprTy(expr)
 
             is MvDotExpr -> inferDotExprTy(expr)
             is MvDerefExpr -> inferDerefExprTy(expr)
@@ -428,6 +429,16 @@ class TypeInferenceWalker(
         inferArgumentTypes(formalInputs, expectedInputTys, exprs)
 
         return ctx.resolveTypeVarsIfPossible(TyVector(tyVar))
+    }
+
+    private fun inferIndexExprTy(indexExpr: MvIndexExpr): Ty {
+        indexExpr.exprList.drop(1).first().inferTypeCoercableTo(TyInteger.DEFAULT)
+
+        val receiverExpr = indexExpr.exprList.first()
+        val receiverTy = receiverExpr.inferType()
+        coerce(receiverExpr, receiverTy, TyVector(TyUnknown))
+
+        return (receiverTy as? TyVector)?.item ?: TyUnknown
     }
 
     private fun inferBinaryExprTy(binaryExpr: MvBinaryExpr): Ty {

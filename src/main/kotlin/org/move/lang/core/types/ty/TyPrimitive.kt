@@ -57,6 +57,7 @@ data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
             Kind.values().find { literal.text.endsWith(it.name) }?.let(::TyInteger)
 
         val DEFAULT_KIND = Kind.NoPrecision
+        val DEFAULT = default()
 
         fun default() = TyInteger(DEFAULT_KIND)
     }

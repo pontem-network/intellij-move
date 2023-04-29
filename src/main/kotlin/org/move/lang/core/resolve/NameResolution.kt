@@ -1,5 +1,6 @@
 package org.move.lang.core.resolve
 
+import com.intellij.codeInsight.completion.CompletionUtil
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.MoveFile
@@ -264,9 +265,14 @@ fun processLexicalDeclarations(
 
                 val msl = receiverExpr.isMsl()
                 val inference = receiverExpr.inference(msl) ?: return false
-                // uninferred expr is allowed for the `object.IntellijIdeaRulezzz` case:
+                // uninferred expr is allowed for the `object.IntellijIdeaRulezzz` (no letters after dot) case:
                 // there's an obvious dot expr, but I can't make it pin on '.'
-                val receiverTy = inference.getExprTypeOrUnknown(receiverExpr)
+                val receiverTy =
+                    if (CompletionUtil.getOriginalElement(dotExpr.structDotField) == null) {
+                        inference.getExprTypeOrUnknown(receiverExpr)
+                    } else {
+                        inference.getExprType(receiverExpr)
+                    }
                 val innerTy = when (receiverTy) {
                     is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
                     is TyStruct -> receiverTy

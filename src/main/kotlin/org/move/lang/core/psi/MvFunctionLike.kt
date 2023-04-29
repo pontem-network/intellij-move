@@ -16,8 +16,6 @@ interface MvFunctionLike : MvNameIdentifierOwner,
 
     val returnType: MvReturnType?
 
-    val codeBlock: MvCodeBlock?
-
     override fun declaredType(msl: Boolean): TyFunction {
         val typeParameters = this.tyTypeParams
         val paramTypes = parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
@@ -67,37 +65,12 @@ val MvFunctionLike.acquiresPathTypes: List<MvPathType>
             else -> emptyList()
         }
 
-//val MvFunctionLike.typeParamsUsedOnlyInReturnType: List<MvTypeParameter>
-//    get() {
-//        val msl = false
-//        val funcTy = this.declaredType(msl)
-//
-//        val usedTypeParams = mutableSetOf<MvTypeParameter>()
-//        funcTy.paramTypes
-//            .forEach {
-//                it.visitTyVarWith { tyVar ->
-//                    tyVar.origin?.origin?.let { o -> usedTypeParams.add(o) }; false
-//                }
-//            }
-//        return this.typeParameters.filter { it !in usedTypeParams }
-//    }
-
-//val MvFunctionLike.requiredTypeParams: List<MvTypeParameter>
-//    get() {
-//        val usedTypeParams = mutableSetOf<MvTypeParameter>()
-//        val msl = false
-////        val itemContext = this.outerItemContext(msl)
-////        val funcTy = itemContext.getFunctionItemTy(this)
-//        val funcTy = this.declaredType(msl)
-//        funcTy.paramTypes
-//            .withAdded(funcTy.retType)
-//            .forEach {
-//                it.visitTyVarWith { tyVar ->
-//                    tyVar.origin?.origin?.let { o -> usedTypeParams.add(o) }; false
-//                }
-//            }
-//        return this.typeParameters.filter { it !in usedTypeParams }
-//    }
+val MvFunctionLike.anyBlock: AnyBlock? get() = when (this) {
+    is MvFunction -> this.codeBlock
+    is MvSpecFunction -> this.specCodeBlock
+    is MvSpecInlineFunction -> this.specCodeBlock
+    else -> null
+}
 
 val MvFunctionLike.module: MvModule?
     get() =

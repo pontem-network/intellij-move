@@ -154,7 +154,7 @@ FILE
                 PsiElement(()('(')
                 PsiElement())(')')
               PsiWhiteSpace(' ')
-              MvCodeBlockImpl(CODE_BLOCK)
+              MvSpecCodeBlockImpl(SPEC_CODE_BLOCK)
                 PsiElement({)('{')
                 PsiElement(})('}')
           PsiWhiteSpace('\n        ')

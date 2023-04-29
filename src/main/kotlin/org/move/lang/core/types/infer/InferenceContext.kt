@@ -210,7 +210,7 @@ class InferenceContext(
         inference.extractParameterBindings(owner)
 
         when (owner) {
-            is MvFunctionLike -> owner.codeBlock?.let { inference.inferFnBody(it) }
+            is MvFunctionLike -> owner.anyBlock?.let { inference.inferFnBody(it) }
             is MvItemSpec -> {
                 owner.itemSpecBlock?.let { inference.inferSpec(it) }
             }
