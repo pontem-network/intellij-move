@@ -1023,4 +1023,76 @@ module 0x1::main {
             }
         }     
     """)
+
+    fun `test range expr`() = testExpr("""
+        module 0x1::m {
+            spec module {
+                let a = 1..10;
+                a;
+              //^ range   
+            }
+        }        
+    """)
+
+    fun `test forall quantifier expr`() = testExpr("""
+        module 0x1::m {
+            fun call() {}
+            spec call {
+                let a = forall i in 0..10: i < 20;
+                a;
+              //^ bool  
+            }
+        }        
+    """)
+
+    fun `test forall quantifier range expr`() = testExpr("""
+        module 0x1::m {
+            fun call() {}
+            spec call {
+                forall i in 0..10: i < 20;
+                            //^ range
+            }
+        }        
+    """)
+
+    fun `test forall quantifier range binding expr`() = testExpr("""
+        module 0x1::m {
+            fun call() {}
+            spec call {
+                forall i in 0..10: i < 20;
+                                 //^ num
+            }
+        }        
+    """)
+
+    fun `test forall quantifier range vector binding expr`() = testExpr("""
+        module 0x1::m {
+            fun call() {}
+            spec call {
+                forall i in vector[true, false]: i;
+                                               //^ bool
+            }
+        }        
+    """)
+
+    fun `test forall quantifier type binding expr`() = testExpr("""
+        module 0x1::m {
+            fun call() {}
+            spec call {
+                forall i: num : i < 20;
+                              //^ num
+            }
+        }        
+    """)
+
+    fun `test exists quantifier expr`() = testExpr("""
+        module 0x1::m {
+            fun call() {}
+            spec call {
+                let a = exists i in 0..10: i == 1;
+                a;
+              //^ bool  
+            }
+        }        
+    """)
 }

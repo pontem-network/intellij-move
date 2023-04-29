@@ -133,14 +133,6 @@ private fun render(
     val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, typeParam, tyVar, fq) }
 
     return when (ty) {
-//        is TyFunction -> {
-//            val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
-//            var s = if (ty.retType is TyUnit) params else "$params -> ${r(ty.retType)}"
-//            if (ty.acquiresTypes.isNotEmpty()) {
-//                s += ty.acquiresTypes.joinToString(", ", " acquires ", transform = r)
-//            }
-//            s
-//        }
         is TyFunction -> {
             val params = ty.paramTypes.joinToString(", ", "fn(", ")", transform = r)
             var s = if (ty.retType is TyUnit) params else "$params -> ${r(ty.retType)}"
@@ -151,11 +143,11 @@ private fun render(
         }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
         is TyVector -> "vector<${r(ty.item)}>"
+        is TyIntegerRange -> "range"
         is TyReference -> {
             val prefix = if (ty.permissions.contains(RefPermissions.WRITE)) "&mut " else "&"
             "$prefix${r(ty.referenced)}"
         }
-//        is TyTypeParameter -> ty.name ?: anonymous
         is TyTypeParameter -> typeParam(ty)
         is TyStruct -> {
             val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)

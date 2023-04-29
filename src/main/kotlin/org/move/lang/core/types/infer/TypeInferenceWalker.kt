@@ -217,6 +217,8 @@ class TypeInferenceWalker(
                 }
                 TyUnit
             }
+            is MvQuantExpr -> inferQuantExprTy(expr)
+            is MvRangeExpr -> inferRangeExprTy(expr)
             is MvModifiesSpecExpr -> {
                 expr.expr?.inferType()
                 TyUnit
@@ -439,6 +441,38 @@ class TypeInferenceWalker(
         coerce(receiverExpr, receiverTy, TyVector(TyUnknown))
 
         return (receiverTy as? TyVector)?.item ?: TyUnknown
+    }
+
+    private fun inferQuantExprTy(quantExpr: MvQuantExpr): Ty {
+        quantExpr.quantBindings?.quantBindingList.orEmpty()
+            .forEach {
+                collectQuantBinding(it)
+            }
+        quantExpr.expr?.inferTypeCoercableTo(TyBool)
+        return TyBool
+    }
+
+    private fun collectQuantBinding(quantBinding: MvQuantBinding) {
+        val bindingPat = quantBinding.bindingPat
+        val ty = when (quantBinding) {
+            is MvRangeQuantBinding -> {
+                val rangeTy = quantBinding.expr?.inferType()
+                when (rangeTy) {
+                    is TyVector -> rangeTy.item
+                    is TyIntegerRange -> TyInteger.DEFAULT
+                    else -> TyUnknown
+                }
+            }
+            is MvTypeQuantBinding -> quantBinding.type?.loweredType(true) ?: TyUnknown
+            else -> error("unreachable")
+        }
+        this.ctx.writePatTy(bindingPat, ty)
+    }
+
+    private fun inferRangeExprTy(rangeExpr: MvRangeExpr): Ty {
+        rangeExpr.exprList.first().inferTypeCoercableTo(TyInteger.DEFAULT)
+        rangeExpr.exprList.drop(1).first().inferTypeCoercableTo(TyInteger.DEFAULT)
+        return TyIntegerRange
     }
 
     private fun inferBinaryExprTy(binaryExpr: MvBinaryExpr): Ty {

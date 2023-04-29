@@ -926,7 +926,7 @@ VectorLitItems ::= '[' <<comma_sep_items Expr>>? ']'
 private StructOrSchemaLitExpr ::= StructLitExpr | SchemaLitExpr
 StructLitExpr ::= <<checkStructAllowed>> Path StructLitFieldsBlock
 {
-    implements = ["org.move.lang.core.psi.ext.PathExpr"]
+    implements = ["org.move.lang.core.psi.PathExpr"]
 }
 StructLitFieldsBlock ::= '{' StructLitField_with_recover* '}' { pin = 1 }
 
@@ -988,7 +988,7 @@ AddressLit ::= '@' AddressRef { pin = 1 }
 
 CallExpr ::= (Path &'(') ValueArgumentList {
     pin = 1
-    implements = ["org.move.lang.core.psi.ext.PathExpr"]
+    implements = ["org.move.lang.core.psi.PathExpr"]
 }
 ValueArgumentList ::= '(' ValueArgumentList_items? ')' { pin = 1 }
 private ValueArgumentList_items ::= <<comma_sep_items ValueArgument>>
@@ -1027,7 +1027,7 @@ IndexExpr ::= Expr IndexArg
 private IndexArg ::= '[' Expr ']'
 
 RefExpr ::= Path !'{' {
-    implements = ["org.move.lang.core.psi.ext.PathExpr"]
+    implements = ["org.move.lang.core.psi.PathExpr"]
 }
 
 //private Path ::= QualPath | LocalPath
@@ -1466,13 +1466,13 @@ ForallQuantExpr ::= <<mslOnly forall>> QuantBindings QuantWhere? ':' Expr
 {
     pin = 1
     rightAssociative = true
-    implements = [ "org.move.lang.core.psi.ext.MvQuantBindingsOwner" ]
+    implements = [ "org.move.lang.core.psi.ext.MvQuantExpr" ]
 }
 ExistsQuantExpr ::= <<mslOnly exists>> QuantBindings QuantWhere? ':' Expr
 {
     pin = 1
     rightAssociative = true
-    implements = [ "org.move.lang.core.psi.ext.MvQuantBindingsOwner" ]
+    implements = [ "org.move.lang.core.psi.ext.MvQuantExpr" ]
 }
 
 ChooseQuantExpr ::= choose min? QuantBindings (QuantWhere)?
@@ -1484,7 +1484,7 @@ ChooseQuantExpr ::= choose min? QuantBindings (QuantWhere)?
 QuantBindings ::= <<comma_sep_items QuantBinding>>
 QuantBinding ::= RangeQuantBinding | TypeQuantBinding
 
-RangeQuantBinding ::= BindingPat in RangeExpr {
+RangeQuantBinding ::= BindingPat in Expr {
     pin = 2
     extends = QuantBinding
 }

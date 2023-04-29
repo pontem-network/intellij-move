@@ -395,6 +395,7 @@ class InferenceContext(
             ty1msl is TyPrimitive && ty2msl is TyPrimitive && ty1msl.name == ty2msl.name -> Ok(Unit)
 
             ty1msl is TyVector && ty2msl is TyVector -> combineTypes(ty1msl.item, ty2msl.item)
+            ty1msl is TyIntegerRange && ty2msl is TyIntegerRange -> Ok(Unit)
 
             ty1msl is TyReference && ty2msl is TyReference
                     // inferredTy permissions should be a superset of expectedTy permissions
