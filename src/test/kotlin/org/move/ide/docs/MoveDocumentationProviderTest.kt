@@ -151,7 +151,7 @@ module 0x1::m {
     """, """
 value parameter <b>result</b>: num      
     """)
-
+    
     private fun doTest(@Language("Move") code: String, @Language("Html") expected: String?) =
         doTest(code, expected, block = MvDocumentationProvider::generateDoc)
 }

@@ -226,4 +226,20 @@ class SpecsCompletionTest: CompletionTestCase() {
         }
     }
     """)
+
+    fun `test aborts_if false`() = doSingleCompletion("""
+        module 0x1::m {
+            fun call() {}
+            spec call {
+                aborts_if fa/*caret*/;
+            }
+        }        
+    """, """
+        module 0x1::m {
+            fun call() {}
+            spec call {
+                aborts_if false/*caret*/;
+            }
+        }        
+    """)
 }

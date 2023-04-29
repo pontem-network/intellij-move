@@ -148,6 +148,10 @@ object MvPsiPatterns {
         psiElementWithParent<MvPath>()
 //            .withSuperParent<MvPath>(2)
 
+    fun refExpr(): PsiElementPattern.Capture<PsiElement> =
+        path()
+            .withSuperParent(2, MvRefExpr::class.java)
+
     fun pathType(): PsiElementPattern.Capture<PsiElement> =
         path()
             .withSuperParent<MvPathType>(2)

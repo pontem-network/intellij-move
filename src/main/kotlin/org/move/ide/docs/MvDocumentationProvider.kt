@@ -39,8 +39,8 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
 
         val msl = docElement?.isMsl() ?: false
         when (docElement) {
-            // TODO: add docs for both scopes
             is MvNamedAddress -> {
+                // TODO: add docs for both [addresses] and [dev-addresses]
                 val moveProject = docElement.moveProject ?: return null
                 val refName = docElement.referenceName
                 val named = moveProject.getNamedAddress(refName) ?: return null
@@ -48,7 +48,6 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
                     named.addressLit(moveProject)?.original ?: angleWrapped("unassigned")
                 return "$refName = \"$address\""
             }
-
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
