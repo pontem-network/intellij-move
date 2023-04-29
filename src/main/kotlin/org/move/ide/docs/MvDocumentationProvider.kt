@@ -33,9 +33,11 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
         val buffer = StringBuilder()
         var docElement = element
         if (
-            docElement is MvBindingPat
-            && docElement.owner is MvConst
-        ) docElement = docElement.owner
+            docElement is MvBindingPat && docElement.owner is MvConst
+        )
+            docElement = docElement.owner
+
+        val msl = docElement?.isMsl() ?: false
         when (docElement) {
             // TODO: add docs for both scopes
             is MvNamedAddress -> {
@@ -50,15 +52,8 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
-//                val project = docElement.project
-                val inference = docElement.inference(false) ?: return null
-//                val inferenceCtx = docElement.inferenceContext(false)
-//                val itemContext = docElement.itemContextOwner?.itemContext(false) ?: project.itemContext(false)
-//                val inferenceCtx =
-//                    docElement.ownerInferenceCtx(false) ?: InferenceContext(false, itemContext)
+                val inference = docElement.inference(msl) ?: return null
                 val type = inference.getPatType(docElement).renderForDocs(true)
-//                val type = inferenceCtx.getBindingPatTy(docElement).renderForDocs(true)
-//                val type = docElement.inferBindingTy(inferenceCtx, itemContext).renderForDocs(true)
                 buffer += presentationInfo.type
                 buffer += " "
                 buffer.b { it += presentationInfo.name }

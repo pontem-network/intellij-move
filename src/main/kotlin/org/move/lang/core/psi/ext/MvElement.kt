@@ -1,5 +1,6 @@
 package org.move.lang.core.psi.ext
 
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiTreeUtil
@@ -25,9 +26,9 @@ fun PsiFileSystemItem.findMoveProject(): MoveProject? {
 
 //private val MSL_KEY: Key<CachedValue<FunctionSignature?>> = Key.create("SIGNATURE_KEY")
 
-fun MvElement.isMsl(): Boolean {
+fun PsiElement.isMsl(): Boolean {
     return CachedValuesManager.getProjectPsiDependentCache(this) {
-        var element: MvElement? = it
+        var element: PsiElement? = it
         while (element != null) {
             // use items always non-msl, otherwise import resolution doesn't work correctly
             if (element is MvUseItem) return@getProjectPsiDependentCache false

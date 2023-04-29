@@ -17,8 +17,16 @@ val MvBindingPat.owner: PsiElement?
                 || it is MvSchemaFieldStmt
     }
 
+var MvBindingPat.synthetic: Boolean
+    get() = (this as MvBindingPatMixin).synthetic
+    set(value) {
+        (this as MvBindingPatMixin).synthetic = value
+    }
+
 abstract class MvBindingPatMixin(node: ASTNode) : MvMandatoryNameIdentifierOwnerImpl(node),
                                                   MvBindingPat {
+    var synthetic = false
+
     override fun getIcon(flags: Int): Icon =
         when (this.owner) {
             is MvFunctionParameter -> MoveIcons.PARAMETER

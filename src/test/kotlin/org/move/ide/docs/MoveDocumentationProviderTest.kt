@@ -140,6 +140,18 @@ fun <b>box3</b>&lt;T&gt;(x: T): Box3&lt;T&gt;</pre></div>
 <div class='content'></div>        
     """)
 
+    fun `test result type documentation`() = doTest("""
+module 0x1::m {
+    fun call(): u8 {}
+    spec call {
+        result;
+        //^ 
+    }
+}        
+    """, """
+value parameter <b>result</b>: num      
+    """)
+
     private fun doTest(@Language("Move") code: String, @Language("Html") expected: String?) =
         doTest(code, expected, block = MvDocumentationProvider::generateDoc)
 }

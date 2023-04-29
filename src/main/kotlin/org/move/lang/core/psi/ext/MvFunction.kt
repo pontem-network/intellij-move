@@ -141,11 +141,11 @@ val MvFunctionLike.specResultParameters: List<MvFunctionParameter>
                 when (retTypeType) {
                     null -> emptyList()
                     is MvTupleType -> {
-                        val bindings = retTypeType.typeList
+                        val parameters = retTypeType.typeList
                             .mapIndexed { i, type ->
                                 psiFactory.specFunctionParameter("result_${i + 1}: ${type.text}")
                             }
-                        bindings
+                        parameters
                     }
                     else -> {
                         listOf(psiFactory.specFunctionParameter("result: ${retTypeType.text}"))

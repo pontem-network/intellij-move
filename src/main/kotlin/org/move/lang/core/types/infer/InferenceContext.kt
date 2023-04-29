@@ -77,14 +77,21 @@ data class InferenceResult(
     /// Explicitly allow uninferred expr
     fun getExprTypeOrUnknown(expr: MvExpr): Ty = exprTypes[expr] ?: TyUnknown
 
-    fun getPatType(pat: MvPat): Ty =
-        patTypes[pat] ?: run {
-            if (pat.project.pluginDevelopmentMode) {
-                error(pat.typeErrorText)
-            } else {
-                TyUnknown
+    fun getPatType(pat: MvPat): Ty {
+        val type = patTypes[pat]
+        if (type != null) return type
+
+        // synthetic fallback for binding pat
+        if (pat is MvBindingPat && pat.synthetic) {
+            val owner = pat.parent as? MvTypeAnnotationOwner
+            if (owner != null) {
+                return owner.type?.loweredType(pat.isMsl()) ?: TyUnknown
             }
         }
+        // if not in devmode, return unknown
+        if (!pat.project.pluginDevelopmentMode) return TyUnknown
+        error(message = pat.typeErrorText)
+    }
 
     /// Explicitly allow uninferred pat
     fun getPatTypeOrUnknown(pat: MvPat): Ty = patTypes[pat] ?: TyUnknown
@@ -113,10 +120,7 @@ internal val MvElement.typeErrorText: String
             IntRange(rangeInStmt.startOffset, rangeInStmt.endOffset - 1),
             "[${this.text}]"
         )
-        text += """
-            Context: `$stmtText`
-        """.trimIndent()
-
+        text += "\nContext: `$stmtText`"
         return text
     }
 
