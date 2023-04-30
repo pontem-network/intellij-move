@@ -2,7 +2,7 @@ package org.move.utils.tests.resolve
 
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.resolve.MvReferenceElement
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor

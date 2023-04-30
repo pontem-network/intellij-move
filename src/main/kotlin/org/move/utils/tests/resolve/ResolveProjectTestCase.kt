@@ -10,7 +10,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.intellij.lang.annotations.Language
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.resolve.MvReferenceElement
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.openapiext.document
 import org.move.openapiext.toPsiFile
 import org.move.openapiext.toVirtualFile

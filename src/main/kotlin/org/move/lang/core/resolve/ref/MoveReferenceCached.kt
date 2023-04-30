@@ -3,7 +3,6 @@ package org.move.lang.core.resolve.ref
 import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.ResolveResult
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.resolve.MvReferenceElement
 
 abstract class MvReferenceCached<T : MvReferenceElement>(element: T) : MvReferenceBase<T>(element) {
     abstract fun resolveInner(): List<MvNamedElement>

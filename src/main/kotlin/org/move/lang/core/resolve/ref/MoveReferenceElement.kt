@@ -1,12 +1,8 @@
-package org.move.lang.core.resolve
+package org.move.lang.core.resolve.ref
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 import org.move.lang.core.psi.MvElement
-import org.move.lang.core.resolve.ref.MvFQModuleReference
-import org.move.lang.core.resolve.ref.MvPathReference
-import org.move.lang.core.resolve.ref.MvReference
-import org.move.lang.core.resolve.ref.NamedAddressReference
 
 interface PsiReferenceElement : PsiElement {
     val identifier: PsiElement?

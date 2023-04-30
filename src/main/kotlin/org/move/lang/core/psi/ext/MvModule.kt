@@ -123,6 +123,9 @@ fun MvModule.entryFunctions(): List<MvFunction> = this.allFunctions().filter { i
 
 fun MvModule.viewFunctions(): List<MvFunction> = this.allFunctions().filter { it.isView }
 
+fun MvModule.specInlineFunctions(): List<MvSpecInlineFunction> =
+    this.moduleItemSpecs().flatMap { it.specInlineFunctions() }
+
 fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
     val trimmedText = text.trimIndent()
     return project.psiFactory.specFunction(trimmedText, moduleName = "builtin_spec_functions")
@@ -153,14 +156,15 @@ fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
             ),
             builtinSpecFunction("spec native fun TRACE<T>(_: T): T;", project),
             // vector functions
-            builtinSpecFunction("spec native fun len<T>(_: vector<T>): num;", project),
             builtinSpecFunction(
                 "spec native fun concat<T>(v1: vector<T>, v2: vector<T>): vector<T>;",
                 project
             ),
+            builtinSpecFunction("spec native fun len<T>(_: vector<T>): num;", project),
             builtinSpecFunction("spec native fun contains<T>(v: vector<T>, e: T): bool;", project),
             builtinSpecFunction("spec native fun index_of<T>(_: vector<T>, _: T): num;", project),
             builtinSpecFunction("spec native fun range<T>(_: vector<T>): range;", project),
+            builtinSpecFunction("spec native fun update<T>(_: vector<T>, _: num, _: T): vector<T>;", project),
             builtinSpecFunction("spec native fun in_range<T>(_: vector<T>, _: num): bool;", project),
         )
     }
@@ -176,7 +180,7 @@ val MvModuleBlock.module: MvModule get() = this.parent as MvModule
 ////    this.childrenOfType<MvItemSpec>()
 ////        .filter { it.itemSpecRef?.moduleKw != null }
 
-val MvModuleSpec.module: MvModule? get() = this.fqModuleRef?.reference?.resolve() as? MvModule
+val MvModuleSpec.moduleItem: MvModule? get() = this.fqModuleRef?.reference?.resolve() as? MvModule
 
 val MvModuleSpecBlock.moduleSpec: MvModuleSpec get() = this.parent as MvModuleSpec
 
@@ -187,6 +191,12 @@ fun MvModuleSpecBlock.itemSpecs() = this.childrenOfType<MvItemSpec>()
 //fun MvModuleSpecBlock.moduleItemSpecs() =
 //    this.itemSpecs()
 //        .filter { it.itemSpecRef?.moduleKw != null }
+
+fun MvModule.moduleItemSpecs(): List<MvModuleItemSpec> =
+    this.moduleBlock?.moduleItemSpecList.orEmpty()
+
+fun MvModuleSpec.moduleItemSpecs(): List<MvModuleItemSpec> =
+    this.moduleSpecBlock?.moduleItemSpecList.orEmpty()
 
 fun MvModule.allModuleSpecs(): List<MvModuleSpec> {
     return getProjectPsiDependentCache(this) {

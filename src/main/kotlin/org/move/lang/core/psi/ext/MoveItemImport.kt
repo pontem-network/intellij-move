@@ -9,7 +9,7 @@ import org.move.lang.core.resolve.MslLetScope
 import org.move.lang.core.resolve.ref.MvReferenceCached
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.resolve.ref.resolveModuleItem
+import org.move.lang.core.resolve.resolveModuleItem
 
 fun MvUseItem.useSpeck(): MvItemUseSpeck =
     ancestorStrict() ?: error("ItemImport outside ModuleItemsImport")

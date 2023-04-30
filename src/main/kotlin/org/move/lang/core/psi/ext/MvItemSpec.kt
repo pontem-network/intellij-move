@@ -10,6 +10,13 @@ val MvItemSpec.item: MvNamedElement? get() = this.itemSpecRef?.reference?.resolv
 val MvItemSpec.funcItem get() = this.item as? MvFunction
 
 val MvModuleItemSpec.itemSpecBlock: MvSpecCodeBlock? get() = this.childOfType()
+
+fun MvModuleItemSpec.specInlineFunctions(): List<MvSpecInlineFunction> =
+    this.itemSpecBlock?.stmtList
+        ?.filterIsInstance<MvSpecInlineFunctionStmt>()
+        ?.map { it.specInlineFunction }
+        .orEmpty()
+
 val MvItemSpec.itemSpecBlock: MvSpecCodeBlock? get() = this.childOfType()
 val MvItemSpecBlockExpr.specBlock: MvSpecCodeBlock? get() = this.childOfType()
 

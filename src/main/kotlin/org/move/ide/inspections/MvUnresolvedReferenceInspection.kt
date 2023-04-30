@@ -7,7 +7,7 @@ import org.move.cli.settings.pluginDevelopmentMode
 import org.move.ide.inspections.imports.AutoImportFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.MvReferenceElement
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyUnknown

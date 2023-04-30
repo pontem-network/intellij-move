@@ -18,9 +18,9 @@ import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.resolve.ref.processModuleItems
 import org.move.lang.core.types.infer.inferExpectedTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty

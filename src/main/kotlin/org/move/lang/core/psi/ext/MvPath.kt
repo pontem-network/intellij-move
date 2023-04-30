@@ -5,7 +5,7 @@ import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
 import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.MvReferenceElement
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.MvPathReference
 import org.move.lang.core.resolve.ref.MvPathReferenceImpl
 import org.move.lang.core.resolve.ref.Namespace

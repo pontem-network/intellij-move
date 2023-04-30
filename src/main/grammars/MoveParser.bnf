@@ -173,7 +173,7 @@ AttrItemArguments ::= '(' <<comma_sep_items AttrItemArgument>> ')'
 AttrItemArgument ::= IDENTIFIER ('=' Expr)?
 {
     implements = [
-        "org.move.lang.core.resolve.MvReferenceElement"
+        "org.move.lang.core.resolve.ref.MvReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvAttrItemArgumentMixin"
 }
@@ -565,7 +565,7 @@ UseItem ::= IDENTIFIER UseAlias?
     name = "item name"
     implements = [
         "org.move.lang.core.psi.MvNamedElement"
-        "org.move.lang.core.resolve.MvMandatoryReferenceElement"
+        "org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvUseItemMixin"
 }
@@ -683,7 +683,7 @@ private StructPatField_recover ::= !('}' | IDENTIFIER)
 StructPatField ::= (BindingPat !':') | (IDENTIFIER StructPatFieldBinding)
 {
     implements = [
-        "org.move.lang.core.resolve.MvStructFieldReferenceElement"
+        "org.move.lang.core.resolve.ref.MvStructFieldReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructPatFieldMixin"
 }
@@ -940,7 +940,7 @@ private StructLitField_recover ::= !('}' | IDENTIFIER)
 StructLitField ::= IDENTIFIER StructLitFieldInit?
 {
     implements = [
-        "org.move.lang.core.resolve.MvStructFieldLitReferenceElement"
+        "org.move.lang.core.resolve.ref.MvStructFieldLitReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructLitFieldMixin"
 }
@@ -1018,7 +1018,7 @@ DotExpr ::= Expr '.' StructDotField
 
 StructDotField ::= IDENTIFIER
 {
-    implements = ["org.move.lang.core.resolve.MvStructFieldReferenceElement"]
+    implements = ["org.move.lang.core.resolve.ref.MvStructFieldReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MvStructDotMixin"
 }
 
@@ -1033,7 +1033,7 @@ RefExpr ::= Path !'{' {
 //private Path ::= QualPath | LocalPath
 //fake Path ::= (ModuleRef '::')? IDENTIFIER? TypeArgumentList?
 //{
-//    implements = ["org.move.lang.core.resolve.MvReferenceElement"]
+//    implements = ["org.move.lang.core.resolve.ref.MvReferenceElement"]
 //    mixin = "org.move.lang.core.psi.ext.MvPathMixin"
 //}
 
@@ -1042,7 +1042,7 @@ RefExpr ::= Path !'{' {
 
 Path ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList?
 {
-    implements = ["org.move.lang.core.resolve.MvPathReferenceElement"]
+    implements = ["org.move.lang.core.resolve.ref.MvPathReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MvPathMixin"
 }
 
@@ -1062,7 +1062,7 @@ private FQModulePathIdent ::= FQModuleRef '::' IDENTIFIER
 
 ModuleRef ::= IDENTIFIER | FQModuleRef
 {
-    implements = ["org.move.lang.core.resolve.MvReferenceElement"]
+    implements = ["org.move.lang.core.resolve.ref.MvReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MvModuleRefMixin"
 }
 
@@ -1071,7 +1071,7 @@ FQModuleRef ::= AddressRef '::' IDENTIFIER
     pin = 2
     extends = ModuleRef
     implements = [
-        "org.move.lang.core.resolve.MvFQModuleReferenceElement"
+        "org.move.lang.core.resolve.ref.MvFQModuleReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvFQModuleRefMixin"
 }
@@ -1084,7 +1084,7 @@ AddressRef ::= NamedAddress
                 | POLKADOT_ADDRESS
 NamedAddress ::= IDENTIFIER
 {
-    implements = ["org.move.lang.core.resolve.NamedAddressReferenceElement"]
+    implements = ["org.move.lang.core.resolve.ref.NamedAddressReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MvNamedAddressMixin"
 }
 
@@ -1196,7 +1196,7 @@ private ItemSpecTypeParameter_recover ::= !('>' | '(' | '{' | phantom | IDENTIFI
 ItemSpecTypeParameter ::= IDENTIFIER TypeParamBound? {
     pin = 1
     implements = [
-        "org.move.lang.core.resolve.MvItemSpecParameterReferenceElement"
+        "org.move.lang.core.resolve.ref.MvItemSpecParameterReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecTypeParameterMixin"
 }
@@ -1212,7 +1212,7 @@ private ItemSpecFunctionParameter_recover ::= !(')' | '{' | ';' | IDENTIFIER)
 ItemSpecFunctionParameter ::= IDENTIFIER TypeAnnotation {
     pin = 1
     implements = [
-        "org.move.lang.core.resolve.MvItemSpecParameterReferenceElement"
+        "org.move.lang.core.resolve.ref.MvItemSpecParameterReferenceElement"
         "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecFunctionParameterMixin"
@@ -1220,7 +1220,7 @@ ItemSpecFunctionParameter ::= IDENTIFIER TypeAnnotation {
 
 ItemSpecRef ::= IDENTIFIER
 {
-    implements = ["org.move.lang.core.resolve.MvReferenceElement"]
+    implements = ["org.move.lang.core.resolve.ref.MvReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecRefMixin"
 }
 
@@ -1228,7 +1228,7 @@ ItemSpecRef ::= IDENTIFIER
 //{
 //    pin = 1
 ////    extends = AnySpec
-//    implements = ["org.move.lang.core.resolve.MvMandatoryReferenceElement"]
+//    implements = ["org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"]
 //    mixin = "org.move.lang.core.psi.ext.MvItemSpecMixin"
 //}
 //ModuleKeywordSpec ::= (spec MODULE_KW) <<msl ItemSpecBlock>> {
@@ -1384,7 +1384,7 @@ private SchemaField_recover ::= !('}' | IDENTIFIER)
 SchemaLitField ::= IDENTIFIER SchemaLitFieldInit?
 {
     implements = [
-        "org.move.lang.core.resolve.MvSchemaRefFieldReferenceElement"
+        "org.move.lang.core.resolve.ref.MvSchemaRefFieldReferenceElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSchemaLitFieldMixin"
 }

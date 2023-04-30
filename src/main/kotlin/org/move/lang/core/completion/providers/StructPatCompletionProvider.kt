@@ -14,9 +14,9 @@ import org.move.lang.core.psi.itemScope
 import org.move.lang.core.psiElement
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslLetScope
+import org.move.lang.core.resolve.processModuleItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.resolve.ref.processModuleItems
 import org.move.lang.core.withParent
 
 object StructPatCompletionProvider : MvCompletionProvider() {

@@ -17,6 +17,7 @@ import org.move.lang.core.completion.DefaultInsertHandler
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.ItemQualName
 import org.move.lang.index.MvNamedElementIndex

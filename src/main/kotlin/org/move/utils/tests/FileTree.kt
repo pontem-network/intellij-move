@@ -18,7 +18,7 @@ import com.intellij.psi.PsiManager
 import org.intellij.lang.annotations.Language
 import org.move.cli.manifest.TomlDependency
 import org.move.lang.core.psi.ext.ancestorStrict
-import org.move.lang.core.resolve.MvReferenceElement
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.openapiext.document
 import org.move.openapiext.fullyRefreshDirectory
 import org.move.openapiext.toPsiFile

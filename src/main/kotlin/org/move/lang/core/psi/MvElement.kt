@@ -27,7 +27,7 @@ val MvElement.namespaceModule: MvModule?
         val parent = this.findFirstParent(false) { it is MvModule || it is MvModuleSpec }
         return when (parent) {
             is MvModule -> parent
-            is MvModuleSpec -> parent.module
+            is MvModuleSpec -> parent.moduleItem
             else -> null
         }
     }

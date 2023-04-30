@@ -1,6 +1,6 @@
 package org.move.ide.inspections.imports
 
-import org.move.lang.core.resolve.MvReferenceElement
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor

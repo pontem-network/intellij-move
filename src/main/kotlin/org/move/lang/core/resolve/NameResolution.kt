@@ -6,6 +6,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.address
@@ -17,21 +18,6 @@ import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.stdext.wrapWithList
-
-enum class MslLetScope {
-    NONE, EXPR_STMT, LET_STMT, LET_POST_STMT;
-}
-
-val MvElement.mslLetScope: MslLetScope
-    get() {
-        if (!this.isMsl()) return MslLetScope.NONE
-        val letStmt = this.ancestorOrSelf<MvLetStmt>()
-        return when {
-            letStmt == null -> MslLetScope.EXPR_STMT
-            letStmt.isPost -> MslLetScope.LET_POST_STMT
-            else -> MslLetScope.LET_STMT
-        }
-    }
 
 data class ItemVis(
     val namespaces: Set<Namespace>,
@@ -146,29 +132,13 @@ fun processFileItems(
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     for (module in file.modules()) {
-        for (namespace in itemVis.namespaces) {
-            val found = when (namespace) {
-                Namespace.MODULE -> processor.match(itemVis, module)
-                Namespace.NAME -> {
-                    processor.matchAll(
-                        itemVis,
-                        if (itemVis.isMsl) module.consts() else emptyList()
-                    )
-                }
-                Namespace.FUNCTION -> {
-                    val functions = itemVis.visibilities.flatMap { module.visibleFunctions(it) }
-                    val specFunctions = if (itemVis.isMsl) module.specFunctions() else emptyList()
-                    processor.matchAll(
-                        itemVis,
-                        functions, specFunctions
-                    )
-                }
-                Namespace.TYPE -> processor.matchAll(itemVis, module.structs())
-                Namespace.SCHEMA -> processor.matchAll(itemVis, module.schemas())
-                else -> continue
-            }
-            if (found) return true
+        if (
+            Namespace.MODULE in itemVis.namespaces
+            && processor.match(itemVis, module)
+        ) {
+            return true
         }
+        if (processModuleInnerItems(module, itemVis, processor)) return true
     }
     return false
 }
@@ -552,7 +522,7 @@ fun walkUpThroughScopes(
         }
 
         if (scope is MvModuleSpecBlock) {
-            val moduleBlock = scope.moduleSpec.module?.moduleBlock
+            val moduleBlock = scope.moduleSpec.moduleItem?.moduleBlock
             if (moduleBlock != null) {
                 cameFrom = scope
                 scope = moduleBlock

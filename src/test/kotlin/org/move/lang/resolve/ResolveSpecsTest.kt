@@ -611,8 +611,6 @@ module 0x1::main {
 
     fun `test resolve spec fun defined in another module spec`() = checkByCode("""
         module 0x1::m {
-        }
-        spec 0x1::m {
             spec fun spec_now_microseconds(): u64 {
                       //X
                 1
