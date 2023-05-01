@@ -126,6 +126,10 @@ class TypeInferenceWalker(
                 val ty = stmt.type?.loweredType(msl) ?: TyUnknown
                 ctx.writePatTy(binding, resolveTypeVarsWithObligations(ty))
             }
+            is MvIncludeStmt -> {
+                stmt.expr?.inferType()
+                TyUnit
+            }
             is MvExprStmt -> stmt.expr.inferType()
             is MvSpecExprStmt -> stmt.expr.inferType()
         }
@@ -228,6 +232,7 @@ class TypeInferenceWalker(
                 TyUnit
             }
             is MvSpecVisRestrictedExpr -> expr.expr?.inferType(expected) ?: TyUnknown
+            is MvSchemaLitExpr -> inferSchemaLitExprTy(expr)
             else ->
                 if (expr.project.pluginDevelopmentMode) error(expr.typeErrorText) else TyUnknown
         }
@@ -411,9 +416,40 @@ class TypeInferenceWalker(
                 coerce(field, bindingTy, fieldTy)
             }
         }
-
         return structTy
     }
+
+    private fun inferSchemaLitExprTy(litExpr: MvSchemaLitExpr): Ty {
+        val path = litExpr.path
+        val schemaItem = path.maybeSchema
+        if (schemaItem == null) {
+            for (field in litExpr.fields) {
+                field.expr?.let { inferExprTy(it) }
+            }
+            return TyUnknown
+        }
+
+        val (schemaTy, _) = ctx.instantiatePath<TySchema>(path, schemaItem)
+//        expected.onlyHasTy(ctx)?.let { expectedTy ->
+//            ctx.unifySubst(typeParameters, expectedTy.typeParameterValues)
+//        }
+
+        litExpr.fields.forEach { field ->
+            val fieldTy = field.type(msl)?.substitute(schemaTy.substitution) ?: TyUnknown
+            val expr = field.expr
+
+            if (expr != null) {
+                expr.inferTypeCoercableTo(fieldTy)
+            } else {
+                val bindingTy = field.resolveToBinding()?.let { ctx.getPatType(it) } ?: TyUnknown
+                coerce(field, bindingTy, fieldTy)
+            }
+        }
+        return schemaTy
+    }
+
+    private fun MvSchemaLitField.type(msl: Boolean) =
+        this.resolveToDeclaration()?.type?.loweredType(msl)
 
     private fun MvStructLitField.type(msl: Boolean) =
         this.resolveToDeclaration()?.type?.loweredType(msl)

@@ -7,7 +7,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvSchemaStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
-import org.move.lang.core.types.infer.emptySubstitution
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.GenericTy
@@ -39,6 +38,8 @@ val MvSchema.fieldStmts get() = this.specBlock?.schemaFields().orEmpty()
 
 val MvSchema.fieldBindings get() = this.fieldStmts.map { it.bindingPat }
 
+val MvIncludeStmt.expr: MvExpr? get() = this.childOfType()
+
 abstract class MvSchemaMixin : MvStubbedNamedElementImpl<MvSchemaStub>,
                                MvSchema {
 
@@ -55,5 +56,6 @@ abstract class MvSchemaMixin : MvStubbedNamedElementImpl<MvSchemaStub>,
             return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
 
-    override fun declaredType(msl: Boolean): GenericTy = TySchema(this, emptySubstitution)
+    override fun declaredType(msl: Boolean): GenericTy =
+        TySchema(this, this.tyTypeParams, this.generics)
 }

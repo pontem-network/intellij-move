@@ -199,7 +199,7 @@ class ResolveStructFieldsTest : ResolveTestCase() {
                 include MySchema {
                     schema_val: s.val
                                  //^
-                }
+                };
             }
         }        
     """

@@ -12,6 +12,12 @@ val MvSchemaLitField.isShorthand get() = !hasChild(MvElementTypes.COLON)
 
 val MvSchemaLitField.schemaLit: MvSchemaLitExpr? get() = ancestorStrict(MvSpecCodeBlock::class.java)
 
+inline fun <reified T : MvElement> MvSchemaLitField.resolveToElement(): T? =
+    reference.multiResolve().filterIsInstance<T>().singleOrNull()
+
+fun MvSchemaLitField.resolveToDeclaration(): MvSchemaFieldStmt? = resolveToElement()
+fun MvSchemaLitField.resolveToBinding(): MvBindingPat? = resolveToElement()
+
 class MvSchemaFieldReferenceImpl(
     element: MvSchemaLitField
 ) : MvReferenceCached<MvSchemaLitField>(element) {
