@@ -12,7 +12,7 @@ class ItemSpecsLineMarkerProviderTest: LineMarkerProviderTestBase() {
     """)
 
     fun `test item specifications`() = doTestByText("""
-        module 0x1::m {
+        module 0x1::m {  // - Has specifications  
             fun call() {}  // - Has specifications  
             
         }

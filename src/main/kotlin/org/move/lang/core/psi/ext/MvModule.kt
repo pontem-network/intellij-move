@@ -198,6 +198,13 @@ fun MvModule.moduleItemSpecs(): List<MvModuleItemSpec> =
 fun MvModuleSpec.moduleItemSpecs(): List<MvModuleItemSpec> =
     this.moduleSpecBlock?.moduleItemSpecList.orEmpty()
 
+fun MvModuleSpec.schemas(): List<MvSchema> = this.moduleSpecBlock?.schemaList.orEmpty()
+
+fun MvModuleSpec.specFunctions(): List<MvSpecFunction> = this.moduleSpecBlock?.specFunctionList.orEmpty()
+
+fun MvModuleSpec.specInlineFunctions(): List<MvSpecInlineFunction> =
+    this.moduleItemSpecs().flatMap { it.specInlineFunctions() }
+
 fun MvModule.allModuleSpecs(): List<MvModuleSpec> {
     return getProjectPsiDependentCache(this) {
         val moveProject = it.moveProject ?: return@getProjectPsiDependentCache emptyList()

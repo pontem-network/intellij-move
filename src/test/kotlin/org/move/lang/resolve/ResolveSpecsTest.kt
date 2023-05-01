@@ -609,7 +609,7 @@ module 0x1::main {
         }
     """)
 
-    fun `test resolve spec fun defined in another module spec`() = checkByCode("""
+    fun `test resolve spec fun defined in another module`() = checkByCode("""
         module 0x1::m {
             spec fun spec_now_microseconds(): u64 {
                       //X
@@ -621,6 +621,80 @@ module 0x1::main {
             spec module {
                 m::spec_now_microseconds();
                      //^
+            }
+        }
+    """)
+
+    fun `test resolve spec fun defined in another module spec`() = checkByCode("""
+        module 0x1::m {
+        }
+        spec 0x1::m {
+            spec fun spec_now_microseconds(): u64 {
+                      //X
+                1
+            }            
+        }
+        module 0x1::main {
+            use 0x1::m;
+            spec module {
+                m::spec_now_microseconds();
+                     //^
+            }
+        }
+    """)
+
+    fun `test resolve spec fun defined in another spec module item spec`() = checkByCode("""
+        module 0x1::m {
+        }
+        spec 0x1::m {
+            spec module {
+                fun spec_now_microseconds(): u64 {
+                          //X
+                    1
+                }            
+            }
+        }
+        module 0x1::main {
+            use 0x1::m;
+            spec module {
+                m::spec_now_microseconds();
+                     //^
+            }
+        }
+    """)
+
+    fun `test spec function from module item spec is not accessible in non-msl scope`() = checkByCode("""
+        module 0x1::m {
+        }
+        spec 0x1::m {
+            spec fun spec_now_microseconds(): u64 {
+                1
+            }       
+        }
+        module 0x1::main {
+            use 0x1::m;
+            fun main() {
+                m::spec_now_microseconds();
+                   //^ unresolved
+            }
+        }
+    """)
+
+    fun `test spec inline function from module item spec is not accessible in non-msl scope`() = checkByCode("""
+        module 0x1::m {
+        }
+        spec 0x1::m {
+            spec module { 
+                fun spec_now_microseconds(): u64 {
+                    1
+                }       
+            }
+        }
+        module 0x1::main {
+            use 0x1::m;
+            fun main() {
+                m::spec_now_microseconds();
+                   //^ unresolved
             }
         }
     """)

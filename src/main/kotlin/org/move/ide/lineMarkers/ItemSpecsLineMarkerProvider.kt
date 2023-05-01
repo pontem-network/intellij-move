@@ -6,6 +6,8 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder
 import com.intellij.psi.PsiElement
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvModule
+import org.move.lang.core.psi.ext.allModuleSpecs
 import org.move.lang.core.psi.ext.innerItemSpecs
 import org.move.lang.core.psi.ext.outerItemSpecs
 import javax.swing.Icon
@@ -20,7 +22,7 @@ class ItemSpecsLineMarkerProvider : RelatedItemLineMarkerProvider() {
     ) {
         val parent = element.parent
         val targets = when {
-//            parent is MvModule && parent.identifier == element -> parent.allModuleSpecs()
+            parent is MvModule && parent.identifier == element -> parent.allModuleSpecs()
             parent is MvFunction && parent.identifier == element -> {
                 parent.innerItemSpecs() + parent.outerItemSpecs()
             }

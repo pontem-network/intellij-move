@@ -47,10 +47,14 @@ fun processModuleSpecItems(
 ): Boolean {
     for (namespace in itemVis.namespaces) {
         for (moduleSpec in module.allModuleSpecs()) {
-            val moduleSpecBlock = moduleSpec.moduleSpecBlock ?: continue
             val matched = when (namespace) {
-                Namespace.NAME -> processor.matchAll(itemVis, moduleSpecBlock.specFunctionList)
-                Namespace.SCHEMA -> processor.matchAll(itemVis, moduleSpecBlock.schemaList)
+                Namespace.FUNCTION ->
+                    processor.matchAll(
+                        itemVis,
+                        moduleSpec.specFunctions(),
+                        moduleSpec.specInlineFunctions()
+                    )
+                Namespace.SCHEMA -> processor.matchAll(itemVis, moduleSpec.schemas())
                 else -> false
             }
             if (matched) return true
@@ -65,37 +69,7 @@ fun processModuleItems(
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     return processModuleInnerItems(module, itemVis, processor)
-            || processModuleSpecItems(module, itemVis, processor)
-//    for (namespace in itemVis.namespaces) {
-//        var found = when (namespace) {
-//            Namespace.NAME -> processor.matchAll(
-//                itemVis,
-//                if (itemVis.isMsl) module.consts() else emptyList()
-//            )
-//            Namespace.FUNCTION -> processor.matchAll(
-//                itemVis,
-//                itemVis.visibilities.flatMap { module.visibleFunctions(it) },
-//                if (itemVis.isMsl) module.specFunctions() else emptyList(),
-//            )
-//            Namespace.TYPE -> processor.matchAll(itemVis, module.structs())
-//            Namespace.SCHEMA -> processor.matchAll(itemVis, module.schemas())
-//            Namespace.ERROR_CONST -> processor.matchAll(itemVis, module.consts())
-//            else -> false
-//        }
-//        if (!found) {
-//            for (moduleSpec in module.allModuleSpecs()) {
-//                val moduleSpecBlock = moduleSpec.moduleSpecBlock ?: continue
-//                found = when (namespace) {
-//                    Namespace.NAME -> processor.matchAll(itemVis, moduleSpecBlock.specFunctionList)
-//                    Namespace.SCHEMA -> processor.matchAll(itemVis, moduleSpecBlock.schemaList)
-//                    else -> false
-//                }
-//                if (found) break
-//            }
-//        }
-//        if (found) return true
-//    }
-//    return false
+            || itemVis.isMsl && processModuleSpecItems(module, itemVis, processor)
 }
 
 fun resolveModuleItem(
