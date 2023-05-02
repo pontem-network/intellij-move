@@ -390,18 +390,33 @@ fun processLexicalDeclarations(
                 when (scope) {
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
+                        val specFunctions = if (itemVis.isMsl) {
+                            listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
+                        } else {
+                            emptyList()
+                        }
+                        val specInlineFunctions = if (itemVis.isMsl) {
+                            module.moduleItemSpecs().flatMap { it.specInlineFunctions() }
+                        } else {
+                            emptyList()
+                        }
                         processor.matchAll(
                             itemVis,
                             module.allNonTestFunctions(),
                             module.builtinFunctions(),
-                            if (itemVis.isMsl) {
-                                listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
-                            } else {
-                                emptyList()
-                            }
+                            specFunctions,
+                            specInlineFunctions
                         )
                     }
-                    is MvModuleSpecBlock -> processor.matchAll(itemVis, scope.specFunctionList)
+                    is MvModuleSpecBlock -> {
+                        val specFunctions = scope.specFunctionList
+                        val specInlineFunctions = scope.moduleItemSpecList.flatMap { it.specInlineFunctions() }
+                        processor.matchAll(
+                            itemVis,
+                            specFunctions,
+                            specInlineFunctions
+                        )
+                    }
                     is MvFunctionLike -> processor.matchAll(itemVis, scope.lambdaParamsAsBindings)
                     is MvLambdaExpr -> processor.matchAll(itemVis, scope.bindingPatList)
                     is MvItemSpec -> {
@@ -412,7 +427,7 @@ fun processLexicalDeclarations(
                         }
                     }
                     is MvSpecCodeBlock -> {
-                        val inlineFunctions = scope.inlineFunctions().asReversed()
+                        val inlineFunctions = scope.specInlineFunctions().asReversed()
                         return processor.matchAll(itemVis, inlineFunctions)
                     }
                     else -> false

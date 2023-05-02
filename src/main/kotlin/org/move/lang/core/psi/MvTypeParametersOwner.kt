@@ -2,14 +2,15 @@ package org.move.lang.core.psi
 
 import org.move.lang.core.types.infer.Substitution
 import org.move.lang.core.types.infer.toTypeSubst
-import org.move.lang.core.types.ty.GenericTy
+import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyTypeParameter
+import org.move.lang.core.types.ty.TyUnknown
 
 interface MvTypeParametersOwner : MvElement {
     val typeParameterList: MvTypeParameterList?
-
-    fun declaredType(msl: Boolean): GenericTy
+    // override for generic items
+    fun declaredType(msl: Boolean): Ty = TyUnknown
 }
 
 val MvTypeParametersOwner.typeParameters: List<MvTypeParameter>

@@ -698,4 +698,32 @@ module 0x1::main {
             }
         }
     """)
+
+    fun `test resolve type parameters of axiom`() = checkByCode("""
+        module 0x1::m {
+            spec module {
+                    // `deserialize` is an injective function.
+                axiom<T> forall b1: vector<u8>, b2: vector<u8>:
+                    //X
+                    (deserialize<T>(b1) == deserialize<T>(b2) ==> b1 == b2);
+                               //^
+            }
+        }        
+    """)
+
+    fun `test resolve spec fun from module item spec in the same module`() = checkByCode("""
+        module 0x1::m {
+            fun call<T>() {}
+        }
+        spec 0x1::m {
+            spec module {
+                fun deserializable<T>(bytes: vector<u8>): bool;
+                    //X
+            }
+            spec call<T>() {
+                deserializable<T>();
+                //^
+            }
+        }        
+    """)
 }

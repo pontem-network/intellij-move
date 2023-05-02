@@ -56,6 +56,6 @@ abstract class MvSchemaMixin : MvStubbedNamedElementImpl<MvSchemaStub>,
             return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
 
-    override fun declaredType(msl: Boolean): GenericTy =
+    override fun declaredType(msl: Boolean): TySchema =
         TySchema(this, this.tyTypeParams, this.generics)
 }

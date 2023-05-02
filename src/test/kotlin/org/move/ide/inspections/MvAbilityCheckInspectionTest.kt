@@ -186,4 +186,31 @@ class MvAbilityCheckInspectionTest: InspectionTestBase(MvAbilityCheckInspection:
     }    
     """
     )
+
+    fun `test no ability error on generic parameter in struct`() = checkByText("""
+        module 0x1::m {
+            struct SmartVector<T> has store {
+                inner_item: T,
+            } 
+        }        
+    """)
+
+    fun `test no required ability on vector of type T`() = checkByText("""
+        module 0x1::m {
+            struct SmartVector<T> has store {
+                inline_vec: vector<T>,
+            }
+        }
+    """)
+
+    fun `test field T requires store if struct has key ability`() = checkByText("""
+        module 0x1::m {
+            struct S<T> has key { val: T }
+            struct M {}
+            fun main() {
+                let m = M {};
+                S { val: m };
+            }
+        }        
+    """)
 }

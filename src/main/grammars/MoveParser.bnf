@@ -1403,13 +1403,18 @@ FunctionPattern ::= PatternVis? PatternIdent TypeParameterList? {
 private InvariantModifier ::= <<invariantModifierKeyword>>
 InvariantSpecExpr ::= invariant InvariantModifier? TypeParameterList? Expr {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvBoolSpecExpr" ]
+    implements = [
+        "org.move.lang.core.psi.MvBoolSpecExpr"
+//        "org.move.lang.core.psi.MvTypeParametersOwner"
+    ]
 }
 
-//AxiomSpecStmt ::= AxiomSpecExpr ';'
 AxiomSpecExpr ::= axiom TypeParameterList? Expr {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvBoolSpecExpr" ]
+    implements = [
+        "org.move.lang.core.psi.MvBoolSpecExpr"
+        "org.move.lang.core.psi.MvTypeParametersOwner"
+    ]
 }
 
 SpecVisibility ::= '[' SpecVisibility_items ']' { pin = 1 }

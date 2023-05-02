@@ -15,7 +15,7 @@ fun MvSpecCodeBlock.letStmts(post: Boolean): List<MvLetStmt> {
     }
 }
 
-fun MvSpecCodeBlock.inlineFunctions(): List<MvSpecInlineFunction> {
+fun MvSpecCodeBlock.specInlineFunctions(): List<MvSpecInlineFunction> {
     return this.childrenOfType<MvSpecInlineFunctionStmt>()
         .map { it.specInlineFunction }
 }

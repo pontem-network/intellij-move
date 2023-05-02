@@ -44,19 +44,22 @@ val MvStruct.module: MvModule
         return moduleBlock.parent as MvModule
     }
 
-val MvStruct.abilities: List<MvAbility>
+val MvStruct.psiAbilities: List<MvAbility>
     get() {
         return this.abilitiesList?.abilityList ?: emptyList()
     }
 
-val MvStruct.tyAbilities: Set<Ability> get() = this.abilities.mapNotNull { it.ability }.toSet()
+val MvStruct.abilities: Set<Ability> get() = this.psiAbilities.mapNotNull { it.ability }.toSet()
+
+val MvStruct.requiredAbilitiesForTypeParam: Set<Ability> get() =
+    this.abilities.map { it.requires() }.toSet()
 
 val MvStruct.hasPhantomTypeParameters get() = this.typeParameters.any { it.isPhantom }
 
 fun MvStruct.addAbility(ability: String) {
-    if (ability in this.abilities.map { it.text }) return
+    if (ability in this.psiAbilities.map { it.text }) return
 
-    val newAbilities = this.abilities.mapNotNull { it.text }.withAdded(ability)
+    val newAbilities = this.psiAbilities.mapNotNull { it.text }.withAdded(ability)
     val newAbilitiesList = project.psiFactory.abilitiesList(newAbilities)
     if (this.abilitiesList != null) {
         this.abilitiesList?.replace(newAbilitiesList)

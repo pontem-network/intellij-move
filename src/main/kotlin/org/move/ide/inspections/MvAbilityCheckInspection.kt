@@ -9,7 +9,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.fields
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.structItem
-import org.move.lang.core.psi.ext.tyAbilities
+import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.types.infer.inferExpectedTypeArgumentTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
@@ -65,7 +65,7 @@ class MvAbilityCheckInspection : MvLocalInspectionTool() {
             }
 
             override fun visitStruct(o: MvStruct) {
-                val structAbilities = o.tyAbilities
+                val structAbilities = o.abilities
                 if (structAbilities.isEmpty()) return
                 for (field in o.fields) {
                     val fieldTy = field.type?.loweredType(false) ?: continue

@@ -2,7 +2,7 @@ package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
 import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.ext.tyAbilities
+import org.move.lang.core.psi.ext.abilities
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.*
 
@@ -12,7 +12,7 @@ data class TyStruct(
     val typeArguments: List<Ty>,
 ) : GenericTy(item, substitution, mergeFlags(typeArguments) or HAS_TY_STRUCT_MASK) {
 
-    override fun abilities(): Set<Ability> = this.item.tyAbilities
+    override fun abilities(): Set<Ability> = this.item.abilities
 
     override fun innerFoldWith(folder: TypeFolder): Ty {
         return TyStruct(

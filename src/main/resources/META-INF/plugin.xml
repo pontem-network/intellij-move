@@ -215,7 +215,7 @@
                          implementationClass="org.move.ide.inspections.MvTypeCheckInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Ability checking"
-                         enabledByDefault="true" level="ERROR"
+                         enabledByDefault="false" level="ERROR"
                          implementationClass="org.move.ide.inspections.MvAbilityCheckInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Missing acquires"
