@@ -18,6 +18,8 @@ data class TyFunction(
     mergeFlags(paramTypes) or mergeFlags(acquiresTypes) or retType.flags
 ) {
 
+    fun needsTypeAnnotation(): Boolean = this.substitution.hasTyInfer
+
     override fun innerFoldWith(folder: TypeFolder): Ty {
         return TyFunction(
             item,

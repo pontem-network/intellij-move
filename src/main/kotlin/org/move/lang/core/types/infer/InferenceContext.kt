@@ -211,18 +211,21 @@ class InferenceContext(
 
         fulfill.selectWherePossible()
 
-//        fallbackUnresolvedTypeVarsIfPossible()
-//
-//        fulfill.selectWherePossible()
+        fallbackUnresolvedTypeVarsIfPossible()
+
+        fulfill.selectWherePossible()
 
         exprTypes.replaceAll { _, ty -> fullyResolve(ty) }
         patTypes.replaceAll { _, ty -> fullyResolve(ty) }
 
-        exprExpectedTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
         acquiredTypes.replaceAll { _, tys -> tys.map { fullyResolve(it) } }
-        callExprTypes.replaceAll { _, ty -> fullyResolve(ty) }
-        pathTypes.replaceAll { _, ty -> fullyResolve(ty) as GenericTy }
-        typeErrors.replaceAll { err -> fullyResolve(err) }
+        // for call expressions, we need to leave unresolved ty vars intact
+        // to determine whether an explicit type annotation required
+        callExprTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
+
+        exprExpectedTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
+        typeErrors.replaceAll { err -> fullyResolveWithOrigins(err) }
+        pathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) as GenericTy }
 
         return InferenceResult(
             exprTypes,
@@ -235,26 +238,25 @@ class InferenceContext(
         )
     }
 
+    private fun fallbackUnresolvedTypeVarsIfPossible() {
+        val allTypes = exprTypes.values.asSequence() + patTypes.values.asSequence()
+        for (ty in allTypes) {
+            ty.visitInferTys { tyInfer ->
+                val rty = shallowResolve(tyInfer)
+                if (rty is TyInfer) {
+                    fallbackIfPossible(rty)
+                }
+                false
+            }
+        }
+    }
 
-//    private fun fallbackUnresolvedTypeVarsIfPossible() {
-//        val allTypes = exprTypes.values.asSequence() + patTypes.values.asSequence()
-//        for (ty in allTypes) {
-//            ty.visitInferTys { tyInfer ->
-//                val rty = shallowResolve(tyInfer)
-//                if (rty is TyInfer) {
-//                    fallbackIfPossible(rty)
-//                }
-//                false
-//            }
-//        }
-//    }
-
-//    private fun fallbackIfPossible(ty: TyInfer) {
-//        when (ty) {
-//            is TyInfer.IntVar -> intUnificationTable.unifyVarValue(ty, TyInteger.default())
-//            is TyInfer.TyVar -> Unit
-//        }
-//    }
+    private fun fallbackIfPossible(ty: TyInfer) {
+        when (ty) {
+            is TyInfer.IntVar -> intUnificationTable.unifyVarValue(ty, TyInteger.default())
+            is TyInfer.TyVar -> Unit
+        }
+    }
 
     fun isTypeInferred(expr: MvExpr): Boolean {
         return exprTypes.containsKey(expr)
@@ -425,17 +427,17 @@ class InferenceContext(
         return ty.foldTyInferWith(this::shallowResolve)
     }
 
-    private fun <T : TypeFoldable<T>> fullyResolve(value: T): T {
-        fun go(ty: Ty): Ty {
-            if (ty !is TyInfer) return ty
+    fun <T : TypeFoldable<T>> fullyResolve(value: T): T = value.foldWith(fullTypeResolver)
 
-            return when (ty) {
-                is TyInfer.IntVar -> intUnificationTable.findValue(ty) ?: TyInteger.default()
-                is TyInfer.TyVar -> varUnificationTable.findValue(ty)?.let(::go) ?: ty.origin ?: TyUnknown
-            }
+    private inner class FullTypeResolver : TypeFolder() {
+        override fun fold(ty: Ty): Ty {
+            if (!ty.needsInfer) return ty
+            val res = shallowResolve(ty)
+            return if (res is TyInfer) TyUnknown else res.innerFoldWith(this)
         }
-        return value.foldTyInferWith(::go)
     }
+
+    private val fullTypeResolver: FullTypeResolver = FullTypeResolver()
 
     /**
      * Similar to [fullyResolve], but replaces unresolved [TyInfer.TyVar] to its [TyInfer.TyVar.origin]

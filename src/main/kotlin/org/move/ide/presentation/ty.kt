@@ -167,6 +167,13 @@ private fun render(
             else
                 "$params ${r(ty.returnType)}"
         }
+        is TySchema -> {
+            val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
+            val args =
+                if (ty.typeArguments.isEmpty()) ""
+                else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
+            name + args
+        }
         else -> error("unimplemented for type ${ty.javaClass.name}")
     }
 }

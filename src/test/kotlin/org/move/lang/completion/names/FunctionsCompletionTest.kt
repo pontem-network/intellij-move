@@ -379,4 +379,20 @@ class FunctionsCompletionTest : CompletionTestCase() {
         }
     }    
     """)
+
+    fun `test no angle brackets for function with generic vector parameter`() = doSingleCompletion("""
+        module 0x1::m {
+            native public fun destroy_empty<Element>(v: vector<Element>);
+            fun main() {
+                destroy/*caret*/
+            }
+        }        
+    """, """
+        module 0x1::m {
+            native public fun destroy_empty<Element>(v: vector<Element>);
+            fun main() {
+                destroy_empty(/*caret*/)
+            }
+        }        
+    """)
 }

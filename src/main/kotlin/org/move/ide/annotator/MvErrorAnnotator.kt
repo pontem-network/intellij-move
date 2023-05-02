@@ -15,6 +15,7 @@ import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.types.ty.hasTyInfer
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
 import org.move.lang.utils.addToHolder
@@ -98,10 +99,8 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                             } else {
                                 val callTy = parent.inference(msl)?.getCallExprType(parent)
                                         as? TyFunction ?: return
-                                val requiresExplicit = callTy.substitution.containsTypeVarOrOwnTypeParameter()
-
                                 // if no type args are passed, check whether all type params are inferrable
-                                if (requiresExplicit) {
+                                if (callTy.needsTypeAnnotation()) {
                                     MvDiagnostic
                                         .NeedsTypeAnnotation(path)
                                         .addToHolder(moveHolder)

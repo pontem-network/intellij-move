@@ -5,6 +5,8 @@ import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_INFER_VISITOR
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_STRUCT_VISITOR
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_TYPE_PARAMETER_VISITOR
+import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.NEEDS_INFER
+import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.NEEDS_SUBST
 
 enum class Ability {
     DROP, COPY, STORE, KEY;
@@ -33,7 +35,8 @@ val TypeFoldable<*>.hasTyInfer get() = visitWith(HAS_TY_INFER_VISITOR)
 val TypeFoldable<*>.hasTyTypeParameters get() = visitWith(HAS_TY_TYPE_PARAMETER_VISITOR)
 val TypeFoldable<*>.hasTyStruct get() = visitWith(HAS_TY_STRUCT_VISITOR)
 
-val TypeFoldable<*>.needsSubst get(): Boolean = this.hasTyTypeParameters
+val TypeFoldable<*>.needsInfer get(): Boolean = visitWith(NEEDS_INFER)
+val TypeFoldable<*>.needsSubst get(): Boolean = visitWith(NEEDS_SUBST)
 
 abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
 

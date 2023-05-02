@@ -112,11 +112,10 @@ class ExpressionTypeInferenceTest: TypificationTestCase() {
     fun `test vector no specific type`() = testExpr("""
     module 0x1::M {
         native public fun vector_empty<Element>(): vector<Element>;
-        native public fun vector_push_back<Element>(v: &mut vector<Element>, e: Element);
         fun call() {
             let v = vector_empty();
             v;
-          //^ vector<Element>  
+          //^ vector<<unknown>>  
         }
     }        
     """)

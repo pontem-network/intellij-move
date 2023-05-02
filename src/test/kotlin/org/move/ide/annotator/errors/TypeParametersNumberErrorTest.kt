@@ -210,4 +210,12 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
             }
         }        
     """)
+
+    fun `test type parameter can be inferred from mut vector ref`() = checkErrors("""
+        module 0x1::m {
+            fun swap<T>(v: &mut vector<T>) {
+                swap(v);
+            }
+        }        
+    """)
 }

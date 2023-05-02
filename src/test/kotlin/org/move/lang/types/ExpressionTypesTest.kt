@@ -125,7 +125,7 @@ class ExpressionTypesTest: TypificationTestCase() {
         struct R<CoinType> {}
         fun main() {
             R {};
-          //^ 0x1::M::R<CoinType>  
+          //^ 0x1::M::R<<unknown>>  
         }
     }
     """)
