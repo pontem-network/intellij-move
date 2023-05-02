@@ -76,6 +76,7 @@ class MvTypeCheckInspection : MvLocalInspectionTool() {
             typeError.element,
             typeError.message(),
             ProblemHighlightType.GENERIC_ERROR,
+            *(listOfNotNull(typeError.fix()).toTypedArray())
         )
     }
 }

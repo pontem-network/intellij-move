@@ -49,6 +49,8 @@ data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
         }
     }
 
+    fun isDefault(): Boolean = this.kind == DEFAULT_KIND
+
     companion object {
         fun fromName(name: String): TyInteger =
             Kind.values().find { it.name == name }?.let(::TyInteger)!!

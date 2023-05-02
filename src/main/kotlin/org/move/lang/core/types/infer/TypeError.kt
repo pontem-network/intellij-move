@@ -1,23 +1,23 @@
 package org.move.lang.core.types.infer
 
+import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.psi.PsiElement
+import org.move.ide.inspections.fixes.AddCastFix
 import org.move.ide.presentation.expectedBindingFormText
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
-import org.move.lang.core.psi.MvElement
+import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.psi.MvReturnExpr
 import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyInteger
 
-enum class TypeErrorScope {
-    MAIN, MODULE;
-}
-
-sealed class TypeError(open val element: PsiElement): TypeFoldable<TypeError> {
+sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
     abstract fun message(): String
 
     override fun innerVisitWith(visitor: TypeVisitor): Boolean = true
+
+    open fun fix(): LocalQuickFix? = null
 
     data class TypeMismatch(
         override val element: PsiElement,
@@ -34,24 +34,14 @@ sealed class TypeError(open val element: PsiElement): TypeFoldable<TypeError> {
         override fun innerFoldWith(folder: TypeFolder): TypeError {
             return TypeMismatch(element, folder(expectedTy), folder(actualTy))
         }
-    }
 
-//    data class FieldAbilityRequired(
-//        override val element: MvStructField,
-//        val fieldTy: Ty,
-//        val declared: Ability,
-//        val missing: Ability,
-//    ): TypeError(element) {
-//        override fun message(): String {
-//            return "The type '${fieldTy.name()}' does not have the ability '${missing.label()}' " +
-//                        "required by the declared ability '${declared.label()}' " +
-//                        "of the struct '${element.structItem.name}'"
-//        }
-//
-//        override fun innerFoldWith(folder: TypeFolder): TypeError {
-//            return FieldAbilityRequired(element, folder(fieldTy), declared, missing)
-//        }
-//    }
+        override fun fix(): LocalQuickFix? {
+            if (element !is MvExpr) return null
+            if (expectedTy !is TyInteger || actualTy !is TyInteger) return null
+            if (expectedTy.isDefault() || actualTy.isDefault()) return null
+            return AddCastFix(element, expectedTy)
+        }
+    }
 
     data class UnsupportedBinaryOp(
         override val element: PsiElement,
