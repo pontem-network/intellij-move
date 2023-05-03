@@ -8,6 +8,9 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
+import org.move.lang.toNioPathOrNull
+import org.move.openapiext.document
+import org.move.openapiext.getOffsetPosition
 import org.move.stdext.RsResult
 import org.move.stdext.RsResult.Err
 import org.move.stdext.RsResult.Ok
@@ -56,26 +59,8 @@ sealed class CombineTypeError {
     class TypeMismatch(val ty1: Ty, val ty2: Ty) : CombineTypeError()
 }
 
-data class InferenceResult(
-    private val exprTypes: Map<MvExpr, Ty>,
-    private val patTypes: Map<MvPat, Ty>,
-    private val exprExpectedTypes: Map<MvExpr, Ty>,
-    private val acquiredTypes: Map<MvCallExpr, List<Ty>>,
-    private val callExprTypes: Map<MvCallExpr, Ty>,
-    private val pathTypes: Map<MvPath, GenericTy>,
-    val typeErrors: List<TypeError>
-) {
-    fun getExprType(expr: MvExpr): Ty =
-        exprTypes[expr] ?: run {
-            if (expr.project.pluginDevelopmentMode) {
-                error(expr.typeErrorText)
-            } else {
-                TyUnknown
-            }
-        }
-
-    /// Explicitly allow uninferred expr
-    fun getExprTypeOrUnknown(expr: MvExpr): Ty = exprTypes[expr] ?: TyUnknown
+interface InferenceData {
+    val patTypes: Map<MvPat, Ty>
 
     fun getPatType(pat: MvPat): Ty {
         val type = patTypes[pat]
@@ -92,6 +77,28 @@ data class InferenceResult(
         if (!pat.project.pluginDevelopmentMode) return TyUnknown
         error(message = pat.typeErrorText)
     }
+}
+
+data class InferenceResult(
+    override val patTypes: Map<MvPat, Ty>,
+    private val exprTypes: Map<MvExpr, Ty>,
+    private val exprExpectedTypes: Map<MvExpr, Ty>,
+    private val acquiredTypes: Map<MvCallExpr, List<Ty>>,
+    private val callExprTypes: Map<MvCallExpr, Ty>,
+    private val pathTypes: Map<MvPath, GenericTy>,
+    val typeErrors: List<TypeError>
+): InferenceData {
+    fun getExprType(expr: MvExpr): Ty =
+        exprTypes[expr] ?: run {
+            if (expr.project.pluginDevelopmentMode) {
+                error(message = expr.typeErrorText)
+            } else {
+                TyUnknown
+            }
+        }
+
+    /// Explicitly allow uninferred expr
+    fun getExprTypeOrUnknown(expr: MvExpr): Ty = exprTypes[expr] ?: TyUnknown
 
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallExprType(expr: MvCallExpr): Ty? = callExprTypes[expr]
@@ -109,16 +116,29 @@ data class InferenceResult(
 
 internal val MvElement.typeErrorText: String
     get() {
-        var text = "${this.elementType} `${this.text}` is never inferred."
-        val stmt = this.ancestorStrict<MvStmt>() ?: return text
-        text += "\nContext: `${stmt.text}`"
+        var text = "${this.elementType} `${this.text}` is never inferred"
+
+        val elementOffset = this.textOffset
+        val file = this.containingFile ?: return text
+        val document = file.document?.getOffsetPosition(elementOffset)
+        document?.let { (line, col) -> text += "\nFile: ${file.toNioPathOrNull()} at ($line, $col)" }
+
+        val context = when (this) {
+            is MvExpr -> this.ancestorStrict<MvStmt>()?.text
+            is MvPat -> this.ancestorStrict<MvTypeAnnotationOwner>()?.text ?: this.parent?.text
+            else -> null
+        }
+        if (context != null) {
+            if (!context.endsWith('\n')) text += "\n"
+            text += "Context: `$context`"
+        }
         return text
     }
 
 fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
     val inferenceCtx = InferenceContext(msl)
     return recursionGuard(element, { inferenceCtx.infer(element) }, memoize = false)
-        ?: error("Can not run nested type inference")
+        ?: error("Cannot run nested type inference")
 }
 
 private val NEW_INFERENCE_KEY_NON_MSL: Key<CachedValue<InferenceResult>> = Key.create("NEW_INFERENCE_KEY_NON_MSL")
@@ -159,10 +179,11 @@ fun MvElement.inference(msl: Boolean): InferenceResult? {
 class InferenceContext(
     var msl: Boolean,
     private val skipUnification: Boolean = false
-) {
+): InferenceData {
+
+    override val patTypes = mutableMapOf<MvPat, Ty>()
 
     private val exprTypes = concurrentMapOf<MvExpr, Ty>()
-    private val patTypes = mutableMapOf<MvPat, Ty>()
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
     private val acquiredTypes = mutableMapOf<MvCallExpr, List<Ty>>()
     private val callExprTypes = mutableMapOf<MvCallExpr, Ty>()
@@ -174,8 +195,6 @@ class InferenceContext(
     val intUnificationTable = UnificationTable<TyInfer.IntVar, Ty>()
 
     val fulfill = FulfillmentContext(this)
-
-    fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: error("Pat `${pat.text}` is never inferred")
 
     fun startSnapshot(): Snapshot = CombinedSnapshot(
         intUnificationTable.startSnapshot(),
@@ -228,8 +247,8 @@ class InferenceContext(
         pathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) as GenericTy }
 
         return InferenceResult(
-            exprTypes,
             patTypes,
+            exprTypes,
             exprExpectedTypes,
             acquiredTypes,
             callExprTypes,
