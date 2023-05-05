@@ -808,7 +808,7 @@ fake BinaryExpr ::= Expr BinaryOp Expr {
     mixin = "org.move.lang.core.psi.ext.MvBinaryExprMixin"
 }
 
-fake BinaryOp ::= '==>' | '='
+fake BinaryOp ::= '<==>' | '==>' | '='
                     | '==' | '!='
                     | '<' | '>' | '<=' | '>='
                     | '<<' | '>>'
@@ -826,7 +826,7 @@ private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
 private AtomExpr ::=
                     AnnotatedExpr
                     | TupleLitOrParenExpr
-                    | StructOrSchemaLitExpr
+                    | StructLitExpr
                     | VectorLitExpr
                     | DotExpr
                     | IndexExpr
@@ -899,7 +899,7 @@ private ImplyBinExpr_items ::= ImplyBinExpr | PartialImplyBinExpr
 ImplyBinExpr ::= Expr ImplyBinOp Expr
 PartialImplyBinExpr ::= Expr PartialImplyBinOp Expr
 
-ImplyBinOp ::= <<mslOnly eqeq_gt>>
+ImplyBinOp ::= <<includeStmtModeFalse>> <<mslOnly eqeq_gt>>
 PartialImplyBinOp ::= <<mslOnly lt_eqeq_gt>>
 
 BangExpr ::= '!' Expr
@@ -923,8 +923,7 @@ VectorLitItems ::= '[' <<comma_sep_items Expr>>? ']'
     pin = 1
 }
 
-private StructOrSchemaLitExpr ::= StructLitExpr | SchemaLitExpr
-StructLitExpr ::= <<checkStructAllowed>> Path StructLitFieldsBlock
+StructLitExpr ::= <<includeStmtModeFalse>> Path StructLitFieldsBlock
 {
     implements = ["org.move.lang.core.psi.PathExpr"]
 }
@@ -1369,9 +1368,30 @@ EnsuresSpecExpr ::= ensures SpecExpr {
 }
 ModifiesSpecExpr ::= modifies Expr { pin = 1 }
 
-IncludeStmt ::= include SpecVisibility? <<includeStmtMode Expr>> ';' { pin = 1 }
+IncludeStmt ::= include SpecVisibility? IncludeItem ';' { pin = 1 }
 
-SchemaLitExpr ::= <<checkSchemaAllowed>> Path SchemaFieldsBlock
+//private IncludeStmt_items ::= SchemaLitPlain | SchemaLitAnd | SchemaLitIfElse | SchemaLitImply
+
+IncludeItem ::= SchemaIncludeItem | AndIncludeItem | IfElseIncludeItem | ImplyIncludeItem
+
+SchemaIncludeItem ::= SchemaLit &(';' | '}' | SpecExprStmt_first)
+{
+    extends = IncludeItem
+}
+AndIncludeItem ::= SchemaLit AndBinOp SchemaLit
+{
+    extends = IncludeItem
+}
+ImplyIncludeItem ::= <<includeStmtMode Expr>> ImplyBinOp SchemaLit
+{
+    extends = IncludeItem
+}
+IfElseIncludeItem ::= if Condition SchemaLit else SchemaLit
+{
+    extends = IncludeItem
+}
+
+SchemaLit ::= Path SchemaFieldsBlock?
 
 SchemaFieldsBlock ::= '{' SchemaField_with_recover* '}' { pin = 1 }
 private SchemaField_with_recover ::= !'}' SchemaLitField (',' | &'}')

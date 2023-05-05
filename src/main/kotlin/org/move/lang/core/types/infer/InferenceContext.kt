@@ -62,6 +62,8 @@ sealed class CombineTypeError {
 interface InferenceData {
     val patTypes: Map<MvPat, Ty>
 
+    fun getPatTypeOrUnknown(pat: MvPat): Ty = patTypes[pat] ?: TyUnknown
+
     fun getPatType(pat: MvPat): Ty {
         val type = patTypes[pat]
         if (type != null) return type
@@ -125,12 +127,15 @@ internal val MvElement.typeErrorText: String
 
         val context = when (this) {
             is MvExpr -> this.ancestorStrict<MvStmt>()?.text
-            is MvPat -> this.ancestorStrict<MvTypeAnnotationOwner>()?.text ?: this.parent?.text
+            is MvPat -> {
+                val inferenceOwner = this.ancestorStrict<MvInferenceContextOwner>()
+                inferenceOwner?.text ?: this.parent?.text
+            }
             else -> null
         }
         if (context != null) {
             if (!context.endsWith('\n')) text += "\n"
-            text += "Context: `$context`"
+            text += "Context: \n${context.trimIndent()}\n"
         }
         return text
     }
@@ -246,6 +251,7 @@ class InferenceContext(
         typeErrors.replaceAll { err -> fullyResolveWithOrigins(err) }
         pathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) as GenericTy }
 
+        println("return inference result")
         return InferenceResult(
             patTypes,
             exprTypes,

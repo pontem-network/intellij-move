@@ -79,8 +79,6 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
                     if (bindingPat.identifier.text.startsWith("_")) continue
 
                     val ty = inference.getPatType(bindingPat)
-//                    val bindingTy = inferenceCtx.getBindingPatTy(bindingPat)
-//                    val bindingTy = inference.getPatType()
                     if (ty is TyUnknown) continue
 
                     presentTypeForBinding(bindingPat, ty)

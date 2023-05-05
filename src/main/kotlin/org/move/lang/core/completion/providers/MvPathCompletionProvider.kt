@@ -104,7 +104,7 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
         get() =
             MvPsiPatterns.path()
                 .andNot(MvPsiPatterns.pathType())
-                .andNot(MvPsiPatterns.schemaRef())
+                .andNot(MvPsiPatterns.schemaLit())
 
     override fun itemVis(pathElement: MvPath): ItemVis {
         return ItemVis(
@@ -121,7 +121,7 @@ object FunctionsCompletionProvider : MvPathCompletionProvider() {
         get() =
             MvPsiPatterns.path()
                 .andNot(MvPsiPatterns.pathType())
-                .andNot(MvPsiPatterns.schemaRef())
+                .andNot(MvPsiPatterns.schemaLit())
 
     override fun itemVis(pathElement: MvPath): ItemVis {
         return ItemVis(
@@ -151,7 +151,7 @@ object SchemasCompletionProvider : MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
             StandardPatterns.or(
-                MvPsiPatterns.schemaRef(), MvPsiPatterns.pathInsideIncludeStmt()
+                MvPsiPatterns.schemaLit(), MvPsiPatterns.pathInsideIncludeStmt()
             )
 
 

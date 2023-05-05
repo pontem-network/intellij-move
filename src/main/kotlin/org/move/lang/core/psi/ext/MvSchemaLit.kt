@@ -1,11 +1,11 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.MvSchema
-import org.move.lang.core.psi.MvSchemaLitExpr
+import org.move.lang.core.psi.MvSchemaLit
 import org.move.lang.core.psi.MvSchemaLitField
 
-val MvSchemaLitExpr.schema: MvSchema? get() = this.path.reference?.resolveWithAliases() as? MvSchema
+val MvSchemaLit.schema: MvSchema? get() = this.path.reference?.resolveWithAliases() as? MvSchema
 
-val MvSchemaLitExpr.fields: List<MvSchemaLitField> get() = schemaFieldsBlock.schemaLitFieldList
+val MvSchemaLit.fields: List<MvSchemaLitField> get() = schemaFieldsBlock?.schemaLitFieldList.orEmpty()
 
-val MvSchemaLitExpr.fieldNames: List<String> get() = fields.map { it.referenceName }
+val MvSchemaLit.fieldNames: List<String> get() = fields.map { it.referenceName }

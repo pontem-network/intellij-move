@@ -125,16 +125,17 @@ FILE
           MvIncludeStmtImpl(INCLUDE_STMT)
             PsiElement(include_kw)('include')
             PsiWhiteSpace(' ')
-            MvRefExprImpl(REF_EXPR)
-              MvPathImpl(PATH)
-                PsiElement(IDENTIFIER)('Schema')
-            PsiErrorElement:'!', '::', ';', <, <operator>, '=', '[' or '{' expected, got 'assert'
+            MvSchemaIncludeItemImpl(SCHEMA_INCLUDE_ITEM)
+              MvSchemaLitImpl(SCHEMA_LIT)
+                MvPathImpl(PATH)
+                  PsiElement(IDENTIFIER)('Schema')
+            PsiErrorElement:'::', ';', <, '{' or '}' expected, got 'assert'
               <empty list>
           PsiWhiteSpace('\n\n        ')
           MvSpecExprStmtImpl(SPEC_EXPR_STMT)
             MvAssertSpecExprImpl(ASSERT_SPEC_EXPR)
               PsiElement(assert_kw)('assert')
-              PsiErrorElement:<expression> or <type annotation> expected, got ';'
+              PsiErrorElement:<expression> expected, got ';'
                 <empty list>
             PsiElement(;)(';')
           PsiWhiteSpace('\n        ')

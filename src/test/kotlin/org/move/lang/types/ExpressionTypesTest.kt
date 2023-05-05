@@ -1116,4 +1116,46 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test integer type of shift left`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let a = 1u8;
+                (a << 32);
+              //^ u8  
+            }
+        }        
+    """)
+
+    fun `test integer type of shift right`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let a = 1u8;
+                (a >> 32);
+              //^ u8  
+            }
+        }        
+    """)
+
+    fun `test integer type inference with ordering expr`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let a = 1;
+                a > 2u8;
+                a;
+              //^ u8  
+            }
+        }        
+    """)
+
+    fun `test integer type inference with equality expr`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let a = 1;
+                a == 2u8;
+                a;
+              //^ u8  
+            }
+        }        
+    """)
 }

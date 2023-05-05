@@ -79,7 +79,7 @@ class TypeInferenceWalker(
             TyUnit
         } else {
             if (coerce && expectedTy != null) {
-                tailExpr.inferTypeCoercableTo(expectedTy)
+                tailExpr.inferTypeCoerceTo(expectedTy)
             } else {
                 tailExpr.inferType(expectedTy)
             }
@@ -126,10 +126,7 @@ class TypeInferenceWalker(
                 val ty = stmt.type?.loweredType(msl) ?: TyUnknown
                 ctx.writePatTy(binding, resolveTypeVarsWithObligations(ty))
             }
-            is MvIncludeStmt -> {
-                stmt.expr?.inferType()
-                TyUnit
-            }
+            is MvIncludeStmt -> inferIncludeStmt(stmt)
             is MvExprStmt -> stmt.expr.inferType()
             is MvSpecExprStmt -> stmt.expr.inferType()
         }
@@ -143,7 +140,15 @@ class TypeInferenceWalker(
         return inferExprTy(this, expected)
     }
 
+    // returns inferred
     private fun MvExpr.inferTypeCoercableTo(expected: Ty): Ty {
+        val inferred = this.inferType(expected)
+        coerce(this, inferred, expected)
+        return inferred
+    }
+
+    // returns expected
+    private fun MvExpr.inferTypeCoerceTo(expected: Ty): Ty {
         val inferred = this.inferType(expected)
         return if (coerce(this, inferred, expected)) expected else inferred
     }
@@ -209,18 +214,12 @@ class TypeInferenceWalker(
             is MvContinueExpr -> TyNever
             is MvBreakExpr -> TyNever
             is MvAbortExpr -> {
-                expr.expr?.inferTypeCoercableTo(TyInteger.default())
+                expr.expr?.inferTypeCoercableTo(TyInteger.DEFAULT)
                 TyNever
             }
             is MvCodeBlockExpr -> expr.codeBlock.inferBlockType(expected)
             is MvAssignmentExpr -> inferAssignmentExprTy(expr)
-            is MvBoolSpecExpr -> {
-                inferBoolSpecExpr(expr)
-                when (expr) {
-                    is MvAbortsIfSpecExpr -> expr.abortsIfWith?.expr?.inferTypeCoercableTo(TyInteger.default())
-                }
-                TyUnit
-            }
+            is MvBoolSpecExpr -> inferBoolSpecExpr(expr)
             is MvQuantExpr -> inferQuantExprTy(expr)
             is MvRangeExpr -> inferRangeExprTy(expr)
             is MvModifiesSpecExpr -> {
@@ -228,11 +227,11 @@ class TypeInferenceWalker(
                 TyUnit
             }
             is MvAbortsWithSpecExpr -> {
-                expr.exprList.forEach { it.inferTypeCoercableTo(TyInteger.default()) }
+                expr.exprList.forEach { it.inferTypeCoercableTo(TyInteger.DEFAULT) }
                 TyUnit
             }
             is MvSpecVisRestrictedExpr -> expr.expr?.inferType(expected) ?: TyUnknown
-            is MvSchemaLitExpr -> inferSchemaLitExprTy(expr)
+//            is MvSchemaLitExpr -> inferSchemaLitExprTy(expr)
             else ->
                 if (expr.project.pluginDevelopmentMode) error(expr.typeErrorText) else TyUnknown
         }
@@ -243,7 +242,11 @@ class TypeInferenceWalker(
     }
 
     private fun inferBoolSpecExpr(expr: MvBoolSpecExpr): Ty {
-        return expr.expr?.inferTypeCoercableTo(TyBool) ?: TyUnknown
+        expr.expr?.inferTypeCoercableTo(TyBool)
+        if (expr is MvAbortsIfSpecExpr) {
+            expr.abortsIfWith?.expr?.inferTypeCoercableTo(TyInteger.DEFAULT)
+        }
+        return TyUnit
     }
 
     private fun inferRefExprTy(refExpr: MvRefExpr): Ty {
@@ -419,11 +422,11 @@ class TypeInferenceWalker(
         return structTy
     }
 
-    private fun inferSchemaLitExprTy(litExpr: MvSchemaLitExpr): Ty {
-        val path = litExpr.path
+    private fun inferSchemaLitTy(schemaLit: MvSchemaLit): Ty {
+        val path = schemaLit.path
         val schemaItem = path.maybeSchema
         if (schemaItem == null) {
-            for (field in litExpr.fields) {
+            for (field in schemaLit.fields) {
                 field.expr?.let { inferExprTy(it) }
             }
             return TyUnknown
@@ -434,7 +437,7 @@ class TypeInferenceWalker(
 //            ctx.unifySubst(typeParameters, expectedTy.typeParameterValues)
 //        }
 
-        litExpr.fields.forEach { field ->
+        schemaLit.fields.forEach { field ->
             val fieldTy = field.type(msl)?.substitute(schemaTy.substitution) ?: TyUnknown
             val expr = field.expr
 
@@ -472,8 +475,7 @@ class TypeInferenceWalker(
 
     private fun inferIndexExprTy(indexExpr: MvIndexExpr): Ty {
         val receiverExpr = indexExpr.exprList.first()
-        val receiverTy = receiverExpr.inferType()
-        coerce(receiverExpr, receiverTy, TyVector(TyUnknown))
+        val receiverTy = receiverExpr.inferTypeCoercableTo(TyVector(TyUnknown))
 
         val posExpr = indexExpr.exprList.drop(1).first()
         val posTy = posExpr.inferType()
@@ -522,7 +524,8 @@ class TypeInferenceWalker(
             "+", "-", "*", "/", "%" -> inferArithmeticBinaryExprTy(binaryExpr)
             "==", "!=" -> inferEqualityBinaryExprTy(binaryExpr)
             "||", "&&", "==>", "<==>" -> inferLogicBinaryExprTy(binaryExpr)
-            "^", "|", "&", "<<", ">>" -> inferBitOpsExprTy(binaryExpr)
+            "^", "|", "&" -> inferBitOpsExprTy(binaryExpr)
+            "<<", ">>" -> inferBitShiftsExprTy(binaryExpr)
             else -> TyUnknown
         }
     }
@@ -595,7 +598,7 @@ class TypeInferenceWalker(
                 typeErrorEncountered = true
             }
             if (!typeErrorEncountered) {
-                ctx.combineTypes(leftTy, rightTy)
+                coerce(rightExpr, rightTy, expected = leftTy)
             }
         }
         return TyBool
@@ -616,9 +619,20 @@ class TypeInferenceWalker(
         val leftExpr = binaryExpr.left
         val rightExpr = binaryExpr.right
 
-        val leftTy = leftExpr.inferTypeCoercableTo(TyInteger.default())
+        val leftTy = leftExpr.inferTypeCoercableTo(TyInteger.DEFAULT)
         if (rightExpr != null) {
             rightExpr.inferTypeCoercableTo(leftTy)
+        }
+        return leftTy
+    }
+
+    private fun inferBitShiftsExprTy(binaryExpr: MvBinaryExpr): Ty {
+        val leftExpr = binaryExpr.left
+        val rightExpr = binaryExpr.right
+
+        val leftTy = leftExpr.inferTypeCoercableTo(TyInteger.DEFAULT)
+        if (rightExpr != null) {
+            rightExpr.inferTypeCoercableTo(TyInteger.U8)
         }
         return leftTy
     }
@@ -647,12 +661,12 @@ class TypeInferenceWalker(
     }
 
     private fun inferTupleLitExprTy(tupleExpr: MvTupleLitExpr, expected: Expectation): Ty {
-        val types = tupleExpr.exprList.mapIndexed { i, ty ->
+        val types = tupleExpr.exprList.mapIndexed { i, itemExpr ->
             val expectedTy = (expected.onlyHasTy(ctx) as? TyTuple)?.types?.getOrNull(i)
             if (expectedTy != null) {
-                ty.inferTypeCoercableTo(expectedTy)
+                itemExpr.inferTypeCoerceTo(expectedTy)
             } else {
-                ty.inferType()
+                itemExpr.inferType()
             }
         }
         return TyTuple(types)
@@ -752,6 +766,25 @@ class TypeInferenceWalker(
             inlineBlockExpr != null -> inlineBlockExpr.inferType(expected)
         }
         return TyNever
+    }
+
+    private fun inferIncludeStmt(includeStmt: MvIncludeStmt) {
+        val includeItem = includeStmt.includeItem ?: return
+        when (includeItem) {
+            is MvSchemaIncludeItem -> inferSchemaLitTy(includeItem.schemaLit)
+            is MvAndIncludeItem -> {
+                includeItem.schemaLitList.forEach { inferSchemaLitTy(it) }
+            }
+            is MvIfElseIncludeItem -> {
+                includeItem.condition.expr?.inferTypeCoercableTo(TyBool)
+                includeItem.schemaLitList.forEach { inferSchemaLitTy(it) }
+            }
+            is MvImplyIncludeItem -> {
+                includeItem.childOfType<MvExpr>()?.inferTypeCoercableTo(TyBool)
+                inferSchemaLitTy(includeItem.schemaLit)
+            }
+            else -> error("unreachable")
+        }
     }
 
     private fun checkTypeMismatch(

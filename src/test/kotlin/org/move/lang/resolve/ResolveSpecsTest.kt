@@ -395,6 +395,39 @@ class ResolveSpecsTest: ResolveTestCase() {
     }    
     """)
 
+    fun `test schema lit with if else operator if`() = checkByCode("""
+    module 0x1::M {
+        spec schema MySchema {}
+                     //X
+        spec module {
+            include if (true) MySchema else MySchema;
+                              //^
+        }
+    }    
+    """)
+
+    fun `test schema lit with if else operator else`() = checkByCode("""
+    module 0x1::M {
+        spec schema MySchema {}
+                     //X
+        spec module {
+            include if (true) MySchema else MySchema;
+                                            //^
+        }
+    }    
+    """)
+
+    fun `test schema lit with and operator`() = checkByCode("""
+    module 0x1::M {
+        spec schema MySchema {}
+                     //X
+        spec module {
+            include MySchema && MySchema;
+                     //^
+        }
+    }    
+    """)
+
     fun `test resolve module name in spec module`() = checkByCode("""
     module 0x1::Module {
                 //X        

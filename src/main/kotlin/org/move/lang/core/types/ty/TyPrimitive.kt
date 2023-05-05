@@ -60,6 +60,7 @@ data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
 
         val DEFAULT_KIND = Kind.NoPrecision
         val DEFAULT = default()
+        val U8 = TyInteger(Kind.u8)
 
         fun default() = TyInteger(DEFAULT_KIND)
     }

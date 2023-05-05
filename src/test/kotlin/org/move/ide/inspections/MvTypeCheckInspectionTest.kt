@@ -1,5 +1,6 @@
 package org.move.ide.inspections
 
+import org.move.utils.tests.DevelopmentMode
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class MvTypeCheckInspectionTest : InspectionTestBase(MvTypeCheckInspection::class) {
@@ -892,10 +893,10 @@ module 0x1::main {
     """
     )
 
-    fun `test integer arguments support ordering`() = checkByText(
+    fun `test integer arguments of the same type support ordering`() = checkByText(
         """
 module 0x1::main {
-    fun main(a: u64, b: u8) {
+    fun main(a: u64, b: u64) {
         let c = 1;
         a < b;
         a > b;
@@ -1191,13 +1192,15 @@ module 0x1::pool {
     """
     )
 
-    fun `test no invalid unpacking for variable in parens`() = checkByText("""
+    fun `test no invalid unpacking for variable in parens`() = checkByText(
+        """
         module 0x1::m {
             fun call() {
                 let (a) = 1;
             }
         }        
-    """)
+    """
+    )
 
     fun `test check type of assigning value in tuple assignment`() = checkByText(
         """
@@ -1212,25 +1215,30 @@ module 0x1::pool {
     """
     )
 
-    fun `test deref type error`() = checkByText("""
+    fun `test deref type error`() = checkByText(
+        """
         module 0x1::m {
             fun main() {
                 let a = &&mut 1;
                 let b: bool = <error descr="Incompatible type 'integer', expected 'bool'">**a</error>;
             }        
         } 
-    """)
+    """
+    )
 
-    fun `test shift left with u64`() = checkByText("""
+    fun `test shift left with u64`() = checkByText(
+        """
         module 0x1::m {
             fun main() {
                 let a = 1u64;
                 a << 1;
             }        
         } 
-    """)
+    """
+    )
 
-    fun `test abort expr requires an integer type`() = checkByText("""
+    fun `test abort expr requires an integer type`() = checkByText(
+        """
         module 0x1::m {
             fun main() {
                 abort 1;
@@ -1239,9 +1247,11 @@ module 0x1::pool {
                 abort <error descr="Incompatible type 'bool', expected 'integer'">false</error>;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test aborts if with requires an integer type`() = checkByText("""
+    fun `test aborts if with requires an integer type`() = checkByText(
+        """
         module 0x1::m {
             fun call() {}
             spec call {
@@ -1251,41 +1261,77 @@ module 0x1::pool {
                 aborts_if true with <error descr="Incompatible type 'bool', expected 'integer'">false</error>;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test aborts with requires integer`() = checkByText("""
+    fun `test aborts with requires integer`() = checkByText(
+        """
         module 0x1::m {
             fun call() {}
             spec call {
                 aborts_with <error descr="Incompatible type 'bool', expected 'integer'">false</error>;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test type check function param in func spec`() = checkByText("""
+    fun `test type check function param in func spec`() = checkByText(
+        """
         module 0x1::m {
             fun call(val: bool) {}
             spec call { 
                 <error descr="Invalid argument to '+': expected integer type, but found 'bool'">val</error> + 1;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test type check function result in func spec`() = checkByText("""
+    fun `test type check function result in func spec`() = checkByText(
+        """
         module 0x1::m {
             fun call(): bool { true }
             spec call {
                 <error descr="Invalid argument to '+': expected integer type, but found 'bool'">result</error> + 1;
             }
         }        
-    """)
+    """
+    )
 
-        fun `test spec vector slice`() = checkByText("""
+    fun `test spec vector slice`() = checkByText(
+        """
             module 0x1::m {
                 spec module {
                     let v = vector[true, false];
                     v[0..1];
                 }
             }        
-        """)
+        """
+    )
+
+    fun `test type check imply expr in include`() = checkByText(
+        """
+        module 0x1::m {
+            spec schema Schema {}
+            spec module {
+                include <error descr="Incompatible type 'num', expected 'bool'">1</error> ==> Schema {};
+            } 
+        }        
+    """
+    )
+
+    fun `test incompatible integers to gte`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                1u8 >= <error descr="Incompatible type 'u64', expected 'u8'">1u64</error>;
+            }
+        }        
+    """)
+
+    fun `test bit shift requires u8`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                1 << <error descr="Incompatible type 'u64', expected 'u8'">1000u64</error>;
+            }
+        }        
+    """)
 }

@@ -18,7 +18,7 @@ object MacrosCompletionProvider : MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = MvPsiPatterns.path()
             .andNot(MvPsiPatterns.pathType())
-            .andNot(MvPsiPatterns.schemaRef())
+            .andNot(MvPsiPatterns.schemaLit())
             .andNot(
                 PlatformPatterns.psiElement()
                     .afterLeaf(PlatformPatterns.psiElement(MvElementTypes.COLON_COLON))

@@ -271,7 +271,7 @@ fun processLexicalDeclarations(
             }
 
             Namespace.SCHEMA_FIELD -> {
-                val schema = (scope as? MvSchemaLitExpr)?.path?.maybeSchema
+                val schema = (scope as? MvSchemaLit)?.path?.maybeSchema
                 if (schema != null) {
                     return processor.matchAll(itemVis, schema.fieldBindings)
                 }

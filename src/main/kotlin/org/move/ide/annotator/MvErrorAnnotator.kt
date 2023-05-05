@@ -107,8 +107,9 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                                 }
                             }
                         }
-                        qualItem is MvSchema
-                                && (parent is MvSchemaLitExpr || parent is MvRefExpr) -> {
+                        qualItem is MvSchema && parent is MvSchemaLit -> {
+//                        qualItem is MvSchema
+//                                && (parent is MvSchemaLit || parent is MvRefExpr) -> {
                             val expectedCount = qualItem.typeParameters.size
                             if (realCount != 0) {
                                 // if any type param is passed, inference is disabled, so check fully

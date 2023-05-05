@@ -111,11 +111,9 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
 
         is MvBindingPat -> {
             val msl = this.isMsl()
-//            val inferenceCtx = this.maybeInferenceContext(msl) ?: InferenceContext(msl)
-//            val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
-//            val inferenceCtx = this.inferenceContext(msl)
             val inference = this.inference(msl)
-            val ty = inference?.getPatType(this) ?: TyUnknown
+            // race condition sometimes happens, when file is too big, inference is not finished yet
+            val ty = inference?.getPatTypeOrUnknown(this) ?: TyUnknown
             this.createLookupElementWithIcon()
                 .withTypeText(ty.text(true))
         }
