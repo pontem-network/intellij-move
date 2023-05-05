@@ -9,10 +9,10 @@ import org.move.lang.core.types.infer.*
 data class TyFunction(
     override val item: MvFunctionLike,
     override val substitution: Substitution,
-    val paramTypes: List<Ty>,
+    override val paramTypes: List<Ty>,
     val acquiresTypes: List<Ty>,
-    val retType: Ty,
-) : GenericTy(
+    override val retType: Ty,
+) : TyCallable, GenericTy(
     item,
     substitution,
     mergeFlags(paramTypes) or mergeFlags(acquiresTypes) or retType.flags

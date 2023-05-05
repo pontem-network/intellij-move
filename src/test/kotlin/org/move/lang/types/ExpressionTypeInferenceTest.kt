@@ -407,21 +407,21 @@ module 0x1::main {
         """
     module 0x1::mod {
         public inline fun fold<Accumulator, Element>(elem: Element, func: |Element| Accumulator): Accumulator {
-                                                                    //^ |Element| Accumulator
+                                                                    //^ |Element| -> Accumulator
         }
     }        
     """
     )
 
-//    fun `test lambda expr type`() = testExpr("""
-//    module 0x1::mod {
-//        public inline fun fold<Accumulator, Element>(elem: Element, f: |Element| Accumulator): Accumulator {
-//            let accum = f(elem);
-//            accum;
-//             //^ Accumulator
-//        }
-//    }
-//    """)
+    fun `test lambda expr type`() = testExpr("""
+    module 0x1::mod {
+        public inline fun fold<Accumulator, Element>(elem: Element, f: |Element| Accumulator): Accumulator {
+            let accum = f(elem);
+            accum;
+             //^ Accumulator
+        }
+    }
+    """)
 //
 //    fun `test lambda expr call expr inference`() = testExpr("""
 //    module 0x1::mod {

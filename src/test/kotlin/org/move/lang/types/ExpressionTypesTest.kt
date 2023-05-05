@@ -1158,4 +1158,50 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test lambda expr`() = testExpr("""
+        module 0x1::m {
+            inline fun main<Element>(f: |Element|) {
+                f;
+              //^ |Element| -> ()  
+            }
+        }        
+    """)
+
+    fun `test lambda expr from assigned variable`() = testExpr("""
+        module 0x1::m {
+            inline fun main<Element>(f: |Element|) {
+                let g = f;
+                g;
+              //^ |Element| -> ()  
+            }
+        }        
+    """)
+
+    fun `test lambda expr unit type`() = testExpr("""
+        module 0x1::m {
+            inline fun main<Element>(f: |Element|) {
+                f();
+              //^ ()  
+            }
+        }        
+    """)
+
+    fun `test lambda expr returning type`() = testExpr("""
+        module 0x1::m {
+            inline fun main<Element>(f: |Element| Element) {
+                f();
+              //^ Element  
+            }
+        }        
+    """)
+
+    fun `test lambda expr integer return type`() = testExpr("""
+        module 0x1::m {
+            inline fun main<Element>(e: Element, f: |Element| u8) {
+                f(e);
+              //^ u8  
+            }
+        }        
+    """)
 }

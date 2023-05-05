@@ -251,7 +251,6 @@ class InferenceContext(
         typeErrors.replaceAll { err -> fullyResolveWithOrigins(err) }
         pathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) as GenericTy }
 
-        println("return inference result")
         return InferenceResult(
             patTypes,
             exprTypes,

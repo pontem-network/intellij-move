@@ -13,9 +13,10 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.ty.TyCallable
 import org.move.lang.core.types.ty.TyFunction
+import org.move.lang.core.types.ty.TyLambda
 import org.move.lang.core.types.ty.TyUnknown
-import org.move.lang.core.types.ty.hasTyInfer
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
 import org.move.lang.utils.addToHolder
@@ -108,8 +109,6 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                             }
                         }
                         qualItem is MvSchema && parent is MvSchemaLit -> {
-//                        qualItem is MvSchema
-//                                && (parent is MvSchemaLit || parent is MvRefExpr) -> {
                             val expectedCount = qualItem.typeParameters.size
                             if (realCount != 0) {
                                 // if any type param is passed, inference is disabled, so check fully
@@ -152,16 +151,11 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                 val referenceName = path.referenceName ?: return
                 val item = path.reference?.resolve() ?: return
 
-//                val itemContext = outerFunction.outerItemContext(msl)
-
                 if (item is MvFunction && referenceName in GLOBAL_STORAGE_ACCESS_FUNCTIONS) {
                     val explicitTypeArgs = path.typeArguments
                     val currentModule = callExpr.containingModule ?: return
-//                    val inferenceCtx = callExpr.maybeInferenceContext(false) ?: return
                     for (typeArg in explicitTypeArgs) {
-//                        val typeArgTy = inferenceCtx.getTypeTy(typeArg.type)
                         val typeArgTy = typeArg.type.loweredType(msl)
-//                        val typeArgTy = itemContext.rawType(typeArg.type)
                         if (typeArgTy !is TyUnknown && !typeArgTy.canBeAcquiredInModule(currentModule)) {
                             val typeName = typeArgTy.fullname()
                             MvDiagnostic
@@ -187,9 +181,11 @@ class MvErrorAnnotator : MvAnnotatorBase() {
 
             override fun visitValueArgumentList(arguments: MvValueArgumentList) {
                 val callExpr = arguments.parent as? MvCallExpr ?: return
-                val function = callExpr.path.reference?.resolveWithAliases() as? MvFunctionLike ?: return
+                val msl = callExpr.isMsl()
+                val callTy =
+                    callExpr.inference(msl)?.getCallExprType(callExpr) as? TyCallable ?: return
 
-                val expectedCount = function.parameters.size
+                val expectedCount = callTy.paramTypes.size
                 val realCount = arguments.valueArgumentList.size
                 val errorMessage =
                     "This function takes $expectedCount ${

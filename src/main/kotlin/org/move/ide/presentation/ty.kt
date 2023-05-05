@@ -162,10 +162,11 @@ private fun render(
         }
         is TyLambda -> {
             val params = ty.paramTypes.joinToString(",", "|", "|", transform = r)
-            if (ty.returnType is TyUnit)
-                params
+            val retType = if (ty.retType is TyUnit)
+                "()"
             else
-                "$params ${r(ty.returnType)}"
+                r(ty.retType)
+            "$params -> $retType"
         }
         is TySchema -> {
             val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)

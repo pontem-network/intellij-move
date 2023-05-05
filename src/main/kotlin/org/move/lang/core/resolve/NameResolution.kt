@@ -309,7 +309,7 @@ fun processLexicalDeclarations(
                     }
                     is MvModuleSpecBlock -> processor.matchAll(itemVis, scope.schemaList)
                     is MvScript -> processor.matchAll(itemVis, scope.consts())
-                    is MvFunctionLike -> processor.matchAll(itemVis, scope.valueParamsAsBindings)
+                    is MvFunctionLike -> processor.matchAll(itemVis, scope.allParamsAsBindings)
                     is MvLambdaExpr -> processor.matchAll(itemVis, scope.bindingPatList)
                     is MvItemSpec -> {
                         val item = scope.item

@@ -56,4 +56,12 @@ class ParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) {
             }
         }    
     """)
+
+    fun `test lambda expr expected single parameter`() = checkErrors("""
+        module 0x1::m {
+            inline fun main<Element>(e: Element, f: |Element| u8) {
+                f(<error descr="This function takes 1 parameter but 0 parameters were supplied">)</error>;
+            }
+        }        
+    """)
 }

@@ -284,22 +284,29 @@ class TypeInferenceWalker(
 
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expectation): Ty {
         val path = callExpr.path
-        val genericItem = path.reference?.resolveWithAliases() as? MvFunctionLike
-        val baseTy =
-            genericItem?.let {
-                val (itemTy, _) = ctx.instantiatePath<TyFunction>(path, it)
+        val item = path.reference?.resolveWithAliases()
+        val baseTy = when (item) {
+            is MvFunctionLike -> {
+                val (itemTy, _) = ctx.instantiatePath<TyFunction>(path, item)
                 itemTy
-            } ?: TyFunction.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
-        val funcTy = ctx.resolveTypeVarsIfPossible(baseTy) as TyFunction
+            }
+            is MvBindingPat -> {
+                ctx.getPatType(item) as? TyLambda
+                    ?: TyFunction.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
+            }
+            else -> TyFunction.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
+        }
+        val funcTy = ctx.resolveTypeVarsIfPossible(baseTy) as TyCallable
 
         val expectedInputTys =
             expectedInputsForExpectedOutput(expected, funcTy.retType, funcTy.paramTypes)
 
         inferArgumentTypes(funcTy.paramTypes, expectedInputTys, callExpr.callArgumentExprs)
 
-        ctx.writeAcquiredTypes(callExpr, funcTy.acquiresTypes)
-        ctx.writeCallExprType(callExpr, funcTy)
-
+        if (funcTy is TyFunction) {
+            ctx.writeAcquiredTypes(callExpr, funcTy.acquiresTypes)
+        }
+        ctx.writeCallExprType(callExpr, funcTy as Ty)
         return funcTy.retType
     }
 
