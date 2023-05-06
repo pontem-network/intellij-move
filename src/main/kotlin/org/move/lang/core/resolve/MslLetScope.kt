@@ -4,7 +4,7 @@ import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvLetStmt
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.isPost
+import org.move.lang.core.psi.ext.post
 
 enum class MslLetScope {
     NONE, EXPR_STMT, LET_STMT, LET_POST_STMT;
@@ -16,7 +16,7 @@ val MvElement.mslLetScope: MslLetScope
         val letStmt = this.ancestorOrSelf<MvLetStmt>()
         return when {
             letStmt == null -> MslLetScope.EXPR_STMT
-            letStmt.isPost -> MslLetScope.LET_POST_STMT
+            letStmt.post -> MslLetScope.LET_POST_STMT
             else -> MslLetScope.LET_STMT
         }
     }

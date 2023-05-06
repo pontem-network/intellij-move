@@ -2,11 +2,14 @@ package org.move.ide.formatter.impl
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet.orSet
 import org.move.lang.MoveFile
 import org.move.lang.MvElementTypes.*
 import org.move.lang.core.psi.*
+import org.move.openapiext.document
+import org.move.openapiext.getOffsetPosition
 import com.intellij.psi.tree.TokenSet.create as ts
 
 
@@ -67,6 +70,14 @@ fun ASTNode.isDelimiterOfCurrentBlock(parent: ASTNode?): Boolean {
         LT, GT -> parentType in ANGLE_DELIMITED_BLOCKS
         else -> false
     }
+}
+
+/// Returns null if element does not belong to any file
+val PsiElement.documentLocation: Pair<Int, Int>? get() {
+    val elementOffset = this.textOffset
+    val file = this.containingFile ?: return null
+    val location = file.document?.getOffsetPosition(elementOffset)
+    return location
 }
 
 //val ASTNode.isFlatBraceBlock: Boolean

@@ -1204,4 +1204,24 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test infer let binding pat type in spec block arbitrary order`() = testExpr("""
+        module 0x1::m {
+            spec module {
+                addr;
+                //^ address
+                let addr = @0x1;
+            }
+        }        
+    """)
+
+    fun `test infer let post binding pat type in spec block arbitrary order`() = testExpr("""
+        module 0x1::m {
+            spec module {
+                addr;
+                //^ address
+                let post addr = @0x1;
+            }
+        }        
+    """)
 }

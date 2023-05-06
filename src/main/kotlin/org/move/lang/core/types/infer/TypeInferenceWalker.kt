@@ -67,9 +67,21 @@ class TypeInferenceWalker(
     }
 
     private fun AnyBlock.inferBlockType(expected: Expectation, coerce: Boolean = false): Ty {
-        for (stmt in this.stmtList) {
-            processStatement(stmt)
+        val stmts = when (this) {
+            is MvSpecCodeBlock, is MvModuleSpecBlock -> {
+                // reorder stmts, move let stmts to the top, then let post, then others
+                this.stmtList.sortedBy {
+                    when {
+                        it is MvLetStmt && !it.post -> 0
+                        it is MvLetStmt && it.post -> 1
+                        else -> 2
+                    }
+                }
+            }
+            else -> this.stmtList
         }
+        stmts.forEach { processStatement(it) }
+
         val tailExpr = this.expr
         val expectedTy = expected.onlyHasTy(ctx)
         return if (tailExpr == null) {

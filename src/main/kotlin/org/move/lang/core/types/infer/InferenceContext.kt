@@ -4,6 +4,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.util.CachedValue
 import com.jetbrains.rd.util.concurrentMapOf
 import org.move.cli.settings.pluginDevelopmentMode
+import org.move.ide.formatter.impl.documentLocation
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
@@ -119,11 +120,12 @@ data class InferenceResult(
 internal val MvElement.typeErrorText: String
     get() {
         var text = "${this.elementType} `${this.text}` is never inferred"
-
-        val elementOffset = this.textOffset
-        val file = this.containingFile ?: return text
-        val document = file.document?.getOffsetPosition(elementOffset)
-        document?.let { (line, col) -> text += "\nFile: ${file.toNioPathOrNull()} at ($line, $col)" }
+        val file = this.containingFile
+        if (file != null) {
+            this.documentLocation?.let { (line, col) ->
+                text += "\nFile: ${file.toNioPathOrNull()} at ($line, $col)"
+            }
+        }
 
         val context = when (this) {
             is MvExpr -> this.ancestorStrict<MvStmt>()?.text

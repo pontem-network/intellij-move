@@ -9,9 +9,9 @@ val MvSpecCodeBlock.allLetStmts: List<MvLetStmt> get() = this.childrenOfType()
 fun MvSpecCodeBlock.letStmts(post: Boolean): List<MvLetStmt> {
     val letStmts = this.allLetStmts
     return if (post) {
-        letStmts.filter { it.isPost }
+        letStmts.filter { it.post }
     } else {
-        letStmts.filter { !it.isPost }
+        letStmts.filter { !it.post }
     }
 }
 
