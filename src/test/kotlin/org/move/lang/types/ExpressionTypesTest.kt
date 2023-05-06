@@ -1246,4 +1246,46 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test infer no return lambda expr`() = testExpr("""
+        module 0x1::m {
+            inline fun for_each<Element>(v: vector<Element>, f: |Element|) {}
+            fun main() {
+                for_each(vector[1, 2, 3], |elem| { elem; });
+                                                  //^ integer
+            }
+        }
+    """)
+
+    fun `test infer identity lambda expr`() = testExpr("""
+        module 0x1::m {
+            inline fun for_each<Element>(v: vector<Element>, f: |Element| Element) {}
+            fun main() {
+                for_each(vector[1, 2, 3], |elem| elem);
+                                                  //^ integer
+            }
+        }
+    """)
+
+    fun `test infer two param lambda expr`() = testExpr("""
+        module 0x1::m {
+            inline fun for_each<Element>(v: vector<Element>, f: |Element, Element|) {}
+            fun main() {
+                for_each(vector[1, 2, 3], |elem1, elem2| { elem2; });
+                                                          //^ integer
+            }
+        }
+    """)
+
+    fun `test infer single param lambda two param expected`() = testExpr(
+        """
+        module 0x1::m {
+            inline fun for_each<Element>(v: vector<Element>, f: |Element, Element|) {}
+            fun main() {
+                for_each(vector[1, 2, 3], |elem| { elem; });
+                                                    //^ integer
+            }
+        }
+    """
+    )
 }

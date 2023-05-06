@@ -194,6 +194,7 @@ class TypeInferenceWalker(
             is MvDerefExpr -> inferDerefExprTy(expr)
             is MvLitExpr -> inferLitExprTy(expr)
             is MvTupleLitExpr -> inferTupleLitExprTy(expr, expected)
+            is MvLambdaExpr -> inferLambdaExpr(expr, expected)
 
             is MvMoveExpr -> expr.expr?.inferType() ?: TyUnknown
             is MvCopyExpr -> expr.expr?.inferType() ?: TyUnknown
@@ -243,7 +244,6 @@ class TypeInferenceWalker(
                 TyUnit
             }
             is MvSpecVisRestrictedExpr -> expr.expr?.inferType(expected) ?: TyUnknown
-//            is MvSchemaLitExpr -> inferSchemaLitExprTy(expr)
             else ->
                 if (expr.project.pluginDevelopmentMode) error(expr.typeErrorText) else TyUnknown
         }
@@ -292,6 +292,19 @@ class TypeInferenceWalker(
         val innerExprTy = inferExprTy(innerExpr, hint)
         val mutabilities = RefPermissions.valueOf(borrowExpr.isMut)
         return TyReference(innerExprTy, mutabilities, ctx.msl)
+    }
+
+    private fun inferLambdaExpr(lambdaExpr: MvLambdaExpr, expected: Expectation): Ty {
+        val bindings = lambdaExpr.bindingPatList
+        val lambdaTy =
+            (expected.onlyHasTy(this.ctx) as? TyLambda) ?: TyLambda.unknown(bindings.size)
+
+        for ((i, binding) in lambdaExpr.bindingPatList.withIndex()) {
+            val ty = lambdaTy.paramTypes.getOrElse(i) { TyUnknown }
+            ctx.writePatTy(binding, ty)
+        }
+        lambdaExpr.expr?.inferTypeCoercableTo(lambdaTy.retType)
+        return TyUnknown
     }
 
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expectation): Ty {

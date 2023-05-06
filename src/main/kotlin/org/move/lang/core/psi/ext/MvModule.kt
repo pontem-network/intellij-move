@@ -160,6 +160,7 @@ fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
                 "spec native fun concat<T>(v1: vector<T>, v2: vector<T>): vector<T>;",
                 project
             ),
+            builtinSpecFunction("spec native fun vec<T>(_: T): vector<T>;", project),
             builtinSpecFunction("spec native fun len<T>(_: vector<T>): num;", project),
             builtinSpecFunction("spec native fun contains<T>(v: vector<T>, e: T): bool;", project),
             builtinSpecFunction("spec native fun index_of<T>(_: vector<T>, _: T): num;", project),
