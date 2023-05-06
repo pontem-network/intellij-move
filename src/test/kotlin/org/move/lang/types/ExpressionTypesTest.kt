@@ -2,125 +2,152 @@ package org.move.lang.types
 
 import org.move.utils.tests.types.TypificationTestCase
 
-class ExpressionTypesTest: TypificationTestCase() {
-    fun `test add expr`() = testExpr("""
+class ExpressionTypesTest : TypificationTestCase() {
+    fun `test add expr`() = testExpr(
+        """
     script {
         fun main() {
             (1u8 + 1u8);
           //^ u8
         }
     }    
-    """)
+    """
+    )
 
-    fun `test sub expr`() = testExpr("""
+    fun `test sub expr`() = testExpr(
+        """
     script {
         fun main() {
             (1u8 - 1u8);
           //^ u8
         }
     }    
-    """)
+    """
+    )
 
-    fun `test mul expr`() = testExpr("""
+    fun `test mul expr`() = testExpr(
+        """
     script {
         fun main() {
             (1u8 * 1u8);
           //^ u8
         }
     }    
-    """)
+    """
+    )
 
-    fun `test div expr`() = testExpr("""
+    fun `test div expr`() = testExpr(
+        """
     script {
         fun main() {
             (1u8 / 1u8);
           //^ u8
         }
     }    
-    """)
+    """
+    )
 
-    fun `test mod expr`() = testExpr("""
+    fun `test mod expr`() = testExpr(
+        """
     script {
         fun main() {
             (1u8 % 10);
           //^ u8
         }
     }    
-    """)
+    """
+    )
 
-    fun `test bang expr`() = testExpr("""
+    fun `test bang expr`() = testExpr(
+        """
     script {
         fun main() {
             !true;
           //^ bool
         }
     }    
-    """)
+    """
+    )
 
-    fun `test less expr`() = testExpr("""
+    fun `test less expr`() = testExpr(
+        """
     script {
         fun main() {
             (1 < 1);
           //^ bool
         }
     }    
-    """)
+    """
+    )
 
-    fun `test less equal expr`() = testExpr("""
+    fun `test less equal expr`() = testExpr(
+        """
     script {
         fun main() {
             (1 <= 1);
           //^ bool
         }
     }    
-    """)
+    """
+    )
 
-    fun `test greater expr`() = testExpr("""
+    fun `test greater expr`() = testExpr(
+        """
     script {
         fun main() {
             (1 > 1);
           //^ bool
         }
     }    
-    """)
+    """
+    )
 
-    fun `test greater equal expr`() = testExpr("""
+    fun `test greater equal expr`() = testExpr(
+        """
     script {
         fun main() {
             (1 >= 1);
           //^ bool
         }
     }    
-    """)
+    """
+    )
 
-    fun `test cast expr`() = testExpr("""
+    fun `test cast expr`() = testExpr(
+        """
     script {
         fun main() {
             (1 as u8);
           //^ u8
         }
     }    
-    """)
+    """
+    )
 
-    fun `test copy expr`() = testExpr("""
+    fun `test copy expr`() = testExpr(
+        """
     script {
         fun main() {
             copy 1u8;
           //^ u8
         }
     }    
-    """)
+    """
+    )
 
-    fun `test move expr`() = testExpr("""
+    fun `test move expr`() = testExpr(
+        """
     script {
         fun main() {
             move 1u8;
           //^ u8
         }
     }    
-    """)
+    """
+    )
 
-    fun `test struct literal expr with unresolved type param`() = testExpr("""
+    fun `test struct literal expr with unresolved type param`() = testExpr(
+        """
     module 0x1::M {
         struct R<CoinType> {}
         fun main() {
@@ -128,36 +155,44 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ 0x1::M::R<<unknown>>  
         }
     }
-    """)
+    """
+    )
 
-    fun `test borrow expr`() = testExpr("""
+    fun `test borrow expr`() = testExpr(
+        """
     module 0x1::M {
         fun main(s: signer) {
             &s;
           //^ &signer 
         }
     }    
-    """)
+    """
+    )
 
-    fun `test mutable borrow expr`() = testExpr("""
+    fun `test mutable borrow expr`() = testExpr(
+        """
     module 0x1::M {
         fun main(s: signer) {
             &mut s;
           //^ &mut signer 
         }
     }    
-    """)
+    """
+    )
 
-    fun `test deref expr`() = testExpr("""
+    fun `test deref expr`() = testExpr(
+        """
     module 0x1::M {
         fun main(s: &signer) {
             *s;
           //^ signer 
         }
     }    
-    """)
+    """
+    )
 
-    fun `test dot access to primitive field`() = testExpr("""
+    fun `test dot access to primitive field`() = testExpr(
+        """
     module 0x1::M {
         struct S { addr: address }
         fun main() {
@@ -166,9 +201,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ address 
         }
     }    
-    """)
+    """
+    )
 
-    fun `test dot access to field with struct type`() = testExpr("""
+    fun `test dot access to field with struct type`() = testExpr(
+        """
     module 0x1::M {
         struct Addr {}
         struct S { addr: Addr }
@@ -178,9 +215,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ 0x1::M::Addr 
         }
     }    
-    """)
+    """
+    )
 
-    fun `test borrow expr of dot access`() = testExpr("""
+    fun `test borrow expr of dot access`() = testExpr(
+        """
     module 0x1::M {
         struct Addr {}
         struct S { addr: Addr }
@@ -190,27 +229,33 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ &mut 0x1::M::Addr 
         }
     }    
-    """)
+    """
+    )
 
-    fun `test add expr with untyped and typed integer`() = testExpr("""
+    fun `test add expr with untyped and typed integer`() = testExpr(
+        """
     module 0x1::M {
         fun main() {
             (1 + 1u8);
           //^ u8  
         }
     }    
-    """)
+    """
+    )
 
-    fun `test add expr with untyped and typed integer reversed`() = testExpr("""
+    fun `test add expr with untyped and typed integer reversed`() = testExpr(
+        """
     module 0x1::M {
         fun main() {
             (1u8 + 1);
           //^ u8  
         }
     }    
-    """)
+    """
+    )
 
-    fun `test struct field as vector`() = testExpr("""
+    fun `test struct field as vector`() = testExpr(
+        """
     module 0x1::M {
         struct NFT {}
         struct Collection { nfts: vector<NFT> }
@@ -219,9 +264,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ vector<0x1::M::NFT>  
         }
     }    
-    """)
+    """
+    )
 
-    fun `test if expr`() = testExpr("""
+    fun `test if expr`() = testExpr(
+        """
     module 0x1::M {
         fun m() {
             let a = if (true) 1 else 2;
@@ -229,9 +276,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ integer 
         }
     }    
-    """)
+    """
+    )
 
-    fun `test if expr without else`() = testExpr("""
+    fun `test if expr without else`() = testExpr(
+        """
     module 0x1::M {
         fun m() {
             let a = if (true) 1;
@@ -239,9 +288,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ () 
         }
     }    
-    """)
+    """
+    )
 
-    fun `test if expr with incompatible else`() = testExpr("""
+    fun `test if expr with incompatible else`() = testExpr(
+        """
     module 0x1::M {
         fun m() {
             let a = if (true) 1 else true;
@@ -249,9 +300,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ <unknown>
         }
     }    
-    """)
+    """
+    )
 
-    fun `test return type of unit returning function`() = testExpr("""
+    fun `test return type of unit returning function`() = testExpr(
+        """
     module 0x1::M {
         fun call(): () {}
         fun m() {
@@ -259,9 +312,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ ()
         }
     }    
-    """)
+    """
+    )
 
-    fun `test if else with references coerced to less specific one`() = testExpr("""
+    fun `test if else with references coerced to less specific one`() = testExpr(
+        """
     module 0x1::M {
         struct S {}
         fun m(s: &S, s_mut: &mut S) {
@@ -270,27 +325,33 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ &0x1::M::S  
         }
     }    
-    """)
+    """
+    )
 
-    fun `test x string`() = testExpr("""
+    fun `test x string`() = testExpr(
+        """
     module 0x1::M {
         fun m() {
             x"1234";
             //^ vector<u8>
         }
     }    
-    """)
+    """
+    )
 
-    fun `test msl num`() = testExpr("""
+    fun `test msl num`() = testExpr(
+        """
     module 0x1::M {
         spec module {
             1;
           //^ num  
         }
     }    
-    """)
+    """
+    )
 
-    fun `test msl callable num`() = testExpr("""
+    fun `test msl callable num`() = testExpr(
+        """
     module 0x1::M {
         fun call(): u8 { 1 }
         spec module {
@@ -298,9 +359,11 @@ class ExpressionTypesTest: TypificationTestCase() {
             //^ num
         }
     }    
-    """)
+    """
+    )
 
-    fun `test msl ref is type`() = testExpr("""
+    fun `test msl ref is type`() = testExpr(
+        """
     module 0x1::M {
         struct S {}
         fun ref(): &S {}
@@ -310,9 +373,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ 0x1::M::S
         }
     }    
-    """)
+    """
+    )
 
-    fun `test msl mut ref is type`() = testExpr("""
+    fun `test msl mut ref is type`() = testExpr(
+        """
     module 0x1::M {
         struct S {}
         fun ref_mut(): &mut S {}
@@ -322,9 +387,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ 0x1::M::S
         }
     }    
-    """)
+    """
+    )
 
-    fun `test type of fun param in spec`() = testExpr("""
+    fun `test type of fun param in spec`() = testExpr(
+        """
     module 0x1::M {
         fun call(addr: address) {}
         spec call {
@@ -332,9 +399,11 @@ class ExpressionTypesTest: TypificationTestCase() {
             //^ address
         }
     }    
-    """)
+    """
+    )
 
-    fun `test type of u8 fun param in spec`() = testExpr("""
+    fun `test type of u8 fun param in spec`() = testExpr(
+        """
     module 0x1::M {
         fun call(n: u8) {}
         spec call {
@@ -342,7 +411,8 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ num  
         }
     }    
-    """)
+    """
+    )
 
 //    fun `test type of result variable in fun spec is return type`() = testExpr("""
 //    module 0x1::M {
@@ -354,7 +424,8 @@ class ExpressionTypesTest: TypificationTestCase() {
 //    }
 //    """)
 
-    fun `test old function type for spec`() = testExpr("""
+    fun `test old function type for spec`() = testExpr(
+        """
     module 0x1::M {
         struct S {}
         fun call(a: S) {}
@@ -363,9 +434,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ 0x1::M::S 
         }
     }    
-    """)
+    """
+    )
 
-    fun `test global function type for spec`() = testExpr("""
+    fun `test global function type for spec`() = testExpr(
+        """
     module 0x1::M {
         struct S has key {}
         spec module {
@@ -374,9 +447,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ 0x1::M::S 
         }
     }    
-    """)
+    """
+    )
 
-    fun `test const int in spec`() = testExpr("""
+    fun `test const int in spec`() = testExpr(
+        """
     module 0x1::M {
         const MY_INT: u8 = 1;
         spec module {
@@ -384,9 +459,11 @@ class ExpressionTypesTest: TypificationTestCase() {
             //^ num
         }
     }    
-    """)
+    """
+    )
 
-    fun `test schema field type`() = testExpr("""
+    fun `test schema field type`() = testExpr(
+        """
     module 0x1::M {
         spec schema SS {
             val: num;
@@ -394,9 +471,11 @@ class ExpressionTypesTest: TypificationTestCase() {
             //^ num
         }
     }    
-    """)
+    """
+    )
 
-    fun `test struct field vector_u8 in spec`() = testExpr("""
+    fun `test struct field vector_u8 in spec`() = testExpr(
+        """
     module 0x1::M {
         struct S { vec: vector<u8> } 
         spec module {
@@ -405,18 +484,22 @@ class ExpressionTypesTest: TypificationTestCase() {
             //^ vector<num>
         }
     }    
-    """)
+    """
+    )
 
-    fun `test tuple type`() = testExpr("""
+    fun `test tuple type`() = testExpr(
+        """
     module 0x1::M {
         fun m() {
             (1u64, 1u64);
           //^ (u64, u64)  
         }
     }    
-    """)
+    """
+    )
 
-    fun `test explicit generic type struct`() = testExpr("""
+    fun `test explicit generic type struct`() = testExpr(
+        """
     module 0x1::M {
         struct Option<Element> {}
         fun call() {
@@ -425,18 +508,22 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ 0x1::M::Option<u8>  
         }
     }        
-    """)
+    """
+    )
 
-    fun `test type of plus with invalid arguments`() = testExpr("""
+    fun `test type of plus with invalid arguments`() = testExpr(
+        """
     module 0x1::M {
         fun add(a: bool, b: bool) {
             (a + b);
           //^ <unknown>  
         }
     }    
-    """)
+    """
+    )
 
-    fun `test struct lit with generic of type with incorrect abilities`() = testExpr("""
+    fun `test struct lit with generic of type with incorrect abilities`() = testExpr(
+        """
     module 0x1::M {
         struct S<phantom Message: store> {}
         struct R has copy {  }
@@ -445,9 +532,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ 0x1::M::S<0x1::M::R>  
         }
     }    
-    """)
+    """
+    )
 
-    fun `test while expr returns unit`() = testExpr("""
+    fun `test while expr returns unit`() = testExpr(
+        """
     module 0x1::M {
         fun main() {
             let a = while (true) { 1; };
@@ -455,9 +544,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ ()  
         }
     }    
-    """)
+    """
+    )
 
-    fun `test return value from block`() = testExpr("""
+    fun `test return value from block`() = testExpr(
+        """
     module 0x1::M {
         fun main() {
             let a = { 1u8 };
@@ -465,18 +556,22 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ u8  
         }
     }    
-    """)
+    """
+    )
 
-    fun `test if else return`() = testExpr("""
+    fun `test if else return`() = testExpr(
+        """
     module 0x1::M {
         fun main(): u8 {
             if (true) { return 1 } else { return 2 }
           //^ <never>  
         }
     }    
-    """)
+    """
+    )
 
-    fun `test unpack struct into field`() = testExpr("""
+    fun `test unpack struct into field`() = testExpr(
+        """
         module 0x1::M {
         struct S { val: u8 }
         fun s(): S { S { val: 10 } }
@@ -486,9 +581,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ 0x1::M::S   
         }
     }            
-    """)
+    """
+    )
 
-    fun `test unpack tuple of structs`() = testExpr("""
+    fun `test unpack tuple of structs`() = testExpr(
+        """
         module 0x1::M {
         struct S { val: u8 }
         fun s(): (S, S) { (S { val: 10 }, S { val: 10 }) }
@@ -498,9 +595,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ 0x1::M::S   
         }
     }            
-    """)
+    """
+    )
 
-    fun `test integer inference with spec blocks inside block`() = testExpr("""
+    fun `test integer inference with spec blocks inside block`() = testExpr(
+        """
     module 0x1::main {
         spec fun get_num(): num { 1 }
         fun main() {
@@ -512,9 +611,11 @@ class ExpressionTypesTest: TypificationTestCase() {
             };
         }
     }    
-    """)
+    """
+    )
 
-    fun `test integer inference with spec blocks outside block`() = testExpr("""
+    fun `test integer inference with spec blocks outside block`() = testExpr(
+        """
     module 0x1::main {
         spec fun get_num(): num { 1 }
         fun main() {
@@ -527,9 +628,11 @@ class ExpressionTypesTest: TypificationTestCase() {
             //^ u8
         }
     }    
-    """)
+    """
+    )
 
-    fun `test vector lit with explicit type`() = testExpr("""
+    fun `test vector lit with explicit type`() = testExpr(
+        """
     module 0x1::main {
         fun main() {
             let vv = vector<u8>[];
@@ -537,9 +640,11 @@ class ExpressionTypesTest: TypificationTestCase() {
            //^ vector<u8>   
         }
     }        
-    """)
+    """
+    )
 
-    fun `test vector lit with inferred type`() = testExpr("""
+    fun `test vector lit with inferred type`() = testExpr(
+        """
     module 0x1::main {
         fun main() {
             let vv = vector[1u8];
@@ -547,9 +652,11 @@ class ExpressionTypesTest: TypificationTestCase() {
            //^ vector<u8>   
         }
     }        
-    """)
+    """
+    )
 
-    fun `test vector lit with inferred integer type`() = testExpr("""
+    fun `test vector lit with inferred integer type`() = testExpr(
+        """
     module 0x1::main {
         fun main() {
             let vv = vector[1];
@@ -557,9 +664,11 @@ class ExpressionTypesTest: TypificationTestCase() {
            //^ vector<integer>   
         }
     }        
-    """)
+    """
+    )
 
-    fun `test vector lit with inferred type from call expr`() = testExpr("""
+    fun `test vector lit with inferred type from call expr`() = testExpr(
+        """
     module 0x1::main {
         fun call(a: vector<u8>) {}
         fun main() {
@@ -569,9 +678,11 @@ class ExpressionTypesTest: TypificationTestCase() {
            //^ vector<u8>   
         }
     }        
-    """)
+    """
+    )
 
-    fun `test vector lit with explicit type and type error`() = testExpr("""
+    fun `test vector lit with explicit type and type error`() = testExpr(
+        """
     module 0x1::main {
         fun main() {
             let vv = vector<u8>[1u64];
@@ -579,9 +690,11 @@ class ExpressionTypesTest: TypificationTestCase() {
            //^ vector<u8>   
         }
     }        
-    """)
+    """
+    )
 
-    fun `test vector lit with implicit type and type error`() = testExpr("""
+    fun `test vector lit with implicit type and type error`() = testExpr(
+        """
     module 0x1::main {
         fun main() {
             let vv = vector[1u8, 1u64];
@@ -589,9 +702,11 @@ class ExpressionTypesTest: TypificationTestCase() {
            //^ vector<u8>   
         }
     }        
-    """)
+    """
+    )
 
-    fun `test vector lit inside specs`() = testExpr("""
+    fun `test vector lit inside specs`() = testExpr(
+        """
     module 0x1::main {
         spec module {
             let vv = vector[1];
@@ -599,9 +714,11 @@ class ExpressionTypesTest: TypificationTestCase() {
            //^ vector<num>   
         }
     }        
-    """)
+    """
+    )
 
-    fun `test call expr with explicit type and type error`() = testExpr("""
+    fun `test call expr with explicit type and type error`() = testExpr(
+        """
     module 0x1::main {
         fun call<T>(a: T, b: T): T {
             b        
@@ -612,9 +729,11 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ u8  
         }    
     }        
-    """)
+    """
+    )
 
-    fun `test call expr with implicit type and type error`() = testExpr("""
+    fun `test call expr with implicit type and type error`() = testExpr(
+        """
     module 0x1::main {
         fun call<T>(a: T, b: T): T {
             b        
@@ -625,7 +744,8 @@ class ExpressionTypesTest: TypificationTestCase() {
           //^ u8  
         }    
     }        
-    """)
+    """
+    )
 
     fun `test simple map vector field`() = testExpr(
         """
@@ -653,7 +773,8 @@ module 0x1::simple_map {
     """
     )
 
-    fun `test recursive type`() = testExpr("""
+    fun `test recursive type`() = testExpr(
+        """
 module 0x1::main {
     struct S { val: S }
     fun main() {
@@ -662,9 +783,11 @@ module 0x1::main {
       //^ 0x1::main::S  
     }
 }        
-    """)
+    """
+    )
 
-    fun `test recursive type with nested struct`() = testExpr("""
+    fun `test recursive type with nested struct`() = testExpr(
+        """
 module 0x1::main {
     struct S { val: vector<vector<S>> }
     fun main() {
@@ -673,9 +796,11 @@ module 0x1::main {
       //^ 0x1::main::S  
     }
 }        
-    """)
+    """
+    )
 
-    fun `test nested struct literal explicit type`() = testExpr("""
+    fun `test nested struct literal explicit type`() = testExpr(
+        """
 module 0x1::main {
     struct V<T> { val: T }
     struct S<T> { val: V<T> }
@@ -685,9 +810,11 @@ module 0x1::main {
       //^ 0x1::main::S<u64>  
     }
 }        
-    """)
+    """
+    )
 
-    fun `test nested struct literal inferred type`() = testExpr("""
+    fun `test nested struct literal inferred type`() = testExpr(
+        """
 module 0x1::main {
     struct V<T> { val: T }
     struct S<T> { val: V<T> }
@@ -697,16 +824,19 @@ module 0x1::main {
       //^ 0x1::main::S<u64>  
     }
 }        
-    """)
+    """
+    )
 
-    fun `test parens type`() = testExpr("""
+    fun `test parens type`() = testExpr(
+        """
 module 0x1::main {
     fun call(a: (u8)) {
         a;
       //^ u8  
     }
 }        
-    """)
+    """
+    )
 
     fun `test imported table with alias`() = testExpr(
         """
@@ -728,7 +858,8 @@ module 0x1::pool {
     """
     )
 
-    fun `test call expr from alias`() = testExpr("""
+    fun `test call expr from alias`() = testExpr(
+        """
 module 0x1::string {
     public fun call(): u8 {}
 }        
@@ -740,9 +871,11 @@ module 0x1::main {
       //^ u8  
     }
 }
-    """)
+    """
+    )
 
-    fun `test binding inside if block`() = testExpr("""
+    fun `test binding inside if block`() = testExpr(
+        """
 module 0x1::main {
     fun main() {
         if (true) {
@@ -752,9 +885,11 @@ module 0x1::main {
         }
     }
 }        
-    """)
+    """
+    )
 
-    fun `test binding inside else block`() = testExpr("""
+    fun `test binding inside else block`() = testExpr(
+        """
 module 0x1::main {
     fun main() {
         if (true) {} else {
@@ -764,9 +899,11 @@ module 0x1::main {
         }
     }
 }        
-    """)
+    """
+    )
 
-    fun `test binding inside code block`() = testExpr("""
+    fun `test binding inside code block`() = testExpr(
+        """
 module 0x1::main {
     fun main() {
         let b = {
@@ -776,54 +913,66 @@ module 0x1::main {
         };
     }
 }        
-    """)
+    """
+    )
 
-    fun `test bit and`() = testExpr("""
+    fun `test bit and`() = testExpr(
+        """
 module 0x1::main {
     fun main() {
         (1 & 1);
       //^ integer  
     }
 }        
-    """)
+    """
+    )
 
-    fun `test bit or`() = testExpr("""
+    fun `test bit or`() = testExpr(
+        """
 module 0x1::main {
     fun main() {
         (1 | 1);
       //^ integer  
     }
 }        
-    """)
+    """
+    )
 
-    fun `test bit shift left`() = testExpr("""
+    fun `test bit shift left`() = testExpr(
+        """
 module 0x1::main {
     fun main() {
         (1 << 1);
       //^ integer  
     }
 }        
-    """)
+    """
+    )
 
-    fun `test bit shift right`() = testExpr("""
+    fun `test bit shift right`() = testExpr(
+        """
 module 0x1::main {
     fun main() {
         (1 >> 1);
       //^ integer  
     }
 }        
-    """)
+    """
+    )
 
-    fun `test bit ^`() = testExpr("""
+    fun `test bit ^`() = testExpr(
+        """
 module 0x1::main {
     fun main() {
         (1 ^ 1);
       //^ integer  
     }
 }        
-    """)
+    """
+    )
 
-    fun `test infer result for spec`() = testExpr("""
+    fun `test infer result for spec`() = testExpr(
+        """
 module 0x1::main {
     struct S { val: u8 }
     fun call(): S { S { val: 1 } }
@@ -832,9 +981,11 @@ module 0x1::main {
                       //^ num
     }
 }        
-    """)
+    """
+    )
 
-    fun `test struct unpacking type`() = testExpr("""
+    fun `test struct unpacking type`() = testExpr(
+        """
         module 0x1::m {
             struct S<CoinType> { amount: CoinType }
             fun call<CallCoinType>(s: S<CallCoinType>) {
@@ -843,9 +994,11 @@ module 0x1::main {
                 //^ CallCoinType
             }
         }               
-    """)
+    """
+    )
 
-    fun `test type of binding of tuple of single variable`() = testExpr("""
+    fun `test type of binding of tuple of single variable`() = testExpr(
+        """
         module 0x1::m {
             fun call() {
                 let (a) = 1;
@@ -853,9 +1006,11 @@ module 0x1::main {
               //^ integer  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test type of binding of tuple of single variable with comma`() = testExpr("""
+    fun `test type of binding of tuple of single variable with comma`() = testExpr(
+        """
         module 0x1::m {
             fun call() {
                 let (a,) = 1;
@@ -863,9 +1018,11 @@ module 0x1::main {
               //^ integer  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test deref type with generics`() = testExpr("""
+    fun `test deref type with generics`() = testExpr(
+        """
         module 0x1::m {
             struct Coin<CoinType> { val: u8 }
             struct BTC {}
@@ -876,9 +1033,11 @@ module 0x1::main {
               //^ &&mut 0x1::m::Coin<_>  
             }        
         } 
-    """)
+    """
+    )
 
-    fun `test infer integer with explicit tuple literal type in let statement`() = testExpr("""
+    fun `test infer integer with explicit tuple literal type in let statement`() = testExpr(
+        """
         module 0x1::m {
             fun call<Element>(v: Element): Element {}
             fun main() {
@@ -888,9 +1047,11 @@ module 0x1::main {
               //^ u8  
             }        
         } 
-    """)
+    """
+    )
 
-    fun `test infer integer with explicit tuple literal type in assignment`() = testExpr("""
+    fun `test infer integer with explicit tuple literal type in assignment`() = testExpr(
+        """
         module 0x1::m {
             fun call<Element>(v: Element): Element {}
             fun main() {
@@ -901,9 +1062,11 @@ module 0x1::main {
               //^ u8  
             }        
         } 
-    """)
+    """
+    )
 
-    fun `test integer parameter has type num in inline spec block`() = testExpr("""
+    fun `test integer parameter has type num in inline spec block`() = testExpr(
+        """
         module 0x1::m {
             fun main(degree: u8) {
                 spec {
@@ -912,9 +1075,11 @@ module 0x1::main {
                 }
             }
         }        
-    """)
+    """
+    )
 
-    fun `test continue expr never type`() = testExpr("""
+    fun `test continue expr never type`() = testExpr(
+        """
         module 0x1::m {
             fun main() {
                 while (true) {
@@ -923,9 +1088,11 @@ module 0x1::main {
                 }
             }
         }        
-    """)
+    """
+    )
 
-    fun `test break expr never type`() = testExpr("""
+    fun `test break expr never type`() = testExpr(
+        """
         module 0x1::m {
             fun main() {
                 while (true) {
@@ -934,18 +1101,22 @@ module 0x1::main {
                 }
             }
         }        
-    """)
+    """
+    )
 
-    fun `test abort expr never type`() = testExpr("""
+    fun `test abort expr never type`() = testExpr(
+        """
         module 0x1::m {
             fun main() {
                 abort 1  
                 //^ <never>
             }
         }        
-    """)
+    """
+    )
 
-    fun `test modifies expr`() = testExpr("""
+    fun `test modifies expr`() = testExpr(
+        """
         module 0x1::m {
             struct Coin has key {}
             spec module {
@@ -953,18 +1124,22 @@ module 0x1::main {
                        //^ 0x1::m::Coin
             }
         }        
-    """)
+    """
+    )
 
-    fun `test builtin const in spec`() = testExpr("""
+    fun `test builtin const in spec`() = testExpr(
+        """
         module 0x1::m {
             spec module {
                 assert 1 <= MAX_U128;
                                //^ num
             }
         }        
-    """)
+    """
+    )
 
-    fun `test num type`() = testExpr("""
+    fun `test num type`() = testExpr(
+        """
         module 0x1::m {
             spec module {
                 let a: num;
@@ -972,9 +1147,11 @@ module 0x1::main {
               //^ num  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test result of return type of function spec`() = testExpr("""
+    fun `test result of return type of function spec`() = testExpr(
+        """
         module 0x1::m {
             public fun get_fees_distribution(): u128 {
                 1
@@ -985,9 +1162,11 @@ module 0x1::main {
                          //^ num
             }
         }
-    """)
+    """
+    )
 
-    fun `test result_1 of return tuple in function spec`() = testExpr("""
+    fun `test result_1 of return tuple in function spec`() = testExpr(
+        """
         module 0x1::m {
             public fun get_fees_distribution(): (u128, u128) {
                 (1, 1)
@@ -998,9 +1177,11 @@ module 0x1::main {
                          //^ num
             }
         }
-    """)
+    """
+    )
 
-    fun `test result_2 of return tuple in function spec`() = testExpr("""
+    fun `test result_2 of return tuple in function spec`() = testExpr(
+        """
         module 0x1::m {
             public fun get_fees_distribution(): (u128, bool) {
                 (1, false)
@@ -1011,9 +1192,11 @@ module 0x1::main {
                          //^ bool
             }
         }
-    """)
+    """
+    )
 
-    fun `test spec index expr`() = testExpr("""
+    fun `test spec index expr`() = testExpr(
+        """
         module 0x1::m {
             spec module {
                 let v = vector<bool>[false];
@@ -1022,9 +1205,11 @@ module 0x1::main {
               //^ bool  
             }
         }     
-    """)
+    """
+    )
 
-    fun `test range expr`() = testExpr("""
+    fun `test range expr`() = testExpr(
+        """
         module 0x1::m {
             spec module {
                 let a = 1..10;
@@ -1032,9 +1217,11 @@ module 0x1::main {
               //^ range   
             }
         }        
-    """)
+    """
+    )
 
-    fun `test forall quantifier expr`() = testExpr("""
+    fun `test forall quantifier expr`() = testExpr(
+        """
         module 0x1::m {
             fun call() {}
             spec call {
@@ -1043,9 +1230,11 @@ module 0x1::main {
               //^ bool  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test forall quantifier range expr`() = testExpr("""
+    fun `test forall quantifier range expr`() = testExpr(
+        """
         module 0x1::m {
             fun call() {}
             spec call {
@@ -1053,9 +1242,11 @@ module 0x1::main {
                             //^ range
             }
         }        
-    """)
+    """
+    )
 
-    fun `test forall quantifier range binding expr`() = testExpr("""
+    fun `test forall quantifier range binding expr`() = testExpr(
+        """
         module 0x1::m {
             fun call() {}
             spec call {
@@ -1063,9 +1254,11 @@ module 0x1::main {
                                  //^ num
             }
         }        
-    """)
+    """
+    )
 
-    fun `test forall quantifier range vector binding expr`() = testExpr("""
+    fun `test forall quantifier range vector binding expr`() = testExpr(
+        """
         module 0x1::m {
             fun call() {}
             spec call {
@@ -1073,9 +1266,11 @@ module 0x1::main {
                                                //^ bool
             }
         }        
-    """)
+    """
+    )
 
-    fun `test forall quantifier type binding expr`() = testExpr("""
+    fun `test forall quantifier type binding expr`() = testExpr(
+        """
         module 0x1::m {
             fun call() {}
             spec call {
@@ -1083,9 +1278,11 @@ module 0x1::main {
                               //^ num
             }
         }        
-    """)
+    """
+    )
 
-    fun `test exists quantifier expr`() = testExpr("""
+    fun `test exists quantifier expr`() = testExpr(
+        """
         module 0x1::m {
             fun call() {}
             spec call {
@@ -1094,9 +1291,11 @@ module 0x1::main {
               //^ bool  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test spec expr with visibility inferred`() = testExpr("""
+    fun `test spec expr with visibility inferred`() = testExpr(
+        """
         module 0x1::m {
             spec module {
                 let i = false;
@@ -1104,9 +1303,11 @@ module 0x1::main {
                                       //^ bool
             }
         }        
-    """)
+    """
+    )
 
-    fun `test spec vector slice`() = testExpr("""
+    fun `test spec vector slice`() = testExpr(
+        """
         module 0x1::m {
             spec module {
                 let v = vector[true, false];
@@ -1115,9 +1316,11 @@ module 0x1::main {
                 //^ vector<bool>
             }
         }        
-    """)
+    """
+    )
 
-    fun `test integer type of shift left`() = testExpr("""
+    fun `test integer type of shift left`() = testExpr(
+        """
         module 0x1::m {
             fun main() {
                 let a = 1u8;
@@ -1125,9 +1328,11 @@ module 0x1::main {
               //^ u8  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test integer type of shift right`() = testExpr("""
+    fun `test integer type of shift right`() = testExpr(
+        """
         module 0x1::m {
             fun main() {
                 let a = 1u8;
@@ -1135,9 +1340,11 @@ module 0x1::main {
               //^ u8  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test integer type inference with ordering expr`() = testExpr("""
+    fun `test integer type inference with ordering expr`() = testExpr(
+        """
         module 0x1::m {
             fun main() {
                 let a = 1;
@@ -1146,9 +1353,11 @@ module 0x1::main {
               //^ u8  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test integer type inference with equality expr`() = testExpr("""
+    fun `test integer type inference with equality expr`() = testExpr(
+        """
         module 0x1::m {
             fun main() {
                 let a = 1;
@@ -1157,18 +1366,22 @@ module 0x1::main {
               //^ u8  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test lambda expr`() = testExpr("""
+    fun `test lambda expr`() = testExpr(
+        """
         module 0x1::m {
             inline fun main<Element>(f: |Element|) {
                 f;
               //^ |Element| -> ()  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test lambda expr from assigned variable`() = testExpr("""
+    fun `test lambda expr from assigned variable`() = testExpr(
+        """
         module 0x1::m {
             inline fun main<Element>(f: |Element|) {
                 let g = f;
@@ -1176,36 +1389,44 @@ module 0x1::main {
               //^ |Element| -> ()  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test lambda expr unit type`() = testExpr("""
+    fun `test lambda expr unit type`() = testExpr(
+        """
         module 0x1::m {
             inline fun main<Element>(f: |Element|) {
                 f();
               //^ ()  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test lambda expr returning type`() = testExpr("""
+    fun `test lambda expr returning type`() = testExpr(
+        """
         module 0x1::m {
             inline fun main<Element>(f: |Element| Element) {
                 f();
               //^ Element  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test lambda expr integer return type`() = testExpr("""
+    fun `test lambda expr integer return type`() = testExpr(
+        """
         module 0x1::m {
             inline fun main<Element>(e: Element, f: |Element| u8) {
                 f(e);
               //^ u8  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test infer let binding pat type in spec block arbitrary order`() = testExpr("""
+    fun `test infer let binding pat type in spec block arbitrary order`() = testExpr(
+        """
         module 0x1::m {
             spec module {
                 addr;
@@ -1213,9 +1434,11 @@ module 0x1::main {
                 let addr = @0x1;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test infer let post binding pat type in spec block arbitrary order`() = testExpr("""
+    fun `test infer let post binding pat type in spec block arbitrary order`() = testExpr(
+        """
         module 0x1::m {
             spec module {
                 addr;
@@ -1223,9 +1446,11 @@ module 0x1::main {
                 let post addr = @0x1;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test int2bv and bv type`() = testExpr("""
+    fun `test int2bv and bv type`() = testExpr(
+        """
         module 0x1::m {
             fun call() {}
             spec call {
@@ -1234,9 +1459,11 @@ module 0x1::main {
               //^ bv  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test int2bv bv2int`() = testExpr("""
+    fun `test int2bv bv2int`() = testExpr(
+        """
         module 0x1::m {
             fun call() {}
             spec call {
@@ -1245,9 +1472,11 @@ module 0x1::main {
               //^ num  
             }
         }        
-    """)
+    """
+    )
 
-    fun `test infer no return lambda expr`() = testExpr("""
+    fun `test infer no return lambda expr`() = testExpr(
+        """
         module 0x1::m {
             inline fun for_each<Element>(v: vector<Element>, f: |Element|) {}
             fun main() {
@@ -1255,9 +1484,11 @@ module 0x1::main {
                                                   //^ integer
             }
         }
-    """)
+    """
+    )
 
-    fun `test infer identity lambda expr`() = testExpr("""
+    fun `test infer identity lambda expr`() = testExpr(
+        """
         module 0x1::m {
             inline fun for_each<Element>(v: vector<Element>, f: |Element| Element) {}
             fun main() {
@@ -1265,9 +1496,11 @@ module 0x1::main {
                                                   //^ integer
             }
         }
-    """)
+    """
+    )
 
-    fun `test infer two param lambda expr`() = testExpr("""
+    fun `test infer two param lambda expr`() = testExpr(
+        """
         module 0x1::m {
             inline fun for_each<Element>(v: vector<Element>, f: |Element, Element|) {}
             fun main() {
@@ -1275,7 +1508,8 @@ module 0x1::main {
                                                           //^ integer
             }
         }
-    """)
+    """
+    )
 
     fun `test infer single param lambda two param expected`() = testExpr(
         """
@@ -1286,6 +1520,23 @@ module 0x1::main {
                                                     //^ integer
             }
         }
+    """
+    )
+
+    fun `test infer vector type binding of spec fun`() = testExpr(
+        """
+        module 0x1::m {
+            spec module {
+                fun eq_push_back<Element>(v1: vector<Element>, v2: vector<Element>, e: Element): bool {
+                    let res = 
+                    (len(v1) == len(v2) + 1 &&
+                        v1[len(v1)-1] == e &&
+                        v1[0..len(v1)-1] == v2[0..len(v2)]);
+                    res;
+                    //^ bool
+                }
+            }
+        }        
     """
     )
 }

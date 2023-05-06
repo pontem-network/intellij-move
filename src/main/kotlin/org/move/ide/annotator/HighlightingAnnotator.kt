@@ -22,7 +22,7 @@ val BUILTIN_FUNCTIONS =
     GLOBAL_STORAGE_ACCESS_FUNCTIONS + setOf("move_to")
 val SPEC_BUILTIN_FUNCTIONS = setOf(
     "global", "len", "vec", "concat", "contains", "index_of", "range",
-    "in_range", "update_field", "old", "TRACE"
+    "in_range", "update", "update_field", "old", "TRACE", "int2bv", "bv2int"
 )
 
 class HighlightingAnnotator : MvAnnotatorBase() {
