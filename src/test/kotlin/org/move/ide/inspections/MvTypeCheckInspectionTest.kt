@@ -1124,7 +1124,7 @@ module 0x1::pool {
     fun call(pool: &mut Pool) {
         let value = table::borrow_mut(&mut pool.shares, @0x1);
         let unref = *value;
-        1u128 - <error descr="Invalid argument to '-': expected integer type, but found 'V'">unref</error>;
+        1u128 - unref;
     }
 }        
     """

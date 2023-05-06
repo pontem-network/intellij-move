@@ -1,12 +1,10 @@
 package org.move.lang.core.types.infer
 
+import org.move.cli.settings.devErrorOrFallback
 import org.move.ide.annotator.INTEGER_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_INTEGER_TYPE_IDENTIFIERS
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.mutable
-import org.move.lang.core.psi.ext.paramTypes
-import org.move.lang.core.psi.ext.returnType
-import org.move.lang.core.psi.ext.typeArguments
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
 
 fun MvType.loweredType(msl: Boolean): Ty = TyLowering.lowerType(this, msl)
@@ -38,7 +36,10 @@ class TyLowering {
                 }
                 TyLambda(paramTys, retTy)
             }
-            else -> TyUnknown
+            else -> moveType.project.devErrorOrFallback(
+                "${moveType.elementType} type is not inferred",
+                TyUnknown
+            )
         }
     }
 
@@ -81,7 +82,6 @@ class TyLowering {
     private fun <T : MvElement> instantiatePathGenerics(
         path: MvPath,
         namedItem: T,
-//        subst: Substitution,
         msl: Boolean
     ): BoundElement<T> {
         if (namedItem !is MvTypeParametersOwner) return BoundElement(namedItem)

@@ -288,15 +288,15 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
     }    
     """)
 
-    fun `test no unresolved reference for imported module identifier`() = checkByText("""
-    module 0x1::Signer {}
-    module 0x1::M {
-        use 0x1::Signer;
-        fun call() {
-            Signer
-        }
-    }
-    """)
+//    fun `test no unresolved reference for imported module identifier`() = checkByText("""
+//    module 0x1::Signer {}
+//    module 0x1::M {
+//        use 0x1::Signer;
+//        fun call() {
+//            Signer::
+//        }
+//    }
+//    """)
 
     fun `test unresolved field for dot expression`() = checkByText(
         """

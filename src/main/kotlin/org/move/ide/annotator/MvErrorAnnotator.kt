@@ -15,7 +15,6 @@ import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.TyCallable
 import org.move.lang.core.types.ty.TyFunction
-import org.move.lang.core.types.ty.TyLambda
 import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.lang.utils.MvDiagnostic
@@ -40,7 +39,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                 val msl = path.isMsl()
                 val realCount = path.typeArguments.size
                 val parent = path.parent
-                if (item == null && path.isLocal && path.identifierName == "vector") {
+                if (item == null && path.nullModuleRef && path.identifierName == "vector") {
                     val expectedCount = 1
                     if (realCount != expectedCount) {
                         MvDiagnostic

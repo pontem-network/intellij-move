@@ -2,7 +2,6 @@ package org.move.ide.formatter.impl
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.TokenSet.orSet
 import org.move.lang.MoveFile
@@ -73,7 +72,7 @@ fun ASTNode.isDelimiterOfCurrentBlock(parent: ASTNode?): Boolean {
 }
 
 /// Returns null if element does not belong to any file
-val PsiElement.documentLocation: Pair<Int, Int>? get() {
+val PsiElement.location: Pair<Int, Int>? get() {
     val elementOffset = this.textOffset
     val file = this.containingFile ?: return null
     val location = file.document?.getOffsetPosition(elementOffset)

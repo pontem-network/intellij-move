@@ -85,7 +85,6 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
             else -> TyUnknown
         }
         // it is required for the TyInfer.TyVar to always have a different underlying unification table
-//        val ty = if (expectedTy is TyInfer.TyVar) TyInfer.TyVar(expectedTy.origin) else expectedTy
         val isCompat = isCompatible(expectedTy, itemTy, msl) && compatAbilities(expectedTy, itemTy, msl)
         props = props.copy(
             isReturnTypeConformsToExpectedType = isCompat
@@ -93,47 +92,3 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
     }
     return props
 }
-
-//private fun isCompatibleTypes(actualTy: Ty?, expectedTy: Ty?, msl: Boolean): Boolean {
-//    if (actualTy == null || expectedTy == null) return false
-//    if (
-//        actualTy is TyUnknown || expectedTy is TyUnknown ||
-//        actualTy is TyNever || expectedTy is TyNever ||
-//        actualTy is TyTypeParameter || expectedTy is TyTypeParameter
-//    ) return false
-//
-//    // Replace `TyUnknown` and `TyTypeParameter` with `TyNever` to ignore them when combining types
-//    val folder = object : TypeFolder() {
-//        override fun fold(ty: Ty): Ty = when (ty) {
-//            is TyUnknown -> TyNever
-//            is TyTypeParameter -> TyNever
-//            else -> ty.innerFoldWith(this)
-//        }
-//    }
-//
-//    // TODO coerce
-//    val ty1 = actualTy.foldWith(folder)
-//    val ty2 = expectedTy.foldWith(folder)
-//    return ctx.combineTypesNoVars(ty1, ty2).isOk
-////    return if (expectedTy.coercable) {
-////        lookup.ctx.tryCoerce(ty1, ty2)
-////    } else {
-////        lookup.ctx.combineTypesNoVars(ty1, ty2)
-////    }.isOk
-//}
-
-
-//private fun MvNamedElement.asTy(ctx: InferenceContext): Ty {
-//    val msl = false
-//    val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
-//    return when (this) {
-////        is RsFieldDecl -> typeReference?.type
-//        is MvFunction -> this.returnTypeTy(itemContext)
-//        is MvStruct -> {
-//            itemContext.getItemTy(this)
-//        }
-//        is MvConst -> itemContext.getConstTy(this)
-//        is MvBindingPat -> this.inferBindingTy(ctx, itemContext)
-//        else -> TyUnknown
-//    }
-//}

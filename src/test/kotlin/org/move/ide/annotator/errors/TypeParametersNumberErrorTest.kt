@@ -218,4 +218,41 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
             }
         }        
     """)
+
+    fun `test no type annotation error if name is unresolved but type is inferrable`() = checkErrors("""
+        module 0x1::m {
+            struct Option<Element> has copy, drop, store {
+                vec: vector<Element>
+            }
+            native fun is_none<Element>(t: &Option<Element>): bool;
+            fun main() {
+                is_none(unknown_name);
+            }
+        }        
+    """)
+
+    fun `test no type annotation error if return type is unresolved but type is inferrable`() = checkErrors("""
+        module 0x1::m {
+            struct Option<Element> has copy, drop, store {
+                vec: vector<Element>
+            }
+            native fun none<Element>(): Option<Element>;
+            fun main() {
+                none() == unknown_name;
+            }
+        }        
+    """)
+
+    fun `test no needs type annotation for spec struct field item passed`() = checkErrors("""
+        module 0x1::m {
+            struct Option<Element> has copy, drop, store {
+                vec: vector<Element>
+            }
+            native fun is_none<Element>(t: &Option<Element>): bool;
+            struct S { aggregator: Option<u8> }
+            spec S {
+                is_none(aggregator);
+            }
+        }        
+    """)
 }

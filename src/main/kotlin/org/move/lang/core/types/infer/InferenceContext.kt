@@ -4,7 +4,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.util.CachedValue
 import com.jetbrains.rd.util.concurrentMapOf
 import org.move.cli.settings.pluginDevelopmentMode
-import org.move.ide.formatter.impl.documentLocation
+import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
@@ -88,7 +88,7 @@ data class InferenceResult(
     private val callExprTypes: Map<MvCallExpr, Ty>,
     private val pathTypes: Map<MvPath, GenericTy>,
     val typeErrors: List<TypeError>
-): InferenceData {
+) : InferenceData {
     fun getExprType(expr: MvExpr): Ty =
         exprTypes[expr] ?: run {
             if (expr.project.pluginDevelopmentMode) {
@@ -120,7 +120,7 @@ internal val MvElement.typeErrorText: String
         var text = "${this.elementType} `${this.text}` is never inferred"
         val file = this.containingFile
         if (file != null) {
-            this.documentLocation?.let { (line, col) ->
+            this.location?.let { (line, col) ->
                 text += "\nFile: ${file.toNioPathOrNull()} at ($line, $col)"
             }
         }
@@ -184,7 +184,7 @@ fun MvElement.inference(msl: Boolean): InferenceResult? {
 class InferenceContext(
     var msl: Boolean,
     private val skipUnification: Boolean = false
-): InferenceData {
+) : InferenceData {
 
     override val patTypes = mutableMapOf<MvPat, Ty>()
 
@@ -220,7 +220,7 @@ class InferenceContext(
             is MvFunctionLike -> owner.rawReturnType(msl)
             else -> TyUnknown
         }
-        val inference = TypeInferenceWalker(this, returnTy)
+        val inference = TypeInferenceWalker(this, owner.project, returnTy)
 
         inference.extractParameterBindings(owner)
 
@@ -403,7 +403,15 @@ class InferenceContext(
         return when {
             ty1 === ty2 -> Ok(Unit)
             ty1msl is TyNever || ty2msl is TyNever -> Ok(Unit)
-            ty1msl is TyUnknown || ty2msl is TyUnknown -> Ok(Unit)
+            ty1msl is TyUnknown || ty2msl is TyUnknown -> {
+                ty1msl.hasTyInfer && ty1msl.visitTyVarWith {
+                    combineTyVar(it, TyUnknown); false
+                }
+                ty2msl.hasTyInfer && ty2msl.visitTyVarWith {
+                    combineTyVar(it, TyUnknown); false
+                }
+                Ok(Unit)
+            }
 
             ty1msl is TyTypeParameter && ty2msl is TyTypeParameter && ty1msl == ty2msl -> Ok(Unit)
             ty1msl is TyUnit && ty2msl is TyUnit -> Ok(Unit)

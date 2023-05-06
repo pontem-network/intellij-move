@@ -5,6 +5,10 @@
 
 package org.move.lang.core.types.infer
 
+import org.move.ide.formatter.impl.location
+import org.move.lang.core.types.ty.TyInfer
+import org.move.lang.toNioPathOrNull
+
 interface NodeOrValue
 interface Node : NodeOrValue {
     var parent: NodeOrValue
@@ -93,7 +97,10 @@ class UnificationTable<K : Node, V> {
         val val2 = node2.value
 
         val newVal = if (val1 != null && val2 != null) {
-            if (val1 != val2) error("unification error") // must be solved on the upper level
+            if (val1 != val2) {
+                // must be solved on the upper level
+                error("Unification error: unifying $key1 -> $key2")
+            }
             val1
         } else {
             val1 ?: val2
@@ -104,8 +111,21 @@ class UnificationTable<K : Node, V> {
 
     fun unifyVarValue(key: K, value: V) {
         val node = get(key)
-        if (node.value != null && node.value != value) error("unification error") // must be solved on the upper level
-
+        if (node.value != null && node.value != value) {
+            // must be solved on the upper level
+            when (key) {
+                is TyInfer.TyVar -> {
+                    val origin = key.origin?.origin
+                    val originFilePath = origin?.containingFile?.toNioPathOrNull()
+                    error(
+                        "TyVar unification error: " +
+                                "unifying $key (with origin at $originFilePath ${origin?.location}) " +
+                                "-> $value, node.value = ${node.value}"
+                    )
+                }
+                else -> error("Unification error: unifying $key -> $value")
+            }
+        }
         setValue(node, value)
     }
 

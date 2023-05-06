@@ -134,3 +134,10 @@ fun Path?.isValidExecutable(): Boolean {
 }
 
 val Project.pluginDevelopmentMode: Boolean get() = this.moveSettings.settingsState.developmentMode
+
+fun <T> Project.devErrorOrFallback(message: String, fallback: T): T {
+    if (this.pluginDevelopmentMode) {
+        error(message)
+    }
+    return fallback
+}

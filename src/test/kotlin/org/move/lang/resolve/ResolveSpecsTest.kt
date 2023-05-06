@@ -759,4 +759,16 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test module has separate scope from bindings`() = checkByCode("""
+        module 0x1::m {
+            fun call(account: &signer) {}
+                        //X
+            spec call {
+                use aptos_framework::account;
+                signer::address_of(account);
+                                  //^
+            }
+        }        
+    """)
 }

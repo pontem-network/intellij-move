@@ -63,7 +63,7 @@ class HighlightingAnnotator : MvAnnotatorBase() {
 
         val path = element as? MvPath ?: return null
         // any qual :: access is not highlighted
-        if (path.isQual) return null
+        if (path.isQualPath) return null
 
         val identifierName = path.identifierName
         when (path.parent) {

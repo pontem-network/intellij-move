@@ -1,8 +1,10 @@
 package org.move.lang.core.types.infer
 
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import org.move.cli.settings.pluginDevelopmentMode
+import org.move.cli.settings.devErrorOrFallback
+import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
@@ -11,6 +13,7 @@ import org.move.stdext.chain
 
 class TypeInferenceWalker(
     val ctx: InferenceContext,
+    val project: Project,
     private val returnTy: Ty
 ) {
 
@@ -34,10 +37,15 @@ class TypeInferenceWalker(
         val bindings = when (owner) {
             is MvFunctionLike -> owner.allParamsAsBindings
             is MvItemSpec -> {
-                val funcItem = owner.funcItem
-                funcItem?.allParamsAsBindings
-                    ?.chain(funcItem.specResultParameters.map { it.bindingPat })
-                    ?.toList().orEmpty()
+                val item = owner.item
+                when (item) {
+                    is MvFunction -> {
+                        item.allParamsAsBindings
+                            .chain(item.specResultParameters.map { it.bindingPat })
+                            .toList()
+                    }
+                    else -> emptyList()
+                }
             }
             is MvSchema -> owner.fieldStmts.map { it.bindingPat }
             else -> emptyList()
@@ -45,9 +53,13 @@ class TypeInferenceWalker(
         for (binding in bindings) {
             val bindingContext = binding.owner
             val ty = when (bindingContext) {
+                null -> TyUnknown
                 is MvFunctionParameter -> bindingContext.type?.loweredType(msl) ?: TyUnknown
                 is MvSchemaFieldStmt -> bindingContext.type?.loweredType(msl) ?: TyUnknown
-                else -> TyUnknown
+                else -> project.devErrorOrFallback(
+                    "${bindingContext.elementType} binding is not inferred",
+                    TyUnknown
+                )
             }
             this.ctx.writePatTy(binding, ty)
         }
@@ -244,7 +256,7 @@ class TypeInferenceWalker(
             }
             is MvSpecVisRestrictedExpr -> expr.expr?.inferType(expected) ?: TyUnknown
             else ->
-                if (expr.project.pluginDevelopmentMode) error(expr.typeErrorText) else TyUnknown
+                project.devErrorOrFallback(expr.typeErrorText, TyUnknown)
         }
 
         val refinedExprTy = exprTy.mslScopeRefined(msl)
@@ -268,11 +280,16 @@ class TypeInferenceWalker(
                 return funcItem.rawReturnType(true)
             }
         }
-        val item = refExpr.path.reference?.resolveWithAliases()
+        val item = refExpr.path.reference?.resolveWithAliases() ?: return TyUnknown
         val ty = when (item) {
             is MvBindingPat -> ctx.getPatType(item)
             is MvConst -> item.type?.loweredType(msl) ?: TyUnknown
-            else -> TyUnknown
+            is MvStructField -> item.type?.loweredType(msl) ?: TyUnknown
+            else -> project.devErrorOrFallback(
+                "Referenced item ${item.elementType} " +
+                        "of ref expr `${refExpr.text}` at ${refExpr.location} cannot be inferred into type",
+                TyUnknown
+            )
         }
         return ty
     }
@@ -331,6 +348,7 @@ class TypeInferenceWalker(
             ctx.writeAcquiredTypes(callExpr, funcTy.acquiresTypes)
         }
         ctx.writeCallExprType(callExpr, funcTy as Ty)
+
         return funcTy.retType
     }
 
