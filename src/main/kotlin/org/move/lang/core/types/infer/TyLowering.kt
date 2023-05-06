@@ -61,6 +61,7 @@ class TyLowering {
     private fun lowerPrimitiveTy(path: MvPath, msl: Boolean): Ty {
         val refName = path.referenceName ?: return TyUnknown
         if (msl && refName in SPEC_INTEGER_TYPE_IDENTIFIERS) return TyInteger.fromName("num")
+        if (msl && refName == "bv") return TySpecBv
 
         val ty = when (refName) {
             in INTEGER_TYPE_IDENTIFIERS -> TyInteger.fromName(refName)

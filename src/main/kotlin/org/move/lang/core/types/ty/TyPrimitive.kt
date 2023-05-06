@@ -36,6 +36,12 @@ object TyNum : TyPrimitive("num") {
     override fun toString(): String = tyToString(this)
 }
 
+object TySpecBv: TyPrimitive("bv") {
+    override fun abilities() = Ability.all()
+    override fun toString(): String = tyToString(this)
+
+}
+
 data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
     override fun abilities() = Ability.all()
 

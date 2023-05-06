@@ -1224,4 +1224,26 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test int2bv and bv type`() = testExpr("""
+        module 0x1::m {
+            fun call() {}
+            spec call {
+                let a = int2bv(100);
+                a;
+              //^ bv  
+            }
+        }        
+    """)
+
+    fun `test int2bv bv2int`() = testExpr("""
+        module 0x1::m {
+            fun call() {}
+            spec call {
+                let a = bv2int(int2bv(100));
+                a;
+              //^ num  
+            }
+        }        
+    """)
 }

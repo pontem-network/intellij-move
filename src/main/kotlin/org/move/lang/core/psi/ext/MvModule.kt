@@ -166,6 +166,8 @@ fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
             builtinSpecFunction("spec native fun range<T>(_: vector<T>): range;", project),
             builtinSpecFunction("spec native fun update<T>(_: vector<T>, _: num, _: T): vector<T>;", project),
             builtinSpecFunction("spec native fun in_range<T>(_: vector<T>, _: num): bool;", project),
+            builtinSpecFunction("spec native fun int2bv(_: num): bv;", project),
+            builtinSpecFunction("spec native fun bv2int(_: bv): num;", project),
         )
     }
 }

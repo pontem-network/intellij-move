@@ -116,6 +116,7 @@ private fun render(
             is TySigner -> "signer"
             is TyUnit -> "()"
             is TyNum -> "num"
+            is TySpecBv -> "bv"
             is TyInteger -> {
                 if (ty.kind == TyInteger.DEFAULT_KIND) {
                     integer
