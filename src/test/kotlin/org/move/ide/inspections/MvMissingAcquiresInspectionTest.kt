@@ -166,15 +166,32 @@ module 0x1::main {
     """
     )
 
-//    fun `test outer function requires acquires through inline function`() = checkWarnings("""
-//module 0x1::main {
-//    struct S has key {}
-//    fun call() {
-//        <error descr="Function 'call' is not marked as 'acquires S'">borrow_object<S>()</error>;
-//    }
-//    inline fun borrow_object<T: key>(source_object: &Object<T>): &T {
-//        borrow_global<T>(object::object_address(source_object))
-//    }
-//}
-//    """)
+    fun `test inline no missing acquires if item from a different module`() = checkErrors(
+        """
+module 0x1::item {
+    struct Item has key {}
+}
+module 0x1::main {
+    use 0x1::item::Item;
+    fun main() {
+        get_item<Item>();
+    }
+    inline fun get_item<Element>() {
+        borrow_global<Element>(@0x1);
+    } 
+}        
+    """
+    )
+
+    fun `test outer function requires acquires through inline function`() = checkWarnings("""
+module 0x1::main {
+    struct S has key {}
+    fun call() {
+        <error descr="Function 'call' is not marked as 'acquires S'">borrow_object<S>()</error>;
+    }
+    inline fun borrow_object<T: key>(source_object: &Object<T>): &T {
+        borrow_global<T>(object::object_address(source_object))
+    }
+}
+    """)
 }

@@ -5,7 +5,7 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.types.ty.*
 
-fun Ty.canBeAcquiredInModule(mod: MvModule): Boolean {
+fun Ty.itemDeclaredInModule(mod: MvModule): Boolean {
     if (this is TyUnknown) return true
     // no declaring module means builtin
     val declaringMod = this.declaringModule ?: return false

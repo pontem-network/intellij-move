@@ -85,7 +85,7 @@ data class InferenceResult(
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
     private val acquiredTypes: Map<MvCallExpr, List<Ty>>,
-    private val callExprTypes: Map<MvCallExpr, Ty>,
+    val callExprTypes: Map<MvCallExpr, Ty>,
     private val pathTypes: Map<MvPath, GenericTy>,
     val typeErrors: List<TypeError>
 ) : InferenceData {
@@ -104,6 +104,10 @@ data class InferenceResult(
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallExprType(expr: MvCallExpr): Ty? = callExprTypes[expr]
     fun getPathType(path: MvPath): GenericTy? = pathTypes[path]
+
+    fun getAcqTypes(expr: MvCallExpr): List<Ty> {
+        return acquiredTypes[expr]?.takeIf { !it.contains(TyUnknown) } ?: emptyList()
+    }
 
     fun getAcquiredTypes(expr: MvCallExpr, outerSubst: Substitution? = null): List<Ty> {
         val acquiresTypes = acquiredTypes[expr]?.takeIf { !it.contains(TyUnknown) } ?: emptyList()

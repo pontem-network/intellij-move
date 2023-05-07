@@ -3,7 +3,7 @@ package org.move.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
-import org.move.ide.presentation.canBeAcquiredInModule
+import org.move.ide.presentation.itemDeclaredInModule
 import org.move.ide.presentation.fullname
 import org.move.ide.utils.functionSignature
 import org.move.ide.utils.signature
@@ -154,8 +154,8 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                     val explicitTypeArgs = path.typeArguments
                     val currentModule = callExpr.containingModule ?: return
                     for (typeArg in explicitTypeArgs) {
-                        val typeArgTy = typeArg.type.loweredType(msl)
-                        if (typeArgTy !is TyUnknown && !typeArgTy.canBeAcquiredInModule(currentModule)) {
+                        val typeArgTy = typeArg.type.loweredType(false)
+                        if (typeArgTy !is TyUnknown && !typeArgTy.itemDeclaredInModule(currentModule)) {
                             val typeName = typeArgTy.fullname()
                             MvDiagnostic
                                 .StorageAccessIsNotAllowed(path, typeName)

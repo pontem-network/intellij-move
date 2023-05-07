@@ -1,5 +1,6 @@
 package org.move.lang.core.psi
 
+import com.intellij.psi.util.descendantsOfType
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.stubs.MvModuleStub
@@ -19,13 +20,13 @@ interface MvFunctionLike : MvNameIdentifierOwner,
     override fun declaredType(msl: Boolean): TyFunction {
         val typeParameters = this.tyTypeParams
         val paramTypes = parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
-        val acquiresTypes = this.acquiresPathTypes.map { it.loweredType(msl) }
+        val acquiredTypes = this.acquiresPathTypes.map { it.loweredType(msl) }
         val retType = rawReturnType(msl)
         return TyFunction(
             this,
             typeParameters,
             paramTypes,
-            acquiresTypes,
+            acquiredTypes,
             retType
         )
     }
@@ -62,12 +63,13 @@ val MvFunctionLike.acquiresPathTypes: List<MvPathType>
             else -> emptyList()
         }
 
-val MvFunctionLike.anyBlock: AnyBlock? get() = when (this) {
-    is MvFunction -> this.codeBlock
-    is MvSpecFunction -> this.specCodeBlock
-    is MvSpecInlineFunction -> this.specCodeBlock
-    else -> null
-}
+val MvFunctionLike.anyBlock: AnyBlock?
+    get() = when (this) {
+        is MvFunction -> this.codeBlock
+        is MvSpecFunction -> this.specCodeBlock
+        is MvSpecInlineFunction -> this.specCodeBlock
+        else -> null
+    }
 
 val MvFunctionLike.module: MvModule?
     get() =
