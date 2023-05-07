@@ -52,4 +52,33 @@ spec 0x1::main {
     ): u64;
 }        
     """)
+
+    // TODO: later
+    fun `test variable used as implicit schema parameter`() = checkByText("""
+        module 0x1::m {
+            fun call() {}
+            spec schema MySchema { 
+                account_addr: address;
+            }
+            spec call {
+                let account_addr = @0x1;
+                include MySchema;
+            }
+        }        
+    """)
+
+    // TODO: later
+    fun `test variable used as implicit schema parameter with existing fields`() = checkByText("""
+        module 0x1::m {
+            fun call() {}
+            spec schema MySchema { 
+                account_addr: address;
+                amount: u8;
+            }
+            spec call {
+                let account_addr = @0x1;
+                include MySchema { amount: 100 };
+            }
+        }        
+    """)
 }
