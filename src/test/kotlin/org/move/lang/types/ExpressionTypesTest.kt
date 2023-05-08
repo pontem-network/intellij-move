@@ -366,7 +366,7 @@ class ExpressionTypesTest : TypificationTestCase() {
         """
     module 0x1::M {
         struct S {}
-        fun ref(): &S {}
+        fun ref(): &S { &S {} }
         spec module {
             let a = ref();
             a;
@@ -861,7 +861,7 @@ module 0x1::pool {
     fun `test call expr from alias`() = testExpr(
         """
 module 0x1::string {
-    public fun call(): u8 {}
+    public fun call(): u8 { 1 }
 }        
 module 0x1::main {
     use 0x1::string::call as mycall;
@@ -1532,7 +1532,7 @@ module 0x1::main {
                     (len(v1) == len(v2) + 1 &&
                         v1[len(v1)-1] == e &&
                         v1[0..len(v1)-1] == v2[0..len(v2)]);
-                    res;
+                    res
                     //^ bool
                 }
             }
@@ -1540,7 +1540,8 @@ module 0x1::main {
     """
     )
 
-    fun `test item spec struct field`() = testExpr("""
+    fun `test item spec struct field`() = testExpr(
+        """
         module 0x1::m {
             struct Option<Element> has copy, drop, store {
                 vec: vector<Element>
@@ -1551,5 +1552,30 @@ module 0x1::main {
                 //^ 0x1::m::Option<num>
             }
         }        
-    """)
+    """
+    )
+
+    fun `test generic result type in function item spec should not crash`() = testExpr(
+        """
+        module 0x1::m {
+            native struct TableWithLength<phantom K: copy + drop, phantom V> has store;
+            struct BigVector<T> has store {
+                buckets: TableWithLength<u64, vector<T>>,
+                bucket_size: u64
+            }
+            spec native fun table_with_length_spec_get<K, V>(t: TableWithLength<K, V>, k: K): V;
+            native fun vector_borrow<Element>(v: &vector<Element>, i: u64): &Element;
+
+            native fun borrow<T>(v: &BigVector<T>, i: u64): &T;
+
+            spec borrow {
+                ensures result == vector_borrow(
+                    table_with_length_spec_get(v.buckets, i / v.bucket_size), i % v.bucket_size
+                );
+                result;
+                //^ T
+            }
+        }
+    """
+    )
 }

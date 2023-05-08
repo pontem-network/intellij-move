@@ -10,7 +10,8 @@ import org.move.lang.MoveFile
 import org.move.lang.MoveFileType
 import org.move.lang.core.psi.ext.childOfType
 import org.move.lang.core.psi.ext.descendantOfTypeStrict
-import org.move.lang.core.psi.ext.synthetic
+import org.move.lang.core.psi.ext.resolveContext
+import org.move.lang.core.psi.impl.MvFunctionParameterImpl
 
 val Project.psiFactory get() = MvPsiFactory(this)
 
@@ -115,17 +116,18 @@ class MvPsiFactory(val project: Project) {
     }
 
     @Suppress("InvalidModuleDeclaration")
-    fun specFunctionParameter(text: String): MvFunctionParameter {
+    fun specFunctionParameter(parent: MvFunction, name: String, type: String): MvFunctionParameter {
         val parameter = createFromText<MvFunctionParameter>(
             """
             module spec_builtins {
                 spec module {
-                    fun _IntellijDummy($text)
+                    fun _IntellijDummy($name: $type)
                 }
             }
             """.trimIndent()
-        ) ?: error("Failed to create a MvFunctionParameter from text: `$text`")
-        parameter.bindingPat.synthetic = true
+        ) ?: error("Failed to create a MvFunctionParameter with name = $name, type = $type")
+        parameter.resolveContext = parent
+        (parameter as MvFunctionParameterImpl).resolveContext = parent
         return parameter
     }
 

@@ -129,7 +129,7 @@ fun MvFunctionLike.rawReturnType(msl: Boolean): Ty {
     return retType.type?.loweredType(msl) ?: TyUnknown
 }
 
-val MvFunctionLike.specResultParameters: List<MvFunctionParameter>
+val MvFunction.specResultParameters: List<MvFunctionParameter>
     get() {
         return getProjectPsiDependentCache(this) {
             val retType = it.returnType
@@ -141,14 +141,15 @@ val MvFunctionLike.specResultParameters: List<MvFunctionParameter>
                 when (retTypeType) {
                     null -> emptyList()
                     is MvTupleType -> {
-                        val parameters = retTypeType.typeList
+                        retTypeType.typeList
                             .mapIndexed { i, type ->
-                                psiFactory.specFunctionParameter("result_${i + 1}: ${type.text}")
+                                psiFactory.specFunctionParameter(it, "result_${i + 1}", type.text)
                             }
-                        parameters
                     }
                     else -> {
-                        listOf(psiFactory.specFunctionParameter("result: ${retTypeType.text}"))
+                        listOf(
+                            psiFactory.specFunctionParameter(it, "result", retTypeType.text)
+                        )
                     }
                 }
             }

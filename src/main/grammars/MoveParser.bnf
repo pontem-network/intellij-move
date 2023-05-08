@@ -455,6 +455,7 @@ FunctionParameter ::= BindingPat TypeAnnotation {
     implements = [
         "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
+    mixin = "org.move.lang.core.psi.ext.MvFunctionParameterMixin"
 }
 
 // u8 | (u8,) | (u8, u8) | (u8, u8,)

@@ -3,6 +3,7 @@ package org.move.lang.core.types.infer
 import com.intellij.openapi.util.Key
 import com.intellij.psi.util.CachedValue
 import com.jetbrains.rd.util.concurrentMapOf
+import org.jetbrains.annotations.TestOnly
 import org.move.cli.settings.pluginDevelopmentMode
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
@@ -67,13 +68,6 @@ interface InferenceData {
         val type = patTypes[pat]
         if (type != null) return type
 
-        // synthetic fallback for binding pat
-        if (pat is MvBindingPat && pat.synthetic) {
-            val owner = pat.parent as? MvTypeAnnotationOwner
-            if (owner != null) {
-                return owner.type?.loweredType(pat.isMsl()) ?: TyUnknown
-            }
-        }
         // if not in devmode, return unknown
         if (!pat.project.pluginDevelopmentMode) return TyUnknown
         error(message = pat.typeErrorText)
@@ -97,6 +91,9 @@ data class InferenceResult(
                 TyUnknown
             }
         }
+
+    @TestOnly
+    fun hasExprType(expr: MvExpr): Boolean = expr in exprTypes
 
     /// Explicitly allow uninferred expr
     fun getExprTypeOrUnknown(expr: MvExpr): Ty = exprTypes[expr] ?: TyUnknown

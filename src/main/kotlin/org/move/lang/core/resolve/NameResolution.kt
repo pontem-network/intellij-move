@@ -521,7 +521,7 @@ fun walkUpThroughScopes(
     handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean,
 ): Boolean {
     var cameFrom = start
-    var scope = start.parent as MvElement?
+    var scope = start.context as MvElement?
     while (scope != null) {
         if (handleScope(cameFrom, scope)) return true
 
@@ -548,7 +548,7 @@ fun walkUpThroughScopes(
         if (stopAfter(scope)) break
 
         cameFrom = scope
-        scope = scope.parent as? MvElement
+        scope = scope.context as? MvElement
     }
 
     return false
