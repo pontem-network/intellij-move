@@ -14,26 +14,26 @@ fun MvImportsOwner.items(): Sequence<MvElement> {
         .filter { it !is MvAttr }
 }
 
-fun MvImportsOwner.moduleImports(): List<MvModuleUseSpeck> {
+fun MvImportsOwner.moduleUseSpecks(): List<MvModuleUseSpeck> {
     return getProjectPsiDependentCache(this) {
         useStmtList.mapNotNull { it.moduleUseSpeck }
     }
 }
 
-fun MvImportsOwner.moduleImportNames(): List<MvNamedElement> =
+fun MvImportsOwner.allModuleUseSpecks(): List<MvNamedElement> =
     listOf(
-        moduleImportsNoAliases(),
-        moduleImportsAliases(),
+        moduleUseSpecksNoAliases(),
+        moduleUseSpecksAliases(),
     ).flatten()
 
-fun MvImportsOwner.moduleImportsNoAliases(): List<MvModuleUseSpeck> =
-    moduleImports()
+fun MvImportsOwner.moduleUseSpecksNoAliases(): List<MvModuleUseSpeck> =
+    moduleUseSpecks()
         .filter { it.useAlias == null }
 
-fun MvImportsOwner.moduleImportsAliases(): List<MvUseAlias> =
-    moduleImports().mapNotNull { it.useAlias }
+fun MvImportsOwner.moduleUseSpecksAliases(): List<MvUseAlias> =
+    moduleUseSpecks().mapNotNull { it.useAlias }
 
-fun MvImportsOwner.itemImports(): List<MvUseItem> {
+fun MvImportsOwner.psiUseItems(): List<MvUseItem> {
     return getProjectPsiDependentCache(this) { importsOwner ->
         importsOwner
             .useStmtList
@@ -49,24 +49,28 @@ fun MvImportsOwner.itemImports(): List<MvUseItem> {
     }
 }
 
-fun MvImportsOwner.itemImportNames(): List<MvNamedElement> =
+fun MvImportsOwner.allUseItems(): List<MvNamedElement> =
     listOf(
         useItemsNoAliases(),
-        itemImportsAliases(),
+        useItemsAliases(),
     ).flatten()
 
 fun MvImportsOwner.useItemsNoAliases(): List<MvUseItem> =
-    itemImports().filter { it.useAlias == null }
-
-fun MvImportsOwner.itemImportsAliases(): List<MvUseAlias> = itemImports().mapNotNull { it.useAlias }
-
-fun MvImportsOwner.selfItemImports(): List<MvUseItem> =
-    itemImports()
-        .filter { it.isSelf }
+    psiUseItems()
+        .filter { !it.isSelf }
         .filter { it.useAlias == null }
 
-fun MvImportsOwner.selfItemImportAliases(): List<MvUseAlias> =
-    itemImports()
+fun MvImportsOwner.useItemsAliases(): List<MvUseAlias> =
+    psiUseItems()
+        .filter { !it.isSelf }
+        .mapNotNull { it.useAlias }
+
+fun MvImportsOwner.selfModuleUseItemNoAliases(): List<MvUseItem> =
+    psiUseItems()
+        .filter { it.isSelf && it.useAlias == null }
+
+fun MvImportsOwner.selfModuleUseItemAliases(): List<MvUseAlias> =
+    psiUseItems()
         .filter { it.isSelf }
         .mapNotNull { it.useAlias }
 
@@ -83,7 +87,7 @@ fun MvImportsOwner.shortestPathText(item: MvNamedElement): String? {
     }
     val module = item.containingModule ?: return null
     val moduleName = module.name ?: return null
-    for (moduleImport in this.moduleImportsNoAliases()) {
+    for (moduleImport in this.moduleUseSpecksNoAliases()) {
         val importedModule = moduleImport.fqModuleRef?.reference?.resolve() ?: continue
         if (importedModule == module) {
             return "$moduleName::$itemName"

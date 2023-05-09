@@ -1555,7 +1555,7 @@ module 0x1::main {
     """
     )
 
-    fun `test generic result type in function item spec should not crash`() = testExpr(
+    fun `test generic result type in function item spec should not crash`() = testExprsTypified(
         """
         module 0x1::m {
             native struct TableWithLength<phantom K: copy + drop, phantom V> has store;
@@ -1572,10 +1572,34 @@ module 0x1::main {
                 ensures result == vector_borrow(
                     table_with_length_spec_get(v.buckets, i / v.bucket_size), i % v.bucket_size
                 );
-                result;
-                //^ T
             }
         }
+    """
+    )
+
+    fun `test option of object equals view function with the same name as module`() = testExprsTypified(
+        """
+        module 0x1::royalty {
+            struct Royalty has copy, drop, key {
+                numerator: u64,
+                denominator: u64,
+                payee_address: address,
+            }
+            public native fun create(): Royalty;
+        }
+        module 0x1::m {
+            use 0x1::royalty::{Self, Royalty};
+            struct Option<Element> has copy, drop, store {
+                vec: vector<Element>
+            }
+            public native fun some<SomeElement>(e: SomeElement): Option<SomeElement>;
+            public native fun royalty<T: key>(): Option<Royalty>;
+            #[test]
+            fun test_some() {
+                let expected_royalty = royalty::create(); 
+                assert!(some(expected_royalty) == royalty());
+            }
+        }        
     """
     )
 }

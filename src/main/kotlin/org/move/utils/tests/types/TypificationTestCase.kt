@@ -47,6 +47,11 @@ abstract class TypificationTestCase : MvTestBase() {
         checkAllExpressionsTypified()
     }
 
+    protected fun testExprsTypified(@Language("Move") code: String) {
+        InlineFile(myFixture, code, "main.move")
+        checkAllExpressionsTypified()
+    }
+
     protected fun testBinding(
         @Language("Move") code: String,
 //        allowErrors: Boolean = false

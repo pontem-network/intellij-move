@@ -105,7 +105,7 @@ module 0x1::Main {
     fun `test no unused import if unresolved item but used`() = checkWarnings("""
 module 0x1::Main {
     use 0x1::M::call;
-    fun call() {
+    fun main() {
         call();
     }
 }        

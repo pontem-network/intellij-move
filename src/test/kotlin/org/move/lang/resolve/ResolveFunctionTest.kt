@@ -598,4 +598,32 @@ module 0x1::mod {
     }
 }        
     """)
+
+    fun `test resolve local function when module with same name is imported as Self`() = checkByCode("""
+        module 0x1::royalty {}
+        module 0x1::m {
+            use 0x1::royalty::Self;
+            public fun royalty() {}
+                        //X
+            public fun main() {
+                royalty();
+                //^
+            }
+        }        
+    """)
+
+    fun `test resolve local function when function with the same name imported`() = checkByCode("""
+        module 0x1::royalty {
+            public fun royalty() {}
+        }
+        module 0x1::m {
+            use 0x1::royalty::royalty;
+            public fun royalty() {}
+                        //X
+            public fun main() {
+                royalty();
+                //^
+            }
+        }        
+    """)
 }

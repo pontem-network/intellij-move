@@ -8,6 +8,7 @@ package org.move.lang.core.types.infer
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.toNioPathOrNull
+import java.util.stream.Collectors
 
 interface NodeOrValue
 interface Node : NodeOrValue {

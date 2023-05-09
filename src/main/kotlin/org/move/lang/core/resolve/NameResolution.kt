@@ -279,10 +279,7 @@ fun processLexicalDeclarations(
             }
 
             Namespace.ERROR_CONST -> {
-                if (scope is MvImportsOwner) {
-                    if (processor.matchAll(itemVis, scope.itemImportNames())) return true
-                }
-                when (scope) {
+                val found = when (scope) {
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
                         processor.matchAll(
@@ -292,13 +289,16 @@ fun processLexicalDeclarations(
                     }
                     else -> false
                 }
+                if (!found) {
+                    if (scope is MvImportsOwner) {
+                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
+                    }
+                }
+                found
             }
 
             Namespace.NAME -> {
-                if (scope is MvImportsOwner) {
-                    if (processor.matchAll(itemVis, scope.itemImportNames())) return true
-                }
-                when (scope) {
+                val found = when (scope) {
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
                         processor.matchAll(
@@ -381,13 +381,15 @@ fun processLexicalDeclarations(
                     }
                     else -> false
                 }
-            }
-
-            Namespace.FUNCTION -> {
-                if (scope is MvImportsOwner) {
-                    if (processor.matchAll(itemVis, scope.itemImportNames())) return true
+                if (!found) {
+                    if (scope is MvImportsOwner) {
+                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
+                    }
                 }
-                when (scope) {
+                found
+            }
+            Namespace.FUNCTION -> {
+                val found = when (scope) {
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
                         val specFunctions = if (itemVis.isMsl) {
@@ -432,16 +434,19 @@ fun processLexicalDeclarations(
                     }
                     else -> false
                 }
+                if (!found) {
+                    if (scope is MvImportsOwner) {
+                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
+                    }
+                }
+                found
             }
 
             Namespace.TYPE -> {
                 if (scope is MvTypeParametersOwner) {
                     if (processor.matchAll(itemVis, scope.typeParameters)) return true
                 }
-                if (scope is MvImportsOwner) {
-                    if (processor.matchAll(itemVis, scope.itemImportNames())) return true
-                }
-                when (scope) {
+                val found = when (scope) {
                     is MvItemSpec -> {
                         val funcItem = scope.funcItem
                         if (funcItem != null) {
@@ -454,7 +459,7 @@ fun processLexicalDeclarations(
                         val module = scope.parent as MvModule
                         processor.matchAll(
                             itemVis,
-                            scope.itemImportNames(),
+                            scope.allUseItems(),
                             module.structs()
                         )
                     }
@@ -467,6 +472,12 @@ fun processLexicalDeclarations(
 
                     else -> false
                 }
+                if (!found) {
+                    if (scope is MvImportsOwner) {
+                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
+                    }
+                }
+                found
             }
 
             Namespace.SPEC_ITEM -> when (scope) {
@@ -486,12 +497,12 @@ fun processLexicalDeclarations(
             Namespace.SCHEMA -> when (scope) {
                 is MvModuleBlock -> processor.matchAll(
                     itemVis,
-                    scope.itemImportNames(),
+                    scope.allUseItems(),
                     scope.schemaList
                 )
                 is MvModuleSpecBlock -> processor.matchAll(
                     itemVis,
-                    scope.itemImportNames(),
+                    scope.allUseItems(),
                     scope.schemaList,
                     scope.specFunctionList
                 )
@@ -502,9 +513,9 @@ fun processLexicalDeclarations(
                 is MvImportsOwner -> processor.matchAll(
                     itemVis,
                     listOf(
-                        scope.moduleImportNames(),
-                        scope.selfItemImports(),
-                        scope.selfItemImportAliases(),
+                        scope.allModuleUseSpecks(),
+                        scope.selfModuleUseItemNoAliases(),
+                        scope.selfModuleUseItemAliases(),
                     ).flatten(),
                 )
                 else -> false

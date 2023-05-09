@@ -290,6 +290,26 @@ module 0x1::string_tests {
 }
     """)
 
+    fun `test resolve const item with same name imported expected failure`() = checkByCode("""
+module 0x1::string {
+    const ERR_ADMIN: u64 = 1;
+}        
+#[test_only]
+module 0x1::string_tests {
+    use 0x1::string::ERR_ADMIN;
+
+    const ERR_ADMIN: u64 = 1;
+            //X
+
+    #[test]
+    #[expected_failure(abort_code = ERR_ADMIN)]
+                                     //^
+    fun test_abort() {
+        
+    }
+}
+    """)
+
     fun `test resolve const item same module expected failure`() = checkByCode("""
 #[test_only]
 module 0x1::string_tests {

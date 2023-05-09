@@ -151,7 +151,19 @@ module 0x1::m {
     """, """
 value parameter <b>result</b>: num      
     """)
-    
+
+    fun `test generic result type documentation`() = doTest("""
+module 0x1::m {
+    fun call<T>(): &mut T {}
+    spec call {
+        result;
+        //^ 
+    }
+}        
+    """, """
+value parameter <b>result</b>: &mut T      
+    """)
+
     private fun doTest(@Language("Move") code: String, @Language("Html") expected: String?) =
         doTest(code, expected, block = MvDocumentationProvider::generateDoc)
 }

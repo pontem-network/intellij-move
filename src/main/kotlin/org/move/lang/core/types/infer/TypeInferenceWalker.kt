@@ -4,6 +4,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.move.cli.settings.devErrorOrFallback
+import org.move.cli.settings.pluginDevelopmentMode
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -617,6 +618,17 @@ class TypeInferenceWalker(
         if (rightExpr != null) {
             val leftTy = inferExprTy(leftExpr)
             val rightTy = inferExprTy(rightExpr)
+
+            // if any of the types has TyUnknown and TyInfer, combineTyVar will fail
+            // it only happens in buggy situation, but it's annoying for the users, so return if not in devMode
+            if (!project.pluginDevelopmentMode) {
+                if ((leftTy.hasTyUnknown || rightTy.hasTyUnknown)
+                    && (leftTy.hasTyInfer || rightTy.hasTyInfer)
+                ) {
+                    return TyBool
+                }
+            }
+
             if (ctx.combineTypes(leftTy, rightTy).isErr) {
                 ctx.reportTypeError(
                     TypeError.IncompatibleArgumentsToBinaryExpr(binaryExpr, leftTy, rightTy, op)
