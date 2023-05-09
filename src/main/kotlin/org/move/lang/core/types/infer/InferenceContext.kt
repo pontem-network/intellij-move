@@ -78,7 +78,6 @@ data class InferenceResult(
     override val patTypes: Map<MvPat, Ty>,
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
-    private val acquiredTypes: Map<MvCallExpr, List<Ty>>,
     val callExprTypes: Map<MvCallExpr, Ty>,
     private val pathTypes: Map<MvPath, GenericTy>,
     val typeErrors: List<TypeError>
@@ -101,19 +100,6 @@ data class InferenceResult(
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallExprType(expr: MvCallExpr): Ty? = callExprTypes[expr]
     fun getPathType(path: MvPath): GenericTy? = pathTypes[path]
-
-    fun getAcqTypes(expr: MvCallExpr): List<Ty> {
-        return acquiredTypes[expr]?.takeIf { !it.contains(TyUnknown) } ?: emptyList()
-    }
-
-    fun getAcquiredTypes(expr: MvCallExpr, outerSubst: Substitution? = null): List<Ty> {
-        val acquiresTypes = acquiredTypes[expr]?.takeIf { !it.contains(TyUnknown) } ?: emptyList()
-        return if (outerSubst != null) {
-            acquiresTypes.map { it.substituteOrUnknown(outerSubst) }
-        } else {
-            acquiresTypes
-        }
-    }
 }
 
 internal val MvElement.typeErrorText: String
@@ -191,7 +177,6 @@ class InferenceContext(
 
     private val exprTypes = concurrentMapOf<MvExpr, Ty>()
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
-    private val acquiredTypes = mutableMapOf<MvCallExpr, List<Ty>>()
     private val callExprTypes = mutableMapOf<MvCallExpr, Ty>()
     private val pathTypes = mutableMapOf<MvPath, GenericTy>()
 
@@ -243,7 +228,6 @@ class InferenceContext(
         exprTypes.replaceAll { _, ty -> fullyResolve(ty) }
         patTypes.replaceAll { _, ty -> fullyResolve(ty) }
 
-        acquiredTypes.replaceAll { _, tys -> tys.map { fullyResolve(it) } }
         // for call expressions, we need to leave unresolved ty vars intact
         // to determine whether an explicit type annotation required
         callExprTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
@@ -256,7 +240,6 @@ class InferenceContext(
             patTypes,
             exprTypes,
             exprExpectedTypes,
-            acquiredTypes,
             callExprTypes,
             pathTypes,
             typeErrors
@@ -297,10 +280,6 @@ class InferenceContext(
 
     fun writeExprExpectedTy(expr: MvExpr, ty: Ty) {
         this.exprExpectedTypes[expr] = ty
-    }
-
-    fun writeAcquiredTypes(callExpr: MvCallExpr, tys: List<Ty>) {
-        this.acquiredTypes[callExpr] = tys
     }
 
     fun writeCallExprType(callExpr: MvCallExpr, ty: Ty) {

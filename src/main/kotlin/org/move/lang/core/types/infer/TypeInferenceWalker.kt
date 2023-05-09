@@ -344,9 +344,6 @@ class TypeInferenceWalker(
 
         inferArgumentTypes(funcTy.paramTypes, expectedInputTys, callExpr.callArgumentExprs)
 
-        if (funcTy is TyFunction) {
-            ctx.writeAcquiredTypes(callExpr, funcTy.acquiresTypes)
-        }
         ctx.writeCallExprType(callExpr, funcTy as Ty)
 
         return funcTy.retType
