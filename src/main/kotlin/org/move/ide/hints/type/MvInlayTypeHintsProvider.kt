@@ -12,7 +12,7 @@ import org.move.lang.core.psi.MvLetStmt
 import org.move.lang.core.psi.MvPat
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.infer.inferenceContext
+import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.JComponent
@@ -73,14 +73,15 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
 
             private fun presentTypeForPat(pat: MvPat) {
                 val msl = pat.isMsl()
-                val inferenceCtx = pat.inferenceContext(msl)
+//                val inferenceCtx = pat.inferenceContext(msl)
+                val inference = pat.inference(msl) ?: return
                 for (bindingPat in pat.descendantsOfType<MvBindingPat>()) {
                     if (bindingPat.identifier.text.startsWith("_")) continue
 
-                    val bindingTy = inferenceCtx.getBindingPatTy(bindingPat)
-                    if (bindingTy is TyUnknown) continue
+                    val ty = inference.getPatType(bindingPat)
+                    if (ty is TyUnknown) continue
 
-                    presentTypeForBinding(bindingPat, bindingTy)
+                    presentTypeForBinding(bindingPat, ty)
                 }
             }
 

@@ -2,20 +2,20 @@ package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.*
 
-fun MvItemSpecBlock.schemaFields(): List<MvSchemaFieldStmt> = childrenOfType()
+fun MvSpecCodeBlock.schemaFields(): List<MvSchemaFieldStmt> = childrenOfType()
 
-fun MvItemSpecBlock.letStmts(): List<MvLetStmt> = this.childrenOfType()
+val MvSpecCodeBlock.allLetStmts: List<MvLetStmt> get() = this.childrenOfType()
 
-fun MvItemSpecBlock.letStmts(post: Boolean): List<MvLetStmt> {
-    val statements = this.letStmts()
+fun MvSpecCodeBlock.letStmts(post: Boolean): List<MvLetStmt> {
+    val letStmts = this.allLetStmts
     return if (post) {
-        statements.filter { it.isPost }
+        letStmts.filter { it.post }
     } else {
-        statements.filter { !it.isPost }
+        letStmts.filter { !it.post }
     }
 }
 
-fun MvItemSpecBlock.inlineFunctions(): List<MvSpecInlineFunction> {
+fun MvSpecCodeBlock.specInlineFunctions(): List<MvSpecInlineFunction> {
     return this.childrenOfType<MvSpecInlineFunctionStmt>()
         .map { it.specInlineFunction }
 }

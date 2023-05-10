@@ -8,7 +8,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvMandatoryNameIdentifierOwnerImpl
-import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import javax.swing.Icon
 
 val MvBindingPat.owner: PsiElement?

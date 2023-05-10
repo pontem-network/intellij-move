@@ -1,7 +1,7 @@
 package org.move.lang.resolve
 
 import org.intellij.lang.annotations.Language
-import org.move.lang.core.resolve.MvReferenceElement
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.base.findElementInEditor
 import org.move.utils.tests.resolve.ResolveTestCase

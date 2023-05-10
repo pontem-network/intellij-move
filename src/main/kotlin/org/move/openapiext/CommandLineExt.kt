@@ -16,8 +16,8 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.util.io.systemIndependentPath
-import org.move.cli.runconfig.MvCapturingProcessHandler
-import org.move.stdext.MvResult
+import org.move.cli.runConfigurations.MvCapturingProcessHandler
+import org.move.stdext.RsResult
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
 
@@ -72,7 +72,7 @@ fun GeneralCommandLine.execute(
     val handler = MvCapturingProcessHandler.startProcess(this) // The OS process is started here
         .unwrapOrElse {
             LOG.warn("Failed to run executable", it)
-            return MvResult.Err(MvProcessExecutionException.Start(commandLineString, it))
+            return RsResult.Err(MvProcessExecutionException.Start(commandLineString, it))
         }
 
     val cargoKiller = Disposable {
@@ -100,7 +100,7 @@ fun GeneralCommandLine.execute(
         // on the other hand, this is isomorphic
         // to the scenario where cargoKiller triggers.
         val output = ProcessOutput().apply { setCancelled() }
-        return MvResult.Err(
+        return RsResult.Err(
             MvProcessExecutionException.Canceled(
                 commandLineString,
                 output,
@@ -122,15 +122,15 @@ fun GeneralCommandLine.execute(
     }
 
     return when {
-        output.isCancelled -> MvResult.Err(MvProcessExecutionException.Canceled(commandLineString, output))
-        output.isTimeout -> MvResult.Err(MvProcessExecutionException.Timeout(commandLineString, output))
-        output.exitCode != 0 -> MvResult.Err(
+        output.isCancelled -> RsResult.Err(MvProcessExecutionException.Canceled(commandLineString, output))
+        output.isTimeout -> RsResult.Err(MvProcessExecutionException.Timeout(commandLineString, output))
+        output.exitCode != 0 -> RsResult.Err(
             MvProcessExecutionException.ProcessAborted(
                 commandLineString,
                 output
             )
         )
-        else -> MvResult.Ok(output)
+        else -> RsResult.Ok(output)
     }
 }
 

@@ -3,8 +3,10 @@ package org.move.ide.inspections.imports
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.intention.HighPriorityAction
+import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInspection.LocalQuickFixOnPsiElement
+import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
@@ -15,7 +17,9 @@ import org.move.lang.core.completion.DefaultInsertHandler
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.types.ItemQualName
 import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.moveProject
 import org.move.openapiext.checkWriteAccessAllowed
@@ -25,6 +29,12 @@ import org.move.openapiext.runWriteCommandAction
 
 class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), HighPriorityAction {
     private var isConsumed: Boolean = false
+
+    override fun generatePreview(
+        project: Project,
+        previewDescriptor: ProblemDescriptor
+    ): IntentionPreviewInfo =
+        IntentionPreviewInfo.EMPTY
 
     override fun getFamilyName() = NAME
     override fun getText() = familyName
@@ -55,6 +65,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
                 chooseItemAndImport(project, it, candidates, refElement)
             }
         }
+        isConsumed = true
     }
 
     private fun chooseItemAndImport(
@@ -89,7 +100,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
         fun getImportCandidates(
             context: ImportContext,
             targetName: String,
-            itemFilter: (MvQualifiedNamedElement) -> Boolean = { true }
+            itemFilter: (MvQualNamedElement) -> Boolean = { true }
         ): List<ImportCandidate> {
             val (contextElement, itemVis) = context
 
@@ -97,7 +108,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
             val moveProject = contextElement.moveProject ?: return emptyList()
             val searchScope = moveProject.searchScope()
 
-            val allItems = mutableListOf<MvQualifiedNamedElement>()
+            val allItems = mutableListOf<MvQualNamedElement>()
             if (isUnitTestMode) {
                 // always add current file in tests
                 val currentFile = contextElement.containingFile as? MoveFile ?: return emptyList()
@@ -109,7 +120,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
                 .processElementsByName(project, targetName, searchScope) { element ->
                     processQualItem(element, itemVis) {
                         val entryElement = it.element
-                        if (entryElement !is MvQualifiedNamedElement) return@processQualItem false
+                        if (entryElement !is MvQualNamedElement) return@processQualItem false
                         if (it.name == targetName) {
                             allItems.add(entryElement)
                         }
@@ -120,7 +131,7 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
 
             return allItems
                 .filter(itemFilter)
-                .mapNotNull { el -> el.fqPath?.let { ImportCandidate(el, it) } }
+                .mapNotNull { item -> item.qualName?.let { ImportCandidate(item, it) } }
         }
     }
 }
@@ -150,7 +161,7 @@ data class ImportContext private constructor(
             val itemVis = ItemVis(
                 namespaces = ns,
                 visibilities = vs,
-                mslScope = contextElement.mslScope,
+                mslLetScope = contextElement.mslLetScope,
                 itemScope = contextElement.itemScope,
             )
             return ImportContext(contextElement, itemVis)
@@ -158,7 +169,7 @@ data class ImportContext private constructor(
     }
 }
 
-data class ImportCandidate(val element: MvQualifiedNamedElement, val fqPath: FqPath)
+data class ImportCandidate(val element: MvQualNamedElement, val qualName: ItemQualName)
 
 fun ImportCandidate.import(context: MvElement) {
     checkWriteAccessAllowed()
@@ -168,11 +179,11 @@ fun ImportCandidate.import(context: MvElement) {
         ?: return
     val insertTestOnly = insertionScope.itemScope == ItemScope.MAIN
             && context.itemScope == ItemScope.TEST
-    insertionScope.insertUseItem(psiFactory, fqPath, insertTestOnly)
+    insertionScope.insertUseItem(psiFactory, qualName, insertTestOnly)
 }
 
-private fun MvImportsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: FqPath, testOnly: Boolean) {
-    val newUseStmt = psiFactory.useStmt(usePath.toString(), testOnly)
+private fun MvImportsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: ItemQualName, testOnly: Boolean) {
+    val newUseStmt = psiFactory.useStmt(usePath.editorText(), testOnly)
     if (this.tryGroupWithOtherUseItems(psiFactory, newUseStmt, testOnly)) return
 
     val anchor = childrenOfType<MvUseStmt>().lastElement
@@ -226,11 +237,11 @@ class ImportInsertHandler(
     }
 }
 
-fun MoveFile.qualifiedItems(targetName: String, itemVis: ItemVis): List<MvQualifiedNamedElement> {
+fun MoveFile.qualifiedItems(targetName: String, itemVis: ItemVis): List<MvQualNamedElement> {
     checkUnitTestMode()
-    val elements = mutableListOf<MvQualifiedNamedElement>()
+    val elements = mutableListOf<MvQualNamedElement>()
     processFileItems(this, itemVis) {
-        if (it.element is MvQualifiedNamedElement && it.name == targetName) {
+        if (it.element is MvQualNamedElement && it.name == targetName) {
             elements.add(it.element)
         }
         false

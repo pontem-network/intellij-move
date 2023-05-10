@@ -10,7 +10,7 @@ import org.move.lang.core.completion.createLookupElementWithIcon
 import org.move.lang.core.psi.MvItemSpecRef
 import org.move.lang.core.psi.itemScope
 import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.MslScope
+import org.move.lang.core.resolve.MslLetScope
 import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
@@ -28,7 +28,7 @@ object SpecItemCompletionProvider : MvCompletionProvider() {
         val itemVis = ItemVis(
             namespaces = setOf(Namespace.SPEC_ITEM),
             visibilities = Visibility.none(),
-            mslScope = MslScope.NONE,
+            mslLetScope = MslLetScope.NONE,
             itemScope = itemSpecRef.itemScope,
         )
         processItems(itemSpecRef, itemVis) {

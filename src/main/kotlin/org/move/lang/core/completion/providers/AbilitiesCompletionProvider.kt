@@ -14,9 +14,9 @@ object AbilitiesCompletionProvider : CompletionProvider<CompletionParameters>() 
         context: ProcessingContext,
         result: CompletionResultSet
     ) {
-        val traits = arrayOf("copy", "store", "drop", "key")
-        for (trait in traits) {
-            val element = LookupElementBuilder.create(trait)
+        val abilities = arrayOf("copy", "store", "drop", "key")
+        for (ability in abilities) {
+            val element = LookupElementBuilder.create(ability)
             result.addElement(PrioritizedLookupElement.withPriority(element, KEYWORD_PRIORITY))
         }
     }

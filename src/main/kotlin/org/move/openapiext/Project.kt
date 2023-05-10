@@ -4,15 +4,15 @@ import com.intellij.execution.RunManager
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
-import org.move.cli.runconfig.AptosCommandConfiguration
+import org.move.cli.runConfigurations.legacy.MoveCommandConfiguration
 
 val Project.runManager: RunManager get() = RunManager.getInstance(this)
 
-fun Project.aptosRunConfigurations(): List<AptosCommandConfiguration> =
+fun Project.aptosRunConfigurations(): List<MoveCommandConfiguration> =
     runManager.allConfigurationsList
-        .filterIsInstance<AptosCommandConfiguration>()
+        .filterIsInstance<MoveCommandConfiguration>()
 
-fun Project.aptosBuildRunConfigurations(): List<AptosCommandConfiguration> =
+fun Project.aptosBuildRunConfigurations(): List<MoveCommandConfiguration> =
     aptosRunConfigurations().filter { it.command.startsWith("move compile") }
 
 inline fun <reified T : Configurable> Project.showSettings() {

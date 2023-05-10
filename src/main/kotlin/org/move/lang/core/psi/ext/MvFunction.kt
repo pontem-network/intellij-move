@@ -7,16 +7,20 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.util.SimpleModificationTracker
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
+import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.util.PlatformIcons
+import org.move.cli.MoveProject
 import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvAttrItem
-import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.MvItemSpec
-import org.move.lang.core.psi.module
+import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
+import org.move.lang.core.types.ItemQualName
+import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnit
+import org.move.lang.core.types.ty.TyUnknown
 import javax.swing.Icon
 
 enum class FunctionVisibility {
@@ -51,11 +55,21 @@ fun MvFunction.visibilityFromPsi(): FunctionVisibility {
     }
 }
 
-val MvFunction.isEntry: Boolean get() = this.isChildExists(MvElementTypes.ENTRY)
+val MvFunction.isEntry: Boolean
+    get() {
+        val stub = greenStub
+        return stub?.isEntry ?: this.isChildExists(MvElementTypes.ENTRY)
+    }
 
 val MvFunction.isInline: Boolean get() = this.isChildExists(MvElementTypes.INLINE)
 
-val MvFunction.isView: Boolean get() = queryAttributes.getAttrItem("view") != null
+val MvFunction.isView: Boolean
+    get() {
+        val stub = greenStub
+        return stub?.isView ?: queryAttributes.isView
+    }
+
+fun MvFunction.functionId(moveProject: MoveProject): String? = qualName?.cmdText(moveProject)
 
 val MvFunction.testAttrItem: MvAttrItem? get() = queryAttributes.getAttrItem("test")
 
@@ -66,6 +80,8 @@ val MvFunction.isTest: Boolean
     }
 
 val QueryAttributes.isTest: Boolean get() = this.hasAttrItem("test")
+
+val QueryAttributes.isView: Boolean get() = this.hasAttrItem("view")
 
 val MvFunction.signatureText: String
     get() {
@@ -98,6 +114,48 @@ fun MvFunction.outerItemSpecs(): List<MvItemSpec> {
         .filter { it.itemSpecRef?.referenceName == functionName }
 }
 
+val MvFunction.transactionParameters: List<MvFunctionParameter> get() = this.parameters.drop(1)
+
+//fun MvFunctionLike.declaredType(msl: Boolean): TyFunction2 {
+//    val subst = typeParameters ?: this.instantiateTypeParameters()
+//    val paramTypes = parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
+//    val acquiresTypes = this.acquiresPathTypes.map { it.loweredType(msl) }
+//    val retType = rawReturnType(msl)
+//    return TyFunction2(subst, paramTypes, acquiresTypes, retType)
+//}
+
+fun MvFunctionLike.rawReturnType(msl: Boolean): Ty {
+    val retType = returnType ?: return TyUnit
+    return retType.type?.loweredType(msl) ?: TyUnknown
+}
+
+val MvFunction.specResultParameters: List<MvFunctionParameter>
+    get() {
+        return getProjectPsiDependentCache(this) {
+            val retType = it.returnType
+            val psiFactory = it.project.psiFactory
+            if (retType == null) {
+                emptyList()
+            } else {
+                val retTypeType = retType.type
+                when (retTypeType) {
+                    null -> emptyList()
+                    is MvTupleType -> {
+                        retTypeType.typeList
+                            .mapIndexed { i, type ->
+                                psiFactory.specFunctionParameter(it, "result_${i + 1}", type.text)
+                            }
+                    }
+                    else -> {
+                        listOf(
+                            psiFactory.specFunctionParameter(it, "result", retTypeType.text)
+                        )
+                    }
+                }
+            }
+        }
+    }
+
 abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
                                  MvFunction {
     constructor(node: ASTNode) : super(node)
@@ -106,12 +164,20 @@ abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
 
     var builtIn = false
 
-    override val fqName: String
+    override val qualName: ItemQualName?
         get() {
-            val moduleFqName = this.module?.fqName?.let { "$it::" }
-            val name = this.name ?: "<unknown>"
-            return moduleFqName + name
+            val itemName = this.name ?: return null
+            val moduleFQName = this.module?.qualName ?: return null
+            return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
+
+//    override fun declaredType(msl: Boolean): TyFunction2 {
+//        val subst = this.instantiateTypeParameters()
+//        val paramTypes = parameters.map { it.type?.loweredType(msl) ?: TyUnknown }
+//        val acquiresTypes = this.acquiresPathTypes.map { it.loweredType(msl) }
+//        val retType = rawReturnType(msl)
+//        return TyFunction2(subst, paramTypes, acquiresTypes, retType)
+//    }
 
     override val modificationTracker: SimpleModificationTracker =
         SimpleModificationTracker()

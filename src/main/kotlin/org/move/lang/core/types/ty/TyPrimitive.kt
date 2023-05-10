@@ -4,7 +4,7 @@ import com.intellij.psi.PsiElement
 import org.move.ide.presentation.tyToString
 
 
-abstract class TyPrimitive(val name: String) : Ty {
+abstract class TyPrimitive(val name: String) : Ty() {
     override fun abilities() = setOf(Ability.DROP, Ability.COPY, Ability.STORE)
 }
 
@@ -36,6 +36,12 @@ object TyNum : TyPrimitive("num") {
     override fun toString(): String = tyToString(this)
 }
 
+object TySpecBv: TyPrimitive("bv") {
+    override fun abilities() = Ability.all()
+    override fun toString(): String = tyToString(this)
+
+}
+
 data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
     override fun abilities() = Ability.all()
 
@@ -49,6 +55,8 @@ data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
         }
     }
 
+    fun isDefault(): Boolean = this.kind == DEFAULT_KIND
+
     companion object {
         fun fromName(name: String): TyInteger =
             Kind.values().find { it.name == name }?.let(::TyInteger)!!
@@ -57,6 +65,10 @@ data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
             Kind.values().find { literal.text.endsWith(it.name) }?.let(::TyInteger)
 
         val DEFAULT_KIND = Kind.NoPrecision
+        val DEFAULT = default()
+        val U8 = TyInteger(Kind.u8)
+
+        fun default() = TyInteger(DEFAULT_KIND)
     }
 
     enum class Kind {

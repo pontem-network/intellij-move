@@ -2,7 +2,6 @@ package org.move.lang.core.psi
 
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
-import com.intellij.openapi.util.ModificationTracker
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
@@ -28,7 +27,7 @@ val MvElement.namespaceModule: MvModule?
         val parent = this.findFirstParent(false) { it is MvModule || it is MvModuleSpec }
         return when (parent) {
             is MvModule -> parent
-            is MvModuleSpec -> parent.module
+            is MvModuleSpec -> parent.moduleItem
             else -> null
         }
     }
@@ -39,11 +38,11 @@ val MvElement.containingModuleSpec: MvModuleSpec? get() = ancestorStrict()
 
 val MvElement.containingImportsOwner get() = ancestorOrSelf<MvImportsOwner>()
 
-val MvElement.containingModuleOrScript: MvElement?
-    get() {
-        return this.findFirstParent(false) { it is MvScript || it is MvModule }
-                as? MvElement
-    }
+//val MvElement.containingModuleOrScript: MvElement?
+//    get() {
+//        return this.findFirstParent(false) { it is MvScript || it is MvModule }
+//                as? MvElement
+//    }
 
 /**
  * Delete the element along with a neighbour comma.

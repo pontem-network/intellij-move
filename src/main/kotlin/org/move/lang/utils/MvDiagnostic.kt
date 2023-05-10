@@ -80,7 +80,7 @@ sealed class MvDiagnostic(
         }
     }
 
-    class CannotInferType(element: PsiElement) : MvDiagnostic(element) {
+    class NeedsTypeAnnotation(element: PsiElement) : MvDiagnostic(element) {
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
                 ERROR,

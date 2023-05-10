@@ -120,7 +120,7 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = module.fqName
+            override fun getName(): String = module.qualName?.editorText() ?: "null"
             override fun toTestString(): String = "Module($name)"
         }
 
@@ -139,7 +139,7 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = function.fqName
+            override fun getName(): String = function.qualName?.editorText() ?: "null"
             override fun toTestString(): String = "Entrypoint($name)"
         }
 
@@ -158,7 +158,7 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = function.fqName
+            override fun getName(): String = function.qualName?.editorText() ?: "null"
             override fun toTestString(): String = "View($name)"
         }
 

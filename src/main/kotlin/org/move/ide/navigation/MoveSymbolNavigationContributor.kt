@@ -11,7 +11,11 @@ import org.move.openapiext.allMoveFiles
 
 
 class MvSymbolNavigationContributor : ChooseByNameContributorEx {
-    override fun processNames(processor: Processor<in String>, scope: GlobalSearchScope, filter: IdFilter?) {
+    override fun processNames(
+        processor: Processor<in String>,
+        scope: GlobalSearchScope,
+        filter: IdFilter?
+    ) {
         // get all names
         val project = scope.project ?: return
         val visitor = object : MvNamedElementsVisitor() {

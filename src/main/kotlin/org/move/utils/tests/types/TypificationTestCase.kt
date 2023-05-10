@@ -1,5 +1,7 @@
 package org.move.utils.tests.types
 
+import com.intellij.psi.PsiElement
+import com.intellij.psi.util.descendantsOfType
 import org.intellij.lang.annotations.Language
 import org.move.ide.presentation.expectedTyText
 import org.move.ide.presentation.text
@@ -27,23 +29,27 @@ abstract class TypificationTestCase : MvTestBase() {
         val (element, data) = myFixture.findElementAndDataInEditor<T>()
         val expectedType = data.trim()
 
-        val msl = element.isMsl()
-        val ctx = element.maybeInferenceContext(msl) ?: InferenceContext(msl, element.itemContext(msl))
+//        val ctx = element.maybeInferenceContext(msl) ?: InferenceContext(msl, element.itemContext(msl))
 
-        val actualType = inferExpectedTy(element, ctx)?.expectedTyText() ?: "null"
+        val msl = element.isMsl()
+        val inference = element.inference(msl) ?: error("No inference at caret element")
+
+        val actualType = inferExpectedTy(element, inference)?.expectedTyText() ?: "null"
         check(actualType == expectedType) {
             "Type mismatch. Expected $expectedType, found: $actualType"
         }
     }
 
-    protected fun testExpr(
-        @Language("Move") code: String,
-//        allowErrors: Boolean = false
-    ) {
+    protected fun testExpr(@Language("Move") code: String) {
         InlineFile(myFixture, code, "main.move")
         check()
 //        if (!allowErrors) checkNoInferenceErrors()
-//        checkAllExpressionsTypified()
+        checkAllExpressionsTypified()
+    }
+
+    protected fun testExprsTypified(@Language("Move") code: String) {
+        InlineFile(myFixture, code, "main.move")
+        checkAllExpressionsTypified()
     }
 
     protected fun testBinding(
@@ -52,23 +58,17 @@ abstract class TypificationTestCase : MvTestBase() {
     ) {
         InlineFile(myFixture, code, "main.move")
         val (bindingPat, data) = myFixture.findElementAndDataInEditor<MvBindingPat>()
-//        val expectedTypes = data.split("|").map(String::trim)
         val expectedType = data.trim()
 
-//        val ctx = InferenceContext(expr.isMsl())
         val msl = bindingPat.isMsl()
-        val inferenceCtx = bindingPat.maybeInferenceContext(msl) ?: error("No InferenceContextOwner at the caret")
+        val inference = bindingPat.inference(msl) ?: error("No InferenceContextOwner at the caret")
 
-        val type = inferenceCtx.getBindingPatTy(bindingPat).text(true)
-        check(type == expectedType) {
-            "Type mismatch. Expected $expectedType, found: $type"
+        val actualType = inference.getPatType(bindingPat).text(true)
+        check(actualType == expectedType) {
+            "Type mismatch. Expected $expectedType, found: $actualType"
         }
-//        check(type in expectedType) {
-//            "Type mismatch. Expected one of $expectedType, found: $type. $description"
-//        }
-
 //        if (!allowErrors) checkNoInferenceErrors()
-//        checkAllExpressionsTypified()
+        checkAllExpressionsTypified()
     }
 
 //    protected fun testExpr(
@@ -100,48 +100,47 @@ abstract class TypificationTestCase : MvTestBase() {
         val expectedType = data.trim()
 
         val msl = expr.isMsl()
-        val inferenceCtx = expr.maybeInferenceContext(msl) ?: error("No InferenceContextOwner at the caret")
-
-        val type = inferExprTy(expr, inferenceCtx).text(true)
-        check(type == expectedType) {
-            "Type mismatch. Expected $expectedType, found: $type"
+        val inference = expr.inference(msl) ?: error("No inference owner at the caret position")
+        val actualType = inference.getExprType(expr).text(true)
+        check(actualType == expectedType) {
+            "Type mismatch. Expected $expectedType, found: $actualType"
         }
-//        check(type in expectedType) {
-//            "Type mismatch. Expected one of $expectedType, found: $type. $description"
-//        }
     }
 
-//    private fun checkNoInferenceErrors() {
-//        val errors = myFixture.file.descendantsOfType<RsInferenceContextOwner>().asSequence()
-//            .flatMap { it.inference.diagnostics.asSequence() }
-//            .map { it.element to it.prepare() }
-//            .filter { it.second.severity == Severity.ERROR }
-//            .toList()
-//        if (errors.isNotEmpty()) {
-//            error(
-//                errors.joinToString("\n", "Detected errors during type inference: \n") {
-//                    "\tAt `${it.first.text}` (line ${it.first.lineNumber}) " +
-//                            "${it.second.errorCode?.code} ${it.second.header} | ${it.second.description}"
-//                }
-//            )
-//        }
-//    }
+    private fun checkNoInferenceErrors() {
+        val errors = myFixture.file.descendantsOfType<MvInferenceContextOwner>().asSequence()
+            .flatMap { it.inference(false).typeErrors.asSequence() }
+            .map { it.element to it.message() }
+            .toList()
+        if (errors.isNotEmpty()) {
+            error(
+                errors.joinToString(
+                    "\n",
+                    "Detected errors during type inference: \n"
+                ) {
+                    "\tAt `${it.first.text}` (line ${it.first.lineNumber}) ${it.second}"
+                }
+            )
+        }
+    }
 
-//    private fun checkAllExpressionsTypified() {
-//        val notTypifiedExprs = myFixture.file.descendantsWithMacrosOfType<RsExpr>()
-//            .filter { expr ->
-//                expr.inference?.isExprTypeInferred(expr) == false
-//            }.filter { expr ->
-//                expr.expandedFrom?.let { it.macroName in BUILTIN_MACRO_NAMES } != true
-//            }
-//        if (notTypifiedExprs.isNotEmpty()) {
-//            error(
-//                notTypifiedExprs.joinToString(
-//                    "\n",
-//                    "Some expressions are not typified during type inference: \n",
-//                    "\nNote: All `RsExpr`s must be typified during type inference"
-//                ) { "\tAt `${it.text}` (line ${it.lineNumber})" }
-//            )
-//        }
-//    }
+    private fun checkAllExpressionsTypified() {
+        val notTypifiedExprs = myFixture.file
+            .descendantsOfType<MvExpr>().toList()
+            .filter { expr ->
+                expr.inference(false)?.hasExprType(expr) == false
+            }
+        if (notTypifiedExprs.isNotEmpty()) {
+            error(
+                notTypifiedExprs.joinToString(
+                    "\n",
+                    "Some expressions are not typified during type inference: \n",
+                    "\nNote: All `MvExpr`s must be typified during type inference"
+                ) { "\tAt `${it.text}` (line ${it.lineNumber})" }
+            )
+        }
+    }
+
+    private val PsiElement.lineNumber: Int
+        get() = myFixture.getDocument(myFixture.file).getLineNumber(textOffset)
 }

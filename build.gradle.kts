@@ -14,10 +14,10 @@ fun prop(name: String): String =
 
 
 //val intellijVersion = prop("intellijVersion", "2021.2")
-val kotlinVersion = "1.8.10"
+val kotlinVersion = "1.8.20"
 
 val pluginJarName = "intellij-move-$platformVersion"
-val pluginVersion = "1.27.1"
+val pluginVersion = "1.28.0"
 val pluginGroup = "org.move"
 val javaVersion = if (platformVersion < "222") JavaVersion.VERSION_11 else JavaVersion.VERSION_17
 val kotlinJvmTarget = if (platformVersion < "222") "11" else "17"
@@ -27,7 +27,7 @@ version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.8.10"
+    kotlin("jvm") version "1.8.20"
     id("org.jetbrains.intellij") version "1.13.3"
     id("org.jetbrains.grammarkit") version "2021.2.2"
     id("net.saliman.properties") version "1.5.2"
@@ -42,6 +42,7 @@ dependencies {
     implementation("io.sentry:sentry:5.5.2") {
         exclude("org.slf4j")
     }
+    implementation("com.github.ajalt.clikt:clikt:3.5.2")
 }
 
 allprojects {
@@ -54,6 +55,7 @@ allprojects {
     repositories {
         mavenCentral()
         maven("https://cache-redirector.jetbrains.com/intellij-dependencies")
+        gradlePluginPortal()
     }
 
     intellij {

@@ -3,10 +3,10 @@ package org.move.lang.core.psi.ext
 import org.move.lang.core.psi.MvStructPat
 import org.move.lang.core.psi.MvStructPatField
 
-val MvStructPat.fields: List<MvStructPatField>
+val MvStructPat.patFields: List<MvStructPatField>
     get() =
         structPatFieldsBlock.structPatFieldList
 
-val MvStructPat.fieldNames: List<String>
+val MvStructPat.patFieldNames: List<String>
     get() =
-        fields.map { it.referenceName }
+        patFields.map { it.referenceName }

@@ -12,12 +12,13 @@ import org.move.lang.core.types.ty.TyUnknown
 
 abstract class TypeFolder {
     val cache = mutableMapOf<Ty, Ty>()
-    var depth = 0;
+    var depth = 0
 
     operator fun invoke(ty: Ty): Ty {
-        // workaround for massively deep structs
-        if (depth > 25) return TyUnknown
+        // workaround for recursive structs, folding gives up at some point
+        if (depth > MAX_RECURSION_DEPTH) return TyUnknown
 
+//        return fold(ty)
         val cachedTy = cache[ty]
         if (cachedTy != null) {
             return cachedTy
@@ -29,6 +30,10 @@ abstract class TypeFolder {
     }
 
     abstract fun fold(ty: Ty): Ty
+
+    companion object {
+        const val MAX_RECURSION_DEPTH = 25
+    }
 }
 
 //typealias TypeFolder = (Ty) -> Ty
@@ -38,7 +43,7 @@ typealias TypeVisitor = (Ty) -> Boolean
  * Despite a scary name, [TypeFoldable] is a rather simple thing.
  *
  * It allows to map type variables within a type (or another object,
- * containing a type, like a [EqualityConstraint]) to other types.
+ * containing a type, like a [EqualObligation]) to other types.
  */
 interface TypeFoldable<out Self> {
     /**
@@ -72,8 +77,8 @@ interface TypeFoldable<out Self> {
      */
     fun innerFoldWith(folder: TypeFolder): Self
 
-    /** Similar to [innerVisitWith], but just visit types without folding */
-    fun visitWith(visitor: TypeVisitor): Boolean
+    /** Similar to [superVisitWith], but just visit types without folding */
+    fun visitWith(visitor: TypeVisitor): Boolean = innerVisitWith(visitor)
 
     /** Similar to [foldWith], but just visit types without folding */
     fun innerVisitWith(visitor: TypeVisitor): Boolean

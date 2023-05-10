@@ -14,7 +14,6 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
-import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyUnknown
 
 const val KEYWORD_PRIORITY = 80.0
@@ -105,18 +104,18 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
 
         is MvConst -> {
             val msl = this.isMsl()
-            val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
+            val constTy = this.type?.loweredType(msl) ?: TyUnknown
             this.createLookupElementWithIcon()
-                .withTypeText(itemContext.getConstTy(this).text(true))
+                .withTypeText(constTy.text(true))
         }
 
         is MvBindingPat -> {
             val msl = this.isMsl()
-//            val inferenceCtx = this.maybeInferenceContext(msl) ?: InferenceContext(msl)
-//            val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
-            val inferenceCtx = this.inferenceContext(msl)
+            val inference = this.inference(msl)
+            // race condition sometimes happens, when file is too big, inference is not finished yet
+            val ty = inference?.getPatTypeOrUnknown(this) ?: TyUnknown
             this.createLookupElementWithIcon()
-                .withTypeText(inferenceCtx.getBindingPatTy(this).text(true))
+                .withTypeText(ty.text(true))
         }
 
         is MvSchema -> this.createLookupElementWithIcon()
@@ -213,45 +212,7 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
         val element = item.psiElement as? MvElement ?: return
 
         when (element) {
-            is MvFunctionLike -> {
-                val allTypesInferred = run {
-                    // explicit type arguments required
-                    if (element.requiredTypeParams.isNotEmpty()) return@run false
-                    // all type arguments inferrable from function parameters
-                    if (element.typeParamsUsedOnlyInReturnType.isEmpty()) return@run true
-
-                    if (completionContext == null) return@run false
-                    val msl = element.isMsl()
-
-                    val itemContext = element.module?.itemContext(msl) ?: element.project.itemContext(msl)
-                    val funcTy = itemContext.getItemTy(element) as? TyFunction ?: return@run false
-
-                    val inferenceCtx = InferenceContext(msl, itemContext)
-                    val expectedTy = completionContext.expectedTy
-                    if (expectedTy != null && expectedTy !is TyUnknown) {
-                        inferenceCtx.addConstraint(funcTy.retType, expectedTy)
-                    }
-                    inferenceCtx.processConstraints()
-
-                    val resolvedTy = inferenceCtx.resolveTy(funcTy)
-                    !resolvedTy.containsTyOfClass(listOf(TyInfer::class.java))
-                }
-
-                var suffix = ""
-                if (!context.hasAngleBrackets && !allTypesInferred) {
-                    suffix += "<>"
-                }
-                if (!context.hasAngleBrackets && !context.hasCallParens) {
-                    suffix += "()"
-                }
-                val offset = when {
-                    element.parameters.isNotEmpty() || !allTypesInferred -> 1
-                    else -> 2
-                }
-
-                document.insertString(context.selectionEndOffset, suffix)
-                EditorModificationUtil.moveCaretRelatively(context.editor, offset)
-            }
+            is MvFunctionLike -> handleFunctionInsert(context, element)
             is MvSchema -> {
                 if (element.hasTypeParameters) {
                     if (!context.hasAngleBrackets) {
@@ -273,5 +234,39 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
                 }
             }
         }
+    }
+
+    private fun handleFunctionInsert(context: InsertionContext, element: MvFunctionLike) {
+        val requiresExplicitTypes = run {
+            val msl = element.isMsl()
+            val callTy = element.declaredType(msl).substitute(element.tyInfers) as TyFunction
+
+            val inferenceCtx = InferenceContext(msl)
+            callTy.paramTypes.forEach {
+                val resolvedParamType = it.foldTyInferWith { TyUnknown }
+                inferenceCtx.combineTypes(it, resolvedParamType)
+            }
+            val expectedTy = completionContext?.expectedTy
+            if (expectedTy != null && expectedTy !is TyUnknown) {
+                inferenceCtx.combineTypes(callTy.retType, expectedTy)
+            }
+            (inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyFunction).needsTypeAnnotation()
+        }
+
+        var suffix = ""
+        if (!context.hasAngleBrackets && requiresExplicitTypes) {
+            suffix += "<>"
+        }
+        if (!context.hasAngleBrackets && !context.hasCallParens) {
+            suffix += "()"
+        }
+
+        val offset = when {
+            element.parameters.isNotEmpty() || requiresExplicitTypes -> 1
+            else -> 2
+        }
+
+        context.document.insertString(context.selectionEndOffset, suffix)
+        EditorModificationUtil.moveCaretRelatively(context.editor, offset)
     }
 }

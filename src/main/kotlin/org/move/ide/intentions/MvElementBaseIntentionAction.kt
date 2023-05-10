@@ -1,9 +1,11 @@
 package org.move.ide.intentions
 
 import com.intellij.codeInsight.intention.BaseElementAtCaretIntentionAction
+import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import org.move.openapiext.checkReadAccessAllowed
 import org.move.openapiext.checkWriteAccessAllowed
 
@@ -33,6 +35,9 @@ abstract class MvElementBaseIntentionAction<Ctx> : BaseElementAtCaretIntentionAc
     abstract fun findApplicableContext(project: Project, editor: Editor, element: PsiElement): Ctx?
 
     abstract fun invoke(project: Project, editor: Editor, ctx: Ctx)
+
+    override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo =
+        IntentionPreviewInfo.EMPTY
 
     final override fun invoke(project: Project, editor: Editor, element: PsiElement) {
         val ctx = findApplicableContext(project, editor, element) ?: return

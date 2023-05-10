@@ -1,5 +1,6 @@
 package org.move.ide.annotator
 
+import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.annotation.AnnotationBuilder
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
@@ -10,8 +11,8 @@ class MvAnnotationHolder(val holder: AnnotationHolder) {
         newErrorAnnotation(element, message).create()
     }
 
-    fun createWeakWarningAnnotation(element: PsiElement, message: String?) {
-        newWeakWarningAnnotation(element, message).create()
+    fun createWeakWarningAnnotation(element: PsiElement, message: String?, vararg fixes: IntentionAction) {
+        newWeakWarningAnnotation(element, message, *fixes).create()
     }
 
     fun newErrorAnnotation(
@@ -23,12 +24,14 @@ class MvAnnotationHolder(val holder: AnnotationHolder) {
     fun newWeakWarningAnnotation(
         element: PsiElement,
         message: String?,
-    ): AnnotationBuilder = newAnnotation(element, HighlightSeverity.WEAK_WARNING, message)
+        vararg fixes: IntentionAction
+    ): AnnotationBuilder = newAnnotation(element, HighlightSeverity.WEAK_WARNING, message, *fixes)
 
     fun newAnnotation(
         element: PsiElement,
         severity: HighlightSeverity,
         message: String?,
+        vararg fixes: IntentionAction
     ): AnnotationBuilder {
         val builder = if (message == null) {
             holder.newSilentAnnotation(severity)
@@ -36,6 +39,9 @@ class MvAnnotationHolder(val holder: AnnotationHolder) {
             holder.newAnnotation(severity, message)
         }
         builder.range(element)
+        for (fix in fixes) {
+            builder.withFix(fix)
+        }
         return builder
     }
 }

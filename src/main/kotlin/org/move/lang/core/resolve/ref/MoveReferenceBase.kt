@@ -6,7 +6,6 @@ import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.resolve.MvReferenceElement
 import org.move.utils.doRenameIdentifier
 
 abstract class MvReferenceBase<T : MvReferenceElement>(element: T) : PsiPolyVariantReferenceBase<T>(element),

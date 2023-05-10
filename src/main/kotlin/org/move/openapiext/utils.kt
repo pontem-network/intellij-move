@@ -66,6 +66,12 @@ fun VirtualFile.toPsiDirectory(project: Project): PsiDirectory? =
 val PsiFile.document: Document?
     get() = PsiDocumentManager.getInstance(project).getDocument(this)
 
+fun Document.getOffsetPosition(offset: Int): Pair<Int, Int> {
+    val lineNumber = this.getLineNumber(offset) + 1
+    val columnNumber = offset - this.getLineStartOffset(lineNumber - 1)
+    return Pair(lineNumber, columnNumber)
+}
+
 fun saveAllDocuments() = FileDocumentManager.getInstance().saveAllDocuments()
 
 inline fun testAssert(action: () -> Boolean, lazyMessage: () -> Any) {

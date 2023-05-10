@@ -68,9 +68,9 @@ class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
         override fun visitScriptBlock(o: MvScriptBlock) = fold(o)
         override fun visitModuleBlock(o: MvModuleBlock) = fold(o)
 
-        override fun visitItemSpecBlock(o: MvItemSpecBlock) {
-            if (o.children.isNotEmpty()) {
-                fold(o)
+        override fun visitSpecCodeBlock(block: MvSpecCodeBlock) {
+            if (block.children.isNotEmpty()) {
+                fold(block)
             }
         }
 

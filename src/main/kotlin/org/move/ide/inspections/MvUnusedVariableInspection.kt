@@ -6,7 +6,7 @@ import com.intellij.psi.util.descendantsOfType
 import org.move.ide.inspections.fixes.RemoveParameterFix
 import org.move.ide.inspections.fixes.RenameFix
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.functionLike
+import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.owner
 
 class MvUnusedVariableInspection : MvLocalInspectionTool() {
@@ -20,12 +20,16 @@ class MvUnusedVariableInspection : MvLocalInspectionTool() {
             }
 
             override fun visitFunctionParameter(o: MvFunctionParameter) {
-                if (o.functionLike?.codeBlock == null) return
+                val functionLike = o.containingFunctionLike ?: return
+                if (functionLike.anyBlock == null) return
+
                 val binding = o.bindingPat
                 checkUnused(binding, "Unused function parameter")
             }
 
             private fun checkUnused(binding: MvBindingPat, description: String) {
+                if (binding.isMsl()) return
+
                 val bindingName = binding.name
                 if (bindingName.startsWith("_")) return
 

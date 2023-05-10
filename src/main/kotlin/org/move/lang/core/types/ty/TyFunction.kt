@@ -1,33 +1,55 @@
 package org.move.lang.core.types.ty
 
+import com.intellij.openapi.project.Project
 import org.move.ide.presentation.tyToString
 import org.move.lang.core.psi.MvFunctionLike
-import org.move.lang.core.types.infer.TypeFolder
-import org.move.lang.core.types.infer.TypeVisitor
+import org.move.lang.core.psi.psiFactory
+import org.move.lang.core.types.infer.*
 
-class TyFunction(
-    val item: MvFunctionLike,
-    val typeVars: List<TyInfer.TyVar>,
-    val paramTypes: List<Ty>,
-    val retType: Ty,
+data class TyFunction(
+    override val item: MvFunctionLike,
+    override val substitution: Substitution,
+    override val paramTypes: List<Ty>,
     val acquiresTypes: List<Ty>,
-    val typeArgs: List<Ty>,
-) : Ty {
+    override val retType: Ty,
+) : TyCallable, GenericTy(
+    item,
+    substitution,
+    mergeFlags(paramTypes) or mergeFlags(acquiresTypes) or retType.flags
+) {
+
+    fun needsTypeAnnotation(): Boolean = this.substitution.hasTyInfer
+
     override fun innerFoldWith(folder: TypeFolder): Ty {
         return TyFunction(
             item,
-            typeVars,
+            substitution.foldValues(folder),
             paramTypes.map { it.foldWith(folder) },
-            retType.foldWith(folder),
             acquiresTypes.map { it.foldWith(folder) },
-            typeArgs.map { it.foldWith(folder) }
+            retType.foldWith(folder),
         )
     }
 
     override fun innerVisitWith(visitor: TypeVisitor): Boolean =
-        paramTypes.any { it.visitWith(visitor) } || retType.visitWith(visitor)
+        substitution.visitValues(visitor)
+                || paramTypes.any { it.visitWith(visitor) }
+                || retType.visitWith(visitor)
+                || acquiresTypes.any { it.visitWith(visitor) }
 
     override fun abilities(): Set<Ability> = Ability.all()
 
     override fun toString(): String = tyToString(this)
+
+    companion object {
+        fun unknownTyFunction(project: Project, numParams: Int): TyFunction {
+            val fakeFunction = project.psiFactory.function("fun __fake()")
+            return TyFunction(
+                fakeFunction,
+                emptySubstitution,
+                generateSequence { TyUnknown }.take(numParams).toList(),
+                emptyList(),
+                TyUnknown
+            )
+        }
+    }
 }

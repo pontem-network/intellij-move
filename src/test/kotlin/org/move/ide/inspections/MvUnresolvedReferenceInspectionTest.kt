@@ -1,5 +1,6 @@
 package org.move.ide.inspections
 
+import org.move.utils.tests.DevelopmentMode
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedReferenceInspection::class) {
@@ -287,15 +288,15 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
     }    
     """)
 
-    fun `test no unresolved reference for imported module identifier`() = checkByText("""
-    module 0x1::Signer {}
-    module 0x1::M {
-        use 0x1::Signer;
-        fun call() {
-            Signer
-        }
-    }
-    """)
+//    fun `test no unresolved reference for imported module identifier`() = checkByText("""
+//    module 0x1::Signer {}
+//    module 0x1::M {
+//        use 0x1::Signer;
+//        fun call() {
+//            Signer::
+//        }
+//    }
+//    """)
 
     fun `test unresolved field for dot expression`() = checkByText(
         """
@@ -328,24 +329,8 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
     }    
     """)
 
-    fun `test no unresolved field for uninferred type of vector`() = checkByText(
-        """
-    module 0x1::M {
-        struct ValidatorInfo { field: u8 }
-        native public fun vector_empty<Element>(): vector<Element>;
-        native public fun vector_push_back<Element>(v: &mut vector<Element>, e: Element);
-        native public fun vector_borrow_mut<Element>(v: &mut vector<Element>, i: u64): &mut Element;
-        fun call() {
-            let v = vector_empty();
-            let item = ValidatorInfo { field: 10 };
-            vector_push_back(&mut v, item);
-            vector_borrow_mut(&mut v, 10).field;
-        }
-    }        
-    """
-    )
-
-    fun `test no error for dot field in specs`() = checkByText("""
+    @DevelopmentMode(false)
+    fun `test no error for dot field in specs without development mode`() = checkByText("""
 module 0x1::main {
     struct S {}
     fun call(): S {}
@@ -367,12 +352,12 @@ module 0x1::main {
 }        
     """)
 
-    fun `test no error for field of reference of unknown type`() = checkByText("""
+    fun `test error for field of reference of unknown type`() = checkByText("""
 module 0x1::main {
     fun call<T>(t: T): &T { &t }
     fun main() {
         let var = &(1 + false);
-        var.key;
+        var.<error descr="Unresolved field: `key`">key</error>;
     }
 }        
     """)
@@ -412,5 +397,45 @@ module 0x1::m {
     /// A shared resource group for storing object resources together in storage.
     struct ObjectGroup { }
 }        
+    """)
+
+    fun `test spec builtin const unresolved outside spec`() = checkByText("""
+module 0x1::m {
+    fun main() {
+        <error descr="Unresolved reference: `MAX_U128`">MAX_U128</error>;
+    }
+}
+    """)
+
+    fun `test spec builtin const in spec`() = checkByText("""
+module 0x1::m {
+    fun main() {
+        spec {
+            MAX_U128;
+        }
+    }
+}
+    """)
+
+    fun `test result variable for return type tuple in function spec`() = checkByText("""
+        module 0x1::m {
+            public fun get_fees_distribution(): (u128, u128) {
+                (1, 1)
+            }
+            spec get_fees_distribution {
+                aborts_if false;
+                ensures result_1 == 1;
+                ensures result_2 == 1;
+                ensures <error descr="Unresolved reference: `result_3`">result_3</error> == 1;
+            }
+        }        
+    """)
+
+    fun `test no unresolved reference in pragma`() = checkByText("""
+        module 0x1::m {
+            spec module {
+                pragma intrinsic = map;
+            }
+        }        
     """)
 }

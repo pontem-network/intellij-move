@@ -59,9 +59,9 @@ class ResolveStructFieldsTest : ResolveTestCase() {
               //X  
             }
             
-            public fun is_none<Element>(t: &Option<Element>): bool {
-                Vector::is_empty(&t.vec)
-                                  //^
+            public fun is_none<Element>(t: &Option<Element>) {
+                &t.vec;
+                  //^
             }
         }    
     """
@@ -76,8 +76,8 @@ class ResolveStructFieldsTest : ResolveTestCase() {
             }
             
             public fun is_none<Element>(t: &mut Option<Element>): bool {
-                Vector::is_empty(&t.vec)
-                                  //^
+                &t.vec;
+                  //^
             }
         }    
     """
@@ -137,20 +137,71 @@ class ResolveStructFieldsTest : ResolveTestCase() {
         } 
     """)
 
-    fun `test resolve field for vector inferred type`() = checkByCode("""
+    fun `test resolve field for vector inferred type`() = checkByCode(
+        """
     module 0x1::M {
         struct ValidatorInfo { field: u8 }
                               //X
         native public fun vector_empty<El>(): vector<El>;
-        native public fun vector_push_back<Element>(v: &mut vector<Element>, e: Element);
-        native public fun vector_borrow_mut<Element>(v: &mut vector<Element>, i: u64): &mut Element;
+        native public fun vector_push_back<PushElement>(v: &mut vector<PushElement>, e: PushElement);
+        native public fun vector_borrow_mut<BorrowElement>(v: &mut vector<BorrowElement>, i: u64): &mut BorrowElement;
         fun call() {
             let v = vector_empty();
             let item = ValidatorInfo { field: 10 };
             vector_push_back(&mut v, item);
-            vector_borrow_mut(&mut v, 10).field
+            vector_borrow_mut(&mut v, 10).field;
                                           //^
         }
     }        
+    """
+    )
+
+    fun `test access fields of imported structs in specs`() = checkByCode("""
+        module 0x1::coin {
+            struct Coin { value: u64 }
+                         //X
+            public fun get_coin(): Coin { Coin { value: 10 } }
+        }        
+        module 0x1::m {
+            use 0x1::coin::get_coin;
+            
+            spec module {
+                get_coin().value;
+                             //^
+            } 
+        }
     """)
+
+    fun `test struct from another module can be created in specs`() = checkByCode("""
+        module 0x1::m {
+            struct Coin { val: u8 }
+                  //X
+        }
+        module 0x1::main {
+            use 0x1::m;
+            spec module {
+                let _ = m::Coin { val: 10 };
+                           //^
+            }
+        }
+    """)
+
+    fun `test resolve field from include schema`() = checkByCode(
+        """
+        module 0x1::m {
+            struct S { val: u8 }
+                      //X
+            spec schema MySchema {
+                schema_val: u8;
+            }
+            spec module {
+                let s = S { val: 10 };
+                include MySchema {
+                    schema_val: s.val
+                                 //^
+                };
+            }
+        }        
+    """
+    )
 }

@@ -59,6 +59,9 @@ class MoveProjectsService(val project: Project) : Disposable {
         }
     }
 
+    val allProjects: List<MoveProject>
+        get() = this.projects.state
+
     fun refreshAllProjects() {
         LOG.info("Project state refresh started")
         modifyProjects {
@@ -79,9 +82,6 @@ class MoveProjectsService(val project: Project) : Disposable {
         val file = path.toVirtualFile() ?: return null
         return findMoveProject(file)
     }
-
-    val allProjects: List<MoveProject>
-        get() = this.projects.state
 
     private fun doRefresh(project: Project): CompletableFuture<List<MoveProject>> {
         val result = CompletableFuture<List<MoveProject>>()

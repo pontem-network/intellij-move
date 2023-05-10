@@ -12,7 +12,6 @@ import com.intellij.util.BitUtil
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 import org.move.lang.MvElementTypes.*
-import org.move.lang.core.MoveParserUtil.setFlag
 import org.move.stdext.makeBitMask
 
 enum class FunModifier {
@@ -151,7 +150,7 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     fun includeStmtMode(b: PsiBuilder, level: Int, parser: Parser): Boolean {
         val oldFlags = b.flags
         val newFlags = oldFlags
-            .setFlag(SCHEMA_LIT_ALLOWED, true)
+            .setFlag(INCLUDE_STMT_MODE, true)
         b.flags = newFlags
         val result = parser.parse(b, level)
         b.flags = oldFlags
@@ -159,10 +158,10 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun checkStructAllowed(b: PsiBuilder, level: Int): Boolean = !checkSchemaAllowed(b, level)
+    fun includeStmtModeFalse(b: PsiBuilder, level: Int): Boolean = !includeStmtModeTrue(b, level)
 
     @JvmStatic
-    fun checkSchemaAllowed(b: PsiBuilder, level: Int): Boolean = BitUtil.isSet(b.flags, SCHEMA_LIT_ALLOWED)
+    fun includeStmtModeTrue(b: PsiBuilder, level: Int): Boolean = BitUtil.isSet(b.flags, INCLUDE_STMT_MODE)
 
     @JvmStatic
     fun functionModifierSet(
@@ -379,7 +378,7 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 
     // flags
     private val TOP_LEVEL: Int = makeBitMask(0)
-    private val SCHEMA_LIT_ALLOWED: Int = makeBitMask(1)
+    private val INCLUDE_STMT_MODE: Int = makeBitMask(1)
 
     // msl
     private val MSL_LEVEL: Key<Int> = Key("MoveParserUtil.MSL_LEVEL")

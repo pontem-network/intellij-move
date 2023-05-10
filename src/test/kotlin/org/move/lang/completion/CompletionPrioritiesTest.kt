@@ -1,7 +1,7 @@
 package org.move.lang.completion
 
 import org.intellij.lang.annotations.Language
-import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.MvQualNamedElement
 import org.move.utils.tests.completion.CompletionTestCase
 
 class CompletionPrioritiesTest : CompletionTestCase() {
@@ -85,7 +85,8 @@ module 0x1::Main {
         """
     )
 
-    fun `test correct type const first`() = checkCompletionsOrder(listOf("CONST_2u8", "CONST_1u64"), """
+    fun `test correct type const first`() = checkCompletionsOrder(
+        listOf("CONST_2u8", "CONST_1u64"), """
     module 0x1::Main {
         const CONST_1u64: u64 = 2;
         const CONST_2u8: u8 = 1;
@@ -93,7 +94,8 @@ module 0x1::Main {
             let a: u8 = CO/*caret*/;
         }
     }    
-    """)
+    """
+    )
 
     fun `test resource before non-resource in borrow_global`() = checkCompletionsOrder(
         listOf("Coin", "Cat"),
@@ -116,7 +118,8 @@ module 0x1::Main {
 
     fun checkFqCompletionsOrder(listStart: List<String>, @Language("Move") code: String) {
         val variants = completionFixture.invokeCompletion(code)
-        val lookupStrings = variants.map { (it.psiElement as? MvNamedElement)?.fqName ?: it.lookupString }
+        val lookupStrings =
+            variants.map { (it.psiElement as? MvQualNamedElement)?.qualName?.editorText() ?: it.lookupString }
         checkValidPrefix(listStart, lookupStrings)
     }
 

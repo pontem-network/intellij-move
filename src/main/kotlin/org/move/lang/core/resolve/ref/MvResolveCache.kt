@@ -28,7 +28,6 @@ import com.intellij.util.containers.ConcurrentWeakKeySoftValueHashMap
 import com.intellij.util.containers.HashingStrategy
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestors
-import org.move.lang.core.resolve.MvReferenceElement
 import java.lang.ref.ReferenceQueue
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicReference

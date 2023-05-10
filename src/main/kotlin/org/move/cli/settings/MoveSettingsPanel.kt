@@ -6,7 +6,7 @@ import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
-import org.move.cli.Aptos
+import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathField
 import org.move.openapiext.showSettings

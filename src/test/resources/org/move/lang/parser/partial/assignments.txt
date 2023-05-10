@@ -121,7 +121,7 @@ FILE
                       <empty list>
                   MvBinaryOpImpl(BINARY_OP)
                     PsiElement(+)('+')
-                  PsiErrorElement:',', ':', <expression>, <operator>, '=' or '[' expected, got ')'
+                  PsiErrorElement:':', <expression>, <operator>, '=' or '[' expected, got ')'
                     <empty list>
                 PsiWhiteSpace(' ')
                 PsiElement())(')')
@@ -240,7 +240,7 @@ FILE
                 PsiWhiteSpace(' ')
                 MvInitializerImpl(INITIALIZER)
                   PsiElement(=)('=')
-                  PsiErrorElement:',', ':', <expression>, <operator>, '=' or '[' expected, got ')'
+                  PsiErrorElement:':', <expression>, <operator>, '=' or '[' expected, got ')'
                     <empty list>
               PsiWhiteSpace(' ')
               PsiElement())(')')

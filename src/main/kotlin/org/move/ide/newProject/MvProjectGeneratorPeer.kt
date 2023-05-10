@@ -13,7 +13,7 @@ import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.layout.selected
-import org.move.cli.Aptos
+import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.cli.settings.AptosSettingsPanel
 import org.move.cli.settings.MoveSettingsPanel
 import org.move.cli.settings.isValidExecutable

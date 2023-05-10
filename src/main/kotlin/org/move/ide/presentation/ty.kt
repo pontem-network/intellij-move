@@ -5,7 +5,7 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.types.ty.*
 
-fun Ty.canBeAcquiredInModule(mod: MvModule): Boolean {
+fun Ty.itemDeclaredInModule(mod: MvModule): Boolean {
     if (this is TyUnknown) return true
     // no declaring module means builtin
     val declaringMod = this.declaringModule ?: return false
@@ -34,7 +34,7 @@ fun Ty.expectedBindingFormText(): String {
             "tuple binding of length ${this.types.size}: $expectedForm"
         }
         is TyStruct -> "struct binding of type ${this.text(true)}"
-        else -> "a single type"
+        else -> "a single variable"
     }
 }
 
@@ -66,13 +66,21 @@ fun Ty.expectedTyText(): String {
     return render(
         this,
         level = 3,
-        typeVar = {
-            val name = "?${it.origin?.name ?: "_"}"
+        typeParam = {
+            val name = it.origin.name ?: "_"
             val abilities =
                 it.abilities()
                     .toList().sorted()
                     .joinToString(", ", "(", ")") { a -> a.label() }
             "$name$abilities"
+        },
+        tyVar = {
+            val name = it.origin?.name ?: "_"
+            val abilities =
+                it.abilities()
+                    .toList().sorted()
+                    .joinToString(", ", "(", ")") { a -> a.label() }
+            "?$name$abilities"
         },
         fq = true
     )
@@ -95,7 +103,8 @@ private fun render(
     unknown: String = "<unknown>",
     anonymous: String = "<anonymous>",
     integer: String = "integer",
-    typeVar: (TyInfer.TyVar) -> String = { "?${it.origin?.name ?: "_"}" },
+    typeParam: (TyTypeParameter) -> String = { it.name ?: anonymous },
+    tyVar: (TyInfer.TyVar) -> String = { "?${it.origin?.name ?: "_"}" },
     fq: Boolean = false
 ): String {
     check(level >= 0)
@@ -107,6 +116,7 @@ private fun render(
             is TySigner -> "signer"
             is TyUnit -> "()"
             is TyNum -> "num"
+            is TySpecBv -> "bv"
             is TyInteger -> {
                 if (ty.kind == TyInteger.DEFAULT_KIND) {
                     integer
@@ -121,7 +131,7 @@ private fun render(
 
     if (level == 0) return "_"
 
-    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, typeVar, fq) }
+    val r = { subTy: Ty -> render(subTy, level - 1, unknown, anonymous, integer, typeParam, tyVar, fq) }
 
     return when (ty) {
         is TyFunction -> {
@@ -134,29 +144,38 @@ private fun render(
         }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
         is TyVector -> "vector<${r(ty.item)}>"
+        is TyIntegerRange -> "range"
         is TyReference -> {
             val prefix = if (ty.permissions.contains(RefPermissions.WRITE)) "&mut " else "&"
             "$prefix${r(ty.referenced)}"
         }
-        is TyTypeParameter -> ty.name ?: anonymous
+        is TyTypeParameter -> typeParam(ty)
         is TyStruct -> {
-            val name = if (fq) ty.item.fqName else (ty.item.name ?: anonymous)
+            val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
             val args =
-                if (ty.typeArgs.isEmpty()) ""
-                else ty.typeArgs.joinToString(", ", "<", ">", transform = r)
+                if (ty.typeArguments.isEmpty()) ""
+                else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
             name + args
         }
         is TyInfer -> when (ty) {
-            is TyInfer.TyVar -> typeVar(ty)
+            is TyInfer.TyVar -> tyVar(ty)
             is TyInfer.IntVar -> integer
         }
         is TyLambda -> {
             val params = ty.paramTypes.joinToString(",", "|", "|", transform = r)
-            if (ty.returnType is TyUnit)
-                params
+            val retType = if (ty.retType is TyUnit)
+                "()"
             else
-                "$params ${r(ty.returnType)}"
+                r(ty.retType)
+            "$params -> $retType"
         }
-        else -> error("unreachable")
+        is TySchema -> {
+            val name = if (fq) ty.item.qualName?.editorText() ?: anonymous else (ty.item.name ?: anonymous)
+            val args =
+                if (ty.typeArguments.isEmpty()) ""
+                else ty.typeArguments.joinToString(", ", "<", ">", transform = r)
+            name + args
+        }
+        else -> error("unimplemented for type ${ty.javaClass.name}")
     }
 }

@@ -395,6 +395,39 @@ class ResolveSpecsTest: ResolveTestCase() {
     }    
     """)
 
+    fun `test schema lit with if else operator if`() = checkByCode("""
+    module 0x1::M {
+        spec schema MySchema {}
+                     //X
+        spec module {
+            include if (true) MySchema else MySchema;
+                              //^
+        }
+    }    
+    """)
+
+    fun `test schema lit with if else operator else`() = checkByCode("""
+    module 0x1::M {
+        spec schema MySchema {}
+                     //X
+        spec module {
+            include if (true) MySchema else MySchema;
+                                            //^
+        }
+    }    
+    """)
+
+    fun `test schema lit with and operator`() = checkByCode("""
+    module 0x1::M {
+        spec schema MySchema {}
+                     //X
+        spec module {
+            include MySchema && MySchema;
+                     //^
+        }
+    }    
+    """)
+
     fun `test resolve module name in spec module`() = checkByCode("""
     module 0x1::Module {
                 //X        
@@ -507,7 +540,7 @@ class ResolveSpecsTest: ResolveTestCase() {
     }
     spec 0x1::main {
         spec fun spec_now() {
-            global<S>(@0x1).val
+            global<S>(@0x1).val;
                            //^ 
         }
     } 
@@ -579,5 +612,163 @@ class ResolveSpecsTest: ResolveTestCase() {
         
         }
     }
+    """)
+
+    fun `test result field for spec`() = checkByCode("""
+module 0x1::main {
+    struct S { val: u8 }
+               //X
+    fun call(): S { S { val: 1 } }
+    spec call {
+        ensures result.val == 1;
+                      //^
+    }
+}        
+    """)
+
+    fun `test resolve native fun defined in spec module`() = checkByCode("""
+        module 0x1::m {
+            spec module {
+                native fun serialize<MoveValue>(v: &MoveValue): vector<u8>;
+                            //X
+            }
+        }
+        module 0x1::main {
+            use 0x1::m;
+            spec module {
+                m::serialize(&true);
+                   //^
+            }
+        }
+    """)
+
+    fun `test resolve spec fun defined in another module`() = checkByCode("""
+        module 0x1::m {
+            spec fun spec_now_microseconds(): u64 {
+                      //X
+                1
+            }            
+        }
+        module 0x1::main {
+            use 0x1::m;
+            spec module {
+                m::spec_now_microseconds();
+                     //^
+            }
+        }
+    """)
+
+    fun `test resolve spec fun defined in another module spec`() = checkByCode("""
+        module 0x1::m {
+        }
+        spec 0x1::m {
+            spec fun spec_now_microseconds(): u64 {
+                      //X
+                1
+            }            
+        }
+        module 0x1::main {
+            use 0x1::m;
+            spec module {
+                m::spec_now_microseconds();
+                     //^
+            }
+        }
+    """)
+
+    fun `test resolve spec fun defined in another spec module item spec`() = checkByCode("""
+        module 0x1::m {
+        }
+        spec 0x1::m {
+            spec module {
+                fun spec_now_microseconds(): u64 {
+                          //X
+                    1
+                }            
+            }
+        }
+        module 0x1::main {
+            use 0x1::m;
+            spec module {
+                m::spec_now_microseconds();
+                     //^
+            }
+        }
+    """)
+
+    fun `test spec function from module item spec is not accessible in non-msl scope`() = checkByCode("""
+        module 0x1::m {
+        }
+        spec 0x1::m {
+            spec fun spec_now_microseconds(): u64 {
+                1
+            }       
+        }
+        module 0x1::main {
+            use 0x1::m;
+            fun main() {
+                m::spec_now_microseconds();
+                   //^ unresolved
+            }
+        }
+    """)
+
+    fun `test spec inline function from module item spec is not accessible in non-msl scope`() = checkByCode("""
+        module 0x1::m {
+        }
+        spec 0x1::m {
+            spec module { 
+                fun spec_now_microseconds(): u64 {
+                    1
+                }       
+            }
+        }
+        module 0x1::main {
+            use 0x1::m;
+            fun main() {
+                m::spec_now_microseconds();
+                   //^ unresolved
+            }
+        }
+    """)
+
+    fun `test resolve type parameters of axiom`() = checkByCode("""
+        module 0x1::m {
+            spec module {
+                    // `deserialize` is an injective function.
+                axiom<T> forall b1: vector<u8>, b2: vector<u8>:
+                    //X
+                    (deserialize<T>(b1) == deserialize<T>(b2) ==> b1 == b2);
+                               //^
+            }
+        }        
+    """)
+
+    fun `test resolve spec fun from module item spec in the same module`() = checkByCode("""
+        module 0x1::m {
+            fun call<T>() {}
+        }
+        spec 0x1::m {
+            spec module {
+                fun deserializable<T>(bytes: vector<u8>): bool;
+                    //X
+            }
+            spec call<T>() {
+                deserializable<T>();
+                //^
+            }
+        }        
+    """)
+
+    fun `test module has separate scope from bindings`() = checkByCode("""
+        module 0x1::m {
+            fun call(account: &signer) {}
+                        //X
+            spec call {
+                use aptos_framework::account;
+                signer::address_of(account);
+                                  //^
+            }
+        }        
     """)
 }

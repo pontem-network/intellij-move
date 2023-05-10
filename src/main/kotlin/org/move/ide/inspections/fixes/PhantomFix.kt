@@ -2,14 +2,14 @@ package org.move.ide.inspections.fixes
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import org.move.ide.inspections.MvLocalQuickFixOnPsiElement
+import org.move.ide.inspections.DiagnosticFix
 import org.move.lang.core.psi.MvTypeParameter
 import org.move.lang.core.psi.ext.isPhantom
 import org.move.lang.core.psi.psiFactory
 
-sealed class PhantomFix(typeParam: MvTypeParameter): MvLocalQuickFixOnPsiElement<MvTypeParameter>(typeParam) {
+sealed class PhantomFix(typeParam: MvTypeParameter) : DiagnosticFix<MvTypeParameter>(typeParam) {
 
-    class Add(typeParameter: MvTypeParameter): PhantomFix(typeParameter) {
+    class Add(typeParameter: MvTypeParameter) : PhantomFix(typeParameter) {
 
         override fun getFamilyName(): String = "Declare phantom"
         override fun getText(): String = "Declare phantom"
@@ -24,7 +24,7 @@ sealed class PhantomFix(typeParam: MvTypeParameter): MvLocalQuickFixOnPsiElement
         }
     }
 
-    class Remove(typeParameter: MvTypeParameter): PhantomFix(typeParameter) {
+    class Remove(typeParameter: MvTypeParameter) : PhantomFix(typeParameter) {
 
         override fun getFamilyName(): String = "Remove phantom"
         override fun getText(): String = "Remove phantom"

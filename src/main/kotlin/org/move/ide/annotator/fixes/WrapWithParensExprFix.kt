@@ -4,11 +4,10 @@ import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.intellij.psi.SmartPsiElementPointer
-import org.move.ide.inspections.DiagnosticFix
+import org.move.ide.inspections.DiagnosticIntentionFix
 import org.move.lang.core.psi.*
 
-class WrapWithParensExprFix(castExpr: MvCastExpr) : DiagnosticFix<MvCastExpr>(castExpr) {
+class WrapWithParensExprFix(castExpr: MvCastExpr) : DiagnosticIntentionFix<MvCastExpr>(castExpr) {
     override fun generatePreview(project: Project, previewDescriptor: ProblemDescriptor): IntentionPreviewInfo =
         IntentionPreviewInfo.EMPTY
     override fun getFamilyName(): String = "Wrap cast with ()"

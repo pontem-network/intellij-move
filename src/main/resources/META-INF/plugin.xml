@@ -32,13 +32,15 @@
                         serviceImplementation="org.move.lang.core.psi.MvPsiManagerImpl"/>
 
         <configurationType
-                implementation="org.move.cli.runconfig.AptosCommandConfigurationType"/>
+                implementation="org.move.cli.runConfigurations.legacy.MoveConfigurationType"/>
+        <configurationType
+                implementation="org.move.cli.runConfigurations.aptos.AptosConfigurationType"/>
         <runConfigurationProducer
-                implementation="org.move.cli.runconfig.producers.TestCommandConfigurationProducer"/>
+                implementation="org.move.cli.runConfigurations.producers.TestCommandConfigurationProducer"/>
         <runConfigurationProducer
-                implementation="org.move.cli.runconfig.producers.PublishCommandConfigurationProducer"/>
-<!--        <runConfigurationProducer-->
-<!--                implementation="org.move.cli.runconfig.producers.RunTransactionConfigurationProducer"/>-->
+                implementation="org.move.cli.runConfigurations.producers.RunCommandConfigurationProducer"/>
+        <runConfigurationProducer
+                implementation="org.move.cli.runConfigurations.producers.ViewCommandConfigurationProducer"/>
         <runLineMarkerContributor language="Move"
                                   implementationClass="org.move.ide.lineMarkers.AptosCommandLineMarkerContributor"/>
 
@@ -48,6 +50,8 @@
         <stubElementTypeHolder class="org.move.lang.MvElementTypes" />
 
         <stubIndex implementation="org.move.lang.index.MvNamedElementIndex" />
+        <stubIndex implementation="org.move.lang.index.MvEntryFunctionIndex" />
+        <stubIndex implementation="org.move.lang.index.MvViewFunctionIndex" />
         <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
         <lang.documentationProvider language="Move"
@@ -210,6 +214,10 @@
                          enabledByDefault="true" level="ERROR"
                          implementationClass="org.move.ide.inspections.MvTypeCheckInspection"/>
         <localInspection language="Move" groupName="Move"
+                         displayName="Ability checking"
+                         enabledByDefault="false" level="ERROR"
+                         implementationClass="org.move.ide.inspections.MvAbilityCheckInspection"/>
+        <localInspection language="Move" groupName="Move"
                          displayName="Missing acquires"
                          enabledByDefault="true" level="ERROR"
                          implementationClass="org.move.ide.inspections.MvMissingAcquiresInspection"/>
@@ -245,13 +253,16 @@
         <!-- Color Settings -->
         <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>
 
+        <extendWordSelectionHandler implementation="org.move.ide.wordSelection.MvListSelectionHandler" />
+        <extendWordSelectionHandler implementation="org.move.ide.wordSelection.MvTypeParamBoundListHandler" />
+
         <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml"/>
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
         <moduleType id="MOVE_MODULE"
                     implementationClass="org.move.cli.module.MvModuleType"/>
         <moduleBuilder builderClass="org.move.cli.module.MvModuleBuilder"/>
-        <projectTaskRunner implementation="org.move.cli.runconfig.buildtool.AptosBuildTaskRunner" />
+        <projectTaskRunner implementation="org.move.cli.runConfigurations.AptosBuildTaskRunner" />
 
         <projectOpenProcessor id="Move" implementation="org.move.cli.MoveProjectOpenProcessor"/>
         <directoryProjectGenerator implementation="org.move.ide.newProject.MvDirectoryProjectGenerator" />
@@ -275,8 +286,7 @@
                 implementation="org.move.cli.module.BuildLibraryRootsProvider"/>
 
         <!-- Notifications -->
-        <notificationGroup id="Move Plugin" displayType="BALLOON"/>
-        <notificationGroup id="Missing Aptos Init" displayType="BALLOON"/>
+        <notificationGroup id="Move Language" displayType="BALLOON"/>
         <editorNotificationProvider
                 implementation="org.move.ide.notifications.InvalidAptosBinaryNotification"/>
 

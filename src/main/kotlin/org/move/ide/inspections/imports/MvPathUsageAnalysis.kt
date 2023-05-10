@@ -5,6 +5,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.allModuleSpecBlocks
 import org.move.lang.core.psi.ext.module
+import org.move.lang.core.psi.ext.moduleItem
 import org.move.lang.core.psi.ext.moduleSpec
 
 typealias ItemUsages = MutableMap<String, MutableSet<MvNamedElement>>
@@ -63,7 +64,7 @@ val MvImportsOwner.pathUsages: PathUsages
                 }
             }
             is MvModuleSpecBlock -> {
-                val module = this.moduleSpec.module ?: return localPathUsages
+                val module = this.moduleSpec.moduleItem ?: return localPathUsages
                 val moduleBlock = module.moduleBlock
                 if (moduleBlock != null) {
                     localPathUsages.updateFrom(moduleBlock.localPathUsages())

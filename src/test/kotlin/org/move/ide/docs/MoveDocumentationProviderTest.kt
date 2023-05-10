@@ -12,7 +12,7 @@ class MvDocumentationProviderTest : MvDocumentationProviderTestCase() {
         }
     }
     """, expected = """
-        <div class='definition'><pre>builtins
+        <div class='definition'><pre>0x0::builtins
         native fun <b>move_from</b>&lt;T: key&gt;(addr: address): T</pre></div>
         <div class='content'><p>Removes `T` from address and returns it. </p>
         <p>Aborts if address does not hold a `T`.</p></div>
@@ -138,6 +138,30 @@ module 0x1::main {
 <div class='definition'><pre>0x1::main
 fun <b>box3</b>&lt;T&gt;(x: T): Box3&lt;T&gt;</pre></div>
 <div class='content'></div>        
+    """)
+
+    fun `test result type documentation`() = doTest("""
+module 0x1::m {
+    fun call(): u8 {}
+    spec call {
+        result;
+        //^ 
+    }
+}        
+    """, """
+value parameter <b>result</b>: num      
+    """)
+
+    fun `test generic result type documentation`() = doTest("""
+module 0x1::m {
+    fun call<T>(): &mut T {}
+    spec call {
+        result;
+        //^ 
+    }
+}        
+    """, """
+value parameter <b>result</b>: &mut T      
     """)
 
     private fun doTest(@Language("Move") code: String, @Language("Html") expected: String?) =

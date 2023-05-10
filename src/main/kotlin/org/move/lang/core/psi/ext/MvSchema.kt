@@ -6,23 +6,28 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.MvSchemaStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
-import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
+import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.ty.GenericTy
+import org.move.lang.core.types.ty.TySchema
+import org.move.lang.core.types.ty.TyUnknown
 
-val MvSchema.specBlock: MvItemSpecBlock? get() = this.childOfType()
+val MvSchema.specBlock: MvSpecCodeBlock? get() = this.childOfType()
 
-val MvSchema.module: MvModule
+val MvSchema.module: MvModule?
     get() {
         val moduleBlock = this.parent
-        return moduleBlock.parent as MvModule
+        return moduleBlock.parent as? MvModule
     }
 
 val MvSchema.requiredTypeParams: List<MvTypeParameter>
     get() {
         val usedTypeParams = mutableSetOf<MvTypeParameter>()
-        val inferenceCtx = InferenceContext.default(true, this)
+//        val inferenceCtx = InferenceContext.default(true, this)
         this.fieldStmts
-            .map { it.annotationTy(inferenceCtx) }
+            .map { it.type?.loweredType(true) ?: TyUnknown }
+//            .map { it.annotationTy(inferenceCtx) }
             .forEach {
                 it.foldTyTypeParameterWith { paramTy -> usedTypeParams.add(paramTy.origin); paramTy }
             }
@@ -33,6 +38,8 @@ val MvSchema.fieldStmts get() = this.specBlock?.schemaFields().orEmpty()
 
 val MvSchema.fieldBindings get() = this.fieldStmts.map { it.bindingPat }
 
+val MvIncludeStmt.expr: MvExpr? get() = this.childOfType()
+
 abstract class MvSchemaMixin : MvStubbedNamedElementImpl<MvSchemaStub>,
                                MvSchema {
 
@@ -42,10 +49,13 @@ abstract class MvSchemaMixin : MvStubbedNamedElementImpl<MvSchemaStub>,
 
     override fun getIcon(flags: Int) = MoveIcons.SCHEMA
 
-    override val fqName: String
+    override val qualName: ItemQualName?
         get() {
-            val moduleFqName = "${this.module.fqName}::"
-            val name = this.name ?: "<unknown>"
-            return moduleFqName + name
+            val itemName = this.name ?: return null
+            val moduleFQName = this.module?.qualName ?: return null
+            return ItemQualName(this, moduleFQName.address, moduleFQName.itemName, itemName)
         }
+
+    override fun declaredType(msl: Boolean): TySchema =
+        TySchema(this, this.tyTypeParams, this.generics)
 }

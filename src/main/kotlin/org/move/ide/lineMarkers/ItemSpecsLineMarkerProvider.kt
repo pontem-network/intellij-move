@@ -22,7 +22,7 @@ class ItemSpecsLineMarkerProvider : RelatedItemLineMarkerProvider() {
     ) {
         val parent = element.parent
         val targets = when {
-//            parent is MvModule && parent.identifier == element -> parent.allModuleSpecs()
+            parent is MvModule && parent.identifier == element -> parent.allModuleSpecs()
             parent is MvFunction && parent.identifier == element -> {
                 parent.innerItemSpecs() + parent.outerItemSpecs()
             }

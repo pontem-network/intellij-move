@@ -8,9 +8,9 @@ package org.move.openapiext
 import com.fasterxml.jackson.core.JacksonException
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.process.ProcessOutput
-import org.move.stdext.MvResult
+import org.move.stdext.RsResult
 
-typealias MvProcessResult<T> = MvResult<T, MvProcessExecutionException>
+typealias MvProcessResult<T> = RsResult<T, MvProcessExecutionException>
 
 sealed class MvProcessExecutionOrDeserializationException : RuntimeException {
     constructor(cause: Throwable) : super(cause)
@@ -58,13 +58,13 @@ sealed class MvProcessExecutionException : MvProcessExecutionOrDeserializationEx
     }
 }
 
-fun MvProcessResult<ProcessOutput>.ignoreExitCode(): MvResult<ProcessOutput, MvProcessExecutionException.Start> =
+fun MvProcessResult<ProcessOutput>.ignoreExitCode(): RsResult<ProcessOutput, MvProcessExecutionException.Start> =
     when (this) {
-        is MvResult.Ok -> MvResult.Ok(ok)
-        is MvResult.Err -> when (err) {
-            is MvProcessExecutionException.Start -> MvResult.Err(err)
-            is MvProcessExecutionException.Canceled -> MvResult.Ok(err.output)
-            is MvProcessExecutionException.Timeout -> MvResult.Ok(err.output)
-            is MvProcessExecutionException.ProcessAborted -> MvResult.Ok(err.output)
+        is RsResult.Ok -> RsResult.Ok(ok)
+        is RsResult.Err -> when (err) {
+            is MvProcessExecutionException.Start -> RsResult.Err(err)
+            is MvProcessExecutionException.Canceled -> RsResult.Ok(err.output)
+            is MvProcessExecutionException.Timeout -> RsResult.Ok(err.output)
+            is MvProcessExecutionException.ProcessAborted -> RsResult.Ok(err.output)
         }
     }

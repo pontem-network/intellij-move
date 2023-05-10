@@ -4,7 +4,7 @@ import com.intellij.ide.util.PsiNavigationSupport
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.cli.Aptos.Companion.GeneratedFilesHolder
+import org.move.cli.runConfigurations.aptos.Aptos.Companion.GeneratedFilesHolder
 import org.move.openapiext.common.isHeadlessEnvironment
 
 fun Project.openFile(file: VirtualFile) = openFiles(GeneratedFilesHolder(file))

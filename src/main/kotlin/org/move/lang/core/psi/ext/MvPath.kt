@@ -1,13 +1,14 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
+import org.move.cli.settings.debugErrorOrFallback
 import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
 import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.MvReferenceElement
 import org.move.lang.core.resolve.ref.MvPathReference
 import org.move.lang.core.resolve.ref.MvPathReferenceImpl
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 
 fun MvPath.isPrimitiveType(): Boolean =
@@ -25,8 +26,6 @@ fun MvPath.isSpecPrimitiveType(): Boolean =
         .union(BUILTIN_TYPE_IDENTIFIERS)
         .union(SPEC_ONLY_PRIMITIVE_TYPES)
 
-val MvPath.isResult: Boolean get() = this.textMatches("result") || this.text.startsWith("result_")
-
 val MvPath.isUpdateFieldArg2: Boolean
     get() {
         if (!this.isMsl()) return false
@@ -42,13 +41,11 @@ val MvPath.isUpdateFieldArg2: Boolean
 
 val MvPath.identifierName: String? get() = identifier?.text
 
-//val MvPath.colonColon get() = this.findFirstChildByType(MvElementTypes.COLON_COLON)
-
-val MvPath.isLocal: Boolean
+val MvPath.nullModuleRef: Boolean
     get() =
         identifier != null && this.moduleRef == null
 
-val MvPath.isQual: Boolean get() = !this.isLocal
+val MvPath.isQualPath: Boolean get() = !this.nullModuleRef
 
 val MvPath.typeArguments: List<MvTypeArgument>
     get() = typeArgumentList?.typeArgumentList.orEmpty()
@@ -62,14 +59,19 @@ abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
     override fun getReference(): MvPathReference? {
         val parent = this.parent
         val namespaces = when {
-            parent is MvRefExpr && this.hasAncestor<MvIncludeStmt>() -> setOf(Namespace.NAME, Namespace.SCHEMA)
-            parent is MvSchemaLitExpr
-                    || parent is MvSchemaRef -> setOf(Namespace.SCHEMA)
+            parent is MvSchemaLit || parent is MvSchemaRef -> setOf(Namespace.SCHEMA)
             parent is MvPathType -> setOf(Namespace.TYPE)
-            parent is MvRefExpr && parent.isErrorConst() -> setOf(Namespace.ERROR_CONST)
             parent is MvCallExpr -> setOf(Namespace.FUNCTION)
-            this.isLocal -> setOf(Namespace.NAME, Namespace.MODULE)
-            else -> setOf(Namespace.NAME)
+            parent is MvRefExpr && parent.isAbortCodeConst() -> setOf(Namespace.ERROR_CONST)
+            parent is MvRefExpr -> setOf(Namespace.NAME)
+//            parent is MvRefExpr && this.nullModuleRef -> setOf(Namespace.NAME)
+//            parent is MvRefExpr && !this.nullModuleRef -> setOf(Namespace.NAME, Namespace.MODULE)
+            // TODO: it's own namespace?
+            parent is MvStructLitExpr || parent is MvStructPat -> setOf(Namespace.NAME)
+            else -> project.debugErrorOrFallback(
+                "Unhandled path parent ${parent.elementType}",
+                setOf(Namespace.NAME)
+            )
         }
         return MvPathReferenceImpl(this, namespaces)
     }
@@ -79,7 +81,7 @@ fun MvReferenceElement.namespaces(): Set<Namespace> {
     val parent = this.parent
     return when (parent) {
         is MvPathType -> setOf(Namespace.TYPE)
-        is MvSchemaLitExpr, is MvSchemaRef -> setOf(Namespace.SCHEMA)
+        is MvSchemaLit, is MvSchemaRef -> setOf(Namespace.SCHEMA)
         else ->
             when (this) {
                 is MvModuleRef -> setOf(Namespace.MODULE)

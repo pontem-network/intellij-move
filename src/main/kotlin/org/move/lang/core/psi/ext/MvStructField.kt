@@ -8,6 +8,6 @@ val MvStructField.fieldsDefBlock: MvStructBlock?
     get() =
         parent as? MvStructBlock
 
-val MvStructField.struct: MvStruct
+val MvStructField.structItem: MvStruct
     get() =
         fieldsDefBlock?.parent as MvStruct

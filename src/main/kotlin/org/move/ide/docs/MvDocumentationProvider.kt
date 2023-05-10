@@ -10,11 +10,10 @@ import org.move.ide.presentation.text
 import org.move.ide.presentation.typeLabel
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.inferenceContext
-import org.move.lang.core.types.infer.maybeInferenceContext
-import org.move.lang.core.types.infer.outerItemContext
+import org.move.lang.core.types.infer.inference
+import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.moveProject
 import org.move.stdext.joinToWithBuffer
 
@@ -34,28 +33,26 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
         val buffer = StringBuilder()
         var docElement = element
         if (
-            docElement is MvBindingPat
-            && docElement.owner is MvConst
-        ) docElement = docElement.owner
+            docElement is MvBindingPat && docElement.owner is MvConst
+        )
+            docElement = docElement.owner
+
+        val msl = docElement?.isMsl() ?: false
         when (docElement) {
-            // TODO: add docs for both scopes
             is MvNamedAddress -> {
+                // TODO: add docs for both [addresses] and [dev-addresses]
                 val moveProject = docElement.moveProject ?: return null
                 val refName = docElement.referenceName
                 val named = moveProject.getNamedAddress(refName) ?: return null
-                return "$refName = \"${named.value}\""
+                val address =
+                    named.addressLit(moveProject)?.original ?: angleWrapped("unassigned")
+                return "$refName = \"$address\""
             }
-
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
-//                val project = docElement.project
-                val inferenceCtx = docElement.inferenceContext(false)
-//                val itemContext = docElement.itemContextOwner?.itemContext(false) ?: project.itemContext(false)
-//                val inferenceCtx =
-//                    docElement.ownerInferenceCtx(false) ?: InferenceContext(false, itemContext)
-                val type = inferenceCtx.getBindingPatTy(docElement).renderForDocs(true)
-//                val type = docElement.inferBindingTy(inferenceCtx, itemContext).renderForDocs(true)
+                val inference = docElement.inference(msl) ?: return null
+                val type = inference.getPatType(docElement).renderForDocs(true)
                 buffer += presentationInfo.type
                 buffer += " "
                 buffer.b { it += presentationInfo.name }
@@ -98,7 +95,7 @@ fun MvDocAndAttributeOwner.documentationAsHtml(): String {
 fun generateFunction(function: MvFunction, buffer: StringBuilder) {
     val module = function.module
     if (module != null) {
-        buffer += module.fqName
+        buffer += module.qualName?.editorText() ?: "unknown"
         buffer += "\n"
     }
     if (function.isNative) buffer += "native "
@@ -116,11 +113,11 @@ fun MvElement.signature(builder: StringBuilder) {
         is MvFunction -> generateFunction(this, buffer)
         is MvModule -> {
             buffer += "module "
-            buffer += this.fqName
+            buffer += this.qualName?.editorText() ?: "unknown"
         }
 
         is MvStruct -> {
-            buffer += this.containingModule!!.fqName
+            buffer += this.module.qualName?.editorText() ?: "unknown"
             buffer += "\n"
 
             buffer += "struct "
@@ -131,23 +128,25 @@ fun MvElement.signature(builder: StringBuilder) {
         }
 
         is MvStructField -> {
-            val module = this.struct.module
-            val itemContext = this.struct.outerItemContext(msl)
-            buffer += module.fqName
+            val module = this.structItem.module
+//            val itemContext = this.structItem.outerItemContext(msl)
+            buffer += module.qualName?.editorText() ?: "unknown"
             buffer += "::"
-            buffer += this.struct.name ?: angleWrapped("anonymous")
+            buffer += this.structItem.name ?: angleWrapped("anonymous")
             buffer += "\n"
             buffer.b { it += this.name }
-            buffer += ": ${itemContext.getStructFieldItemTy(this).renderForDocs(true)}"
+            buffer += ": ${(this.type?.loweredType(msl) ?: TyUnknown).renderForDocs(true)}"
+//            buffer += ": ${itemContext.getStructFieldItemTy(this).renderForDocs(true)}"
         }
 
         is MvConst -> {
-            val itemContext = this.outerItemContext(msl)
-            buffer += this.module?.fqName ?: "script"
+//            val itemContext = this.outerItemContext(msl)
+            buffer += this.module?.qualName?.editorText() ?: angleWrapped("unknown")
             buffer += "\n"
             buffer += "const "
             buffer.b { it += this.name ?: angleWrapped("unknown") }
-            buffer += ": ${itemContext.getConstTy(this).renderForDocs(false)}"
+            buffer += ": ${(this.type?.loweredType(msl) ?: TyUnknown).renderForDocs(false)}"
+//            buffer += ": ${itemContext.getConstTy(this).renderForDocs(false)}"
             this.initializer?.let { buffer += " ${it.text}" }
         }
 
@@ -165,8 +164,11 @@ private fun PsiElement.generateDocumentation(
     when (this) {
         is MvType -> {
             val msl = this.isMsl()
-            val inferenceCtx = this.maybeInferenceContext(msl) ?: InferenceContext.default(msl, this)
-            buffer += inferenceCtx.getTypeTy(this)
+//            val itemContext = this.itemContext(msl)
+//            val inferenceCtx = this.maybeInferenceContext(msl) ?: InferenceContext.default(msl, this)
+//            buffer += inferenceCtx.getTypeTy(this)
+//            buffer += itemContext.rawType(this)
+            buffer += this.loweredType(msl)
                 .typeLabel(this)
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")

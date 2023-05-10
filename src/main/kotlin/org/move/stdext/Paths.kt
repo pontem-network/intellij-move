@@ -1,6 +1,7 @@
 package org.move.stdext
 
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.io.isDirectory
 import java.nio.file.Files
 import java.nio.file.InvalidPathException
@@ -29,3 +30,6 @@ fun Path.isExecutableFile(): Boolean {
 }
 
 fun Path.exists(): Boolean = Files.exists(this)
+
+fun executableName(toolName: String): String =
+    if (SystemInfo.isWindows) "$toolName.exe" else toolName

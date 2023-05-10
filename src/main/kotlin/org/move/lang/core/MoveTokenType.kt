@@ -37,3 +37,6 @@ val MOVE_BINARY_OPS = tokenSetOf(
     PLUS, MINUS,
     XOR, AND, OR
 )
+
+val LIST_OPEN_SYMBOLS = tokenSetOf(L_PAREN, LT)
+val LIST_CLOSE_SYMBOLS = tokenSetOf(R_PAREN, GT)

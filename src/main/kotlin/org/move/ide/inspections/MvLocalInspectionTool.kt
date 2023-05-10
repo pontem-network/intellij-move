@@ -1,5 +1,6 @@
 package org.move.ide.inspections
 
+import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.codeInspection.*
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -47,13 +48,60 @@ abstract class MvLocalInspectionTool : LocalInspectionTool() {
     }
 }
 
-abstract class DiagnosticFix<T : PsiElement>(element: T) :
+abstract class DiagnosticFix<T : PsiElement>(element: T) : LocalQuickFixOnPsiElement(element) {
+    override fun getStartElement(): T {
+        @Suppress("UNCHECKED_CAST")
+        return super.getStartElement() as T
+    }
+
+    override fun generatePreview(project: Project, previewDescriptor: ProblemDescriptor): IntentionPreviewInfo =
+        IntentionPreviewInfo.EMPTY
+
+    override fun getFamilyName(): String = text
+
+    override fun isAvailable(
+        project: Project,
+        file: PsiFile,
+        startElement: PsiElement,
+        endElement: PsiElement
+    ): Boolean = stillApplicable(project, file, getStartElement())
+
+    override fun invoke(
+        project: Project,
+        file: PsiFile,
+        startElement: PsiElement,
+        endElement: PsiElement
+    ) {
+        val element = getStartElement()
+        if (stillApplicable(project, file, element)) {
+            invoke(project, file, element)
+        }
+    }
+
+    open fun stillApplicable(project: Project, file: PsiFile, element: T): Boolean = true
+
+    abstract fun invoke(project: Project, file: PsiFile, element: T)
+}
+
+abstract class DiagnosticIntentionFix<T : PsiElement>(element: T) :
     LocalQuickFixAndIntentionActionOnPsiElement(element) {
 
     override fun getStartElement(): T {
         @Suppress("UNCHECKED_CAST")
         return super.getStartElement() as T
     }
+
+    override fun generatePreview(project: Project, previewDescriptor: ProblemDescriptor): IntentionPreviewInfo =
+        IntentionPreviewInfo.EMPTY
+
+    override fun getFamilyName(): String = text
+
+    override fun isAvailable(
+        project: Project,
+        file: PsiFile,
+        startElement: PsiElement,
+        endElement: PsiElement
+    ): Boolean = stillApplicable(project, file, getStartElement())
 
     override fun invoke(
         project: Project,
@@ -69,25 +117,7 @@ abstract class DiagnosticFix<T : PsiElement>(element: T) :
         }
     }
 
-    abstract fun stillApplicable(project: Project, file: PsiFile, element: T): Boolean
-
-    abstract fun invoke(project: Project, file: PsiFile, element: T)
-}
-
-abstract class InspectionQuickFix(val fixName: String) : LocalQuickFix {
-    override fun getFamilyName(): String = fixName
-}
-
-abstract class MvLocalQuickFixOnPsiElement<T : PsiElement>(psiElement: T) : LocalQuickFixOnPsiElement(psiElement) {
-    override fun invoke(project: Project, file: PsiFile, startElement: PsiElement, endElement: PsiElement) {
-        @Suppress("UNCHECKED_CAST")
-        val element = startElement as T
-        if (stillApplicable(project, file, element)) {
-            invoke(project, file, element)
-        }
-    }
-
-    abstract fun stillApplicable(project: Project, file: PsiFile, element: T): Boolean
+    open fun stillApplicable(project: Project, file: PsiFile, element: T): Boolean = true
 
     abstract fun invoke(project: Project, file: PsiFile, element: T)
 }

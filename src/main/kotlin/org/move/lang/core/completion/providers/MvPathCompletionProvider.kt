@@ -18,14 +18,13 @@ import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.resolve.ref.processModuleItems
-import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.inferExpectedTy
-import org.move.lang.core.types.infer.itemContext
-import org.move.lang.core.types.infer.maybeInferenceContext
+import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyUnknown
 
 abstract class MvPathCompletionProvider : MvCompletionProvider() {
 
@@ -105,13 +104,13 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
         get() =
             MvPsiPatterns.path()
                 .andNot(MvPsiPatterns.pathType())
-                .andNot(MvPsiPatterns.schemaRef())
+                .andNot(MvPsiPatterns.schemaLit())
 
     override fun itemVis(pathElement: MvPath): ItemVis {
         return ItemVis(
             setOf(Namespace.NAME),
             Visibility.none(),
-            mslScope = pathElement.mslScope,
+            mslLetScope = pathElement.mslLetScope,
             itemScope = pathElement.itemScope,
         )
     }
@@ -122,13 +121,13 @@ object FunctionsCompletionProvider : MvPathCompletionProvider() {
         get() =
             MvPsiPatterns.path()
                 .andNot(MvPsiPatterns.pathType())
-                .andNot(MvPsiPatterns.schemaRef())
+                .andNot(MvPsiPatterns.schemaLit())
 
     override fun itemVis(pathElement: MvPath): ItemVis {
         return ItemVis(
             setOf(Namespace.FUNCTION),
             Visibility.none(),
-            mslScope = pathElement.mslScope,
+            mslLetScope = pathElement.mslLetScope,
             itemScope = pathElement.itemScope,
         )
     }
@@ -142,7 +141,7 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
         return ItemVis(
             setOf(Namespace.TYPE),
             Visibility.none(),
-            mslScope = pathElement.mslScope,
+            mslLetScope = pathElement.mslLetScope,
             itemScope = pathElement.itemScope,
         )
     }
@@ -152,7 +151,7 @@ object SchemasCompletionProvider : MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
             StandardPatterns.or(
-                MvPsiPatterns.schemaRef(), MvPsiPatterns.pathInsideIncludeStmt()
+                MvPsiPatterns.schemaLit(), MvPsiPatterns.pathInsideIncludeStmt()
             )
 
 
@@ -160,7 +159,7 @@ object SchemasCompletionProvider : MvPathCompletionProvider() {
         return ItemVis(
             setOf(Namespace.SCHEMA),
             Visibility.none(),
-            mslScope = MslScope.EXPR,
+            mslLetScope = MslLetScope.EXPR_STMT,
             itemScope = pathElement.itemScope,
         )
     }
@@ -174,10 +173,8 @@ private fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement
             is MvPathType,
             is MvRefExpr,
             is MvDotExpr -> {
-                val inferenceCtx =
-                    (ancestor as MvElement).maybeInferenceContext(msl)
-                        ?: InferenceContext(msl, ancestor.itemContext(msl))
-                return inferExpectedTy(ancestor, inferenceCtx)
+                val inference = (ancestor as MvElement).inference(msl) ?: return TyUnknown
+                return inferExpectedTy(ancestor, inference)
             }
         }
     }

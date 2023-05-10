@@ -12,7 +12,7 @@ import org.move.lang.core.completion.createCompletionLookupElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.mslScope
+import org.move.lang.core.resolve.mslLetScope
 import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
@@ -49,7 +49,7 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
                 val structPat = element.structPat
                 addFieldsToCompletion(
                     structPat.path.maybeStruct ?: return,
-                    structPat.fieldNames,
+                    structPat.patFieldNames,
                     result
                 )
             }
@@ -65,7 +65,7 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
                 val itemVis = ItemVis(
                     namespaces = setOf(Namespace.DOT_FIELD),
                     visibilities = Visibility.none(),
-                    mslScope = element.mslScope,
+                    mslLetScope = element.mslLetScope,
                     itemScope = element.itemScope,
                 )
                 processItems(element, itemVis) {

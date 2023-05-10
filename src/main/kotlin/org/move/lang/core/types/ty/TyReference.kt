@@ -14,16 +14,20 @@ enum class RefPermissions {
     READ,
     WRITE;
 
-    val isMut: Boolean get() = this == READ
-
     companion object {
         fun valueOf(mutable: Boolean): Set<RefPermissions> =
             if (mutable) setOf(READ, WRITE) else setOf(READ)
     }
 }
 
-data class TyReference(val referenced: Ty, val permissions: Set<RefPermissions>, val msl: Boolean) : Ty {
+data class TyReference(
+    val referenced: Ty,
+    val permissions: Set<RefPermissions>,
+    val msl: Boolean
+) : Ty(referenced.flags) {
     override fun abilities() = setOf(Ability.COPY, Ability.DROP)
+
+    val isMut: Boolean get() = this.permissions.contains(RefPermissions.WRITE)
 
     fun innerTy(): Ty {
         return if (referenced is TyReference) {
@@ -48,4 +52,12 @@ data class TyReference(val referenced: Ty, val permissions: Set<RefPermissions>,
         referenced.visitWith(visitor)
 
     override fun toString(): String = tyToString(this)
+
+    companion object {
+        fun ref(ty: Ty, msl: Boolean): TyReference = TyReference(ty, setOf(RefPermissions.READ), msl)
+
+        fun coerceMutability(inferred: TyReference, expected: TyReference): Boolean {
+            return inferred.isMut || !expected.isMut
+        }
+    }
 }

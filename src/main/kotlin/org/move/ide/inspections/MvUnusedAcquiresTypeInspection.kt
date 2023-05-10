@@ -1,93 +1,77 @@
 package org.move.ide.inspections
 
-import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.descendantsOfType
-import org.move.ide.presentation.canBeAcquiredInModule
+import org.move.ide.inspections.fixes.RemoveAcquiresFix
 import org.move.ide.presentation.fullnameNoArgs
+import org.move.ide.presentation.itemDeclaredInModule
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.inferAcquiresTys
-import org.move.lang.core.types.infer.inferenceContext
+import org.move.lang.core.types.infer.acquiresContext
+import org.move.lang.core.types.infer.inference
+import org.move.lang.core.types.infer.loweredType
+import org.move.lang.moveProject
 
 
 class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
-        fun registerUnusedAcquires(ref: PsiElement) {
-            holder.registerProblem(
-                ref,
-                "Unused acquires clause",
-                ProblemHighlightType.LIKE_UNUSED_SYMBOL,
-                object : InspectionQuickFix("Remove acquires") {
-                    override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-                        val element = descriptor.psiElement
-                        when (element) {
-                            is MvAcquiresType -> element.delete()
-                            is MvPathType -> {
-                                val acquiresType = element.parent as MvAcquiresType
-                                val typeNames =
-                                    acquiresType.pathTypeList
-                                        .filter { it != element }
-                                        .joinToString(", ") { it.text }
-                                val newAcquiresType = project.psiFactory.acquires("acquires $typeNames")
-                                acquiresType.replace(newAcquiresType)
-                            }
-                        }
-                    }
-                }
-            )
-        }
+        val annotationHolder = Holder(holder)
         return object : MvVisitor() {
             override fun visitAcquiresType(o: MvAcquiresType) {
                 val function = o.parent as? MvFunction ?: return
-                val module = function.module ?: return
-                val codeBlock = function.codeBlock ?: return
+                val currentModule = function.module ?: return
+                val acquiresContext = o.moveProject?.acquiresContext ?: return
+                val inference = function.inference(false)
 
-                val inferenceCtx = function.inferenceContext(false)
-
-                val acquiredTys = mutableSetOf<String>()
-                for (callExpr in codeBlock.descendantsOfType<MvCallExpr>()) {
-                    val callAcquiresTys =
-                        callExpr.inferAcquiresTys() ?: return
-                    val acqTyNames = callAcquiresTys.map { it.fullnameNoArgs() }
-                    acquiredTys.addAll(acqTyNames)
+                val callAcquiresTypes = mutableSetOf<String>()
+                for (callExpr in inference.callExprTypes.keys) {
+                    val types = acquiresContext.getCallTypes(callExpr, inference)
+                    callAcquiresTypes.addAll(
+                        types.map { it.fullnameNoArgs() })
                 }
 
-                val unusedAcquiresIndices = mutableListOf<Int>()
-                val visitedTypeNames = mutableSetOf<String>()
-                val pathTypes = o.pathTypeList
-                for ((i, pathType) in pathTypes.withIndex()) {
-                    // check that this acquires is allowed in the context
-                    val ty = inferenceCtx.getTypeTy(pathType)
-                    if (!ty.canBeAcquiredInModule(module)) {
-                        unusedAcquiresIndices.add(i)
+                val unusedTypeIndices = mutableListOf<Int>()
+                val visitedTypes = mutableSetOf<String>()
+                for ((i, pathType) in function.acquiresPathTypes.withIndex()) {
+                    val ty = pathType.loweredType(false)
+                    if (!ty.itemDeclaredInModule(currentModule)) {
+                        unusedTypeIndices.add(i)
                         continue
                     }
+
                     // check for duplicates
-                    val typeName = ty.fullnameNoArgs()
-                    if (typeName in visitedTypeNames) {
-                        unusedAcquiresIndices.add(i)
+                    val tyFullName = ty.fullnameNoArgs()
+                    if (tyFullName in visitedTypes) {
+                        unusedTypeIndices.add(i)
                         continue
                     }
-                    visitedTypeNames.add(typeName)
-                    // check for unused
-                    if (typeName !in acquiredTys) {
-                        unusedAcquiresIndices.add(i)
+                    visitedTypes.add(tyFullName)
+
+                    if (tyFullName !in callAcquiresTypes) {
+                        unusedTypeIndices.add(i)
                         continue
                     }
                 }
-
-                if (unusedAcquiresIndices.size == pathTypes.size) {
+                if (unusedTypeIndices.size == function.acquiresPathTypes.size) {
                     // register whole acquiresType
-                    registerUnusedAcquires(o)
+                    annotationHolder.registerUnusedAcquires(o)
                     return
                 }
-                for (idx in unusedAcquiresIndices) {
-                    registerUnusedAcquires(pathTypes[idx])
+                for (idx in unusedTypeIndices) {
+                    annotationHolder.registerUnusedAcquires(function.acquiresPathTypes[idx])
                 }
             }
+        }
+    }
+
+    class Holder(val problemsHolder: ProblemsHolder) {
+        fun registerUnusedAcquires(ref: PsiElement) {
+            problemsHolder.registerProblem(
+                ref,
+                "Unused acquires clause",
+                ProblemHighlightType.LIKE_UNUSED_SYMBOL,
+                RemoveAcquiresFix(ref)
+            )
         }
     }
 }

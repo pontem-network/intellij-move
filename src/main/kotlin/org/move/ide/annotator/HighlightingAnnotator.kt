@@ -22,7 +22,7 @@ val BUILTIN_FUNCTIONS =
     GLOBAL_STORAGE_ACCESS_FUNCTIONS + setOf("move_to")
 val SPEC_BUILTIN_FUNCTIONS = setOf(
     "global", "len", "vec", "concat", "contains", "index_of", "range",
-    "in_range", "update_field", "old", "TRACE"
+    "in_range", "update", "update_field", "old", "TRACE", "int2bv", "bv2int"
 )
 
 class HighlightingAnnotator : MvAnnotatorBase() {
@@ -63,7 +63,7 @@ class HighlightingAnnotator : MvAnnotatorBase() {
 
         val path = element as? MvPath ?: return null
         // any qual :: access is not highlighted
-        if (path.isQual) return null
+        if (path.isQualPath) return null
 
         val identifierName = path.identifierName
         when (path.parent) {
@@ -78,7 +78,7 @@ class HighlightingAnnotator : MvAnnotatorBase() {
                 }
             }
             is MvCallExpr -> {
-                val resolved = path.reference?.resolveWithAliases() as? MvFunctionLike
+                val resolved = path.reference?.resolveWithAliases()
                 if (resolved != null) {
                     return when {
                         resolved is MvSpecFunction

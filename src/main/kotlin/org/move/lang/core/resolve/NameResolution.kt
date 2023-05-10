@@ -1,16 +1,16 @@
 package org.move.lang.core.resolve
 
+import com.intellij.codeInsight.completion.CompletionUtil
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.util.PsiUtilCore
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.address
-import org.move.lang.core.types.infer.inferExprTy
-import org.move.lang.core.types.infer.maybeInferenceContext
+import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
@@ -19,28 +19,13 @@ import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.stdext.wrapWithList
 
-enum class MslScope {
-    NONE, EXPR, LET, LET_POST;
-}
-
-val MvElement.mslScope: MslScope
-    get() {
-        if (!this.isMsl()) return MslScope.NONE
-        val letStmt = this.ancestorOrSelf<MvLetStmt>()
-        return when {
-            letStmt == null -> MslScope.EXPR
-            letStmt.isPost -> MslScope.LET_POST
-            else -> MslScope.LET
-        }
-    }
-
 data class ItemVis(
     val namespaces: Set<Namespace>,
     val visibilities: Set<Visibility>,
-    val mslScope: MslScope,
+    val mslLetScope: MslLetScope,
     val itemScope: ItemScope,
 ) {
-    val isMsl get() = mslScope != MslScope.NONE
+    val isMsl get() = mslLetScope != MslLetScope.NONE
 }
 
 fun processItems(
@@ -68,7 +53,7 @@ fun resolveLocalItem(
 ): List<MvNamedElement> {
     val itemVis = ItemVis(
         namespaces,
-        mslScope = element.mslScope,
+        mslLetScope = element.mslLetScope,
         visibilities = Visibility.local(),
         itemScope = element.itemScope,
     )
@@ -147,29 +132,13 @@ fun processFileItems(
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     for (module in file.modules()) {
-        for (namespace in itemVis.namespaces) {
-            val found = when (namespace) {
-                Namespace.MODULE -> processor.match(itemVis, module)
-                Namespace.NAME -> {
-                    processor.matchAll(
-                        itemVis,
-                        if (itemVis.isMsl) module.consts() else emptyList()
-                    )
-                }
-                Namespace.FUNCTION -> {
-                    val functions = itemVis.visibilities.flatMap { module.visibleFunctions(it) }
-                    val specFunctions = if (itemVis.isMsl) module.specFunctions() else emptyList()
-                    processor.matchAll(
-                        itemVis,
-                        functions, specFunctions
-                    )
-                }
-                Namespace.TYPE -> processor.matchAll(itemVis, module.structs())
-                Namespace.SCHEMA -> processor.matchAll(itemVis, module.schemas())
-                else -> continue
-            }
-            if (found) return true
+        if (
+            Namespace.MODULE in itemVis.namespaces
+            && processor.match(itemVis, module)
+        ) {
+            return true
         }
+        if (processModuleInnerItems(module, itemVis, processor)) return true
     }
     return false
 }
@@ -181,16 +150,16 @@ fun processFQModuleRef(
     val itemVis = ItemVis(
         namespaces = setOf(Namespace.MODULE),
         visibilities = Visibility.local(),
-        mslScope = fqModuleRef.mslScope,
+        mslLetScope = fqModuleRef.mslLetScope,
         itemScope = fqModuleRef.itemScope,
     )
     val moveProj = fqModuleRef.moveProject ?: return
-    val refAddress = fqModuleRef.addressRef.address(moveProj)?.canonicalValue
+    val refAddressText = fqModuleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
 
     val moduleProcessor = MatchingProcessor<MvNamedElement> {
         val entry = SimpleScopeEntry(it.name, it.element as MvModule)
-        val modAddress = entry.element.address(moveProj)?.canonicalValue
-        if (modAddress != refAddress)
+        val modAddressText = entry.element.address(moveProj)?.canonicalValue(moveProj)
+        if (modAddressText != refAddressText)
             return@MatchingProcessor false
         processor.match(entry)
     }
@@ -218,17 +187,17 @@ fun processFQModuleRef(
     val itemVis = ItemVis(
         namespaces = setOf(Namespace.MODULE),
         visibilities = Visibility.local(),
-        mslScope = fqModuleRef.mslScope,
+        mslLetScope = fqModuleRef.mslLetScope,
         itemScope = fqModuleRef.itemScope,
     )
     val project = fqModuleRef.project
     val moveProj = fqModuleRef.moveProject ?: return
 
-    val refAddress = fqModuleRef.addressRef.address(moveProj)?.canonicalValue
+    val refAddress = fqModuleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
     val moduleProcessor = MatchingProcessor<MvNamedElement> {
         val entry = SimpleScopeEntry(it.name, it.element as MvModule)
         // TODO: check belongs to the current project
-        val modAddress = entry.element.address(moveProj)?.canonicalValue
+        val modAddress = entry.element.address(moveProj)?.canonicalValue(moveProj)
 
         if (modAddress != refAddress) return@MatchingProcessor false
         processor.match(entry)
@@ -265,19 +234,27 @@ fun processLexicalDeclarations(
                 val receiverExpr = dotExpr.expr
 
                 val msl = receiverExpr.isMsl()
-                val inferenceCtx = receiverExpr.maybeInferenceContext(msl) ?: return false
-
-                val receiverTy = inferExprTy(receiverExpr, inferenceCtx)
+                val inference = receiverExpr.inference(msl) ?: return false
+                // uninferred expr is allowed for the `object.IntellijIdeaRulezzz` (no letters after dot) case:
+                // there's an obvious dot expr, but I can't make it pin on '.'
+                val receiverTy =
+                    if (CompletionUtil.getOriginalElement(dotExpr.structDotField) == null) {
+                        inference.getExprTypeOrUnknown(receiverExpr)
+                    } else {
+                        inference.getExprType(receiverExpr)
+                    }
                 val innerTy = when (receiverTy) {
                     is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
                     is TyStruct -> receiverTy
                     else -> TyUnknown
                 }
-                if (innerTy !is TyStruct) return false
+                if (innerTy !is TyStruct) return true
 
                 val structItem = innerTy.item
-                val dotExprModule = dotExpr.namespaceModule ?: return false
-                if (structItem.containingModule != dotExprModule) return false
+                if (!msl) {
+                    val dotExprModule = dotExpr.namespaceModule ?: return false
+                    if (structItem.containingModule != dotExprModule) return false
+                }
 
                 val fields = structItem.fields
                 return processor.matchAll(itemVis, fields)
@@ -294,7 +271,7 @@ fun processLexicalDeclarations(
             }
 
             Namespace.SCHEMA_FIELD -> {
-                val schema = (scope as? MvSchemaLitExpr)?.path?.maybeSchema
+                val schema = (scope as? MvSchemaLit)?.path?.maybeSchema
                 if (schema != null) {
                     return processor.matchAll(itemVis, schema.fieldBindings)
                 }
@@ -302,10 +279,7 @@ fun processLexicalDeclarations(
             }
 
             Namespace.ERROR_CONST -> {
-                if (scope is MvImportsOwner) {
-                    if (processor.matchAll(itemVis, scope.itemImportNames())) return true
-                }
-                when (scope) {
+                val found = when (scope) {
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
                         processor.matchAll(
@@ -315,91 +289,84 @@ fun processLexicalDeclarations(
                     }
                     else -> false
                 }
+                if (!found) {
+                    if (scope is MvImportsOwner) {
+                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
+                    }
+                }
+                found
             }
 
             Namespace.NAME -> {
-                if (scope is MvImportsOwner) {
-                    if (processor.matchAll(itemVis, scope.itemImportNames())) return true
-                }
-                when (scope) {
+                val found = when (scope) {
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
                         processor.matchAll(
                             itemVis,
-//                            module.allNonTestFunctions(),
-//                            module.builtinFunctions(),
                             module.structs(),
                             module.consts(),
-//                            if (itemVis.isMsl) {
-//                                listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
-//                            } else {
-//                                emptyList()
-//                            }
                         )
                     }
-                    is MvModuleSpecBlock -> processor.matchAll(
-                        itemVis,
-                        scope.schemaList,
-//                        scope.specFunctionList,
-                    )
+                    is MvModuleSpecBlock -> processor.matchAll(itemVis, scope.schemaList)
                     is MvScript -> processor.matchAll(itemVis, scope.consts())
-                    is MvFunctionLike -> processor.matchAll(itemVis, scope.valueParamsAsBindings)
+                    is MvFunctionLike -> processor.matchAll(itemVis, scope.allParamsAsBindings)
                     is MvLambdaExpr -> processor.matchAll(itemVis, scope.bindingPatList)
-                    is MvCodeBlock -> {
-                        val precedingLetDecls = scope.letStmts
-                            // drops all let-statements after the current position
-                            .filter { PsiUtilCore.compareElementsByPosition(it, cameFrom) <= 0 }
-                            // drops let-statement that is ancestors of ref (on the same statement, at most one)
-                            .filter { cameFrom != it && !PsiTreeUtil.isAncestor(cameFrom, it, true) }
-
-                        // shadowing support (look at latest first)
-                        val namedElements = precedingLetDecls
-                            .asReversed()
-                            .flatMap { it.pat?.bindings.orEmpty() }
-
-                        // skip shadowed (already visited) elements
-                        val visited = mutableSetOf<String>()
-                        val processorWithShadowing = MatchingProcessor { entry ->
-                            ((entry.name !in visited)
-                                    && processor.match(entry).also { visited += entry.name })
-                        }
-                        processorWithShadowing.matchAll(itemVis, namedElements)
-                    }
-
                     is MvItemSpec -> {
                         val item = scope.item
                         when (item) {
-                            is MvFunction -> processor.matchAll(itemVis, item.valueParamsAsBindings)
+                            is MvFunction -> {
+                                processor.matchAll(
+                                    itemVis,
+                                    item.valueParamsAsBindings,
+                                    item.specResultParameters.map { it.bindingPat },
+                                )
+                            }
                             is MvStruct -> processor.matchAll(itemVis, item.fields)
                             else -> false
                         }
                     }
                     is MvSchema -> processor.matchAll(itemVis, scope.fieldBindings)
                     is MvQuantBindingsOwner -> processor.matchAll(itemVis, scope.bindings)
-                    is MvItemSpecBlock -> {
-                        val visibleLetDecls = when (itemVis.mslScope) {
-                            MslScope.EXPR -> scope.letStmts()
-                            MslScope.LET, MslScope.LET_POST -> {
-                                val letDecls = if (itemVis.mslScope == MslScope.LET_POST) {
-                                    scope.letStmts()
-                                } else {
-                                    scope.letStmts(false)
-                                }
-                                letDecls
+                    is MvCodeBlock,
+                    is MvSpecCodeBlock -> {
+                        val visibleLetStmts = when (scope) {
+                            is MvCodeBlock -> {
+                                scope.letStmts
                                     // drops all let-statements after the current position
                                     .filter { it.cameBefore(cameFrom) }
                                     // drops let-statement that is ancestors of ref (on the same statement, at most one)
-                                    .filter { cameFrom != it && !PsiTreeUtil.isAncestor(cameFrom, it, true) }
+                                    .filter {
+                                        cameFrom != it
+                                                && !PsiTreeUtil.isAncestor(cameFrom, it, true)
+                                    }
                             }
-
-                            MslScope.NONE -> emptyList()
+                            is MvSpecCodeBlock -> {
+                                when (itemVis.mslLetScope) {
+                                    MslLetScope.EXPR_STMT -> scope.allLetStmts
+                                    MslLetScope.LET_STMT, MslLetScope.LET_POST_STMT -> {
+                                        val letDecls = if (itemVis.mslLetScope == MslLetScope.LET_POST_STMT) {
+                                            scope.allLetStmts
+                                        } else {
+                                            scope.letStmts(false)
+                                        }
+                                        letDecls
+                                            // drops all let-statements after the current position
+                                            .filter { it.cameBefore(cameFrom) }
+                                            // drops let-statement that is ancestors of ref (on the same statement, at most one)
+                                            .filter {
+                                                cameFrom != it
+                                                        && !PsiTreeUtil.isAncestor(cameFrom, it, true)
+                                            }
+                                    }
+                                    MslLetScope.NONE -> emptyList()
+                                }
+                            }
+                            else -> error("unreachable")
                         }
                         // shadowing support (look at latest first)
-                        val namedElements = visibleLetDecls
+                        val namedElements = visibleLetStmts
                             .asReversed()
                             .flatMap { it.pat?.bindings.orEmpty() }
-                            // add inline functions
-//                            .chain(scope.inlineFunctions().asReversed())
 
                         // skip shadowed (already visited) elements
                         val visited = mutableSetOf<String>()
@@ -407,118 +374,79 @@ fun processLexicalDeclarations(
                             ((entry.name !in visited)
                                     && processor.match(entry).also { visited += entry.name })
                         }
-                        return processorWithShadowing.matchAll(
-                            itemVis,
-                            namedElements.asIterable()
-                        )
+                        processorWithShadowing.matchAll(itemVis, namedElements) || (
+                                // if inside SpecCodeBlock, match also with builtin spec consts
+                                scope is MvSpecCodeBlock
+                                        && processorWithShadowing.matchAll(itemVis, scope.builtinSpecConsts()))
                     }
                     else -> false
                 }
-            }
-
-            Namespace.FUNCTION -> {
-                if (scope is MvImportsOwner) {
-                    if (processor.matchAll(itemVis, scope.itemImportNames())) return true
+                if (!found) {
+                    if (scope is MvImportsOwner) {
+                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
+                    }
                 }
-                when (scope) {
+                found
+            }
+            Namespace.FUNCTION -> {
+                val found = when (scope) {
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
+                        val specFunctions = if (itemVis.isMsl) {
+                            listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
+                        } else {
+                            emptyList()
+                        }
+                        val specInlineFunctions = if (itemVis.isMsl) {
+                            module.moduleItemSpecs().flatMap { it.specInlineFunctions() }
+                        } else {
+                            emptyList()
+                        }
                         processor.matchAll(
                             itemVis,
                             module.allNonTestFunctions(),
                             module.builtinFunctions(),
-                            if (itemVis.isMsl) {
-                                listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
-                            } else {
-                                emptyList()
-                            }
+                            specFunctions,
+                            specInlineFunctions
                         )
                     }
-                    is MvModuleSpecBlock -> processor.matchAll(itemVis, scope.specFunctionList)
-//                    is MvScript -> processor.matchAll(itemVis, scope.consts())
+                    is MvModuleSpecBlock -> {
+                        val specFunctions = scope.specFunctionList
+                        val specInlineFunctions = scope.moduleItemSpecList.flatMap { it.specInlineFunctions() }
+                        processor.matchAll(
+                            itemVis,
+                            specFunctions,
+                            specInlineFunctions
+                        )
+                    }
                     is MvFunctionLike -> processor.matchAll(itemVis, scope.lambdaParamsAsBindings)
                     is MvLambdaExpr -> processor.matchAll(itemVis, scope.bindingPatList)
-//                    is MvCodeBlock -> {
-//                        val precedingLetDecls = scope.letStmts
-//                            // drops all let-statements after the current position
-//                            .filter { PsiUtilCore.compareElementsByPosition(it, cameFrom) <= 0 }
-//                            // drops let-statement that is ancestors of ref (on the same statement, at most one)
-//                            .filter { cameFrom != it && !PsiTreeUtil.isAncestor(cameFrom, it, true) }
-//
-//                        // shadowing support (look at latest first)
-//                        val namedElements = precedingLetDecls
-//                            .asReversed()
-//                            .flatMap { it.pat?.bindings.orEmpty() }
-//
-//                        // skip shadowed (already visited) elements
-//                        val visited = mutableSetOf<String>()
-//                        val processorWithShadowing = MatchingProcessor { entry ->
-//                            ((entry.name !in visited)
-//                                    && processor.match(entry).also { visited += entry.name })
-//                        }
-//                        processorWithShadowing.matchAll(itemVis, namedElements)
-//                    }
-
                     is MvItemSpec -> {
                         val item = scope.item
                         when (item) {
                             is MvFunction -> processor.matchAll(itemVis, item.lambdaParamsAsBindings)
-//                            is MvStruct -> processor.matchAll(itemVis, item.fields)
                             else -> false
                         }
                     }
-//                    is MvSchema -> processor.matchAll(itemVis, scope.fieldBindings)
-//                    is MvQuantBindingsOwner -> processor.matchAll(itemVis, scope.bindings)
-                    is MvItemSpecBlock -> {
-//                        val visibleLetDecls = when (itemVis.mslScope) {
-//                            MslScope.EXPR -> scope.letStmts()
-//                            MslScope.LET, MslScope.LET_POST -> {
-//                                val letDecls = if (itemVis.mslScope == MslScope.LET_POST) {
-//                                    scope.letStmts()
-//                                } else {
-//                                    scope.letStmts(false)
-//                                }
-//                                letDecls
-//                                    // drops all let-statements after the current position
-//                                    .filter { it.cameBefore(cameFrom) }
-//                                    // drops let-statement that is ancestors of ref (on the same statement, at most one)
-//                                    .filter { cameFrom != it && !PsiTreeUtil.isAncestor(cameFrom, it, true) }
-//                            }
-//
-//                            MslScope.NONE -> emptyList()
-//                        }
-                        // shadowing support (look at latest first)
-                        val namedElements = scope.inlineFunctions().asReversed()
-//                        val namedElements = visibleLetDecls
-//                            .asReversed()
-//                            .flatMap { it.pat?.bindings.orEmpty() }
-//                            // add inline functions
-//                            .chain(scope.inlineFunctions().asReversed())
-
-                        // skip shadowed (already visited) elements
-//                        val visited = mutableSetOf<String>()
-//                        val processorWithShadowing = MatchingProcessor { entry ->
-//                            ((entry.name !in visited)
-//                                    && processor.match(entry).also { visited += entry.name })
-//                        }
-                        return processor.matchAll(itemVis, namedElements)
-//                        return processorWithShadowing.matchAll(
-//                            itemVis,
-//                            namedElements.asIterable()
-//                        )
+                    is MvSpecCodeBlock -> {
+                        val inlineFunctions = scope.specInlineFunctions().asReversed()
+                        return processor.matchAll(itemVis, inlineFunctions)
                     }
                     else -> false
                 }
+                if (!found) {
+                    if (scope is MvImportsOwner) {
+                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
+                    }
+                }
+                found
             }
 
             Namespace.TYPE -> {
                 if (scope is MvTypeParametersOwner) {
                     if (processor.matchAll(itemVis, scope.typeParameters)) return true
                 }
-                if (scope is MvImportsOwner) {
-                    if (processor.matchAll(itemVis, scope.itemImportNames())) return true
-                }
-                when (scope) {
+                val found = when (scope) {
                     is MvItemSpec -> {
                         val funcItem = scope.funcItem
                         if (funcItem != null) {
@@ -531,18 +459,25 @@ fun processLexicalDeclarations(
                         val module = scope.parent as MvModule
                         processor.matchAll(
                             itemVis,
-                            scope.itemImportNames(),
+                            scope.allUseItems(),
                             module.structs()
                         )
                     }
                     is MvApplySchemaStmt -> {
                         val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
-                        val patternTypeParams = toPatterns.flatMap { it.typeParameters }
+                        val patternTypeParams =
+                            toPatterns.flatMap { it.typeParameterList?.typeParameterList.orEmpty() }
                         processor.matchAll(itemVis, patternTypeParams)
                     }
 
                     else -> false
                 }
+                if (!found) {
+                    if (scope is MvImportsOwner) {
+                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
+                    }
+                }
+                found
             }
 
             Namespace.SPEC_ITEM -> when (scope) {
@@ -562,12 +497,12 @@ fun processLexicalDeclarations(
             Namespace.SCHEMA -> when (scope) {
                 is MvModuleBlock -> processor.matchAll(
                     itemVis,
-                    scope.itemImportNames(),
+                    scope.allUseItems(),
                     scope.schemaList
                 )
                 is MvModuleSpecBlock -> processor.matchAll(
                     itemVis,
-                    scope.itemImportNames(),
+                    scope.allUseItems(),
                     scope.schemaList,
                     scope.specFunctionList
                 )
@@ -578,9 +513,9 @@ fun processLexicalDeclarations(
                 is MvImportsOwner -> processor.matchAll(
                     itemVis,
                     listOf(
-                        scope.moduleImportNames(),
-                        scope.selfItemImports(),
-                        scope.selfItemImportAliases(),
+                        scope.allModuleUseSpecks(),
+                        scope.selfModuleUseItemNoAliases(),
+                        scope.selfModuleUseItemAliases(),
                     ).flatten(),
                 )
                 else -> false
@@ -597,7 +532,7 @@ fun walkUpThroughScopes(
     handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean,
 ): Boolean {
     var cameFrom = start
-    var scope = start.parent as MvElement?
+    var scope = start.context as MvElement?
     while (scope != null) {
         if (handleScope(cameFrom, scope)) return true
 
@@ -613,7 +548,7 @@ fun walkUpThroughScopes(
         }
 
         if (scope is MvModuleSpecBlock) {
-            val moduleBlock = scope.moduleSpec.module?.moduleBlock
+            val moduleBlock = scope.moduleSpec.moduleItem?.moduleBlock
             if (moduleBlock != null) {
                 cameFrom = scope
                 scope = moduleBlock
@@ -624,7 +559,7 @@ fun walkUpThroughScopes(
         if (stopAfter(scope)) break
 
         cameFrom = scope
-        scope = scope.parent as? MvElement
+        scope = scope.context as? MvElement
     }
 
     return false

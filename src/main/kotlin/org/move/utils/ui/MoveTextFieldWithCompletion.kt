@@ -34,7 +34,7 @@ class CodeFragmentDocumentCreator(
     }
 }
 
-class MoveTextFieldWithCompletion(
+open class MoveTextFieldWithCompletion(
     project: Project,
     text: String,
     completionProvider: TextCompletionProvider,

@@ -21,7 +21,7 @@ abstract class MvNamedElementImpl(node: ASTNode) : MvElementImpl(node),
 
     override fun getTextOffset(): Int = nameElement?.textOffset ?: super.getTextOffset()
 
-    override val fqName: String get() = "<unknown>"
+//    override val fqName: String get() = "<unknown>"
 }
 
 abstract class MvMandatoryNamedElementImpl(node: ASTNode) : MvNamedElementImpl(node),

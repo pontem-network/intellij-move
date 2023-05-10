@@ -2,10 +2,7 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.MvElementImpl
-import org.move.lang.core.psi.MvPat
-import org.move.lang.core.psi.MvStructPat
-import org.move.lang.core.psi.MvStructPatField
+import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvReference
 import org.move.lang.core.resolve.ref.MvStructFieldReferenceImpl
 import org.move.lang.core.resolve.ref.MvStructPatShorthandFieldReferenceImpl
@@ -19,6 +16,33 @@ val MvStructPatField.pat: MvPat?
     }
 
 val MvStructPatField.isShorthand: Boolean get() = this.structPatFieldBinding == null
+
+val MvStructPatField.kind: PatFieldKind
+    get() = bindingPat?.let { PatFieldKind.Shorthand(it) }
+        ?: PatFieldKind.Full(this.identifier!!, this.structPatFieldBinding?.pat!!)
+
+// PatField ::= identifier ':' Pat | box? PatBinding
+sealed class PatFieldKind {
+    /**
+     * struct S { a: i32 }
+     * let S { a : ref b } = ...
+     *         ~~~~~~~~~
+     */
+    data class Full(val ident: PsiElement, val pat: MvPat): PatFieldKind()
+    /**
+     * struct S { a: i32 }
+     * let S { ref a } = ...
+     *         ~~~~~
+     */
+    data class Shorthand(val binding: MvBindingPat): PatFieldKind()
+}
+
+val PatFieldKind.fieldName: String
+    get() = when (this) {
+        is PatFieldKind.Full -> ident.text
+        is PatFieldKind.Shorthand -> binding.name
+    }
+
 
 abstract class MvStructPatFieldMixin(node: ASTNode) : MvElementImpl(node),
                                                       MvStructPatField {

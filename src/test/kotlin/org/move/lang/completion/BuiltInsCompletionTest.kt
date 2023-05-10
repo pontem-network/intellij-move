@@ -66,13 +66,13 @@ class BuiltInsCompletionTest : CompletionTestCase() {
     fun `test builtin spec functions in specs`() = doFirstCompletion("""
     module 0x1::M {
         spec module {
-            ensures globa/*caret*/
+            globa/*caret*/
         }
     }    
     """, """
     module 0x1::M {
         spec module {
-            ensures global</*caret*/>()
+            global</*caret*/>()
         }
     }    
     """)

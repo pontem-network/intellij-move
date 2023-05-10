@@ -24,7 +24,7 @@ abstract class MvDocumentationProviderProjectTestCase : MvProjectTestBase() {
             check(actual == null) { "Expected null, got `$actual`" }
         } else {
             check(actual != null) { "Expected not null result" }
-            assertSameLines(actual, expected.trimIndent())
+            assertSameLines(expected.trimIndent(), actual)
         }
     }
 }

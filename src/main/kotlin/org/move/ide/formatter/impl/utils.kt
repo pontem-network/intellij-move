@@ -7,6 +7,8 @@ import com.intellij.psi.tree.TokenSet.orSet
 import org.move.lang.MoveFile
 import org.move.lang.MvElementTypes.*
 import org.move.lang.core.psi.*
+import org.move.openapiext.document
+import org.move.openapiext.getOffsetPosition
 import com.intellij.psi.tree.TokenSet.create as ts
 
 
@@ -27,7 +29,7 @@ val BRACKET_DELIMITED_BLOCKS = ts(VECTOR_LIT_ITEMS)
 val STRUCT_LITERAL_BLOCKS = ts(STRUCT_PAT_FIELDS_BLOCK, STRUCT_LIT_FIELDS_BLOCK)
 val DEF_BLOCKS = ts(
     SCRIPT_BLOCK, ADDRESS_BLOCK, MODULE_BLOCK, CODE_BLOCK,
-    MODULE_SPEC_BLOCK, ITEM_SPEC_BLOCK,
+    MODULE_SPEC_BLOCK, SPEC_CODE_BLOCK,
     STRUCT_BLOCK, SCHEMA_FIELDS_BLOCK
 )
 val BLOCK_LIKE = orSet(STRUCT_LITERAL_BLOCKS, DEF_BLOCKS)
@@ -67,6 +69,14 @@ fun ASTNode.isDelimiterOfCurrentBlock(parent: ASTNode?): Boolean {
         LT, GT -> parentType in ANGLE_DELIMITED_BLOCKS
         else -> false
     }
+}
+
+/// Returns null if element does not belong to any file
+val PsiElement.location: Pair<Int, Int>? get() {
+    val elementOffset = this.textOffset
+    val file = this.containingFile ?: return null
+    val location = file.document?.getOffsetPosition(elementOffset)
+    return location
 }
 
 //val ASTNode.isFlatBraceBlock: Boolean

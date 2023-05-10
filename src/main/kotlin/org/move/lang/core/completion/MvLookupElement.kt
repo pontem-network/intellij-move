@@ -3,10 +3,10 @@ package org.move.lang.core.completion
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementDecorator
 import org.move.lang.core.psi.*
-import org.move.lang.core.types.infer.inferenceContext
+import org.move.lang.core.types.infer.compatAbilities
+import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.isCompatible
-import org.move.lang.core.types.infer.outerItemContext
-import org.move.lang.core.types.ty.TyFunction
+import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.TyUnknown
 
 fun LookupElement.toMvLookupElement(properties: LookupElementProperties): MvLookupElement =
@@ -64,44 +64,31 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
 //        val itemContext = element.itemContextOwner?.itemContext(msl) ?: element.project.itemContext(msl)
 //        val ctx = InferenceContext(msl, itemContext)
 //        val typeContext =
-        val ty = when (element) {
+        val itemTy = when (element) {
 //        is RsFieldDecl -> typeReference?.type
-            is MvFunctionLike -> {
-                val itemContext = element.outerItemContext(msl)
-                (itemContext.getItemTy(element) as? TyFunction)?.retType ?: TyUnknown
-            }
-            is MvStruct -> {
-                element.outerItemContext(msl).getItemTy(element)
-            }
-            is MvConst -> {
-                element.outerItemContext(msl).getConstTy(element)
-            }
+            is MvFunctionLike -> element.declaredType(msl).retType
+            is MvStruct -> element.declaredType(msl)
+//            is MvFunction -> {
+//                element.declaredType(msl)
+////                val itemContext = element.outerItemContext(msl)
+////                (itemContext.getItemTy(element) as? TyFunction)?.retType ?: TyUnknown
+//            }
+//            is MvStruct -> {
+//                TyStruct2.valueOf(element)
+////                element.outerItemContext(msl).getItemTy(element)
+//            }
+            is MvConst -> element.type?.loweredType(msl) ?: TyUnknown
             is MvBindingPat -> {
-                val inferenceCtx = element.inferenceContext(msl)
-                inferenceCtx.getBindingPatTy(element)
+                val inference = element.inference(msl)
+                inference?.getPatType(element) ?: TyUnknown
             }
-//            is MvBindingPat -> this.inferBindingTy(ctx, itemContext)
             else -> TyUnknown
         }
-//        val ty = element.asTy(ctx)
+        // it is required for the TyInfer.TyVar to always have a different underlying unification table
+        val isCompat = isCompatible(expectedTy, itemTy, msl) && compatAbilities(expectedTy, itemTy, msl)
         props = props.copy(
-            isReturnTypeConformsToExpectedType = isCompatible(context.expectedTy, ty, msl)
+            isReturnTypeConformsToExpectedType = isCompat
         )
     }
     return props
 }
-
-//private fun MvNamedElement.asTy(ctx: InferenceContext): Ty {
-//    val msl = false
-//    val itemContext = this.itemContextOwner?.itemContext(msl) ?: project.itemContext(msl)
-//    return when (this) {
-////        is RsFieldDecl -> typeReference?.type
-//        is MvFunction -> this.returnTypeTy(itemContext)
-//        is MvStruct -> {
-//            itemContext.getItemTy(this)
-//        }
-//        is MvConst -> itemContext.getConstTy(this)
-//        is MvBindingPat -> this.inferBindingTy(ctx, itemContext)
-//        else -> TyUnknown
-//    }
-//}

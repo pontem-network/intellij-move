@@ -7,14 +7,24 @@ package org.move.utils.tests
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
+import org.move.cli.settings.moveSettings
 import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
+
+annotation class DevelopmentMode(val enabled: Boolean)
 
 abstract class MvTestBase : BasePlatformTestCase(),
                             MvTestCase {
     protected val fileName: String
         get() = "${getTestName(true)}.$testFileExtension"
     open val dataPath: String = ""
+
+    override fun setUp() {
+        super.setUp()
+        val settingsState = project.moveSettings.settingsState
+        val isDevMode = this.findAnnotationInstance<DevelopmentMode>()?.enabled ?: true
+        project.moveSettings.settingsState = settingsState.copy(debugMode = isDevMode)
+    }
 
     override fun getTestDataPath(): String = "${TestCase.testResourcesPath}/$dataPath"
     override fun getTestName(lowercaseFirstLetter: Boolean): String {

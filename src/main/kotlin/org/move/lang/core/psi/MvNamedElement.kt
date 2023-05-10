@@ -10,16 +10,14 @@ import org.move.ide.annotator.BUILTIN_FUNCTIONS
 import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.completion.BUILTIN_ITEM_PRIORITY
 import org.move.lang.core.completion.LOCAL_ITEM_PRIORITY
-import org.move.lang.core.psi.ext.addressRef
 import org.move.lang.core.psi.ext.findLastChildByType
+import org.move.lang.core.types.ItemQualName
 
 interface MvNamedElement : MvElement,
                            PsiNamedElement,
                            NavigatablePsiElement {
 
     val nameElement: PsiElement? get() = this.findLastChildByType(IDENTIFIER)
-
-    val fqName: String
 }
 
 interface MvMandatoryNamedElement : MvNamedElement {
@@ -30,36 +28,9 @@ interface MvMandatoryNamedElement : MvNamedElement {
     override fun getName(): String
 }
 
-interface MvQualifiedNamedElement : MvNamedElement
-
-data class FqPath(val address: String, val module: String, val item: String?) {
-    override fun toString(): String {
-        return if (item == null) {
-            "$address::$module"
-        } else {
-            "$address::$module::$item"
-        }
-    }
+interface MvQualNamedElement : MvNamedElement {
+    val qualName: ItemQualName?
 }
-
-val MvQualifiedNamedElement.fqPath: FqPath?
-    get() {
-        return when (this) {
-            is MvModule -> {
-                val address = this.addressRef()?.text ?: return null
-                val moduleName = this.name ?: return null
-                FqPath(address, moduleName, null)
-            }
-
-            else -> {
-                val module = this.containingModule ?: return null
-                val address = module.addressRef()?.text ?: return null
-                val moduleName = module.name ?: return null
-                val elementName = this.name ?: return null
-                FqPath(address, moduleName, elementName)
-            }
-        }
-    }
 
 val MvNamedElement.completionPriority
     get() = when {

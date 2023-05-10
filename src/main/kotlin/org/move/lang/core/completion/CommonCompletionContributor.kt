@@ -28,6 +28,11 @@ class CommonCompletionContributor : CompletionContributor() {
             MvPsiPatterns.ability(),
             AbilitiesCompletionProvider
         )
+        extend(
+            CompletionType.BASIC,
+            MvPsiPatterns.refExpr(),
+            BoolsCompletionProvider
+        )
         extend(CompletionType.BASIC, MacrosCompletionProvider)
     }
 

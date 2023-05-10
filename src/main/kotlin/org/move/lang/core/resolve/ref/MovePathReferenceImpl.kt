@@ -4,59 +4,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 
-fun processModuleItems(
-    module: MvModule,
-    itemVis: ItemVis,
-    processor: MatchingProcessor<MvNamedElement>,
-): Boolean {
-    for (namespace in itemVis.namespaces) {
-        var found = when (namespace) {
-            Namespace.NAME -> processor.matchAll(
-                itemVis,
-                if (itemVis.isMsl) module.consts() else emptyList()
-            )
-            Namespace.FUNCTION -> processor.matchAll(
-                itemVis,
-                itemVis.visibilities.flatMap { module.visibleFunctions(it) },
-                if (itemVis.isMsl) module.specFunctions() else emptyList(),
-            )
-            Namespace.TYPE -> processor.matchAll(itemVis, module.structs())
-            Namespace.SCHEMA -> processor.matchAll(itemVis, module.schemas())
-            Namespace.ERROR_CONST -> processor.matchAll(itemVis, module.consts())
-            else -> false
-        }
-        if (!found) {
-            for (moduleSpec in module.allModuleSpecs()) {
-                val moduleSpecBlock = moduleSpec.moduleSpecBlock ?: continue
-                found = when (namespace) {
-                    Namespace.NAME -> processor.matchAll(itemVis, moduleSpecBlock.specFunctionList)
-                    Namespace.SCHEMA -> processor.matchAll(itemVis, moduleSpecBlock.schemaList)
-                    else -> false
-                }
-                if (found) break
-            }
-        }
-        if (found) return true
-    }
-    return false
-}
-
-fun resolveModuleItem(
-    module: MvModule,
-    name: String,
-    itemVis: ItemVis,
-): List<MvNamedElement> {
-    val resolved = mutableListOf<MvNamedElement>()
-    processModuleItems(module, itemVis) {
-        if (it.name == name) {
-            resolved.add(it.element)
-            return@processModuleItems true
-        }
-        return@processModuleItems false
-    }
-    return resolved
-}
-
 class MvPathReferenceImpl(
     element: MvPath,
     val namespaces: Set<Namespace>,
@@ -69,7 +16,7 @@ class MvPathReferenceImpl(
         val itemVis = ItemVis(
             namespaces,
             vs,
-            element.mslScope,
+            element.mslLetScope,
             itemScope = element.itemScope,
         )
 

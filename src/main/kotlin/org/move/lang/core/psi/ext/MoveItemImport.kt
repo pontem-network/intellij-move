@@ -5,11 +5,11 @@ import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNamedElementImpl
 import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.MslScope
+import org.move.lang.core.resolve.MslLetScope
 import org.move.lang.core.resolve.ref.MvReferenceCached
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.resolve.ref.resolveModuleItem
+import org.move.lang.core.resolve.resolveModuleItem
 
 fun MvUseItem.useSpeck(): MvItemUseSpeck =
     ancestorStrict() ?: error("ItemImport outside ModuleItemsImport")
@@ -50,7 +50,7 @@ class MvUseItemReferenceElement(element: MvUseItem) : MvReferenceCached<MvUseIte
         val itemVis = ItemVis(
             ns,
             vs,
-            MslScope.NONE,
+            MslLetScope.EXPR_STMT,
             itemScope = moduleRef.itemScope,
         )
         return resolveModuleItem(

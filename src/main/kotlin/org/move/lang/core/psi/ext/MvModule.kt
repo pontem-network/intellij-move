@@ -15,6 +15,7 @@ import org.move.lang.core.stubs.MvStructStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.stubs.ext.childrenStubsOfType
 import org.move.lang.core.types.Address
+import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleSpecIndex
 import org.move.lang.moveProject
@@ -62,7 +63,6 @@ fun MvModule.allNonTestFunctions(): List<MvFunction> =
     }
 
 fun MvModule.testFunctions(): List<MvFunction> =
-//    allFunctions().filter { f -> f.isTest }
     getProjectPsiDependentCache(this) {
         it.allFunctions().filter { f -> f.isTest }
     }
@@ -123,12 +123,8 @@ fun MvModule.entryFunctions(): List<MvFunction> = this.allFunctions().filter { i
 
 fun MvModule.viewFunctions(): List<MvFunction> = this.allFunctions().filter { it.isView }
 
-fun builtinFunction(text: String, project: Project): MvFunction {
-    val trimmedText = text.trimIndent()
-    val function = project.psiFactory.function(trimmedText, moduleName = "builtins")
-    (function as MvFunctionMixin).builtIn = true
-    return function
-}
+fun MvModule.specInlineFunctions(): List<MvSpecInlineFunction> =
+    this.moduleItemSpecs().flatMap { it.specInlineFunctions() }
 
 fun builtinSpecFunction(text: String, project: Project): MvSpecFunction {
     val trimmedText = text.trimIndent()
@@ -160,29 +156,26 @@ fun MvModule.builtinSpecFunctions(): List<MvSpecFunction> {
             ),
             builtinSpecFunction("spec native fun TRACE<T>(_: T): T;", project),
             // vector functions
-            builtinSpecFunction("spec native fun len<T>(_: vector<T>): num;", project),
             builtinSpecFunction(
                 "spec native fun concat<T>(v1: vector<T>, v2: vector<T>): vector<T>;",
                 project
             ),
+            builtinSpecFunction("spec native fun vec<T>(_: T): vector<T>;", project),
+            builtinSpecFunction("spec native fun len<T>(_: vector<T>): num;", project),
             builtinSpecFunction("spec native fun contains<T>(v: vector<T>, e: T): bool;", project),
             builtinSpecFunction("spec native fun index_of<T>(_: vector<T>, _: T): num;", project),
             builtinSpecFunction("spec native fun range<T>(_: vector<T>): range;", project),
+            builtinSpecFunction("spec native fun update<T>(_: vector<T>, _: num, _: T): vector<T>;", project),
             builtinSpecFunction("spec native fun in_range<T>(_: vector<T>, _: num): bool;", project),
+            builtinSpecFunction("spec native fun int2bv(_: num): bv;", project),
+            builtinSpecFunction("spec native fun bv2int(_: bv): num;", project),
         )
     }
 }
 
 fun MvModule.specFunctions(): List<MvSpecFunction> = moduleBlock?.specFunctionList.orEmpty()
 
-fun MvModule.consts(): List<MvConst> =
-    getProjectPsiDependentCache(this) {
-        it.moduleBlock?.constList.orEmpty()
-    }
-//fun MvModule.constBindings(): List<MvBindingPat> =
-//    getProjectPsiDependentCache(this) {
-//        it.moduleBlock?.constList.orEmpty().mapNotNull { c -> c.bindingPat }
-//    }
+fun MvModule.consts(): List<MvConst> = this.moduleBlock?.constList.orEmpty()
 
 val MvModuleBlock.module: MvModule get() = this.parent as MvModule
 
@@ -190,7 +183,7 @@ val MvModuleBlock.module: MvModule get() = this.parent as MvModule
 ////    this.childrenOfType<MvItemSpec>()
 ////        .filter { it.itemSpecRef?.moduleKw != null }
 
-val MvModuleSpec.module: MvModule? get() = this.fqModuleRef?.reference?.resolve() as? MvModule
+val MvModuleSpec.moduleItem: MvModule? get() = this.fqModuleRef?.reference?.resolve() as? MvModule
 
 val MvModuleSpecBlock.moduleSpec: MvModuleSpec get() = this.parent as MvModuleSpec
 
@@ -201,6 +194,19 @@ fun MvModuleSpecBlock.itemSpecs() = this.childrenOfType<MvItemSpec>()
 //fun MvModuleSpecBlock.moduleItemSpecs() =
 //    this.itemSpecs()
 //        .filter { it.itemSpecRef?.moduleKw != null }
+
+fun MvModule.moduleItemSpecs(): List<MvModuleItemSpec> =
+    this.moduleBlock?.moduleItemSpecList.orEmpty()
+
+fun MvModuleSpec.moduleItemSpecs(): List<MvModuleItemSpec> =
+    this.moduleSpecBlock?.moduleItemSpecList.orEmpty()
+
+fun MvModuleSpec.schemas(): List<MvSchema> = this.moduleSpecBlock?.schemaList.orEmpty()
+
+fun MvModuleSpec.specFunctions(): List<MvSpecFunction> = this.moduleSpecBlock?.specFunctionList.orEmpty()
+
+fun MvModuleSpec.specInlineFunctions(): List<MvSpecInlineFunction> =
+    this.moduleItemSpecs().flatMap { it.specInlineFunctions() }
 
 fun MvModule.allModuleSpecs(): List<MvModuleSpec> {
     return getProjectPsiDependentCache(this) {
@@ -248,10 +254,10 @@ abstract class MvModuleMixin : MvStubbedNamedElementImpl<MvModuleStub>,
         )
     }
 
-    override val fqName: String
+    override val qualName: ItemQualName?
         get() {
-            val address = this.addressRef()?.text?.let { "$it::" } ?: ""
-            val module = this.name ?: "<unknown>"
-            return address + module
+            val itemName = this.name ?: return null
+            val address = this.address(this.moveProject) ?: Address.Value("0x0")
+            return ItemQualName(this, address, null, itemName)
         }
 }

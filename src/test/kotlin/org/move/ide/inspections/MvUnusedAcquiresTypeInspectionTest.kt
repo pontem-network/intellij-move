@@ -89,13 +89,53 @@ module 0x1::main {
 }        
     """)
 
-    fun `test no unused acquires with `() = checkWarnings("""
+    fun `test no unused acquires with inline function`() = checkWarnings("""
 module 0x1::main {
     struct StakePool has key {
         locked_until_secs: u64,
     }
     fun get_lockup_secs(pool_address: address) acquires StakePool {
+        f();
+    }
+    inline fun f() {
         borrow_global<StakePool>(pool_address);
+    }
+}        
+    """)
+
+    fun `test no unused acquires if declared on inline function`() = checkWarnings("""
+module 0x1::main {
+    struct StakePool has key {
+        locked_until_secs: u64,
+    }
+    inline fun get_lockup_secs(pool_address: address) acquires StakePool {
+        f();
+    }
+    inline fun f() {
+        borrow_global<StakePool>(pool_address);
+    }
+}        
+    """)
+
+    fun `test error if declared on inline function but not acquired`() = checkWarnings("""
+module 0x1::main {
+    struct StakePool has key {
+        locked_until_secs: u64,
+    }
+    inline fun get_lockup_secs(pool_address: address) <warning descr="Unused acquires clause">acquires StakePool</warning> {
+    }
+}        
+    """)
+
+    fun `test no unused acquires if declared on inline function but not acquired nested`() = checkWarnings("""
+module 0x1::main {
+    struct StakePool has key {
+        locked_until_secs: u64,
+    }
+    inline fun get_lockup_secs(pool_address: address) <warning descr="Unused acquires clause">acquires StakePool</warning> {
+        f();
+    }
+    inline fun f() {
     }
 }        
     """)

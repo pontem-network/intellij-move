@@ -1,6 +1,6 @@
 package org.move.ide.inspections.imports
 
-import org.move.lang.core.resolve.MvReferenceElement
+import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
@@ -159,7 +159,7 @@ module 0x1::main {
 
         val candidates =
             AutoImportFix.getImportCandidates(ImportContext.Companion.from(refElement), targetName)
-                .map { it.fqPath.toString() }
+                .map { it.qualName.editorText() }
         if (data == "[]") {
             check(candidates.isEmpty()) { "Non-empty candidates: $candidates" }
             return

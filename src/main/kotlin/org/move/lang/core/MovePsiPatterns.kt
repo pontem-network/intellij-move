@@ -51,7 +51,7 @@ object MvPsiPatterns {
     fun anySpecStart() = psiElementInside<MvItemSpec>().and(onStmtBeginning("spec"))
 //    fun anySpecStart() = psiElementInside<>().and(onStmtBeginning("spec"))
 
-    fun itemSpecStmt(): PsiElementPattern.Capture<PsiElement> = psiElementInside<MvItemSpecBlock>()
+    fun itemSpecStmt(): PsiElementPattern.Capture<PsiElement> = psiElementInside<MvSpecCodeBlock>()
 
     fun itemSpecRef(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvItemSpecRef>()
 
@@ -148,13 +148,17 @@ object MvPsiPatterns {
         psiElementWithParent<MvPath>()
 //            .withSuperParent<MvPath>(2)
 
+    fun refExpr(): PsiElementPattern.Capture<PsiElement> =
+        path()
+            .withSuperParent(2, MvRefExpr::class.java)
+
     fun pathType(): PsiElementPattern.Capture<PsiElement> =
         path()
             .withSuperParent<MvPathType>(2)
 
-    fun schemaRef(): PsiElementPattern.Capture<PsiElement> =
+    fun schemaLit(): PsiElementPattern.Capture<PsiElement> =
         path()
-            .withSuperParent<MvSchemaLitExpr>(2)
+            .withSuperParent<MvSchemaLit>(2)
 
     fun pathInsideIncludeStmt(): PsiElementPattern.Capture<PsiElement> =
         path()

@@ -3,15 +3,17 @@ package org.move.lang.types
 import org.move.utils.tests.types.TypificationTestCase
 
 class TypeSubstitutionTest: TypificationTestCase() {
-    fun `test return type of callable`() = testExpr("""
-    module 0x1::M {
-        fun call<R>(): R {}
-        fun main() {
-            call<u8>();
-          //^ u8  
-        }
-    }    
-    """)
+    fun `test return type of callable`() = testExpr(
+        """
+        module 0x1::M {
+            fun call<R>(): R {}
+            fun main() {
+                call<u8>();
+              //^ u8  
+            }
+        }    
+        """
+    )
 
     fun `test borrow_global_mut returns reference to type`() = testExpr(
         """
@@ -50,26 +52,30 @@ class TypeSubstitutionTest: TypificationTestCase() {
     """
     )
 
-    fun `test parametrized struct from literal`() = testExpr("""
-    module 0x1::M {
-        struct MyToken<Num> has key {}
-        fun main() {
-            MyToken<u8> {};
-          //^ 0x1::M::MyToken<u8>
-        }
-    }    
-    """)
+    fun `test parametrized struct from literal`() = testExpr(
+        """
+        module 0x1::M {
+            struct MyToken<Num> has key {}
+            fun main() {
+                MyToken<u8> {};
+              //^ 0x1::M::MyToken<u8>
+            }
+        }    
+        """
+    )
 
-    fun `test parametrized struct from call expr`() = testExpr("""
-    module 0x1::M {
-        struct MyToken<Num> has key {}
-        fun call<Token>(): Token {}
-        fun main() {
-            call<MyToken<u8>>();
-          //^ 0x1::M::MyToken<u8>
-        }
-    }    
-    """)
+    fun `test parametrized struct from call expr`() = testExpr(
+        """
+        module 0x1::M {
+            struct MyToken<Num> has key {}
+            fun call<Token>(): Token {}
+            fun main() {
+                call<MyToken<u8>>();
+              //^ 0x1::M::MyToken<u8>
+            }
+        }    
+        """
+    )
 
     fun `test struct field reference with generic field`() = testExpr(
         """
@@ -84,69 +90,77 @@ class TypeSubstitutionTest: TypificationTestCase() {
     """
     )
 
-    fun `test return type of generic function parametrized by the vector of types`() = testExpr("""
-    module 0x1::M {
-        native public fun borrow<Element>(v: &vector<Element>, i: u64): &Element;
-        
-        fun m() {
-            let a: vector<u8>;
-            let b = borrow(&a, 0);
-            b;
-          //^ &u8 
-        }
-    }    
-    """)
+    fun `test return type of generic function parametrized by the vector of types`() = testExpr(
+        """
+        module 0x1::M {
+            native public fun borrow<Element>(v: &vector<Element>, i: u64): &Element;
+            
+            fun m() {
+                let a: vector<u8>;
+                let b = borrow(&a, 0);
+                b;
+              //^ &u8 
+            }
+        }    
+        """
+    )
 
-    fun `test return type of generic function parametrized by field`() = testExpr("""
-    module 0x1::M {
-        struct Option<Element> { element: Element } 
-        struct S { id: Option<u64> }
+    fun `test return type of generic function parametrized by field`() = testExpr(
+        """
+        module 0x1::M {
+            struct Option<Element> { element: Element }
+            struct S<Element> { id: Option<Element> }
+            native public fun borrow<Element>(v: &Option<Element>): &Element;
+            fun m() {
+                let s = S { id: Option { element: 1u64 } };
+                let b = *borrow(&s.id);
+                b;
+              //^ u64  
+            }
+        }    
+        """
+    )
 
-        native public fun borrow<Element>(v: &Option<Element>): &Element;
-        
-        fun m() {
-            let s = S { id: Option { element: 1u64 } };
-            let b = *borrow(&s.id);
-            b;
-          //^ u64  
-        }
-    }    
-    """)
+    fun `test struct literal type generic`() = testExpr(
+        """
+        module 0x1::M {
+            struct Vault<VaultContent: store> has key {
+                content: VaultContent
+            }
+            public fun new<Content: store>(owner: &signer,  content: Content) {
+                let v = Vault { content };
+                v;
+              //^ 0x1::M::Vault<Content>  
+            }
+        }    
+        """
+    )
 
-    fun `test struct literal type generic`() = testExpr("""
-    module 0x1::M {
-        struct Vault<VaultContent: store> has key {
-            content: VaultContent
-        }
-        public fun new<Content: store>(owner: &signer,  content: Content) {
-            let v = Vault { content };
-            v;
-          //^ 0x1::M::Vault<Content>  
-        }
-    }    
-    """)
+    fun `test infer return type from the known parameters`() = testExpr(
+        """
+        module 0x1::M {
+            struct C {}
+            struct D {}
+            fun new<Content>(a: Content, b: Content): Content {}
+            fun m() {
+                let a = new(C{}, D{});
+                a;
+              //^ 0x1::M::C  
+            }
+        }    
+        """
+    )
 
-    fun `test infer return type from the known parameters`() = testExpr("""
-    module 0x1::M {
-        struct C {}
-        struct D {}
-        fun new<Content>(a: Content, b: Content): Content {}
-        fun m() {
-            let a = new(C{}, D{});
-            a;
-          //^ 0x1::M::C  
-        }
-    }    
-    """)
-
-    fun `test infer struct literal type from known field types`() = testExpr("""
-    module 0x1::M {
-        struct S<Num> { a: Num, b: Num }
-        fun m() {
-            let s = S { a: true, b: 1u64 };
-            s;
-          //^ 0x1::M::S<bool>
-        }
-    }    
-    """)
+    fun `test infer struct literal type from known field types`() = testExpr(
+        """
+        module 0x1::M {
+            struct S<Num> { a: Num, b: Num }
+            fun m() {
+                let s = S { a: true, b: 1u64 };
+                s;
+              //^ 0x1::M::S<bool>
+            }
+        }    
+        """
+    )
 }

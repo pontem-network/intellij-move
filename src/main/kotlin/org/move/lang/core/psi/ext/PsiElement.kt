@@ -212,3 +212,9 @@ val PsiElement.stubParent: PsiElement?
  */
 inline fun <reified T : PsiElement> PsiElement.contextOrSelf(): T? =
     PsiTreeUtil.getContextOfType(this, T::class.java, /* strict */ false)
+
+fun PsiElement.textRangeInAncestor(ancestorElement: PsiElement): TextRange {
+    if (!ancestorElement.isAncestorOf(this)) return this.textRange
+    val startOffset = this.startOffset - ancestorElement.startOffset
+    return TextRange.from(startOffset, this.textLength)
+}

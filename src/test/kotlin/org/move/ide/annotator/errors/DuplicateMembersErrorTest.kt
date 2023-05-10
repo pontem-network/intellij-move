@@ -4,15 +4,6 @@ import org.move.ide.annotator.MvErrorAnnotator
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class DuplicateMembersErrorTest : AnnotatorTestCase(MvErrorAnnotator::class) {
-    fun `test duplicate function in script`() = checkErrors(
-        """
-        script {
-            fun <error descr="Duplicate definitions with name `main`">main</error>() {}
-            fun <error descr="Duplicate definitions with name `main`">main</error>() {}
-        }
-    """
-    )
-
     fun `test duplicate function in module`() = checkErrors(
         """
         module 0x1::M {
