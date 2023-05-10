@@ -50,7 +50,7 @@ class MvUseItemReferenceElement(element: MvUseItem) : MvReferenceCached<MvUseIte
         val itemVis = ItemVis(
             ns,
             vs,
-            MslLetScope.NONE,
+            MslLetScope.EXPR_STMT,
             itemScope = moduleRef.itemScope,
         )
         return resolveModuleItem(
