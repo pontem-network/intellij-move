@@ -23,7 +23,7 @@ abstract class MvTestBase : BasePlatformTestCase(),
         super.setUp()
         val settingsState = project.moveSettings.settingsState
         val isDevMode = this.findAnnotationInstance<DevelopmentMode>()?.enabled ?: true
-        project.moveSettings.settingsState = settingsState.copy(developmentMode = isDevMode)
+        project.moveSettings.settingsState = settingsState.copy(debugMode = isDevMode)
     }
 
     override fun getTestDataPath(): String = "${TestCase.testResourcesPath}/$dataPath"

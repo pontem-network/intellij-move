@@ -3,8 +3,8 @@ package org.move.lang.core.types.infer
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import org.move.cli.settings.devErrorOrFallback
-import org.move.cli.settings.pluginDevelopmentMode
+import org.move.cli.settings.debugErrorOrFallback
+import org.move.cli.settings.pluginDebugMode
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -57,7 +57,7 @@ class TypeInferenceWalker(
                 null -> TyUnknown
                 is MvFunctionParameter -> bindingContext.type?.loweredType(msl) ?: TyUnknown
                 is MvSchemaFieldStmt -> bindingContext.type?.loweredType(msl) ?: TyUnknown
-                else -> project.devErrorOrFallback(
+                else -> project.debugErrorOrFallback(
                     "${bindingContext.elementType} binding is not inferred",
                     TyUnknown
                 )
@@ -257,7 +257,7 @@ class TypeInferenceWalker(
             }
             is MvSpecVisRestrictedExpr -> expr.expr?.inferType(expected) ?: TyUnknown
             else ->
-                project.devErrorOrFallback(expr.typeErrorText, TyUnknown)
+                project.debugErrorOrFallback(expr.typeErrorText, TyUnknown)
         }
 
         val refinedExprTy = exprTy.mslScopeRefined(msl)
@@ -286,7 +286,7 @@ class TypeInferenceWalker(
             is MvBindingPat -> ctx.getPatType(item)
             is MvConst -> item.type?.loweredType(msl) ?: TyUnknown
             is MvStructField -> item.type?.loweredType(msl) ?: TyUnknown
-            else -> project.devErrorOrFallback(
+            else -> project.debugErrorOrFallback(
                 "Referenced item ${item.elementType} " +
                         "of ref expr `${refExpr.text}` at ${refExpr.location} cannot be inferred into type",
                 TyUnknown
@@ -621,7 +621,7 @@ class TypeInferenceWalker(
 
             // if any of the types has TyUnknown and TyInfer, combineTyVar will fail
             // it only happens in buggy situation, but it's annoying for the users, so return if not in devMode
-            if (!project.pluginDevelopmentMode) {
+            if (!project.pluginDebugMode) {
                 if ((leftTy.hasTyUnknown || rightTy.hasTyUnknown)
                     && (leftTy.hasTyInfer || rightTy.hasTyInfer)
                 ) {

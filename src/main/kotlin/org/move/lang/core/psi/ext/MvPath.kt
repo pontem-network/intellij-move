@@ -1,7 +1,7 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import org.move.cli.settings.devErrorOrFallback
+import org.move.cli.settings.debugErrorOrFallback
 import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
 import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
@@ -68,7 +68,7 @@ abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
 //            parent is MvRefExpr && !this.nullModuleRef -> setOf(Namespace.NAME, Namespace.MODULE)
             // TODO: it's own namespace?
             parent is MvStructLitExpr || parent is MvStructPat -> setOf(Namespace.NAME)
-            else -> project.devErrorOrFallback(
+            else -> project.debugErrorOrFallback(
                 "Unhandled path parent ${parent.elementType}",
                 setOf(Namespace.NAME)
             )

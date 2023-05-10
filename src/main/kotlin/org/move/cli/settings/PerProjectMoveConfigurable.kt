@@ -30,9 +30,12 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
                         .bindSelected(state::disableTelemetry)
                 }
                 row {
-                    checkBox("Enable development mode")
-                        .bindSelected(state::developmentMode)
-                    comment("Disables some fallbacks to explicitly crash or highlight errors")
+                    checkBox("Enable debug mode")
+                        .bindSelected(state::debugMode)
+                    comment(
+                        "Enables some explicit crashes in the different parts of code. " +
+                                "Useful for bug reporting to help the development of the plugin."
+                    )
                 }
             }
         }

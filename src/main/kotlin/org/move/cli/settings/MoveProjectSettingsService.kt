@@ -45,7 +45,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
         var aptosPath: String = "",
         var foldSpecs: Boolean = false,
         var disableTelemetry: Boolean = true,
-        var developmentMode: Boolean = false,
+        var debugMode: Boolean = false,
     )
 
     @Volatile
@@ -133,10 +133,10 @@ fun Path?.isValidExecutable(): Boolean {
             && this.isExecutableFile()
 }
 
-val Project.pluginDevelopmentMode: Boolean get() = this.moveSettings.settingsState.developmentMode
+val Project.pluginDebugMode: Boolean get() = this.moveSettings.settingsState.debugMode
 
-fun <T> Project.devErrorOrFallback(message: String, fallback: T): T {
-    if (this.pluginDevelopmentMode) {
+fun <T> Project.debugErrorOrFallback(message: String, fallback: T): T {
+    if (this.pluginDebugMode) {
         error(message)
     }
     return fallback

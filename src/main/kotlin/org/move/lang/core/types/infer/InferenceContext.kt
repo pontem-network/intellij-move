@@ -4,7 +4,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.util.CachedValue
 import com.jetbrains.rd.util.concurrentMapOf
 import org.jetbrains.annotations.TestOnly
-import org.move.cli.settings.pluginDevelopmentMode
+import org.move.cli.settings.pluginDebugMode
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -69,7 +69,7 @@ interface InferenceData {
         if (type != null) return type
 
         // if not in devmode, return unknown
-        if (!pat.project.pluginDevelopmentMode) return TyUnknown
+        if (!pat.project.pluginDebugMode) return TyUnknown
         error(message = pat.typeErrorText)
     }
 }
@@ -84,7 +84,7 @@ data class InferenceResult(
 ) : InferenceData {
     fun getExprType(expr: MvExpr): Ty =
         exprTypes[expr] ?: run {
-            if (expr.project.pluginDevelopmentMode) {
+            if (expr.project.pluginDebugMode) {
                 error(message = expr.typeErrorText)
             } else {
                 TyUnknown

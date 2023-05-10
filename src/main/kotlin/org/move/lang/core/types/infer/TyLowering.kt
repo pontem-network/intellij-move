@@ -1,6 +1,6 @@
 package org.move.lang.core.types.infer
 
-import org.move.cli.settings.devErrorOrFallback
+import org.move.cli.settings.debugErrorOrFallback
 import org.move.ide.annotator.INTEGER_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_INTEGER_TYPE_IDENTIFIERS
 import org.move.lang.core.psi.*
@@ -36,7 +36,7 @@ class TyLowering {
                 }
                 TyLambda(paramTys, retTy)
             }
-            else -> moveType.project.devErrorOrFallback(
+            else -> moveType.project.debugErrorOrFallback(
                 "${moveType.elementType} type is not inferred",
                 TyUnknown
             )
