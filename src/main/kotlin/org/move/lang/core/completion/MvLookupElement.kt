@@ -61,26 +61,15 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
     val msl = context.itemVis.isMsl
     val expectedTy = context.expectedTy
     if (expectedTy != null) {
-//        val itemContext = element.itemContextOwner?.itemContext(msl) ?: element.project.itemContext(msl)
-//        val ctx = InferenceContext(msl, itemContext)
-//        val typeContext =
         val itemTy = when (element) {
-//        is RsFieldDecl -> typeReference?.type
             is MvFunctionLike -> element.declaredType(msl).retType
             is MvStruct -> element.declaredType(msl)
-//            is MvFunction -> {
-//                element.declaredType(msl)
-////                val itemContext = element.outerItemContext(msl)
-////                (itemContext.getItemTy(element) as? TyFunction)?.retType ?: TyUnknown
-//            }
-//            is MvStruct -> {
-//                TyStruct2.valueOf(element)
-////                element.outerItemContext(msl).getItemTy(element)
-//            }
             is MvConst -> element.type?.loweredType(msl) ?: TyUnknown
             is MvBindingPat -> {
                 val inference = element.inference(msl)
-                inference?.getPatType(element) ?: TyUnknown
+                // sometimes type inference won't be able to catch up with the completion, and this line crashes,
+                // so changing to infallible getPatTypeOrUnknown()
+                inference?.getPatTypeOrUnknown(element) ?: TyUnknown
             }
             else -> TyUnknown
         }
