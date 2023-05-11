@@ -93,7 +93,8 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
             // TODO: no auto-import if name in scope, but cannot be resolved
 
             val refName = refElement.referenceName ?: return null
-            val candidates = getImportCandidates(ImportContext.from(refElement), refName)
+            val importContext = ImportContext.from(refElement)
+            val candidates = getImportCandidates(importContext, refName)
             return Context(candidates)
         }
 
@@ -147,7 +148,7 @@ data class ImportContext private constructor(
         }
 
         fun from(contextElement: MvReferenceElement): ImportContext {
-            val ns = contextElement.namespaces()
+            val ns = contextElement.importCandidateNamespaces()
             val vs = if (contextElement.containingScript != null) {
                 setOf(Visibility.Public, Visibility.PublicScript)
             } else {
