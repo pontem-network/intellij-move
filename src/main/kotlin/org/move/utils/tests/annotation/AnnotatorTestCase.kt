@@ -13,9 +13,8 @@ abstract class AnnotatorTestCase(
     private val annotatorClass: KClass<out MvAnnotatorBase>
 ) : MvAnnotationTestCase() {
 
-    override fun createAnnotationFixture(): MvAnnotationTestFixture = MvAnnotationTestFixture(
-        this, myFixture, annotatorClasses = listOf(annotatorClass)
-    )
+    override fun createAnnotationFixture(): MvAnnotationTestFixture =
+        MvAnnotationTestFixture(this, myFixture, annotatorClasses = listOf(annotatorClass))
 
     protected fun checkFixByText(
         fixName: String,

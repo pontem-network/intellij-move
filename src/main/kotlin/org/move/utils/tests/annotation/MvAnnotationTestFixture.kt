@@ -17,19 +17,28 @@ import com.intellij.testFramework.fixtures.impl.BaseFixture
 import junit.framework.TestCase
 import org.intellij.lang.annotations.Language
 import org.move.ide.annotator.MvAnnotatorBase
+import org.move.stdext.withAdded
+import org.move.utils.tests.EnableInspection
+import org.move.utils.tests.findAnnotationInstance
 import kotlin.reflect.KClass
 
 class MvAnnotationTestFixture(
     private val testCase: TestCase,
     val codeInsightFixture: CodeInsightTestFixture,
-    private val annotatorClasses: List<KClass<out MvAnnotatorBase>> = emptyList(),
-    private val inspectionClasses: List<KClass<out InspectionProfileEntry>> = emptyList(),
+    private var annotatorClasses: List<KClass<out MvAnnotatorBase>> = emptyList(),
+    private var inspectionClasses: List<KClass<out InspectionProfileEntry>> = emptyList(),
 ) : BaseFixture() {
     val project: Project get() = codeInsightFixture.project
     lateinit var enabledInspections: List<InspectionProfileEntry>
 
     override fun setUp() {
         super.setUp()
+
+        val inspectionToEnable = testCase.findAnnotationInstance<EnableInspection>()?.inspectionClass
+        if (inspectionToEnable != null) {
+            inspectionClasses = inspectionClasses.withAdded(inspectionToEnable)
+        }
+
         annotatorClasses.forEach {
             MvAnnotatorBase.enableAnnotator(
                 it.java,

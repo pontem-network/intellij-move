@@ -865,17 +865,10 @@ class TypeInferenceWalker(
         reportTypeMismatch(element, expected, inferred)
     }
 
-    // Another awful hack: check that inner expressions did not annotated as an error
-    // to disallow annotation intersections. This should be done in a different way
     private fun reportTypeMismatch(element: PsiElement, expected: Ty, inferred: Ty) {
         reportTypeError(TypeError.TypeMismatch(element, expected, inferred))
-//        if (ctx.typeErrors.all { !element.isAncestorOf(it.element) }) {
-//            ctx.addTypeError(TypeError.TypeMismatch(element, expected, inferred))
-//        }
     }
 
-    // Another awful hack: check that inner expressions did not annotated as an error
-    // to disallow annotation intersections. This should be done in a different way
     fun reportTypeError(typeError: TypeError) = ctx.reportTypeError(typeError)
 
     companion object {

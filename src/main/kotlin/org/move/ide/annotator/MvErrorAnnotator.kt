@@ -11,6 +11,7 @@ import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.address
+import org.move.lang.core.types.infer.subtreeAnnotatedWithTypeError
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.TyCallable
@@ -97,8 +98,11 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                                         .addToHolder(moveHolder)
                                 }
                             } else {
-                                val callTy = parent.inference(msl)?.getCallExprType(parent)
-                                        as? TyFunction ?: return
+                                val inference = parent.inference(msl) ?: return
+                                if (parent.subtreeAnnotatedWithTypeError(inference.typeErrors)) {
+                                    return
+                                }
+                                val callTy = inference.getCallExprType(parent) as? TyFunction ?: return
                                 // if no type args are passed, check whether all type params are inferrable
                                 if (callTy.needsTypeAnnotation()) {
                                     MvDiagnostic
