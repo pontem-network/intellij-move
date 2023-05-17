@@ -33,15 +33,18 @@ class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MvValueArgumentLi
             context.removeHint()
             return
         }
-        val currentParameterIndex = if (parameterOwner.startOffset == context.offset) {
-            -1
-        } else {
-            ParameterInfoUtils.getCurrentParameterIndex(
-                parameterOwner.node,
-                context.offset,
-                MvElementTypes.COMMA
-            )
-        }
+        val contextOffset = context.offset
+        val currentParameterIndex =
+            if (parameterOwner.startOffset == contextOffset) {
+                -1
+            } else {
+                if (parameterOwner.valueArgumentList.isEmpty()) {
+                    0
+                } else {
+                    parameterOwner.valueArgumentList
+                        .indexOfFirst { it.textRange.containsOffset(contextOffset) }
+                }
+            }
         context.setCurrentParameter(currentParameterIndex)
     }
 

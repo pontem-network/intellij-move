@@ -108,8 +108,10 @@ FILE
             PsiErrorElement:'::', <operator>, '=' or '[' expected, got '=='
               PsiElement(==)('==')
             PsiElement(>)('>')
-            PsiWhiteSpace(' ')
-            PsiElement(INTEGER_LITERAL)('2')
+          PsiWhiteSpace(' ')
+          MvExprStmtImpl(EXPR_STMT)
+            MvLitExprImpl(LIT_EXPR)
+              PsiElement(INTEGER_LITERAL)('2')
             PsiElement(;)(';')
           PsiWhiteSpace('\n    ')
           PsiElement(})('}')

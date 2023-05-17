@@ -701,7 +701,7 @@ private SpecExpr_item ::= SpecExprStmt_items | ExprStmt_expr
 {
     recoverWhile = SpecExprStmt_recover
 }
-private SpecExprStmt_recover ::= !(';' | '}' | SpecExprStmt_first)
+private SpecExprStmt_recover ::= !(';' | '}' | SpecExpr_first | Expr_first)
 private SpecExprStmt_first ::= let | if | while
                                     | include | apply | pragma | emits | assume | assert | ensures
                                     | axiom | modifies | aborts_if | aborts_with | requires | invariant
@@ -739,17 +739,16 @@ private ExprStmt_expr ::= ItemSpecBlockExpr
 {
     recoverWhile = "ExprStmt_recover"
 }
-private ExprStmt_recover ::= !(';' | '}' | Expr_first)
-private Expr_first ::= let | if | while | return | continue | break | spec
+private ExprStmt_recover ::= !(';' | '}' | <<mslOnly SpecExpr_first>> | Expr_first)
+private Expr_first ::= let | if | while | loop | continue | break | return | spec
+                        | copy | move | abort
                         | IDENTIFIER
+                        | '*' | '&' | '!' | '|' | '{' | '[' | '('
+                        | AnyLitToken_first
                         | (AddressRef '::')
-//                                | <<specOnly apply>>
-//                                | <<specOnly pragma>>
-//                                | <<specOnly emits>>
-//                                | <<specOnly choose>>
-//                                | <<specOnly ensures>> | <<specOnly invariant>>
-//                                | <<specOnly include>> | <<specOnly aborts_if>>
-//                                | <<specOnly choose>> | <<specOnly axiom>>
+private SpecExpr_first ::= include | apply | pragma | emits | assume | assert | ensures
+                            | axiom | modifies | aborts_if | aborts_with | requires
+                            | invariant | choose
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
@@ -984,20 +983,36 @@ LitExpr ::= HEX_INTEGER_LITERAL
                 | HEX_STRING_LITERAL
                 | BYTE_STRING_LITERAL
                 | AddressLit
+
+private AnyLitToken_first ::= HEX_INTEGER_LITERAL
+                                  | BOOL_LITERAL
+                                  | INTEGER_LITERAL
+                                  | HEX_STRING_LITERAL
+                                  | BYTE_STRING_LITERAL
+                                  | '@'
+
 AddressLit ::= '@' AddressRef { pin = 1 }
 
 CallExpr ::= (Path &'(') ValueArgumentList {
     pin = 1
     implements = ["org.move.lang.core.psi.PathExpr"]
 }
-ValueArgumentList ::= '(' ValueArgumentList_items? ')' { pin = 1 }
-private ValueArgumentList_items ::= <<comma_sep_items ValueArgument>>
-{
-    recoverWhile = ValueArgumentList_items_recovery
-}
-private ValueArgumentList_items_recovery ::= !(';' | ')')
+ValueArgumentList ::= '(' ValueArgument* ')' { pin = 1 }
 
-ValueArgument ::= Expr
+ValueArgument ::= !')' Expr (',' | &')') {
+    pin = 1
+    recoverWhile = ValueArgument_recover
+}
+private ValueArgument_recover ::= !(<<mslOnly SpecExpr_first>> | Expr_first | ')' | '}' | ';' | ',')
+
+//ValueArgument ::= Expr
+
+//private ValueArgumentList_items ::= <<comma_sep_items ValueArgument>>
+//{
+//    recoverWhile = ValueArgumentList_items_recovery
+//}
+//private ValueArgumentList_items_recovery ::= !(';' | ')')
+
 
 IfExpr ::= if Condition AnyBlock ElseBlock? { pin = 1 }
 

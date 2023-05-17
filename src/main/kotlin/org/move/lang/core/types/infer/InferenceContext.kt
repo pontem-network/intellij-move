@@ -478,7 +478,7 @@ class InferenceContext(
     // to disallow annotation intersections. This should be done in a different way
     fun reportTypeError(typeError: TypeError) {
         val element = typeError.element
-        if (!element.subtreeAnnotatedWithTypeError(this.typeErrors)
+        if (!element.descendantHasTypeError(this.typeErrors)
             && typeError.element.containingFile.isPhysical
         ) {
             typeErrors.add(typeError)
@@ -486,6 +486,6 @@ class InferenceContext(
     }
 }
 
-fun PsiElement.subtreeAnnotatedWithTypeError(existingTypeErrors: List<TypeError>): Boolean {
+fun PsiElement.descendantHasTypeError(existingTypeErrors: List<TypeError>): Boolean {
     return existingTypeErrors.any { typeError -> this.isAncestorOf(typeError.element) }
 }

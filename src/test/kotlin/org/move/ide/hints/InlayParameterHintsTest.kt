@@ -1,16 +1,28 @@
 package org.move.ide.hints
 
 import com.intellij.codeInsight.daemon.impl.HintRenderer
+import com.intellij.codeInsight.hints.LinearOrderInlayRenderer
 import org.intellij.lang.annotations.Language
 import org.move.utils.tests.MvTestBase
 
 class InlayParameterHintsTest : MvTestBase() {
     fun `test fun`() = checkByText(
         """
-        module M {
+        module 0x1::M {
             fun call(val: u8, val2: u8) {}
             fun main() {
                 call(/*hint="val:"*/1, /*hint="val2:"*/2)
+            }    
+        }    
+    """
+    )
+
+    fun `test fun skipped argument`() = checkByText(
+        """
+        module 0x1::M {
+            fun call(val: u8, val2: u8) {}
+            fun main() {
+                call(, /*hint="val2:"*/2)
             }    
         }    
     """
@@ -43,7 +55,7 @@ class InlayParameterHintsTest : MvTestBase() {
         module 0x1::M {
             fun call(root_acc: address, param: address) {}
             fun main() {
-                let myval = @0x1;
+                let myval<hint text="[:  address]"/> = @0x1;
                 call(myval, /*hint="param:"*/@0x1);
             }    
         }    
@@ -52,12 +64,17 @@ class InlayParameterHintsTest : MvTestBase() {
 
     private fun checkByText(@Language("Move") code: String) {
         inlineFile(
-            code.replace(
-                HINT_COMMENT_PATTERN,
-                "<$1/>"
-            )
+            code.trimIndent().replace(HINT_COMMENT_PATTERN, "<$1/>")
         )
-        myFixture.testInlays({ (it.renderer as HintRenderer).text }) { it.renderer is HintRenderer }
+        checkInlays()
+    }
+
+    @Suppress("UnstableApiUsage")
+    private fun checkInlays() {
+        myFixture.testInlays(
+            { (it.renderer as LinearOrderInlayRenderer<*>).toString() },
+            { it.renderer is LinearOrderInlayRenderer<*> }
+        )
     }
 
     companion object {

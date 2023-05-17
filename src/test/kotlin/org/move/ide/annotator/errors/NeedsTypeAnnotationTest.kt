@@ -97,4 +97,22 @@ class NeedsTypeAnnotationTest: AnnotatorTestCase(MvErrorAnnotator::class) {
             }
         }    
     """)
+
+    fun `test no need type annotation error if function has missing value parameters`() = checkErrors("""
+        module 0x1::m {
+            fun call<R>(a: u8, b: &R) {}
+            fun main() {
+                call(<error descr="This function takes 2 parameters but 0 parameters were supplied">)</error>;
+            }
+        }    
+    """)
+
+    fun `test needs type annotation if missing parameters but not inferrable`() = checkErrors("""
+        module 0x1::m {
+            fun call<R>(a: u8) {}
+            fun main() {
+                <error descr="Could not infer this type. Try adding an annotation">call</error>(<error descr="This function takes 1 parameter but 0 parameters were supplied">)</error>;
+            }
+        }    
+    """)
 }

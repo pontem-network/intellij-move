@@ -345,7 +345,19 @@ class TypeInferenceWalker(
 
         inferArgumentTypes(funcTy.paramTypes, expectedInputTys, callExpr.callArgumentExprs)
 
-        ctx.writeCallExprType(callExpr, funcTy as Ty)
+        // if value parameter has no type, use it as unknown for the sake of "need type annotation" check
+        ctx.probe {
+            val valueArguments = callExpr.valueArguments
+            for ((i, paramType) in funcTy.paramTypes.withIndex()) {
+                val argumentExpr = valueArguments.getOrNull(i)?.expr
+                if (argumentExpr == null) {
+                    paramType.visitInferTys {
+                        ctx.combineTypes(it, TyUnknown); true
+                    }
+                }
+            }
+            ctx.writeCallExprType(callExpr, ctx.resolveTypeVarsIfPossible(funcTy as Ty))
+        }
 
         return funcTy.retType
     }
@@ -353,9 +365,11 @@ class TypeInferenceWalker(
     private fun inferArgumentTypes(
         formalInputTys: List<Ty>,
         expectedInputTys: List<Ty>,
-        argExprs: List<MvExpr>
+        argExprs: List<MvExpr?>
     ) {
         for ((i, argExpr) in argExprs.withIndex()) {
+            if (argExpr == null) continue
+
             val formalInputTy = formalInputTys.getOrNull(i) ?: TyUnknown
             val expectedInputTy = expectedInputTys.getOrNull(i) ?: formalInputTy
 
@@ -374,7 +388,7 @@ class TypeInferenceWalker(
         val ident = macroExpr.macroIdent.identifier
         if (ident.text == "assert") {
             val formalInputTys = listOf(TyBool, TyInteger.default())
-            inferArgumentTypes(formalInputTys, emptyList(), macroExpr.callArgumentExprs)
+            inferArgumentTypes(formalInputTys, emptyList(), macroExpr.valueArguments.map { it.expr })
         }
         return TyUnit
     }

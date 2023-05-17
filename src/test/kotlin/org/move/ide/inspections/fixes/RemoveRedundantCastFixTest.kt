@@ -31,4 +31,18 @@ module 0x1::main {
     }
 }        
     """)
+
+//    fun `test remove redundant cast from left expr`() = checkFixByText("Remove redundant cast", """
+//module 0x1::main {
+//    fun main() {
+//        (/*caret*/1u64 <warning descr="No cast needed">as u64</warning>);
+//    }
+//}
+//    """, """
+//module 0x1::main {
+//    fun main() {
+//        1u64;
+//    }
+//}
+//    """)
 }
