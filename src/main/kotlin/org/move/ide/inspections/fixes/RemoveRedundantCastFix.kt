@@ -10,7 +10,7 @@ import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
 
 class RemoveRedundantCastFix(castExpr: MvCastExpr) : DiagnosticFix<MvCastExpr>(castExpr) {
-    override fun getFamilyName(): String = "Remove redundant cast"
+
     override fun getText(): String = "Remove redundant cast"
 
     override fun stillApplicable(project: Project, file: PsiFile, element: MvCastExpr): Boolean {
