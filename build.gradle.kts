@@ -19,8 +19,8 @@ val kotlinVersion = "1.8.20"
 val pluginJarName = "intellij-move-$platformVersion"
 val pluginVersion = "1.28.1"
 val pluginGroup = "org.move"
-val javaVersion = if (platformVersion < "222") JavaVersion.VERSION_11 else JavaVersion.VERSION_17
-val kotlinJvmTarget = if (platformVersion < "222") "11" else "17"
+val javaVersion = JavaVersion.VERSION_17
+val kotlinJvmTarget = "17"
 
 group = pluginGroup
 version = pluginVersion
@@ -29,7 +29,7 @@ plugins {
     id("java")
     kotlin("jvm") version "1.8.20"
     id("org.jetbrains.intellij") version "1.13.3"
-    id("org.jetbrains.grammarkit") version "2021.2.2"
+    id("org.jetbrains.grammarkit") version "2022.3.1"
     id("net.saliman.properties") version "1.5.2"
 }
 
@@ -90,14 +90,14 @@ allprojects {
     }
 
     val generateMoveLexer = task<GenerateLexerTask>("generateMoveLexer") {
-        source.set("src/main/grammars/MoveLexer.flex")
+        sourceFile.set(file("src/main/grammars/MoveLexer.flex"))
         targetDir.set("src/main/gen/org/move/lang")
         targetClass.set("_MoveLexer")
         purgeOldFiles.set(true)
     }
 
     val generateMoveParser = task<GenerateParserTask>("generateMoveParser") {
-        source.set("src/main/grammars/MoveParser.bnf")
+        sourceFile.set(file("src/main/grammars/MoveParser.bnf"))
         targetRoot.set("src/main/gen")
         pathToParser.set("/org/move/lang/MoveParser.java")
         pathToPsiRoot.set("/org/move/lang/psi")

@@ -7,7 +7,8 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.ui.LabeledComponent
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.EditorTextField
-import com.intellij.ui.layout.panel
+import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.text.nullize
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -37,13 +38,17 @@ class MoveCommandConfigurationEditor : SettingsEditor<MoveCommandConfiguration>(
     override fun createEditor(): JComponent {
         return panel {
             row("Command:") {
-                commandTextField(growX, pushX)
+                cell(commandTextField)
+                    .horizontalAlign(HorizontalAlign.FILL)
+                    .resizableColumn()
             }
             row(envVarsField.label) {
-                envVarsField(growX)
+                cell(envVarsField)
+                    .horizontalAlign(HorizontalAlign.FILL)
             }
             row(workingDirectoryField.label) {
-                workingDirectoryField(growX)
+                cell(workingDirectoryField)
+                    .horizontalAlign(HorizontalAlign.FILL)
             }
         }
     }

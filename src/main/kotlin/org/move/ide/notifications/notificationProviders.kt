@@ -7,12 +7,15 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
+import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
 import org.move.cli.moveProjects
 import org.move.cli.settings.*
 import org.move.lang.isMoveOrManifest
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.showSettings
+import java.util.function.Function
+import javax.swing.JComponent
 
 fun updateAllNotifications(project: Project) {
     EditorNotifications.getInstance(project).updateAllNotifications()
@@ -27,19 +30,17 @@ class UpdateNotificationsOnSettingsChangeListener(val project: Project) : MoveSe
 
 class InvalidAptosBinaryNotification(
     private val project: Project
-) : EditorNotifications.Provider<EditorNotificationPanel>(),
+) : EditorNotificationProvider,
     DumbAware {
 
-    private val VirtualFile.disablingKey: String
-        get() = NOTIFICATION_STATUS_KEY + path
+    override fun collectNotificationData(
+        project: Project,
+        file: VirtualFile
+    ): Function<in FileEditor, out JComponent?> {
+        return Function { createNotificationPanel(file, project) }
+    }
 
-    override fun getKey(): Key<EditorNotificationPanel> = PROVIDER_KEY
-
-    override fun createNotificationPanel(
-        file: VirtualFile,
-        fileEditor: FileEditor,
-        project: Project
-    ): EditorNotificationPanel? {
+    fun createNotificationPanel(file: VirtualFile, project: Project): EditorNotificationPanel? {
         if (isUnitTestMode) return null
         if (!file.isMoveOrManifest) return null
 
@@ -69,9 +70,9 @@ class InvalidAptosBinaryNotification(
     private fun isNotificationDisabled(file: VirtualFile): Boolean =
         PropertiesComponent.getInstance(project).getBoolean(file.disablingKey)
 
+    private val VirtualFile.disablingKey: String get() = NOTIFICATION_STATUS_KEY + path
+
     companion object {
         private const val NOTIFICATION_STATUS_KEY = "org.move.hideMoveNotifications"
-
-        private val PROVIDER_KEY: Key<EditorNotificationPanel> = Key.create("Fix Move.toml file")
     }
 }

@@ -3,7 +3,8 @@ package org.move.cli.runConfigurations.aptos.any
 import com.intellij.execution.configuration.EnvironmentVariablesComponent
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.ui.EditorTextField
-import com.intellij.ui.layout.panel
+import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import org.move.utils.ui.WorkingDirectoryField
 import java.nio.file.Path
 import javax.swing.JComponent
@@ -30,13 +31,17 @@ class AnyCommandConfigurationEditor : SettingsEditor<AnyCommandConfiguration>() 
     override fun createEditor(): JComponent {
         return panel {
             row("Command:") {
-                commandTextField(growX, pushX)
+                cell(commandTextField)
+                    .horizontalAlign(HorizontalAlign.FILL)
+                    .resizableColumn()
             }
             row(envVarsField.label) {
-                envVarsField(growX)
+                cell(envVarsField)
+                    .horizontalAlign(HorizontalAlign.FILL)
             }
             row(workingDirectoryField.label) {
-                workingDirectoryField(growX)
+                cell(workingDirectoryField)
+                    .horizontalAlign(HorizontalAlign.FILL)
             }
         }
     }
