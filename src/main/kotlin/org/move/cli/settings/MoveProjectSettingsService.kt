@@ -46,6 +46,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
         var foldSpecs: Boolean = false,
         var disableTelemetry: Boolean = true,
         var debugMode: Boolean = false,
+        var skipFetchLatestGitDeps: Boolean = false
     )
 
     @Volatile
@@ -141,3 +142,6 @@ fun <T> Project.debugErrorOrFallback(message: String, fallback: T): T {
     }
     return fallback
 }
+
+val Project.skipFetchLatestGitDeps: Boolean get() =
+    this.moveSettings.settingsState.skipFetchLatestGitDeps

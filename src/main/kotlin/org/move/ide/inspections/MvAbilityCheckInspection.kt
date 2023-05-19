@@ -6,10 +6,7 @@ import org.move.ide.annotator.pluralise
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.fields
-import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.psi.ext.structItem
-import org.move.lang.core.psi.ext.abilities
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.infer.inferExpectedTypeArgumentTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
@@ -26,17 +23,18 @@ class MvAbilityCheckInspection : MvLocalInspectionTool() {
                 val funcTy = funcItem.declaredType(false)
                 val inference = callExpr.inference(false) ?: return
 
-                for ((i, argument) in o.valueArgumentList.withIndex()) {
-                    val actualType = inference.getExprType(argument.expr)
+                for ((i, valueArgument) in o.valueArgumentList.withIndex()) {
+                    val argumentExpr = valueArgument.expr ?: continue
+                    val actualType = inference.getExprType(argumentExpr)
                     val expectedType = funcTy.paramTypes.getOrNull(i) ?: TyUnknown
                     val missingAbilities = expectedType.abilities() - actualType.abilities()
                     if (missingAbilities.isNotEmpty()) {
                         val abilitiesText =
-                            missingAbilities.map { it.label() }.joinToString(prefix = "", postfix = "")
+                            missingAbilities.joinToString(prefix = "", postfix = "") { it.label() }
                         val message = "The type '${actualType.text()}' does not have required " +
                                 "${pluralise(missingAbilities.size, "ability", "abilities")} " +
                                 "'$abilitiesText'"
-                        holder.registerProblem(argument, message, ProblemHighlightType.GENERIC_ERROR)
+                        holder.registerProblem(argumentExpr, message, ProblemHighlightType.GENERIC_ERROR)
                     }
                 }
             }
@@ -55,7 +53,7 @@ class MvAbilityCheckInspection : MvLocalInspectionTool() {
                     val missingAbilities = expectedType.abilities() - actualType.abilities()
                     if (missingAbilities.isNotEmpty()) {
                         val abilitiesText =
-                            missingAbilities.map { it.label() }.joinToString(prefix = "", postfix = "")
+                            missingAbilities.joinToString(prefix = "", postfix = "") { it.label() }
                         val message = "The type '${actualType.text()}' does not have required " +
                                 "${pluralise(missingAbilities.size, "ability", "abilities")} " +
                                 "'$abilitiesText'"

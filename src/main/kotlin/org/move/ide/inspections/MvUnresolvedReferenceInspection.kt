@@ -18,9 +18,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
     override val isSyntaxOnly get() = false
 
-    private fun ProblemsHolder.registerUnresolvedReferenceError(
-        element: MvReferenceElement
-    ) {
+    private fun ProblemsHolder.registerUnresolvedReferenceError(element: MvReferenceElement) {
         // no errors in pragmas
         if (element.hasAncestor<MvPragmaSpecStmt>()) return
 
@@ -28,19 +26,13 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         if (candidates.isEmpty() && ignoreWithoutQuickFix) return
 
         val referenceName = element.referenceName ?: return
-        val namespace = element.namespaces().singleOrNull()
-        val description = when (namespace) {
-            Namespace.TYPE -> "Unresolved type: `$referenceName`"
-//            Namespace.SCHEMA -> "Unresolved schema `$referenceName`"
-            else -> {
-                val parent = element.parent
-                if (parent is MvCallExpr) {
-                    "Unresolved function: `$referenceName`"
-                } else {
-                    "Unresolved reference: `$referenceName`"
-                }
-            }
+        val parent = element.parent
+        val description = when (parent) {
+            is MvPathType -> "Unresolved type: `$referenceName`"
+            is MvCallExpr -> "Unresolved function: `$referenceName`"
+            else -> "Unresolved reference: `$referenceName`"
         }
+
         val highlightedElement = element.referenceNameElement ?: element
         val fix = if (candidates.isNotEmpty()) AutoImportFix(element) else null
         registerProblem(

@@ -345,7 +345,19 @@ class TypeInferenceWalker(
 
         inferArgumentTypes(funcTy.paramTypes, expectedInputTys, callExpr.callArgumentExprs)
 
-        ctx.writeCallExprType(callExpr, funcTy as Ty)
+        // if value parameter has no type, use it as unknown for the sake of "need type annotation" check
+        ctx.probe {
+            val valueArguments = callExpr.valueArguments
+            for ((i, paramType) in funcTy.paramTypes.withIndex()) {
+                val argumentExpr = valueArguments.getOrNull(i)?.expr
+                if (argumentExpr == null) {
+                    paramType.visitInferTys {
+                        ctx.combineTypes(it, TyUnknown); true
+                    }
+                }
+            }
+            ctx.writeCallExprType(callExpr, ctx.resolveTypeVarsIfPossible(funcTy as Ty))
+        }
 
         return funcTy.retType
     }
@@ -353,9 +365,11 @@ class TypeInferenceWalker(
     private fun inferArgumentTypes(
         formalInputTys: List<Ty>,
         expectedInputTys: List<Ty>,
-        argExprs: List<MvExpr>
+        argExprs: List<MvExpr?>
     ) {
         for ((i, argExpr) in argExprs.withIndex()) {
+            if (argExpr == null) continue
+
             val formalInputTy = formalInputTys.getOrNull(i) ?: TyUnknown
             val expectedInputTy = expectedInputTys.getOrNull(i) ?: formalInputTy
 
@@ -374,7 +388,7 @@ class TypeInferenceWalker(
         val ident = macroExpr.macroIdent.identifier
         if (ident.text == "assert") {
             val formalInputTys = listOf(TyBool, TyInteger.default())
-            inferArgumentTypes(formalInputTys, emptyList(), macroExpr.callArgumentExprs)
+            inferArgumentTypes(formalInputTys, emptyList(), macroExpr.valueArguments.map { it.expr })
         }
         return TyUnit
     }
@@ -865,17 +879,10 @@ class TypeInferenceWalker(
         reportTypeMismatch(element, expected, inferred)
     }
 
-    // Another awful hack: check that inner expressions did not annotated as an error
-    // to disallow annotation intersections. This should be done in a different way
     private fun reportTypeMismatch(element: PsiElement, expected: Ty, inferred: Ty) {
         reportTypeError(TypeError.TypeMismatch(element, expected, inferred))
-//        if (ctx.typeErrors.all { !element.isAncestorOf(it.element) }) {
-//            ctx.addTypeError(TypeError.TypeMismatch(element, expected, inferred))
-//        }
     }
 
-    // Another awful hack: check that inner expressions did not annotated as an error
-    // to disallow annotation intersections. This should be done in a different way
     fun reportTypeError(typeError: TypeError) = ctx.reportTypeError(typeError)
 
     companion object {

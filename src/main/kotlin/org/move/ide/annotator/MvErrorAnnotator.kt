@@ -3,8 +3,8 @@ package org.move.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
-import org.move.ide.presentation.itemDeclaredInModule
 import org.move.ide.presentation.fullname
+import org.move.ide.presentation.itemDeclaredInModule
 import org.move.ide.utils.functionSignature
 import org.move.ide.utils.signature
 import org.move.lang.MvElementTypes.R_PAREN
@@ -13,6 +13,7 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.infer.descendantHasTypeError
 import org.move.lang.core.types.ty.TyCallable
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
@@ -97,8 +98,11 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                                         .addToHolder(moveHolder)
                                 }
                             } else {
-                                val callTy = parent.inference(msl)?.getCallExprType(parent)
-                                        as? TyFunction ?: return
+                                val inference = parent.inference(msl) ?: return
+                                if (parent.descendantHasTypeError(inference.typeErrors)) {
+                                    return
+                                }
+                                val callTy = inference.getCallExprType(parent) as? TyFunction ?: return
                                 // if no type args are passed, check whether all type params are inferrable
                                 if (callTy.needsTypeAnnotation()) {
                                     MvDiagnostic
@@ -184,16 +188,16 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                 val callTy =
                     callExpr.inference(msl)?.getCallExprType(callExpr) as? TyCallable ?: return
 
+                val valueArguments = arguments.valueArgumentList
+                if (valueArguments.any { it.expr == null }) return
+
+                val argumentExprs = valueArguments.map { it.expr!! }
+                val realCount = argumentExprs.size
                 val expectedCount = callTy.paramTypes.size
-                val realCount = arguments.valueArgumentList.size
+
                 val errorMessage =
-                    "This function takes $expectedCount ${
-                        pluralise(
-                            expectedCount,
-                            "parameter",
-                            "parameters"
-                        )
-                    } " +
+                    "This function takes " +
+                            "$expectedCount ${pluralise(expectedCount, "parameter", "parameters")} " +
                             "but $realCount ${pluralise(realCount, "parameter", "parameters")} " +
                             "${pluralise(realCount, "was", "were")} supplied"
                 when {
@@ -205,7 +209,8 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                         return
                     }
                     realCount > expectedCount -> {
-                        arguments.valueArgumentList.drop(expectedCount)
+                        argumentExprs
+                            .drop(expectedCount)
                             .forEach {
                                 holder.newAnnotation(HighlightSeverity.ERROR, errorMessage)
                                     .range(it)

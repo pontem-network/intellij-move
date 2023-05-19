@@ -9,10 +9,10 @@ val MvCallExpr.valueArguments: List<MvValueArgument>
     get() =
         this.valueArgumentList?.valueArgumentList.orEmpty()
 
-val MvCallExpr.callArgumentExprs: List<MvExpr>
-    get() = this.valueArgumentList
-        ?.valueArgumentList.orEmpty().map { it.expr }
+val MvMacroCallExpr.valueArguments: List<MvValueArgument>
+    get() =
+        this.valueArgumentList?.valueArgumentList.orEmpty()
 
-val MvMacroCallExpr.callArgumentExprs: List<MvExpr>
-    get() = this.valueArgumentList
-        ?.valueArgumentList.orEmpty().map { it.expr }
+val MvCallExpr.callArgumentExprs: List<MvExpr?> get() = this.valueArguments.map { it.expr }
+
+val MvMacroCallExpr.callArgumentExprs: List<MvExpr?> get() = this.valueArguments.map { it.expr }

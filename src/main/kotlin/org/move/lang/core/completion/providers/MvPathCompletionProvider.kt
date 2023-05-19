@@ -86,9 +86,10 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
             parameters,
             result,
             processedNames,
-            importContext
+            importContext,
         )
         candidates.forEach { candidate ->
+            println(candidate)
             val lookupElement = candidate.element.createLookupElement(
                 ctx,
                 priority = UNIMPORTED_ITEM_PRIORITY,

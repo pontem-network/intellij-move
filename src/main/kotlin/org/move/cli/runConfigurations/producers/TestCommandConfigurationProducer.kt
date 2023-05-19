@@ -7,6 +7,7 @@ import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.aptos.AptosCommandLine
 import org.move.cli.runConfigurations.aptos.AptosConfigurationType
 import org.move.cli.runConfigurations.aptos.any.AnyCommandConfigurationFactory
+import org.move.cli.settings.skipFetchLatestGitDeps
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
@@ -58,7 +59,11 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
             val functionName = fn.name ?: return null
 
             val confName = "Test $modName::$functionName"
-            val subCommand = "move test --filter $modName::$functionName"
+            var subCommand = "move test --filter $modName::$functionName"
+            if (psi.project.skipFetchLatestGitDeps) {
+                subCommand += " --skip-fetch-latest-git-deps"
+            }
+
             val moveProject = fn.moveProject ?: return null
             val rootPath = moveProject.contentRootPath ?: return null
             return CommandLineFromContext(
@@ -74,13 +79,18 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
 
             val modName = mod.name ?: return null
             val confName = "Test $modName"
-            val command = "move test --filter $modName"
+
+            var subCommand = "move test --filter $modName"
+            if (psi.project.skipFetchLatestGitDeps) {
+                subCommand += " --skip-fetch-latest-git-deps"
+            }
+
             val moveProject = mod.moveProject ?: return null
             val rootPath = moveProject.contentRootPath ?: return null
             return CommandLineFromContext(
                 mod,
                 confName,
-                AptosCommandLine(command, workingDirectory = rootPath)
+                AptosCommandLine(subCommand, workingDirectory = rootPath)
             )
         }
 
@@ -92,11 +102,15 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
             val rootPath = moveProject.contentRootPath ?: return null
 
             val confName = "Test $packageName"
-            val command = "move test"
+            var subCommand = "move test"
+            if (location.project.skipFetchLatestGitDeps) {
+                subCommand += " --skip-fetch-latest-git-deps"
+            }
+
             return CommandLineFromContext(
                 location,
                 confName,
-                AptosCommandLine(command, workingDirectory = rootPath)
+                AptosCommandLine(subCommand, workingDirectory = rootPath)
             )
         }
     }

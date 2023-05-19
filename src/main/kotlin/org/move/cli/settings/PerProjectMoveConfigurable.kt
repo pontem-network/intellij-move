@@ -37,6 +37,13 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
                                 "Useful for bug reporting to help the development of the plugin."
                     )
                 }
+                row {
+                    checkBox("Skip fetching latest git dependencies for tests")
+                        .bindSelected(state::skipFetchLatestGitDeps)
+                    comment(
+                        "Adds --skip-fetch-latest-git-deps to generated test runs."
+                    )
+                }
             }
         }
     }

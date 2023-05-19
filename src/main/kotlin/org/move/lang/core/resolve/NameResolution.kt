@@ -97,7 +97,7 @@ fun processQualItem(
                 || item is MvSchema && Namespace.SCHEMA in itemVis.namespaces ->
             processor.match(itemVis, item)
 
-        item is MvFunction && Namespace.NAME in itemVis.namespaces -> {
+        item is MvFunction && Namespace.FUNCTION in itemVis.namespaces -> {
             if (item.isTest) return false
             for (vis in itemVis.visibilities) {
                 when {

@@ -194,8 +194,8 @@ class TestProject(
     private val filesWithNamedElement: List<String>
 ) {
 
-    val fileWithCaret: String get() = filesWithCaret.single()
-    val fileWithNamedElement: String get() = filesWithNamedElement.single()
+    val fileWithCaret: String get() = filesWithCaret.singleOrNull() ?: error("No file with caret")
+    val fileWithNamedElement: String get() = filesWithNamedElement.singleOrNull() ?: error("No file with named element")
 
     inline fun <reified T : PsiElement> findElementInFile(path: String): T {
         val element = doFindElementInFile(path)

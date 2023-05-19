@@ -1334,4 +1334,13 @@ module 0x1::pool {
             }
         }        
     """)
+
+    fun `test type check incomplete call expr get correct param`() = checkByText("""
+        module 0x1::m {
+            fun call(a: u64, b: u8) {}
+            fun main() {
+                call(<error descr="<expression> expected, got ','">,</error> <error descr="Incompatible type 'u64', expected 'u8'">2u64</error>);
+            }
+        }        
+    """)
 }

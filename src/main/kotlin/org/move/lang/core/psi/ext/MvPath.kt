@@ -77,7 +77,7 @@ abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
     }
 }
 
-fun MvReferenceElement.namespaces(): Set<Namespace> {
+fun MvReferenceElement.importCandidateNamespaces(): Set<Namespace> {
     val parent = this.parent
     return when (parent) {
         is MvPathType -> setOf(Namespace.TYPE)
@@ -86,7 +86,7 @@ fun MvReferenceElement.namespaces(): Set<Namespace> {
             when (this) {
                 is MvModuleRef -> setOf(Namespace.MODULE)
                 is MvPath -> setOf(Namespace.NAME, Namespace.FUNCTION)
-                else -> Namespace.all()
+                else -> Namespace.importableItems()
             }
     }
 }

@@ -5,13 +5,17 @@
 
 package org.move.utils.tests
 
+import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
 import org.move.cli.settings.moveSettings
 import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
+import kotlin.reflect.KClass
 
 annotation class DevelopmentMode(val enabled: Boolean)
+
+annotation class EnableInspection(val inspectionClass: KClass<out LocalInspectionTool>)
 
 abstract class MvTestBase : BasePlatformTestCase(),
                             MvTestCase {

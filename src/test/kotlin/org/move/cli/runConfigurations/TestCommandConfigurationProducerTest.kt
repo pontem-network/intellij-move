@@ -1,5 +1,6 @@
 package org.move.cli.runConfigurations
 
+import org.move.cli.settings.moveSettings
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.openapiext.toPsiDirectory
@@ -27,6 +28,34 @@ class TestCommandConfigurationProducerTest : RunConfigurationProducerTestBase("t
                 )
             }
         }
+        checkOnElement<MvFunction>()
+    }
+
+    fun `test test run for function skipping fetch git deps`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            tests {
+                move(
+                    "MoveTests.move", """
+            #[test_only]
+            module 0x1::MoveTests {
+                #[test]
+                fun /*caret*/test_add() {
+                    1 + 1;
+                }
+                #[test]
+                fun test_mul() {
+                    1 * 1;
+                }
+            }
+            """
+                )
+            }
+        }
+        this.project.moveSettings
+            .modifyTemporary(this.testRootDisposable) {
+                it.skipFetchLatestGitDeps = true
+            }
         checkOnElement<MvFunction>()
     }
 
@@ -176,10 +205,12 @@ class TestCommandConfigurationProducerTest : RunConfigurationProducerTestBase("t
 
     fun `test run tests for move toml file`() {
         testProject {
-            moveToml("""
+            moveToml(
+                """
             [package]
             name = "MyPackage" # /*caret*/                    
-            """)
+            """
+            )
             sources {
                 move(
                     "main.move", """

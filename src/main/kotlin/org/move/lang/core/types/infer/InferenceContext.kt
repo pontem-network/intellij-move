@@ -1,6 +1,7 @@
 package org.move.lang.core.types.infer
 
 import com.intellij.openapi.util.Key
+import com.intellij.psi.PsiElement
 import com.intellij.psi.util.CachedValue
 import com.jetbrains.rd.util.concurrentMapOf
 import org.jetbrains.annotations.TestOnly
@@ -473,13 +474,18 @@ class InferenceContext(
 
     private val fullTypeWithOriginsResolver: FullTypeWithOriginsResolver = FullTypeWithOriginsResolver()
 
+    // Awful hack: check that inner expressions did not annotated as an error
+    // to disallow annotation intersections. This should be done in a different way
     fun reportTypeError(typeError: TypeError) {
         val element = typeError.element
-        if (
-            typeErrors.all { !element.isAncestorOf(it.element) }
+        if (!element.descendantHasTypeError(this.typeErrors)
             && typeError.element.containingFile.isPhysical
         ) {
             typeErrors.add(typeError)
         }
     }
+}
+
+fun PsiElement.descendantHasTypeError(existingTypeErrors: List<TypeError>): Boolean {
+    return existingTypeErrors.any { typeError -> this.isAncestorOf(typeError.element) }
 }

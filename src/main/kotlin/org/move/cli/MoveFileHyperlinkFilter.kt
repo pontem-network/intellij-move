@@ -35,7 +35,7 @@ class MoveFileHyperlinkFilter(
             }
 
         val lineStart = entireLength - line.length
-        val startInd = lineStart + filePath.range.first + 1
+        val startInd = lineStart + filePath.range.first
         val endInd = lineStart + columnNumber.range.last + 1
 
         val file = resolveFilePath(filePath.value) ?: return null
