@@ -6,7 +6,9 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.ui.LabeledComponent
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
-import com.intellij.ui.EditorTextField
+import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.COLUMNS_LARGE
+import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.text.nullize
@@ -15,7 +17,7 @@ import java.nio.file.Paths
 import javax.swing.JComponent
 
 class MoveCommandConfigurationEditor : SettingsEditor<MoveCommandConfiguration>() {
-    private val commandTextField = EditorTextField()
+    private val commandTextField = JBTextField()
     private val envVarsField = EnvironmentVariablesComponent()
     private val workingDirectory: Path?
         get() = workingDirectoryField.component.text.nullize()?.let { Paths.get(it) }
@@ -39,8 +41,8 @@ class MoveCommandConfigurationEditor : SettingsEditor<MoveCommandConfiguration>(
         return panel {
             row("Command:") {
                 cell(commandTextField)
+                    .columns(COLUMNS_LARGE)
                     .horizontalAlign(HorizontalAlign.FILL)
-                    .resizableColumn()
             }
             row(envVarsField.label) {
                 cell(envVarsField)

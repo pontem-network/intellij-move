@@ -2,7 +2,9 @@ package org.move.cli.runConfigurations.aptos.any
 
 import com.intellij.execution.configuration.EnvironmentVariablesComponent
 import com.intellij.openapi.options.SettingsEditor
-import com.intellij.ui.EditorTextField
+import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.COLUMNS_LARGE
+import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import org.move.utils.ui.WorkingDirectoryField
@@ -10,7 +12,7 @@ import java.nio.file.Path
 import javax.swing.JComponent
 
 class AnyCommandConfigurationEditor : SettingsEditor<AnyCommandConfiguration>() {
-    private val commandTextField = EditorTextField()
+    private val commandTextField = JBTextField()
     private val envVarsField = EnvironmentVariablesComponent()
     val workingDirectoryField = WorkingDirectoryField()
 
@@ -33,7 +35,7 @@ class AnyCommandConfigurationEditor : SettingsEditor<AnyCommandConfiguration>() 
             row("Command:") {
                 cell(commandTextField)
                     .horizontalAlign(HorizontalAlign.FILL)
-                    .resizableColumn()
+                    .columns(COLUMNS_LARGE)
             }
             row(envVarsField.label) {
                 cell(envVarsField)
