@@ -13,21 +13,20 @@ fun prop(name: String): String =
 
 
 
-//val intellijVersion = prop("intellijVersion", "2021.2")
-val kotlinVersion = "1.8.20"
 
 val pluginJarName = "intellij-move-$platformVersion"
 val pluginVersion = "1.29.0"
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
 val kotlinJvmTarget = "17"
+val kotlinStdlibVersion = "1.8.21"
 
 group = pluginGroup
 version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.8.20"
+    kotlin("jvm") version "1.8.21"
     id("org.jetbrains.intellij") version "1.13.3"
     id("org.jetbrains.grammarkit") version "2022.3.1"
     id("net.saliman.properties") version "1.5.2"
@@ -35,9 +34,9 @@ plugins {
 
 dependencies {
     // kotlin stdlib source code
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinStdlibVersion")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinStdlibVersion")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinStdlibVersion")
 
     implementation("io.sentry:sentry:5.5.2") {
         exclude("org.slf4j")
