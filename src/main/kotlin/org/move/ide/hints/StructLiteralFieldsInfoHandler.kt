@@ -14,10 +14,10 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.type
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.TyUnknown
-import org.move.utils.AsyncParameterInfoHandler
+import org.move.utils.AsyncParameterInfoHandlerBase
 
 class StructLitFieldsInfoHandler :
-    AsyncParameterInfoHandler<MvStructLitFieldsBlock, FieldsDescription>() {
+    AsyncParameterInfoHandlerBase<MvStructLitFieldsBlock, FieldsDescription>() {
 
     override fun findTargetElement(file: PsiFile, offset: Int): MvStructLitFieldsBlock? {
         val element = file.findElementAt(offset) ?: return null

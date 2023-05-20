@@ -27,8 +27,6 @@ FILE
                     PsiElement(INTEGER_LITERAL)('1')
                 PsiErrorElement:')', ',', '::', <operator>, '=' or '[' expected, got ';'
                   <empty list>
-                MvValueArgumentImpl(VALUE_ARGUMENT)
-                  <empty list>
             PsiElement(;)(';')
           PsiWhiteSpace('\n        ')
           MvExprStmtImpl(EXPR_STMT)
@@ -58,7 +56,7 @@ FILE
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   MvLitExprImpl(LIT_EXPR)
                     PsiElement(INTEGER_LITERAL)('1')
-                  PsiElement(,)(',')
+                PsiElement(,)(',')
                 PsiWhiteSpace(' ')
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   MvBinaryExprImpl(BINARY_EXPR[+])
@@ -81,16 +79,16 @@ FILE
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   MvLitExprImpl(LIT_EXPR)
                     PsiElement(INTEGER_LITERAL)('1')
-                  PsiElement(,)(',')
+                PsiElement(,)(',')
                 PsiWhiteSpace(' ')
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   MvLitExprImpl(LIT_EXPR)
                     PsiElement(INTEGER_LITERAL)('2')
-                  PsiElement(,)(',')
+                PsiElement(,)(',')
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   PsiErrorElement:<expression> expected, got ','
                     <empty list>
-                  PsiElement(,)(',')
+                PsiElement(,)(',')
                 PsiElement())(')')
             PsiElement(;)(';')
           PsiWhiteSpace('\n        ')
@@ -103,16 +101,16 @@ FILE
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   MvLitExprImpl(LIT_EXPR)
                     PsiElement(INTEGER_LITERAL)('1')
-                  PsiElement(,)(',')
+                PsiElement(,)(',')
                 PsiWhiteSpace(' ')
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   MvLitExprImpl(LIT_EXPR)
                     PsiElement(INTEGER_LITERAL)('2')
-                  PsiElement(,)(',')
+                PsiElement(,)(',')
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   PsiErrorElement:<expression> expected, got ','
                     <empty list>
-                  PsiElement(,)(',')
+                PsiElement(,)(',')
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   MvLitExprImpl(LIT_EXPR)
                     PsiElement(INTEGER_LITERAL)('4')
@@ -138,7 +136,7 @@ FILE
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   MvLitExprImpl(LIT_EXPR)
                     PsiElement(INTEGER_LITERAL)('1')
-                  PsiElement(,)(',')
+                PsiElement(,)(',')
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   PsiErrorElement:<expression> expected, got ';'
                     <empty list>
@@ -164,7 +162,7 @@ FILE
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   MvLitExprImpl(LIT_EXPR)
                     PsiElement(INTEGER_LITERAL)('1')
-                  PsiElement(,)(',')
+                PsiElement(,)(',')
                 PsiWhiteSpace('\n        ')
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   PsiErrorElement:<expression> expected, got 'let'
@@ -191,15 +189,13 @@ FILE
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   MvLitExprImpl(LIT_EXPR)
                     PsiElement(INTEGER_LITERAL)('1')
-                  PsiElement(,)(',')
+                PsiElement(,)(',')
                 PsiWhiteSpace(' ')
                 MvValueArgumentImpl(VALUE_ARGUMENT)
                   MvRefExprImpl(REF_EXPR)
                     MvPathImpl(PATH)
                       PsiElement(IDENTIFIER)('assert')
                 PsiErrorElement:'!', ')', ',', '::', <, <operator>, '=', '[' or '{' expected, got ';'
-                  <empty list>
-                MvValueArgumentImpl(VALUE_ARGUMENT)
                   <empty list>
             PsiElement(;)(';')
           PsiWhiteSpace('\n\n        ')
@@ -220,7 +216,7 @@ FILE
                   MvValueArgumentImpl(VALUE_ARGUMENT)
                     PsiErrorElement:<expression> expected, got ','
                       <empty list>
-                    PsiElement(,)(',')
+                  PsiElement(,)(',')
                   PsiElement())(')')
             PsiElement(;)(';')
           PsiWhiteSpace('\n        ')
@@ -255,35 +251,47 @@ FILE
                 PsiElement())(')')
             PsiElement(;)(';')
           PsiWhiteSpace('\n\n        ')
+          MvExprStmtImpl(EXPR_STMT)
+            MvCallExprImpl(CALL_EXPR)
+              MvPathImpl(PATH)
+                PsiElement(IDENTIFIER)('call10')
+              MvValueArgumentListImpl(VALUE_ARGUMENT_LIST)
+                PsiElement(()('(')
+                MvValueArgumentImpl(VALUE_ARGUMENT)
+                  PsiErrorElement:<expression> expected, got ','
+                    <empty list>
+                PsiElement(,)(',')
+                MvValueArgumentImpl(VALUE_ARGUMENT)
+                  PsiErrorElement:<expression> expected, got ','
+                    <empty list>
+                PsiElement(,)(',')
+                MvValueArgumentImpl(VALUE_ARGUMENT)
+                  PsiErrorElement:<expression> expected, got ','
+                    <empty list>
+                PsiElement(,)(',')
+                PsiElement())(')')
+            PsiElement(;)(';')
+          PsiWhiteSpace('\n\n        ')
           MvItemSpecBlockExprImpl(ITEM_SPEC_BLOCK_EXPR)
             PsiElement(spec)('spec')
             PsiWhiteSpace(' ')
             MvSpecCodeBlockImpl(SPEC_CODE_BLOCK)
               PsiElement({)('{')
               PsiWhiteSpace('\n            ')
-              MvSpecExprStmtImpl(SPEC_EXPR_STMT)
-                MvCallExprImpl(CALL_EXPR)
-                  MvPathImpl(PATH)
-                    PsiElement(IDENTIFIER)('call')
-                  MvValueArgumentListImpl(VALUE_ARGUMENT_LIST)
-                    PsiElement(()('(')
-                    MvValueArgumentImpl(VALUE_ARGUMENT)
-                      MvRefExprImpl(REF_EXPR)
-                        MvPathImpl(PATH)
-                          PsiElement(IDENTIFIER)('a')
-                      PsiElement(,)(',')
-                    PsiWhiteSpace('\n            ')
-                    MvValueArgumentImpl(VALUE_ARGUMENT)
-                      PsiErrorElement:<expression> expected, got 'assert'
-                        <empty list>
-              MvSpecExprStmtImpl(SPEC_EXPR_STMT)
-                MvAssertSpecExprImpl(ASSERT_SPEC_EXPR)
-                  PsiElement(assert_kw)('assert')
-                  PsiWhiteSpace(' ')
-                  MvLitExprImpl(LIT_EXPR)
-                    PsiElement(BOOL_LITERAL)('true')
-                PsiElement(;)(';')
-              PsiWhiteSpace('\n        ')
+              MvCallExprImpl(CALL_EXPR)
+                MvPathImpl(PATH)
+                  PsiElement(IDENTIFIER)('call')
+                MvValueArgumentListImpl(VALUE_ARGUMENT_LIST)
+                  PsiElement(()('(')
+                  MvValueArgumentImpl(VALUE_ARGUMENT)
+                    MvRefExprImpl(REF_EXPR)
+                      MvPathImpl(PATH)
+                        PsiElement(IDENTIFIER)('a')
+                  PsiElement(,)(',')
+                  PsiWhiteSpace('\n        ')
+                  MvValueArgumentImpl(VALUE_ARGUMENT)
+                    PsiErrorElement:<expression> expected, got '}'
+                      <empty list>
               PsiElement(})('}')
           PsiWhiteSpace('\n    ')
           PsiElement(})('}')

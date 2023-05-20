@@ -19,9 +19,10 @@ script {
         call(& );
         call(&mut );
 
+        call10(,,,);
+
         spec {
             call(a,
-            assert true;
         }
     }
 }

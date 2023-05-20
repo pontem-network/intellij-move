@@ -12,9 +12,9 @@ import org.move.lang.core.psi.MvStructLitFieldsBlock
 import org.move.lang.core.psi.MvValueArgumentList
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.startOffset
-import org.move.utils.AsyncParameterInfoHandler
+import org.move.utils.AsyncParameterInfoHandlerBase
 
-class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MvValueArgumentList, ParamsDescription>() {
+class FunctionParameterInfoHandler : AsyncParameterInfoHandlerBase<MvValueArgumentList, ParamsDescription>() {
 
     override fun findTargetElement(file: PsiFile, offset: Int): MvValueArgumentList? {
         val element = file.findElementAt(offset) ?: return null
@@ -41,8 +41,11 @@ class FunctionParameterInfoHandler : AsyncParameterInfoHandler<MvValueArgumentLi
                 if (parameterOwner.valueArgumentList.isEmpty()) {
                     0
                 } else {
-                    parameterOwner.valueArgumentList
-                        .indexOfFirst { it.textRange.containsOffset(contextOffset) }
+                    ParameterInfoUtils.getCurrentParameterIndex(
+                        parameterOwner.node,
+                        context.offset,
+                        MvElementTypes.COMMA
+                    )
                 }
             }
         context.setCurrentParameter(currentParameterIndex)

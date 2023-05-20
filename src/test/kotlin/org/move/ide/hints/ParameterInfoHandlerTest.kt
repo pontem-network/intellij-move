@@ -108,4 +108,20 @@ class ParameterInfoHandlerTest
             fun foo(val1/*caret*/: u8, val2: u8) {}
         }
     """, "", -1)
+
+    fun `test fun incomplete args index 1`() = checkByText(
+        """
+        module 0x1::m {
+            fun call(val1: u8, val2: u8) {}
+            fun main() { call(42, /*caret*/); }    
+        }
+    """, "val1: u8, val2: u8", 1)
+
+    fun `test fun incomplete args index 2`() = checkByText(
+        """
+        module 0x1::m {
+            fun call(val1: u8, val2: u8, val3: u8) {}
+            fun main() { call(42, 10, /*caret*/); }    
+        }
+    """, "val1: u8, val2: u8, val3: u8", 2)
 }

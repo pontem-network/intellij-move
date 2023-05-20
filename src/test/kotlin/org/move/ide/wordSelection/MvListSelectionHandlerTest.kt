@@ -80,12 +80,6 @@ class MvListSelectionHandlerTest : MvSelectionHandlerTestBase() {
     """, """
         module 0x1::m {
             fun main() {
-                call(<selection>1<caret>4,</selection> 2);
-            }
-        }
-    """, """
-        module 0x1::m {
-            fun main() {
                 call(<selection>1<caret>4, 2</selection>);
             }
         }

@@ -997,9 +997,13 @@ CallExpr ::= (Path &'(') ValueArgumentList {
     pin = 1
     implements = ["org.move.lang.core.psi.PathExpr"]
 }
-ValueArgumentList ::= '(' ValueArgument* ')' { pin = 1 }
+ValueArgumentList ::= '(' ValueArgumentList_items? ')' {
+    pin = 1
+}
 
-ValueArgument ::= !')' Expr (',' | &')') {
+private ValueArgumentList_items ::= ValueArgument (',' ValueArgument)* ','?
+
+ValueArgument ::= !')' Expr &(',' | ')') {
     pin = 1
     recoverWhile = ValueArgument_recover
 }
