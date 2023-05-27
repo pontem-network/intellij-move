@@ -55,6 +55,9 @@ fun Ty.typeLabel(relativeTo: MvElement): String {
     }
 }
 
+fun Ty.hintText(): String =
+    render(this, level = 3, unknown = "?", tyVar = { "?" })
+
 fun Ty.text(fq: Boolean = false): String =
     render(
         this,

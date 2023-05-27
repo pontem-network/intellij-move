@@ -2,6 +2,7 @@ package org.move.ide.hints.type
 
 import com.intellij.codeInsight.hints.presentation.InlayPresentation
 import com.intellij.codeInsight.hints.presentation.PresentationFactory
+import org.move.ide.presentation.hintText
 import org.move.ide.presentation.text
 import org.move.lang.core.types.ty.*
 
@@ -16,7 +17,7 @@ class MvTypeHintsPresentationFactory(private val factory: PresentationFactory) {
         is TyTuple -> tupleTypeHint(ty, level)
         is TyReference -> referenceTypeHint(ty, level)
         is TyTypeParameter -> typeParameterTypeHint(ty)
-        else -> text(ty.text(false))
+        else -> text(ty.hintText())
     }
 
     private fun tupleTypeHint(type: TyTuple, level: Int): InlayPresentation =
@@ -28,10 +29,11 @@ class MvTypeHintsPresentationFactory(private val factory: PresentationFactory) {
             startWithPlaceholder = checkSize(level, type.types.size)
         )
 
-    private fun referenceTypeHint(type: TyReference, level: Int): InlayPresentation = listOf(
-        text("&" + if (type.permissions.contains(RefPermissions.WRITE)) "mut " else ""),
-        hint(type.referenced, level) // level is not incremented intentionally
-    ).join()
+    private fun referenceTypeHint(type: TyReference, level: Int): InlayPresentation =
+        listOf(
+            text("&" + if (type.permissions.contains(RefPermissions.WRITE)) "mut " else ""),
+            hint(type.referenced, level) // level is not incremented intentionally
+        ).join()
 
     private fun typeParameterTypeHint(type: TyTypeParameter): InlayPresentation {
         return text(type.origin.name)
@@ -40,8 +42,7 @@ class MvTypeHintsPresentationFactory(private val factory: PresentationFactory) {
     private fun parametersHint(kinds: List<Ty>, level: Int): InlayPresentation =
         kinds.map { hint(it, level) }.join(", ")
 
-    private fun checkSize(level: Int, elementsCount: Int): Boolean =
-        level + elementsCount > FOLDING_THRESHOLD
+    private fun checkSize(level: Int, elementsCount: Int): Boolean = level + elementsCount > FOLDING_THRESHOLD
 
     private fun List<InlayPresentation>.join(separator: String = ""): InlayPresentation {
         if (separator.isEmpty()) {

@@ -1,6 +1,6 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.DevelopmentMode
+import org.move.utils.tests.DebugMode
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedReferenceInspection::class) {
@@ -329,7 +329,7 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
     }    
     """)
 
-    @DevelopmentMode(false)
+    @DebugMode(false)
     fun `test no error for dot field in specs without development mode`() = checkByText("""
 module 0x1::main {
     struct S {}

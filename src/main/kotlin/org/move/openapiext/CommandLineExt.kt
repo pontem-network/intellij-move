@@ -84,6 +84,7 @@ fun GeneralCommandLine.execute(
         }
     }
 
+    @Suppress("DEPRECATION")
     val alreadyDisposed = runReadAction {
         if (Disposer.isDisposed(owner)) {
             true

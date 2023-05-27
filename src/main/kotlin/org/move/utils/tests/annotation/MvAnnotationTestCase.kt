@@ -1,10 +1,7 @@
 package org.move.utils.tests.annotation
 
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.DevelopmentMode
-import org.move.utils.tests.EnableInspection
 import org.move.utils.tests.MvTestBase
-import org.move.utils.tests.findAnnotationInstance
 
 abstract class MvAnnotationTestCase : MvTestBase() {
     protected lateinit var annotationFixture: MvAnnotationTestFixture

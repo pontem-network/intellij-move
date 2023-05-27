@@ -10,6 +10,7 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.infer.inferExpectedTypeArgumentTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.ty.GenericTy
 import org.move.lang.core.types.ty.TyUnknown
 
 class MvAbilityCheckInspection : MvLocalInspectionTool() {
@@ -43,7 +44,7 @@ class MvAbilityCheckInspection : MvLocalInspectionTool() {
                 if (o.isMsl()) return
 
                 val path = o.parent as? MvPath ?: return
-                val pathType = o.inference(false)?.getPathType(path) ?: return
+                val pathType = o.inference(false)?.getPathType(path) as? GenericTy ?: return
                 val generics = pathType.item.generics
 
                 for ((i, typeArgument) in o.typeArgumentList.withIndex()) {

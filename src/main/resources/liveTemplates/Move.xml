@@ -10,6 +10,17 @@
         </context>
     </template>
 
+    <template name="sd"
+              value='std::debug::print(&amp;std::string::utf8(b"$TEXT$"));'
+              description="Debug String"
+              toReformat="false"
+              toShortenFQNames="true">
+        <variable name="TEXT" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="MOVE_BLOCK" value="true"/>
+        </context>
+    </template>
+
     <template name="t"
               value="#[test]&#10;fun $NAME$() {&#10;    $END$&#10;}"
               description="test function"

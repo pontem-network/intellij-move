@@ -531,7 +531,8 @@ class TypeInferenceWalker(
             expectedInputsForExpectedOutput(expected, TyVector(tyVar), formalInputs)
         inferArgumentTypes(formalInputs, expectedInputTys, exprs)
 
-        return ctx.resolveTypeVarsIfPossible(TyVector(tyVar))
+        val vectorTy = ctx.resolveTypeVarsIfPossible(TyVector(tyVar))
+        return vectorTy
     }
 
     private fun inferIndexExprTy(indexExpr: MvIndexExpr): Ty {

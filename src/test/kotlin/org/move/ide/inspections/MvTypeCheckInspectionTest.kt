@@ -1,6 +1,5 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.DevelopmentMode
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class MvTypeCheckInspectionTest : InspectionTestBase(MvTypeCheckInspection::class) {

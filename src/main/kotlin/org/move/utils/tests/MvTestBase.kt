@@ -13,7 +13,7 @@ import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
 import kotlin.reflect.KClass
 
-annotation class DevelopmentMode(val enabled: Boolean)
+annotation class DebugMode(val enabled: Boolean)
 
 annotation class EnableInspection(val inspectionClass: KClass<out LocalInspectionTool>)
 
@@ -26,7 +26,7 @@ abstract class MvTestBase : BasePlatformTestCase(),
     override fun setUp() {
         super.setUp()
         val settingsState = project.moveSettings.settingsState
-        val isDevMode = this.findAnnotationInstance<DevelopmentMode>()?.enabled ?: true
+        val isDevMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
         project.moveSettings.settingsState = settingsState.copy(debugMode = isDevMode)
     }
 

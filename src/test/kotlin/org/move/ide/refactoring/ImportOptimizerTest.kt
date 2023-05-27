@@ -405,6 +405,54 @@ module 0x1::main {
 }        
     """)
 
+    fun `test duplicate struct import`() = doTest("""
+        module 0x1::pool { 
+            struct X1 {}    
+            public fun create_pool<BinStep>() {}        
+        }        
+        module 0x1::main {
+            use 0x1::pool::{Self, X1, X1};
+            fun main() {
+                pool::create_pool<X1>();
+            }
+        }        
+    """, """
+        module 0x1::pool { 
+            struct X1 {}    
+            public fun create_pool<BinStep>() {}        
+        }        
+        module 0x1::main {
+            use 0x1::pool::{Self, X1};
+            fun main() {
+                pool::create_pool<X1>();
+            }
+        }        
+    """)
+
+    fun `test duplicate self import`() = doTest("""
+        module 0x1::pool { 
+            struct X1 {}    
+            public fun create_pool<BinStep>() {}        
+        }        
+        module 0x1::main {
+            use 0x1::pool::{Self, Self, X1};
+            fun main() {
+                pool::create_pool<X1>();
+            }
+        }        
+    """, """
+        module 0x1::pool { 
+            struct X1 {}    
+            public fun create_pool<BinStep>() {}        
+        }        
+        module 0x1::main {
+            use 0x1::pool::{Self, X1};
+            fun main() {
+                pool::create_pool<X1>();
+            }
+        }        
+    """)
+
 //    fun `test module spec with parent import`() = doTest("""
 //module 0x1::string { public fun utf8(v: vector<u8>) {} }
 //module 0x1::main {

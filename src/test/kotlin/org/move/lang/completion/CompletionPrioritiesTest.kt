@@ -110,6 +110,21 @@ module 0x1::Main {
         """
     )
 
+    fun `test vector literal inferred type`() = checkCompletionsOrder(
+        listOf("liq_nft_1", "liq_nft_2", "liq_nfts"),
+        """
+            module 0x1::m {
+                fun main() {
+                    let liq_nfts = vector[1, 2, 3];
+                    let liq_nft_1 = 1;
+                    let liq_nft_2 = 2;
+                    vector[liq_nft_1, liq/*caret*/];
+                }
+            }
+        
+        """
+    )
+
     fun checkCompletionsOrder(listStart: List<String>, @Language("Move") code: String) {
         val variants = completionFixture.invokeCompletion(code)
         val lookupStrings = variants.map { it.lookupString }

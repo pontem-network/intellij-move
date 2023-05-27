@@ -114,6 +114,20 @@ class BuiltInsCompletionTest : CompletionTestCase() {
     }    
     """)
 
+    fun `test vector literal completion`() = doSingleCompletion("""
+        module 0x1::m {
+            fun main() {
+                vecto/*caret*/
+            }
+        }        
+    """, """
+        module 0x1::m {
+            fun main() {
+                vector[/*caret*/]
+            }
+        }        
+    """)
+
     private fun checkContainsBuiltins(@Language("Move") text: String) {
         val functionNames = BUILTIN_FUNCTIONS
         for (name in functionNames) {

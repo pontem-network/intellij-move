@@ -23,6 +23,7 @@ class UiDebouncer(
      * @param onUiThread: callback to be executed in EDT with **any** modality state.
      * Use it only for UI updates
      */
+    @Suppress("DEPRECATION")
     fun <T> run(onPooledThread: () -> T, onUiThread: (T) -> Unit) {
         if (Disposer.isDisposed(parentDisposable)) return
         alarm.cancelAllRequests()
@@ -37,7 +38,6 @@ class UiDebouncer(
     }
 }
 
-@Suppress("UnstableApiUsage")
 fun pathField(
     fileChooserDescriptor: FileChooserDescriptor,
     disposable: Disposable,
