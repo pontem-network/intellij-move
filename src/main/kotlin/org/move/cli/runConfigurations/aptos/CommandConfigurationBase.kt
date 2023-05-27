@@ -13,6 +13,7 @@ import org.jdom.Element
 import org.move.cli.readPath
 import org.move.cli.readString
 import org.move.cli.runConfigurations.legacy.MoveCommandConfiguration
+import org.move.cli.runConfigurations.test.AptosTestCommandLineState
 import org.move.cli.writePath
 import org.move.cli.writeString
 import org.move.stdext.exists
@@ -44,8 +45,14 @@ abstract class CommandConfigurationBase(
     }
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): AptosCommandLineState? {
-        val config = clean().ok ?: return null
-        return AptosCommandLineState(environment, config.aptosPath, config.commandLine)
+        return clean().ok?.let { stateConfig ->
+            AptosCommandLineState(environment, stateConfig.aptosPath, stateConfig.commandLine)
+//            if (command.startsWith("move test")) {
+//                AptosTestCommandLineState(environment, stateConfig.aptosPath, stateConfig.commandLine)
+//            } else {
+//                AptosCommandLineState(environment, stateConfig.aptosPath, stateConfig.commandLine)
+//            }
+        }
     }
 
     fun clean(): CleanConfiguration {
