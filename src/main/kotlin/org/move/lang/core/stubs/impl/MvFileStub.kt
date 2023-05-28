@@ -17,7 +17,7 @@ class MvFileStub(file: MoveFile?) : PsiFileStubImpl<MoveFile>(file) {
     override fun getType() = Type
 
     object Type : IStubFileElementType<MvFileStub>(MoveLanguage) {
-        private const val STUB_VERSION = 22
+        private const val STUB_VERSION = 23
 
         // Bump this number if Stub structure changes
         override fun getStubVersion(): Int = MoveParserDefinition.PARSER_VERSION + STUB_VERSION

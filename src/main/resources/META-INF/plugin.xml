@@ -52,6 +52,7 @@
         <stubIndex implementation="org.move.lang.index.MvNamedElementIndex" />
         <stubIndex implementation="org.move.lang.index.MvEntryFunctionIndex" />
         <stubIndex implementation="org.move.lang.index.MvViewFunctionIndex" />
+        <stubIndex implementation="org.move.lang.index.MvTestFunctionIndex" />
         <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
         <lang.documentationProvider language="Move"

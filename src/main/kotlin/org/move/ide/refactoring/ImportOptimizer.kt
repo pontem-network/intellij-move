@@ -5,6 +5,7 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiWhiteSpace
+import org.move.ide.inspections.imports.PathUsages
 import org.move.ide.inspections.isImportedItemUsed
 import org.move.ide.intentions.removeCurlyBraces
 import org.move.lang.MoveFile
@@ -161,7 +162,18 @@ class ImportOptimizer : ImportOptimizer {
     }
 }
 
-fun MvUseStmt.deleteWithLeadingWhitespace() {
+private fun MvUseStmt.deleteWithLeadingWhitespace() {
     if (this.nextSibling.isWhitespace()) this.nextSibling.delete()
     this.delete()
 }
+
+//private fun MoveFile.forEachScope(callback: (MvImportsOwner, List<RsUseItem>, PathUsages?) -> Unit) {
+//    val usesByScope = descendantsOfType<RsUseItem>()
+//        .filterNot { it.isReexportOfLegacyMacro() }
+//        .groupBy { it.parent }
+//    for ((scope, uses) in usesByScope) {
+//        if (scope !is RsMod && scope !is RsBlock) continue
+//        val pathUsage = getPathUsage(scope as RsItemsOwner)
+//        callback(scope, uses, pathUsage)
+//    }
+//}

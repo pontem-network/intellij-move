@@ -46,11 +46,11 @@ abstract class CommandConfigurationBase(
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): AptosCommandLineState? {
         return clean().ok?.let { stateConfig ->
-            AptosCommandLineState(environment, stateConfig.aptosPath, stateConfig.commandLine)
+//            AptosCommandLineState(environment, stateConfig.aptosPath, stateConfig.commandLine)
 //            if (command.startsWith("move test")) {
 //                AptosTestCommandLineState(environment, stateConfig.aptosPath, stateConfig.commandLine)
 //            } else {
-//                AptosCommandLineState(environment, stateConfig.aptosPath, stateConfig.commandLine)
+            AptosCommandLineState(environment, stateConfig.aptosPath, stateConfig.commandLine)
 //            }
         }
     }

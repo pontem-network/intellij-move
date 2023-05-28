@@ -71,12 +71,14 @@ fun ASTNode.isDelimiterOfCurrentBlock(parent: ASTNode?): Boolean {
     }
 }
 
+data class PsiLocation(val line: Int, val column: Int)
+
 /// Returns null if element does not belong to any file
-val PsiElement.location: Pair<Int, Int>? get() {
+val PsiElement.location: PsiLocation? get() {
     val elementOffset = this.textOffset
     val file = this.containingFile ?: return null
-    val location = file.document?.getOffsetPosition(elementOffset)
-    return location
+    val location = file.document?.getOffsetPosition(elementOffset) ?: return null
+    return PsiLocation(location.first, location.second)
 }
 
 //val ASTNode.isFlatBraceBlock: Boolean
