@@ -1,7 +1,7 @@
 <templateSet group="Move">
     <template name="d"
-              value="std::debug::print($TEXT$);"
-              description="Debug"
+              value="std::debug::print(&amp;$TEXT$);"
+              description="debug print"
               toReformat="false"
               toShortenFQNames="true">
         <variable name="TEXT" expression="" defaultValue="" alwaysStopAt="true"/>
@@ -12,7 +12,18 @@
 
     <template name="sd"
               value='std::debug::print(&amp;std::string::utf8(b"$TEXT$"));'
-              description="Debug String"
+              description="debug print string"
+              toReformat="false"
+              toShortenFQNames="true">
+        <variable name="TEXT" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="MOVE_BLOCK" value="true"/>
+        </context>
+    </template>
+
+    <template name="wd"
+              value='std::debug::print(&amp;aptos_std::string_utils::format1(&amp;b"$VAR$ = {}", $VAR$));'
+              description="debug print expression"
               toReformat="false"
               toShortenFQNames="true">
         <variable name="TEXT" expression="" defaultValue="" alwaysStopAt="true"/>
