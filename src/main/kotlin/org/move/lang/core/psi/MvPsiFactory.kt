@@ -77,6 +77,10 @@ class MvPsiFactory(val project: Project) {
         createFromText("module 0x1::_DummyModule { fun call() { let _ = $text; } }")
             ?: error("Failed to create expr")
 
+    fun type(text: String): MvType =
+        createFromText("module 0x1::_DummyModule { fun call() { let _: $text; } }")
+            ?: error("Failed to create type")
+
     fun useStmt(speckText: String, testOnly: Boolean): MvUseStmt {
         return createFromText("module 0x1::_DummyModule { ${if (testOnly) "#[test_only]\n" else ""}use $speckText; }")
             ?: error("Failed to create an item import from text: `$speckText`")

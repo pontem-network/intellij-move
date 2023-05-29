@@ -3,7 +3,7 @@ package org.move.ide.inspections.fixes
 import org.move.ide.inspections.MvTypeCheckInspection
 import org.move.utils.tests.annotation.InspectionTestBase
 
-class AddCastFixTest : InspectionTestBase(MvTypeCheckInspection::class) {
+class IntegerCastFixTest : InspectionTestBase(MvTypeCheckInspection::class) {
     fun `test no cast available on untyped integer`() = checkFixIsUnavailable(
         "Cast to 'u64'", """
         module 0x1::m {
@@ -39,6 +39,42 @@ class AddCastFixTest : InspectionTestBase(MvTypeCheckInspection::class) {
             fun main() {
                 let a = 1u8;
                 let b: u64 = (a as u64);
+            }
+        }        
+    """
+    )
+
+    fun `test change cast from u64 to u128`() = checkFixByText(
+        "Change cast type to 'u128'", """
+        module 0x1::m {
+            fun main() {
+                let a = 1u8;
+                let b: u128 = <error descr="Incompatible type 'u64', expected 'u128'">(a as/*caret*/ u64)</error>;
+            }
+        }        
+    """, """
+        module 0x1::m {
+            fun main() {
+                let a = 1u8;
+                let b: u128 = (a as u128);
+            }
+        }        
+    """
+    )
+
+    fun `test remove cast`() = checkFixByText(
+        "Remove 'u64' cast", """
+        module 0x1::m {
+            fun main() {
+                let a = 1u8;
+                let b: u8 = <error descr="Incompatible type 'u64', expected 'u8'">(a as/*caret*/ u64)</error>;
+            }
+        }        
+    """, """
+        module 0x1::m {
+            fun main() {
+                let a = 1u8;
+                let b: u8 = a;
             }
         }        
     """

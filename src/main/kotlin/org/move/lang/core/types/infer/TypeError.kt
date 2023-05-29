@@ -2,13 +2,16 @@ package org.move.lang.core.types.infer
 
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.psi.PsiElement
-import org.move.ide.inspections.fixes.AddCastFix
+import org.move.ide.inspections.fixes.IntegerCastFix
 import org.move.ide.presentation.expectedBindingFormText
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
+import org.move.lang.core.psi.MvCastExpr
 import org.move.lang.core.psi.MvExpr
+import org.move.lang.core.psi.MvParensExpr
 import org.move.lang.core.psi.MvReturnExpr
 import org.move.lang.core.psi.MvStruct
+import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInteger
 
@@ -36,10 +39,28 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
         }
 
         override fun fix(): LocalQuickFix? {
-            if (element !is MvExpr) return null
-            if (expectedTy !is TyInteger || actualTy !is TyInteger) return null
-            if (expectedTy.isDefault() || actualTy.isDefault()) return null
-            return AddCastFix(element, expectedTy)
+            if (element is MvExpr) {
+                if (expectedTy is TyInteger && actualTy is TyInteger
+                    && !expectedTy.isDefault() && !actualTy.isDefault()
+                ) {
+                    if (this.element.isMsl()) return null
+
+                    val expr = element
+                    val inference = expr.inference(false) ?: return null
+
+                    if (expr is MvParensExpr && expr.expr is MvCastExpr) {
+                        val castExpr = expr.expr as MvCastExpr
+                        val originalTy = inference.getExprType(castExpr.expr) as? TyInteger ?: return null
+                        if (originalTy == expectedTy) {
+                            return IntegerCastFix.RemoveCast(castExpr)
+                        } else {
+                            return IntegerCastFix.ChangeCast(castExpr, expectedTy)
+                        }
+                    }
+                    return IntegerCastFix.AddCast(element, expectedTy)
+                }
+            }
+            return null
         }
     }
 
