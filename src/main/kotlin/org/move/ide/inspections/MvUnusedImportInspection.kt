@@ -5,10 +5,10 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
 import org.move.ide.inspections.imports.ItemUsages
+import org.move.ide.inspections.imports.PathUsages
 import org.move.ide.inspections.imports.ScopePathUsages
 import org.move.ide.inspections.imports.pathUsages
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.moduleName
 import org.move.lang.core.psi.ext.speck
 
@@ -16,6 +16,7 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
             override fun visitImportsOwner(o: MvImportsOwner) {
+                val pathUsages = o.pathUsages
                 val visitedItems = mutableMapOf<ItemScope, MutableSet<String>>()
                 val visitedModules = mutableMapOf<ItemScope, MutableSet<String>>()
                 for (useStmt in o.useStmtList) {
@@ -31,7 +32,7 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                         }
                         scopedVisitedModules.add(moduleName)
 
-                        if (!moduleUseSpeck.isImportedItemUsed()) {
+                        if (!moduleUseSpeck.isUseItemUsed(pathUsages)) {
                             holder.registerUnused(useStmt)
                         }
                         continue
@@ -63,7 +64,7 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                                 }
                                 scopedVisitedModules.add(moduleName)
 
-                                if (!useItem.isImportedItemUsed()) {
+                                if (!useItem.isUseItemUsed(pathUsages)) {
                                     holder.registerUnused(targetItem)
                                 }
                                 continue
@@ -78,7 +79,7 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
                             }
                             scopedVisitedItems.add(itemName)
 
-                            if (!useItem.isImportedItemUsed()) {
+                            if (!useItem.isUseItemUsed(pathUsages)) {
                                 holder.registerUnused(targetItem)
                             }
                         }
@@ -98,11 +99,8 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
 
 }
 
-fun MvElement.isImportedItemUsed(): Boolean {
-    val parentImportsOwner = this.ancestorStrict<MvImportsOwner>() ?: return true
-    val itemScope = this.itemScope
-    val pathUsages = parentImportsOwner.pathUsages.get(itemScope)
-
+fun MvElement.isUseItemUsed(pathUsages: PathUsages): Boolean {
+    val scopePathUsages = pathUsages.get(this.itemScope)
     return when (this) {
         is MvModuleUseSpeck -> {
             val useAlias = this.useAlias
@@ -110,7 +108,7 @@ fun MvElement.isImportedItemUsed(): Boolean {
                 (if (useAlias != null) useAlias.name else this.fqModuleRef?.referenceName)
                     ?: return true
             // null if import is never used
-            val usageResolvedItems = pathUsages.nameUsages[moduleName] ?: return false
+            val usageResolvedItems = scopePathUsages.nameUsages[moduleName] ?: return false
             if (usageResolvedItems.isEmpty()) {
                 // import is used but usages are unresolved
                 return true
@@ -125,10 +123,10 @@ fun MvElement.isImportedItemUsed(): Boolean {
             val itemGroup = this.useItemGroup
             if (itemGroup != null && itemGroup.useItemList.isEmpty()) return false
             val useItem = this.useItem ?: return true
-            isUseItemUsed(useItem, pathUsages)
+            isUseItemUsed(useItem, scopePathUsages)
         }
-        is MvUseItem -> isUseItemUsed(this, pathUsages)
-        else -> error("unimplemented")
+        is MvUseItem -> isUseItemUsed(this, scopePathUsages)
+        else -> error("unreachable")
     }
 }
 

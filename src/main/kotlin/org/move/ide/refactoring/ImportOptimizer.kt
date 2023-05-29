@@ -4,9 +4,8 @@ import com.intellij.lang.ImportOptimizer
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiWhiteSpace
-import org.move.ide.inspections.imports.PathUsages
-import org.move.ide.inspections.isImportedItemUsed
+import org.move.ide.inspections.imports.pathUsages
+import org.move.ide.inspections.isUseItemUsed
 import org.move.ide.intentions.removeCurlyBraces
 import org.move.lang.MoveFile
 import org.move.lang.MvElementTypes.L_BRACE
@@ -39,18 +38,20 @@ class ImportOptimizer : ImportOptimizer {
 
     private fun optimizeImports(importsOwner: MvImportsOwner) {
         removeUnusedImports(importsOwner)
-        mergeTestOnlyImportsIntoMainImports(importsOwner)
+//        mergeTestOnlyImportsIntoMainImports(importsOwner)
         mergeItemGroups(importsOwner)
+//        removeDuplicates(importsOwner)
         sortImports(importsOwner)
     }
 
     private fun removeUnusedImports(importsOwner: MvImportsOwner) {
         val psiFactory = importsOwner.project.psiFactory
+        val pathUsages = importsOwner.pathUsages
         val useStmts = importsOwner.useStmtList
         for (useStmt in useStmts) {
             val moduleSpeck = useStmt.moduleUseSpeck
             if (moduleSpeck != null) {
-                if (!moduleSpeck.isImportedItemUsed()) {
+                if (!moduleSpeck.isUseItemUsed(pathUsages)) {
                     useStmt.deleteWithLeadingWhitespace()
                     continue
                 }
@@ -59,7 +60,7 @@ class ImportOptimizer : ImportOptimizer {
             if (useSpeck != null) {
                 var itemGroup = useSpeck.useItemGroup
                 if (itemGroup != null) {
-                    val usedItems = itemGroup.useItemList.filter { it.isImportedItemUsed() }
+                    val usedItems = itemGroup.useItemList.filter { it.isUseItemUsed(pathUsages) }
                     if (usedItems.isEmpty()) {
                         useStmt.deleteWithLeadingWhitespace()
                     } else {
@@ -70,7 +71,7 @@ class ImportOptimizer : ImportOptimizer {
                         itemGroup.removeCurlyBraces()
                     }
                 }
-                if (!useSpeck.isImportedItemUsed()) {
+                if (!useSpeck.isUseItemUsed(pathUsages)) {
                     // single unused import 0x1::M::call;
                     useStmt.deleteWithLeadingWhitespace()
                 }
@@ -120,6 +121,10 @@ class ImportOptimizer : ImportOptimizer {
             }
     }
 
+    private fun removeDuplicates(importsOwner: MvImportsOwner) {
+
+    }
+
     private fun sortImports(useStmtOwner: MvImportsOwner) {
         val psiFactory = useStmtOwner.project.psiFactory
         val offset =
@@ -155,25 +160,11 @@ class ImportOptimizer : ImportOptimizer {
             }
             useStmtOwner.addAfter(psiFactory.createNewline(), lastAddedUseItem)
         }
-        useStmts.forEach {
-            (it.nextSibling as? PsiWhiteSpace)?.delete()
-            it.delete()
-        }
+        useStmts.forEach { it.deleteWithLeadingWhitespace() }
     }
 }
 
 private fun MvUseStmt.deleteWithLeadingWhitespace() {
-    if (this.nextSibling.isWhitespace()) this.nextSibling.delete()
+    this.nextSibling?.takeIf { it.isWhitespace() }?.delete()
     this.delete()
 }
-
-//private fun MoveFile.forEachScope(callback: (MvImportsOwner, List<RsUseItem>, PathUsages?) -> Unit) {
-//    val usesByScope = descendantsOfType<RsUseItem>()
-//        .filterNot { it.isReexportOfLegacyMacro() }
-//        .groupBy { it.parent }
-//    for ((scope, uses) in usesByScope) {
-//        if (scope !is RsMod && scope !is RsBlock) continue
-//        val pathUsage = getPathUsage(scope as RsItemsOwner)
-//        callback(scope, uses, pathUsage)
-//    }
-//}

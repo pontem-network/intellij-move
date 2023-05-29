@@ -393,6 +393,10 @@ module 0x1::main {
     fun main() {
         utf8();
     }
+    #[test]
+    fun test_main() {
+        utf8();
+    }
 }        
     """, """
 module 0x1::string { public fun utf8() {} }        
@@ -400,6 +404,10 @@ module 0x1::main {
     use 0x1::string::utf8;
 
     fun main() {
+        utf8();
+    }
+    #[test]
+    fun test_main() {
         utf8();
     }
 }        

@@ -38,18 +38,18 @@ data class ScopePathUsages(
 }
 
 data class PathUsages(
-    val mainUsages: ScopePathUsages,
-    val testUsages: ScopePathUsages
+    val mainScopeUsages: ScopePathUsages,
+    val testScopeUsages: ScopePathUsages
 ) {
     fun updateFrom(other: PathUsages) {
-        mainUsages.updateFrom(other.mainUsages)
-        testUsages.updateFrom(other.testUsages)
+        mainScopeUsages.updateFrom(other.mainScopeUsages)
+        testScopeUsages.updateFrom(other.testScopeUsages)
     }
 
     fun get(itemScope: ItemScope): ScopePathUsages {
         return when (itemScope) {
-            ItemScope.MAIN -> mainUsages
-            ItemScope.TEST -> testUsages
+            ItemScope.MAIN -> mainScopeUsages
+            ItemScope.TEST -> testScopeUsages
         }
     }
 }
