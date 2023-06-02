@@ -68,7 +68,9 @@ class ParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) {
     fun `test assert macro expects two parameters`() = checkErrors("""
         module 0x1::m {
             fun call() {
-                assert!(true<error descr="This function takes 2 parameters but 1 parameter was supplied">)
+                assert!(true<error descr="This function takes 2 parameters but 1 parameter was supplied">)</error>;
+                assert!(true, <error descr="This function takes 2 parameters but 1 parameter was supplied">)</error>;
+                assert!(<error descr="This function takes 2 parameters but 0 parameters were supplied">)</error>;
             }
         }        
     """)

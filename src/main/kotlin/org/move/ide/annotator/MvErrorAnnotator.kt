@@ -11,9 +11,9 @@ import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.address
+import org.move.lang.core.types.infer.descendantHasTypeError
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
-import org.move.lang.core.types.infer.descendantHasTypeError
 import org.move.lang.core.types.ty.TyCallable
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
@@ -183,17 +183,30 @@ class MvErrorAnnotator : MvAnnotatorBase() {
             }
 
             override fun visitValueArgumentList(arguments: MvValueArgumentList) {
-                val callExpr = arguments.parent as? MvCallExpr ?: return
-                val msl = callExpr.isMsl()
-                val callTy =
-                    callExpr.inference(msl)?.getCallExprType(callExpr) as? TyCallable ?: return
+                val parentExpr = arguments.parent
+                val expectedCount =
+                    when (parentExpr) {
+                        is MvCallExpr -> {
+                            val msl = parentExpr.isMsl()
+                            val callTy =
+                                parentExpr.inference(msl)?.getCallExprType(parentExpr) as? TyCallable ?: return
+                            callTy.paramTypes.size
+                        }
+                        is MvMacroCallExpr -> {
+                            if (parentExpr.macroIdent.identifier.text == "assert") {
+                                2
+                            } else {
+                                return
+                            }
+                        }
+                        else -> return
+                    }
 
                 val valueArguments = arguments.valueArgumentList
                 if (valueArguments.any { it.expr == null }) return
 
                 val argumentExprs = valueArguments.map { it.expr!! }
                 val realCount = argumentExprs.size
-                val expectedCount = callTy.paramTypes.size
 
                 val errorMessage =
                     "This function takes " +
