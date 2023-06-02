@@ -446,7 +446,7 @@ class TypeInferenceWalker(
         } ?: return TyUnknown
 
         val item = structTy.item
-        val fieldName = dotExpr.structDotField.referenceName
+        val fieldName = dotExpr.structDotField?.referenceName ?: return TyUnknown
         val fieldTy = item.fieldsMap[fieldName]
             ?.type
             ?.loweredType(msl)

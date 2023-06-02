@@ -1033,8 +1033,13 @@ AssignmentExpr ::= Expr Initializer { rightAssociative = true }
 Initializer ::= '=' Expr { pin = 1 }
 
 BorrowExpr ::= '&' mut? Expr
-DotExpr ::= Expr '.' StructDotField
 
+DotExpr ::= Expr DotExpr_field
+// Do not inline this rule, it breaks expression parsing
+private DotExpr_field ::= '.' StructDotField {
+    pin = 1
+    consumeTokenMethod = "consumeTokenFast"
+}
 StructDotField ::= IDENTIFIER
 {
     implements = ["org.move.lang.core.resolve.ref.MvStructFieldReferenceElement"]

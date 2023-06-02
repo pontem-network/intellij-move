@@ -17,6 +17,16 @@ FILE
           PsiElement({)('{')
           PsiWhiteSpace('\n        ')
           MvExprStmtImpl(EXPR_STMT)
+            MvDotExprImpl(DOT_EXPR)
+              MvRefExprImpl(REF_EXPR)
+                MvPathImpl(PATH)
+                  PsiElement(IDENTIFIER)('bin')
+              PsiElement(.)('.')
+              PsiErrorElement:IDENTIFIER expected, got ';'
+                <empty list>
+            PsiElement(;)(';')
+          PsiWhiteSpace('\n        ')
+          MvExprStmtImpl(EXPR_STMT)
             MvLitExprImpl(LIT_EXPR)
               PsiElement(HEX_STRING_LITERAL)('x"')
             PsiElement(;)(';')
