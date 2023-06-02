@@ -235,15 +235,8 @@ fun processLexicalDeclarations(
 
                 val msl = receiverExpr.isMsl()
                 val inference = receiverExpr.inference(msl) ?: return false
-                // uninferred expr is allowed for the `object.IntellijIdeaRulezzz` (no letters after dot) case:
-                // there's an obvious dot expr, but I can't make it pin on '.'
-                val dotField = dotExpr.structDotField ?: return false
-                val receiverTy =
-                    if (CompletionUtil.getOriginalElement(dotField) == null) {
-                        inference.getExprTypeOrUnknown(receiverExpr)
-                    } else {
-                        inference.getExprType(receiverExpr)
-                    }
+                val receiverTy = inference.getExprType(receiverExpr)
+
                 val innerTy = when (receiverTy) {
                     is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
                     is TyStruct -> receiverTy
