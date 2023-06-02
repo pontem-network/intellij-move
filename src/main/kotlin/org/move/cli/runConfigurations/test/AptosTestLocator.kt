@@ -17,8 +17,4 @@ object AptosTestLocator : SMTestLocator {
     ): MutableList<Location<PsiElement>> {
         TODO("Not yet implemented")
     }
-
-    fun getTestFunctionUrl(functionFqName: String): String {
-        return ""
-    }
 }

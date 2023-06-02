@@ -181,10 +181,10 @@ class AptosTestEventsConverter(
                     ServiceMessageBuilder.testFinished(testId)
                 )
             }
-            is TestLine.StartTestFailDetail -> {
-                val testId = "${testLine.moduleName}::${testLine.testName}"
-                listOf(ServiceMessageBuilder.testStarted(testLine.testName))
-            }
+//            is TestLine.StartTestFailDetail -> {
+//                val testId = "${testLine.moduleName}::${testLine.testName}"
+//                listOf(ServiceMessageBuilder.testStarted(testLine.testName))
+//            }
 //            is TestLine.EndTestFailDetail -> {
 //                val lastTestName = lastFailedTest ?: return null
 //                lastFailedTest = null
