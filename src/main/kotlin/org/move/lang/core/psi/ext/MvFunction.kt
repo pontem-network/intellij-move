@@ -4,7 +4,6 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.editor.colors.TextAttributesKey
-import com.intellij.openapi.util.SimpleModificationTracker
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
@@ -179,8 +178,7 @@ abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
 //        return TyFunction2(subst, paramTypes, acquiresTypes, retType)
 //    }
 
-    override val modificationTracker: SimpleModificationTracker =
-        SimpleModificationTracker()
+    override val modificationTracker = MvModificationTracker(this)
 
     override fun incModificationCount(element: PsiElement): Boolean {
         val shouldInc = codeBlock?.isAncestorOf(element) == true

@@ -1,5 +1,6 @@
 package org.move.ide.inspections.imports
 
+import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
@@ -158,7 +159,8 @@ module 0x1::main {
         val targetName = refElement.referenceName ?: error("No name for reference element")
 
         val candidates =
-            AutoImportFix.getImportCandidates(ImportContext.Companion.from(refElement), targetName)
+            ImportCandidateCollector
+                .getImportCandidates(ImportContext.Companion.from(refElement), targetName)
                 .map { it.qualName.editorText() }
         if (data == "[]") {
             check(candidates.isEmpty()) { "Non-empty candidates: $candidates" }

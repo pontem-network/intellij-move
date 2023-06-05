@@ -438,7 +438,7 @@ class TypeInferenceWalker(
     }
 
     private fun inferDotExprTy(dotExpr: MvDotExpr): Ty {
-        val baseTy = resolveTypeVarsWithObligations(dotExpr.expr.inferType())
+        val baseTy = ctx.resolveTypeVarsIfPossible(dotExpr.expr.inferType())
         val structTy = when (baseTy) {
             is TyReference -> baseTy.innermostTy() as? TyStruct
             is TyStruct -> baseTy

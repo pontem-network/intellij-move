@@ -86,6 +86,19 @@ class MvPsiFactory(val project: Project) {
             ?: error("Failed to create an item import from text: `$speckText`")
     }
 
+    fun itemUseSpeck(fqModuleText: String, useItem: String): MvItemUseSpeck {
+        return createFromText("module 0x1::_DummyModule { use $fqModuleText::$useItem; }")
+            ?: error("Cannot create item use speck")
+//        return if (names.size == 1) {
+//            createFromText("module 0x1::_DummyModule { use $fqModuleText::$useItem; }")
+//                ?: error("")
+//        } else {
+//            val namesText = names.joinToString(", ", "{", "}")
+//            createFromText("module 0x1::_DummyModule { use $fqModuleText::$namesText; }")
+//                ?: error("")
+//        }
+    }
+
     fun itemUseSpeck(fqModuleText: String, names: List<String>): MvItemUseSpeck {
         assert(names.isNotEmpty())
         return if (names.size == 1) {

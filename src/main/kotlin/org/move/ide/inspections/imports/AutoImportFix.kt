@@ -12,19 +12,18 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import org.move.ide.utils.imports.ImportCandidate
+import org.move.ide.utils.imports.ImportCandidateCollector
+import org.move.ide.utils.imports.import
 import org.move.lang.MoveFile
 import org.move.lang.core.completion.DefaultInsertHandler
+import org.move.lang.core.completion.providers.import
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.types.ItemQualName
-import org.move.lang.index.MvNamedElementIndex
-import org.move.lang.moveProject
-import org.move.openapiext.checkWriteAccessAllowed
 import org.move.openapiext.common.checkUnitTestMode
-import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.runWriteCommandAction
 
 class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), HighPriorityAction {
@@ -53,7 +52,8 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
         if (refElement.hasAncestor<MvUseStmt>()) return
 
         val name = refElement.referenceName ?: return
-        val candidates = getImportCandidates(ImportContext.from(refElement), name)
+        val candidates =
+            ImportCandidateCollector.getImportCandidates(ImportContext.from(refElement), name)
         if (candidates.isEmpty()) return
 
         if (candidates.size == 1) {
@@ -94,45 +94,9 @@ class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), H
 
             val refName = refElement.referenceName ?: return null
             val importContext = ImportContext.from(refElement)
-            val candidates = getImportCandidates(importContext, refName)
+            val candidates =
+                ImportCandidateCollector.getImportCandidates(importContext, refName)
             return Context(candidates)
-        }
-
-        fun getImportCandidates(
-            context: ImportContext,
-            targetName: String,
-            itemFilter: (MvQualNamedElement) -> Boolean = { true }
-        ): List<ImportCandidate> {
-            val (contextElement, itemVis) = context
-
-            val project = contextElement.project
-            val moveProject = contextElement.moveProject ?: return emptyList()
-            val searchScope = moveProject.searchScope()
-
-            val allItems = mutableListOf<MvQualNamedElement>()
-            if (isUnitTestMode) {
-                // always add current file in tests
-                val currentFile = contextElement.containingFile as? MoveFile ?: return emptyList()
-                val items = currentFile.qualifiedItems(targetName, itemVis)
-                allItems.addAll(items)
-            }
-
-            MvNamedElementIndex
-                .processElementsByName(project, targetName, searchScope) { element ->
-                    processQualItem(element, itemVis) {
-                        val entryElement = it.element
-                        if (entryElement !is MvQualNamedElement) return@processQualItem false
-                        if (it.name == targetName) {
-                            allItems.add(entryElement)
-                        }
-                        false
-                    }
-                    true
-                }
-
-            return allItems
-                .filter(itemFilter)
-                .mapNotNull { item -> item.qualName?.let { ImportCandidate(item, it) } }
         }
     }
 }
@@ -167,74 +131,6 @@ data class ImportContext private constructor(
             )
             return ImportContext(contextElement, itemVis)
         }
-    }
-}
-
-data class ImportCandidate(val element: MvQualNamedElement, val qualName: ItemQualName)
-
-fun ImportCandidate.import(context: MvElement) {
-    checkWriteAccessAllowed()
-    val psiFactory = element.project.psiFactory
-    val insertionScope = context.containingModule?.moduleBlock
-        ?: context.containingScript?.scriptBlock
-        ?: return
-    val insertTestOnly = insertionScope.itemScope == ItemScope.MAIN
-            && context.itemScope == ItemScope.TEST
-    insertionScope.insertUseItem(psiFactory, qualName, insertTestOnly)
-}
-
-private fun MvImportsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: ItemQualName, testOnly: Boolean) {
-    val newUseStmt = psiFactory.useStmt(usePath.editorText(), testOnly)
-    if (this.tryGroupWithOtherUseItems(psiFactory, newUseStmt, testOnly)) return
-
-    val anchor = childrenOfType<MvUseStmt>().lastElement
-    if (anchor != null) {
-        addAfter(newUseStmt, anchor)
-    } else {
-        val firstItem = this.items().first()
-        addBefore(newUseStmt, firstItem)
-        addBefore(psiFactory.createNewline(), firstItem)
-    }
-}
-
-private fun MvImportsOwner.tryGroupWithOtherUseItems(
-    psiFactory: MvPsiFactory,
-    newUseStmt: MvUseStmt,
-    testOnly: Boolean
-): Boolean {
-    val newUseSpeck = newUseStmt.itemUseSpeck ?: return false
-    val newName = newUseSpeck.names().singleOrNull() ?: return false
-    val newFqModule = newUseSpeck.fqModuleRef
-    return useStmtList
-        .filter { it.isTestOnly == testOnly }
-        .mapNotNull { it.itemUseSpeck }
-        .any { it.tryGroupWith(psiFactory, newFqModule, newName) }
-}
-
-private fun MvItemUseSpeck.tryGroupWith(
-    psiFactory: MvPsiFactory,
-    newFqModule: MvFQModuleRef,
-    newName: String
-): Boolean {
-    if (!this.fqModuleRef.textMatches(newFqModule)) return false
-    if (newName in this.names()) return true
-    val speck = psiFactory.itemUseSpeck(newFqModule.text, this.names() + newName)
-    this.replace(speck)
-    return true
-}
-
-private val <T : MvElement> List<T>.lastElement: T? get() = maxByOrNull { it.textOffset }
-
-class ImportInsertHandler(
-    val parameters: CompletionParameters,
-    val candidate: ImportCandidate
-) : DefaultInsertHandler() {
-
-    override fun handleInsert(context: InsertionContext, item: LookupElement) {
-        super.handleInsert(context, item)
-        context.commitDocument()
-        val path = parameters.originalPosition?.parent as? MvPath ?: return
-        candidate.import(path)
     }
 }
 

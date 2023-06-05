@@ -1,7 +1,6 @@
 package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
-import com.intellij.openapi.util.SimpleModificationTracker
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 
@@ -22,7 +21,8 @@ val MvItemSpecBlockExpr.specBlock: MvSpecCodeBlock? get() = this.childOfType()
 
 abstract class MvItemSpecMixin(node: ASTNode) : MvElementImpl(node),
                                                 MvItemSpec {
-    override val modificationTracker: SimpleModificationTracker = SimpleModificationTracker()
+
+    override val modificationTracker = MvModificationTracker(this)
 
     override fun incModificationCount(element: PsiElement): Boolean {
 //        val shouldInc = element.ancestors.any {

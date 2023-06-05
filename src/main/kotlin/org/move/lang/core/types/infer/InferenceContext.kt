@@ -176,7 +176,7 @@ class InferenceContext(
 
     override val patTypes = mutableMapOf<MvPat, Ty>()
 
-    private val exprTypes = concurrentMapOf<MvExpr, Ty>()
+    private val exprTypes = mutableMapOf<MvExpr, Ty>()
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
     private val callExprTypes = mutableMapOf<MvCallExpr, Ty>()
     private val pathTypes = mutableMapOf<MvPath, Ty>()

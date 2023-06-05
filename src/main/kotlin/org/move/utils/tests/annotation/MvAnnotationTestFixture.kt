@@ -18,7 +18,7 @@ import junit.framework.TestCase
 import org.intellij.lang.annotations.Language
 import org.move.ide.annotator.MvAnnotatorBase
 import org.move.stdext.withAdded
-import org.move.utils.tests.EnableInspection
+import org.move.utils.tests.WithEnabledInspections
 import org.move.utils.tests.findAnnotationInstance
 import kotlin.reflect.KClass
 
@@ -34,10 +34,10 @@ class MvAnnotationTestFixture(
     override fun setUp() {
         super.setUp()
 
-        val inspectionToEnable = testCase.findAnnotationInstance<EnableInspection>()?.inspectionClass
-        if (inspectionToEnable != null) {
-            inspectionClasses = inspectionClasses.withAdded(inspectionToEnable)
-        }
+//        val inspectionToEnable = testCase.findAnnotationInstance<WithEnabledInspections>()?.inspectionClass
+//        if (inspectionToEnable != null) {
+//            inspectionClasses = inspectionClasses.withAdded(inspectionToEnable)
+//        }
 
         annotatorClasses.forEach {
             MvAnnotatorBase.enableAnnotator(

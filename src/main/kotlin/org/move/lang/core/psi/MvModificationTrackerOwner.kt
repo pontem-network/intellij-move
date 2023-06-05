@@ -5,17 +5,23 @@
 
 package org.move.lang.core.psi
 
-import com.intellij.openapi.util.ModificationTracker
+import com.intellij.openapi.util.SimpleModificationTracker
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.ext.stubParent
 import kotlin.reflect.KClass
+
+class MvModificationTracker(val owner: MvModificationTrackerOwner): SimpleModificationTracker() {
+    override fun incModificationCount() {
+        super.incModificationCount()
+    }
+}
 
 /**
  * A PSI element that holds modification tracker for some reason.
  * This is mostly used to invalidate cached type inference results.
  */
 interface MvModificationTrackerOwner : MvElement {
-    val modificationTracker: ModificationTracker
+    val modificationTracker: MvModificationTracker
 
     /**
      * Increments local modification counter if needed.

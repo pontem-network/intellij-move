@@ -6,6 +6,8 @@ import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
+import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -271,3 +273,16 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
         EditorModificationUtil.moveCaretRelatively(context.editor, offset)
     }
 }
+
+// When a user types `(` while completion,
+// `com.intellij.codeInsight.completion.DefaultCharFilter` invokes completion with selected item.
+// And if we insert `()` for the item (for example, function), a user get double parentheses
+private fun InsertionContext.doNotAddOpenParenCompletionChar() {
+    if (completionChar == '(') {
+        setAddCompletionChar(false)
+//        Testmarks.DoNotAddOpenParenCompletionChar.hit()
+    }
+}
+
+inline fun <reified T : PsiElement> InsertionContext.getElementOfType(strict: Boolean = false): T? =
+    PsiTreeUtil.findElementOfClassAtOffset(file, tailOffset - 1, T::class.java, strict)

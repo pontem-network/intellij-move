@@ -16,6 +16,7 @@ import com.intellij.psi.impl.FakePsiElement
 import com.intellij.ui.popup.list.ListPopupImpl
 import com.intellij.ui.popup.list.PopupListElementRenderer
 import org.jetbrains.annotations.TestOnly
+import org.move.ide.utils.imports.ImportCandidate
 import org.move.openapiext.common.isUnitTestMode
 import java.awt.BorderLayout
 import javax.swing.Icon
@@ -89,7 +90,7 @@ private class PopupImportItemUi(private val project: Project, private val dataCo
             override fun getListElementRenderer(): ListCellRenderer<*> {
                 val baseRenderer = super.getListElementRenderer() as PopupListElementRenderer<Any>
                 val psiRenderer = RsImportCandidateCellRenderer()
-                return ListCellRenderer<Any> { list, value, index, isSelected, cellHasFocus ->
+                return ListCellRenderer { list, value, index, isSelected, cellHasFocus ->
                     @Suppress("MissingAccessibleContext")
                     val panel = JPanel(BorderLayout())
                     baseRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)

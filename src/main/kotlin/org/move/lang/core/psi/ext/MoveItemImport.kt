@@ -14,11 +14,26 @@ import org.move.lang.core.resolve.resolveModuleItem
 fun MvUseItem.useSpeck(): MvItemUseSpeck =
     ancestorStrict() ?: error("ItemImport outside ModuleItemsImport")
 
-val MvUseItem.speck: MvElement?
+val MvUseItem.annotationItem: MvElement
     get() {
         val parent = this.parent
         if (parent is MvUseItemGroup && parent.useItemList.size != 1) return this
-        return ancestorStrict<MvUseStmt>()
+        return useStmt
+    }
+
+val MvUseItem.useStmt: MvUseStmt
+    get() =
+        ancestorStrict() ?: error("always has MvUseStmt as ancestor")
+
+val MvUseItem.originalName: String get() = this.identifier.text
+
+val MvUseItem.nameOrAlias: String?
+    get() {
+        val alias = this.useAlias
+        if (alias != null) {
+            return alias.identifier?.text
+        }
+        return this.identifier.text
     }
 
 val MvUseItem.moduleName: String

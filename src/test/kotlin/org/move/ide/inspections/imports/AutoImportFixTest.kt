@@ -2,6 +2,7 @@ package org.move.ide.inspections.imports
 
 import org.intellij.lang.annotations.Language
 import org.move.ide.inspections.MvUnresolvedReferenceInspection
+import org.move.ide.utils.imports.ImportCandidate
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class AutoImportFixTest : InspectionTestBase(MvUnresolvedReferenceInspection::class) {

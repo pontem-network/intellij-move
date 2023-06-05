@@ -1342,4 +1342,19 @@ module 0x1::pool {
             }
         }        
     """)
+
+    fun `test if branch returns incorrect type of integer error last expression`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let my_vol_ref = 1u64;
+                my_vol_ref = 
+                    if (true) {
+                        1 + 1;
+                        <error descr="Incompatible type 'u32', expected 'u64'">1u32</error>
+                    } else {
+                        0    
+                    };
+            }
+        }                
+    """)
 }

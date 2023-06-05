@@ -542,6 +542,7 @@ ModuleUseSpeck ::= (AddressRef !'::') | FQModuleRef UseAlias?
     name = "qual path to module"
     implements = [
         "org.move.lang.core.psi.MvNamedElement"
+        "org.move.lang.core.psi.MvUseSpeck"
     ]
     mixin = "org.move.lang.core.psi.ext.MvModuleUseSpeckMixin"
 }
@@ -549,6 +550,9 @@ ItemUseSpeck ::= FQModuleRef '::' (UseItem | UseItemGroup)
 {
     pin = 2
     name = "qual path to imported item"
+    implements = [
+        "org.move.lang.core.psi.MvUseSpeck"
+    ]
 }
 
 UseItemGroup ::= '{' <<comma_sep_items MultiItemUse_member_with_recovery>>? '}'

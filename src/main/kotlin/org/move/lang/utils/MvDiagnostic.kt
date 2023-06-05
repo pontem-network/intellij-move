@@ -132,7 +132,6 @@ sealed class MvDiagnostic(
                 fixes = listOf(WrapWithParensExprFix(castExpr))
             )
         }
-
     }
 }
 

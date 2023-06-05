@@ -5,17 +5,27 @@
 
 package org.move.utils.tests
 
+import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.codeInspection.LocalInspectionTool
+import com.intellij.testFramework.enableInspectionTool
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
 import org.move.cli.settings.moveSettings
 import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
+import java.lang.annotation.Inherited
 import kotlin.reflect.KClass
+import kotlin.reflect.full.createInstance
 
+@Inherited
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class DebugMode(val enabled: Boolean)
 
-annotation class EnableInspection(val inspectionClass: KClass<out LocalInspectionTool>)
+@Inherited
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class WithEnabledInspections(vararg val inspections: KClass<out InspectionProfileEntry>)
 
 abstract class MvTestBase : BasePlatformTestCase(),
                             MvTestCase {
@@ -25,9 +35,18 @@ abstract class MvTestBase : BasePlatformTestCase(),
 
     override fun setUp() {
         super.setUp()
+
+        setupInspections()
+
         val settingsState = project.moveSettings.settingsState
         val isDevMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
         project.moveSettings.settingsState = settingsState.copy(debugMode = isDevMode)
+    }
+
+    private fun setupInspections() {
+        for (inspection in findAnnotationInstance<WithEnabledInspections>()?.inspections.orEmpty()) {
+            enableInspectionTool(project, inspection.createInstance(), testRootDisposable)
+        }
     }
 
     override fun getTestDataPath(): String = "${TestCase.testResourcesPath}/$dataPath"
