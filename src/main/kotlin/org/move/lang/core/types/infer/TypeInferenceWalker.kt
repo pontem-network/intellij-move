@@ -286,6 +286,8 @@ class TypeInferenceWalker(
             is MvBindingPat -> ctx.getPatType(item)
             is MvConst -> item.type?.loweredType(msl) ?: TyUnknown
             is MvStructField -> item.type?.loweredType(msl) ?: TyUnknown
+            // only occurs in the invalid code statements
+            is MvStruct -> TyUnknown
             else -> project.debugErrorOrFallback(
                 "Referenced item ${item.elementType} " +
                         "of ref expr `${refExpr.text}` at ${refExpr.location} cannot be inferred into type",

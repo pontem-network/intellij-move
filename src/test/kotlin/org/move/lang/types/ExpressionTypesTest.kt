@@ -1602,4 +1602,41 @@ module 0x1::main {
         }        
     """
     )
+
+    fun `test ref expr of struct item`() = testExpr(
+        """
+        module 0x1::m {
+            struct S {}
+            fun main() {
+                S;
+              //^ <unknown>  
+            }
+        }        
+    """
+    )
+
+    fun `test ref expr of schema item`() = testExpr(
+        """
+        module 0x1::m {
+            spec schema S {}
+            fun main() {
+                S;
+              //^ <unknown>  
+            }
+        }        
+    """
+    )
+
+    fun `test ref expr of function item`() = testExpr(
+        """
+        module 0x1::m {
+            fun call() {}
+            fun main() {
+                call;
+              //^ <unknown>  
+            }
+        }        
+    """
+    )
+
 }
