@@ -134,11 +134,11 @@ module 0x1::M {
     fun `test spec struct`() = doTestByText(
         """
 module 0x1::M {
-    spec struct MyStruct {/*caret*/}
+    spec MyStruct {/*caret*/}
 } 
     """, """
 module 0x1::M {
-    spec struct MyStruct {
+    spec MyStruct {
         /*caret*/
     }
 } 
@@ -594,5 +594,42 @@ module 0x1::M {
             /*caret*/
         }
     }
+    """)
+
+    fun `test use item group indent first item`() = doTestByText("""
+        module 0x1::m {
+            use 0x1::m::{/*caret*/call, call2};
+        }         
+    """, """
+        module 0x1::m {
+            use 0x1::m::{
+                /*caret*/call, call2};
+        }         
+    """)
+
+    fun `test use item group indent second item`() = doTestByText("""
+        module 0x1::m {
+            use 0x1::m::{
+                call, /*caret*/call2};
+        }         
+    """, """
+        module 0x1::m {
+            use 0x1::m::{
+                call, 
+                /*caret*/call2};
+        }         
+    """)
+
+    fun `test use item group indent right brace`() = doTestByText("""
+        module 0x1::m {
+            use 0x1::m::{
+                call, call2/*caret*/};
+        }         
+    """, """
+        module 0x1::m {
+            use 0x1::m::{
+                call, call2
+            /*caret*/};
+        }         
     """)
 }

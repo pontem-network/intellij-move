@@ -204,4 +204,46 @@ class ResolveStructFieldsTest : ResolveTestCase() {
         }        
     """
     )
+
+    fun `test resolve field inside incomplete equal expr`() = checkByCode(
+        """
+        module 0x1::m {
+            struct S { val: u8 }
+                      //X
+            fun main() {
+                let s: S;
+                assert!(s.val ==)
+                         //^
+            }
+        }        
+    """
+    )
+
+    fun `test resolve field inside incomplete inequal expr`() = checkByCode(
+        """
+        module 0x1::m {
+            struct S { val: u8 }
+                      //X
+            fun main() {
+                let s: S;
+                assert!(s.val !=)
+                         //^
+            }
+        }        
+    """
+    )
+
+    fun `test resolve field inside incomplete plus expr`() = checkByCode(
+        """
+        module 0x1::m {
+            struct S { val: u8 }
+                      //X
+            fun main() {
+                let s: S;
+                assert!(s.val +)
+                         //^
+            }
+        }        
+    """
+    )
 }

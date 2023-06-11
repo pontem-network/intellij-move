@@ -3,17 +3,14 @@ package org.move.lang.core.types.infer
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.psi.PsiElement
 import org.move.ide.inspections.fixes.IntegerCastFix
-import org.move.ide.presentation.expectedBindingFormText
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
-import org.move.lang.core.psi.MvCastExpr
-import org.move.lang.core.psi.MvExpr
-import org.move.lang.core.psi.MvParensExpr
-import org.move.lang.core.psi.MvReturnExpr
-import org.move.lang.core.psi.MvStruct
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInteger
+import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.core.types.ty.TyTuple
 
 sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
     abstract fun message(): String
@@ -100,11 +97,34 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
         val assignedTy: Ty,
     ) : TypeError(element) {
         override fun message(): String {
-            return "Invalid unpacking. Expected ${assignedTy.expectedBindingFormText()}"
+            return when {
+                element is MvStructPat &&
+                        (assignedTy !is TyStruct && assignedTy !is TyTuple) -> {
+                    "Assigned expr of type '${assignedTy.text(fq = false)}' " +
+                            "cannot be unpacked with struct pattern"
+                }
+                element is MvTuplePat &&
+                        (assignedTy !is TyStruct && assignedTy !is TyTuple) -> {
+                    "Assigned expr of type '${assignedTy.text(fq = false)}' " +
+                            "cannot be unpacked with tuple pattern"
+                }
+                else -> "Invalid unpacking. Expected ${assignedTy.assignedTyFormText()}"
+            }
         }
 
         override fun innerFoldWith(folder: TypeFolder): TypeError {
             return InvalidUnpacking(element, folder(assignedTy))
+        }
+
+        private fun Ty.assignedTyFormText(): String {
+            return when (this) {
+                is TyTuple -> {
+                    val expectedForm = this.types.joinToString(", ", "(", ")") { "_" }
+                    "tuple binding of length ${this.types.size}: $expectedForm"
+                }
+                is TyStruct -> "struct binding of type ${this.text(true)}"
+                else -> "a single variable"
+            }
         }
     }
 
@@ -117,5 +137,32 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
         }
 
         override fun innerFoldWith(folder: TypeFolder): TypeError = this
+    }
+
+    data class ExpectedNonReferenceType(
+        override val element: PsiElement,
+        val actualTy: Ty,
+    ) : TypeError(element) {
+
+        override fun message(): String {
+            return "Expected a single non-reference type, but found: '${actualTy.text(fq = false)}'"
+        }
+
+        override fun innerFoldWith(folder: TypeFolder): TypeError {
+            return ExpectedNonReferenceType(element, folder.fold(actualTy))
+        }
+    }
+
+    data class InvalidDereference(
+        override val element: PsiElement,
+        val actualTy: Ty
+    ): TypeError(element) {
+        override fun message(): String {
+            return "Invalid dereference. Expected '&_' but found '${actualTy.text(fq = false)}'"
+        }
+
+        override fun innerFoldWith(folder: TypeFolder): TypeError {
+            return InvalidDereference(element, folder.fold(actualTy))
+        }
     }
 }

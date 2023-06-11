@@ -73,7 +73,7 @@ POLKADOT_ADDRESS=[1-9A-HJ-NP-Za-km-z]{40}[1-9A-HJ-NP-Za-km-z]*
 
 BOOL_LITERAL=(true)|(false)
 INTEGER_LITERAL=[0-9]+[a-zA-Z0-9]*
-HEX_INTEGER_LITERAL=0x[0-9a-fA-F]+[a-zA-Z0-9]*
+HEX_INTEGER_LITERAL=0x[0-9a-zA-Z]+[a-zA-Z0-9]*
 HEX_STRING_LITERAL=x\" ( [A-F0-9a-f]* ) (\")?
 BYTE_STRING_LITERAL=b\" ( [^\\\"\n] | \\[^] )* (\")?
 //BYTE_STRING_LITERAL=b\" ( [^\"\n] | (\\\")] )* (\")?

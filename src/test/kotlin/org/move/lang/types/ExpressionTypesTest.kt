@@ -1,5 +1,6 @@
 package org.move.lang.types
 
+import org.move.utils.tests.DebugMode
 import org.move.utils.tests.types.TypificationTestCase
 
 class ExpressionTypesTest : TypificationTestCase() {
@@ -562,8 +563,8 @@ class ExpressionTypesTest : TypificationTestCase() {
     fun `test if else return`() = testExpr(
         """
     module 0x1::M {
-        fun main(): u8 {
-            if (true) { return 1 } else { return 2 }
+        fun main() {
+            if (true) { return 1 } else { return 2 };
           //^ <never>  
         }
     }    
@@ -1027,10 +1028,10 @@ module 0x1::main {
             struct Coin<CoinType> { val: u8 }
             struct BTC {}
             fun main() {
-                let a = &&mut Coin { val: 10 };
-                let b: Coin<BTC> = **a;
+                let a = &mut Coin { val: 10 };
+                let b: Coin<BTC> = *a;
                 a;
-              //^ &&mut 0x1::m::Coin<_>  
+              //^ &mut 0x1::m::Coin<0x1::m::BTC>  
             }        
         } 
     """

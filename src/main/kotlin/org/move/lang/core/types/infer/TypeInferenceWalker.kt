@@ -171,6 +171,16 @@ class TypeInferenceWalker(
         return inferred
     }
 
+    // returns inferred
+    private fun MvExpr.inferTypeCoercableTo(expected: Expectation): Ty {
+        val expectedTy = expected.onlyHasTy(ctx)
+        return if (expectedTy != null) {
+            this.inferTypeCoercableTo(expectedTy)
+        } else {
+            this.inferType()
+        }
+    }
+
     // returns expected
     private fun MvExpr.inferTypeCoerceTo(expected: Ty): Ty {
         val inferred = this.inferType(expected)
@@ -242,7 +252,7 @@ class TypeInferenceWalker(
                 expr.expr?.inferTypeCoercableTo(TyInteger.DEFAULT)
                 TyNever
             }
-            is MvCodeBlockExpr -> expr.codeBlock.inferBlockType(expected)
+            is MvCodeBlockExpr -> expr.codeBlock.inferBlockType(expected, coerce = true)
             is MvAssignmentExpr -> inferAssignmentExprTy(expr)
             is MvBoolSpecExpr -> inferBoolSpecExpr(expr)
             is MvQuantExpr -> inferQuantExprTy(expr)
@@ -309,8 +319,16 @@ class TypeInferenceWalker(
         val hint = Expectation.maybeHasType(expectedInnerTy)
 
         val innerExprTy = inferExprTy(innerExpr, hint)
-        val mutabilities = RefPermissions.valueOf(borrowExpr.isMut)
-        return TyReference(innerExprTy, mutabilities, ctx.msl)
+        val innerRefTy = when (innerExprTy) {
+            is TyReference, is TyTuple -> {
+                ctx.reportTypeError(TypeError.ExpectedNonReferenceType(innerExpr, innerExprTy))
+                TyUnknown
+            }
+            else -> innerExprTy
+        }
+
+        val permissions = RefPermissions.valueOf(borrowExpr.isMut)
+        return TyReference(innerRefTy, permissions, ctx.msl)
     }
 
     private fun inferLambdaExpr(lambdaExpr: MvLambdaExpr, expected: Expectation): Ty {
@@ -632,9 +650,9 @@ class TypeInferenceWalker(
         val rightExpr = binaryExpr.right
         val op = binaryExpr.binaryOp.op
 
+        val leftTy = leftExpr.inferType()
         if (rightExpr != null) {
-            val leftTy = inferExprTy(leftExpr)
-            val rightTy = inferExprTy(rightExpr)
+            val rightTy = rightExpr.inferType()
 
             // if any of the types has TyUnknown and TyInfer, combineTyVar will fail
             // it only happens in buggy situation, but it's annoying for the users, so return if not in devMode
@@ -731,8 +749,13 @@ class TypeInferenceWalker(
     }
 
     private fun inferDerefExprTy(derefExpr: MvDerefExpr): Ty {
-        val exprTy = derefExpr.expr?.inferType()
-        return (exprTy as? TyReference)?.referenced ?: TyUnknown
+        val innerExpr = derefExpr.expr ?: return TyUnknown
+        val innerExprTy = innerExpr.inferType()
+        if (innerExprTy !is TyReference) {
+            ctx.reportTypeError(TypeError.InvalidDereference(innerExpr, innerExprTy))
+            return TyUnknown
+        }
+        return innerExprTy.referenced
     }
 
     private fun inferTupleLitExprTy(tupleExpr: MvTupleLitExpr, expected: Expectation): Ty {
@@ -764,28 +787,27 @@ class TypeInferenceWalker(
 
     private fun inferIfExprTy(ifExpr: MvIfExpr, expected: Expectation): Ty {
         ifExpr.condition?.expr?.inferTypeCoercableTo(TyBool)
-
-        val ifTy =
-            ifExpr.codeBlock?.inferBlockType(expected)
-                ?: ifExpr.inlineBlock?.expr?.inferType(expected)
-
+        val actualIfTy =
+            ifExpr.codeBlock?.inferBlockType(expected, coerce = true)
+                ?: ifExpr.inlineBlock?.expr?.inferTypeCoercableTo(expected)
         val elseBlock = ifExpr.elseBlock ?: return TyUnit
+        val actualElseTy =
+            elseBlock.codeBlock?.inferBlockType(expected, coerce = true)
+                ?: elseBlock.inlineBlock?.expr?.inferTypeCoercableTo(expected)
 
-        val resolvedIfTy = resolveTypeVarsWithObligations(ifTy ?: TyUnknown)
-        val expectedElse = Expectation.maybeHasType(resolvedIfTy)
-        val elseTy =
-            elseBlock.codeBlock?.inferBlockType(expected)
-                ?: elseBlock.inlineBlock?.expr?.inferType(expectedElse)
-        if (ifTy != null && elseTy != null) {
-            val element = elseBlock.codeBlock ?: elseBlock.inlineBlock!!
-            // special case for references in if-else block
-            if (ifTy is TyReference && elseTy is TyReference) {
-                coerce(element, elseTy.referenced, ifTy.referenced)
-            } else {
-                coerce(element, elseTy, ifTy)
+        val expectedElseTy = expected.onlyHasTy(ctx) ?: actualIfTy ?: TyUnknown
+        if (actualElseTy != null) {
+            elseBlock.tailExpr?.let {
+                // special case: `if (true) &s else &mut s` shouldn't show type error
+                if (expectedElseTy is TyReference && actualElseTy is TyReference) {
+                    coerce(it, actualElseTy.referenced, expectedElseTy.referenced)
+                } else {
+                    coerce(it, actualElseTy, expectedElseTy)
+                }
             }
         }
-        return intersectTypes(listOfNotNull(ifTy, elseTy), symmetric = true)
+
+        return intersectTypes(listOfNotNull(actualIfTy, actualElseTy), symmetric = true)
     }
 
     private fun intersectTypes(types: List<Ty>, symmetric: Boolean = true): Ty {

@@ -11,7 +11,7 @@
     </template>
 
     <template name="sd"
-              value='std::debug::print(&amp;std::string::utf8(b"$TEXT$"));'
+              value='std::debug::print(&amp;std::string::utf8(b&quot;$TEXT$&quot;));'
               description="debug print string"
               toReformat="false"
               toShortenFQNames="true">
@@ -22,11 +22,11 @@
     </template>
 
     <template name="wd"
-              value='std::debug::print(&amp;aptos_std::string_utils::format1(&amp;b"$VAR$ = {}", $VAR$));'
+              value="std::debug::print(&amp;aptos_std::string_utils::format1(&amp;b&quot;$VAR$ = {}&quot;, $VAR$));"
               description="debug print expression"
               toReformat="false"
               toShortenFQNames="true">
-        <variable name="TEXT" expression="" defaultValue="" alwaysStopAt="true"/>
+        <variable name="VAR" expression="" defaultValue="" alwaysStopAt="true"/>
         <context>
             <option name="MOVE_BLOCK" value="true"/>
         </context>

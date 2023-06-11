@@ -21,6 +21,10 @@ script {
 
         call10(,,,);
 
+        assert!(s.val +);
+        assert!(s.val !=);
+        assert!(s.val ==);
+
         spec {
             call(a,
         }

@@ -5,25 +5,33 @@ import org.move.utils.tests.MvIntentionTestCase
 class RemoveCurlyBracesIntentionTest: MvIntentionTestCase(RemoveCurlyBracesIntention::class) {
     fun `test remove curly braces simple`() = doAvailableTest(
         """
-        module M {
+        module 0x1::m {
             use 0x1::Vector::{p/*caret*/ush};
         }
         """,
         """
-        module M {
+        module 0x1::m {
             use 0x1::Vector::p/*caret*/ush;
         }
         """,
     )
 
+    fun `test cannot remove curly braces if more than one item imported`() = doUnavailableTest(
+        """
+        module 0x1::m {
+            use 0x1::Vector::{p/*caret*/ush, pull};
+        }
+        """
+    )
+
     fun `test remove curly braces alias`() = doAvailableTest(
         """
-        module M {
+        module 0x1::m {
             use 0x1::Vector::{p/*caret*/ush as p};
         }
         """,
         """
-        module M {
+        module 0x1::m {
             use 0x1::Vector::p/*caret*/ush as p;
         }
         """,
