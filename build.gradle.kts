@@ -24,7 +24,7 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "1.8.21"
-    id("org.jetbrains.intellij") version "1.13.3"
+    id("org.jetbrains.intellij") version "1.14.2-SNAPSHOT"
     id("org.jetbrains.grammarkit") version "2022.3.1"
     id("net.saliman.properties") version "1.5.2"
 }
@@ -40,6 +40,7 @@ dependencies {
     }
     implementation("com.github.ajalt.clikt:clikt:3.5.2")
 }
+
 
 allprojects {
     apply {
