@@ -812,6 +812,7 @@ fake BinaryExpr ::= Expr BinaryOp Expr {
     mixin = "org.move.lang.core.psi.ext.MvBinaryExprMixin"
 }
 
+//noinspection BnfUnusedRule
 fake BinaryOp ::= '<==>' | '==>' | '='
                     | '==' | '!='
                     | '<' | '>' | '<=' | '>='

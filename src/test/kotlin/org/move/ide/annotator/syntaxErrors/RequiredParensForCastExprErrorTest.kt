@@ -1,9 +1,9 @@
-package org.move.ide.annotator.errors
+package org.move.ide.annotator.syntaxErrors
 
-import org.move.ide.annotator.MvErrorAnnotator
+import org.move.ide.annotator.MvSyntaxErrorAnnotator
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
-class RequiredParensForCastExprErrorTest : AnnotatorTestCase(MvErrorAnnotator::class) {
+class RequiredParensForCastExprErrorTest : AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
     fun `test cast expr in parens`() = checkErrors(
         """
 module 0x1::main {

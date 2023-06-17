@@ -1,9 +1,9 @@
-package org.move.ide.annotator.errors
+package org.move.ide.annotator.syntaxErrors
 
-import org.move.ide.annotator.MvErrorAnnotator
+import org.move.ide.annotator.MvSyntaxErrorAnnotator
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
-class InvalidHexStringTest: AnnotatorTestCase(MvErrorAnnotator::class) {
+class InvalidHexStringTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
     fun `test valid hex strings`() = checkWarnings(
         """
         module 0x1::m {

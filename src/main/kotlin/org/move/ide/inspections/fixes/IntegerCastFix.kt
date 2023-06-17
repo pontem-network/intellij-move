@@ -14,8 +14,6 @@ import org.move.lang.core.types.ty.TyInteger
 
 sealed class IntegerCastFix(expr: MvExpr) : DiagnosticFix<MvExpr>(expr) {
 
-    val expr: MvExpr get() = this.startElement
-
     override fun availableInBatchMode(): Boolean = false
     override fun getFamilyName(): String = "Fix integer cast"
 
@@ -26,8 +24,8 @@ sealed class IntegerCastFix(expr: MvExpr) : DiagnosticFix<MvExpr>(expr) {
         override fun invoke(project: Project, file: PsiFile, element: MvExpr) {
             val psiFactory = project.psiFactory
 
-            val parensExpr = psiFactory.expr<MvParensExpr>("(1 as ${castType.name()})");
-            val oldExpr = expr.copy()
+            val parensExpr = psiFactory.expr<MvParensExpr>("(1 as ${castType.name()})")
+            val oldExpr = element.copy()
             val newParensExpr = element.replace(parensExpr) as MvParensExpr
 
             val litExpr = (newParensExpr.expr as MvCastExpr).expr
@@ -36,7 +34,7 @@ sealed class IntegerCastFix(expr: MvExpr) : DiagnosticFix<MvExpr>(expr) {
     }
 
     class RemoveCast(expr: MvCastExpr): IntegerCastFix(expr) {
-        val oldCastType: Ty get() = (this.expr as MvCastExpr).type.loweredType(false)
+        val oldCastType: Ty get() = (this.targetElement as MvCastExpr).type.loweredType(false)
 
         override fun getText(): String = "Remove '${oldCastType.name()}' cast"
 
@@ -45,7 +43,7 @@ sealed class IntegerCastFix(expr: MvExpr) : DiagnosticFix<MvExpr>(expr) {
             file: PsiFile,
             element: MvExpr
         ) =
-            (expr as MvCastExpr).replaceWithChildExpr()
+            (element as MvCastExpr).replaceWithChildExpr()
     }
 
     class ChangeCast(expr: MvCastExpr, val castType: TyInteger): IntegerCastFix(expr) {

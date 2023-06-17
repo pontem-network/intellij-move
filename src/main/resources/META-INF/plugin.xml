@@ -133,6 +133,8 @@
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.MvErrorAnnotator"/>
         <annotator language="Move"
+                   implementationClass="org.move.ide.annotator.MvSyntaxErrorAnnotator"/>
+        <annotator language="Move"
                    implementationClass="org.move.ide.annotator.HighlightingAnnotator"/>
 
         <codeInsight.parameterInfo language="Move"

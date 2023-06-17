@@ -12,13 +12,14 @@ import com.intellij.psi.PsiElement
 import org.move.ide.annotator.MvAnnotationHolder
 import org.move.ide.annotator.fixes.ItemSpecSignatureFix
 import org.move.ide.annotator.fixes.WrapWithParensExprFix
+import org.move.ide.annotator.pluralise
 import org.move.lang.core.psi.MvCastExpr
 import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.ext.*
 import org.move.lang.utils.Severity.*
 
-sealed class MvDiagnostic(
+sealed class Diagnostic(
     val element: PsiElement,
     val textRange: TextRange
 ) {
@@ -35,52 +36,60 @@ sealed class MvDiagnostic(
 
     abstract fun prepare(): PreparedAnnotation
 
-//    class TypeError(
-//        element: PsiElement,
-//        private val expectedTy: Ty,
-//        private val actualTy: Ty,
-//    ) : MvDiagnostic(element), TypeFoldable<TypeError> {
-//
-//        override fun prepare(): PreparedAnnotation {
-//            return PreparedAnnotation(
-//                ERROR,
-//                "Mismatched types",
-//                expectedFound(expectedTy, actualTy)
-//            )
-//        }
-//
-//        override fun innerFoldWith(folder: TypeFolder): TypeError =
-//            TypeError(element, expectedTy.foldWith(folder), actualTy.foldWith(folder))
-//
-//        override fun visitWith(visitor: TypeVisitor): Boolean = innerVisitWith(visitor)
-//
-//        override fun innerVisitWith(visitor: TypeVisitor): Boolean =
-//            expectedTy.visitWith(visitor) || actualTy.visitWith(visitor)
-//
-//        private fun expectedFound(expectedTy: Ty, actualTy: Ty): String {
-//            return "expected `${expectedTy.text(true)}`" +
-//                    ", found `${actualTy.text(true)}`"
-//        }
-//    }
+    class DuplicateDefinitions(element: PsiElement, val name: String): Diagnostic(element) {
+        override fun prepare(): PreparedAnnotation {
+            return PreparedAnnotation(ERROR, "Duplicate definitions with name `${name}`")
+        }
+    }
 
     class TypeArgumentsNumberMismatch(
         element: PsiElement,
         private val label: String,
         private val expectedCount: Int,
         private val realCount: Int,
-    ) : MvDiagnostic(element) {
+    ) : Diagnostic(element) {
 
         override fun prepare(): PreparedAnnotation {
-            val errorText = "Invalid instantiation of '$label'. " +
-                    "Expected $expectedCount type argument(s) but got $realCount"
             return PreparedAnnotation(
                 ERROR,
-                errorText,
+                "Invalid instantiation of '$label'. " +
+                        "Expected $expectedCount type argument(s) but got $realCount",
             )
         }
     }
 
-    class NeedsTypeAnnotation(element: PsiElement) : MvDiagnostic(element) {
+    class NoTypeArgumentsExpected(
+        element: PsiElement,
+        private val itemLabel: String,
+    ) : Diagnostic(element) {
+
+        override fun prepare(): PreparedAnnotation {
+            return PreparedAnnotation(
+                ERROR,
+                "No type arguments expected for '$itemLabel'"
+            )
+        }
+    }
+
+    class ValueArgumentsNumberMismatch(
+        target: PsiElement,
+        private val expectedCount: Int,
+        private val realCount: Int,
+    ): Diagnostic(target) {
+        override fun prepare(): PreparedAnnotation {
+            val errorMessage =
+                "This function takes " +
+                        "$expectedCount ${pluralise(expectedCount, "parameter", "parameters")} " +
+                        "but $realCount ${pluralise(realCount, "parameter", "parameters")} " +
+                        "${pluralise(realCount, "was", "were")} supplied"
+            return PreparedAnnotation(
+                ERROR,
+                errorMessage
+            )
+        }
+    }
+
+    class NeedsTypeAnnotation(element: PsiElement) : Diagnostic(element) {
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
                 ERROR,
@@ -92,7 +101,7 @@ sealed class MvDiagnostic(
     class StorageAccessIsNotAllowed(
         path: MvPath,
         private val typeName: String,
-    ) : MvDiagnostic(path) {
+    ) : Diagnostic(path) {
 
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
@@ -104,7 +113,7 @@ sealed class MvDiagnostic(
     }
 
     class FunctionSignatureMismatch(itemSpec: MvItemSpec) :
-        MvDiagnostic(
+        Diagnostic(
             itemSpec,
             TextRange(
                 itemSpec.itemSpecRef?.startOffset ?: itemSpec.startOffset,
@@ -123,7 +132,7 @@ sealed class MvDiagnostic(
         }
     }
 
-    class ParensAreRequiredForCastExpr(castExpr: MvCastExpr) : MvDiagnostic(castExpr) {
+    class ParensAreRequiredForCastExpr(castExpr: MvCastExpr) : Diagnostic(castExpr) {
         override fun prepare(): PreparedAnnotation {
             val castExpr = element as MvCastExpr
             return PreparedAnnotation(
@@ -161,7 +170,7 @@ class PreparedAnnotation(
 //    val textAttributes: TextAttributesKey? = null
 )
 
-fun MvDiagnostic.addToHolder(moveHolder: MvAnnotationHolder) {
+fun Diagnostic.addToHolder(moveHolder: MvAnnotationHolder) {
     val prepared = prepare()
 
     val holder = moveHolder.holder

@@ -49,9 +49,12 @@ abstract class MvLocalInspectionTool : LocalInspectionTool() {
 }
 
 abstract class DiagnosticFix<T : PsiElement>(element: T) : LocalQuickFixOnPsiElement(element) {
-    override fun getStartElement(): T {
+
+    val targetElement: T get() = this.startElement as T
+
+    override fun getStartElement(): T? {
         @Suppress("UNCHECKED_CAST")
-        return super.getStartElement() as T
+        return super.getStartElement() as T?
     }
 
     override fun generatePreview(project: Project, previewDescriptor: ProblemDescriptor): IntentionPreviewInfo =
@@ -64,7 +67,10 @@ abstract class DiagnosticFix<T : PsiElement>(element: T) : LocalQuickFixOnPsiEle
         file: PsiFile,
         startElement: PsiElement,
         endElement: PsiElement
-    ): Boolean = stillApplicable(project, file, getStartElement())
+    ): Boolean {
+        val element = getStartElement() ?: return false
+        return stillApplicable(project, file, element)
+    }
 
     override fun invoke(
         project: Project,
@@ -72,7 +78,7 @@ abstract class DiagnosticFix<T : PsiElement>(element: T) : LocalQuickFixOnPsiEle
         startElement: PsiElement,
         endElement: PsiElement
     ) {
-        val element = getStartElement()
+        val element = getStartElement() ?: return
         if (stillApplicable(project, file, element)) {
             invoke(project, file, element)
         }

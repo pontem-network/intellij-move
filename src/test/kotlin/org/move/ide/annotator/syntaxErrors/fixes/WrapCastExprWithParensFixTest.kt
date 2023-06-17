@@ -1,9 +1,10 @@
-package org.move.ide.annotator.errors.fixes
+package org.move.ide.annotator.syntaxErrors.fixes
 
 import org.move.ide.annotator.MvErrorAnnotator
+import org.move.ide.annotator.MvSyntaxErrorAnnotator
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
-class WrapWithParensExprFixTest : AnnotatorTestCase(MvErrorAnnotator::class) {
+class WrapCastExprWithParensFixTest : AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
     fun `test error if cast expr without parens`() = checkFixByText(
         "Wrap cast with ()",
         """
