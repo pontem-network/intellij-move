@@ -18,11 +18,12 @@ class InvalidHexStringTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
         """
         module 0x1::m {
             fun main() {
-                x"1"; 
-                x"f";
-                x"acaca";
-                x"ii";
-                x"fffz";
+                x"<error descr="Odd number of characters in hex string. Expected 2 hexadecimal digits for each byte">1</error>"; 
+                x"<error descr="Odd number of characters in hex string. Expected 2 hexadecimal digits for each byte">f</error>";
+                x"<error descr="Odd number of characters in hex string. Expected 2 hexadecimal digits for each byte">acaca</error>";
+                
+                x"<error descr="Invalid hex symbol">i</error><error descr="Invalid hex symbol">i</error>";
+                x"fff<error descr="Invalid hex symbol">z</error>";
             }
         }        
     """

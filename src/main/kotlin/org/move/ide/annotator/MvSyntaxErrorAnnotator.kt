@@ -40,13 +40,13 @@ class MvSyntaxErrorAnnotator : MvAnnotatorBase() {
         when (lit) {
             is Literal.HexInteger -> {
                 val litValue = lit.element.text
-                var actualLitValue = litValue.substring(2).lowercase()
+                var actualLitValue = litValue.removePrefix("0x").lowercase()
                 val actualLitOffset = lit.element.startOffset + 2
                 if (actualLitValue.isEmpty()) {
                     holder.createErrorAnnotation(litExpr, "Invalid hex integer")
                     return
                 }
-                val match = HEX_INTEGER_WITH_SUFFIX_REGEX.matchEntire(litValue)
+                val match = HEX_INTEGER_WITH_SUFFIX_REGEX.matchEntire(actualLitValue)
                 if (match != null) {
                     actualLitValue = match.groups[1]!!.value.lowercase()
                     val (suffix, range) = match.groups[2]!!
@@ -94,6 +94,33 @@ class MvSyntaxErrorAnnotator : MvAnnotatorBase() {
                 }
             }
             is Literal.HexString -> {
+                val litValue = lit.element.text.lowercase()
+                if (!litValue.endsWith('"')) {
+                    // don't check incomplete hex strings
+                    return
+                }
+                val hexValue = litValue.removePrefix("x\"").removeSuffix("\"")
+                val hexValueOffset = lit.element.startOffset + 2
+
+                // check hex string has even number of symbols
+                if (hexValue.length % 2 != 0) {
+                    holder.createErrorAnnotation(
+                        TextRange.from(hexValueOffset, hexValue.length),
+                        "Odd number of characters in hex string. " +
+                                "Expected 2 hexadecimal digits for each byte"
+                    )
+                }
+
+                // check all symbols are valid
+                for ((i, char) in hexValue.toList().withIndex()) {
+                    if (char !in ACCEPTABLE_HEX_SYMBOLS) {
+                        val offset = hexValueOffset + i
+                        holder.createErrorAnnotation(
+                            TextRange.from(offset, 1),
+                            "Invalid hex symbol"
+                        )
+                    }
+                }
             }
             else -> Unit
         }
