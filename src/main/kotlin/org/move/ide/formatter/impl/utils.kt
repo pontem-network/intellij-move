@@ -63,7 +63,7 @@ fun ASTNode.isDelimiterOfCurrentBlock(parent: ASTNode?): Boolean {
     if (parent == null) return false
     val parentType = parent.elementType
     return when (elementType) {
-        L_BRACE, R_BRACE -> parentType in BLOCK_LIKE
+        L_BRACE, R_BRACE -> parentType in BLOCK_LIKE || parentType == USE_ITEM_GROUP
         L_BRACK, R_BRACK -> parentType in BRACKET_DELIMITED_BLOCKS
         L_PAREN, R_PAREN -> parentType in PAREN_DELIMITED_BLOCKS
         LT, GT -> parentType in ANGLE_DELIMITED_BLOCKS

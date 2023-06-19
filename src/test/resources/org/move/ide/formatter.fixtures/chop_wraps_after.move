@@ -1,4 +1,14 @@
 module 0x1::chop_wraps {
+    use 0x1::m::{
+        long_function_1,
+        long_function_2,
+        long_function_3,
+        long_function_4,
+        long_function_5,
+        long_function_6,
+        long_function_7
+    };
+
     fun long_arguments(
         addr1: address,
         addr1: address,
