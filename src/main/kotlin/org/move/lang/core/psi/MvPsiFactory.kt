@@ -58,6 +58,18 @@ class MvPsiFactory(val project: Project) {
 //            .descendantOfTypeStrict<MvTypeAnnotation>()!!
 //            .getChild(MvElementTypes.COLON)!!
 
+    fun createComma(): PsiElement =
+        createFromText<MvValueArgument>(
+            """
+                module 0x1::_dummy {
+                    fun _dummy() {
+                        call(1,);
+                    }
+                }                
+            """
+        )!!.nextSibling
+
+
 //    fun createExpression(text: String): MvExpr =
 //        tryCreateExpression(text)
 //            ?: error("Failed to create expression from text: `$text`")
@@ -111,10 +123,10 @@ class MvPsiFactory(val project: Project) {
         }
     }
 
-    fun useItemGroup(names: List<String>): MvUseItemGroup {
-        val namesText = names.joinToString(", ")
-        return createFromText("module 0x1::_DummyModule { use 0x1::Module::{$namesText}; }")
-            ?: error("Failed to create an item import from text: `$namesText`")
+    fun useItemGroup(items: List<String>): MvUseItemGroup {
+        val allItemsText = items.joinToString(", ")
+        return createFromText("module 0x1::_DummyModule { use 0x1::Module::{$allItemsText}; }")
+            ?: error("Failed to create an item import from text: `$allItemsText`")
     }
 
     fun useItem(text: String): MvUseItem {

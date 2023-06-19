@@ -34,9 +34,6 @@ fun MoveFmtBlock.computeChildIndent(childNode: ASTNode): Indent? {
         // }
         parentType in DELIMITED_BLOCKS -> getNormalIndentIfNotCurrentBlockDelimiter(childNode, parentNode)
 
-        // indent every item inside the UseItemGroup
-        parentType == USE_ITEM_GROUP -> getNormalIndentIfNotCurrentBlockDelimiter(childNode, parentNode)
-
 //        //     let a =
 //        //     92;
 //        // =>

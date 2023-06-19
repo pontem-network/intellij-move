@@ -1,4 +1,5 @@
 module 0x1::chop_wraps {
+    use 0x1::m::{long_function_1, long_function_2};
     use 0x1::m::{
         long_function_1,
         long_function_2,

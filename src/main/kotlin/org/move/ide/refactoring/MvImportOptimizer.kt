@@ -4,8 +4,8 @@ import com.intellij.codeInspection.InspectionManager
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.lang.ImportOptimizer
 import com.intellij.psi.*
-import org.move.ide.inspections.UnusedImportVisitor
 import org.move.ide.inspections.MvUnusedImportInspection
+import org.move.ide.inspections.imports.ImportAnalyzer
 import org.move.ide.utils.imports.COMPARATOR_FOR_ITEMS_IN_USE_GROUP
 import org.move.ide.utils.imports.UseStmtWrapper
 import org.move.lang.MoveFile
@@ -27,7 +27,7 @@ class MvImportOptimizer : ImportOptimizer {
         }
 
         val holder = ProblemsHolder(InspectionManager.getInstance(file.project), file, false)
-        val importVisitor = UnusedImportVisitor(holder)
+        val importVisitor = ImportAnalyzer(holder)
         object : PsiRecursiveElementVisitor() {
             override fun visitElement(element: PsiElement) {
                 if (element is MvImportsOwner) {

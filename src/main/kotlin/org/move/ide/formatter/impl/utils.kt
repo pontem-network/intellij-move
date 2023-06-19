@@ -36,16 +36,19 @@ val BLOCK_LIKE = orSet(STRUCT_LITERAL_BLOCKS, DEF_BLOCKS)
 
 val DELIMITED_BLOCKS = orSet(
     PAREN_DELIMITED_BLOCKS, ANGLE_DELIMITED_BLOCKS, BRACKET_DELIMITED_BLOCKS,
-    BLOCK_LIKE
+    BLOCK_LIKE,
+    ts(USE_ITEM_GROUP)
 )
 
 fun ASTNode?.isWhitespaceOrEmpty() = this == null || textLength == 0 || elementType == TokenType.WHITE_SPACE
 
 val PsiElement.isTopLevelItem: Boolean
-    get() = (this is MvModule || this is MvAddressDef || this is MvScript) && parent is MoveFile
+    get() = (this is MvModule || this is MvAddressDef || this is MvScript || this is MvModuleSpec)
+            && parent is MoveFile
 
 val PsiElement.isModuleItem: Boolean
     get() = this is MvFunction || this is MvConst || this is MvStruct || this is MvUseStmt
+            || this is MvSpecFunction || this is MvSchema
 
 val PsiElement.isDeclarationItem: Boolean
     get() = (this is MvModule && parent is MvAddressBlock) || this.isModuleItem
@@ -55,9 +58,6 @@ val PsiElement.isStmt: Boolean
 
 val PsiElement.isStmtOrExpr: Boolean
     get() = this is MvStmt || this is MvExpr && parent is MvCodeBlock
-
-val ASTNode.isDelimitedBlock: Boolean
-    get() = elementType in DELIMITED_BLOCKS
 
 fun ASTNode.isDelimiterOfCurrentBlock(parent: ASTNode?): Boolean {
     if (parent == null) return false

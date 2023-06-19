@@ -596,6 +596,21 @@ module 0x1::M {
     }
     """)
 
+    fun `test use item group indent zero item`() = doTestByText("""
+        module 0x1::m {
+            use 0x1::m::{/*caret*/
+                call
+            };
+        }         
+    """, """
+        module 0x1::m {
+            use 0x1::m::{
+                /*caret*/
+                call
+            };
+        }         
+    """)
+
     fun `test use item group indent first item`() = doTestByText("""
         module 0x1::m {
             use 0x1::m::{/*caret*/call, call2};

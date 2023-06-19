@@ -1,23 +1,17 @@
 package org.move.ide.inspections.imports
 
-import com.intellij.codeInsight.completion.CompletionParameters
-import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.intention.HighPriorityAction
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
-import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.codeInspection.LocalQuickFixOnPsiElement
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import org.move.ide.inspections.DiagnosticFix
 import org.move.ide.utils.imports.ImportCandidate
 import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.ide.utils.imports.import
 import org.move.lang.MoveFile
-import org.move.lang.core.completion.DefaultInsertHandler
-import org.move.lang.core.completion.providers.import
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
@@ -26,47 +20,42 @@ import org.move.lang.core.resolve.ref.Visibility
 import org.move.openapiext.common.checkUnitTestMode
 import org.move.openapiext.runWriteCommandAction
 
-class AutoImportFix(element: PsiElement) : LocalQuickFixOnPsiElement(element), HighPriorityAction {
-    private var isConsumed: Boolean = false
+class AutoImportFix(element: MvReferenceElement) : DiagnosticFix<MvReferenceElement>(element), HighPriorityAction {
 
-    override fun generatePreview(
-        project: Project,
-        previewDescriptor: ProblemDescriptor
-    ): IntentionPreviewInfo =
-        IntentionPreviewInfo.EMPTY
+    private var isConsumed: Boolean = false
 
     override fun getFamilyName() = NAME
     override fun getText() = familyName
 
-    public override fun isAvailable(): Boolean = super.isAvailable() && !isConsumed
+    override fun stillApplicable(
+        project: Project,
+        file: PsiFile,
+        element: MvReferenceElement
+    ): Boolean =
+        !isConsumed
 
-    override fun invoke(project: Project, file: PsiFile, startElement: PsiElement, endElement: PsiElement) {
-        invoke(project)
-    }
+    override fun invoke(project: Project, file: PsiFile, element: MvReferenceElement) {
+        if (element.reference == null) return
+        if (element.hasAncestor<MvUseStmt>()) return
 
-    data class Context(val candidates: List<ImportCandidate>)
-
-    fun invoke(project: Project) {
-        val refElement = startElement as? MvReferenceElement ?: return
-        if (refElement.reference == null) return
-        if (refElement.hasAncestor<MvUseStmt>()) return
-
-        val name = refElement.referenceName ?: return
+        val name = element.referenceName ?: return
         val candidates =
-            ImportCandidateCollector.getImportCandidates(ImportContext.from(refElement), name)
+            ImportCandidateCollector.getImportCandidates(ImportContext.from(element), name)
         if (candidates.isEmpty()) return
 
         if (candidates.size == 1) {
             project.runWriteCommandAction {
-                candidates.first().import(refElement)
+                candidates.first().import(element)
             }
         } else {
             DataManager.getInstance().dataContextFromFocusAsync.onSuccess {
-                chooseItemAndImport(project, it, candidates, refElement)
+                chooseItemAndImport(project, it, candidates, element)
             }
         }
         isConsumed = true
     }
+
+    data class Context(val candidates: List<ImportCandidate>)
 
     private fun chooseItemAndImport(
         project: Project,

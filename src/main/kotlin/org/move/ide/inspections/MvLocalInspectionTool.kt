@@ -62,7 +62,7 @@ abstract class DiagnosticFix<T : PsiElement>(element: T) : LocalQuickFixOnPsiEle
 
     override fun getFamilyName(): String = text
 
-    override fun isAvailable(
+    final override fun isAvailable(
         project: Project,
         file: PsiFile,
         startElement: PsiElement,
@@ -72,7 +72,7 @@ abstract class DiagnosticFix<T : PsiElement>(element: T) : LocalQuickFixOnPsiEle
         return stillApplicable(project, file, element)
     }
 
-    override fun invoke(
+    final override fun invoke(
         project: Project,
         file: PsiFile,
         startElement: PsiElement,

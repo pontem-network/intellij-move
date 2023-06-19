@@ -25,8 +25,6 @@ val MvUseItem.useStmt: MvUseStmt
     get() =
         ancestorStrict() ?: error("always has MvUseStmt as ancestor")
 
-val MvUseItem.originalName: String get() = this.identifier.text
-
 val MvUseItem.nameOrAlias: String?
     get() {
         val alias = this.useAlias

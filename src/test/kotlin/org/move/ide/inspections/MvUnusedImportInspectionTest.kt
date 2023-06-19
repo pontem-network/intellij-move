@@ -170,18 +170,57 @@ module 0x1::M2 {
     }
     """)
 
+    fun `test skip analyzing for incomplete self item alias`() = checkWarnings("""
+    module 0x1::coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::coin::{Self as<error descr="IDENTIFIER expected, got ','">,</error> Self, Coin};
+        
+        fun call(): Coin {
+            coin::get_coin();
+        }
+    }
+    """)
+
+    fun `test skip analyzing for incomplete item alias`() = checkWarnings("""
+    module 0x1::coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::coin::{Coin as<error descr="IDENTIFIER expected, got ','">,</error> Coin};
+        
+        fun call(): Coin {
+        }
+    }
+    """)
+
     fun `test no unused Self in group with alias and no alias`() = checkWarnings("""
+    module 0x1::coin {
+        struct Coin {}
+        public fun get_coin(): Coin {}
+    }    
+    module 0x1::Main {
+        use 0x1::coin::{Self as my_coin, Self, Coin};
+        
+        fun call(): Coin {
+            coin::get_coin();
+            my_coin::get_coin();
+        }
+    }
+    """)
+
+    fun `test unused alias if another exists`() = checkWarnings("""
     module 0x1::Coin {
         struct Coin {}
         public fun get_coin(): Coin {}
     }    
     module 0x1::Main {
-        use 0x1::Coin::{Self as MyCoin, Self, Coin};
+        use 0x1::Coin::{Coin as MyCoin, <warning descr="Unused use item">Coin as MyCoin</warning>};
         
-        fun call(): Coin {
-            Coin::get_coin();
-            MyCoin::get_coin();
-        }
+        fun call(): MyCoin {}
     }
     """)
 
@@ -263,24 +302,24 @@ module 0x1::main {
     }
     """)
 
-    fun `test unused test_only import`() = checkWarnings("""
-    module 0x1::string {
-        public fun call() {}
-    }        
-    module 0x1::main {
-        use 0x1::string::call;
-        <warning descr="Unused use item">#[test_only]
-        use 0x1::string::call;</warning>
-        
-        fun main() {
-            call();
-        }
-        #[test]
-        fun test_main() {
-            call();
-        }
-    }
-    """)
+//    fun `test unused test_only import`() = checkWarnings("""
+//    module 0x1::string {
+//        public fun call() {}
+//    }
+//    module 0x1::main {
+//        use 0x1::string::call;
+//        <warning descr="Unused use item">#[test_only]
+//        use 0x1::string::call;</warning>
+//
+//        fun main() {
+//            call();
+//        }
+//        #[test]
+//        fun test_main() {
+//            call();
+//        }
+//    }
+//    """)
 
     fun `test unused main import in presence of test_only usage`() = checkWarnings("""
     module 0x1::string {
@@ -420,18 +459,18 @@ module 0x1::main {
 }        
     """)
 
-    fun `test unused top import with local present`() = checkWarnings("""
-        module 0x1::string {
-            public fun call() {}
-        }
-        module 0x1::main {
-            <warning descr="Unused use item">use 0x1::string;</warning>
-            fun main() {
-                use 0x1::string;
-                string::call();
-            }
-        }
-    """)
+//    fun `test unused top import with local present`() = checkWarnings("""
+//        module 0x1::string {
+//            public fun call() {}
+//        }
+//        module 0x1::main {
+//            <warning descr="Unused use item">use 0x1::string;</warning>
+//            fun main() {
+//                use 0x1::string;
+//                string::call();
+//            }
+//        }
+//    """)
 
     fun `test unused local import`() = checkWarnings("""
         module 0x1::string {

@@ -13,54 +13,113 @@ import org.move.openapiext.checkWriteAccessAllowed
  */
 fun ImportCandidate.import(context: MvElement) {
     checkWriteAccessAllowed()
-    val psiFactory = element.project.psiFactory
     val insertionScope = context.containingModule?.moduleBlock
         ?: context.containingScript?.scriptBlock
         ?: return
     val insertTestOnly =
         insertionScope.itemScope == ItemScope.MAIN
                 && context.itemScope == ItemScope.TEST
-    insertionScope.insertUseItem(psiFactory, qualName, insertTestOnly)
+    insertionScope.insertUseItem(qualName, insertTestOnly)
 }
 
-private fun MvImportsOwner.insertUseItem(psiFactory: MvPsiFactory, usePath: ItemQualName, testOnly: Boolean) {
-    val newUseStmt = psiFactory.useStmt(usePath.editorText(), testOnly)
-    if (this.tryGroupWithOtherUseItems(psiFactory, newUseStmt, testOnly)) return
+private fun MvImportsOwner.insertUseItem(usePath: ItemQualName, testOnly: Boolean) {
 
-    val anchor = childrenOfType<MvUseStmt>().lastElement
-    if (anchor != null) {
-        addAfter(newUseStmt, anchor)
-    } else {
-        val firstItem = this.items().first()
-        addBefore(newUseStmt, firstItem)
-        addBefore(psiFactory.createNewline(), firstItem)
-    }
+    if (tryInsertingIntoExistingUseStmt(this, usePath, testOnly)) return
+
+    val newUseStmt =
+        this.project.psiFactory.useStmt(usePath.editorText(), testOnly)
+    insertUseStmtAtTheCorrectLocation(this, newUseStmt)
+
+//    val anchor = childrenOfType<MvUseStmt>().lastElement
+//    if (anchor != null) {
+//        addAfter(newUseStmt, anchor)
+//    } else {
+//        val firstItem = this.items().first()
+//        addBefore(newUseStmt, firstItem)
+//        addBefore(psiFactory.createNewline(), firstItem)
+//    }
 }
 
-private fun MvImportsOwner.tryGroupWithOtherUseItems(
-    psiFactory: MvPsiFactory,
-    newUseStmt: MvUseStmt,
+private fun tryInsertingIntoExistingUseStmt(
+    mod: MvImportsOwner,
+    usePath: ItemQualName,
     testOnly: Boolean
 ): Boolean {
-    val newUseSpeck = newUseStmt.itemUseSpeck ?: return false
-    val newName = newUseSpeck.names().singleOrNull() ?: return false
-    val newFqModule = newUseSpeck.fqModuleRef
-    return useStmtList
+    if (usePath.moduleName == null) return false
+    val psiFactory = mod.project.psiFactory
+    return mod
+        .useStmtList
         .filter { it.isTestOnly == testOnly }
         .mapNotNull { it.itemUseSpeck }
-        .any { it.tryGroupWith(psiFactory, newFqModule, newName) }
+        .any { tryGroupWithItemSpeck(psiFactory, it, usePath) }
 }
 
-private fun MvItemUseSpeck.tryGroupWith(
-    psiFactory: MvPsiFactory,
-    newFqModule: MvFQModuleRef,
-    newName: String
+private fun tryGroupWithItemSpeck(
+    psiFactory: MvPsiFactory, itemUseSpeck: MvItemUseSpeck, usePath: ItemQualName
 ): Boolean {
-    if (!this.fqModuleRef.textMatches(newFqModule)) return false
-    if (newName in this.names()) return true
-    val speck = psiFactory.itemUseSpeck(newFqModule.text, this.names() + newName)
-    this.replace(speck)
+    val fqModuleName = usePath.editorModuleFqName() ?: error("checked in the upper level")
+    if (!itemUseSpeck.fqModuleRef.textMatches(fqModuleName)) return false
+
+    val itemName = usePath.itemName
+    if (itemName in itemUseSpeck.names()) return true
+
+    val useItem = psiFactory.useItem(itemName)
+    val useItemGroup = itemUseSpeck.useItemGroup
+    if (useItemGroup != null) {
+        // add after the last item
+        val itemList = useItemGroup.useItemList
+        if (itemList.isEmpty()) {
+            // use 0x1::m::{};
+            useItemGroup.addAfter(useItem, useItemGroup.lBrace)
+        } else {
+            // use 0x1::m::{item1} -> use 0x1::m::{item1, item2}
+            val lastItem = itemList.last()
+            useItemGroup.addAfter(
+                useItem,
+                useItemGroup.addAfter(psiFactory.createComma(), lastItem)
+            )
+        }
+    } else {
+        val existingItem = itemUseSpeck.useItem ?: return true
+
+        val existingItemCopy = existingItem.copy()
+        val itemGroup = existingItem.replace(psiFactory.useItemGroup(listOf())) as MvUseItemGroup
+
+        val comma = itemGroup.addAfter(
+            psiFactory.createComma(),
+            itemGroup.addAfter(existingItemCopy, itemGroup.lBrace)
+        )
+        itemGroup.addAfter(useItem, comma)
+    }
     return true
 }
 
 private val <T : MvElement> List<T>.lastElement: T? get() = maxByOrNull { it.textOffset }
+
+private fun insertUseStmtAtTheCorrectLocation(mod: MvImportsOwner, useStmt: MvUseStmt): Boolean {
+    val psiFactory = MvPsiFactory(mod.project)
+    val newline = psiFactory.createNewline()
+    val useStmts = mod.childrenOfType<MvUseStmt>().map(::UseStmtWrapper)
+    if (useStmts.isEmpty()) {
+        val anchor = mod.items().first()
+        mod.addAfter(newline, mod.addBefore(useStmt, anchor))
+        return true
+    }
+
+    val useWrapper = UseStmtWrapper(useStmt)
+    val (less, greater) = useStmts.partition { it < useWrapper }
+    val anchorBefore = less.lastOrNull()
+    val anchorAfter = greater.firstOrNull()
+    when {
+        anchorBefore != null -> {
+            val addedItem = mod.addAfter(useStmt, anchorBefore.useStmt)
+            mod.addBefore(newline, addedItem)
+        }
+        anchorAfter != null -> {
+            val addedItem = mod.addBefore(useStmt, anchorAfter.useStmt)
+            mod.addAfter(newline, addedItem)
+        }
+        else -> error("unreachable")
+    }
+    return true
+}
