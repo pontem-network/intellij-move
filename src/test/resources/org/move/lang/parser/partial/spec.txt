@@ -51,7 +51,7 @@ FILE
         PsiElement(fun)('fun')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('myfun')
-        PsiErrorElement:'(' or < expected, got 'spec'
+        PsiErrorElement:'(' or <type parameters> expected, got 'spec'
           <empty list>
       PsiWhiteSpace('\n    ')
       MvSchemaImpl(SCHEMA)
@@ -67,7 +67,7 @@ FILE
         PsiElement(schema_kw)('schema')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('MySchema')
-        PsiErrorElement:< or '{' expected, got 'fun'
+        PsiErrorElement:<type parameters> or '{' expected, got 'fun'
           <empty list>
       PsiWhiteSpace('\n\n    ')
       MvFunctionImpl(FUNCTION)
@@ -131,20 +131,20 @@ FILE
               MvSchemaLitImpl(SCHEMA_LIT)
                 MvPathImpl(PATH)
                   PsiElement(IDENTIFIER)('Schema')
-            PsiErrorElement:'::', ';', <, '{' or '}' expected, got 'assert'
+            PsiErrorElement:'::', ';', <type arguments>, '{' or '}' expected, got 'assert'
               <empty list>
           PsiWhiteSpace('\n\n        ')
           MvSpecExprStmtImpl(SPEC_EXPR_STMT)
             MvAssertSpecExprImpl(ASSERT_SPEC_EXPR)
               PsiElement(assert_kw)('assert')
-              PsiErrorElement:<expression> expected, got ';'
+              PsiErrorElement:<expression> or '[' expected, got ';'
                 <empty list>
             PsiElement(;)(';')
           PsiWhiteSpace('\n        ')
           MvSpecExprStmtImpl(SPEC_EXPR_STMT)
             MvAssumeSpecExprImpl(ASSUME_SPEC_EXPR)
               PsiElement(assume_kw)('assume')
-              PsiErrorElement:<expression> or <type annotation> expected, got ';'
+              PsiErrorElement:<expression>, <type annotation> or '[' expected, got ';'
                 <empty list>
             PsiElement(;)(';')
           PsiWhiteSpace('\n        ')

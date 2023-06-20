@@ -21,9 +21,14 @@ module M {
         a < b && b > 2;
 
         v1[1+1];
+        v2[i + 1..len(v2)];
 
         has;
         schema;
+        include;
+        assume;
+        assert;
+        invariant;
 
         return
     }

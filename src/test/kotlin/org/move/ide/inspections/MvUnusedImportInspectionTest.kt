@@ -302,6 +302,7 @@ module 0x1::main {
     }
     """)
 
+    // TODO: test
 //    fun `test unused test_only import`() = checkWarnings("""
 //    module 0x1::string {
 //        public fun call() {}
@@ -459,6 +460,7 @@ module 0x1::main {
 }        
     """)
 
+    // TODO: test
 //    fun `test unused top import with local present`() = checkWarnings("""
 //        module 0x1::string {
 //            public fun call() {}

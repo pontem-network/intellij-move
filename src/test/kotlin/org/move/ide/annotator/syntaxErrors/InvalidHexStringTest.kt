@@ -9,6 +9,7 @@ class InvalidHexStringTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
         module 0x1::m {
             fun main() {
                 x""; x"11"; x"ff";
+                x"00112233445566778899aabbccddeeff"
             }
         }        
     """

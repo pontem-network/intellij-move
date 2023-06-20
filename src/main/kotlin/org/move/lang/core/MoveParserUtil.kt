@@ -64,6 +64,9 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     fun lteqeqgtImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, LT_EQ_EQ_GT, LT, EQ_EQ, GT)
 
     @JvmStatic
+    fun dotdotImpl(b: PsiBuilder, level: Int): Boolean = collapse(b, DOT_DOT, DOT, DOT)
+
+    @JvmStatic
     private fun collapse(b: PsiBuilder, tokenType: IElementType, vararg parts: IElementType): Boolean {
         // We do not want whitespace between parts, so firstly we do raw lookup for each part,
         // and when we make sure that we have desired token, we consume and collapse it.
@@ -286,6 +289,9 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 //    fun vectorKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "vector", VECTOR_KW)
 
     @JvmStatic
+    fun updateKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "update", UPDATE)
+
+    @JvmStatic
     fun friendKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "friend", FRIEND)
 
     @JvmStatic
@@ -355,6 +361,9 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun requiresKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "requires", REQUIRES)
+
+    @JvmStatic
+    fun decreasesKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "decreases", DECREASES)
 
     @JvmStatic
     fun emitsKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "emits", EMITS)

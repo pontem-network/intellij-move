@@ -265,7 +265,7 @@ class TypeInferenceWalker(
                 expr.exprList.forEach { it.inferTypeCoercableTo(TyInteger.DEFAULT) }
                 TyUnit
             }
-            is MvSpecVisRestrictedExpr -> expr.expr?.inferType(expected) ?: TyUnknown
+//            is MvSpecVisRestrictedExpr -> expr.expr?.inferType(expected) ?: TyUnknown
             else ->
                 project.debugErrorOrFallback(expr.typeErrorText, TyUnknown)
         }

@@ -195,7 +195,7 @@ FILE
                   MvRefExprImpl(REF_EXPR)
                     MvPathImpl(PATH)
                       PsiElement(IDENTIFIER)('assert')
-                PsiErrorElement:'!', ')', ',', '::', <, <operator>, '=', '[' or '{' expected, got ';'
+                PsiErrorElement:'!', ')', ',', '::', <operator>, <type arguments>, '=', '[' or '{' expected, got ';'
                   <empty list>
             PsiElement(;)(';')
           PsiWhiteSpace('\n\n        ')

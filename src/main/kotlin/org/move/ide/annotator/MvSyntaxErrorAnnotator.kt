@@ -136,7 +136,7 @@ class MvSyntaxErrorAnnotator : MvAnnotatorBase() {
         private val HEX_INTEGER_WITH_SUFFIX_REGEX =
             Regex("([0-9a-zA-Z]+)*(u[0-9]{1,4})")
         private val ACCEPTABLE_HEX_SYMBOLS =
-            setOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'f')
+            setOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
 //        private val INTEGER_WITH_SUFFIX_REGEX =
 //            Regex("([0-9a-zA-Z]+)(u(8)|(16)|(32)|(64)|(128)|(256))")
 

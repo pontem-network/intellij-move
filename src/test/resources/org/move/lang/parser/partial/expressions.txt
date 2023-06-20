@@ -60,7 +60,7 @@ FILE
                 MvModuleRefImpl(MODULE_REF)
                   PsiElement(IDENTIFIER)('RMRK')
                 PsiElement(::)('::')
-                PsiErrorElement:<, IDENTIFIER or '{' expected, got '0x1'
+                PsiErrorElement:<type arguments>, IDENTIFIER or '{' expected, got '0x1'
                   <empty list>
           PsiWhiteSpace('\n        ')
           MvExprStmtImpl(EXPR_STMT)
@@ -70,7 +70,7 @@ FILE
                   MvAddressRefImpl(ADDRESS_REF)
                     PsiElement(DIEM_ADDRESS)('0x1')
                   PsiElement(::)('::')
-                  PsiErrorElement:'::', <, IDENTIFIER or '{' expected, got ';'
+                  PsiErrorElement:'::', <type arguments>, IDENTIFIER or '{' expected, got ';'
                     <empty list>
             PsiWhiteSpace(' ')
             PsiElement(;)(';')
@@ -84,7 +84,7 @@ FILE
                   PsiElement(::)('::')
                   PsiElement(IDENTIFIER)('RMRK')
                 PsiElement(::)('::')
-                PsiErrorElement:<, IDENTIFIER or '{' expected, got ';'
+                PsiErrorElement:<type arguments>, IDENTIFIER or '{' expected, got ';'
                   <empty list>
             PsiWhiteSpace(' ')
             PsiElement(;)(';')
@@ -99,7 +99,7 @@ FILE
                   PsiElement(::)('::')
                   PsiElement(IDENTIFIER)('RMRK')
                 PsiElement(::)('::')
-                PsiErrorElement:<, IDENTIFIER or '{' expected, got ';'
+                PsiErrorElement:<type arguments>, IDENTIFIER or '{' expected, got ';'
                   <empty list>
             PsiWhiteSpace(' ')
             PsiElement(;)(';')
@@ -114,7 +114,7 @@ FILE
                   PsiElement(::)('::')
                   PsiElement(IDENTIFIER)('RMRK')
                 PsiElement(::)('::')
-                PsiErrorElement:<, IDENTIFIER or '{' expected, got 'while'
+                PsiErrorElement:<type arguments>, IDENTIFIER or '{' expected, got 'while'
                   <empty list>
           PsiWhiteSpace('\n\n        ')
           MvExprStmtImpl(EXPR_STMT)
