@@ -1,6 +1,9 @@
 package org.move.lang.core.psi
 
-import com.intellij.psi.util.descendantsOfType
+import com.intellij.ide.projectView.PresentationData
+import com.intellij.navigation.ItemPresentation
+import com.intellij.openapi.editor.colors.TextAttributesKey
+import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.stubs.MvModuleStub
@@ -31,6 +34,18 @@ interface MvFunctionLike : MvNameIdentifierOwner,
         )
     }
 }
+
+val MvFunctionLike.itemPresentation: PresentationData?
+    get() {
+        val name = this.name ?: return null
+        val signature = this.signatureText
+        return PresentationData(
+            "$name$signature",
+            null,
+            MoveIcons.FUNCTION,
+            TextAttributesKey.createTextAttributesKey("public")
+        )
+    }
 
 val MvFunctionLike.isNative get() = hasChild(MvElementTypes.NATIVE)
 
@@ -90,4 +105,12 @@ val MvFunctionLike.script: MvScript?
     get() {
         val scriptBlock = this.parent ?: return null
         return scriptBlock.parent as? MvScript
+    }
+
+val MvFunctionLike.signatureText: String
+    get() {
+        val params = this.functionParameterList?.parametersText ?: "()"
+        val returnTypeText = this.returnType?.type?.text ?: ""
+        val returnType = if (returnTypeText == "") "" else ": $returnTypeText"
+        return "$params$returnType"
     }

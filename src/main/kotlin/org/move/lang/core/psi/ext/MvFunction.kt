@@ -1,13 +1,10 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
-import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
-import com.intellij.util.PlatformIcons
 import org.move.cli.MoveProject
 import org.move.ide.MoveIcons
 import org.move.ide.annotator.BUILTIN_FUNCTIONS
@@ -81,14 +78,6 @@ val MvFunction.isTest: Boolean
 val QueryAttributes.isTest: Boolean get() = this.hasAttrItem("test")
 
 val QueryAttributes.isView: Boolean get() = this.hasAttrItem("view")
-
-val MvFunction.signatureText: String
-    get() {
-        val params = this.functionParameterList?.parametersText ?: "()"
-        val returnTypeText = this.returnType?.type?.text ?: ""
-        val returnType = if (returnTypeText == "") "" else ": $returnTypeText"
-        return "$params$returnType"
-    }
 
 val MvFunction.outerFileName: String
     get() =
@@ -197,16 +186,5 @@ abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
 
     override fun getIcon(flags: Int): Icon = MoveIcons.FUNCTION
 
-    override fun getPresentation(): ItemPresentation? {
-        val name = this.name ?: return null
-//        val params = this.functionParameterList?.parametersText ?: "()"
-//        val returnTypeText = this.returnType?.type?.text ?: ""
-//        val tail = if (returnTypeText == "") "" else ": $returnTypeText"
-        return PresentationData(
-            "$name${this.signatureText}",
-            null,
-            PlatformIcons.PUBLIC_ICON,
-            TextAttributesKey.createTextAttributesKey("public")
-        )
-    }
+    override fun getPresentation(): ItemPresentation? = this.itemPresentation
 }

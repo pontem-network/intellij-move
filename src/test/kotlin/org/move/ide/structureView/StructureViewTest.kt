@@ -1,9 +1,8 @@
-package org.move.ide.navigation
+package org.move.ide.structureView
 
 import com.intellij.openapi.ui.Queryable
 import com.intellij.testFramework.PlatformTestUtil
 import org.intellij.lang.annotations.Language
-import org.move.ide.structure.MvStructureViewElement
 import org.move.utils.tests.MvTestBase
 import javax.swing.JTree
 import javax.swing.tree.TreePath
@@ -23,26 +22,6 @@ address 0x1 {
     """
     )
 
-    fun `test module functions`() = doTest(
-        """
-    module M {
-        public fun call_pub() {}
-        public(friend) fun call_pub_friend() {}
-        public(script) fun call_pub_script() {}
-        fun double(i: u8): u8 {}
-        fun main() {}
-    }    
-    """, """
-    -main.move
-     -M
-      call_pub()
-      call_pub_friend()
-      call_pub_script()
-      double(i: u8): u8
-      main()
-    """
-    )
-
     fun `test scripts`() = doTest(
         """
     script {
@@ -55,6 +34,38 @@ address 0x1 {
     -main.move
      script_fun_1()
      script_fun_2()
+    """
+    )
+
+    fun `test module items`() = doTest(
+        """
+    module 0x1::m {
+        struct Struct1 {
+            field1: u8
+        }
+        struct Struct2 {
+            field2: u8
+        }
+        public fun call_pub() {}
+        public(friend) fun call_pub_friend() {}
+        entry fun call_entry() {}
+        fun double(i: u8): u8 {}
+        fun main() {}
+        spec fun find(): u8 {}
+    }    
+    """, """
+    -main.move
+     -m
+      -Struct1
+       field1: u8
+      -Struct2
+       field2: u8
+      call_pub()
+      call_pub_friend()
+      call_entry()
+      double(i: u8): u8
+      main()
+      find(): u8
     """
     )
 
@@ -73,9 +84,14 @@ address 0x1 {
 
     private fun assertTreeEqual(tree: JTree, expected: String) {
         val printInfo = Queryable.PrintInfo(
-            arrayOf(MvStructureViewElement.NAME_KEY),
+            arrayOf(MvStructureViewTreeElement.NAME_KEY),
         )
-        val treeStringPresentation = PlatformTestUtil.print(tree, TreePath(tree.model.root), printInfo, false)
+        val treeStringPresentation = PlatformTestUtil.print(
+            tree,
+            TreePath(tree.model.root),
+            printInfo,
+            false
+        )
         assertEquals(expected.trim(), treeStringPresentation.trim())
     }
 }

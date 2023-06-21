@@ -1,4 +1,4 @@
-package org.move.ide.structure
+package org.move.ide.structureView
 
 import com.intellij.ide.structureView.StructureViewModel
 import com.intellij.ide.structureView.StructureViewModelBase
@@ -12,7 +12,7 @@ class MvStructureViewModel(editor: Editor?, moveFile: MoveFile) :
     StructureViewModelBase(
         moveFile,
         editor,
-        MvStructureViewElement(moveFile)
+        MvStructureViewTreeElement(moveFile)
     ),
     StructureViewModel.ElementInfoProvider {
 

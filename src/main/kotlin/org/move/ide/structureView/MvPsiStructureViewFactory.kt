@@ -1,4 +1,4 @@
-package org.move.ide.structure
+package org.move.ide.structureView
 
 import com.intellij.ide.structureView.StructureViewBuilder
 import com.intellij.ide.structureView.StructureViewModel
