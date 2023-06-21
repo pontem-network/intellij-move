@@ -57,13 +57,3 @@ fun <T> MvElement.psiFileTrackedCachedResult(value: T): CachedValueProvider.Resu
         CachedValueProvider.Result.create(value, PsiModificationTracker.MODIFICATION_COUNT)
     }
 }
-
-
-//class CacheUtils {
-//    companion object {
-//        fun <E : PsiElement, T> cachePsiDependent(context: E, provider: (E) -> T): T {
-////            val psi = if (context is StubBase<*>) context.psi as E else context
-//            return getProjectPsiDependentCache(context, provider)
-//        }
-//    }
-//}

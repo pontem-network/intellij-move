@@ -291,12 +291,14 @@ class InferenceContext(
     fun <T : GenericTy> instantiatePath(
         path: MvPath,
         genericItem: MvTypeParametersOwner
-    ): Pair<T, Substitution> {
+    ): Pair<T, Substitution>? {
         var itemTy =
-            this.pathTypes.getOrPut(path) { TyLowering.lowerPath(path, msl) as T }
+            this.pathTypes.getOrPut(path) {
+                TyLowering.lowerPath(path, msl) as? T ?: return null
+            }
 
         val typeParameters = genericItem.tyInfers
-        itemTy = itemTy.substitute(typeParameters) as T
+        itemTy = itemTy.substitute(typeParameters) as? T ?: return null
 
         unifySubst(typeParameters, itemTy.substitution)
         return Pair(itemTy, typeParameters)

@@ -1640,4 +1640,14 @@ module 0x1::main {
     """
     )
 
+    fun `test incomplete range expr`() = testExpr("""
+        module 0x1::m {
+            spec module {
+                let a = 1..;
+                a;
+              //^ range  
+            }
+        }        
+    """)
+
 }

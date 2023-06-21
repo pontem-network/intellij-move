@@ -73,7 +73,7 @@ fun MvPat.extractBindings(fctx: TypeInferenceWalker, ty: Ty) {
         }
         is MvStructPat -> {
             val structItem = this.structItem ?: (ty as? TyStruct)?.item ?: return
-            val (patTy, _) = fctx.ctx.instantiatePath<TyStruct>(this.path, structItem);
+            val (patTy, _) = fctx.ctx.instantiatePath<TyStruct>(this.path, structItem) ?: return
             if (!isCompatible(ty, patTy, fctx.msl)) {
                 fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
             }

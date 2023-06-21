@@ -984,7 +984,7 @@ upper TupleLitExprUpper ::= ',' [ Expr (',' Expr)* ','? ] ')' {
 
 LambdaExpr ::= '|' <<non_empty_comma_sep_items BindingPat>> '|' Expr { pin = 1 }
 
-RangeExpr ::= Expr dotdot Expr
+RangeExpr ::= Expr dotdot Expr { pin = 2 }
 
 
 private HEX_INTEGER_LITERAL ::= <<hexIntegerLiteral>>

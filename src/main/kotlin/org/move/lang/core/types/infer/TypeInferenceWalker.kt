@@ -347,17 +347,18 @@ class TypeInferenceWalker(
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expectation): Ty {
         val path = callExpr.path
         val item = path.reference?.resolveWithAliases()
-        val baseTy = when (item) {
-            is MvFunctionLike -> {
-                val (itemTy, _) = ctx.instantiatePath<TyFunction>(path, item)
-                itemTy
+        val baseTy =
+            when (item) {
+                is MvFunctionLike -> {
+                    val (itemTy, _) = ctx.instantiatePath<TyFunction>(path, item) ?: return TyUnknown
+                    itemTy
+                }
+                is MvBindingPat -> {
+                    ctx.getPatType(item) as? TyLambda
+                        ?: TyFunction.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
+                }
+                else -> TyFunction.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
             }
-            is MvBindingPat -> {
-                ctx.getPatType(item) as? TyLambda
-                    ?: TyFunction.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
-            }
-            else -> TyFunction.unknownTyFunction(callExpr.project, callExpr.valueArguments.size)
-        }
         val funcTy = ctx.resolveTypeVarsIfPossible(baseTy) as TyCallable
 
         val expectedInputTys =
@@ -484,7 +485,7 @@ class TypeInferenceWalker(
             return TyUnknown
         }
 
-        val (structTy, typeParameters) = ctx.instantiatePath<TyStruct>(path, structItem)
+        val (structTy, typeParameters) = ctx.instantiatePath<TyStruct>(path, structItem) ?: return TyUnknown
         expected.onlyHasTy(ctx)?.let { expectedTy ->
             ctx.unifySubst(typeParameters, expectedTy.typeParameterValues)
         }
@@ -513,7 +514,7 @@ class TypeInferenceWalker(
             return TyUnknown
         }
 
-        val (schemaTy, _) = ctx.instantiatePath<TySchema>(path, schemaItem)
+        val (schemaTy, _) = ctx.instantiatePath<TySchema>(path, schemaItem) ?: return TyUnknown
 //        expected.onlyHasTy(ctx)?.let { expectedTy ->
 //            ctx.unifySubst(typeParameters, expectedTy.typeParameterValues)
 //        }
@@ -595,8 +596,8 @@ class TypeInferenceWalker(
     }
 
     private fun inferRangeExprTy(rangeExpr: MvRangeExpr): Ty {
-        rangeExpr.exprList.first().inferTypeCoercableTo(TyInteger.DEFAULT)
-        rangeExpr.exprList.drop(1).first().inferTypeCoercableTo(TyInteger.DEFAULT)
+        rangeExpr.exprList.firstOrNull()?.inferTypeCoercableTo(TyInteger.DEFAULT)
+        rangeExpr.exprList.drop(1).firstOrNull()?.inferTypeCoercableTo(TyInteger.DEFAULT)
         return TyIntegerRange
     }
 
