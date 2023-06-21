@@ -75,4 +75,16 @@ module 0x1::mod {
 }
     """
     )
+
+    // TODO: test
+//    fun `test no mismatch if type is passed with a different qual name`() = checkWarnings("""
+//        module 0x1::string {
+//            struct String {}
+//        }
+//        module 0x1::m {
+//            use 0x1::string::{Self, String};
+//            fun call(): String {}
+//            spec call(): string::String {}
+//        }
+//    """)
 }

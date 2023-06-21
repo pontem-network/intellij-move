@@ -1374,7 +1374,6 @@ SchemaFieldStmt_local ::= local BindingPat TypeAnnotation ';' {
     elementType = SchemaFieldStmt
 }
 
-// TODO: `global` is not allowed in schema
 GlobalVariableStmt ::= global BindingPat TypeParameterList? TypeAnnotation ('=' Expr)? ';'
 {
     pin = 1
