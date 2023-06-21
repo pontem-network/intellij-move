@@ -4,6 +4,9 @@ import org.move.ide.annotator.MvSyntaxErrorAnnotator
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
 // TODO: test
+// TODO: global is not allowed in schemas
+// TODO: local / schema variables are not allowed in spec blocks
+// TODO: update only available in inline specs
 //class AllowedSpecStatementsTest: AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
 //    fun `test assert assume allowed in inline spec blocks`() = checkWarnings("""
 //        module 0x1::m {

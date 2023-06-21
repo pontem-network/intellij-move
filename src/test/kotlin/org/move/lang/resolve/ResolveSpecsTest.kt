@@ -206,6 +206,17 @@ class ResolveSpecsTest: ResolveTestCase() {
     }    
     """)
 
+    fun `test schema vars in schema local`() = checkByCode("""
+    module 0x1::M {
+        spec schema MySchema {
+            local ensures: address;
+                 //X
+            update ensures = 1;
+                  //^  
+        }
+    }    
+    """)
+
     fun `test schema vars in schema reverse order`() = checkByCode("""
     module 0x1::M {
         spec schema MySchema {
@@ -271,6 +282,21 @@ class ResolveSpecsTest: ResolveTestCase() {
         spec schema MySchema {
             addr: address;
             //X
+        }
+    }    
+    """)
+
+    fun `test resolve local schema parameters`() = checkByCode("""
+    module 0x1::M {
+        spec module {
+            let a = @0x1;
+            include MySchema { addr: a };
+                              //^
+        }
+        
+        spec schema MySchema {
+            local addr: address;
+                 //X
         }
     }    
     """)

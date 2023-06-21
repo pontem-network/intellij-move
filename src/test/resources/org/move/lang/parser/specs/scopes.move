@@ -25,5 +25,8 @@ module M {
     spec unpack(a: u8, b: u8) {}
     spec unpack(): u8 {}
 
-    spec schema ModuleInvariant<X, Y> {}
+    spec schema ModuleInvariant<X, Y> {
+        supply: num;
+        local ensures: num;
+    }
 }

@@ -1321,8 +1321,8 @@ private ItemSpecBlock_items_recover ::= !('}' | <<eof>>)
 //private SpecBlockFinishingExpr_with_recover ::= !('}' | <<eof>>) SpecBlockFinishingExpr
 
 private SpecStmt ::= UseStmt
-                       | SchemaFieldStmt
-                       | SpecVariableStmt
+                       | SchemaFieldStmtImpl
+                       | GlobalVariableStmt
                        | SpecInlineFunctionStmt
 //                       | NativeFunctionDefSpecStmt
 //                       | UninterpretedFunctionDefSpecStmt
@@ -1334,6 +1334,7 @@ private SpecStmt ::= UseStmt
 //                               | EnsuresSpecStmt
 //                               | ModifiesSpecStmt
                                | IncludeStmt
+                               | UpdateSpecStmt
 //                               | IncludeStmts
 //                               | InvariantSpecStmt
 //                               | AxiomSpecStmt
@@ -1355,20 +1356,32 @@ private SpecStmt ::= UseStmt
 //
 //private SpecBlockFinishingExpr ::= SpecExpr | AggregateExpr | Expr
 
-SchemaFieldStmt ::= BindingPat TypeAnnotation ';'
+fake SchemaFieldStmt ::= local? BindingPat TypeAnnotation ';'
 {
-    pin = 2
     implements = [
         "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
-//    mixin = "org.move.lang.core.psi.ext.MvSchemaFieldStmtMixin"
 }
 
-// TODO: replace SchemaFieldStmt with this, `local` is the same as no keyword and settable in schema
+private SchemaFieldStmtImpl ::= SchemaFieldStmt_local | SchemaFieldStmt_simple
+
+SchemaFieldStmt_simple ::= BindingPat TypeAnnotation ';' {
+    pin = 2
+    elementType = SchemaFieldStmt
+}
+SchemaFieldStmt_local ::= local BindingPat TypeAnnotation ';' {
+    pin = 1
+    elementType = SchemaFieldStmt
+}
+
 // TODO: `global` is not allowed in schema
-SpecVariableStmt ::= (local | global) IDENTIFIER TypeParameterList? TypeAnnotation ('=' Expr)? ';' { pin = 1 }
-//LocalVariableSpecStmt ::= (local) IDENTIFIER TypeAnnotation ';' { pin = 1 }
-//GlobalVariableSpecStmt ::= global IDENTIFIER TypeAnnotation ';' { pin = 1 }
+GlobalVariableStmt ::= global BindingPat TypeParameterList? TypeAnnotation ('=' Expr)? ';'
+{
+    pin = 1
+    implements = [
+        "org.move.lang.core.psi.MvTypeAnnotationOwner"
+    ]
+}
 
 //private post ::= <<postKeyword>>
 //LetSpecStmt ::= (let post?) Pat TypeAnnotation? Initializer? ';' { pin = 1 }
@@ -1405,7 +1418,10 @@ ModifiesSpecExpr ::= modifies SpecPropertyList? Expr { pin = 1 }
 
 IncludeStmt ::= include SpecPropertyList? IncludeItem ';' { pin = 1 }
 
-//private IncludeStmt_items ::= SchemaLitPlain | SchemaLitAnd | SchemaLitIfElse | SchemaLitImply
+UpdateSpecStmt ::= update UpdateExpr_items '=' Expr ';' {
+    pin = 1
+}
+private UpdateExpr_items ::= UnaryExpr | BorrowExpr | AtomExpr
 
 IncludeItem ::= SchemaIncludeItem | AndIncludeItem | IfElseIncludeItem | ImplyIncludeItem
 

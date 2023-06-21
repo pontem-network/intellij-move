@@ -151,6 +151,7 @@ class TypeInferenceWalker(
                 ctx.writePatTy(binding, resolveTypeVarsWithObligations(ty))
             }
             is MvIncludeStmt -> inferIncludeStmt(stmt)
+            is MvUpdateSpecStmt -> inferUpdateStmt(stmt)
             is MvExprStmt -> stmt.expr.inferType()
             is MvSpecExprStmt -> stmt.expr.inferType()
         }
@@ -883,6 +884,10 @@ class TypeInferenceWalker(
             }
             else -> error("unreachable")
         }
+    }
+
+    private fun inferUpdateStmt(updateStmt: MvUpdateSpecStmt) {
+        updateStmt.exprList.forEach { it.inferType() }
     }
 
     private fun checkTypeMismatch(

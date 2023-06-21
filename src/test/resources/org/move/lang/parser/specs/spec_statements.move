@@ -39,6 +39,8 @@ module 0x1::M {
         include MySchema && MySchema;
 
         native fun serialize<MoveValue>(v: &MoveValue): vector<u8>;
+
+        update supply = 1;
     }
 
     spec module {
