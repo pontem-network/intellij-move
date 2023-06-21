@@ -9,13 +9,23 @@ enum class MvColor(humanName: String, default: TextAttributesKey? = null) {
     VARIABLE("Variables//Default", Default.IDENTIFIER),
     FIELD("Variables//Field", Default.INSTANCE_FIELD),
 
-    MODULE_DEF("Modules//Module definition", Default.IDENTIFIER),
-    CONSTANT_DEF("Variables//Constant", Default.CONSTANT),
+    MODULE("Modules//Module definition", Default.IDENTIFIER),
     CONSTANT("Variables//Constant", Default.CONSTANT),
 
-    FUNCTION_DEF("Functions//Function declaration", Default.FUNCTION_DECLARATION),
+    FUNCTION("Functions//Function declaration", Default.FUNCTION_DECLARATION),
     FUNCTION_CALL("Functions//Function call", Default.FUNCTION_CALL),
+
+    VIEW_FUNCTION("Functions//View function declaration", Default.FUNCTION_DECLARATION),
+    VIEW_FUNCTION_CALL("Functions//View function call", Default.FUNCTION_CALL),
+
+    ENTRY_FUNCTION("Functions//Entry function declaration", Default.FUNCTION_DECLARATION),
+    ENTRY_FUNCTION_CALL("Functions//Entry function call", Default.FUNCTION_CALL),
+
+    INLINE_FUNCTION("Functions//Inline function declaration", Default.FUNCTION_DECLARATION),
+    INLINE_FUNCTION_CALL("Functions//Inline function call", Default.FUNCTION_CALL),
+
     BUILTIN_FUNCTION_CALL("Functions//Builtins", Default.FUNCTION_CALL),
+
     MACRO("Functions//Macro", Default.IDENTIFIER),
 
     KEYWORD("Keywords//Keyword", Default.KEYWORD),
@@ -23,6 +33,7 @@ enum class MvColor(humanName: String, default: TextAttributesKey? = null) {
     ABILITY("Types//Ability", Default.IDENTIFIER),
     PRIMITIVE_TYPE("Types//Primitive", Default.KEYWORD),
     BUILTIN_TYPE("Types//Builtins", Default.IDENTIFIER),
+    STRUCT("Types//Struct", Default.CLASS_NAME),
     TYPE_PARAMETER("Types//Generic type parameters", Default.IDENTIFIER),
 
     VECTOR_LITERAL("Literals//Vector", Default.FUNCTION_CALL),

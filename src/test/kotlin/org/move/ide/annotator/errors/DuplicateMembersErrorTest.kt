@@ -76,6 +76,13 @@ class DuplicateMembersErrorTest : AnnotatorTestCase(MvErrorAnnotator::class) {
     """
     )
 
+    fun `test no duplicate functions if no name specified`() = checkErrors("""
+        module 0x1::m {
+            native fun<error descr="IDENTIFIER expected, got ';'">;</error>
+            native fun<error descr="IDENTIFIER expected, got ';'">;</error>
+        }        
+    """)
+
     fun `test duplicate modules on the same addresses`() = checkErrors(
         """
         module 0x1::<error descr="Duplicate definitions with name `M`">M</error> {}
