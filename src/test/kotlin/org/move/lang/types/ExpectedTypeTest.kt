@@ -197,12 +197,35 @@ class ExpectedTypeTest : TypificationTestCase() {
     """
     )
 
-    fun `test type argument type`() = testExpectedTyType(
+    fun `test type argument type no abilities`() = testExpectedTyType(
+        """
+    module 0x1::main {
+        struct Struct<T> {}
+        fun main() {
+            Struct<S> {};
+                 //^ ?T()
+        }
+    }        
+    """
+    )
+
+    fun `test type argument type with ability`() = testExpectedTyType(
         """
     module 0x1::main {
         fun main() {
             borrow_global<S>();
                         //^ ?T(key)
+        }
+    }        
+    """
+    )
+
+    fun `test vector type argument type`() = testExpectedTyType(
+        """
+    module 0x1::main {
+        fun main() {
+            vector<S>[];
+                 //^ ?_()
         }
     }        
     """
