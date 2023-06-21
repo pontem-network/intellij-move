@@ -20,7 +20,7 @@ val MvSpecFunction.module: MvModule?
 //        if (moduleStub != null) {
 //            return moduleStub.psi
 //        }
-        return this.parent.parent as? MvModule
+        return this.parent?.parent as? MvModule
     }
 
 abstract class MvSpecFunctionMixin : MvStubbedNamedElementImpl<MvSpecFunctionStub>,

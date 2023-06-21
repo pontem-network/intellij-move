@@ -94,7 +94,7 @@ val MvFunctionLike.module: MvModule?
                 if (moduleStub != null) {
                     moduleStub.psi
                 } else {
-                    this.parent.parent as? MvModule
+                    this.parent?.parent as? MvModule
                 }
             }
             // TODO:
