@@ -40,9 +40,7 @@ abstract class ResolveProjectTestCase : MvProjectTestBase() {
     protected fun stubOnlyResolve(fileTree: FileTreeBuilder.() -> Unit) {
         val testProject = testProject(fileTree)
 
-        checkAstNotLoaded(VirtualFileFilter { file ->
-            !file.path.endsWith(testProject.fileWithCaret)
-        })
+        checkAstNotLoaded { file -> !file.path.endsWith(testProject.fileWithCaret) }
 
         val refClass = MvReferenceElement::class.java
         val targetClass = MvNamedElement::class.java

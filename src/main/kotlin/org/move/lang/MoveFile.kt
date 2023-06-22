@@ -17,6 +17,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.childrenOfType
 import org.move.lang.core.psi.ext.modules
+import org.move.lang.core.stubs.MvStubbedElementImpl
 import org.move.openapiext.resolveAbsPath
 import org.move.openapiext.toPsiFile
 import org.move.stdext.chain
@@ -35,7 +36,9 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
     return null
 }
 
-val PsiElement.moveProject: MoveProject? get() = project.moveProjects.findMoveProject(this)
+val PsiElement.moveProject: MoveProject? get() {
+    return project.moveProjects.findMoveProject(this)
+}
 
 fun VirtualFile.hasChild(name: String) = this.findChild(name) != null
 

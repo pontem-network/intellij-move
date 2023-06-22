@@ -7,6 +7,7 @@ package org.move.stdext
 
 import com.intellij.util.SmartList
 import java.util.*
+import kotlin.reflect.full.memberProperties
 
 @Suppress("UNCHECKED_CAST")
 inline fun <T> buildList(builder: (CollectionBuilder<T>).() -> Unit): List<T> =
@@ -219,4 +220,9 @@ private class WithNextIterator<T : Any>(private val iterator: Iterator<T>) : Ite
         this.next = nextNext
         return WithNextValue(next, nextNext)
     }
+}
+
+inline fun <reified T : Any> T.asMap() : Map<String, Any?> {
+    val props = T::class.memberProperties.associateBy { it.name }
+    return props.keys.associateWith { props[it]?.get(this) }
 }

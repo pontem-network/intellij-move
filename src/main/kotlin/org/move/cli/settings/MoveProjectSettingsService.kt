@@ -143,5 +143,12 @@ fun <T> Project.debugErrorOrFallback(message: String, fallback: T): T {
     return fallback
 }
 
+fun <T> Project.debugErrorOrFallback(message: String, cause: Throwable?, fallback: () -> T): T {
+    if (this.pluginDebugMode) {
+        throw IllegalStateException(message, cause)
+    }
+    return fallback()
+}
+
 val Project.skipFetchLatestGitDeps: Boolean get() =
     this.moveSettings.settingsState.skipFetchLatestGitDeps

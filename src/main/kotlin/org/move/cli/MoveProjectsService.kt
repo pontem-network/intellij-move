@@ -17,14 +17,11 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.ex.temp.TempFileSystem
-import com.intellij.psi.PsiDirectory
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
+import com.intellij.psi.*
+import com.intellij.psi.util.parents
 import com.intellij.util.messages.Topic
-import org.move.cli.settings.MoveProjectSettingsService
-import org.move.cli.settings.MoveSettingsChangedEvent
-import org.move.cli.settings.MoveSettingsListener
+import org.move.cli.settings.*
+import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.movePsiManager
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
@@ -73,7 +70,27 @@ class MoveProjectsService(val project: Project) : Disposable {
         val file = when (psiElement) {
             is PsiDirectory -> psiElement.virtualFile
             is PsiFile -> psiElement.originalFile.virtualFile
-            else -> psiElement.containingFile?.originalFile?.virtualFile
+            else -> {
+                val containingFile =
+                    try {
+                        psiElement.containingFile
+                    } catch (e: PsiInvalidElementAccessException) {
+                        val parentsChain =
+                            psiElement.parents(true).map { it.elementType }.joinToString(" -> ")
+                        project.debugErrorOrFallback(
+                            "Cannot get the containing file for the ${psiElement.javaClass.name}, " +
+                                    "elementType is ${psiElement.elementType}, parents chain is $parentsChain",
+                            cause = e
+                        ) {
+                            try {
+                                psiElement.node.psi.containingFile
+                            } catch (e: PsiInvalidElementAccessException) {
+                                null
+                            }
+                        }
+                    }
+                containingFile?.originalFile?.virtualFile
+            }
         } ?: return null
         return findMoveProject(file)
     }

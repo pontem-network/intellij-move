@@ -121,7 +121,8 @@ class FunctionCallPanel(
         this.moveProject = moveProject
         val variants = handler.getFunctionCompletionVariants(moveProject)
 
-        this.item = variants.firstOrNull()?.let { handler.getFunction(this.moveProject, it) }
+        this.item = variants.firstOrNull()
+            ?.let { handler.getFunction(this.moveProject, it) }
             ?: error("Should always have one valid function")
 
         val functionCall = this.item.instantiateCall()
