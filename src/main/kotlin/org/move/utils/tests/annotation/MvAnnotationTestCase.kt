@@ -1,10 +1,7 @@
 package org.move.utils.tests.annotation
 
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.DevelopmentMode
-import org.move.utils.tests.EnableInspection
 import org.move.utils.tests.MvTestBase
-import org.move.utils.tests.findAnnotationInstance
 
 abstract class MvAnnotationTestCase : MvTestBase() {
     protected lateinit var annotationFixture: MvAnnotationTestFixture
@@ -22,8 +19,7 @@ abstract class MvAnnotationTestCase : MvTestBase() {
 
     protected abstract fun createAnnotationFixture(): MvAnnotationTestFixture
 
-    fun checkHighlighting(text: String) = annotationFixture.checkHighlighting(text)
-
+    fun checkHighlighting(@Language("Move") text: String) = annotationFixture.checkHighlighting(text)
     fun checkErrors(@Language("Move") text: String) = annotationFixture.checkErrors(text)
     fun checkWarnings(@Language("Move") text: String) = annotationFixture.checkWarnings(text)
 

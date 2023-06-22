@@ -6,7 +6,6 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
-import org.move.ide.inspections.imports.ImportInsertHandler
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.*
 import org.move.lang.core.psi.MvPath

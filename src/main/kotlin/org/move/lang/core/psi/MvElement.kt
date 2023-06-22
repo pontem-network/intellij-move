@@ -61,7 +61,6 @@ fun MvElement.deleteWithSurroundingComma() {
             precedingComma?.delete()
         }
     }
-
     delete()
 }
 
@@ -70,8 +69,9 @@ fun MvElement.deleteWithSurroundingComma() {
  * See [deleteWithSurroundingComma].
  */
 fun MvElement.deleteWithSurroundingCommaAndWhitespace() {
-    val toDelete = rightSiblings.takeWhile { it.isWhitespaceOrComment } +
-            leftSiblings.takeWhile { it.isWhitespaceOrComment }
+    val toDelete =
+        rightSiblings.takeWhile { it.isWhitespaceOrComment } +
+                leftSiblings.takeWhile { it.isWhitespaceOrComment }
     toDelete.forEach {
         it.delete()
     }

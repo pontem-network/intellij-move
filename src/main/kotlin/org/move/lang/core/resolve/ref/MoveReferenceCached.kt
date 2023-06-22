@@ -27,40 +27,4 @@ abstract class MvReferenceCached<T : MvReferenceElement>(element: T) : MvReferen
             return (ref.reference as MvReferenceCached<*>).resolveInner().map { PsiElementResolveResult(it) }
         }
     }
-
-//    private object Resolver :
-//        ResolveCache.AbstractResolver<MvReferenceCached<*>, List<PsiElementResolveResult>> {
-//        override fun resolve(
-//            ref: MvReferenceCached<*>,
-//            incompleteCode: Boolean
-//        ): List<PsiElementResolveResult> {
-//            return ref.resolveInner().map { PsiElementResolveResult(it) }
-//        }
-//    }
 }
-
-//abstract class MvReferenceCached<T : MvReferenceElement>(
-//    element: T,
-//) : MvReferenceBase<T>(element) {
-//
-//    abstract fun resolveInner(): List<MvNamedElement>
-//
-//    override fun resolve(): MvNamedElement? {
-//        return cachedMultiResolve().firstOrNull() as MvNamedElement?
-//    }
-//
-//    private fun cachedMultiResolve(): List<PsiElementResolveResult> {
-//        return ResolveCache
-//            .getInstance(element.project)
-//            .resolveWithCaching(this, Resolver, true, false)
-//            .orEmpty()
-//    }
-//
-//    private object Resolver : ResolveCache.AbstractResolver<MvReferenceCached<*>, List<PsiElementResolveResult>> {
-//        override fun resolve(
-//            ref: MvReferenceCached<*>,
-//            incompleteCode: Boolean,
-//        ): List<PsiElementResolveResult> = ref.resolveInner().map { PsiElementResolveResult(it) }
-//
-//    }
-//}

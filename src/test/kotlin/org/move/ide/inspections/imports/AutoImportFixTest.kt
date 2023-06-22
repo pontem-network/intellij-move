@@ -2,6 +2,7 @@ package org.move.ide.inspections.imports
 
 import org.intellij.lang.annotations.Language
 import org.move.ide.inspections.MvUnresolvedReferenceInspection
+import org.move.ide.utils.imports.ImportCandidate
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class AutoImportFixTest : InspectionTestBase(MvUnresolvedReferenceInspection::class) {
@@ -116,6 +117,34 @@ module 0x1::M {
 }
 module 0x1::Main {
     use 0x1::M::{S, call};
+    
+    fun main() {
+        call();
+    }
+}
+    """
+    )
+
+    fun `test auto import to the same group with alias`() = checkAutoImportFixByText(
+        """
+module 0x1::M {
+    struct S {}
+    public fun call() {}
+}
+module 0x1::Main {
+    use 0x1::M::S as MyS;
+    
+    fun main() {
+        <error descr="Unresolved function: `call`">/*caret*/call</error>();
+    }
+}
+    """, """
+module 0x1::M {
+    struct S {}
+    public fun call() {}
+}
+module 0x1::Main {
+    use 0x1::M::{S as MyS, call};
     
     fun main() {
         call();
@@ -305,10 +334,10 @@ module 0x1::minter {
     public fun mint() {}    
 }        
 module 0x1::main {
+    use 0x1::minter::mint;
     #[test_only]
     use 0x1::minter::mint;
-    use 0x1::minter::mint;
-
+    
     public fun main() {
         mint();    
     }
@@ -344,10 +373,10 @@ module 0x1::minter {
     public fun mint() {}    
 }        
 module 0x1::main {
+    use 0x1::minter::mint;
     #[test_only]
     use 0x1::minter::{Self, mint};
-    use 0x1::minter::mint;
-
+    
     public fun main() {
         mint();    
     }
@@ -371,6 +400,68 @@ module 0x1::m2 {
     }
 }
     """)
+
+    fun `test add import into existing empty item group`() = checkAutoImportFixByText(
+        """
+module 0x1::Token {
+    struct Token {}
+    struct MintCapability {}
+    public fun call() {}
+}
+module 0x1::Main {
+    use 0x1::Token::{};
+    fun main() {
+        <error descr="Unresolved function: `call`">/*caret*/call</error>();
+    }
+}
+    """, """
+module 0x1::Token {
+    struct Token {}
+    struct MintCapability {}
+    public fun call() {}
+}
+module 0x1::Main {
+    use 0x1::Token::{call};
+    fun main() {
+        call();
+    }
+}
+    """
+    )
+
+    fun `test add import into existing item group multi line`() = checkAutoImportFixByText(
+        """
+module 0x1::Token {
+    struct Token {}
+    struct MintCapability {}
+    public fun call() {}
+}
+module 0x1::Main {
+    use 0x1::Token::{
+        Token, 
+        MintCapability
+    };
+    fun main(token: Token, mint_cap: MintCapability) {
+        <error descr="Unresolved function: `call`">/*caret*/call</error>();
+    }
+}
+    """, """
+module 0x1::Token {
+    struct Token {}
+    struct MintCapability {}
+    public fun call() {}
+}
+module 0x1::Main {
+    use 0x1::Token::{
+        Token, 
+        MintCapability, call
+    };
+    fun main(token: Token, mint_cap: MintCapability) {
+        call();
+    }
+}
+    """
+    )
 
     private fun checkAutoImportFixByText(
         @Language("Move") before: String,

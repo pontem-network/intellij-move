@@ -1,12 +1,13 @@
 package org.move.ide.inspections.imports
 
+import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 
 class ImportCandidatesTest : MvProjectTestBase() {
-    fun `test cannot import test function`() = checkImportCandidates {
+    fun `test cannot import test function`() = checkCandidates {
         namedMoveToml("Package")
         sources {
             move(
@@ -31,7 +32,7 @@ module 0x1::main {
         }
     }
 
-    fun `test cannot import private function`() = checkImportCandidates {
+    fun `test cannot import private function`() = checkCandidates {
         namedMoveToml("Package")
         sources {
             move(
@@ -54,7 +55,7 @@ module 0x1::main {
         }
     }
 
-    fun `test import public function`() = checkImportCandidates {
+    fun `test import public function`() = checkCandidates {
         namedMoveToml("Package")
         sources {
             move(
@@ -100,7 +101,7 @@ module 0x1::main {
 //        }
 //    }
 
-    fun `test import friend function`() = checkImportCandidates {
+    fun `test import friend function`() = checkCandidates {
         namedMoveToml("Package")
         sources {
             move(
@@ -124,7 +125,7 @@ module 0x1::main {
         }
     }
 
-    fun `test cannot import friend function if not a friend`() = checkImportCandidates {
+    fun `test cannot import friend function if not a friend`() = checkCandidates {
         namedMoveToml("Package")
         sources {
             move(
@@ -147,7 +148,72 @@ module 0x1::main {
         }
     }
 
-    fun checkImportCandidates(
+    // TODO: test
+//    fun `test not duplicate public method from dependency package included twice with different versions`() =
+//        checkCandidates {
+//            dir("aptos_framework") {
+//                namedMoveToml("AptosFramework")
+//                sources {
+//                    main(
+//                        """
+//                        module 0x1::m {
+//                            public fun aptos_call() {}
+//                        }
+//                    """
+//                    )
+//                }
+//            }
+//            dir("aptos_framework_new") {
+//                namedMoveToml("AptosFramework")
+//                sources {
+//                    main(
+//                        """
+//                        module 0x1::m {
+//                            public fun aptos_call() {}
+//                        }
+//                    """
+//                    )
+//                }
+//            }
+//            dir("bin_steps") {
+//                moveToml(
+//                    """
+//                    [package]
+//                    name = "BinSteps"
+//
+//                    [dependencies.AptosFramework]
+//                    local = "../aptos_framework"
+//                """
+//                )
+//                sources { }
+//            }
+//            moveToml(
+//                """
+//                [package]
+//                name = "MyPackage"
+//
+//                [dependencies.AptosFramework]
+//                local = "./aptos_framework_new"
+//
+//                [dependencies.BinSteps]
+//                local = "./bin_steps"
+//            """
+//            )
+//            sources {
+//                main(
+//                    """
+//                    module 0x1::mm {
+//                        public fun main() {
+//                            aptos_call();
+//                            //^ [0x1::m::aptos_call]
+//                        }
+//                    }
+//                """
+//                )
+//            }
+//        }
+
+    fun checkCandidates(
         tree: FileTreeBuilder.() -> Unit
     ) {
         testProject(tree)
@@ -158,7 +224,8 @@ module 0x1::main {
         val targetName = refElement.referenceName ?: error("No name for reference element")
 
         val candidates =
-            AutoImportFix.getImportCandidates(ImportContext.Companion.from(refElement), targetName)
+            ImportCandidateCollector
+                .getImportCandidates(ImportContext.Companion.from(refElement), targetName)
                 .map { it.qualName.editorText() }
         if (data == "[]") {
             check(candidates.isEmpty()) { "Non-empty candidates: $candidates" }

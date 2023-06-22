@@ -23,13 +23,13 @@ class MvViewFunctionIndex : StringStubIndexExtension<MvFunction>() {
         val KEY: StubIndexKey<String, MvFunction> =
             StubIndexKey.createIndexKey("org.move.index.MvViewFunctionIndex")
 
-        fun getViewFunction(
-            project: Project,
-            functionId: String,
-            scope: GlobalSearchScope = GlobalSearchScope.allScope(project)
-        ): MvFunction? {
-            return getFunction(project, functionId, scope) { it.isView }
-        }
+//        fun getViewFunction(
+//            project: Project,
+//            functionId: String,
+//            scope: GlobalSearchScope = GlobalSearchScope.allScope(project)
+//        ): MvFunction? {
+//            return getFunction(project, functionId, scope) { it.isView }
+//        }
 
         fun getFunctionByFunctionId(
             moveProject: MoveProject,

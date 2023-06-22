@@ -1,9 +1,6 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.psi.MvAddressRef
-import org.move.lang.core.psi.MvFQModuleRef
-import org.move.lang.core.psi.MvUseItem
-import org.move.lang.core.psi.MvUseStmt
+import org.move.lang.core.psi.*
 import org.move.stdext.wrapWithList
 
 val MvUseStmt.addressRef: MvAddressRef?
@@ -61,6 +58,8 @@ val MvUseStmt.childUseItems: List<MvUseItem>
         }
         return emptyList()
     }
+
+val MvUseStmt.useSpeck: MvUseSpeck? get() = this.itemUseSpeck ?: this.moduleUseSpeck
 
 val MvUseStmt.useSpeckText: String
     get() {

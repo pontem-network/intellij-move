@@ -1,5 +1,6 @@
 script {
     fun m() {
+        bin.;
         x";
         b"
     }

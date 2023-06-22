@@ -9,7 +9,6 @@ import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.infer.loweredType
-import org.move.lang.core.types.ty.GenericTy
 import org.move.lang.core.types.ty.TySchema
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -34,7 +33,7 @@ val MvSchema.requiredTypeParams: List<MvTypeParameter>
         return this.typeParameters.filter { it !in usedTypeParams }
     }
 
-val MvSchema.fieldStmts get() = this.specBlock?.schemaFields().orEmpty()
+val MvSchema.fieldStmts: List<MvSchemaFieldStmt> get() = this.specBlock?.schemaFields().orEmpty()
 
 val MvSchema.fieldBindings get() = this.fieldStmts.map { it.bindingPat }
 

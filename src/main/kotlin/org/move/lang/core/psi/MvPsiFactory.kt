@@ -58,6 +58,18 @@ class MvPsiFactory(val project: Project) {
 //            .descendantOfTypeStrict<MvTypeAnnotation>()!!
 //            .getChild(MvElementTypes.COLON)!!
 
+    fun createComma(): PsiElement =
+        createFromText<MvValueArgument>(
+            """
+                module 0x1::_dummy {
+                    fun _dummy() {
+                        call(1,);
+                    }
+                }                
+            """
+        )!!.nextSibling
+
+
 //    fun createExpression(text: String): MvExpr =
 //        tryCreateExpression(text)
 //            ?: error("Failed to create expression from text: `$text`")
@@ -77,9 +89,26 @@ class MvPsiFactory(val project: Project) {
         createFromText("module 0x1::_DummyModule { fun call() { let _ = $text; } }")
             ?: error("Failed to create expr")
 
+    fun type(text: String): MvType =
+        createFromText("module 0x1::_DummyModule { fun call() { let _: $text; } }")
+            ?: error("Failed to create type")
+
     fun useStmt(speckText: String, testOnly: Boolean): MvUseStmt {
         return createFromText("module 0x1::_DummyModule { ${if (testOnly) "#[test_only]\n" else ""}use $speckText; }")
             ?: error("Failed to create an item import from text: `$speckText`")
+    }
+
+    fun itemUseSpeck(fqModuleText: String, useItem: String): MvItemUseSpeck {
+        return createFromText("module 0x1::_DummyModule { use $fqModuleText::$useItem; }")
+            ?: error("Cannot create item use speck")
+//        return if (names.size == 1) {
+//            createFromText("module 0x1::_DummyModule { use $fqModuleText::$useItem; }")
+//                ?: error("")
+//        } else {
+//            val namesText = names.joinToString(", ", "{", "}")
+//            createFromText("module 0x1::_DummyModule { use $fqModuleText::$namesText; }")
+//                ?: error("")
+//        }
     }
 
     fun itemUseSpeck(fqModuleText: String, names: List<String>): MvItemUseSpeck {
@@ -94,10 +123,10 @@ class MvPsiFactory(val project: Project) {
         }
     }
 
-    fun useItemGroup(names: List<String>): MvUseItemGroup {
-        val namesText = names.joinToString(", ")
-        return createFromText("module 0x1::_DummyModule { use 0x1::Module::{$namesText}; }")
-            ?: error("Failed to create an item import from text: `$namesText`")
+    fun useItemGroup(items: List<String>): MvUseItemGroup {
+        val allItemsText = items.joinToString(", ")
+        return createFromText("module 0x1::_DummyModule { use 0x1::Module::{$allItemsText}; }")
+            ?: error("Failed to create an item import from text: `$allItemsText`")
     }
 
     fun useItem(text: String): MvUseItem {
@@ -165,7 +194,7 @@ class MvPsiFactory(val project: Project) {
             ?: error("Failed to create a function from text: `$text`")
 
     fun createWhitespace(ws: String): PsiElement =
-        PsiParserFacade.SERVICE.getInstance(project).createWhiteSpaceFromText(ws)
+        PsiParserFacade.getInstance(project).createWhiteSpaceFromText(ws)
 
     fun createNewline(): PsiElement = createWhitespace("\n")
 

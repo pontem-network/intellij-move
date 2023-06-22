@@ -52,12 +52,13 @@
         <stubIndex implementation="org.move.lang.index.MvNamedElementIndex" />
         <stubIndex implementation="org.move.lang.index.MvEntryFunctionIndex" />
         <stubIndex implementation="org.move.lang.index.MvViewFunctionIndex" />
+        <stubIndex implementation="org.move.lang.index.MvTestFunctionIndex" />
         <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
         <lang.documentationProvider language="Move"
                                     implementationClass="org.move.ide.docs.MvDocumentationProvider"/>
 
-        <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.ImportOptimizer"/>
+        <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.MvImportOptimizer"/>
 
         <gotoSymbolContributor implementation="org.move.ide.navigation.MvSymbolNavigationContributor"/>
         <gotoClassContributor implementation="org.move.ide.navigation.MvStructNavigationContributor"/>
@@ -132,6 +133,8 @@
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.MvErrorAnnotator"/>
         <annotator language="Move"
+                   implementationClass="org.move.ide.annotator.MvSyntaxErrorAnnotator"/>
+        <annotator language="Move"
                    implementationClass="org.move.ide.annotator.HighlightingAnnotator"/>
 
         <codeInsight.parameterInfo language="Move"
@@ -158,7 +161,7 @@
                                    id="mvRenamePsiFileProcessor"/>
         <lang.psiStructureViewFactory
                 language="Move"
-                implementationClass="org.move.ide.structure.MvPsiStructureViewFactory"/>
+                implementationClass="org.move.ide.structureView.MvPsiStructureViewFactory"/>
 
         <declarationRangeHandler
                 key="org.move.lang.core.psi.MvModule"

@@ -33,7 +33,7 @@ FILE
           MvPathTypeImpl(PATH_TYPE)
             MvPathImpl(PATH)
               PsiElement(IDENTIFIER)('u8')
-        PsiErrorElement:'::', < or '=' expected, got 'const'
+        PsiErrorElement:'::', <type arguments> or '=' expected, got 'const'
           <empty list>
       PsiWhiteSpace('\n\n    ')
       MvConstImpl(CONST)

@@ -1,6 +1,8 @@
 package org.move.lang.core.psi.ext
 
+import com.intellij.ide.projectView.PresentationData
 import com.intellij.lang.ASTNode
+import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.stubs.IStubElementType
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes
@@ -80,8 +82,6 @@ abstract class MvStructMixin : MvStubbedNamedElementImpl<MvStructStub>,
 
     constructor(stub: MvStructStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
 
-    override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT
-
     override val qualName: ItemQualName?
         get() {
             val itemName = this.name ?: return null
@@ -91,5 +91,17 @@ abstract class MvStructMixin : MvStubbedNamedElementImpl<MvStructStub>,
 
     override fun declaredType(msl: Boolean): TyStruct {
         return TyStruct(this, this.tyTypeParams, this.generics)
+    }
+
+    override fun getIcon(flags: Int): Icon = MoveIcons.STRUCT
+
+    override fun getPresentation(): ItemPresentation? {
+        val structName = this.name ?: return null
+        return PresentationData(
+            structName,
+            null,
+            MoveIcons.STRUCT,
+            null
+        )
     }
 }

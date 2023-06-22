@@ -28,7 +28,7 @@ class AptosToolWindowFactory : ToolWindowFactory, DumbAware {
         project.moveProjects.refreshAllProjects()
 
         val toolwindowPanel = AptosToolWindowPanel(project)
-        val tab = ContentFactory.SERVICE.getInstance()
+        val tab = ContentFactory.getInstance()
             .createContent(toolwindowPanel, "", false)
         toolWindow.contentManager.addContent(tab)
     }

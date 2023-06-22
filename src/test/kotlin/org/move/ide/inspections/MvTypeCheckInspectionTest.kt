@@ -1,6 +1,5 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.DevelopmentMode
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class MvTypeCheckInspectionTest : InspectionTestBase(MvTypeCheckInspection::class) {
@@ -275,7 +274,7 @@ module 0x1::M {
         """
     module 0x1::M {
         fun m() {
-            if (true) {1} else <error descr="Incompatible type 'bool', expected 'integer'">{true}</error>;
+            if (true) {1} else {<error descr="Incompatible type 'bool', expected 'integer'">true</error>};
         }
     }    
     """
@@ -456,9 +455,11 @@ module 0x1::M {
     fun `test if else with references no error if coerceable`() = checkErrors(
         """
     module 0x1::M {
-        struct S {}
-        fun m(s: &S, s_mut: &mut S) {
-            (if (cond) s_mut else s);
+        struct S has drop {}
+        fun m() {
+            let s = S {};
+            let _ = if (true) &s else &mut s;
+            let _ = if (true) &mut s else &s;
         }
     }    
     """
@@ -693,7 +694,7 @@ module 0x1::M {
         struct S { val: u8 }
         fun s(): u8 { 1 }
         fun main() {
-            let <error descr="Invalid unpacking. Expected a single variable">(a, b)</error> = s();
+            let <error descr="Assigned expr of type 'u8' cannot be unpacked with tuple pattern">(a, b)</error> = s();
         }
     }    
     """
@@ -1035,9 +1036,9 @@ module 0x1::main {
     fun main<X, Y>() {
         if (true) {
             G<X, Y> {}
-        } else <error descr="Incompatible type 'G<Y, X>', expected 'G<X, Y>'">{
-            G<Y, X> {}
-        }</error>;
+        } else {
+            <error descr="Incompatible type 'G<Y, X>', expected 'G<X, Y>'">G<Y, X> {}</error>
+        };
     }
 }        
     """
@@ -1148,7 +1149,7 @@ module 0x1::pool {
         module 0x1::m {
             fun main() {
                 let a = 1;
-                a = <error descr="Incompatible type 'bool', expected 'integer'">if (true) false else true</error>;
+                a = if (true) <error descr="Incompatible type 'bool', expected 'integer'">false</error> else <error descr="Incompatible type 'bool', expected 'integer'">true</error>;
             }
         }        
     """
@@ -1218,9 +1219,11 @@ module 0x1::pool {
     fun `test deref type error`() = checkByText(
         """
         module 0x1::m {
+            struct S {}
             fun main() {
-                let a = &&mut 1;
-                let b: bool = <error descr="Incompatible type 'integer', expected 'bool'">**a</error>;
+                let s = S {};
+                let mut_s = &mut s;
+                let b: bool = <error descr="Incompatible type 'S', expected 'bool'">*mut_s</error>;
             }        
         } 
     """
@@ -1342,5 +1345,129 @@ module 0x1::pool {
                 call(<error descr="<expression> expected, got ','">,</error> <error descr="Incompatible type 'u64', expected 'u8'">2u64</error>);
             }
         }        
+    """)
+
+    fun `test if else last expr returns incorrect type`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let my_vol_ref = 1u64;
+                my_vol_ref = 
+                    if (true) {
+                        1 + 1;
+                        <error descr="Incompatible type 'u32', expected 'u64'">1u32</error>
+                    } else {
+                        1 + 1;
+                        <error descr="Incompatible type 'u32', expected 'u64'">1u32</error>
+                    };
+            }
+        }                
+    """)
+
+    fun `test if else last expr only if returns incorrect type`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let my_vol_ref = 1u64;
+                my_vol_ref = 
+                    if (true) {
+                        1 + 1;
+                        <error descr="Incompatible type 'u32', expected 'u64'">1u32</error>
+                    } else {
+                        1 + 1;
+                        1u64
+                    };
+            }
+        }                
+    """)
+
+    fun `test if else inline returns incorrect type`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let my_vol_ref = 1u64;
+                my_vol_ref = 
+                    if (true) 
+                        <error descr="Incompatible type 'u32', expected 'u64'">1u32</error>
+                    else
+                        <error descr="Incompatible type 'u32', expected 'u64'">1u32</error>
+                    ;
+            }
+        }                
+    """)
+
+    fun `test if else inline if returns incorrect type`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let my_vol_ref = 1u64;
+                my_vol_ref = 
+                    if (true) 
+                        <error descr="Incompatible type 'u32', expected 'u64'">1u32</error>
+                    else
+                        1u64
+                    ;
+            }
+        }                
+    """)
+
+    fun `test block returns incorrect type of integer error on last expression`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let my_vol_ref = 1u64;
+                my_vol_ref = {
+                        1 + 1;
+                        <error descr="Incompatible type 'u32', expected 'u64'">1u32</error>
+                    };
+            }
+        }                
+    """)
+
+    fun `test unpack mut ref with struct pattern`() = checkByText("""
+        module 0x1::m {
+            struct Bin has store {
+                reserves_x: u64,
+                reserves_y: u64,
+                token_data_id: u64,
+            }
+            fun main(bin: &mut Bin) {
+                let <error descr="Assigned expr of type '&mut Bin' cannot be unpacked with struct pattern">Bin { reserves_x: _, reserves_y: _, token_data_id: _ }</error> = bin;
+            }
+        }        
+    """)
+
+    fun `test unpack mut ref with tuple pattern`() = checkByText("""
+        module 0x1::m {
+            struct Bin has store {
+                reserves_x: u64,
+                reserves_y: u64,
+                token_data_id: u64,
+            }
+            fun main(bin: &mut Bin) {
+                let <error descr="Assigned expr of type '&mut Bin' cannot be unpacked with tuple pattern">(a, b)</error> = bin;
+            }
+        }        
+    """)
+
+    fun `test cannot reference another reference`() = checkByText("""
+        module 0x1::m {
+            struct Pool<X, Y> {}
+            fun main<X, Y>(pool: &mut Pool<X, Y>) {
+                &<error descr="Expected a single non-reference type, but found: '&mut Pool<X, Y>'">pool</error>;
+            }
+        }
+    """)
+
+    fun `test cannot reference tuple`() = checkByText("""
+        module 0x1::m {
+            fun call(): (u8, u8) { (1, 1) }
+            fun main() {
+                &<error descr="Expected a single non-reference type, but found: '(u8, u8)'">call()</error>;
+            }
+        }
+    """)
+
+    fun `test cannot dereference non reference type`() = checkByText("""
+        module 0x1::m {
+            fun main<X, Y>(pool: &mut Pool<X, Y>) {
+                *<error descr="Invalid dereference. Expected '&_' but found 'integer'">1</error>;
+            }
+        }
     """)
 }

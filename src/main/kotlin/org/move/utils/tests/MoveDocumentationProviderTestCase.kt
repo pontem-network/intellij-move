@@ -1,6 +1,5 @@
 package org.move.utils.tests
 
-import com.intellij.codeInsight.documentation.DocumentationManager
 import com.intellij.psi.PsiElement
 import org.intellij.lang.annotations.Language
 import org.move.ide.docs.MvDocumentationProvider
@@ -16,7 +15,8 @@ abstract class MvDocumentationProviderProjectTestCase : MvProjectTestBase() {
         testProject(builder)
 
         val (originalElement, offset) = myFixture.findElementAndOffsetInEditor<MvElement>()
-        val element = DocumentationManager.getInstance(project)
+        @Suppress("DEPRECATION")
+        val element = com.intellij.codeInsight.documentation.DocumentationManager.getInstance(project)
             .findTargetElement(myFixture.editor, offset, myFixture.file, originalElement)!!
 
         val actual = MvDocumentationProvider().block(element, originalElement)?.trim()
@@ -64,7 +64,8 @@ abstract class MvDocumentationProviderTestCase : MvTestBase() {
         InlineFile(myFixture, code, "main.move")
 
         val (originalElement, offset) = findElement()
-        val element = DocumentationManager.getInstance(project)
+        @Suppress("DEPRECATION")
+        val element = com.intellij.codeInsight.documentation.DocumentationManager.getInstance(project)
             .findTargetElement(myFixture.editor, offset, myFixture.file, originalElement)!!
 
         val actual = MvDocumentationProvider().block(element, originalElement)?.trim()

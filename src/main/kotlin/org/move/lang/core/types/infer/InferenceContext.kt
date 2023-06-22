@@ -80,7 +80,7 @@ data class InferenceResult(
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
     val callExprTypes: Map<MvCallExpr, Ty>,
-    private val pathTypes: Map<MvPath, GenericTy>,
+    private val pathTypes: Map<MvPath, Ty>,
     val typeErrors: List<TypeError>
 ) : InferenceData {
     fun getExprType(expr: MvExpr): Ty =
@@ -100,7 +100,7 @@ data class InferenceResult(
 
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallExprType(expr: MvCallExpr): Ty? = callExprTypes[expr]
-    fun getPathType(path: MvPath): GenericTy? = pathTypes[path]
+    fun getPathType(path: MvPath): Ty? = pathTypes[path]
 }
 
 internal val MvElement.typeErrorText: String
@@ -176,10 +176,10 @@ class InferenceContext(
 
     override val patTypes = mutableMapOf<MvPat, Ty>()
 
-    private val exprTypes = concurrentMapOf<MvExpr, Ty>()
+    private val exprTypes = mutableMapOf<MvExpr, Ty>()
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
     private val callExprTypes = mutableMapOf<MvCallExpr, Ty>()
-    private val pathTypes = mutableMapOf<MvPath, GenericTy>()
+    private val pathTypes = mutableMapOf<MvPath, Ty>()
 
     private val typeErrors = mutableListOf<TypeError>()
 
@@ -235,7 +235,7 @@ class InferenceContext(
 
         exprExpectedTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
         typeErrors.replaceAll { err -> fullyResolveWithOrigins(err) }
-        pathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) as GenericTy }
+        pathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
 
         return InferenceResult(
             patTypes,
@@ -291,12 +291,14 @@ class InferenceContext(
     fun <T : GenericTy> instantiatePath(
         path: MvPath,
         genericItem: MvTypeParametersOwner
-    ): Pair<T, Substitution> {
+    ): Pair<T, Substitution>? {
         var itemTy =
-            this.pathTypes.getOrPut(path) { TyLowering.lowerPath(path, msl) as T }
+            this.pathTypes.getOrPut(path) {
+                TyLowering.lowerPath(path, msl) as? T ?: return null
+            }
 
         val typeParameters = genericItem.tyInfers
-        itemTy = itemTy.substitute(typeParameters) as T
+        itemTy = itemTy.substitute(typeParameters) as? T ?: return null
 
         unifySubst(typeParameters, itemTy.substitution)
         return Pair(itemTy, typeParameters)

@@ -85,6 +85,7 @@ class MoveProjectsTreeStructure(
 
         class Project(val moveProject: MoveProject, parent: SimpleNode) :
             Package(moveProject.currentPackage, parent) {
+
             override fun buildChildren(): Array<SimpleNode> {
                 val dependencyPackages = moveProject.dependencies.map { it.first }
                 return arrayOf(

@@ -45,8 +45,6 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .between(L_PAREN, R_PAREN).spacing(0, 0, 0, false, 0)
 
         //== paren delimited lists
-//        .afterInside(L_BRACE, BLOCK_LIKE).spacing(0, 0, 0, true, 0)
-//        .beforeInside(R_BRACE, BLOCK_LIKE).spacing(0, 0, 0, true, 0)
         .afterInside(L_PAREN, PAREN_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)
         .beforeInside(R_PAREN, PAREN_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)
         .afterInside(LT, ANGLE_DELIMITED_BLOCKS).spacing(0, 0, 0, true, 0)

@@ -9,9 +9,13 @@ import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilCore
+import com.intellij.psi.util.descendantsOfType
+import com.intellij.psi.util.prevLeaf
+import com.intellij.util.SmartList
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.impl.MvFileStub
+import org.move.openapiext.document
 
 fun PsiElement.hasChild(tokenType: IElementType): Boolean = childrenByType(tokenType).toList().isNotEmpty()
 
@@ -28,6 +32,99 @@ inline fun <reified T : PsiElement> PsiElement.stubChildrenOfType(): List<T> {
         stub?.childrenStubs?.mapNotNull { it.psi as? T } ?: return childrenOfType()
     } else {
         PsiTreeUtil.getStubChildrenOfTypeAsList(this, T::class.java)
+    }
+}
+
+
+inline fun <reified T : PsiElement> PsiElement.descendantOfTypeStrict(): T? =
+    PsiTreeUtil.findChildOfType(this, T::class.java, /* strict */ true)
+
+inline fun <reified T : PsiElement> PsiElement.descendantOfTypeOrSelf(): T? =
+    PsiTreeUtil.findChildOfType(this, T::class.java, /* strict */ false)
+
+inline fun <reified T : PsiElement> PsiElement.descendantsOfType(): Collection<T> =
+    PsiTreeUtil.findChildrenOfType(this, T::class.java)
+
+inline fun <reified T : PsiElement> PsiElement.descendantsOfTypeOrSelf(): Collection<T> =
+    PsiTreeUtil.findChildrenOfAnyType(this, false, T::class.java)
+
+inline fun <reified T : PsiElement> PsiElement.descendantOfType(predicate: (T) -> Boolean): T? {
+    return descendantsOfType<T>().firstOrNull(predicate)
+}
+
+@Suppress("unused")
+inline fun <reified T : PsiElement> PsiElement.stubDescendantsOfTypeStrict(): Collection<T> =
+    getStubDescendantsOfType(this, true, T::class.java)
+
+inline fun <reified T : PsiElement> PsiElement.stubDescendantsOfTypeOrSelf(): Collection<T> =
+    getStubDescendantsOfType(this, false, T::class.java)
+
+inline fun <reified T : PsiElement> PsiElement.stubDescendantOfTypeOrStrict(): T? =
+    getStubDescendantOfType(this, true, T::class.java)
+
+@Suppress("unused")
+inline fun <reified T : PsiElement> PsiElement.stubDescendantOfTypeOrSelf(): T? =
+    getStubDescendantOfType(this, false, T::class.java)
+
+fun <T : PsiElement> getStubDescendantsOfType(
+    element: PsiElement?,
+    strict: Boolean,
+    aClass: Class<T>
+): Collection<T> {
+    if (element == null) return emptyList()
+    val stub = (element as? PsiFileImpl)?.greenStub
+        ?: (element as? StubBasedPsiElement<*>)?.greenStub
+        ?: return PsiTreeUtil.findChildrenOfAnyType(element, strict, aClass)
+
+    val result = SmartList<T>()
+
+    fun go(childrenStubs: List<StubElement<out PsiElement>>) {
+        for (childStub in childrenStubs) {
+            val child = childStub.psi
+            if (aClass.isInstance(child)) {
+                result.add(aClass.cast(child))
+            }
+            go(childStub.childrenStubs)
+        }
+
+    }
+
+    if (strict) {
+        go(stub.childrenStubs)
+    } else {
+        go(listOf(stub))
+    }
+
+    return result
+}
+
+fun <T : PsiElement> getStubDescendantOfType(
+    element: PsiElement?,
+    strict: Boolean,
+    aClass: Class<T>
+): T? {
+    if (element == null) return null
+    val stub = (element as? PsiFileImpl)?.greenStub
+        ?: (element as? StubBasedPsiElement<*>)?.greenStub
+        ?: return PsiTreeUtil.findChildOfType(element, aClass, strict)
+
+    fun go(childrenStubs: List<StubElement<out PsiElement>>): T? {
+        for (childStub in childrenStubs) {
+            val child = childStub.psi
+            if (aClass.isInstance(child)) {
+                return aClass.cast(child)
+            } else {
+                go(childStub.childrenStubs)?.let { return it }
+            }
+        }
+
+        return null
+    }
+
+    return if (strict) {
+        go(stub.childrenStubs)
+    } else {
+        go(listOf(stub))
     }
 }
 
@@ -134,9 +231,6 @@ fun PsiElement.isChildExists(type: IElementType): Boolean =
 fun PsiElement.isAncestorOf(child: PsiElement): Boolean =
     child.ancestors.contains(this)
 
-inline fun <reified T : PsiElement> PsiElement.descendantOfTypeStrict(): T? =
-    PsiTreeUtil.findChildOfType(this, T::class.java, true)
-
 val PsiElement.startOffset: Int
     get() = textRange.startOffset
 
@@ -145,14 +239,6 @@ val PsiElement.endOffset: Int
 
 val PsiElement.endOffsetInParent: Int
     get() = startOffsetInParent + textLength
-
-fun PsiElement.rangeWithPrevSpace(prev: PsiElement?): TextRange = when (prev) {
-    is PsiWhiteSpace -> textRange.union(prev.textRange)
-    else -> textRange
-}
-
-val PsiElement.rangeWithPrevSpace: TextRange
-    get() = rangeWithPrevSpace(prevSibling)
 
 val PsiElement.rangeWithSurroundingLineBreaks: TextRange
     get() {
@@ -172,6 +258,10 @@ fun PsiElement?.getPrevNonCommentSibling(): PsiElement? =
 /** Finds first sibling that is neither comment, nor whitespace after given element */
 fun PsiElement?.getNextNonCommentSibling(): PsiElement? =
     PsiTreeUtil.skipWhitespacesAndCommentsForward(this)
+
+/** Finds first sibling that is not whitespace before given element */
+fun PsiElement?.getPrevNonWhitespaceSibling(): PsiElement? =
+    PsiTreeUtil.skipWhitespacesBackward(this)
 
 /** Finds first sibling that is not whitespace after given element */
 fun PsiElement?.getNextNonWhitespaceSibling(): PsiElement? =
@@ -196,7 +286,7 @@ fun PsiElement.cameBefore(element: PsiElement) =
 inline val <T : StubElement<*>> StubBasedPsiElement<T>.greenStub: T?
     get() = (this as? StubBasedPsiElementBase<T>)?.greenStub
 
-fun <T: PsiElement> T.smartPointer() = SmartPointerManager.createPointer(this)
+fun <T : PsiElement> T.smartPointer() = SmartPointerManager.createPointer(this)
 
 val PsiElement.stubParent: PsiElement?
     get() {
@@ -218,3 +308,30 @@ fun PsiElement.textRangeInAncestor(ancestorElement: PsiElement): TextRange {
     val startOffset = this.startOffset - ancestorElement.startOffset
     return TextRange.from(startOffset, this.textLength)
 }
+
+fun PsiElement.rangeWithPrevSpace(prev: PsiElement?): TextRange =
+    when (prev) {
+        is PsiWhiteSpace -> textRange.union(prev.textRange)
+        else -> textRange
+    }
+
+val PsiElement.rangeWithPrevSpace: TextRange
+    get() = rangeWithPrevSpace(prevLeaf())
+
+private fun PsiElement.getLineCount(): Int {
+    val doc = containingFile?.document
+    if (doc != null) {
+        val spaceRange = textRange ?: TextRange.EMPTY_RANGE
+
+        if (spaceRange.endOffset <= doc.textLength) {
+            val startLine = doc.getLineNumber(spaceRange.startOffset)
+            val endLine = doc.getLineNumber(spaceRange.endOffset)
+
+            return endLine - startLine
+        }
+    }
+
+    return (text ?: "").count { it == '\n' } + 1
+}
+
+fun PsiWhiteSpace.isMultiLine(): Boolean = getLineCount() > 1

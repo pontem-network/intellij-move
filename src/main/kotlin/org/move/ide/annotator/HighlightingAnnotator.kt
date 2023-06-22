@@ -34,7 +34,9 @@ class HighlightingAnnotator : MvAnnotatorBase() {
             else -> null
         } ?: return
         val severity = color.testSeverity
-        holder.newSilentAnnotation(severity).textAttributes(color.textAttributesKey).create()
+        holder.newSilentAnnotation(severity)
+            .textAttributes(color.textAttributesKey)
+            .create()
     }
 
     private fun highlightLeaf(element: PsiElement): MvColor? {
@@ -56,50 +58,73 @@ class HighlightingAnnotator : MvAnnotatorBase() {
         if (element is MvItemSpecTypeParameter) return MvColor.TYPE_PARAMETER
         if (element is MvModuleRef && element.isSelf) return MvColor.KEYWORD
         if (element is MvUseItem && element.text == "Self") return MvColor.KEYWORD
-        if (element is MvFunction) return MvColor.FUNCTION_DEF
-        if (element is MvConst) return MvColor.CONSTANT_DEF
-        if (element is MvModule) return MvColor.MODULE_DEF
+        if (element is MvFunction)
+            return when {
+                element.isInline -> MvColor.INLINE_FUNCTION
+                element.isView -> MvColor.VIEW_FUNCTION
+                element.isEntry -> MvColor.ENTRY_FUNCTION
+                else -> MvColor.FUNCTION
+            }
+        if (element is MvStruct) return MvColor.STRUCT
+        if (element is MvStructField) return MvColor.FIELD
+        if (element is MvStructDotField) return MvColor.FIELD
+        if (element is MvStructPatField) return MvColor.FIELD
+        if (element is MvStructLitField) return MvColor.FIELD
+        if (element is MvConst) return MvColor.CONSTANT
+        if (element is MvModule) return MvColor.MODULE
         if (element is MvVectorLitExpr) return MvColor.VECTOR_LITERAL
 
         val path = element as? MvPath ?: return null
         // any qual :: access is not highlighted
         if (path.isQualPath) return null
 
-        val identifierName = path.identifierName
-        when (path.parent) {
-            is MvPathType -> {
-                if (identifierName in PRIMITIVE_TYPE_IDENTIFIERS) return MvColor.PRIMITIVE_TYPE
-                if (identifierName in SPEC_ONLY_PRIMITIVE_TYPES && path.isMsl()) return MvColor.PRIMITIVE_TYPE
-                if (identifierName in BUILTIN_TYPE_IDENTIFIERS) return MvColor.BUILTIN_TYPE
+        return highlightPathElement(path)
+    }
 
-                val item = path.reference?.resolve()
-                if (item is MvTypeParameter) {
-                    return MvColor.TYPE_PARAMETER
-                }
-            }
-            is MvCallExpr -> {
-                val resolved = path.reference?.resolveWithAliases()
-                if (resolved != null) {
-                    return when {
-                        resolved is MvSpecFunction
-                                && resolved.isNative
-                                && identifierName in SPEC_BUILTIN_FUNCTIONS -> MvColor.BUILTIN_FUNCTION_CALL
-                        resolved is MvFunction
-                                && resolved.isNative
-                                && identifierName in BUILTIN_FUNCTIONS -> MvColor.BUILTIN_FUNCTION_CALL
-                        else -> MvColor.FUNCTION_CALL
+    private fun highlightPathElement(path: MvPath): MvColor? {
+        val identifierName = path.identifierName
+        return when (path.parent) {
+            is MvPathType -> {
+                when {
+                    identifierName in PRIMITIVE_TYPE_IDENTIFIERS -> MvColor.PRIMITIVE_TYPE
+                    identifierName in SPEC_ONLY_PRIMITIVE_TYPES && path.isMsl() -> MvColor.PRIMITIVE_TYPE
+                    identifierName in BUILTIN_TYPE_IDENTIFIERS -> MvColor.BUILTIN_TYPE
+                    else -> {
+                        val item = path.reference?.resolve()
+                        when (item) {
+                            is MvTypeParameter -> MvColor.TYPE_PARAMETER
+                            is MvStruct -> MvColor.STRUCT
+                            else -> null
+                        }
                     }
                 }
             }
-            is MvRefExpr -> {
-                val resolved = path.reference?.resolve() ?: return null
-                if (resolved is MvConst) {
-                    return MvColor.CONSTANT
-                } else {
-                    return MvColor.VARIABLE
+            is MvCallExpr -> {
+                val item = path.reference?.resolveWithAliases()
+                when {
+                    item is MvSpecFunction
+                            && item.isNative
+                            && identifierName in SPEC_BUILTIN_FUNCTIONS -> MvColor.BUILTIN_FUNCTION_CALL
+                    item is MvFunction
+                            && item.isNative
+                            && identifierName in BUILTIN_FUNCTIONS -> MvColor.BUILTIN_FUNCTION_CALL
+                    item is MvFunction && item.isEntry -> MvColor.ENTRY_FUNCTION_CALL
+                    item is MvFunction && item.isView -> MvColor.VIEW_FUNCTION_CALL
+                    item is MvFunction && item.isInline -> MvColor.INLINE_FUNCTION_CALL
+                    else -> MvColor.FUNCTION_CALL
                 }
             }
+            is MvStructLitExpr -> MvColor.STRUCT
+            is MvStructPat -> MvColor.STRUCT
+            is MvRefExpr -> {
+                val item = path.reference?.resolve() ?: return null
+                if (item is MvConst) {
+                    MvColor.CONSTANT
+                } else {
+                    MvColor.VARIABLE
+                }
+            }
+            else -> null
         }
-        return null
     }
 }

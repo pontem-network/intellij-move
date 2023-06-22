@@ -7,6 +7,7 @@ package org.move.stdext
 
 import com.intellij.util.SmartList
 import java.util.*
+import kotlin.reflect.full.memberProperties
 
 @Suppress("UNCHECKED_CAST")
 inline fun <T> buildList(builder: (CollectionBuilder<T>).() -> Unit): List<T> =
@@ -194,3 +195,34 @@ fun <T> T?.wrapWithMutableList(): MutableList<T> = this?.let { listOf(it) }.orEm
 
 fun <T> List<T>.withAdded(element: T): List<T> = listOf(this, listOf(element)).flatten()
 fun <T> List<T>.withExtended(list: List<T>): List<T> = listOf(this, list).flatten()
+
+typealias WithNextValue<T> = Pair<T, T?>
+
+fun <T : Any> Sequence<T>.withNext(): Sequence<WithNextValue<T>> = WithNextSequence(this)
+
+private class WithNextSequence<T : Any>(private val sequence: Sequence<T>) : Sequence<WithNextValue<T>> {
+
+    override fun iterator(): Iterator<WithNextValue<T>> = WithNextIterator(sequence.iterator())
+}
+
+private class WithNextIterator<T : Any>(private val iterator: Iterator<T>) : Iterator<WithNextValue<T>> {
+
+    private var next: T? = null
+
+    override fun hasNext() = next != null || iterator.hasNext()
+
+    override fun next(): WithNextValue<T> {
+        if (next == null) { // The first invocation (or illegal after-the-last invocation)
+            next = iterator.next()
+        }
+        val next = next ?: throw NoSuchElementException()
+        val nextNext = iterator.nextOrNull()
+        this.next = nextNext
+        return WithNextValue(next, nextNext)
+    }
+}
+
+inline fun <reified T : Any> T.asMap() : Map<String, Any?> {
+    val props = T::class.memberProperties.associateBy { it.name }
+    return props.keys.associateWith { props[it]?.get(this) }
+}

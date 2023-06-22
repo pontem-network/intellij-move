@@ -20,13 +20,18 @@ class RemoveRedundantCastFix(castExpr: MvCastExpr) : DiagnosticFix<MvCastExpr>(c
         return elementExprTy == typeTy
     }
 
-    override fun invoke(project: Project, file: PsiFile, element: MvCastExpr) {
-        val newElement = element.replace(element.expr)
-        val parent = newElement.parent
-        if (parent is MvParensExpr) {
-            RemoveRedundantParenthesesFix(parent).applyFix()
-        }
+    override fun invoke(
+        project: Project,
+        file: PsiFile,
+        element: MvCastExpr
+    ) =
+        element.replaceWithChildExpr()
+}
+
+fun MvCastExpr.replaceWithChildExpr() {
+    val newElement = this.replace(this.expr)
+    val parent = newElement.parent
+    if (parent is MvParensExpr) {
+        RemoveRedundantParenthesesFix(parent).applyFix()
     }
-
-
 }

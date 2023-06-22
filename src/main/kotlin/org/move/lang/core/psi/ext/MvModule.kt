@@ -256,8 +256,11 @@ abstract class MvModuleMixin : MvStubbedNamedElementImpl<MvModuleStub>,
 
     override val qualName: ItemQualName?
         get() {
-            val itemName = this.name ?: return null
-            val address = this.address(this.moveProject) ?: Address.Value("0x0")
-            return ItemQualName(this, address, null, itemName)
+            // from stub
+            val moduleName = this.name ?: return null
+            val moveProject = this.moveProject
+            // from stub
+            val address = this.address(moveProject) ?: Address.Value("0x0")
+            return ItemQualName(this, address, null, moduleName)
         }
 }

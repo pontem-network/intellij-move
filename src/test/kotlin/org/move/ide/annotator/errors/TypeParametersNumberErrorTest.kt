@@ -34,19 +34,19 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
             struct MyStruct { field: u8 }
             
             fun m() {
-                let a: <error descr="Invalid instantiation of '0x1::M::MyStruct'. Expected 0 type argument(s) but got 1">MyStruct<u8></error>;
+                let a: MyStruct<error descr="No type arguments expected for '0x1::M::MyStruct'"><u8></error>;
             }
         }    
     """)
 
     fun `test no type arguments expected for imported alias`() = checkErrors("""
-        module 0x1::string {
+        module 0x1::m {
             struct MyStruct { field: u8 }
         }
-        module 0x1::M {
-            use 0x1::string::MyStruct as Struct;            
-            fun m() {
-                let a: <error descr="Invalid instantiation of '0x1::string::MyStruct'. Expected 0 type argument(s) but got 1">Struct<u8></error>;
+        module 0x1::main {
+            use 0x1::m::MyStruct as Struct;            
+            fun main() {
+                let a: Struct<error descr="No type arguments expected for '0x1::m::MyStruct'"><u8></error>;
             }
         }    
     """)
@@ -63,7 +63,7 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
         module 0x1::M {
             fun call() {}
             fun main() {
-                let a = <error descr="Invalid instantiation of '0x1::M::call'. Expected 0 type argument(s) but got 1">call<u8></error>();
+                let a = call<error descr="No type arguments expected for '0x1::M::call'"><u8></error>();
             }
         }    
     """)
@@ -81,7 +81,7 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
         module 0x1::M {
             fun call<T>() {}
             fun main() {
-                let a = <error descr="Invalid instantiation of '0x1::M::call'. Expected 1 type argument(s) but got 2">call<u8, u8></error>();
+                let a = call<u8, <error descr="Invalid instantiation of '0x1::M::call'. Expected 1 type argument(s) but got 2">u8</error>>();
             }
         }    
     """)
@@ -96,7 +96,7 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
     fun `test too many generic params for type`() = checkErrors("""
     module 0x1::M {
         struct S<R> { r: R }
-        struct Event { val: <error descr="Invalid instantiation of '0x1::M::S'. Expected 1 type argument(s) but got 2">S<u8, u8></error> }
+        struct Event { val: S<u8, <error descr="Invalid instantiation of '0x1::M::S'. Expected 1 type argument(s) but got 2">u8</error>> }
     }    
     """)
 
@@ -115,7 +115,7 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
     module 0x1::M {
         struct S<R, RR> {}
         fun m() {
-            let a = <error descr="Invalid instantiation of '0x1::M::S'. Expected 2 type argument(s) but got 1">S<u8></error> {};
+            let a = S<error descr="Invalid instantiation of '0x1::M::S'. Expected 2 type argument(s) but got 1"><u8></error> {};
         }
     }    
     """)
@@ -144,7 +144,7 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
         spec schema MySchema<Type1, Type2> {}
         fun call() {}
         spec call {
-            include <error descr="Invalid instantiation of '0x1::M::MySchema'. Expected 2 type argument(s) but got 1">MySchema<u8></error>;
+            include MySchema<error descr="Invalid instantiation of '0x1::M::MySchema'. Expected 2 type argument(s) but got 1"><u8></error>;
         }
     }    
     """)

@@ -128,7 +128,7 @@ class RemoveParameterFixTest : InspectionTestBase(MvUnusedVariableInspection::cl
             x + b
         }
         fun main() {
-            call(0,  2);
+            call(0, 2);
         }
     }
     """

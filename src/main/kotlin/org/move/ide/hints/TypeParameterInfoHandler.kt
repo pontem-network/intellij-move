@@ -9,10 +9,10 @@ import com.intellij.psi.PsiFile
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
-import org.move.utils.AsyncParameterInfoHandler
+import org.move.utils.AsyncParameterInfoHandlerBase
 
 class TypeParameterInfoHandler :
-    AsyncParameterInfoHandler<MvTypeArgumentList, TypeParamsDescription>() {
+    AsyncParameterInfoHandlerBase<MvTypeArgumentList, TypeParamsDescription>() {
 
     override fun findTargetElement(file: PsiFile, offset: Int): MvTypeArgumentList? =
         file.findElementAt(offset)?.ancestorStrict()

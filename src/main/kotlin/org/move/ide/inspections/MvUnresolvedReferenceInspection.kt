@@ -175,7 +175,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             // disable inspection is object is unresolved
             if (receiverTy is TyUnknown) return
 
-            val dotField = dotExpr.structDotField
+            val dotField = dotExpr.structDotField ?: return
             if (!dotField.resolvable) {
                 holder.registerProblem(
                     dotField.referenceNameElement,

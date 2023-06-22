@@ -11,8 +11,8 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
 
     fun `test block comment do not break the highlighting`() = checkHighlighting("""
     /* module M */
-    module <MODULE_DEF>M</MODULE_DEF> {
-        fun <FUNCTION_DEF>call</FUNCTION_DEF>() {}
+    module <MODULE>M</MODULE> {
+        fun <FUNCTION>call</FUNCTION>() {}
     }
     """)
 
@@ -23,20 +23,19 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
     module M {
         use 0x1::string::mycall as mycall_alias;
         
-        fun <FUNCTION_DEF>call</FUNCTION_DEF>(x: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>) {}
-        fun <FUNCTION_DEF>main</FUNCTION_DEF>() {
+        fun <FUNCTION>call</FUNCTION>(x: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>) {}
+        fun <FUNCTION>main</FUNCTION>() {
             <FUNCTION_CALL>call</FUNCTION_CALL>(1)
             <FUNCTION_CALL>mycall_alias</FUNCTION_CALL>()
-            
         }
     }    
     """)
 
     fun `test variable names annotated`() = checkHighlighting("""
-    module <MODULE_DEF>M</MODULE_DEF> {
-        const <CONSTANT_DEF>MAX_INT</CONSTANT_DEF>: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE> = 255;
+    module <MODULE>M</MODULE> {
+        const <CONSTANT>MAX_INT</CONSTANT>: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE> = 255;
 
-        fun <FUNCTION_DEF>main</FUNCTION_DEF>() {
+        fun <FUNCTION>main</FUNCTION>() {
             let a = 1;
             <VARIABLE>a</VARIABLE>;
             <CONSTANT>MAX_INT</CONSTANT>;
@@ -71,7 +70,7 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
 
     fun `test builtin functions highlighted in call positions`() = checkHighlighting(
         """
-        module M {
+        module 0x1::m {
             fun move_to() {
                 let move_to = 1;
                 move_to();
@@ -87,6 +86,34 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
         }
     """
     )
+
+    fun `test highlight view functions`() = checkHighlighting("""
+        module 0x1::m {
+            #[view]
+            public fun <VIEW_FUNCTION>get_pool</VIEW_FUNCTION>() {}
+            fun main() {
+                <VIEW_FUNCTION_CALL>get_pool</VIEW_FUNCTION_CALL>();
+            }
+        }        
+    """)
+
+    fun `test highlight entry functions`() = checkHighlighting("""
+        module 0x1::m {
+            public entry fun <ENTRY_FUNCTION>get_pool</ENTRY_FUNCTION>() {}
+            fun main() {
+                <ENTRY_FUNCTION_CALL>get_pool</ENTRY_FUNCTION_CALL>();
+            }
+        }        
+    """)
+
+    fun `test highlight inline functions`() = checkHighlighting("""
+        module 0x1::m {
+            public inline fun <INLINE_FUNCTION>get_pool</INLINE_FUNCTION>() {}
+            fun main() {
+                <INLINE_FUNCTION_CALL>get_pool</INLINE_FUNCTION_CALL>();
+            }
+        }        
+    """)
 
     fun `test function param named as builtin type`() = checkHighlighting(
         """
@@ -185,5 +212,20 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
             
         }
     }
+    """)
+
+    fun `test structs and struct fields are highlighted`() = checkHighlighting("""
+        module 0x1::m {
+            struct <STRUCT>MyS</STRUCT> {
+                <FIELD>field1</FIELD>: u8,
+                <FIELD>field2</FIELD>: u8,
+            }
+            fun main(s: <STRUCT>MyS</STRUCT>): <STRUCT>MyS</STRUCT> {
+                s.<FIELD>field1</FIELD>;
+                s.<FIELD>field2</FIELD>;
+                let <STRUCT>MyS</STRUCT> { <FIELD>field1</FIELD>: myfield1, <FIELD>field2</FIELD>: myfield2 } = s;
+                <STRUCT>MyS</STRUCT> { <FIELD>field1</FIELD>: 1, <FIELD>field2</FIELD>: 2 }
+            }
+        }
     """)
 }

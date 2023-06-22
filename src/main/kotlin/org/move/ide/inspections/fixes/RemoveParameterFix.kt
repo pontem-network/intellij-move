@@ -7,6 +7,7 @@ import org.move.ide.inspections.DiagnosticFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.callArgumentExprs
 import org.move.lang.core.psi.ext.testAttrItem
+import org.move.lang.core.psi.ext.valueArguments
 
 /**
  * Fix that removes a parameter and all its usages at call sites.
@@ -42,7 +43,7 @@ private fun removeArguments(function: MvFunction, parameterIndex: Int) {
             pathExpr as? MvCallExpr
         }
     calls.forEach { call ->
-        call.callArgumentExprs
+        call.valueArguments
             .getOrNull(parameterIndex)
             ?.deleteWithSurroundingCommaAndWhitespace()
     }

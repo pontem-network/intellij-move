@@ -80,7 +80,7 @@ FILE
               MvPathTypeImpl(PATH_TYPE)
                 MvPathImpl(PATH)
                   PsiElement(IDENTIFIER)('u8')
-            PsiErrorElement:',', '::', < or '}' expected, got 'my_field'
+            PsiErrorElement:',', '::', <type arguments> or '}' expected, got 'my_field'
               <empty list>
           PsiWhiteSpace('\n        ')
           MvStructFieldImpl(STRUCT_FIELD)

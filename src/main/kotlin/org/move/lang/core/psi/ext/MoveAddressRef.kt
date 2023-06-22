@@ -14,8 +14,7 @@ val MvAddressRef.useGroupLevel: Int
         val currentPackageAddresses =
             this.moveProject?.currentPackageAddresses()?.keys.orEmpty().map { it.lowercase() }
         return when (name) {
-            "std" -> 0
-            "aptos_std", "aptos_framework" -> 1
+            "std", "aptos_std", "aptos_framework", "aptos_token" -> 1
             !in currentPackageAddresses -> 2
             else -> 3
         }

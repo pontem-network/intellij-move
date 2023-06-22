@@ -19,7 +19,10 @@ import io.sentry.SentryLevel
 import io.sentry.UserFeedback
 import io.sentry.protocol.Message
 import io.sentry.protocol.SentryId
+import org.move.cli.settings.moveSettings
+import org.move.cli.settings.pluginDebugMode
 import org.move.openapiext.project
+import org.move.stdext.asMap
 import java.awt.Component
 
 
@@ -44,7 +47,7 @@ class PontemSentryErrorReporter : ErrorReportSubmitter() {
         object : Task.Backgroundable(project, "Sending error report", false) {
             override fun run(indicator: ProgressIndicator) {
                 val mainEvent = events[0]
-                val sentryEvent = createSentryEventFromError(mainEvent)
+                val sentryEvent = createSentryEventFromError(project, mainEvent)
                 try {
                     // io
                     val sentryEventId = Sentry.captureEvent(sentryEvent)
@@ -67,17 +70,25 @@ class PontemSentryErrorReporter : ErrorReportSubmitter() {
     }
 
     companion object {
-        private fun createSentryEventFromError(event: IdeaLoggingEvent): SentryEvent {
+        private fun createSentryEventFromError(project: Project?, event: IdeaLoggingEvent): SentryEvent {
             val sentryEvent = SentryEvent()
             sentryEvent.level = SentryLevel.ERROR
 
-
             val plugin = IdeErrorsDialog.getPlugin(event)
-            sentryEvent.contexts["Plugin Info"] = mapOf(
-                "Platform" to ApplicationInfo.getInstance().fullApplicationName,
-                "Plugin Version" to (plugin?.version ?: "unknown")
-            )
-            sentryEvent.contexts["Stacktrace"] = mapOf("Value" to event.throwableText)
+            sentryEvent.contexts["Plugin Info"] =
+                mapOf(
+                    "Platform" to ApplicationInfo.getInstance().fullApplicationName,
+                    "Plugin Version" to (plugin?.version ?: "unknown"),
+                )
+            if (project != null) {
+                val settings = project.moveSettings.settingsState.asMap().toMutableMap()
+                settings.remove("aptosPath")
+                sentryEvent.contexts["Settings"] = settings
+            }
+            sentryEvent.contexts["Stacktrace"] =
+                mapOf(
+                    "Value" to event.throwableText
+                )
 
             val sentryMessage = Message()
             sentryMessage.formatted = event.errorMessage

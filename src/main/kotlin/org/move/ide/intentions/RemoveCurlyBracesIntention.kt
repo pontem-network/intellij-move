@@ -19,6 +19,7 @@ class RemoveCurlyBracesIntention : MvElementBaseIntentionAction<RemoveCurlyBrace
     override fun findApplicableContext(project: Project, editor: Editor, element: PsiElement): Context? {
         val useStmt = element.ancestorStrict<MvUseStmt>() ?: return null
         val useItemGroup = useStmt.itemUseSpeck?.useItemGroup ?: return null
+        if (useItemGroup.useItemList.size > 1) return null
         return Context(useItemGroup)
     }
 
@@ -37,7 +38,7 @@ class RemoveCurlyBracesIntention : MvElementBaseIntentionAction<RemoveCurlyBrace
     }
 }
 
-fun MvUseItemGroup.removeCurlyBraces() {
+private fun MvUseItemGroup.removeCurlyBraces() {
     val psiFactory = this.project.psiFactory
     val itemUse = this.useItemList.singleOrNull() ?: return
     val refName = itemUse.referenceName

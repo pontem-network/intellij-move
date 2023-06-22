@@ -1,8 +1,8 @@
 <fold text='/* ... */'>/// my docstring
 /// my other docstring</fold>
 module 0x1::M <fold text='{...}'>{
-    <fold text='/* consts */'>const MY_CONST: u64 = 1;
-    const MY_CONST_2: u64 = 1;</fold>
+    const <fold text='...'> MY_CONST: u64 = 1;
+    const MY_CONST_2: u64 = 1</fold>;
 
     <fold text='/* ... */'>/// my docstring
     /// my other docstring</fold>

@@ -1,6 +1,7 @@
 package org.move.cli.runConfigurations.aptos
 
 import com.intellij.execution.configurations.CommandLineState
+import com.intellij.execution.filters.Filter
 import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
@@ -8,7 +9,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import org.move.cli.MoveFileHyperlinkFilter
 import java.nio.file.Path
 
-class AptosCommandLineState(
+open class AptosCommandLineState(
     execEnv: ExecutionEnvironment,
     private val aptosPath: Path,
     private val commandLine: AptosCommandLine
@@ -18,8 +19,7 @@ class AptosCommandLineState(
     val project = environment.project
 
     init {
-        commandLine.workingDirectory
-            ?.let { wd -> addConsoleFilters(MoveFileHyperlinkFilter(project, wd)) }
+        createFilters().forEach { addConsoleFilters(it) }
     }
 
     override fun startProcess(): ProcessHandler {
@@ -31,4 +31,14 @@ class AptosCommandLineState(
         ProcessTerminatedListener.attach(handler)  // shows exit code upon termination
         return handler
     }
+
+    protected fun createFilters(): Collection<Filter> {
+        val filters = mutableListOf<Filter>()
+        val wd = commandLine.workingDirectory
+        if (wd != null) {
+            filters.add(MoveFileHyperlinkFilter(project, wd))
+        }
+        return filters
+    }
+
 }

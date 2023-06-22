@@ -1,15 +1,20 @@
 package org.move.ide.hints.type
 
 import com.intellij.codeInsight.hints.*
+import com.intellij.codeInsight.hints.ImmediateConfigurable.Case
+import com.intellij.codeInsight.hints.presentation.InlayPresentation
+import com.intellij.codeInsight.hints.presentation.InsetPresentation
+import com.intellij.codeInsight.hints.presentation.MenuOnClickPresentation
 import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.descendantsOfType
-import org.move.lang.core.psi.MvBindingPat
-import org.move.lang.core.psi.MvLetStmt
-import org.move.lang.core.psi.MvPat
+import org.move.lang.MoveLanguage
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.declaration
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.inference
@@ -22,7 +27,7 @@ import javax.swing.JPanel
 class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Settings> {
     override val key: SettingsKey<Settings> get() = KEY
 
-    override val name: String get() = "Type hints"
+    override val name: String get() = "Types"
 
     override val previewText: String
         get() = """
@@ -34,12 +39,24 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
             }
             """.trimIndent()
 
-    override fun createConfigurable(settings: Settings): ImmediateConfigurable = object :
-        ImmediateConfigurable {
+    override val group: InlayGroup get() = InlayGroup.TYPES_GROUP
 
-        override val cases: List<ImmediateConfigurable.Case>
+    override fun createConfigurable(settings: Settings) = object : ImmediateConfigurable {
+
+        override val mainCheckboxText: String
+            get() = "Show hints for:"
+
+        /**
+         * Each case may have:
+         *  * Description provided by [InlayHintsProvider.getProperty].
+         *  Property key has `inlay.%[InlayHintsProvider.key].id%.%case.id%` structure
+         *
+         *  * Preview taken from `resource/inlayProviders/%[InlayHintsProvider.key].id%/%case.id%.rs` file
+         */
+        override val cases: List<Case>
             get() = listOf(
-                ImmediateConfigurable.Case("Show for variables", "variables", settings::showForVariables),
+                Case("Variables", "variables", settings::showForVariables),
+                Case("Obvious types", "obvious_types", settings::showObviousTypes),
             )
 
         override fun createComponent(listener: ChangeListener): JComponent = JPanel()
@@ -60,51 +77,72 @@ class MvInlayTypeHintsProvider : InlayHintsProvider<MvInlayTypeHintsProvider.Set
 
             override fun collect(element: PsiElement, editor: Editor, sink: InlayHintsSink): Boolean {
                 if (project.service<DumbService>().isDumb) return true
+                if (element !is MvElement) return true
 
-                when {
-                    settings.showForVariables && element is MvLetStmt -> {
-                        val pat = element.pat ?: return true
-                        if (element.typeAnnotation != null) return true
-                        presentTypeForPat(pat)
-                    }
+                if (settings.showForVariables) {
+                    presentVariable(element)
                 }
                 return true
             }
 
-            private fun presentTypeForPat(pat: MvPat) {
-                val msl = pat.isMsl()
-//                val inferenceCtx = pat.inferenceContext(msl)
-                val inference = pat.inference(msl) ?: return
-                for (bindingPat in pat.descendantsOfType<MvBindingPat>()) {
-                    if (bindingPat.identifier.text.startsWith("_")) continue
-
-                    val ty = inference.getPatType(bindingPat)
-                    if (ty is TyUnknown) continue
-
-                    presentTypeForBinding(bindingPat, ty)
+            private fun presentVariable(element: MvElement) {
+                when (element) {
+                    is MvLetStmt -> {
+                        if (element.typeAnnotation != null) return
+                        val pat = element.pat ?: return
+                        presentTypeForPat(pat, element.initializer?.expr)
+                    }
                 }
             }
 
-            private fun presentTypeForBinding(
-                binding: MvBindingPat,
-                bindingTy: Ty
-            ) {
-                val presentation = typeHintsFactory.typeHint(bindingTy)
+            private fun presentTypeForPat(pat: MvPat, expr: MvExpr?) {
+                if (!settings.showObviousTypes && isObvious(pat, expr?.declaration)) return
+
+                val msl = pat.isMsl()
+                val inference = pat.inference(msl) ?: return
+                for (binding in pat.descendantsOfType<MvBindingPat>()) {
+                    if (binding.name.startsWith("_"))
+                        continue
+                    presentTypeForBinding(binding, inference.getPatType(binding))
+                }
+            }
+
+            private fun presentTypeForBinding(binding: MvBindingPat, ty: Ty) {
+                if (ty is TyUnknown) return
+                val presentation = typeHintsFactory.typeHint(ty)
+                val offset = binding.endOffset
+                val finalPresentation = presentation.withDisableAction(project)
                 sink.addInlineElement(
-                    binding.endOffset,
-                    false,
-                    presentation,
-                    false
+                    offset, false, finalPresentation, false
                 )
             }
         }
     }
 
+    private fun InlayPresentation.withDisableAction(project: Project): InsetPresentation = InsetPresentation(
+        MenuOnClickPresentation(this, project) {
+            listOf(InlayProviderDisablingAction(name, MoveLanguage, project, key))
+        }, left = 1
+    )
+
     data class Settings(
         var showForVariables: Boolean = true,
+//        var showForLambdas: Boolean = true,
+        var showObviousTypes: Boolean = false,
     )
 
     companion object {
         private val KEY: SettingsKey<Settings> = SettingsKey("move.type.hints")
     }
 }
+
+/**
+ * Don't show hints in such cases:
+ *
+ * `let b = MyStruct { x: 42 };`
+ */
+private fun isObvious(pat: MvPat, declaration: MvElement?): Boolean =
+    when (declaration) {
+        is MvStruct -> pat is MvBindingPat
+        else -> false
+    }

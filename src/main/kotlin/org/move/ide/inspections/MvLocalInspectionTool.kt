@@ -49,9 +49,12 @@ abstract class MvLocalInspectionTool : LocalInspectionTool() {
 }
 
 abstract class DiagnosticFix<T : PsiElement>(element: T) : LocalQuickFixOnPsiElement(element) {
-    override fun getStartElement(): T {
+
+    val targetElement: T? get() = this.startElement
+
+    override fun getStartElement(): T? {
         @Suppress("UNCHECKED_CAST")
-        return super.getStartElement() as T
+        return super.getStartElement() as T?
     }
 
     override fun generatePreview(project: Project, previewDescriptor: ProblemDescriptor): IntentionPreviewInfo =
@@ -59,24 +62,34 @@ abstract class DiagnosticFix<T : PsiElement>(element: T) : LocalQuickFixOnPsiEle
 
     override fun getFamilyName(): String = text
 
-    override fun isAvailable(
+    final override fun isAvailable(
         project: Project,
         file: PsiFile,
         startElement: PsiElement,
         endElement: PsiElement
-    ): Boolean = stillApplicable(project, file, getStartElement())
+    ): Boolean {
+        val element = getStartElement() ?: return false
+        return stillApplicable(element) && stillApplicable(project, file, element)
+    }
 
-    override fun invoke(
+    final override fun invoke(
         project: Project,
         file: PsiFile,
         startElement: PsiElement,
         endElement: PsiElement
     ) {
-        val element = getStartElement()
-        if (stillApplicable(project, file, element)) {
+        val element = getStartElement() ?: return
+        if (stillApplicable(element)
+            && stillApplicable(project, file, element)
+        ) {
             invoke(project, file, element)
         }
     }
+
+    /**
+     * Convenience method to add simple condition which depends only on the element itself.
+     */
+    open fun stillApplicable(element: T): Boolean = true
 
     open fun stillApplicable(project: Project, file: PsiFile, element: T): Boolean = true
 

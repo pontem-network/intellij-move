@@ -57,7 +57,7 @@ FILE
               MvPathTypeImpl(PATH_TYPE)
                 MvPathImpl(PATH)
                   PsiElement(IDENTIFIER)('u8')
-            PsiErrorElement:'::', ';', < or '=' expected, got '1'
+            PsiErrorElement:'::', ';', <type arguments> or '=' expected, got '1'
               <empty list>
           PsiWhiteSpace(' ')
           MvExprStmtImpl(EXPR_STMT)

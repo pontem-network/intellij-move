@@ -4,6 +4,9 @@ import com.intellij.codeInsight.completion.CompletionUtil
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.MoveFile
+import org.move.lang.core.completion.getOriginalOrSelf
+import org.move.lang.core.completion.safeGetOriginalElement
+import org.move.lang.core.completion.safeGetOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
@@ -230,19 +233,13 @@ fun processLexicalDeclarations(
     for (namespace in itemVis.namespaces) {
         val stop = when (namespace) {
             Namespace.DOT_FIELD -> {
-                val dotExpr = scope as? MvDotExpr ?: return false
-                val receiverExpr = dotExpr.expr
+                val dotExpr = (scope as? MvDotExpr)?.getOriginalOrSelf() ?: return false
 
-                val msl = receiverExpr.isMsl()
+                val msl = dotExpr.isMsl()
+                val receiverExpr = dotExpr.expr
                 val inference = receiverExpr.inference(msl) ?: return false
-                // uninferred expr is allowed for the `object.IntellijIdeaRulezzz` (no letters after dot) case:
-                // there's an obvious dot expr, but I can't make it pin on '.'
-                val receiverTy =
-                    if (CompletionUtil.getOriginalElement(dotExpr.structDotField) == null) {
-                        inference.getExprTypeOrUnknown(receiverExpr)
-                    } else {
-                        inference.getExprType(receiverExpr)
-                    }
+                val receiverTy = inference.getExprType(receiverExpr)
+
                 val innerTy = when (receiverTy) {
                     is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
                     is TyStruct -> receiverTy

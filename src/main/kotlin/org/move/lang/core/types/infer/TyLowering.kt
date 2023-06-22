@@ -55,7 +55,10 @@ class TyLowering {
                 val (_, explicits) = instantiatePathGenerics(path, namedItem, msl)
                 baseTy.substitute(explicits)
             }
-            else -> TyUnknown
+            else -> namedItem.project.debugErrorOrFallback(
+                "${namedItem.elementType} path cannot be inferred into type",
+                TyUnknown
+            )
         }
     }
 
