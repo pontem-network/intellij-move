@@ -1,5 +1,6 @@
 package org.move.cli.toolwindow
 
+import com.intellij.diagnostic.PluginException
 import com.intellij.execution.Location
 import com.intellij.execution.PsiLocation
 import com.intellij.execution.actions.RunContextAction
@@ -21,17 +22,20 @@ class MoveEntrypointMouseAdapter : MouseAdapter() {
             ?.lastPathComponent as? DefaultMutableTreeNode ?: return
         val userObject = node.userObject
         val function = when (userObject) {
-            is MoveProjectsTreeStructure.MoveSimpleNode.Entrypoint -> {
-                userObject.function
-            }
-            is MoveProjectsTreeStructure.MoveSimpleNode.View -> {
-                userObject.function
-            }
+            is MoveProjectsTreeStructure.MoveSimpleNode.Entrypoint -> userObject.function
+            is MoveProjectsTreeStructure.MoveSimpleNode.View -> userObject.function
             else -> return
         }
 
+        val functionLocation =
+            try {
+                PsiLocation.fromPsiElement(function) ?: return
+            } catch (e: PluginException) {
+                // TODO: figure out why this exception is raised
+                return
+            }
         val dataContext =
-            SimpleDataContext.getSimpleContext(Location.DATA_KEY, PsiLocation.fromPsiElement(function))
+            SimpleDataContext.getSimpleContext(Location.DATA_KEY, functionLocation)
         val actionEvent =
             AnActionEvent.createFromDataContext(ActionPlaces.TOOLWINDOW_CONTENT, null, dataContext)
 
