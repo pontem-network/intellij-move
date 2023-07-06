@@ -30,7 +30,7 @@ class PontemSentryErrorReporter : ErrorReportSubmitter() {
     init {
         Sentry.init { options ->
             options.dsn = "https://a3153f348f8d43f189c4228db47cfc0d@sentry.pontem.network/6"
-            options.enableUncaughtExceptionHandler = false
+            options.isEnableUncaughtExceptionHandler = false
         }
     }
 
