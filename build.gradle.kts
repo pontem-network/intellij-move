@@ -15,6 +15,7 @@ val pluginJarName = "intellij-move-$platformVersion"
 val pluginVersion = "1.29.1"
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
+val kotlinStdlibVersion = "1.8.22"
 
 group = pluginGroup
 version = pluginVersion
@@ -28,6 +29,8 @@ plugins {
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinStdlibVersion")
+
     implementation("io.sentry:sentry:6.25.0") {
         exclude("org.slf4j")
     }
