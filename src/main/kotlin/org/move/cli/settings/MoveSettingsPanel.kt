@@ -7,6 +7,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import org.move.cli.runConfigurations.aptos.Aptos
+import org.move.ide.actions.download.ui.DownloadAptosDialog
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathField
 import org.move.openapiext.showSettings
@@ -55,10 +56,23 @@ class MoveSettingsPanel(
             comment("(required)")
         }
         row("Version") { cell(versionLabel) }
-        row("       ") {
+        row {
+            button("Download Aptos CLI") {
+                val dialog = DownloadAptosDialog(parentComponent = aptosPathField)
+                dialog.show()
+
+                val newAptosPath = dialog.outPath
+                if (dialog.isOK && newAptosPath != null) {
+                    data = Data(newAptosPath)
+                }
+            }
+        }
+        row {
             link("Set default project settings") {
                 ProjectManager.getInstance().defaultProject.showSettings<PerProjectMoveConfigurable>()
-            }.visible(showDefaultSettingsLink)
+            }
+                .visible(showDefaultSettingsLink)
+                .horizontalAlign(HorizontalAlign.RIGHT)
         }
     }
 

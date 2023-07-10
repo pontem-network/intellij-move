@@ -24,34 +24,28 @@
 package org.move.ide.actions.download.ui
 
 import com.intellij.execution.Platform
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.selected
-import org.move.ide.actions.download.AptosDownloader
+import org.move.ide.actions.download.DownloadAptosTask
 import org.move.ide.actions.download.PathSelector
 import java.io.File
 import javax.swing.JComponent
-import javax.swing.SwingUtilities
 
 class DownloadAptosDialog(
-    private val project: Project,
-    private var version: String
-) : DialogWrapper(project, true) {
+    private val parentComponent: JComponent,
+) : DialogWrapper(null, parentComponent, true, IdeModalityType.IDE) {
 
-    //    private val downloadInProjectRoot = JBCheckBox("Download to project root", false)
+    var outPath: String? = null
+
+    private var version = "2.0.2"
     private var downloadToProjectRoot: Boolean = true
     private var customDestinationDirectory: String = ""
 
     init {
-//        Disposer.register(disposable, downloadInProjectRoot)
-
         init()
-        isModal = false
         title = "Download Aptos"
         setOKButtonText("Download")
     }
@@ -104,13 +98,14 @@ class DownloadAptosDialog(
                 val file = File(dir)
                 if (!file.exists()) {
                     if (!file.mkdir()) {
-                        SwingUtilities.invokeLater {
-                            Messages.showErrorDialog(
-                                project,
-                                "Cannot create $dir directory",
-                                "IO Error",
-                            )
-                        }
+                        // TODO: show error
+//                        SwingUtilities.invokeLater {
+//                            Messages.showErrorDialog(
+//                                project,
+//                                "Cannot create $dir directory",
+//                                "IO Error",
+//                            )
+//                        }
                         return
                     }
                 }
@@ -118,7 +113,10 @@ class DownloadAptosDialog(
             }
             false -> customDestinationDirectory
         }
-        AptosDownloader(project, version, destinationDir).start()
+        val downloadTask = DownloadAptosTask(parentComponent, version, destinationDir)
+        downloadTask.queue()
+
+        outPath = downloadTask.result
     }
 
     companion object {

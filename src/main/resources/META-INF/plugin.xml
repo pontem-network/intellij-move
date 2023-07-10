@@ -339,12 +339,12 @@
                 description="Create new Move file">
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
         </action>
-        <action id="Move.DownloadAptosCLI"
-                class="org.move.ide.actions.DownloadAptosAction"
-                text="Download Aptos CLI"
-                description="Download Aptos CLI">
-<!--            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>-->
-        </action>
+<!--        <action id="Move.DownloadAptosCLI"-->
+<!--                class="org.move.ide.actions.DownloadAptosAction"-->
+<!--                text="Download Aptos CLI"-->
+<!--                description="Download Aptos CLI">-->
+<!--&lt;!&ndash;            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>&ndash;&gt;-->
+<!--        </action>-->
         <action id="Move.RefreshAllProjects"
                 description="Update Move project information"
                 text="Update Move Projects"
