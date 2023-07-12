@@ -14,6 +14,9 @@ class InvalidIntegerTest : AnnotatorTestCase(MvSyntaxErrorAnnotator::class) {
                 0x1; 0xff; 0xFFF; 0xACACAFFF;
                 0x1f1fu128;
                 0011;
+                
+                0x1111_1111;
+                1_000;
             }
         }        
     """
