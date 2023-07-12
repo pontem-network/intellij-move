@@ -20,4 +20,28 @@
             <option name="FOREGROUND" value="8888C6"/>
         </value>
     </option>
+    <option name="org.move.KEY_OBJECT">
+        <value>
+            <option name="EFFECT_COLOR" value="bca5c4" />
+            <option name="EFFECT_TYPE" value="1" />
+        </value>
+    </option>
+    <option name="org.move.STORE_NO_DROP_OBJECT">
+        <value>
+            <option name="EFFECT_COLOR" value="bca5c4" />
+            <option name="EFFECT_TYPE" value="1" />
+        </value>
+    </option>
+    <option name="org.move.MUT_REF_TO_KEY_OBJECT">
+        <value>
+            <option name="EFFECT_COLOR" value="bca5c4" />
+            <option name="EFFECT_TYPE" value="1" />
+        </value>
+    </option>
+    <option name="org.move.MUT_REF_TO_STORE_NO_DROP_OBJECT">
+        <value>
+            <option name="EFFECT_COLOR" value="bca5c4" />
+            <option name="EFFECT_TYPE" value="1" />
+        </value>
+    </option>
 </list>

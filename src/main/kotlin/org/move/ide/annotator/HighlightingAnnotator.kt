@@ -8,6 +8,10 @@ import org.move.lang.MvElementTypes.HEX_INTEGER_LITERAL
 import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.types.infer.inference
+import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyReference
+import org.move.lang.core.types.ty.TyStruct
 
 val INTEGER_TYPE_IDENTIFIERS = setOf("u8", "u16", "u32", "u64", "u128", "u256")
 val SPEC_INTEGER_TYPE_IDENTIFIERS = INTEGER_TYPE_IDENTIFIERS + setOf("num")
@@ -74,16 +78,30 @@ class HighlightingAnnotator : MvAnnotatorBase() {
         if (element is MvModule) return MvColor.MODULE
         if (element is MvVectorLitExpr) return MvColor.VECTOR_LITERAL
 
-        val path = element as? MvPath ?: return null
-        // any qual :: access is not highlighted
-        if (path.isQualPath) return null
+        return when (element) {
+            is MvPath -> highlightPathElement(element)
+            is MvBindingPat -> highlightBindingPat(element)
+            else -> null
+        }
+    }
 
-        return highlightPathElement(path)
+    private fun highlightBindingPat(bindingPat: MvBindingPat): MvColor {
+        val msl = bindingPat.isMsl()
+        val itemTy = bindingPat.inference(msl)?.getPatType(bindingPat)
+        return if (itemTy != null) {
+            highlightVariableByType(itemTy)
+        } else {
+            MvColor.VARIABLE
+        }
     }
 
     private fun highlightPathElement(path: MvPath): MvColor? {
+        // any qual :: access is not highlighted
+        if (path.isQualPath) return null
+
         val identifierName = path.identifierName
-        return when (path.parent) {
+        val pathOwner = path.parent
+        return when (pathOwner) {
             is MvPathType -> {
                 when {
                     identifierName in PRIMITIVE_TYPE_IDENTIFIERS -> MvColor.PRIMITIVE_TYPE
@@ -121,10 +139,37 @@ class HighlightingAnnotator : MvAnnotatorBase() {
                 if (item is MvConst) {
                     MvColor.CONSTANT
                 } else {
-                    MvColor.VARIABLE
+                    val msl = pathOwner.isMsl()
+                    val itemTy = pathOwner.inference(msl)?.getExprType(pathOwner)
+                    if (itemTy != null) {
+                        highlightVariableByType(itemTy)
+                    } else {
+                        MvColor.VARIABLE
+                    }
                 }
             }
             else -> null
         }
     }
+
+    private fun highlightVariableByType(itemTy: Ty): MvColor =
+        when {
+            itemTy is TyReference -> {
+                val referenced = itemTy.referenced
+                when {
+                    referenced is TyStruct && referenced.item.hasKey ->
+                        if (itemTy.isMut) MvColor.MUT_REF_TO_KEY_OBJECT else MvColor.REF_TO_KEY_OBJECT
+                    referenced is TyStruct && referenced.item.hasStore && !referenced.item.hasDrop ->
+                        if (itemTy.isMut) MvColor.MUT_REF_TO_STORE_NO_DROP_OBJECT else MvColor.REF_TO_STORE_NO_DROP_OBJECT
+                    referenced is TyStruct && referenced.item.hasStore && referenced.item.hasDrop ->
+                        if (itemTy.isMut) MvColor.MUT_REF_TO_STORE_OBJECT else MvColor.REF_TO_STORE_OBJECT
+                    else ->
+                        if (itemTy.isMut) MvColor.MUT_REF else MvColor.REF
+                }
+            }
+            itemTy is TyStruct && itemTy.item.hasStore && !itemTy.item.hasDrop -> MvColor.STORE_NO_DROP_OBJECT
+            itemTy is TyStruct && itemTy.item.hasStore -> MvColor.STORE_OBJECT
+            itemTy is TyStruct && itemTy.item.hasKey -> MvColor.KEY_OBJECT
+            else -> MvColor.VARIABLE
+        }
 }
