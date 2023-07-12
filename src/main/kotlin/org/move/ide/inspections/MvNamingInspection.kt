@@ -1,10 +1,7 @@
 package org.move.ide.inspections
 
 import com.intellij.codeInspection.ProblemsHolder
-import org.move.lang.core.psi.MvBindingPat
-import org.move.lang.core.psi.MvConst
-import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.MvVisitor
+import org.move.lang.core.psi.*
 
 abstract class MvNamingInspection(private val elementTitle: String) : MvLocalInspectionTool() {
 
@@ -22,6 +19,26 @@ class MvConstNamingInspection : MvNamingInspection("Constant") {
                 holder.registerProblem(
                     ident,
                     "Invalid constant name `$name`. Constant names must start with 'A'..'Z'"
+                )
+            }
+        }
+    }
+}
+
+class MvFunctionNamingInspection : MvNamingInspection("Function") {
+    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
+
+        override fun visitFunction(o: MvFunction) = checkFunctionName(o)
+
+        override fun visitSpecFunction(o: MvSpecFunction) = checkFunctionName(o)
+
+        private fun checkFunctionName(o: MvFunctionLike) {
+            val ident = o.nameIdentifier ?: return
+            val name = ident.text
+            if (name.startsWithUnderscore()) {
+                holder.registerProblem(
+                    ident,
+                    "Invalid function name '$name'. Function names cannot start with '_'"
                 )
             }
         }
@@ -65,3 +82,5 @@ class MvLocalBindingNamingInspection : MvNamingInspection("Local variable") {
 fun String.startsWithUpperCaseLetter(): Boolean = this[0].isUpperCase()
 
 fun String.startsWithLowerCaseLetter(): Boolean = this[0].isLowerCase()
+
+fun String.startsWithUnderscore(): Boolean = this[0] == '_'

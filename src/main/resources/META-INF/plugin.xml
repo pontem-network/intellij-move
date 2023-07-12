@@ -205,6 +205,10 @@
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.move.ide.inspections.MvStructNamingInspection"/>
         <localInspection language="Move" groupName="Move"
+                         displayName="Function naming convention"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="org.move.ide.inspections.MvFunctionNamingInspection"/>
+        <localInspection language="Move" groupName="Move"
                          displayName="Local variable naming convention"
                          enabledByDefault="true" level="WARNING"
                          implementationClass="org.move.ide.inspections.MvLocalBindingNamingInspection"/>

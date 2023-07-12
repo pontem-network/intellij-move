@@ -3,13 +3,8 @@ package org.move.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.MvCastExpr
-import org.move.lang.core.psi.MvLitExpr
-import org.move.lang.core.psi.MvParensExpr
-import org.move.lang.core.psi.MvVisitor
-import org.move.lang.core.psi.ext.Literal
-import org.move.lang.core.psi.ext.literal
-import org.move.lang.core.psi.ext.startOffset
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.*
 import org.move.lang.utils.Diagnostic
 import org.move.lang.utils.addToHolder
 
@@ -22,6 +17,7 @@ class MvSyntaxErrorAnnotator : MvAnnotatorBase() {
         val visitor = object : MvVisitor() {
             override fun visitLitExpr(expr: MvLitExpr) = checkLitExpr(moveHolder, expr)
             override fun visitCastExpr(expr: MvCastExpr) = checkCastExpr(moveHolder, expr)
+            override fun visitStruct(s: MvStruct) = checkStruct(moveHolder, s)
         }
         element.accept(visitor)
     }
@@ -33,6 +29,13 @@ class MvSyntaxErrorAnnotator : MvAnnotatorBase() {
                 .ParensAreRequiredForCastExpr(castExpr)
                 .addToHolder(holder)
         }
+    }
+
+    private fun checkStruct(holder: MvAnnotationHolder, struct: MvStruct) {
+        val native = struct.native ?: return
+        val errorRange = TextRange.create(native.startOffset, struct.structKw.endOffset)
+        Diagnostic.NativeStructNotSupported(struct, errorRange)
+            .addToHolder(holder)
     }
 
     private fun checkLitExpr(holder: MvAnnotationHolder, litExpr: MvLitExpr) {

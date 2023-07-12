@@ -13,6 +13,32 @@ module 0x1::M {
     )
 }
 
+class MvFunctionNamingInspectionTest : InspectionTestBase(MvFunctionNamingInspection::class) {
+    fun `test function name cannot start with _`() = checkByText(
+        """
+module 0x1::m {
+    fun <warning descr="Invalid function name '_main'. Function names cannot start with '_'">_main</warning>() {}
+}
+    """
+    )
+
+    fun `test spec function name cannot start with _`() = checkByText(
+        """
+module 0x1::m {
+    spec fun <warning descr="Invalid function name '_main'. Function names cannot start with '_'">_main</warning>(): u8 { 1 }
+}
+    """
+    )
+
+    fun `test native function name cannot start with _`() = checkByText(
+        """
+module 0x1::m {
+    native fun <warning descr="Invalid function name '_main'. Function names cannot start with '_'">_main</warning>(): u8;
+}
+    """
+    )
+}
+
 class MvStructNamingInspectionTest : InspectionTestBase(MvStructNamingInspection::class) {
     fun `test structs`() = checkByText(
         """
