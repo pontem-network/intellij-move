@@ -15,15 +15,15 @@ val pluginJarName = "intellij-move-$platformVersion"
 val pluginVersion = "1.29.1"
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
-val kotlinStdlibVersion = "1.8.22"
+val kotlinStdlibVersion = "1.9.0"
 
 group = pluginGroup
 version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.8.22"
-    id("org.jetbrains.intellij") version "1.14.2"
+    kotlin("jvm") version "1.9.0"
+    id("org.jetbrains.intellij") version "1.15.0"
     id("org.jetbrains.grammarkit") version "2022.3.1"
     id("net.saliman.properties") version "1.5.2"
 }
