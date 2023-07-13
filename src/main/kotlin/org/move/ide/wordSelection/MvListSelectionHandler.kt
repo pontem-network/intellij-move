@@ -22,7 +22,7 @@ class MvListSelectionHandler : ExtendWordSelectionHandlerBase() {
         cursorOffset: Int,
         editor: Editor
     ): List<TextRange>? {
-        val node = e.node!!
+        val node = e.node ?: return null
         val startNode = node.findChildByType(LIST_OPEN_SYMBOLS) ?: return null
         val endNode = node.findChildByType(LIST_CLOSE_SYMBOLS) ?: return null
         val range = TextRange(startNode.startOffset + 1, endNode.startOffset)

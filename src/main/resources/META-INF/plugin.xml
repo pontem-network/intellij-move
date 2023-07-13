@@ -137,6 +137,9 @@
         <annotator language="Move"
                    implementationClass="org.move.ide.annotator.HighlightingAnnotator"/>
 
+        <annotator language="TOML"
+                   implementationClass="org.move.toml.MoveTomlErrorAnnotator" />
+
         <codeInsight.parameterInfo language="Move"
                                    implementationClass="org.move.ide.hints.FunctionParameterInfoHandler"/>
         <codeInsight.parameterInfo language="Move"
@@ -262,6 +265,7 @@
 
         <extendWordSelectionHandler implementation="org.move.ide.wordSelection.MvListSelectionHandler" />
         <extendWordSelectionHandler implementation="org.move.ide.wordSelection.MvTypeParamBoundListHandler" />
+        <extendWordSelectionHandler implementation="org.move.ide.wordSelection.MvStringSelectionHandler" />
 
         <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml"/>
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>

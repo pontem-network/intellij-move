@@ -91,8 +91,9 @@ FILE
               MvSpecPropertyImpl(SPEC_PROPERTY)
                 PsiElement(IDENTIFIER)('seed')
               PsiElement(])(']')
-            PsiErrorElement:<expression> expected, got '}'
-              <empty list>
+            PsiWhiteSpace(' ')
+            MvLitExprImpl(LIT_EXPR)
+              PsiElement(BOOL_LITERAL)('true')
           PsiWhiteSpace('\n    ')
           PsiElement(})('}')
       PsiWhiteSpace('\n')

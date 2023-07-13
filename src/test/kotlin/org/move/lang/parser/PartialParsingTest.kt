@@ -21,4 +21,5 @@ class PartialParsingTest: MvParsingTestCase("partial") {
     // expressions
     fun `test expressions`() = doTest(true)
     fun `test assignments`() = doTest(true)
+    fun `test dot exprs`() = doTest(true)
 }

@@ -10,7 +10,7 @@ import com.intellij.ide.DataManager
 import org.intellij.lang.annotations.Language
 
 abstract class MvSelectionHandlerTestBase : MvTestBase() {
-    fun doTest(@Language("Move") before: String, @Language("Move") vararg after: String) {
+    fun doTest(@Language("Move") before: String,  @Language("Move") vararg after: String) {
         doTestInner(before, after.toList())
     }
 

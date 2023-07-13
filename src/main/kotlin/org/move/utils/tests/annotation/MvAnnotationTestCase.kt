@@ -23,6 +23,13 @@ abstract class MvAnnotationTestCase : MvTestBase() {
     fun checkErrors(@Language("Move") text: String) = annotationFixture.checkErrors(text)
     fun checkWarnings(@Language("Move") text: String) = annotationFixture.checkWarnings(text)
 
+    fun checkMoveTomlWarnings(@Language("TOML") text: String) =
+        annotationFixture.check(text,
+                                configure = { tomlText ->
+                                    annotationFixture.codeInsightFixture
+                                        .configureByText("Move.toml", tomlText)
+                                })
+
     protected fun checkByText(
         @Language("Move") text: String,
         checkWarn: Boolean = true,

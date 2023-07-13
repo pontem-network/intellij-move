@@ -38,4 +38,11 @@ module M {
     fun m() {
         return 1
     }
+    fun dot() {
+        bin.field1.field2;
+        bin.field < 1;
+    }
+    spec dot {
+        bin.field[1];
+    }
 }

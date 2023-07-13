@@ -752,13 +752,14 @@ private ExprStmt_expr ::= ItemSpecBlockExpr
 private ExprStmt_recover ::= !(';' | '}' | <<mslOnly SpecExpr_first>> | Expr_first)
 private Expr_first ::= let | if | while | loop | continue | break | return | spec
                         | copy | move | abort
+//                        | (<<VECTOR_IDENTIFIER>> ('<' | '['))
                         | IDENTIFIER
                         | '*' | '&' | '!' | '|' | '{' | '('
                         | AnyLitToken_first
                         | (AddressRef '::')
 private SpecExpr_first ::= include | apply | pragma | emits | assume | assert | ensures
                             | axiom | modifies | aborts_if | aborts_with | requires
-                            | invariant | choose
+                            | invariant | choose | decreases | update
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Blocks
@@ -1050,7 +1051,7 @@ private DotExpr_field ::= '.' (!'.') StructDotField {
     pin = 2
     consumeTokenMethod = "consumeTokenFast"
 }
-StructDotField ::= IDENTIFIER
+StructDotField ::= !(<<VECTOR_IDENTIFIER>> ('[' | '<')) IDENTIFIER !('(' | '::' | '!' | '{')
 {
     implements = ["org.move.lang.core.resolve.ref.MvStructFieldReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MvStructDotMixin"
