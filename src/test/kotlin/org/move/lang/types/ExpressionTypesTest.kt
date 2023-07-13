@@ -1650,4 +1650,36 @@ module 0x1::main {
         }        
     """)
 
+    fun `test dot expr chained`() = testExpr("""
+        module 0x1::m {
+            struct Pool { field: u8 }
+            fun main(pool: &mut Pool) {
+                pool.
+                //^ &mut 0x1::m::Pool
+                pool.field;
+            }
+        }        
+    """)
+
+    fun `test dot expr with dot expr incomplete 1`() = testExpr("""
+        module 0x1::m {
+            struct Pool { field: u8 }
+            fun main(pool: &mut Pool) {
+                pool.field
+                //^ &mut 0x1::m::Pool
+                pool.field
+            }
+        }        
+    """)
+
+    fun `test dot expr with dot expr incomplete 2`() = testExpr("""
+        module 0x1::m {
+            struct Pool { field: u8 }
+            fun main(pool: &mut Pool) {
+                pool.unknown
+                pool.field
+                    //^ u8
+            }
+        }        
+    """)
 }

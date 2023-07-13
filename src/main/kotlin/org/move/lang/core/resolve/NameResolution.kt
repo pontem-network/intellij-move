@@ -1,18 +1,17 @@
 package org.move.lang.core.resolve
 
-import com.intellij.codeInsight.completion.CompletionUtil
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.MoveFile
 import org.move.lang.core.completion.getOriginalOrSelf
-import org.move.lang.core.completion.safeGetOriginalElement
-import org.move.lang.core.completion.safeGetOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.address
+import org.move.lang.core.types.infer.MvInferenceContextOwner
+import org.move.lang.core.types.infer.inferTypesIn
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
@@ -238,7 +237,18 @@ fun processLexicalDeclarations(
                 val msl = dotExpr.isMsl()
                 val receiverExpr = dotExpr.expr
                 val inference = receiverExpr.inference(msl) ?: return false
-                val receiverTy = inference.getExprType(receiverExpr)
+                val receiverTy =
+                    inference.getExprTypeOrNull(receiverExpr) ?: run {
+                        // Sometimes in the completion, tree drastically changes between
+                        // `s.` and `s.IntellijIdeaRulezzz`, in that case inference cache value is inapplicable.
+                        // We don't want to drop the cache in that case, so to mitigate stale cache problems
+                        // - we just create another inference context (but only in case of an error).
+                        // Should happen pretty rarely, so hopefully won't affect performance much.
+                        val inferenceOwner =
+                            receiverExpr.ancestorOrSelf<MvInferenceContextOwner>() ?: return false
+                        val noCacheInference = inferTypesIn(inferenceOwner, msl)
+                        noCacheInference.getExprType(receiverExpr)
+                    }
 
                 val innerTy = when (receiverTy) {
                     is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
