@@ -113,20 +113,18 @@ internal val MvElement.typeErrorText: String
                 text += "\nFile: ${file.toNioPathOrNull()} at ($line, $col)"
             }
         }
-        val psiContext = when (this) {
-            is MvExpr -> this.ancestorStrict<MvStmt>()
-            is MvPat -> this.ancestorStrict<MvInferenceContextOwner>() ?: this.parent
-            else -> null
-        }
-        if (psiContext != null) {
-            val psiString = DebugUtil.psiToString(psiContext, true)
-            text += "\n"
-            text += psiString
-            if (this is MvExpr) {
-                // print next element too
-                val nextPsiContext = psiContext.getNextNonCommentSibling()
-                if (nextPsiContext != null) {
-                    text += DebugUtil.psiToString(nextPsiContext, true)
+        when (this) {
+            is MvExpr -> {
+                val stmt = this.ancestorStrict<MvStmt>();
+                if (stmt != null) {
+                    val psiString = DebugUtil.psiToString(stmt, true)
+                    text += "\n"
+                    text += psiString
+                    // print next stmt too
+                    val nextPsiContext = stmt.getNextNonCommentSibling() as? MvStmt
+                    if (nextPsiContext != null) {
+                        text += DebugUtil.psiToString(nextPsiContext, true)
+                    }
                 }
             }
         }
