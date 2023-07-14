@@ -20,7 +20,7 @@ import io.sentry.UserFeedback
 import io.sentry.protocol.Message
 import io.sentry.protocol.SentryId
 import org.move.cli.settings.moveSettings
-import org.move.cli.settings.pluginDebugMode
+import org.move.openapiext.contentRoots
 import org.move.openapiext.project
 import org.move.stdext.asMap
 import java.awt.Component

@@ -22,6 +22,7 @@ import com.intellij.testFramework.LightVirtualFile
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.messages.Topic
 import org.move.cli.MoveProjectsService
+import org.move.cli.MoveProjectsService.MoveProjectsListener
 import org.move.cli.moveProjects
 import org.move.lang.MoveFile
 import org.move.lang.MoveFileType
@@ -101,14 +102,14 @@ class MvPsiManagerImpl(val project: Project) : MvPsiManager, Disposable {
     init {
         PsiManager.getInstance(project).addPsiTreeChangeListener(CacheInvalidator(), this)
 
-        project.messageBus.connect().subscribe(ProjectTopics.PROJECT_ROOTS, object : ModuleRootListener {
-            override fun rootsChanged(event: ModuleRootEvent) {
-                incStructureModificationCount()
-            }
-        })
-        project.messageBus.connect().subscribe(
-            MoveProjectsService.MOVE_PROJECTS_TOPIC,
-            MoveProjectsService.MoveProjectsListener { _, _ ->
+        project.messageBus.connect()
+            .subscribe(ProjectTopics.PROJECT_ROOTS, object : ModuleRootListener {
+                override fun rootsChanged(event: ModuleRootEvent) {
+                    incStructureModificationCount()
+                }
+            })
+        project.messageBus.connect()
+            .subscribe(MoveProjectsService.MOVE_PROJECTS_TOPIC, MoveProjectsListener { _, _ ->
                 incStructureModificationCount()
             })
     }

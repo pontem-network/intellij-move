@@ -3,6 +3,7 @@ package org.move.cli.module
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
+import com.intellij.openapi.roots.ImmutableSyntheticLibrary
 import com.intellij.openapi.roots.SyntheticLibrary
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.MoveProject
@@ -32,7 +33,27 @@ class MoveLibrary(
     override fun getPresentableText(): String = if (version != null) "$name $version" else name
 }
 
-private val MoveProject.ideaLibraries: Collection<MoveLibrary>
+class BuildLibraryRootsProvider : AdditionalLibraryRootsProvider() {
+    override fun getAdditionalProjectLibraries(project: Project): Collection<SyntheticLibrary> {
+        return project.moveProjects
+            .allProjects
+            .smartFlatMap { it.ideaLibraries }
+            .toMutableSet()
+    }
+
+    override fun getRootsToWatch(project: Project): List<VirtualFile> {
+        return getAdditionalProjectLibraries(project).flatMap { it.sourceRoots }
+    }
+}
+
+private fun <U, V> Collection<U>.smartFlatMap(transform: (U) -> Collection<V>): Collection<V> =
+    when (size) {
+        0 -> emptyList()
+        1 -> transform(first())
+        else -> this.flatMap(transform)
+    }
+
+private val MoveProject.ideaLibraries: Collection<SyntheticLibrary>
     get() {
         return this.dependencies
             .map { it.first }
@@ -50,16 +71,3 @@ private val MoveProject.ideaLibraries: Collection<MoveLibrary>
             }
 
     }
-
-class BuildLibraryRootsProvider : AdditionalLibraryRootsProvider() {
-    override fun getAdditionalProjectLibraries(project: Project): MutableSet<SyntheticLibrary> {
-        return project.moveProjects
-            .allProjects
-            .flatMap { it.ideaLibraries }
-            .toMutableSet()
-    }
-
-    override fun getRootsToWatch(project: Project): List<VirtualFile> {
-        return getAdditionalProjectLibraries(project).flatMap { it.sourceRoots }
-    }
-}
