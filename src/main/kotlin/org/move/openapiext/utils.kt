@@ -22,8 +22,11 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.SyntheticLibrary
+import com.intellij.openapi.roots.libraries.LibraryTable
+import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.JDOMUtil
 import com.intellij.openapi.util.NlsContexts
@@ -117,6 +120,13 @@ val Project.modules: Collection<Module>
 val Project.contentRoots: Sequence<VirtualFile>
     get() = this.modules.asSequence()
         .flatMap { ModuleRootManager.getInstance(it).contentRoots.asSequence() }
+
+val Project.syntheticLibraries: Collection<SyntheticLibrary> get() {
+    val libraries = AdditionalLibraryRootsProvider.EP_NAME
+        .extensionList
+        .flatMap { it.getAdditionalProjectLibraries(this) }
+    return libraries
+}
 
 val Project.root: Path? get() = contentRoots.firstOrNull()?.toNioPathOrNull()
 

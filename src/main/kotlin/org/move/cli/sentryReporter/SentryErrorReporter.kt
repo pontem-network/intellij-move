@@ -1,4 +1,4 @@
-package org.move.cli
+package org.move.cli.sentryReporter
 
 import com.intellij.diagnostic.DiagnosticBundle
 import com.intellij.diagnostic.IdeErrorsDialog
@@ -20,13 +20,12 @@ import io.sentry.UserFeedback
 import io.sentry.protocol.Message
 import io.sentry.protocol.SentryId
 import org.move.cli.settings.moveSettings
-import org.move.openapiext.contentRoots
 import org.move.openapiext.project
 import org.move.stdext.asMap
 import java.awt.Component
 
 
-class PontemSentryErrorReporter : ErrorReportSubmitter() {
+class SentryErrorReporter : ErrorReportSubmitter() {
     init {
         Sentry.init { options ->
             options.dsn = "https://a3153f348f8d43f189c4228db47cfc0d@sentry.pontem.network/6"
@@ -85,10 +84,8 @@ class PontemSentryErrorReporter : ErrorReportSubmitter() {
                 settings.remove("aptosPath")
                 sentryEvent.contexts["Settings"] = settings
             }
-            sentryEvent.contexts["Stacktrace"] =
-                mapOf(
-                    "Value" to event.throwableText
-                )
+            // IdeaLoggingEvent only provides text stacktrace
+            sentryEvent.contexts["Stacktrace"] = mapOf("Value" to event.throwableText)
 
             val sentryMessage = Message()
             sentryMessage.formatted = event.errorMessage

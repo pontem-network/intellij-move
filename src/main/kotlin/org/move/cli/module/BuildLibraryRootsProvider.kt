@@ -3,7 +3,6 @@ package org.move.cli.module
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
-import com.intellij.openapi.roots.ImmutableSyntheticLibrary
 import com.intellij.openapi.roots.SyntheticLibrary
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.MoveProject

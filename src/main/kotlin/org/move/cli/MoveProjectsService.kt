@@ -161,11 +161,7 @@ class MoveProjectsService(val project: Project) : Disposable {
     private fun modifyProjects(
         updater: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
     ): CompletableFuture<List<MoveProject>> {
-        val refreshStatusPublisher =
-            project.messageBus.syncPublisher(MOVE_PROJECTS_REFRESH_TOPIC)
-
         val wrappedUpdater = { projects: List<MoveProject> ->
-            refreshStatusPublisher.onRefreshStarted()
             updater(projects)
         }
 
@@ -195,14 +191,9 @@ class MoveProjectsService(val project: Project) : Disposable {
     companion object {
         private val LOG = logger<MoveProjectsService>()
 
-        val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic(
+        val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic.create(
             "move projects changes",
             MoveProjectsListener::class.java
-        )
-
-        val MOVE_PROJECTS_REFRESH_TOPIC: Topic<MoveProjectsRefreshListener> = Topic(
-            "Move refresh",
-            MoveProjectsRefreshListener::class.java
         )
     }
 

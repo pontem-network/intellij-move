@@ -115,10 +115,10 @@ class MoveToml(
             projectRoot: Path
         ): Pair<TomlDependency.Local, RawAddressMap>? {
             val localPathValue = depTable["local"]?.stringValue() ?: return null
-            val localPath =
+            val normalizedLocalPath =
                 projectRoot.resolve(localPathValue).toAbsolutePath().normalize()
             val subst = parseAddrSubst(depTable)
-            return Pair(TomlDependency.Local(depName, localPath), subst)
+            return Pair(TomlDependency.Local(depName, normalizedLocalPath), subst)
         }
 
         private fun parseGitDependency(

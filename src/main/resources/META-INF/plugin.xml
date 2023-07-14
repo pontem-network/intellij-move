@@ -330,7 +330,7 @@
             <category>Move</category>
         </intentionAction>
 
-        <errorHandler implementation="org.move.cli.PontemSentryErrorReporter" />
+        <errorHandler implementation="org.move.cli.sentryReporter.SentryErrorReporter" />
 
     </extensions>
 
@@ -338,6 +338,9 @@
         <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
                   topic="org.move.cli.settings.MoveSettingsListener"
                   activeInTestMode="false"/>
+        <listener
+            class="org.move.cli.sentryReporter.SentryContextsProjectsListener"
+            topic="org.move.cli.MoveProjectsService$MoveProjectsListener" />
     </projectListeners>
 
     <actions>
