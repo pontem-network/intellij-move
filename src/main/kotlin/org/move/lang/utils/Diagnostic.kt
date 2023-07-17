@@ -16,6 +16,7 @@ import org.move.ide.annotator.pluralise
 import org.move.lang.core.psi.MvCastExpr
 import org.move.lang.core.psi.MvItemSpec
 import org.move.lang.core.psi.MvPath
+import org.move.lang.core.psi.MvStruct
 import org.move.lang.core.psi.ext.*
 import org.move.lang.utils.Severity.*
 
@@ -139,6 +140,15 @@ sealed class Diagnostic(
                 ERROR,
                 "Parentheses are required for the cast expr",
                 fixes = listOf(WrapWithParensExprFix(castExpr))
+            )
+        }
+    }
+
+    class NativeStructNotSupported(struct: MvStruct, errorRange: TextRange): Diagnostic(struct, errorRange) {
+        override fun prepare(): PreparedAnnotation {
+            return PreparedAnnotation(
+                ERROR,
+                "Native structs aren't supported by the Move VM anymore"
             )
         }
     }

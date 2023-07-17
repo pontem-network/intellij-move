@@ -17,21 +17,21 @@ class QuotesHandlerTest: MvTypingTestCase() {
     }    
     """, '"')
 
-    fun `test complete byte string quotes`() = doTestByText("""
+    fun `test complete byte string quotes no semi`() = doTestByText("""
     script {
         fun m() {
-            b/*caret*/;
+            b<caret>
         }
     }    
     """, """
     script {
         fun m() {
-            b"/*caret*/";
+            b"<caret>"
         }
     }    
     """, '"')
 
-    fun `test complete hex string quotes`() = doTestByText("""
+    fun `test complete hex string quotes semi`() = doTestByText("""
     script {
         fun m() {
             x/*caret*/;
@@ -41,6 +41,20 @@ class QuotesHandlerTest: MvTypingTestCase() {
     script {
         fun m() {
             x"/*caret*/";
+        }
+    }    
+    """, '"')
+
+    fun `test complete hex string quotes no semi`() = doTestByText("""
+    script {
+        fun m() {
+            x/*caret*/
+        }
+    }    
+    """, """
+    script {
+        fun m() {
+            x"/*caret*/"
         }
     }    
     """, '"')

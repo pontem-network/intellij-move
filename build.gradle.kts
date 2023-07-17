@@ -12,30 +12,26 @@ fun prop(name: String): String =
         ?: error("Property `$name` is not defined in gradle.properties for environment `$platformVersion`")
 
 val pluginJarName = "intellij-move-$platformVersion"
-val pluginVersion = "1.29.0"
+val pluginVersion = "1.30.0"
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
-val kotlinJvmTarget = "17"
-val kotlinStdlibVersion = "1.8.21"
+val kotlinStdlibVersion = "1.9.0"
 
 group = pluginGroup
 version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.8.21"
-    id("org.jetbrains.intellij") version "1.13.3"
+    kotlin("jvm") version "1.9.0"
+    id("org.jetbrains.intellij") version "1.15.0"
     id("org.jetbrains.grammarkit") version "2022.3.1"
     id("net.saliman.properties") version "1.5.2"
 }
 
 dependencies {
-    // kotlin stdlib source code
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinStdlibVersion")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinStdlibVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinStdlibVersion")
 
-    implementation("io.sentry:sentry:5.5.2") {
+    implementation("io.sentry:sentry:6.25.0") {
         exclude("org.slf4j")
     }
     implementation("com.github.ajalt.clikt:clikt:3.5.2")
@@ -80,9 +76,6 @@ allprojects {
             main {
                 kotlin.srcDirs("src/$platformVersion/main/kotlin")
             }
-//            test {
-//                kotlin.srcDirs("src/$platformVersion/test/kotlin")
-//            }
         }
     }
 
@@ -103,11 +96,11 @@ allprojects {
 
     tasks {
         // workaround for gradle not seeing tests in 2021.3+
-        val test by getting(Test::class) {
-            setScanForTestClasses(false)
-            // Only run tests from classes that end with "Test"
-            include("**/*Test.class")
-        }
+//        val test by getting(Test::class) {
+//            isScanForTestClasses = false
+//            // Only run tests from classes that end with "Test"
+//            include("**/*Test.class")
+//        }
 
         patchPluginXml {
             version.set("$pluginVersion.$platformVersion")
@@ -148,7 +141,7 @@ allprojects {
                 generateMoveLexer, generateMoveParser
             )
             kotlinOptions {
-                jvmTarget = kotlinJvmTarget
+                jvmTarget = "17"
                 languageVersion = "1.8"
                 apiVersion = "1.6"
                 freeCompilerArgs = listOf("-Xjvm-default=all")

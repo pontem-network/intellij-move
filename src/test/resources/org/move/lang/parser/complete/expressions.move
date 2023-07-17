@@ -9,6 +9,9 @@ module M {
         0xRR;  // invalid
         0xFFFu128;
 
+        0x1111_1111;
+        1_000;
+
         (1 + 1) * (1 + 1);
         (!!true + !!true) * !!false;
         1 % 2;
@@ -34,5 +37,12 @@ module M {
     }
     fun m() {
         return 1
+    }
+    fun dot() {
+        bin.field1.field2;
+        bin.field < 1;
+    }
+    spec dot {
+        bin.field[1];
     }
 }

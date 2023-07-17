@@ -161,40 +161,29 @@ class MoveProjectsService(val project: Project) : Disposable {
     private fun modifyProjects(
         updater: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
     ): CompletableFuture<List<MoveProject>> {
-        val refreshStatusPublisher =
-            project.messageBus.syncPublisher(MOVE_PROJECTS_REFRESH_TOPIC)
-
         val wrappedUpdater = { projects: List<MoveProject> ->
-            refreshStatusPublisher.onRefreshStarted()
             updater(projects)
         }
 
         return projects.updateAsync(wrappedUpdater)
             .thenApply { projects ->
                 buildWatcher.updateProjects(projects)
-                resetIDEState(projects)
+                invokeAndWaitIfNeeded {
+                    runWriteAction {
+                        projectsIndex.resetIndex()
+
+                        // In unit tests roots change is done by the test framework in most cases
+                        runOnlyInNonLightProject(project) {
+                            ProjectRootManagerEx.getInstanceEx(project)
+                                .makeRootsChange(EmptyRunnable.getInstance(), false, true)
+                        }
+                        // increments structure modification counter in the subscriber
+                        project.messageBus
+                            .syncPublisher(MOVE_PROJECTS_TOPIC).moveProjectsUpdated(this, projects)
+                    }
+                }
                 projects
             }
-    }
-
-    private fun resetIDEState(projects: Collection<MoveProject>) {
-        invokeAndWaitIfNeeded {
-            runWriteAction {
-                projectsIndex.resetIndex()
-
-                PsiManager.getInstance(project).dropPsiCaches()
-                project.movePsiManager.incStructureModificationCount()
-
-                // In unit tests roots change is done by the test framework in most cases
-                runOnlyInNonLightProject(project) {
-                    ProjectRootManagerEx.getInstanceEx(project)
-                        .makeRootsChange(EmptyRunnable.getInstance(), false, true)
-                }
-                project.messageBus
-                    .syncPublisher(MOVE_PROJECTS_TOPIC)
-                    .moveProjectsUpdated(this, projects)
-            }
-        }
     }
 
     override fun dispose() {}
@@ -202,14 +191,9 @@ class MoveProjectsService(val project: Project) : Disposable {
     companion object {
         private val LOG = logger<MoveProjectsService>()
 
-        val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic(
+        val MOVE_PROJECTS_TOPIC: Topic<MoveProjectsListener> = Topic.create(
             "move projects changes",
             MoveProjectsListener::class.java
-        )
-
-        val MOVE_PROJECTS_REFRESH_TOPIC: Topic<MoveProjectsRefreshListener> = Topic(
-            "Move refresh",
-            MoveProjectsRefreshListener::class.java
         )
     }
 

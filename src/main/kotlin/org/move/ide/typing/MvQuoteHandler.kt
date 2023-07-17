@@ -12,15 +12,19 @@ class MvQuoteHandler : SimpleTokenSetQuoteHandler(BYTE_STRING_LITERAL, HEX_STRIN
     override fun isOpeningQuote(iterator: HighlighterIterator, offset: Int): Boolean {
         val elementType = iterator.tokenType
         val start = iterator.start
-        return when (elementType) {
-            BYTE_STRING_LITERAL, HEX_STRING_LITERAL -> offset - start <= 1
+        val result = when (elementType) {
+            BYTE_STRING_LITERAL, HEX_STRING_LITERAL -> start == (offset + 1)
             else -> super.isOpeningQuote(iterator, offset)
         }
+        return result
     }
 
     override fun isNonClosedLiteral(iterator: HighlighterIterator, chars: CharSequence): Boolean {
-        if (iterator.tokenType == HEX_STRING_LITERAL)
-            return iterator.end - iterator.start == 2
+        if (iterator.tokenType == HEX_STRING_LITERAL
+            || iterator.tokenType == BYTE_STRING_LITERAL
+        ) {
+            return (iterator.end - iterator.start) == 2
+        }
 
         return super.isNonClosedLiteral(iterator, chars)
     }

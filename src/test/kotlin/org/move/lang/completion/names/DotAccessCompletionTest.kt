@@ -55,4 +55,22 @@ module 0x1::M {
 }            
         """
     )
+
+    fun `test chained dot access`() = doSingleCompletion("""
+        module 0x1::m {
+            struct Pool { field: u8 }
+            fun main(pool: &mut Pool) {
+                pool./*caret*/
+                pool.field
+            }
+        }        
+    """, """
+        module 0x1::m {
+            struct Pool { field: u8 }
+            fun main(pool: &mut Pool) {
+                pool.field/*caret*/
+                pool.field
+            }
+        }        
+    """)
 }

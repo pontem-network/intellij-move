@@ -2,8 +2,8 @@ package org.move.lang.core.types.infer
 
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
+import com.intellij.psi.impl.DebugUtil
 import com.intellij.psi.util.CachedValue
-import com.jetbrains.rd.util.concurrentMapOf
 import org.jetbrains.annotations.TestOnly
 import org.move.cli.settings.pluginDebugMode
 import org.move.ide.formatter.impl.location
@@ -97,6 +97,7 @@ data class InferenceResult(
 
     /// Explicitly allow uninferred expr
     fun getExprTypeOrUnknown(expr: MvExpr): Ty = exprTypes[expr] ?: TyUnknown
+    fun getExprTypeOrNull(expr: MvExpr): Ty? = exprTypes[expr]
 
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallExprType(expr: MvCallExpr): Ty? = callExprTypes[expr]
@@ -112,18 +113,20 @@ internal val MvElement.typeErrorText: String
                 text += "\nFile: ${file.toNioPathOrNull()} at ($line, $col)"
             }
         }
-
-        val context = when (this) {
-            is MvExpr -> this.ancestorStrict<MvStmt>()?.text
-            is MvPat -> {
-                val inferenceOwner = this.ancestorStrict<MvInferenceContextOwner>()
-                inferenceOwner?.text ?: this.parent?.text
+        when (this) {
+            is MvExpr -> {
+                val stmt = this.ancestorStrict<MvStmt>();
+                if (stmt != null) {
+                    val psiString = DebugUtil.psiToString(stmt, true)
+                    text += "\n"
+                    text += psiString
+                    // print next stmt too
+                    val nextPsiContext = stmt.getNextNonCommentSibling() as? MvStmt
+                    if (nextPsiContext != null) {
+                        text += DebugUtil.psiToString(nextPsiContext, true)
+                    }
+                }
             }
-            else -> null
-        }
-        if (context != null) {
-            if (!context.endsWith('\n')) text += "\n"
-            text += "Context: \n${context.trimIndent()}\n"
         }
         return text
     }

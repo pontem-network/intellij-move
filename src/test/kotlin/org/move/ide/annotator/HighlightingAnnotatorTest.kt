@@ -228,4 +228,54 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
             }
         }
     """)
+
+    fun `test highlight objects`() = checkHighlighting("""
+        module 0x1::m {
+            struct Res {}
+            struct ResKey has key {}
+            struct ResStoreDrop has store, drop {}
+            struct ResStore has store {}
+            fun objects(
+                <VARIABLE>binding</VARIABLE>: u8,
+                <KEY_OBJECT>res_key</KEY_OBJECT>: ResKey, 
+                <STORE_OBJECT>res_store_drop</STORE_OBJECT>: ResStoreDrop, 
+                <STORE_NO_DROP_OBJECT>res_store</STORE_NO_DROP_OBJECT>: ResStore, 
+            ) {
+                <KEY_OBJECT>res_key</KEY_OBJECT>;
+                <STORE_OBJECT>res_store_drop</STORE_OBJECT>;
+                <STORE_NO_DROP_OBJECT>res_store</STORE_NO_DROP_OBJECT>;
+            }
+        }        
+    """)
+
+    fun `test highlight references`() = checkHighlighting("""
+        module 0x1::m {
+            struct Res {}
+            struct ResKey has key {}
+            struct ResStoreDrop has store, drop {}
+            struct ResStoreNoDrop has store {}
+            fun refs(<REF>ref_res</REF>: &Res, <MUT_REF>mut_ref_res</MUT_REF>: &mut Res) {
+                <REF>ref_res</REF>;
+                <MUT_REF>mut_ref_res</MUT_REF>;
+            }
+            fun ref_to_object(
+                <REF_TO_KEY_OBJECT>ref_res_key</REF_TO_KEY_OBJECT>: &ResKey, 
+                <REF_TO_STORE_OBJECT>ref_res_store_drop</REF_TO_STORE_OBJECT>: &ResStoreDrop, 
+                <REF_TO_STORE_NO_DROP_OBJECT>ref_res_store_no_drop</REF_TO_STORE_NO_DROP_OBJECT>: &ResStoreNoDrop, 
+                ) {
+                <REF_TO_KEY_OBJECT>ref_res_key</REF_TO_KEY_OBJECT>;
+                <REF_TO_STORE_OBJECT>ref_res_store_drop</REF_TO_STORE_OBJECT>;
+                <REF_TO_STORE_NO_DROP_OBJECT>ref_res_store_no_drop</REF_TO_STORE_NO_DROP_OBJECT>;
+            }
+            fun mut_ref_to_object(
+                <MUT_REF_TO_KEY_OBJECT>ref_res_key</MUT_REF_TO_KEY_OBJECT>: &mut ResKey, 
+                <MUT_REF_TO_STORE_OBJECT>ref_res_store_drop</MUT_REF_TO_STORE_OBJECT>: &mut ResStoreDrop, 
+                <MUT_REF_TO_STORE_NO_DROP_OBJECT>ref_res_store_no_drop</MUT_REF_TO_STORE_NO_DROP_OBJECT>: &mut ResStoreNoDrop, 
+                ) {
+                <MUT_REF_TO_KEY_OBJECT>ref_res_key</MUT_REF_TO_KEY_OBJECT>;
+                <MUT_REF_TO_STORE_OBJECT>ref_res_store_drop</MUT_REF_TO_STORE_OBJECT>;
+                <MUT_REF_TO_STORE_NO_DROP_OBJECT>ref_res_store_no_drop</MUT_REF_TO_STORE_NO_DROP_OBJECT>;
+            }
+        }        
+    """)
 }

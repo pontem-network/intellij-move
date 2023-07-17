@@ -53,6 +53,11 @@ val MvStruct.psiAbilities: List<MvAbility>
 
 val MvStruct.abilities: Set<Ability> get() = this.psiAbilities.mapNotNull { it.ability }.toSet()
 
+val MvStruct.hasKey: Boolean get() = Ability.KEY in abilities
+val MvStruct.hasStore: Boolean get() = Ability.STORE in abilities
+val MvStruct.hasCopy: Boolean get() = Ability.COPY in abilities
+val MvStruct.hasDrop: Boolean get() = Ability.DROP in abilities
+
 val MvStruct.requiredAbilitiesForTypeParam: Set<Ability> get() =
     this.abilities.map { it.requires() }.toSet()
 

@@ -9,6 +9,20 @@ enum class MvColor(humanName: String, default: TextAttributesKey? = null) {
     VARIABLE("Variables//Default", Default.IDENTIFIER),
     FIELD("Variables//Field", Default.INSTANCE_FIELD),
 
+    KEY_OBJECT("Variables//Object with 'key'", Default.IDENTIFIER),
+    STORE_OBJECT("Variables//Object with 'store'", Default.IDENTIFIER),
+    STORE_NO_DROP_OBJECT("Variables//Object with 'store' but without 'drop'", Default.IDENTIFIER),
+
+    REF("Variables//Reference", Default.IDENTIFIER),
+    REF_TO_KEY_OBJECT("Variables//Reference to object with 'key'", Default.IDENTIFIER),
+    REF_TO_STORE_OBJECT("Variables//Reference to object with 'store'", Default.IDENTIFIER),
+    REF_TO_STORE_NO_DROP_OBJECT("Variables//Reference to object with 'store' but without 'drop'", Default.IDENTIFIER),
+
+    MUT_REF("Variables//Mutable reference", Default.IDENTIFIER),
+    MUT_REF_TO_KEY_OBJECT("Variables//Mutable reference to object with 'key' ability", Default.IDENTIFIER),
+    MUT_REF_TO_STORE_OBJECT("Variables//Mutable reference to object with 'store' ability", Default.IDENTIFIER),
+    MUT_REF_TO_STORE_NO_DROP_OBJECT("Variables//Mutable reference to object with 'store' ability but without 'drop'", Default.IDENTIFIER),
+
     MODULE("Modules//Module definition", Default.IDENTIFIER),
     CONSTANT("Variables//Constant", Default.CONSTANT),
 

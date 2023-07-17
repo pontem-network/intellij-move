@@ -3,13 +3,8 @@ package org.move.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.MvCastExpr
-import org.move.lang.core.psi.MvLitExpr
-import org.move.lang.core.psi.MvParensExpr
-import org.move.lang.core.psi.MvVisitor
-import org.move.lang.core.psi.ext.Literal
-import org.move.lang.core.psi.ext.literal
-import org.move.lang.core.psi.ext.startOffset
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.*
 import org.move.lang.utils.Diagnostic
 import org.move.lang.utils.addToHolder
 
@@ -22,6 +17,7 @@ class MvSyntaxErrorAnnotator : MvAnnotatorBase() {
         val visitor = object : MvVisitor() {
             override fun visitLitExpr(expr: MvLitExpr) = checkLitExpr(moveHolder, expr)
             override fun visitCastExpr(expr: MvCastExpr) = checkCastExpr(moveHolder, expr)
+            override fun visitStruct(s: MvStruct) = checkStruct(moveHolder, s)
         }
         element.accept(visitor)
     }
@@ -33,6 +29,13 @@ class MvSyntaxErrorAnnotator : MvAnnotatorBase() {
                 .ParensAreRequiredForCastExpr(castExpr)
                 .addToHolder(holder)
         }
+    }
+
+    private fun checkStruct(holder: MvAnnotationHolder, struct: MvStruct) {
+        val native = struct.native ?: return
+        val errorRange = TextRange.create(native.startOffset, struct.structKw.endOffset)
+        Diagnostic.NativeStructNotSupported(struct, errorRange)
+            .addToHolder(holder)
     }
 
     private fun checkLitExpr(holder: MvAnnotationHolder, litExpr: MvLitExpr) {
@@ -59,7 +62,7 @@ class MvSyntaxErrorAnnotator : MvAnnotatorBase() {
                     }
                 }
                 for ((i, char) in actualLitValue.toList().withIndex()) {
-                    if (char !in ACCEPTABLE_HEX_SYMBOLS) {
+                    if (char !in ACCEPTABLE_HEX_INTEGER_SYMBOLS) {
                         val offset = actualLitOffset + i
                         holder.createErrorAnnotation(
                             TextRange.from(offset, 1),
@@ -128,18 +131,15 @@ class MvSyntaxErrorAnnotator : MvAnnotatorBase() {
 
     companion object {
         private val INTEGER_WITH_SUFFIX_REGEX =
-            Regex("([0-9a-zA-Z]+)(u[0-9]{1,4})")
+            Regex("([0-9a-zA-Z_]+)(u[0-9]{1,4})")
         private val ACCEPTABLE_INTEGER_SYMBOLS =
-            setOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
+            setOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '_')
         private val ACCEPTABLE_INTEGER_SUFFIXES =
             setOf("u8", "u16", "u32", "u64", "u128", "u256")
         private val HEX_INTEGER_WITH_SUFFIX_REGEX =
-            Regex("([0-9a-zA-Z]+)*(u[0-9]{1,4})")
+            Regex("([0-9a-zA-Z_]+)*(u[0-9]{1,4})")
         private val ACCEPTABLE_HEX_SYMBOLS =
             setOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
-//        private val INTEGER_WITH_SUFFIX_REGEX =
-//            Regex("([0-9a-zA-Z]+)(u(8)|(16)|(32)|(64)|(128)|(256))")
-
-//        private val INTEGER_REGEX = Regex("[0-9]+(u(8)|(16)|(32)|(64)|(128)|(256))?")
+        private val ACCEPTABLE_HEX_INTEGER_SYMBOLS = ACCEPTABLE_HEX_SYMBOLS + setOf('_')
     }
 }
