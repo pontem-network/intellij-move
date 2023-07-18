@@ -33,8 +33,8 @@ class MvStructureViewTreeElement(val element: NavigatablePsiElement) : Structure
             is MvAddressDef -> element.modules()
             is MvModule -> {
                 listOf(
-                    element.structs(),
-                    element.allFunctions(),
+                    element.structs().sortedBy { it.name },
+                    element.allFunctions().sortedBy { it.name },
                     element.specFunctions(),
                 ).flatten()
             }
