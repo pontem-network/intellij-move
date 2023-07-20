@@ -9,11 +9,13 @@ import com.intellij.psi.PsiFile
 import org.move.lang.MoveFile
 
 class MvPsiStructureViewFactory : PsiStructureViewFactory {
-    override fun getStructureViewBuilder(psiFile: PsiFile): StructureViewBuilder {
-        val moveFile = psiFile as MoveFile
+    override fun getStructureViewBuilder(psiFile: PsiFile): StructureViewBuilder? {
+        if (psiFile !is MoveFile) {
+            return null
+        }
         return object : TreeBasedStructureViewBuilder() {
             override fun createStructureViewModel(editor: Editor?): StructureViewModel {
-                return MvStructureViewModel(editor, moveFile)
+                return MvStructureViewModel(editor, psiFile)
             }
         }
     }
