@@ -12,7 +12,7 @@ fun prop(name: String): String =
         ?: error("Property `$name` is not defined in gradle.properties for environment `$platformVersion`")
 
 val pluginJarName = "intellij-move-$platformVersion"
-val pluginVersion = "1.30.0"
+val pluginVersion = "1.30.1"
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
 val kotlinStdlibVersion = "1.9.0"
