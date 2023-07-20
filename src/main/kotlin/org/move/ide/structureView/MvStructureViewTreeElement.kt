@@ -7,14 +7,27 @@ import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.ui.Queryable
 import com.intellij.psi.NavigatablePsiElement
 import org.move.lang.MoveFile
-import org.move.lang.core.psi.MvAddressDef
-import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.MvStruct
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.openapiext.common.isUnitTestMode
 
-class MvStructureViewTreeElement(val element: NavigatablePsiElement) : StructureViewTreeElement,
-                                                                       Queryable {
+class MvStructureViewTreeElement(val element: NavigatablePsiElement): StructureViewTreeElement,
+                                                                      Queryable {
+    val isPublic: Boolean
+        get() {
+            return when (element) {
+                is MvFunction -> element.visibility != FunctionVisibility.PRIVATE
+                else -> true
+            }
+        }
+
+    val isTestFunction: Boolean
+        get() =
+            (element as? MvFunction)?.isTest ?: false
+
+    val isTestOnlyItem: Boolean
+        get() =
+            (element as? MvDocAndAttributeOwner)?.isTestOnly ?: false
 
     override fun navigate(requestFocus: Boolean) = element.navigate(requestFocus)
     override fun canNavigate(): Boolean = element.canNavigate()
