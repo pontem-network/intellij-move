@@ -27,41 +27,47 @@ jobs:
                     java-version: 17
 
             -   name: Setup Gradle and dependencies
-                uses: gradle/gradle-build-action@v2.4.2
+                uses: gradle/gradle-build-action@v2.5.1
                 with:
+                    gradle-version: wrapper
+                    cache-read-only: false
                     arguments: ":resolveDependencies -Pkotlin.incremental=false --no-daemon"
-#                    gradle-home-cache-excludes: |
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+                    gradle-home-cache-excludes: |
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Verify Plugin Configuration
-                uses: gradle/gradle-build-action@v2.4.2
+                uses: gradle/gradle-build-action@v2.5.1
                 with:
-                    arguments: "verifyPluginConfiguration"
-#                    gradle-home-cache-excludes: |
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+                    gradle-version: wrapper
+                    arguments: "verifyPluginConfiguration -Pkotlin.incremental=false --no-daemon"
+                    gradle-home-cache-excludes: |
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Build
-                uses: gradle/gradle-build-action@v2.4.2
+                uses: gradle/gradle-build-action@v2.5.1
                 with:
+                    gradle-version: wrapper
                     arguments: "assemble testClasses -Pkotlin.incremental=false --no-daemon --stacktrace"
-#                    gradle-home-cache-excludes: |
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+                    gradle-home-cache-excludes: |
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
-            -   name: Check
-                uses: gradle/gradle-build-action@v2.4.2
+            -   name: Tests
+                uses: gradle/gradle-build-action@v2.5.1
                 with:
+                    gradle-version: wrapper
                     arguments: "check -Pkotlin.incremental=false --no-daemon --stacktrace"
-#                    gradle-home-cache-excludes: |
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+                    gradle-home-cache-excludes: |
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Verify plugin
-                uses: gradle/gradle-build-action@v2.4.2
+                uses: gradle/gradle-build-action@v2.5.1
                 with:
-                    arguments: "runPluginVerifier"
-#                    gradle-home-cache-excludes: |
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+                    gradle-version: wrapper
+                    arguments: "runPluginVerifier -Pkotlin.incremental=false --no-daemon"
+                    gradle-home-cache-excludes: |
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
