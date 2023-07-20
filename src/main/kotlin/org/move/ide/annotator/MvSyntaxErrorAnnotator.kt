@@ -11,15 +11,40 @@ import org.move.lang.utils.addToHolder
 /*
     Augments parser to make the error messages better.
  */
-class MvSyntaxErrorAnnotator : MvAnnotatorBase() {
+class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val moveHolder = MvAnnotationHolder(holder)
-        val visitor = object : MvVisitor() {
+        val visitor = object: MvVisitor() {
             override fun visitLitExpr(expr: MvLitExpr) = checkLitExpr(moveHolder, expr)
             override fun visitCastExpr(expr: MvCastExpr) = checkCastExpr(moveHolder, expr)
             override fun visitStruct(s: MvStruct) = checkStruct(moveHolder, s)
+            override fun visitFunction(o: MvFunction) = checkFunction(moveHolder, o)
+            override fun visitSpecFunction(o: MvSpecFunction) = checkSpecFunction(moveHolder, o)
         }
         element.accept(visitor)
+    }
+
+    private fun checkFunction(holder: MvAnnotationHolder, function: MvFunction) {
+        when {
+            function.isEntry -> {
+                // no error if #[test_only]
+                if (function.isTestOnly) return
+                // no error if #[test]
+                if (function.isTest) return
+                val returnType = function.returnType ?: return
+                Diagnostic
+                    .EntryFunCannotHaveReturnValue(returnType)
+                    .addToHolder(holder)
+            }
+        }
+    }
+
+    private fun checkSpecFunction(holder: MvAnnotationHolder, specFunction: MvSpecFunction) {
+        if (specFunction.returnType == null) {
+            Diagnostic
+                .SpecFunctionRequiresReturnType(specFunction)
+                .addToHolder(holder)
+        }
     }
 
     private fun checkCastExpr(holder: MvAnnotationHolder, castExpr: MvCastExpr) {

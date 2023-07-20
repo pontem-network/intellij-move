@@ -13,27 +13,17 @@ import org.move.ide.annotator.MvAnnotationHolder
 import org.move.ide.annotator.fixes.ItemSpecSignatureFix
 import org.move.ide.annotator.fixes.WrapWithParensExprFix
 import org.move.ide.annotator.pluralise
-import org.move.lang.core.psi.MvCastExpr
-import org.move.lang.core.psi.MvItemSpec
-import org.move.lang.core.psi.MvPath
-import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.endOffset
+import org.move.lang.core.psi.ext.itemSpecBlock
+import org.move.lang.core.psi.ext.startOffset
 import org.move.lang.utils.Severity.*
 
 sealed class Diagnostic(
     val element: PsiElement,
     val textRange: TextRange
 ) {
-    constructor(element: PsiElement) : this(element, element.textRange)
-
-    constructor(element: PsiElement, endElement: PsiElement) :
-            this(
-                element,
-                TextRange(
-                    element.startOffset,
-                    endElement.endOffset
-                )
-            )
+    constructor(element: PsiElement): this(element, element.textRange)
 
     abstract fun prepare(): PreparedAnnotation
 
@@ -48,7 +38,7 @@ sealed class Diagnostic(
         private val label: String,
         private val expectedCount: Int,
         private val realCount: Int,
-    ) : Diagnostic(element) {
+    ): Diagnostic(element) {
 
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
@@ -62,7 +52,7 @@ sealed class Diagnostic(
     class NoTypeArgumentsExpected(
         element: PsiElement,
         private val itemLabel: String,
-    ) : Diagnostic(element) {
+    ): Diagnostic(element) {
 
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
@@ -90,7 +80,7 @@ sealed class Diagnostic(
         }
     }
 
-    class NeedsTypeAnnotation(element: PsiElement) : Diagnostic(element) {
+    class NeedsTypeAnnotation(element: PsiElement): Diagnostic(element) {
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
                 ERROR,
@@ -102,7 +92,7 @@ sealed class Diagnostic(
     class StorageAccessIsNotAllowed(
         path: MvPath,
         private val typeName: String,
-    ) : Diagnostic(path) {
+    ): Diagnostic(path) {
 
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
@@ -113,7 +103,7 @@ sealed class Diagnostic(
         }
     }
 
-    class FunctionSignatureMismatch(itemSpec: MvItemSpec) :
+    class FunctionSignatureMismatch(itemSpec: MvItemSpec):
         Diagnostic(
             itemSpec,
             TextRange(
@@ -133,7 +123,7 @@ sealed class Diagnostic(
         }
     }
 
-    class ParensAreRequiredForCastExpr(castExpr: MvCastExpr) : Diagnostic(castExpr) {
+    class ParensAreRequiredForCastExpr(castExpr: MvCastExpr): Diagnostic(castExpr) {
         override fun prepare(): PreparedAnnotation {
             val castExpr = element as MvCastExpr
             return PreparedAnnotation(
@@ -149,6 +139,34 @@ sealed class Diagnostic(
             return PreparedAnnotation(
                 ERROR,
                 "Native structs aren't supported by the Move VM anymore"
+            )
+        }
+    }
+
+    class SpecFunctionRequiresReturnType(specFunction: MvSpecFunction):
+        Diagnostic(
+            specFunction,
+            TextRange.create(
+                specFunction.functionParameterList?.endOffset
+                    ?: specFunction.specCodeBlock?.startOffset
+                    ?: specFunction.startOffset,
+                (specFunction.specCodeBlock?.startOffset?.plus(1)) ?: specFunction.endOffset
+            )
+        ) {
+
+        override fun prepare(): PreparedAnnotation {
+            return PreparedAnnotation(
+                ERROR,
+                "Requires return type"
+            )
+        }
+    }
+
+    class EntryFunCannotHaveReturnValue(returnType: MvReturnType): Diagnostic(returnType) {
+        override fun prepare(): PreparedAnnotation {
+            return PreparedAnnotation(
+                ERROR,
+                "Entry functions cannot have a return value"
             )
         }
     }
