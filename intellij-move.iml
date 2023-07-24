@@ -1,0 +1,677 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module relativePaths="true" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output/>
+    <orderEntry type="inheritedJdk"/>
+    <content url="file://$MODULE_DIR$/">
+      <sourceFolder url="file://$MODULE_DIR$/src/main/gen" isTestSource="false"/>
+      <sourceFolder url="file://$MODULE_DIR$/src/main/kotlin" isTestSource="false"/>
+      <sourceFolder url="file://$MODULE_DIR$/src/222/main/kotlin" isTestSource="false"/>
+      <sourceFolder url="file://$MODULE_DIR$/src/test/kotlin" isTestSource="true"/>
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource"/>
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource"/>
+      <excludeFolder url="file://$MODULE_DIR$/.gradle"/>
+      <excludeFolder url="file://$MODULE_DIR$/build"/>
+    </content>
+    <orderEntry type="sourceFolder" forTests="false"/>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains/grammar-kit/2022.3.1/287078ee504fcca793a61025a8d8666afdb486aa/grammar-kit-2022.3.1.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains/grammar-kit/2022.3.1/5bc8f6e9696effec56db08076712b8fbe4d80aae/grammar-kit-2022.3.1-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains.intellij.deps.jflex/jflex/1.7.0-1/5df008de5b93c349854d864eac810b7115b66b0f/jflex-1.7.0-1.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains.intellij.deps.jflex/jflex/1.7.0-1/356eff24189ef0f8accc87db8f2398d36290be81/jflex-1.7.0-1-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/1.9.0/2891f552979d4bf4d4ec516acb9df769fb62dbe9/kotlin-reflect-1.9.0.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/1.9.0/48a1bec600b604e05cf5973324cc2795255c6b01/kotlin-reflect-1.9.0-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/io.sentry/sentry/6.25.0/51c062138e0a96e8c5b26dafe54e6f59d75f9f70/sentry-6.25.0.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/io.sentry/sentry/6.25.0/c798ce23555b773c55e472bb202bbef7e14e2589/sentry-6.25.0-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.github.ajalt.clikt/clikt-jvm/3.5.2/c2260b9cd50ee1a2c68936b72235b19e001cf8c1/clikt-jvm-3.5.2.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.github.ajalt.clikt/clikt-jvm/3.5.2/4a2277b8cda0565437352d3a8e8329a0eca690bf/clikt-jvm-3.5.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.8.10/7c002ac41f547a82e81dfebd2a20577a738dbf3f/kotlin-stdlib-jdk8-1.8.10.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.8.10/20739e7aae2a2bfb66c4081b233ffea7b947cf77/kotlin-stdlib-jdk8-1.8.10-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.8.10/cb726a23c808a850a43e7d6b9d1ba91b02fe9f05/kotlin-stdlib-jdk7-1.8.10.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.8.10/3641d7cb7650db9fe93a5361b1b88cbcefdb01e0/kotlin-stdlib-jdk7-1.8.10-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.9.0/8ee15ef0c67dc83d874f412d84378d7f0eb50b63/kotlin-stdlib-1.9.0.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.9.0/40b9c37d8c614f0a5f87bab78da0ca7c771d1395/kotlin-stdlib-1.9.0-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/24.0.0/69b8b443c437fdeefa8d20c18d257b94836a92b9/annotations-24.0.0.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/24.0.0/d0f77e3bd1ba4927fc8bcf0e1ca3b76f6e9b34f8/annotations-24.0.0-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/plugins/toml/lib/toml.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/3rd-party-rt.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/annotations-java5.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/app.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/asm-9.2.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/asm-analysis-9.2.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/asm-commons-9.2.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/asm-tree-9.2.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/asm-util-9.2.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/async-profiler.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/byte-buddy-agent.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/dbus-java-3.2.1.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/error-prone-annotations.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/external-system-rt.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/externalProcess-rt.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/forms_rt.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/groovy.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/grpc-netty-shaded.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/intellij-coverage-agent-1.0.673.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/intellij-test-discovery.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/java-utils-1.0.6.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/jetbrains-annotations.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/jffi-1.3.9-native.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/jffi-1.3.9.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/jna.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/jnr-a64asm-1.0.0.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/jnr-ffi-2.2.12.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/jnr-x86asm-1.0.2.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/jps-model.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/jsch-agent.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/junit4.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/junit5.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/junixsocket-core.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/lz4-java.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/platform-objectSerializer-annotations.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/platform-statistics-devkit.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/protobuf.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/pty4j.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/rd-core.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/rd-framework.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/rd-swing.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/rd-text.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/stats.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/testFramework.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/util.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/util_rt.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.clion/clion/2022.2/b46d0daab05fcb40163bdf52c725e691a0516082/clion-2022.2/lib/winp.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/2022.2/555a6f6a04f930e6d453e2630b1cb33ba5e490d5/ideaIC-2022.2-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.apache.ant/ant/1.7.0/9746af1a485e50cf18dcb232489032a847067066/ant-1.7.0.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.apache.ant/ant/1.7.0/58ec0e378f1d33cb72a92ee3a9442909789090db/ant-1.7.0-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.apache.ant/ant-launcher/1.7.0/e7e30789211e074aa70ef3eaea59bd5b22a7fa7a/ant-launcher-1.7.0.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES/>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.9.0/cd65c21cfd1eec4d44ef09f9f52b6d9f8a720636/kotlin-stdlib-common-1.9.0.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.9.0/6fb55fcd2b695c29928835638f5f221f18427695/kotlin-stdlib-common-1.9.0-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="RUNTIME">
+      <library>
+        <CLASSES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar!/"/>
+        </CLASSES>
+        <JAVADOC/>
+        <SOURCES>
+          <root url="jar:///home/mkurnikov/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/5991ca87ef1fb5544943d9abc5a9a37583fabe03/annotations-13.0-sources.jar!/"/>
+        </SOURCES>
+      </library>
+    </orderEntry>
+  </component>
+  <component name="ModuleRootManager"/>
+</module>

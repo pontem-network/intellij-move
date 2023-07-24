@@ -21,6 +21,7 @@ group = pluginGroup
 version = pluginVersion
 
 plugins {
+    idea
     id("java")
     kotlin("jvm") version "1.9.0"
     id("org.jetbrains.intellij") version "1.15.0"
@@ -37,8 +38,7 @@ dependencies {
     implementation("com.github.ajalt.clikt:clikt:3.5.2")
 }
 
-
-allprojects {
+project(":") {
     apply {
         plugin("kotlin")
         plugin("org.jetbrains.grammarkit")
@@ -95,13 +95,6 @@ allprojects {
     }
 
     tasks {
-        // workaround for gradle not seeing tests in 2021.3+
-//        val test by getting(Test::class) {
-//            isScanForTestClasses = false
-//            // Only run tests from classes that end with "Test"
-//            include("**/*Test.class")
-//        }
-
         patchPluginXml {
             version.set("$pluginVersion.$platformVersion")
             changeNotes.set("""
