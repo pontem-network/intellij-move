@@ -19,6 +19,7 @@ import io.sentry.SentryLevel
 import io.sentry.UserFeedback
 import io.sentry.protocol.Message
 import io.sentry.protocol.SentryId
+import org.move.cli.moveProjects
 import org.move.cli.settings.moveSettings
 import org.move.openapiext.project
 import org.move.stdext.asMap
@@ -83,9 +84,12 @@ class SentryErrorReporter : ErrorReportSubmitter() {
                 val settings = project.moveSettings.settingsState.asMap().toMutableMap()
                 settings.remove("aptosPath")
                 sentryEvent.contexts["Settings"] = settings
+                sentryEvent.contexts["Projects"] =
+                    project.moveProjects.allProjects.map { MoveProjectContext.from(it) }
             }
             // IdeaLoggingEvent only provides text stacktrace
             sentryEvent.contexts["Stacktrace"] = mapOf("Value" to event.throwableText)
+
 
             val sentryMessage = Message()
             sentryMessage.formatted = event.errorMessage

@@ -25,10 +25,8 @@ package org.move.ide.actions.download.ui
 
 import com.intellij.execution.Platform
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.ui.dsl.builder.bindSelected
-import com.intellij.ui.dsl.builder.bindText
-import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.builder.selected
+import com.intellij.openapi.ui.validation.DialogValidation
+import com.intellij.ui.dsl.builder.*
 import org.move.ide.actions.download.DownloadAptosTask
 import org.move.ide.actions.download.PathSelector
 import java.io.File
@@ -58,8 +56,9 @@ class DownloadAptosDialog(
                         { version },
                         { version = it }
                     )
+                comment("{major}.{minor}.{patch}, i.e. 1.9.0, 2.0.2")
             }
-            buttonsGroup("Download to") {
+            buttonsGroup("Download To") {
                 row {
                     radioButton("Home directory")
                         .bindSelected(
