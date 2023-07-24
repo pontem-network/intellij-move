@@ -56,17 +56,17 @@ class MoveSettingsPanel(
             comment("(required)")
         }
         row("Version") { cell(versionLabel) }
-        row {
-            button("Download Aptos CLI") {
-                val dialog = DownloadAptosDialog(parentComponent = aptosPathField)
-                dialog.show()
-
-                val newAptosPath = dialog.outPath
-                if (dialog.isOK && newAptosPath != null) {
-                    data = Data(newAptosPath)
-                }
-            }
-        }
+//        row {
+//            button("Download Aptos CLI") {
+//                val dialog = DownloadAptosDialog(parentComponent = aptosPathField)
+//                dialog.show()
+//
+//                val newAptosPath = dialog.outPath
+//                if (dialog.isOK && newAptosPath != null) {
+//                    data = Data(newAptosPath)
+//                }
+//            }
+//        }
         row {
             link("Set default project settings") {
                 ProjectManager.getInstance().defaultProject.showSettings<PerProjectMoveConfigurable>()
