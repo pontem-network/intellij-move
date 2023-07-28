@@ -5,7 +5,6 @@
 
 package org.move.ide.inspections.imports
 
-import com.intellij.codeInsight.navigation.NavigationUtil
 import com.intellij.ide.util.DefaultPsiElementCellRenderer
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
@@ -18,6 +17,7 @@ import com.intellij.ui.popup.list.PopupListElementRenderer
 import org.jetbrains.annotations.TestOnly
 import org.move.ide.utils.imports.ImportCandidate
 import org.move.openapiext.common.isUnitTestMode
+import org.move.utils.ui.NavigationUtilCompat
 import java.awt.BorderLayout
 import javax.swing.Icon
 import javax.swing.JPanel
@@ -108,7 +108,7 @@ private class PopupImportItemUi(private val project: Project, private val dataCo
                 }
             }
         }
-        NavigationUtil.hidePopupIfDumbModeStarts(popup, project)
+        NavigationUtilCompat.hidePopupIfDumbModeStarts(popup, project)
         popup.showInBestPositionFor(dataContext)
     }
 }
