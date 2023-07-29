@@ -1,18 +1,19 @@
 <idea-plugin>
-    <id>org.move.lang</id>
-    <name>Move Language</name>
+<!--    <id>org.move.lang</id>-->
+<!--    <name>Move Language</name>-->
 
-    <vendor>Pontem</vendor>
+<!--    <vendor>Pontem</vendor>-->
 
-    <description>
-        <![CDATA[
-            <p>Support for Move, smart-contract language for Aptos and other blockchains.</p>
+<!--    <description>-->
+<!--        <![CDATA[-->
+<!--            <p>Support for Move, smart-contract language for Aptos and other blockchains.</p>-->
 
-            <p><a href="https://github.com/pontem-network/intellij-move">https://github.com/pontem-network/intellij-move</a></p>
-        ]]>
-    </description>
+<!--            <p><a href="https://github.com/pontem-network/intellij-move">https://github.com/pontem-network/intellij-move</a></p>-->
+<!--        ]]>-->
+<!--    </description>-->
+
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-         on how to target different products -->
+     on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
     <depends>org.toml.lang</depends>
 

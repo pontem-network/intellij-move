@@ -1,0 +1,17 @@
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+  <id>org.move.lang</id>
+  <name>Move Language</name>
+
+  <vendor>Pontem</vendor>
+
+  <description>
+    <![CDATA[
+            <p>Support for Move, smart-contract language for Aptos and other blockchains.</p>
+
+            <p><a href="https://github.com/pontem-network/intellij-move">https://github.com/pontem-network/intellij-move</a></p>
+        ]]>
+  </description>
+
+  <xi:include href="/META-INF/intellij-move-core.xml" />
+
+</idea-plugin>

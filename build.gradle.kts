@@ -1,11 +1,11 @@
-import org.jetbrains.grammarkit.tasks.GenerateLexerTask
-import org.jetbrains.grammarkit.tasks.GenerateParserTask
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
 val platformVersion = prop("shortPlatformVersion")
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
+// set by default in Github Actions
+val isCI = System.getenv("CI") != null
 
 fun prop(name: String): String =
     extra.properties[name] as? String
@@ -26,6 +26,7 @@ plugins {
     id("org.jetbrains.intellij") version "1.15.0"
     id("org.jetbrains.grammarkit") version "2022.3.1"
     id("net.saliman.properties") version "1.5.2"
+    id("org.gradle.idea")
 }
 
 dependencies {
@@ -36,7 +37,6 @@ dependencies {
     }
     implementation("com.github.ajalt.clikt:clikt:3.5.2")
 }
-
 
 allprojects {
     apply {
@@ -55,6 +55,9 @@ allprojects {
         pluginName.set(pluginJarName)
         version.set(prop("platformVersion"))
         type.set(prop("platformType"))
+
+        downloadSources.set(!isCI)
+        instrumentCode.set(false)
 
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
         plugins.set(prop("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
@@ -79,29 +82,7 @@ allprojects {
         }
     }
 
-    val generateMoveLexer = task<GenerateLexerTask>("generateMoveLexer") {
-        sourceFile.set(file("src/main/grammars/MoveLexer.flex"))
-        targetDir.set("src/main/gen/org/move/lang")
-        targetClass.set("_MoveLexer")
-        purgeOldFiles.set(true)
-    }
-
-    val generateMoveParser = task<GenerateParserTask>("generateMoveParser") {
-        sourceFile.set(file("src/main/grammars/MoveParser.bnf"))
-        targetRoot.set("src/main/gen")
-        pathToParser.set("/org/move/lang/MoveParser.java")
-        pathToPsiRoot.set("/org/move/lang/psi")
-        purgeOldFiles.set(true)
-    }
-
     tasks {
-        // workaround for gradle not seeing tests in 2021.3+
-//        val test by getting(Test::class) {
-//            isScanForTestClasses = false
-//            // Only run tests from classes that end with "Test"
-//            include("**/*Test.class")
-//        }
-
         patchPluginXml {
             version.set("$pluginVersion.$platformVersion")
             changeNotes.set("""
@@ -115,6 +96,64 @@ allprojects {
             untilBuild.set(prop("pluginUntilBuild"))
         }
 
+        withType<KotlinCompile> {
+            kotlinOptions {
+                jvmTarget = "17"
+                languageVersion = "1.8"
+                apiVersion = "1.6"
+                freeCompilerArgs = listOf("-Xjvm-default=all")
+            }
+        }
+
+        // All these tasks don't make sense for non-root subprojects
+        // Root project (i.e. `:plugin`) enables them itself if needed
+        runIde { enabled = false }
+        prepareSandbox { enabled = false }
+        buildSearchableOptions { enabled = false }
+
+        withType<Jar> {
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        }
+    }
+
+}
+
+project(":") {
+    tasks {
+        generateLexer {
+            sourceFile.set(file("src/main/grammars/MoveLexer.flex"))
+            targetDir.set("src/main/gen/org/move/lang")
+            targetClass.set("_MoveLexer")
+            purgeOldFiles.set(true)
+        }
+        generateParser {
+            sourceFile.set(file("src/main/grammars/MoveParser.bnf"))
+            targetRoot.set("src/main/gen")
+            pathToParser.set("/org/move/lang/MoveParser.java")
+            pathToPsiRoot.set("/org/move/lang/psi")
+            purgeOldFiles.set(true)
+        }
+        withType<KotlinCompile> {
+            dependsOn(generateLexer, generateParser)
+        }
+    }
+
+    task("resolveDependencies") {
+        doLast {
+            rootProject.allprojects
+                .map { it.configurations }
+                .flatMap { it.filter { c -> c.isCanBeResolved } }
+                .forEach { it.resolve() }
+        }
+    }
+}
+
+project(":plugin") {
+    dependencies {
+        implementation(project(":"))
+    }
+
+    tasks {
         runPluginVerifier {
             ideVersions.set(
                 prop("verifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty)
@@ -136,23 +175,10 @@ allprojects {
             token.set(publishingToken)
         }
 
-        withType<KotlinCompile> {
-            dependsOn(
-                generateMoveLexer, generateMoveParser
-            )
-            kotlinOptions {
-                jvmTarget = "17"
-                languageVersion = "1.8"
-                apiVersion = "1.6"
-                freeCompilerArgs = listOf("-Xjvm-default=all")
-            }
-        }
-
-        withType<Jar> {
-            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        }
-
-        withType<org.jetbrains.intellij.tasks.BuildSearchableOptionsTask> {
+        runIde { enabled = true }
+        prepareSandbox { enabled = true }
+        buildSearchableOptions {
+            enabled = true
             jbrVersion.set(prop("jbrVersion"))
         }
 
@@ -165,15 +191,6 @@ allprojects {
                     ideDir.set(clionDir)
                 }
             }
-        }
-    }
-
-    task("resolveDependencies") {
-        doLast {
-            rootProject.allprojects
-                .map { it.configurations }
-                .flatMap { it.filter { c -> c.isCanBeResolved } }
-                .forEach { it.resolve() }
         }
     }
 }
