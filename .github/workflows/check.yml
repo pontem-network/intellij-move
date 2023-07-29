@@ -34,8 +34,8 @@ jobs:
                     arguments: ":resolveDependencies -Pkotlin.incremental=false --no-daemon"
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Build
                 uses: gradle/gradle-build-action@v2.7.0
@@ -44,8 +44,8 @@ jobs:
                     arguments: "assemble testClasses -Pkotlin.incremental=false --no-daemon --stacktrace"
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Tests
                 uses: gradle/gradle-build-action@v2.7.0
@@ -54,8 +54,8 @@ jobs:
                     arguments: ":test -Pkotlin.incremental=false --no-daemon --stacktrace"
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Verify plugin.xml
                 uses: gradle/gradle-build-action@v2.7.0
@@ -64,8 +64,8 @@ jobs:
                     arguments: ":plugin:verifyPluginConfiguration -Pkotlin.incremental=false --no-daemon"
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
             -   name: Verify plugin
                 uses: gradle/gradle-build-action@v2.7.0
@@ -74,5 +74,5 @@ jobs:
                     arguments: ":plugin:runPluginVerifier -Pkotlin.incremental=false --no-daemon"
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-#                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
