@@ -2,7 +2,6 @@ import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-val platformVersion = prop("shortPlatformVersion")
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
 // set by default in Github Actions
 val isCI = System.getenv("CI") != null
@@ -11,11 +10,13 @@ fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties for environment `$platformVersion`")
 
-val pluginJarName = "intellij-move-$platformVersion"
-val pluginVersion = "1.30.1"
+val platformVersion = prop("shortPlatformVersion")
+val codeVersion = "1.31.0"
+val pluginVersion = "$codeVersion.$platformVersion"
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
 val kotlinStdlibVersion = "1.9.0"
+val pluginJarName = "intellij-move-$pluginVersion"
 
 group = pluginGroup
 version = pluginVersion
@@ -84,7 +85,7 @@ allprojects {
 
     tasks {
         patchPluginXml {
-            version.set("$pluginVersion.$platformVersion")
+            version.set(pluginVersion)
             changeNotes.set("""
     <body>
         <p><a href="https://github.com/pontem-network/intellij-move/blob/master/changelog/$pluginVersion.md">
