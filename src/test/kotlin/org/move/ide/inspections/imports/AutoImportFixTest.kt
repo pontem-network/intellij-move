@@ -463,6 +463,51 @@ module 0x1::Main {
     """
     )
 
+    fun `test add new module import into existing group with verify_only`() = checkAutoImportFixByText("""
+        module 0x1::a {
+            struct String {}
+            public fun test_call() {}
+        }        
+        module 0x1::m {
+            struct S {}
+        }
+        module 0x1::main {
+            use 0x1::a::String;
+            #[verify_only]
+            use 0x1::a::test_call;
+            
+            fun main(a: String, b: <error descr="Unresolved type: `S`">/*caret*/S</error>) {
+            }
+            
+            #[verify_only]
+            fun test() {
+                test_call();
+            }
+        }
+    """, """
+        module 0x1::a {
+            struct String {}
+            public fun test_call() {}
+        }        
+        module 0x1::m {
+            struct S {}
+        }
+        module 0x1::main {
+            use 0x1::a::String;
+            use 0x1::m::S;
+            #[verify_only]
+            use 0x1::a::test_call;
+            
+            fun main(a: String, b: S) {
+            }
+            
+            #[verify_only]
+            fun test() {
+                test_call();
+            }
+        }
+    """)
+
     private fun checkAutoImportFixByText(
         @Language("Move") before: String,
         @Language("Move") after: String,

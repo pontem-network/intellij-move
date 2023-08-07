@@ -2,7 +2,7 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ref.MvReference
+import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvReferenceCached
 
 class AttrItemArgumentReferenceImpl(
@@ -20,7 +20,7 @@ class AttrItemArgumentReferenceImpl(
 abstract class MvAttrItemArgumentMixin(node: ASTNode) : MvElementImpl(node),
                                                         MvAttrItemArgument {
 
-    override fun getReference(): MvReference? {
+    override fun getReference(): MvPolyVariantReference? {
         val attr = this.ancestorStrict<MvAttr>() ?: return null
         attr.attrItemList
             .singleOrNull()

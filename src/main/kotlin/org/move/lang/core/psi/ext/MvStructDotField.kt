@@ -18,7 +18,7 @@ class MvStructDotFieldReferenceImpl(
 
 abstract class MvStructDotFieldMixin(node: ASTNode) : MvElementImpl(node),
                                                       MvStructDotField {
-    override fun getReference(): MvReference {
+    override fun getReference(): MvPolyVariantReference {
         return MvStructDotFieldReferenceImpl(this)
     }
 }

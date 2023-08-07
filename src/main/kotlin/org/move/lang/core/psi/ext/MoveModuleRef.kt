@@ -6,7 +6,7 @@ import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.psi.MvModuleRef
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.resolve.ref.MvModuleReferenceImpl
-import org.move.lang.core.resolve.ref.MvReference
+import org.move.lang.core.resolve.ref.MvPolyVariantReference
 
 val MvModuleRef.isSelf: Boolean
     get() =
@@ -16,7 +16,7 @@ val MvModuleRef.isSelf: Boolean
 
 abstract class MvModuleRefMixin(node: ASTNode) : MvElementImpl(node), MvModuleRef {
 
-    override fun getReference(): MvReference? = MvModuleReferenceImpl(this)
+    override fun getReference(): MvPolyVariantReference? = MvModuleReferenceImpl(this)
 }
 
 //abstract class MvImportedModuleRefMixin(node: ASTNode) : MvReferenceElementImpl(node),

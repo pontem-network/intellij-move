@@ -15,13 +15,15 @@ class ImportAnalyzer(val holder: ProblemsHolder) : MvVisitor() {
 
     private fun analyzeImportsOwner(useStmtOwner: MvImportsOwner) {
         val pathUsagesInScopes = useStmtOwner.pathUsages
+
         val visitedItemsInScopes: VisitedNameMap = mutableMapOf()
         val visitedModulesInScopes: VisitedNameMap = mutableMapOf()
 
         for (useStmt in useStmtOwner.useStmtList) {
             val stmtScope = useStmt.itemScope
 
-            val pathUsage = pathUsagesInScopes.get(stmtScope)
+            val pathUsage = pathUsagesInScopes.getScopeUsages(stmtScope)
+
             val visitedModules = visitedModulesInScopes.getOrPut(stmtScope)
             val visitedItems = visitedItemsInScopes.getOrPut(stmtScope)
 

@@ -24,27 +24,32 @@ interface MvAttributeOwnerStub {
 
     val isTestOnly: Boolean
 
+    val isVerifyOnly: Boolean
+
     companion object {
         val ATTRS_MASK: Int = makeBitMask(0)
         val TEST_ONLY_MASK: Int = makeBitMask(1)
-        const val USED_BITS: Int = 2
-
-        fun extractFlags(element: MvDocAndAttributeOwner): Int =
-            extractFlags(element.queryAttributes)
+        val VERIFY_ONLY_MASK: Int = makeBitMask(2)
+        const val USED_BITS: Int = 3
 
         fun extractFlags(query: QueryAttributes): Int {
             var hasAttrs = false
             var testOnly = false
+            var verifyOnly = false
             for (attrItem in query.attrItems) {
                 hasAttrs = true
                 if (attrItem.name == "test_only") {
                     testOnly = true
+                }
+                if (attrItem.name == "verify_only") {
+                    verifyOnly = true
                 }
             }
 
             var flags = 0
             flags = BitUtil.set(flags, ATTRS_MASK, hasAttrs)
             flags = BitUtil.set(flags, TEST_ONLY_MASK, testOnly)
+            flags = BitUtil.set(flags, VERIFY_ONLY_MASK, verifyOnly)
             return flags
         }
     }
@@ -61,6 +66,9 @@ abstract class MvAttributeOwnerStubBase<T : MvElement>(
 
     override val isTestOnly: Boolean
         get() = BitUtil.isSet(flags, MvAttributeOwnerStub.TEST_ONLY_MASK)
+
+    override val isVerifyOnly: Boolean
+        get() = BitUtil.isSet(flags, MvAttributeOwnerStub.VERIFY_ONLY_MASK)
 
     protected abstract val flags: Int
 }

@@ -3,7 +3,7 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ref.MvReference
+import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvReferenceCached
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.resolveLocalItem
@@ -39,7 +39,7 @@ class MvSchemaFieldShorthandReferenceImpl(
 
 abstract class MvSchemaLitFieldMixin(node: ASTNode) : MvElementImpl(node),
                                                       MvSchemaLitField {
-    override fun getReference(): MvReference {
+    override fun getReference(): MvPolyVariantReference {
         if (this.isShorthand) {
             return MvSchemaFieldShorthandReferenceImpl(this)
         } else {

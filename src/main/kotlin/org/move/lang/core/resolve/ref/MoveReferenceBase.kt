@@ -9,7 +9,7 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.utils.doRenameIdentifier
 
 abstract class MvReferenceBase<T : MvReferenceElement>(element: T) : PsiPolyVariantReferenceBase<T>(element),
-                                                                     MvReference {
+                                                                     MvPolyVariantReference {
 
     override fun resolve(): MvNamedElement? = super.resolve() as? MvNamedElement
 

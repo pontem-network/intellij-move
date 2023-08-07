@@ -39,17 +39,20 @@ data class ScopePathUsages(
 
 data class PathUsages(
     val mainScopeUsages: ScopePathUsages,
-    val testScopeUsages: ScopePathUsages
+    val testScopeUsages: ScopePathUsages,
+    val verifyScopeUsages: ScopePathUsages,
 ) {
     fun updateFrom(other: PathUsages) {
         mainScopeUsages.updateFrom(other.mainScopeUsages)
         testScopeUsages.updateFrom(other.testScopeUsages)
+        verifyScopeUsages.updateFrom(other.verifyScopeUsages)
     }
 
-    fun get(itemScope: ItemScope): ScopePathUsages {
+    fun getScopeUsages(itemScope: ItemScope): ScopePathUsages {
         return when (itemScope) {
             ItemScope.MAIN -> mainScopeUsages
             ItemScope.TEST -> testScopeUsages
+            ItemScope.VERIFY -> verifyScopeUsages
         }
     }
 }
@@ -82,21 +85,25 @@ private fun MvImportsOwner.localPathUsages(): PathUsages {
 
         val mainNameUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
         val mainTypeUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
+
         val testNameUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
         val testTypeUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
+
+        val verifyNameUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
+        val verifyTypeUsages = mutableMapOf<String, MutableSet<MvNamedElement>>()
 
         for (child in importsOwner.children) {
             PsiTreeUtil.processElements(child, MvPath::class.java) { path ->
                 val (nameUsages, typeUsages) =
-                    if (path.itemScope == ItemScope.TEST) {
-                        Pair(testNameUsages, testTypeUsages)
-                    } else {
-                        Pair(mainNameUsages, mainTypeUsages)
+                    when (path.itemScope) {
+                        ItemScope.MAIN -> Pair(mainNameUsages, mainTypeUsages)
+                        ItemScope.TEST -> Pair(testNameUsages, testTypeUsages)
+                        ItemScope.VERIFY -> Pair(verifyNameUsages, verifyTypeUsages)
                     }
                 when {
-                    path.moduleRef != null -> putUsage(path, nameUsages)
-                    path.parent is MvPathType -> putUsage(path, typeUsages)
-                    else -> putUsage(path, nameUsages)
+                    path.moduleRef != null -> addUsage(path, nameUsages)
+                    path.parent is MvPathType -> addUsage(path, typeUsages)
+                    else -> addUsage(path, nameUsages)
                 }
                 true
             }
@@ -104,11 +111,12 @@ private fun MvImportsOwner.localPathUsages(): PathUsages {
         PathUsages(
             ScopePathUsages(mainNameUsages, mainTypeUsages),
             ScopePathUsages(testNameUsages, testTypeUsages),
+            ScopePathUsages(verifyNameUsages, verifyTypeUsages),
         )
     }
 }
 
-private fun putUsage(element: MvPath, itemUsages: ItemUsages) {
+private fun addUsage(element: MvPath, itemUsages: ItemUsages) {
     val moduleRef = element.moduleRef
     when {
         // MODULE::ITEM

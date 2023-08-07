@@ -4,9 +4,9 @@ import org.move.lang.core.psi.MvPathType
 import org.move.lang.core.psi.MvRefType
 import org.move.lang.core.psi.MvType
 import org.move.lang.core.psi.MvTypeArgument
-import org.move.lang.core.resolve.ref.MvReference
+import org.move.lang.core.resolve.ref.MvPolyVariantReference
 
-val MvType.moveReference: MvReference?
+val MvType.moveReference: MvPolyVariantReference?
     get() = when (this) {
         is MvPathType -> this.path.reference
         is MvRefType -> this.type?.moveReference

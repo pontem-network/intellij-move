@@ -3,7 +3,7 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvItemSpecParameterReferenceElement
-import org.move.lang.core.resolve.ref.MvReference
+import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvReferenceCached
 
 val MvItemSpecFunctionParameter.parameterList get() = this.parent as? MvItemSpecFunctionParameterList
@@ -58,14 +58,14 @@ class MvItemSpecParameterReferenceImpl(
 
 abstract class MvItemSpecFunctionParameterMixin(node: ASTNode) : MvElementImpl(node),
                                                                  MvItemSpecFunctionParameter {
-    override fun getReference(): MvReference {
+    override fun getReference(): MvPolyVariantReference {
         return MvItemSpecParameterReferenceImpl(this)
     }
 }
 
 abstract class MvItemSpecTypeParameterMixin(node: ASTNode) : MvElementImpl(node),
                                                              MvItemSpecTypeParameter {
-    override fun getReference(): MvReference {
+    override fun getReference(): MvPolyVariantReference {
         return MvItemSpecParameterReferenceImpl(this)
     }
 }
