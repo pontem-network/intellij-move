@@ -1375,12 +1375,14 @@ SchemaFieldStmt_local ::= local BindingPat TypeAnnotation ';' {
     elementType = SchemaFieldStmt
 }
 
-GlobalVariableStmt ::= global BindingPat TypeParameterList? TypeAnnotation ('=' Expr)? ';'
+GlobalVariableStmt ::= global IDENTIFIER TypeParameterList? TypeAnnotation ('=' Expr)? ';'
 {
     pin = 1
     implements = [
+        "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.MvTypeAnnotationOwner"
     ]
+    mixin = "org.move.lang.core.psi.ext.MvGlobalVariableMixin"
 }
 
 //private post ::= <<postKeyword>>

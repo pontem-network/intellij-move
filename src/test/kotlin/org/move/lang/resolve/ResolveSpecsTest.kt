@@ -807,4 +807,75 @@ module 0x1::main {
                 //^
         }        
     """)
+
+    fun `test global spec variable not accessible from main code`() = checkByCode("""
+        module 0x1::m {
+            spec module {
+                global supply: num;
+            }
+            fun main() {
+                supply;
+                //^ unresolved
+            }
+        }        
+    """)
+
+    fun `test resolve global variable for schema`() = checkByCode("""
+        module 0x1::m {
+            spec module {
+                global supply<CoinType>: num;
+                       //X
+            }
+            spec schema MySchema {
+                ensures supply<CoinType> == 1;
+                          //^    
+            }
+        }        
+    """)
+
+    fun `test resolve global variable for inline spec`() = checkByCode("""
+        module 0x1::m {
+            spec module {
+                global supply<CoinType>: num;
+                       //X
+            }
+            fun main() {
+                spec {
+                    assert supply<CoinType> == 1;
+                              //^    
+                }
+            }
+        }        
+    """)
+
+    fun `test resolve global variable for inline spec defined in module spec`() = checkByCode("""
+        module 0x1::m {
+            fun main() {
+                spec {
+                    assert supply<CoinType> == 1;
+                              //^    
+                }
+            }
+        }        
+        spec 0x1::m {
+            spec module {
+                global supply<CoinType>: num;
+                       //X
+            }
+        }
+    """)
+
+    fun `test resolve global variable in spec module`() = checkByCode("""
+        module 0x1::m {}
+        spec 0x1::m {
+            spec module {
+                global supply<CoinType>: num;
+                       //X
+            }
+            spec schema MySchema {
+                ensures supply<CoinType> == 1;
+                          //^    
+            }
+        }        
+    """)
 }

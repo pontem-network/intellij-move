@@ -1682,4 +1682,28 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test global variable for schema`() = testExpr("""
+        module 0x1::m {
+            spec module {
+                global supply: num;
+            }
+            spec schema MySchema {
+                ensures supply == 1;
+                          //^ num   
+            }
+        }        
+    """)
+
+    fun `test no error with type inference with pragma`() = testExpr("""
+        module 0x1::m {
+            struct Table { length: u64 }
+        }        
+        spec 0x1::m {
+            spec Table {
+                pragma map_length = length;
+                                    //^ num
+            }
+        }
+    """)
 }

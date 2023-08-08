@@ -134,17 +134,17 @@ fun Path?.isValidExecutable(): Boolean {
             && this.isExecutableFile()
 }
 
-val Project.pluginDebugMode: Boolean get() = this.moveSettings.settingsState.debugMode
+val Project.isDebugModeEnabled: Boolean get() = this.moveSettings.settingsState.debugMode
 
 fun <T> Project.debugErrorOrFallback(message: String, fallback: T): T {
-    if (this.pluginDebugMode) {
+    if (this.isDebugModeEnabled) {
         error(message)
     }
     return fallback
 }
 
 fun <T> Project.debugErrorOrFallback(message: String, cause: Throwable?, fallback: () -> T): T {
-    if (this.pluginDebugMode) {
+    if (this.isDebugModeEnabled) {
         throw IllegalStateException(message, cause)
     }
     return fallback()

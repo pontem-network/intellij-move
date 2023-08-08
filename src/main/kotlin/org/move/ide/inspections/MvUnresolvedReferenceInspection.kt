@@ -3,12 +3,11 @@ package org.move.ide.inspections
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.util.descendantsOfType
-import org.move.cli.settings.pluginDebugMode
+import org.move.cli.settings.isDebugModeEnabled
 import org.move.ide.inspections.imports.AutoImportFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
-import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -45,7 +44,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitModuleRef(moduleRef: MvModuleRef) {
-            if (moduleRef.isMsl() && !moduleRef.project.pluginDebugMode) {
+            if (moduleRef.isMsl() && !moduleRef.project.isDebugModeEnabled) {
                 return
             }
             // skip this check, as it will be checked in MvPath visitor
@@ -62,7 +61,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
         override fun visitPath(path: MvPath) {
             // skip specs in non-dev mode, too many false-positives
-            if (path.isMsl() && !path.project.pluginDebugMode) {
+            if (path.isMsl() && !path.project.isDebugModeEnabled) {
                 return
             }
 //            if (path.isMsl() && path.isResult) return
@@ -91,7 +90,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitStructPatField(patField: MvStructPatField) {
-            if (patField.isMsl() && !patField.project.pluginDebugMode) {
+            if (patField.isMsl() && !patField.project.isDebugModeEnabled) {
                 return
             }
             val resolvedStructDef = patField.structPat.path.maybeStruct ?: return
@@ -105,7 +104,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitStructLitField(litField: MvStructLitField) {
-            if (litField.isMsl() && !litField.project.pluginDebugMode) {
+            if (litField.isMsl() && !litField.project.isDebugModeEnabled) {
                 return
             }
             if (litField.isShorthand) {
@@ -168,7 +167,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         }
 
         override fun visitDotExpr(dotExpr: MvDotExpr) {
-            if (dotExpr.isMsl() && !dotExpr.project.pluginDebugMode) {
+            if (dotExpr.isMsl() && !dotExpr.project.isDebugModeEnabled) {
                 return
             }
             val receiverTy = dotExpr.inference(false)?.getExprType(dotExpr.expr)
