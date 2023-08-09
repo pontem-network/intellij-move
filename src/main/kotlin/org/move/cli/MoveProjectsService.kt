@@ -8,6 +8,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.RootsChangeRescanningInfo
 import com.intellij.openapi.project.ex.ProjectEx
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -171,11 +172,10 @@ class MoveProjectsService(val project: Project) : Disposable {
                 invokeAndWaitIfNeeded {
                     runWriteAction {
                         projectsIndex.resetIndex()
-
-                        // In unit tests roots change is done by the test framework in most cases
+                        // disable for unit-tests: in those cases roots change is done by the test framework
                         runOnlyInNonLightProject(project) {
                             ProjectRootManagerEx.getInstanceEx(project)
-                                .makeRootsChange(EmptyRunnable.getInstance(), false, true)
+                                .makeRootsChange(EmptyRunnable.getInstance(), RootsChangeRescanningInfo.TOTAL_RESCAN)
                         }
                         // increments structure modification counter in the subscriber
                         project.messageBus
