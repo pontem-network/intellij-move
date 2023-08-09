@@ -11,7 +11,6 @@ import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
 import org.move.cli.moveProjects
 import org.move.cli.runConfigurations.addDefaultBuildRunConfiguration
-import org.move.cli.settings.AptosSettingsPanel
 import org.move.cli.settings.MoveSettingsPanel
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
@@ -19,54 +18,55 @@ import org.move.ide.notifications.updateAllNotifications
 import org.move.openapiext.computeWithCancelableProgress
 import org.move.stdext.unwrapOrThrow
 
-data class NewProjectData(
-    val data: MoveSettingsPanel.Data,
-    val aptosInitEnabled: Boolean,
-    val initData: AptosSettingsPanel.InitData
+data class AptosProjectConfig(
+    val aptosSettings: MoveSettingsPanel.Data,
+//    val aptosInitEnabled: Boolean,
+//    val initData: AptosSettingsPanel.InitData
 )
 
-class MvDirectoryProjectGenerator : DirectoryProjectGeneratorBase<NewProjectData>(),
-                                    CustomStepProjectGenerator<NewProjectData> {
+class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
+                             CustomStepProjectGenerator<AptosProjectConfig> {
 
-    private var peer: MvProjectGeneratorPeer? = null
+//    private var peer: MvProjectGeneratorPeer? = null
 
-    override fun getName() = "Move"
-    override fun getLogo() = MoveIcons.MOVE
-    override fun createPeer(): ProjectGeneratorPeer<NewProjectData> =
-        MvProjectGeneratorPeer().also { peer = it }
+    override fun getName() = "Aptos"
+    override fun getLogo() = MoveIcons.APTOS
+    override fun createPeer(): ProjectGeneratorPeer<AptosProjectConfig> = AptosProjectGeneratorPeer()
+//        MvProjectGeneratorPeer().also { peer = it }
 
     override fun generateProject(
         project: Project,
         baseDir: VirtualFile,
-        settings: NewProjectData,
+        projectConfig: AptosProjectConfig,
         module: Module
     ) {
-        val aptos = settings.data.aptos() ?: return
+        val aptosCli = projectConfig.aptosSettings.aptosCli() ?: return
         val packageName = project.name
 
         val manifestFile = project.computeWithCancelableProgress("Generating Aptos project...") {
-            val manifestFile = aptos.move_init(
-                project, module,
+            val manifestFile = aptosCli.moveInit(
+                project,
+                module,
                 rootDirectory = baseDir,
                 packageName = packageName
             )
                 .unwrapOrThrow() // TODO throw? really??
 
-            if (settings.aptosInitEnabled) {
-                aptos.init(
-                    project, module,
-                    privateKeyPath = settings.initData.privateKeyPath,
-                    faucetUrl = settings.initData.faucetUrl,
-                    restUrl = settings.initData.restUrl,
-                )
-                    .unwrapOrThrow()
-            }
+//            if (settings.aptosInitEnabled) {
+//                aptosCli.init(
+//                    project, module,
+//                    privateKeyPath = settings.initData.privateKeyPath,
+//                    faucetUrl = settings.initData.faucetUrl,
+//                    restUrl = settings.initData.restUrl,
+//                )
+//                    .unwrapOrThrow()
+//            }
             manifestFile
         }
 
 
         project.moveSettings.modify {
-            it.aptosPath = settings.data.aptosPath
+            it.aptosPath = projectConfig.aptosSettings.aptosPath
         }
         project.addDefaultBuildRunConfiguration(isSelected = true)
         project.openFile(manifestFile)
@@ -76,7 +76,8 @@ class MvDirectoryProjectGenerator : DirectoryProjectGeneratorBase<NewProjectData
     }
 
     override fun createStep(
-        projectGenerator: DirectoryProjectGenerator<NewProjectData>,
-        callback: AbstractNewProjectStep.AbstractCallback<NewProjectData>
-    ): AbstractActionWithPanel = MvProjectSettingsStep(projectGenerator)
+        projectGenerator: DirectoryProjectGenerator<AptosProjectConfig>,
+        callback: AbstractNewProjectStep.AbstractCallback<AptosProjectConfig>
+    ): AbstractActionWithPanel =
+        AptosProjectConfigStep(projectGenerator)
 }

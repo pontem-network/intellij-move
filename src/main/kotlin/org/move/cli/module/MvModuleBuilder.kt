@@ -11,7 +11,7 @@ import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.util.Disposer
 import org.move.cli.Consts
 import org.move.cli.runConfigurations.addDefaultBuildRunConfiguration
-import org.move.cli.runConfigurations.aptos.Aptos
+import org.move.cli.runConfigurations.aptos.AptosCli
 import org.move.cli.settings.MoveSettingsPanel
 import org.move.ide.newProject.openFile
 import org.move.openapiext.computeWithCancelableProgress
@@ -41,13 +41,13 @@ class MvModuleBuilder : ModuleBuilder() {
 
         // Just work if user "creates new project" over an existing one.
         if (aptosPath != null && root.findChild(Consts.MANIFEST_FILE) == null) {
-            val aptos = Aptos(aptosPath)
+            val aptosCli = AptosCli(aptosPath)
             val project = modifiableRootModel.project
             val packageName = project.name.replace(' ', '_')
 
             ApplicationManager.getApplication().executeOnPooledThread {
                 val manifestFile = project.computeWithCancelableProgress("Generating Aptos project...") {
-                    aptos.move_init(
+                    aptosCli.moveInit(
                         project, modifiableRootModel.module,
                         rootDirectory = root,
                         packageName = packageName

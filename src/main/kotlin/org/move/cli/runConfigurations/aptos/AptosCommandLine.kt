@@ -19,9 +19,9 @@ data class AptosCommandLine(
         return StringUtil.join(listOfNotNull(subCommand, *arguments.toTypedArray()), " ")
     }
 
-    fun toGeneralCommandLine(aptos: Aptos): GeneralCommandLine {
+    fun toGeneralCommandLine(aptosCli: AptosCli): GeneralCommandLine {
         val generalCommandLine = GeneralCommandLine()
-            .withExePath(aptos.location.toString())
+            .withExePath(aptosCli.location.toString())
             // subcommand can be null
             .withParameters(listOfNotNull(subCommand))
             .withParameters(this.arguments)

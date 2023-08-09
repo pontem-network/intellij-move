@@ -14,7 +14,7 @@ import org.move.stdext.*
 import java.io.File
 import java.nio.file.Path
 
-class Aptos(val location: Path) {
+class AptosCli(val location: Path) {
     fun init(
         project: Project,
         owner: Disposable,
@@ -38,8 +38,7 @@ class Aptos(val location: Path) {
         return commandLine.toGeneralCommandLine(this).execute(owner)
     }
 
-    @Suppress("FunctionName")
-    fun move_init(
+    fun moveInit(
         project: Project,
         owner: Disposable,
         rootDirectory: VirtualFile,
@@ -83,7 +82,7 @@ class Aptos(val location: Path) {
     }
 
     companion object {
-        fun fromProject(project: Project): Aptos? = project.aptosPath?.let { Aptos(it) }
+        fun fromProject(project: Project): AptosCli? = project.aptosPath?.let { AptosCli(it) }
 
         data class GeneratedFilesHolder(val manifest: VirtualFile)
 

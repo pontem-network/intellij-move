@@ -8,33 +8,28 @@ package org.move.ide.newProject
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.platform.GeneratorPeerImpl
-import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.dsl.builder.AlignX
-import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.layout.selected
-import org.move.cli.runConfigurations.aptos.Aptos
-import org.move.cli.settings.AptosSettingsPanel
+import org.move.cli.runConfigurations.aptos.AptosCli
 import org.move.cli.settings.MoveSettingsPanel
 import org.move.cli.settings.isValidExecutable
 import org.move.stdext.toPathOrNull
 import javax.swing.JComponent
 
-class MvProjectGeneratorPeer : GeneratorPeerImpl<NewProjectData>() {
+class AptosProjectGeneratorPeer : GeneratorPeerImpl<AptosProjectConfig>() {
 
     private val moveSettingsPanel =
         MoveSettingsPanel(showDefaultSettingsLink = true) { checkValid?.run() }
 
-    private val aptosInitCheckBox = JBCheckBox("Run 'aptos init'", false)
-    private val aptosSettingsPanel = AptosSettingsPanel(aptosInitCheckBox.selected)
+//    private val aptosInitCheckBox = JBCheckBox("Run 'aptos init'", false)
+//    private val aptosSettingsPanel = AptosSettingsPanel(aptosInitCheckBox.selected)
 
     private var checkValid: Runnable? = null
 
-    override fun getSettings(): NewProjectData {
-        return NewProjectData(
-            data = moveSettingsPanel.data,
-            aptosInitEnabled = aptosInitCheckBox.isSelected,
-            initData = aptosSettingsPanel.data
+    override fun getSettings(): AptosProjectConfig {
+        return AptosProjectConfig(
+            aptosSettings = moveSettingsPanel.data,
+//            aptosInitEnabled = aptosInitCheckBox.isSelected,
+//            initData = aptosSettingsPanel.data
         )
     }
 
@@ -47,13 +42,12 @@ class MvProjectGeneratorPeer : GeneratorPeerImpl<NewProjectData>() {
         val panel = panel {
             group {}
             moveSettingsPanel.attachTo(this)
-            group {}.bottomGap(BottomGap.MEDIUM)
 
-            row { cell(aptosInitCheckBox).align(AlignX.FILL) }
-//            row { cell(aptosInitCheckBox).horizontalAlign(HorizontalAlign.FILL) }
-            aptosSettingsPanel.attachTo(this)
+//            group {}.bottomGap(BottomGap.MEDIUM)
+//            row { cell(aptosInitCheckBox).align(AlignX.FILL) }
+//            aptosSettingsPanel.attachTo(this)
         }
-        val suggestedAptosPath = Aptos.suggestPath()
+        val suggestedAptosPath = AptosCli.suggestPath()
         if (suggestedAptosPath != null) {
             moveSettingsPanel.data = MoveSettingsPanel.Data(suggestedAptosPath)
         }
@@ -66,13 +60,13 @@ class MvProjectGeneratorPeer : GeneratorPeerImpl<NewProjectData>() {
             return ValidationInfo("Invalid path to Aptos executable")
         }
 
-        if (aptosInitEnabled()) {
-            return aptosSettingsPanel.validate()
-        }
+//        if (aptosInitEnabled()) {
+//            return aptosSettingsPanel.validate()
+//        }
         return null
     }
 
-    private fun aptosInitEnabled(): Boolean {
-        return aptosInitCheckBox.isSelected
-    }
+//    private fun aptosInitEnabled(): Boolean {
+//        return aptosInitCheckBox.isSelected
+//    }
 }

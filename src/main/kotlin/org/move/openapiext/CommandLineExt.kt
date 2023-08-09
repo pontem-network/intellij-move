@@ -75,7 +75,7 @@ fun GeneralCommandLine.execute(
             return RsResult.Err(MvProcessExecutionException.Start(commandLineString, it))
         }
 
-    val cargoKiller = Disposable {
+    val processKiller = Disposable {
         // Don't attempt a graceful termination, Cargo can be SIGKILLed safely.
         // https://github.com/rust-lang/cargo/issues/3566
         if (!handler.isProcessTerminated) {
@@ -89,13 +89,13 @@ fun GeneralCommandLine.execute(
         if (Disposer.isDisposed(owner)) {
             true
         } else {
-            Disposer.register(owner, cargoKiller)
+            Disposer.register(owner, processKiller)
             false
         }
     }
 
     if (alreadyDisposed) {
-        Disposer.dispose(cargoKiller) // Kill the process
+        Disposer.dispose(processKiller) // Kill the process
 
         // On the one hand, this seems fishy,
         // on the other hand, this is isomorphic
@@ -119,7 +119,7 @@ fun GeneralCommandLine.execute(
 
         handler.runner()
     } finally {
-        Disposer.dispose(cargoKiller)
+        Disposer.dispose(processKiller)
     }
 
     return when {

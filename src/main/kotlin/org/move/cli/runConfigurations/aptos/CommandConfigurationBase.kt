@@ -13,7 +13,6 @@ import org.jdom.Element
 import org.move.cli.readPath
 import org.move.cli.readString
 import org.move.cli.runConfigurations.legacy.MoveCommandConfiguration
-import org.move.cli.runConfigurations.test.AptosTestCommandLineState
 import org.move.cli.writePath
 import org.move.cli.writeString
 import org.move.stdext.exists
@@ -61,10 +60,10 @@ abstract class CommandConfigurationBase(
         val parsedCommand = MoveCommandConfiguration.ParsedCommand.parse(command)
             ?: return CleanConfiguration.error("No command specified")
 
-        val aptos = Aptos.fromProject(project)
+        val aptosCli = AptosCli.fromProject(project)
             ?: return CleanConfiguration.error("No Aptos CLI specified")
-        if (!aptos.location.exists()) {
-            return CleanConfiguration.error("Invalid Aptos CLI: ${aptos.location}")
+        if (!aptosCli.location.exists()) {
+            return CleanConfiguration.error("Invalid Aptos CLI: ${aptosCli.location}")
         }
 
         val commandLine = AptosCommandLine(
@@ -73,7 +72,7 @@ abstract class CommandConfigurationBase(
             workingDirectory,
             environmentVariables
         )
-        return CleanConfiguration.Ok(aptos.location, commandLine)
+        return CleanConfiguration.Ok(aptosCli.location, commandLine)
     }
 
     sealed class CleanConfiguration {

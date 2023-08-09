@@ -7,7 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.PlatformProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenProcessor
 import org.move.cli.runConfigurations.addDefaultBuildRunConfiguration
-import org.move.cli.runConfigurations.aptos.Aptos
+import org.move.cli.runConfigurations.aptos.AptosCli
 import org.move.cli.settings.aptosPath
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
@@ -18,7 +18,7 @@ import org.move.openapiext.aptosRunConfigurations
 import org.move.openapiext.contentRoots
 import javax.swing.Icon
 
-class MoveProjectOpenProcessor : ProjectOpenProcessor() {
+class AptosProjectOpenProcessor : ProjectOpenProcessor() {
     override val name: String get() = "Move"
     override val icon: Icon get() = MoveIcons.MOVE
 
@@ -53,10 +53,10 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
                     updateAllNotifications(it)
                 }
 
-                val aptosPath = Aptos.suggestPath()
-                if (aptosPath != null && it.aptosPath?.toString().isNullOrBlank()) {
+                val aptosCliPath = AptosCli.suggestPath()
+                if (aptosCliPath != null && it.aptosPath?.toString().isNullOrBlank()) {
                     it.moveSettings.modify { state ->
-                        state.aptosPath = aptosPath
+                        state.aptosPath = aptosCliPath
                     }
                 }
                 it.moveProjects.refreshAllProjects()

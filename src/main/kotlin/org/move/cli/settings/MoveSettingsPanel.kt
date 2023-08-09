@@ -6,7 +6,7 @@ import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.Panel
-import org.move.cli.runConfigurations.aptos.Aptos
+import org.move.cli.runConfigurations.aptos.AptosCli
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathField
 import org.move.openapiext.showSettings
@@ -26,7 +26,7 @@ class MoveSettingsPanel(
     private val versionLabel = VersionLabel()
 
     data class Data(val aptosPath: String) {
-        fun aptos(): Aptos? = aptosPath.toPathOrNull()?.let { Aptos(it) }
+        fun aptosCli(): AptosCli? = aptosPath.toPathOrNull()?.let { AptosCli(it) }
     }
 
     var data: Data
@@ -81,8 +81,8 @@ class MoveSettingsPanel(
         val aptosPath = aptosPathField.text.toPathOrNull()
         versionUpdateDebouncer.run(
             onPooledThread = {
-                val aptosVersion = aptosPath?.let { Aptos(it) }?.version()
-                aptosVersion
+                val aptosCliVersion = aptosPath?.let { AptosCli(it) }?.version()
+                aptosCliVersion
             },
             onUiThread = { version ->
                 versionLabel.setVersion(version)
