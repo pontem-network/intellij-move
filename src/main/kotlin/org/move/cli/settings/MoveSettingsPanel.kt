@@ -4,10 +4,9 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
+import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.Panel
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import org.move.cli.runConfigurations.aptos.Aptos
-import org.move.ide.actions.download.ui.DownloadAptosDialog
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathField
 import org.move.openapiext.showSettings
@@ -51,7 +50,8 @@ class MoveSettingsPanel(
         )
         row("Aptos CLI") {
             cell(aptosPathField)
-                .horizontalAlign(HorizontalAlign.FILL)
+                .align(AlignX.FILL)
+//                .horizontalAlign(HorizontalAlign.FILL)
                 .resizableColumn()
             comment("(required)")
         }
@@ -72,7 +72,8 @@ class MoveSettingsPanel(
                 ProjectManager.getInstance().defaultProject.showSettings<PerProjectMoveConfigurable>()
             }
                 .visible(showDefaultSettingsLink)
-                .horizontalAlign(HorizontalAlign.RIGHT)
+                .align(AlignX.FILL)
+//                .horizontalAlign(HorizontalAlign.RIGHT)
         }
     }
 

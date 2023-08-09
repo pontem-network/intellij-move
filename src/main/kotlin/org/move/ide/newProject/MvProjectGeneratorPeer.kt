@@ -9,9 +9,9 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.platform.GeneratorPeerImpl
 import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.layout.selected
 import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.cli.settings.AptosSettingsPanel
@@ -49,7 +49,8 @@ class MvProjectGeneratorPeer : GeneratorPeerImpl<NewProjectData>() {
             moveSettingsPanel.attachTo(this)
             group {}.bottomGap(BottomGap.MEDIUM)
 
-            row { cell(aptosInitCheckBox).horizontalAlign(HorizontalAlign.FILL) }
+            row { cell(aptosInitCheckBox).align(AlignX.FILL) }
+//            row { cell(aptosInitCheckBox).horizontalAlign(HorizontalAlign.FILL) }
             aptosSettingsPanel.attachTo(this)
         }
         val suggestedAptosPath = Aptos.suggestPath()

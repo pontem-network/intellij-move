@@ -8,8 +8,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.TextFieldWithAutoCompletion
+import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.ui.components.BorderLayoutPanel
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvFunction
@@ -161,7 +161,8 @@ class FunctionCallPanel(
 
             row("Function") {
                 cell(functionCompletionField)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
+//                    .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
                 cell(functionApplyButton)
             }
@@ -192,7 +193,8 @@ class FunctionCallPanel(
                             }
                         })
                         cell(typeParameterTextField)
-                            .horizontalAlign(HorizontalAlign.FILL)
+                            .align(AlignX.FILL)
+//                            .horizontalAlign(HorizontalAlign.FILL)
                     }
                 }
             }
@@ -211,7 +213,8 @@ class FunctionCallPanel(
                         }
                         paramField.component.text = outerPanel.valueParams[paramName]?.value
                         paramField
-                            .horizontalAlign(HorizontalAlign.FILL)
+                            .align(AlignX.FILL)
+//                            .horizontalAlign(HorizontalAlign.FILL)
                             .whenTextChangedFromUi {
                                 outerPanel.valueParams[paramName] = FunctionCallParam(it, paramTyName)
                                 fireChangeEvent()

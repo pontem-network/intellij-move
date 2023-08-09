@@ -5,6 +5,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.layout.ComponentPredicate
@@ -38,12 +39,15 @@ class AptosSettingsPanel(val panelEnabled: ComponentPredicate) : Disposable {
         }
 
     fun attachTo(layout: Panel) = with(layout) {
-        row("Private key file") { cell(privateKeyPathField).horizontalAlign(HorizontalAlign.FILL) }
+        row("Private key file") { cell(privateKeyPathField).align(AlignX.FILL) }
             .enabledIf(panelEnabled)
-        row("Faucet URL") { cell(faucetUrlField).horizontalAlign(HorizontalAlign.FILL) }
+//        row("Private key file") { cell(privateKeyPathField).horizontalAlign(HorizontalAlign.FILL) }
+        row("Faucet URL") { cell(faucetUrlField).align(AlignX.FILL) }
             .enabledIf(panelEnabled)
-        row("Rest API URL") { cell(restUrlField).horizontalAlign(HorizontalAlign.FILL) }
+//        row("Faucet URL") { cell(faucetUrlField).horizontalAlign(HorizontalAlign.FILL) }
+        row("Rest API URL") { cell(restUrlField).align(AlignX.FILL) }
             .enabledIf(panelEnabled)
+//        row("Rest API URL") { cell(restUrlField).horizontalAlign(HorizontalAlign.FILL) }
     }
 
     override fun dispose() {
