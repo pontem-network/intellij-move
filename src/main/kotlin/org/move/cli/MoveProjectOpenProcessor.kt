@@ -55,8 +55,8 @@ class MoveProjectOpenProcessor : ProjectOpenProcessor() {
 
                 val aptosPath = Aptos.suggestPath()
                 if (aptosPath != null && it.aptosPath?.toString().isNullOrBlank()) {
-                    it.moveSettings.modify {
-                        it.aptosPath = aptosPath
+                    it.moveSettings.modify { state ->
+                        state.aptosPath = aptosPath
                     }
                 }
                 it.moveProjects.refreshAllProjects()
