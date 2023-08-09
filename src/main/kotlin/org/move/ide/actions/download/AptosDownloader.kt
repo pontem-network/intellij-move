@@ -59,9 +59,7 @@ class DownloadAptosTask(
         if (!destinationDir.isDirectory) {
             statusListener(
                 DownloadStatus.Failed(
-                    "${destinationDir.absolutePath} is not a directory",
-                    aptosUrl,
-                    destinationDir
+                    "${destinationDir.absolutePath} is not a directory"
                 )
             )
             return null
@@ -70,7 +68,7 @@ class DownloadAptosTask(
             val url = try {
                 URL(aptosUrl)
             } catch (e: MalformedURLException) {
-                statusListener(DownloadStatus.Failed("Bad Aptos HTTP url", aptosUrl, destinationDir))
+                statusListener(DownloadStatus.Failed("Bad Aptos HTTP url"))
                 return null
             }
             val destinationFile = File(destinationDir, aptosUrl.toFileName())
@@ -79,7 +77,7 @@ class DownloadAptosTask(
             try {
                 httpConn.getHeaderField("Content-Type")
             } catch (e: IllegalStateException) {
-                statusListener(DownloadStatus.Failed("Nothing to download", aptosUrl, destinationDir))
+                statusListener(DownloadStatus.Failed("Nothing to download"))
                 return null
             }
 
@@ -89,7 +87,7 @@ class DownloadAptosTask(
             val inputStream = try {
                 url.openStream()
             } catch (e: IOException) {
-                statusListener(DownloadStatus.Failed("Can't connect", aptosUrl, destinationDir))
+                statusListener(DownloadStatus.Failed("Can't connect"))
                 return null
             }
 
@@ -118,10 +116,10 @@ class DownloadAptosTask(
             statusListener(DownloadStatus.Downloading("Removing zip archive"))
             destinationFile.delete()
 
-            statusListener(DownloadStatus.Finished(outFile.absolutePath, aptosUrl, destinationDir))
+            statusListener(DownloadStatus.Finished)
             return outFile.absolutePath
         } else {
-            statusListener(DownloadStatus.Failed("Can't understand link type", aptosUrl, destinationDir))
+            statusListener(DownloadStatus.Failed("Can't understand link type"))
             return null
         }
     }
