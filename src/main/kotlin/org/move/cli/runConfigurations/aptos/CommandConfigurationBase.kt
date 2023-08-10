@@ -60,7 +60,7 @@ abstract class CommandConfigurationBase(
         val parsedCommand = MoveCommandConfiguration.ParsedCommand.parse(command)
             ?: return CleanConfiguration.error("No command specified")
 
-        val aptosCli = AptosCli.fromProject(project)
+        val aptosCli = AptosCliExecutor.fromProject(project)
             ?: return CleanConfiguration.error("No Aptos CLI specified")
         if (!aptosCli.location.exists()) {
             return CleanConfiguration.error("Invalid Aptos CLI: ${aptosCli.location}")

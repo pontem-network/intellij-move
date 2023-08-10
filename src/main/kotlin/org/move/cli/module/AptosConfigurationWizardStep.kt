@@ -9,7 +9,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import org.move.cli.moveProjects
-import org.move.cli.settings.MoveSettingsPanel
+import org.move.cli.settings.AptosSettingsPanel
 import org.move.cli.settings.moveSettings
 import org.move.openapiext.isFeatureEnabled
 import javax.swing.JComponent
@@ -19,22 +19,22 @@ class AptosConfigurationWizardStep(
     private val configurationUpdaterConsumer: ((ModuleBuilder.ModuleConfigurationUpdater) -> Unit)? = null
 ) : ModuleWizardStep() {
 
-    private val moveSettingsPanel = MoveSettingsPanel(showDefaultSettingsLink = true)
+    private val aptosSettingsPanel = AptosSettingsPanel(showDefaultProjectSettingsLink = true)
 
     override fun getComponent(): JComponent =
         panel {
-            moveSettingsPanel.attachTo(this)
+            aptosSettingsPanel.attachTo(this)
         }.withBorderIfNeeded()
 
-    override fun disposeUIResources() = Disposer.dispose(moveSettingsPanel)
+    override fun disposeUIResources() = Disposer.dispose(aptosSettingsPanel)
 
     override fun updateDataModel() {
-        val data = moveSettingsPanel.data
-        ConfigurationUpdater.data = data
+        val panelData = aptosSettingsPanel.panelData
+        ConfigurationUpdater.data = panelData
 
         val projectBuilder = context.projectBuilder
         if (projectBuilder is MvModuleBuilder) {
-            projectBuilder.configurationData = data
+            projectBuilder.configurationData = panelData
             projectBuilder.addModuleConfigurationUpdater(ConfigurationUpdater)
         } else {
             configurationUpdaterConsumer?.invoke(ConfigurationUpdater)
@@ -55,13 +55,13 @@ class AptosConfigurationWizardStep(
     private fun isNewWizard(): Boolean = isFeatureEnabled("new.project.wizard")
 
     private object ConfigurationUpdater : ModuleBuilder.ModuleConfigurationUpdater() {
-        var data: MoveSettingsPanel.Data? = null
+        var data: AptosSettingsPanel.PanelData? = null
 
         override fun update(module: Module, rootModel: ModifiableRootModel) {
             val data = data
             if (data != null) {
                 module.project.moveSettings.modify {
-                    it.aptosPath = data.aptosPath
+                    it.aptosPath = data.aptosExec.pathToSettingsFormat()
                 }
             }
             // We don't use SDK, but let's inherit one to reduce the amount of

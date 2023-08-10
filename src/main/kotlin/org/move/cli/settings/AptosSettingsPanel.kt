@@ -2,68 +2,126 @@ package org.move.cli.settings
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
-import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.components.JBTextField
-import com.intellij.ui.dsl.builder.AlignX
-import com.intellij.ui.dsl.builder.Panel
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
-import com.intellij.ui.layout.ComponentPredicate
-import com.intellij.util.Urls
+import com.intellij.ui.dsl.builder.*
+import org.move.cli.runConfigurations.aptos.AptosCliExecutor
+import org.move.openapiext.UiDebouncer
 import org.move.openapiext.pathField
+import org.move.openapiext.showSettings
+import org.move.stdext.toPathOrNull
 
-class AptosSettingsPanel(val panelEnabled: ComponentPredicate) : Disposable {
-    private val privateKeyPathField =
+class AptosSettingsPanel(
+    private val showDefaultProjectSettingsLink: Boolean,
+    private val updateListener: (() -> Unit)? = null
+): Disposable {
+
+    private val localPathField =
         pathField(
-            FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor(),
+            FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
             this,
-            "Private Key File"
-        )
-    private val faucetUrlField = JBTextField()
-    private val restUrlField = JBTextField()
-
-    data class InitData(
-        val privateKeyPath: String,
-        val faucetUrl: String,
-        val restUrl: String
-    )
-
-    var data: InitData
-        get() {
-            return InitData(privateKeyPathField.text, faucetUrlField.text, restUrlField.text)
+            "Choose Aptos CLI"
+        ) { text ->
+            aptosExec = AptosExec.LocalPath(text)
+            onAptosExecUpdate()
         }
+
+    private val versionLabel = VersionLabel()
+    private val versionUpdateDebouncer = UiDebouncer(this)
+
+    data class PanelData(val aptosExec: AptosExec)
+
+    var panelData: PanelData
+        get() = PanelData(aptosExec)
         set(value) {
-            privateKeyPathField.text = value.privateKeyPath
-            faucetUrlField.text = value.faucetUrl
-            restUrlField.text = value.restUrl
+            when (value.aptosExec) {
+                is AptosExec.Bundled -> localPathField.text = ""
+                else -> localPathField.text = value.aptosExec.execPath
+            }
+            onAptosExecUpdate()
         }
+
+    var aptosExec: AptosExec = AptosExec.Bundled
 
     fun attachTo(layout: Panel) = with(layout) {
-        row("Private key file") { cell(privateKeyPathField).align(AlignX.FILL) }
-            .enabledIf(panelEnabled)
-//        row("Private key file") { cell(privateKeyPathField).horizontalAlign(HorizontalAlign.FILL) }
-        row("Faucet URL") { cell(faucetUrlField).align(AlignX.FILL) }
-            .enabledIf(panelEnabled)
-//        row("Faucet URL") { cell(faucetUrlField).horizontalAlign(HorizontalAlign.FILL) }
-        row("Rest API URL") { cell(restUrlField).align(AlignX.FILL) }
-            .enabledIf(panelEnabled)
-//        row("Rest API URL") { cell(restUrlField).horizontalAlign(HorizontalAlign.FILL) }
+        // Don't use `Project.toolchain` or `Project.rustSettings` here because
+        // `getService` can return `null` for default project after dynamic plugin loading.
+        // As a result, you can get `java.lang.IllegalStateException`
+        // So let's handle it manually
+        val defaultProjectSettings =
+            ProjectManager.getInstance().defaultProject.getService(MoveProjectSettingsService::class.java)
+        panelData = PanelData(
+            aptosExec = AptosExec.fromSettingsFormat(defaultProjectSettings.state.aptosPath),
+        )
+        buttonsGroup("Aptos CLI") {
+            row {
+                radioButton("Bundled")
+                    .bindSelected(
+                        { aptosExec is AptosExec.Bundled },
+                        {
+                            aptosExec = AptosExec.Bundled
+                            onAptosExecUpdate()
+                        }
+                    )
+            }
+
+            row {
+                val button = radioButton("Local")
+                    .bindSelected(
+                        { aptosExec is AptosExec.LocalPath },
+                        {
+                            aptosExec = AptosExec.LocalPath(localPathField.text)
+                            onAptosExecUpdate()
+                        }
+                    )
+                cell(localPathField)
+                    .enabledIf(button.selected)
+                    .align(AlignX.FILL).resizableColumn()
+            }
+        }
+//        row("aptos-cli executable") {
+//            cell(localPathField)
+//                .align(AlignX.FILL)
+////                .horizontalAlign(HorizontalAlign.FILL)
+//                .resizableColumn()
+//            comment("(required)")
+//        }
+        row("Version") { cell(versionLabel) }
+//        row {
+//            button("Download Aptos CLI") {
+//                val dialog = DownloadAptosDialog(parentComponent = aptosPathField)
+//                dialog.show()
+//
+//                val newAptosPath = dialog.outPath
+//                if (dialog.isOK && newAptosPath != null) {
+//                    data = Data(newAptosPath)
+//                }
+//            }
+//        }
+        row {
+            link("Set default project settings") {
+                ProjectManager.getInstance().defaultProject.showSettings<PerProjectMoveConfigurable>()
+            }
+                .visible(showDefaultProjectSettingsLink)
+                .align(AlignX.RIGHT)
+//                .horizontalAlign(HorizontalAlign.RIGHT)
+        }
+    }
+
+    private fun onAptosExecUpdate() {
+        val aptosExecPath = aptosExec.execPath.toPathOrNull()
+        versionUpdateDebouncer.run(
+            onPooledThread = {
+                aptosExecPath?.let { AptosCliExecutor(it).version() }
+            },
+            onUiThread = { version ->
+                versionLabel.setVersion(version)
+                updateListener?.invoke()
+            }
+        )
     }
 
     override fun dispose() {
-        Disposer.dispose(privateKeyPathField)
+        Disposer.dispose(localPathField)
     }
-
-    fun validate(): ValidationInfo? {
-        if (data.privateKeyPath.isBlank()) return ValidationInfo("Private key is required")
-        if (data.faucetUrl.isBlank()) return ValidationInfo("Faucet url is required")
-        if (!data.faucetUrl.isValidUrl()) return ValidationInfo("Faucet url is invalid")
-        if (data.restUrl.isBlank()) return ValidationInfo("Rest url is required")
-        if (!data.restUrl.isValidUrl()) return ValidationInfo("Rest url is invalid")
-        return null
-    }
-}
-
-private fun String.isValidUrl(): Boolean {
-    return Urls.parse(this, false) != null
 }

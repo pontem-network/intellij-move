@@ -11,7 +11,7 @@ import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
 import org.move.cli.moveProjects
 import org.move.cli.runConfigurations.addDefaultBuildRunConfiguration
-import org.move.cli.settings.MoveSettingsPanel
+import org.move.cli.settings.AptosSettingsPanel
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
 import org.move.ide.notifications.updateAllNotifications
@@ -19,7 +19,7 @@ import org.move.openapiext.computeWithCancelableProgress
 import org.move.stdext.unwrapOrThrow
 
 data class AptosProjectConfig(
-    val aptosSettings: MoveSettingsPanel.Data,
+    val panelData: AptosSettingsPanel.PanelData,
 //    val aptosInitEnabled: Boolean,
 //    val initData: AptosSettingsPanel.InitData
 )
@@ -32,7 +32,6 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
     override fun getName() = "Aptos"
     override fun getLogo() = MoveIcons.APTOS
     override fun createPeer(): ProjectGeneratorPeer<AptosProjectConfig> = AptosProjectGeneratorPeer()
-//        MvProjectGeneratorPeer().also { peer = it }
 
     override fun generateProject(
         project: Project,
@@ -40,18 +39,20 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
         projectConfig: AptosProjectConfig,
         module: Module
     ) {
-        val aptosCli = projectConfig.aptosSettings.aptosCli() ?: return
+        val aptosExecutor = projectConfig.panelData.aptosExec.toExecutor() ?: return
         val packageName = project.name
 
-        val manifestFile = project.computeWithCancelableProgress("Generating Aptos project...") {
-            val manifestFile = aptosCli.moveInit(
-                project,
-                module,
-                rootDirectory = baseDir,
-                packageName = packageName
-            )
-                .unwrapOrThrow() // TODO throw? really??
+        val manifestFile =
+            project.computeWithCancelableProgress("Generating Aptos project...") {
+                val manifestFile = aptosExecutor.moveInit(
+                    project,
+                    module,
+                    rootDirectory = baseDir,
+                    packageName = packageName
+                )
+                    .unwrapOrThrow() // TODO throw? really??
 
+                manifestFile
 //            if (settings.aptosInitEnabled) {
 //                aptosCli.init(
 //                    project, module,
@@ -61,12 +62,11 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
 //                )
 //                    .unwrapOrThrow()
 //            }
-            manifestFile
-        }
+            }
 
 
         project.moveSettings.modify {
-            it.aptosPath = projectConfig.aptosSettings.aptosPath
+            it.aptosPath = projectConfig.panelData.aptosExec.pathToSettingsFormat()
         }
         project.addDefaultBuildRunConfiguration(isSelected = true)
         project.openFile(manifestFile)

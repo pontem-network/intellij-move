@@ -13,32 +13,32 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
 
     override fun getId(): String = "org.move.settings"
 
-    private val state: MoveProjectSettingsService.State = project.moveSettings.settingsState
+    private val settingsState: MoveProjectSettingsService.State = project.moveSettings.state
 
-    private val moveProjectSettings = MoveSettingsPanel(showDefaultSettingsLink = !project.isDefault)
+    private val aptosSettingsPanel = AptosSettingsPanel(showDefaultProjectSettingsLink = !project.isDefault)
 
     override fun createPanel(): DialogPanel {
         return panel {
-            moveProjectSettings.attachTo(this)
+            aptosSettingsPanel.attachTo(this)
             group {
                 row {
                     checkBox("Auto-fold specs in opened files")
-                        .bindSelected(state::foldSpecs)
+                        .bindSelected(settingsState::foldSpecs)
                 }
                 row {
                     checkBox("Disable telemetry for new Run Configurations")
-                        .bindSelected(state::disableTelemetry)
+                        .bindSelected(settingsState::disableTelemetry)
                 }
                 row {
                     checkBox("Enable debug mode")
-                        .bindSelected(state::debugMode)
+                        .bindSelected(settingsState::debugMode)
                     comment(
                         "Enables some explicit crashes in the plugin code. Useful for the error reporting."
                     )
                 }
                 row {
                     checkBox("Skip fetching latest git dependencies for tests")
-                        .bindSelected(state::skipFetchLatestGitDeps)
+                        .bindSelected(settingsState::skipFetchLatestGitDeps)
                     comment(
                         "Adds --skip-fetch-latest-git-deps to the test runs."
                     )
@@ -49,25 +49,27 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
 
     override fun disposeUIResources() {
         super<BoundConfigurable>.disposeUIResources()
-        Disposer.dispose(moveProjectSettings)
+        Disposer.dispose(aptosSettingsPanel)
     }
 
     override fun reset() {
         super<BoundConfigurable>.reset()
-        moveProjectSettings.data = MoveSettingsPanel.Data(state.aptosPath)
+        aptosSettingsPanel.panelData =
+            AptosSettingsPanel.PanelData(AptosExec.fromSettingsFormat(settingsState.aptosPath))
+//        aptosSettingsPanel.panelData = AptosSettingsPanel.PanelData(state.aptosPath)
     }
 
     override fun isModified(): Boolean {
         if (super<BoundConfigurable>.isModified()) return true
-        val data = moveProjectSettings.data
-        return data.aptosPath != state.aptosPath
+        val panelData = aptosSettingsPanel.panelData
+        return panelData.aptosExec.pathToSettingsFormat() != settingsState.aptosPath
     }
 
     override fun apply() {
         super.apply()
-        val newState = state
-        newState.aptosPath = moveProjectSettings.data.aptosPath
-        project.moveSettings.settingsState = newState
+        val newSettingsState = settingsState
+        newSettingsState.aptosPath = aptosSettingsPanel.panelData.aptosExec.pathToSettingsFormat()
+        project.moveSettings.state = newSettingsState
 
     }
 }

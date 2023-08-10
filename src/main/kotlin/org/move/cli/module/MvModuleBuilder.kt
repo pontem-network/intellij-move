@@ -11,11 +11,10 @@ import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.util.Disposer
 import org.move.cli.Consts
 import org.move.cli.runConfigurations.addDefaultBuildRunConfiguration
-import org.move.cli.runConfigurations.aptos.AptosCli
-import org.move.cli.settings.MoveSettingsPanel
+import org.move.cli.runConfigurations.aptos.AptosCliExecutor
+import org.move.cli.settings.AptosSettingsPanel
 import org.move.ide.newProject.openFile
 import org.move.openapiext.computeWithCancelableProgress
-import org.move.stdext.toPathOrNull
 import org.move.stdext.unwrapOrThrow
 
 class MvModuleBuilder : ModuleBuilder() {
@@ -36,19 +35,20 @@ class MvModuleBuilder : ModuleBuilder() {
         val root = doAddContentEntry(modifiableRootModel)?.file ?: return
         modifiableRootModel.inheritSdk()
 
-        val aptosPath = configurationData?.aptosPath?.toPathOrNull()
+        val aptosPath = configurationData?.aptosExec?.pathOrNull()
         root.refresh(false, true)
 
         // Just work if user "creates new project" over an existing one.
         if (aptosPath != null && root.findChild(Consts.MANIFEST_FILE) == null) {
-            val aptosCli = AptosCli(aptosPath)
+            val aptosCli = AptosCliExecutor(aptosPath)
             val project = modifiableRootModel.project
             val packageName = project.name.replace(' ', '_')
 
             ApplicationManager.getApplication().executeOnPooledThread {
                 val manifestFile = project.computeWithCancelableProgress("Generating Aptos project...") {
                     aptosCli.moveInit(
-                        project, modifiableRootModel.module,
+                        project,
+                        modifiableRootModel.module,
                         rootDirectory = root,
                         packageName = packageName
                     )
@@ -60,5 +60,5 @@ class MvModuleBuilder : ModuleBuilder() {
         }
     }
 
-    var configurationData: MoveSettingsPanel.Data? = null
+    var configurationData: AptosSettingsPanel.PanelData? = null
 }
