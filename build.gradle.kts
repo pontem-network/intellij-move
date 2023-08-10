@@ -59,6 +59,7 @@ allprojects {
 
         downloadSources.set(!isCI)
         instrumentCode.set(false)
+        ideaDependencyCachePath.set(dependencyCachePath)
 
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
         plugins.set(prop("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
@@ -101,7 +102,7 @@ allprojects {
             kotlinOptions {
                 jvmTarget = "17"
                 languageVersion = "1.8"
-                apiVersion = "1.6"
+                apiVersion = "1.7"
                 freeCompilerArgs = listOf("-Xjvm-default=all")
             }
         }
@@ -195,3 +196,14 @@ project(":plugin") {
         }
     }
 }
+
+val Project.dependencyCachePath
+    get(): String {
+        val cachePath = file("${rootProject.projectDir}/deps")
+        // If cache path doesn't exist, we need to create it manually
+        // because otherwise gradle-intellij-plugin will ignore it
+        if (!cachePath.exists()) {
+            cachePath.mkdirs()
+        }
+        return cachePath.absolutePath
+    }
