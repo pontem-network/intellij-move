@@ -1,6 +1,7 @@
 package org.move.cli.settings
 
 import org.move.cli.runConfigurations.aptos.AptosCliExecutor
+import org.move.openapiext.PluginPathManager
 import org.move.stdext.toPathOrNull
 
 sealed class AptosExec {
@@ -8,8 +9,7 @@ sealed class AptosExec {
 
     object Bundled: AptosExec() {
         override val execPath: String
-            get() =
-                TODO("Not yet implemented")
+            get() = PluginPathManager.bundledAptosCli ?: ""
     }
 
     data class LocalPath(override val execPath: String): AptosExec()

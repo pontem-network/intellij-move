@@ -1,3 +1,4 @@
+import org.jetbrains.intellij.tasks.PrepareSandboxTask
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
@@ -18,6 +19,8 @@ val javaVersion = JavaVersion.VERSION_17
 val kotlinStdlibVersion = "1.9.0"
 val pluginJarName = "intellij-move-$pluginVersion"
 
+val aptosVersion = "2.0.3"
+
 group = pluginGroup
 version = pluginVersion
 
@@ -28,6 +31,7 @@ plugins {
     id("org.jetbrains.grammarkit") version "2022.3.1"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
+    id("de.undercouch.download") version "5.4.0"
 }
 
 dependencies {
@@ -44,6 +48,7 @@ allprojects {
         plugin("kotlin")
         plugin("org.jetbrains.grammarkit")
         plugin("org.jetbrains.intellij")
+        plugin("de.undercouch.download")
     }
 
     repositories {
@@ -87,13 +92,15 @@ allprojects {
     tasks {
         patchPluginXml {
             version.set(pluginVersion)
-            changeNotes.set("""
+            changeNotes.set(
+                """
     <body>
         <p><a href="https://github.com/pontem-network/intellij-move/blob/master/changelog/$pluginVersion.md">
             Changelog for Intellij-Move $pluginVersion on Github
             </a></p>
     </body>
-            """)
+            """
+            )
             sinceBuild.set(prop("pluginSinceBuild"))
             untilBuild.set(prop("pluginUntilBuild"))
         }
@@ -102,7 +109,7 @@ allprojects {
             kotlinOptions {
                 jvmTarget = "17"
                 languageVersion = "1.8"
-                apiVersion = "1.7"
+                apiVersion = "1.6"
                 freeCompilerArgs = listOf("-Xjvm-default=all")
             }
         }
@@ -115,6 +122,42 @@ allprojects {
 
         withType<Jar> {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        }
+
+        task("downloadAptosBinaries") {
+            val baseUrl = "https://github.com/aptos-labs/aptos-core/releases/download/aptos-cli-v$aptosVersion"
+            doLast {
+                for (releasePlatform in listOf("MacOSX", "Ubuntu-22.04", "Ubuntu", "Windows")) {
+                    val zipFileName = "aptos-cli-$aptosVersion-$releasePlatform-x86_64.zip"
+                    val zipFileUrl = "$baseUrl/$zipFileName"
+                    val zipRoot = "${rootProject.buildDir}/zip"
+                    val zipFile = file("$zipRoot/$zipFileName")
+                    if (zipFile.exists()) {
+                        continue
+                    }
+                    download.run {
+                        src(zipFileUrl)
+                        dest(zipFile)
+                        overwrite(false)
+                    }
+
+                    val platformName =
+                        when (releasePlatform) {
+                            "MacOSX" -> "macos"
+                            "Ubuntu" -> "ubuntu"
+                            "Ubuntu-22.04" -> "ubuntu22"
+                            "Windows" -> "windows"
+                            else -> error("unreachable")
+                        }
+                    val platformRoot = file("${rootProject.rootDir}/bin/$platformName")
+                    copy {
+                        from(
+                            zipTree(zipFile)
+                        )
+                        into(platformRoot)
+                    }
+                }
+            }
         }
     }
 
@@ -184,6 +227,18 @@ project(":plugin") {
             jbrVersion.set(prop("jbrVersion"))
         }
 
+        buildPlugin {
+            dependsOn("downloadAptosBinaries")
+        }
+
+        withType<PrepareSandboxTask> {
+            // copy bin/ directory inside the plugin zip file
+            from("$rootDir/bin") {
+                into("${pluginName.get()}/bin")
+                include("**")
+            }
+        }
+
         withType<org.jetbrains.intellij.tasks.RunIdeTask> {
             jbrVersion.set(prop("jbrVersion"))
 
@@ -207,3 +262,4 @@ val Project.dependencyCachePath
         }
         return cachePath.absolutePath
     }
+

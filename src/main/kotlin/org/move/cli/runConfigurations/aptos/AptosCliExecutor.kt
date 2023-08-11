@@ -39,7 +39,7 @@ class AptosCliExecutor(val location: Path) {
 
     fun moveInit(
         project: Project,
-        owner: Disposable,
+        parentDisposable: Disposable,
         rootDirectory: VirtualFile,
         packageName: String,
     ): MvProcessResult<VirtualFile> {
@@ -56,7 +56,7 @@ class AptosCliExecutor(val location: Path) {
             workingDirectory = project.root
         )
         commandLine.toGeneralCommandLine(this)
-            .execute(owner)
+            .execute(parentDisposable)
             .unwrapOrElse { return RsResult.Err(it) }
         fullyRefreshDirectory(rootDirectory)
 

@@ -2,6 +2,7 @@ package org.move.ide.newProject
 
 import com.intellij.ide.util.projectWizard.AbstractNewProjectStep
 import com.intellij.ide.util.projectWizard.CustomStepProjectGenerator
+import com.intellij.openapi.components.service
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -9,6 +10,7 @@ import com.intellij.openapi.wm.impl.welcomeScreen.AbstractActionWithPanel
 import com.intellij.platform.DirectoryProjectGenerator
 import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
+import org.move.cli.PluginApplicationDisposable
 import org.move.cli.moveProjects
 import org.move.cli.runConfigurations.addDefaultBuildRunConfiguration
 import org.move.cli.settings.AptosSettingsPanel
@@ -20,18 +22,16 @@ import org.move.stdext.unwrapOrThrow
 
 data class AptosProjectConfig(
     val panelData: AptosSettingsPanel.PanelData,
-//    val aptosInitEnabled: Boolean,
-//    val initData: AptosSettingsPanel.InitData
 )
 
 class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
                              CustomStepProjectGenerator<AptosProjectConfig> {
 
-//    private var peer: MvProjectGeneratorPeer? = null
+    private val disposable = service<PluginApplicationDisposable>()
 
     override fun getName() = "Aptos"
     override fun getLogo() = MoveIcons.APTOS
-    override fun createPeer(): ProjectGeneratorPeer<AptosProjectConfig> = AptosProjectGeneratorPeer()
+    override fun createPeer(): ProjectGeneratorPeer<AptosProjectConfig> = AptosProjectGeneratorPeer(disposable)
 
     override fun generateProject(
         project: Project,
@@ -46,22 +46,13 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
             project.computeWithCancelableProgress("Generating Aptos project...") {
                 val manifestFile = aptosExecutor.moveInit(
                     project,
-                    module,
+                    disposable,
                     rootDirectory = baseDir,
                     packageName = packageName
                 )
                     .unwrapOrThrow() // TODO throw? really??
 
                 manifestFile
-//            if (settings.aptosInitEnabled) {
-//                aptosCli.init(
-//                    project, module,
-//                    privateKeyPath = settings.initData.privateKeyPath,
-//                    faucetUrl = settings.initData.faucetUrl,
-//                    restUrl = settings.initData.restUrl,
-//                )
-//                    .unwrapOrThrow()
-//            }
             }
 
 

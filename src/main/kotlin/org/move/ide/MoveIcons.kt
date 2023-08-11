@@ -6,9 +6,7 @@ import javax.swing.Icon
 
 object MoveIcons {
     val MOVE = load("/icons/move.svg")
-
     val APTOS = load("/icons/aptos.svg")
-    val APTOS_DARK = load("/icons/aptos_dark.svg")
 
     val ADDRESS = load("/icons/annotationtype.png")
     val MODULE = load("/icons/module.svg")

@@ -4,6 +4,8 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
+import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.*
 import org.move.cli.runConfigurations.aptos.AptosCliExecutor
 import org.move.openapiext.UiDebouncer
@@ -79,25 +81,7 @@ class AptosSettingsPanel(
                     .align(AlignX.FILL).resizableColumn()
             }
         }
-//        row("aptos-cli executable") {
-//            cell(localPathField)
-//                .align(AlignX.FILL)
-////                .horizontalAlign(HorizontalAlign.FILL)
-//                .resizableColumn()
-//            comment("(required)")
-//        }
-        row("Version") { cell(versionLabel) }
-//        row {
-//            button("Download Aptos CLI") {
-//                val dialog = DownloadAptosDialog(parentComponent = aptosPathField)
-//                dialog.show()
-//
-//                val newAptosPath = dialog.outPath
-//                if (dialog.isOK && newAptosPath != null) {
-//                    data = Data(newAptosPath)
-//                }
-//            }
-//        }
+        row("aptos --version :") { cell(versionLabel) }
         row {
             link("Set default project settings") {
                 ProjectManager.getInstance().defaultProject.showSettings<PerProjectMoveConfigurable>()

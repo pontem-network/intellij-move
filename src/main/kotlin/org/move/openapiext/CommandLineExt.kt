@@ -53,11 +53,9 @@ fun GeneralCommandLine.execute(): ProcessOutput? {
         return null
     }
     val output = handler.runProcessWithGlobalProgress()
-
     if (!output.isSuccess) {
         LOG.warn(MvProcessExecutionException.errorMessage(commandLineString, output))
     }
-
     return output
 }
 
