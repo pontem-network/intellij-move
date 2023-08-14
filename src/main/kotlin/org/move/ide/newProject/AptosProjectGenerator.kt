@@ -30,7 +30,7 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
     private val disposable = service<PluginApplicationDisposable>()
 
     override fun getName() = "Aptos"
-    override fun getLogo() = MoveIcons.APTOS
+    override fun getLogo() = MoveIcons.APTOS_LOGO
     override fun createPeer(): ProjectGeneratorPeer<AptosProjectConfig> = AptosProjectGeneratorPeer(disposable)
 
     override fun generateProject(

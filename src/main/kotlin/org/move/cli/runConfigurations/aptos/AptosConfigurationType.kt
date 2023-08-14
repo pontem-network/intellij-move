@@ -13,7 +13,7 @@ class AptosConfigurationType :
         "AptosCommandConfiguration",
         "Aptos",
         "Aptos command execution",
-        NotNullLazyValue.createConstantValue(MoveIcons.APTOS)
+        NotNullLazyValue.createConstantValue(MoveIcons.APTOS_LOGO)
     ) {
 
     init {

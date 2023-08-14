@@ -5,8 +5,8 @@ import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
 
 object MoveIcons {
-    val MOVE = load("/icons/move.svg")
-    val APTOS = load("/icons/aptos.svg")
+    val MOVE_LOGO = load("/icons/move_logo.svg")
+    val APTOS_LOGO = load("/icons/aptos.svg")
 
     val ADDRESS = load("/icons/annotationtype.png")
     val MODULE = load("/icons/module.svg")

@@ -59,7 +59,6 @@ allprojects {
 
     intellij {
         pluginName.set(pluginJarName)
-        version.set(prop("platformVersion"))
         type.set(prop("platformType"))
 
         downloadSources.set(!isCI)
@@ -68,6 +67,10 @@ allprojects {
 
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
         plugins.set(prop("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
+
+        version.set(prop("platformVersion"))
+//        localPath.set("/home/mkurnikov/pontem-ide/pontem-ide-2023.2/")
+//        localSourcesPath.set("/home/mkurnikov/pontem-ide/pontem-232.SNAPSHOT-source")
     }
 
     configure<JavaPluginExtension> {

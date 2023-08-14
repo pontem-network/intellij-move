@@ -13,7 +13,7 @@ class MoveConfigurationType :
         "MoveRunConfiguration",
         "Move",
         "Move command execution",
-        NotNullLazyValue.createConstantValue(MoveIcons.MOVE)
+        NotNullLazyValue.createConstantValue(MoveIcons.MOVE_LOGO)
     ) {
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
         return MoveCommandConfiguration(project, this)

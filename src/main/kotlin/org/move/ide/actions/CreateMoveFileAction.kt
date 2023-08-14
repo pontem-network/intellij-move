@@ -18,7 +18,7 @@ import org.move.ide.MoveIcons
 import org.move.lang.moveProject
 import java.util.*
 
-class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MoveIcons.MOVE),
+class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MoveIcons.MOVE_LOGO),
                              DumbAware {
     override fun getActionName(directory: PsiDirectory, newName: String, templateName: String) = CAPTION
 
@@ -28,9 +28,9 @@ class CreateMoveFileAction : CreateFileFromTemplateAction(CAPTION, "", MoveIcons
         builder: CreateFileFromTemplateDialog.Builder
     ) {
         builder.setTitle(CAPTION)
-            .addKind("Empty", MoveIcons.MOVE, "Move File")
-            .addKind("Module", MoveIcons.MOVE, "Move Module")
-            .addKind("Test Module", MoveIcons.MOVE, "Move Test Module")
+            .addKind("Empty", MoveIcons.MOVE_LOGO, "Move File")
+            .addKind("Module", MoveIcons.MOVE_LOGO, "Move Module")
+            .addKind("Test Module", MoveIcons.MOVE_LOGO, "Move Test Module")
     }
 
     override fun createFileFromTemplate(name: String, template: FileTemplate, dir: PsiDirectory): PsiFile? {

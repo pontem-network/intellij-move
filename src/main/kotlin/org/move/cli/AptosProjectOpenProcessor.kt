@@ -20,7 +20,7 @@ import javax.swing.Icon
 
 class AptosProjectOpenProcessor: ProjectOpenProcessor() {
     override val name: String get() = "Move"
-    override val icon: Icon get() = MoveIcons.MOVE
+    override val icon: Icon get() = MoveIcons.MOVE_LOGO
 
     override fun canOpenProject(file: VirtualFile): Boolean =
         FileUtil.namesEqual(file.name, Consts.MANIFEST_FILE)

@@ -52,7 +52,7 @@ class MoveProjectsTreeStructure(
 
         open class Package(val movePackage: MovePackage, parent: SimpleNode) : MoveSimpleNode(parent) {
             init {
-                icon = MoveIcons.MOVE
+                icon = MoveIcons.MOVE_LOGO
             }
 
             override fun buildChildren(): Array<SimpleNode> {
