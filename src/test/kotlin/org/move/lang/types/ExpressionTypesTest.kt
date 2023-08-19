@@ -1706,4 +1706,56 @@ module 0x1::main {
             }
         }
     """)
+
+    fun `test infer quant variable in forall`() = testBinding("""
+        module 0x1::m {}        
+        spec 0x1::m {
+            spec Table {
+                let left_length = 100;
+                let left = vector[];
+                let right = vector[];
+                ensures forall i: u64 where i < left_length: left[i] == right[i];
+                             //^ num
+            }
+        }
+    """)
+
+    fun `test infer quant variable in exists`() = testBinding("""
+        module 0x1::m {}        
+        spec 0x1::m {
+            spec Table {
+                let left_length = 100;
+                let left = vector[];
+                let right = vector[];
+                ensures exists i: u64 where i < left_length: left[i] == right[i];
+                             //^ num
+            }
+        }
+    """)
+
+    fun `test infer quant variable in where`() = testExpr("""
+        module 0x1::m {}        
+        spec 0x1::m {
+            spec Table {
+                let left_length = 100;
+                let left = vector[];
+                let right = vector[];
+                ensures forall i: u64 where i < left_length: left[i] == right[i];
+                                          //^ num
+            }
+        }
+    """)
+
+    fun `test infer quant variable in quant body`() = testExpr("""
+        module 0x1::m {}        
+        spec 0x1::m {
+            spec Table {
+                let left_length = 100;
+                let left = vector[];
+                let right = vector[];
+                ensures forall i: u64 where i < left_length: left[i] == right[i];
+                                                                //^ num
+            }
+        }
+    """)
 }

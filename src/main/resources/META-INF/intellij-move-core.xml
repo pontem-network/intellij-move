@@ -254,7 +254,7 @@
                          implementationClass="org.move.ide.inspections.UnusedTestSignerInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Address by value inspection"
-                         enabledByDefault="true" level="WEAK WARNING"
+                         enabledByDefault="false" level="WEAK WARNING"
                          implementationClass="org.move.ide.inspections.AddressByValueImportInspection"/>
         <localInspection language="Move" groupName="Move"
                          displayName="Redundant type cast"

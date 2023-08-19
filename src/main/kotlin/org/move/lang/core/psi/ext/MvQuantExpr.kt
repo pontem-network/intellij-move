@@ -8,6 +8,7 @@ interface MvQuantBindingsOwner: MvElement {
 
 interface MvQuantExpr : MvQuantBindingsOwner {
     val expr: MvExpr?
+    val quantWhere: MvQuantWhere?
 }
 
 val MvQuantBindingsOwner.bindings: List<MvBindingPat>

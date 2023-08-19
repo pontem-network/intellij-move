@@ -578,6 +578,7 @@ class TypeInferenceWalker(
             .forEach {
                 collectQuantBinding(it)
             }
+        quantExpr.quantWhere?.expr?.inferTypeCoercableTo(TyBool)
         quantExpr.expr?.inferTypeCoercableTo(TyBool)
         return TyBool
     }
