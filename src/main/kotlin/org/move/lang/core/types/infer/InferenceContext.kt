@@ -477,7 +477,7 @@ private val MvElement.inferenceErrorMessage: String
         }
         when (this) {
             is MvExpr -> {
-                val stmt = this.ancestorStrict<MvStmt>();
+                val stmt = this.ancestorStrict<MvStmt>()
                 if (stmt != null) {
                     val psiString = DebugUtil.psiToString(stmt, true)
                     text += "\n"

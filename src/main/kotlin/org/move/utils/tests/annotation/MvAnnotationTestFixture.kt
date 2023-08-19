@@ -145,14 +145,14 @@ class MvAnnotationTestFixture(
         checkInfo: Boolean = false,
         checkWeakWarn: Boolean = false,
     ) {
-        kotlin.check(code.contains("/*caret*/")) {
+        check(code.contains("/*caret*/")) {
             "No /*caret*/ comment, add it to the place where fix is expected"
         }
         configureByText(code)
         codeInsightFixture.checkHighlighting(checkWarn, checkInfo, checkWeakWarn)
 
         val fixNames = codeInsightFixture.filterAvailableIntentions(fixPrefix).map { it.text }
-        kotlin.check(fixes == fixNames) {
+        check(fixes == fixNames) {
             "Cannot find fixes ${fixNamesToString(fixes)} in ${fixNamesToString(fixNames)}"
         }
     }

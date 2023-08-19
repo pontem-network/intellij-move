@@ -56,7 +56,7 @@ private class AptosToolWindowPanel(project: Project) : SimpleToolWindowPanel(tru
 
     init {
         toolbar = aptosTab.toolbar.component
-        aptosTab.toolbar.setTargetComponent(this)
+        aptosTab.toolbar.targetComponent = this
         setContent(aptosTab.content)
     }
 
