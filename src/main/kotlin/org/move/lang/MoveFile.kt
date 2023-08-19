@@ -17,7 +17,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.childrenOfType
 import org.move.lang.core.psi.ext.modules
-import org.move.lang.core.stubs.MvStubbedElementImpl
 import org.move.openapiext.resolveAbsPath
 import org.move.openapiext.toPsiFile
 import org.move.stdext.chain

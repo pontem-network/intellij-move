@@ -6,15 +6,11 @@
 package org.move.ide.newProject
 
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.Application
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.service
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.Disposer
 import com.intellij.platform.GeneratorPeerImpl
 import com.intellij.ui.dsl.builder.panel
-import org.move.cli.PluginApplicationDisposable
 import org.move.cli.defaultProjectSettings
 import org.move.cli.settings.AptosExec
 import org.move.cli.settings.AptosSettingsPanel

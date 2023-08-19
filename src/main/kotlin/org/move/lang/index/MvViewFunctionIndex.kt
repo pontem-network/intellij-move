@@ -8,8 +8,6 @@ import com.intellij.psi.stubs.StubIndexKey
 import com.intellij.util.Processors
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.ext.isEntry
-import org.move.lang.core.psi.ext.isView
 import org.move.lang.core.stubs.impl.MvFileStub
 import org.move.lang.core.types.ItemQualName
 import org.move.openapiext.checkCommitIsNotInProgress

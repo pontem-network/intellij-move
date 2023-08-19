@@ -12,7 +12,6 @@ import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
 import org.move.stdext.exists
 import org.move.stdext.isExecutableFile
-import org.move.stdext.toPathOrNull
 import java.nio.file.Path
 import kotlin.reflect.KProperty1
 

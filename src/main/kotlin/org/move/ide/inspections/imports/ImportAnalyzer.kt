@@ -3,7 +3,9 @@ package org.move.ide.inspections.imports
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.annotationItem
+import org.move.lang.core.psi.ext.moduleName
+import org.move.lang.core.psi.ext.useSpeck
 
 private typealias VisitedNameMap = MutableMap<ItemScope, MutableSet<String>>
 

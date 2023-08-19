@@ -1,7 +1,6 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.types.ty.Ty
 
 val MvCallExpr.typeArguments: List<MvTypeArgument> get() = this.path.typeArguments
 

@@ -4,7 +4,10 @@ import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.MvElementImpl
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvStructDotField
-import org.move.lang.core.resolve.ref.*
+import org.move.lang.core.resolve.ref.MvPolyVariantReference
+import org.move.lang.core.resolve.ref.MvReferenceCached
+import org.move.lang.core.resolve.ref.MvStructDotFieldReferenceElement
+import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.resolveLocalItem
 
 class MvStructDotFieldReferenceImpl(

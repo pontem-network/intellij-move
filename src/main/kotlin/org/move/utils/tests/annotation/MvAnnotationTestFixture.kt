@@ -17,9 +17,6 @@ import com.intellij.testFramework.fixtures.impl.BaseFixture
 import junit.framework.TestCase
 import org.intellij.lang.annotations.Language
 import org.move.ide.annotator.MvAnnotatorBase
-import org.move.stdext.withAdded
-import org.move.utils.tests.WithEnabledInspections
-import org.move.utils.tests.findAnnotationInstance
 import kotlin.reflect.KClass
 
 class MvAnnotationTestFixture(

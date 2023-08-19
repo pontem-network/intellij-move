@@ -4,11 +4,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.ide.util.treeView.smartTree.ActionPresentation
 import com.intellij.ide.util.treeView.smartTree.ActionPresentationData
 import com.intellij.ide.util.treeView.smartTree.Sorter
-import org.move.lang.core.psi.MvConst
-import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.MvSchema
-import org.move.lang.core.psi.MvSpecFunction
-import org.move.lang.core.psi.MvStruct
+import org.move.lang.core.psi.*
 
 class ItemTypeComparator: Comparator<MvStructureViewTreeElement> {
     override fun compare(left: MvStructureViewTreeElement, right: MvStructureViewTreeElement): Int {

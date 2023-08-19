@@ -6,7 +6,10 @@ import org.move.ide.annotator.pluralise
 import org.move.ide.presentation.name
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.abilities
+import org.move.lang.core.psi.ext.fields
+import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.structItem
 import org.move.lang.core.types.infer.inferExpectedTypeArgumentTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType

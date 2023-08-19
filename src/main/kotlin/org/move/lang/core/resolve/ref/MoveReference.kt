@@ -6,7 +6,6 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvUseAlias
 import org.move.lang.core.psi.ext.moduleUseSpeck
 import org.move.lang.core.psi.ext.useItem
-import org.move.lang.core.types.infer.BoundElement
 
 interface MvPolyVariantReference : PsiPolyVariantReference {
 

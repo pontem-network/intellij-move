@@ -3,11 +3,10 @@ package org.move.openapiext
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.ide.plugins.IdeaPluginDescriptor
 import com.intellij.ide.plugins.PluginManagerCore
-import com.intellij.openapi.application.*
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.util.SystemInfo
-import org.move.openapiext.common.isUnitTestMode
 import java.nio.file.Files
 import java.nio.file.Path
 
