@@ -1682,4 +1682,80 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test global variable for schema`() = testExpr("""
+        module 0x1::m {
+            spec module {
+                global supply: num;
+            }
+            spec schema MySchema {
+                ensures supply == 1;
+                          //^ num   
+            }
+        }        
+    """)
+
+    fun `test no error with type inference with pragma`() = testExpr("""
+        module 0x1::m {
+            struct Table { length: u64 }
+        }        
+        spec 0x1::m {
+            spec Table {
+                pragma map_length = length;
+                                    //^ num
+            }
+        }
+    """)
+
+    fun `test infer quant variable in forall`() = testBinding("""
+        module 0x1::m {}        
+        spec 0x1::m {
+            spec Table {
+                let left_length = 100;
+                let left = vector[];
+                let right = vector[];
+                ensures forall i: u64 where i < left_length: left[i] == right[i];
+                             //^ num
+            }
+        }
+    """)
+
+    fun `test infer quant variable in exists`() = testBinding("""
+        module 0x1::m {}        
+        spec 0x1::m {
+            spec Table {
+                let left_length = 100;
+                let left = vector[];
+                let right = vector[];
+                ensures exists i: u64 where i < left_length: left[i] == right[i];
+                             //^ num
+            }
+        }
+    """)
+
+    fun `test infer quant variable in where`() = testExpr("""
+        module 0x1::m {}        
+        spec 0x1::m {
+            spec Table {
+                let left_length = 100;
+                let left = vector[];
+                let right = vector[];
+                ensures forall i: u64 where i < left_length: left[i] == right[i];
+                                          //^ num
+            }
+        }
+    """)
+
+    fun `test infer quant variable in quant body`() = testExpr("""
+        module 0x1::m {}        
+        spec 0x1::m {
+            spec Table {
+                let left_length = 100;
+                let left = vector[];
+                let right = vector[];
+                ensures forall i: u64 where i < left_length: left[i] == right[i];
+                                                                //^ num
+            }
+        }
+    """)
 }

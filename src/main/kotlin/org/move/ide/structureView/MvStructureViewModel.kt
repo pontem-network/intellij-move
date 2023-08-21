@@ -21,7 +21,7 @@ class MvStructureViewModel(editor: Editor?, moveFile: MoveFile):
 
     init {
         withSuitableClasses(MvNamedElement::class.java)
-        withSorters(Sorter.ALPHA_SORTER)
+        withSorters(ItemTypeSorter(), Sorter.ALPHA_SORTER)
     }
 
     override fun getFilters(): Array<Filter> =

@@ -644,4 +644,41 @@ module 0x1::mod {
             }
         }
     """)
+
+    fun `test verify_only function accessible in spec`() = checkByCode("""
+        module 0x1::m {
+            #[verify_only]
+            fun call(): u8 { 1 }
+               //X
+            fun main() {}
+            spec main {
+                let _ = call();
+                       //^
+            }
+        }        
+    """)
+
+    fun `test verify_only function accessible in other verify_only function`() = checkByCode("""
+        module 0x1::m {
+            #[verify_only]
+            fun call(): u8 { 1 }
+               //X
+            #[verify_only]
+            fun main() {
+                let _ = call();
+                       //^
+            }
+        }        
+    """)
+
+    fun `test verify_only not accessible in the regular code`() = checkByCode("""
+        module 0x1::m {
+            #[verify_only]
+            fun call(): u8 { 1 }
+            fun main() {
+                let _ = call();
+                       //^ unresolved
+            }
+        }        
+    """)
 }

@@ -29,6 +29,12 @@ val MvDocAndAttributeOwner.isTestOnly: Boolean
         return stub?.isTestOnly ?: queryAttributes.isTestOnly
     }
 
+val MvDocAndAttributeOwner.isVerifyOnly: Boolean
+    get() {
+        val stub = attributeStub
+        return stub?.isVerifyOnly ?: queryAttributes.isVerifyOnly
+    }
+
 inline val MvDocAndAttributeOwner.attributeStub: MvAttributeOwnerStub?
     get() = (this as? StubBasedPsiElementBase<*>)?.greenStub as? MvAttributeOwnerStub
 
@@ -54,6 +60,7 @@ class QueryAttributes(
     private val attributes: Sequence<MvAttr>
 ) {
     val isTestOnly: Boolean get() = hasAttrItem("test_only")
+    val isVerifyOnly: Boolean get() = hasAttrItem("verify_only")
 
     fun hasAttrItem(attributeName: String): Boolean = getAttrItem(attributeName) != null
 

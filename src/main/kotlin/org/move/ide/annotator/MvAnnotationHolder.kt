@@ -6,7 +6,6 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
-import org.move.lang.core.psi.ext.startOffset
 
 class MvAnnotationHolder(val holder: AnnotationHolder) {
     fun createErrorAnnotation(element: PsiElement, message: String?) {

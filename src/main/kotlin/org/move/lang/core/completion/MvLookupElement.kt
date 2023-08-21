@@ -24,9 +24,7 @@ class MvLookupElement(
 
         other as MvLookupElement
 
-        if (props != other.props) return false
-
-        return true
+        return props == other.props
     }
 
     override fun hashCode(): Int {

@@ -16,6 +16,7 @@ import org.move.lang.core.psi.ext.isTest
 import org.move.lang.core.psi.ext.isTestOnly
 import org.move.lang.core.psi.ext.viewFunctions
 import org.move.stdext.iterateMoveFiles
+import java.util.concurrent.CompletableFuture
 
 class MoveProjectsTreeStructure(
     tree: MoveProjectsTree,
@@ -32,10 +33,10 @@ class MoveProjectsTreeStructure(
 
     override fun getRootElement() = root
 
-    fun updateMoveProjects(moveProjects: List<MoveProject>) {
+    fun reloadTreeModelAsync(moveProjects: List<MoveProject>): CompletableFuture<*> {
         this.moveProjects = moveProjects
-        root = MoveSimpleNode.Root(moveProjects)
-        treeModel.invalidate()
+        this.root = MoveSimpleNode.Root(moveProjects)
+        return treeModel.invalidateAsync()
     }
 
     sealed class MoveSimpleNode(parent: SimpleNode?) : CachingSimpleNode(parent) {
@@ -51,7 +52,7 @@ class MoveProjectsTreeStructure(
 
         open class Package(val movePackage: MovePackage, parent: SimpleNode) : MoveSimpleNode(parent) {
             init {
-                icon = MoveIcons.MOVE
+                icon = MoveIcons.MOVE_LOGO
             }
 
             override fun buildChildren(): Array<SimpleNode> {

@@ -8,6 +8,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.RootsChangeRescanningInfo
 import com.intellij.openapi.project.ex.ProjectEx
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -17,12 +18,17 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.ex.temp.TempFileSystem
-import com.intellij.psi.*
+import com.intellij.psi.PsiDirectory
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiInvalidElementAccessException
 import com.intellij.psi.util.parents
 import com.intellij.util.messages.Topic
-import org.move.cli.settings.*
+import org.move.cli.settings.MoveProjectSettingsService
+import org.move.cli.settings.MoveSettingsChangedEvent
+import org.move.cli.settings.MoveSettingsListener
+import org.move.cli.settings.debugErrorOrFallback
 import org.move.lang.core.psi.ext.elementType
-import org.move.lang.core.psi.movePsiManager
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.toVirtualFile
@@ -171,11 +177,10 @@ class MoveProjectsService(val project: Project) : Disposable {
                 invokeAndWaitIfNeeded {
                     runWriteAction {
                         projectsIndex.resetIndex()
-
-                        // In unit tests roots change is done by the test framework in most cases
+                        // disable for unit-tests: in those cases roots change is done by the test framework
                         runOnlyInNonLightProject(project) {
                             ProjectRootManagerEx.getInstanceEx(project)
-                                .makeRootsChange(EmptyRunnable.getInstance(), false, true)
+                                .makeRootsChange(EmptyRunnable.getInstance(), RootsChangeRescanningInfo.TOTAL_RESCAN)
                         }
                         // increments structure modification counter in the subscriber
                         project.messageBus

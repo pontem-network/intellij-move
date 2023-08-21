@@ -17,7 +17,6 @@ import org.move.lang.core.MvPsiPatterns.function
 import org.move.lang.core.MvPsiPatterns.itemSpecStmt
 import org.move.lang.core.MvPsiPatterns.moduleBlock
 import org.move.lang.core.MvPsiPatterns.moduleSpecBlock
-import org.move.lang.core.MvPsiPatterns.refExpr
 import org.move.lang.core.MvPsiPatterns.scriptBlock
 import org.move.lang.core.MvPsiPatterns.toplevel
 import org.move.lang.core.MvPsiPatterns.typeParameter

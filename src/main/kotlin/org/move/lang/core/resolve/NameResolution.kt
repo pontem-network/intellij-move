@@ -381,10 +381,16 @@ fun processLexicalDeclarations(
                             ((entry.name !in visited)
                                     && processor.match(entry).also { visited += entry.name })
                         }
-                        processorWithShadowing.matchAll(itemVis, namedElements) || (
-                                // if inside SpecCodeBlock, match also with builtin spec consts
-                                scope is MvSpecCodeBlock
-                                        && processorWithShadowing.matchAll(itemVis, scope.builtinSpecConsts()))
+                        var found = processorWithShadowing.matchAll(itemVis, namedElements)
+                        if (!found && scope is MvSpecCodeBlock) {
+                            // if inside SpecCodeBlock, match also with builtin spec consts and global variables
+                            found = processorWithShadowing.matchAll(
+                                itemVis,
+                                scope.builtinSpecConsts(),
+                                scope.globalVariables()
+                            )
+                        }
+                        found
                     }
                     else -> false
                 }
@@ -546,11 +552,12 @@ fun walkUpThroughScopes(
         // walk all items in original module block
         if (scope is MvModuleBlock) {
             // handle spec module {}
-            if (handleModuleItemSpecs(cameFrom, scope, handleScope)) return true
+            if (handleModuleItemSpecsInBlock(cameFrom, scope, handleScope)) return true
             // walk over all spec modules
             for (moduleSpec in scope.module.allModuleSpecs()) {
                 val moduleSpecBlock = moduleSpec.moduleSpecBlock ?: continue
                 if (handleScope(cameFrom, moduleSpecBlock)) return true
+                if (handleModuleItemSpecsInBlock(cameFrom, moduleSpecBlock, handleScope)) return true
             }
         }
 
@@ -572,14 +579,14 @@ fun walkUpThroughScopes(
     return false
 }
 
-private fun handleModuleItemSpecs(
+private fun handleModuleItemSpecsInBlock(
     cameFrom: MvElement,
-    scope: MvElement,
+    block: MvElement,
     handleScope: (cameFrom: MvElement, scope: MvElement) -> Boolean
 ): Boolean {
-    val moduleItemSpecs = when (scope) {
-        is MvModuleBlock -> scope.moduleItemSpecList
-        is MvModuleSpecBlock -> scope.moduleItemSpecList
+    val moduleItemSpecs = when (block) {
+        is MvModuleBlock -> block.moduleItemSpecList
+        is MvModuleSpecBlock -> block.moduleItemSpecList
         else -> emptyList()
     }
     for (moduleItemSpec in moduleItemSpecs.filter { it != cameFrom }) {

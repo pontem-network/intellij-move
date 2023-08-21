@@ -40,7 +40,7 @@ interface NamedAddressReferenceElement : PsiMandatoryReferenceElement {
 
 interface MvReferenceElement : PsiReferenceElement, MvElement {
 
-    override fun getReference(): MvReference?
+    override fun getReference(): MvPolyVariantReference?
 }
 
 interface MvMandatoryReferenceElement : MvReferenceElement {
@@ -50,7 +50,7 @@ interface MvMandatoryReferenceElement : MvReferenceElement {
 
     override val referenceName: String get() = referenceNameElement.text
 
-    override fun getReference(): MvReference
+    override fun getReference(): MvPolyVariantReference
 }
 
 interface MvPathReferenceElement : MvReferenceElement {
@@ -61,7 +61,9 @@ interface MvFQModuleReferenceElement : MvReferenceElement {
     override fun getReference(): MvFQModuleReference?
 }
 
-interface MvStructFieldReferenceElement : MvMandatoryReferenceElement
+interface MvStructDotFieldReferenceElement : MvMandatoryReferenceElement
+
+interface MvStructPatFieldReferenceElement : MvMandatoryReferenceElement
 
 interface MvStructFieldLitReferenceElement : MvMandatoryReferenceElement
 

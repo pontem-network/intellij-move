@@ -3,10 +3,10 @@ package org.move.cli.runConfigurations.aptos.any
 import com.intellij.execution.configuration.EnvironmentVariablesComponent
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import org.move.utils.ui.WorkingDirectoryField
 import java.nio.file.Path
 import javax.swing.JComponent
@@ -34,16 +34,19 @@ class AnyCommandConfigurationEditor : SettingsEditor<AnyCommandConfiguration>() 
         return panel {
             row("Command:") {
                 cell(commandTextField)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
+//                    .horizontalAlign(HorizontalAlign.FILL)
                     .columns(COLUMNS_LARGE)
             }
             row(envVarsField.label) {
                 cell(envVarsField)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
+//                    .horizontalAlign(HorizontalAlign.FILL)
             }
             row(workingDirectoryField.label) {
                 cell(workingDirectoryField)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
+//                    .horizontalAlign(HorizontalAlign.FILL)
             }
         }
     }

@@ -4,17 +4,16 @@ import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.util.io.isDirectory
 import org.move.cli.Consts
-import org.move.cli.settings.aptosPath
+import org.move.cli.settings.aptosExec
 import org.move.cli.settings.isValidExecutable
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
-import org.move.stdext.*
-import java.io.File
+import org.move.stdext.RsResult
+import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
 
-class Aptos(val location: Path) {
+class AptosCliExecutor(val location: Path) {
     fun init(
         project: Project,
         owner: Disposable,
@@ -38,10 +37,9 @@ class Aptos(val location: Path) {
         return commandLine.toGeneralCommandLine(this).execute(owner)
     }
 
-    @Suppress("FunctionName")
-    fun move_init(
+    fun moveInit(
         project: Project,
-        owner: Disposable,
+        parentDisposable: Disposable,
         rootDirectory: VirtualFile,
         packageName: String,
     ): MvProcessResult<VirtualFile> {
@@ -58,7 +56,7 @@ class Aptos(val location: Path) {
             workingDirectory = project.root
         )
         commandLine.toGeneralCommandLine(this)
-            .execute(owner)
+            .execute(parentDisposable)
             .unwrapOrElse { return RsResult.Err(it) }
         fullyRefreshDirectory(rootDirectory)
 
@@ -83,34 +81,35 @@ class Aptos(val location: Path) {
     }
 
     companion object {
-        fun fromProject(project: Project): Aptos? = project.aptosPath?.let { Aptos(it) }
+//        fun fromProject(project: Project): AptosCliExecutor? = project.aptosPath?.let { AptosCliExecutor(it) }
+        fun fromProject(project: Project): AptosCliExecutor? = project.aptosExec.toExecutor()
 
         data class GeneratedFilesHolder(val manifest: VirtualFile)
 
-        fun suggestPath(): String? {
-            for (path in homePathCandidates()) {
-                when {
-                    path.isDirectory() -> {
-                        val candidate = path.resolveExisting(executableName("aptos")) ?: continue
-                        if (candidate.isExecutableFile())
-                            return candidate.toAbsolutePath().toString()
-                    }
-                    path.isExecutableFile() && path.fileName.toString() == executableName("aptos") -> {
-                        if (path.isExecutableFile())
-                            return path.toAbsolutePath().toString()
-                    }
-                }
-            }
-            return null
-        }
+//        fun suggestPath(): String? {
+//            for (path in homePathCandidates()) {
+//                when {
+//                    path.isDirectory() -> {
+//                        val candidate = path.resolveExisting(executableName("aptos")) ?: continue
+//                        if (candidate.isExecutableFile())
+//                            return candidate.toAbsolutePath().toString()
+//                    }
+//                    path.isExecutableFile() && path.fileName.toString() == executableName("aptos") -> {
+//                        if (path.isExecutableFile())
+//                            return path.toAbsolutePath().toString()
+//                    }
+//                }
+//            }
+//            return null
+//        }
 
-        private fun homePathCandidates(): Sequence<Path> {
-            return System.getenv("PATH")
-                .orEmpty()
-                .split(File.pathSeparator)
-                .asSequence()
-                .filter { it.isNotEmpty() }
-                .mapNotNull { it.toPathOrNull() }
-        }
+//        private fun homePathCandidates(): Sequence<Path> {
+//            return System.getenv("PATH")
+//                .orEmpty()
+//                .split(File.pathSeparator)
+//                .asSequence()
+//                .filter { it.isNotEmpty() }
+//                .mapNotNull { it.toPathOrNull() }
+//        }
     }
 }

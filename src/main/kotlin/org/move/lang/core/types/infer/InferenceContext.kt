@@ -1,11 +1,12 @@
 package org.move.lang.core.types.infer
 
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.DebugUtil
 import com.intellij.psi.util.CachedValue
 import org.jetbrains.annotations.TestOnly
-import org.move.cli.settings.pluginDebugMode
+import org.move.cli.settings.isDebugModeEnabled
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -20,7 +21,7 @@ import org.move.utils.cacheManager
 import org.move.utils.cacheResult
 import org.move.utils.recursionGuard
 
-interface MvInferenceContextOwner : MvElement
+interface MvInferenceContextOwner: MvElement
 
 fun isCompatibleIntegers(expectedTy: TyInteger, inferredTy: TyInteger): Boolean {
     return expectedTy.kind == TyInteger.DEFAULT_KIND
@@ -57,7 +58,7 @@ data class CoerceOk(
 fun RelateResult.into(): CoerceResult = map { CoerceOk() }
 
 sealed class CombineTypeError {
-    class TypeMismatch(val ty1: Ty, val ty2: Ty) : CombineTypeError()
+    class TypeMismatch(val ty1: Ty, val ty2: Ty): CombineTypeError()
 }
 
 interface InferenceData {
@@ -65,14 +66,8 @@ interface InferenceData {
 
     fun getPatTypeOrUnknown(pat: MvPat): Ty = patTypes[pat] ?: TyUnknown
 
-    fun getPatType(pat: MvPat): Ty {
-        val type = patTypes[pat]
-        if (type != null) return type
-
-        // if not in devmode, return unknown
-        if (!pat.project.pluginDebugMode) return TyUnknown
-        error(message = pat.typeErrorText)
-    }
+    fun getPatType(pat: MvPat): Ty =
+        patTypes[pat] ?: pat.project.inferenceErrorOrTyUnknown(pat)
 }
 
 data class InferenceResult(
@@ -82,15 +77,8 @@ data class InferenceResult(
     val callExprTypes: Map<MvCallExpr, Ty>,
     private val pathTypes: Map<MvPath, Ty>,
     val typeErrors: List<TypeError>
-) : InferenceData {
-    fun getExprType(expr: MvExpr): Ty =
-        exprTypes[expr] ?: run {
-            if (expr.project.pluginDebugMode) {
-                error(message = expr.typeErrorText)
-            } else {
-                TyUnknown
-            }
-        }
+): InferenceData {
+    fun getExprType(expr: MvExpr): Ty = exprTypes[expr] ?: expr.project.inferenceErrorOrTyUnknown(expr)
 
     @TestOnly
     fun hasExprType(expr: MvExpr): Boolean = expr in exprTypes
@@ -104,40 +92,14 @@ data class InferenceResult(
     fun getPathType(path: MvPath): Ty? = pathTypes[path]
 }
 
-internal val MvElement.typeErrorText: String
-    get() {
-        var text = "${this.elementType} `${this.text}` is never inferred"
-        val file = this.containingFile
-        if (file != null) {
-            this.location?.let { (line, col) ->
-                text += "\nFile: ${file.toNioPathOrNull()} at ($line, $col)"
-            }
-        }
-        when (this) {
-            is MvExpr -> {
-                val stmt = this.ancestorStrict<MvStmt>();
-                if (stmt != null) {
-                    val psiString = DebugUtil.psiToString(stmt, true)
-                    text += "\n"
-                    text += psiString
-                    // print next stmt too
-                    val nextPsiContext = stmt.getNextNonCommentSibling() as? MvStmt
-                    if (nextPsiContext != null) {
-                        text += DebugUtil.psiToString(nextPsiContext, true)
-                    }
-                }
-            }
-        }
-        return text
-    }
-
 fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
     val inferenceCtx = InferenceContext(msl)
     return recursionGuard(element, { inferenceCtx.infer(element) }, memoize = false)
         ?: error("Cannot run nested type inference")
 }
 
-private val NEW_INFERENCE_KEY_NON_MSL: Key<CachedValue<InferenceResult>> = Key.create("NEW_INFERENCE_KEY_NON_MSL")
+private val NEW_INFERENCE_KEY_NON_MSL: Key<CachedValue<InferenceResult>> =
+    Key.create("NEW_INFERENCE_KEY_NON_MSL")
 private val NEW_INFERENCE_KEY_MSL: Key<CachedValue<InferenceResult>> = Key.create("NEW_INFERENCE_KEY_MSL")
 
 fun MvInferenceContextOwner.inference(msl: Boolean): InferenceResult {
@@ -175,7 +137,7 @@ fun MvElement.inference(msl: Boolean): InferenceResult? {
 class InferenceContext(
     var msl: Boolean,
     private val skipUnification: Boolean = false
-) : InferenceData {
+): InferenceData {
 
     override val patTypes = mutableMapOf<MvPat, Ty>()
 
@@ -291,7 +253,7 @@ class InferenceContext(
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <T : GenericTy> instantiatePath(
+    fun <T: GenericTy> instantiatePath(
         path: MvPath,
         genericItem: MvTypeParametersOwner
     ): Pair<T, Substitution>? {
@@ -336,7 +298,7 @@ class InferenceContext(
         }
     }
 
-    private fun <T : Ty> combineTypePairs(pairs: List<Pair<T, T>>): RelateResult {
+    private fun <T: Ty> combineTypePairs(pairs: List<Pair<T, T>>): RelateResult {
         var canUnify: RelateResult = Ok(Unit)
         for ((ty1, ty2) in pairs) {
             canUnify = combineTypes(ty1, ty2).and { canUnify }
@@ -351,7 +313,7 @@ class InferenceContext(
             is TyInfer.TyVar -> varUnificationTable.unifyVarVar(ty1, ty2)
             else -> {
                 val ty1r = varUnificationTable.findRoot(ty1)
-                val isTy2ContainsTy1 = ty2.visitWith(object : TypeVisitor {
+                val isTy2ContainsTy1 = ty2.visitWith(object: TypeVisitor {
                     override fun invoke(ty: Ty): Boolean = when {
                         ty is TyInfer.TyVar && varUnificationTable.findRoot(ty) == ty1r -> true
                         ty.hasTyInfer -> ty.innerVisitWith(this)
@@ -441,13 +403,13 @@ class InferenceContext(
         }
     }
 
-    fun <T : TypeFoldable<T>> resolveTypeVarsIfPossible(ty: T): T {
+    fun <T: TypeFoldable<T>> resolveTypeVarsIfPossible(ty: T): T {
         return ty.foldTyInferWith(this::shallowResolve)
     }
 
-    fun <T : TypeFoldable<T>> fullyResolve(value: T): T = value.foldWith(fullTypeResolver)
+    fun <T: TypeFoldable<T>> fullyResolve(value: T): T = value.foldWith(fullTypeResolver)
 
-    private inner class FullTypeResolver : TypeFolder() {
+    private inner class FullTypeResolver: TypeFolder() {
         override fun fold(ty: Ty): Ty {
             if (!ty.needsInfer) return ty
             val res = shallowResolve(ty)
@@ -461,11 +423,11 @@ class InferenceContext(
      * Similar to [fullyResolve], but replaces unresolved [TyInfer.TyVar] to its [TyInfer.TyVar.origin]
      * instead of [TyUnknown]
      */
-    fun <T : TypeFoldable<T>> fullyResolveWithOrigins(value: T): T {
+    fun <T: TypeFoldable<T>> fullyResolveWithOrigins(value: T): T {
         return value.foldWith(fullTypeWithOriginsResolver)
     }
 
-    private inner class FullTypeWithOriginsResolver : TypeFolder() {
+    private inner class FullTypeWithOriginsResolver: TypeFolder() {
         override fun fold(ty: Ty): Ty {
             if (!ty.hasTyInfer) return ty
             return when (val res = shallowResolve(ty)) {
@@ -494,3 +456,39 @@ class InferenceContext(
 fun PsiElement.descendantHasTypeError(existingTypeErrors: List<TypeError>): Boolean {
     return existingTypeErrors.any { typeError -> this.isAncestorOf(typeError.element) }
 }
+
+fun Project.inferenceErrorOrTyUnknown(inferredElement: MvElement): TyUnknown =
+    when {
+        // pragma statements are not supported for now
+//        inferredElement.hasAncestorOrSelf<MvPragmaSpecStmt>() -> TyUnknown
+        // error out if debug mode is enabled
+        this.isDebugModeEnabled -> error(inferredElement.inferenceErrorMessage)
+        else -> TyUnknown
+    }
+
+private val MvElement.inferenceErrorMessage: String
+    get() {
+        var text = "${this.elementType} `${this.text}` is never inferred"
+        val file = this.containingFile
+        if (file != null) {
+            this.location?.let { (line, col) ->
+                text += "\nFile: ${file.toNioPathOrNull()} at ($line, $col)"
+            }
+        }
+        when (this) {
+            is MvExpr -> {
+                val stmt = this.ancestorStrict<MvStmt>()
+                if (stmt != null) {
+                    val psiString = DebugUtil.psiToString(stmt, true)
+                    text += "\n"
+                    text += psiString
+                    // print next stmt too
+                    val nextPsiContext = stmt.getNextNonCommentSibling() as? MvStmt
+                    if (nextPsiContext != null) {
+                        text += DebugUtil.psiToString(nextPsiContext, true)
+                    }
+                }
+            }
+        }
+        return text
+    }

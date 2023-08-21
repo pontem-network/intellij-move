@@ -6,7 +6,6 @@
 package org.move.utils.tests
 
 import com.intellij.codeInspection.InspectionProfileEntry
-import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.testFramework.enableInspectionTool
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
@@ -38,9 +37,9 @@ abstract class MvTestBase : BasePlatformTestCase(),
 
         setupInspections()
 
-        val settingsState = project.moveSettings.settingsState
+        val settingsState = project.moveSettings.state
         val isDevMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
-        project.moveSettings.settingsState = settingsState.copy(debugMode = isDevMode)
+        project.moveSettings.state = settingsState.copy(debugMode = isDevMode)
     }
 
     private fun setupInspections() {

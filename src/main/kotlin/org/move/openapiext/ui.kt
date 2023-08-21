@@ -7,7 +7,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.ui.TextComponentAccessor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.util.NlsContexts
+import com.intellij.openapi.util.NlsContexts.DialogTitle
 import com.intellij.ui.DocumentAdapter
 import com.intellij.util.Alarm
 import javax.swing.JTextField
@@ -38,11 +38,12 @@ class UiDebouncer(
     }
 }
 
+@Suppress("UnstableApiUsage")
 fun pathField(
     fileChooserDescriptor: FileChooserDescriptor,
     disposable: Disposable,
-    @NlsContexts.DialogTitle dialogTitle: String,
-    onTextChanged: () -> Unit = {}
+    @DialogTitle dialogTitle: String,
+    onTextChanged: (String) -> Unit = {}
 ): TextFieldWithBrowseButton {
     val component = TextFieldWithBrowseButton(null, disposable)
     component.addBrowseFolderListener(
@@ -50,7 +51,10 @@ fun pathField(
         fileChooserDescriptor,
         TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT
     )
-    component.childComponent.addTextChangeListener { onTextChanged() }
+    component.childComponent.addTextChangeListener {
+        val documentText = it.document.getText(0, it.document.length)
+        onTextChanged(documentText)
+    }
     return component
 }
 

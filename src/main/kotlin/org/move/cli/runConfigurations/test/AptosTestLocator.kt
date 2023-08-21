@@ -5,7 +5,6 @@ import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
-import org.move.lang.index.MvViewFunctionIndex
 
 object AptosTestLocator : SMTestLocator {
 

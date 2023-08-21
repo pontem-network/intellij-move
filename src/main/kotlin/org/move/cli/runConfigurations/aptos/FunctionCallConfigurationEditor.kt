@@ -8,11 +8,7 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.JBColor
-import com.intellij.ui.dsl.builder.COLUMNS_LARGE
-import com.intellij.ui.dsl.builder.columns
-import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
-import com.intellij.ui.dsl.gridLayout.VerticalAlign
+import com.intellij.ui.dsl.builder.*
 import org.move.cli.MoveProject
 import org.move.cli.moveProjects
 import org.move.stdext.RsResult
@@ -118,8 +114,9 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             row { cell(errorLabel) }
             row {
                 cell(editorPanel)
-                    .verticalAlign(VerticalAlign.FILL)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL + AlignY.FILL)
+//                    .verticalAlign(VerticalAlign.FILL)
+//                    .horizontalAlign(HorizontalAlign.FILL)
             }
         }
         return DumbService.getInstance(project).wrapGently(outerPanel, this)
@@ -130,7 +127,8 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             row { cell(errorLabel) }
             row("Project") {
                 cell(projectComboBox)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
+//                    .horizontalAlign(HorizontalAlign.FILL)
                     .columns(COLUMNS_LARGE)
                     .whenItemSelectedFromUi {
                         moveProject = it.moveProject
@@ -140,7 +138,8 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             }
             row("Account") {
                 cell(accountComboBox)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
+//                    .horizontalAlign(HorizontalAlign.FILL)
                     .whenItemSelectedFromUi {
                         signerAccount = it
                     }
@@ -148,8 +147,9 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             separator()
             row {
                 cell(functionCallPanel)
-                    .verticalAlign(VerticalAlign.FILL)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL + AlignY.FILL)
+//                    .verticalAlign(VerticalAlign.FILL)
+//                    .horizontalAlign(HorizontalAlign.FILL)
             }
         }
         editorPanel.registerValidators(this)

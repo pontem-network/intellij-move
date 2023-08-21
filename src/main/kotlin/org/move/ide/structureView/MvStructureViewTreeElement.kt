@@ -17,6 +17,7 @@ class MvStructureViewTreeElement(val element: NavigatablePsiElement): StructureV
         get() {
             return when (element) {
                 is MvFunction -> element.visibility != FunctionVisibility.PRIVATE
+                is MvConst -> false
                 else -> true
             }
         }
@@ -32,8 +33,7 @@ class MvStructureViewTreeElement(val element: NavigatablePsiElement): StructureV
     override fun navigate(requestFocus: Boolean) = element.navigate(requestFocus)
     override fun canNavigate(): Boolean = element.canNavigate()
     override fun canNavigateToSource(): Boolean = element.canNavigateToSource()
-    override fun getPresentation(): ItemPresentation =
-        this.element.presentation ?: PresentationData()
+    override fun getPresentation(): ItemPresentation = this.element.presentation ?: PresentationData()
 
     override fun getChildren(): Array<TreeElement> {
         val items = when (element) {
@@ -46,6 +46,7 @@ class MvStructureViewTreeElement(val element: NavigatablePsiElement): StructureV
             is MvAddressDef -> element.modules()
             is MvModule -> {
                 listOf(
+                    element.consts(),
                     element.structs(),
                     element.allFunctions(),
                     element.specFunctions(),
@@ -57,9 +58,7 @@ class MvStructureViewTreeElement(val element: NavigatablePsiElement): StructureV
         return items.map { MvStructureViewTreeElement(it) }.toTypedArray()
     }
 
-    override fun getValue(): Any {
-        return this.element
-    }
+    override fun getValue(): Any = this.element
 
     // Used in `RsStructureViewTest`
     override fun putInfo(info: MutableMap<in String, in String>) {

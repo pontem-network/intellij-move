@@ -7,10 +7,10 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.ui.LabeledComponent
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.text.nullize
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -42,15 +42,18 @@ class MoveCommandConfigurationEditor : SettingsEditor<MoveCommandConfiguration>(
             row("Command:") {
                 cell(commandTextField)
                     .columns(COLUMNS_LARGE)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
+//                    .horizontalAlign(HorizontalAlign.FILL)
             }
             row(envVarsField.label) {
                 cell(envVarsField)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
+//                    .horizontalAlign(HorizontalAlign.FILL)
             }
             row(workingDirectoryField.label) {
                 cell(workingDirectoryField)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .align(AlignX.FILL)
+//                    .horizontalAlign(HorizontalAlign.FILL)
             }
         }
     }

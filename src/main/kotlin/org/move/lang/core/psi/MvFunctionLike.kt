@@ -1,7 +1,6 @@
 package org.move.lang.core.psi
 
 import com.intellij.ide.projectView.PresentationData
-import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes

@@ -23,6 +23,7 @@ class UseStmtWrapper(val useStmt: MvUseStmt) : Comparable<UseStmtWrapper> {
     //    - self::
     val packageGroupLevel: Int = when {
         this.useStmt.isTestOnly -> 5
+        this.useStmt.isVerifyOnly -> 6
         else -> this.addr?.useGroupLevel ?: -1
     }
 

@@ -12,7 +12,6 @@ import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
 import org.move.stdext.exists
 import org.move.stdext.isExecutableFile
-import org.move.stdext.toPathOrNull
 import java.nio.file.Path
 import kotlin.reflect.KProperty1
 
@@ -42,7 +41,8 @@ private const val settingsServiceName: String = "MoveProjectSettingsService_1"
 class MoveProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
 
     data class State(
-        var aptosPath: String = "",
+        // null -> Bundled, not null -> Local
+        var aptosPath: String? = null,
         var foldSpecs: Boolean = false,
         var disableTelemetry: Boolean = true,
         var debugMode: Boolean = false,
@@ -52,7 +52,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
     @Volatile
     private var _state = State()
 
-    var settingsState: State
+    var state: State
         get() = _state.copy()
         set(newState) {
             if (_state != newState) {
@@ -91,7 +91,7 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
      * After setting change,
      */
     fun modify(action: (State) -> Unit) {
-        settingsState = settingsState.also(action)
+        state = state.also(action)
     }
 
     /**
@@ -100,8 +100,8 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
      */
     @TestOnly
     fun modifyTemporary(parentDisposable: Disposable, action: (State) -> Unit) {
-        val oldState = settingsState
-        settingsState = oldState.also(action)
+        val oldState = state
+        state = oldState.also(action)
         Disposer.register(parentDisposable) {
             _state = oldState
         }
@@ -121,11 +121,11 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
 
 val Project.moveSettings: MoveProjectSettingsService get() = service()
 
-val Project.collapseSpecs: Boolean
-    get() = this.moveSettings.settingsState.foldSpecs
+val Project.collapseSpecs: Boolean get() = this.moveSettings.state.foldSpecs
 
-val Project.aptosPath: Path?
-    get() = this.moveSettings.settingsState.aptosPath.toPathOrNull()
+val Project.aptosExec: AptosExec get() = AptosExec.fromSettingsFormat(this.moveSettings.state.aptosPath)
+
+val Project.aptosPath: Path? get() = this.aptosExec.pathOrNull()
 
 fun Path?.isValidExecutable(): Boolean {
     return this != null
@@ -134,21 +134,21 @@ fun Path?.isValidExecutable(): Boolean {
             && this.isExecutableFile()
 }
 
-val Project.pluginDebugMode: Boolean get() = this.moveSettings.settingsState.debugMode
+val Project.isDebugModeEnabled: Boolean get() = this.moveSettings.state.debugMode
 
 fun <T> Project.debugErrorOrFallback(message: String, fallback: T): T {
-    if (this.pluginDebugMode) {
+    if (this.isDebugModeEnabled) {
         error(message)
     }
     return fallback
 }
 
 fun <T> Project.debugErrorOrFallback(message: String, cause: Throwable?, fallback: () -> T): T {
-    if (this.pluginDebugMode) {
+    if (this.isDebugModeEnabled) {
         throw IllegalStateException(message, cause)
     }
     return fallback()
 }
 
 val Project.skipFetchLatestGitDeps: Boolean get() =
-    this.moveSettings.settingsState.skipFetchLatestGitDeps
+    this.moveSettings.state.skipFetchLatestGitDeps

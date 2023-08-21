@@ -3,7 +3,9 @@ package org.move.ide.inspections.imports
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.annotationItem
+import org.move.lang.core.psi.ext.moduleName
+import org.move.lang.core.psi.ext.useSpeck
 
 private typealias VisitedNameMap = MutableMap<ItemScope, MutableSet<String>>
 
@@ -15,13 +17,15 @@ class ImportAnalyzer(val holder: ProblemsHolder) : MvVisitor() {
 
     private fun analyzeImportsOwner(useStmtOwner: MvImportsOwner) {
         val pathUsagesInScopes = useStmtOwner.pathUsages
+
         val visitedItemsInScopes: VisitedNameMap = mutableMapOf()
         val visitedModulesInScopes: VisitedNameMap = mutableMapOf()
 
         for (useStmt in useStmtOwner.useStmtList) {
             val stmtScope = useStmt.itemScope
 
-            val pathUsage = pathUsagesInScopes.get(stmtScope)
+            val pathUsage = pathUsagesInScopes.getScopeUsages(stmtScope)
+
             val visitedModules = visitedModulesInScopes.getOrPut(stmtScope)
             val visitedItems = visitedItemsInScopes.getOrPut(stmtScope)
 

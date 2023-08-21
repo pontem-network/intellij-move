@@ -6,7 +6,7 @@ import org.move.ide.MoveIcons
 import javax.swing.Icon
 
 class MvModuleType : ModuleType<MvModuleBuilder>(ID) {
-    override fun getNodeIcon(isOpened: Boolean): Icon = MoveIcons.MOVE
+    override fun getNodeIcon(isOpened: Boolean): Icon = MoveIcons.MOVE_LOGO
 
     override fun createModuleBuilder(): MvModuleBuilder = MvModuleBuilder()
 

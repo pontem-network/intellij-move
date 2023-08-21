@@ -215,10 +215,7 @@ private fun SpacingContext.needsBlankLineBetweenItems(): Boolean {
         return false
 
     // Allow to keep consecutive runs of `use`, `const` or other "one line" items without blank lines
-    if (elementType1 == elementType2 && elementType1 in ONE_LINE_ITEMS)
-        return false
-
-    return true
+    return elementType1 !in ONE_LINE_ITEMS || elementType1 != elementType2
 }
 
 fun SpacingBuilder.beforeInside(

@@ -109,8 +109,7 @@ private fun isStartOfGenericBraces(editor: Editor): Boolean {
     if (lexer.tokenType != IDENTIFIER) return false
 
     // don't complete angle braces inside identifier
-    if (lexer.end != offset) return false
-    return true
+    return lexer.end == offset
 }
 
 private fun calculateBalance(editor: Editor): Int {

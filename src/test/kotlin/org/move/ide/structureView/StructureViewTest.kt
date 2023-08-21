@@ -1,6 +1,5 @@
 package org.move.ide.structureView
 
-import com.intellij.testFramework.PlatformTestUtil
 import org.intellij.lang.annotations.Language
 
 class StructureViewTest: StructureViewTestBase() {
@@ -36,6 +35,8 @@ address 0x1 {
     fun `test module items`() = doTest(
         """
     module 0x1::m {
+        const ERR_NOT_FOUND: u64 = 1;
+        const ERR_NOT_ENOUGH_PERMISSIONS: u64 = 2;
         struct Struct1 {
             field1: u8
         }
@@ -52,6 +53,8 @@ address 0x1 {
     """, """
 -main.move
  -m
+  ERR_NOT_FOUND: u64
+  ERR_NOT_ENOUGH_PERMISSIONS: u64
   -Struct1
    field1: u8
   -Struct2

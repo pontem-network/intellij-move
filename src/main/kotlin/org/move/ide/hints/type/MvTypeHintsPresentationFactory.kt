@@ -3,7 +3,6 @@ package org.move.ide.hints.type
 import com.intellij.codeInsight.hints.presentation.InlayPresentation
 import com.intellij.codeInsight.hints.presentation.PresentationFactory
 import org.move.ide.presentation.hintText
-import org.move.ide.presentation.text
 import org.move.lang.core.types.ty.*
 
 @Suppress("UnstableApiUsage")

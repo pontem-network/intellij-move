@@ -5,7 +5,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyInfer
-import org.move.lang.core.types.ty.TyInteger
 import org.move.lang.core.types.ty.TyTypeParameter
 
 fun inferExpectedTy(element: PsiElement, inference: InferenceResult): Ty? {

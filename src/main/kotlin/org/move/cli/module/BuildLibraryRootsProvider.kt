@@ -66,7 +66,7 @@ private val MoveProject.ideaLibraries: Collection<SyntheticLibrary>
                 val sourceRoots = it.layoutPaths().mapNotNull { p -> p.toVirtualFile() }.toMutableSet()
                 it.moveToml.tomlFile
                     ?.virtualFile?.let { f -> sourceRoots.add(f) }
-                MoveLibrary(it.packageName, sourceRoots, emptySet(), MoveIcons.MOVE, null)
+                MoveLibrary(it.packageName, sourceRoots, emptySet(), MoveIcons.MOVE_LOGO, null)
             }
 
     }

@@ -1,8 +1,6 @@
 package org.move.ide.inspections.imports
 
 import com.intellij.codeInsight.intention.HighPriorityAction
-import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
-import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
@@ -13,8 +11,13 @@ import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.ide.utils.imports.import
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.*
+import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ext.hasAncestor
+import org.move.lang.core.psi.ext.importCandidateNamespaces
+import org.move.lang.core.psi.ext.smartPointer
+import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.mslLetScope
+import org.move.lang.core.resolve.processFileItems
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.openapiext.common.checkUnitTestMode

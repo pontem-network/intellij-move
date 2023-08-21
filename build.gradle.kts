@@ -1,8 +1,8 @@
+import org.jetbrains.intellij.tasks.PrepareSandboxTask
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-val platformVersion = prop("shortPlatformVersion")
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
 // set by default in Github Actions
 val isCI = System.getenv("CI") != null
@@ -11,11 +11,15 @@ fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties for environment `$platformVersion`")
 
-val pluginJarName = "intellij-move-$platformVersion"
-val pluginVersion = "1.30.1"
+val platformVersion = prop("shortPlatformVersion")
+val codeVersion = "1.31.0"
+val pluginVersion = "$codeVersion.$platformVersion"
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
 val kotlinStdlibVersion = "1.9.0"
+val pluginJarName = "intellij-move-$pluginVersion"
+
+val aptosVersion = "2.0.3"
 
 group = pluginGroup
 version = pluginVersion
@@ -27,6 +31,7 @@ plugins {
     id("org.jetbrains.grammarkit") version "2022.3.1"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
+    id("de.undercouch.download") version "5.4.0"
 }
 
 dependencies {
@@ -43,6 +48,7 @@ allprojects {
         plugin("kotlin")
         plugin("org.jetbrains.grammarkit")
         plugin("org.jetbrains.intellij")
+        plugin("de.undercouch.download")
     }
 
     repositories {
@@ -53,14 +59,18 @@ allprojects {
 
     intellij {
         pluginName.set(pluginJarName)
-        version.set(prop("platformVersion"))
         type.set(prop("platformType"))
 
         downloadSources.set(!isCI)
         instrumentCode.set(false)
+        ideaDependencyCachePath.set(dependencyCachePath)
 
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
         plugins.set(prop("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
+
+        version.set(prop("platformVersion"))
+//        localPath.set("/home/mkurnikov/pontem-ide/pontem-ide-2023.2/")
+//        localSourcesPath.set("/home/mkurnikov/pontem-ide/pontem-232.SNAPSHOT-source")
     }
 
     configure<JavaPluginExtension> {
@@ -84,14 +94,16 @@ allprojects {
 
     tasks {
         patchPluginXml {
-            version.set("$pluginVersion.$platformVersion")
-            changeNotes.set("""
+            version.set(pluginVersion)
+            changeNotes.set(
+                """
     <body>
         <p><a href="https://github.com/pontem-network/intellij-move/blob/master/changelog/$pluginVersion.md">
             Changelog for Intellij-Move $pluginVersion on Github
             </a></p>
     </body>
-            """)
+            """
+            )
             sinceBuild.set(prop("pluginSinceBuild"))
             untilBuild.set(prop("pluginUntilBuild"))
         }
@@ -113,6 +125,42 @@ allprojects {
 
         withType<Jar> {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        }
+
+        task("downloadAptosBinaries") {
+            val baseUrl = "https://github.com/aptos-labs/aptos-core/releases/download/aptos-cli-v$aptosVersion"
+            doLast {
+                for (releasePlatform in listOf("MacOSX", "Ubuntu-22.04", "Ubuntu", "Windows")) {
+                    val zipFileName = "aptos-cli-$aptosVersion-$releasePlatform-x86_64.zip"
+                    val zipFileUrl = "$baseUrl/$zipFileName"
+                    val zipRoot = "${rootProject.buildDir}/zip"
+                    val zipFile = file("$zipRoot/$zipFileName")
+                    if (zipFile.exists()) {
+                        continue
+                    }
+                    download.run {
+                        src(zipFileUrl)
+                        dest(zipFile)
+                        overwrite(false)
+                    }
+
+                    val platformName =
+                        when (releasePlatform) {
+                            "MacOSX" -> "macos"
+                            "Ubuntu" -> "ubuntu"
+                            "Ubuntu-22.04" -> "ubuntu22"
+                            "Windows" -> "windows"
+                            else -> error("unreachable")
+                        }
+                    val platformRoot = file("${rootProject.rootDir}/bin/$platformName")
+                    copy {
+                        from(
+                            zipTree(zipFile)
+                        )
+                        into(platformRoot)
+                    }
+                }
+            }
         }
     }
 
@@ -182,6 +230,18 @@ project(":plugin") {
             jbrVersion.set(prop("jbrVersion"))
         }
 
+        buildPlugin {
+            dependsOn("downloadAptosBinaries")
+        }
+
+        withType<PrepareSandboxTask> {
+            // copy bin/ directory inside the plugin zip file
+            from("$rootDir/bin") {
+                into("${pluginName.get()}/bin")
+                include("**")
+            }
+        }
+
         withType<org.jetbrains.intellij.tasks.RunIdeTask> {
             jbrVersion.set(prop("jbrVersion"))
 
@@ -194,3 +254,15 @@ project(":plugin") {
         }
     }
 }
+
+val Project.dependencyCachePath
+    get(): String {
+        val cachePath = file("${rootProject.projectDir}/deps")
+        // If cache path doesn't exist, we need to create it manually
+        // because otherwise gradle-intellij-plugin will ignore it
+        if (!cachePath.exists()) {
+            cachePath.mkdirs()
+        }
+        return cachePath.absolutePath
+    }
+

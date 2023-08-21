@@ -6,9 +6,8 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvUseAlias
 import org.move.lang.core.psi.ext.moduleUseSpeck
 import org.move.lang.core.psi.ext.useItem
-import org.move.lang.core.types.infer.BoundElement
 
-interface MvReference : PsiPolyVariantReference {
+interface MvPolyVariantReference : PsiPolyVariantReference {
 
     override fun getElement(): MvElement
 
@@ -29,7 +28,7 @@ interface MvReference : PsiPolyVariantReference {
     fun multiResolve(): List<MvNamedElement>
 }
 
-interface MvPathReference : MvReference {
-    fun advancedResolve(): BoundElement<MvElement>? =
-        resolveWithAliases()?.let { BoundElement(it) }
+interface MvPathReference : MvPolyVariantReference {
+//    fun advancedResolve(): BoundElement<MvElement>? =
+//        resolveWithAliases()?.let { BoundElement(it) }
 }

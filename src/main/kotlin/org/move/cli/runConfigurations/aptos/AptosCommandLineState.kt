@@ -23,8 +23,8 @@ open class AptosCommandLineState(
     }
 
     override fun startProcess(): ProcessHandler {
-        val aptos = Aptos(aptosPath)
-        val generalCommandLine = commandLine.toGeneralCommandLine(aptos)
+        val aptosCli = AptosCliExecutor(aptosPath)
+        val generalCommandLine = commandLine.toGeneralCommandLine(aptosCli)
 
         val handler = KillableColoredProcessHandler(generalCommandLine)
         consoleBuilder.console.attachToProcess(handler)

@@ -25,8 +25,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.SyntheticLibrary
-import com.intellij.openapi.roots.libraries.LibraryTable
-import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.JDOMUtil
 import com.intellij.openapi.util.NlsContexts

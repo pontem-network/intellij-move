@@ -5,3 +5,5 @@ build/
 src/main/gen/
 .DS_Store
 /dove
+deps/
+bin/

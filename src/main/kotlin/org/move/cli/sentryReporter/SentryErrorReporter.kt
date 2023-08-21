@@ -81,7 +81,7 @@ class SentryErrorReporter : ErrorReportSubmitter() {
                     "Plugin Version" to (plugin?.version ?: "unknown"),
                 )
             if (project != null) {
-                val settings = project.moveSettings.settingsState.asMap().toMutableMap()
+                val settings = project.moveSettings.state.asMap().toMutableMap()
                 settings.remove("aptosPath")
                 sentryEvent.contexts["Settings"] = settings
                 sentryEvent.contexts["Projects"] =

@@ -3,7 +3,7 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.ref.MvReference
+import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvStructFieldReferenceImpl
 import org.move.lang.core.resolve.ref.MvStructLitShorthandFieldReferenceImpl
 
@@ -21,7 +21,7 @@ fun MvStructLitField.resolveToBinding(): MvBindingPat? = resolveToElement()
 
 abstract class MvStructLitFieldMixin(node: ASTNode) : MvElementImpl(node),
                                                       MvStructLitField {
-    override fun getReference(): MvReference {
+    override fun getReference(): MvPolyVariantReference {
         if (!this.isShorthand) return MvStructFieldReferenceImpl(this)
         return MvStructLitShorthandFieldReferenceImpl(this)
     }

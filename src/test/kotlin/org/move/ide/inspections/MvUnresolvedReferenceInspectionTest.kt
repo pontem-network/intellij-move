@@ -438,4 +438,17 @@ module 0x1::m {
             }
         }        
     """)
+
+    // TODO: test
+//    fun `test field inaccessible outside of the defining module`() = checkByText("""
+//        module 0x1::m {
+//            struct S { my_field: u8 }
+//        }
+//        module 0x1::main {
+//            use 0x1::m::S;
+//            fun main(s: &mut S) {
+//                s.<error descr="Unresolved field: 'my_field' is inaccessible outside of the defining module">my_field</error>;
+//            }
+//        }
+//    """)
 }

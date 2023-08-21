@@ -11,9 +11,6 @@ import org.move.lang.core.psi.ext.stubParent
 import kotlin.reflect.KClass
 
 class MvModificationTracker(val owner: MvModificationTrackerOwner): SimpleModificationTracker() {
-    override fun incModificationCount() {
-        super.incModificationCount()
-    }
 }
 
 /**
