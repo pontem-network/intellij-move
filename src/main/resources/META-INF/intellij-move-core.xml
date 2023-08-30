@@ -86,7 +86,7 @@
         <lang.formatter language="Move"
                         implementationClass="org.move.ide.formatter.MvFormattingModelBuilder"/>
         <langCodeStyleSettingsProvider
-                implementation="org.move.ide.formatter.MvLanguageCodeStyleSettingsProvider"/>
+                implementation="org.move.ide.formatter.settings.MvLanguageCodeStyleSettingsProvider"/>
 
         <lang.foldingBuilder language="Move" implementationClass="org.move.ide.folding.MvFoldingBuilder"/>
 

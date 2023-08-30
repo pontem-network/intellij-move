@@ -38,10 +38,6 @@ object MvPsiPatterns {
     fun function(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvFunction>()
 
-    fun nativeFunction(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvFunction>()
-//            .afterSibling(PlatformPatterns.psiElement(NATIVE))
-
     fun scriptBlock(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvScriptBlock>()
 
     fun moduleSpecBlock(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvModuleSpecBlock>()
@@ -49,7 +45,6 @@ object MvPsiPatterns {
     fun codeStmt(): PsiElementPattern.Capture<PsiElement> = psiElementInside<MvCodeBlock>()
 
     fun anySpecStart() = psiElementInside<MvItemSpec>().and(onStmtBeginning("spec"))
-//    fun anySpecStart() = psiElementInside<>().and(onStmtBeginning("spec"))
 
     fun itemSpecStmt(): PsiElementPattern.Capture<PsiElement> = psiElementInside<MvSpecCodeBlock>()
 
@@ -61,66 +56,6 @@ object MvPsiPatterns {
         return psiElement()
     }
 
-//    inline fun <reified I : PsiElement> afterSibling(): ElementPattern<PsiElement> {
-//        val afterSibling = PlatformPatterns
-//            .psiElement()
-//            .afterSiblingSkipping(whitespaceAndErrors(), psiElement<I>())
-//        val afterSiblingWithError = PlatformPatterns
-//            .psiElement()
-//            .withParent(psiElement<PsiErrorElement>().afterSiblingSkipping(whitespaceAndErrors(), psiElement<I>()))
-//        return PlatformPatterns.or(afterSibling, afterSiblingWithError)
-//        val errorIdentifier = PlatformPatterns
-//            .psiElement()
-//            .withParent(PsiErrorElement::class.java)
-//        return errorIdentifier.afterSiblingSkipping(whitespace(), psiElement<I>())
-//        val identifier = PlatformPatterns.psiElement()
-//        val identifierOrErrorIdentifier = StandardPatterns.or(identifier, errorIdentifier)
-
-//        StandardPatterns.or(
-//            psiElement<I>(),
-//            psiElement<PsiErrorElement>().withParent(psiElement<I>())
-//        )
-//        PlatformPatterns.psiElement().withParent(
-//            StandardPatterns.or(
-//                psiElement<I>(),
-//                psiElement<PsiErrorElement>().withParent(psiElement<I>())
-//            )
-//        )
-//    }
-
-//    fun acquiresPlacement(): ElementPattern<PsiElement> {
-//        return PlatformPatterns.or(
-//            psiElementWithParent<MvFunction>().with(AfterSibling(FUNCTION_PARAMETER_LIST)),
-//            psiElementWithParent<MvReturnType>()
-//        )
-//        return psiElementWithParent<MvFunctionSignature>()
-//            .and(
-//                PlatformPatterns.or(
-//                    afterSibling<MvFunctionParameterList>(),
-//                    afterSibling<MvReturnType>()
-//                ))
-//               return PlatformPatterns.psiElement().beforeLeafSkipping(
-//                    whitespace(), PlatformPatterns.psiElement(MvCodeBlock::class.java))
-//            )
-//        return PlatformPatterns
-//            .psiElement()
-//            .withParent(MvFunctionSignature::class.java)
-//            .and(psiElementAfterSiblingSkipping<MvFunctionParameterList>(whitespace()))
-//        return psiElement<PsiElement>()
-//            .and(psiElementAfterSiblingSkipping<MvFunctionParameterList>(whitespace()))
-//        return PlatformPatterns
-//            .and(
-//                psiElementAfterSiblingSkipping<MvFunctionParameterList>(whitespace())
-//            )
-//        return psiElementWithParent<MvFunctionSignature>()
-//            .and(
-//                psiElementAfterSiblingSkipping<MvFunctionParameterList>(
-//                    PlatformPatterns.or(whitespace(), psiElement<MvReturnType>())
-//                )
-//            )
-
-//    }
-
     fun typeParameter(): PsiElementPattern.Capture<PsiElement> =
         psiElementWithParent<MvTypeParameter>()
 
@@ -131,22 +66,9 @@ object MvPsiPatterns {
                 PlatformPatterns.psiElement(COLON),
             )
 
-    fun ability(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvAbility>()
+    fun ability(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvAbility>()
 
-//    fun pathIdent(): PsiElementPattern.Capture<PsiElement> =
-//        PlatformPatterns.psiElement()
-//            .withParent<MvPathIdent>()
-//            .withSuperParent<MvPath>(2)
-
-//    fun fqPathIdent(): PsiElementPattern.Capture<PsiElement> =
-//        PlatformPatterns.psiElement()
-//            .withParent<MvPathIdent>()
-////            .withSuperParent<MvPath>(2)
-
-    fun path(): PsiElementPattern.Capture<PsiElement> =
-        psiElementWithParent<MvPath>()
-//            .withSuperParent<MvPath>(2)
+    fun path(): PsiElementPattern.Capture<PsiElement> = psiElementWithParent<MvPath>()
 
     fun refExpr(): PsiElementPattern.Capture<PsiElement> =
         path()
@@ -192,14 +114,7 @@ object MvPsiPatterns {
                 .withParent(psiElement<PsiErrorElement>().afterSiblingSkipping(skip, psiElement<I>()))
         )
 
-//    private inline fun <reified I : PsiElement> beforeLeaf() =
-//        StandardPatterns.or(
-//            PlatformPatterns.psiElement().be
-//            PlatformPatterns.psiElement()
-//                .withParent(psiElement<PsiErrorElement>().afterSiblingSkipping(skip, psiElement<I>()))
-//        )
-
-    inline fun <reified I : PsiElement> psiElementInside() =
+    inline fun <reified I : PsiElement> psiElementInside(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement().inside(
             StandardPatterns.or(
                 psiElement<I>(),
@@ -288,12 +203,4 @@ fun <T : Any, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCond(
 ): Self =
     with(object : PatternCondition<T>(name) {
         override fun accepts(t: T, context: ProcessingContext?): Boolean = cond(t)
-    })
-
-fun <T : Any, Self : ObjectPattern<T, Self>> ObjectPattern<T, Self>.withCondContext(
-    name: String,
-    cond: (T, ProcessingContext?) -> Boolean
-): Self =
-    with(object : PatternCondition<T>(name) {
-        override fun accepts(t: T, context: ProcessingContext?): Boolean = cond(t, context)
     })
