@@ -205,17 +205,6 @@ class MoveProjectsService(val project: Project) : Disposable {
     fun interface MoveProjectsListener {
         fun moveProjectsUpdated(service: MoveProjectsService, projects: Collection<MoveProject>)
     }
-
-    interface MoveProjectsRefreshListener {
-        fun onRefreshStarted()
-//        fun onRefreshFinished(status: MoveRefreshStatus)
-    }
-
-    enum class MoveRefreshStatus {
-        SUCCESS,
-        FAILURE,
-        CANCEL
-    }
 }
 
 fun setupProjectRoots(project: Project, moveProjects: List<MoveProject>) {

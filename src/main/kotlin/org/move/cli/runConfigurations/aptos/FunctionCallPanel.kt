@@ -1,7 +1,6 @@
 package org.move.cli.runConfigurations.aptos
 
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
@@ -170,18 +169,16 @@ class FunctionCallPanel(
                 separator()
             }
             if (typeParameters.isNotEmpty()) {
-                val cacheService = project.service<RunTransactionCacheService>()
                 for (typeParameter in function.typeParameters) {
                     val paramName = typeParameter.name ?: continue
                     row(paramName) {
-                        val completionVariants = cacheService.getTypeParameterCache(paramName)
                         val initialValue = outerPanel.typeParams[paramName] ?: ""
 
                         val typeParameterTextField = TypeParameterTextField(
                             project,
                             function,
                             initialValue,
-                            completionVariants
+                            emptyList()
                         )
                         typeParameterTextField
                             .addDefaultValidator(outerPanel)

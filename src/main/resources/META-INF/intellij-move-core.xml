@@ -305,30 +305,37 @@
                 implementation="org.move.ide.notifications.InvalidAptosBinaryNotification"/>
 
         <intentionAction>
+            <language>Move</language>
             <className>org.move.ide.intentions.RemoveCurlyBracesIntention</className>
             <category>Move</category>
         </intentionAction>
         <intentionAction>
+            <language>Move</language>
             <className>org.move.ide.intentions.InlineAddressBlockIntention</className>
             <category>Move</category>
         </intentionAction>
         <intentionAction>
+            <language>Move</language>
             <className>org.move.ide.intentions.ChopParameterListIntention</className>
             <category>Move</category>
         </intentionAction>
         <intentionAction>
+            <language>Move</language>
             <className>org.move.ide.intentions.ChopValueArgumentListIntention</className>
             <category>Move</category>
         </intentionAction>
         <intentionAction>
+            <language>Move</language>
             <className>org.move.ide.intentions.ChopAttrArgumentListIntention</className>
             <category>Move</category>
         </intentionAction>
         <intentionAction>
+            <language>Move</language>
             <className>org.move.ide.intentions.ChopStructLiteralIntention</className>
             <category>Move</category>
         </intentionAction>
         <intentionAction>
+            <language>Move</language>
             <className>org.move.ide.intentions.ChopStructPatIntention</className>
             <category>Move</category>
         </intentionAction>
@@ -350,12 +357,6 @@
                 description="Create new Move file">
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
         </action>
-<!--        <action id="Move.DownloadAptosCLI"-->
-<!--                class="org.move.ide.actions.DownloadAptosAction"-->
-<!--                text="Download Aptos CLI"-->
-<!--                description="Download Aptos CLI">-->
-<!--&lt;!&ndash;            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>&ndash;&gt;-->
-<!--        </action>-->
         <action id="Move.RefreshAllProjects"
                 description="Update Move project information"
                 text="Update Move Projects"

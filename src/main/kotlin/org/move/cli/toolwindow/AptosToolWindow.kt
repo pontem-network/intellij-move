@@ -24,9 +24,7 @@ class AptosToolWindowFactory : ToolWindowFactory, DumbAware {
     private val lock: Any = Any()
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-//        guessAndSetupRustProject(project)
         project.moveProjects.refreshAllProjects()
-
         val toolwindowPanel = AptosToolWindowPanel(project)
         val tab = ContentFactory.getInstance()
             .createContent(toolwindowPanel, "", false)
