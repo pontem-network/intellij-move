@@ -1,4 +1,4 @@
-package org.move.ide.live_templates
+package org.move.ide.liveTemplates
 
 import com.intellij.codeInsight.template.EverywhereContextType
 import com.intellij.codeInsight.template.TemplateActionContext

@@ -15,10 +15,7 @@ import org.move.lang.core.psi.MvFQModuleRef
 
 object MvUsageTypeProvider : UsageTypeProviderEx {
     // Instantiate each UsageType only once, so that the equality check in UsageTypeGroup.equals() works correctly
-//    private val IMPL = UsageType { "impl" }
-
 //    private val TYPE_REFERENCE = UsageType { "type reference" }
-//    private val TRAIT_REFERENCE = UsageType { "trait reference" }
 
     private val EXPR = UsageType { "expr" }
     private val DOT_EXPR = UsageType { "dot expr" }

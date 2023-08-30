@@ -32,16 +32,7 @@ class InlineAddressBlockIntention : MvElementBaseIntentionAction<InlineAddressBl
         val moduleNameElement = module.nameElement ?: return
         val blockText = module.moduleBlock?.text ?: return
 
-//        val nameOffset = moduleNameElement.startOffset
-//        var caretOffset = editor.caretModel.offset
-//        if (caretOffset > nameOffset) {
-//            // focused on identifier
-//           caretOffset += addressText.length + 2
-//        }
-
         val inlineModule = project.psiFactory.inlineModule(addressText, moduleNameElement.text, blockText)
         address.replace(inlineModule)
-
-//        editor.caretModel.moveToOffset(caretOffset)
     }
 }
