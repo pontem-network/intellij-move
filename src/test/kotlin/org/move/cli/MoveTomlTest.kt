@@ -1,6 +1,5 @@
 package org.move.cli
 
-import org.move.cli.manifest.AptosConfigYaml
 import org.move.cli.manifest.MoveToml
 import org.move.openapiext.toPsiFile
 import org.move.openapiext.toVirtualFile

@@ -1,10 +1,8 @@
 package org.move.cli.filters
 
-import com.intellij.util.PathUtil
 import org.move.cli.MoveFileHyperlinkFilter
 import org.move.utils.tests.HighlightFilterTestBase
 import java.nio.file.Paths
-import kotlin.io.path.Path
 
 class MoveFileHyperlinkFilterTest: HighlightFilterTestBase() {
     fun `test compilation failure hyperlink`() {

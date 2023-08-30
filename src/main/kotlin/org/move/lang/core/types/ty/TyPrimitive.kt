@@ -71,6 +71,7 @@ data class TyInteger(val kind: Kind) : TyPrimitive(kind.name.lowercase()) {
         fun default() = TyInteger(DEFAULT_KIND)
     }
 
+    @Suppress("EnumEntryName")
     enum class Kind {
         NoPrecision, u8, u16, u32, u64, u128, u256, num
     }
