@@ -17,9 +17,6 @@ class TypeInferenceWalker(
     val project: Project,
     private val returnTy: Ty
 ) {
-
-    private val fulfillmentContext: FulfillmentContext = ctx.fulfill
-
     val msl: Boolean = ctx.msl
 
     fun <T> mslScope(action: () -> T): T {
@@ -115,12 +112,7 @@ class TypeInferenceWalker(
         if (!ty.hasTyInfer) return ty
         val tyRes = ctx.resolveTypeVarsIfPossible(ty)
         if (!tyRes.hasTyInfer) return tyRes
-        selectObligationsWherePossible()
         return ctx.resolveTypeVarsIfPossible(tyRes)
-    }
-
-    private fun selectObligationsWherePossible() {
-        fulfillmentContext.selectWherePossible()
     }
 
     private fun processStatement(stmt: MvStmt) {
