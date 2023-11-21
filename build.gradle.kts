@@ -9,11 +9,11 @@ val isCI = System.getenv("CI") != null
 
 fun prop(name: String): String =
     extra.properties[name] as? String
-        ?: error("Property `$name` is not defined in gradle.properties for environment `$platformVersion`")
+        ?: error("Property `$name` is not defined in gradle.properties for environment `$shortPlatformVersion`")
 
-val platformVersion = prop("shortPlatformVersion")
+val shortPlatformVersion = prop("shortPlatformVersion")
 val codeVersion = "1.31.0"
-val pluginVersion = "$codeVersion.$platformVersion"
+val pluginVersion = "$codeVersion.$shortPlatformVersion"
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
 val kotlinStdlibVersion = "1.9.0"
@@ -87,7 +87,7 @@ allprojects {
     kotlin {
         sourceSets {
             main {
-                kotlin.srcDirs("src/$platformVersion/main/kotlin")
+                kotlin.srcDirs("src/$shortPlatformVersion/main/kotlin")
             }
         }
     }
@@ -203,9 +203,12 @@ project(":plugin") {
 
     tasks {
         runPluginVerifier {
-            ideVersions.set(
-                prop("verifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty)
-            )
+            if ("SNAPSHOT" !in shortPlatformVersion) {
+                ideVersions.set(
+                    prop("verifierIdeVersions")
+                        .split(',').map(String::trim).filter(String::isNotEmpty)
+                )
+            }
             failureLevel.set(
                 EnumSet.complementOf(
                     EnumSet.of(
