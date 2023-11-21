@@ -303,6 +303,8 @@
         <notificationGroup id="Move Language" displayType="BALLOON"/>
         <editorNotificationProvider
                 implementation="org.move.ide.notifications.MissingCliPathNotificationProvider"/>
+        <editorNotificationProvider
+                implementation="org.move.ide.notifications.NoMoveProjectDetectedNotificationProvider"/>
 
         <intentionAction>
             <language>Move</language>

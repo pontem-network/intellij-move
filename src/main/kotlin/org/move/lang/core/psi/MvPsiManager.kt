@@ -145,7 +145,7 @@ class MvPsiManagerImpl(val project: Project) : MvPsiManager, Disposable {
             if (file == null) {
                 if (element is MoveFile ||
                     element is PsiDirectory
-                    && project.moveProjects.findMoveProject(element.virtualFile) != null
+                    && project.moveProjects.findMoveProjectForFile(element.virtualFile) != null
                 ) {
                     incRustStructureModificationCount(element as? MoveFile, element as? MoveFile)
                 }

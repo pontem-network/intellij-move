@@ -44,7 +44,10 @@ val Project.moveProjects get() = service<MoveProjectsService>()
 val Project.hasMoveProject get() = this.moveProjects.allProjects.isNotEmpty()
 
 class MoveProjectsService(val project: Project) : Disposable {
+
     private val buildWatcher = BuildDirectoryWatcher(emptyList()) { refreshAllProjects() }
+
+    var initialized = false
 
     init {
         with(project.messageBus.connect()) {
@@ -98,12 +101,12 @@ class MoveProjectsService(val project: Project) : Disposable {
                 containingFile?.originalFile?.virtualFile
             }
         } ?: return null
-        return findMoveProject(file)
+        return findMoveProjectForFile(file)
     }
 
     fun findMoveProject(path: Path): MoveProject? {
         val file = path.toVirtualFile() ?: return null
-        return findMoveProject(file)
+        return findMoveProjectForFile(file)
     }
 
     private fun doRefresh(project: Project): CompletableFuture<List<MoveProject>> {
@@ -118,7 +121,7 @@ class MoveProjectsService(val project: Project) : Disposable {
         }
     }
 
-    fun findMoveProject(file: VirtualFile): MoveProject? {
+    fun findMoveProjectForFile(file: VirtualFile): MoveProject? {
         val cached = this.projectsIndex.get(file)
         if (cached is IndexEntry.Present) return cached.value
 
@@ -185,6 +188,7 @@ class MoveProjectsService(val project: Project) : Disposable {
                         // increments structure modification counter in the subscriber
                         project.messageBus
                             .syncPublisher(MOVE_PROJECTS_TOPIC).moveProjectsUpdated(this, projects)
+                        initialized = true
                     }
                 }
                 projects
