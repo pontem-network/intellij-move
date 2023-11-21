@@ -26,12 +26,12 @@ version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.9.0"
-    id("org.jetbrains.intellij") version "1.15.0"
-    id("org.jetbrains.grammarkit") version "2022.3.1"
+    kotlin("jvm") version "1.9.20"
+    id("org.jetbrains.intellij") version "1.16.0"
+    id("org.jetbrains.grammarkit") version "2022.3.2"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
-    id("de.undercouch.download") version "5.4.0"
+    id("de.undercouch.download") version "5.5.0"
 }
 
 dependencies {
