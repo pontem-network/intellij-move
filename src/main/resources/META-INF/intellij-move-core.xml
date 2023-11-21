@@ -302,7 +302,7 @@
         <!-- Notifications -->
         <notificationGroup id="Move Language" displayType="BALLOON"/>
         <editorNotificationProvider
-                implementation="org.move.ide.notifications.InvalidAptosBinaryNotification"/>
+                implementation="org.move.ide.notifications.MissingCliPathNotificationProvider"/>
 
         <intentionAction>
             <language>Move</language>

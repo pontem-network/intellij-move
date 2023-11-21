@@ -79,8 +79,6 @@ class MoveFile(fileViewProvider: FileViewProvider) : MoveFileBase(fileViewProvid
     fun moduleSpecs(): List<MvModuleSpec> = this.childrenOfType()
 }
 
-val VirtualFile.isMoveOrManifest: Boolean get() = this.isMoveFile || this.isMoveTomlManifestFile
-
 val VirtualFile.isMoveFile: Boolean get() = fileType == MoveFileType
 
 val VirtualFile.isMoveTomlManifestFile: Boolean get() = name == "Move.toml"
