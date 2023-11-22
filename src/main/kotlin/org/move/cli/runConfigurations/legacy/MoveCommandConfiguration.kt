@@ -21,7 +21,7 @@ class MoveCommandConfiguration(
 
     var command: String = "move compile"
     var workingDirectory: Path? = if (!project.isDefault) {
-        project.moveProjects.allProjects.firstOrNull()?.contentRootPath
+        project.moveProjectsService.allProjects.firstOrNull()?.contentRootPath
     } else {
         null
     }

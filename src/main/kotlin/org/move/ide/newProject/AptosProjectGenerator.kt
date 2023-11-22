@@ -11,7 +11,7 @@ import com.intellij.platform.DirectoryProjectGenerator
 import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
 import org.move.cli.PluginApplicationDisposable
-import org.move.cli.moveProjects
+import org.move.cli.moveProjectsService
 import org.move.cli.runConfigurations.addDefaultBuildRunConfiguration
 import org.move.cli.settings.AptosSettingsPanel
 import org.move.cli.settings.moveSettings
@@ -63,7 +63,7 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
         project.openFile(manifestFile)
 
         updateAllNotifications(project)
-        project.moveProjects.refreshAllProjects()
+        project.moveProjectsService.scheduleProjectsRefresh()
     }
 
     override fun createStep(

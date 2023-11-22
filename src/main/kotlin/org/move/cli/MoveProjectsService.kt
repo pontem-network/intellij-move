@@ -39,27 +39,30 @@ import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
-val Project.moveProjects get() = service<MoveProjectsService>()
+val Project.moveProjectsService get() = service<MoveProjectsService>()
 
-val Project.hasMoveProject get() = this.moveProjects.allProjects.isNotEmpty()
+val Project.hasMoveProject get() = this.moveProjectsService.allProjects.isNotEmpty()
 
 class MoveProjectsService(val project: Project) : Disposable {
 
-    private val buildWatcher = BuildDirectoryWatcher(emptyList()) { refreshAllProjects() }
+    private val refreshOnBuildDirChangeWatcher = BuildDirectoryWatcher(emptyList()) { scheduleProjectsRefresh() }
 
     var initialized = false
 
     init {
         with(project.messageBus.connect()) {
             if (!isUnitTestMode) {
-                subscribe(VirtualFileManager.VFS_CHANGES, buildWatcher)
+                subscribe(VirtualFileManager.VFS_CHANGES, refreshOnBuildDirChangeWatcher)
                 subscribe(VirtualFileManager.VFS_CHANGES, MoveTomlWatcher {
-                    refreshAllProjects()
+                    // on every Move.toml change
+                    // TODO: move to External system integration
+                    scheduleProjectsRefresh()
                 })
             }
             subscribe(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC, object : MoveSettingsListener {
                 override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
-                    refreshAllProjects()
+                    // on every Move Language plugin settings change
+                    scheduleProjectsRefresh()
                 }
             })
         }
@@ -68,10 +71,10 @@ class MoveProjectsService(val project: Project) : Disposable {
     val allProjects: List<MoveProject>
         get() = this.projects.state
 
-    fun refreshAllProjects() {
+    fun scheduleProjectsRefresh() {
         LOG.info("Project state refresh started")
-        modifyProjects {
-            doRefresh(project)
+        modifyProjectModel {
+            doRefreshProjects(project)
         }
     }
 
@@ -109,7 +112,7 @@ class MoveProjectsService(val project: Project) : Disposable {
         return findMoveProjectForFile(file)
     }
 
-    private fun doRefresh(project: Project): CompletableFuture<List<MoveProject>> {
+    private fun doRefreshProjects(project: Project): CompletableFuture<List<MoveProject>> {
         val result = CompletableFuture<List<MoveProject>>()
         val syncTask = MoveProjectsSyncTask(project, result)
         project.taskQueue.run(syncTask)
@@ -167,7 +170,7 @@ class MoveProjectsService(val project: Project) : Disposable {
      * All modifications to project model except for low-level `loadState` should
      * go through this method: it makes sure that when we update various IDEA listeners.
      */
-    private fun modifyProjects(
+    private fun modifyProjectModel(
         updater: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
     ): CompletableFuture<List<MoveProject>> {
         val wrappedUpdater = { projects: List<MoveProject> ->
@@ -176,7 +179,7 @@ class MoveProjectsService(val project: Project) : Disposable {
 
         return projects.updateAsync(wrappedUpdater)
             .thenApply { projects ->
-                buildWatcher.updateProjects(projects)
+                refreshOnBuildDirChangeWatcher.setWatchedProjects(projects)
                 invokeAndWaitIfNeeded {
                     runWriteAction {
                         projectsIndex.resetIndex()

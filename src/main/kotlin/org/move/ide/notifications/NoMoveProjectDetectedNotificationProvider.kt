@@ -6,7 +6,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
-import org.move.cli.moveProjects
+import org.move.cli.moveProjectsService
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
 import org.move.openapiext.common.isDispatchThread
@@ -23,12 +23,19 @@ class NoMoveProjectDetectedNotificationProvider(project: Project): MvEditorNotif
         if (ScratchUtil.isScratch(file)) return null
         @Suppress("UnstableApiUsage")
         if (!project.isTrusted()) return null
+
+        val moveProjectsService = project.moveProjectsService
+        // HACK: Reloads projects once on an opening of any Move file, if not yet reloaded.
+        //       It should be invoked somewhere else where it's more appropriate,
+        //       not in the notification handler.
+        if (!moveProjectsService.initialized) {
+            moveProjectsService.scheduleProjectsRefresh()
+            // exit notification handler here, it's going to be entered again after the refresh
+            return null
+        }
         if (isNotificationDisabled(file)) return null
 
-        val moveProjects = project.moveProjects
-        if (!moveProjects.initialized) return null
-
-        if (moveProjects.allProjects.isNotEmpty()) {
+        if (moveProjectsService.allProjects.isEmpty()) {
             // no move projects available
             return EditorNotificationPanel().apply {
                 text = "No Aptos projects found"
@@ -39,7 +46,7 @@ class NoMoveProjectDetectedNotificationProvider(project: Project): MvEditorNotif
             }
         }
 
-        if (moveProjects.findMoveProjectForFile(file) == null) {
+        if (moveProjectsService.findMoveProjectForFile(file) == null) {
             return EditorNotificationPanel().apply {
                 text = "File does not belong to any known Aptos project"
                 createActionLabel("Do not show again") {

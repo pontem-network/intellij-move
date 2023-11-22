@@ -5,7 +5,7 @@ import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.MoveProject
-import org.move.cli.moveProjects
+import org.move.cli.moveProjectsService
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.moveProject
@@ -21,7 +21,7 @@ fun MvElement.isInsideAssignmentLhs(): Boolean {
 fun PsiFileSystemItem.findMoveProject(): MoveProject? {
     if (this is MoveFile) return this.moveProject
     val path = virtualFile.toNioPathOrNull() ?: return null
-    return project.moveProjects.findMoveProject(path)
+    return project.moveProjectsService.findMoveProject(path)
 }
 
 //private val MSL_KEY: Key<CachedValue<FunctionSignature?>> = Key.create("SIGNATURE_KEY")

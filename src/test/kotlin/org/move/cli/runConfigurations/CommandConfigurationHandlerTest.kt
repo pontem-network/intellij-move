@@ -1,6 +1,6 @@
 package org.move.cli.runConfigurations
 
-import org.move.cli.moveProjects
+import org.move.cli.moveProjectsService
 import org.move.cli.runConfigurations.aptos.CommandConfigurationHandler
 import org.move.cli.runConfigurations.aptos.run.RunCommandConfigurationHandler
 import org.move.cli.runConfigurations.aptos.view.ViewCommandConfigurationHandler
@@ -74,7 +74,7 @@ profiles:
     ) {
         testProject(builder)
 
-        val moveProject = project.moveProjects.allProjects.first()
+        val moveProject = project.moveProjectsService.allProjects.first()
         val (profile, functionCall) = handler.parseCommand(moveProject, command).unwrap()
 
         check(profile == expectedProfile) { "Unexpected profile $profile" }

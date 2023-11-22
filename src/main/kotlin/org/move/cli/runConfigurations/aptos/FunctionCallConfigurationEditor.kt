@@ -10,7 +10,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.ui.JBColor
 import com.intellij.ui.dsl.builder.*
 import org.move.cli.MoveProject
-import org.move.cli.moveProjects
+import org.move.cli.moveProjectsService
 import org.move.stdext.RsResult
 import org.move.utils.ui.whenItemSelectedFromUi
 import javax.swing.JComponent
@@ -45,7 +45,7 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
     init {
         errorLabel.foreground = JBColor.RED
 
-        moveProject.project.moveProjects.allProjects.forEach {
+        moveProject.project.moveProjectsService.allProjects.forEach {
             projectComboBox.addItem(MoveProjectItem(it))
         }
         projectComboBox.isEnabled = projectComboBox.model.size > 1
@@ -63,7 +63,7 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
     }
 
     override fun resetEditorFrom(s: T) {
-        val moveProject = s.workingDirectory?.let { project.moveProjects.findMoveProject(it) }
+        val moveProject = s.workingDirectory?.let { project.moveProjectsService.findMoveProject(it) }
         if (moveProject == null) {
             setErrorText("Deserialization error: no Aptos project found in the specified working directory")
             editorPanel.isVisible = false

@@ -59,7 +59,7 @@ class AptosProjectOpenProcessor: ProjectOpenProcessor() {
                     it.aptosPath = defaultProjectSettings?.state?.aptosPath
                 }
 
-                it.moveProjects.refreshAllProjects()
+                it.moveProjectsService.scheduleProjectsRefresh()
 //
 //                val aptosCliPath = AptosCliExecutor.suggestPath()
 //                if (aptosCliPath != null && it.aptosPath?.toString().isNullOrBlank()) {

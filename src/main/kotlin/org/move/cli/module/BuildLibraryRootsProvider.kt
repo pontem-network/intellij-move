@@ -6,7 +6,7 @@ import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
 import com.intellij.openapi.roots.SyntheticLibrary
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.MoveProject
-import org.move.cli.moveProjects
+import org.move.cli.moveProjectsService
 import org.move.ide.MoveIcons
 import org.move.openapiext.contentRoots
 import org.move.openapiext.toVirtualFile
@@ -34,7 +34,7 @@ class MoveLibrary(
 
 class BuildLibraryRootsProvider : AdditionalLibraryRootsProvider() {
     override fun getAdditionalProjectLibraries(project: Project): Collection<SyntheticLibrary> {
-        return project.moveProjects
+        return project.moveProjectsService
             .allProjects
             .smartFlatMap { it.ideaLibraries }
             .toMutableSet()

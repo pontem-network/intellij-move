@@ -1,6 +1,6 @@
 package org.move.lang
 
-import org.move.cli.moveProjects
+import org.move.cli.moveProjectsService
 import org.move.lang.core.psi.MvNamedAddress
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
@@ -189,7 +189,7 @@ class NamedAddressValuesTest : MvProjectTestBase() {
         val (address, data) = myFixture.findElementAndDataInEditor<MvNamedAddress>()
         val expectedValue = data.trim()
 
-        val moveProject = project.moveProjects.findMoveProject(address)!!
+        val moveProject = project.moveProjectsService.findMoveProject(address)!!
         val actualValue = moveProject.getNamedAddress(address.referenceName)!!.text()
 
         check(actualValue == expectedValue) {
