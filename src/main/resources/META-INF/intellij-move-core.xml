@@ -61,8 +61,8 @@
 
         <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.MvImportOptimizer"/>
 
-        <gotoSymbolContributor implementation="org.move.ide.navigation.MvSymbolNavigationContributor"/>
-        <gotoClassContributor implementation="org.move.ide.navigation.MvStructNavigationContributor"/>
+        <gotoSymbolContributor implementation="org.move.ide.navigation.goto.MvSymbolNavigationContributor"/>
+        <gotoClassContributor implementation="org.move.ide.navigation.goto.MvStructNavigationContributor"/>
 
         <lang.syntaxHighlighter language="Move"
                                 implementationClass="org.move.ide.MvHighlighter"/>
@@ -169,10 +169,10 @@
 
         <declarationRangeHandler
                 key="org.move.lang.core.psi.MvModule"
-                implementationClass="org.move.ide.navigation.ModuleDeclarationRangeHandler"/>
+                implementationClass="org.move.ide.hints.ModuleDeclarationRangeHandler"/>
         <declarationRangeHandler
                 key="org.move.lang.core.psi.MvFunction"
-                implementationClass="org.move.ide.navigation.FunctionDeclarationRangeHandler"/>
+                implementationClass="org.move.ide.hints.FunctionDeclarationRangeHandler"/>
 
         <breadcrumbsInfoProvider implementation="org.move.ide.MvBreadcrumbsProvider" />
 

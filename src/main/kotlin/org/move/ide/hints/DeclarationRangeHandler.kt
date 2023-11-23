@@ -1,4 +1,4 @@
-package org.move.ide.navigation
+package org.move.ide.hints
 
 import com.intellij.codeInsight.hint.DeclarationRangeHandler
 import com.intellij.openapi.util.TextRange

@@ -34,13 +34,13 @@ interface MvFunctionLike : MvNameIdentifierOwner,
     }
 }
 
-val MvFunctionLike.itemPresentation: PresentationData?
+val MvFunctionLike.functionItemPresentation: PresentationData?
     get() {
         val name = this.name ?: return null
         val signature = this.signatureText
         return PresentationData(
             "$name$signature",
-            null,
+            this.locationString(true),
             MoveIcons.FUNCTION,
             TextAttributesKey.createTextAttributesKey("public")
         )

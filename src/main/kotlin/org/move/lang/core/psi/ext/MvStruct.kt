@@ -13,8 +13,11 @@ import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.ty.Ability
 import org.move.lang.core.types.ty.TyStruct
+import org.move.lang.toNioPathOrNull
+import org.move.openapiext.rootPath
 import org.move.stdext.withAdded
 import javax.swing.Icon
+import kotlin.io.path.readText
 
 val MvStruct.fields: List<MvStructField>
     get() = structBlock?.structFieldList.orEmpty()
@@ -58,8 +61,9 @@ val MvStruct.hasStore: Boolean get() = Ability.STORE in abilities
 val MvStruct.hasCopy: Boolean get() = Ability.COPY in abilities
 val MvStruct.hasDrop: Boolean get() = Ability.DROP in abilities
 
-val MvStruct.requiredAbilitiesForTypeParam: Set<Ability> get() =
-    this.abilities.map { it.requires() }.toSet()
+val MvStruct.requiredAbilitiesForTypeParam: Set<Ability>
+    get() =
+        this.abilities.map { it.requires() }.toSet()
 
 val MvStruct.hasPhantomTypeParameters get() = this.typeParameters.any { it.isPhantom }
 
@@ -80,12 +84,12 @@ fun MvStruct.addAbility(ability: String) {
     }
 }
 
-abstract class MvStructMixin : MvStubbedNamedElementImpl<MvStructStub>,
-                               MvStruct {
+abstract class MvStructMixin: MvStubbedNamedElementImpl<MvStructStub>,
+                              MvStruct {
 
-    constructor(node: ASTNode) : super(node)
+    constructor(node: ASTNode): super(node)
 
-    constructor(stub: MvStructStub, nodeType: IStubElementType<*, *>) : super(stub, nodeType)
+    constructor(stub: MvStructStub, nodeType: IStubElementType<*, *>): super(stub, nodeType)
 
     override val qualName: ItemQualName?
         get() {
@@ -104,7 +108,7 @@ abstract class MvStructMixin : MvStubbedNamedElementImpl<MvStructStub>,
         val structName = this.name ?: return null
         return PresentationData(
             structName,
-            null,
+            this.locationString(true),
             MoveIcons.STRUCT,
             null
         )

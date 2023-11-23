@@ -186,5 +186,5 @@ abstract class MvFunctionMixin : MvStubbedNamedElementImpl<MvFunctionStub>,
 
     override fun getIcon(flags: Int): Icon = MoveIcons.FUNCTION
 
-    override fun getPresentation(): ItemPresentation? = this.itemPresentation
+    override fun getPresentation(): ItemPresentation? = this.functionItemPresentation
 }

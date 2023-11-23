@@ -27,7 +27,7 @@ abstract class MvStructFieldMixin(node: ASTNode) : MvMandatoryNameIdentifierOwne
         val fieldType = this.typeAnnotation?.text ?: ""
         return PresentationData(
             "${this.name}${fieldType}",
-            null,
+            this.locationString(true),
             MoveIcons.STRUCT_FIELD,
             null
         )

@@ -126,7 +126,7 @@ val Project.syntheticLibraries: Collection<SyntheticLibrary> get() {
     return libraries
 }
 
-val Project.root: Path? get() = contentRoots.firstOrNull()?.toNioPathOrNull()
+val Project.rootPath: Path? get() = contentRoots.firstOrNull()?.toNioPathOrNull()
 
 val Project.contentRoot: VirtualFile? get() = contentRoots.firstOrNull()
 

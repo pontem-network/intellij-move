@@ -32,7 +32,7 @@ class AptosCliExecutor(val location: Path) {
                 "--rest-url", restUrl,
                 "--assume-yes"
             ),
-            workingDirectory = project.root
+            workingDirectory = project.rootPath
         )
         return commandLine.toGeneralCommandLine(this).execute(owner)
     }
@@ -53,7 +53,7 @@ class AptosCliExecutor(val location: Path) {
                 "--name", packageName,
                 "--assume-yes"
             ),
-            workingDirectory = project.root
+            workingDirectory = project.rootPath
         )
         commandLine.toGeneralCommandLine(this)
             .execute(parentDisposable)

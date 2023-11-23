@@ -15,19 +15,22 @@ import com.intellij.util.SmartList
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.stubs.impl.MvFileStub
+import org.move.lang.toNioPathOrNull
 import org.move.openapiext.document
+import org.move.openapiext.rootPath
+import java.nio.file.Path
 
 fun PsiElement.hasChild(tokenType: IElementType): Boolean = childrenByType(tokenType).toList().isNotEmpty()
 
 fun PsiElement.getChild(tokenType: IElementType): PsiElement? = childrenByType(tokenType).firstOrNull()
 
-inline fun <reified T : PsiElement> PsiElement.childOfType(): T? =
+inline fun <reified T: PsiElement> PsiElement.childOfType(): T? =
     PsiTreeUtil.getChildOfType(this, T::class.java)
 
-inline fun <reified T : PsiElement> PsiElement.childrenOfType(): List<T> =
+inline fun <reified T: PsiElement> PsiElement.childrenOfType(): List<T> =
     PsiTreeUtil.getChildrenOfTypeAsList(this, T::class.java)
 
-inline fun <reified T : PsiElement> PsiElement.stubChildrenOfType(): List<T> {
+inline fun <reified T: PsiElement> PsiElement.stubChildrenOfType(): List<T> {
     return if (this is PsiFileImpl) {
         stub?.childrenStubs?.mapNotNull { it.psi as? T } ?: return childrenOfType()
     } else {
@@ -36,37 +39,37 @@ inline fun <reified T : PsiElement> PsiElement.stubChildrenOfType(): List<T> {
 }
 
 
-inline fun <reified T : PsiElement> PsiElement.descendantOfTypeStrict(): T? =
+inline fun <reified T: PsiElement> PsiElement.descendantOfTypeStrict(): T? =
     PsiTreeUtil.findChildOfType(this, T::class.java, /* strict */ true)
 
-inline fun <reified T : PsiElement> PsiElement.descendantOfTypeOrSelf(): T? =
+inline fun <reified T: PsiElement> PsiElement.descendantOfTypeOrSelf(): T? =
     PsiTreeUtil.findChildOfType(this, T::class.java, /* strict */ false)
 
-inline fun <reified T : PsiElement> PsiElement.descendantsOfType(): Collection<T> =
+inline fun <reified T: PsiElement> PsiElement.descendantsOfType(): Collection<T> =
     PsiTreeUtil.findChildrenOfType(this, T::class.java)
 
-inline fun <reified T : PsiElement> PsiElement.descendantsOfTypeOrSelf(): Collection<T> =
+inline fun <reified T: PsiElement> PsiElement.descendantsOfTypeOrSelf(): Collection<T> =
     PsiTreeUtil.findChildrenOfAnyType(this, false, T::class.java)
 
-inline fun <reified T : PsiElement> PsiElement.descendantOfType(predicate: (T) -> Boolean): T? {
+inline fun <reified T: PsiElement> PsiElement.descendantOfType(predicate: (T) -> Boolean): T? {
     return descendantsOfType<T>().firstOrNull(predicate)
 }
 
 @Suppress("unused")
-inline fun <reified T : PsiElement> PsiElement.stubDescendantsOfTypeStrict(): Collection<T> =
+inline fun <reified T: PsiElement> PsiElement.stubDescendantsOfTypeStrict(): Collection<T> =
     getStubDescendantsOfType(this, true, T::class.java)
 
-inline fun <reified T : PsiElement> PsiElement.stubDescendantsOfTypeOrSelf(): Collection<T> =
+inline fun <reified T: PsiElement> PsiElement.stubDescendantsOfTypeOrSelf(): Collection<T> =
     getStubDescendantsOfType(this, false, T::class.java)
 
-inline fun <reified T : PsiElement> PsiElement.stubDescendantOfTypeOrStrict(): T? =
+inline fun <reified T: PsiElement> PsiElement.stubDescendantOfTypeOrStrict(): T? =
     getStubDescendantOfType(this, true, T::class.java)
 
 @Suppress("unused")
-inline fun <reified T : PsiElement> PsiElement.stubDescendantOfTypeOrSelf(): T? =
+inline fun <reified T: PsiElement> PsiElement.stubDescendantOfTypeOrSelf(): T? =
     getStubDescendantOfType(this, false, T::class.java)
 
-fun <T : PsiElement> getStubDescendantsOfType(
+fun <T: PsiElement> getStubDescendantsOfType(
     element: PsiElement?,
     strict: Boolean,
     aClass: Class<T>
@@ -98,7 +101,7 @@ fun <T : PsiElement> getStubDescendantsOfType(
     return result
 }
 
-fun <T : PsiElement> getStubDescendantOfType(
+fun <T: PsiElement> getStubDescendantOfType(
     element: PsiElement?,
     strict: Boolean,
     aClass: Class<T>
@@ -135,35 +138,35 @@ val PsiElement.ancestors: Sequence<PsiElement>
         else it.parent
     }
 
-inline fun <reified T : PsiElement> PsiElement.ancestorsOfType(): Sequence<T> {
+inline fun <reified T: PsiElement> PsiElement.ancestorsOfType(): Sequence<T> {
     return this.ancestors.filterIsInstance<T>()
 }
 
 fun PsiElement.findFirstParent(strict: Boolean = true, cond: Condition<in PsiElement>) =
     PsiTreeUtil.findFirstParent(this, strict, cond)
 
-inline fun <reified T : PsiElement> PsiElement.ancestorStrict(): T? =
+inline fun <reified T: PsiElement> PsiElement.ancestorStrict(): T? =
     PsiTreeUtil.getParentOfType(this, T::class.java, true)
 
-inline fun <reified T : PsiElement> PsiElement.ancestorStrict(stopAt: Class<out PsiElement>): T? =
+inline fun <reified T: PsiElement> PsiElement.ancestorStrict(stopAt: Class<out PsiElement>): T? =
     PsiTreeUtil.getParentOfType(this, T::class.java, true, stopAt)
 
-inline fun <reified T : PsiElement> PsiElement.ancestorOrSelf(): T? =
+inline fun <reified T: PsiElement> PsiElement.ancestorOrSelf(): T? =
     PsiTreeUtil.getParentOfType(this, T::class.java, false)
 
-fun <T : PsiElement> PsiElement.ancestorOfClass(psiClass: Class<T>, strict: Boolean = false): T? =
+fun <T: PsiElement> PsiElement.ancestorOfClass(psiClass: Class<T>, strict: Boolean = false): T? =
     PsiTreeUtil.getParentOfType(this, psiClass, strict)
 
-inline fun <reified T : PsiElement> PsiElement.hasAncestor(): Boolean =
+inline fun <reified T: PsiElement> PsiElement.hasAncestor(): Boolean =
     ancestorStrict<T>() != null
 
-inline fun <reified T : PsiElement> PsiElement.hasAncestorOrSelf(): Boolean =
+inline fun <reified T: PsiElement> PsiElement.hasAncestorOrSelf(): Boolean =
     ancestorOrSelf<T>() != null
 
-inline fun <reified T : PsiElement> PsiElement.ancestorOrSelf(stopAt: Class<out PsiElement>): T? =
+inline fun <reified T: PsiElement> PsiElement.ancestorOrSelf(stopAt: Class<out PsiElement>): T? =
     PsiTreeUtil.getParentOfType(this, T::class.java, false, stopAt)
 
-inline fun <reified T : PsiElement> PsiElement.stubAncestorStrict(): T? =
+inline fun <reified T: PsiElement> PsiElement.stubAncestorStrict(): T? =
     PsiTreeUtil.getStubOrPsiParentOfType(this, T::class.java)
 
 /**
@@ -283,10 +286,10 @@ fun PsiElement.cameBefore(element: PsiElement) =
     PsiUtilCore.compareElementsByPosition(this, element) <= 0
 
 @Suppress("UNCHECKED_CAST")
-inline val <T : StubElement<*>> StubBasedPsiElement<T>.greenStub: T?
+inline val <T: StubElement<*>> StubBasedPsiElement<T>.greenStub: T?
     get() = (this as? StubBasedPsiElementBase<T>)?.greenStub
 
-fun <T : PsiElement> T.smartPointer() = SmartPointerManager.createPointer(this)
+fun <T: PsiElement> T.smartPointer() = SmartPointerManager.createPointer(this)
 
 val PsiElement.stubParent: PsiElement?
     get() {
@@ -300,7 +303,7 @@ val PsiElement.stubParent: PsiElement?
 /**
  * Same as [ancestorOrSelf], but with "fake" parent links. See [org.rust.lang.core.macros.RsExpandedElement].
  */
-inline fun <reified T : PsiElement> PsiElement.contextOrSelf(): T? =
+inline fun <reified T: PsiElement> PsiElement.contextOrSelf(): T? =
     PsiTreeUtil.getContextOfType(this, T::class.java, /* strict */ false)
 
 fun PsiElement.textRangeInAncestor(ancestorElement: PsiElement): TextRange {
@@ -335,3 +338,17 @@ private fun PsiElement.getLineCount(): Int {
 }
 
 fun PsiWhiteSpace.isMultiLine(): Boolean = getLineCount() > 1
+
+fun PsiElement.locationPath(tryRelative: Boolean): Path? {
+    val containingFilePath = this.containingFile.toNioPathOrNull() ?: return null
+    if (tryRelative) {
+        val rootPath = this.project.rootPath
+        if (rootPath != null) {
+            return rootPath.relativize(containingFilePath)
+        }
+    }
+    return containingFilePath
+}
+
+fun PsiElement.locationString(tryRelative: Boolean): String? =
+    locationPath(tryRelative)?.toString()
