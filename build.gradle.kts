@@ -19,7 +19,7 @@ val javaVersion = JavaVersion.VERSION_17
 val kotlinStdlibVersion = "1.9.0"
 val pluginJarName = "intellij-move-$pluginVersion"
 
-val aptosVersion = "2.0.3"
+val aptosVersion = "2.3.2"
 
 group = pluginGroup
 version = pluginVersion
@@ -130,7 +130,8 @@ allprojects {
         task("downloadAptosBinaries") {
             val baseUrl = "https://github.com/aptos-labs/aptos-core/releases/download/aptos-cli-v$aptosVersion"
             doLast {
-                for (releasePlatform in listOf("MacOSX", "Ubuntu-22.04", "Ubuntu", "Windows")) {
+                // NOTE: MacOS is not supported anymore for pre-built CLI
+                for (releasePlatform in listOf(/*"MacOSX",*/ "Ubuntu-22.04", "Ubuntu", "Windows")) {
                     val zipFileName = "aptos-cli-$aptosVersion-$releasePlatform-x86_64.zip"
                     val zipFileUrl = "$baseUrl/$zipFileName"
                     val zipRoot = "${rootProject.buildDir}/zip"
@@ -146,7 +147,7 @@ allprojects {
 
                     val platformName =
                         when (releasePlatform) {
-                            "MacOSX" -> "macos"
+//                            "MacOSX" -> "macos"
                             "Ubuntu" -> "ubuntu"
                             "Ubuntu-22.04" -> "ubuntu22"
                             "Windows" -> "windows"
