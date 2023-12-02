@@ -26,16 +26,11 @@ class AptosProjectGeneratorPeer(val parentDisposable: Disposable) : GeneratorPee
         Disposer.register(parentDisposable, aptosSettingsPanel)
     }
 
-//    private val aptosInitCheckBox = JBCheckBox("Run 'aptos init'", false)
-//    private val aptosSettingsPanel = AptosSettingsPanel(aptosInitCheckBox.selected)
-
     private var checkValid: Runnable? = null
 
     override fun getSettings(): AptosProjectConfig {
         return AptosProjectConfig(
             panelData = aptosSettingsPanel.panelData,
-//            aptosInitEnabled = aptosInitCheckBox.isSelected,
-//            initData = aptosSettingsPanel.data
         )
     }
 
@@ -46,7 +41,6 @@ class AptosProjectGeneratorPeer(val parentDisposable: Disposable) : GeneratorPee
 
     override fun getComponent(): JComponent {
         val panel = panel {
-//            group {}
             aptosSettingsPanel.attachTo(this)
         }
         val defaultAptosPath = defaultProjectSettings()?.state?.aptosPath

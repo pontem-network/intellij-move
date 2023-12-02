@@ -1,4 +1,4 @@
-package org.move.cli.module
+package org.move.ide.newProject.module
 
 import com.intellij.ide.util.projectWizard.ModuleBuilder
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
@@ -33,7 +33,7 @@ class AptosConfigurationWizardStep(
         ConfigurationUpdater.data = panelData
 
         val projectBuilder = context.projectBuilder
-        if (projectBuilder is MvModuleBuilder) {
+        if (projectBuilder is AptosModuleBuilder) {
             projectBuilder.configurationData = panelData
             projectBuilder.addModuleConfigurationUpdater(ConfigurationUpdater)
         } else {

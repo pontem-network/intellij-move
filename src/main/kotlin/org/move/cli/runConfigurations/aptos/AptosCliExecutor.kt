@@ -65,7 +65,7 @@ class AptosCliExecutor(val location: Path) {
         return RsResult.Ok(manifest)
     }
 
-    fun version(): String? {
+    fun version(): ProcessOutput? {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
@@ -76,8 +76,8 @@ class AptosCliExecutor(val location: Path) {
             listOf("--version"),
             workingDirectory = null,
         )
-        val lines = commandLine.toGeneralCommandLine(this).execute()?.stdoutLines.orEmpty()
-        return if (lines.isNotEmpty()) return lines.joinToString("\n") else null
+        val output = commandLine.toGeneralCommandLine(this).execute()
+        return output
     }
 
     companion object {

@@ -1,4 +1,4 @@
-package org.move.cli.module
+package org.move.ide.newProject.module
 
 import com.intellij.ide.util.projectWizard.ModuleBuilder
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
@@ -17,8 +17,8 @@ import org.move.ide.newProject.openFile
 import org.move.openapiext.computeWithCancelableProgress
 import org.move.stdext.unwrapOrThrow
 
-class MvModuleBuilder : ModuleBuilder() {
-    override fun getModuleType(): ModuleType<*> = MvModuleType.INSTANCE
+class AptosModuleBuilder : ModuleBuilder() {
+    override fun getModuleType(): ModuleType<*> = AptosModuleType.Util.INSTANCE
 
     override fun isSuitableSdkType(sdkType: SdkTypeId?): Boolean = true
 

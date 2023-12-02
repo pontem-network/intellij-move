@@ -4,15 +4,17 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.dsl.builder.AlignX
-import com.intellij.ui.dsl.builder.Panel
-import com.intellij.ui.dsl.builder.bindSelected
-import com.intellij.ui.dsl.builder.selected
+import com.intellij.openapi.util.SystemInfo
+import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.layout.ComponentPredicate
 import org.move.cli.runConfigurations.aptos.AptosCliExecutor
 import org.move.openapiext.UiDebouncer
+import org.move.openapiext.isSuccess
 import org.move.openapiext.pathField
 import org.move.openapiext.showSettings
 import org.move.stdext.toPathOrNull
+import kotlin.properties.ObservableProperty
+import kotlin.reflect.KProperty
 
 class AptosSettingsPanel(
     private val showDefaultProjectSettingsLink: Boolean,
@@ -26,7 +28,7 @@ class AptosSettingsPanel(
             "Choose Aptos CLI"
         ) { text ->
             aptosExec = AptosExec.LocalPath(text)
-            onAptosExecUpdate()
+            updateVersionLabel()
         }
 
     private val versionLabel = VersionLabel()
@@ -41,7 +43,7 @@ class AptosSettingsPanel(
                 is AptosExec.Bundled -> localPathField.text = ""
                 else -> localPathField.text = value.aptosExec.execPath
             }
-            onAptosExecUpdate()
+            updateVersionLabel()
         }
 
     var aptosExec: AptosExec = AptosExec.Bundled
@@ -63,9 +65,12 @@ class AptosSettingsPanel(
                         { aptosExec is AptosExec.Bundled },
                         {
                             aptosExec = AptosExec.Bundled
-                            onAptosExecUpdate()
+                            updateVersionLabel()
                         }
                     )
+                    .enabled(AptosExec.isBundledSupported())
+                comment("Disabled on MacOS, use `brew install aptos` to obtain the aptos-cli")
+                    .visible(!AptosExec.isBundledSupported())
             }
 
             row {
@@ -74,7 +79,7 @@ class AptosSettingsPanel(
                         { aptosExec is AptosExec.LocalPath },
                         {
                             aptosExec = AptosExec.LocalPath(localPathField.text)
-                            onAptosExecUpdate()
+                            updateVersionLabel()
                         }
                     )
                 cell(localPathField)
@@ -93,14 +98,26 @@ class AptosSettingsPanel(
         }
     }
 
-    private fun onAptosExecUpdate() {
+    private fun updateVersionLabel() {
         val aptosExecPath = aptosExec.execPath.toPathOrNull()
         versionUpdateDebouncer.run(
             onPooledThread = {
                 aptosExecPath?.let { AptosCliExecutor(it).version() }
             },
-            onUiThread = { version ->
-                versionLabel.setVersion(version)
+            onUiThread = { versionCmdOutput ->
+                if (versionCmdOutput == null) {
+                    versionLabel.setText("N/A (Invalid aptos executable)", errorHighlighting = true)
+                } else {
+                    if (versionCmdOutput.isSuccess) {
+                        val versionText = versionCmdOutput.stdoutLines.joinToString("\n")
+                        versionLabel.setText(versionText, errorHighlighting = false)
+                    } else {
+                        versionLabel.setText(
+                            "N/A (Cannot run --version command. Error code is ${versionCmdOutput.exitCode})",
+                            errorHighlighting = true
+                        )
+                    }
+                }
                 updateListener?.invoke()
             }
         )

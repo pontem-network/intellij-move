@@ -1,5 +1,6 @@
 package org.move.cli.settings
 
+import com.intellij.openapi.util.SystemInfo
 import org.move.cli.runConfigurations.aptos.AptosCliExecutor
 import org.move.openapiext.PluginPathManager
 import org.move.stdext.toPathOrNull
@@ -31,5 +32,7 @@ sealed class AptosExec {
                 null -> Bundled
                 else -> LocalPath(aptosPath)
             }
+
+        fun isBundledSupported(): Boolean = !SystemInfo.isMac
     }
 }

@@ -30,7 +30,7 @@ interface MoveSettingsListener {
 
 private const val settingsServiceName: String = "MoveProjectSettingsService_1"
 
-@Service
+@Service(Service.Level.PROJECT)
 @State(
     name = settingsServiceName,
     storages = [
@@ -38,11 +38,12 @@ private const val settingsServiceName: String = "MoveProjectSettingsService_1"
         Storage("misc.xml", deprecated = true)
     ]
 )
-class MoveProjectSettingsService(private val project: Project) : PersistentStateComponent<Element> {
+class MoveProjectSettingsService(private val project: Project): PersistentStateComponent<Element> {
 
+    // default values for settings
     data class State(
-        // null -> Bundled, not null -> Local
-        var aptosPath: String? = null,
+        // null not Mac -> Bundled, null and Mac -> Local(""), not null -> Local(value)
+        var aptosPath: String? = if (AptosExec.isBundledSupported()) null else "",
         var foldSpecs: Boolean = false,
         var disableTelemetry: Boolean = true,
         var debugMode: Boolean = false,
@@ -84,6 +85,10 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
     override fun loadState(element: Element) {
         val rawState = element.clone()
         XmlSerializer.deserializeInto(_state, rawState)
+        // migrate old default value for MacOS aptosPath (bundled is not supported anymore)
+//        if (_state.aptosPath == null && !AptosExec.isBundledSupported()) {
+//            _state.aptosPath = ""
+//        }
     }
 
     /**
@@ -91,7 +96,10 @@ class MoveProjectSettingsService(private val project: Project) : PersistentState
      * After setting change,
      */
     fun modify(action: (State) -> Unit) {
-        state = state.also(action)
+        val oldState = state.copy()
+        val newState = state.also(action)
+        val event = MoveSettingsChangedEvent(oldState, newState)
+        project.messageBus.syncPublisher(MOVE_SETTINGS_TOPIC).moveSettingsChanged(event)
     }
 
     /**
@@ -150,5 +158,6 @@ fun <T> Project.debugErrorOrFallback(message: String, cause: Throwable?, fallbac
     return fallback()
 }
 
-val Project.skipFetchLatestGitDeps: Boolean get() =
-    this.moveSettings.state.skipFetchLatestGitDeps
+val Project.skipFetchLatestGitDeps: Boolean
+    get() =
+        this.moveSettings.state.skipFetchLatestGitDeps

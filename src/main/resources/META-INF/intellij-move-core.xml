@@ -272,8 +272,8 @@
         <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
 
         <moduleType id="MOVE_MODULE"
-                    implementationClass="org.move.cli.module.MvModuleType"/>
-        <moduleBuilder builderClass="org.move.cli.module.MvModuleBuilder"/>
+                    implementationClass="org.move.ide.newProject.module.AptosModuleType"/>
+        <moduleBuilder builderClass="org.move.ide.newProject.module.AptosModuleBuilder"/>
         <projectTaskRunner implementation="org.move.cli.runConfigurations.AptosBuildTaskRunner" />
 
         <projectOpenProcessor id="Move" implementation="org.move.cli.AptosProjectOpenProcessor"/>
@@ -297,7 +297,7 @@
         <applicationService serviceImplementation="org.move.openapiext.OpenSSLInfoService" />
 
         <additionalLibraryRootsProvider
-                implementation="org.move.cli.module.BuildLibraryRootsProvider"/>
+                implementation="org.move.ide.newProject.module.BuildLibraryRootsProvider"/>
 
         <!-- Notifications -->
         <notificationGroup id="Move Language" displayType="BALLOON"/>
