@@ -2,7 +2,7 @@ package org.move.cli.module
 
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
-import org.move.cli.AptosProjectOpenProcessor
+import org.move.cli.openProject.AptosProjectOpenProcessor
 import org.move.utils.tests.MvProjectTestBase
 
 class AptosProjectOpenProcessorTest : MvProjectTestBase() {

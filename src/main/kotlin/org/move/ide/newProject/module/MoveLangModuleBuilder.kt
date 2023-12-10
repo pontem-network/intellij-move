@@ -10,7 +10,7 @@ import com.intellij.openapi.projectRoots.SdkTypeId
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.util.Disposer
 import org.move.cli.Consts
-import org.move.cli.runConfigurations.addDefaultBuildRunConfiguration
+import org.move.cli.runConfigurations.addAptosMoveCompileRunConfiguration
 import org.move.cli.runConfigurations.aptos.AptosCliExecutor
 import org.move.cli.settings.AptosSettingsPanel
 import org.move.ide.newProject.openFile
@@ -54,7 +54,7 @@ class AptosModuleBuilder : ModuleBuilder() {
                     )
                         .unwrapOrThrow() // TODO throw? really??
                 }
-                project.addDefaultBuildRunConfiguration(true)
+                project.addAptosMoveCompileRunConfiguration(true)
                 project.openFile(manifestFile)
             }
         }

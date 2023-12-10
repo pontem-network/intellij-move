@@ -1,4 +1,4 @@
-package org.move.cli
+package org.move.cli.openProject
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
@@ -7,6 +7,8 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.PlatformProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenProcessor
+import org.move.cli.Consts
+import org.move.cli.moveProjectsService
 import org.move.cli.runConfigurations.addDefaultBuildRunConfiguration
 import org.move.cli.settings.MoveProjectSettingsService
 import org.move.cli.settings.moveSettings
@@ -36,39 +38,7 @@ class AptosProjectOpenProcessor: ProjectOpenProcessor() {
             virtualFile,
             projectToClose,
             forceOpenInNewFrame
-        )?.also {
-            StartupManager.getInstance(it).runAfterOpened {
-                // create default build configuration if it doesn't exist
-                if (it.aptosBuildRunConfigurations().isEmpty()) {
-                    val isEmpty = it.aptosRunConfigurations().isEmpty()
-                    it.addDefaultBuildRunConfiguration(isSelected = isEmpty)
-                }
-
-                // opens Move.toml file
-                val packageRoot = it.contentRoots.firstOrNull()
-                if (packageRoot != null) {
-                    val manifest = packageRoot.findChild(Consts.MANIFEST_FILE)
-                    if (manifest != null) {
-                        it.openFile(manifest)
-                    }
-                    updateAllNotifications(it)
-                }
-
-                val defaultProjectSettings = ProjectManager.getInstance().defaultMoveSettings
-                it.moveSettings.modify {
-                    it.aptosPath = defaultProjectSettings?.state?.aptosPath
-                }
-
-                it.moveProjectsService.scheduleProjectsRefresh()
-//
-//                val aptosCliPath = AptosCliExecutor.suggestPath()
-//                if (aptosCliPath != null && it.aptosPath?.toString().isNullOrBlank()) {
-//                    it.moveSettings.modify { state ->
-//                        state.aptosPath = aptosCliPath
-//                    }
-//                }
-            }
-        }
+        )
     }
 }
 

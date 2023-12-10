@@ -16,9 +16,9 @@ val codeVersion = "1.32.0"
 val pluginVersion = "$codeVersion.$shortPlatformVersion"
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
-val kotlinStdlibVersion = "1.9.0"
 val pluginJarName = "intellij-move-$pluginVersion"
 
+val kotlinReflectVersion = "1.8.10"
 val aptosVersion = "2.3.2"
 
 group = pluginGroup
@@ -26,8 +26,8 @@ version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.9.20"
-    id("org.jetbrains.intellij") version "1.16.0"
+    kotlin("jvm") version "1.9.21"
+    id("org.jetbrains.intellij") version "1.16.1"
     id("org.jetbrains.grammarkit") version "2022.3.2"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
@@ -35,7 +35,7 @@ plugins {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinStdlibVersion")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinReflectVersion")
 
     implementation("io.sentry:sentry:6.25.0") {
         exclude("org.slf4j")
@@ -111,8 +111,8 @@ allprojects {
         withType<KotlinCompile> {
             kotlinOptions {
                 jvmTarget = "17"
-                languageVersion = "1.8"
-                apiVersion = "1.6"
+                languageVersion = "1.9"
+                apiVersion = "1.8"
                 freeCompilerArgs = listOf("-Xjvm-default=all")
             }
         }

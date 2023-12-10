@@ -5,13 +5,12 @@ import com.intellij.openapi.module.ModuleTypeManager
 import org.move.ide.MoveIcons
 import javax.swing.Icon
 
-class AptosModuleType: ModuleType<AptosModuleBuilder>(ID) {
+class AptosModuleType: ModuleType<MoveLangModuleBuilder>(ID) {
+    override fun getName(): String = "Move"
+    override fun getDescription(): String = "Move module"
     override fun getNodeIcon(isOpened: Boolean): Icon = MoveIcons.MOVE_LOGO
 
-    override fun createModuleBuilder(): AptosModuleBuilder = AptosModuleBuilder()
-
-    override fun getName(): String = "Aptos"
-    override fun getDescription(): String = "Aptos module"
+    override fun createModuleBuilder(): MoveLangModuleBuilder = MoveLangModuleBuilder()
 
     object Util {
         val INSTANCE: AptosModuleType by lazy {
