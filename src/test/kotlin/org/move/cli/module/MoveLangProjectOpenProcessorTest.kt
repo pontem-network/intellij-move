@@ -2,7 +2,7 @@ package org.move.cli.module
 
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
-import org.move.cli.openProject.MoveLangProjectOpenProcessor
+import org.move.ide.newProject.MoveLangProjectOpenProcessor
 import org.move.utils.tests.MvProjectTestBase
 
 class MoveLangProjectOpenProcessorTest : MvProjectTestBase() {

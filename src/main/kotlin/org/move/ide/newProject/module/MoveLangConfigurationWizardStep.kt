@@ -15,7 +15,7 @@ import org.move.cli.settings.moveSettings
 import org.move.openapiext.isFeatureEnabled
 import javax.swing.JComponent
 
-class AptosConfigurationWizardStep(
+class MoveLangConfigurationWizardStep(
     private val context: WizardContext,
     private val configurationUpdaterConsumer: ((ModuleBuilder.ModuleConfigurationUpdater) -> Unit)? = null
 ): ModuleWizardStep() {

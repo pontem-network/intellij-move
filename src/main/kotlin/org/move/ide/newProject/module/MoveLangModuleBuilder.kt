@@ -10,14 +10,13 @@ import com.intellij.openapi.projectRoots.SdkTypeId
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.util.Disposer
 import org.move.cli.Consts
-import org.move.cli.runConfigurations.addCompileProjectRunConfiguration
 import org.move.cli.runConfigurations.aptos.AptosCliExecutor
 import org.move.cli.settings.AptosExec
-import org.move.ide.newProject.openFile
+import org.move.ide.newProject.ProjectInitialization
 import org.move.openapiext.computeWithCancelableProgress
 import org.move.stdext.unwrapOrThrow
 
-class MoveLangModuleBuilder : ModuleBuilder() {
+class MoveLangModuleBuilder: ModuleBuilder() {
     override fun getModuleType(): ModuleType<*> = MoveLangModuleType.Util.INSTANCE
 
     override fun isSuitableSdkType(sdkType: SdkTypeId?): Boolean = true
@@ -26,7 +25,7 @@ class MoveLangModuleBuilder : ModuleBuilder() {
         context: WizardContext,
         parentDisposable: Disposable
     ): ModuleWizardStep {
-        return AptosConfigurationWizardStep(context).apply {
+        return MoveLangConfigurationWizardStep(context).apply {
             Disposer.register(parentDisposable, this::disposeUIResources)
         }
     }
@@ -54,8 +53,10 @@ class MoveLangModuleBuilder : ModuleBuilder() {
                     )
                         .unwrapOrThrow() // TODO throw? really??
                 }
-                project.addCompileProjectRunConfiguration(true)
-                project.openFile(manifestFile)
+                ProjectInitialization.openMoveTomlInEditor(project, manifestFile)
+                ProjectInitialization.createDefaultCompileConfiguration(project, true)
+//                project.addCompileProjectRunConfiguration(true)
+//                project.openFile(manifestFile)
             }
         }
     }

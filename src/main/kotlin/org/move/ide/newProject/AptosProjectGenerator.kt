@@ -11,12 +11,9 @@ import com.intellij.platform.DirectoryProjectGenerator
 import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
 import org.move.cli.PluginApplicationDisposable
-import org.move.cli.moveProjectsService
-import org.move.cli.runConfigurations.addDefaultBuildRunConfiguration
 import org.move.cli.settings.AptosExec
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
-import org.move.ide.notifications.updateAllNotifications
 import org.move.openapiext.computeWithCancelableProgress
 import org.move.stdext.unwrapOrThrow
 
@@ -51,11 +48,15 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
                     .unwrapOrThrow() // TODO throw? really??
                 manifestFile
             }
-
+        // update settings (and refresh Aptos projects too)
         project.moveSettings.modify {
             it.aptosPath = projectConfig.aptosExec.pathToSettingsFormat()
         }
-        updateAllNotifications(project)
+
+        ProjectInitialization.openMoveTomlInEditor(project, manifestFile)
+        ProjectInitialization.createDefaultCompileConfigurationIfNotExists(project)
+
+//        updateAllNotifications(project)
 //        project.addDefaultBuildRunConfiguration(isSelected = true)
 //        project.openFile(manifestFile)
 
