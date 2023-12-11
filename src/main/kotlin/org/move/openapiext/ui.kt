@@ -38,7 +38,6 @@ class UiDebouncer(
     }
 }
 
-@Suppress("UnstableApiUsage")
 fun pathField(
     fileChooserDescriptor: FileChooserDescriptor,
     disposable: Disposable,

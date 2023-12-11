@@ -15,11 +15,12 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
 
     private val settingsState: MoveProjectSettingsService.State = project.moveSettings.state
 
-    private val aptosSettingsPanel = AptosSettingsPanel(showDefaultProjectSettingsLink = !project.isDefault)
+    private val chooseAptosCliPanel = ChooseAptosCliPanel(showDefaultProjectSettingsLink = !project.isDefault)
 
     override fun createPanel(): DialogPanel {
         return panel {
-            aptosSettingsPanel.attachTo(this)
+//            chooseAptosCliPanel.setSelectedAptosExec(AptosExec.default())
+            chooseAptosCliPanel.attachToLayout(this)
             group {
                 row {
                     checkBox("Auto-fold specs in opened files")
@@ -49,27 +50,28 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
 
     override fun disposeUIResources() {
         super<BoundConfigurable>.disposeUIResources()
-        Disposer.dispose(aptosSettingsPanel)
+        Disposer.dispose(chooseAptosCliPanel)
     }
 
+    /// loads settings from configurable to swing form
     override fun reset() {
+        chooseAptosCliPanel.selectedAptosExec = settingsState.aptosExec()
+        // should be invoked at the end
         super<BoundConfigurable>.reset()
-        aptosSettingsPanel.panelData =
-            AptosSettingsPanel.PanelData(AptosExec.fromSettingsFormat(settingsState.aptosPath))
-//        aptosSettingsPanel.panelData = AptosSettingsPanel.PanelData(state.aptosPath)
     }
 
+    /// checks whether any settings are modified (should be fast)
     override fun isModified(): Boolean {
         if (super<BoundConfigurable>.isModified()) return true
-        val panelData = aptosSettingsPanel.panelData
-        return panelData.aptosExec.pathToSettingsFormat() != settingsState.aptosPath
+        val selectedAptosExec = chooseAptosCliPanel.selectedAptosExec
+        return selectedAptosExec != settingsState.aptosExec()
     }
 
+    /// saves values from Swing form back to configurable (OK / Apply)
     override fun apply() {
         super.apply()
-        val newSettingsState = settingsState
-        newSettingsState.aptosPath = aptosSettingsPanel.panelData.aptosExec.pathToSettingsFormat()
-        project.moveSettings.state = newSettingsState
+        project.moveSettings.state =
+            settingsState.copy(aptosPath = chooseAptosCliPanel.selectedAptosExec.pathToSettingsFormat())
 
     }
 }

@@ -3,6 +3,7 @@ package org.move.cli.settings
 import com.intellij.configurationStore.serializeObjectInto
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.*
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiManager
@@ -10,10 +11,12 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
+import org.move.openapiext.infoInProduction
 import org.move.stdext.exists
 import org.move.stdext.isExecutableFile
 import java.nio.file.Path
 import kotlin.reflect.KProperty1
+import kotlin.reflect.full.memberProperties
 
 data class MoveSettingsChangedEvent(
     val oldState: MoveProjectSettingsService.State,
@@ -43,12 +46,20 @@ class MoveProjectSettingsService(private val project: Project): PersistentStateC
     // default values for settings
     data class State(
         // null not Mac -> Bundled, null and Mac -> Local(""), not null -> Local(value)
-        var aptosPath: String? = if (AptosExec.isBundledSupported()) null else "",
+        var aptosPath: String? = if (AptosExec.isBundledSupportedForThePlatform()) null else "",
         var foldSpecs: Boolean = false,
         var disableTelemetry: Boolean = true,
         var debugMode: Boolean = false,
         var skipFetchLatestGitDeps: Boolean = false
-    )
+    ) {
+        fun aptosExec(): AptosExec {
+            val path = aptosPath
+            return when (path) {
+                null -> AptosExec.Bundled
+                else -> AptosExec.LocalPath(path)
+            }
+        }
+    }
 
     @Volatile
     private var _state = State()
@@ -68,8 +79,16 @@ class MoveProjectSettingsService(private val project: Project): PersistentStateC
         newState: State,
     ) {
         val event = MoveSettingsChangedEvent(oldState, newState)
-        project.messageBus.syncPublisher(MOVE_SETTINGS_TOPIC)
-            .moveSettingsChanged(event)
+
+        for (prop in State::class.memberProperties) {
+            if (event.isChanged(prop)) {
+                val oldValue = prop.get(oldState)
+                val newValue = prop.get(newState)
+                LOG.infoInProduction("SETTINGS updated [${prop.name}: $oldValue -> $newValue]")
+            }
+        }
+
+        project.messageBus.syncPublisher(MOVE_SETTINGS_TOPIC).moveSettingsChanged(event)
 
         if (event.isChanged(State::foldSpecs)) {
             PsiManager.getInstance(project).dropPsiCaches()
@@ -85,10 +104,6 @@ class MoveProjectSettingsService(private val project: Project): PersistentStateC
     override fun loadState(element: Element) {
         val rawState = element.clone()
         XmlSerializer.deserializeInto(_state, rawState)
-        // migrate old default value for MacOS aptosPath (bundled is not supported anymore)
-//        if (_state.aptosPath == null && !AptosExec.isBundledSupported()) {
-//            _state.aptosPath = ""
-//        }
     }
 
     /**
@@ -98,8 +113,10 @@ class MoveProjectSettingsService(private val project: Project): PersistentStateC
     fun modify(action: (State) -> Unit) {
         val oldState = state.copy()
         val newState = state.also(action)
-        val event = MoveSettingsChangedEvent(oldState, newState)
-        project.messageBus.syncPublisher(MOVE_SETTINGS_TOPIC).moveSettingsChanged(event)
+
+        notifySettingsChanged(oldState, newState)
+//        val event = MoveSettingsChangedEvent(oldState, newState)
+//        project.messageBus.syncPublisher(MOVE_SETTINGS_TOPIC).moveSettingsChanged(event)
     }
 
     /**
@@ -120,10 +137,9 @@ class MoveProjectSettingsService(private val project: Project): PersistentStateC
      * Note, result is a copy of service state, so you need to set modified state back to apply changes
      */
     companion object {
-        val MOVE_SETTINGS_TOPIC = Topic(
-            "move settings changes",
-            MoveSettingsListener::class.java
-        )
+        val MOVE_SETTINGS_TOPIC = Topic("move settings changes", MoveSettingsListener::class.java)
+
+        private val LOG = logger<MoveProjectSettingsService>()
     }
 }
 
@@ -131,9 +147,9 @@ val Project.moveSettings: MoveProjectSettingsService get() = service()
 
 val Project.collapseSpecs: Boolean get() = this.moveSettings.state.foldSpecs
 
-val Project.aptosExec: AptosExec get() = AptosExec.fromSettingsFormat(this.moveSettings.state.aptosPath)
+val Project.aptosExec: AptosExec get() = this.moveSettings.state.aptosExec()
 
-val Project.aptosPath: Path? get() = this.aptosExec.pathOrNull()
+val Project.aptosPath: Path? get() = this.aptosExec.toPathOrNull()
 
 fun Path?.isValidExecutable(): Boolean {
     return this != null

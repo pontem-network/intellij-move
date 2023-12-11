@@ -26,7 +26,7 @@ import org.move.stdext.asMap
 import java.awt.Component
 
 
-class SentryErrorReporter : ErrorReportSubmitter() {
+class SentryErrorReporter: ErrorReportSubmitter() {
     init {
         Sentry.init { options ->
             options.dsn = "https://a3153f348f8d43f189c4228db47cfc0d@sentry.pontem.network/6"
@@ -44,7 +44,7 @@ class SentryErrorReporter : ErrorReportSubmitter() {
     ): Boolean {
         val project = parentComponent.project
 
-        object : Task.Backgroundable(project, "Sending error report", false) {
+        object: Task.Backgroundable(project, "Sending error report", false) {
             override fun run(indicator: ProgressIndicator) {
                 val mainEvent = events[0]
                 val sentryEvent = createSentryEventFromError(project, mainEvent)
@@ -69,40 +69,38 @@ class SentryErrorReporter : ErrorReportSubmitter() {
         return true
     }
 
-    companion object {
-        private fun createSentryEventFromError(project: Project?, event: IdeaLoggingEvent): SentryEvent {
-            val sentryEvent = SentryEvent()
-            sentryEvent.level = SentryLevel.ERROR
+    private fun createSentryEventFromError(project: Project?, event: IdeaLoggingEvent): SentryEvent {
+        val sentryEvent = SentryEvent()
+        sentryEvent.level = SentryLevel.ERROR
 
-            val plugin = IdeErrorsDialog.getPlugin(event)
-            sentryEvent.contexts["Plugin Info"] =
-                mapOf(
-                    "Platform" to ApplicationInfo.getInstance().fullApplicationName,
-                    "Plugin Version" to (plugin?.version ?: "unknown"),
-                )
-            if (project != null) {
-                val settings = project.moveSettings.state.asMap().toMutableMap()
-                settings.remove("aptosPath")
-                sentryEvent.contexts["Settings"] = settings
-                sentryEvent.contexts["Projects"] =
-                    project.moveProjectsService.allProjects.map { MoveProjectContext.from(it) }
-            }
-            // IdeaLoggingEvent only provides text stacktrace
-            sentryEvent.contexts["Stacktrace"] = mapOf("Value" to event.throwableText)
-
-
-            val sentryMessage = Message()
-            sentryMessage.formatted = event.errorMessage
-            sentryEvent.message = sentryMessage
-
-            sentryEvent.fingerprints = listOf("{{ default }}", event.errorMessage)
-
-            return sentryEvent
+        val plugin = IdeErrorsDialog.getPlugin(event)
+        sentryEvent.contexts["Plugin Info"] =
+            mapOf(
+                "Platform" to ApplicationInfo.getInstance().fullApplicationName,
+                "Plugin Version" to (plugin?.version ?: "unknown"),
+            )
+        if (project != null) {
+            val settings = project.moveSettings.state.asMap().toMutableMap()
+            settings.remove("aptosPath")
+            sentryEvent.contexts["Settings"] = settings
+            sentryEvent.contexts["Projects"] =
+                project.moveProjectsService.allProjects.map { MoveProjectContext.from(it) }
         }
+        // IdeaLoggingEvent only provides text stacktrace
+        sentryEvent.contexts["Stacktrace"] = mapOf("Value" to event.throwableText)
 
-        private fun successfullySent(sentryEventId: SentryId): Boolean {
-            return sentryEventId != SentryId.EMPTY_ID
-        }
+
+        val sentryMessage = Message()
+        sentryMessage.formatted = event.errorMessage
+        sentryEvent.message = sentryMessage
+
+        sentryEvent.fingerprints = listOf("{{ default }}", event.errorMessage)
+
+        return sentryEvent
+    }
+
+    private fun successfullySent(sentryEventId: SentryId): Boolean {
+        return sentryEventId != SentryId.EMPTY_ID
     }
 }
 

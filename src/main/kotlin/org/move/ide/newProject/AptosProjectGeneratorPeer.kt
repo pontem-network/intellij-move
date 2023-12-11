@@ -11,27 +11,23 @@ import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.Disposer
 import com.intellij.platform.GeneratorPeerImpl
 import com.intellij.ui.dsl.builder.panel
-import org.move.cli.defaultProjectSettings
-import org.move.cli.settings.AptosExec
-import org.move.cli.settings.AptosSettingsPanel
+import org.move.cli.settings.ChooseAptosCliPanel
 import org.move.cli.settings.isValidExecutable
 import javax.swing.JComponent
 
-class AptosProjectGeneratorPeer(val parentDisposable: Disposable) : GeneratorPeerImpl<AptosProjectConfig>() {
+class AptosProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerImpl<AptosProjectConfig>() {
 
-    private val aptosSettingsPanel =
-        AptosSettingsPanel(showDefaultProjectSettingsLink = false) { checkValid?.run() }
+    private val chooseAptosCliPanel =
+        ChooseAptosCliPanel(showDefaultProjectSettingsLink = false) { checkValid?.run() }
 
     init {
-        Disposer.register(parentDisposable, aptosSettingsPanel)
+        Disposer.register(parentDisposable, chooseAptosCliPanel)
     }
 
     private var checkValid: Runnable? = null
 
     override fun getSettings(): AptosProjectConfig {
-        return AptosProjectConfig(
-            panelData = aptosSettingsPanel.panelData,
-        )
+        return AptosProjectConfig(aptosExec = chooseAptosCliPanel.selectedAptosExec)
     }
 
     override fun getComponent(myLocationField: TextFieldWithBrowseButton, checkValid: Runnable): JComponent {
@@ -40,28 +36,16 @@ class AptosProjectGeneratorPeer(val parentDisposable: Disposable) : GeneratorPee
     }
 
     override fun getComponent(): JComponent {
-        val panel = panel {
-            aptosSettingsPanel.attachTo(this)
+        return panel {
+            chooseAptosCliPanel.attachToLayout(this)
         }
-        val defaultAptosPath = defaultProjectSettings()?.state?.aptosPath
-        aptosSettingsPanel.aptosExec = AptosExec.fromSettingsFormat(defaultAptosPath)
-        return panel
     }
 
     override fun validate(): ValidationInfo? {
-//        val aptosPath = this.aptosSettingsPanel.data.aptosPath.toPathOrNull()
-        val aptosPath = this.aptosSettingsPanel.aptosExec.pathOrNull()
+        val aptosPath = this.chooseAptosCliPanel.selectedAptosExec.toPathOrNull()
         if (aptosPath == null || !aptosPath.isValidExecutable()) {
             return ValidationInfo("Invalid path to Aptos executable")
         }
-
-//        if (aptosInitEnabled()) {
-//            return aptosSettingsPanel.validate()
-//        }
         return null
     }
-
-//    private fun aptosInitEnabled(): Boolean {
-//        return aptosInitCheckBox.isSelected
-//    }
 }

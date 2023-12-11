@@ -10,15 +10,15 @@ import com.intellij.openapi.projectRoots.SdkTypeId
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.util.Disposer
 import org.move.cli.Consts
-import org.move.cli.runConfigurations.addAptosMoveCompileRunConfiguration
+import org.move.cli.runConfigurations.addCompileProjectRunConfiguration
 import org.move.cli.runConfigurations.aptos.AptosCliExecutor
-import org.move.cli.settings.AptosSettingsPanel
+import org.move.cli.settings.AptosExec
 import org.move.ide.newProject.openFile
 import org.move.openapiext.computeWithCancelableProgress
 import org.move.stdext.unwrapOrThrow
 
-class AptosModuleBuilder : ModuleBuilder() {
-    override fun getModuleType(): ModuleType<*> = AptosModuleType.Util.INSTANCE
+class MoveLangModuleBuilder : ModuleBuilder() {
+    override fun getModuleType(): ModuleType<*> = MoveLangModuleType.Util.INSTANCE
 
     override fun isSuitableSdkType(sdkType: SdkTypeId?): Boolean = true
 
@@ -35,7 +35,7 @@ class AptosModuleBuilder : ModuleBuilder() {
         val root = doAddContentEntry(modifiableRootModel)?.file ?: return
         modifiableRootModel.inheritSdk()
 
-        val aptosPath = configurationData?.aptosExec?.pathOrNull()
+        val aptosPath = aptosExec?.toPathOrNull()
         root.refresh(false, true)
 
         // Just work if user "creates new project" over an existing one.
@@ -54,11 +54,11 @@ class AptosModuleBuilder : ModuleBuilder() {
                     )
                         .unwrapOrThrow() // TODO throw? really??
                 }
-                project.addAptosMoveCompileRunConfiguration(true)
+                project.addCompileProjectRunConfiguration(true)
                 project.openFile(manifestFile)
             }
         }
     }
 
-    var configurationData: AptosSettingsPanel.PanelData? = null
+    var aptosExec: AptosExec? = null
 }

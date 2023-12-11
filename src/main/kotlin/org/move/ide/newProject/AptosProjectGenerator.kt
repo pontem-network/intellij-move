@@ -13,16 +13,14 @@ import com.intellij.platform.ProjectGeneratorPeer
 import org.move.cli.PluginApplicationDisposable
 import org.move.cli.moveProjectsService
 import org.move.cli.runConfigurations.addDefaultBuildRunConfiguration
-import org.move.cli.settings.AptosSettingsPanel
+import org.move.cli.settings.AptosExec
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
 import org.move.ide.notifications.updateAllNotifications
 import org.move.openapiext.computeWithCancelableProgress
 import org.move.stdext.unwrapOrThrow
 
-data class AptosProjectConfig(
-    val panelData: AptosSettingsPanel.PanelData,
-)
+data class AptosProjectConfig(val aptosExec: AptosExec)
 
 class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
                              CustomStepProjectGenerator<AptosProjectConfig> {
@@ -39,7 +37,7 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
         projectConfig: AptosProjectConfig,
         module: Module
     ) {
-        val aptosExecutor = projectConfig.panelData.aptosExec.toExecutor() ?: return
+        val aptosExecutor = projectConfig.aptosExec.toExecutor() ?: return
         val packageName = project.name
 
         val manifestFile =
@@ -51,19 +49,17 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
                     packageName = packageName
                 )
                     .unwrapOrThrow() // TODO throw? really??
-
                 manifestFile
             }
 
-
         project.moveSettings.modify {
-            it.aptosPath = projectConfig.panelData.aptosExec.pathToSettingsFormat()
+            it.aptosPath = projectConfig.aptosExec.pathToSettingsFormat()
         }
-        project.addDefaultBuildRunConfiguration(isSelected = true)
-        project.openFile(manifestFile)
-
         updateAllNotifications(project)
-        project.moveProjectsService.scheduleProjectsRefresh()
+//        project.addDefaultBuildRunConfiguration(isSelected = true)
+//        project.openFile(manifestFile)
+
+//        project.moveProjectsService.scheduleProjectsRefresh("non-IDEA New Project generator finished")
     }
 
     override fun createStep(

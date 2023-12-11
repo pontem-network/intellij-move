@@ -193,7 +193,7 @@ private fun Severity.toHighlightSeverity(): HighlightSeverity = when (this) {
 class PreparedAnnotation(
     val severity: Severity,
     @InspectionMessage val header: String,
-    @Suppress("UnstableApiUsage") @NlsContexts.Tooltip val description: String = "",
+    @NlsContexts.Tooltip val description: String = "",
     val fixes: List<LocalQuickFix> = emptyList(),
 //    val textAttributes: TextAttributesKey? = null
 )

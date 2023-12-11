@@ -1,372 +1,379 @@
 <idea-plugin>
-<!--    <id>org.move.lang</id>-->
-<!--    <name>Move Language</name>-->
+  <!--    <id>org.move.lang</id>-->
+  <!--    <name>Move Language</name>-->
 
-<!--    <vendor>Pontem</vendor>-->
+  <!--    <vendor>Pontem</vendor>-->
 
-<!--    <description>-->
-<!--        <![CDATA[-->
-<!--            <p>Support for Move, smart-contract language for Aptos and other blockchains.</p>-->
+  <!--    <description>-->
+  <!--        <![CDATA[-->
+  <!--            <p>Support for Move, smart-contract language for Aptos and other blockchains.</p>-->
 
-<!--            <p><a href="https://github.com/pontem-network/intellij-move">https://github.com/pontem-network/intellij-move</a></p>-->
-<!--        ]]>-->
-<!--    </description>-->
+  <!--            <p><a href="https://github.com/pontem-network/intellij-move">https://github.com/pontem-network/intellij-move</a></p>-->
+  <!--        ]]>-->
+  <!--    </description>-->
 
-    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-     on how to target different products -->
-    <depends>com.intellij.modules.platform</depends>
-    <depends>org.toml.lang</depends>
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+   on how to target different products -->
+  <depends>com.intellij.modules.platform</depends>
+  <depends>org.toml.lang</depends>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <fileType name="Move"
-                  language="Move"
-                  extensions="move"
-                  implementationClass="org.move.lang.MoveFileType"
-                  fieldName="INSTANCE"/>
+  <extensions defaultExtensionNs="com.intellij">
+    <fileType name="Move"
+              language="Move"
+              extensions="move"
+              implementationClass="org.move.lang.MoveFileType"
+              fieldName="INSTANCE" />
 
-        <codeInsight.lineMarkerProvider language="Move"
-                                        implementationClass="org.move.ide.lineMarkers.ItemSpecsLineMarkerProvider" />
+    <codeInsight.lineMarkerProvider language="Move"
+                                    implementationClass="org.move.ide.lineMarkers.ItemSpecsLineMarkerProvider" />
 
-        <!-- PSI managing -->
+    <!-- PSI managing -->
 
-        <projectService serviceInterface="org.move.lang.core.psi.MvPsiManager"
-                        serviceImplementation="org.move.lang.core.psi.MvPsiManagerImpl"/>
+    <projectService serviceInterface="org.move.lang.core.psi.MvPsiManager"
+                    serviceImplementation="org.move.lang.core.psi.MvPsiManagerImpl" />
 
-        <configurationType
-                implementation="org.move.cli.runConfigurations.legacy.MoveConfigurationType"/>
-        <configurationType
-                implementation="org.move.cli.runConfigurations.aptos.AptosConfigurationType"/>
-        <runConfigurationProducer
-                implementation="org.move.cli.runConfigurations.producers.TestCommandConfigurationProducer"/>
-        <runConfigurationProducer
-                implementation="org.move.cli.runConfigurations.producers.RunCommandConfigurationProducer"/>
-        <runConfigurationProducer
-                implementation="org.move.cli.runConfigurations.producers.ViewCommandConfigurationProducer"/>
-        <runLineMarkerContributor language="Move"
-                                  implementationClass="org.move.ide.lineMarkers.AptosCommandLineMarkerContributor"/>
+    <configurationType
+        implementation="org.move.cli.runConfigurations.legacy.MoveConfigurationType" />
+    <configurationType
+        implementation="org.move.cli.runConfigurations.aptos.AptosConfigurationType" />
+    <runConfigurationProducer
+        implementation="org.move.cli.runConfigurations.producers.TestCommandConfigurationProducer" />
+    <runConfigurationProducer
+        implementation="org.move.cli.runConfigurations.producers.RunCommandConfigurationProducer" />
+    <runConfigurationProducer
+        implementation="org.move.cli.runConfigurations.producers.ViewCommandConfigurationProducer" />
+    <runLineMarkerContributor language="Move"
+                              implementationClass="org.move.ide.lineMarkers.AptosCommandLineMarkerContributor" />
 
-        <lang.parserDefinition language="Move"
-                               implementationClass="org.move.lang.MoveParserDefinition"/>
+    <lang.parserDefinition language="Move"
+                           implementationClass="org.move.lang.MoveParserDefinition" />
 
-        <stubElementTypeHolder class="org.move.lang.MvElementTypes" />
+    <stubElementTypeHolder class="org.move.lang.MvElementTypes" externalIdPrefix="move." />
 
-        <stubIndex implementation="org.move.lang.index.MvNamedElementIndex" />
-        <stubIndex implementation="org.move.lang.index.MvEntryFunctionIndex" />
-        <stubIndex implementation="org.move.lang.index.MvViewFunctionIndex" />
-        <stubIndex implementation="org.move.lang.index.MvTestFunctionIndex" />
-        <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
+    <stubIndex implementation="org.move.lang.index.MvNamedElementIndex" />
+    <stubIndex implementation="org.move.lang.index.MvEntryFunctionIndex" />
+    <stubIndex implementation="org.move.lang.index.MvViewFunctionIndex" />
+    <stubIndex implementation="org.move.lang.index.MvTestFunctionIndex" />
+    <stubIndex implementation="org.move.lang.index.MvModuleSpecIndex" />
 
-        <lang.documentationProvider language="Move"
-                                    implementationClass="org.move.ide.docs.MvDocumentationProvider"/>
+    <lang.documentationProvider language="Move"
+                                implementationClass="org.move.ide.docs.MvDocumentationProvider" />
 
-        <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.MvImportOptimizer"/>
+    <lang.importOptimizer language="Move" implementationClass="org.move.ide.refactoring.MvImportOptimizer" />
 
-        <gotoSymbolContributor implementation="org.move.ide.navigation.goto.MvSymbolNavigationContributor"/>
-        <gotoClassContributor implementation="org.move.ide.navigation.goto.MvStructNavigationContributor"/>
+    <gotoSymbolContributor implementation="org.move.ide.navigation.goto.MvSymbolNavigationContributor" />
+    <gotoClassContributor implementation="org.move.ide.navigation.goto.MvStructNavigationContributor" />
 
-        <lang.syntaxHighlighter language="Move"
-                                implementationClass="org.move.ide.MvHighlighter"/>
-        <lang.commenter language="Move"
-                        implementationClass="org.move.ide.MvCommenter"/>
-        <lang.braceMatcher language="Move"
-                           implementationClass="org.move.ide.typing.MvBraceMatcher"/>
-        <lang.quoteHandler language="Move"
-                           implementationClass="org.move.ide.typing.MvQuoteHandler"/>
-        <typedHandler implementation="org.move.ide.typing.MvAngleBraceTypedHandler"
-                      id="MvAngleBracketsHandler"/>
-        <typedHandler implementation="org.move.ide.typing.MoveTextFieldTypedHandler"
-                      id="MoveTextFieldTypedHandler"/>
-        <typedHandler implementation="org.move.ide.typing.MvTypedHandler"
-                      id="MvTypedHandler"/>
-        <enterHandlerDelegate implementation="org.move.ide.typing.MvEnterInLineCommentHandler"
-                              id="MvEnterInLineComments"/>
-        <backspaceHandlerDelegate implementation="org.move.ide.typing.MvAngleBracketsBackspaceHandler"
-                                  id="MvAngleBracketsBackspaceHandler"/>
+    <lang.syntaxHighlighter language="Move"
+                            implementationClass="org.move.ide.MvHighlighter" />
+    <lang.commenter language="Move"
+                    implementationClass="org.move.ide.MvCommenter" />
+    <lang.braceMatcher language="Move"
+                       implementationClass="org.move.ide.typing.MvBraceMatcher" />
+    <lang.quoteHandler language="Move"
+                       implementationClass="org.move.ide.typing.MvQuoteHandler" />
+    <typedHandler implementation="org.move.ide.typing.MvAngleBraceTypedHandler"
+                  id="MvAngleBracketsHandler" />
+    <typedHandler implementation="org.move.ide.typing.MoveTextFieldTypedHandler"
+                  id="MoveTextFieldTypedHandler" />
+    <typedHandler implementation="org.move.ide.typing.MvTypedHandler"
+                  id="MvTypedHandler" />
+    <enterHandlerDelegate implementation="org.move.ide.typing.MvEnterInLineCommentHandler"
+                          id="MvEnterInLineComments" />
+    <backspaceHandlerDelegate implementation="org.move.ide.typing.MvAngleBracketsBackspaceHandler"
+                              id="MvAngleBracketsBackspaceHandler" />
 
-        <lang.formatter language="Move"
-                        implementationClass="org.move.ide.formatter.MvFormattingModelBuilder"/>
-        <langCodeStyleSettingsProvider
-                implementation="org.move.ide.formatter.settings.MvLanguageCodeStyleSettingsProvider"/>
+    <lang.formatter language="Move"
+                    implementationClass="org.move.ide.formatter.MvFormattingModelBuilder" />
+    <langCodeStyleSettingsProvider
+        implementation="org.move.ide.formatter.settings.MvLanguageCodeStyleSettingsProvider" />
 
-        <lang.foldingBuilder language="Move" implementationClass="org.move.ide.folding.MvFoldingBuilder"/>
+    <lang.foldingBuilder language="Move" implementationClass="org.move.ide.folding.MvFoldingBuilder" />
 
-        <lang.namesValidator language="Move"
-                             implementationClass="org.move.ide.refactoring.MvNamesValidator"/>
-        <lang.refactoringSupport language="Move"
-                                 implementationClass="org.move.ide.refactoring.MvRefactoringSupportProvider"/>
+    <lang.namesValidator language="Move"
+                         implementationClass="org.move.ide.refactoring.MvNamesValidator" />
+    <lang.refactoringSupport language="Move"
+                             implementationClass="org.move.ide.refactoring.MvRefactoringSupportProvider" />
 
-<!--        <lang.refactoringSupport language="TOML"-->
-<!--                                 implementationClass="org.move.ide.refactoring.toml.TomlRefactoringSupportProvider"/>-->
-<!--        <renameHandler implementation="org.move.ide.refactoring.toml.TomlInPlaceRenameHandler" />-->
-<!--        <renameHandler implementation="org.move.ide.refactoring.toml.TomlRenameHandler" />-->
-<!--        <renamePsiElementProcessor implementation="org.move.ide.refactoring.toml.MvRenameAddressProcessor"-->
-<!--                                   order="first"-->
-<!--                                   id="mvRenameAddressProcessor" />-->
-
-
-        <lang.findUsagesProvider language="Move"
-                                 implementationClass="org.move.ide.search.MvFindUsagesProvider"/>
-        <usageTypeProvider
-                implementation="org.move.ide.search.NamedAddressUsageTypeProvider"/>
-        <findUsagesHandlerFactory
-                implementation="org.move.ide.search.NamedAddressFindUsagesHandlerFactory"/>
-
-        <completion.confidence language="Move"
-                               implementationClass="org.move.lang.core.completion.MvCompletionConfidence"/>
-        <completion.contributor language="Move"
-                                implementationClass="org.move.lang.core.completion.CommonCompletionContributor"/>
-        <completion.contributor language="Move"
-                                implementationClass="org.move.lang.core.completion.KeywordCompletionContributor"/>
-        <completion.contributor language="Move"
-                                implementationClass="org.move.lang.core.completion.MoveTextFieldCompletionContributor"/>
-        <completion.contributor language="TOML"
-                                implementationClass="org.move.toml.completion.MoveTomlCompletionContributor"/>
-        <weigher key="completion"
-                 implementationClass="com.intellij.codeInsight.completion.PriorityWeigher"
-                 id="priority"
-                 order="first"/>
-
-        <psi.referenceContributor language="TOML"
-                                  implementation="org.move.toml.MoveTomlReferenceContributor"/>
-        <psi.referenceContributor language="Move"
-                                  implementation="org.move.toml.NamedAddressReferenceContributor"/>
-
-        <annotator language="Move"
-                   implementationClass="org.move.ide.annotator.MvErrorAnnotator"/>
-        <annotator language="Move"
-                   implementationClass="org.move.ide.annotator.MvSyntaxErrorAnnotator"/>
-        <annotator language="Move"
-                   implementationClass="org.move.ide.annotator.HighlightingAnnotator"/>
-
-        <annotator language="TOML"
-                   implementationClass="org.move.toml.MoveTomlErrorAnnotator" />
-
-        <codeInsight.parameterInfo language="Move"
-                                   implementationClass="org.move.ide.hints.FunctionParameterInfoHandler"/>
-        <codeInsight.parameterInfo language="Move"
-                                   implementationClass="org.move.ide.hints.TypeParameterInfoHandler"/>
-        <codeInsight.parameterInfo language="Move"
-                                   implementationClass="org.move.ide.hints.StructLitFieldsInfoHandler"/>
-        <codeInsight.parameterNameHints language="Move"
-                                        implementationClass="org.move.ide.hints.MvInlayParameterHintsProvider"/>
-        <codeInsight.inlayProvider language="Move"
-                                   implementationClass="org.move.ide.hints.type.MvInlayTypeHintsProvider"/>
-
-        <defaultLiveTemplates file="liveTemplates/Move.xml"/>
-        <liveTemplateContext implementation="org.move.ide.liveTemplates.MvContextType$Generic"/>
-        <liveTemplateContext implementation="org.move.ide.liveTemplates.MvContextType$Module"/>
-        <liveTemplateContext implementation="org.move.ide.liveTemplates.MvContextType$Block"/>
-
-        <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameProcessor"
-                                   order="first"
-                                   id="mvRenameProcessor"/>
-        <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameFileProcessor"
-                                   order="before renamePsiFile"
-                                   id="mvRenamePsiFileProcessor"/>
-        <lang.psiStructureViewFactory
-                language="Move"
-                implementationClass="org.move.ide.structureView.MvPsiStructureViewFactory"/>
-
-        <declarationRangeHandler
-                key="org.move.lang.core.psi.MvModule"
-                implementationClass="org.move.ide.hints.ModuleDeclarationRangeHandler"/>
-        <declarationRangeHandler
-                key="org.move.lang.core.psi.MvFunction"
-                implementationClass="org.move.ide.hints.FunctionDeclarationRangeHandler"/>
-
-        <breadcrumbsInfoProvider implementation="org.move.ide.MvBreadcrumbsProvider" />
-
-        <toolWindow id="Aptos"
-                    anchor="right"
-                    factoryClass="org.move.cli.toolwindow.AptosToolWindowFactory"
-                    icon="/icons/aptos.svg" />
+    <!--        <lang.refactoringSupport language="TOML"-->
+    <!--                                 implementationClass="org.move.ide.refactoring.toml.TomlRefactoringSupportProvider"/>-->
+    <!--        <renameHandler implementation="org.move.ide.refactoring.toml.TomlInPlaceRenameHandler" />-->
+    <!--        <renameHandler implementation="org.move.ide.refactoring.toml.TomlRenameHandler" />-->
+    <!--        <renamePsiElementProcessor implementation="org.move.ide.refactoring.toml.MvRenameAddressProcessor"-->
+    <!--                                   order="first"-->
+    <!--                                   id="mvRenameAddressProcessor" />-->
 
 
+    <lang.findUsagesProvider language="Move"
+                             implementationClass="org.move.ide.search.MvFindUsagesProvider" />
+    <usageTypeProvider
+        implementation="org.move.ide.search.NamedAddressUsageTypeProvider" />
+    <findUsagesHandlerFactory
+        implementation="org.move.ide.search.NamedAddressFindUsagesHandlerFactory" />
 
-        <!--        <localInspection language="Move" groupPath="Move" groupName="Naming"-->
-        <!--                         displayName="Attempt to override a built-in function"-->
-        <!--                         enabledByDefault="true" level="ERROR"-->
-        <!--                         implementationClass="org.move.ide.inspections.lints.FunctionNamingInspection"/>-->
-        <localInspection language="Move" groupName="Move"
-                         displayName="Unresolved reference"
-                         enabledByDefault="true"
-                         level="ERROR"
-                         implementationClass="org.move.ide.inspections.MvUnresolvedReferenceInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Field initialization shorthand"
-                         enabledByDefault="true" level="WEAK WARNING"
-                         implementationClass="org.move.ide.inspections.FieldInitShorthandInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Invalid module declaration"
-                         enabledByDefault="true" level="ERROR"
-                         implementationClass="org.move.ide.inspections.InvalidModuleDeclarationInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Constant naming convention"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.MvConstNamingInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Struct naming convention"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.MvStructNamingInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Function naming convention"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.MvFunctionNamingInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Local variable naming convention"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.MvLocalBindingNamingInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Redundant qualifier"
-                         enabledByDefault="false" level="WARNING"
-                         implementationClass="org.move.ide.inspections.RedundantQualifiedPathInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Type checking"
-                         enabledByDefault="true" level="ERROR"
-                         implementationClass="org.move.ide.inspections.MvTypeCheckInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Ability checking"
-                         enabledByDefault="false" level="ERROR"
-                         implementationClass="org.move.ide.inspections.MvAbilityCheckInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Missing acquires"
-                         enabledByDefault="true" level="ERROR"
-                         implementationClass="org.move.ide.inspections.MvMissingAcquiresInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Unused acquires"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.MvUnusedAcquiresTypeInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Unused struct type parameter"
-                         enabledByDefault="true" level="ERROR"
-                         implementationClass="org.move.ide.inspections.PhantomTypeParameterInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Unused import"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.MvUnusedImportInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Unused declaration"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.MvUnusedVariableInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Unused test signer"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.UnusedTestSignerInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Address by value inspection"
-                         enabledByDefault="false" level="WEAK WARNING"
-                         implementationClass="org.move.ide.inspections.AddressByValueImportInspection"/>
-        <localInspection language="Move" groupName="Move"
-                         displayName="Redundant type cast"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="org.move.ide.inspections.RedundantTypeCastInspection"/>
+    <completion.confidence language="Move"
+                           implementationClass="org.move.lang.core.completion.MvCompletionConfidence" />
+    <completion.contributor language="Move"
+                            implementationClass="org.move.lang.core.completion.CommonCompletionContributor" />
+    <completion.contributor language="Move"
+                            implementationClass="org.move.lang.core.completion.KeywordCompletionContributor" />
+    <completion.contributor language="Move"
+                            implementationClass="org.move.lang.core.completion.MoveTextFieldCompletionContributor" />
+    <completion.contributor language="TOML"
+                            implementationClass="org.move.toml.completion.MoveTomlCompletionContributor" />
+    <weigher key="completion"
+             implementationClass="com.intellij.codeInsight.completion.PriorityWeigher"
+             id="priority"
+             order="first" />
 
-        <!-- Color Settings -->
-        <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage"/>
+    <psi.referenceContributor language="TOML"
+                              implementation="org.move.toml.MoveTomlReferenceContributor" />
+    <psi.referenceContributor language="Move"
+                              implementation="org.move.toml.NamedAddressReferenceContributor" />
 
-        <extendWordSelectionHandler implementation="org.move.ide.wordSelection.MvListSelectionHandler" />
-        <extendWordSelectionHandler implementation="org.move.ide.wordSelection.MvTypeParamBoundListHandler" />
-        <extendWordSelectionHandler implementation="org.move.ide.wordSelection.MvStringSelectionHandler" />
+    <annotator language="Move"
+               implementationClass="org.move.ide.annotator.MvErrorAnnotator" />
+    <annotator language="Move"
+               implementationClass="org.move.ide.annotator.MvSyntaxErrorAnnotator" />
+    <annotator language="Move"
+               implementationClass="org.move.ide.annotator.HighlightingAnnotator" />
 
-        <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml"/>
-        <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml"/>
+    <annotator language="TOML"
+               implementationClass="org.move.toml.MoveTomlErrorAnnotator" />
 
-        <moduleType id="MOVE_MODULE"
-                    implementationClass="org.move.ide.newProject.module.AptosModuleType"/>
-        <moduleBuilder builderClass="org.move.ide.newProject.module.AptosModuleBuilder"/>
-        <projectTaskRunner implementation="org.move.cli.runConfigurations.AptosBuildTaskRunner" />
+    <codeInsight.parameterInfo language="Move"
+                               implementationClass="org.move.ide.hints.FunctionParameterInfoHandler" />
+    <codeInsight.parameterInfo language="Move"
+                               implementationClass="org.move.ide.hints.TypeParameterInfoHandler" />
+    <codeInsight.parameterInfo language="Move"
+                               implementationClass="org.move.ide.hints.StructLitFieldsInfoHandler" />
+    <codeInsight.parameterNameHints language="Move"
+                                    implementationClass="org.move.ide.hints.MvInlayParameterHintsProvider" />
+    <codeInsight.inlayProvider language="Move"
+                               implementationClass="org.move.ide.hints.type.MvInlayTypeHintsProvider" />
 
-        <projectOpenProcessor id="Move" implementation="org.move.cli.AptosProjectOpenProcessor"/>
+    <defaultLiveTemplates file="liveTemplates/Move.xml" />
+    <liveTemplateContext implementation="org.move.ide.liveTemplates.MvContextType$Generic" />
+    <liveTemplateContext implementation="org.move.ide.liveTemplates.MvContextType$Module" />
+    <liveTemplateContext implementation="org.move.ide.liveTemplates.MvContextType$Block" />
 
-        <directoryProjectGenerator implementation="org.move.ide.newProject.AptosProjectGenerator" />
+    <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameProcessor"
+                               order="first"
+                               id="mvRenameProcessor" />
+    <renamePsiElementProcessor implementation="org.move.ide.refactoring.MvRenameFileProcessor"
+                               order="before renamePsiFile"
+                               id="mvRenamePsiFileProcessor" />
+    <lang.psiStructureViewFactory
+        language="Move"
+        implementationClass="org.move.ide.structureView.MvPsiStructureViewFactory" />
 
-        <projectConfigurable instance="org.move.cli.settings.PerProjectMoveConfigurable"
-                             displayName="Move Language"
-                             groupId="language"
-                             id="language.move"/>
-        <projectService serviceInterface="org.move.utils.ProjectRootService"
-                        serviceImplementation="org.move.utils.ProjectRootServiceImpl"
-                        testServiceImplementation="org.move.utils.TestProjectRootServiceImpl"/>
+    <declarationRangeHandler
+        key="org.move.lang.core.psi.MvModule"
+        implementationClass="org.move.ide.hints.ModuleDeclarationRangeHandler" />
+    <declarationRangeHandler
+        key="org.move.lang.core.psi.MvFunction"
+        implementationClass="org.move.ide.hints.FunctionDeclarationRangeHandler" />
 
-        <projectService serviceImplementation="org.move.cli.MoveProjectsService"/>
-<!--        <projectService serviceImplementation="org.move.cli.packages.MovePackageService"/>-->
+    <breadcrumbsInfoProvider implementation="org.move.ide.MvBreadcrumbsProvider" />
 
-<!--        <projectService serviceInterface="com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker"-->
-<!--                        serviceImplementation="org.move.cli.projectAware.MoveExternalSystemProjectAware"-->
-<!--                        overrides="true" />-->
-        <applicationService serviceImplementation="org.move.openapiext.OpenSSLInfoService" />
+    <toolWindow id="Aptos"
+                anchor="right"
+                factoryClass="org.move.cli.toolwindow.AptosToolWindowFactory"
+                icon="/icons/aptos.svg" />
 
-        <additionalLibraryRootsProvider
-                implementation="org.move.ide.newProject.module.BuildLibraryRootsProvider"/>
 
-        <!-- Notifications -->
-        <notificationGroup id="Move Language" displayType="BALLOON"/>
-        <editorNotificationProvider
-                implementation="org.move.ide.notifications.MissingCliPathNotificationProvider"/>
-        <editorNotificationProvider
-                implementation="org.move.ide.notifications.NoMoveProjectDetectedNotificationProvider"/>
+    <!--        <localInspection language="Move" groupPath="Move" groupName="Naming"-->
+    <!--                         displayName="Attempt to override a built-in function"-->
+    <!--                         enabledByDefault="true" level="ERROR"-->
+    <!--                         implementationClass="org.move.ide.inspections.lints.FunctionNamingInspection"/>-->
+    <localInspection language="Move" groupName="Move"
+                     displayName="Unresolved reference"
+                     enabledByDefault="true"
+                     level="ERROR"
+                     implementationClass="org.move.ide.inspections.MvUnresolvedReferenceInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Field initialization shorthand"
+                     enabledByDefault="true" level="WEAK WARNING"
+                     implementationClass="org.move.ide.inspections.FieldInitShorthandInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Invalid module declaration"
+                     enabledByDefault="true" level="ERROR"
+                     implementationClass="org.move.ide.inspections.InvalidModuleDeclarationInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Constant naming convention"
+                     enabledByDefault="true" level="WARNING"
+                     implementationClass="org.move.ide.inspections.MvConstNamingInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Struct naming convention"
+                     enabledByDefault="true" level="WARNING"
+                     implementationClass="org.move.ide.inspections.MvStructNamingInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Function naming convention"
+                     enabledByDefault="true" level="WARNING"
+                     implementationClass="org.move.ide.inspections.MvFunctionNamingInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Local variable naming convention"
+                     enabledByDefault="true" level="WARNING"
+                     implementationClass="org.move.ide.inspections.MvLocalBindingNamingInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Redundant qualifier"
+                     enabledByDefault="false" level="WARNING"
+                     implementationClass="org.move.ide.inspections.RedundantQualifiedPathInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Type checking"
+                     enabledByDefault="true" level="ERROR"
+                     implementationClass="org.move.ide.inspections.MvTypeCheckInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Ability checking"
+                     enabledByDefault="false" level="ERROR"
+                     implementationClass="org.move.ide.inspections.MvAbilityCheckInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Missing acquires"
+                     enabledByDefault="true" level="ERROR"
+                     implementationClass="org.move.ide.inspections.MvMissingAcquiresInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Unused acquires"
+                     enabledByDefault="true" level="WARNING"
+                     implementationClass="org.move.ide.inspections.MvUnusedAcquiresTypeInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Unused struct type parameter"
+                     enabledByDefault="true" level="ERROR"
+                     implementationClass="org.move.ide.inspections.PhantomTypeParameterInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Unused import"
+                     enabledByDefault="true" level="WARNING"
+                     implementationClass="org.move.ide.inspections.MvUnusedImportInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Unused declaration"
+                     enabledByDefault="true" level="WARNING"
+                     implementationClass="org.move.ide.inspections.MvUnusedVariableInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Unused test signer"
+                     enabledByDefault="true" level="WARNING"
+                     implementationClass="org.move.ide.inspections.UnusedTestSignerInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Address by value inspection"
+                     enabledByDefault="false" level="WEAK WARNING"
+                     implementationClass="org.move.ide.inspections.AddressByValueImportInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Redundant type cast"
+                     enabledByDefault="true" level="WARNING"
+                     implementationClass="org.move.ide.inspections.RedundantTypeCastInspection" />
 
-        <intentionAction>
-            <language>Move</language>
-            <className>org.move.ide.intentions.RemoveCurlyBracesIntention</className>
-            <category>Move</category>
-        </intentionAction>
-        <intentionAction>
-            <language>Move</language>
-            <className>org.move.ide.intentions.InlineAddressBlockIntention</className>
-            <category>Move</category>
-        </intentionAction>
-        <intentionAction>
-            <language>Move</language>
-            <className>org.move.ide.intentions.ChopParameterListIntention</className>
-            <category>Move</category>
-        </intentionAction>
-        <intentionAction>
-            <language>Move</language>
-            <className>org.move.ide.intentions.ChopValueArgumentListIntention</className>
-            <category>Move</category>
-        </intentionAction>
-        <intentionAction>
-            <language>Move</language>
-            <className>org.move.ide.intentions.ChopAttrArgumentListIntention</className>
-            <category>Move</category>
-        </intentionAction>
-        <intentionAction>
-            <language>Move</language>
-            <className>org.move.ide.intentions.ChopStructLiteralIntention</className>
-            <category>Move</category>
-        </intentionAction>
-        <intentionAction>
-            <language>Move</language>
-            <className>org.move.ide.intentions.ChopStructPatIntention</className>
-            <category>Move</category>
-        </intentionAction>
+    <!-- Color Settings -->
+    <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage" />
 
-        <errorHandler implementation="org.move.cli.sentryReporter.SentryErrorReporter" />
+    <extendWordSelectionHandler implementation="org.move.ide.wordSelection.MvListSelectionHandler" />
+    <extendWordSelectionHandler implementation="org.move.ide.wordSelection.MvTypeParamBoundListHandler" />
+    <extendWordSelectionHandler implementation="org.move.ide.wordSelection.MvStringSelectionHandler" />
 
-    </extensions>
+    <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml" />
+    <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml" />
 
-    <projectListeners>
-        <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
-                  topic="org.move.cli.settings.MoveSettingsListener"
-                  activeInTestMode="false"/>
-    </projectListeners>
+<!--    <moduleType id="MOVE_MODULE"-->
+<!--                implementationClass="org.move.ide.newProject.module.MoveLangModuleType" />-->
+<!--    <moduleBuilder builderClass="org.move.ide.newProject.module.MoveLangModuleBuilder" />-->
+    <moduleBuilder builderClass="org.move.ide.newProject.module.MoveLangProjectBuilder" />
+    <projectTaskRunner implementation="org.move.cli.runConfigurations.AptosBuildTaskRunner" />
 
-    <actions>
-        <action id="Move.NewMoveFile"
-                class="org.move.ide.actions.CreateMoveFileAction"
-                text="Move File"
-                description="Create new Move file">
-            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
-        </action>
-        <action id="Move.RefreshAllProjects"
-                description="Update Move project information"
-                text="Update Move Projects"
-                class="org.move.ide.actions.RefreshMoveProjectsAction"
-                icon="AllIcons.Actions.Refresh"/>
+    <projectOpenProcessor id="Move" implementation="org.move.cli.openProject.MoveLangProjectOpenProcessor" />
+    <postStartupActivity
+        implementation="org.move.cli.openProject.AlwaysRefreshProjectsAfterOpen" />
+<!--    <backgroundPostStartupActivity-->
+<!--        implementation="org.move.cli.openProject.OpenMoveTomlOnProjectCreationFile" />-->
+    <!--  5 seconds delayed  -->
+    <backgroundPostStartupActivity
+        implementation="org.move.cli.openProject.CreateDefaultCompileRunConfiguration" />
 
-        <group id="Move.Aptos">
-            <reference id="Move.RefreshAllProjects"/>
-        </group>
-    </actions>
+    <directoryProjectGenerator implementation="org.move.ide.newProject.AptosProjectGenerator" />
+
+    <projectConfigurable instance="org.move.cli.settings.PerProjectMoveConfigurable"
+                         displayName="Move Language"
+                         groupId="language"
+                         id="language.move" />
+    <projectService serviceInterface="org.move.utils.ProjectRootService"
+                    serviceImplementation="org.move.utils.ProjectRootServiceImpl"
+                    testServiceImplementation="org.move.utils.TestProjectRootServiceImpl" />
+
+    <projectService serviceImplementation="org.move.cli.MoveProjectsService" />
+    <!--        <projectService serviceImplementation="org.move.cli.packages.MovePackageService"/>-->
+
+    <!--        <projectService serviceInterface="com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker"-->
+    <!--                        serviceImplementation="org.move.cli.projectAware.MoveExternalSystemProjectAware"-->
+    <!--                        overrides="true" />-->
+    <!--        <applicationService serviceImplementation="org.move.openapiext.OpenSSLInfoService" />-->
+
+    <additionalLibraryRootsProvider
+        implementation="org.move.ide.newProject.module.BuildLibraryRootsProvider" />
+
+    <!-- Notifications -->
+    <notificationGroup id="Move Language" displayType="BALLOON" />
+    <editorNotificationProvider
+        implementation="org.move.ide.notifications.InvalidAptosExecNotification" />
+    <editorNotificationProvider
+        implementation="org.move.ide.notifications.NoMoveProjectDetectedNotificationProvider" />
+
+    <intentionAction>
+      <language>Move</language>
+      <className>org.move.ide.intentions.RemoveCurlyBracesIntention</className>
+      <category>Move</category>
+    </intentionAction>
+    <intentionAction>
+      <language>Move</language>
+      <className>org.move.ide.intentions.InlineAddressBlockIntention</className>
+      <category>Move</category>
+    </intentionAction>
+    <intentionAction>
+      <language>Move</language>
+      <className>org.move.ide.intentions.ChopParameterListIntention</className>
+      <category>Move</category>
+    </intentionAction>
+    <intentionAction>
+      <language>Move</language>
+      <className>org.move.ide.intentions.ChopValueArgumentListIntention</className>
+      <category>Move</category>
+    </intentionAction>
+    <intentionAction>
+      <language>Move</language>
+      <className>org.move.ide.intentions.ChopAttrArgumentListIntention</className>
+      <category>Move</category>
+    </intentionAction>
+    <intentionAction>
+      <language>Move</language>
+      <className>org.move.ide.intentions.ChopStructLiteralIntention</className>
+      <category>Move</category>
+    </intentionAction>
+    <intentionAction>
+      <language>Move</language>
+      <className>org.move.ide.intentions.ChopStructPatIntention</className>
+      <category>Move</category>
+    </intentionAction>
+
+    <errorHandler implementation="org.move.cli.sentryReporter.SentryErrorReporter" />
+
+  </extensions>
+
+  <projectListeners>
+    <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
+              topic="org.move.cli.settings.MoveSettingsListener"
+              activeInTestMode="false" />
+  </projectListeners>
+
+  <actions>
+    <action id="Move.NewMoveFile"
+            class="org.move.ide.actions.CreateMoveFileAction"
+            text="Move File"
+            description="Create new Move file">
+      <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile" />
+    </action>
+    <action id="Move.RefreshAllProjects"
+            description="Update Move project information"
+            text="Update Move Projects"
+            class="org.move.ide.actions.RefreshMoveProjectsAction"
+            icon="AllIcons.Actions.Refresh" />
+
+    <group id="Move.Aptos">
+      <reference id="Move.RefreshAllProjects" />
+    </group>
+  </actions>
 </idea-plugin>

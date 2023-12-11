@@ -5,10 +5,10 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.RootsChangeRescanningInfo
 import com.intellij.openapi.project.ex.ProjectEx
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -31,10 +31,11 @@ import org.move.cli.settings.debugErrorOrFallback
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
+import org.move.openapiext.infoInProduction
 import org.move.openapiext.toVirtualFile
 import org.move.stdext.AsyncValue
-import org.move.stdext.IndexEntry
-import org.move.stdext.MoveProjectsIndex
+import org.move.stdext.CacheEntry
+import org.move.stdext.FileToMoveProjectCache
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
@@ -43,9 +44,10 @@ val Project.moveProjectsService get() = service<MoveProjectsService>()
 
 val Project.hasMoveProject get() = this.moveProjectsService.allProjects.isNotEmpty()
 
-class MoveProjectsService(val project: Project) : Disposable {
+class MoveProjectsService(val project: Project): Disposable {
 
-    private val refreshOnBuildDirChangeWatcher = BuildDirectoryWatcher(emptyList()) { scheduleProjectsRefresh() }
+    private val refreshOnBuildDirChangeWatcher =
+        BuildDirectoryWatcher(emptyList()) { scheduleProjectsRefresh("build/ directory changed") }
 
     var initialized = false
 
@@ -56,13 +58,13 @@ class MoveProjectsService(val project: Project) : Disposable {
                 subscribe(VirtualFileManager.VFS_CHANGES, MoveTomlWatcher {
                     // on every Move.toml change
                     // TODO: move to External system integration
-                    scheduleProjectsRefresh()
+                    scheduleProjectsRefresh("Move.toml changed")
                 })
             }
-            subscribe(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC, object : MoveSettingsListener {
+            subscribe(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC, object: MoveSettingsListener {
                 override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
                     // on every Move Language plugin settings change
-                    scheduleProjectsRefresh()
+                    scheduleProjectsRefresh("plugin settings changed")
                 }
             })
         }
@@ -71,11 +73,13 @@ class MoveProjectsService(val project: Project) : Disposable {
     val allProjects: List<MoveProject>
         get() = this.projects.state
 
-    fun scheduleProjectsRefresh() {
-        LOG.info("Project state refresh started")
-        modifyProjectModel {
-            doRefreshProjects(project)
-        }
+    fun scheduleProjectsRefresh(reason: String? = null): CompletableFuture<List<MoveProject>> {
+        LOG.logProjectsRefresh("scheduled", reason)
+        val moveProjectsFut =
+            modifyProjectModel {
+                doRefreshProjects(project, reason)
+            }
+        return moveProjectsFut
     }
 
     fun findMoveProject(psiElement: PsiElement): MoveProject? {
@@ -112,11 +116,11 @@ class MoveProjectsService(val project: Project) : Disposable {
         return findMoveProjectForFile(file)
     }
 
-    private fun doRefreshProjects(project: Project): CompletableFuture<List<MoveProject>> {
-        val result = CompletableFuture<List<MoveProject>>()
-        val syncTask = MoveProjectsSyncTask(project, result)
+    private fun doRefreshProjects(project: Project, reason: String?): CompletableFuture<List<MoveProject>> {
+        val moveProjectsFut = CompletableFuture<List<MoveProject>>()
+        val syncTask = MoveProjectsSyncTask(project, moveProjectsFut, reason)
         project.taskQueue.run(syncTask)
-        return result.thenApply { updatedProjects ->
+        return moveProjectsFut.thenApply { updatedProjects ->
             runOnlyInNonLightProject(project) {
                 setupProjectRoots(project, updatedProjects)
             }
@@ -125,8 +129,8 @@ class MoveProjectsService(val project: Project) : Disposable {
     }
 
     fun findMoveProjectForFile(file: VirtualFile): MoveProject? {
-        val cached = this.projectsIndex.get(file)
-        if (cached is IndexEntry.Present) return cached.value
+        val cached = this.fileToMoveProjectCache.get(file)
+        if (cached is CacheEntry.Present) return cached.value
 
         if (isUnitTestMode && file.fileSystem is TempFileSystem) return MoveProject.forTests(project)
 
@@ -153,7 +157,7 @@ class MoveProjectsService(val project: Project) : Disposable {
                 }
             }
         }
-        this.projectsIndex.put(file, IndexEntry.Present(resProject))
+        this.fileToMoveProjectCache.put(file, CacheEntry.Present(resProject))
         return resProject
     }
 
@@ -164,7 +168,7 @@ class MoveProjectsService(val project: Project) : Disposable {
      */
     private val projects = AsyncValue<List<MoveProject>>(emptyList())
 
-    private val projectsIndex: MoveProjectsIndex = MoveProjectsIndex(project, {})
+    private val fileToMoveProjectCache = FileToMoveProjectCache(this)
 
     /**
      * All modifications to project model except for low-level `loadState` should
@@ -176,17 +180,22 @@ class MoveProjectsService(val project: Project) : Disposable {
         val wrappedUpdater = { projects: List<MoveProject> ->
             updater(projects)
         }
-
         return projects.updateAsync(wrappedUpdater)
             .thenApply { projects ->
                 refreshOnBuildDirChangeWatcher.setWatchedProjects(projects)
                 invokeAndWaitIfNeeded {
                     runWriteAction {
-                        projectsIndex.resetIndex()
+                        // remove file -> moveproject associations from cache
+                        fileToMoveProjectCache.clear()
+
                         // disable for unit-tests: in those cases roots change is done by the test framework
                         runOnlyInNonLightProject(project) {
                             ProjectRootManagerEx.getInstanceEx(project)
-                                .makeRootsChange(EmptyRunnable.getInstance(), RootsChangeRescanningInfo.TOTAL_RESCAN)
+                                .makeRootsChange(EmptyRunnable.getInstance(), false, true)
+//                                .makeRootsChange(
+//                                    EmptyRunnable.getInstance(),
+//                                    RootsChangeRescanningInfo.TOTAL_RESCAN
+//                                )
                         }
                         // increments structure modification counter in the subscriber
                         project.messageBus
@@ -247,3 +256,11 @@ inline fun runOnlyInNonLightProject(project: Project, action: () -> Unit) {
 }
 
 val VirtualFile.fsDepth: Int get() = this.path.split(File.separator).count()
+
+fun Logger.logProjectsRefresh(status: String, reason: String? = null) {
+    var logMessage = "PROJ_REFRESH $status"
+    if (reason != null) {
+        logMessage += " [$reason]"
+    }
+    this.infoInProduction(logMessage)
+}

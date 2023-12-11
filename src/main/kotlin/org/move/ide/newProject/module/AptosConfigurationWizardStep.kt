@@ -9,7 +9,8 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import org.move.cli.moveProjectsService
-import org.move.cli.settings.AptosSettingsPanel
+import org.move.cli.settings.AptosExec
+import org.move.cli.settings.ChooseAptosCliPanel
 import org.move.cli.settings.moveSettings
 import org.move.openapiext.isFeatureEnabled
 import javax.swing.JComponent
@@ -17,24 +18,24 @@ import javax.swing.JComponent
 class AptosConfigurationWizardStep(
     private val context: WizardContext,
     private val configurationUpdaterConsumer: ((ModuleBuilder.ModuleConfigurationUpdater) -> Unit)? = null
-) : ModuleWizardStep() {
+): ModuleWizardStep() {
 
-    private val aptosSettingsPanel = AptosSettingsPanel(showDefaultProjectSettingsLink = true)
+    private val chooseAptosCliPanel = ChooseAptosCliPanel(showDefaultProjectSettingsLink = true)
 
     override fun getComponent(): JComponent =
         panel {
-            aptosSettingsPanel.attachTo(this)
+            chooseAptosCliPanel.attachToLayout(this)
         }.withBorderIfNeeded()
 
-    override fun disposeUIResources() = Disposer.dispose(aptosSettingsPanel)
+    override fun disposeUIResources() = Disposer.dispose(chooseAptosCliPanel)
 
     override fun updateDataModel() {
-        val panelData = aptosSettingsPanel.panelData
-        ConfigurationUpdater.data = panelData
+        val selectedAptosExec = chooseAptosCliPanel.selectedAptosExec
+        ConfigurationUpdater.aptosExec = selectedAptosExec
 
         val projectBuilder = context.projectBuilder
-        if (projectBuilder is AptosModuleBuilder) {
-            projectBuilder.configurationData = panelData
+        if (projectBuilder is MoveLangModuleBuilder) {
+            projectBuilder.aptosExec = selectedAptosExec
             projectBuilder.addModuleConfigurationUpdater(ConfigurationUpdater)
         } else {
             configurationUpdaterConsumer?.invoke(ConfigurationUpdater)
@@ -44,7 +45,7 @@ class AptosConfigurationWizardStep(
     // It's simple hack to imitate new UI style if new project wizard is enabled
     // TODO: drop it and support new project wizard properly
     //  see https://github.com/intellij-rust/intellij-rust/issues/8585
-    private fun <T : JComponent> T.withBorderIfNeeded(): T {
+    private fun <T: JComponent> T.withBorderIfNeeded(): T {
         if (isNewWizard()) {
             // border size is taken from `com.intellij.ide.wizard.NewProjectWizardStepPanel`
             border = JBUI.Borders.empty(14, 20)
@@ -54,21 +55,21 @@ class AptosConfigurationWizardStep(
 
     private fun isNewWizard(): Boolean = isFeatureEnabled("new.project.wizard")
 
-    private object ConfigurationUpdater : ModuleBuilder.ModuleConfigurationUpdater() {
-        var data: AptosSettingsPanel.PanelData? = null
+    private object ConfigurationUpdater: ModuleBuilder.ModuleConfigurationUpdater() {
+        var aptosExec: AptosExec? = null
 
         override fun update(module: Module, rootModel: ModifiableRootModel) {
-            val data = data
-            if (data != null) {
+            val aptosExec = aptosExec
+            if (aptosExec != null) {
                 module.project.moveSettings.modify {
-                    it.aptosPath = data.aptosExec.pathToSettingsFormat()
+                    it.aptosPath = aptosExec.pathToSettingsFormat()
                 }
             }
             // We don't use SDK, but let's inherit one to reduce the amount of
             // "SDK not configured" errors
             // https://github.com/intellij-rust/intellij-rust/issues/1062
             rootModel.inheritSdk()
-            module.project.moveProjectsService.scheduleProjectsRefresh()
+            module.project.moveProjectsService.scheduleProjectsRefresh("IDEA New Project generator finished")
 
 //            val contentEntry = rootModel.contentEntries.singleOrNull()
 //            if (contentEntry != null) {
