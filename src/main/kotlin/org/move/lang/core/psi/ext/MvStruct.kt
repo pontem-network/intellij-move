@@ -13,11 +13,8 @@ import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.ty.Ability
 import org.move.lang.core.types.ty.TyStruct
-import org.move.lang.toNioPathOrNull
-import org.move.openapiext.rootPath
 import org.move.stdext.withAdded
 import javax.swing.Icon
-import kotlin.io.path.readText
 
 val MvStruct.fields: List<MvStructField>
     get() = structBlock?.structFieldList.orEmpty()

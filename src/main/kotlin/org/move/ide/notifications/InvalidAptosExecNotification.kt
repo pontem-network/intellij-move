@@ -7,8 +7,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import org.move.cli.settings.PerProjectMoveConfigurable
 import org.move.cli.settings.aptosExec
-import org.move.cli.settings.aptosPath
-import org.move.cli.settings.isValidExecutable
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
 import org.move.openapiext.common.isUnitTestMode

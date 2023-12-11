@@ -7,8 +7,8 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvSpecFunction
 import org.move.lang.core.psi.MvSpecInlineFunction
-import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.psi.functionItemPresentation
+import org.move.lang.core.psi.impl.MvNameIdentifierOwnerImpl
 import org.move.lang.core.stubs.MvSpecFunctionStub
 import org.move.lang.core.stubs.MvStubbedNamedElementImpl
 import org.move.lang.core.types.ItemQualName
