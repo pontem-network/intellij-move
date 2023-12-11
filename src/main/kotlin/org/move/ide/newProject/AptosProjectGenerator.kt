@@ -2,6 +2,7 @@ package org.move.ide.newProject
 
 import com.intellij.ide.util.projectWizard.AbstractNewProjectStep
 import com.intellij.ide.util.projectWizard.CustomStepProjectGenerator
+import com.intellij.ide.util.projectWizard.ProjectSettingsStepBase
 import com.intellij.openapi.components.service
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -53,19 +54,20 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
             it.aptosPath = projectConfig.aptosExec.pathToSettingsFormat()
         }
 
-        ProjectInitialization.openMoveTomlInEditor(project, manifestFile)
         ProjectInitialization.createDefaultCompileConfigurationIfNotExists(project)
-
-//        updateAllNotifications(project)
-//        project.addDefaultBuildRunConfiguration(isSelected = true)
-//        project.openFile(manifestFile)
-
-//        project.moveProjectsService.scheduleProjectsRefresh("non-IDEA New Project generator finished")
+        ProjectInitialization.openMoveTomlInEditor(project, manifestFile)
     }
 
     override fun createStep(
         projectGenerator: DirectoryProjectGenerator<AptosProjectConfig>,
         callback: AbstractNewProjectStep.AbstractCallback<AptosProjectConfig>
     ): AbstractActionWithPanel =
-        AptosProjectConfigStep(projectGenerator)
+        ConfigStep(projectGenerator)
+
+    class ConfigStep(generator: DirectoryProjectGenerator<AptosProjectConfig>):
+        ProjectSettingsStepBase<AptosProjectConfig>(
+            generator,
+            AbstractNewProjectStep.AbstractCallback()
+        )
+
 }

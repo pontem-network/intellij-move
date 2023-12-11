@@ -36,45 +36,6 @@ class MoveLangProjectOpenProcessor: ProjectOpenProcessor() {
                         ProjectInitialization.createDefaultCompileConfigurationIfNotExists(project)
                     }
             }
-//            ?.also {
-//            StartupManager.getInstance(it).runAfterOpened {
-//                // create default build configuration if it doesn't exist
-//                if (it.aptosBuildRunConfigurations().isEmpty()) {
-//                    val isEmpty = it.aptosRunConfigurations().isEmpty()
-//                    it.addDefaultBuildRunConfiguration(isSelected = isEmpty)
-//                }
-//
-//                // opens Move.toml file
-//                val packageRoot = it.contentRoots.firstOrNull()
-//                if (packageRoot != null) {
-//                    val manifest = packageRoot.findChild(Consts.MANIFEST_FILE)
-//                    if (manifest != null) {
-//                        it.openFile(manifest)
-//                    }
-//                    updateAllNotifications(it)
-//                }
-//
-//                val defaultProjectSettings = ProjectManager.getInstance().defaultMoveSettings
-//                it.moveSettings.modify {
-//                    it.aptosPath = defaultProjectSettings?.state?.aptosPath
-//                }
-//
-//                it.moveProjectsService.scheduleProjectsRefresh()
-////
-////                val aptosCliPath = AptosCliExecutor.suggestPath()
-////                if (aptosCliPath != null && it.aptosPath?.toString().isNullOrBlank()) {
-////                    it.moveSettings.modify { state ->
-////                        state.aptosPath = aptosCliPath
-////                    }
-////                }
-//            }
-//    }
     }
-//
-//    companion object {
-//        private val LOG = logger<MoveLangProjectOpenProcessor>()
-//    }
 }
-
-//fun defaultProjectSettings(): MoveProjectSettingsService? = ProjectManager.getInstance().defaultMoveSettings
 

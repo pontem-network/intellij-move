@@ -1,12 +1,10 @@
-package org.move.ide.newProject.module
+package org.move.cli
 
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
 import com.intellij.openapi.roots.SyntheticLibrary
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.cli.MoveProject
-import org.move.cli.moveProjectsService
 import org.move.ide.MoveIcons
 import org.move.openapiext.contentRoots
 import org.move.openapiext.toVirtualFile

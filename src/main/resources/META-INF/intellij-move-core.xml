@@ -270,24 +270,11 @@
     <additionalTextAttributes scheme="Default" file="colors/MoveDefault.xml" />
     <additionalTextAttributes scheme="Darcula" file="colors/MoveDarcula.xml" />
 
-
-    <!-- Modules -->
-    <!-- although Rust module type is only created by IDEA, we need it in other IDEs as well
-    to be able to open a project created in IDEA without errors -->
-<!--    <moduleType id="MOVE_MODULE"-->
-<!--                implementationClass="org.move.ide.newProject.module.MoveLangModuleType" />-->
-<!--    <moduleBuilder builderClass="org.move.ide.newProject.module.MoveLangModuleBuilder" />-->
-<!--    <moduleBuilder builderClass="org.move.ide.newProject.module.MoveLangModuleBuilderFromAdapter" />-->
-
     <projectTaskRunner implementation="org.move.cli.runConfigurations.AptosBuildTaskRunner" />
 
     <!-- Project Creation -->
     <projectOpenProcessor id="Move" implementation="org.move.ide.newProject.MoveLangProjectOpenProcessor" />
     <directoryProjectGenerator implementation="org.move.ide.newProject.AptosProjectGenerator" />
-
-    <!-- IDEA language selection switcher -->
-<!--    <newProjectWizard.language implementation="org.move.ide.newProject.module.AptosNewProjectWizard" />-->
-
 
     <postStartupActivity
         implementation="org.move.ide.newProject.AlwaysRefreshProjectsAfterOpen" />
@@ -314,8 +301,7 @@
     <!--                        overrides="true" />-->
     <!--        <applicationService serviceImplementation="org.move.openapiext.OpenSSLInfoService" />-->
 
-    <additionalLibraryRootsProvider
-        implementation="org.move.ide.newProject.module.BuildLibraryRootsProvider" />
+    <additionalLibraryRootsProvider implementation="org.move.cli.BuildLibraryRootsProvider" />
 
     <!-- Notifications -->
     <notificationGroup id="Move Language" displayType="BALLOON" />

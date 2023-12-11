@@ -1,6 +1,5 @@
 package org.move.ide.newProject
 
-import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -9,7 +8,9 @@ import org.move.cli.runConfigurations.aptos.AptosConfigurationType
 import org.move.cli.runConfigurations.aptos.any.AnyCommandConfiguration
 import org.move.cli.runConfigurations.aptos.any.AnyCommandConfigurationFactory
 import org.move.ide.notifications.updateAllNotifications
+import org.move.openapiext.addRunConfiguration
 import org.move.openapiext.contentRoots
+import org.move.openapiext.openFile
 import org.move.openapiext.runManager
 import org.move.stdext.toPath
 
@@ -52,18 +53,5 @@ object ProjectInitialization {
             }
         return runConfigurationAndWithSettings
     }
-}
-
-fun Project.addRunConfiguration(
-    isSelected: Boolean = false,
-    configurationFactory: (RunManager, Project) -> RunnerAndConfigurationSettings,
-): RunnerAndConfigurationSettings {
-    val runManager = RunManager.getInstance(this)
-    val runnerAndConfigurationSettings = configurationFactory(runManager, this)
-    runManager.addConfiguration(runnerAndConfigurationSettings)
-    if (isSelected) {
-        runManager.selectedConfiguration = runnerAndConfigurationSettings
-    }
-    return runnerAndConfigurationSettings
 }
 
