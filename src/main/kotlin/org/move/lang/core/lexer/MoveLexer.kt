@@ -7,5 +7,4 @@ fun createMoveLexer(): MoveLexer {
     return MoveLexer()
 }
 
-@Suppress("UnstableApiUsage")
 class MoveLexer : FlexAdapter(_MoveLexer(null))

@@ -51,9 +51,7 @@ private inline fun RelateResult.and(rhs: () -> RelateResult): RelateResult = if 
 
 typealias CoerceResult = RsResult<CoerceOk, CombineTypeError>
 
-data class CoerceOk(
-    val obligations: List<Obligation> = emptyList()
-)
+class CoerceOk()
 
 fun RelateResult.into(): CoerceResult = map { CoerceOk() }
 
@@ -151,8 +149,6 @@ class InferenceContext(
     val varUnificationTable = UnificationTable<TyInfer.TyVar, Ty>()
     val intUnificationTable = UnificationTable<TyInfer.IntVar, Ty>()
 
-    val fulfill = FulfillmentContext(this)
-
     fun startSnapshot(): Snapshot = CombinedSnapshot(
         intUnificationTable.startSnapshot(),
         varUnificationTable.startSnapshot(),
@@ -185,11 +181,7 @@ class InferenceContext(
             is MvSchema -> owner.specBlock?.let { inference.inferSpec(it) }
         }
 
-        fulfill.selectWherePossible()
-
         fallbackUnresolvedTypeVarsIfPossible()
-
-        fulfill.selectWherePossible()
 
         exprTypes.replaceAll { _, ty -> fullyResolve(ty) }
         patTypes.replaceAll { _, ty -> fullyResolve(ty) }

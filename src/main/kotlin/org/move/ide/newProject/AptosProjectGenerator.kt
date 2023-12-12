@@ -2,6 +2,7 @@ package org.move.ide.newProject
 
 import com.intellij.ide.util.projectWizard.AbstractNewProjectStep
 import com.intellij.ide.util.projectWizard.CustomStepProjectGenerator
+import com.intellij.ide.util.projectWizard.ProjectSettingsStepBase
 import com.intellij.openapi.components.service
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -11,18 +12,13 @@ import com.intellij.platform.DirectoryProjectGenerator
 import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
 import org.move.cli.PluginApplicationDisposable
-import org.move.cli.moveProjects
-import org.move.cli.runConfigurations.addDefaultBuildRunConfiguration
-import org.move.cli.settings.AptosSettingsPanel
+import org.move.cli.settings.AptosExec
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
-import org.move.ide.notifications.updateAllNotifications
 import org.move.openapiext.computeWithCancelableProgress
 import org.move.stdext.unwrapOrThrow
 
-data class AptosProjectConfig(
-    val panelData: AptosSettingsPanel.PanelData,
-)
+data class AptosProjectConfig(val aptosExec: AptosExec)
 
 class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
                              CustomStepProjectGenerator<AptosProjectConfig> {
@@ -39,7 +35,7 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
         projectConfig: AptosProjectConfig,
         module: Module
     ) {
-        val aptosExecutor = projectConfig.panelData.aptosExec.toExecutor() ?: return
+        val aptosExecutor = projectConfig.aptosExec.toExecutor() ?: return
         val packageName = project.name
 
         val manifestFile =
@@ -51,24 +47,27 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
                     packageName = packageName
                 )
                     .unwrapOrThrow() // TODO throw? really??
-
                 manifestFile
             }
-
-
+        // update settings (and refresh Aptos projects too)
         project.moveSettings.modify {
-            it.aptosPath = projectConfig.panelData.aptosExec.pathToSettingsFormat()
+            it.aptosPath = projectConfig.aptosExec.pathToSettingsFormat()
         }
-        project.addDefaultBuildRunConfiguration(isSelected = true)
-        project.openFile(manifestFile)
 
-        updateAllNotifications(project)
-        project.moveProjects.refreshAllProjects()
+        ProjectInitialization.createDefaultCompileConfigurationIfNotExists(project)
+        ProjectInitialization.openMoveTomlInEditor(project, manifestFile)
     }
 
     override fun createStep(
         projectGenerator: DirectoryProjectGenerator<AptosProjectConfig>,
         callback: AbstractNewProjectStep.AbstractCallback<AptosProjectConfig>
     ): AbstractActionWithPanel =
-        AptosProjectConfigStep(projectGenerator)
+        ConfigStep(projectGenerator)
+
+    class ConfigStep(generator: DirectoryProjectGenerator<AptosProjectConfig>):
+        ProjectSettingsStepBase<AptosProjectConfig>(
+            generator,
+            AbstractNewProjectStep.AbstractCallback()
+        )
+
 }

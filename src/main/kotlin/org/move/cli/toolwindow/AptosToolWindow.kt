@@ -17,16 +17,14 @@ import org.move.cli.MoveProject
 import org.move.cli.MoveProjectsService
 import org.move.cli.MoveProjectsService.MoveProjectsListener
 import org.move.cli.hasMoveProject
-import org.move.cli.moveProjects
+import org.move.cli.moveProjectsService
 import javax.swing.JComponent
 
 class AptosToolWindowFactory : ToolWindowFactory, DumbAware {
     private val lock: Any = Any()
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-//        guessAndSetupRustProject(project)
-        project.moveProjects.refreshAllProjects()
-
+        project.moveProjectsService.scheduleProjectsRefresh("Aptos Tool Window opened")
         val toolwindowPanel = AptosToolWindowPanel(project)
         val tab = ContentFactory.getInstance()
             .createContent(toolwindowPanel, "", false)
@@ -100,7 +98,7 @@ class AptosToolWindow(private val project: Project) {
             })
         }
         invokeLater {
-            val moveProjects = project.moveProjects.allProjects.toList()
+            val moveProjects = project.moveProjectsService.allProjects.toList()
             projectStructure.reloadTreeModelAsync(moveProjects)
         }
     }

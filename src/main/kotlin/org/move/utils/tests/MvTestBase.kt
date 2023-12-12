@@ -38,8 +38,9 @@ abstract class MvTestBase : BasePlatformTestCase(),
         setupInspections()
 
         val settingsState = project.moveSettings.state
-        val isDevMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
-        project.moveSettings.state = settingsState.copy(debugMode = isDevMode)
+        val debugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
+        // triggers projects refresh
+        project.moveSettings.state = settingsState.copy(debugMode = debugMode)
     }
 
     private fun setupInspections() {

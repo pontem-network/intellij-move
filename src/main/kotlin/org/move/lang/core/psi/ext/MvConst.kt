@@ -38,7 +38,7 @@ abstract class MvConstMixin : MvStubbedNamedElementImpl<MvConstStub>,
         val constType = this.typeAnnotation?.text ?: ""
         return PresentationData(
             "${this.name}$constType",
-            null,
+            this.locationString(true),
             MoveIcons.CONST,
             null
         )

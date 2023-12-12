@@ -10,7 +10,9 @@ import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.psi.MvType
 import org.move.lang.core.psi.ext.isMsl
-import org.move.lang.core.types.infer.*
+import org.move.lang.core.types.infer.MvInferenceContextOwner
+import org.move.lang.core.types.infer.inferExpectedTy
+import org.move.lang.core.types.infer.inference
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementAndDataInEditor

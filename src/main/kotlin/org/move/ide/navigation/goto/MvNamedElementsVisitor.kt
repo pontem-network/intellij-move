@@ -1,4 +1,4 @@
-package org.move.ide.navigation
+package org.move.ide.navigation.goto
 
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiRecursiveVisitor

@@ -23,7 +23,7 @@ import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.messages.Topic
 import org.move.cli.MoveProjectsService
 import org.move.cli.MoveProjectsService.MoveProjectsListener
-import org.move.cli.moveProjects
+import org.move.cli.moveProjectsService
 import org.move.lang.MoveFile
 import org.move.lang.MoveFileType
 import org.move.lang.core.psi.MvPsiManager.Companion.isIgnorePsiEvents
@@ -145,7 +145,7 @@ class MvPsiManagerImpl(val project: Project) : MvPsiManager, Disposable {
             if (file == null) {
                 if (element is MoveFile ||
                     element is PsiDirectory
-                    && project.moveProjects.findMoveProject(element.virtualFile) != null
+                    && project.moveProjectsService.findMoveProjectForFile(element.virtualFile) != null
                 ) {
                     incRustStructureModificationCount(element as? MoveFile, element as? MoveFile)
                 }

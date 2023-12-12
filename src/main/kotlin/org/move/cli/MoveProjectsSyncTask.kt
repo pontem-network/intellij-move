@@ -1,5 +1,6 @@
 package org.move.cli
 
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
@@ -18,19 +19,23 @@ import java.util.concurrent.CompletableFuture
 
 class MoveProjectsSyncTask(
     project: Project,
-    private val future: CompletableFuture<List<MoveProject>>
+    private val future: CompletableFuture<List<MoveProject>>,
+    private val reason: String?
 ) : Task.Backgroundable(project, "Reloading Move packages", true) {
 
     override fun run(indicator: ProgressIndicator) {
         indicator.isIndeterminate = true
 
+        val before = System.currentTimeMillis()
+        LOG.logProjectsRefresh("started", reason)
         // aptos move fetch
         fetchDependencies()
 
-        val projects = PsiDocumentManager
+        val moveProjects = PsiDocumentManager
             .getInstance(project)
             .commitAndRunReadAction(Computable { loadProjects(project) })
-        future.complete(projects)
+        LOG.logProjectsRefresh("finished in ${System.currentTimeMillis() - before}ms", reason)
+        future.complete(moveProjects)
     }
 
     private fun fetchDependencies() {
@@ -38,6 +43,8 @@ class MoveProjectsSyncTask(
     }
 
     companion object {
+        private val LOG = logger<MoveProjectsSyncTask>()
+
         private data class DepId(val rootPath: String)
 
         fun loadProjects(project: Project): List<MoveProject> {

@@ -126,14 +126,16 @@ val Project.syntheticLibraries: Collection<SyntheticLibrary> get() {
     return libraries
 }
 
-val Project.root: Path? get() = contentRoots.firstOrNull()?.toNioPathOrNull()
+val Project.rootDir: VirtualFile? get() = contentRoots.firstOrNull()
+
+val Project.rootPath: Path? get() = contentRoots.firstOrNull()?.toNioPathOrNull()
 
 val Project.contentRoot: VirtualFile? get() = contentRoots.firstOrNull()
 
 fun Element.toXmlString() = JDOMUtil.writeElement(this)
 
 fun <T> Project.computeWithCancelableProgress(
-    @Suppress("UnstableApiUsage") @NlsContexts.ProgressTitle title: String,
+    @NlsContexts.ProgressTitle title: String,
     supplier: () -> T
 ): T {
     if (isUnitTestMode) {

@@ -21,7 +21,7 @@ class MoveCommandConfiguration(
 
     var command: String = "move compile"
     var workingDirectory: Path? = if (!project.isDefault) {
-        project.moveProjects.allProjects.firstOrNull()?.contentRootPath
+        project.moveProjectsService.allProjects.firstOrNull()?.contentRootPath
     } else {
         null
     }
@@ -86,7 +86,7 @@ class MoveCommandConfiguration(
         val ok: Ok? get() = this as? Ok
 
         companion object {
-            fun error(@Suppress("UnstableApiUsage") @NlsContexts.DialogMessage message: String) = Err(
+            fun error(@NlsContexts.DialogMessage message: String) = Err(
                 RuntimeConfigurationError(message)
             )
         }

@@ -1,4 +1,4 @@
-package org.move.ide.formatter
+package org.move.ide.formatter.settings
 
 import com.intellij.application.options.CodeStyleAbstractConfigurable
 import com.intellij.application.options.CodeStyleAbstractPanel
@@ -6,8 +6,6 @@ import com.intellij.application.options.IndentOptionsEditor
 import com.intellij.application.options.SmartIndentOptionsEditor
 import com.intellij.lang.Language
 import com.intellij.psi.codeStyle.*
-import org.move.ide.formatter.settings.MoveCodeStyleMainPanel
-import org.move.ide.formatter.settings.MoveCodeStyleSettings
 import org.move.lang.MoveLanguage
 
 class MvLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider() {

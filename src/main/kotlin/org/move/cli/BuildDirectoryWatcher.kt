@@ -9,7 +9,7 @@ class BuildDirectoryWatcher(
     private val onChange: () -> Unit
 ) : BulkFileListener {
 
-    fun updateProjects(moveProjects: List<MoveProject>) {
+    fun setWatchedProjects(moveProjects: List<MoveProject>) {
         this.moveProjects = moveProjects
     }
 

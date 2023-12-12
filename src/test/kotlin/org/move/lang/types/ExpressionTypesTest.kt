@@ -1,6 +1,5 @@
 package org.move.lang.types
 
-import org.move.utils.tests.DebugMode
 import org.move.utils.tests.types.TypificationTestCase
 
 class ExpressionTypesTest : TypificationTestCase() {

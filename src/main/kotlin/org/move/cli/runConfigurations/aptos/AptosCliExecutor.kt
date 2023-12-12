@@ -32,7 +32,7 @@ class AptosCliExecutor(val location: Path) {
                 "--rest-url", restUrl,
                 "--assume-yes"
             ),
-            workingDirectory = project.root
+            workingDirectory = project.rootPath
         )
         return commandLine.toGeneralCommandLine(this).execute(owner)
     }
@@ -53,7 +53,7 @@ class AptosCliExecutor(val location: Path) {
                 "--name", packageName,
                 "--assume-yes"
             ),
-            workingDirectory = project.root
+            workingDirectory = project.rootPath
         )
         commandLine.toGeneralCommandLine(this)
             .execute(parentDisposable)
@@ -65,7 +65,7 @@ class AptosCliExecutor(val location: Path) {
         return RsResult.Ok(manifest)
     }
 
-    fun version(): String? {
+    fun version(): ProcessOutput? {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
@@ -76,8 +76,8 @@ class AptosCliExecutor(val location: Path) {
             listOf("--version"),
             workingDirectory = null,
         )
-        val lines = commandLine.toGeneralCommandLine(this).execute()?.stdoutLines.orEmpty()
-        return if (lines.isNotEmpty()) return lines.joinToString("\n") else null
+        val output = commandLine.toGeneralCommandLine(this).execute()
+        return output
     }
 
     companion object {

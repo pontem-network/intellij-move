@@ -2,8 +2,8 @@ package org.move.ide.refactoring.optimizeImports
 
 import org.intellij.lang.annotations.Language
 import org.move.ide.inspections.MvUnusedImportInspection
-import org.move.utils.tests.WithEnabledInspections
 import org.move.utils.tests.MvTestBase
+import org.move.utils.tests.WithEnabledInspections
 
 @WithEnabledInspections(MvUnusedImportInspection::class)
 abstract class OptimizeImportsTestBase: MvTestBase() {

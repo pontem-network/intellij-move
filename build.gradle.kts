@@ -9,33 +9,33 @@ val isCI = System.getenv("CI") != null
 
 fun prop(name: String): String =
     extra.properties[name] as? String
-        ?: error("Property `$name` is not defined in gradle.properties for environment `$platformVersion`")
+        ?: error("Property `$name` is not defined in gradle.properties for environment `$shortPlatformVersion`")
 
-val platformVersion = prop("shortPlatformVersion")
-val codeVersion = "1.31.0"
-val pluginVersion = "$codeVersion.$platformVersion"
+val shortPlatformVersion = prop("shortPlatformVersion")
+val codeVersion = "1.32.0"
+val pluginVersion = "$codeVersion.$shortPlatformVersion"
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
-val kotlinStdlibVersion = "1.9.0"
 val pluginJarName = "intellij-move-$pluginVersion"
 
-val aptosVersion = "2.0.3"
+val kotlinReflectVersion = "1.8.10"
+val aptosVersion = "2.3.2"
 
 group = pluginGroup
 version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.9.0"
-    id("org.jetbrains.intellij") version "1.15.0"
-    id("org.jetbrains.grammarkit") version "2022.3.1"
+    kotlin("jvm") version "1.9.21"
+    id("org.jetbrains.intellij") version "1.16.1"
+    id("org.jetbrains.grammarkit") version "2022.3.2"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
-    id("de.undercouch.download") version "5.4.0"
+    id("de.undercouch.download") version "5.5.0"
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinStdlibVersion")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinReflectVersion")
 
     implementation("io.sentry:sentry:6.25.0") {
         exclude("org.slf4j")
@@ -87,7 +87,7 @@ allprojects {
     kotlin {
         sourceSets {
             main {
-                kotlin.srcDirs("src/$platformVersion/main/kotlin")
+                kotlin.srcDirs("src/$shortPlatformVersion/main/kotlin")
             }
         }
     }
@@ -111,8 +111,8 @@ allprojects {
         withType<KotlinCompile> {
             kotlinOptions {
                 jvmTarget = "17"
-                languageVersion = "1.8"
-                apiVersion = "1.6"
+                languageVersion = "1.9"
+                apiVersion = "1.8"
                 freeCompilerArgs = listOf("-Xjvm-default=all")
             }
         }
@@ -130,23 +130,23 @@ allprojects {
         task("downloadAptosBinaries") {
             val baseUrl = "https://github.com/aptos-labs/aptos-core/releases/download/aptos-cli-v$aptosVersion"
             doLast {
-                for (releasePlatform in listOf("MacOSX", "Ubuntu-22.04", "Ubuntu", "Windows")) {
+                // NOTE: MacOS is not supported anymore for pre-built CLI
+                for (releasePlatform in listOf(/*"MacOSX",*/ "Ubuntu-22.04", "Ubuntu", "Windows")) {
                     val zipFileName = "aptos-cli-$aptosVersion-$releasePlatform-x86_64.zip"
                     val zipFileUrl = "$baseUrl/$zipFileName"
                     val zipRoot = "${rootProject.buildDir}/zip"
                     val zipFile = file("$zipRoot/$zipFileName")
-                    if (zipFile.exists()) {
-                        continue
-                    }
-                    download.run {
-                        src(zipFileUrl)
-                        dest(zipFile)
-                        overwrite(false)
+                    if (!zipFile.exists()) {
+                        download.run {
+                            src(zipFileUrl)
+                            dest(zipFile)
+                            overwrite(false)
+                        }
                     }
 
                     val platformName =
                         when (releasePlatform) {
-                            "MacOSX" -> "macos"
+//                            "MacOSX" -> "macos"
                             "Ubuntu" -> "ubuntu"
                             "Ubuntu-22.04" -> "ubuntu22"
                             "Windows" -> "windows"
@@ -203,9 +203,12 @@ project(":plugin") {
 
     tasks {
         runPluginVerifier {
-            ideVersions.set(
-                prop("verifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty)
-            )
+            if ("SNAPSHOT" !in shortPlatformVersion) {
+                ideVersions.set(
+                    prop("verifierIdeVersions")
+                        .split(',').map(String::trim).filter(String::isNotEmpty)
+                )
+            }
             failureLevel.set(
                 EnumSet.complementOf(
                     EnumSet.of(

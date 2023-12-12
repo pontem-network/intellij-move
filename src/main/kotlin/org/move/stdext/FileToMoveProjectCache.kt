@@ -13,32 +13,31 @@ import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import org.move.cli.MoveProject
 import java.util.concurrent.ConcurrentHashMap
-import java.util.function.Consumer
 
-sealed class IndexEntry {
-    object Missing : IndexEntry()
-    data class Present(val value: MoveProject?) : IndexEntry()
+sealed class CacheEntry {
+    object Missing : CacheEntry()
+    data class Present(val value: MoveProject?) : CacheEntry()
 }
 
-class MoveProjectsIndex(
+class FileToMoveProjectCache(
     parentDisposable: Disposable,
-    private val myInitializer: Consumer<MoveProjectsIndex>
+//    private val myInitializer: Consumer<MoveProjectsMap>
 ) {
-    private val entryMap: MutableMap<VirtualFile, IndexEntry> = ConcurrentHashMap()
+    private val entryMap: MutableMap<VirtualFile, CacheEntry> = ConcurrentHashMap()
 
-    fun resetIndex() {
+    fun clear() {
         entryMap.clear()
-        myInitializer.accept(this)
+//        myInitializer.accept(this)
     }
 
-    fun put(file: VirtualFile?, value: IndexEntry) {
+    fun put(file: VirtualFile?, value: CacheEntry) {
         if (file !is VirtualFileWithId) return
         entryMap[file] = value
     }
 
-    fun get(file: VirtualFile): IndexEntry {
-        if (file !is VirtualFileWithId || !file.isValid) return IndexEntry.Missing
-        return entryMap.getOrDefault(file, IndexEntry.Missing)
+    fun get(file: VirtualFile): CacheEntry {
+        if (file !is VirtualFileWithId || !file.isValid) return CacheEntry.Missing
+        return entryMap.getOrDefault(file, CacheEntry.Missing)
     }
 
     companion object {
@@ -52,18 +51,18 @@ class MoveProjectsIndex(
     }
 
     init {
-        resetIndex()
+        clear()
         val connection = ApplicationManager.getApplication().messageBus.connect(parentDisposable)
         connection.subscribe(FileTypeManager.TOPIC, object : FileTypeListener {
             override fun fileTypesChanged(event: FileTypeEvent) {
-                resetIndex()
+                clear()
             }
         })
         connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
             override fun after(events: List<VFileEvent>) {
                 for (event in events) {
                     if (isDirectoryEvent(event)) {
-                        resetIndex()
+                        clear()
                         break
                     }
                 }

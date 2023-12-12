@@ -1,8 +1,5 @@
 package org.move.ide.annotator.syntaxErrors
 
-import org.move.ide.annotator.MvSyntaxErrorAnnotator
-import org.move.utils.tests.annotation.AnnotatorTestCase
-
 // TODO: test
 // TODO: global is not allowed in schemas
 // TODO: local / schema variables are not allowed in spec blocks

@@ -156,11 +156,6 @@ fun <T : Any> Iterator<T>.nextOrNull(): T? =
 
 fun <T> MutableList<T>.removeLast(): T = removeAt(size - 1)
 
-fun <T> dequeOf(): Deque<T> = ArrayDeque<T>()
-
-fun <T> dequeOf(vararg elements: T): Deque<T> =
-    ArrayDeque<T>().apply { addAll(elements) }
-
 inline fun <reified T : Enum<T>> enumSetOf(): EnumSet<T> = EnumSet.noneOf(T::class.java)
 
 typealias LookbackValue<T> = Pair<T, T?>

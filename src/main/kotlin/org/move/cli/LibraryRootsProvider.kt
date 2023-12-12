@@ -1,18 +1,16 @@
-package org.move.cli.module
+package org.move.cli
 
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
 import com.intellij.openapi.roots.SyntheticLibrary
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.cli.MoveProject
-import org.move.cli.moveProjects
 import org.move.ide.MoveIcons
 import org.move.openapiext.contentRoots
 import org.move.openapiext.toVirtualFile
 import javax.swing.Icon
 
-class MoveLibrary(
+class MoveLangLibrary(
     private val name: String,
     private val sourceRoots: Set<VirtualFile>,
     private val excludedRoots: Set<VirtualFile>,
@@ -22,7 +20,7 @@ class MoveLibrary(
     override fun getSourceRoots(): Collection<VirtualFile> = sourceRoots
     override fun getExcludedRoots(): Set<VirtualFile> = excludedRoots
 
-    override fun equals(other: Any?): Boolean = other is MoveLibrary && other.sourceRoots == sourceRoots
+    override fun equals(other: Any?): Boolean = other is MoveLangLibrary && other.sourceRoots == sourceRoots
     override fun hashCode(): Int = sourceRoots.hashCode()
 
     override fun getLocationString(): String? = null
@@ -34,7 +32,7 @@ class MoveLibrary(
 
 class BuildLibraryRootsProvider : AdditionalLibraryRootsProvider() {
     override fun getAdditionalProjectLibraries(project: Project): Collection<SyntheticLibrary> {
-        return project.moveProjects
+        return project.moveProjectsService
             .allProjects
             .smartFlatMap { it.ideaLibraries }
             .toMutableSet()
@@ -66,7 +64,7 @@ private val MoveProject.ideaLibraries: Collection<SyntheticLibrary>
                 val sourceRoots = it.layoutPaths().mapNotNull { p -> p.toVirtualFile() }.toMutableSet()
                 it.moveToml.tomlFile
                     ?.virtualFile?.let { f -> sourceRoots.add(f) }
-                MoveLibrary(it.packageName, sourceRoots, emptySet(), MoveIcons.MOVE_LOGO, null)
+                MoveLangLibrary(it.packageName, sourceRoots, emptySet(), MoveIcons.MOVE_LOGO, null)
             }
 
     }

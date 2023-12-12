@@ -82,7 +82,7 @@ abstract class CommandConfigurationBase(
         val ok: Ok? get() = this as? Ok
 
         companion object {
-            fun error(@Suppress("UnstableApiUsage") @NlsContexts.DialogMessage message: String) = Err(
+            fun error(@NlsContexts.DialogMessage message: String) = Err(
                 RuntimeConfigurationError(message)
             )
         }
