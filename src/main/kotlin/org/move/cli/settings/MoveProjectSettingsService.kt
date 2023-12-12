@@ -11,7 +11,7 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
-import org.move.openapiext.infoInProduction
+import org.move.openapiext.debugInProduction
 import org.move.stdext.exists
 import org.move.stdext.isExecutableFile
 import java.nio.file.Path
@@ -84,7 +84,7 @@ class MoveProjectSettingsService(private val project: Project): PersistentStateC
             if (event.isChanged(prop)) {
                 val oldValue = prop.get(oldState)
                 val newValue = prop.get(newState)
-                LOG.infoInProduction("SETTINGS updated [${prop.name}: $oldValue -> $newValue]")
+                LOG.debugInProduction("SETTINGS updated [${prop.name}: $oldValue -> $newValue]")
             }
         }
 

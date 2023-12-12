@@ -31,7 +31,7 @@ import org.move.cli.settings.debugErrorOrFallback
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isUnitTestMode
-import org.move.openapiext.infoInProduction
+import org.move.openapiext.debugInProduction
 import org.move.openapiext.toVirtualFile
 import org.move.stdext.AsyncValue
 import org.move.stdext.CacheEntry
@@ -262,5 +262,5 @@ fun Logger.logProjectsRefresh(status: String, reason: String? = null) {
     if (reason != null) {
         logMessage += " [$reason]"
     }
-    this.infoInProduction(logMessage)
+    this.debugInProduction(logMessage)
 }
