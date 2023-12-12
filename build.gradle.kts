@@ -136,13 +136,12 @@ allprojects {
                     val zipFileUrl = "$baseUrl/$zipFileName"
                     val zipRoot = "${rootProject.buildDir}/zip"
                     val zipFile = file("$zipRoot/$zipFileName")
-                    if (zipFile.exists()) {
-                        continue
-                    }
-                    download.run {
-                        src(zipFileUrl)
-                        dest(zipFile)
-                        overwrite(false)
+                    if (!zipFile.exists()) {
+                        download.run {
+                            src(zipFileUrl)
+                            dest(zipFile)
+                            overwrite(false)
+                        }
                     }
 
                     val platformName =
