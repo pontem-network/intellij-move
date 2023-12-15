@@ -22,6 +22,9 @@ module 0x1::M {
     #[test(a = @0x1, b = @0x2, c = @Std)]
     fun main3() {}
 
+    #[test()]
+    fun test_empty_parens() {}
+
     #[test_only]
     native fun native_main();
 
