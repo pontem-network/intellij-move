@@ -16,7 +16,15 @@ fun processModuleInnerItems(
                 processor.matchAll(
                     itemVis,
                     if (itemVis.isMsl) module.consts() else emptyList(),
-                    if (itemVis.isMsl) module.structs() else emptyList()
+                    if (itemVis.isMsl) module.structs() else emptyList(),
+                    if (itemVis.isMsl)
+                        module.allModuleSpecs()
+                            .map {
+                                it.moduleItemSpecs()
+                                    .flatMap { spec -> spec.itemSpecBlock?.globalVariables().orEmpty() }
+                            }
+                            .flatten()
+                    else emptyList()
                 )
             }
             Namespace.FUNCTION -> {
