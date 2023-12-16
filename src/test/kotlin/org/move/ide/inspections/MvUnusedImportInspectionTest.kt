@@ -565,4 +565,16 @@ spec 0x1::main {
     }    
 }
     """)
+
+    fun `test no unused import for spec fun usage`() = checkWarnings("""
+        module 0x1::string {
+            public fun id(): u128 { 1 }
+        }
+        module 0x1::m {
+            use 0x1::string;
+            spec fun call(): u128 {
+                string::id()
+            }
+        }        
+    """)
 }

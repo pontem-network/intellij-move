@@ -499,7 +499,7 @@ fun processLexicalDeclarations(
                     processor.matchAll(
                         itemVis,
                         listOf(
-                            module.allNonTestFunctions(),
+                            module.allFunctions(),
                             module.structs(),
                         ).flatten()
                     )

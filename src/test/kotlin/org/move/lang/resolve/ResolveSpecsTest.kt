@@ -878,4 +878,38 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test resolve global variable accessible with qual name`() = checkByCode("""
+        module 0x1::coin {
+        }
+        spec 0x1::coin {
+            spec module {
+                global supply<CoinType>: num;
+                      //X
+            }
+        }        
+        module 0x1::transaction {
+            fun main() {}
+        }
+        spec 0x1::transaction {
+            spec main {
+                use 0x1::coin;
+                ensures coin::supply<CoinType> == 1;
+                                //^
+            }
+        }
+    """)
+
+    fun `test resolve item specs in test_only module`() = checkByCode("""
+        #[test_only]
+        module 0x1::m {
+            public fun simple_share(o: Obj) {
+                       //X
+            }
+            spec simple_share {
+                    //^
+            }
+
+        }
+    """)
 }
