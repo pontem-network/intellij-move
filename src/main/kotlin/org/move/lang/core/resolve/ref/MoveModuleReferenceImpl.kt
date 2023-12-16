@@ -8,9 +8,9 @@ import org.move.stdext.wrapWithList
 
 class MvModuleReferenceImpl(
     element: MvModuleRef,
-) : MvReferenceCached<MvModuleRef>(element) {
+) : MvPolyVariantReferenceCached<MvModuleRef>(element) {
 
-    override fun resolveInner(): List<MvNamedElement> {
+    override fun multiResolveInner(): List<MvNamedElement> {
         if (element.isSelf) return element.containingModule.wrapWithList()
 
         val resolved = resolveSingleItem(element, setOf(Namespace.MODULE))

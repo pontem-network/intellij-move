@@ -3,14 +3,14 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
-import org.move.lang.core.resolve.ref.MvReferenceCached
+import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 
 class AttrItemArgumentReferenceImpl(
     element: MvAttrItemArgument,
     val ownerFunction: MvFunction
-) : MvReferenceCached<MvAttrItemArgument>(element) {
+) : MvPolyVariantReferenceCached<MvAttrItemArgument>(element) {
 
-    override fun resolveInner(): List<MvNamedElement> {
+    override fun multiResolveInner(): List<MvNamedElement> {
         return ownerFunction.parameters
             .map { it.bindingPat }
             .filter { it.name == element.referenceName }

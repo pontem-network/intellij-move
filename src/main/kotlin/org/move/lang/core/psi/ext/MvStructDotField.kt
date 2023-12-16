@@ -5,16 +5,16 @@ import org.move.lang.core.psi.MvElementImpl
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvStructDotField
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
-import org.move.lang.core.resolve.ref.MvReferenceCached
+import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.ref.MvStructDotFieldReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.resolveLocalItem
 
 class MvStructDotFieldReferenceImpl(
     element: MvStructDotFieldReferenceElement
-) : MvReferenceCached<MvStructDotFieldReferenceElement>(element) {
+) : MvPolyVariantReferenceCached<MvStructDotFieldReferenceElement>(element) {
 
-    override fun resolveInner(): List<MvNamedElement> {
+    override fun multiResolveInner(): List<MvNamedElement> {
         return resolveLocalItem(element, setOf(Namespace.DOT_FIELD))
     }
 }

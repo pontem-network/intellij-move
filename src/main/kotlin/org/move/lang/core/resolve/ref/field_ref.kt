@@ -7,16 +7,16 @@ import org.move.lang.core.resolve.resolveLocalItem
 
 class MvStructFieldReferenceImpl(
     element: MvMandatoryReferenceElement
-) : MvReferenceCached<MvMandatoryReferenceElement>(element) {
+) : MvPolyVariantReferenceCached<MvMandatoryReferenceElement>(element) {
 
-    override fun resolveInner() = resolveLocalItem(element, setOf(Namespace.STRUCT_FIELD))
+    override fun multiResolveInner() = resolveLocalItem(element, setOf(Namespace.STRUCT_FIELD))
 }
 
 class MvStructLitShorthandFieldReferenceImpl(
     element: MvStructLitField,
-) : MvReferenceCached<MvStructLitField>(element) {
+) : MvPolyVariantReferenceCached<MvStructLitField>(element) {
 
-    override fun resolveInner(): List<MvNamedElement> {
+    override fun multiResolveInner(): List<MvNamedElement> {
         return listOf(
             resolveLocalItem(element, setOf(Namespace.STRUCT_FIELD)),
             resolveLocalItem(element, setOf(Namespace.NAME))
@@ -26,7 +26,7 @@ class MvStructLitShorthandFieldReferenceImpl(
 
 class MvStructPatShorthandFieldReferenceImpl(
     element: MvStructPatField
-) : MvReferenceCached<MvStructPatField>(element) {
+) : MvPolyVariantReferenceCached<MvStructPatField>(element) {
 
-    override fun resolveInner() = resolveLocalItem(element, setOf(Namespace.STRUCT_FIELD))
+    override fun multiResolveInner() = resolveLocalItem(element, setOf(Namespace.STRUCT_FIELD))
 }

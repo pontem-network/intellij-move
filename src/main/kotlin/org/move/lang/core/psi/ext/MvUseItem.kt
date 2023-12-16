@@ -6,7 +6,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNamedElementImpl
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslLetScope
-import org.move.lang.core.resolve.ref.MvReferenceCached
+import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.resolveModuleItem
@@ -42,9 +42,9 @@ val MvUseItem.moduleName: String
 
 val MvUseItem.isSelf: Boolean get() = this.identifier.textMatches("Self")
 
-class MvUseItemReferenceElement(element: MvUseItem) : MvReferenceCached<MvUseItem>(element) {
+class MvUseItemReferenceElement(element: MvUseItem) : MvPolyVariantReferenceCached<MvUseItem>(element) {
 
-    override fun resolveInner(): List<MvNamedElement> {
+    override fun multiResolveInner(): List<MvNamedElement> {
         val moduleRef = element.useSpeck().fqModuleRef
         val module =
             moduleRef.reference?.resolve() as? MvModule ?: return emptyList()

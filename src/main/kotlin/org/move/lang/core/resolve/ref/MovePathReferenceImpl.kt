@@ -9,11 +9,11 @@ import org.move.lang.core.resolve.*
 class MvPathReferenceImpl(
     element: MvPath,
     val namespaces: Set<Namespace>,
-) : MvReferenceCached<MvPath>(element), MvPathReference {
+) : MvPolyVariantReferenceCached<MvPath>(element), MvPathReference {
 
     override val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE
 
-    override fun resolveInner(): List<MvNamedElement> {
+    override fun multiResolveInner(): List<MvNamedElement> {
         val vs = Visibility.buildSetOfVisibilities(element)
         val itemVis = ItemVis(
             namespaces,

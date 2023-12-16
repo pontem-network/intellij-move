@@ -10,11 +10,11 @@ interface MvFQModuleReference : MvPolyVariantReference
 
 class MvFQModuleReferenceImpl(
     element: MvFQModuleRef,
-) : MvReferenceCached<MvFQModuleRef>(element), MvFQModuleReference {
+) : MvPolyVariantReferenceCached<MvFQModuleRef>(element), MvFQModuleReference {
 
     override val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE
 
-    override fun resolveInner(): List<MvNamedElement> {
+    override fun multiResolveInner(): List<MvNamedElement> {
         val referenceName = element.referenceName ?: return emptyList()
         var resolved: MvModule? = null
         processFQModuleRef(element, referenceName) {

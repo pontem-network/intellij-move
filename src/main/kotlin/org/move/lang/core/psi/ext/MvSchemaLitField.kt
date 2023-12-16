@@ -4,7 +4,7 @@ import com.intellij.lang.ASTNode
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
-import org.move.lang.core.resolve.ref.MvReferenceCached
+import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.resolveLocalItem
 
@@ -20,16 +20,16 @@ fun MvSchemaLitField.resolveToBinding(): MvBindingPat? = resolveToElement()
 
 class MvSchemaFieldReferenceImpl(
     element: MvSchemaLitField
-) : MvReferenceCached<MvSchemaLitField>(element) {
-    override fun resolveInner(): List<MvNamedElement> {
+) : MvPolyVariantReferenceCached<MvSchemaLitField>(element) {
+    override fun multiResolveInner(): List<MvNamedElement> {
         return resolveLocalItem(element, setOf(Namespace.SCHEMA_FIELD))
     }
 }
 
 class MvSchemaFieldShorthandReferenceImpl(
     element: MvSchemaLitField
-) : MvReferenceCached<MvSchemaLitField>(element) {
-    override fun resolveInner(): List<MvNamedElement> {
+) : MvPolyVariantReferenceCached<MvSchemaLitField>(element) {
+    override fun multiResolveInner(): List<MvNamedElement> {
         return listOf(
             resolveLocalItem(element, setOf(Namespace.SCHEMA_FIELD)),
             resolveLocalItem(element, setOf(Namespace.NAME))
