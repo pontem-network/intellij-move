@@ -900,6 +900,20 @@ module 0x1::main {
         }
     """)
 
+    fun `test resolve funs in spec in test_only module`() = checkByCode("""
+        #[test_only]
+        module 0x1::m {
+            public fun simple_share(o: Obj) {
+                       //X
+            }
+            spec fun call(): u128 {
+                simple_share(); 1
+                //^
+            }
+
+        }
+    """)
+
     fun `test resolve item specs in test_only module`() = checkByCode("""
         #[test_only]
         module 0x1::m {
