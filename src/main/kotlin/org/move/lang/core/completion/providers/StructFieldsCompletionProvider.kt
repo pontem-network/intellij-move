@@ -19,7 +19,7 @@ import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.withParent
 import org.move.lang.core.withSuperParent
 
-object StructFieldsCompletionProvider : MvCompletionProvider() {
+object StructFieldsCompletionProvider: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = StandardPatterns.or(
             PlatformPatterns
@@ -62,19 +62,25 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
                 )
             }
             is MvStructDotField -> {
-                val itemVis = ItemVis(
-                    namespaces = setOf(Namespace.DOT_FIELD),
-                    visibilities = Visibility.none(),
-                    mslLetScope = element.mslLetScope,
-                    itemScope = element.itemScope,
-                )
-                processItems(element, itemVis) {
-                    val field = it.element as? MvStructField
-                    if (field != null) {
-                        result.addElement(field.createCompletionLookupElement())
-                    }
-                    false
+                val receiverItem = element.receiverItem ?: return
+                for (field in receiverItem.fields) {
+                    result.addElement(
+                        field.createCompletionLookupElement()
+                    )
                 }
+//                val itemVis = ItemVis(
+//                    namespaces = setOf(Namespace.DOT_FIELD),
+//                    visibilities = Visibility.none(),
+//                    mslLetScope = element.mslLetScope,
+//                    itemScope = element.itemScope,
+//                )
+//                processItems(element, itemVis) {
+//                    val field = it.element as? MvStructField
+//                    if (field != null) {
+//                        result.addElement(field.createCompletionLookupElement())
+//                    }
+//                    false
+//                }
             }
         }
     }

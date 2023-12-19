@@ -10,16 +10,11 @@ import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.address
-import org.move.lang.core.types.infer.MvInferenceContextOwner
-import org.move.lang.core.types.infer.inferTypesIn
-import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.ty.TyReference
+import org.move.lang.core.types.infer.inferReceiverTy
 import org.move.lang.core.types.ty.TyStruct
-import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
-import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.wrapWithList
 
 data class ItemVis(
@@ -224,49 +219,34 @@ fun processFQModuleRef(
         }
 }
 
+/// continue with the next resolution scope
+const val CONTINUE = false
+const val STOP = true
+
 fun processLexicalDeclarations(
     scope: MvElement,
     cameFrom: MvElement,
     itemVis: ItemVis,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
+    val msl = scope.isMsl()
     for (namespace in itemVis.namespaces) {
         val stop = when (namespace) {
-            Namespace.DOT_FIELD -> {
-                val dotExpr = (scope as? MvDotExpr)?.getOriginalOrSelf() ?: return false
-
-                val msl = dotExpr.isMsl()
-                val receiverExpr = dotExpr.expr
-                val inference = receiverExpr.inference(msl) ?: return false
-                val receiverTy =
-                    inference.getExprTypeOrNull(receiverExpr) ?: run {
-                        // Sometimes in the completion, tree drastically changes between
-                        // `s.` and `s.IntellijIdeaRulezzz`, in that case inference cache value is inapplicable.
-                        // We don't want to drop the cache in that case, so to mitigate stale cache problems
-                        // - we just create another inference context (but only in case of an error).
-                        // Should happen pretty rarely, so hopefully won't affect performance much.
-                        val inferenceOwner =
-                            receiverExpr.ancestorOrSelf<MvInferenceContextOwner>() ?: return false
-                        val noCacheInference = inferTypesIn(inferenceOwner, msl)
-                        noCacheInference.getExprType(receiverExpr)
-                    }
-
-                val innerTy = when (receiverTy) {
-                    is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
-                    is TyStruct -> receiverTy
-                    else -> TyUnknown
-                }
-                if (innerTy !is TyStruct) return true
-
-                val structItem = innerTy.item
-                if (!msl) {
-                    val dotExprModule = dotExpr.namespaceModule ?: return false
-                    if (structItem.containingModule != dotExprModule) return false
-                }
-
-                val fields = structItem.fields
-                return processor.matchAll(itemVis, fields)
-            }
+//            Namespace.DOT_FIELD -> {
+//                val dotExpr = (scope as? MvDotExpr)?.getOriginalOrSelf() ?: return CONTINUE
+//
+//                val innerTy = dotExpr.inferReceiverTy(msl)
+//                if (innerTy !is TyStruct) return STOP
+//
+//                val structItem = innerTy.item
+//                if (!msl) {
+//                    val dotExprModule = dotExpr.namespaceModule ?: return false
+//                    if (structItem.containingModule != dotExprModule) return false
+//                }
+//
+//                val fields = structItem.fields
+//                return processor.matchAll(itemVis, fields)
+//            }
 
             Namespace.STRUCT_FIELD -> {
                 val struct = when (scope) {
@@ -539,6 +519,7 @@ fun processLexicalDeclarations(
     }
     return false
 }
+
 
 fun walkUpThroughScopes(
     start: MvElement,
