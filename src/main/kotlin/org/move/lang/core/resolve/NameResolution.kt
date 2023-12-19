@@ -3,15 +3,12 @@ package org.move.lang.core.resolve
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.MoveFile
-import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.address
-import org.move.lang.core.types.infer.inferReceiverTy
-import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
@@ -229,32 +226,16 @@ fun processLexicalDeclarations(
     itemVis: ItemVis,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
-    val msl = scope.isMsl()
     for (namespace in itemVis.namespaces) {
         val stop = when (namespace) {
-//            Namespace.DOT_FIELD -> {
-//                val dotExpr = (scope as? MvDotExpr)?.getOriginalOrSelf() ?: return CONTINUE
-//
-//                val innerTy = dotExpr.inferReceiverTy(msl)
-//                if (innerTy !is TyStruct) return STOP
-//
-//                val structItem = innerTy.item
-//                if (!msl) {
-//                    val dotExprModule = dotExpr.namespaceModule ?: return false
-//                    if (structItem.containingModule != dotExprModule) return false
-//                }
-//
-//                val fields = structItem.fields
-//                return processor.matchAll(itemVis, fields)
-//            }
 
             Namespace.STRUCT_FIELD -> {
-                val struct = when (scope) {
+                val structItem = when (scope) {
                     is MvStructPat -> scope.path.maybeStruct
                     is MvStructLitExpr -> scope.path.maybeStruct
                     else -> null
                 }
-                if (struct != null) return processor.matchAll(itemVis, struct.fields)
+                if (structItem != null) return processor.matchAll(itemVis, structItem.fields)
                 false
             }
 
@@ -472,20 +453,6 @@ fun processLexicalDeclarations(
                     }
                 }
                 found
-            }
-
-            Namespace.SPEC_ITEM -> when (scope) {
-                is MvModuleBlock -> {
-                    val module = scope.parent as MvModule
-                    processor.matchAll(
-                        itemVis,
-                        listOf(
-                            module.allFunctions(),
-                            module.structs(),
-                        ).flatten()
-                    )
-                }
-                else -> false
             }
 
             Namespace.SCHEMA -> when (scope) {

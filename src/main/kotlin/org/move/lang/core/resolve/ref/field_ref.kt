@@ -28,5 +28,7 @@ class MvStructPatShorthandFieldReferenceImpl(
     element: MvStructPatField
 ) : MvPolyVariantReferenceCached<MvStructPatField>(element) {
 
-    override fun multiResolveInner() = resolveLocalItem(element, setOf(Namespace.STRUCT_FIELD))
+    override fun multiResolveInner(): List<MvNamedElement> {
+        return resolveLocalItem(element, setOf(Namespace.STRUCT_FIELD))
+    }
 }

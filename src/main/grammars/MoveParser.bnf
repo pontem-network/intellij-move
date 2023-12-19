@@ -954,7 +954,7 @@ private DotExpr_field ::= '.' (!'.') StructDotField {
 }
 StructDotField ::= !(<<VECTOR_IDENTIFIER>> ('[' | '<')) IDENTIFIER !('(' | '::' | '!' | '{')
 {
-    implements = ["org.move.lang.core.resolve.ref.MvStructDotFieldReferenceElement"]
+    implements = ["org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MvStructDotFieldMixin"
 }
 
@@ -1132,7 +1132,7 @@ ItemSpecFunctionParameter ::= IDENTIFIER TypeAnnotation {
 
 ItemSpecRef ::= IDENTIFIER
 {
-    implements = ["org.move.lang.core.resolve.ref.MvReferenceElement"]
+    implements = ["org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecRefMixin"
 }
 

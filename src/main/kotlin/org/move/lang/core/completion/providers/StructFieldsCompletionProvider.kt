@@ -63,24 +63,12 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
             }
             is MvStructDotField -> {
                 val receiverItem = element.receiverItem ?: return
-                for (field in receiverItem.fields) {
-                    result.addElement(
-                        field.createCompletionLookupElement()
-                    )
-                }
-//                val itemVis = ItemVis(
-//                    namespaces = setOf(Namespace.DOT_FIELD),
-//                    visibilities = Visibility.none(),
-//                    mslLetScope = element.mslLetScope,
-//                    itemScope = element.itemScope,
-//                )
-//                processItems(element, itemVis) {
-//                    val field = it.element as? MvStructField
-//                    if (field != null) {
-//                        result.addElement(field.createCompletionLookupElement())
-//                    }
-//                    false
-//                }
+                receiverItem.fields
+                    .forEach {
+                        result.addElement(
+                            it.createCompletionLookupElement()
+                        )
+                    }
             }
         }
     }

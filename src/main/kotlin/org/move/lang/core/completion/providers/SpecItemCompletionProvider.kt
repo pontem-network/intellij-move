@@ -8,6 +8,9 @@ import org.move.lang.core.completion.addSuffix
 import org.move.lang.core.completion.alreadyHasSpace
 import org.move.lang.core.completion.createLookupElementWithIcon
 import org.move.lang.core.psi.MvItemSpecRef
+import org.move.lang.core.psi.ext.itemSpec
+import org.move.lang.core.psi.ext.module
+import org.move.lang.core.psi.ext.mslSpecifiableItems
 import org.move.lang.core.psi.itemScope
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.MslLetScope
@@ -15,7 +18,7 @@ import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 
-object SpecItemCompletionProvider : MvCompletionProvider() {
+object SpecItemCompletionProvider: MvCompletionProvider() {
     override val elementPattern get() = MvPsiPatterns.itemSpecRef()
 
     override fun addCompletions(
@@ -24,21 +27,15 @@ object SpecItemCompletionProvider : MvCompletionProvider() {
         result: CompletionResultSet
     ) {
         val itemSpecRef = parameters.position.parent as? MvItemSpecRef ?: return
-
-        val itemVis = ItemVis(
-            namespaces = setOf(Namespace.SPEC_ITEM),
-            visibilities = Visibility.none(),
-            mslLetScope = MslLetScope.NONE,
-            itemScope = itemSpecRef.itemScope,
-        )
-        processItems(itemSpecRef, itemVis) {
-            val lookup = it.element.createLookupElementWithIcon()
-                .withInsertHandler { ctx, _ ->
-                    if (!ctx.alreadyHasSpace) ctx.addSuffix(" ")
-                }
-            result.addElement(lookup)
-            false
-        }
+        val module = itemSpecRef.itemSpec.module ?: return
+        module.mslSpecifiableItems
+            .forEach {
+                val lookup = it.createLookupElementWithIcon()
+                    .withInsertHandler { ctx, _ ->
+                        if (!ctx.alreadyHasSpace) ctx.addSuffix(" ")
+                    }
+                result.addElement(lookup)
+            }
     }
 
 
