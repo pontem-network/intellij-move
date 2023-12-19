@@ -38,10 +38,6 @@ fun processItems(
     }
 }
 
-fun resolveSingleItem(element: MvReferenceElement, namespaces: Set<Namespace>): MvNamedElement? {
-    return resolveLocalItem(element, namespaces).firstOrNull()
-}
-
 fun resolveLocalItem(
     element: MvReferenceElement,
     namespaces: Set<Namespace>
@@ -64,21 +60,21 @@ fun resolveLocalItem(
     return resolved.wrapWithList()
 }
 
-fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
-    if (moduleRef is MvFQModuleRef) {
-        return moduleRef
-    }
+// go from local MODULE reference to corresponding FqModuleRef (from import)
+fun resolveIntoFQModuleRefInUseSpeck(moduleRef: MvModuleRef): MvFQModuleRef? {
+    check(moduleRef !is MvFQModuleRef) { "Should be handled on the upper level" }
+
     // module refers to ModuleImport
-    var resolved = resolveSingleItem(moduleRef, setOf(Namespace.MODULE))
+    var resolved = resolveLocalItem(moduleRef, setOf(Namespace.MODULE)).firstOrNull()
     if (resolved is MvUseAlias) {
         resolved = resolved.moduleUseSpeck ?: resolved.useItem
     }
     if (resolved is MvUseItem && resolved.isSelf) {
         return resolved.useSpeck().fqModuleRef
     }
-    if (resolved !is MvModuleUseSpeck) return null
-
-    return resolved.fqModuleRef
+//    if (resolved !is MvModuleUseSpeck) return null
+    return (resolved as? MvModuleUseSpeck)?.fqModuleRef
+//    return resolved.fqModuleRef
 }
 
 fun processQualItem(
@@ -471,14 +467,8 @@ fun processLexicalDeclarations(
             }
 
             Namespace.MODULE -> when (scope) {
-                is MvImportsOwner -> processor.matchAll(
-                    itemVis,
-                    listOf(
-                        scope.allModuleUseSpecks(),
-                        scope.selfModuleUseItemNoAliases(),
-                        scope.selfModuleUseItemAliases(),
-                    ).flatten(),
-                )
+                is MvImportsOwner ->
+                    processor.matchAll(itemVis, scope.moduleUseItems())
                 else -> false
             }
         }

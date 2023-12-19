@@ -3,17 +3,18 @@ package org.move.lang.core.resolve.ref
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.isUpdateFieldArg2
+import org.move.lang.core.psi.ext.namespaces
 import org.move.lang.core.psi.ext.useSpeck
 import org.move.lang.core.resolve.*
 
 class MvPathReferenceImpl(
     element: MvPath,
-    val namespaces: Set<Namespace>,
 ) : MvPolyVariantReferenceCached<MvPath>(element), MvPathReference {
 
     override val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE
 
     override fun multiResolveInner(): List<MvNamedElement> {
+        val namespaces = element.namespaces()
         val vs = Visibility.buildSetOfVisibilities(element)
         val itemVis = ItemVis(
             namespaces,
@@ -27,8 +28,7 @@ class MvPathReferenceImpl(
         // first, see whether it's a fully qualified path (ADDRESS::MODULE::NAME) and try to resolve those
         if (moduleRef is MvFQModuleRef) {
             // TODO: can be replaced with index call
-            val module = moduleRef.reference?.resolve() as? MvModule
-                ?: return emptyList()
+            val module = moduleRef.reference?.resolve() as? MvModule ?: return emptyList()
             return resolveModuleItem(module, refName, itemVis)
         }
         // second,
@@ -40,10 +40,9 @@ class MvPathReferenceImpl(
                     containingModule, refName, itemVis.copy(visibilities = setOf(Visibility.Internal))
                 )
             }
-            val fqModuleRef = resolveIntoFQModuleRef(moduleRef) ?: return emptyList()
-            // TODO: can be replaced with index call
-            val module = fqModuleRef.reference?.resolve() as? MvModule
-                ?: return emptyList()
+            val useSpeckFQModuleRef = resolveIntoFQModuleRefInUseSpeck(moduleRef) ?: return emptyList()
+            val module =
+                useSpeckFQModuleRef.reference?.resolve() as? MvModule ?: return emptyList()
             return resolveModuleItem(module, refName, itemVis)
         } else {
             // if it's NAME

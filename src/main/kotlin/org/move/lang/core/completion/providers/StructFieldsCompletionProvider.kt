@@ -11,11 +11,6 @@ import org.move.lang.core.MvPsiPatterns.bindingPat
 import org.move.lang.core.completion.createCompletionLookupElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.mslLetScope
-import org.move.lang.core.resolve.processItems
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.withParent
 import org.move.lang.core.withSuperParent
 

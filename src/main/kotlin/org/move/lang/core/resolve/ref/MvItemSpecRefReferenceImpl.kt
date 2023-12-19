@@ -2,16 +2,11 @@ package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.MvItemSpecRef
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.itemScope
-import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.mslLetScope
-import org.move.lang.core.resolve.processItems
-import org.move.lang.core.resolve.resolveLocalItem
-import org.move.stdext.chain
-import org.move.stdext.wrapWithList
+import org.move.lang.core.psi.ext.itemSpec
+import org.move.lang.core.psi.ext.module
+import org.move.lang.core.psi.ext.mslSpecifiableItems
 
-class MvItemSpecRefReferenceImpl(element: MvItemSpecRef) : MvPolyVariantReferenceCached<MvItemSpecRef>(element) {
+class MvItemSpecRefReferenceImpl(element: MvItemSpecRef): MvPolyVariantReferenceCached<MvItemSpecRef>(element) {
 
     override fun multiResolveInner(): List<MvNamedElement> {
         val module = element.itemSpec.module ?: return emptyList()

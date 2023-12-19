@@ -11,12 +11,6 @@ import org.move.lang.core.psi.MvItemSpecRef
 import org.move.lang.core.psi.ext.itemSpec
 import org.move.lang.core.psi.ext.module
 import org.move.lang.core.psi.ext.mslSpecifiableItems
-import org.move.lang.core.psi.itemScope
-import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.MslLetScope
-import org.move.lang.core.resolve.processItems
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.Visibility
 
 object SpecItemCompletionProvider: MvCompletionProvider() {
     override val elementPattern get() = MvPsiPatterns.itemSpecRef()
