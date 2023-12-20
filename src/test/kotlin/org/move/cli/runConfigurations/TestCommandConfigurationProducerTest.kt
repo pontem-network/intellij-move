@@ -59,6 +59,34 @@ class TestCommandConfigurationProducerTest : RunConfigurationProducerTestBase("t
         checkOnElement<MvFunction>()
     }
 
+    fun `test test run for function dumping state on test failure`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            tests {
+                move(
+                    "MoveTests.move", """
+            #[test_only]
+            module 0x1::MoveTests {
+                #[test]
+                fun /*caret*/test_add() {
+                    1 + 1;
+                }
+                #[test]
+                fun test_mul() {
+                    1 * 1;
+                }
+            }
+            """
+                )
+            }
+        }
+        this.project.moveSettings
+            .modifyTemporary(this.testRootDisposable) {
+                it.dumpStateOnTestFailure = true
+            }
+        checkOnElement<MvFunction>()
+    }
+
     fun `test no test run if no test functions`() {
         testProject {
             namedMoveToml("MyPackage")

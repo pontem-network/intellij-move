@@ -44,6 +44,13 @@ class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move
                         "Adds --skip-fetch-latest-git-deps to the test runs."
                     )
                 }
+                row {
+                    checkBox("Dump storage to console on test failures")
+                        .bindSelected(settingsState::dumpStateOnTestFailure)
+                    comment(
+                        "Adds --dump to the test runs."
+                    )
+                }
             }
         }
     }
