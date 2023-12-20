@@ -9,13 +9,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.createCompletionLookupElement
 import org.move.lang.core.completion.createSelfLookup
-import org.move.lang.core.psi.MvModule
-import org.move.lang.core.psi.MvUseItem
-import org.move.lang.core.psi.MvUseItemGroup
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.names
 import org.move.lang.core.psi.ext.useSpeck
-import org.move.lang.core.psi.itemScope
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslLetScope
 import org.move.lang.core.resolve.processModuleItems
@@ -53,7 +50,7 @@ object ImportsCompletionProvider : MvCompletionProvider() {
         val itemVis = ItemVis(
             ns, vs,
             mslLetScope = itemImport.mslLetScope,
-            itemScope = itemImport.itemScope,
+            itemScopes = itemImport.itemScopes,
         )
         processModuleItems(referredModule, itemVis) {
             val lookup =

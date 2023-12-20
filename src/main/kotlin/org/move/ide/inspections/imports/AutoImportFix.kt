@@ -119,7 +119,7 @@ data class ImportContext private constructor(
                 namespaces = ns,
                 visibilities = vs,
                 mslLetScope = contextElement.mslLetScope,
-                itemScope = contextElement.itemScope,
+                itemScopes = contextElement.itemScopes,
             )
             return ImportContext(contextElement, itemVis)
         }

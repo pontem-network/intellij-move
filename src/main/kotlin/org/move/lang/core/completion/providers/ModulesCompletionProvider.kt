@@ -8,11 +8,8 @@ import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.*
-import org.move.lang.core.psi.MvPath
-import org.move.lang.core.psi.containingModule
-import org.move.lang.core.psi.containingModuleSpec
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.equalsTo
-import org.move.lang.core.psi.itemScope
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslLetScope
 import org.move.lang.core.resolve.processItems
@@ -42,7 +39,7 @@ object ModulesCompletionProvider : MvCompletionProvider() {
                 setOf(Namespace.MODULE),
                 visibilities = Visibility.local(),
                 mslLetScope = refElement.mslLetScope,
-                itemScope = refElement.itemScope,
+                itemScopes = refElement.itemScopes,
             )
         val ctx = CompletionContext(refElement, itemVis)
         processItems(refElement, itemVis) {

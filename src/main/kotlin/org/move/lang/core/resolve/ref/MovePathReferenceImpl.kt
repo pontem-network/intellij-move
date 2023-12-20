@@ -20,7 +20,7 @@ class MvPathReferenceImpl(
             namespaces,
             vs,
             element.mslLetScope,
-            itemScope = element.itemScope,
+            itemScopes = element.itemScopes,
         )
 
         val refName = element.referenceName ?: return emptyList()

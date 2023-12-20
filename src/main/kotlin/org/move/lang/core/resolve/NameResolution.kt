@@ -18,7 +18,7 @@ data class ItemVis(
     val namespaces: Set<Namespace>,
     val visibilities: Set<Visibility>,
     val mslLetScope: MslLetScope,
-    val itemScope: ItemScope,
+    val itemScopes: Set<ItemScope>,
 ) {
     val isMsl get() = mslLetScope != MslLetScope.NONE
 }
@@ -46,7 +46,7 @@ fun resolveLocalItem(
         namespaces,
         mslLetScope = element.mslLetScope,
         visibilities = Visibility.local(),
-        itemScope = element.itemScope,
+        itemScopes = element.itemScopes,
     )
     val referenceName = element.referenceName
     var resolved: MvNamedElement? = null
@@ -142,7 +142,7 @@ fun processFQModuleRef(
         namespaces = setOf(Namespace.MODULE),
         visibilities = Visibility.local(),
         mslLetScope = fqModuleRef.mslLetScope,
-        itemScope = fqModuleRef.itemScope,
+        itemScopes = fqModuleRef.itemScopes,
     )
     val moveProj = fqModuleRef.moveProject ?: return
     val refAddressText = fqModuleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
@@ -192,7 +192,7 @@ fun processFQModuleRef(
         namespaces = setOf(Namespace.MODULE),
         visibilities = Visibility.local(),
         mslLetScope = moduleRef.mslLetScope,
-        itemScope = moduleRef.itemScope,
+        itemScopes = moduleRef.itemScopes,
     )
     // search modules in the current file first
     val currentFile = moduleRef.containingMoveFile ?: return

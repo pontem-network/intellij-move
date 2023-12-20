@@ -14,7 +14,7 @@ fun interface MatchingProcessor<T : MvNamedElement> {
 
     fun match(contextVis: ItemVis, element: T): Boolean {
         if (!contextVis.isMsl && element.isMsl()) return false
-        if (!element.isVisibleInContext(contextVis.itemScope)) return false
+        if (!element.isVisibleInContext(contextVis.itemScopes)) return false
 
         val name = element.name ?: return false
         val entry = SimpleScopeEntry(name, element)

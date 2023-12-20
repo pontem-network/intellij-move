@@ -42,15 +42,19 @@ val MvUseItem.moduleName: String
 
 val MvUseItem.isSelf: Boolean get() = this.identifier.textMatches("Self")
 
-class MvUseItemReferenceElement(element: MvUseItem) : MvPolyVariantReferenceCached<MvUseItem>(element) {
+class MvUseItemReferenceElement(
+    element: MvUseItem
+) : MvPolyVariantReferenceCached<MvUseItem>(element) {
 
     override fun multiResolveInner(): List<MvNamedElement> {
-        val moduleRef = element.useSpeck().fqModuleRef
+        val fqModuleRef = element.useSpeck().fqModuleRef
         val module =
-            moduleRef.reference?.resolve() as? MvModule ?: return emptyList()
+            fqModuleRef.reference?.resolve() as? MvModule ?: return emptyList()
         if ((element.useAlias == null && element.text == "Self")
             || (element.useAlias != null && element.text.startsWith("Self as"))
-        ) return listOf(module)
+        ) {
+            return listOf(module)
+        }
 
         val ns = setOf(
             Namespace.TYPE,
@@ -59,12 +63,22 @@ class MvUseItemReferenceElement(element: MvUseItem) : MvPolyVariantReferenceCach
             Namespace.SCHEMA,
             Namespace.ERROR_CONST
         )
-        val vs = Visibility.buildSetOfVisibilities(moduleRef)
+        val vs = Visibility.buildSetOfVisibilities(fqModuleRef)
+
+        // import has MAIN+VERIFY, and TEST if it or any of the parents has test
+        val useItemScopes = mutableSetOf(ItemScope.MAIN, ItemScope.VERIFY)
+
+        var scopedElement: MvElement? = element
+        while (scopedElement != null) {
+            useItemScopes.addAll(scopedElement.itemScopes)
+            scopedElement = scopedElement.parent as? MvElement
+        }
+
         val itemVis = ItemVis(
             ns,
             vs,
             MslLetScope.EXPR_STMT,
-            itemScope = moduleRef.itemScope,
+            itemScopes = useItemScopes,
         )
         return resolveModuleItem(
             module,

@@ -110,7 +110,7 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
             setOf(Namespace.NAME),
             Visibility.none(),
             mslLetScope = pathElement.mslLetScope,
-            itemScope = pathElement.itemScope,
+            itemScopes = pathElement.itemScopes,
         )
     }
 }
@@ -127,7 +127,7 @@ object FunctionsCompletionProvider : MvPathCompletionProvider() {
             setOf(Namespace.FUNCTION),
             Visibility.none(),
             mslLetScope = pathElement.mslLetScope,
-            itemScope = pathElement.itemScope,
+            itemScopes = pathElement.itemScopes,
         )
     }
 }
@@ -141,7 +141,7 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
             setOf(Namespace.TYPE),
             Visibility.none(),
             mslLetScope = pathElement.mslLetScope,
-            itemScope = pathElement.itemScope,
+            itemScopes = pathElement.itemScopes,
         )
     }
 }
@@ -159,7 +159,7 @@ object SchemasCompletionProvider : MvPathCompletionProvider() {
             setOf(Namespace.SCHEMA),
             Visibility.none(),
             mslLetScope = MslLetScope.EXPR_STMT,
-            itemScope = pathElement.itemScope,
+            itemScopes = pathElement.itemScopes,
         )
     }
 }

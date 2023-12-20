@@ -9,6 +9,10 @@ enum class ItemScope {
     MAIN,
     TEST,
     VERIFY;
+
+    companion object {
+        fun all(): Set<ItemScope> = setOf(MAIN, TEST, VERIFY)
+    }
 }
 
 fun MvElement.isVisibleInContext(contextScope: ItemScope): Boolean {
@@ -33,16 +37,19 @@ private val ITEM_SCOPES_KEY =
 
 val MvElement.itemScopes: Set<ItemScope>
     get() {
+        // TODO: special case module items to use stub-only in some cases
 //        project.cacheManager.cache(this, ITEM_SCOPES_KEY) {
         val scopes = mutableSetOf(ItemScope.MAIN)
         var element: MvElement? = this
         while (element != null) {
             when (element) {
                 is MvDocAndAttributeOwner -> {
-                    val ownerItemScope = element.explicitAttributeItemScope()
-                    if (ownerItemScope != null) {
-                        scopes.add(ownerItemScope)
-                    }
+                    val attributeScopes = element.explicitItemScopes()
+                    scopes.addAll(attributeScopes)
+//                    val ownerItemScope = element.explicitAttributeItemScope()
+//                    if (ownerItemScope != null) {
+//                        scopes.add(ownerItemScope)
+//                    }
                 }
                 is MvSpecCodeBlock, is MvItemSpecRef -> scopes.add(ItemScope.VERIFY)
             }
@@ -72,9 +79,20 @@ val MvElement.itemScope: ItemScope
         }
     }
 
+private fun MvDocAndAttributeOwner.explicitItemScopes(): Set<ItemScope> {
+    val scopes = mutableSetOf<ItemScope>()
+    if (this.isTestOnly || (this is MvFunction && this.isTest)) {
+        scopes.add(ItemScope.TEST)
+    }
+    if (this.isVerifyOnly) {
+        scopes.add(ItemScope.VERIFY)
+    }
+    return scopes
+}
+
 private fun MvDocAndAttributeOwner.explicitAttributeItemScope(): ItemScope? =
     when (this) {
-        is MvSpecInlineFunction -> ItemScope.MAIN
+//        is MvSpecInlineFunction -> ItemScope.MAIN
         is MvFunction ->
             when {
                 this.isTestOnly || this.isTest -> ItemScope.TEST
