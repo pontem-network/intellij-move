@@ -4,20 +4,26 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.isVisibleInContext
 
-data class SimpleScopeEntry<T : MvNamedElement>(
+data class ScopeItem<T : MvNamedElement>(
     val name: String,
     val element: T
 )
 
 fun interface MatchingProcessor<T : MvNamedElement> {
-    fun match(entry: SimpleScopeEntry<T>): Boolean
+    fun match(entry: ScopeItem<T>): Boolean
+
+    fun match(element: T): Boolean {
+        val name = element.name ?: return false
+        val entry = ScopeItem(name, element)
+        return match(entry)
+    }
 
     fun match(contextVis: ItemVis, element: T): Boolean {
         if (!contextVis.isMsl && element.isMsl()) return false
         if (!element.isVisibleInContext(contextVis.itemScopes)) return false
 
         val name = element.name ?: return false
-        val entry = SimpleScopeEntry(name, element)
+        val entry = ScopeItem(name, element)
         return match(entry)
     }
 
@@ -25,4 +31,9 @@ fun interface MatchingProcessor<T : MvNamedElement> {
         sequenceOf(*collections)
             .flatten()
             .any { match(itemVis, it) }
+
+    fun matchAll(vararg collections: Iterable<T>): Boolean =
+        sequenceOf(*collections)
+            .flatten()
+            .any { match(it) }
 }

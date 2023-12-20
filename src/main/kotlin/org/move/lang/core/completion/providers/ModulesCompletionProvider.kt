@@ -34,25 +34,20 @@ object ModulesCompletionProvider : MvCompletionProvider() {
         if (refElement.moduleRef != null) return
 
         val processedNames = mutableSetOf<String>()
+        val namespaces = setOf(Namespace.MODULE)
         val itemVis =
             ItemVis(
-                setOf(Namespace.MODULE),
+                namespaces,
                 visibilities = Visibility.local(),
                 mslLetScope = refElement.mslLetScope,
                 itemScopes = refElement.itemScopes,
             )
         val ctx = CompletionContext(refElement, itemVis)
-        processItems(refElement, itemVis) {
-            val lookup = it.element.createLookupElement(
-                ctx,
-                priority = IMPORTED_MODULE_PRIORITY
+        processItems(refElement, namespaces, itemVis) { (name, element) ->
+            result.addElement(
+                element.createLookupElement(ctx, priority = IMPORTED_MODULE_PRIORITY)
             )
-//            val lookup = it.element.createCompletionLookupElement(
-//                priority = IMPORTED_MODULE_PRIORITY,
-////                props = props,
-//            )
-            result.addElement(lookup)
-            it.element.name?.let(processedNames::add)
+            processedNames.add(name)
             false
         }
 

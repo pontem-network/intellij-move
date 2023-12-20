@@ -5,10 +5,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
 
-/// continue with the next resolution scope
-const val CONTINUE = false
-const val STOP = true
-
 fun processItemsInScope(
     scope: MvElement,
     cameFrom: MvElement,

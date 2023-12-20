@@ -25,7 +25,7 @@ import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
-abstract class MvPathCompletionProvider : MvCompletionProvider() {
+abstract class MvPathCompletionProvider: MvCompletionProvider() {
 
     abstract fun itemVis(pathElement: MvPath): ItemVis
 
@@ -62,16 +62,15 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
         }
 
         val processedNames = mutableSetOf<String>()
-        processItems(pathElement, itemVis) {
-            if (processedNames.contains(it.name)) return@processItems false
-            processedNames.add(it.name)
-
-            val lookupElement = it.element.createLookupElement(
-                ctx,
-                priority = it.element.completionPriority
+        val namespaces = itemVis.namespaces
+        processItems(pathElement, namespaces, itemVis) { (name, element) ->
+            if (processedNames.contains(name)) {
+                return@processItems false
+            }
+            processedNames.add(name)
+            result.addElement(
+                element.createLookupElement(ctx, priority = element.completionPriority)
             )
-            result.addElement(lookupElement)
-
             false
         }
 
@@ -98,7 +97,7 @@ abstract class MvPathCompletionProvider : MvCompletionProvider() {
     }
 }
 
-object NamesCompletionProvider : MvPathCompletionProvider() {
+object NamesCompletionProvider: MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
             MvPsiPatterns.path()
@@ -115,7 +114,7 @@ object NamesCompletionProvider : MvPathCompletionProvider() {
     }
 }
 
-object FunctionsCompletionProvider : MvPathCompletionProvider() {
+object FunctionsCompletionProvider: MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
             MvPsiPatterns.path()
@@ -132,7 +131,7 @@ object FunctionsCompletionProvider : MvPathCompletionProvider() {
     }
 }
 
-object TypesCompletionProvider : MvPathCompletionProvider() {
+object TypesCompletionProvider: MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = MvPsiPatterns.pathType()
 
@@ -146,7 +145,7 @@ object TypesCompletionProvider : MvPathCompletionProvider() {
     }
 }
 
-object SchemasCompletionProvider : MvPathCompletionProvider() {
+object SchemasCompletionProvider: MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
             StandardPatterns.or(

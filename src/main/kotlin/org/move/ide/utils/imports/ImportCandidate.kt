@@ -34,7 +34,8 @@ object ImportCandidateCollector {
 
         MvNamedElementIndex
             .processElementsByName(project, targetName, searchScope) { element ->
-                processQualItem(element, itemVis) {
+                val namespaces = itemVis.namespaces
+                processQualItem(element, namespaces, itemVis) {
                     val entryElement = it.element
                     if (entryElement !is MvQualNamedElement) return@processQualItem false
                     if (it.name == targetName) {

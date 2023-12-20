@@ -1,7 +1,6 @@
 package org.move.lang.core.resolve
 
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -25,6 +24,7 @@ data class ItemVis(
 
 fun processItems(
     element: MvElement,
+    namespaces: Set<Namespace>,
     itemVis: ItemVis,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
@@ -33,7 +33,7 @@ fun processItems(
         stopAfter = { it is MvModule }
     ) { cameFrom, scope ->
         processItemsInScope(
-            scope, cameFrom, itemVis.namespaces, itemVis, processor
+            scope, cameFrom, namespaces, itemVis, processor
         )
     }
 }
@@ -50,7 +50,7 @@ fun resolveLocalItem(
     )
     val referenceName = element.referenceName
     var resolved: MvNamedElement? = null
-    processItems(element, itemVis) {
+    processItems(element, namespaces, itemVis) {
         if (it.name == referenceName) {
             resolved = it.element
             return@processItems true
@@ -79,16 +79,17 @@ fun resolveIntoFQModuleRefInUseSpeck(moduleRef: MvModuleRef): MvFQModuleRef? {
 
 fun processQualItem(
     item: MvNamedElement,
+    namespaces: Set<Namespace>,
     itemVis: ItemVis,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     val matched = when {
-        item is MvModule && Namespace.MODULE in itemVis.namespaces
-                || item is MvStruct && Namespace.TYPE in itemVis.namespaces
-                || item is MvSchema && Namespace.SCHEMA in itemVis.namespaces ->
+        item is MvModule && Namespace.MODULE in namespaces
+                || item is MvStruct && Namespace.TYPE in namespaces
+                || item is MvSchema && Namespace.SCHEMA in namespaces ->
             processor.match(itemVis, item)
 
-        item is MvFunction && Namespace.FUNCTION in itemVis.namespaces -> {
+        item is MvFunction && Namespace.FUNCTION in namespaces -> {
             if (item.isTest) return false
             for (vis in itemVis.visibilities) {
                 when {
@@ -148,7 +149,7 @@ fun processFQModuleRef(
     val refAddressText = fqModuleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
 
     val moduleProcessor = MatchingProcessor<MvNamedElement> {
-        val entry = SimpleScopeEntry(it.name, it.element as MvModule)
+        val entry = ScopeItem(it.name, it.element as MvModule)
         val modAddressText = entry.element.address(moveProj)?.canonicalValue(moveProj)
         if (modAddressText != refAddressText)
             return@MatchingProcessor false
@@ -180,7 +181,7 @@ fun processFQModuleRef(
     val refAddress = moduleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
 
     val matchModule = MatchingProcessor<MvNamedElement> {
-        val entry = SimpleScopeEntry(it.name, it.element as MvModule)
+        val entry = ScopeItem(it.name, it.element as MvModule)
         // TODO: check belongs to the current project
         val modAddress = entry.element.address(moveProj)?.canonicalValue(moveProj)
 
@@ -188,8 +189,9 @@ fun processFQModuleRef(
         processor.match(entry)
     }
 
+    val namespaces = setOf(Namespace.MODULE)
     val itemVis = ItemVis(
-        namespaces = setOf(Namespace.MODULE),
+        namespaces = namespaces,
         visibilities = Visibility.local(),
         mslLetScope = moduleRef.mslLetScope,
         itemScopes = moduleRef.itemScopes,
@@ -205,7 +207,7 @@ fun processFQModuleRef(
 
     MvNamedElementIndex
         .processElementsByName(project, target, searchScope) {
-            val matched = processQualItem(it, itemVis, matchModule)
+            val matched = processQualItem(it, namespaces, itemVis, matchModule)
             if (matched) return@processElementsByName false
 
             true
