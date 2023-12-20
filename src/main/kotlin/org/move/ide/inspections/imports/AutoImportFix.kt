@@ -9,7 +9,6 @@ import org.move.ide.inspections.DiagnosticFix
 import org.move.ide.utils.imports.ImportCandidate
 import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.ide.utils.imports.import
-import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.hasAncestor
@@ -17,11 +16,9 @@ import org.move.lang.core.psi.ext.importCandidateNamespaces
 import org.move.lang.core.psi.ext.smartPointer
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslLetScope
-import org.move.lang.core.resolve.processFileItems
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.openapiext.common.checkUnitTestMode
 import org.move.openapiext.runWriteCommandAction
 
 class AutoImportFix(element: MvReferenceElement): DiagnosticFix<MvReferenceElement>(element),
@@ -133,19 +130,19 @@ data class ImportContext private constructor(
     }
 }
 
-fun MoveFile.qualifiedItems(
-    targetName: String,
-    namespaces: Set<Namespace>,
-    visibilities: Set<Visibility>,
-    itemVis: ItemVis
-): List<MvQualNamedElement> {
-    checkUnitTestMode()
-    val elements = mutableListOf<MvQualNamedElement>()
-    processFileItems(this, namespaces, visibilities, itemVis) {
-        if (it.element is MvQualNamedElement && it.name == targetName) {
-            elements.add(it.element)
-        }
-        false
-    }
-    return elements
-}
+//fun MoveFile.qualifiedItems(
+//    targetName: String,
+//    namespaces: Set<Namespace>,
+//    visibilities: Set<Visibility>,
+//    itemVis: ItemVis
+//): List<MvQualNamedElement> {
+//    checkUnitTestMode()
+//    val elements = mutableListOf<MvQualNamedElement>()
+//    processFileItems(this, namespaces, visibilities, itemVis) {
+//        if (it.element is MvQualNamedElement && it.name == targetName) {
+//            elements.add(it.element)
+//        }
+//        false
+//    }
+//    return elements
+//}

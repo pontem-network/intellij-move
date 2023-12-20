@@ -18,6 +18,12 @@ data class ItemVis(
     val itemScopes: Set<ItemScope>,
 ) {
     val isMsl get() = mslLetScope != MslLetScope.NONE
+
+    fun matches(element: MvElement): Boolean {
+        if (!this.isMsl && element.isMsl()) return false
+        if (!element.isVisibleInContext(this.itemScopes)) return false
+        return true
+    }
 }
 
 fun processItems(
@@ -115,21 +121,9 @@ fun processQualItem(
     return matched
 }
 
-fun processFileItems(
-    file: MoveFile,
-    namespaces: Set<Namespace>,
-    visibilities: Set<Visibility>,
-    itemVis: ItemVis,
-    processor: MatchingProcessor<MvNamedElement>,
-): Boolean {
+fun processModulesInFile(file: MoveFile, moduleProcessor: MatchingProcessor<MvNamedElement>): Boolean {
     for (module in file.modules()) {
-        if (
-            Namespace.MODULE in namespaces
-            && processor.match(itemVis, module)
-        ) {
-            return true
-        }
-        if (processModuleInnerItems(module, namespaces, visibilities, itemVis, processor)) return true
+        if (moduleProcessor.match(module)) return true
     }
     return false
 }
@@ -138,14 +132,17 @@ fun processFQModuleRef(
     fqModuleRef: MvFQModuleRef,
     processor: MatchingProcessor<MvModule>,
 ) {
+    val moveProj = fqModuleRef.moveProject ?: return
+    val refAddressText = fqModuleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
+
     val itemVis = ItemVis(
         mslLetScope = fqModuleRef.mslLetScope,
         itemScopes = fqModuleRef.itemScopes,
     )
-    val moveProj = fqModuleRef.moveProject ?: return
-    val refAddressText = fqModuleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
-
-    val moduleProcessor = MatchingProcessor<MvNamedElement> {
+    val moduleProcessor = MatchingProcessor {
+        if (!itemVis.matches(it.element)) {
+            return@MatchingProcessor false
+        }
         val entry = ScopeItem(it.name, it.element as MvModule)
         val modAddressText = entry.element.address(moveProj)?.canonicalValue(moveProj)
         if (modAddressText != refAddressText)
@@ -155,16 +152,16 @@ fun processFQModuleRef(
 
     // first search modules in the current file
     val currentFile = fqModuleRef.containingMoveFile ?: return
-    var stopped =
-        processFileItems(currentFile, setOf(Namespace.MODULE), Visibility.local(), itemVis, moduleProcessor)
+    var stopped = processModulesInFile(currentFile, moduleProcessor)
+//    var stopped =
+//        processFileItems(currentFile, setOf(Namespace.MODULE), Visibility.local(), itemVis, moduleProcessor)
     if (stopped) return
 
     moveProj.processMoveFiles { moveFile ->
         // skip current file as it's processed already
         if (moveFile.toNioPathOrNull() == currentFile.toNioPathOrNull())
             return@processMoveFiles true
-        stopped =
-            processFileItems(moveFile, setOf(Namespace.MODULE), Visibility.local(), itemVis, moduleProcessor)
+        stopped = processModulesInFile(moveFile, moduleProcessor)
         // if not resolved, returns true to indicate that next file should be tried
         !stopped
     }
@@ -179,7 +176,12 @@ fun processFQModuleRef(
     val moveProj = moduleRef.moveProject ?: return
     val refAddress = moduleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
 
+    val itemVis = ItemVis(
+        mslLetScope = moduleRef.mslLetScope,
+        itemScopes = moduleRef.itemScopes,
+    )
     val matchModule = MatchingProcessor<MvNamedElement> {
+        if (!itemVis.matches(it.element)) return@MatchingProcessor false
         val entry = ScopeItem(it.name, it.element as MvModule)
         // TODO: check belongs to the current project
         val modAddress = entry.element.address(moveProj)?.canonicalValue(moveProj)
@@ -188,14 +190,11 @@ fun processFQModuleRef(
         processor.match(entry)
     }
 
-    val itemVis = ItemVis(
-        mslLetScope = moduleRef.mslLetScope,
-        itemScopes = moduleRef.itemScopes,
-    )
+
     // search modules in the current file first
     val currentFile = moduleRef.containingMoveFile ?: return
-    val stopped =
-        processFileItems(currentFile, setOf(Namespace.MODULE), Visibility.local(), itemVis, matchModule)
+    val stopped = processModulesInFile(currentFile, matchModule)
+//        processFileItems(currentFile, setOf(Namespace.MODULE), Visibility.local(), itemVis, matchModule)
     if (stopped) return
 
     val currentFileScope = GlobalSearchScope.fileScope(currentFile)

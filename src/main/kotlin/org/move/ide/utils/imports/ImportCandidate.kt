@@ -1,13 +1,16 @@
 package org.move.ide.utils.imports
 
 import org.move.ide.inspections.imports.ImportContext
-import org.move.ide.inspections.imports.qualifiedItems
 import org.move.lang.MoveFile
+import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvQualNamedElement
-import org.move.lang.core.resolve.processQualItem
+import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.ItemQualName
 import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.moveProject
+import org.move.openapiext.common.checkUnitTestMode
 import org.move.openapiext.common.isUnitTestMode
 
 data class ImportCandidate(val element: MvQualNamedElement, val qualName: ItemQualName)
@@ -28,7 +31,17 @@ object ImportCandidateCollector {
         if (isUnitTestMode) {
             // always add current file in tests
             val currentFile = contextElement.containingFile as? MoveFile ?: return emptyList()
-            val items = currentFile.qualifiedItems(targetName, namespaces, visibilities, itemVis)
+
+            val items = mutableListOf<MvQualNamedElement>()
+            processFileItemsForUnitTests(currentFile, namespaces, visibilities, itemVis) {
+                if (it.element is MvQualNamedElement && it.name == targetName) {
+                    items.add(it.element)
+                }
+                false
+            }
+//            return elements
+
+//            val items = currentFile.qualifiedItems(targetName, namespaces, visibilities, itemVis)
             allItems.addAll(items)
         }
 
@@ -49,4 +62,24 @@ object ImportCandidateCollector {
             .filter(itemFilter)
             .mapNotNull { item -> item.qualName?.let { ImportCandidate(item, it) } }
     }
+}
+
+private fun processFileItemsForUnitTests(
+    file: MoveFile,
+    namespaces: Set<Namespace>,
+    visibilities: Set<Visibility>,
+    itemVis: ItemVis,
+    processor: MatchingProcessor<MvNamedElement>,
+): Boolean {
+    checkUnitTestMode()
+    for (module in file.modules()) {
+        if (
+            Namespace.MODULE in namespaces
+            && processor.match(itemVis, module)
+        ) {
+            return true
+        }
+        if (processModuleInnerItems(module, namespaces, visibilities, itemVis, processor)) return true
+    }
+    return false
 }
