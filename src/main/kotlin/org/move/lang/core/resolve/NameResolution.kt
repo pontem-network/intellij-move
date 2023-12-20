@@ -14,7 +14,6 @@ import org.move.lang.toNioPathOrNull
 import org.move.stdext.wrapWithList
 
 data class ItemVis(
-    val visibilities: Set<Visibility>,
     val mslLetScope: MslLetScope,
     val itemScopes: Set<ItemScope>,
 ) {
@@ -42,7 +41,6 @@ fun resolveLocalItem(
     namespaces: Set<Namespace>
 ): List<MvNamedElement> {
     val itemVis = ItemVis(
-        visibilities = Visibility.local(),
         mslLetScope = element.mslLetScope,
         itemScopes = element.itemScopes,
     )
@@ -78,6 +76,7 @@ fun resolveIntoFQModuleRefInUseSpeck(moduleRef: MvModuleRef): MvFQModuleRef? {
 fun processQualItem(
     item: MvNamedElement,
     namespaces: Set<Namespace>,
+    visibilities: Set<Visibility>,
     itemVis: ItemVis,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
@@ -89,7 +88,7 @@ fun processQualItem(
 
         item is MvFunction && Namespace.FUNCTION in namespaces -> {
             if (item.isTest) return false
-            for (vis in itemVis.visibilities) {
+            for (vis in visibilities) {
                 when {
                     vis is Visibility.Public
                             && item.visibility == FunctionVisibility.PUBLIC -> processor.match(itemVis, item)
@@ -119,6 +118,7 @@ fun processQualItem(
 fun processFileItems(
     file: MoveFile,
     namespaces: Set<Namespace>,
+    visibilities: Set<Visibility>,
     itemVis: ItemVis,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
@@ -129,7 +129,7 @@ fun processFileItems(
         ) {
             return true
         }
-        if (processModuleInnerItems(module, namespaces, itemVis, processor)) return true
+        if (processModuleInnerItems(module, namespaces, visibilities, itemVis, processor)) return true
     }
     return false
 }
@@ -138,9 +138,7 @@ fun processFQModuleRef(
     fqModuleRef: MvFQModuleRef,
     processor: MatchingProcessor<MvModule>,
 ) {
-    val namespaces = setOf(Namespace.MODULE)
     val itemVis = ItemVis(
-        visibilities = Visibility.local(),
         mslLetScope = fqModuleRef.mslLetScope,
         itemScopes = fqModuleRef.itemScopes,
     )
@@ -157,14 +155,16 @@ fun processFQModuleRef(
 
     // first search modules in the current file
     val currentFile = fqModuleRef.containingMoveFile ?: return
-    var stopped = processFileItems(currentFile, namespaces, itemVis, moduleProcessor)
+    var stopped =
+        processFileItems(currentFile, setOf(Namespace.MODULE), Visibility.local(), itemVis, moduleProcessor)
     if (stopped) return
 
     moveProj.processMoveFiles { moveFile ->
         // skip current file as it's processed already
         if (moveFile.toNioPathOrNull() == currentFile.toNioPathOrNull())
             return@processMoveFiles true
-        stopped = processFileItems(moveFile, namespaces, itemVis, moduleProcessor)
+        stopped =
+            processFileItems(moveFile, setOf(Namespace.MODULE), Visibility.local(), itemVis, moduleProcessor)
         // if not resolved, returns true to indicate that next file should be tried
         !stopped
     }
@@ -188,15 +188,14 @@ fun processFQModuleRef(
         processor.match(entry)
     }
 
-    val namespaces = setOf(Namespace.MODULE)
     val itemVis = ItemVis(
-        visibilities = Visibility.local(),
         mslLetScope = moduleRef.mslLetScope,
         itemScopes = moduleRef.itemScopes,
     )
     // search modules in the current file first
     val currentFile = moduleRef.containingMoveFile ?: return
-    val stopped = processFileItems(currentFile, namespaces, itemVis, matchModule)
+    val stopped =
+        processFileItems(currentFile, setOf(Namespace.MODULE), Visibility.local(), itemVis, matchModule)
     if (stopped) return
 
     val currentFileScope = GlobalSearchScope.fileScope(currentFile)
@@ -205,7 +204,7 @@ fun processFQModuleRef(
 
     MvNamedElementIndex
         .processElementsByName(project, target, searchScope) {
-            val matched = processQualItem(it, namespaces, itemVis, matchModule)
+            val matched = processQualItem(it, setOf(Namespace.MODULE), Visibility.local(), itemVis, matchModule)
             if (matched) return@processElementsByName false
 
             true

@@ -18,7 +18,7 @@ object ImportCandidateCollector {
         targetName: String,
         itemFilter: (MvQualNamedElement) -> Boolean = { true }
     ): List<ImportCandidate> {
-        val (contextElement, namespaces, itemVis) = context
+        val (contextElement, namespaces, visibilities, itemVis) = context
 
         val project = contextElement.project
         val moveProject = contextElement.moveProject ?: return emptyList()
@@ -28,14 +28,13 @@ object ImportCandidateCollector {
         if (isUnitTestMode) {
             // always add current file in tests
             val currentFile = contextElement.containingFile as? MoveFile ?: return emptyList()
-            val items = currentFile.qualifiedItems(targetName, namespaces, itemVis)
+            val items = currentFile.qualifiedItems(targetName, namespaces, visibilities, itemVis)
             allItems.addAll(items)
         }
 
         MvNamedElementIndex
             .processElementsByName(project, targetName, searchScope) { element ->
-//                val namespaces = itemVis.namespaces
-                processQualItem(element, namespaces, itemVis) {
+                processQualItem(element, namespaces, visibilities, itemVis) {
                     val entryElement = it.element
                     if (entryElement !is MvQualNamedElement) return@processQualItem false
                     if (it.name == targetName) {

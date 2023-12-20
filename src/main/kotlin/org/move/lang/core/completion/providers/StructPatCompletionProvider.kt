@@ -33,11 +33,10 @@ object StructPatCompletionProvider : MvCompletionProvider() {
 
         val namespaces = setOf(Namespace.TYPE)
         val itemVis = ItemVis(
-            visibilities = setOf(Visibility.Internal),
             mslLetScope = MslLetScope.NONE,
             itemScopes = bindingPat.itemScopes,
         )
-        processModuleItems(module, namespaces, itemVis) {
+        processModuleItems(module, namespaces, setOf(Visibility.Internal), itemVis) {
             val lookup = it.element.createCompletionLookupElement()
             result.addElement(lookup)
             false

@@ -31,9 +31,9 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
 
     open fun itemVis(pathElement: MvPath): ItemVis =
         ItemVis(
-            Visibility.none(),
             mslLetScope = pathElement.mslLetScope,
-            itemScopes = pathElement.itemScopes,        )
+            itemScopes = pathElement.itemScopes,
+        )
 
     final override fun addCompletions(
         parameters: CompletionParameters,
@@ -60,7 +60,7 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
                 moduleRef.isSelf -> setOf(Visibility.Internal)
                 else -> Visibility.buildSetOfVisibilities(pathElement)
             }
-            processModuleItems(module, namespaces, itemVis.copy(visibilities = vs)) {
+            processModuleItems(module, namespaces, vs, itemVis) {
                 val lookup = it.element.createLookupElement(ctx)
                 result.addElement(lookup)
                 false
@@ -85,7 +85,12 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
 
         val originalPathElement = parameters.originalPosition?.parent as? MvPath ?: return
         val importContext =
-            ImportContext.from(originalPathElement, namespaces, itemVis.copy(visibilities = setOf(Visibility.Public)))
+            ImportContext.from(
+                originalPathElement,
+                namespaces,
+                setOf(Visibility.Public),
+                itemVis
+            )
         val candidates = getImportCandidates(
             parameters,
             result,
@@ -168,7 +173,6 @@ object SchemasCompletionProvider: MvPathCompletionProvider() {
 
     override fun itemVis(pathElement: MvPath): ItemVis {
         return ItemVis(
-            Visibility.none(),
             mslLetScope = MslLetScope.EXPR_STMT,
             itemScopes = pathElement.itemScopes,
         )

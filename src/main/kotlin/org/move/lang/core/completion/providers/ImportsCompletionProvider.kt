@@ -48,10 +48,10 @@ object ImportsCompletionProvider : MvCompletionProvider() {
         }
         val ns = setOf(Namespace.NAME, Namespace.TYPE, Namespace.FUNCTION)
         val itemVis = ItemVis(
-            vs, mslLetScope = itemImport.mslLetScope,
+            mslLetScope = itemImport.mslLetScope,
             itemScopes = itemImport.itemScopes,
         )
-        processModuleItems(referredModule, ns, itemVis) {
+        processModuleItems(referredModule, ns, vs, itemVis) {
             result.addElement(
                 it.element.createCompletionLookupElement(BasicInsertHandler(), ns = ns)
             )

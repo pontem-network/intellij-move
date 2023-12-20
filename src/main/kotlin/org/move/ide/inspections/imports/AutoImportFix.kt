@@ -99,15 +99,17 @@ class AutoImportFix(element: MvReferenceElement): DiagnosticFix<MvReferenceEleme
 data class ImportContext private constructor(
     val pathElement: MvReferenceElement,
     val namespaces: Set<Namespace>,
+    val visibilities: Set<Visibility>,
     val itemVis: ItemVis,
 ) {
     companion object {
         fun from(
             contextElement: MvReferenceElement,
             namespaces: Set<Namespace>,
+            visibilities: Set<Visibility>,
             itemVis: ItemVis
         ): ImportContext {
-            return ImportContext(contextElement, namespaces, itemVis)
+            return ImportContext(contextElement, namespaces, visibilities, itemVis)
         }
 
         fun from(contextElement: MvReferenceElement): ImportContext {
@@ -123,11 +125,10 @@ data class ImportContext private constructor(
                 }
             }
             val itemVis = ItemVis(
-                visibilities = vs,
                 mslLetScope = contextElement.mslLetScope,
                 itemScopes = contextElement.itemScopes,
             )
-            return ImportContext(contextElement, ns, itemVis)
+            return ImportContext(contextElement, ns, vs, itemVis)
         }
     }
 }
@@ -135,11 +136,12 @@ data class ImportContext private constructor(
 fun MoveFile.qualifiedItems(
     targetName: String,
     namespaces: Set<Namespace>,
+    visibilities: Set<Visibility>,
     itemVis: ItemVis
 ): List<MvQualNamedElement> {
     checkUnitTestMode()
     val elements = mutableListOf<MvQualNamedElement>()
-    processFileItems(this, namespaces, itemVis) {
+    processFileItems(this, namespaces, visibilities, itemVis) {
         if (it.element is MvQualNamedElement && it.name == targetName) {
             elements.add(it.element)
         }

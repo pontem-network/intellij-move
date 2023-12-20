@@ -4,10 +4,12 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.Namespace
+import org.move.lang.core.resolve.ref.Visibility
 
 fun processModuleInnerItems(
     module: MvModule,
     namespaces: Set<Namespace>,
+    visibilities: Set<Visibility>,
     itemVis: ItemVis,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
@@ -29,7 +31,7 @@ fun processModuleInnerItems(
                 )
             }
             Namespace.FUNCTION -> {
-                val functions = itemVis.visibilities.flatMap { module.visibleFunctions(it) }
+                val functions = visibilities.flatMap { module.visibleFunctions(it) }
                 val specFunctions =
                     if (itemVis.isMsl) module.specFunctions() else emptyList()
                 val specInlineFunctions =
@@ -76,10 +78,11 @@ fun processModuleSpecItems(
 fun processModuleItems(
     module: MvModule,
     namespaces: Set<Namespace>,
+    visibilities: Set<Visibility>,
     itemVis: ItemVis,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
-    return processModuleInnerItems(module, namespaces, itemVis, processor)
+    return processModuleInnerItems(module, namespaces, visibilities, itemVis, processor)
             || itemVis.isMsl && processModuleSpecItems(module, namespaces, itemVis, processor)
 }
 
@@ -87,10 +90,11 @@ fun resolveModuleItem(
     module: MvModule,
     name: String,
     namespaces: Set<Namespace>,
+    visibilities: Set<Visibility>,
     itemVis: ItemVis,
 ): List<MvNamedElement> {
     val resolved = mutableListOf<MvNamedElement>()
-    processModuleItems(module, namespaces, itemVis) {
+    processModuleItems(module, namespaces, visibilities, itemVis) {
         if (it.name == name) {
             resolved.add(it.element)
             return@processModuleItems true

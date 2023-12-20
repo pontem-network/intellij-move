@@ -14,7 +14,6 @@ import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslLetScope
 import org.move.lang.core.resolve.processFQModuleRef
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.address
 import org.move.lang.core.withParent
@@ -39,7 +38,6 @@ object FQModuleCompletionProvider : MvCompletionProvider() {
 
         val namespaces = setOf(Namespace.MODULE)
         val itemVis = ItemVis(
-            visibilities = Visibility.none(),
             mslLetScope = fqModuleRef.mslLetScope,
             itemScopes = fqModuleRef.itemScopes,
         )

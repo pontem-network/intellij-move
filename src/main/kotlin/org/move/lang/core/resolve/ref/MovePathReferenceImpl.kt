@@ -9,7 +9,7 @@ import org.move.lang.core.resolve.*
 
 class MvPathReferenceImpl(
     element: MvPath,
-) : MvPolyVariantReferenceCached<MvPath>(element), MvPathReference {
+): MvPolyVariantReferenceCached<MvPath>(element), MvPathReference {
 
     override val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE
 
@@ -17,7 +17,6 @@ class MvPathReferenceImpl(
         val namespaces = element.namespaces()
         val vs = Visibility.buildSetOfVisibilities(element)
         val itemVis = ItemVis(
-            vs,
             element.mslLetScope,
             itemScopes = element.itemScopes,
         )
@@ -28,7 +27,7 @@ class MvPathReferenceImpl(
         if (moduleRef is MvFQModuleRef) {
             // TODO: can be replaced with index call
             val module = moduleRef.reference?.resolve() as? MvModule ?: return emptyList()
-            return resolveModuleItem(module, refName, namespaces, itemVis)
+            return resolveModuleItem(module, refName, namespaces, vs, itemVis)
         }
         // second,
         // if it's MODULE::NAME -> resolve MODULE into corresponding FQModuleRef using imports
@@ -36,13 +35,17 @@ class MvPathReferenceImpl(
             if (moduleRef.isSelf) {
                 val containingModule = moduleRef.containingModule ?: return emptyList()
                 return resolveModuleItem(
-                    containingModule, refName, namespaces, itemVis.copy(visibilities = setOf(Visibility.Internal))
+                    containingModule,
+                    refName,
+                    namespaces,
+                    setOf(Visibility.Internal),
+                    itemVis
                 )
             }
             val useSpeckFQModuleRef = resolveIntoFQModuleRefInUseSpeck(moduleRef) ?: return emptyList()
             val module =
                 useSpeckFQModuleRef.reference?.resolve() as? MvModule ?: return emptyList()
-            return resolveModuleItem(module, refName, namespaces, itemVis)
+            return resolveModuleItem(module, refName, namespaces, vs, itemVis)
         } else {
             // if it's NAME
             // special case second argument of update_field function in specs
@@ -59,7 +62,7 @@ class MvPathReferenceImpl(
                     // TODO: index call
                     val module = fqModRef.reference?.resolve() as? MvModule
                         ?: return emptyList()
-                    return resolveModuleItem(module, refName, namespaces, itemVis)
+                    return resolveModuleItem(module, refName, namespaces, vs, itemVis)
                 }
                 // module import
                 is MvModuleUseSpeck -> {

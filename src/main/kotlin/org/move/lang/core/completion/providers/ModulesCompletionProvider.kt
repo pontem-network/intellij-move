@@ -40,7 +40,6 @@ object ModulesCompletionProvider: MvCompletionProvider() {
         val namespaces = setOf(Namespace.MODULE)
         val itemVis =
             ItemVis(
-                visibilities = Visibility.local(),
                 mslLetScope = refElement.mslLetScope,
                 itemScopes = refElement.itemScopes,
             )
@@ -58,7 +57,12 @@ object ModulesCompletionProvider: MvCompletionProvider() {
 
         val path = parameters.originalPosition?.parent as? MvPath ?: return
         val importContext =
-            ImportContext.from(path, namespaces, itemVis.copy(visibilities = setOf(Visibility.Public)))
+            ImportContext.from(
+                path,
+                namespaces,
+                setOf(Visibility.Public),
+                itemVis
+            )
         val containingMod = path.containingModule
         val candidates = getImportCandidates(parameters, result, processedNames, importContext,
                                              itemFilter = {
