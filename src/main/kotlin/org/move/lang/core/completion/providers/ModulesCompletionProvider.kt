@@ -8,15 +8,18 @@ import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.*
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvPath
+import org.move.lang.core.psi.containingModule
+import org.move.lang.core.psi.containingModuleSpec
 import org.move.lang.core.psi.ext.equalsTo
+import org.move.lang.core.psi.itemScopes
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslLetScope
 import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 
-object ModulesCompletionProvider : MvCompletionProvider() {
+object ModulesCompletionProvider: MvCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
             MvPsiPatterns.path()
@@ -37,12 +40,11 @@ object ModulesCompletionProvider : MvCompletionProvider() {
         val namespaces = setOf(Namespace.MODULE)
         val itemVis =
             ItemVis(
-                namespaces,
                 visibilities = Visibility.local(),
                 mslLetScope = refElement.mslLetScope,
                 itemScopes = refElement.itemScopes,
             )
-        val ctx = CompletionContext(refElement, itemVis)
+        val ctx = CompletionContext(refElement, namespaces, itemVis)
         processItems(refElement, namespaces, itemVis) { (name, element) ->
             result.addElement(
                 element.createLookupElement(ctx, priority = IMPORTED_MODULE_PRIORITY)
@@ -56,7 +58,7 @@ object ModulesCompletionProvider : MvCompletionProvider() {
 
         val path = parameters.originalPosition?.parent as? MvPath ?: return
         val importContext =
-            ImportContext.from(path, itemVis.copy(visibilities = setOf(Visibility.Public)))
+            ImportContext.from(path, namespaces, itemVis.copy(visibilities = setOf(Visibility.Public)))
         val containingMod = path.containingModule
         val candidates = getImportCandidates(parameters, result, processedNames, importContext,
                                              itemFilter = {
@@ -65,12 +67,12 @@ object ModulesCompletionProvider : MvCompletionProvider() {
                                                  )
                                              })
         candidates.forEach { candidate ->
-            val lookupElement = candidate.element.createCompletionLookupElement(
-                ImportInsertHandler(parameters, candidate),
-                importContext.itemVis.namespaces,
-                priority = UNIMPORTED_ITEM_PRIORITY,
-//                props = props,
-            )
+            val lookupElement =
+                candidate.element.createCompletionLookupElement(
+                    ImportInsertHandler(parameters, candidate),
+                    importContext.namespaces,
+                    priority = UNIMPORTED_ITEM_PRIORITY,
+                )
             result.addElement(lookupElement)
         }
     }

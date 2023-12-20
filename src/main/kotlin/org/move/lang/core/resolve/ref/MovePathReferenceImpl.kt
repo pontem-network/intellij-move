@@ -17,7 +17,6 @@ class MvPathReferenceImpl(
         val namespaces = element.namespaces()
         val vs = Visibility.buildSetOfVisibilities(element)
         val itemVis = ItemVis(
-            namespaces,
             vs,
             element.mslLetScope,
             itemScopes = element.itemScopes,
@@ -29,7 +28,7 @@ class MvPathReferenceImpl(
         if (moduleRef is MvFQModuleRef) {
             // TODO: can be replaced with index call
             val module = moduleRef.reference?.resolve() as? MvModule ?: return emptyList()
-            return resolveModuleItem(module, refName, itemVis)
+            return resolveModuleItem(module, refName, namespaces, itemVis)
         }
         // second,
         // if it's MODULE::NAME -> resolve MODULE into corresponding FQModuleRef using imports
@@ -37,13 +36,13 @@ class MvPathReferenceImpl(
             if (moduleRef.isSelf) {
                 val containingModule = moduleRef.containingModule ?: return emptyList()
                 return resolveModuleItem(
-                    containingModule, refName, itemVis.copy(visibilities = setOf(Visibility.Internal))
+                    containingModule, refName, namespaces, itemVis.copy(visibilities = setOf(Visibility.Internal))
                 )
             }
             val useSpeckFQModuleRef = resolveIntoFQModuleRefInUseSpeck(moduleRef) ?: return emptyList()
             val module =
                 useSpeckFQModuleRef.reference?.resolve() as? MvModule ?: return emptyList()
-            return resolveModuleItem(module, refName, itemVis)
+            return resolveModuleItem(module, refName, namespaces, itemVis)
         } else {
             // if it's NAME
             // special case second argument of update_field function in specs
@@ -60,7 +59,7 @@ class MvPathReferenceImpl(
                     // TODO: index call
                     val module = fqModRef.reference?.resolve() as? MvModule
                         ?: return emptyList()
-                    return resolveModuleItem(module, refName, itemVis)
+                    return resolveModuleItem(module, refName, namespaces, itemVis)
                 }
                 // module import
                 is MvModuleUseSpeck -> {

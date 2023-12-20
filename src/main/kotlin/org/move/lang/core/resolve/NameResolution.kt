@@ -14,7 +14,6 @@ import org.move.lang.toNioPathOrNull
 import org.move.stdext.wrapWithList
 
 data class ItemVis(
-    val namespaces: Set<Namespace>,
     val visibilities: Set<Visibility>,
     val mslLetScope: MslLetScope,
     val itemScopes: Set<ItemScope>,
@@ -43,9 +42,8 @@ fun resolveLocalItem(
     namespaces: Set<Namespace>
 ): List<MvNamedElement> {
     val itemVis = ItemVis(
-        namespaces,
-        mslLetScope = element.mslLetScope,
         visibilities = Visibility.local(),
+        mslLetScope = element.mslLetScope,
         itemScopes = element.itemScopes,
     )
     val referenceName = element.referenceName
@@ -120,17 +118,18 @@ fun processQualItem(
 
 fun processFileItems(
     file: MoveFile,
+    namespaces: Set<Namespace>,
     itemVis: ItemVis,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     for (module in file.modules()) {
         if (
-            Namespace.MODULE in itemVis.namespaces
+            Namespace.MODULE in namespaces
             && processor.match(itemVis, module)
         ) {
             return true
         }
-        if (processModuleInnerItems(module, itemVis, processor)) return true
+        if (processModuleInnerItems(module, namespaces, itemVis, processor)) return true
     }
     return false
 }
@@ -139,8 +138,8 @@ fun processFQModuleRef(
     fqModuleRef: MvFQModuleRef,
     processor: MatchingProcessor<MvModule>,
 ) {
+    val namespaces = setOf(Namespace.MODULE)
     val itemVis = ItemVis(
-        namespaces = setOf(Namespace.MODULE),
         visibilities = Visibility.local(),
         mslLetScope = fqModuleRef.mslLetScope,
         itemScopes = fqModuleRef.itemScopes,
@@ -158,14 +157,14 @@ fun processFQModuleRef(
 
     // first search modules in the current file
     val currentFile = fqModuleRef.containingMoveFile ?: return
-    var stopped = processFileItems(currentFile, itemVis, moduleProcessor)
+    var stopped = processFileItems(currentFile, namespaces, itemVis, moduleProcessor)
     if (stopped) return
 
     moveProj.processMoveFiles { moveFile ->
         // skip current file as it's processed already
         if (moveFile.toNioPathOrNull() == currentFile.toNioPathOrNull())
             return@processMoveFiles true
-        stopped = processFileItems(moveFile, itemVis, moduleProcessor)
+        stopped = processFileItems(moveFile, namespaces, itemVis, moduleProcessor)
         // if not resolved, returns true to indicate that next file should be tried
         !stopped
     }
@@ -191,14 +190,13 @@ fun processFQModuleRef(
 
     val namespaces = setOf(Namespace.MODULE)
     val itemVis = ItemVis(
-        namespaces = namespaces,
         visibilities = Visibility.local(),
         mslLetScope = moduleRef.mslLetScope,
         itemScopes = moduleRef.itemScopes,
     )
     // search modules in the current file first
     val currentFile = moduleRef.containingMoveFile ?: return
-    val stopped = processFileItems(currentFile, itemVis, matchModule)
+    val stopped = processFileItems(currentFile, namespaces, itemVis, matchModule)
     if (stopped) return
 
     val currentFileScope = GlobalSearchScope.fileScope(currentFile)

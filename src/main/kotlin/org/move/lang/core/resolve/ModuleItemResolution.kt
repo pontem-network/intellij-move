@@ -7,10 +7,11 @@ import org.move.lang.core.resolve.ref.Namespace
 
 fun processModuleInnerItems(
     module: MvModule,
+    namespaces: Set<Namespace>,
     itemVis: ItemVis,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
-    for (namespace in itemVis.namespaces) {
+    for (namespace in namespaces) {
         val found = when (namespace) {
             Namespace.NAME -> {
                 processor.matchAll(
@@ -50,10 +51,11 @@ fun processModuleInnerItems(
 
 fun processModuleSpecItems(
     module: MvModule,
+    namespaces: Set<Namespace>,
     itemVis: ItemVis,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
-    for (namespace in itemVis.namespaces) {
+    for (namespace in namespaces) {
         for (moduleSpec in module.allModuleSpecs()) {
             val matched = when (namespace) {
                 Namespace.FUNCTION ->
@@ -73,20 +75,22 @@ fun processModuleSpecItems(
 
 fun processModuleItems(
     module: MvModule,
+    namespaces: Set<Namespace>,
     itemVis: ItemVis,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
-    return processModuleInnerItems(module, itemVis, processor)
-            || itemVis.isMsl && processModuleSpecItems(module, itemVis, processor)
+    return processModuleInnerItems(module, namespaces, itemVis, processor)
+            || itemVis.isMsl && processModuleSpecItems(module, namespaces, itemVis, processor)
 }
 
 fun resolveModuleItem(
     module: MvModule,
     name: String,
+    namespaces: Set<Namespace>,
     itemVis: ItemVis,
 ): List<MvNamedElement> {
     val resolved = mutableListOf<MvNamedElement>()
-    processModuleItems(module, itemVis) {
+    processModuleItems(module, namespaces, itemVis) {
         if (it.name == name) {
             resolved.add(it.element)
             return@processModuleItems true

@@ -19,11 +19,13 @@ import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslLetScope
 import org.move.lang.core.resolve.processFileItems
 import org.move.lang.core.resolve.ref.MvReferenceElement
+import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.openapiext.common.checkUnitTestMode
 import org.move.openapiext.runWriteCommandAction
 
-class AutoImportFix(element: MvReferenceElement) : DiagnosticFix<MvReferenceElement>(element), HighPriorityAction {
+class AutoImportFix(element: MvReferenceElement): DiagnosticFix<MvReferenceElement>(element),
+                                                  HighPriorityAction {
 
     private var isConsumed: Boolean = false
 
@@ -96,11 +98,16 @@ class AutoImportFix(element: MvReferenceElement) : DiagnosticFix<MvReferenceElem
 @Suppress("DataClassPrivateConstructor")
 data class ImportContext private constructor(
     val pathElement: MvReferenceElement,
+    val namespaces: Set<Namespace>,
     val itemVis: ItemVis,
 ) {
     companion object {
-        fun from(contextElement: MvReferenceElement, itemVis: ItemVis): ImportContext {
-            return ImportContext(contextElement, itemVis)
+        fun from(
+            contextElement: MvReferenceElement,
+            namespaces: Set<Namespace>,
+            itemVis: ItemVis
+        ): ImportContext {
+            return ImportContext(contextElement, namespaces, itemVis)
         }
 
         fun from(contextElement: MvReferenceElement): ImportContext {
@@ -116,20 +123,23 @@ data class ImportContext private constructor(
                 }
             }
             val itemVis = ItemVis(
-                namespaces = ns,
                 visibilities = vs,
                 mslLetScope = contextElement.mslLetScope,
                 itemScopes = contextElement.itemScopes,
             )
-            return ImportContext(contextElement, itemVis)
+            return ImportContext(contextElement, ns, itemVis)
         }
     }
 }
 
-fun MoveFile.qualifiedItems(targetName: String, itemVis: ItemVis): List<MvQualNamedElement> {
+fun MoveFile.qualifiedItems(
+    targetName: String,
+    namespaces: Set<Namespace>,
+    itemVis: ItemVis
+): List<MvQualNamedElement> {
     checkUnitTestMode()
     val elements = mutableListOf<MvQualNamedElement>()
-    processFileItems(this, itemVis) {
+    processFileItems(this, namespaces, itemVis) {
         if (it.element is MvQualNamedElement && it.name == targetName) {
             elements.add(it.element)
         }

@@ -131,18 +131,19 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
 
 data class CompletionContext(
     val contextElement: MvElement,
+    val namespaces: Set<Namespace>,
     val itemVis: ItemVis,
     val expectedTy: Ty? = null,
 )
 
 
 fun MvNamedElement.createLookupElement(
-    context: CompletionContext,
+    completionContext: CompletionContext,
     priority: Double = DEFAULT_PRIORITY,
-    insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(context),
+    insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionContext),
 ): LookupElement {
-    val lookupElement = this.createBaseLookupElement(context.itemVis.namespaces)
-    val props = lookupProperties(this, context)
+    val lookupElement = this.createBaseLookupElement(completionContext.namespaces)
+    val props = lookupProperties(this, completionContext)
     return lookupElement
         .withInsertHandler(insertHandler)
         .withPriority(priority)

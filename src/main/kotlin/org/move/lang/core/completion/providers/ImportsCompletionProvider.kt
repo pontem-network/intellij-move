@@ -48,17 +48,13 @@ object ImportsCompletionProvider : MvCompletionProvider() {
         }
         val ns = setOf(Namespace.NAME, Namespace.TYPE, Namespace.FUNCTION)
         val itemVis = ItemVis(
-            ns, vs,
-            mslLetScope = itemImport.mslLetScope,
+            vs, mslLetScope = itemImport.mslLetScope,
             itemScopes = itemImport.itemScopes,
         )
-        processModuleItems(referredModule, itemVis) {
-            val lookup =
-                it.element.createCompletionLookupElement(
-                    BasicInsertHandler(),
-                    ns = itemVis.namespaces
-                )
-            result.addElement(lookup)
+        processModuleItems(referredModule, ns, itemVis) {
+            result.addElement(
+                it.element.createCompletionLookupElement(BasicInsertHandler(), ns = ns)
+            )
             false
         }
     }

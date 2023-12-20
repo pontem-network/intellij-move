@@ -75,7 +75,6 @@ class MvUseItemReferenceElement(
         }
 
         val itemVis = ItemVis(
-            ns,
             vs,
             MslLetScope.EXPR_STMT,
             itemScopes = useItemScopes,
@@ -83,6 +82,7 @@ class MvUseItemReferenceElement(
         return resolveModuleItem(
             module,
             element.referenceName,
+            ns,
             itemVis
         )
     }

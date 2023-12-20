@@ -31,13 +31,13 @@ object StructPatCompletionProvider : MvCompletionProvider() {
         val bindingPat = parameters.position.parent as MvBindingPat
         val module = bindingPat.containingModule ?: return
 
+        val namespaces = setOf(Namespace.TYPE)
         val itemVis = ItemVis(
-            namespaces = setOf(Namespace.TYPE),
             visibilities = setOf(Visibility.Internal),
             mslLetScope = MslLetScope.NONE,
             itemScopes = bindingPat.itemScopes,
         )
-        processModuleItems(module, itemVis) {
+        processModuleItems(module, namespaces, itemVis) {
             val lookup = it.element.createCompletionLookupElement()
             result.addElement(lookup)
             false
