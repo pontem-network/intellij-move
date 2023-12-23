@@ -1,12 +1,15 @@
 package org.move.ide.inspections.imports
 
+import com.intellij.openapi.util.Key
+import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import com.intellij.psi.util.PsiTreeUtil
+import org.move.ide.inspections.imports.PathStart.Companion.pathStart
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.allModuleSpecBlocks
-import org.move.lang.core.psi.ext.module
-import org.move.lang.core.psi.ext.moduleItem
-import org.move.lang.core.psi.ext.moduleSpec
+import org.move.lang.core.psi.ext.*
+import org.move.utils.cache
+import org.move.utils.cacheManager
+import org.move.utils.psiFileTrackedCachedResult
 
 typealias ItemUsages = MutableMap<String, MutableSet<MvNamedElement>>
 
@@ -116,8 +119,32 @@ private fun MvImportsOwner.localPathUsages(): PathUsages {
     }
 }
 
-private fun addUsage(element: MvPath, itemUsages: ItemUsages) {
-    val moduleRef = element.moduleRef
+sealed class PathStart {
+    data class Address(val addressRef: MvAddressRef): PathStart()
+    data class Module(val modName: String, val moduleRef: MvModuleRef): PathStart()
+    data class Item(val itemName: String): PathStart()
+
+    companion object {
+        val MvPath.pathStart: PathStart?
+            get() {
+                val pathModuleRef = this.moduleRef
+                if (pathModuleRef != null) {
+                    if (pathModuleRef is MvFQModuleRef) {
+                        return Address(pathModuleRef.addressRef)
+                    } else {
+                        val modName = pathModuleRef.referenceName ?: return null
+                        return Module(modName, pathModuleRef)
+                    }
+                } else {
+                    val itemName = this.referenceName ?: return null
+                    return Item(itemName)
+                }
+            }
+    }
+}
+
+private fun addUsage(path: MvPath, itemUsages: ItemUsages) {
+    val moduleRef = path.moduleRef
     when {
         // MODULE::ITEM
         moduleRef != null && moduleRef !is MvFQModuleRef -> {
@@ -134,8 +161,8 @@ private fun addUsage(element: MvPath, itemUsages: ItemUsages) {
         }
         // ITEM_NAME
         moduleRef == null -> {
-            val name = element.referenceName ?: return
-            val targets = element.reference?.multiResolve().orEmpty()
+            val name = path.referenceName ?: return
+            val targets = path.reference?.multiResolve().orEmpty()
             if (targets.isEmpty()) {
                 itemUsages.putIfAbsent(name, mutableSetOf())
             } else {
@@ -147,3 +174,29 @@ private fun addUsage(element: MvPath, itemUsages: ItemUsages) {
         }
     }
 }
+
+val MvImportsOwner.nameUsages: NameUsagesMap
+    get() =
+        project.cacheManager.cache(this, NAME_USAGES) {
+            val map = mutableMapOf<String, MutableList<PathStart>>()
+            for (path in this.descendantsOfType<MvPath>()) {
+                val pathStart = path.pathStart ?: continue
+                when (pathStart) {
+                    is PathStart.Module -> {
+                        val mods = map.getOrPut(pathStart.modName) { mutableListOf() }
+                        mods.add(pathStart)
+                    }
+                    is PathStart.Item -> {
+                        val items = map.getOrPut(pathStart.itemName) { mutableListOf() }
+                        items.add(pathStart)
+                    }
+                    else -> continue
+                }
+            }
+            return@cache psiFileTrackedCachedResult(map)
+        }
+
+private typealias NameUsagesMap = Map<String, MutableList<PathStart>>
+
+private val NAME_USAGES = Key.create<CachedValue<NameUsagesMap>>("org.move.NAME_USAGES")
+

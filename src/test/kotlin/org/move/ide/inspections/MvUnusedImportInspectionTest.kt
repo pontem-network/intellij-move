@@ -244,6 +244,7 @@ module 0x1::M2 {
     """)
 
     fun `test unused import in module spec`() = checkWarnings("""
+    module 0x1::Main {}        
     spec 0x1::Main {
         <warning descr="Unused use item">use 0x1::Coin::{};</warning>
     }
@@ -575,6 +576,49 @@ spec 0x1::main {
             spec fun call(): u128 {
                 string::id()
             }
+        }        
+    """)
+
+    fun `test import duplicate inside spec`() = checkWarnings("""
+        module 0x1::string {
+            public fun id(): u128 { 1 }
+        }
+        module 0x1::m {
+            use 0x1::string;
+        }        
+        spec 0x1::m {
+            <warning descr="Unused use item">use 0x1::string;</warning>
+            spec module {
+                string::id();
+            }
+        }
+    """)
+
+    fun `test no unused import if used inside spec`() = checkWarnings("""
+        module 0x1::string {
+            public fun id(): u128 { 1 }
+        }
+        module 0x1::m {
+            use 0x1::string;
+        }        
+        spec 0x1::m {
+            spec module {
+                string::id();
+            }
+        }
+    """)
+
+    fun `test spec import but used in original module`() = checkWarnings("""
+        module 0x1::mm {
+            native public fun spec_sip_hash(): u128;
+        }
+        module 0x1::m {
+            fun main(): u128 {
+                spec_sip_hash(); 1
+            }
+        }
+        spec 0x1::m {
+            use 0x1::mm::spec_sip_hash;
         }        
     """)
 }

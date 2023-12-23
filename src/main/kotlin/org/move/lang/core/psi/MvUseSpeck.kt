@@ -2,6 +2,7 @@ package org.move.lang.core.psi
 
 import org.move.ide.inspections.imports.ItemUsages
 import org.move.ide.inspections.imports.ScopePathUsages
+import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.moduleName
 
 interface MvUseSpeck: MvElement
@@ -34,6 +35,8 @@ fun MvUseSpeck.isUsed(pathUsages: ScopePathUsages): Boolean {
         else -> error("unreachable")
     }
 }
+
+val MvUseItem.useGroup: MvUseItemGroup? get() = this.ancestorStrict()
 
 fun MvUseItem.isUsed(pathUsage: ScopePathUsages): Boolean {
     val (itemName, itemUsages) = this.itemUsageInfo(pathUsage) ?: return true
