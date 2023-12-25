@@ -23,13 +23,13 @@ interface MvDocAndAttributeOwner : MvElement, NavigatablePsiElement {
     }
 }
 
-val MvDocAndAttributeOwner.isTestOnly: Boolean
+val MvDocAndAttributeOwner.hasTestOnlyAttr: Boolean
     get() {
         val stub = attributeStub
         return stub?.isTestOnly ?: queryAttributes.isTestOnly
     }
 
-val MvDocAndAttributeOwner.isVerifyOnly: Boolean
+val MvDocAndAttributeOwner.hasVerifyOnlyAttr: Boolean
     get() {
         val stub = attributeStub
         return stub?.isVerifyOnly ?: queryAttributes.isVerifyOnly

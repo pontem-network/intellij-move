@@ -10,5 +10,5 @@ fun MvRefExpr.isAbortCodeConst(): Boolean {
     if (itemArgument.identifier.text != "abort_code") return false
 
     val attrItem = itemArgument.parent?.parent as? MvAttrItem ?: return false
-    return (attrItem.attr.owner as? MvFunction)?.isTest ?: false
+    return (attrItem.attr.owner as? MvFunction)?.hasTestAttr ?: false
 }

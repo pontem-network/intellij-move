@@ -1,5 +1,6 @@
 package org.move.lang.core.psi.ext
 
+import org.move.ide.inspections.imports.declScope
 import org.move.lang.core.psi.*
 import org.move.stdext.wrapWithList
 
@@ -23,7 +24,7 @@ val MvUseStmt.addressRef: MvAddressRef?
 
 val MvUseStmt.useGroupLevel: Int
     get() {
-        if (this.isTestOnly) return 5
+        if (this.hasTestOnlyAttr) return 5
         return this.addressRef?.useGroupLevel ?: -1
     }
 
@@ -69,33 +70,34 @@ val MvItemUseSpeck.useItems: List<MvUseItem>
         return this.useItem.wrapWithList()
     }
 
-val MvUseStmt.useSpeck: MvUseSpeck? get() = this.itemUseSpeck ?: this.moduleUseSpeck
-
-
 // TODO: rename
-sealed class UseSpeckType(open val nameOrAlias: String) {
+sealed class UseSpeckType(open val nameOrAlias: String, open val scope: ItemScope) {
     data class Module(
         override val nameOrAlias: String,
         val moduleUseSpeck: MvModuleUseSpeck,
-    ): UseSpeckType(nameOrAlias)
+        override val scope: ItemScope,
+    ): UseSpeckType(nameOrAlias, scope)
 
     data class SelfModule(
         override val nameOrAlias: String,
         val useItem: MvUseItem,
-    ): UseSpeckType(nameOrAlias)
+        override val scope: ItemScope
+    ): UseSpeckType(nameOrAlias, scope)
 
     data class Item(
         override val nameOrAlias: String,
         val useItem: MvUseItem,
-    ): UseSpeckType(nameOrAlias)
+        override val scope: ItemScope
+    ): UseSpeckType(nameOrAlias, scope)
 }
 
 val MvUseStmt.useSpeckTypes: List<UseSpeckType>
     get() {
+        val useScope = this.declScope
         val moduleUseSpeck = this.moduleUseSpeck
         if (moduleUseSpeck != null) {
             val nameOrAlias = moduleUseSpeck.nameElement?.text ?: return emptyList()
-            return listOf(UseSpeckType.Module(nameOrAlias, moduleUseSpeck))
+            return listOf(UseSpeckType.Module(nameOrAlias, moduleUseSpeck, useScope))
         }
         return this.itemUseSpeck?.useItems.orEmpty()
             .mapNotNull {
@@ -108,10 +110,10 @@ val MvUseStmt.useSpeckTypes: List<UseSpeckType>
                         } else {
                             it.moduleName
                         }
-                    UseSpeckType.SelfModule(nameOrAlias, it)
+                    UseSpeckType.SelfModule(nameOrAlias, it, useScope)
                 } else {
                     val nameOrAlias = it.nameOrAlias ?: return@mapNotNull null
-                    UseSpeckType.Item(nameOrAlias, it)
+                    UseSpeckType.Item(nameOrAlias, it, useScope)
                 }
             }
     }

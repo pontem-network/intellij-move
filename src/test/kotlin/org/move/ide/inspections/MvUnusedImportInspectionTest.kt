@@ -81,6 +81,20 @@ module 0x1::Main {
 }
     """)
 
+    fun `test duplicate Self import`() = checkWarnings("""
+module 0x1::M {
+    struct S {}
+    public fun call() {}
+}        
+module 0x1::Main {
+    use 0x1::M::{Self, <warning descr="Unused use item">Self</warning>, S};
+    
+    fun main(a: S) {
+        M::call();
+    }
+}
+    """)
+
     fun `test unused imports if unresolved module`() = checkWarnings("""
 module 0x1::Main {
     <warning descr="Unused use item">use 0x1::M1;</warning>
@@ -333,6 +347,22 @@ module 0x1::main {
         use 0x1::string::call;
         
         #[test_only]
+        fun main() {
+            call();
+        }
+    }
+    """)
+
+    fun `test unused main import in presence of test usage`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        <warning descr="Unused use item">use 0x1::string::call;</warning>
+        #[test_only]
+        use 0x1::string::call;
+        
+        #[test]
         fun main() {
             call();
         }

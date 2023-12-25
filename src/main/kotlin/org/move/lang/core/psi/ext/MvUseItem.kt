@@ -11,7 +11,7 @@ import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.resolveModuleItem
 
-fun MvUseItem.useSpeck(): MvItemUseSpeck =
+fun MvUseItem.itemUseSpeck(): MvItemUseSpeck =
     ancestorStrict() ?: error("ItemImport outside ModuleItemsImport")
 
 val MvUseItem.annotationItem: MvElement
@@ -47,7 +47,7 @@ class MvUseItemReferenceElement(
 ) : MvPolyVariantReferenceCached<MvUseItem>(element) {
 
     override fun multiResolveInner(): List<MvNamedElement> {
-        val fqModuleRef = element.useSpeck().fqModuleRef
+        val fqModuleRef = element.itemUseSpeck().fqModuleRef
         val module =
             fqModuleRef.reference?.resolve() as? MvModule ?: return emptyList()
         if ((element.useAlias == null && element.text == "Self")

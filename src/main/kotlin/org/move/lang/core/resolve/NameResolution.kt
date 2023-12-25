@@ -72,7 +72,7 @@ fun resolveIntoFQModuleRefInUseSpeck(moduleRef: MvModuleRef): MvFQModuleRef? {
         resolved = resolved.moduleUseSpeck ?: resolved.useItem
     }
     if (resolved is MvUseItem && resolved.isSelf) {
-        return resolved.useSpeck().fqModuleRef
+        return resolved.itemUseSpeck().fqModuleRef
     }
 //    if (resolved !is MvModuleUseSpeck) return null
     return (resolved as? MvModuleUseSpeck)?.fqModuleRef
@@ -93,7 +93,7 @@ fun processQualItem(
             processor.match(itemVis, item)
 
         item is MvFunction && Namespace.FUNCTION in namespaces -> {
-            if (item.isTest) return false
+            if (item.hasTestAttr) return false
             for (vis in visibilities) {
                 when {
                     vis is Visibility.Public

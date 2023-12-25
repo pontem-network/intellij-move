@@ -4,7 +4,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.isUpdateFieldArg2
 import org.move.lang.core.psi.ext.namespaces
-import org.move.lang.core.psi.ext.useSpeck
+import org.move.lang.core.psi.ext.itemUseSpeck
 import org.move.lang.core.resolve.*
 
 class MvPathReferenceImpl(
@@ -58,7 +58,7 @@ class MvPathReferenceImpl(
                 // item import
                 is MvUseItem -> {
                     // find corresponding FQModuleRef from imports and resolve
-                    val fqModRef = item.useSpeck().fqModuleRef
+                    val fqModRef = item.itemUseSpeck().fqModuleRef
                     // TODO: index call
                     val module = fqModRef.reference?.resolve() as? MvModule
                         ?: return emptyList()

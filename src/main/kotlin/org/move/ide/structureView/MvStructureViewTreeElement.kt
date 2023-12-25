@@ -24,11 +24,11 @@ class MvStructureViewTreeElement(val element: NavigatablePsiElement): StructureV
 
     val isTestFunction: Boolean
         get() =
-            (element as? MvFunction)?.isTest ?: false
+            (element as? MvFunction)?.hasTestAttr ?: false
 
     val isTestOnlyItem: Boolean
         get() =
-            (element as? MvDocAndAttributeOwner)?.isTestOnly ?: false
+            (element as? MvDocAndAttributeOwner)?.hasTestOnlyAttr ?: false
 
     override fun navigate(requestFocus: Boolean) = element.navigate(requestFocus)
     override fun canNavigate(): Boolean = element.canNavigate()

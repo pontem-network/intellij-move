@@ -59,12 +59,12 @@ fun MvModule.allFunctions(): List<MvFunction> {
 fun MvModule.allNonTestFunctions(): List<MvFunction> =
 //    allFunctions().filter { f -> !f.isTest }
     getProjectPsiDependentCache(this) {
-        it.allFunctions().filter { f -> !f.isTest }
+        it.allFunctions().filter { f -> !f.hasTestAttr }
     }
 
 fun MvModule.testFunctions(): List<MvFunction> =
     getProjectPsiDependentCache(this) {
-        it.allFunctions().filter { f -> f.isTest }
+        it.allFunctions().filter { f -> f.hasTestAttr }
     }
 
 fun MvModule.builtinFunctions(): List<MvFunction> {

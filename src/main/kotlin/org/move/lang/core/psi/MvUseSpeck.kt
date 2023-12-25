@@ -5,36 +5,36 @@ import org.move.ide.inspections.imports.ScopePathUsages
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.moduleName
 
-interface MvUseSpeck: MvElement
+//interface MvUseSpeck: MvElement
 
-fun MvUseSpeck.isUsed(pathUsages: ScopePathUsages): Boolean {
-    return when (this) {
-        is MvModuleUseSpeck -> {
-            val useAlias = this.useAlias
-            val moduleName =
-                (if (useAlias != null) useAlias.name else this.fqModuleRef?.referenceName)
-                    ?: return true
-            // null if import is never used
-            val usageResolvedItems = pathUsages.nameUsages[moduleName] ?: return false
-            if (usageResolvedItems.isEmpty()) {
-                // import is used but usages are unresolved
-                return true
-            }
-            val speckResolvedItems =
-                if (useAlias != null) listOf(useAlias) else this.fqModuleRef?.reference?.multiResolve().orEmpty()
-            // any of path usages resolve to the same named item
-            speckResolvedItems.any { it in usageResolvedItems }
-        }
-        is MvItemUseSpeck -> {
-            // Use speck with an empty group is always unused
-            val itemGroup = this.useItemGroup
-            if (itemGroup != null && itemGroup.useItemList.isEmpty()) return false
-            val useItem = this.useItem ?: return true
-            useItem.isUsed(pathUsages)
-        }
-        else -> error("unreachable")
-    }
-}
+//fun MvUseSpeck.isUsed(pathUsages: ScopePathUsages): Boolean {
+//    return when (this) {
+//        is MvModuleUseSpeck -> {
+//            val useAlias = this.useAlias
+//            val moduleName =
+//                (if (useAlias != null) useAlias.name else this.fqModuleRef?.referenceName)
+//                    ?: return true
+//            // null if import is never used
+//            val usageResolvedItems = pathUsages.nameUsages[moduleName] ?: return false
+//            if (usageResolvedItems.isEmpty()) {
+//                // import is used but usages are unresolved
+//                return true
+//            }
+//            val speckResolvedItems =
+//                if (useAlias != null) listOf(useAlias) else this.fqModuleRef?.reference?.multiResolve().orEmpty()
+//            // any of path usages resolve to the same named item
+//            speckResolvedItems.any { it in usageResolvedItems }
+//        }
+//        is MvItemUseSpeck -> {
+//            // Use speck with an empty group is always unused
+//            val itemGroup = this.useItemGroup
+//            if (itemGroup != null && itemGroup.useItemList.isEmpty()) return false
+//            val useItem = this.useItem ?: return true
+//            useItem.isUsed(pathUsages)
+//        }
+//        else -> error("unreachable")
+//    }
+//}
 
 val MvUseItem.useGroup: MvUseItemGroup? get() = this.ancestorStrict()
 

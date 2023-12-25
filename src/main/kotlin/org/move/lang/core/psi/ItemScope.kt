@@ -81,10 +81,10 @@ val MvElement.itemScope: ItemScope
 
 private fun MvDocAndAttributeOwner.explicitItemScopes(): Set<ItemScope> {
     val scopes = mutableSetOf<ItemScope>()
-    if (this.isTestOnly || (this is MvFunction && this.isTest)) {
+    if (this.hasTestOnlyAttr || (this is MvFunction && this.hasTestAttr)) {
         scopes.add(ItemScope.TEST)
     }
-    if (this.isVerifyOnly) {
+    if (this.hasVerifyOnlyAttr) {
         scopes.add(ItemScope.VERIFY)
     }
     return scopes
@@ -95,21 +95,21 @@ private fun MvDocAndAttributeOwner.explicitAttributeItemScope(): ItemScope? =
 //        is MvSpecInlineFunction -> ItemScope.MAIN
         is MvFunction ->
             when {
-                this.isTestOnly || this.isTest -> ItemScope.TEST
-                this.isVerifyOnly -> ItemScope.VERIFY
+                this.hasTestOnlyAttr || this.hasTestAttr -> ItemScope.TEST
+                this.hasVerifyOnlyAttr -> ItemScope.VERIFY
                 else ->
                     this.module?.explicitAttributeItemScope() ?: ItemScope.MAIN
             }
         is MvStruct ->
             when {
-                this.isTestOnly -> ItemScope.TEST
-                this.isVerifyOnly -> ItemScope.VERIFY
+                this.hasTestOnlyAttr -> ItemScope.TEST
+                this.hasVerifyOnlyAttr -> ItemScope.VERIFY
                 else -> this.module.explicitAttributeItemScope() ?: ItemScope.MAIN
             }
         else ->
             when {
-                this.isTestOnly -> ItemScope.TEST
-                this.isVerifyOnly -> ItemScope.VERIFY
+                this.hasTestOnlyAttr -> ItemScope.TEST
+                this.hasVerifyOnlyAttr -> ItemScope.VERIFY
                 else -> null
             }
     }

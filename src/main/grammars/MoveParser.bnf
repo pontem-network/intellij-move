@@ -273,7 +273,7 @@ fake SpecFunction ::= Attr* spec native? fun IDENTIFIER? TypeParameterList?
         "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvFunctionLike"
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
-        "org.move.lang.core.psi.MslScopeElement"
+        "org.move.lang.core.psi.ScopeMslOnlyElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSpecFunctionMixin"
     stubClass = "org.move.lang.core.stubs.MvSpecFunctionStub"
@@ -302,7 +302,7 @@ fake SpecInlineFunction ::= Attr* native? fun IDENTIFIER? TypeParameterList?
 {
     implements = [
         "org.move.lang.core.psi.MvFunctionLike"
-        "org.move.lang.core.psi.MslScopeElement"
+        "org.move.lang.core.psi.ScopeMslOnlyElement"
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSpecInlineFunctionMixin"
@@ -484,7 +484,7 @@ ModuleUseSpeck ::= (AddressRef !'::') | FQModuleRef UseAlias?
     name = "qual path to module"
     implements = [
         "org.move.lang.core.psi.MvNamedElement"
-        "org.move.lang.core.psi.MvUseSpeck"
+//        "org.move.lang.core.psi.MvUseSpeck"
     ]
     mixin = "org.move.lang.core.psi.ext.MvModuleUseSpeckMixin"
 }
@@ -492,9 +492,9 @@ ItemUseSpeck ::= FQModuleRef '::' (UseItem | UseItemGroup)
 {
     pin = 2
     name = "qual path to imported item"
-    implements = [
-        "org.move.lang.core.psi.MvUseSpeck"
-    ]
+//    implements = [
+//        "org.move.lang.core.psi.MvUseSpeck"
+//    ]
 }
 
 UseItemGroup ::= '{' <<non_empty_comma_sep_items MultiItemUse_member_with_recovery>>? '}'
@@ -1057,7 +1057,7 @@ ModuleSpecBlock ::= '{' ModuleSpecBlock_item_with_recover* '}'
     pin = 1
     implements = [
         "org.move.lang.core.psi.MvImportsOwner"
-        "org.move.lang.core.psi.MslScopeElement"
+        "org.move.lang.core.psi.ScopeMslOnlyElement"
         "org.move.lang.core.psi.AnyBlock"
     ]
 }
@@ -1075,7 +1075,7 @@ ModuleItemSpec ::= spec MODULE_KW <<msl SpecCodeBlock>>
     pin = 2
     implements = [
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
-        "org.move.lang.core.psi.MslScopeElement"
+        "org.move.lang.core.psi.ScopeMslOnlyElement"
     ]
 }
 ItemSpec ::= (spec !MODULE_KW) ItemSpecRef ItemSpecSignature? <<msl SpecCodeBlock>>
@@ -1083,8 +1083,8 @@ ItemSpec ::= (spec !MODULE_KW) ItemSpecRef ItemSpecSignature? <<msl SpecCodeBloc
     pin = 1
     implements = [
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
-        "org.move.lang.core.psi.MslScopeElement"
         "org.move.lang.core.psi.MvModificationTrackerOwner"
+        "org.move.lang.core.psi.ScopeMslOnlyElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvItemSpecMixin"
 }
@@ -1143,7 +1143,7 @@ Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl SpecCodeBlock>> {
         "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
-        "org.move.lang.core.psi.MslScopeElement"
+        "org.move.lang.core.psi.ScopeMslOnlyElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSchemaMixin"
     stubClass = "org.move.lang.core.stubs.MvSchemaStub"
@@ -1152,7 +1152,7 @@ Schema ::= (spec schema) IDENTIFIER TypeParameterList? <<msl SpecCodeBlock>> {
 
 ItemSpecBlockExpr ::= spec <<msl SpecCodeBlock>> {
     implements = [
-        "org.move.lang.core.psi.MslScopeElement"
+        "org.move.lang.core.psi.ScopeMslOnlyElement"
     ]
 }
 
@@ -1227,28 +1227,60 @@ AssertSpecExpr ::= assert SpecPropertyList? Expr {
 }
 AssumeSpecExpr ::= assume SpecPropertyList? Expr {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvBoolSpecExpr" ]
+    implements = [
+        "org.move.lang.core.psi.MvBoolSpecExpr"
+        "org.move.lang.core.psi.MslOnlyElement"
+    ]
 }
 EnsuresSpecExpr ::= ensures SpecPropertyList? SpecExpr {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvBoolSpecExpr" ]
+    implements = [
+        "org.move.lang.core.psi.MvBoolSpecExpr"
+        "org.move.lang.core.psi.MslOnlyElement"
+    ]
 }
 RequiresSpecExpr ::= requires SpecPropertyList? Expr {
     pin = 1
-    implements = [ "org.move.lang.core.psi.MvBoolSpecExpr" ]
+    implements = [
+        "org.move.lang.core.psi.MvBoolSpecExpr"
+        "org.move.lang.core.psi.MslOnlyElement"
+    ]
 }
-DecreasesSpecExpr ::= decreases SpecPropertyList? Expr { pin = 1 }
+DecreasesSpecExpr ::= decreases SpecPropertyList? Expr {
+    pin = 1
+    implements = [
+        "org.move.lang.core.psi.MslOnlyElement"
+    ]
+}
 
-ModifiesSpecExpr ::= modifies SpecPropertyList? Expr { pin = 1 }
+ModifiesSpecExpr ::= modifies SpecPropertyList? Expr {
+    pin = 1
+    implements = [
+        "org.move.lang.core.psi.MslOnlyElement"
+    ]
+}
 
-IncludeStmt ::= include SpecPropertyList? IncludeItem ';' { pin = 1 }
+IncludeStmt ::= include SpecPropertyList? IncludeItem ';' {
+    pin = 1
+    implements = [
+        "org.move.lang.core.psi.MslOnlyElement"
+    ]
+}
 
 UpdateSpecStmt ::= update UpdateExpr_items '=' Expr ';' {
     pin = 1
+    implements = [
+        "org.move.lang.core.psi.MslOnlyElement"
+    ]
 }
 private UpdateExpr_items ::= UnaryExpr | BorrowExpr | AtomExpr
 
 IncludeItem ::= SchemaIncludeItem | AndIncludeItem | IfElseIncludeItem | ImplyIncludeItem
+{
+    implements = [
+        "org.move.lang.core.psi.MslOnlyElement"
+    ]
+}
 
 SchemaIncludeItem ::= SchemaLit &(';' | '}' | SpecExprStmt_first)
 {

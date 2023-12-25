@@ -40,7 +40,7 @@ fun PsiElement.isMsl(): Boolean {
             )
                 return@getProjectPsiDependentCache false
 
-            if (element is MslScopeElement) return@getProjectPsiDependentCache true
+            if (element is ScopeMslOnlyElement) return@getProjectPsiDependentCache true
 
             element = element.parent as? MvElement
         }

@@ -12,8 +12,8 @@ import org.move.ide.MoveIcons
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.entryFunctions
-import org.move.lang.core.psi.ext.isTest
-import org.move.lang.core.psi.ext.isTestOnly
+import org.move.lang.core.psi.ext.hasTestAttr
+import org.move.lang.core.psi.ext.hasTestOnlyAttr
 import org.move.lang.core.psi.ext.viewFunctions
 import org.move.stdext.iterateMoveFiles
 import java.util.concurrent.CompletableFuture
@@ -62,13 +62,13 @@ class MoveProjectsTreeStructure(
                 for (folder in movePackage.moveFolders()) {
                     folder.iterateMoveFiles(movePackage.project) {
                         for (module in it.modules()) {
-                            if (!module.isTestOnly) modules.add(module)
+                            if (!module.hasTestOnlyAttr) modules.add(module)
                             scriptFunctions.addAll(
                                 module.entryFunctions()
-                                    .filter { fn -> !fn.isTestOnly && !fn.isTest })
+                                    .filter { fn -> !fn.hasTestOnlyAttr && !fn.hasTestAttr })
                             viewFunctions.addAll(
                                 module.viewFunctions()
-                                    .filter { fn -> !fn.isTestOnly && !fn.isTest })
+                                    .filter { fn -> !fn.hasTestOnlyAttr && !fn.hasTestAttr })
                         }
                         true
                     }

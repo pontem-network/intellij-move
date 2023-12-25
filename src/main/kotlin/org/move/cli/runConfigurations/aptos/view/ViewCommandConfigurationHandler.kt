@@ -4,7 +4,7 @@ import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.aptos.CommandConfigurationHandler
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvFunctionParameter
-import org.move.lang.core.psi.ext.isTest
+import org.move.lang.core.psi.ext.hasTestAttr
 import org.move.lang.core.psi.ext.isView
 import org.move.lang.core.psi.parameters
 import org.move.lang.index.MvViewFunctionIndex
@@ -15,7 +15,7 @@ class ViewCommandConfigurationHandler : CommandConfigurationHandler() {
 
     override fun configurationName(functionId: String): String = "View $functionId"
 
-    override fun functionPredicate(function: MvFunction): Boolean = function.isView && !function.isTest
+    override fun functionPredicate(function: MvFunction): Boolean = function.isView && !function.hasTestAttr
 
     override fun getFunction(moveProject: MoveProject, functionQualName: String): MvFunction? {
         return getViewFunction(moveProject, functionQualName)

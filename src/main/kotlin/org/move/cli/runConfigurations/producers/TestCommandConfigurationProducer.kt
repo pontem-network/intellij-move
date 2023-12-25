@@ -14,7 +14,7 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.findMoveProject
 import org.move.lang.core.psi.ext.hasTestFunctions
-import org.move.lang.core.psi.ext.isTest
+import org.move.lang.core.psi.ext.hasTestAttr
 import org.move.lang.moveProject
 import org.toml.lang.psi.TomlFile
 
@@ -53,7 +53,7 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
 
         private fun findTestFunction(psi: PsiElement, climbUp: Boolean): CommandLineFromContext? {
             val fn = findElement<MvFunction>(psi, climbUp) ?: return null
-            if (!fn.isTest) return null
+            if (!fn.hasTestAttr) return null
 
             val modName = fn.containingModule?.name ?: return null
             val functionName = fn.name ?: return null

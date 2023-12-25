@@ -3,18 +3,11 @@ package org.move.ide.inspections.imports
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.inspections.imports.PathStart.Companion.pathStart
-import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.stdext.chain
-
-private typealias VisitedNameMap = MutableMap<ItemScope, MutableSet<String>>
-
-private fun VisitedNameMap.getOrPut(itemScope: ItemScope): MutableSet<String> =
-    this.getOrPut(itemScope) { mutableSetOf() }
 
 private val MvImportsOwner.useSpeckTypes: List<UseSpeckType>
     get() {
@@ -46,17 +39,31 @@ private val MvImportsOwner.importOwnerWithSiblings: List<MvImportsOwner>
     }
 
 class ImportAnalyzer(val holder: ProblemsHolder): MvVisitor() {
-    override fun visitModuleBlock(o: MvModuleBlock) {
 
+    override fun visitModuleBlock(o: MvModuleBlock) = analyzeImportsOwner3(o)
+
+    override fun visitScriptBlock(o: MvScriptBlock) = analyzeImportsOwner3(o)
+
+    override fun visitModuleSpecBlock(o: MvModuleSpecBlock) = analyzeImportsOwner3(o)
+
+    fun analyzeImportsOwner3(importsOwner: MvImportsOwner) {
+        analyzeUseStmtsForScope(importsOwner, ItemScope.TEST)
+        analyzeUseStmtsForScope(importsOwner, ItemScope.MAIN)
+    }
+
+    private fun analyzeUseStmtsForScope(rootImportOwner: MvImportsOwner, itemScope: ItemScope) {
         val allSpecksHit = mutableSetOf<UseSpeckType>()
-        val moduleBlockWithSiblings = o.importOwnerWithSiblings
-
-        val reachablePaths = moduleBlockWithSiblings.flatMap { it.descendantsOfType<MvPath>() }
-        for (path in reachablePaths) {
+        val moduleBlockWithSiblings = rootImportOwner.importOwnerWithSiblings
+        val reachablePaths =
+            moduleBlockWithSiblings.flatMap { it.descendantsOfType<MvPath>() }
+                .mapNotNull { path -> path.pathStart?.let { Pair(path, it) } }
+                .filter { it.second.usageScope == itemScope }
+        for ((path, start) in reachablePaths) {
             for (importOwner in path.ancestorsOfType<MvImportsOwner>()) {
-                val start = path.pathStart
                 val useSpeckTypes =
-                    importOwner.importOwnerWithSiblings.flatMap { it.useSpeckTypes }
+                    importOwner.importOwnerWithSiblings
+                        .flatMap { it.useSpeckTypes }
+                        .filter { it.scope == itemScope }
                 val speckHit =
                     when (start) {
                         is PathStart.Module ->
@@ -79,110 +86,14 @@ class ImportAnalyzer(val holder: ProblemsHolder): MvVisitor() {
         }
 
         // includes self
-        val reachableImportOwners =
-            o.importOwnerWithSiblings.flatMap { it.descendantsOfTypeOrSelf<MvImportsOwner>() }
+        val reachableImportOwners = rootImportOwner.descendantsOfTypeOrSelf<MvImportsOwner>()
         for (importsOwner in reachableImportOwners) {
-            for (useStmt in importsOwner.useStmtList) {
+            val scopeUseStmts = importsOwner.useStmtList.filter { it.declScope == itemScope }
+            for (useStmt in scopeUseStmts) {
                 val unusedSpecks = useStmt.useSpeckTypes.toSet() - allSpecksHit
                 holder.registerStmtSpeckTypesError(useStmt, unusedSpecks)
             }
         }
-    }
-
-    private fun analyzeImportsOwner(useStmtOwner: MvImportsOwner) {
-        val pathUsagesInScopes = useStmtOwner.pathUsages
-
-        val visitedItemsInScopes: VisitedNameMap = mutableMapOf()
-        val visitedModulesInScopes: VisitedNameMap = mutableMapOf()
-
-        for (useStmt in useStmtOwner.useStmtList) {
-            val stmtScope = useStmt.itemScope
-
-            val pathUsage = pathUsagesInScopes.getScopeUsages(stmtScope)
-
-            val visitedModules = visitedModulesInScopes.getOrPut(stmtScope)
-            val visitedItems = visitedItemsInScopes.getOrPut(stmtScope)
-
-            val useSpeck = useStmt.useSpeck ?: continue
-            when (useSpeck) {
-                is MvModuleUseSpeck -> {
-                    val moduleName = useSpeck.name ?: continue
-                    if (moduleName in visitedModules) {
-                        useStmt.highlightUnusedImport()
-                        continue
-                    }
-                    visitedModules.add(moduleName)
-
-                    if (!useSpeck.isUsed(pathUsage)) {
-                        useStmt.highlightUnusedImport()
-                    }
-                    continue
-                }
-                is MvItemUseSpeck -> {
-                    val useGroup = useSpeck.useItemGroup
-                    if (useGroup == null) {
-                        val useItem = useSpeck.useItem ?: continue
-                        analyzeUseItem(useItem, visitedModules, visitedItems, pathUsage)
-                            ?.annotationItem
-                            ?.highlightUnusedImport()
-                    } else {
-                        val unusedItems = useGroup.useItemList
-                            .mapNotNull {
-                                analyzeUseItem(it, visitedModules, visitedItems, pathUsage)
-                            }
-                        if (unusedItems.size == useGroup.useItemList.size) {
-                            useStmt.highlightUnusedImport()
-                        } else {
-                            unusedItems.forEach { it.annotationItem.highlightUnusedImport() }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // returns MvUseItem if unused, else null
-    private fun analyzeUseItem(
-        useItem: MvUseItem,
-        visitedModules: MutableSet<String>,
-        visitedItems: MutableSet<String>,
-        pathUsage: ScopePathUsages,
-    ): MvUseItem? {
-        val originalItemName = useItem.identifier.text
-        val aliasName = useItem.useAlias?.let { it.name ?: return null }
-
-        if (originalItemName == "Self") {
-            // Self reference to module, check against visitedModules
-            val moduleName = aliasName ?: useItem.moduleName
-            if (moduleName in visitedModules) {
-                return useItem
-            }
-            visitedModules.add(moduleName)
-
-            if (!useItem.isUsed(pathUsage)) {
-                return useItem
-            }
-            return null
-        }
-
-        val itemName = aliasName ?: originalItemName
-        if (itemName in visitedItems) {
-            return useItem
-        }
-        visitedItems.add(itemName)
-
-        if (!useItem.isUsed(pathUsage)) {
-            return useItem
-        }
-        return null
-    }
-
-    private fun MvElement.highlightUnusedImport() {
-        holder.registerProblem(
-            this,
-            "Unused use item",
-            ProblemHighlightType.LIKE_UNUSED_SYMBOL
-        )
     }
 }
 
@@ -222,44 +133,5 @@ private fun ProblemsHolder.registerStmtSpeckTypesError(
             )
         }
     }
-//    when (useSpeckType) {
-//        is UseSpeckType.Module -> {
-//            val useStmt = useSpeckType.moduleUseSpeck.parent as MvUseStmt
-//        }
-//        is UseSpeckType.Item -> {
-//            val useItem = useSpeckType.useItem
-//            val maybeUseGroup = useItem.useGroup
-//            if (maybeUseGroup == null) {
-//                val useStmt = useItem.useStmt
-//                this.registerProblem(
-//                    useStmt,
-//                    "Unused use item",
-//                    ProblemHighlightType.LIKE_UNUSED_SYMBOL
-//                )
-//            } else {
-//                this.registerProblem(
-//                    useItem,
-//                    "Unused use item",
-//                    ProblemHighlightType.LIKE_UNUSED_SYMBOL
-//                )
-//            }
-//        }
-//    }
-}
-
-inline fun <reified T: PsiElement> PsiElement.leafsWithParentsOfType(): List<Sequence<T>> {
-    return PsiTreeUtil.findChildrenOfType(this, T::class.java)
-        .map {
-            val ancestors = it.ancestorsOfType<T>()
-            ancestors
-        }
-}
-
-inline fun <reified T: PsiElement> PsiElement.leafsWithParentsOfTypeWithDepth(): List<Pair<Sequence<T>, Int>> {
-    return PsiTreeUtil.findChildrenOfType(this, T::class.java)
-        .map {
-            val ancestors = it.ancestorsOfType<T>()
-            Pair(ancestors, ancestors.count())
-        }
 }
 

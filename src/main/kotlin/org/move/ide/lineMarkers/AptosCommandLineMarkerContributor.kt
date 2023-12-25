@@ -14,7 +14,7 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNameIdentifierOwner
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.isEntry
-import org.move.lang.core.psi.ext.isTest
+import org.move.lang.core.psi.ext.hasTestAttr
 import org.move.lang.core.psi.ext.isView
 
 class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
@@ -26,7 +26,7 @@ class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
 
         if (parent is MvFunction) {
             when {
-                parent.isTest -> {
+                parent.hasTestAttr -> {
                     val config =
                         TestCommandConfigurationProducer.fromLocation(parent, climbUp = false)
                     if (config != null) {

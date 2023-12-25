@@ -31,7 +31,7 @@ class MvImportOptimizer : ImportOptimizer {
         object : PsiRecursiveElementVisitor() {
             override fun visitElement(element: PsiElement) {
                 if (element is MvImportsOwner) {
-                    importVisitor.visitImportsOwner(element)
+                    importVisitor.analyzeImportsOwner3(element)
                 } else {
                     super.visitElement(element)
                 }
@@ -83,7 +83,7 @@ class MvImportOptimizer : ImportOptimizer {
 
         val useStmts = useStmtOwner.useStmtList
         useStmts
-            .groupBy { Pair(it.fqModuleText, it.isTestOnly) }
+            .groupBy { Pair(it.fqModuleText, it.hasTestOnlyAttr) }
             .forEach { (key, stmts) ->
                 val (fqModuleText, isTestOnly) = key
                 if (fqModuleText == null) return@forEach

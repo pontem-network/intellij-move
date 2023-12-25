@@ -28,9 +28,9 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
         when {
             function.isEntry -> {
                 // no error if #[test_only]
-                if (function.isTestOnly) return
+                if (function.hasTestOnlyAttr) return
                 // no error if #[test]
-                if (function.isTest) return
+                if (function.hasTestAttr) return
                 val returnType = function.returnType ?: return
                 Diagnostic
                     .EntryFunCannotHaveReturnValue(returnType)

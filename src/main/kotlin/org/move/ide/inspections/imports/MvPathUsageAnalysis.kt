@@ -119,25 +119,71 @@ private fun MvImportsOwner.localPathUsages(): PathUsages {
     }
 }
 
-sealed class PathStart {
-    data class Address(val addressRef: MvAddressRef): PathStart()
-    data class Module(val modName: String, val moduleRef: MvModuleRef): PathStart()
-    data class Item(val itemName: String): PathStart()
+// only Main/Test for now
+val MvPath.usageScope: ItemScope get() {
+    var parentElement = this.parent
+    while (parentElement != null) {
+//        if (parentElement is MslOnlyElement) return ItemScope.MAIN
+        if (parentElement is MvDocAndAttributeOwner && parentElement.hasTestOnlyAttr) {
+            return ItemScope.TEST
+        }
+        if (parentElement is MvFunction && parentElement.hasTestAttr) {
+            return ItemScope.TEST
+        }
+        parentElement = parentElement.parent
+    }
+    return ItemScope.MAIN
+}
+
+// only Main/Test for now
+val MvUseStmt.declScope: ItemScope get() {
+    if (this.hasTestOnlyAttr) {
+        return ItemScope.TEST
+    }
+    var parentElement = this.parent
+    while (parentElement != null) {
+//        if (parentElement is MslOnlyElement) return ItemScope.MAIN
+        if (parentElement is MvDocAndAttributeOwner && parentElement.hasTestOnlyAttr) {
+            return ItemScope.TEST
+        }
+        if (parentElement is MvFunction && parentElement.hasTestAttr) {
+            return ItemScope.TEST
+        }
+        parentElement = parentElement.parent
+    }
+    return ItemScope.MAIN
+}
+
+sealed class PathStart(open val usageScope: ItemScope) {
+    data class Address(
+        val addressRef: MvAddressRef,
+        override val usageScope: ItemScope
+    ): PathStart(usageScope)
+    data class Module(
+        val modName: String,
+        val moduleRef: MvModuleRef,
+        override val usageScope: ItemScope
+    ): PathStart(usageScope)
+    data class Item(
+        val itemName: String,
+        override val usageScope: ItemScope
+    ): PathStart(usageScope)
 
     companion object {
         val MvPath.pathStart: PathStart?
             get() {
+                val usageScope = this.usageScope
                 val pathModuleRef = this.moduleRef
                 if (pathModuleRef != null) {
                     if (pathModuleRef is MvFQModuleRef) {
-                        return Address(pathModuleRef.addressRef)
+                        return Address(pathModuleRef.addressRef, usageScope)
                     } else {
                         val modName = pathModuleRef.referenceName ?: return null
-                        return Module(modName, pathModuleRef)
+                        return Module(modName, pathModuleRef, usageScope)
                     }
                 } else {
                     val itemName = this.referenceName ?: return null
-                    return Item(itemName)
+                    return Item(itemName, usageScope)
                 }
             }
     }

@@ -10,6 +10,7 @@ class MvUnusedImportInspection : MvLocalInspectionTool() {
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = ImportAnalyzer(holder)
 
+    @Suppress("CompanionObjectInExtension")
     companion object {
         fun isEnabled(project: Project): Boolean {
             val profile = InspectionProjectProfileManager.getInstance(project).currentProfile

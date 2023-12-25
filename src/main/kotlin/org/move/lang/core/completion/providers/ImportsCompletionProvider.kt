@@ -12,7 +12,7 @@ import org.move.lang.core.completion.createSelfLookup
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.names
-import org.move.lang.core.psi.ext.useSpeck
+import org.move.lang.core.psi.ext.itemUseSpeck
 import org.move.lang.core.resolve.ItemVis
 import org.move.lang.core.resolve.mslLetScope
 import org.move.lang.core.resolve.processModuleItems
@@ -31,7 +31,7 @@ object ImportsCompletionProvider : MvCompletionProvider() {
         result: CompletionResultSet
     ) {
         val itemImport = parameters.position.parent as MvUseItem
-        val moduleRef = itemImport.useSpeck().fqModuleRef
+        val moduleRef = itemImport.itemUseSpeck().fqModuleRef
 
         if (parameters.position !== itemImport.referenceNameElement) return
         val referredModule = moduleRef.reference?.resolve() as? MvModule
