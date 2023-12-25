@@ -31,7 +31,7 @@ class MvImportOptimizer : ImportOptimizer {
         object : PsiRecursiveElementVisitor() {
             override fun visitElement(element: PsiElement) {
                 if (element is MvImportsOwner) {
-                    importVisitor.analyzeImportsOwner3(element)
+                    importVisitor.analyzeImportsOwner(element)
                 } else {
                     super.visitElement(element)
                 }

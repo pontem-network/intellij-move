@@ -70,34 +70,33 @@ val MvItemUseSpeck.useItems: List<MvUseItem>
         return this.useItem.wrapWithList()
     }
 
-// TODO: rename
-sealed class UseSpeckType(open val nameOrAlias: String, open val scope: ItemScope) {
+sealed class UseSpeck(open val nameOrAlias: String, open val scope: ItemScope) {
     data class Module(
         override val nameOrAlias: String,
-        val moduleUseSpeck: MvModuleUseSpeck,
         override val scope: ItemScope,
-    ): UseSpeckType(nameOrAlias, scope)
+        val moduleUseSpeck: MvModuleUseSpeck,
+    ): UseSpeck(nameOrAlias, scope)
 
     data class SelfModule(
         override val nameOrAlias: String,
+        override val scope: ItemScope,
         val useItem: MvUseItem,
-        override val scope: ItemScope
-    ): UseSpeckType(nameOrAlias, scope)
+    ): UseSpeck(nameOrAlias, scope)
 
     data class Item(
         override val nameOrAlias: String,
+        override val scope: ItemScope,
         val useItem: MvUseItem,
-        override val scope: ItemScope
-    ): UseSpeckType(nameOrAlias, scope)
+    ): UseSpeck(nameOrAlias, scope)
 }
 
-val MvUseStmt.useSpeckTypes: List<UseSpeckType>
+val MvUseStmt.useSpecks: List<UseSpeck>
     get() {
         val useScope = this.declScope
         val moduleUseSpeck = this.moduleUseSpeck
         if (moduleUseSpeck != null) {
             val nameOrAlias = moduleUseSpeck.nameElement?.text ?: return emptyList()
-            return listOf(UseSpeckType.Module(nameOrAlias, moduleUseSpeck, useScope))
+            return listOf(UseSpeck.Module(nameOrAlias, useScope, moduleUseSpeck))
         }
         return this.itemUseSpeck?.useItems.orEmpty()
             .mapNotNull {
@@ -110,10 +109,10 @@ val MvUseStmt.useSpeckTypes: List<UseSpeckType>
                         } else {
                             it.moduleName
                         }
-                    UseSpeckType.SelfModule(nameOrAlias, it, useScope)
+                    UseSpeck.SelfModule(nameOrAlias, useScope, it)
                 } else {
                     val nameOrAlias = it.nameOrAlias ?: return@mapNotNull null
-                    UseSpeckType.Item(nameOrAlias, it, useScope)
+                    UseSpeck.Item(nameOrAlias, useScope, it)
                 }
             }
     }
