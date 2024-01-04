@@ -96,10 +96,10 @@ fun processItemsInScope(
                                     }
                             }
                             is MvSpecCodeBlock -> {
-                                when (itemVis.mslLetScope) {
-                                    MslLetScope.EXPR_STMT -> scope.allLetStmts
-                                    MslLetScope.LET_STMT, MslLetScope.LET_POST_STMT -> {
-                                        val letDecls = if (itemVis.mslLetScope == MslLetScope.LET_POST_STMT) {
+                                when (itemVis.letStmtScope) {
+                                    LetStmtScope.EXPR_STMT -> scope.allLetStmts
+                                    LetStmtScope.LET_STMT, LetStmtScope.LET_POST_STMT -> {
+                                        val letDecls = if (itemVis.letStmtScope == LetStmtScope.LET_POST_STMT) {
                                             scope.allLetStmts
                                         } else {
                                             scope.letStmts(false)
@@ -113,7 +113,7 @@ fun processItemsInScope(
                                                         && !PsiTreeUtil.isAncestor(cameFrom, it, true)
                                             }
                                     }
-                                    MslLetScope.NONE -> emptyList()
+                                    LetStmtScope.NONE -> emptyList()
                                 }
                             }
                             else -> error("unreachable")

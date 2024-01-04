@@ -15,7 +15,7 @@ import org.move.lang.core.psi.ext.hasAncestor
 import org.move.lang.core.psi.ext.importCandidateNamespaces
 import org.move.lang.core.psi.ext.smartPointer
 import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.mslLetScope
+import org.move.lang.core.resolve.letStmtScope
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
@@ -122,7 +122,7 @@ data class ImportContext private constructor(
                 }
             }
             val itemVis = ItemVis(
-                mslLetScope = contextElement.mslLetScope,
+                letStmtScope = contextElement.letStmtScope,
                 itemScopes = contextElement.itemScopes,
             )
             return ImportContext(contextElement, ns, vs, itemVis)

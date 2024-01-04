@@ -14,7 +14,7 @@ import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.psi.ext.names
 import org.move.lang.core.psi.ext.itemUseSpeck
 import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.mslLetScope
+import org.move.lang.core.resolve.letStmtScope
 import org.move.lang.core.resolve.processModuleItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
@@ -48,7 +48,7 @@ object ImportsCompletionProvider : MvCompletionProvider() {
         }
         val ns = setOf(Namespace.NAME, Namespace.TYPE, Namespace.FUNCTION)
         val itemVis = ItemVis(
-            mslLetScope = itemImport.mslLetScope,
+            letStmtScope = itemImport.letStmtScope,
             itemScopes = itemImport.itemScopes,
         )
         processModuleItems(referredModule, ns, vs, itemVis) {

@@ -17,7 +17,7 @@ class MvPathReferenceImpl(
         val namespaces = element.namespaces()
         val vs = Visibility.buildSetOfVisibilities(element)
         val itemVis = ItemVis(
-            element.mslLetScope,
+            element.letStmtScope,
             itemScopes = element.itemScopes,
         )
 

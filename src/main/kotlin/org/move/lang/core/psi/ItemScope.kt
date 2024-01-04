@@ -21,7 +21,7 @@ fun MvElement.isVisibleInContext(contextScope: ItemScope): Boolean {
     return itemScope == ItemScope.MAIN || itemScope == contextScope
 }
 
-fun MvElement.isVisibleInContext(contextScopes: Set<ItemScope>): Boolean {
+fun MvNamedElement.isVisibleInContext(contextScopes: Set<ItemScope>): Boolean {
 //    for (requiredScope in this.itemScopes) {
 //        if (!contextScopes.contains(requiredScope)) return false
 //    }

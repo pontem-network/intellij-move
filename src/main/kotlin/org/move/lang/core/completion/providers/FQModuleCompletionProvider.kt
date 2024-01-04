@@ -11,7 +11,7 @@ import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.psi.itemScopes
 import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.mslLetScope
+import org.move.lang.core.resolve.letStmtScope
 import org.move.lang.core.resolve.processFQModuleRef
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.Address
@@ -38,7 +38,7 @@ object FQModuleCompletionProvider : MvCompletionProvider() {
 
         val namespaces = setOf(Namespace.MODULE)
         val itemVis = ItemVis(
-            mslLetScope = fqModuleRef.mslLetScope,
+            letStmtScope = fqModuleRef.letStmtScope,
             itemScopes = fqModuleRef.itemScopes,
         )
         val completionContext = CompletionContext(fqModuleRef, namespaces, itemVis)

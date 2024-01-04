@@ -26,6 +26,28 @@ fun PsiFileSystemItem.findMoveProject(): MoveProject? {
 
 //private val MSL_KEY: Key<CachedValue<FunctionSignature?>> = Key.create("SIGNATURE_KEY")
 
+val MvNamedElement.isMslOnlyItem: Boolean
+    get() {
+        var element: PsiElement? = this
+        while (element != null) {
+            // use items always non-msl, otherwise import resolution doesn't work correctly
+            if (element is MvUseItem) return false
+
+            // module items
+            if (element is MvModule
+                || element is MvFunction
+                || element is MvStruct
+            )
+                return false
+
+            if (element is MslOnlyElement) return true
+
+            element = element.parent as? MvElement
+        }
+        return false
+//        return this.isMsl()
+    }
+
 fun PsiElement.isMsl(): Boolean {
     return CachedValuesManager.getProjectPsiDependentCache(this) {
         var element: PsiElement? = it
@@ -40,7 +62,7 @@ fun PsiElement.isMsl(): Boolean {
             )
                 return@getProjectPsiDependentCache false
 
-            if (element is ScopeMslOnlyElement) return@getProjectPsiDependentCache true
+            if (element is MslOnlyElement) return@getProjectPsiDependentCache true
 
             element = element.parent as? MvElement
         }

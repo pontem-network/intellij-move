@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNamedElementImpl
 import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.MslLetScope
+import org.move.lang.core.resolve.LetStmtScope
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
@@ -75,7 +75,7 @@ class MvUseItemReferenceElement(
         }
 
         val itemVis = ItemVis(
-            MslLetScope.EXPR_STMT,
+            LetStmtScope.EXPR_STMT,
             itemScopes = useItemScopes,
         )
         return resolveModuleItem(

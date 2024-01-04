@@ -14,14 +14,14 @@ import org.move.lang.toNioPathOrNull
 import org.move.stdext.wrapWithList
 
 data class ItemVis(
-    val mslLetScope: MslLetScope,
     val itemScopes: Set<ItemScope>,
+    val letStmtScope: LetStmtScope,
 ) {
-    val isMsl get() = mslLetScope != MslLetScope.NONE
+    val isMsl get() = letStmtScope != LetStmtScope.NONE
 
-    fun matches(element: MvElement): Boolean {
-        if (!this.isMsl && element.isMsl()) return false
-        if (!element.isVisibleInContext(this.itemScopes)) return false
+    fun matches(itemElement: MvNamedElement): Boolean {
+        if (!this.isMsl && itemElement.isMslOnlyItem) return false
+        if (!itemElement.isVisibleInContext(this.itemScopes)) return false
         return true
     }
 }
@@ -47,7 +47,7 @@ fun resolveLocalItem(
     namespaces: Set<Namespace>
 ): List<MvNamedElement> {
     val itemVis = ItemVis(
-        mslLetScope = element.mslLetScope,
+        letStmtScope = element.letStmtScope,
         itemScopes = element.itemScopes,
     )
     val referenceName = element.referenceName
@@ -136,7 +136,7 @@ fun processFQModuleRef(
     val refAddressText = fqModuleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
 
     val itemVis = ItemVis(
-        mslLetScope = fqModuleRef.mslLetScope,
+        letStmtScope = fqModuleRef.letStmtScope,
         itemScopes = fqModuleRef.itemScopes,
     )
     val moduleProcessor = MatchingProcessor {
@@ -177,10 +177,10 @@ fun processFQModuleRef(
     val refAddress = moduleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
 
     val itemVis = ItemVis(
-        mslLetScope = moduleRef.mslLetScope,
+        letStmtScope = moduleRef.letStmtScope,
         itemScopes = moduleRef.itemScopes,
     )
-    val matchModule = MatchingProcessor<MvNamedElement> {
+    val matchModule = MatchingProcessor {
         if (!itemVis.matches(it.element)) return@MatchingProcessor false
         val entry = ScopeItem(it.name, it.element as MvModule)
         // TODO: check belongs to the current project

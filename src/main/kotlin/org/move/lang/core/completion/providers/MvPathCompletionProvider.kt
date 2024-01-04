@@ -31,7 +31,7 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
 
     open fun itemVis(pathElement: MvPath): ItemVis =
         ItemVis(
-            mslLetScope = pathElement.mslLetScope,
+            letStmtScope = pathElement.letStmtScope,
             itemScopes = pathElement.itemScopes,
         )
 
@@ -173,7 +173,7 @@ object SchemasCompletionProvider: MvPathCompletionProvider() {
 
     override fun itemVis(pathElement: MvPath): ItemVis {
         return ItemVis(
-            mslLetScope = MslLetScope.EXPR_STMT,
+            letStmtScope = LetStmtScope.EXPR_STMT,
             itemScopes = pathElement.itemScopes,
         )
     }
