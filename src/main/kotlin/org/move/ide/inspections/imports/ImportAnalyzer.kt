@@ -45,11 +45,11 @@ class ImportAnalyzer(val holder: ProblemsHolder): MvVisitor() {
     override fun visitModuleSpecBlock(o: MvModuleSpecBlock) = analyzeImportsOwner(o)
 
     fun analyzeImportsOwner(importsOwner: MvImportsOwner) {
-        analyzeUseStmtsForScope(importsOwner, ItemScope.TEST)
-        analyzeUseStmtsForScope(importsOwner, ItemScope.MAIN)
+        analyzeUseStmtsForScope(importsOwner, NamedItemScope.TEST)
+        analyzeUseStmtsForScope(importsOwner, NamedItemScope.MAIN)
     }
 
-    private fun analyzeUseStmtsForScope(rootImportOwner: MvImportsOwner, itemScope: ItemScope) {
+    private fun analyzeUseStmtsForScope(rootImportOwner: MvImportsOwner, itemScope: NamedItemScope) {
         val allSpecksHit = mutableSetOf<UseSpeck>()
         val rootImportOwnerWithSiblings = rootImportOwner.importOwnerWithSiblings
         val reachablePaths =

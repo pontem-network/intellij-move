@@ -68,18 +68,18 @@ private fun processFileItemsForUnitTests(
     file: MoveFile,
     namespaces: Set<Namespace>,
     visibilities: Set<Visibility>,
-    itemVis: ItemVis,
+    contextScopeInfo: ContextScopeInfo,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     checkUnitTestMode()
     for (module in file.modules()) {
         if (
             Namespace.MODULE in namespaces
-            && processor.match(itemVis, module)
+            && processor.match(contextScopeInfo, module)
         ) {
             return true
         }
-        if (processModuleInnerItems(module, namespaces, visibilities, itemVis, processor)) return true
+        if (processModuleInnerItems(module, namespaces, visibilities, contextScopeInfo, processor)) return true
     }
     return false
 }

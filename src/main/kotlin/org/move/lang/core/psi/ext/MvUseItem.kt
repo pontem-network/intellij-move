@@ -4,15 +4,15 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNamedElementImpl
-import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.LetStmtScope
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.resolveModuleItem
 
-fun MvUseItem.itemUseSpeck(): MvItemUseSpeck =
-    ancestorStrict() ?: error("ItemImport outside ModuleItemsImport")
+val MvUseItem.itemUseSpeck: MvItemUseSpeck
+    get() = ancestorStrict() ?: error("MvUseItem outside MvItemUseSpeck")
 
 val MvUseItem.annotationItem: MvElement
     get() {
@@ -44,10 +44,10 @@ val MvUseItem.isSelf: Boolean get() = this.identifier.textMatches("Self")
 
 class MvUseItemReferenceElement(
     element: MvUseItem
-) : MvPolyVariantReferenceCached<MvUseItem>(element) {
+): MvPolyVariantReferenceCached<MvUseItem>(element) {
 
     override fun multiResolveInner(): List<MvNamedElement> {
-        val fqModuleRef = element.itemUseSpeck().fqModuleRef
+        val fqModuleRef = element.itemUseSpeck.fqModuleRef
         val module =
             fqModuleRef.reference?.resolve() as? MvModule ?: return emptyList()
         if ((element.useAlias == null && element.text == "Self")
@@ -66,31 +66,33 @@ class MvUseItemReferenceElement(
         val vs = Visibility.buildSetOfVisibilities(fqModuleRef)
 
         // import has MAIN+VERIFY, and TEST if it or any of the parents has test
-        val useItemScopes = mutableSetOf(ItemScope.MAIN, ItemScope.VERIFY)
+        val useItemScopes = mutableSetOf(NamedItemScope.MAIN, NamedItemScope.VERIFY)
 
+        // gather scopes for all parents up to MvUseStmt
         var scopedElement: MvElement? = element
         while (scopedElement != null) {
             useItemScopes.addAll(scopedElement.itemScopes)
             scopedElement = scopedElement.parent as? MvElement
         }
 
-        val itemVis = ItemVis(
-            LetStmtScope.EXPR_STMT,
-            itemScopes = useItemScopes,
-        )
+        val contextScopeInfo =
+            ContextScopeInfo(
+                letStmtScope = LetStmtScope.EXPR_STMT,
+                refItemScopes = useItemScopes,
+            )
         return resolveModuleItem(
             module,
             element.referenceName,
             ns,
             vs,
-            itemVis
+            contextScopeInfo
         )
     }
 
 }
 
-abstract class MvUseItemMixin(node: ASTNode) : MvNamedElementImpl(node),
-                                               MvUseItem {
+abstract class MvUseItemMixin(node: ASTNode): MvNamedElementImpl(node),
+                                              MvUseItem {
     override fun getName(): String? {
         val name = super.getName()
         if (name != "Self") return name

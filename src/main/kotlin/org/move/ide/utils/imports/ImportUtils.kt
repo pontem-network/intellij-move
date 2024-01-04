@@ -17,8 +17,8 @@ fun ImportCandidate.import(context: MvElement) {
         ?: context.containingScript?.scriptBlock
         ?: return
     val insertTestOnly =
-        insertionScope.itemScope == ItemScope.MAIN
-                && context.itemScope == ItemScope.TEST
+        insertionScope.itemScope == NamedItemScope.MAIN
+                && context.itemScope == NamedItemScope.TEST
     insertionScope.insertUseItem(qualName, insertTestOnly)
 }
 

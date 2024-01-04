@@ -7,16 +7,19 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.createCompletionLookupElement
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvBindingPat
+import org.move.lang.core.psi.MvLetStmt
+import org.move.lang.core.psi.containingModule
+import org.move.lang.core.psi.namedItemScopes
 import org.move.lang.core.psiElement
-import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.LetStmtScope
 import org.move.lang.core.resolve.processModuleItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.withParent
 
-object StructPatCompletionProvider : MvCompletionProvider() {
+object StructPatCompletionProvider: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() =
             PlatformPatterns.psiElement()
@@ -32,11 +35,12 @@ object StructPatCompletionProvider : MvCompletionProvider() {
         val module = bindingPat.containingModule ?: return
 
         val namespaces = setOf(Namespace.TYPE)
-        val itemVis = ItemVis(
-            letStmtScope = LetStmtScope.NONE,
-            itemScopes = bindingPat.itemScopes,
-        )
-        processModuleItems(module, namespaces, setOf(Visibility.Internal), itemVis) {
+        val contextScopeInfo =
+            ContextScopeInfo(
+                letStmtScope = LetStmtScope.NONE,
+                refItemScopes = bindingPat.namedItemScopes,
+            )
+        processModuleItems(module, namespaces, setOf(Visibility.Internal), contextScopeInfo) {
             val lookup = it.element.createCompletionLookupElement()
             result.addElement(lookup)
             false

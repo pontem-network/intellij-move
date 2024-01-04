@@ -29,10 +29,10 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
 
     abstract val namespace: Namespace
 
-    open fun itemVis(pathElement: MvPath): ItemVis =
-        ItemVis(
+    open fun pathScopeInfo(pathElement: MvPath): ContextScopeInfo =
+        ContextScopeInfo(
             letStmtScope = pathElement.letStmtScope,
-            itemScopes = pathElement.itemScopes,
+            refItemScopes = pathElement.refItemScopes,
         )
 
     final override fun addCompletions(
@@ -47,11 +47,11 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
 
         val moduleRef = pathElement.moduleRef
         val namespaces = setOf(this.namespace)
-        val itemVis = itemVis(pathElement)
+        val pathScopeInfo = pathScopeInfo(pathElement)
         val msl = pathElement.isMsl()
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(pathElement, msl)
 
-        val ctx = CompletionContext(pathElement, namespaces, itemVis, expectedTy)
+        val ctx = CompletionContext(pathElement, namespaces, pathScopeInfo, expectedTy)
 
         if (moduleRef != null) {
             val module = moduleRef.reference?.resolveWithAliases() as? MvModule
@@ -60,7 +60,7 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
                 moduleRef.isSelf -> setOf(Visibility.Internal)
                 else -> Visibility.buildSetOfVisibilities(pathElement)
             }
-            processModuleItems(module, namespaces, vs, itemVis) {
+            processModuleItems(module, namespaces, vs, pathScopeInfo) {
                 val lookup = it.element.createLookupElement(ctx)
                 result.addElement(lookup)
                 false
@@ -69,7 +69,7 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
         }
 
         val processedNames = mutableSetOf<String>()
-        processItems(pathElement, namespaces, itemVis) { (name, element) ->
+        processItems(pathElement, namespaces, pathScopeInfo) { (name, element) ->
             if (processedNames.contains(name)) {
                 return@processItems false
             }
@@ -89,7 +89,7 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
                 originalPathElement,
                 namespaces,
                 setOf(Visibility.Public),
-                itemVis
+                pathScopeInfo
             )
         val candidates = getImportCandidates(
             parameters,
@@ -171,10 +171,10 @@ object SchemasCompletionProvider: MvPathCompletionProvider() {
 
     override val namespace: Namespace get() = Namespace.SCHEMA
 
-    override fun itemVis(pathElement: MvPath): ItemVis {
-        return ItemVis(
+    override fun pathScopeInfo(pathElement: MvPath): ContextScopeInfo {
+        return ContextScopeInfo(
             letStmtScope = LetStmtScope.EXPR_STMT,
-            itemScopes = pathElement.itemScopes,
+            refItemScopes = pathElement.refItemScopes,
         )
     }
 }

@@ -9,7 +9,7 @@ fun processItemsInScope(
     scope: MvElement,
     cameFrom: MvElement,
     namespaces: Set<Namespace>,
-    itemVis: ItemVis,
+    contextScopeInfo: ContextScopeInfo,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     for (namespace in namespaces) {
@@ -21,14 +21,14 @@ fun processItemsInScope(
                     is MvStructLitExpr -> scope.path.maybeStruct
                     else -> null
                 }
-                if (structItem != null) return processor.matchAll(itemVis, structItem.fields)
+                if (structItem != null) return processor.matchAll(contextScopeInfo, structItem.fields)
                 false
             }
 
             Namespace.SCHEMA_FIELD -> {
                 val schema = (scope as? MvSchemaLit)?.path?.maybeSchema
                 if (schema != null) {
-                    return processor.matchAll(itemVis, schema.fieldBindings)
+                    return processor.matchAll(contextScopeInfo, schema.fieldBindings)
                 }
                 false
             }
@@ -38,7 +38,7 @@ fun processItemsInScope(
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
                         processor.matchAll(
-                            itemVis,
+                            contextScopeInfo,
                             module.consts(),
                         )
                     }
@@ -46,7 +46,7 @@ fun processItemsInScope(
                 }
                 if (!found) {
                     if (scope is MvImportsOwner) {
-                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
+                        if (processor.matchAll(contextScopeInfo, scope.allUseItems())) return true
                     }
                 }
                 found
@@ -57,31 +57,31 @@ fun processItemsInScope(
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
                         processor.matchAll(
-                            itemVis,
+                            contextScopeInfo,
                             module.structs(),
                             module.consts(),
                         )
                     }
-                    is MvModuleSpecBlock -> processor.matchAll(itemVis, scope.schemaList)
-                    is MvScript -> processor.matchAll(itemVis, scope.consts())
-                    is MvFunctionLike -> processor.matchAll(itemVis, scope.allParamsAsBindings)
-                    is MvLambdaExpr -> processor.matchAll(itemVis, scope.bindingPatList)
+                    is MvModuleSpecBlock -> processor.matchAll(contextScopeInfo, scope.schemaList)
+                    is MvScript -> processor.matchAll(contextScopeInfo, scope.consts())
+                    is MvFunctionLike -> processor.matchAll(contextScopeInfo, scope.allParamsAsBindings)
+                    is MvLambdaExpr -> processor.matchAll(contextScopeInfo, scope.bindingPatList)
                     is MvItemSpec -> {
                         val item = scope.item
                         when (item) {
                             is MvFunction -> {
                                 processor.matchAll(
-                                    itemVis,
+                                    contextScopeInfo,
                                     item.valueParamsAsBindings,
                                     item.specResultParameters.map { it.bindingPat },
                                 )
                             }
-                            is MvStruct -> processor.matchAll(itemVis, item.fields)
+                            is MvStruct -> processor.matchAll(contextScopeInfo, item.fields)
                             else -> false
                         }
                     }
-                    is MvSchema -> processor.matchAll(itemVis, scope.fieldBindings)
-                    is MvQuantBindingsOwner -> processor.matchAll(itemVis, scope.bindings)
+                    is MvSchema -> processor.matchAll(contextScopeInfo, scope.fieldBindings)
+                    is MvQuantBindingsOwner -> processor.matchAll(contextScopeInfo, scope.bindings)
                     is MvCodeBlock,
                     is MvSpecCodeBlock -> {
                         val visibleLetStmts = when (scope) {
@@ -96,10 +96,10 @@ fun processItemsInScope(
                                     }
                             }
                             is MvSpecCodeBlock -> {
-                                when (itemVis.letStmtScope) {
+                                when (contextScopeInfo.letStmtScope) {
                                     LetStmtScope.EXPR_STMT -> scope.allLetStmts
                                     LetStmtScope.LET_STMT, LetStmtScope.LET_POST_STMT -> {
-                                        val letDecls = if (itemVis.letStmtScope == LetStmtScope.LET_POST_STMT) {
+                                        val letDecls = if (contextScopeInfo.letStmtScope == LetStmtScope.LET_POST_STMT) {
                                             scope.allLetStmts
                                         } else {
                                             scope.letStmts(false)
@@ -129,11 +129,11 @@ fun processItemsInScope(
                             ((entry.name !in visited)
                                     && processor.match(entry).also { visited += entry.name })
                         }
-                        var found = processorWithShadowing.matchAll(itemVis, namedElements)
+                        var found = processorWithShadowing.matchAll(contextScopeInfo, namedElements)
                         if (!found && scope is MvSpecCodeBlock) {
                             // if inside SpecCodeBlock, match also with builtin spec consts and global variables
                             found = processorWithShadowing.matchAll(
-                                itemVis,
+                                contextScopeInfo,
                                 scope.builtinSpecConsts(),
                                 scope.globalVariables()
                             )
@@ -144,7 +144,7 @@ fun processItemsInScope(
                 }
                 if (!found) {
                     if (scope is MvImportsOwner) {
-                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
+                        if (processor.matchAll(contextScopeInfo, scope.allUseItems())) return true
                     }
                 }
                 found
@@ -153,18 +153,18 @@ fun processItemsInScope(
                 val found = when (scope) {
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
-                        val specFunctions = if (itemVis.isMsl) {
+                        val specFunctions = if (contextScopeInfo.isMsl) {
                             listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
                         } else {
                             emptyList()
                         }
-                        val specInlineFunctions = if (itemVis.isMsl) {
+                        val specInlineFunctions = if (contextScopeInfo.isMsl) {
                             module.moduleItemSpecs().flatMap { it.specInlineFunctions() }
                         } else {
                             emptyList()
                         }
                         processor.matchAll(
-                            itemVis,
+                            contextScopeInfo,
                             module.allNonTestFunctions(),
                             module.builtinFunctions(),
                             specFunctions,
@@ -175,29 +175,29 @@ fun processItemsInScope(
                         val specFunctions = scope.specFunctionList
                         val specInlineFunctions = scope.moduleItemSpecList.flatMap { it.specInlineFunctions() }
                         processor.matchAll(
-                            itemVis,
+                            contextScopeInfo,
                             specFunctions,
                             specInlineFunctions
                         )
                     }
-                    is MvFunctionLike -> processor.matchAll(itemVis, scope.lambdaParamsAsBindings)
-                    is MvLambdaExpr -> processor.matchAll(itemVis, scope.bindingPatList)
+                    is MvFunctionLike -> processor.matchAll(contextScopeInfo, scope.lambdaParamsAsBindings)
+                    is MvLambdaExpr -> processor.matchAll(contextScopeInfo, scope.bindingPatList)
                     is MvItemSpec -> {
                         val item = scope.item
                         when (item) {
-                            is MvFunction -> processor.matchAll(itemVis, item.lambdaParamsAsBindings)
+                            is MvFunction -> processor.matchAll(contextScopeInfo, item.lambdaParamsAsBindings)
                             else -> false
                         }
                     }
                     is MvSpecCodeBlock -> {
                         val inlineFunctions = scope.specInlineFunctions().asReversed()
-                        return processor.matchAll(itemVis, inlineFunctions)
+                        return processor.matchAll(contextScopeInfo, inlineFunctions)
                     }
                     else -> false
                 }
                 if (!found) {
                     if (scope is MvImportsOwner) {
-                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
+                        if (processor.matchAll(contextScopeInfo, scope.allUseItems())) return true
                     }
                 }
                 found
@@ -205,13 +205,13 @@ fun processItemsInScope(
 
             Namespace.TYPE -> {
                 if (scope is MvTypeParametersOwner) {
-                    if (processor.matchAll(itemVis, scope.typeParameters)) return true
+                    if (processor.matchAll(contextScopeInfo, scope.typeParameters)) return true
                 }
                 val found = when (scope) {
                     is MvItemSpec -> {
                         val funcItem = scope.funcItem
                         if (funcItem != null) {
-                            processor.matchAll(itemVis, funcItem.typeParameters)
+                            processor.matchAll(contextScopeInfo, funcItem.typeParameters)
                         } else {
                             false
                         }
@@ -219,7 +219,7 @@ fun processItemsInScope(
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
                         processor.matchAll(
-                            itemVis,
+                            contextScopeInfo,
                             scope.allUseItems(),
                             module.structs()
                         )
@@ -228,14 +228,14 @@ fun processItemsInScope(
                         val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
                         val patternTypeParams =
                             toPatterns.flatMap { it.typeParameterList?.typeParameterList.orEmpty() }
-                        processor.matchAll(itemVis, patternTypeParams)
+                        processor.matchAll(contextScopeInfo, patternTypeParams)
                     }
 
                     else -> false
                 }
                 if (!found) {
                     if (scope is MvImportsOwner) {
-                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
+                        if (processor.matchAll(contextScopeInfo, scope.allUseItems())) return true
                     }
                 }
                 found
@@ -243,12 +243,12 @@ fun processItemsInScope(
 
             Namespace.SCHEMA -> when (scope) {
                 is MvModuleBlock -> processor.matchAll(
-                    itemVis,
+                    contextScopeInfo,
                     scope.allUseItems(),
                     scope.schemaList
                 )
                 is MvModuleSpecBlock -> processor.matchAll(
-                    itemVis,
+                    contextScopeInfo,
                     scope.allUseItems(),
                     scope.schemaList,
                     scope.specFunctionList
@@ -258,7 +258,7 @@ fun processItemsInScope(
 
             Namespace.MODULE -> when (scope) {
                 is MvImportsOwner ->
-                    processor.matchAll(itemVis, scope.moduleUseItems())
+                    processor.matchAll(contextScopeInfo, scope.moduleUseItems())
                 else -> false
             }
         }

@@ -70,22 +70,22 @@ val MvItemUseSpeck.useItems: List<MvUseItem>
         return this.useItem.wrapWithList()
     }
 
-sealed class UseSpeck(open val nameOrAlias: String, open val scope: ItemScope) {
+sealed class UseSpeck(open val nameOrAlias: String, open val scope: NamedItemScope) {
     data class Module(
         override val nameOrAlias: String,
-        override val scope: ItemScope,
+        override val scope: NamedItemScope,
         val moduleUseSpeck: MvModuleUseSpeck,
     ): UseSpeck(nameOrAlias, scope)
 
     data class SelfModule(
         override val nameOrAlias: String,
-        override val scope: ItemScope,
+        override val scope: NamedItemScope,
         val useItem: MvUseItem,
     ): UseSpeck(nameOrAlias, scope)
 
     data class Item(
         override val nameOrAlias: String,
-        override val scope: ItemScope,
+        override val scope: NamedItemScope,
         val useItem: MvUseItem,
     ): UseSpeck(nameOrAlias, scope)
 }

@@ -11,7 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
@@ -132,7 +132,7 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
 data class CompletionContext(
     val contextElement: MvElement,
     val namespaces: Set<Namespace>,
-    val itemVis: ItemVis,
+    val contextScopeInfo: ContextScopeInfo,
     val expectedTy: Ty? = null,
 )
 

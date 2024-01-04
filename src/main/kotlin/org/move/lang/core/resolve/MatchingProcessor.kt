@@ -1,36 +1,38 @@
 package org.move.lang.core.resolve
 
 import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.ext.isMsl
+import org.move.lang.core.psi.ext.isMslOnlyItem
 import org.move.lang.core.psi.isVisibleInContext
 
-data class ScopeItem<T : MvNamedElement>(
+data class ScopeItem<T: MvNamedElement>(
     val name: String,
     val element: T
 )
 
-fun interface MatchingProcessor<T : MvNamedElement> {
+fun interface MatchingProcessor<T: MvNamedElement> {
     fun match(entry: ScopeItem<T>): Boolean
 
-    fun match(element: T): Boolean {
-        val name = element.name ?: return false
-        val entry = ScopeItem(name, element)
+    fun match(itemElement: T): Boolean {
+        val name = itemElement.name ?: return false
+        val entry = ScopeItem(name, itemElement)
         return match(entry)
     }
 
-    fun match(contextVis: ItemVis, element: T): Boolean {
-        if (!contextVis.isMsl && element.isMsl()) return false
-        if (!element.isVisibleInContext(contextVis.itemScopes)) return false
+    fun match(contextScopeInfo: ContextScopeInfo, itemElement: T): Boolean {
+        if (
+            !contextScopeInfo.isMsl && itemElement.isMslOnlyItem
+        ) return false
+        if (!itemElement.isVisibleInContext(contextScopeInfo.refItemScopes)) return false
 
-        val name = element.name ?: return false
-        val entry = ScopeItem(name, element)
+        val name = itemElement.name ?: return false
+        val entry = ScopeItem(name, itemElement)
         return match(entry)
     }
 
-    fun matchAll(itemVis: ItemVis, vararg collections: Iterable<T>): Boolean =
+    fun matchAll(contextScopeInfo: ContextScopeInfo, vararg collections: Iterable<T>): Boolean =
         sequenceOf(*collections)
             .flatten()
-            .any { match(itemVis, it) }
+            .any { match(contextScopeInfo, it) }
 
     fun matchAll(vararg collections: Iterable<T>): Boolean =
         sequenceOf(*collections)

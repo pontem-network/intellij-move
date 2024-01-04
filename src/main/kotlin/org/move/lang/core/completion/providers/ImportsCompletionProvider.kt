@@ -9,18 +9,21 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.createCompletionLookupElement
 import org.move.lang.core.completion.createSelfLookup
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvModule
+import org.move.lang.core.psi.MvUseItem
+import org.move.lang.core.psi.MvUseItemGroup
 import org.move.lang.core.psi.ext.isSelf
-import org.move.lang.core.psi.ext.names
 import org.move.lang.core.psi.ext.itemUseSpeck
-import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.psi.ext.names
+import org.move.lang.core.psi.refItemScopes
+import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.letStmtScope
 import org.move.lang.core.resolve.processModuleItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.withParent
 
-object ImportsCompletionProvider : MvCompletionProvider() {
+object ImportsCompletionProvider: MvCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() = PlatformPatterns
             .psiElement().withParent<MvUseItem>()
@@ -31,7 +34,7 @@ object ImportsCompletionProvider : MvCompletionProvider() {
         result: CompletionResultSet
     ) {
         val itemImport = parameters.position.parent as MvUseItem
-        val moduleRef = itemImport.itemUseSpeck().fqModuleRef
+        val moduleRef = itemImport.itemUseSpeck.fqModuleRef
 
         if (parameters.position !== itemImport.referenceNameElement) return
         val referredModule = moduleRef.reference?.resolve() as? MvModule
@@ -47,11 +50,12 @@ object ImportsCompletionProvider : MvCompletionProvider() {
             else -> Visibility.buildSetOfVisibilities(itemImport)
         }
         val ns = setOf(Namespace.NAME, Namespace.TYPE, Namespace.FUNCTION)
-        val itemVis = ItemVis(
-            letStmtScope = itemImport.letStmtScope,
-            itemScopes = itemImport.itemScopes,
-        )
-        processModuleItems(referredModule, ns, vs, itemVis) {
+        val contextScopeInfo =
+            ContextScopeInfo(
+                letStmtScope = itemImport.letStmtScope,
+                refItemScopes = itemImport.refItemScopes,
+            )
+        processModuleItems(referredModule, ns, vs, contextScopeInfo) {
             result.addElement(
                 it.element.createCompletionLookupElement(BasicInsertHandler(), ns = ns)
             )

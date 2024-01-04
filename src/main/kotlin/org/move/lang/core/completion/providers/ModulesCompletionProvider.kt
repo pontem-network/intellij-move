@@ -12,8 +12,8 @@ import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.containingModuleSpec
 import org.move.lang.core.psi.ext.equalsTo
-import org.move.lang.core.psi.itemScopes
-import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.psi.refItemScopes
+import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.letStmtScope
 import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
@@ -38,13 +38,13 @@ object ModulesCompletionProvider: MvCompletionProvider() {
 
         val processedNames = mutableSetOf<String>()
         val namespaces = setOf(Namespace.MODULE)
-        val itemVis =
-            ItemVis(
+        val contextScopeInfo =
+            ContextScopeInfo(
                 letStmtScope = refElement.letStmtScope,
-                itemScopes = refElement.itemScopes,
+                refItemScopes = refElement.refItemScopes,
             )
-        val ctx = CompletionContext(refElement, namespaces, itemVis)
-        processItems(refElement, namespaces, itemVis) { (name, element) ->
+        val ctx = CompletionContext(refElement, namespaces, contextScopeInfo)
+        processItems(refElement, namespaces, contextScopeInfo) { (name, element) ->
             result.addElement(
                 element.createLookupElement(ctx, priority = IMPORTED_MODULE_PRIORITY)
             )
@@ -61,7 +61,7 @@ object ModulesCompletionProvider: MvCompletionProvider() {
                 path,
                 namespaces,
                 setOf(Visibility.Public),
-                itemVis
+                contextScopeInfo
             )
         val containingMod = path.containingModule
         val candidates = getImportCandidates(parameters, result, processedNames, importContext,

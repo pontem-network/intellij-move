@@ -13,15 +13,17 @@ import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.stdext.wrapWithList
 
-data class ItemVis(
-    val itemScopes: Set<ItemScope>,
+data class ContextScopeInfo(
+    val refItemScopes: Set<NamedItemScope>,
     val letStmtScope: LetStmtScope,
 ) {
     val isMsl get() = letStmtScope != LetStmtScope.NONE
 
     fun matches(itemElement: MvNamedElement): Boolean {
-        if (!this.isMsl && itemElement.isMslOnlyItem) return false
-        if (!itemElement.isVisibleInContext(this.itemScopes)) return false
+        if (
+            !this.isMsl && itemElement.isMslOnlyItem
+        ) return false
+        if (!itemElement.isVisibleInContext(this.refItemScopes)) return false
         return true
     }
 }
@@ -29,7 +31,7 @@ data class ItemVis(
 fun processItems(
     element: MvElement,
     namespaces: Set<Namespace>,
-    itemVis: ItemVis,
+    contextScopeInfo: ContextScopeInfo,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     return walkUpThroughScopes(
@@ -37,7 +39,7 @@ fun processItems(
         stopAfter = { it is MvModule }
     ) { cameFrom, scope ->
         processItemsInScope(
-            scope, cameFrom, namespaces, itemVis, processor
+            scope, cameFrom, namespaces, contextScopeInfo, processor
         )
     }
 }
@@ -46,13 +48,14 @@ fun resolveLocalItem(
     element: MvReferenceElement,
     namespaces: Set<Namespace>
 ): List<MvNamedElement> {
-    val itemVis = ItemVis(
-        letStmtScope = element.letStmtScope,
-        itemScopes = element.itemScopes,
-    )
+    val contextScopeInfo =
+        ContextScopeInfo(
+            letStmtScope = element.letStmtScope,
+            refItemScopes = element.refItemScopes,
+        )
     val referenceName = element.referenceName
     var resolved: MvNamedElement? = null
-    processItems(element, namespaces, itemVis) {
+    processItems(element, namespaces, contextScopeInfo) {
         if (it.name == referenceName) {
             resolved = it.element
             return@processItems true
@@ -72,7 +75,7 @@ fun resolveIntoFQModuleRefInUseSpeck(moduleRef: MvModuleRef): MvFQModuleRef? {
         resolved = resolved.moduleUseSpeck ?: resolved.useItem
     }
     if (resolved is MvUseItem && resolved.isSelf) {
-        return resolved.itemUseSpeck().fqModuleRef
+        return resolved.itemUseSpeck.fqModuleRef
     }
 //    if (resolved !is MvModuleUseSpeck) return null
     return (resolved as? MvModuleUseSpeck)?.fqModuleRef
@@ -83,35 +86,38 @@ fun processQualItem(
     item: MvNamedElement,
     namespaces: Set<Namespace>,
     visibilities: Set<Visibility>,
-    itemVis: ItemVis,
+    contextScopeInfo: ContextScopeInfo,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     val matched = when {
         item is MvModule && Namespace.MODULE in namespaces
                 || item is MvStruct && Namespace.TYPE in namespaces
                 || item is MvSchema && Namespace.SCHEMA in namespaces ->
-            processor.match(itemVis, item)
+            processor.match(contextScopeInfo, item)
 
         item is MvFunction && Namespace.FUNCTION in namespaces -> {
             if (item.hasTestAttr) return false
             for (vis in visibilities) {
                 when {
                     vis is Visibility.Public
-                            && item.visibility == FunctionVisibility.PUBLIC -> processor.match(itemVis, item)
+                            && item.visibility == FunctionVisibility.PUBLIC -> processor.match(
+                        contextScopeInfo,
+                        item
+                    )
 
                     vis is Visibility.PublicScript
                             && item.visibility == FunctionVisibility.PUBLIC_SCRIPT ->
-                        processor.match(itemVis, item)
+                        processor.match(contextScopeInfo, item)
 
                     vis is Visibility.PublicFriend && item.visibility == FunctionVisibility.PUBLIC_FRIEND -> {
                         val itemModule = item.module ?: return false
                         val currentModule = vis.currentModule.element ?: return false
                         if (currentModule.fqModule() in itemModule.declaredFriendModules) {
-                            processor.match(itemVis, item)
+                            processor.match(contextScopeInfo, item)
                         }
                     }
 
-                    vis is Visibility.Internal -> processor.match(itemVis, item)
+                    vis is Visibility.Internal -> processor.match(contextScopeInfo, item)
                 }
             }
             false
@@ -135,12 +141,12 @@ fun processFQModuleRef(
     val moveProj = fqModuleRef.moveProject ?: return
     val refAddressText = fqModuleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
 
-    val itemVis = ItemVis(
+    val contextScopeInfo = ContextScopeInfo(
         letStmtScope = fqModuleRef.letStmtScope,
-        itemScopes = fqModuleRef.itemScopes,
+        refItemScopes = fqModuleRef.refItemScopes,
     )
     val moduleProcessor = MatchingProcessor {
-        if (!itemVis.matches(it.element)) {
+        if (!contextScopeInfo.matches(it.element)) {
             return@MatchingProcessor false
         }
         val entry = ScopeItem(it.name, it.element as MvModule)
@@ -176,12 +182,12 @@ fun processFQModuleRef(
     val moveProj = moduleRef.moveProject ?: return
     val refAddress = moduleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
 
-    val itemVis = ItemVis(
+    val contextScopeInfo = ContextScopeInfo(
         letStmtScope = moduleRef.letStmtScope,
-        itemScopes = moduleRef.itemScopes,
+        refItemScopes = moduleRef.refItemScopes,
     )
     val matchModule = MatchingProcessor {
-        if (!itemVis.matches(it.element)) return@MatchingProcessor false
+        if (!contextScopeInfo.matches(it.element)) return@MatchingProcessor false
         val entry = ScopeItem(it.name, it.element as MvModule)
         // TODO: check belongs to the current project
         val modAddress = entry.element.address(moveProj)?.canonicalValue(moveProj)
@@ -203,7 +209,8 @@ fun processFQModuleRef(
 
     MvNamedElementIndex
         .processElementsByName(project, target, searchScope) {
-            val matched = processQualItem(it, setOf(Namespace.MODULE), Visibility.local(), itemVis, matchModule)
+            val matched =
+                processQualItem(it, setOf(Namespace.MODULE), Visibility.local(), contextScopeInfo, matchModule)
             if (matched) return@processElementsByName false
 
             true

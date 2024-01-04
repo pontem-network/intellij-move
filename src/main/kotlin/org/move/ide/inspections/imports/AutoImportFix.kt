@@ -14,7 +14,7 @@ import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.hasAncestor
 import org.move.lang.core.psi.ext.importCandidateNamespaces
 import org.move.lang.core.psi.ext.smartPointer
-import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.letStmtScope
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
@@ -97,35 +97,35 @@ data class ImportContext private constructor(
     val pathElement: MvReferenceElement,
     val namespaces: Set<Namespace>,
     val visibilities: Set<Visibility>,
-    val itemVis: ItemVis,
+    val contextScopeInfo: ContextScopeInfo,
 ) {
     companion object {
         fun from(
             contextElement: MvReferenceElement,
             namespaces: Set<Namespace>,
             visibilities: Set<Visibility>,
-            itemVis: ItemVis
+            contextScopeInfo: ContextScopeInfo
         ): ImportContext {
-            return ImportContext(contextElement, namespaces, visibilities, itemVis)
+            return ImportContext(contextElement, namespaces, visibilities, contextScopeInfo)
         }
 
-        fun from(contextElement: MvReferenceElement): ImportContext {
-            val ns = contextElement.importCandidateNamespaces()
-            val vs = if (contextElement.containingScript != null) {
+        fun from(refElement: MvReferenceElement): ImportContext {
+            val ns = refElement.importCandidateNamespaces()
+            val vs = if (refElement.containingScript != null) {
                 setOf(Visibility.Public, Visibility.PublicScript)
             } else {
-                val module = contextElement.containingModule
+                val module = refElement.containingModule
                 if (module != null) {
                     setOf(Visibility.Public, Visibility.PublicFriend(module.smartPointer()))
                 } else {
                     setOf(Visibility.Public)
                 }
             }
-            val itemVis = ItemVis(
-                letStmtScope = contextElement.letStmtScope,
-                itemScopes = contextElement.itemScopes,
+            val contextScopeInfo = ContextScopeInfo(
+                letStmtScope = refElement.letStmtScope,
+                refItemScopes = refElement.refItemScopes,
             )
-            return ImportContext(contextElement, ns, vs, itemVis)
+            return ImportContext(refElement, ns, vs, contextScopeInfo)
         }
     }
 }

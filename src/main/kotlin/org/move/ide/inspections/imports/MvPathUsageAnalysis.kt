@@ -51,11 +51,11 @@ data class PathUsages(
         verifyScopeUsages.updateFrom(other.verifyScopeUsages)
     }
 
-    fun getScopeUsages(itemScope: ItemScope): ScopePathUsages {
+    fun getScopeUsages(itemScope: NamedItemScope): ScopePathUsages {
         return when (itemScope) {
-            ItemScope.MAIN -> mainScopeUsages
-            ItemScope.TEST -> testScopeUsages
-            ItemScope.VERIFY -> verifyScopeUsages
+            NamedItemScope.MAIN -> mainScopeUsages
+            NamedItemScope.TEST -> testScopeUsages
+            NamedItemScope.VERIFY -> verifyScopeUsages
         }
     }
 }
@@ -99,9 +99,9 @@ private fun MvImportsOwner.localPathUsages(): PathUsages {
             PsiTreeUtil.processElements(child, MvPath::class.java) { path ->
                 val (nameUsages, typeUsages) =
                     when (path.itemScope) {
-                        ItemScope.MAIN -> Pair(mainNameUsages, mainTypeUsages)
-                        ItemScope.TEST -> Pair(testNameUsages, testTypeUsages)
-                        ItemScope.VERIFY -> Pair(verifyNameUsages, verifyTypeUsages)
+                        NamedItemScope.MAIN -> Pair(mainNameUsages, mainTypeUsages)
+                        NamedItemScope.TEST -> Pair(testNameUsages, testTypeUsages)
+                        NamedItemScope.VERIFY -> Pair(verifyNameUsages, verifyTypeUsages)
                     }
                 when {
                     path.moduleRef != null -> addUsage(path, nameUsages)
@@ -120,53 +120,53 @@ private fun MvImportsOwner.localPathUsages(): PathUsages {
 }
 
 // only Main/Test for now
-val MvPath.usageScope: ItemScope get() {
+val MvPath.usageScope: NamedItemScope get() {
     var parentElement = this.parent
     while (parentElement != null) {
 //        if (parentElement is MslOnlyElement) return ItemScope.MAIN
         if (parentElement is MvDocAndAttributeOwner && parentElement.hasTestOnlyAttr) {
-            return ItemScope.TEST
+            return NamedItemScope.TEST
         }
         if (parentElement is MvFunction && parentElement.hasTestAttr) {
-            return ItemScope.TEST
+            return NamedItemScope.TEST
         }
         parentElement = parentElement.parent
     }
-    return ItemScope.MAIN
+    return NamedItemScope.MAIN
 }
 
 // only Main/Test for now
-val MvUseStmt.declScope: ItemScope get() {
+val MvUseStmt.declScope: NamedItemScope get() {
     if (this.hasTestOnlyAttr) {
-        return ItemScope.TEST
+        return NamedItemScope.TEST
     }
     var parentElement = this.parent
     while (parentElement != null) {
 //        if (parentElement is MslOnlyElement) return ItemScope.MAIN
         if (parentElement is MvDocAndAttributeOwner && parentElement.hasTestOnlyAttr) {
-            return ItemScope.TEST
+            return NamedItemScope.TEST
         }
         if (parentElement is MvFunction && parentElement.hasTestAttr) {
-            return ItemScope.TEST
+            return NamedItemScope.TEST
         }
         parentElement = parentElement.parent
     }
-    return ItemScope.MAIN
+    return NamedItemScope.MAIN
 }
 
-sealed class PathStart(open val usageScope: ItemScope) {
+sealed class PathStart(open val usageScope: NamedItemScope) {
     data class Address(
         val addressRef: MvAddressRef,
-        override val usageScope: ItemScope
+        override val usageScope: NamedItemScope
     ): PathStart(usageScope)
     data class Module(
         val modName: String,
         val moduleRef: MvModuleRef,
-        override val usageScope: ItemScope
+        override val usageScope: NamedItemScope
     ): PathStart(usageScope)
     data class Item(
         val itemName: String,
-        override val usageScope: ItemScope
+        override val usageScope: NamedItemScope
     ): PathStart(usageScope)
 
     companion object {

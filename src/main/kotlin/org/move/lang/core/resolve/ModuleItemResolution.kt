@@ -10,17 +10,17 @@ fun processModuleInnerItems(
     module: MvModule,
     namespaces: Set<Namespace>,
     visibilities: Set<Visibility>,
-    itemVis: ItemVis,
+    contextScopeInfo: ContextScopeInfo,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     for (namespace in namespaces) {
         val found = when (namespace) {
             Namespace.NAME -> {
                 processor.matchAll(
-                    itemVis,
-                    if (itemVis.isMsl) module.consts() else emptyList(),
-                    if (itemVis.isMsl) module.structs() else emptyList(),
-                    if (itemVis.isMsl)
+                    contextScopeInfo,
+                    if (contextScopeInfo.isMsl) module.consts() else emptyList(),
+                    if (contextScopeInfo.isMsl) module.structs() else emptyList(),
+                    if (contextScopeInfo.isMsl)
                         module.allModuleSpecs()
                             .map {
                                 it.moduleItemSpecs()
@@ -33,17 +33,17 @@ fun processModuleInnerItems(
             Namespace.FUNCTION -> {
                 val functions = visibilities.flatMap { module.visibleFunctions(it) }
                 val specFunctions =
-                    if (itemVis.isMsl) module.specFunctions() else emptyList()
+                    if (contextScopeInfo.isMsl) module.specFunctions() else emptyList()
                 val specInlineFunctions =
-                    if (itemVis.isMsl) module.specInlineFunctions() else emptyList()
+                    if (contextScopeInfo.isMsl) module.specInlineFunctions() else emptyList()
                 processor.matchAll(
-                    itemVis,
+                    contextScopeInfo,
                     functions, specFunctions, specInlineFunctions
                 )
             }
-            Namespace.TYPE -> processor.matchAll(itemVis, module.structs())
-            Namespace.SCHEMA -> processor.matchAll(itemVis, module.schemas())
-            Namespace.ERROR_CONST -> processor.matchAll(itemVis, module.consts())
+            Namespace.TYPE -> processor.matchAll(contextScopeInfo, module.structs())
+            Namespace.SCHEMA -> processor.matchAll(contextScopeInfo, module.schemas())
+            Namespace.ERROR_CONST -> processor.matchAll(contextScopeInfo, module.consts())
             else -> continue
         }
         if (found) return true
@@ -54,7 +54,7 @@ fun processModuleInnerItems(
 fun processModuleSpecItems(
     module: MvModule,
     namespaces: Set<Namespace>,
-    itemVis: ItemVis,
+    contextScopeInfo: ContextScopeInfo,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     for (namespace in namespaces) {
@@ -62,11 +62,11 @@ fun processModuleSpecItems(
             val matched = when (namespace) {
                 Namespace.FUNCTION ->
                     processor.matchAll(
-                        itemVis,
+                        contextScopeInfo,
                         moduleSpec.specFunctions(),
                         moduleSpec.specInlineFunctions()
                     )
-                Namespace.SCHEMA -> processor.matchAll(itemVis, moduleSpec.schemas())
+                Namespace.SCHEMA -> processor.matchAll(contextScopeInfo, moduleSpec.schemas())
                 else -> false
             }
             if (matched) return true
@@ -79,11 +79,12 @@ fun processModuleItems(
     module: MvModule,
     namespaces: Set<Namespace>,
     visibilities: Set<Visibility>,
-    itemVis: ItemVis,
+    contextScopeInfo: ContextScopeInfo,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
-    return processModuleInnerItems(module, namespaces, visibilities, itemVis, processor)
-            || itemVis.isMsl && processModuleSpecItems(module, namespaces, itemVis, processor)
+    return processModuleInnerItems(module, namespaces, visibilities, contextScopeInfo, processor)
+            ||
+            contextScopeInfo.isMsl && processModuleSpecItems(module, namespaces, contextScopeInfo, processor)
 }
 
 fun resolveModuleItem(
@@ -91,10 +92,10 @@ fun resolveModuleItem(
     name: String,
     namespaces: Set<Namespace>,
     visibilities: Set<Visibility>,
-    itemVis: ItemVis,
+    contextScopeInfo: ContextScopeInfo,
 ): List<MvNamedElement> {
     val resolved = mutableListOf<MvNamedElement>()
-    processModuleItems(module, namespaces, visibilities, itemVis) {
+    processModuleItems(module, namespaces, visibilities, contextScopeInfo) {
         if (it.name == name) {
             resolved.add(it.element)
             return@processModuleItems true
