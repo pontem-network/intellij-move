@@ -173,8 +173,8 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                                 parentExpr.inference(msl)?.getCallExprType(parentExpr) as? TyCallable ?: return
                             callTy.paramTypes.size
                         }
-                        is MvMacroCallExpr -> {
-                            if (parentExpr.macroIdent.identifier.text == "assert") {
+                        is MvAssertBangExpr -> {
+                            if (parentExpr.identifier.text == "assert") {
                                 2
                             } else {
                                 return

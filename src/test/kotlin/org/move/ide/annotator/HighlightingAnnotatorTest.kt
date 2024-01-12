@@ -200,7 +200,7 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
     fun `test macros are highlighted`() = checkHighlighting("""
     module 0x1::M {
         fun m() {
-            <MACRO>assert!</MACRO>(true, 1);
+            <MACRO>assert</MACRO><MACRO>!</MACRO>(true, 1);
         }
     }
     """)

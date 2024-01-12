@@ -271,6 +271,11 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
+    fun ASSERT_IDENTIFIER(b: PsiBuilder, level: Int): Boolean {
+        return nextTokenIs(b, "assert") && consumeToken(b, IDENTIFIER)
+    }
+
+    @JvmStatic
     fun addressKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "address", ADDRESS)
 
     @JvmStatic

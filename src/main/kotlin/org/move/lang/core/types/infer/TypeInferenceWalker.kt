@@ -204,7 +204,7 @@ class TypeInferenceWalker(
             is MvRefExpr -> inferRefExprTy(expr)
             is MvBorrowExpr -> inferBorrowExprTy(expr, expected)
             is MvCallExpr -> inferCallExprTy(expr, expected)
-            is MvMacroCallExpr -> inferMacroCallExprTy(expr)
+            is MvAssertBangExpr -> inferMacroCallExprTy(expr)
             is MvStructLitExpr -> inferStructLitExprTy(expr, expected)
             is MvVectorLitExpr -> inferVectorLitExpr(expr, expected)
             is MvIndexExpr -> inferIndexExprTy(expr)
@@ -401,8 +401,8 @@ class TypeInferenceWalker(
         }
     }
 
-    fun inferMacroCallExprTy(macroExpr: MvMacroCallExpr): Ty {
-        val ident = macroExpr.macroIdent.identifier
+    fun inferMacroCallExprTy(macroExpr: MvAssertBangExpr): Ty {
+        val ident = macroExpr.identifier
         if (ident.text == "assert") {
             val formalInputTys = listOf(TyBool, TyInteger.default())
             inferArgumentTypes(formalInputTys, emptyList(), macroExpr.valueArguments.map { it.expr })

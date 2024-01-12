@@ -8,10 +8,10 @@ val MvCallExpr.valueArguments: List<MvValueArgument>
     get() =
         this.valueArgumentList?.valueArgumentList.orEmpty()
 
-val MvMacroCallExpr.valueArguments: List<MvValueArgument>
+val MvAssertBangExpr.valueArguments: List<MvValueArgument>
     get() =
         this.valueArgumentList?.valueArgumentList.orEmpty()
 
 val MvCallExpr.callArgumentExprs: List<MvExpr?> get() = this.valueArguments.map { it.expr }
 
-val MvMacroCallExpr.callArgumentExprs: List<MvExpr?> get() = this.valueArguments.map { it.expr }
+val MvAssertBangExpr.callArgumentExprs: List<MvExpr?> get() = this.valueArguments.map { it.expr }

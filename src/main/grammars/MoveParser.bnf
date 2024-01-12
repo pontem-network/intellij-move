@@ -770,7 +770,7 @@ private AtomExpr ::=
                     | VectorLitExpr
                     | DotExpr
                     | IndexExpr
-                    | (CallExpr | MacroCallExpr)
+                    | (CallExpr | AssertBangExpr)
                     | RefExpr
                     | LambdaExpr
                     | LitExpr
@@ -1017,8 +1017,9 @@ NamedAddress ::= IDENTIFIER
 }
 
 /// Macros
-MacroCallExpr ::= MacroIdent ValueArgumentList { pin = 1 }
-MacroIdent ::= IDENTIFIER '!'
+AssertBangExpr ::= <<ASSERT_IDENTIFIER>> '!' ValueArgumentList { pin = 2 }
+//AssertBangExpr ::= MacroIdent ValueArgumentList { pin = 1 }
+//MacroIdent ::= IDENTIFIER '!'
 
 private assert ::= <<assertKeyword>>
 private assume ::= <<assumeKeyword>>

@@ -33,7 +33,6 @@ class HighlightingAnnotator : MvAnnotatorBase() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val color = when {
             element is LeafPsiElement -> highlightLeaf(element)
-            element is MvMacroIdent -> MvColor.MACRO
             element is MvLitExpr && element.text.startsWith("@") -> MvColor.ADDRESS
             else -> null
         } ?: return
@@ -50,6 +49,7 @@ class HighlightingAnnotator : MvAnnotatorBase() {
         return when {
             leafType == IDENTIFIER -> highlightIdentifier(parent)
             leafType == HEX_INTEGER_LITERAL -> MvColor.NUMBER
+            parent is MvAssertBangExpr -> MvColor.MACRO
             parent is MvCopyExpr
                     && element.text == "copy" -> MvColor.KEYWORD
             else -> null
@@ -57,6 +57,7 @@ class HighlightingAnnotator : MvAnnotatorBase() {
     }
 
     private fun highlightIdentifier(element: MvElement): MvColor? {
+        if (element is MvAssertBangExpr) return MvColor.MACRO
         if (element is MvAbility) return MvColor.ABILITY
         if (element is MvTypeParameter) return MvColor.TYPE_PARAMETER
         if (element is MvItemSpecTypeParameter) return MvColor.TYPE_PARAMETER

@@ -71,10 +71,9 @@ FILE
                 <empty list>
           PsiWhiteSpace(' ')
           MvExprStmtImpl(EXPR_STMT)
-            MvMacroCallExprImpl(MACRO_CALL_EXPR)
-              MvMacroIdentImpl(MACRO_IDENT)
-                PsiElement(IDENTIFIER)('assert')
-                PsiElement(!)('!')
+            MvAssertBangExprImpl(ASSERT_BANG_EXPR)
+              PsiElement(IDENTIFIER)('assert')
+              PsiElement(!)('!')
               MvValueArgumentListImpl(VALUE_ARGUMENT_LIST)
                 PsiElement(()('(')
                 MvValueArgumentImpl(VALUE_ARGUMENT)
