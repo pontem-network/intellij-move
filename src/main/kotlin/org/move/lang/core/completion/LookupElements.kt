@@ -106,14 +106,14 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
             .withTypeText(this.typeAnnotation?.type?.text)
 
         is MvConst -> {
-            val msl = this.isMsl()
+            val msl = this.isMslOnlyItem
             val constTy = this.type?.loweredType(msl) ?: TyUnknown
             this.createLookupElementWithIcon()
                 .withTypeText(constTy.text(true))
         }
 
         is MvBindingPat -> {
-            val msl = this.isMsl()
+            val msl = this.isMslOnlyItem
             val inference = this.inference(msl)
             // race condition sometimes happens, when file is too big, inference is not finished yet
             val ty = inference?.getPatTypeOrUnknown(this) ?: TyUnknown
@@ -242,7 +242,7 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
 
     private fun handleFunctionInsert(context: InsertionContext, element: MvFunctionLike) {
         val requiresExplicitTypes = run {
-            val msl = element.isMsl()
+            val msl = element.isMslOnlyItem
             val callTy = element.declaredType(msl).substitute(element.tyInfers) as TyFunction
 
             val inferenceCtx = InferenceContext(msl)

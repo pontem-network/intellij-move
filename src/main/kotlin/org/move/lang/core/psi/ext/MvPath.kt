@@ -28,7 +28,7 @@ fun MvPath.isSpecPrimitiveType(): Boolean =
 
 val MvPath.isUpdateFieldArg2: Boolean
     get() {
-        if (!this.isMsl()) return false
+        if (!this.isMslScope) return false
         val ind = this
             .ancestorStrict<MvCallExpr>()
             ?.let { if (it.path.textMatches("update_field")) it else null }

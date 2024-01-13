@@ -18,9 +18,9 @@ fun processModuleInnerItems(
             Namespace.NAME -> {
                 processor.matchAll(
                     contextScopeInfo,
-                    if (contextScopeInfo.isMsl) module.consts() else emptyList(),
-                    if (contextScopeInfo.isMsl) module.structs() else emptyList(),
-                    if (contextScopeInfo.isMsl)
+                    if (contextScopeInfo.isMslScope) module.consts() else emptyList(),
+                    if (contextScopeInfo.isMslScope) module.structs() else emptyList(),
+                    if (contextScopeInfo.isMslScope)
                         module.allModuleSpecs()
                             .map {
                                 it.moduleItemSpecs()
@@ -33,9 +33,9 @@ fun processModuleInnerItems(
             Namespace.FUNCTION -> {
                 val functions = visibilities.flatMap { module.visibleFunctions(it) }
                 val specFunctions =
-                    if (contextScopeInfo.isMsl) module.specFunctions() else emptyList()
+                    if (contextScopeInfo.isMslScope) module.specFunctions() else emptyList()
                 val specInlineFunctions =
-                    if (contextScopeInfo.isMsl) module.specInlineFunctions() else emptyList()
+                    if (contextScopeInfo.isMslScope) module.specInlineFunctions() else emptyList()
                 processor.matchAll(
                     contextScopeInfo,
                     functions, specFunctions, specInlineFunctions
@@ -84,7 +84,7 @@ fun processModuleItems(
 ): Boolean {
     return processModuleInnerItems(module, namespaces, visibilities, contextScopeInfo, processor)
             ||
-            contextScopeInfo.isMsl && processModuleSpecItems(module, namespaces, contextScopeInfo, processor)
+            contextScopeInfo.isMslScope && processModuleSpecItems(module, namespaces, contextScopeInfo, processor)
 }
 
 fun resolveModuleItem(

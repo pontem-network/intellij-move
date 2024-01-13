@@ -29,7 +29,7 @@ val SPEC_BUILTIN_FUNCTIONS = setOf(
     "in_range", "update", "update_field", "old", "TRACE", "int2bv", "bv2int"
 )
 
-class HighlightingAnnotator : MvAnnotatorBase() {
+class HighlightingAnnotator: MvAnnotatorBase() {
     override fun annotateInternal(element: PsiElement, holder: AnnotationHolder) {
         val color = when {
             element is LeafPsiElement -> highlightLeaf(element)
@@ -87,7 +87,8 @@ class HighlightingAnnotator : MvAnnotatorBase() {
     }
 
     private fun highlightBindingPat(bindingPat: MvBindingPat): MvColor {
-        val msl = bindingPat.isMsl()
+//        val msl = bindingPat.isMslLegacy()
+        val msl = bindingPat.isMslOnlyItem
         val itemTy = bindingPat.inference(msl)?.getPatType(bindingPat)
         return if (itemTy != null) {
             highlightVariableByType(itemTy)
@@ -106,7 +107,7 @@ class HighlightingAnnotator : MvAnnotatorBase() {
             is MvPathType -> {
                 when {
                     identifierName in PRIMITIVE_TYPE_IDENTIFIERS -> MvColor.PRIMITIVE_TYPE
-                    identifierName in SPEC_ONLY_PRIMITIVE_TYPES && path.isMsl() -> MvColor.PRIMITIVE_TYPE
+                    identifierName in SPEC_ONLY_PRIMITIVE_TYPES && path.isMslScope -> MvColor.PRIMITIVE_TYPE
                     identifierName in BUILTIN_TYPE_IDENTIFIERS -> MvColor.BUILTIN_TYPE
                     else -> {
                         val item = path.reference?.resolve()
@@ -140,7 +141,7 @@ class HighlightingAnnotator : MvAnnotatorBase() {
                 if (item is MvConst) {
                     MvColor.CONSTANT
                 } else {
-                    val msl = pathOwner.isMsl()
+                    val msl = path.isMslScope
                     val itemTy = pathOwner.inference(msl)?.getExprType(pathOwner)
                     if (itemTy != null) {
                         highlightVariableByType(itemTy)

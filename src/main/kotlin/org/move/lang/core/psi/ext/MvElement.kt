@@ -45,10 +45,37 @@ val MvNamedElement.isMslOnlyItem: Boolean
             element = element.parent as? MvElement
         }
         return false
-//        return this.isMsl()
     }
 
-fun PsiElement.isMsl(): Boolean {
+val MvPath.isMslScope: Boolean get() = this.isMslInner()
+
+val MvModuleRef.isMslScope: Boolean get() = this.isMslInner()
+
+@Deprecated("Use specialized receiver type property isMslScope if possible")
+fun PsiElement.isMsl(): Boolean = isMslInner()
+//fun PsiElement.isMslLegacy(): Boolean {
+//    return CachedValuesManager.getProjectPsiDependentCache(this) {
+//        var element: PsiElement? = it
+//        while (element != null) {
+//            // use items always non-msl, otherwise import resolution doesn't work correctly
+//            if (element is MvUseItem) return@getProjectPsiDependentCache false
+//
+//            // module items
+//            if (element is MvModule
+//                || element is MvFunction
+//                || element is MvStruct
+//            )
+//                return@getProjectPsiDependentCache false
+//
+//            if (element is MslOnlyElement) return@getProjectPsiDependentCache true
+//
+//            element = element.parent as? MvElement
+//        }
+//        false
+//    }
+//}
+
+private fun PsiElement.isMslInner(): Boolean {
     return CachedValuesManager.getProjectPsiDependentCache(this) {
         var element: PsiElement? = it
         while (element != null) {

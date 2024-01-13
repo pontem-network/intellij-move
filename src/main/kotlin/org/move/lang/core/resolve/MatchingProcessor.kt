@@ -20,7 +20,7 @@ fun interface MatchingProcessor<T: MvNamedElement> {
 
     fun match(contextScopeInfo: ContextScopeInfo, itemElement: T): Boolean {
         if (
-            !contextScopeInfo.isMsl && itemElement.isMslOnlyItem
+            !contextScopeInfo.isMslScope && itemElement.isMslOnlyItem
         ) return false
         if (!itemElement.isVisibleInContext(contextScopeInfo.refItemScopes)) return false
 

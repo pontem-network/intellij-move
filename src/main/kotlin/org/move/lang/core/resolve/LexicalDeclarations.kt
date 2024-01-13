@@ -153,12 +153,12 @@ fun processItemsInScope(
                 val found = when (scope) {
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
-                        val specFunctions = if (contextScopeInfo.isMsl) {
+                        val specFunctions = if (contextScopeInfo.isMslScope) {
                             listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
                         } else {
                             emptyList()
                         }
-                        val specInlineFunctions = if (contextScopeInfo.isMsl) {
+                        val specInlineFunctions = if (contextScopeInfo.isMslScope) {
                             module.moduleItemSpecs().flatMap { it.specInlineFunctions() }
                         } else {
                             emptyList()

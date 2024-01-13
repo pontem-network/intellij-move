@@ -99,8 +99,9 @@ class FieldsDescription(val fields: Array<String>) {
 
     companion object {
         fun fromStructLitBlock(block: MvStructLitFieldsBlock): FieldsDescription? {
-            val struct = block.litExpr.path.maybeStruct ?: return null
-            val msl = block.isMsl()
+            val structPath = block.litExpr.path
+            val struct = structPath.maybeStruct ?: return null
+            val msl = structPath.isMslScope
 //            val itemContext = struct.outerItemContext(msl)
             val fieldParams =
                 struct.fieldsMap.entries.map { (name, field) ->

@@ -10,9 +10,9 @@ import org.move.lang.core.types.ty.TyStruct
 
 val MvStructDotField.receiverItem: MvStruct?
     get() {
-        val msl = this.isMsl()
         val dotExpr =
             (this.parent as? MvDotExpr)?.getOriginalOrSelf() ?: return null
+        val msl = dotExpr.isMsl()
         val innerTy = dotExpr.inferReceiverTy(msl)
         if (innerTy !is TyStruct) return null
         val structItem = innerTy.item

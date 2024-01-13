@@ -54,7 +54,7 @@ val MvFunctionLike.allParamsAsBindings: List<MvBindingPat> get() = this.paramete
 
 val MvFunctionLike.valueParamsAsBindings: List<MvBindingPat>
     get() {
-        val msl = this.isMsl()
+        val msl = this.isMslOnlyItem
         val parameters = this.parameters
         return parameters
             .filter { it.type?.loweredType(msl) !is TyLambda }
@@ -63,7 +63,7 @@ val MvFunctionLike.valueParamsAsBindings: List<MvBindingPat>
 
 val MvFunctionLike.lambdaParamsAsBindings: List<MvBindingPat>
     get() {
-        val msl = this.isMsl()
+        val msl = this.isMslOnlyItem
         val parameters = this.parameters
         return parameters
             .filter { it.type?.loweredType(msl) is TyLambda }

@@ -37,7 +37,6 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
         )
             docElement = docElement.owner
 
-        val msl = docElement?.isMsl() ?: false
         when (docElement) {
             is MvNamedAddress -> {
                 // TODO: add docs for both [addresses] and [dev-addresses]
@@ -51,6 +50,7 @@ class MvDocumentationProvider : AbstractDocumentationProvider() {
             is MvDocAndAttributeOwner -> generateOwnerDoc(docElement, buffer)
             is MvBindingPat -> {
                 val presentationInfo = docElement.presentationInfo ?: return null
+                val msl = docElement.isMslOnlyItem
                 val inference = docElement.inference(msl) ?: return null
                 val type = inference.getPatType(docElement).renderForDocs(true)
                 buffer += presentationInfo.type
@@ -108,7 +108,9 @@ fun generateFunction(function: MvFunction, buffer: StringBuilder) {
 
 fun MvElement.signature(builder: StringBuilder) {
     val buffer = StringBuilder()
-    val msl = this.isMsl()
+    // no need for msl type conversion in docs
+    val msl = false
+//    val msl = this.isMslLegacy()
     when (this) {
         is MvFunction -> generateFunction(this, buffer)
         is MvModule -> {
@@ -164,10 +166,6 @@ private fun PsiElement.generateDocumentation(
     when (this) {
         is MvType -> {
             val msl = this.isMsl()
-//            val itemContext = this.itemContext(msl)
-//            val inferenceCtx = this.maybeInferenceContext(msl) ?: InferenceContext.default(msl, this)
-//            buffer += inferenceCtx.getTypeTy(this)
-//            buffer += itemContext.rawType(this)
             buffer += this.loweredType(msl)
                 .typeLabel(this)
                 .replace("<", "&lt;")

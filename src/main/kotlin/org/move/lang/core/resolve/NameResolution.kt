@@ -17,11 +17,11 @@ data class ContextScopeInfo(
     val refItemScopes: Set<NamedItemScope>,
     val letStmtScope: LetStmtScope,
 ) {
-    val isMsl get() = letStmtScope != LetStmtScope.NONE
+    val isMslScope get() = letStmtScope != LetStmtScope.NONE
 
     fun matches(itemElement: MvNamedElement): Boolean {
         if (
-            !this.isMsl && itemElement.isMslOnlyItem
+            !this.isMslScope && itemElement.isMslOnlyItem
         ) return false
         if (!itemElement.isVisibleInContext(this.refItemScopes)) return false
         return true

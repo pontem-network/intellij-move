@@ -167,7 +167,7 @@ fun MvPat.extractBindings(fctx: TypeInferenceWalker, ty: Ty) {
 //            val typeArgTy = parentCtx.getTypeTy(typeArg.type)
 //
 //            // check compat for abilities
-//            val compat = isCompatibleAbilities(typeVar, typeArgTy, path.isMsl())
+//            val compat = isCompatibleAbilities(typeVar, typeArgTy, path.isMslLegacy())
 //            val isCompat = when (compat) {
 //                is Compat.AbilitiesMismatch -> {
 //                    parentCtx.typeErrors.add(
