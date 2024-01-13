@@ -52,6 +52,10 @@ val MvElement.itemScopes: Set<NamedItemScope>
 //        project.cacheManager.cache(this, ITEM_SCOPES_KEY) {
         val scopes = mutableSetOf(NamedItemScope.MAIN)
         var element: MvElement? = this
+        if (element is MvStruct || element is MvFunction) {
+            val attributeScopes = (element as MvDocAndAttributeOwner).explicitItemScopes()
+            return attributeScopes
+        }
         while (element != null) {
             when (element) {
                 is MvDocAndAttributeOwner -> {
@@ -92,12 +96,25 @@ val MvElement.itemScope: NamedItemScope
 
 private fun MvDocAndAttributeOwner.explicitItemScopes(): Set<NamedItemScope> {
     val scopes = mutableSetOf<NamedItemScope>()
-    if (this.hasTestOnlyAttr || (this is MvFunction && this.hasTestAttr)) {
-        scopes.add(NamedItemScope.TEST)
+    when {
+        this.hasTestOnlyAttr -> scopes.add(NamedItemScope.TEST)
+        this.hasVerifyOnlyAttr -> scopes.add(NamedItemScope.VERIFY)
+        this is MvStruct -> {
+            scopes.addAll(this.module.explicitItemScopes())
+        }
+        this is MvFunction -> {
+            if (this.hasTestAttr) {
+                scopes.add(NamedItemScope.TEST)
+            }
+            scopes.addAll(this.module?.explicitItemScopes().orEmpty())
+        }
     }
-    if (this.hasVerifyOnlyAttr) {
-        scopes.add(NamedItemScope.VERIFY)
-    }
+//    if (this.hasTestOnlyAttr || (this is MvFunction && this.hasTestAttr)) {
+//        scopes.add(NamedItemScope.TEST)
+//    }
+//    if (this.hasVerifyOnlyAttr) {
+//        scopes.add(NamedItemScope.VERIFY)
+//    }
     return scopes
 }
 
