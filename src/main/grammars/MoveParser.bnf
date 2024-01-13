@@ -98,6 +98,7 @@
         ENTRY     = 'entry_kw'
         INLINE     = 'inline_kw'
         FRIEND     = 'friend_kw'
+        FOR     = 'for_kw'
 
         SCRIPT_KW     = 'script_kw'
         MODULE_KW     = 'module'
@@ -409,6 +410,7 @@ private FunctionSignatureInner ::= IDENTIFIER TypeParameterList?
 private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
 
 private friend ::= <<friendKeyword>>
+private for ::= <<forKeyword>>
 
 private FunctionModifierSetInner ::= <<functionModifierSet FunctionVisibilityModifier>>
 private NativeFunctionModifierSetInner ::= <<nativeFunctionModifierSet FunctionVisibilityModifier>>
@@ -761,7 +763,7 @@ private MulExpr_items ::= DivBinExpr | MulBinExpr | ModBinExpr
 private AddExpr_items ::= PlusBinExpr | MinusBinExpr
 private LogicalEqExpr_items ::= EqualsBinExpr | NotEqualsBinExpr | LessEqualsBinExpr | LessBinExpr | GreaterEqualsBinExpr | GreaterBinExpr
 
-private ControlFlowExpr_items ::= IfExpr | LoopExpr | WhileExpr
+private ControlFlowExpr_items ::= IfExpr | LoopExpr | WhileExpr | ForExpr
 private UnaryExpr ::= CopyExpr | MoveExpr | DerefExpr | BangExpr
                       | ReturnExpr | ContinueExpr | BreakExpr | AbortExpr
 private AtomExpr ::=
@@ -948,6 +950,10 @@ ElseBlock ::= else AnyBlock { pin = 1 }
 
 LoopExpr ::= loop AnyBlock { pin = 1 }
 WhileExpr ::= while Condition AnyBlock { pin = 1 }
+ForExpr ::= for ForIterCondition AnyBlock { pin = 1 }
+ForIterCondition ::= '(' BindingPat in Expr ')' {
+    pin = 1
+}
 
 AssignmentExpr ::= Expr Initializer { rightAssociative = true }
 Initializer ::= '=' Expr { pin = 1 }

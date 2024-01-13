@@ -39,6 +39,7 @@ class CompleteParsingTest : MvParsingTestCase("complete") {
     fun `test annotated literals`() = doTest()
 
     fun `test macros`() = doTest()
+    fun `test loops`() = doTest()
 
     fun doTest() {
         super.doTest(true, true)
