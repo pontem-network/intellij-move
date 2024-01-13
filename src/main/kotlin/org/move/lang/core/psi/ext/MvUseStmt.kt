@@ -1,6 +1,6 @@
 package org.move.lang.core.psi.ext
 
-import org.move.ide.inspections.imports.declScope
+import org.move.ide.inspections.imports.declaredItemScope
 import org.move.lang.core.psi.*
 import org.move.stdext.wrapWithList
 
@@ -92,11 +92,11 @@ sealed class UseSpeck(open val nameOrAlias: String, open val scope: NamedItemSco
 
 val MvUseStmt.useSpecks: List<UseSpeck>
     get() {
-        val useScope = this.declScope
+        val stmtItemScope = this.declaredItemScope
         val moduleUseSpeck = this.moduleUseSpeck
         if (moduleUseSpeck != null) {
             val nameOrAlias = moduleUseSpeck.nameElement?.text ?: return emptyList()
-            return listOf(UseSpeck.Module(nameOrAlias, useScope, moduleUseSpeck))
+            return listOf(UseSpeck.Module(nameOrAlias, stmtItemScope, moduleUseSpeck))
         }
         return this.itemUseSpeck?.useItems.orEmpty()
             .mapNotNull {
@@ -109,10 +109,10 @@ val MvUseStmt.useSpecks: List<UseSpeck>
                         } else {
                             it.moduleName
                         }
-                    UseSpeck.SelfModule(nameOrAlias, useScope, it)
+                    UseSpeck.SelfModule(nameOrAlias, stmtItemScope, it)
                 } else {
                     val nameOrAlias = it.nameOrAlias ?: return@mapNotNull null
-                    UseSpeck.Item(nameOrAlias, useScope, it)
+                    UseSpeck.Item(nameOrAlias, stmtItemScope, it)
                 }
             }
     }

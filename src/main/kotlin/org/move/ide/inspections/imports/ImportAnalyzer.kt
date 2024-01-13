@@ -87,7 +87,7 @@ class ImportAnalyzer(val holder: ProblemsHolder): MvVisitor() {
         // includes self
         val reachableImportOwners = rootImportOwner.descendantsOfTypeOrSelf<MvImportsOwner>()
         for (importsOwner in reachableImportOwners) {
-            val scopeUseStmts = importsOwner.useStmtList.filter { it.declScope == itemScope }
+            val scopeUseStmts = importsOwner.useStmtList.filter { it.declaredItemScope == itemScope }
             for (useStmt in scopeUseStmts) {
                 val unusedSpecks = useStmt.useSpecks.toSet() - allSpecksHit
                 holder.registerStmtSpeckError(useStmt, unusedSpecks)
