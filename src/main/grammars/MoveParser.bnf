@@ -630,6 +630,7 @@ StructPatField ::= (BindingPat !':') | (IDENTIFIER StructPatFieldBinding)
 {
     implements = [
         "org.move.lang.core.resolve.ref.MvStructPatFieldReferenceElement"
+        "org.move.lang.core.resolve.ref.MvStructRefField"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructPatFieldMixin"
 }
@@ -877,6 +878,7 @@ StructLitField ::= IDENTIFIER StructLitFieldInit?
 {
     implements = [
         "org.move.lang.core.resolve.ref.MvStructFieldLitReferenceElement"
+        "org.move.lang.core.resolve.ref.MvStructRefField"
     ]
     mixin = "org.move.lang.core.psi.ext.MvStructLitFieldMixin"
 }

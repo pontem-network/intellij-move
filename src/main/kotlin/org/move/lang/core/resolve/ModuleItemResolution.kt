@@ -43,7 +43,7 @@ fun processModuleInnerItems(
             }
             Namespace.TYPE -> processor.matchAll(contextScopeInfo, module.structs())
             Namespace.SCHEMA -> processor.matchAll(contextScopeInfo, module.schemas())
-            Namespace.ERROR_CONST -> processor.matchAll(contextScopeInfo, module.consts())
+            Namespace.CONST -> processor.matchAll(contextScopeInfo, module.consts())
             else -> continue
         }
         if (found) return true

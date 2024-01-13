@@ -61,7 +61,7 @@ class MvUseItemReferenceElement(
             Namespace.NAME,
             Namespace.FUNCTION,
             Namespace.SCHEMA,
-            Namespace.ERROR_CONST
+            Namespace.CONST
         )
         val vs = Visibility.buildSetOfVisibilities(fqModuleRef)
 

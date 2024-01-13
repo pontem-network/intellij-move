@@ -61,8 +61,6 @@ interface MvFQModuleReferenceElement : MvReferenceElement {
     override fun getReference(): MvFQModuleReference?
 }
 
-interface MvStructDotFieldReferenceElement : MvMandatoryReferenceElement
-
 interface MvStructPatFieldReferenceElement : MvMandatoryReferenceElement
 
 interface MvStructFieldLitReferenceElement : MvMandatoryReferenceElement

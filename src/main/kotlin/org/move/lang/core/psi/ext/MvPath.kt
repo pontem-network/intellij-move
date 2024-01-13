@@ -60,7 +60,7 @@ fun MvPath.namespaces(): Set<Namespace> {
         parent is MvSchemaLit || parent is MvSchemaRef -> setOf(Namespace.SCHEMA)
         parent is MvPathType -> setOf(Namespace.TYPE)
         parent is MvCallExpr -> setOf(Namespace.FUNCTION)
-        parent is MvRefExpr && parent.isAbortCodeConst() -> setOf(Namespace.ERROR_CONST)
+        parent is MvRefExpr && parent.isAbortCodeConst() -> setOf(Namespace.CONST)
         parent is MvRefExpr -> setOf(Namespace.NAME)
 //            parent is MvRefExpr && this.nullModuleRef -> setOf(Namespace.NAME)
 //            parent is MvRefExpr && !this.nullModuleRef -> setOf(Namespace.NAME, Namespace.MODULE)
@@ -87,7 +87,7 @@ fun MvReferenceElement.importCandidateNamespaces(): Set<Namespace> {
             when (this) {
                 is MvModuleRef -> setOf(Namespace.MODULE)
                 is MvPath -> setOf(Namespace.NAME, Namespace.FUNCTION)
-                else -> Namespace.importableItems()
+                else -> Namespace.all()
             }
     }
 }

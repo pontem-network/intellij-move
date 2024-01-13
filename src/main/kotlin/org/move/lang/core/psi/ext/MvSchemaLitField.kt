@@ -21,9 +21,7 @@ fun MvSchemaLitField.resolveToBinding(): MvBindingPat? = resolveToElement()
 class MvSchemaFieldReferenceImpl(
     element: MvSchemaLitField
 ) : MvPolyVariantReferenceCached<MvSchemaLitField>(element) {
-    override fun multiResolveInner(): List<MvNamedElement> {
-        return resolveLocalItem(element, setOf(Namespace.SCHEMA_FIELD))
-    }
+    override fun multiResolveInner(): List<MvNamedElement> = resolveIntoSchemaField(element)
 }
 
 class MvSchemaFieldShorthandReferenceImpl(
@@ -31,7 +29,7 @@ class MvSchemaFieldShorthandReferenceImpl(
 ) : MvPolyVariantReferenceCached<MvSchemaLitField>(element) {
     override fun multiResolveInner(): List<MvNamedElement> {
         return listOf(
-            resolveLocalItem(element, setOf(Namespace.SCHEMA_FIELD)),
+            resolveIntoSchemaField(element),
             resolveLocalItem(element, setOf(Namespace.NAME))
         ).flatten()
     }
@@ -46,4 +44,13 @@ abstract class MvSchemaLitFieldMixin(node: ASTNode) : MvElementImpl(node),
             return MvSchemaFieldReferenceImpl(this)
         }
     }
+}
+
+private fun resolveIntoSchemaField(element: MvSchemaLitField): List<MvNamedElement> {
+    val schemaLit = element.schemaLit ?: return emptyList()
+    val schema = schemaLit.path.maybeSchema
+    val referenceName = element.referenceName
+    return schema
+        ?.fieldBindings.orEmpty()
+        .filter { it.name == referenceName }
 }

@@ -15,25 +15,7 @@ fun processItemsInScope(
     for (namespace in namespaces) {
         val stop = when (namespace) {
 
-            Namespace.STRUCT_FIELD -> {
-                val structItem = when (scope) {
-                    is MvStructPat -> scope.path.maybeStruct
-                    is MvStructLitExpr -> scope.path.maybeStruct
-                    else -> null
-                }
-                if (structItem != null) return processor.matchAll(contextScopeInfo, structItem.fields)
-                false
-            }
-
-            Namespace.SCHEMA_FIELD -> {
-                val schema = (scope as? MvSchemaLit)?.path?.maybeSchema
-                if (schema != null) {
-                    return processor.matchAll(contextScopeInfo, schema.fieldBindings)
-                }
-                false
-            }
-
-            Namespace.ERROR_CONST -> {
+            Namespace.CONST -> {
                 val found = when (scope) {
                     is MvModuleBlock -> {
                         val module = scope.parent as MvModule
