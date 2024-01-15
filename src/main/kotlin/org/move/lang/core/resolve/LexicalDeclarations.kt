@@ -48,6 +48,14 @@ fun processItemsInScope(
                     is MvScript -> processor.matchAll(contextScopeInfo, scope.consts())
                     is MvFunctionLike -> processor.matchAll(contextScopeInfo, scope.allParamsAsBindings)
                     is MvLambdaExpr -> processor.matchAll(contextScopeInfo, scope.bindingPatList)
+                    is MvForExpr -> {
+                        val iterConditionBindingPat = scope.forIterCondition?.bindingPat
+                        if (iterConditionBindingPat != null) {
+                            processor.match(iterConditionBindingPat)
+                        } else {
+                            false
+                        }
+                    }
                     is MvItemSpec -> {
                         val item = scope.item
                         when (item) {

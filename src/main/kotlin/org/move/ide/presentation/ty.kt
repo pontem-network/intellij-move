@@ -136,7 +136,7 @@ private fun render(
         }
         is TyTuple -> ty.types.joinToString(", ", "(", ")", transform = r)
         is TyVector -> "vector<${r(ty.item)}>"
-        is TyIntegerRange -> "range"
+        is TyRange -> "range"
         is TyReference -> {
             val prefix = if (ty.permissions.contains(RefPermissions.WRITE)) "&mut " else "&"
             "$prefix${r(ty.referenced)}"

@@ -278,4 +278,13 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
             }
         }        
     """)
+
+    fun `test for loop keywords`() = checkHighlighting("""
+        module 0x1::m {
+            fun main() {
+                let <VARIABLE>for</VARIABLE> = 1;
+                <KEYWORD>for</KEYWORD> (i <KEYWORD>in</KEYWORD> 1..10) {};
+            }
+        }        
+    """)
 }

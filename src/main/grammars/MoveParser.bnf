@@ -948,10 +948,19 @@ private ConditionBody_recover ::= !')'
 
 ElseBlock ::= else AnyBlock { pin = 1 }
 
-LoopExpr ::= loop AnyBlock { pin = 1 }
-WhileExpr ::= while Condition AnyBlock { pin = 1 }
-ForExpr ::= for ForIterCondition AnyBlock { pin = 1 }
-ForIterCondition ::= '(' BindingPat in Expr ')' {
+LoopExpr ::= loop AnyBlock {
+    pin = 1
+    implements = [ "org.move.lang.core.psi.MvLoopLike" ]
+}
+WhileExpr ::= while Condition AnyBlock {
+    pin = 1
+    implements = [ "org.move.lang.core.psi.MvLoopLike" ]
+}
+ForExpr ::= for ForIterCondition AnyBlock {
+    pin = 1
+    implements = [ "org.move.lang.core.psi.MvLoopLike" ]
+}
+ForIterCondition ::= '(' BindingPat in RangeExpr ')' {
     pin = 1
 }
 

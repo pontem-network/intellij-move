@@ -541,7 +541,7 @@ class ExpressionTypesTest : TypificationTestCase() {
         fun main() {
             let a = while (true) { 1; };
             a;
-          //^ ()  
+          //^ <never>  
         }
     }    
     """
@@ -1756,5 +1756,38 @@ module 0x1::main {
                                                                 //^ num
             }
         }
+    """)
+
+    fun `test for expr index partial`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                for (i in ) {
+                    i;
+                  //^ <unknown>  
+                };
+            }
+        }        
+    """)
+
+    fun `test for expr index range expr int type`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                for (i in 1..10) {
+                    i;
+                  //^ integer  
+                };
+            }
+        }        
+    """)
+
+    fun `test for expr index range expr bool type`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                for (i in false..true) {
+                    i;
+                  //^ bool  
+                };
+            }
+        }        
     """)
 }
