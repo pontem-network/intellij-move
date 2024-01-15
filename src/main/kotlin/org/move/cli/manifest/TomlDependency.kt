@@ -1,5 +1,6 @@
 package org.move.cli.manifest
 
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -24,15 +25,28 @@ sealed class TomlDependency {
 
         override fun localPath(): Path {
             val home = System.getProperty("user.home")
-            val dirName = dirName(repo, rev)
-            return Paths.get(home, ".move", dirName, subdir)
+            // TODO: add choice based on selected blockchain
+            val dirNameAptos = dirNameAptos(repo, rev)
+            val aptosPath = Paths.get(home, ".move", dirNameAptos, subdir)
+            if (Files.exists(aptosPath)) {
+                return aptosPath
+            } else {
+                val dirNameSui = dirNameSui(repo, rev)
+                val suiPath = Paths.get(home, ".move", dirNameSui, subdir)
+                return suiPath
+            }
         }
 
         companion object {
-            fun dirName(repo: String, rev: String): String {
+            fun dirNameAptos(repo: String, rev: String): String {
                 val sanitizedRepoName = repo.replace(Regex("[/:.@]"), "_")
-                val revName = rev.replace('/', '_')
-                return "${sanitizedRepoName}_$revName"
+                val aptosRevName = rev.replace("/", "_")
+                return "${sanitizedRepoName}_$aptosRevName"
+            }
+            fun dirNameSui(repo: String, rev: String): String {
+                val sanitizedRepoName = repo.replace(Regex("[/:.@]"), "_")
+                val suiRevName = rev.replace("/", "__")
+                return "${sanitizedRepoName}_$suiRevName"
             }
         }
     }
