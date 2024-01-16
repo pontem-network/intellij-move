@@ -7,6 +7,7 @@ import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.aptos.AptosCommandLine
 import org.move.cli.runConfigurations.aptos.AptosConfigurationType
 import org.move.cli.runConfigurations.aptos.any.AnyCommandConfigurationFactory
+import org.move.cli.settings.dumpStateOnTestFailure
 import org.move.cli.settings.skipFetchLatestGitDeps
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvFunction
@@ -63,6 +64,9 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
             if (psi.project.skipFetchLatestGitDeps) {
                 subCommand += " --skip-fetch-latest-git-deps"
             }
+            if (psi.project.dumpStateOnTestFailure) {
+                subCommand += " --dump"
+            }
 
             val moveProject = fn.moveProject ?: return null
             val rootPath = moveProject.contentRootPath ?: return null
@@ -83,6 +87,9 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
             var subCommand = "move test --filter $modName"
             if (psi.project.skipFetchLatestGitDeps) {
                 subCommand += " --skip-fetch-latest-git-deps"
+            }
+            if (psi.project.dumpStateOnTestFailure) {
+                subCommand += " --dump"
             }
 
             val moveProject = mod.moveProject ?: return null
@@ -106,6 +113,10 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
             if (location.project.skipFetchLatestGitDeps) {
                 subCommand += " --skip-fetch-latest-git-deps"
             }
+            if (location.project.dumpStateOnTestFailure) {
+                subCommand += " --dump"
+            }
+
 
             return CommandLineFromContext(
                 location,

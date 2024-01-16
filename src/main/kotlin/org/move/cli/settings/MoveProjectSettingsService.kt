@@ -50,7 +50,8 @@ class MoveProjectSettingsService(private val project: Project): PersistentStateC
         var foldSpecs: Boolean = false,
         var disableTelemetry: Boolean = true,
         var debugMode: Boolean = false,
-        var skipFetchLatestGitDeps: Boolean = false
+        var skipFetchLatestGitDeps: Boolean = false,
+        var dumpStateOnTestFailure: Boolean = false,
     ) {
         fun aptosExec(): AptosExec {
             val path = aptosPath
@@ -177,3 +178,7 @@ fun <T> Project.debugErrorOrFallback(message: String, cause: Throwable?, fallbac
 val Project.skipFetchLatestGitDeps: Boolean
     get() =
         this.moveSettings.state.skipFetchLatestGitDeps
+
+val Project.dumpStateOnTestFailure: Boolean
+    get() =
+        this.moveSettings.state.dumpStateOnTestFailure
