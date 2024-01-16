@@ -851,21 +851,21 @@ class TypeInferenceWalker(
         if (conditionExpr != null) {
             conditionExpr.inferTypeCoercableTo(TyBool)
         }
-        return inferLoopLike(whileExpr)
+        return inferLoopLikeBlock(whileExpr)
     }
 
     private fun inferLoopExpr(loopExpr: MvLoopExpr): Ty {
-        return inferLoopLike(loopExpr)
+        return inferLoopLikeBlock(loopExpr)
     }
 
     private fun inferForExpr(forExpr: MvForExpr): Ty {
         val iterCondition = forExpr.forIterCondition
         if (iterCondition != null) {
-            val rangeExpr = iterCondition.rangeExpr
+            val rangeExpr = iterCondition.expr
             val bindingTy =
                 if (rangeExpr != null) {
-                    val rangeTy = inferExprTy(rangeExpr) as? TyRange
-                    rangeTy?.itemTy ?: TyUnknown
+                    val rangeTy = rangeExpr.inferType() as? TyRange
+                    rangeTy?.item ?: TyUnknown
                 } else {
                     TyUnknown
                 }
@@ -874,10 +874,10 @@ class TypeInferenceWalker(
                 this.ctx.writePatTy(bindingPat, bindingTy)
             }
         }
-        return inferLoopLike(forExpr)
+        return inferLoopLikeBlock(forExpr)
     }
 
-    private fun inferLoopLike(loopLike: MvLoopLike): Ty {
+    private fun inferLoopLikeBlock(loopLike: MvLoopLike): Ty {
         val codeBlock = loopLike.codeBlock
         val inlineBlockExpr = loopLike.inlineBlock?.expr
         val expected = Expectation.maybeHasType(TyUnit)

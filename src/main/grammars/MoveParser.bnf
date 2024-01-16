@@ -960,7 +960,7 @@ ForExpr ::= for ForIterCondition AnyBlock {
     pin = 1
     implements = [ "org.move.lang.core.psi.MvLoopLike" ]
 }
-ForIterCondition ::= '(' BindingPat in RangeExpr ')' {
+ForIterCondition ::= '(' BindingPat in Expr ')' {
     pin = 1
 }
 
