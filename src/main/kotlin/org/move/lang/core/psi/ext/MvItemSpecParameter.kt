@@ -4,7 +4,7 @@ import com.intellij.lang.ASTNode
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvItemSpecParameterReferenceElement
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
-import org.move.lang.core.resolve.ref.MvReferenceCached
+import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 
 val MvItemSpecFunctionParameter.parameterList get() = this.parent as? MvItemSpecFunctionParameterList
 
@@ -24,9 +24,9 @@ val MvItemSpecTypeParameter.bounds: List<MvAbility>
 
 class MvItemSpecParameterReferenceImpl(
     element: MvItemSpecParameterReferenceElement,
-) : MvReferenceCached<MvItemSpecParameterReferenceElement>(element) {
+) : MvPolyVariantReferenceCached<MvItemSpecParameterReferenceElement>(element) {
 
-    override fun resolveInner(): List<MvNamedElement> {
+    override fun multiResolveInner(): List<MvNamedElement> {
         val element = this.element
         when (element) {
             is MvItemSpecFunctionParameter -> {

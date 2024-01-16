@@ -5,7 +5,7 @@ import org.move.cli.runConfigurations.aptos.CommandConfigurationHandler
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvFunctionParameter
 import org.move.lang.core.psi.ext.isEntry
-import org.move.lang.core.psi.ext.isTest
+import org.move.lang.core.psi.ext.hasTestAttr
 import org.move.lang.core.psi.ext.transactionParameters
 import org.move.lang.index.MvEntryFunctionIndex
 
@@ -15,7 +15,7 @@ class RunCommandConfigurationHandler : CommandConfigurationHandler() {
 
     override fun configurationName(functionId: String): String = "Run $functionId"
 
-    override fun functionPredicate(function: MvFunction): Boolean = function.isEntry && !function.isTest
+    override fun functionPredicate(function: MvFunction): Boolean = function.isEntry && !function.hasTestAttr
 
     override fun getFunction(moveProject: MoveProject, functionQualName: String): MvFunction? {
         return getEntryFunction(moveProject, functionQualName)

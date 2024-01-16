@@ -26,7 +26,56 @@ fun PsiFileSystemItem.findMoveProject(): MoveProject? {
 
 //private val MSL_KEY: Key<CachedValue<FunctionSignature?>> = Key.create("SIGNATURE_KEY")
 
-fun PsiElement.isMsl(): Boolean {
+val MvNamedElement.isMslOnlyItem: Boolean
+    get() {
+        var element: PsiElement? = this
+        while (element != null) {
+            // use items always non-msl, otherwise import resolution doesn't work correctly
+            if (element is MvUseItem) return false
+
+            // module items
+            if (element is MvModule
+                || element is MvFunction
+                || element is MvStruct
+            )
+                return false
+
+            if (element is MslOnlyElement) return true
+
+            element = element.parent as? MvElement
+        }
+        return false
+    }
+
+val MvPath.isMslScope: Boolean get() = this.isMslInner()
+
+val MvModuleRef.isMslScope: Boolean get() = this.isMslInner()
+
+@Deprecated("Use specialized receiver type property isMslScope if possible")
+fun PsiElement.isMsl(): Boolean = isMslInner()
+//fun PsiElement.isMslLegacy(): Boolean {
+//    return CachedValuesManager.getProjectPsiDependentCache(this) {
+//        var element: PsiElement? = it
+//        while (element != null) {
+//            // use items always non-msl, otherwise import resolution doesn't work correctly
+//            if (element is MvUseItem) return@getProjectPsiDependentCache false
+//
+//            // module items
+//            if (element is MvModule
+//                || element is MvFunction
+//                || element is MvStruct
+//            )
+//                return@getProjectPsiDependentCache false
+//
+//            if (element is MslOnlyElement) return@getProjectPsiDependentCache true
+//
+//            element = element.parent as? MvElement
+//        }
+//        false
+//    }
+//}
+
+private fun PsiElement.isMslInner(): Boolean {
     return CachedValuesManager.getProjectPsiDependentCache(this) {
         var element: PsiElement? = it
         while (element != null) {
@@ -40,7 +89,7 @@ fun PsiElement.isMsl(): Boolean {
             )
                 return@getProjectPsiDependentCache false
 
-            if (element is MslScopeElement) return@getProjectPsiDependentCache true
+            if (element is MslOnlyElement) return@getProjectPsiDependentCache true
 
             element = element.parent as? MvElement
         }

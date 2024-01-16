@@ -541,7 +541,7 @@ class ExpressionTypesTest : TypificationTestCase() {
         fun main() {
             let a = while (true) { 1; };
             a;
-          //^ ()  
+          //^ <never>  
         }
     }    
     """
@@ -1214,7 +1214,7 @@ module 0x1::main {
             spec module {
                 let a = 1..10;
                 a;
-              //^ range   
+              //^ range<num>   
             }
         }        
     """
@@ -1239,7 +1239,7 @@ module 0x1::main {
             fun call() {}
             spec call {
                 forall i in 0..10: i < 20;
-                            //^ range
+                            //^ range<num>
             }
         }        
     """
@@ -1644,7 +1644,7 @@ module 0x1::main {
             spec module {
                 let a = 1..;
                 a;
-              //^ range  
+              //^ range<num>  
             }
         }        
     """)
@@ -1756,5 +1756,60 @@ module 0x1::main {
                                                                 //^ num
             }
         }
+    """)
+
+    fun `test for expr index partial`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                for (i in ) {
+                    i;
+                  //^ <unknown>  
+                };
+            }
+        }        
+    """)
+
+    fun `test for expr index range expr int type`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                for (i in 1..10) {
+                    i;
+                  //^ integer  
+                };
+            }
+        }        
+    """)
+
+    fun `test for expr index range expr bool type`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                for (i in false..true) {
+                    i;
+                  //^ bool  
+                };
+            }
+        }        
+    """)
+
+    fun `test for expr index with range as variable`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let vec = 1..10;
+                for (i in vec) {
+                    i;
+                  //^ integer  
+                }
+            }
+        }        
+    """)
+
+    fun `test range as variable`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let vec = 1..10;
+                vec;
+                //^ range<integer>
+            }
+        }        
     """)
 }

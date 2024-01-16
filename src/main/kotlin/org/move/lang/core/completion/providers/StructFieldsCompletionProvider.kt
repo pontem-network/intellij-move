@@ -11,15 +11,10 @@ import org.move.lang.core.MvPsiPatterns.bindingPat
 import org.move.lang.core.completion.createCompletionLookupElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.mslLetScope
-import org.move.lang.core.resolve.processItems
-import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.withParent
 import org.move.lang.core.withSuperParent
 
-object StructFieldsCompletionProvider : MvCompletionProvider() {
+object StructFieldsCompletionProvider: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = StandardPatterns.or(
             PlatformPatterns
@@ -62,19 +57,13 @@ object StructFieldsCompletionProvider : MvCompletionProvider() {
                 )
             }
             is MvStructDotField -> {
-                val itemVis = ItemVis(
-                    namespaces = setOf(Namespace.DOT_FIELD),
-                    visibilities = Visibility.none(),
-                    mslLetScope = element.mslLetScope,
-                    itemScope = element.itemScope,
-                )
-                processItems(element, itemVis) {
-                    val field = it.element as? MvStructField
-                    if (field != null) {
-                        result.addElement(field.createCompletionLookupElement())
+                val receiverItem = element.receiverItem ?: return
+                receiverItem.fields
+                    .forEach {
+                        result.addElement(
+                            it.createCompletionLookupElement()
+                        )
                     }
-                    false
-                }
             }
         }
     }

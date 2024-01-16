@@ -4,15 +4,13 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.*
 import org.move.lang.core.psi.MvElement
 
-open class PlaceholderStub(
-    parent: StubElement<*>?,
-    elementType: IStubElementType<*, *>,
-) : StubBase<MvElement>(parent, elementType) {
+open class PlaceholderStub(parent: StubElement<*>?, elementType: IStubElementType<*, *>):
+    StubBase<MvElement>(parent, elementType) {
 
-    open class Type<PsiT : MvElement>(
+    open class Type<PsiT: MvElement>(
         debugName: String,
         private val psiContructor: (PlaceholderStub, IStubElementType<*, *>) -> PsiT,
-    ) : MvStubElementType<PlaceholderStub, PsiT>(debugName) {
+    ): MvStubElementType<PlaceholderStub, PsiT>(debugName) {
 
         override fun shouldCreateStub(node: ASTNode): Boolean = createStubIfParentIsStub(node)
 
@@ -23,6 +21,7 @@ open class PlaceholderStub(
 
         override fun createPsi(stub: PlaceholderStub) = psiContructor(stub, this)
 
-        override fun createStub(psi: PsiT, parentStub: StubElement<*>?) = PlaceholderStub(parentStub, this)
+        override fun createStub(psi: PsiT, parentStub: StubElement<*>?) =
+            PlaceholderStub(parentStub, this)
     }
 }

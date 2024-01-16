@@ -81,6 +81,20 @@ module 0x1::Main {
 }
     """)
 
+    fun `test duplicate Self import`() = checkWarnings("""
+module 0x1::M {
+    struct S {}
+    public fun call() {}
+}        
+module 0x1::Main {
+    use 0x1::M::{Self, <warning descr="Unused use item">Self</warning>, S};
+    
+    fun main(a: S) {
+        M::call();
+    }
+}
+    """)
+
     fun `test unused imports if unresolved module`() = checkWarnings("""
 module 0x1::Main {
     <warning descr="Unused use item">use 0x1::M1;</warning>
@@ -244,6 +258,7 @@ module 0x1::M2 {
     """)
 
     fun `test unused import in module spec`() = checkWarnings("""
+    module 0x1::Main {}        
     spec 0x1::Main {
         <warning descr="Unused use item">use 0x1::Coin::{};</warning>
     }
@@ -332,6 +347,22 @@ module 0x1::main {
         use 0x1::string::call;
         
         #[test_only]
+        fun main() {
+            call();
+        }
+    }
+    """)
+
+    fun `test unused main import in presence of test usage`() = checkWarnings("""
+    module 0x1::string {
+        public fun call() {}
+    }        
+    module 0x1::main {
+        <warning descr="Unused use item">use 0x1::string::call;</warning>
+        #[test_only]
+        use 0x1::string::call;
+        
+        #[test]
         fun main() {
             call();
         }
@@ -564,5 +595,60 @@ spec 0x1::main {
         m.addr = 1;
     }    
 }
+    """)
+
+    fun `test no unused import for spec fun usage`() = checkWarnings("""
+        module 0x1::string {
+            public fun id(): u128 { 1 }
+        }
+        module 0x1::m {
+            use 0x1::string;
+            spec fun call(): u128 {
+                string::id()
+            }
+        }        
+    """)
+
+    fun `test import duplicate inside spec`() = checkWarnings("""
+        module 0x1::string {
+            public fun id(): u128 { 1 }
+        }
+        module 0x1::m {
+            use 0x1::string;
+        }        
+        spec 0x1::m {
+            <warning descr="Unused use item">use 0x1::string;</warning>
+            spec module {
+                string::id();
+            }
+        }
+    """)
+
+    fun `test no unused import if used inside spec`() = checkWarnings("""
+        module 0x1::string {
+            public fun id(): u128 { 1 }
+        }
+        module 0x1::m {
+            use 0x1::string;
+        }        
+        spec 0x1::m {
+            spec module {
+                string::id();
+            }
+        }
+    """)
+
+    fun `test spec import but used in original module`() = checkWarnings("""
+        module 0x1::mm {
+            native public fun spec_sip_hash(): u128;
+        }
+        module 0x1::m {
+            fun main(): u128 {
+                spec_sip_hash(); 1
+            }
+        }
+        spec 0x1::m {
+            use 0x1::mm::spec_sip_hash;
+        }        
     """)
 }

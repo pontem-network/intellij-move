@@ -40,19 +40,13 @@ enum class Namespace {
     NAME,
     FUNCTION,
     TYPE,
-    SPEC_ITEM,
     SCHEMA,
-    SCHEMA_FIELD,
     MODULE,
-    STRUCT_FIELD,
-    DOT_FIELD,
-    ERROR_CONST;
+    CONST;
 
     companion object {
-        fun itemSpecItems(): Set<Namespace> = setOf(FUNCTION, TYPE)
-
-        fun importableItems(): Set<Namespace> {
-            return setOf(NAME, FUNCTION, TYPE, SCHEMA, MODULE, ERROR_CONST)
+        fun all(): Set<Namespace> {
+            return setOf(NAME, FUNCTION, TYPE, SCHEMA, MODULE, CONST)
         }
 
         fun none(): Set<Namespace> = setOf()

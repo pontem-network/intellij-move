@@ -627,7 +627,7 @@ module 0x1::mod {
         }        
     """)
 
-    fun `test resolve imported spec fun defined in module spec`() = checkByCode("""
+    fun `test resolve spec fun defined in module spec`() = checkByCode("""
         module 0x1::m {
         }        
         spec 0x1::m {
@@ -638,9 +638,9 @@ module 0x1::mod {
         }
         module 0x1::main {
             use 0x1::m::spec_sip_hash;
+            spec fun main(): u128 {
+                spec_sip_hash(); 1
                        //^
-            spec fun main() {
-                spec_sip_hash();
             }
         }
     """)
@@ -680,5 +680,49 @@ module 0x1::mod {
                        //^ unresolved
             }
         }        
+    """)
+
+    fun `test cannot resolve non-test-only import into test-only item`() = checkByCode("""
+        module 0x1::m {
+            #[test_only]
+            public fun call() {}
+        }        
+        module 0x1::main {
+            use 0x1::m::call;
+                        //^ unresolved
+        }
+    """)
+
+    fun `test resolve local test-only import into test-only item`() = checkByCode("""
+        module 0x1::m {
+            #[test_only]
+            public fun call() {}
+                      //X
+        }        
+        module 0x1::main {
+            #[test]                        
+            fun main() {
+            use 0x1::m::call;
+                        //^
+            }
+        }
+    """)
+
+    fun `test resolve use item spec fun defined in module spec verify scope always available`() = checkByCode("""
+        module 0x1::m {
+        }        
+        spec 0x1::m {
+            spec module {
+                fun spec_sip_hash();
+                    //X
+            }
+        }
+        module 0x1::main {
+            use 0x1::m::spec_sip_hash;
+                       //^
+            spec fun main(): u128 {
+                spec_sip_hash(); 1
+            }
+        }
     """)
 }

@@ -190,15 +190,15 @@ class OptimizeImportsTest : OptimizeImportsTestBase() {
         
             fun call(a: S1, b: S2, c: SS1) {
                 Signer::address_of();
-                signature;
-                table;
-                iter_table;
-                coin;
+                signature::;
+                table::;
+                iter_table::;
+                coin::;
             }
         
             #[test]
             fun test() {
-                Errors;
+                Errors::;
             }
         }
     """, """
@@ -225,15 +225,15 @@ class OptimizeImportsTest : OptimizeImportsTestBase() {
         
             fun call(a: S1, b: S2, c: SS1) {
                 Signer::address_of();
-                signature;
-                table;
-                iter_table;
-                coin;
+                signature::;
+                table::;
+                iter_table::;
+                coin::;
             }
         
             #[test]
             fun test() {
-                Errors;
+                Errors::;
             }
         }
     """)

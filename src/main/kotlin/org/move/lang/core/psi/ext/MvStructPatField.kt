@@ -4,7 +4,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
-import org.move.lang.core.resolve.ref.MvStructFieldReferenceImpl
+import org.move.lang.core.resolve.ref.MvStructRefFieldReferenceImpl
 import org.move.lang.core.resolve.ref.MvStructPatShorthandFieldReferenceImpl
 
 val MvStructPatField.structPat: MvStructPat
@@ -60,7 +60,7 @@ abstract class MvStructPatFieldMixin(node: ASTNode) : MvElementImpl(node),
         return if (this.isShorthand) {
             MvStructPatShorthandFieldReferenceImpl(this)
         } else {
-            MvStructFieldReferenceImpl(this)
+            MvStructRefFieldReferenceImpl(this)
         }
     }
 }

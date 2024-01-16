@@ -12,7 +12,7 @@ fun prop(name: String): String =
         ?: error("Property `$name` is not defined in gradle.properties for environment `$shortPlatformVersion`")
 
 val shortPlatformVersion = prop("shortPlatformVersion")
-val codeVersion = "1.32.0"
+val codeVersion = "1.33.0"
 val pluginVersion = "$codeVersion.$shortPlatformVersion"
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
@@ -26,9 +26,9 @@ version = pluginVersion
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.9.21"
+    kotlin("jvm") version "1.9.22"
     id("org.jetbrains.intellij") version "1.16.1"
-    id("org.jetbrains.grammarkit") version "2022.3.2"
+    id("org.jetbrains.grammarkit") version "2022.3.2.1"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
     id("de.undercouch.download") version "5.5.0"

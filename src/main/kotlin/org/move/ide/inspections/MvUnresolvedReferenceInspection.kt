@@ -44,7 +44,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
         override fun visitModuleRef(moduleRef: MvModuleRef) {
-            if (moduleRef.isMsl() && !moduleRef.project.isDebugModeEnabled) {
+            if (moduleRef.isMslScope && !moduleRef.project.isDebugModeEnabled) {
                 return
             }
             // skip this check, as it will be checked in MvPath visitor
@@ -61,11 +61,11 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
 
         override fun visitPath(path: MvPath) {
             // skip specs in non-dev mode, too many false-positives
-            if (path.isMsl() && !path.project.isDebugModeEnabled) {
+            if (path.isMslScope && !path.project.isDebugModeEnabled) {
                 return
             }
-//            if (path.isMsl() && path.isResult) return
-            if (path.isMsl() && path.isSpecPrimitiveType()) return
+//            if (path.isMslLegacy() && path.isResult) return
+            if (path.isMslScope && path.isSpecPrimitiveType()) return
             if (path.isUpdateFieldArg2) return
 
             if (path.isPrimitiveType()) return

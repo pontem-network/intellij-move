@@ -1,5 +1,6 @@
 package org.move.lang.core.psi.ext
 
+import org.move.ide.inspections.imports.declaredItemScope
 import org.move.lang.core.psi.*
 import org.move.stdext.wrapWithList
 
@@ -23,7 +24,7 @@ val MvUseStmt.addressRef: MvAddressRef?
 
 val MvUseStmt.useGroupLevel: Int
     get() {
-        if (this.isTestOnly) return 5
+        if (this.hasTestOnlyAttr) return 5
         return this.addressRef?.useGroupLevel ?: -1
     }
 
@@ -48,18 +49,73 @@ val MvUseStmt.fqModuleRef: MvFQModuleRef?
 
 val MvUseStmt.childUseItems: List<MvUseItem>
     get() {
-        val itemUseSpeck = this.itemUseSpeck
-        if (itemUseSpeck != null) {
-            val group = itemUseSpeck.useItemGroup
-            if (group != null) {
-                return group.useItemList
-            }
-            return itemUseSpeck.useItem.wrapWithList()
-        }
-        return emptyList()
+        return this.itemUseSpeck?.useItems.orEmpty()
+//        if (itemUseSpeck != null) {
+//            return itemUseSpeck.useItems
+////            val group = itemUseSpeck.useItemGroup
+////            if (group != null) {
+////                return group.useItemList
+////            }
+////            return itemUseSpeck.useItem.wrapWithList()
+//        }
+//        return emptyList()
     }
 
-val MvUseStmt.useSpeck: MvUseSpeck? get() = this.itemUseSpeck ?: this.moduleUseSpeck
+val MvItemUseSpeck.useItems: List<MvUseItem>
+    get() {
+        val group = this.useItemGroup
+        if (group != null) {
+            return group.useItemList
+        }
+        return this.useItem.wrapWithList()
+    }
+
+sealed class UseSpeck(open val nameOrAlias: String, open val scope: NamedItemScope) {
+    data class Module(
+        override val nameOrAlias: String,
+        override val scope: NamedItemScope,
+        val moduleUseSpeck: MvModuleUseSpeck,
+    ): UseSpeck(nameOrAlias, scope)
+
+    data class SelfModule(
+        override val nameOrAlias: String,
+        override val scope: NamedItemScope,
+        val useItem: MvUseItem,
+    ): UseSpeck(nameOrAlias, scope)
+
+    data class Item(
+        override val nameOrAlias: String,
+        override val scope: NamedItemScope,
+        val useItem: MvUseItem,
+    ): UseSpeck(nameOrAlias, scope)
+}
+
+val MvUseStmt.useSpecks: List<UseSpeck>
+    get() {
+        val stmtItemScope = this.declaredItemScope
+        val moduleUseSpeck = this.moduleUseSpeck
+        if (moduleUseSpeck != null) {
+            val nameOrAlias = moduleUseSpeck.nameElement?.text ?: return emptyList()
+            return listOf(UseSpeck.Module(nameOrAlias, stmtItemScope, moduleUseSpeck))
+        }
+        return this.itemUseSpeck?.useItems.orEmpty()
+            .mapNotNull {
+                if (it.isSelf) {
+                    val useAlias = it.useAlias
+                    val nameOrAlias =
+                        if (useAlias != null) {
+                            val aliasName = useAlias.name ?: return@mapNotNull null
+                            aliasName
+                        } else {
+                            it.moduleName
+                        }
+                    UseSpeck.SelfModule(nameOrAlias, stmtItemScope, it)
+                } else {
+                    val nameOrAlias = it.nameOrAlias ?: return@mapNotNull null
+                    UseSpeck.Item(nameOrAlias, stmtItemScope, it)
+                }
+            }
+    }
 
 val MvUseStmt.useSpeckText: String
     get() {

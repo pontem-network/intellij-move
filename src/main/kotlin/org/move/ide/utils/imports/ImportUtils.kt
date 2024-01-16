@@ -2,7 +2,7 @@ package org.move.ide.utils.imports
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.childrenOfType
-import org.move.lang.core.psi.ext.isTestOnly
+import org.move.lang.core.psi.ext.hasTestOnlyAttr
 import org.move.lang.core.psi.ext.names
 import org.move.lang.core.types.ItemQualName
 import org.move.openapiext.checkWriteAccessAllowed
@@ -17,8 +17,8 @@ fun ImportCandidate.import(context: MvElement) {
         ?: context.containingScript?.scriptBlock
         ?: return
     val insertTestOnly =
-        insertionScope.itemScope == ItemScope.MAIN
-                && context.itemScope == ItemScope.TEST
+        insertionScope.itemScope == NamedItemScope.MAIN
+                && context.itemScope == NamedItemScope.TEST
     insertionScope.insertUseItem(qualName, insertTestOnly)
 }
 
@@ -49,7 +49,7 @@ private fun tryInsertingIntoExistingUseStmt(
     val psiFactory = mod.project.psiFactory
     return mod
         .useStmtList
-        .filter { it.isTestOnly == testOnly }
+        .filter { it.hasTestOnlyAttr == testOnly }
         .mapNotNull { it.itemUseSpeck }
         .any { tryGroupWithItemSpeck(psiFactory, it, usePath) }
 }

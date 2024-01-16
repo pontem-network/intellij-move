@@ -28,7 +28,7 @@ fun MvPath.isSpecPrimitiveType(): Boolean =
 
 val MvPath.isUpdateFieldArg2: Boolean
     get() {
-        if (!this.isMsl()) return false
+        if (!this.isMslScope) return false
         val ind = this
             .ancestorStrict<MvCallExpr>()
             ?.let { if (it.path.textMatches("update_field")) it else null }
@@ -54,27 +54,28 @@ val MvPath.maybeStruct get() = reference?.resolveWithAliases() as? MvStruct
 
 val MvPath.maybeSchema get() = reference?.resolveWithAliases() as? MvSchema
 
-abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
-
-    override fun getReference(): MvPathReference? {
-        val parent = this.parent
-        val namespaces = when {
-            parent is MvSchemaLit || parent is MvSchemaRef -> setOf(Namespace.SCHEMA)
-            parent is MvPathType -> setOf(Namespace.TYPE)
-            parent is MvCallExpr -> setOf(Namespace.FUNCTION)
-            parent is MvRefExpr && parent.isAbortCodeConst() -> setOf(Namespace.ERROR_CONST)
-            parent is MvRefExpr -> setOf(Namespace.NAME)
+fun MvPath.namespaces(): Set<Namespace> {
+    val parent = this.parent
+    return when {
+        parent is MvSchemaLit || parent is MvSchemaRef -> setOf(Namespace.SCHEMA)
+        parent is MvPathType -> setOf(Namespace.TYPE)
+        parent is MvCallExpr -> setOf(Namespace.FUNCTION)
+        parent is MvRefExpr && parent.isAbortCodeConst() -> setOf(Namespace.CONST)
+        parent is MvRefExpr -> setOf(Namespace.NAME)
 //            parent is MvRefExpr && this.nullModuleRef -> setOf(Namespace.NAME)
 //            parent is MvRefExpr && !this.nullModuleRef -> setOf(Namespace.NAME, Namespace.MODULE)
-            // TODO: it's own namespace?
-            parent is MvStructLitExpr || parent is MvStructPat -> setOf(Namespace.NAME)
-            else -> project.debugErrorOrFallback(
-                "Unhandled path parent ${parent.elementType}",
-                setOf(Namespace.NAME)
-            )
-        }
-        return MvPathReferenceImpl(this, namespaces)
+        // TODO: it's own namespace?
+        parent is MvStructLitExpr || parent is MvStructPat -> setOf(Namespace.NAME)
+        else -> project.debugErrorOrFallback(
+            "Unhandled path parent ${parent.elementType}",
+            setOf(Namespace.NAME)
+        )
     }
+}
+
+abstract class MvPathMixin(node: ASTNode) : MvElementImpl(node), MvPath {
+
+    override fun getReference(): MvPathReference? = MvPathReferenceImpl(this)
 }
 
 fun MvReferenceElement.importCandidateNamespaces(): Set<Namespace> {
@@ -86,7 +87,7 @@ fun MvReferenceElement.importCandidateNamespaces(): Set<Namespace> {
             when (this) {
                 is MvModuleRef -> setOf(Namespace.MODULE)
                 is MvPath -> setOf(Namespace.NAME, Namespace.FUNCTION)
-                else -> Namespace.importableItems()
+                else -> Namespace.all()
             }
     }
 }

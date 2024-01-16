@@ -11,7 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ItemVis
+import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
@@ -106,14 +106,14 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
             .withTypeText(this.typeAnnotation?.type?.text)
 
         is MvConst -> {
-            val msl = this.isMsl()
+            val msl = this.isMslOnlyItem
             val constTy = this.type?.loweredType(msl) ?: TyUnknown
             this.createLookupElementWithIcon()
                 .withTypeText(constTy.text(true))
         }
 
         is MvBindingPat -> {
-            val msl = this.isMsl()
+            val msl = this.isMslOnlyItem
             val inference = this.inference(msl)
             // race condition sometimes happens, when file is too big, inference is not finished yet
             val ty = inference?.getPatTypeOrUnknown(this) ?: TyUnknown
@@ -131,18 +131,19 @@ fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBui
 
 data class CompletionContext(
     val contextElement: MvElement,
-    val itemVis: ItemVis,
+    val namespaces: Set<Namespace>,
+    val contextScopeInfo: ContextScopeInfo,
     val expectedTy: Ty? = null,
 )
 
 
 fun MvNamedElement.createLookupElement(
-    context: CompletionContext,
+    completionContext: CompletionContext,
     priority: Double = DEFAULT_PRIORITY,
-    insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(context),
+    insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionContext),
 ): LookupElement {
-    val lookupElement = this.createBaseLookupElement(context.itemVis.namespaces)
-    val props = lookupProperties(this, context)
+    val lookupElement = this.createBaseLookupElement(completionContext.namespaces)
+    val props = lookupProperties(this, completionContext)
     return lookupElement
         .withInsertHandler(insertHandler)
         .withPriority(priority)
@@ -241,7 +242,7 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
 
     private fun handleFunctionInsert(context: InsertionContext, element: MvFunctionLike) {
         val requiresExplicitTypes = run {
-            val msl = element.isMsl()
+            val msl = element.isMslOnlyItem
             val callTy = element.declaredType(msl).substitute(element.tyInfers) as TyFunction
 
             val inferenceCtx = InferenceContext(msl)

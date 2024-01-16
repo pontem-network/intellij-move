@@ -4,7 +4,7 @@ import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.lang.core.psi.ext.addressRef
 import org.move.lang.core.psi.ext.isSelf
 
-interface MvImportsOwner : MvElement {
+interface MvImportsOwner: MvElement {
     val useStmtList: List<MvUseStmt>
 }
 
@@ -14,16 +14,12 @@ fun MvImportsOwner.items(): Sequence<MvElement> {
         .filter { it !is MvAttr }
 }
 
-fun MvImportsOwner.moduleUseSpecks(): List<MvModuleUseSpeck> {
-    return getProjectPsiDependentCache(this) {
-        useStmtList.mapNotNull { it.moduleUseSpeck }
-    }
-}
-
-fun MvImportsOwner.allModuleUseSpecks(): List<MvNamedElement> =
+fun MvImportsOwner.moduleUseItems(): List<MvNamedElement> =
     listOf(
         moduleUseSpecksNoAliases(),
         moduleUseSpecksAliases(),
+        selfModuleUseItemNoAliases(),
+        selfModuleUseItemAliases(),
     ).flatten()
 
 fun MvImportsOwner.moduleUseSpecksNoAliases(): List<MvModuleUseSpeck> =
@@ -32,6 +28,13 @@ fun MvImportsOwner.moduleUseSpecksNoAliases(): List<MvModuleUseSpeck> =
 
 fun MvImportsOwner.moduleUseSpecksAliases(): List<MvUseAlias> =
     moduleUseSpecks().mapNotNull { it.useAlias }
+
+
+private fun MvImportsOwner.moduleUseSpecks(): List<MvModuleUseSpeck> {
+    return getProjectPsiDependentCache(this) {
+        useStmtList.mapNotNull { it.moduleUseSpeck }
+    }
+}
 
 fun MvImportsOwner.psiUseItems(): List<MvUseItem> {
     return getProjectPsiDependentCache(this) { importsOwner ->

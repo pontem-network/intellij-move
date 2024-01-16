@@ -4,15 +4,15 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.impl.MvNamedElementImpl
-import org.move.lang.core.resolve.ItemVis
-import org.move.lang.core.resolve.MslLetScope
-import org.move.lang.core.resolve.ref.MvReferenceCached
+import org.move.lang.core.resolve.ContextScopeInfo
+import org.move.lang.core.resolve.LetStmtScope
+import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.resolve.resolveModuleItem
 
-fun MvUseItem.useSpeck(): MvItemUseSpeck =
-    ancestorStrict() ?: error("ItemImport outside ModuleItemsImport")
+val MvUseItem.itemUseSpeck: MvItemUseSpeck
+    get() = ancestorStrict() ?: error("MvUseItem outside MvItemUseSpeck")
 
 val MvUseItem.annotationItem: MvElement
     get() {
@@ -42,41 +42,57 @@ val MvUseItem.moduleName: String
 
 val MvUseItem.isSelf: Boolean get() = this.identifier.textMatches("Self")
 
-class MvUseItemReferenceElement(element: MvUseItem) : MvReferenceCached<MvUseItem>(element) {
+class MvUseItemReferenceElement(
+    element: MvUseItem
+): MvPolyVariantReferenceCached<MvUseItem>(element) {
 
-    override fun resolveInner(): List<MvNamedElement> {
-        val moduleRef = element.useSpeck().fqModuleRef
+    override fun multiResolveInner(): List<MvNamedElement> {
+        val fqModuleRef = element.itemUseSpeck.fqModuleRef
         val module =
-            moduleRef.reference?.resolve() as? MvModule ?: return emptyList()
+            fqModuleRef.reference?.resolve() as? MvModule ?: return emptyList()
         if ((element.useAlias == null && element.text == "Self")
             || (element.useAlias != null && element.text.startsWith("Self as"))
-        ) return listOf(module)
+        ) {
+            return listOf(module)
+        }
 
         val ns = setOf(
             Namespace.TYPE,
             Namespace.NAME,
             Namespace.FUNCTION,
             Namespace.SCHEMA,
-            Namespace.ERROR_CONST
+            Namespace.CONST
         )
-        val vs = Visibility.buildSetOfVisibilities(moduleRef)
-        val itemVis = ItemVis(
-            ns,
-            vs,
-            MslLetScope.EXPR_STMT,
-            itemScope = moduleRef.itemScope,
-        )
+        val vs = Visibility.buildSetOfVisibilities(fqModuleRef)
+
+        // import has MAIN+VERIFY, and TEST if it or any of the parents has test
+        val useItemScopes = mutableSetOf(NamedItemScope.MAIN, NamedItemScope.VERIFY)
+
+        // gather scopes for all parents up to MvUseStmt
+        var scopedElement: MvElement? = element
+        while (scopedElement != null) {
+            useItemScopes.addAll(scopedElement.itemScopes)
+            scopedElement = scopedElement.parent as? MvElement
+        }
+
+        val contextScopeInfo =
+            ContextScopeInfo(
+                letStmtScope = LetStmtScope.EXPR_STMT,
+                refItemScopes = useItemScopes,
+            )
         return resolveModuleItem(
             module,
             element.referenceName,
-            itemVis
+            ns,
+            vs,
+            contextScopeInfo
         )
     }
 
 }
 
-abstract class MvUseItemMixin(node: ASTNode) : MvNamedElementImpl(node),
-                                               MvUseItem {
+abstract class MvUseItemMixin(node: ASTNode): MvNamedElementImpl(node),
+                                              MvUseItem {
     override fun getName(): String? {
         val name = super.getName()
         if (name != "Self") return name

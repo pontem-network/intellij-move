@@ -1,67 +1,61 @@
 package org.move.lang.core.resolve
 
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.util.PsiTreeUtil
 import org.move.lang.MoveFile
-import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.address
-import org.move.lang.core.types.infer.MvInferenceContextOwner
-import org.move.lang.core.types.infer.inferTypesIn
-import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.ty.TyReference
-import org.move.lang.core.types.ty.TyStruct
-import org.move.lang.core.types.ty.TyUnknown
 import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.stdext.wrapWithList
 
-data class ItemVis(
-    val namespaces: Set<Namespace>,
-    val visibilities: Set<Visibility>,
-    val mslLetScope: MslLetScope,
-    val itemScope: ItemScope,
+data class ContextScopeInfo(
+    val refItemScopes: Set<NamedItemScope>,
+    val letStmtScope: LetStmtScope,
 ) {
-    val isMsl get() = mslLetScope != MslLetScope.NONE
+    val isMslScope get() = letStmtScope != LetStmtScope.NONE
+
+    fun matches(itemElement: MvNamedElement): Boolean {
+        if (
+            !this.isMslScope && itemElement.isMslOnlyItem
+        ) return false
+        if (!itemElement.isVisibleInContext(this.refItemScopes)) return false
+        return true
+    }
 }
 
 fun processItems(
     element: MvElement,
-    itemVis: ItemVis,
+    namespaces: Set<Namespace>,
+    contextScopeInfo: ContextScopeInfo,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     return walkUpThroughScopes(
         element,
         stopAfter = { it is MvModule }
     ) { cameFrom, scope ->
-        processLexicalDeclarations(
-            scope, cameFrom, itemVis, processor
+        processItemsInScope(
+            scope, cameFrom, namespaces, contextScopeInfo, processor
         )
     }
-}
-
-fun resolveSingleItem(element: MvReferenceElement, namespaces: Set<Namespace>): MvNamedElement? {
-    return resolveLocalItem(element, namespaces).firstOrNull()
 }
 
 fun resolveLocalItem(
     element: MvReferenceElement,
     namespaces: Set<Namespace>
 ): List<MvNamedElement> {
-    val itemVis = ItemVis(
-        namespaces,
-        mslLetScope = element.mslLetScope,
-        visibilities = Visibility.local(),
-        itemScope = element.itemScope,
-    )
+    val contextScopeInfo =
+        ContextScopeInfo(
+            letStmtScope = element.letStmtScope,
+            refItemScopes = element.refItemScopes,
+        )
     val referenceName = element.referenceName
     var resolved: MvNamedElement? = null
-    processItems(element, itemVis) {
+    processItems(element, namespaces, contextScopeInfo) {
         if (it.name == referenceName) {
             resolved = it.element
             return@processItems true
@@ -71,54 +65,59 @@ fun resolveLocalItem(
     return resolved.wrapWithList()
 }
 
-fun resolveIntoFQModuleRef(moduleRef: MvModuleRef): MvFQModuleRef? {
-    if (moduleRef is MvFQModuleRef) {
-        return moduleRef
-    }
+// go from local MODULE reference to corresponding FqModuleRef (from import)
+fun resolveIntoFQModuleRefInUseSpeck(moduleRef: MvModuleRef): MvFQModuleRef? {
+    check(moduleRef !is MvFQModuleRef) { "Should be handled on the upper level" }
+
     // module refers to ModuleImport
-    var resolved = resolveSingleItem(moduleRef, setOf(Namespace.MODULE))
+    var resolved = resolveLocalItem(moduleRef, setOf(Namespace.MODULE)).firstOrNull()
     if (resolved is MvUseAlias) {
         resolved = resolved.moduleUseSpeck ?: resolved.useItem
     }
     if (resolved is MvUseItem && resolved.isSelf) {
-        return resolved.useSpeck().fqModuleRef
+        return resolved.itemUseSpeck.fqModuleRef
     }
-    if (resolved !is MvModuleUseSpeck) return null
-
-    return resolved.fqModuleRef
+//    if (resolved !is MvModuleUseSpeck) return null
+    return (resolved as? MvModuleUseSpeck)?.fqModuleRef
+//    return resolved.fqModuleRef
 }
 
 fun processQualItem(
     item: MvNamedElement,
-    itemVis: ItemVis,
+    namespaces: Set<Namespace>,
+    visibilities: Set<Visibility>,
+    contextScopeInfo: ContextScopeInfo,
     processor: MatchingProcessor<MvNamedElement>,
 ): Boolean {
     val matched = when {
-        item is MvModule && Namespace.MODULE in itemVis.namespaces
-                || item is MvStruct && Namespace.TYPE in itemVis.namespaces
-                || item is MvSchema && Namespace.SCHEMA in itemVis.namespaces ->
-            processor.match(itemVis, item)
+        item is MvModule && Namespace.MODULE in namespaces
+                || item is MvStruct && Namespace.TYPE in namespaces
+                || item is MvSchema && Namespace.SCHEMA in namespaces ->
+            processor.match(contextScopeInfo, item)
 
-        item is MvFunction && Namespace.FUNCTION in itemVis.namespaces -> {
-            if (item.isTest) return false
-            for (vis in itemVis.visibilities) {
+        item is MvFunction && Namespace.FUNCTION in namespaces -> {
+            if (item.hasTestAttr) return false
+            for (vis in visibilities) {
                 when {
                     vis is Visibility.Public
-                            && item.visibility == FunctionVisibility.PUBLIC -> processor.match(itemVis, item)
+                            && item.visibility == FunctionVisibility.PUBLIC -> processor.match(
+                        contextScopeInfo,
+                        item
+                    )
 
                     vis is Visibility.PublicScript
                             && item.visibility == FunctionVisibility.PUBLIC_SCRIPT ->
-                        processor.match(itemVis, item)
+                        processor.match(contextScopeInfo, item)
 
                     vis is Visibility.PublicFriend && item.visibility == FunctionVisibility.PUBLIC_FRIEND -> {
                         val itemModule = item.module ?: return false
                         val currentModule = vis.currentModule.element ?: return false
                         if (currentModule.fqModule() in itemModule.declaredFriendModules) {
-                            processor.match(itemVis, item)
+                            processor.match(contextScopeInfo, item)
                         }
                     }
 
-                    vis is Visibility.Internal -> processor.match(itemVis, item)
+                    vis is Visibility.Internal -> processor.match(contextScopeInfo, item)
                 }
             }
             false
@@ -128,19 +127,9 @@ fun processQualItem(
     return matched
 }
 
-fun processFileItems(
-    file: MoveFile,
-    itemVis: ItemVis,
-    processor: MatchingProcessor<MvNamedElement>,
-): Boolean {
+fun processModulesInFile(file: MoveFile, moduleProcessor: MatchingProcessor<MvNamedElement>): Boolean {
     for (module in file.modules()) {
-        if (
-            Namespace.MODULE in itemVis.namespaces
-            && processor.match(itemVis, module)
-        ) {
-            return true
-        }
-        if (processModuleInnerItems(module, itemVis, processor)) return true
+        if (moduleProcessor.match(module)) return true
     }
     return false
 }
@@ -149,17 +138,18 @@ fun processFQModuleRef(
     fqModuleRef: MvFQModuleRef,
     processor: MatchingProcessor<MvModule>,
 ) {
-    val itemVis = ItemVis(
-        namespaces = setOf(Namespace.MODULE),
-        visibilities = Visibility.local(),
-        mslLetScope = fqModuleRef.mslLetScope,
-        itemScope = fqModuleRef.itemScope,
-    )
     val moveProj = fqModuleRef.moveProject ?: return
     val refAddressText = fqModuleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
 
-    val moduleProcessor = MatchingProcessor<MvNamedElement> {
-        val entry = SimpleScopeEntry(it.name, it.element as MvModule)
+    val contextScopeInfo = ContextScopeInfo(
+        letStmtScope = fqModuleRef.letStmtScope,
+        refItemScopes = fqModuleRef.refItemScopes,
+    )
+    val moduleProcessor = MatchingProcessor {
+        if (!contextScopeInfo.matches(it.element)) {
+            return@MatchingProcessor false
+        }
+        val entry = ScopeItem(it.name, it.element as MvModule)
         val modAddressText = entry.element.address(moveProj)?.canonicalValue(moveProj)
         if (modAddressText != refAddressText)
             return@MatchingProcessor false
@@ -168,36 +158,37 @@ fun processFQModuleRef(
 
     // first search modules in the current file
     val currentFile = fqModuleRef.containingMoveFile ?: return
-    var stopped = processFileItems(currentFile, itemVis, moduleProcessor)
+    var stopped = processModulesInFile(currentFile, moduleProcessor)
+//    var stopped =
+//        processFileItems(currentFile, setOf(Namespace.MODULE), Visibility.local(), itemVis, moduleProcessor)
     if (stopped) return
 
     moveProj.processMoveFiles { moveFile ->
         // skip current file as it's processed already
         if (moveFile.toNioPathOrNull() == currentFile.toNioPathOrNull())
             return@processMoveFiles true
-        stopped = processFileItems(moveFile, itemVis, moduleProcessor)
+        stopped = processModulesInFile(moveFile, moduleProcessor)
         // if not resolved, returns true to indicate that next file should be tried
         !stopped
     }
 }
 
 fun processFQModuleRef(
-    fqModuleRef: MvFQModuleRef,
+    moduleRef: MvFQModuleRef,
     target: String,
     processor: MatchingProcessor<MvModule>,
 ) {
-    val itemVis = ItemVis(
-        namespaces = setOf(Namespace.MODULE),
-        visibilities = Visibility.local(),
-        mslLetScope = fqModuleRef.mslLetScope,
-        itemScope = fqModuleRef.itemScope,
-    )
-    val project = fqModuleRef.project
-    val moveProj = fqModuleRef.moveProject ?: return
+    val project = moduleRef.project
+    val moveProj = moduleRef.moveProject ?: return
+    val refAddress = moduleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
 
-    val refAddress = fqModuleRef.addressRef.address(moveProj)?.canonicalValue(moveProj)
-    val moduleProcessor = MatchingProcessor<MvNamedElement> {
-        val entry = SimpleScopeEntry(it.name, it.element as MvModule)
+    val contextScopeInfo = ContextScopeInfo(
+        letStmtScope = moduleRef.letStmtScope,
+        refItemScopes = moduleRef.refItemScopes,
+    )
+    val matchModule = MatchingProcessor {
+        if (!contextScopeInfo.matches(it.element)) return@MatchingProcessor false
+        val entry = ScopeItem(it.name, it.element as MvModule)
         // TODO: check belongs to the current project
         val modAddress = entry.element.address(moveProj)?.canonicalValue(moveProj)
 
@@ -205,9 +196,11 @@ fun processFQModuleRef(
         processor.match(entry)
     }
 
-    // first search modules in the current file
-    val currentFile = fqModuleRef.containingMoveFile ?: return
-    val stopped = processFileItems(currentFile, itemVis, moduleProcessor)
+
+    // search modules in the current file first
+    val currentFile = moduleRef.containingMoveFile ?: return
+    val stopped = processModulesInFile(currentFile, matchModule)
+//        processFileItems(currentFile, setOf(Namespace.MODULE), Visibility.local(), itemVis, matchModule)
     if (stopped) return
 
     val currentFileScope = GlobalSearchScope.fileScope(currentFile)
@@ -216,327 +209,12 @@ fun processFQModuleRef(
 
     MvNamedElementIndex
         .processElementsByName(project, target, searchScope) {
-            val matched = processQualItem(it, itemVis, moduleProcessor)
+            val matched =
+                processQualItem(it, setOf(Namespace.MODULE), Visibility.local(), contextScopeInfo, matchModule)
             if (matched) return@processElementsByName false
 
             true
         }
-}
-
-fun processLexicalDeclarations(
-    scope: MvElement,
-    cameFrom: MvElement,
-    itemVis: ItemVis,
-    processor: MatchingProcessor<MvNamedElement>,
-): Boolean {
-    for (namespace in itemVis.namespaces) {
-        val stop = when (namespace) {
-            Namespace.DOT_FIELD -> {
-                val dotExpr = (scope as? MvDotExpr)?.getOriginalOrSelf() ?: return false
-
-                val msl = dotExpr.isMsl()
-                val receiverExpr = dotExpr.expr
-                val inference = receiverExpr.inference(msl) ?: return false
-                val receiverTy =
-                    inference.getExprTypeOrNull(receiverExpr) ?: run {
-                        // Sometimes in the completion, tree drastically changes between
-                        // `s.` and `s.IntellijIdeaRulezzz`, in that case inference cache value is inapplicable.
-                        // We don't want to drop the cache in that case, so to mitigate stale cache problems
-                        // - we just create another inference context (but only in case of an error).
-                        // Should happen pretty rarely, so hopefully won't affect performance much.
-                        val inferenceOwner =
-                            receiverExpr.ancestorOrSelf<MvInferenceContextOwner>() ?: return false
-                        val noCacheInference = inferTypesIn(inferenceOwner, msl)
-                        noCacheInference.getExprType(receiverExpr)
-                    }
-
-                val innerTy = when (receiverTy) {
-                    is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
-                    is TyStruct -> receiverTy
-                    else -> TyUnknown
-                }
-                if (innerTy !is TyStruct) return true
-
-                val structItem = innerTy.item
-                if (!msl) {
-                    val dotExprModule = dotExpr.namespaceModule ?: return false
-                    if (structItem.containingModule != dotExprModule) return false
-                }
-
-                val fields = structItem.fields
-                return processor.matchAll(itemVis, fields)
-            }
-
-            Namespace.STRUCT_FIELD -> {
-                val struct = when (scope) {
-                    is MvStructPat -> scope.path.maybeStruct
-                    is MvStructLitExpr -> scope.path.maybeStruct
-                    else -> null
-                }
-                if (struct != null) return processor.matchAll(itemVis, struct.fields)
-                false
-            }
-
-            Namespace.SCHEMA_FIELD -> {
-                val schema = (scope as? MvSchemaLit)?.path?.maybeSchema
-                if (schema != null) {
-                    return processor.matchAll(itemVis, schema.fieldBindings)
-                }
-                false
-            }
-
-            Namespace.ERROR_CONST -> {
-                val found = when (scope) {
-                    is MvModuleBlock -> {
-                        val module = scope.parent as MvModule
-                        processor.matchAll(
-                            itemVis,
-                            module.consts(),
-                        )
-                    }
-                    else -> false
-                }
-                if (!found) {
-                    if (scope is MvImportsOwner) {
-                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
-                    }
-                }
-                found
-            }
-
-            Namespace.NAME -> {
-                val found = when (scope) {
-                    is MvModuleBlock -> {
-                        val module = scope.parent as MvModule
-                        processor.matchAll(
-                            itemVis,
-                            module.structs(),
-                            module.consts(),
-                        )
-                    }
-                    is MvModuleSpecBlock -> processor.matchAll(itemVis, scope.schemaList)
-                    is MvScript -> processor.matchAll(itemVis, scope.consts())
-                    is MvFunctionLike -> processor.matchAll(itemVis, scope.allParamsAsBindings)
-                    is MvLambdaExpr -> processor.matchAll(itemVis, scope.bindingPatList)
-                    is MvItemSpec -> {
-                        val item = scope.item
-                        when (item) {
-                            is MvFunction -> {
-                                processor.matchAll(
-                                    itemVis,
-                                    item.valueParamsAsBindings,
-                                    item.specResultParameters.map { it.bindingPat },
-                                )
-                            }
-                            is MvStruct -> processor.matchAll(itemVis, item.fields)
-                            else -> false
-                        }
-                    }
-                    is MvSchema -> processor.matchAll(itemVis, scope.fieldBindings)
-                    is MvQuantBindingsOwner -> processor.matchAll(itemVis, scope.bindings)
-                    is MvCodeBlock,
-                    is MvSpecCodeBlock -> {
-                        val visibleLetStmts = when (scope) {
-                            is MvCodeBlock -> {
-                                scope.letStmts
-                                    // drops all let-statements after the current position
-                                    .filter { it.cameBefore(cameFrom) }
-                                    // drops let-statement that is ancestors of ref (on the same statement, at most one)
-                                    .filter {
-                                        cameFrom != it
-                                                && !PsiTreeUtil.isAncestor(cameFrom, it, true)
-                                    }
-                            }
-                            is MvSpecCodeBlock -> {
-                                when (itemVis.mslLetScope) {
-                                    MslLetScope.EXPR_STMT -> scope.allLetStmts
-                                    MslLetScope.LET_STMT, MslLetScope.LET_POST_STMT -> {
-                                        val letDecls = if (itemVis.mslLetScope == MslLetScope.LET_POST_STMT) {
-                                            scope.allLetStmts
-                                        } else {
-                                            scope.letStmts(false)
-                                        }
-                                        letDecls
-                                            // drops all let-statements after the current position
-                                            .filter { it.cameBefore(cameFrom) }
-                                            // drops let-statement that is ancestors of ref (on the same statement, at most one)
-                                            .filter {
-                                                cameFrom != it
-                                                        && !PsiTreeUtil.isAncestor(cameFrom, it, true)
-                                            }
-                                    }
-                                    MslLetScope.NONE -> emptyList()
-                                }
-                            }
-                            else -> error("unreachable")
-                        }
-                        // shadowing support (look at latest first)
-                        val namedElements = visibleLetStmts
-                            .asReversed()
-                            .flatMap { it.pat?.bindings.orEmpty() }
-
-                        // skip shadowed (already visited) elements
-                        val visited = mutableSetOf<String>()
-                        val processorWithShadowing = MatchingProcessor { entry ->
-                            ((entry.name !in visited)
-                                    && processor.match(entry).also { visited += entry.name })
-                        }
-                        var found = processorWithShadowing.matchAll(itemVis, namedElements)
-                        if (!found && scope is MvSpecCodeBlock) {
-                            // if inside SpecCodeBlock, match also with builtin spec consts and global variables
-                            found = processorWithShadowing.matchAll(
-                                itemVis,
-                                scope.builtinSpecConsts(),
-                                scope.globalVariables()
-                            )
-                        }
-                        found
-                    }
-                    else -> false
-                }
-                if (!found) {
-                    if (scope is MvImportsOwner) {
-                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
-                    }
-                }
-                found
-            }
-            Namespace.FUNCTION -> {
-                val found = when (scope) {
-                    is MvModuleBlock -> {
-                        val module = scope.parent as MvModule
-                        val specFunctions = if (itemVis.isMsl) {
-                            listOf(module.specFunctions(), module.builtinSpecFunctions()).flatten()
-                        } else {
-                            emptyList()
-                        }
-                        val specInlineFunctions = if (itemVis.isMsl) {
-                            module.moduleItemSpecs().flatMap { it.specInlineFunctions() }
-                        } else {
-                            emptyList()
-                        }
-                        processor.matchAll(
-                            itemVis,
-                            module.allNonTestFunctions(),
-                            module.builtinFunctions(),
-                            specFunctions,
-                            specInlineFunctions
-                        )
-                    }
-                    is MvModuleSpecBlock -> {
-                        val specFunctions = scope.specFunctionList
-                        val specInlineFunctions = scope.moduleItemSpecList.flatMap { it.specInlineFunctions() }
-                        processor.matchAll(
-                            itemVis,
-                            specFunctions,
-                            specInlineFunctions
-                        )
-                    }
-                    is MvFunctionLike -> processor.matchAll(itemVis, scope.lambdaParamsAsBindings)
-                    is MvLambdaExpr -> processor.matchAll(itemVis, scope.bindingPatList)
-                    is MvItemSpec -> {
-                        val item = scope.item
-                        when (item) {
-                            is MvFunction -> processor.matchAll(itemVis, item.lambdaParamsAsBindings)
-                            else -> false
-                        }
-                    }
-                    is MvSpecCodeBlock -> {
-                        val inlineFunctions = scope.specInlineFunctions().asReversed()
-                        return processor.matchAll(itemVis, inlineFunctions)
-                    }
-                    else -> false
-                }
-                if (!found) {
-                    if (scope is MvImportsOwner) {
-                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
-                    }
-                }
-                found
-            }
-
-            Namespace.TYPE -> {
-                if (scope is MvTypeParametersOwner) {
-                    if (processor.matchAll(itemVis, scope.typeParameters)) return true
-                }
-                val found = when (scope) {
-                    is MvItemSpec -> {
-                        val funcItem = scope.funcItem
-                        if (funcItem != null) {
-                            processor.matchAll(itemVis, funcItem.typeParameters)
-                        } else {
-                            false
-                        }
-                    }
-                    is MvModuleBlock -> {
-                        val module = scope.parent as MvModule
-                        processor.matchAll(
-                            itemVis,
-                            scope.allUseItems(),
-                            module.structs()
-                        )
-                    }
-                    is MvApplySchemaStmt -> {
-                        val toPatterns = scope.applyTo?.functionPatternList.orEmpty()
-                        val patternTypeParams =
-                            toPatterns.flatMap { it.typeParameterList?.typeParameterList.orEmpty() }
-                        processor.matchAll(itemVis, patternTypeParams)
-                    }
-
-                    else -> false
-                }
-                if (!found) {
-                    if (scope is MvImportsOwner) {
-                        if (processor.matchAll(itemVis, scope.allUseItems())) return true
-                    }
-                }
-                found
-            }
-
-            Namespace.SPEC_ITEM -> when (scope) {
-                is MvModuleBlock -> {
-                    val module = scope.parent as MvModule
-                    processor.matchAll(
-                        itemVis,
-                        listOf(
-                            module.allNonTestFunctions(),
-                            module.structs(),
-                        ).flatten()
-                    )
-                }
-                else -> false
-            }
-
-            Namespace.SCHEMA -> when (scope) {
-                is MvModuleBlock -> processor.matchAll(
-                    itemVis,
-                    scope.allUseItems(),
-                    scope.schemaList
-                )
-                is MvModuleSpecBlock -> processor.matchAll(
-                    itemVis,
-                    scope.allUseItems(),
-                    scope.schemaList,
-                    scope.specFunctionList
-                )
-                else -> false
-            }
-
-            Namespace.MODULE -> when (scope) {
-                is MvImportsOwner -> processor.matchAll(
-                    itemVis,
-                    listOf(
-                        scope.allModuleUseSpecks(),
-                        scope.selfModuleUseItemNoAliases(),
-                        scope.selfModuleUseItemAliases(),
-                    ).flatten(),
-                )
-                else -> false
-            }
-        }
-        if (stop) return true
-    }
-    return false
 }
 
 fun walkUpThroughScopes(

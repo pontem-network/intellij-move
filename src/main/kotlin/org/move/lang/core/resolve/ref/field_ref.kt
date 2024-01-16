@@ -1,24 +1,26 @@
 package org.move.lang.core.resolve.ref
 
-import org.move.lang.core.psi.MvNamedElement
-import org.move.lang.core.psi.MvStructLitField
-import org.move.lang.core.psi.MvStructPatField
+import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.fields
 import org.move.lang.core.resolve.resolveLocalItem
 
-class MvStructFieldReferenceImpl(
-    element: MvMandatoryReferenceElement
-) : MvReferenceCached<MvMandatoryReferenceElement>(element) {
+interface MvStructRefField: MvReferenceElement
 
-    override fun resolveInner() = resolveLocalItem(element, setOf(Namespace.STRUCT_FIELD))
+class MvStructRefFieldReferenceImpl(
+    element: MvStructRefField
+) : MvPolyVariantReferenceCached<MvStructRefField>(element) {
+
+    override fun multiResolveInner() = resolveIntoStructField(element)
 }
 
 class MvStructLitShorthandFieldReferenceImpl(
     element: MvStructLitField,
-) : MvReferenceCached<MvStructLitField>(element) {
+) : MvPolyVariantReferenceCached<MvStructLitField>(element) {
 
-    override fun resolveInner(): List<MvNamedElement> {
+    override fun multiResolveInner(): List<MvNamedElement> {
         return listOf(
-            resolveLocalItem(element, setOf(Namespace.STRUCT_FIELD)),
+            resolveIntoStructField(element),
             resolveLocalItem(element, setOf(Namespace.NAME))
         ).flatten()
     }
@@ -26,7 +28,22 @@ class MvStructLitShorthandFieldReferenceImpl(
 
 class MvStructPatShorthandFieldReferenceImpl(
     element: MvStructPatField
-) : MvReferenceCached<MvStructPatField>(element) {
+) : MvPolyVariantReferenceCached<MvStructPatField>(element) {
 
-    override fun resolveInner() = resolveLocalItem(element, setOf(Namespace.STRUCT_FIELD))
+    override fun multiResolveInner(): List<MvNamedElement> = resolveIntoStructField(element)
+}
+
+private val MvStructRefField.maybeStruct: MvStruct? get() {
+    return when (this) {
+        is MvStructPatField -> this.structPat.structItem
+        is MvStructLitField -> this.structLitExpr.path.maybeStruct
+        else -> null
+    }
+}
+
+private fun resolveIntoStructField(element: MvStructRefField): List<MvNamedElement> {
+    val structItem = element.maybeStruct ?: return emptyList()
+    val referenceName = element.referenceName
+    return structItem.fields
+        .filter { it.name == referenceName }
 }

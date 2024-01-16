@@ -271,6 +271,11 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
+    fun ASSERT_IDENTIFIER(b: PsiBuilder, level: Int): Boolean {
+        return nextTokenIs(b, "assert") && consumeToken(b, IDENTIFIER)
+    }
+
+    @JvmStatic
     fun addressKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "address", ADDRESS)
 
     @JvmStatic
@@ -293,6 +298,9 @@ object MoveParserUtil : GeneratedParserUtilBase() {
 
     @JvmStatic
     fun friendKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "friend", FRIEND)
+
+    @JvmStatic
+    fun forKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "for", FOR)
 
     @JvmStatic
     fun pragmaKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "pragma", PRAGMA)

@@ -14,9 +14,11 @@ import com.intellij.util.containers.ContainerUtil
 import org.jetbrains.annotations.TestOnly
 import org.move.openapiext.common.isUnitTestMode
 
-abstract class MvAnnotatorBase : Annotator {
+abstract class MvAnnotatorBase: Annotator {
     final override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-        if (!isUnitTestMode || javaClass in enabledAnnotators) {
+        if (!isUnitTestMode
+            || javaClass in enabledAnnotators
+        ) {
             annotateInternal(element, holder)
         }
     }

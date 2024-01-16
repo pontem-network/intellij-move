@@ -36,7 +36,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
 
             override fun visitPath(path: MvPath) {
                 val item = path.reference?.resolveWithAliases()
-                val msl = path.isMsl()
+                val msl = path.isMslScope
                 val realCount = path.typeArguments.size
                 val parent = path.parent
                 if (item == null && path.nullModuleRef && path.identifierName == "vector") {
@@ -125,7 +125,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
             }
 
             override fun visitCallExpr(callExpr: MvCallExpr) {
-                val msl = callExpr.isMsl()
+                val msl = callExpr.path.isMslScope
                 if (msl) return
 
                 val outerFunction = callExpr.containingFunction ?: return
@@ -168,13 +168,13 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                 val expectedCount =
                     when (parentExpr) {
                         is MvCallExpr -> {
-                            val msl = parentExpr.isMsl()
+                            val msl = parentExpr.path.isMslScope
                             val callTy =
                                 parentExpr.inference(msl)?.getCallExprType(parentExpr) as? TyCallable ?: return
                             callTy.paramTypes.size
                         }
-                        is MvMacroCallExpr -> {
-                            if (parentExpr.macroIdent.identifier.text == "assert") {
+                        is MvAssertBangExpr -> {
+                            if (parentExpr.identifier.text == "assert") {
                                 2
                             } else {
                                 return

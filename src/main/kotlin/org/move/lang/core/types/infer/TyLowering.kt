@@ -52,8 +52,9 @@ class TyLowering {
             is MvTypeParameter -> TyTypeParameter(namedItem)
             is MvTypeParametersOwner -> {
                 val baseTy = namedItem.declaredType(msl)
-                val (_, explicits) = instantiatePathGenerics(path, namedItem, msl)
-                baseTy.substitute(explicits)
+                val explicitSubst = instantiateTypeParamsSubstitution(path, namedItem, msl)
+//                val (_, explicits) = instantiatePathGenerics(path, namedItem, msl)
+                baseTy.substitute(explicitSubst)
             }
             else -> namedItem.project.debugErrorOrFallback(
                 "${namedItem.elementType} path cannot be inferred into type",
@@ -82,12 +83,12 @@ class TyLowering {
         return ty
     }
 
-    private fun <T : MvElement> instantiatePathGenerics(
+    private fun <T: MvElement> instantiateTypeParamsSubstitution(
         path: MvPath,
         namedItem: T,
         msl: Boolean
-    ): BoundElement<T> {
-        if (namedItem !is MvTypeParametersOwner) return BoundElement(namedItem)
+    ): Substitution {
+        if (namedItem !is MvTypeParametersOwner) return emptySubstitution
 
         val psiSubstitution = pathPsiSubst(path, namedItem)
 
@@ -101,8 +102,7 @@ class TyLowering {
             }
             typeSubst[paramTy] = valueTy
         }
-        val newSubst = Substitution(typeSubst)
-        return BoundElement(namedItem, newSubst)
+        return Substitution(typeSubst)
     }
 
     companion object {

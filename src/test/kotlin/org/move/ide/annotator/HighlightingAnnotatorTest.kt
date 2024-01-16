@@ -200,7 +200,7 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
     fun `test macros are highlighted`() = checkHighlighting("""
     module 0x1::M {
         fun m() {
-            <MACRO>assert!</MACRO>(true, 1);
+            <MACRO>assert</MACRO><MACRO>!</MACRO>(true, 1);
         }
     }
     """)
@@ -275,6 +275,15 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
                 <MUT_REF_TO_KEY_OBJECT>ref_res_key</MUT_REF_TO_KEY_OBJECT>;
                 <MUT_REF_TO_STORE_OBJECT>ref_res_store_drop</MUT_REF_TO_STORE_OBJECT>;
                 <MUT_REF_TO_STORE_NO_DROP_OBJECT>ref_res_store_no_drop</MUT_REF_TO_STORE_NO_DROP_OBJECT>;
+            }
+        }        
+    """)
+
+    fun `test for loop keywords`() = checkHighlighting("""
+        module 0x1::m {
+            fun main() {
+                let <VARIABLE>for</VARIABLE> = 1;
+                <KEYWORD>for</KEYWORD> (i <KEYWORD>in</KEYWORD> 1..10) {};
             }
         }        
     """)

@@ -168,6 +168,9 @@ val MvModule.stubAddress: StubAddress
         return stub?.address ?: this.psiStubAddress()
     }
 
+fun MvModule.addressAsCanonicalValue(moveProject: MoveProject): String? =
+    this.address(moveProject)?.canonicalValue(moveProject)
+
 fun MvModule.address(proj: MoveProject?): Address? = this.stubAddress.asAddress(proj)
 
 fun MvAddressRef.address(proj: MoveProject?): Address? = psiStubAddress().asAddress(proj)

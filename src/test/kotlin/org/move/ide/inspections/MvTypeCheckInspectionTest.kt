@@ -1470,4 +1470,12 @@ module 0x1::pool {
             }
         }
     """)
+
+    fun `test range expr second has different type`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let a = 1..<error descr="Incompatible type 'bool', expected 'integer'">true</error>;
+            }
+        }        
+    """)
 }
