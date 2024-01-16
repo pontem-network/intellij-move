@@ -83,8 +83,9 @@ class SentryErrorReporter: ErrorReportSubmitter() {
             val settings = project.moveSettings.state.asMap().toMutableMap()
             settings.remove("aptosPath")
             sentryEvent.contexts["Settings"] = settings
-            sentryEvent.contexts["Projects"] =
-                project.moveProjectsService.allProjects.map { MoveProjectContext.from(it) }
+            // TODO: serialization doesn't work for some reason
+//            sentryEvent.contexts["Projects"] =
+//                project.moveProjectsService.allProjects.map { MoveProjectContext.from(it) }.toList()
         }
         // IdeaLoggingEvent only provides text stacktrace
         sentryEvent.contexts["Stacktrace"] = mapOf("Value" to event.throwableText)
