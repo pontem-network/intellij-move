@@ -5,16 +5,14 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.*
-import org.move.cli.runConfigurations.aptos.CliCommandLineArgs
 import org.move.cli.settings.PerProjectMoveConfigurable
 import org.move.cli.settings.VersionLabel
-import org.move.cli.settings.isValidExecutable
 import org.move.openapiext.*
-import org.move.openapiext.common.isUnitTestMode
+import org.move.stdext.toPathOrNull
 
 class ChooseAptosCliPanel(
     private val showDefaultProjectSettingsLink: Boolean,
-    private val updateListener: (() -> Unit)? = null
+    private val versionUpdateListener: (() -> Unit)? = null
 ): Disposable {
 
     private val localPathField =
@@ -25,11 +23,10 @@ class ChooseAptosCliPanel(
             onTextChanged = { text ->
                 val exec = AptosExec.LocalPath(text)
                 _aptosExec = exec
-                updateVersionLabel(exec)
+                exec.toPathOrNull()?.let { versionLabel.updateValue(it) }
             })
 
-    private val versionLabel = VersionLabel()
-    private val versionUpdateDebouncer = UiDebouncer(this)
+    private val versionLabel = VersionLabel(this, versionUpdateListener)
 
     private lateinit var _aptosExec: AptosExec
 
@@ -42,7 +39,7 @@ class ChooseAptosCliPanel(
                 else ->
                     localPathField.text = aptosExec.execPath
             }
-            updateVersionLabel(aptosExec)
+            aptosExec.toPathOrNull()?.let { versionLabel.updateValue(it) }
         }
 
     fun attachToLayout(layout: Panel): Row {
@@ -61,7 +58,7 @@ class ChooseAptosCliPanel(
                             }
                         )
                         .onChanged {
-                            updateVersionLabel(AptosExec.Bundled)
+                            AptosExec.Bundled.toPathOrNull()?.let { versionLabel.updateValue(it) }
                         }
                         .enabled(AptosExec.isBundledSupportedForThePlatform())
                     comment(
@@ -80,7 +77,7 @@ class ChooseAptosCliPanel(
                             }
                         )
                         .onChanged {
-                            updateVersionLabel(AptosExec.LocalPath(localPathField.text))
+                            localPathField.text.toPathOrNull()?.let { versionLabel.updateValue(it) }
                         }
 
                     cell(localPathField)
@@ -88,7 +85,7 @@ class ChooseAptosCliPanel(
                         .align(AlignX.FILL).resizableColumn()
                 }
             }
-            row("aptos --version :") { cell(versionLabel) }
+            row("--version :") { cell(versionLabel) }
             row {
                 link("Set default project settings") {
                     ProjectManager.getInstance().defaultProject.showSettings<PerProjectMoveConfigurable>()
@@ -98,47 +95,8 @@ class ChooseAptosCliPanel(
                 //                .horizontalAlign(HorizontalAlign.RIGHT)
             }
         }
-        updateVersionLabel(_aptosExec)
+        _aptosExec.toPathOrNull()?.let { versionLabel.updateValue(it) }
         return resultRow
-    }
-
-    private fun updateVersionLabel(withExec: AptosExec) {
-        val aptosExecPath = withExec.toPathOrNull()
-        versionUpdateDebouncer.run(
-            onPooledThread = {
-                aptosExecPath?.let { location ->
-                    if (!isUnitTestMode) {
-                        checkIsBackgroundThread()
-                    }
-                    if (!location.isValidExecutable()) return@let null
-
-                    val commandLineArgs = CliCommandLineArgs(
-                        null,
-                        listOf("--version"),
-                        workingDirectory = null,
-                    )
-                    commandLineArgs
-                        .toGeneralCommandLine(cliExePath = location.toString())
-                        .execute()
-                }
-            },
-            onUiThread = { versionCmdOutput ->
-                if (versionCmdOutput == null) {
-                    versionLabel.setText("N/A (Invalid aptos executable)", errorHighlighting = true)
-                } else {
-                    if (versionCmdOutput.isSuccess) {
-                        val versionText = versionCmdOutput.stdoutLines.joinToString("\n")
-                        versionLabel.setText(versionText, errorHighlighting = false)
-                    } else {
-                        versionLabel.setText(
-                            "N/A (Cannot run --version command. Error code is ${versionCmdOutput.exitCode})",
-                            errorHighlighting = true
-                        )
-                    }
-                }
-                updateListener?.invoke()
-            }
-        )
     }
 
     override fun dispose() {
