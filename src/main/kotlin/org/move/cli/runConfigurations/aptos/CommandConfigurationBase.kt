@@ -66,7 +66,7 @@ abstract class CommandConfigurationBase(
             return CleanConfiguration.error("Invalid Aptos CLI: ${aptosCli.location}")
         }
 
-        val commandLine = AptosCommandLine(
+        val commandLine = CliCommandLineArgs(
             parsedCommand.command,
             parsedCommand.additionalArguments,
             workingDirectory,
@@ -76,7 +76,7 @@ abstract class CommandConfigurationBase(
     }
 
     sealed class CleanConfiguration {
-        class Ok(val aptosPath: Path, val commandLine: AptosCommandLine) : CleanConfiguration()
+        class Ok(val aptosPath: Path, val commandLine: CliCommandLineArgs) : CleanConfiguration()
         class Err(val error: RuntimeConfigurationError) : CleanConfiguration()
 
         val ok: Ok? get() = this as? Ok

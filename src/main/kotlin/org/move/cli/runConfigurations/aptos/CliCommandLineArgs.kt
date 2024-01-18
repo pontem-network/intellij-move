@@ -9,19 +9,19 @@ import org.move.cli.runConfigurations.aptos.any.AnyCommandConfiguration
 import org.move.cli.runConfigurations.aptos.any.AnyCommandConfigurationFactory
 import java.nio.file.Path
 
-data class AptosCommandLine(
+data class CliCommandLineArgs(
     val subCommand: String?,
     val arguments: List<String> = emptyList(),
     val workingDirectory: Path? = null,
     val environmentVariables: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
 ) {
-    fun joinedCommand(): String {
+    fun joinArgs(): String {
         return StringUtil.join(listOfNotNull(subCommand, *arguments.toTypedArray()), " ")
     }
 
-    fun toGeneralCommandLine(aptosExecutor: AptosCliExecutor): GeneralCommandLine {
+    fun toGeneralCommandLine(cliExePath: String): GeneralCommandLine {
         val generalCommandLine = GeneralCommandLine()
-            .withExePath(aptosExecutor.location.toString())
+            .withExePath(cliExePath)
             // subcommand can be null
             .withParameters(listOfNotNull(subCommand))
             .withParameters(this.arguments)
@@ -31,22 +31,22 @@ data class AptosCommandLine(
         return generalCommandLine
     }
 
-    fun createRunConfiguration(
-        moveProject: MoveProject,
-        configurationName: String,
-        save: Boolean
-    ): RunnerAndConfigurationSettings {
-        val project = moveProject.project
-        val runConfiguration =
-            AnyCommandConfigurationFactory.createTemplateRunConfiguration(
-                project,
-                configurationName,
-                save = save
-            )
-        val anyCommandConfiguration = runConfiguration.configuration as AnyCommandConfiguration
-        anyCommandConfiguration.command = this.joinedCommand()
-        anyCommandConfiguration.workingDirectory = this.workingDirectory
-        anyCommandConfiguration.environmentVariables = this.environmentVariables
-        return runConfiguration
-    }
+//    fun createRunConfiguration(
+//        moveProject: MoveProject,
+//        configurationName: String,
+//        save: Boolean
+//    ): RunnerAndConfigurationSettings {
+//        val project = moveProject.project
+//        val runConfiguration =
+//            AnyCommandConfigurationFactory.createTemplateRunConfiguration(
+//                project,
+//                configurationName,
+//                save = save
+//            )
+//        val anyCommandConfiguration = runConfiguration.configuration as AnyCommandConfiguration
+//        anyCommandConfiguration.command = this.joinArgs()
+//        anyCommandConfiguration.workingDirectory = this.workingDirectory
+//        anyCommandConfiguration.environmentVariables = this.environmentVariables
+//        return runConfiguration
+//    }
 }

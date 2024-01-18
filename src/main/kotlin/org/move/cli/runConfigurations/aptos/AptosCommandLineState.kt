@@ -12,7 +12,7 @@ import java.nio.file.Path
 open class AptosCommandLineState(
     execEnv: ExecutionEnvironment,
     private val aptosPath: Path,
-    private val commandLine: AptosCommandLine
+    private val commandLine: CliCommandLineArgs
 ) :
     CommandLineState(execEnv) {
 
@@ -24,7 +24,7 @@ open class AptosCommandLineState(
 
     override fun startProcess(): ProcessHandler {
         val aptosCli = AptosCliExecutor(aptosPath)
-        val generalCommandLine = commandLine.toGeneralCommandLine(aptosCli)
+        val generalCommandLine = commandLine.toGeneralCommandLine(aptosCli.location.toString())
 
         val handler = KillableColoredProcessHandler(generalCommandLine)
         consoleBuilder.console.attachToProcess(handler)

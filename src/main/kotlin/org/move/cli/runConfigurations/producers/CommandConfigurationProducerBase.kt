@@ -19,8 +19,8 @@ abstract class CommandConfigurationProducerBase :
         val cmdConf = configFromLocation(sourceElement.get()) ?: return false
         templateConfiguration.name = cmdConf.configurationName
 
-        val commandLine = cmdConf.commandLine
-        templateConfiguration.command = commandLine.joinedCommand()
+        val commandLine = cmdConf.commandLineArgs
+        templateConfiguration.command = commandLine.joinArgs()
         templateConfiguration.workingDirectory = commandLine.workingDirectory
 
         var envVars = commandLine.environmentVariables
@@ -38,12 +38,12 @@ abstract class CommandConfigurationProducerBase :
         val location = context.psiLocation ?: return false
         val cmdConf = configFromLocation(location) ?: return false
         return configuration.name == cmdConf.configurationName
-                && configuration.command == cmdConf.commandLine.joinedCommand()
-                && configuration.workingDirectory == cmdConf.commandLine.workingDirectory
-                && configuration.environmentVariables == cmdConf.commandLine.environmentVariables
+                && configuration.command == cmdConf.commandLineArgs.joinArgs()
+                && configuration.workingDirectory == cmdConf.commandLineArgs.workingDirectory
+                && configuration.environmentVariables == cmdConf.commandLineArgs.environmentVariables
     }
 
-    abstract fun configFromLocation(location: PsiElement): CommandLineFromContext?
+    abstract fun configFromLocation(location: PsiElement): CommandLineArgsFromContext?
 
     companion object {
         inline fun <reified T : PsiElement> findElement(base: PsiElement, climbUp: Boolean): T? {

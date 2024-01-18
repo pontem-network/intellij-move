@@ -5,13 +5,12 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.*
-import org.move.cli.runConfigurations.aptos.AptosCliExecutor
+import org.move.cli.runConfigurations.aptos.CliCommandLineArgs
 import org.move.cli.settings.PerProjectMoveConfigurable
 import org.move.cli.settings.VersionLabel
-import org.move.openapiext.UiDebouncer
-import org.move.openapiext.isSuccess
-import org.move.openapiext.pathField
-import org.move.openapiext.showSettings
+import org.move.cli.settings.isValidExecutable
+import org.move.openapiext.*
+import org.move.openapiext.common.isUnitTestMode
 
 class ChooseAptosCliPanel(
     private val showDefaultProjectSettingsLink: Boolean,
@@ -107,7 +106,21 @@ class ChooseAptosCliPanel(
         val aptosExecPath = withExec.toPathOrNull()
         versionUpdateDebouncer.run(
             onPooledThread = {
-                aptosExecPath?.let { AptosCliExecutor(it).version() }
+                aptosExecPath?.let { location ->
+                    if (!isUnitTestMode) {
+                        checkIsBackgroundThread()
+                    }
+                    if (!location.isValidExecutable()) return@let null
+
+                    val commandLineArgs = CliCommandLineArgs(
+                        null,
+                        listOf("--version"),
+                        workingDirectory = null,
+                    )
+                    commandLineArgs
+                        .toGeneralCommandLine(cliExePath = location.toString())
+                        .execute()
+                }
             },
             onUiThread = { versionCmdOutput ->
                 if (versionCmdOutput == null) {

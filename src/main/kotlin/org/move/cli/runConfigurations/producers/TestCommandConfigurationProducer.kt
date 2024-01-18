@@ -4,7 +4,7 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.MoveProject
-import org.move.cli.runConfigurations.aptos.AptosCommandLine
+import org.move.cli.runConfigurations.aptos.CliCommandLineArgs
 import org.move.cli.runConfigurations.aptos.AptosConfigurationType
 import org.move.cli.runConfigurations.aptos.any.AnyCommandConfigurationFactory
 import org.move.cli.settings.dumpStateOnTestFailure
@@ -27,7 +27,7 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
     override fun configFromLocation(location: PsiElement) = fromLocation(location)
 
     companion object {
-        fun fromLocation(location: PsiElement, climbUp: Boolean = true): CommandLineFromContext? {
+        fun fromLocation(location: PsiElement, climbUp: Boolean = true): CommandLineArgsFromContext? {
             return when {
                 location is MoveFile -> {
                     val module = location.modules().firstOrNull { it.hasTestFunctions() } ?: return null
@@ -52,7 +52,7 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
             }
         }
 
-        private fun findTestFunction(psi: PsiElement, climbUp: Boolean): CommandLineFromContext? {
+        private fun findTestFunction(psi: PsiElement, climbUp: Boolean): CommandLineArgsFromContext? {
             val fn = findElement<MvFunction>(psi, climbUp) ?: return null
             if (!fn.hasTestAttr) return null
 
@@ -70,14 +70,14 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
 
             val moveProject = fn.moveProject ?: return null
             val rootPath = moveProject.contentRootPath ?: return null
-            return CommandLineFromContext(
+            return CommandLineArgsFromContext(
                 fn,
                 confName,
-                AptosCommandLine(subCommand, workingDirectory = rootPath)
+                CliCommandLineArgs(subCommand, workingDirectory = rootPath)
             )
         }
 
-        private fun findTestModule(psi: PsiElement, climbUp: Boolean): CommandLineFromContext? {
+        private fun findTestModule(psi: PsiElement, climbUp: Boolean): CommandLineArgsFromContext? {
             val mod = findElement<MvModule>(psi, climbUp) ?: return null
             if (!mod.hasTestFunctions()) return null
 
@@ -94,17 +94,17 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
 
             val moveProject = mod.moveProject ?: return null
             val rootPath = moveProject.contentRootPath ?: return null
-            return CommandLineFromContext(
+            return CommandLineArgsFromContext(
                 mod,
                 confName,
-                AptosCommandLine(subCommand, workingDirectory = rootPath)
+                CliCommandLineArgs(subCommand, workingDirectory = rootPath)
             )
         }
 
         private fun findTestProject(
             location: PsiFileSystemItem,
             moveProject: MoveProject
-        ): CommandLineFromContext? {
+        ): CommandLineArgsFromContext? {
             val packageName = moveProject.currentPackage.packageName
             val rootPath = moveProject.contentRootPath ?: return null
 
@@ -118,10 +118,10 @@ class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
             }
 
 
-            return CommandLineFromContext(
+            return CommandLineArgsFromContext(
                 location,
                 confName,
-                AptosCommandLine(subCommand, workingDirectory = rootPath)
+                CliCommandLineArgs(subCommand, workingDirectory = rootPath)
             )
         }
     }

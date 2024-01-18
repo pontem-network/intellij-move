@@ -24,7 +24,7 @@ class AptosCliExecutor(val location: Path) {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        val commandLine = AptosCommandLine(
+        val commandLine = CliCommandLineArgs(
             "init",
             arguments = listOf(
                 "--private-key-file", privateKeyPath,
@@ -34,7 +34,9 @@ class AptosCliExecutor(val location: Path) {
             ),
             workingDirectory = project.rootPath
         )
-        return commandLine.toGeneralCommandLine(this).execute(owner)
+        return commandLine
+            .toGeneralCommandLine(cliExePath = this.location.toString())
+            .execute(owner)
     }
 
     fun moveInit(
@@ -46,7 +48,7 @@ class AptosCliExecutor(val location: Path) {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        val commandLine = AptosCommandLine(
+        val commandLine = CliCommandLineArgs(
             "move",
             listOf(
                 "init",
@@ -55,7 +57,7 @@ class AptosCliExecutor(val location: Path) {
             ),
             workingDirectory = project.rootPath
         )
-        commandLine.toGeneralCommandLine(this)
+        commandLine.toGeneralCommandLine(this.location.toString())
             .execute(parentDisposable)
             .unwrapOrElse { return RsResult.Err(it) }
         fullyRefreshDirectory(rootDirectory)
@@ -65,20 +67,22 @@ class AptosCliExecutor(val location: Path) {
         return RsResult.Ok(manifest)
     }
 
-    fun version(): ProcessOutput? {
-        if (!isUnitTestMode) {
-            checkIsBackgroundThread()
-        }
-        if (!location.isValidExecutable()) return null
-
-        val commandLine = AptosCommandLine(
-            null,
-            listOf("--version"),
-            workingDirectory = null,
-        )
-        val output = commandLine.toGeneralCommandLine(this).execute()
-        return output
-    }
+//    fun version(): ProcessOutput? {
+//        if (!isUnitTestMode) {
+//            checkIsBackgroundThread()
+//        }
+//        if (!location.isValidExecutable()) return null
+//
+//        val commandLineArgs = CliCommandLineArgs(
+//            null,
+//            listOf("--version"),
+//            workingDirectory = null,
+//        )
+//        val output = commandLineArgs
+//            .toGeneralCommandLine(cliExePath = this.location.toString())
+//            .execute()
+//        return output
+//    }
 
     companion object {
 //        fun fromProject(project: Project): AptosCliExecutor? = project.aptosPath?.let { AptosCliExecutor(it) }

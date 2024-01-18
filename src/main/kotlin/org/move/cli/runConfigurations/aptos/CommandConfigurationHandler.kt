@@ -3,7 +3,7 @@ package org.move.cli.runConfigurations.aptos
 import com.intellij.psi.PsiElement
 import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.producers.CommandConfigurationProducerBase
-import org.move.cli.runConfigurations.producers.CommandLineFromContext
+import org.move.cli.runConfigurations.producers.CommandLineArgsFromContext
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvFunctionParameter
 import org.move.lang.core.psi.ext.functionId
@@ -20,7 +20,7 @@ abstract class CommandConfigurationHandler {
 
     abstract fun configurationName(functionId: String): String
 
-    fun configurationFromLocation(location: PsiElement): CommandLineFromContext? {
+    fun configurationFromLocation(location: PsiElement): CommandLineArgsFromContext? {
         val function =
             CommandConfigurationProducerBase.findElement<MvFunction>(location, true)
                 ?.takeIf(this::functionPredicate)
@@ -37,8 +37,8 @@ abstract class CommandConfigurationHandler {
         }
         arguments.addAll(listOf("--function-id", functionId))
 
-        val commandLine = AptosCommandLine(subCommand, arguments, workingDirectory)
-        return CommandLineFromContext(
+        val commandLine = CliCommandLineArgs(subCommand, arguments, workingDirectory)
+        return CommandLineArgsFromContext(
             function,
             configurationName(functionId),
             commandLine
