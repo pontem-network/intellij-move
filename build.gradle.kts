@@ -37,7 +37,7 @@ plugins {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinReflectVersion")
 
-    implementation("io.sentry:sentry:6.25.0") {
+    implementation("io.sentry:sentry:7.2.0") {
         exclude("org.slf4j")
     }
     implementation("com.github.ajalt.clikt:clikt:3.5.2")

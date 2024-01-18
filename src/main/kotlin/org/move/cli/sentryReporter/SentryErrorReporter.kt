@@ -19,7 +19,6 @@ import io.sentry.SentryLevel
 import io.sentry.UserFeedback
 import io.sentry.protocol.Message
 import io.sentry.protocol.SentryId
-import org.move.cli.moveProjectsService
 import org.move.cli.settings.moveSettings
 import org.move.openapiext.project
 import org.move.stdext.asMap
@@ -74,11 +73,19 @@ class SentryErrorReporter: ErrorReportSubmitter() {
         sentryEvent.level = SentryLevel.ERROR
 
         val plugin = IdeErrorsDialog.getPlugin(event)
-        sentryEvent.contexts["Plugin Info"] =
-            mapOf(
-                "Platform" to ApplicationInfo.getInstance().fullApplicationName,
-                "Plugin Version" to (plugin?.version ?: "unknown"),
-            )
+
+        val pluginInfoContext = mutableMapOf<String, Any>()
+        pluginInfoContext["Platform"] = ApplicationInfo.getInstance().fullApplicationName
+        pluginInfoContext["Plugin Version"] = plugin?.version ?: "unknown"
+        sentryEvent.contexts["Plugin Info"] = pluginInfoContext
+//        try {
+//        } catch (e: NoSuchFieldError) {
+//            // intellij 2023.1 on windows 11 throws this, catch and report that one instead
+//            // TODO: remove later
+//            sentryEvent.contexts["Runtime Error Stacktrace"] = mapOf("Value" to e.getThrowableText())
+//        }
+//
+
         if (project != null) {
             val settings = project.moveSettings.state.asMap().toMutableMap()
             settings.remove("aptosPath")
