@@ -32,6 +32,10 @@ interface MoveSettingsListener {
     fun moveSettingsChanged(e: MoveSettingsChangedEvent)
 }
 
+enum class Blockchain {
+    APTOS, SUI;
+}
+
 private const val settingsServiceName: String = "MoveProjectSettingsService_1"
 
 @Service(Service.Level.PROJECT)
@@ -47,7 +51,9 @@ class MoveProjectSettingsService(private val project: Project): PersistentStateC
     // default values for settings
     data class State(
         // null not Mac -> Bundled, null and Mac -> Local(""), not null -> Local(value)
+        var blockchain: Blockchain = Blockchain.APTOS,
         var aptosPath: String? = if (AptosExec.isBundledSupportedForThePlatform()) null else "",
+        var suiPath: String = "",
         var foldSpecs: Boolean = false,
         var disableTelemetry: Boolean = true,
         var debugMode: Boolean = false,

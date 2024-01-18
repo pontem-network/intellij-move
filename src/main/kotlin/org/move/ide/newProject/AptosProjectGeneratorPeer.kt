@@ -17,8 +17,7 @@ import javax.swing.JComponent
 
 class AptosProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerImpl<AptosProjectConfig>() {
 
-    private val chooseAptosCliPanel =
-        ChooseAptosCliPanel(showDefaultProjectSettingsLink = false) { checkValid?.run() }
+    private val chooseAptosCliPanel = ChooseAptosCliPanel { checkValid?.run() }
 
     init {
         Disposer.register(parentDisposable, chooseAptosCliPanel)
