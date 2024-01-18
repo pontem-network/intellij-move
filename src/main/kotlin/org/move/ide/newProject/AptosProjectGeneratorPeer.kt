@@ -11,7 +11,7 @@ import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.Disposer
 import com.intellij.platform.GeneratorPeerImpl
 import com.intellij.ui.dsl.builder.panel
-import org.move.cli.settings.ChooseAptosCliPanel
+import org.move.cli.settings.aptos.ChooseAptosCliPanel
 import org.move.cli.settings.isValidExecutable
 import javax.swing.JComponent
 

@@ -7,6 +7,7 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.panel
+import org.move.cli.settings.aptos.ChooseAptosCliPanel
 
 class PerProjectMoveConfigurable(val project: Project) : BoundConfigurable("Move Language"),
                                                          SearchableConfigurable {

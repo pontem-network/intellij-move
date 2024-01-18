@@ -1,4 +1,4 @@
-package org.move.cli.settings
+package org.move.cli.settings.aptos
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -6,6 +6,8 @@ import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.*
 import org.move.cli.runConfigurations.aptos.AptosCliExecutor
+import org.move.cli.settings.PerProjectMoveConfigurable
+import org.move.cli.settings.VersionLabel
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.isSuccess
 import org.move.openapiext.pathField

@@ -1,8 +1,10 @@
-package org.move.cli.settings
+package org.move.cli.settings.aptos
 
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.SystemInfo
 import org.move.cli.runConfigurations.aptos.AptosCliExecutor
+import org.move.cli.settings.MoveProjectSettingsService
+import org.move.cli.settings.isValidExecutable
 import org.move.openapiext.PluginPathManager
 import org.move.stdext.toPathOrNull
 

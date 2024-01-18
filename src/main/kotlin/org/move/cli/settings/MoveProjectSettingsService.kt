@@ -11,6 +11,7 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
+import org.move.cli.settings.aptos.AptosExec
 import org.move.openapiext.debugInProduction
 import org.move.stdext.exists
 import org.move.stdext.isExecutableFile

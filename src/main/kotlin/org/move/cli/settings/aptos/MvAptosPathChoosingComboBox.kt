@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-package org.move.cli.settings
+package org.move.cli.settings.aptos
 
 import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.application.ApplicationManager
