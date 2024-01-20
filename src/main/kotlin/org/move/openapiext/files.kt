@@ -14,7 +14,8 @@ fun Project.allMoveFiles(): List<MoveFile> {
         .sortedByDescending { it.contentRoot.fsDepth }
         .map { moveProject ->
             moveProject.processMoveFiles {
-                val filePath = it.virtualFile.path
+                // virtualFile can be null
+                val filePath = it.virtualFile?.path ?: return@processMoveFiles true
 
                 if (filePath in visited) return@processMoveFiles true
                 visited.add(filePath)

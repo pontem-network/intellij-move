@@ -52,7 +52,7 @@ fun VirtualFile.toNioPathOrNull(): Path? {
 }
 
 fun PsiFile.toNioPathOrNull(): Path? {
-    return this.originalFile.virtualFile.toNioPathOrNull()
+    return this.originalFile.virtualFile?.toNioPathOrNull()
 }
 
 abstract class MoveFileBase(fileViewProvider: FileViewProvider): PsiFileBase(fileViewProvider, MoveLanguage) {
