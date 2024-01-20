@@ -92,7 +92,7 @@ abstract class CommandConfigurationHandler {
 
         val aptosConfig = moveProject.aptosConfigYaml
         if (aptosConfig == null) {
-            return RsResult.Err("Aptos account is not initialized for the current project")
+            return RsResult.Err("Aptos account is not initialized / is invalid for the current project")
         }
 
         if (profileName !in aptosConfig.profiles) {

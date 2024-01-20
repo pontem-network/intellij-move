@@ -188,7 +188,7 @@ class FileTree(val rootDirInfo: FilesystemEntry.Directory) {
 }
 
 class TestProject(
-    private val project: Project,
+    val project: Project,
     val rootDirectory: VirtualFile,
     private val filesWithCaret: List<String>,
     private val filesWithNamedElement: List<String>
