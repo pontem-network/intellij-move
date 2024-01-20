@@ -17,6 +17,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.childrenOfType
 import org.move.lang.core.psi.ext.modules
+import org.move.openapiext.checkReadAccessAllowed
 import org.move.openapiext.resolveAbsPath
 import org.move.openapiext.toPsiFile
 import org.move.stdext.chain
@@ -35,6 +36,7 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
     return null
 }
 
+// requires ReadAccess
 val PsiElement.moveProject: MoveProject? get() {
     return project.moveProjectsService.findMoveProject(this)
 }
@@ -50,7 +52,7 @@ fun VirtualFile.toNioPathOrNull(): Path? {
 }
 
 fun PsiFile.toNioPathOrNull(): Path? {
-    return this.originalFile.virtualFile.toNioPathOrNull()
+    return this.originalFile.virtualFile?.toNioPathOrNull()
 }
 
 abstract class MoveFileBase(fileViewProvider: FileViewProvider): PsiFileBase(fileViewProvider, MoveLanguage) {

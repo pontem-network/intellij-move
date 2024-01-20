@@ -12,14 +12,14 @@ fun prop(name: String): String =
         ?: error("Property `$name` is not defined in gradle.properties for environment `$shortPlatformVersion`")
 
 val shortPlatformVersion = prop("shortPlatformVersion")
-val codeVersion = "1.33.0"
+val codeVersion = "1.33.1"
 val pluginVersion = "$codeVersion.$shortPlatformVersion"
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
 val pluginJarName = "intellij-move-$pluginVersion"
 
 val kotlinReflectVersion = "1.8.10"
-val aptosVersion = "2.3.2"
+val aptosVersion = "2.4.0"
 
 group = pluginGroup
 version = pluginVersion
@@ -37,7 +37,7 @@ plugins {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinReflectVersion")
 
-    implementation("io.sentry:sentry:6.25.0") {
+    implementation("io.sentry:sentry:7.2.0") {
         exclude("org.slf4j")
     }
     implementation("com.github.ajalt.clikt:clikt:3.5.2")

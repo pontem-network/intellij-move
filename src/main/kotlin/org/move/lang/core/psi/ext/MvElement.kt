@@ -51,7 +51,6 @@ val MvPath.isMslScope: Boolean get() = this.isMslInner()
 
 val MvModuleRef.isMslScope: Boolean get() = this.isMslInner()
 
-@Deprecated("Use specialized receiver type property isMslScope if possible")
 fun PsiElement.isMsl(): Boolean = isMslInner()
 //fun PsiElement.isMslLegacy(): Boolean {
 //    return CachedValuesManager.getProjectPsiDependentCache(this) {

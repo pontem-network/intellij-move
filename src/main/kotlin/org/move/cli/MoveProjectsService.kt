@@ -30,6 +30,7 @@ import org.move.cli.settings.MoveSettingsListener
 import org.move.cli.settings.debugErrorOrFallback
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.toNioPathOrNull
+import org.move.openapiext.checkReadAccessAllowed
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.debugInProduction
 import org.move.openapiext.toVirtualFile
@@ -82,7 +83,10 @@ class MoveProjectsService(val project: Project): Disposable {
         return moveProjectsFut
     }
 
+    // requires ReadAccess
     fun findMoveProject(psiElement: PsiElement): MoveProject? {
+        // read access required for the psiElement.containingFile
+        checkReadAccessAllowed()
         val file = when (psiElement) {
             is PsiDirectory -> psiElement.virtualFile
             is PsiFile -> psiElement.originalFile.virtualFile

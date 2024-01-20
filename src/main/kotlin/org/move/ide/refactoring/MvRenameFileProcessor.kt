@@ -66,6 +66,7 @@ class MvRenameFileProcessor : RenamePsiFileProcessor() {
     }
 
     private fun MoveFile.singleModule(): MvModule? {
+        val virtualFile = virtualFile ?: return null
         return modules()
             .singleOrNull()
             ?.takeIf { it.name == virtualFile.nameWithoutExtension }
