@@ -1,6 +1,7 @@
 package org.move.cli.toolwindow
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.runReadAction
 import com.intellij.ui.tree.AsyncTreeModel
 import com.intellij.ui.tree.StructureTreeModel
 import com.intellij.ui.treeStructure.CachingSimpleNode
@@ -122,7 +123,7 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = module.qualName?.editorText() ?: "null"
+            override fun getName(): String = runReadAction { module.qualName?.editorText() ?: "null" }
             override fun toTestString(): String = "Module($name)"
         }
 
@@ -141,7 +142,7 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = function.qualName?.editorText() ?: "null"
+            override fun getName(): String = runReadAction { function.qualName?.editorText() ?: "null" }
             override fun toTestString(): String = "Entrypoint($name)"
         }
 
@@ -160,7 +161,7 @@ class MoveProjectsTreeStructure(
             }
 
             override fun buildChildren(): Array<SimpleNode> = emptyArray()
-            override fun getName(): String = function.qualName?.editorText() ?: "null"
+            override fun getName(): String = runReadAction { function.qualName?.editorText() ?: "null" }
             override fun toTestString(): String = "View($name)"
         }
 

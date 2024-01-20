@@ -102,6 +102,8 @@ fun checkWriteAccessNotAllowed() {
     check(!ApplicationManager.getApplication().isWriteAccessAllowed)
 }
 
+fun isReadAccessAllowed() = ApplicationManager.getApplication().isReadAccessAllowed
+
 fun checkReadAccessAllowed() {
     check(ApplicationManager.getApplication().isReadAccessAllowed) {
         "Needs read action"
