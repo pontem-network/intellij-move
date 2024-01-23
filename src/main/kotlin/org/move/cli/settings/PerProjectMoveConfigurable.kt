@@ -1,7 +1,6 @@
 package org.move.cli.settings
 
-import com.intellij.openapi.options.BoundConfigurable
-import com.intellij.openapi.options.SearchableConfigurable
+import com.intellij.openapi.options.BoundSearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.DialogPanel
@@ -12,10 +11,12 @@ import org.move.cli.settings.aptos.ChooseAptosCliPanel
 import org.move.cli.settings.sui.ChooseSuiCliPanel
 import org.move.openapiext.showSettings
 
-class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move Language"),
-                                                        SearchableConfigurable {
-
-    override fun getId(): String = "org.move.settings"
+class PerProjectMoveConfigurable(val project: Project):
+    BoundSearchableConfigurable(
+        displayName = "Move Language",
+        helpTopic = "Move_language_settings",
+        _id = "org.move.settings"
+    ) {
 
     private val settingsState: MoveProjectSettingsService.State = project.moveSettings.state
 
@@ -91,29 +92,38 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
     }
 
     override fun disposeUIResources() {
-        super<BoundConfigurable>.disposeUIResources()
+        super.disposeUIResources()
         Disposer.dispose(chooseAptosCliPanel)
+        Disposer.dispose(chooseSuiCliPanel)
+    }
+
+    /// checks whether any settings are modified (should be fast)
+    override fun isModified(): Boolean {
+        // checks whether panel created in the createPanel() is modified, defined in DslConfigurableBase
+        if (super.isModified()) return true
+        val selectedAptosExec = chooseAptosCliPanel.selectedAptosExec
+        val selectedSui = chooseSuiCliPanel.getSuiCliPath()
+        return selectedAptosExec != settingsState.aptosExec()
+                || selectedSui != settingsState.suiPath
     }
 
     /// loads settings from configurable to swing form
     override fun reset() {
         chooseAptosCliPanel.selectedAptosExec = settingsState.aptosExec()
+        chooseSuiCliPanel.setSuiCliPath(settingsState.suiPath)
+        // resets panel created in createPanel(), see DslConfigurableBase
         // should be invoked at the end
-        super<BoundConfigurable>.reset()
-    }
-
-    /// checks whether any settings are modified (should be fast)
-    override fun isModified(): Boolean {
-        if (super<BoundConfigurable>.isModified()) return true
-        val selectedAptosExec = chooseAptosCliPanel.selectedAptosExec
-        return selectedAptosExec != settingsState.aptosExec()
+        super.reset()
     }
 
     /// saves values from Swing form back to configurable (OK / Apply)
     override fun apply() {
+        // calls apply() for createPanel().value
         super.apply()
         project.moveSettings.state =
             settingsState.copy(aptosPath = chooseAptosCliPanel.selectedAptosExec.pathToSettingsFormat())
+        project.moveSettings.state =
+            settingsState.copy(suiPath = chooseSuiCliPanel.getSuiCliPath())
 
     }
 }

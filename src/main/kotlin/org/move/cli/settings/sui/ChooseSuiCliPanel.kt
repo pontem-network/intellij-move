@@ -53,6 +53,7 @@ class ChooseSuiCliPanel(
                         .onChanged {
                             localPathField.text.toPathOrNull()?.let { versionLabel.updateValue(it) }
                         }
+                        .align(AlignX.FILL).resizableColumn()
                 }
                 row("--version :") { cell(versionLabel) }
             }
