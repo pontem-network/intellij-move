@@ -134,7 +134,7 @@ class TypeInferenceWalker(
                     } else {
                         pat?.anonymousTyVar() ?: TyUnknown
                     }
-                pat?.extractBindings(
+                pat?.collectBindings(
                     this,
                     explicitTy ?: resolveTypeVarsWithObligations(inferredTy)
                 )

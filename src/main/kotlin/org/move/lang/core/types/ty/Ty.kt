@@ -55,7 +55,7 @@ abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
      */
     open val typeParameterValues: Substitution get() = emptySubstitution
 
-    fun deref(): Ty = if (this is TyReference) this.referenced else TyUnknown
+    fun derefIfNeeded(): Ty = if (this is TyReference) this.referenced.derefIfNeeded() else this
 
     /**
      * User visible string representation of a type

@@ -66,7 +66,7 @@ fun MvPat.anonymousTyVar(): Ty {
     }
 }
 
-fun MvPat.extractBindings(fctx: TypeInferenceWalker, ty: Ty) {
+fun MvPat.collectBindings(fctx: TypeInferenceWalker, ty: Ty) {
     when (this) {
         is MvBindingPat -> {
             fctx.ctx.writePatTy(this, ty)
@@ -74,7 +74,7 @@ fun MvPat.extractBindings(fctx: TypeInferenceWalker, ty: Ty) {
         is MvStructPat -> {
             val structItem = this.structItem ?: (ty as? TyStruct)?.item ?: return
             val (patTy, _) = fctx.ctx.instantiatePath<TyStruct>(this.path, structItem) ?: return
-            if (!isCompatible(ty, patTy, fctx.msl)) {
+            if (!isCompatible(ty.derefIfNeeded(), patTy, fctx.msl)) {
                 fctx.reportTypeError(TypeError.InvalidUnpacking(this, ty))
             }
             val structFields = structItem.fields.associateBy { it.name }
@@ -84,10 +84,11 @@ fun MvPat.extractBindings(fctx: TypeInferenceWalker, ty: Ty) {
                     ?.type
                     ?.loweredType(fctx.msl)
                     ?.substituteOrUnknown(ty.typeParameterValues)
+                    ?.let { if (ty is TyReference) ty.transferReference(it) else it }
                     ?: TyUnknown
                 when (kind) {
-                    is PatFieldKind.Full -> kind.pat.extractBindings(fctx, fieldType)
-                    is PatFieldKind.Shorthand -> kind.binding.extractBindings(fctx, fieldType)
+                    is PatFieldKind.Full -> kind.pat.collectBindings(fctx, fieldType)
+                    is PatFieldKind.Shorthand -> kind.binding.collectBindings(fctx, fieldType)
                 }
             }
         }
@@ -95,7 +96,7 @@ fun MvPat.extractBindings(fctx: TypeInferenceWalker, ty: Ty) {
             if (patList.size == 1 && ty !is TyTuple) {
                 // let (a) = 1;
                 // let (a,) = 1;
-                patList.single().extractBindings(fctx, ty)
+                patList.single().collectBindings(fctx, ty)
                 return
             }
             val patTy = TyTuple.unknown(patList.size)
@@ -107,7 +108,7 @@ fun MvPat.extractBindings(fctx: TypeInferenceWalker, ty: Ty) {
             }
             for ((idx, p) in patList.withIndex()) {
                 val patType = expectedTypes.getOrNull(idx) ?: TyUnknown
-                p.extractBindings(fctx, patType)
+                p.collectBindings(fctx, patType)
             }
         }
     }

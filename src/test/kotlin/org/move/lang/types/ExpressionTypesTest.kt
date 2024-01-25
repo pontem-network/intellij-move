@@ -1812,4 +1812,26 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test unpack struct reference`() = testExpr("""
+        module 0x1::m {
+            struct Field { id: u8 }
+            fun main() {
+                let Field { id } = &Field { id: 1 };
+                id;
+               //^ &u8 
+            }
+        }                
+    """)
+
+    fun `test unpack struct mut reference`() = testExpr("""
+        module 0x1::m {
+            struct Field { id: u8 }
+            fun main() {
+                let Field { id } = &mut Field { id: 1 };
+                id;
+               //^ &mut u8 
+            }
+        }                
+    """)
 }
