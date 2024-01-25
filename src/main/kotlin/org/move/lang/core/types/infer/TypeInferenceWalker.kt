@@ -736,6 +736,7 @@ class TypeInferenceWalker(
         val ty = resolveTypeVarsWithObligations(this)
         return ty is TyInteger
                 || ty is TyNum
+                || ty is TyInfer.TyVar
                 || ty is TyInfer.IntVar
                 || ty is TyUnknown
                 || ty is TyNever

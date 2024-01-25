@@ -1478,4 +1478,31 @@ module 0x1::pool {
             }
         }        
     """)
+
+    fun `test return type inference for generic expr left`() = checkByText("""
+        module 0x1::m {
+            native fun borrow<Value>(): Value;
+            fun main() {
+                borrow() + 3;
+            }
+        }        
+    """)
+
+    fun `test return type inference for deref borrow expr left`() = checkByText("""
+        module 0x1::m {
+            native fun borrow<Value>(): &Value;
+            fun main() {
+                *borrow() + 3;
+            }
+        }        
+    """)
+
+    fun `test return type inference for deref borrow expr right`() = checkByText("""
+        module 0x1::m {
+            native fun borrow<Value>(): &Value;
+            fun main() {
+                3 + *borrow();
+            }
+        }        
+    """)
 }
