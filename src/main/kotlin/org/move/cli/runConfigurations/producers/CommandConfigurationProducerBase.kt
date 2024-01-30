@@ -6,16 +6,23 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
 import org.move.cli.runConfigurations.CommandConfigurationBase
+import org.move.cli.settings.Blockchain
 import org.move.cli.settings.moveSettings
 
-abstract class CommandConfigurationProducerBase :
+abstract class CommandConfigurationProducerBase(val blockchain: Blockchain):
     LazyRunConfigurationProducer<CommandConfigurationBase>() {
+
+    abstract fun configFromLocation(location: PsiElement): CommandLineArgsFromContext?
 
     override fun setupConfigurationFromContext(
         templateConfiguration: CommandConfigurationBase,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {
+        val project = context.project
+        if (project.moveSettings.state.blockchain != blockchain) {
+            return false
+        }
         val cmdConf = configFromLocation(sourceElement.get()) ?: return false
         templateConfiguration.name = cmdConf.configurationName
 
@@ -24,7 +31,7 @@ abstract class CommandConfigurationProducerBase :
         templateConfiguration.workingDirectory = commandLine.workingDirectory
 
         var envVars = commandLine.environmentVariables
-        if (templateConfiguration.project.moveSettings.state.disableTelemetry) {
+        if (project.moveSettings.state.disableTelemetry) {
             envVars = envVars.with(mapOf("APTOS_DISABLE_TELEMETRY" to "true"))
         }
         templateConfiguration.environmentVariables = envVars
@@ -35,6 +42,10 @@ abstract class CommandConfigurationProducerBase :
         configuration: CommandConfigurationBase,
         context: ConfigurationContext
     ): Boolean {
+        val project = context.project
+        if (project.moveSettings.state.blockchain != blockchain) {
+            return false
+        }
         val location = context.psiLocation ?: return false
         val cmdConf = configFromLocation(location) ?: return false
         return configuration.name == cmdConf.configurationName
@@ -43,10 +54,8 @@ abstract class CommandConfigurationProducerBase :
                 && configuration.environmentVariables == cmdConf.commandLineArgs.environmentVariables
     }
 
-    abstract fun configFromLocation(location: PsiElement): CommandLineArgsFromContext?
-
     companion object {
-        inline fun <reified T : PsiElement> findElement(base: PsiElement, climbUp: Boolean): T? {
+        inline fun <reified T: PsiElement> findElement(base: PsiElement, climbUp: Boolean): T? {
             if (base is T) return base
             if (!climbUp) return null
             return base.parentOfType(withSelf = false)

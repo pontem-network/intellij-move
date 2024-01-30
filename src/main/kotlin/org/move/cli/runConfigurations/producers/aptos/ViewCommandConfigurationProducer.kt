@@ -1,4 +1,4 @@
-package org.move.cli.runConfigurations.producers
+package org.move.cli.runConfigurations.producers.aptos
 
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.psi.PsiElement

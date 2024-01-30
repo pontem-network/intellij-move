@@ -1,4 +1,4 @@
-package org.move.cli.runConfigurations.producers
+package org.move.cli.runConfigurations.producers.aptos
 
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
@@ -7,6 +7,9 @@ import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.CliCommandLineArgs
 import org.move.cli.runConfigurations.aptos.AptosConfigurationType
 import org.move.cli.runConfigurations.aptos.any.AnyCommandConfigurationFactory
+import org.move.cli.runConfigurations.producers.CommandConfigurationProducerBase
+import org.move.cli.runConfigurations.producers.CommandLineArgsFromContext
+import org.move.cli.settings.Blockchain
 import org.move.cli.settings.dumpStateOnTestFailure
 import org.move.cli.settings.skipFetchLatestGitDeps
 import org.move.lang.MoveFile
@@ -19,7 +22,7 @@ import org.move.lang.core.psi.ext.hasTestAttr
 import org.move.lang.moveProject
 import org.toml.lang.psi.TomlFile
 
-class TestCommandConfigurationProducer : CommandConfigurationProducerBase() {
+class TestCommandConfigurationProducer : CommandConfigurationProducerBase(Blockchain.APTOS) {
 
     override fun getConfigurationFactory() =
         AnyCommandConfigurationFactory(AptosConfigurationType.getInstance())
