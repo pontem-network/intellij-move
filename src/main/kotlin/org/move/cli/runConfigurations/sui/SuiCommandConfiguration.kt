@@ -1,13 +1,14 @@
-package org.move.cli.runConfigurations.aptos.any
+package org.move.cli.runConfigurations.sui
 
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.openapi.project.Project
 import org.move.cli.moveProjectsService
 import org.move.cli.runConfigurations.CommandConfigurationBase
-import org.move.cli.settings.aptosPath
+import org.move.cli.settings.moveSettings
+import org.move.stdext.toPathOrNull
 import java.nio.file.Path
 
-class AnyCommandConfiguration(
+class SuiCommandConfiguration(
     project: Project,
     factory: ConfigurationFactory
 ):
@@ -21,7 +22,11 @@ class AnyCommandConfiguration(
         }
     }
 
-    override fun getCliPath(project: Project): Path? = project.aptosPath
+    override fun getCliPath(project: Project): Path? {
+        return project.moveSettings.state.suiPath
+            .takeIf { it.isNotBlank() }
+            ?.toPathOrNull()
+    }
 
-    override fun getConfigurationEditor() = AnyCommandConfigurationEditor()
+    override fun getConfigurationEditor() = SuiCommandConfigurationEditor()
 }

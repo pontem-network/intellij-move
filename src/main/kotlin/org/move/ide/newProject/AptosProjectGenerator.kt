@@ -12,10 +12,12 @@ import com.intellij.platform.DirectoryProjectGenerator
 import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
 import org.move.cli.PluginApplicationDisposable
+import org.move.cli.runConfigurations.InitProjectCli
 import org.move.cli.settings.aptos.AptosExec
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
 import org.move.openapiext.computeWithCancelableProgress
+import org.move.stdext.toPathOrNull
 import org.move.stdext.unwrapOrThrow
 
 data class AptosProjectConfig(val aptosExec: AptosExec)
@@ -35,18 +37,20 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
         projectConfig: AptosProjectConfig,
         module: Module
     ) {
-        val aptosExecutor = projectConfig.aptosExec.toExecutor() ?: return
         val packageName = project.name
+        val aptosPath = projectConfig.aptosExec.execPath.toPathOrNull() ?: return
+        val aptosInitializer = InitProjectCli.Aptos(aptosPath)
 
         val manifestFile =
             project.computeWithCancelableProgress("Generating Aptos project...") {
-                val manifestFile = aptosExecutor.moveInit(
-                    project,
-                    disposable,
-                    rootDirectory = baseDir,
-                    packageName = packageName
-                )
-                    .unwrapOrThrow() // TODO throw? really??
+                val manifestFile =
+                    aptosInitializer.init(
+                        project,
+                        disposable,
+                        rootDirectory = baseDir,
+                        packageName = packageName
+                    )
+                        .unwrapOrThrow() // TODO throw? really??
                 manifestFile
             }
         // update settings (and refresh Aptos projects too)

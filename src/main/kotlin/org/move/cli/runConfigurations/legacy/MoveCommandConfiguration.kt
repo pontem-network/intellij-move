@@ -37,7 +37,7 @@ class MoveCommandConfiguration(
 
     override fun getState(executor: Executor, execEnvironment: ExecutionEnvironment): RunProfileState? {
         val config = clean().ok ?: return null
-        return MoveCommandLineState(execEnvironment, config)
+        return LegacyMoveCommandLineState(execEnvironment, config)
     }
 
     override fun writeExternal(element: Element) {

@@ -4,7 +4,7 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.MoveProject
-import org.move.cli.runConfigurations.aptos.CliCommandLineArgs
+import org.move.cli.runConfigurations.CliCommandLineArgs
 import org.move.cli.runConfigurations.aptos.AptosConfigurationType
 import org.move.cli.runConfigurations.aptos.any.AnyCommandConfigurationFactory
 import org.move.cli.settings.dumpStateOnTestFailure

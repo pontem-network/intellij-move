@@ -2,7 +2,7 @@ package org.move.cli.settings
 
 import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
-import org.move.cli.runConfigurations.aptos.CliCommandLineArgs
+import org.move.cli.runConfigurations.CliCommandLineArgs
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.checkIsBackgroundThread
 import org.move.openapiext.common.isUnitTestMode
@@ -31,7 +31,7 @@ class VersionLabel(
                 val commandLineArgs =
                     CliCommandLineArgs(null, listOf("--version"), workingDirectory = null)
                 commandLineArgs
-                    .toGeneralCommandLine(cliExePath = execPath.toString())
+                    .toGeneralCommandLine(execPath)
                     .execute()
             },
             onUiThread = { versionCmdOutput ->

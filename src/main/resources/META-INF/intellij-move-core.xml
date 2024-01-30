@@ -36,6 +36,8 @@
         implementation="org.move.cli.runConfigurations.legacy.MoveConfigurationType" />
     <configurationType
         implementation="org.move.cli.runConfigurations.aptos.AptosConfigurationType" />
+    <configurationType
+        implementation="org.move.cli.runConfigurations.sui.SuiConfigurationType" />
     <runConfigurationProducer
         implementation="org.move.cli.runConfigurations.producers.TestCommandConfigurationProducer" />
     <runConfigurationProducer

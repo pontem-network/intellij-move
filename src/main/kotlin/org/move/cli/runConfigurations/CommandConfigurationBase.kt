@@ -1,4 +1,4 @@
-package org.move.cli.runConfigurations.aptos
+package org.move.cli.runConfigurations
 
 import com.intellij.execution.Executor
 import com.intellij.execution.configuration.EnvironmentVariablesData
@@ -12,6 +12,7 @@ import com.intellij.openapi.util.NlsContexts
 import org.jdom.Element
 import org.move.cli.readPath
 import org.move.cli.readString
+import org.move.cli.runConfigurations.CommandConfigurationBase.CleanConfiguration.Companion.configurationError
 import org.move.cli.runConfigurations.legacy.MoveCommandConfiguration
 import org.move.cli.writePath
 import org.move.cli.writeString
@@ -21,13 +22,15 @@ import java.nio.file.Path
 abstract class CommandConfigurationBase(
     project: Project,
     factory: ConfigurationFactory
-) :
-    LocatableConfigurationBase<AptosCommandLineState>(project, factory),
+):
+    LocatableConfigurationBase<MoveCommandLineState>(project, factory),
     RunConfigurationWithSuppressedDefaultDebugAction {
 
     var command: String = ""
     var workingDirectory: Path? = null
     var environmentVariables: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
+
+    abstract fun getCliPath(project: Project): Path?
 
     override fun writeExternal(element: Element) {
         super.writeExternal(element)
@@ -43,46 +46,42 @@ abstract class CommandConfigurationBase(
         this.environmentVariables = EnvironmentVariablesData.readExternal(element)
     }
 
-    override fun getState(executor: Executor, environment: ExecutionEnvironment): AptosCommandLineState? {
-        return clean().ok?.let { stateConfig ->
-//            AptosCommandLineState(environment, stateConfig.aptosPath, stateConfig.commandLine)
-//            if (command.startsWith("move test")) {
-//                AptosTestCommandLineState(environment, stateConfig.aptosPath, stateConfig.commandLine)
-//            } else {
-            AptosCommandLineState(environment, stateConfig.aptosPath, stateConfig.commandLine)
-//            }
-        }
+    override fun getState(executor: Executor, environment: ExecutionEnvironment): MoveCommandLineState? {
+        return clean().ok
+            ?.let { config ->
+                MoveCommandLineState(environment, config.cliPath, config.commandLine)
+            }
     }
 
     fun clean(): CleanConfiguration {
         val workingDirectory = workingDirectory
-            ?: return CleanConfiguration.error("No working directory specified")
+            ?: return configurationError("No working directory specified")
         val parsedCommand = MoveCommandConfiguration.ParsedCommand.parse(command)
-            ?: return CleanConfiguration.error("No command specified")
+            ?: return configurationError("No command specified")
 
-        val aptosCli = AptosCliExecutor.fromProject(project)
-            ?: return CleanConfiguration.error("No Aptos CLI specified")
-        if (!aptosCli.location.exists()) {
-            return CleanConfiguration.error("Invalid Aptos CLI: ${aptosCli.location}")
+        val cliLocation =
+            this.getCliPath(project) ?: return configurationError("No CLI specified")
+        if (!cliLocation.exists()) {
+            return configurationError("Invalid CLI: $cliLocation")
         }
-
-        val commandLine = CliCommandLineArgs(
-            parsedCommand.command,
-            parsedCommand.additionalArguments,
-            workingDirectory,
-            environmentVariables
-        )
-        return CleanConfiguration.Ok(aptosCli.location, commandLine)
+        val commandLine =
+            CliCommandLineArgs(
+                parsedCommand.command,
+                parsedCommand.additionalArguments,
+                workingDirectory,
+                environmentVariables
+            )
+        return CleanConfiguration.Ok(cliLocation, commandLine)
     }
 
     sealed class CleanConfiguration {
-        class Ok(val aptosPath: Path, val commandLine: CliCommandLineArgs) : CleanConfiguration()
-        class Err(val error: RuntimeConfigurationError) : CleanConfiguration()
+        class Ok(val cliPath: Path, val commandLine: CliCommandLineArgs): CleanConfiguration()
+        class Err(val error: RuntimeConfigurationError): CleanConfiguration()
 
         val ok: Ok? get() = this as? Ok
 
         companion object {
-            fun error(@NlsContexts.DialogMessage message: String) = Err(
+            fun configurationError(@NlsContexts.DialogMessage message: String) = Err(
                 RuntimeConfigurationError(message)
             )
         }

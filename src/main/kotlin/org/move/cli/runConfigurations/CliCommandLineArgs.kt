@@ -1,12 +1,8 @@
-package org.move.cli.runConfigurations.aptos
+package org.move.cli.runConfigurations
 
-import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.util.text.StringUtil
-import org.move.cli.MoveProject
-import org.move.cli.runConfigurations.aptos.any.AnyCommandConfiguration
-import org.move.cli.runConfigurations.aptos.any.AnyCommandConfigurationFactory
 import java.nio.file.Path
 
 data class CliCommandLineArgs(
@@ -19,9 +15,9 @@ data class CliCommandLineArgs(
         return StringUtil.join(listOfNotNull(subCommand, *arguments.toTypedArray()), " ")
     }
 
-    fun toGeneralCommandLine(cliExePath: String): GeneralCommandLine {
+    fun toGeneralCommandLine(cliExePath: Path): GeneralCommandLine {
         val generalCommandLine = GeneralCommandLine()
-            .withExePath(cliExePath)
+            .withExePath(cliExePath.toString())
             // subcommand can be null
             .withParameters(listOfNotNull(subCommand))
             .withParameters(this.arguments)

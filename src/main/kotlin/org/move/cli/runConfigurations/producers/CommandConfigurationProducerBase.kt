@@ -5,7 +5,7 @@ import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
-import org.move.cli.runConfigurations.aptos.CommandConfigurationBase
+import org.move.cli.runConfigurations.CommandConfigurationBase
 import org.move.cli.settings.moveSettings
 
 abstract class CommandConfigurationProducerBase :

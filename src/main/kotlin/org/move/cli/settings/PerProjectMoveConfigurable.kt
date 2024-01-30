@@ -74,7 +74,7 @@ class PerProjectMoveConfigurable(val project: Project):
                     checkBox("Dump storage to console on test failures")
                         .bindSelected(settingsState::dumpStateOnTestFailure)
                     comment(
-                        "Adds --dump to the test runs."
+                        "Adds --dump to the test runs (aptos only)."
                     )
                 }
             }

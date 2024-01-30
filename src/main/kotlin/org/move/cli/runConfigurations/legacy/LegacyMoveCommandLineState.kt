@@ -11,7 +11,7 @@ import org.move.cli.MoveFileHyperlinkFilter
 import org.move.openapiext.withWorkDirectory
 import java.nio.file.Path
 
-class MoveCommandLineState(
+class LegacyMoveCommandLineState(
     environment: ExecutionEnvironment,
     val config: MoveCommandConfiguration.CleanConfiguration.Ok,
 ) : CommandLineState(environment) {

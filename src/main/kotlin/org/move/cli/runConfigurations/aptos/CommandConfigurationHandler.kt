@@ -2,6 +2,7 @@ package org.move.cli.runConfigurations.aptos
 
 import com.intellij.psi.PsiElement
 import org.move.cli.MoveProject
+import org.move.cli.runConfigurations.CliCommandLineArgs
 import org.move.cli.runConfigurations.producers.CommandConfigurationProducerBase
 import org.move.cli.runConfigurations.producers.CommandLineArgsFromContext
 import org.move.lang.core.psi.MvFunction
