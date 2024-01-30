@@ -17,115 +17,111 @@ import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.findMoveProject
-import org.move.lang.core.psi.ext.hasTestFunctions
 import org.move.lang.core.psi.ext.hasTestAttr
+import org.move.lang.core.psi.ext.hasTestFunctions
 import org.move.lang.moveProject
 import org.toml.lang.psi.TomlFile
 
-class TestCommandConfigurationProducer : CommandConfigurationProducerBase(Blockchain.APTOS) {
+class TestCommandConfigurationProducer: CommandConfigurationProducerBase(Blockchain.APTOS) {
 
     override fun getConfigurationFactory() =
         AnyCommandConfigurationFactory(AptosConfigurationType.getInstance())
 
-    override fun configFromLocation(location: PsiElement) = fromLocation(location)
-
-    companion object {
-        fun fromLocation(location: PsiElement, climbUp: Boolean = true): CommandLineArgsFromContext? {
-            return when {
-                location is MoveFile -> {
-                    val module = location.modules().firstOrNull { it.hasTestFunctions() } ?: return null
-                    findTestModule(module, climbUp)
-                }
-                location is TomlFile && location.name == "Move.toml" -> {
-                    val moveProject = location.findMoveProject() ?: return null
+    override fun fromLocation(location: PsiElement, climbUp: Boolean): CommandLineArgsFromContext? {
+        return when {
+            location is MoveFile -> {
+                val module = location.modules().firstOrNull { it.hasTestFunctions() } ?: return null
+                findTestModule(module, climbUp)
+            }
+            location is TomlFile && location.name == "Move.toml" -> {
+                val moveProject = location.findMoveProject() ?: return null
+                findTestProject(location, moveProject)
+            }
+            location is PsiDirectory -> {
+                val moveProject = location.findMoveProject() ?: return null
+                if (
+                    location.virtualFile == moveProject.currentPackage.contentRoot
+                    || location.virtualFile == moveProject.currentPackage.testsFolder
+                ) {
                     findTestProject(location, moveProject)
+                } else {
+                    null
                 }
-                location is PsiDirectory -> {
-                    val moveProject = location.findMoveProject() ?: return null
-                    if (
-                        location.virtualFile == moveProject.currentPackage.contentRoot
-                        || location.virtualFile == moveProject.currentPackage.testsFolder
-                    ) {
-                        findTestProject(location, moveProject)
-                    } else {
-                        null
-                    }
-                }
-                else -> findTestFunction(location, climbUp) ?: findTestModule(location, climbUp)
             }
+            else -> findTestFunction(location, climbUp) ?: findTestModule(location, climbUp)
+        }
+    }
+
+    private fun findTestFunction(psi: PsiElement, climbUp: Boolean): CommandLineArgsFromContext? {
+        val fn = findElement<MvFunction>(psi, climbUp) ?: return null
+        if (!fn.hasTestAttr) return null
+
+        val modName = fn.containingModule?.name ?: return null
+        val functionName = fn.name ?: return null
+
+        val confName = "Test $modName::$functionName"
+        var subCommand = "move test --filter $modName::$functionName"
+        if (psi.project.skipFetchLatestGitDeps) {
+            subCommand += " --skip-fetch-latest-git-deps"
+        }
+        if (psi.project.dumpStateOnTestFailure) {
+            subCommand += " --dump"
         }
 
-        private fun findTestFunction(psi: PsiElement, climbUp: Boolean): CommandLineArgsFromContext? {
-            val fn = findElement<MvFunction>(psi, climbUp) ?: return null
-            if (!fn.hasTestAttr) return null
+        val moveProject = fn.moveProject ?: return null
+        val rootPath = moveProject.contentRootPath ?: return null
+        return CommandLineArgsFromContext(
+            fn,
+            confName,
+            CliCommandLineArgs(subCommand, workingDirectory = rootPath)
+        )
+    }
 
-            val modName = fn.containingModule?.name ?: return null
-            val functionName = fn.name ?: return null
+    private fun findTestModule(psi: PsiElement, climbUp: Boolean): CommandLineArgsFromContext? {
+        val mod = findElement<MvModule>(psi, climbUp) ?: return null
+        if (!mod.hasTestFunctions()) return null
 
-            val confName = "Test $modName::$functionName"
-            var subCommand = "move test --filter $modName::$functionName"
-            if (psi.project.skipFetchLatestGitDeps) {
-                subCommand += " --skip-fetch-latest-git-deps"
-            }
-            if (psi.project.dumpStateOnTestFailure) {
-                subCommand += " --dump"
-            }
+        val modName = mod.name ?: return null
+        val confName = "Test $modName"
 
-            val moveProject = fn.moveProject ?: return null
-            val rootPath = moveProject.contentRootPath ?: return null
-            return CommandLineArgsFromContext(
-                fn,
-                confName,
-                CliCommandLineArgs(subCommand, workingDirectory = rootPath)
-            )
+        var subCommand = "move test --filter $modName"
+        if (psi.project.skipFetchLatestGitDeps) {
+            subCommand += " --skip-fetch-latest-git-deps"
+        }
+        if (psi.project.dumpStateOnTestFailure) {
+            subCommand += " --dump"
         }
 
-        private fun findTestModule(psi: PsiElement, climbUp: Boolean): CommandLineArgsFromContext? {
-            val mod = findElement<MvModule>(psi, climbUp) ?: return null
-            if (!mod.hasTestFunctions()) return null
+        val moveProject = mod.moveProject ?: return null
+        val rootPath = moveProject.contentRootPath ?: return null
+        return CommandLineArgsFromContext(
+            mod,
+            confName,
+            CliCommandLineArgs(subCommand, workingDirectory = rootPath)
+        )
+    }
 
-            val modName = mod.name ?: return null
-            val confName = "Test $modName"
+    private fun findTestProject(
+        location: PsiFileSystemItem,
+        moveProject: MoveProject
+    ): CommandLineArgsFromContext? {
+        val packageName = moveProject.currentPackage.packageName
+        val rootPath = moveProject.contentRootPath ?: return null
 
-            var subCommand = "move test --filter $modName"
-            if (psi.project.skipFetchLatestGitDeps) {
-                subCommand += " --skip-fetch-latest-git-deps"
-            }
-            if (psi.project.dumpStateOnTestFailure) {
-                subCommand += " --dump"
-            }
-
-            val moveProject = mod.moveProject ?: return null
-            val rootPath = moveProject.contentRootPath ?: return null
-            return CommandLineArgsFromContext(
-                mod,
-                confName,
-                CliCommandLineArgs(subCommand, workingDirectory = rootPath)
-            )
+        val confName = "Test $packageName"
+        var subCommand = "move test"
+        if (location.project.skipFetchLatestGitDeps) {
+            subCommand += " --skip-fetch-latest-git-deps"
+        }
+        if (location.project.dumpStateOnTestFailure) {
+            subCommand += " --dump"
         }
 
-        private fun findTestProject(
-            location: PsiFileSystemItem,
-            moveProject: MoveProject
-        ): CommandLineArgsFromContext? {
-            val packageName = moveProject.currentPackage.packageName
-            val rootPath = moveProject.contentRootPath ?: return null
 
-            val confName = "Test $packageName"
-            var subCommand = "move test"
-            if (location.project.skipFetchLatestGitDeps) {
-                subCommand += " --skip-fetch-latest-git-deps"
-            }
-            if (location.project.dumpStateOnTestFailure) {
-                subCommand += " --dump"
-            }
-
-
-            return CommandLineArgsFromContext(
-                location,
-                confName,
-                CliCommandLineArgs(subCommand, workingDirectory = rootPath)
-            )
-        }
+        return CommandLineArgsFromContext(
+            location,
+            confName,
+            CliCommandLineArgs(subCommand, workingDirectory = rootPath)
+        )
     }
 }

@@ -6,7 +6,9 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.psi.PsiElement
 import org.move.cli.runConfigurations.aptos.run.RunCommandConfigurationHandler
 import org.move.cli.runConfigurations.aptos.view.ViewCommandConfigurationHandler
+import org.move.cli.runConfigurations.producers.aptos.RunCommandConfigurationProducer
 import org.move.cli.runConfigurations.producers.aptos.TestCommandConfigurationProducer
+import org.move.cli.runConfigurations.producers.aptos.ViewCommandConfigurationProducer
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes.IDENTIFIER
 import org.move.lang.core.psi.MvFunction
@@ -28,7 +30,7 @@ class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
             when {
                 parent.hasTestAttr -> {
                     val config =
-                        TestCommandConfigurationProducer.fromLocation(parent, climbUp = false)
+                        TestCommandConfigurationProducer().configFromLocation(parent, climbUp = false)
                     if (config != null) {
                         return Info(
                             MoveIcons.RUN_TEST_ITEM,
@@ -38,7 +40,7 @@ class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
                     }
                 }
                 parent.isEntry -> {
-                    val config = RunCommandConfigurationHandler().configurationFromLocation(parent)
+                    val config = RunCommandConfigurationProducer().configFromLocation(parent)
                     if (config != null) {
                         return Info(
                             MoveIcons.RUN_TRANSACTION_ITEM,
@@ -48,7 +50,7 @@ class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
                     }
                 }
                 parent.isView -> {
-                    val config = ViewCommandConfigurationHandler().configurationFromLocation(parent)
+                    val config = ViewCommandConfigurationProducer().configFromLocation(parent)
                     if (config != null) {
                         return Info(
                             MoveIcons.VIEW_FUNCTION_ITEM,
@@ -60,7 +62,7 @@ class AptosCommandLineMarkerContributor : RunLineMarkerContributor() {
             }
         }
         if (parent is MvModule) {
-            val testConfig = TestCommandConfigurationProducer.fromLocation(parent, climbUp = false)
+            val testConfig = TestCommandConfigurationProducer().configFromLocation(parent, climbUp = false)
             if (testConfig != null) {
                 return Info(
                     MoveIcons.RUN_ALL_TESTS_IN_ITEM,

@@ -12,17 +12,21 @@ import org.move.cli.settings.moveSettings
 abstract class CommandConfigurationProducerBase(val blockchain: Blockchain):
     LazyRunConfigurationProducer<CommandConfigurationBase>() {
 
-    abstract fun configFromLocation(location: PsiElement): CommandLineArgsFromContext?
+    fun configFromLocation(location: PsiElement, climbUp: Boolean = true): CommandLineArgsFromContext? {
+        val project = location.project
+        if (project.moveSettings.state.blockchain != blockchain) {
+            return null
+        }
+        return fromLocation(location, climbUp)
+    }
+
+    abstract fun fromLocation(location: PsiElement, climbUp: Boolean = true): CommandLineArgsFromContext?
 
     override fun setupConfigurationFromContext(
         templateConfiguration: CommandConfigurationBase,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {
-        val project = context.project
-        if (project.moveSettings.state.blockchain != blockchain) {
-            return false
-        }
         val cmdConf = configFromLocation(sourceElement.get()) ?: return false
         templateConfiguration.name = cmdConf.configurationName
 
@@ -31,7 +35,7 @@ abstract class CommandConfigurationProducerBase(val blockchain: Blockchain):
         templateConfiguration.workingDirectory = commandLine.workingDirectory
 
         var envVars = commandLine.environmentVariables
-        if (project.moveSettings.state.disableTelemetry) {
+        if (context.project.moveSettings.state.disableTelemetry) {
             envVars = envVars.with(mapOf("APTOS_DISABLE_TELEMETRY" to "true"))
         }
         templateConfiguration.environmentVariables = envVars
