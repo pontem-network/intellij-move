@@ -36,7 +36,7 @@ interface MoveSettingsListener {
 enum class Blockchain {
     APTOS, SUI;
 
-    fun name(): String = if (this == APTOS) "Aptos" else "Sui"
+    override fun toString(): String = if (this == APTOS) "Aptos" else "Sui"
 }
 
 private const val settingsServiceName: String = "MoveProjectSettingsService_1"

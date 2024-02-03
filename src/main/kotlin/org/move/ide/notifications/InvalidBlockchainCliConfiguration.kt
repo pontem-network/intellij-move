@@ -34,7 +34,7 @@ class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationP
         }
 
         return EditorNotificationPanel().apply {
-            text = "${blockchain.name()} CLI path is not provided or invalid"
+            text = "$blockchain CLI path is not provided or invalid"
             createActionLabel("Configure") {
                 project.showSettings<PerProjectMoveConfigurable>()
             }

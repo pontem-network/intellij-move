@@ -25,6 +25,7 @@ class NoMoveProjectDetectedNotificationProvider(project: Project): MvEditorNotif
         @Suppress("UnstableApiUsage")
         if (!project.isTrusted()) return null
 
+        val blockchain = project.blockchain
         val moveProjectsService = project.moveProjectsService
         // HACK: Reloads projects once on an opening of any Move file, if not yet reloaded.
         //       It should be invoked somewhere else where it's more appropriate,
@@ -39,7 +40,7 @@ class NoMoveProjectDetectedNotificationProvider(project: Project): MvEditorNotif
         if (moveProjectsService.allProjects.isEmpty()) {
             // no move projects available
             return EditorNotificationPanel().apply {
-                text = "No ${project.blockchain.name()} projects found"
+                text = "No $blockchain projects found"
                 createActionLabel("Do not show again") {
                     disableNotification(file)
                     updateAllNotifications(project)
@@ -49,7 +50,7 @@ class NoMoveProjectDetectedNotificationProvider(project: Project): MvEditorNotif
 
         if (moveProjectsService.findMoveProjectForFile(file) == null) {
             return EditorNotificationPanel().apply {
-                text = "File does not belong to any known ${project.blockchain.name()} project"
+                text = "File does not belong to any known $blockchain project"
                 createActionLabel("Do not show again") {
                     disableNotification(file)
                     updateAllNotifications(project)
