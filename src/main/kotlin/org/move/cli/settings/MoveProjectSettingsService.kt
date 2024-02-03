@@ -15,6 +15,7 @@ import org.move.cli.settings.aptos.AptosExec
 import org.move.openapiext.debugInProduction
 import org.move.stdext.exists
 import org.move.stdext.isExecutableFile
+import org.move.stdext.toPathOrNull
 import java.nio.file.Path
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
@@ -34,6 +35,8 @@ interface MoveSettingsListener {
 
 enum class Blockchain {
     APTOS, SUI;
+
+    fun name(): String = if (this == APTOS) "Aptos" else "Sui"
 }
 
 private const val settingsServiceName: String = "MoveProjectSettingsService_1"
@@ -156,9 +159,13 @@ val Project.moveSettings: MoveProjectSettingsService get() = service()
 
 val Project.collapseSpecs: Boolean get() = this.moveSettings.state.foldSpecs
 
+val Project.blockchain: Blockchain get() = this.moveSettings.state.blockchain
+
 val Project.aptosExec: AptosExec get() = this.moveSettings.state.aptosExec()
 
 val Project.aptosPath: Path? get() = this.aptosExec.toPathOrNull()
+
+val Project.suiPath: Path? get() = this.moveSettings.state.suiPath.toPathOrNull()
 
 fun Path?.isValidExecutable(): Boolean {
     return this != null

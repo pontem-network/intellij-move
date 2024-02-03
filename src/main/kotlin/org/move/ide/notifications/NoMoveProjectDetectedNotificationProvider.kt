@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import org.move.cli.moveProjectsService
+import org.move.cli.settings.blockchain
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
 import org.move.openapiext.common.isDispatchThread
@@ -38,7 +39,7 @@ class NoMoveProjectDetectedNotificationProvider(project: Project): MvEditorNotif
         if (moveProjectsService.allProjects.isEmpty()) {
             // no move projects available
             return EditorNotificationPanel().apply {
-                text = "No Aptos projects found"
+                text = "No ${project.blockchain.name()} projects found"
                 createActionLabel("Do not show again") {
                     disableNotification(file)
                     updateAllNotifications(project)
@@ -48,7 +49,7 @@ class NoMoveProjectDetectedNotificationProvider(project: Project): MvEditorNotif
 
         if (moveProjectsService.findMoveProjectForFile(file) == null) {
             return EditorNotificationPanel().apply {
-                text = "File does not belong to any known Aptos project"
+                text = "File does not belong to any known ${project.blockchain.name()} project"
                 createActionLabel("Do not show again") {
                     disableNotification(file)
                     updateAllNotifications(project)

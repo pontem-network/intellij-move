@@ -310,7 +310,7 @@
     <!-- Notifications -->
     <notificationGroup id="Move Language" displayType="BALLOON" />
     <editorNotificationProvider
-        implementation="org.move.ide.notifications.InvalidAptosExecNotification" />
+        implementation="org.move.ide.notifications.InvalidBlockchainCliConfiguration" />
     <editorNotificationProvider
         implementation="org.move.ide.notifications.NoMoveProjectDetectedNotificationProvider" />
 
