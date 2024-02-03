@@ -35,7 +35,9 @@ abstract class CommandConfigurationProducerBase(val blockchain: Blockchain):
         templateConfiguration.workingDirectory = commandLine.workingDirectory
 
         var envVars = commandLine.environmentVariables
-        if (context.project.moveSettings.state.disableTelemetry) {
+        if (blockchain == Blockchain.APTOS
+            && context.project.moveSettings.state.disableTelemetry
+        ) {
             envVars = envVars.with(mapOf("APTOS_DISABLE_TELEMETRY" to "true"))
         }
         templateConfiguration.environmentVariables = envVars

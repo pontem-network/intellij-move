@@ -12,6 +12,8 @@ import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import org.intellij.lang.annotations.Language
 import org.move.cli.moveProjectsService
+import org.move.cli.settings.Blockchain
+import org.move.cli.settings.moveSettings
 import org.move.openapiext.toPsiDirectory
 import org.move.openapiext.toPsiFile
 import org.move.openapiext.toVirtualFile
@@ -19,6 +21,20 @@ import org.move.utils.tests.base.TestCase
 
 abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuilder<*>>() {
     var _testProject: TestProject? = null
+
+    override fun setUp() {
+        super.setUp()
+
+        val settingsState = project.moveSettings.state
+        
+        val debugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
+        val blockchain = this.findAnnotationInstance<WithBlockchain>()?.blockchain ?: Blockchain.APTOS
+        // triggers projects refresh
+        project.moveSettings.state = settingsState.copy(
+            debugMode = debugMode,
+            blockchain = blockchain
+        )
+    }
 
     override fun tearDown() {
         _testProject = null

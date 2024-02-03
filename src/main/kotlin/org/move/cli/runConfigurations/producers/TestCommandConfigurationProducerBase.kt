@@ -1,14 +1,10 @@
-package org.move.cli.runConfigurations.producers.aptos
+package org.move.cli.runConfigurations.producers
 
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.CliCommandLineArgs
-import org.move.cli.runConfigurations.aptos.AptosConfigurationType
-import org.move.cli.runConfigurations.aptos.any.AnyCommandConfigurationFactory
-import org.move.cli.runConfigurations.producers.CommandConfigurationProducerBase
-import org.move.cli.runConfigurations.producers.CommandLineArgsFromContext
 import org.move.cli.settings.Blockchain
 import org.move.cli.settings.dumpStateOnTestFailure
 import org.move.cli.settings.skipFetchLatestGitDeps
@@ -22,10 +18,8 @@ import org.move.lang.core.psi.ext.hasTestFunctions
 import org.move.lang.moveProject
 import org.toml.lang.psi.TomlFile
 
-class TestCommandConfigurationProducer: CommandConfigurationProducerBase(Blockchain.APTOS) {
-
-    override fun getConfigurationFactory() =
-        AnyCommandConfigurationFactory(AptosConfigurationType.getInstance())
+abstract class TestCommandConfigurationProducerBase(blockchain: Blockchain):
+    CommandConfigurationProducerBase(blockchain) {
 
     override fun fromLocation(location: PsiElement, climbUp: Boolean): CommandLineArgsFromContext? {
         return when {
@@ -60,11 +54,15 @@ class TestCommandConfigurationProducer: CommandConfigurationProducerBase(Blockch
         val functionName = fn.name ?: return null
 
         val confName = "Test $modName::$functionName"
-        var subCommand = "move test --filter $modName::$functionName"
+        var subCommand = "move test"
+        when (blockchain) {
+            Blockchain.APTOS -> subCommand += " --filter $modName::$functionName"
+            Blockchain.SUI -> subCommand += " $modName::$functionName"
+        }
         if (psi.project.skipFetchLatestGitDeps) {
             subCommand += " --skip-fetch-latest-git-deps"
         }
-        if (psi.project.dumpStateOnTestFailure) {
+        if (blockchain == Blockchain.APTOS && psi.project.dumpStateOnTestFailure) {
             subCommand += " --dump"
         }
 
@@ -84,11 +82,15 @@ class TestCommandConfigurationProducer: CommandConfigurationProducerBase(Blockch
         val modName = mod.name ?: return null
         val confName = "Test $modName"
 
-        var subCommand = "move test --filter $modName"
+        var subCommand = "move test"
+        when (blockchain) {
+            Blockchain.APTOS -> subCommand += " --filter $modName"
+            Blockchain.SUI -> subCommand += " $modName"
+        }
         if (psi.project.skipFetchLatestGitDeps) {
             subCommand += " --skip-fetch-latest-git-deps"
         }
-        if (psi.project.dumpStateOnTestFailure) {
+        if (blockchain == Blockchain.APTOS && psi.project.dumpStateOnTestFailure) {
             subCommand += " --dump"
         }
 
@@ -116,7 +118,6 @@ class TestCommandConfigurationProducer: CommandConfigurationProducerBase(Blockch
         if (location.project.dumpStateOnTestFailure) {
             subCommand += " --dump"
         }
-
 
         return CommandLineArgsFromContext(
             location,

@@ -1,0 +1,8 @@
+<configurations>
+  <configuration name="Test MoveTests::test_add" type="SuiCommandConfiguration">
+    <option name="command" value="move test MoveTests::test_add" />
+    <option name="workingDirectory" value="file://" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</configurations>

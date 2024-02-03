@@ -39,13 +39,15 @@
     <configurationType
         implementation="org.move.cli.runConfigurations.sui.SuiConfigurationType" />
     <runConfigurationProducer
-        implementation="org.move.cli.runConfigurations.producers.aptos.TestCommandConfigurationProducer" />
+        implementation="org.move.cli.runConfigurations.producers.aptos.AptosTestCommandConfigurationProducer" />
     <runConfigurationProducer
         implementation="org.move.cli.runConfigurations.producers.aptos.RunCommandConfigurationProducer" />
     <runConfigurationProducer
         implementation="org.move.cli.runConfigurations.producers.aptos.ViewCommandConfigurationProducer" />
+    <runConfigurationProducer
+        implementation="org.move.cli.runConfigurations.producers.sui.SuiTestCommandConfigurationProducer" />
     <runLineMarkerContributor language="Move"
-                              implementationClass="org.move.ide.lineMarkers.AptosCommandLineMarkerContributor" />
+                              implementationClass="org.move.ide.lineMarkers.CommandLineMarkerContributor" />
 
     <lang.parserDefinition language="Move"
                            implementationClass="org.move.lang.MoveParserDefinition" />

@@ -120,7 +120,8 @@ class MoveProjectSettingsService(private val project: Project): PersistentStateC
      */
     fun modify(action: (State) -> Unit) {
         val oldState = state.copy()
-        val newState = state.also(action)
+        val newState = state.copy().also(action)
+        state = newState
 
         notifySettingsChanged(oldState, newState)
 //        val event = MoveSettingsChangedEvent(oldState, newState)
