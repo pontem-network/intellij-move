@@ -7,6 +7,7 @@ import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunConfigurationWithSuppressedDefaultDebugAction
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
 import org.jdom.Element
@@ -16,6 +17,7 @@ import org.move.cli.runConfigurations.CommandConfigurationBase.CleanConfiguratio
 import org.move.cli.runConfigurations.legacy.MoveCommandConfiguration
 import org.move.cli.writePath
 import org.move.cli.writeString
+import org.move.ide.notifications.Notifications
 import org.move.stdext.exists
 import java.nio.file.Path
 
@@ -47,22 +49,36 @@ abstract class CommandConfigurationBase(
     }
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): MoveCommandLineState? {
-        return clean().ok
-            ?.let { config ->
-                MoveCommandLineState(environment, config.cliPath, config.commandLine)
+        val config = clean()
+        when (config) {
+            is CleanConfiguration.Ok -> {
+                return MoveCommandLineState(environment, config.cliPath, config.commandLine)
             }
+            is CleanConfiguration.Err -> {
+                config.error.message?.let {
+                    Notifications.pluginNotifications()
+                        .createNotification("Run Configuration error", it, NotificationType.ERROR)
+                        .notify(project)
+                }
+                return null
+            }
+        }
+//        return clean().ok
+//            ?.let { config ->
+//                MoveCommandLineState(environment, config.cliPath, config.commandLine)
+//            }
     }
 
     fun clean(): CleanConfiguration {
         val workingDirectory = workingDirectory
             ?: return configurationError("No working directory specified")
         val parsedCommand = MoveCommandConfiguration.ParsedCommand.parse(command)
-            ?: return configurationError("No command specified")
+            ?: return configurationError("No subcommand specified")
 
         val cliLocation =
-            this.getCliPath(project) ?: return configurationError("No CLI specified")
+            this.getCliPath(project) ?: return configurationError("No blockchain CLI specified")
         if (!cliLocation.exists()) {
-            return configurationError("Invalid CLI: $cliLocation")
+            return configurationError("Invalid CLI location: $cliLocation")
         }
         val commandLine =
             CliCommandLineArgs(

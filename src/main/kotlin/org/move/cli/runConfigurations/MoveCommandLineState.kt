@@ -23,7 +23,8 @@ open class MoveCommandLineState(
     }
 
     override fun startProcess(): ProcessHandler {
-        val generalCommandLine = commandLine.toGeneralCommandLine(aptosPath)
+        val generalCommandLine =
+            commandLine.toGeneralCommandLine(aptosPath)
         val handler = KillableColoredProcessHandler(generalCommandLine)
         consoleBuilder.console.attachToProcess(handler)
         ProcessTerminatedListener.attach(handler)  // shows exit code upon termination
