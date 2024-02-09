@@ -20,7 +20,7 @@ class ChooseAptosCliPanel(
             onTextChanged = { text ->
                 val exec = AptosExec.LocalPath(text)
                 _aptosExec = exec
-                exec.toPathOrNull()?.let { versionLabel.updateValue(it) }
+                exec.toPathOrNull()?.let { versionLabel.updateValueWithListener(it) }
             })
 
     private val versionLabel = VersionLabel(this, versionUpdateListener)
@@ -36,7 +36,7 @@ class ChooseAptosCliPanel(
                 else ->
                     localPathField.text = aptosExec.execPath
             }
-            aptosExec.toPathOrNull()?.let { versionLabel.updateValue(it) }
+            aptosExec.toPathOrNull()?.let { versionLabel.updateValueWithListener(it) }
         }
 
     fun attachToLayout(layout: Panel): Row {
@@ -48,15 +48,11 @@ class ChooseAptosCliPanel(
             group("Aptos CLI") {
                 buttonsGroup {
                     row {
-                        radioButton("Bundled")
-                            .bindSelected(
-                                { _aptosExec is AptosExec.Bundled },
-                                {
-                                    _aptosExec = AptosExec.Bundled
-                                }
-                            )
-                            .onChanged {
-                                AptosExec.Bundled.toPathOrNull()?.let { versionLabel.updateValue(it) }
+                        radioButton("Bundled", AptosExec.Bundled)
+                            .actionListener { _, _ ->
+                                _aptosExec = AptosExec.Bundled
+                                AptosExec.Bundled.toPathOrNull()
+                                    ?.let { versionLabel.updateValueWithListener(it) }
                             }
                             .enabled(AptosExec.isBundledSupportedForThePlatform())
                         comment(
@@ -64,29 +60,32 @@ class ChooseAptosCliPanel(
                         )
                             .visible(!AptosExec.isBundledSupportedForThePlatform())
                     }
-
                     row {
-                        val button = radioButton("Local")
-                            .bindSelected(
-                                { _aptosExec is AptosExec.LocalPath },
-                                {
-                                    _aptosExec = AptosExec.LocalPath("")
-//                                updateVersionLabel()
-                                }
-                            )
-                            .onChanged {
-                                localPathField.text.toPathOrNull()?.let { versionLabel.updateValue(it) }
+                        val button = radioButton("Local", AptosExec.LocalPath(""))
+                            .actionListener { _, _ ->
+                                _aptosExec = AptosExec.LocalPath(localPathField.text)
+                                localPathField.text.toPathOrNull()
+                                    ?.let { versionLabel.updateValueWithListener(it) }
                             }
-
                         cell(localPathField)
                             .enabledIf(button.selected)
                             .align(AlignX.FILL).resizableColumn()
                     }
                     row("--version :") { cell(versionLabel) }
                 }
+                    .bind(
+                        { _aptosExec },
+                        {
+                            _aptosExec =
+                                when (it) {
+                                    is AptosExec.Bundled -> it
+                                    is AptosExec.LocalPath -> AptosExec.LocalPath(localPathField.text)
+                                }
+                        }
+                    )
             }
         }
-        _aptosExec.toPathOrNull()?.let { versionLabel.updateValue(it) }
+        _aptosExec.toPathOrNull()?.let { versionLabel.updateValueWithListener(it) }
         return resultRow
     }
 

@@ -18,7 +18,7 @@ class VersionLabel(
 
     private val versionUpdateDebouncer = UiDebouncer(parentDisposable)
 
-    fun updateValue(execPath: Path) {
+    fun updateValueWithListener(execPath: Path) {
         versionUpdateDebouncer.update(
             onPooledThread = {
                 if (!isUnitTestMode) {
@@ -36,7 +36,8 @@ class VersionLabel(
             },
             onUiThread = { versionCmdOutput ->
                 if (versionCmdOutput == null) {
-                    this.setText("N/A (Invalid executable)", errorHighlighting = true)
+                    setTextInvalidExecutable()
+//                    this.setText("N/A (Invalid executable)", errorHighlighting = true)
                 } else {
                     if (versionCmdOutput.isSuccess) {
                         val versionText = versionCmdOutput.stdoutLines.joinToString("\n")
@@ -52,6 +53,8 @@ class VersionLabel(
             }
         )
     }
+
+    fun setTextInvalidExecutable() = this.setText("N/A (Invalid executable)", errorHighlighting = true)
 
     fun setText(text: String, errorHighlighting: Boolean) {
         if (errorHighlighting) {

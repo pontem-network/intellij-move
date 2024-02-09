@@ -32,8 +32,8 @@ class MoveLangProjectOpenProcessor: ProjectOpenProcessor() {
             ?.also { project ->
                 StartupManager.getInstance(project)
                     .runWhenProjectIsInitialized {
-                        ProjectInitialization.openMoveTomlInEditor(project)
-                        ProjectInitialization.createDefaultCompileConfigurationIfNotExists(project)
+                        ProjectInitializationSteps.openMoveTomlInEditor(project)
+                        ProjectInitializationSteps.createDefaultCompileConfigurationIfNotExists(project)
                     }
             }
     }

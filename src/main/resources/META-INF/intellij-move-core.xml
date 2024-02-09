@@ -278,7 +278,7 @@
 
     <!-- Project Creation -->
     <projectOpenProcessor id="Move" implementation="org.move.ide.newProject.MoveLangProjectOpenProcessor" />
-    <directoryProjectGenerator implementation="org.move.ide.newProject.AptosProjectGenerator" />
+    <directoryProjectGenerator implementation="org.move.ide.newProject.MoveProjectGenerator" />
 
     <postStartupActivity
         implementation="org.move.ide.newProject.AlwaysRefreshProjectsAfterOpen" />

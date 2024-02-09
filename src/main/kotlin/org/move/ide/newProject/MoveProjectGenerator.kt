@@ -13,38 +13,36 @@ import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
 import org.move.cli.PluginApplicationDisposable
 import org.move.cli.runConfigurations.InitProjectCli
-import org.move.cli.settings.aptos.AptosExec
+import org.move.cli.settings.Blockchain
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
 import org.move.openapiext.computeWithCancelableProgress
-import org.move.stdext.toPathOrNull
 import org.move.stdext.unwrapOrThrow
 
-data class AptosProjectConfig(val aptosExec: AptosExec)
+data class MoveProjectConfig(val blockchain: Blockchain, val initCli: InitProjectCli)
 
-class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
-                             CustomStepProjectGenerator<AptosProjectConfig> {
+class MoveProjectGenerator: DirectoryProjectGeneratorBase<MoveProjectConfig>(),
+                            CustomStepProjectGenerator<MoveProjectConfig> {
 
     private val disposable = service<PluginApplicationDisposable>()
 
-    override fun getName() = "Aptos"
-    override fun getLogo() = MoveIcons.APTOS_LOGO
-    override fun createPeer(): ProjectGeneratorPeer<AptosProjectConfig> = AptosProjectGeneratorPeer(disposable)
+    override fun getName() = "Move"
+    override fun getLogo() = MoveIcons.MOVE_LOGO
+    override fun createPeer(): ProjectGeneratorPeer<MoveProjectConfig> = MoveProjectGeneratorPeer(disposable)
 
     override fun generateProject(
         project: Project,
         baseDir: VirtualFile,
-        projectConfig: AptosProjectConfig,
+        projectConfig: MoveProjectConfig,
         module: Module
     ) {
         val packageName = project.name
-        val aptosPath = projectConfig.aptosExec.execPath.toPathOrNull() ?: return
-        val aptosInitializer = InitProjectCli.Aptos(aptosPath)
-
+        val blockchain = projectConfig.blockchain
+        val projectCli = projectConfig.initCli
         val manifestFile =
-            project.computeWithCancelableProgress("Generating Aptos project...") {
+            project.computeWithCancelableProgress("Generating $blockchain project...") {
                 val manifestFile =
-                    aptosInitializer.init(
+                    projectCli.init(
                         project,
                         disposable,
                         rootDirectory = baseDir,
@@ -55,21 +53,28 @@ class AptosProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>()
             }
         // update settings (and refresh Aptos projects too)
         project.moveSettings.modify {
-            it.aptosPath = projectConfig.aptosExec.pathToSettingsFormat()
+            it.blockchain = blockchain
+            when (projectCli) {
+                is InitProjectCli.Aptos -> {
+                    it.aptosPath = projectCli.aptosExec.pathToSettingsFormat()
+                }
+                is InitProjectCli.Sui -> {
+                    it.suiPath = projectCli.cliLocation.toString()
+                }
+            }
         }
-
-        ProjectInitialization.createDefaultCompileConfigurationIfNotExists(project)
-        ProjectInitialization.openMoveTomlInEditor(project, manifestFile)
+        ProjectInitializationSteps.createDefaultCompileConfigurationIfNotExists(project)
+        ProjectInitializationSteps.openMoveTomlInEditor(project, manifestFile)
     }
 
     override fun createStep(
-        projectGenerator: DirectoryProjectGenerator<AptosProjectConfig>,
-        callback: AbstractNewProjectStep.AbstractCallback<AptosProjectConfig>
+        projectGenerator: DirectoryProjectGenerator<MoveProjectConfig>,
+        callback: AbstractNewProjectStep.AbstractCallback<MoveProjectConfig>
     ): AbstractActionWithPanel =
         ConfigStep(projectGenerator)
 
-    class ConfigStep(generator: DirectoryProjectGenerator<AptosProjectConfig>):
-        ProjectSettingsStepBase<AptosProjectConfig>(
+    class ConfigStep(generator: DirectoryProjectGenerator<MoveProjectConfig>):
+        ProjectSettingsStepBase<MoveProjectConfig>(
             generator,
             AbstractNewProjectStep.AbstractCallback()
         )

@@ -6,7 +6,6 @@ import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.*
 import org.move.cli.settings.MoveProjectSettingsService
-import org.move.cli.settings.PerProjectMoveConfigurable
 import org.move.cli.settings.VersionLabel
 import org.move.openapiext.*
 import org.move.stdext.toPathOrNull
@@ -22,7 +21,7 @@ class ChooseSuiCliPanel(
             "Choose Sui CLI",
             onTextChanged = { text ->
                 _suiCliPath = text
-                _suiCliPath.toPathOrNull()?.let { versionLabel.updateValue(it) }
+                _suiCliPath.toPathOrNull()?.let { versionLabel.updateValueWithListener(it) }
             })
     private val versionLabel = VersionLabel(this, versionUpdateListener)
 
@@ -32,7 +31,7 @@ class ChooseSuiCliPanel(
     fun setSuiCliPath(path: String) {
         this._suiCliPath = path
         localPathField.text = path
-        path.toPathOrNull()?.let { versionLabel.updateValue(it) }
+        path.toPathOrNull()?.let { versionLabel.updateValueWithListener(it) }
     }
 
     fun attachToLayout(layout: Panel): Row {
@@ -51,14 +50,14 @@ class ChooseSuiCliPanel(
                             { _suiCliPath = it }
                         )
                         .onChanged {
-                            localPathField.text.toPathOrNull()?.let { versionLabel.updateValue(it) }
+                            localPathField.text.toPathOrNull()?.let { versionLabel.updateValueWithListener(it) }
                         }
                         .align(AlignX.FILL).resizableColumn()
                 }
                 row("--version :") { cell(versionLabel) }
             }
         }
-        _suiCliPath.toPathOrNull()?.let { versionLabel.updateValue(it) }
+        _suiCliPath.toPathOrNull()?.let { versionLabel.updateValueWithListener(it) }
         return resultRow
     }
 

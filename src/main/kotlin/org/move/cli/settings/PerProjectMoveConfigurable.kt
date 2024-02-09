@@ -124,6 +124,5 @@ class PerProjectMoveConfigurable(val project: Project):
             settingsState.copy(aptosPath = chooseAptosCliPanel.selectedAptosExec.pathToSettingsFormat())
         project.moveSettings.state =
             settingsState.copy(suiPath = chooseSuiCliPanel.getSuiCliPath())
-
     }
 }
