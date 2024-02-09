@@ -14,7 +14,7 @@ import org.move.openapiext.openFile
 import org.move.openapiext.runManager
 import org.move.stdext.toPath
 
-object ProjectInitialization {
+object ProjectInitializationSteps {
     fun openMoveTomlInEditor(project: Project, moveTomlFile: VirtualFile? = null) {
         val file =
             moveTomlFile ?: run {

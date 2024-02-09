@@ -1419,19 +1419,6 @@ module 0x1::pool {
         }                
     """)
 
-    fun `test unpack mut ref with struct pattern`() = checkByText("""
-        module 0x1::m {
-            struct Bin has store {
-                reserves_x: u64,
-                reserves_y: u64,
-                token_data_id: u64,
-            }
-            fun main(bin: &mut Bin) {
-                let <error descr="Assigned expr of type '&mut Bin' cannot be unpacked with struct pattern">Bin { reserves_x: _, reserves_y: _, token_data_id: _ }</error> = bin;
-            }
-        }        
-    """)
-
     fun `test unpack mut ref with tuple pattern`() = checkByText("""
         module 0x1::m {
             struct Bin has store {
@@ -1478,4 +1465,40 @@ module 0x1::pool {
             }
         }        
     """)
+
+    fun `test return type inference for generic expr left`() = checkByText("""
+        module 0x1::m {
+            native fun borrow<Value>(): Value;
+            fun main() {
+                borrow() + 3;
+            }
+        }        
+    """)
+
+    fun `test return type inference for deref borrow expr left`() = checkByText("""
+        module 0x1::m {
+            native fun borrow<Value>(): &Value;
+            fun main() {
+                *borrow() + 3;
+            }
+        }        
+    """)
+
+    fun `test return type inference for deref borrow expr right`() = checkByText("""
+        module 0x1::m {
+            native fun borrow<Value>(): &Value;
+            fun main() {
+                3 + *borrow();
+            }
+        }        
+    """)
+
+        fun `test unpacking of struct reference allowed`() = checkByText("""
+            module 0x1::m {
+                struct Field { id: u8 }
+                fun main() {
+                    let Field { id } = &Field { id: 1 };
+                }
+            }                
+        """)
 }

@@ -45,6 +45,8 @@ data class TyReference(
         return ty
     }
 
+    fun transferReference(otherTy: Ty): Ty = TyReference(otherTy, this.permissions, this.msl)
+
     override fun innerFoldWith(folder: TypeFolder): Ty =
         TyReference(referenced.foldWith(folder), permissions, msl)
 

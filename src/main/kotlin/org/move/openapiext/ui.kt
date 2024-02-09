@@ -24,7 +24,7 @@ class UiDebouncer(
      * Use it only for UI updates
      */
     @Suppress("DEPRECATION")
-    fun <T> run(onPooledThread: () -> T, onUiThread: (T) -> Unit) {
+    fun <T> update(onPooledThread: () -> T, onUiThread: (T) -> Unit) {
         if (Disposer.isDisposed(parentDisposable)) return
         alarm.cancelAllRequests()
         alarm.addRequest({

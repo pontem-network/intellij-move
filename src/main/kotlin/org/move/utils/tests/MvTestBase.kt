@@ -9,6 +9,7 @@ import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.testFramework.enableInspectionTool
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
+import org.move.cli.settings.Blockchain
 import org.move.cli.settings.moveSettings
 import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
@@ -26,8 +27,13 @@ annotation class DebugMode(val enabled: Boolean)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class WithEnabledInspections(vararg val inspections: KClass<out InspectionProfileEntry>)
 
-abstract class MvTestBase : BasePlatformTestCase(),
-                            MvTestCase {
+@Inherited
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class WithBlockchain(val blockchain: Blockchain)
+
+abstract class MvTestBase: BasePlatformTestCase(),
+                           MvTestCase {
     protected val fileName: String
         get() = "${getTestName(true)}.$testFileExtension"
     open val dataPath: String = ""
@@ -38,9 +44,14 @@ abstract class MvTestBase : BasePlatformTestCase(),
         setupInspections()
 
         val settingsState = project.moveSettings.state
+
         val debugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
+        val blockchain = this.findAnnotationInstance<WithBlockchain>()?.blockchain ?: Blockchain.APTOS
         // triggers projects refresh
-        project.moveSettings.state = settingsState.copy(debugMode = debugMode)
+        project.moveSettings.state = settingsState.copy(
+            debugMode = debugMode,
+            blockchain = blockchain
+        )
     }
 
     private fun setupInspections() {

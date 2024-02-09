@@ -5,15 +5,14 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
-import org.move.cli.settings.PerProjectMoveConfigurable
-import org.move.cli.settings.aptosExec
+import org.move.cli.settings.*
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.showSettings
 
-class InvalidAptosExecNotification(project: Project): MvEditorNotificationProvider(project),
-                                                      DumbAware {
+class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationProvider(project),
+                                                           DumbAware {
 
     override val VirtualFile.disablingKey: String get() = NOTIFICATION_STATUS_KEY + path
 
@@ -24,11 +23,18 @@ class InvalidAptosExecNotification(project: Project): MvEditorNotificationProvid
         if (!project.isTrusted()) return null
         if (isNotificationDisabled(file)) return null
 
-        if (project.aptosExec.isValid()) return null
-//        if (project.aptosPath.isValidExecutable()) return null
+        val blockchain = project.blockchain
+        when (blockchain) {
+            Blockchain.APTOS -> {
+                if (project.aptosExec.isValid()) return null
+            }
+            Blockchain.SUI -> {
+                if (project.suiPath.isValidExecutable()) return null
+            }
+        }
 
         return EditorNotificationPanel().apply {
-            text = "Aptos binary path is not provided or invalid"
+            text = "$blockchain CLI path is not provided or invalid"
             createActionLabel("Configure") {
                 project.showSettings<PerProjectMoveConfigurable>()
             }

@@ -1,12 +1,14 @@
-package org.move.cli.runConfigurations.producers
+package org.move.cli.runConfigurations.producers.aptos
 
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.ConfigurationFromContext
 import com.intellij.execution.impl.RunDialog
 import org.move.cli.runConfigurations.aptos.FunctionCallConfigurationBase
+import org.move.cli.runConfigurations.producers.CommandConfigurationProducerBase
+import org.move.cli.settings.Blockchain
 
 abstract class FunctionCallConfigurationProducerBase<T : FunctionCallConfigurationBase> :
-    CommandConfigurationProducerBase() {
+    CommandConfigurationProducerBase(Blockchain.APTOS) {
 
     override fun onFirstRun(
         configuration: ConfigurationFromContext,

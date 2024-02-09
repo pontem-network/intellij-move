@@ -8,7 +8,6 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.cli.runConfigurations.aptos.AptosCliExecutor
 import org.move.cli.runConfigurations.aptos.any.AnyCommandConfiguration
 import org.move.openapiext.common.isHeadlessEnvironment
 
@@ -25,7 +24,7 @@ fun Project.aptosCommandConfigurationsSettings(): List<RunnerAndConfigurationSet
 //fun Project.aptosBuildRunConfigurations(): List<MoveCommandConfiguration> =
 //    aptosCommandConfigurations().filter { it.command.startsWith("move compile") }
 
-inline fun <reified T : Configurable> Project.showSettings() {
+inline fun <reified T: Configurable> Project.showSettings() {
     ShowSettingsUtil.getInstance().showSettingsDialog(this, T::class.java)
 }
 
@@ -42,9 +41,11 @@ fun Project.addRunConfiguration(
     return runnerAndConfigurationSettings
 }
 
-fun Project.openFile(file: VirtualFile) = openFiles(AptosCliExecutor.Companion.GeneratedFilesHolder(file))
+data class GeneratedFilesHolder(val manifest: VirtualFile)
 
-fun Project.openFiles(files: AptosCliExecutor.Companion.GeneratedFilesHolder) = invokeLater {
+fun Project.openFile(file: VirtualFile) = openFiles(GeneratedFilesHolder(file))
+
+fun Project.openFiles(files: GeneratedFilesHolder) = invokeLater {
     if (!isHeadlessEnvironment) {
         val navigation = PsiNavigationSupport.getInstance()
         navigation.createNavigatable(this, files.manifest, -1).navigate(false)

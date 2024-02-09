@@ -35,6 +35,13 @@ sealed class Expectation {
         }
     }
 
+    fun foldTy(folder: (Ty) -> Ty): Expectation {
+        return when (this) {
+            is ExpectHasType -> ExpectHasType(folder(this.ty))
+            else -> this
+        }
+    }
+
     fun tyAsNullable(ctx: InferenceContext): Ty? {
         return when (val resolved = this.resolve(ctx)) {
             is ExpectHasType -> resolved.ty

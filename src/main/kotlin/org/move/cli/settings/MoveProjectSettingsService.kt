@@ -11,9 +11,11 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializer
 import org.jdom.Element
 import org.jetbrains.annotations.TestOnly
+import org.move.cli.settings.aptos.AptosExec
 import org.move.openapiext.debugInProduction
 import org.move.stdext.exists
 import org.move.stdext.isExecutableFile
+import org.move.stdext.toPathOrNull
 import java.nio.file.Path
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
@@ -31,6 +33,12 @@ interface MoveSettingsListener {
     fun moveSettingsChanged(e: MoveSettingsChangedEvent)
 }
 
+enum class Blockchain {
+    APTOS, SUI;
+
+    override fun toString(): String = if (this == APTOS) "Aptos" else "Sui"
+}
+
 private const val settingsServiceName: String = "MoveProjectSettingsService_1"
 
 @Service(Service.Level.PROJECT)
@@ -46,7 +54,9 @@ class MoveProjectSettingsService(private val project: Project): PersistentStateC
     // default values for settings
     data class State(
         // null not Mac -> Bundled, null and Mac -> Local(""), not null -> Local(value)
+        var blockchain: Blockchain = Blockchain.APTOS,
         var aptosPath: String? = if (AptosExec.isBundledSupportedForThePlatform()) null else "",
+        var suiPath: String = "",
         var foldSpecs: Boolean = false,
         var disableTelemetry: Boolean = true,
         var debugMode: Boolean = false,
@@ -113,7 +123,8 @@ class MoveProjectSettingsService(private val project: Project): PersistentStateC
      */
     fun modify(action: (State) -> Unit) {
         val oldState = state.copy()
-        val newState = state.also(action)
+        val newState = state.copy().also(action)
+        state = newState
 
         notifySettingsChanged(oldState, newState)
 //        val event = MoveSettingsChangedEvent(oldState, newState)
@@ -148,9 +159,13 @@ val Project.moveSettings: MoveProjectSettingsService get() = service()
 
 val Project.collapseSpecs: Boolean get() = this.moveSettings.state.foldSpecs
 
+val Project.blockchain: Blockchain get() = this.moveSettings.state.blockchain
+
 val Project.aptosExec: AptosExec get() = this.moveSettings.state.aptosExec()
 
 val Project.aptosPath: Path? get() = this.aptosExec.toPathOrNull()
+
+val Project.suiPath: Path? get() = this.moveSettings.state.suiPath.toPathOrNull()
 
 fun Path?.isValidExecutable(): Boolean {
     return this != null

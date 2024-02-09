@@ -14,6 +14,7 @@ module 0x1::M {
 
     #[test]
     #[expected_failure]
+    #[test, expected_failure = std::type_name::ENonModuleType]
     fun main() {}
 
     #[attr1, attr2]

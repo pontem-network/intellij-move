@@ -36,14 +36,18 @@
         implementation="org.move.cli.runConfigurations.legacy.MoveConfigurationType" />
     <configurationType
         implementation="org.move.cli.runConfigurations.aptos.AptosConfigurationType" />
+    <configurationType
+        implementation="org.move.cli.runConfigurations.sui.SuiConfigurationType" />
     <runConfigurationProducer
-        implementation="org.move.cli.runConfigurations.producers.TestCommandConfigurationProducer" />
+        implementation="org.move.cli.runConfigurations.producers.aptos.AptosTestCommandConfigurationProducer" />
     <runConfigurationProducer
-        implementation="org.move.cli.runConfigurations.producers.RunCommandConfigurationProducer" />
+        implementation="org.move.cli.runConfigurations.producers.aptos.RunCommandConfigurationProducer" />
     <runConfigurationProducer
-        implementation="org.move.cli.runConfigurations.producers.ViewCommandConfigurationProducer" />
+        implementation="org.move.cli.runConfigurations.producers.aptos.ViewCommandConfigurationProducer" />
+    <runConfigurationProducer
+        implementation="org.move.cli.runConfigurations.producers.sui.SuiTestCommandConfigurationProducer" />
     <runLineMarkerContributor language="Move"
-                              implementationClass="org.move.ide.lineMarkers.AptosCommandLineMarkerContributor" />
+                              implementationClass="org.move.ide.lineMarkers.CommandLineMarkerContributor" />
 
     <lang.parserDefinition language="Move"
                            implementationClass="org.move.lang.MoveParserDefinition" />
@@ -274,7 +278,7 @@
 
     <!-- Project Creation -->
     <projectOpenProcessor id="Move" implementation="org.move.ide.newProject.MoveLangProjectOpenProcessor" />
-    <directoryProjectGenerator implementation="org.move.ide.newProject.AptosProjectGenerator" />
+    <directoryProjectGenerator implementation="org.move.ide.newProject.MoveProjectGenerator" />
 
     <postStartupActivity
         implementation="org.move.ide.newProject.AlwaysRefreshProjectsAfterOpen" />
@@ -306,7 +310,7 @@
     <!-- Notifications -->
     <notificationGroup id="Move Language" displayType="BALLOON" />
     <editorNotificationProvider
-        implementation="org.move.ide.notifications.InvalidAptosExecNotification" />
+        implementation="org.move.ide.notifications.InvalidBlockchainCliConfiguration" />
     <editorNotificationProvider
         implementation="org.move.ide.notifications.NoMoveProjectDetectedNotificationProvider" />
 
