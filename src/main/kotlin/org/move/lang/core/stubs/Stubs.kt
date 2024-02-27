@@ -38,10 +38,10 @@ interface MvAttributeOwnerStub {
             var verifyOnly = false
             for (attrItem in query.attrItems) {
                 hasAttrs = true
-                if (attrItem.name == "test_only") {
+                if (attrItem.referenceName == "test_only") {
                     testOnly = true
                 }
-                if (attrItem.name == "verify_only") {
+                if (attrItem.referenceName == "verify_only") {
                     verifyOnly = true
                 }
             }

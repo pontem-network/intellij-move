@@ -65,7 +65,7 @@ class QueryAttributes(
     fun hasAttrItem(attributeName: String): Boolean = getAttrItem(attributeName) != null
 
     fun getAttrItem(attributeName: String): MvAttrItem? {
-        return this.attrItems.find { it.name == attributeName }
+        return this.attrItems.find { it.referenceName == attributeName }
     }
 
     val attrItems: Sequence<MvAttrItem> get() = this.attributes.flatMap { it.attrItemList }
