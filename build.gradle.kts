@@ -28,7 +28,7 @@ plugins {
     id("java")
     kotlin("jvm") version "1.9.22"
     id("org.jetbrains.intellij") version "1.17.2"
-    id("org.jetbrains.grammarkit") version "2022.3.2.1"
+    id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
     id("de.undercouch.download") version "5.5.0"
@@ -170,13 +170,12 @@ project(":") {
     tasks {
         generateLexer {
             sourceFile.set(file("src/main/grammars/MoveLexer.flex"))
-            targetDir.set("src/main/gen/org/move/lang")
-            targetClass.set("_MoveLexer")
+            targetOutputDir.set(file("src/main/gen/org/move/lang"))
             purgeOldFiles.set(true)
         }
         generateParser {
             sourceFile.set(file("src/main/grammars/MoveParser.bnf"))
-            targetRoot.set("src/main/gen")
+            targetRootOutputDir.set(file("src/main/gen"))
             pathToParser.set("/org/move/lang/MoveParser.java")
             pathToPsiRoot.set("/org/move/lang/psi")
             purgeOldFiles.set(true)
