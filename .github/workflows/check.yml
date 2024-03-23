@@ -11,7 +11,7 @@ jobs:
         strategy:
             matrix:
                 os: [ ubuntu-latest ]
-                gradle-properties-version: [ 231, 232, 233 ]
+                gradle-properties-version: [ 232, 233 ]
 
         runs-on: ${{ matrix.os }}
         env:
@@ -27,7 +27,7 @@ jobs:
                     java-version: 17
 
             -   name: Setup Gradle and dependencies
-                uses: gradle/gradle-build-action@v2.7.0
+                uses: gradle/actions/setup-gradle@v3.1.0
                 with:
                     gradle-version: wrapper
                     cache-read-only: false

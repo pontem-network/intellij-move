@@ -1,6 +1,6 @@
 package org.move.cli.manifest
 
-import com.intellij.util.io.readText
+import kotlin.io.path.readText
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.error.YAMLException
 import java.nio.file.Path
