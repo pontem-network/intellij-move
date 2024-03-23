@@ -17,7 +17,7 @@ class RunCommandConfigurationHandler : CommandConfigurationHandler() {
 
     override fun functionPredicate(function: MvFunction): Boolean = function.isEntry && !function.hasTestAttr
 
-    override fun getFunction(moveProject: MoveProject, functionQualName: String): MvFunction? {
+    override fun getFunctionItem(moveProject: MoveProject, functionQualName: String): MvFunction? {
         return getEntryFunction(moveProject, functionQualName)
     }
 

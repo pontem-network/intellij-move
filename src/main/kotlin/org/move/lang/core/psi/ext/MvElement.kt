@@ -21,7 +21,7 @@ fun MvElement.isInsideAssignmentLhs(): Boolean {
 fun PsiFileSystemItem.findMoveProject(): MoveProject? {
     if (this is MoveFile) return this.moveProject
     val path = virtualFile.toNioPathOrNull() ?: return null
-    return project.moveProjectsService.findMoveProject(path)
+    return project.moveProjectsService.findMoveProjectForPath(path)
 }
 
 //private val MSL_KEY: Key<CachedValue<FunctionSignature?>> = Key.create("SIGNATURE_KEY")

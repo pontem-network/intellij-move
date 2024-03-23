@@ -44,7 +44,7 @@ abstract class MvLocalInspectionTool : LocalInspectionTool() {
     private fun isApplicableTo(file: MoveFile): Boolean {
         if (isUnitTestMode) return true
         if (isSyntaxOnly) return true
-        return file.project.moveProjectsService.findMoveProject(file) != null
+        return file.project.moveProjectsService.findMoveProjectForPsiElement(file) != null
     }
 }
 

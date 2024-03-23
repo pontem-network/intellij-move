@@ -17,7 +17,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.childrenOfType
 import org.move.lang.core.psi.ext.modules
-import org.move.openapiext.checkReadAccessAllowed
 import org.move.openapiext.resolveAbsPath
 import org.move.openapiext.toPsiFile
 import org.move.stdext.chain
@@ -38,7 +37,7 @@ fun findMoveTomlPath(currentFilePath: Path): Path? {
 
 // requires ReadAccess
 val PsiElement.moveProject: MoveProject? get() {
-    return project.moveProjectsService.findMoveProject(this)
+    return project.moveProjectsService.findMoveProjectForPsiElement(this)
 }
 
 fun VirtualFile.hasChild(name: String) = this.findChild(name) != null
