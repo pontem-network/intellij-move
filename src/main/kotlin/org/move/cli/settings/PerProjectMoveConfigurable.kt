@@ -20,7 +20,7 @@ class PerProjectMoveConfigurable(val project: Project):
 
     private val settingsState: MoveProjectSettingsService.State = project.moveSettings.state
 
-    private val chooseAptosCliPanel = ChooseAptosCliPanel()
+    private val chooseAptosCliPanel = ChooseAptosCliPanel(versionUpdateListener = null)
     private val chooseSuiCliPanel = ChooseSuiCliPanel()
 
     override fun createPanel(): DialogPanel {
@@ -85,7 +85,6 @@ class PerProjectMoveConfigurable(val project: Project):
                     }
 //                        .visible(true)
                         .align(AlignX.RIGHT)
-                    //                .horizontalAlign(HorizontalAlign.RIGHT)
                 }
             }
         }
@@ -121,8 +120,9 @@ class PerProjectMoveConfigurable(val project: Project):
         // calls apply() for createPanel().value
         super.apply()
         project.moveSettings.state =
-            settingsState.copy(aptosPath = chooseAptosCliPanel.selectedAptosExec.pathToSettingsFormat())
-        project.moveSettings.state =
-            settingsState.copy(suiPath = chooseSuiCliPanel.getSuiCliPath())
+            settingsState.copy(
+                aptosPath = chooseAptosCliPanel.selectedAptosExec.pathToSettingsFormat(),
+                suiPath = chooseSuiCliPanel.getSuiCliPath()
+            )
     }
 }

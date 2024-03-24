@@ -18,7 +18,7 @@ class VersionLabel(
 
     private val versionUpdateDebouncer = UiDebouncer(parentDisposable)
 
-    fun updateValueWithListener(execPath: Path) {
+    fun updateAndNotifyListeners(execPath: Path) {
         versionUpdateDebouncer.update(
             onPooledThread = {
                 if (!isUnitTestMode) {
