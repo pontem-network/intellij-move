@@ -21,7 +21,7 @@ class ChooseSuiCliPanel(
             "Choose Sui CLI",
             onTextChanged = { text ->
                 _suiCliPath = text
-                _suiCliPath.toPathOrNull()?.let { versionLabel.updateValueWithListener(it) }
+                _suiCliPath.toPathOrNull()?.let { versionLabel.updateAndNotifyListeners(it) }
             })
     private val versionLabel = VersionLabel(this, versionUpdateListener)
 
@@ -31,7 +31,7 @@ class ChooseSuiCliPanel(
     fun setSuiCliPath(path: String) {
         this._suiCliPath = path
         localPathField.text = path
-        path.toPathOrNull()?.let { versionLabel.updateValueWithListener(it) }
+        path.toPathOrNull()?.let { versionLabel.updateAndNotifyListeners(it) }
     }
 
     fun attachToLayout(layout: Panel): Row {
@@ -50,14 +50,14 @@ class ChooseSuiCliPanel(
                             { _suiCliPath = it }
                         )
                         .onChanged {
-                            localPathField.text.toPathOrNull()?.let { versionLabel.updateValueWithListener(it) }
+                            localPathField.text.toPathOrNull()?.let { versionLabel.updateAndNotifyListeners(it) }
                         }
                         .align(AlignX.FILL).resizableColumn()
                 }
                 row("--version :") { cell(versionLabel) }
             }
         }
-        _suiCliPath.toPathOrNull()?.let { versionLabel.updateValueWithListener(it) }
+        _suiCliPath.toPathOrNull()?.let { versionLabel.updateAndNotifyListeners(it) }
         return resultRow
     }
 

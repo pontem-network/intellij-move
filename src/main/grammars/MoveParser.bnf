@@ -153,19 +153,21 @@ File ::= (NamedAddressDef | Script | AddressDef | Module | ModuleSpec)*
 QualPathCodeFragmentElement ::= FQModulePathIdent? TypeArgumentList?
 
 Attr ::= '#' '[' <<non_empty_comma_sep_items AttrItem>> ']' { pin = 1 }
-AttrItem ::= IDENTIFIER (AttrItemArguments | AttrItemInitializer)?
-{
-    implements = [ "org.move.lang.core.psi.MvNamedElement" ]
-    mixin = "org.move.lang.core.psi.ext.MvAttrItemMixin"
-}
-AttrItemArguments ::= '(' <<non_empty_comma_sep_items AttrItemArgument>>? ')' { pin = 1 }
-AttrItemArgument ::= IDENTIFIER ('=' Expr)?
+AttrItem ::= IDENTIFIER (AttrItemList | AttrItemInitializer)?
 {
     implements = [
         "org.move.lang.core.resolve.ref.MvReferenceElement"
     ]
-    mixin = "org.move.lang.core.psi.ext.MvAttrItemArgumentMixin"
+    mixin = "org.move.lang.core.psi.ext.MvAttrItemMixin"
 }
+AttrItemList ::= '(' <<non_empty_comma_sep_items AttrItem>>? ')' { pin = 1 }
+//AttrItemArgument ::= IDENTIFIER ('=' Expr)?
+//{
+//    implements = [
+//        "org.move.lang.core.resolve.ref.MvReferenceElement"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MvAttrItemArgumentMixin"
+//}
 AttrItemInitializer ::= '=' Expr { pin = 1 }
 
 NamedAddressDef ::= address IDENTIFIER '=' AddressRef ';' { pin = 3 }

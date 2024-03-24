@@ -9,12 +9,15 @@ import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.JBColor
 import com.intellij.ui.dsl.builder.*
+import com.intellij.xdebugger.impl.ui.TextViewer
 import org.move.cli.MoveProject
 import org.move.cli.moveProjectsService
 import org.move.stdext.RsResult
 import org.move.utils.ui.whenItemSelectedFromUi
+import org.move.utils.ui.whenTextChangedFromUi
 import javax.swing.JComponent
 import javax.swing.JLabel
+import javax.swing.JTextField
 
 data class MoveProjectItem(val moveProject: MoveProject) {
     override fun toString(): String {
@@ -23,7 +26,7 @@ data class MoveProjectItem(val moveProject: MoveProject) {
 }
 
 class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
-    private val handler: CommandConfigurationHandler,
+    private val commandHandler: CommandConfigurationHandler,
     private var moveProject: MoveProject,
 ) :
     SettingsEditor<T>() {
@@ -34,9 +37,10 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
     private var functionCall: FunctionCall? = null
 
     private val projectComboBox: ComboBox<MoveProjectItem> = ComboBox()
-    private val accountComboBox: ComboBox<String> = ComboBox()
+    private val accountTextField = JTextField()
+    private val rawCommandField = TextViewer("", project, true)
 
-    private val functionCallPanel = FunctionCallPanel(handler, moveProject)
+    private val functionParametersPanel = FunctionParametersPanel(commandHandler, moveProject)
 
     private val errorLabel = JLabel("")
 
@@ -51,19 +55,19 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
         projectComboBox.isEnabled = projectComboBox.model.size > 1
         projectComboBox.selectedItem = MoveProjectItem(moveProject)
 
-        fillAccountsComboBox()
-
         val editor = this
-        functionCallPanel.addFunctionCallListener(object : FunctionCallPanel.FunctionCallListener {
-            override fun functionCallChanged(functionCall: FunctionCall) {
+        functionParametersPanel.addFunctionCallListener(object : FunctionParameterPanelListener {
+            override fun functionParametersChanged(functionCall: FunctionCall) {
                 editor.functionCall = functionCall
+                editor.rawCommandField.text =
+                    commandHandler.generateCommand(moveProject, functionCall, signerAccount).unwrapOrNull() ?: ""
             }
         })
-        functionCallPanel.reset(moveProject)
+        functionParametersPanel.setMoveProjectAndCompletionVariants(moveProject)
     }
 
     override fun resetEditorFrom(s: T) {
-        val moveProject = s.workingDirectory?.let { project.moveProjectsService.findMoveProject(it) }
+        val moveProject = s.workingDirectory?.let { project.moveProjectsService.findMoveProjectForPath(it) }
         if (moveProject == null) {
             setErrorText("Deserialization error: no Aptos project found in the specified working directory")
             editorPanel.isVisible = false
@@ -71,9 +75,8 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             this.functionCall = null
             return
         }
-        fillAccountsComboBox()
 
-        val res = handler.parseCommand(moveProject, s.command)
+        val res = commandHandler.parseCommand(moveProject, s.command)
         val (profile, functionCall) = when (res) {
             is RsResult.Ok -> res.ok
             is RsResult.Err -> {
@@ -85,27 +88,19 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             }
         }
         this.signerAccount = profile
-        this.accountComboBox.selectedItem = profile
+        this.accountTextField.text = profile
 
-        functionCallPanel.updateFromFunctionCall(functionCall)
+        functionParametersPanel.updateFromFunctionCall(functionCall)
     }
 
     override fun applyEditorTo(s: T) {
-        val moveProject = moveProject
-        val profile = signerAccount
-        val functionCall = functionCall
-
-        s.moveProject = moveProject
-        if (profile != null && functionCall != null) {
-            s.command =
-                handler.generateCommand(moveProject, profile, functionCall).unwrapOrNull() ?: ""
-        } else {
-            s.command = ""
-        }
+        functionParametersPanel.fireChangeEvent()
+        s.command = rawCommandField.text
+        s.moveProjectFromWorkingDirectory = moveProject
     }
 
     override fun disposeEditor() {
-        Disposer.dispose(functionCallPanel)
+        Disposer.dispose(functionParametersPanel)
     }
 
     override fun createEditor(): JComponent {
@@ -115,8 +110,6 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             row {
                 cell(editorPanel)
                     .align(AlignX.FILL + AlignY.FILL)
-//                    .verticalAlign(VerticalAlign.FILL)
-//                    .horizontalAlign(HorizontalAlign.FILL)
             }
         }
         return DumbService.getInstance(project).wrapGently(outerPanel, this)
@@ -128,41 +121,32 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             row("Project") {
                 cell(projectComboBox)
                     .align(AlignX.FILL)
-//                    .horizontalAlign(HorizontalAlign.FILL)
                     .columns(COLUMNS_LARGE)
                     .whenItemSelectedFromUi {
                         moveProject = it.moveProject
-                        fillAccountsComboBox()
-                        functionCallPanel.reset(moveProject)
+                        functionParametersPanel.setMoveProjectAndCompletionVariants(moveProject)
                     }
             }
             row("Account") {
-                cell(accountComboBox)
+                cell(accountTextField)
                     .align(AlignX.FILL)
-//                    .horizontalAlign(HorizontalAlign.FILL)
-                    .whenItemSelectedFromUi {
+                    .whenTextChangedFromUi {
                         signerAccount = it
                     }
             }
             separator()
             row {
-                cell(functionCallPanel)
+                cell(functionParametersPanel)
                     .align(AlignX.FILL + AlignY.FILL)
-//                    .verticalAlign(VerticalAlign.FILL)
-//                    .horizontalAlign(HorizontalAlign.FILL)
+            }
+            separator()
+            row("Raw") {
+                cell(rawCommandField)
+                    .align(AlignX.FILL)
             }
         }
         editorPanel.registerValidators(this)
         return editorPanel
-    }
-
-    fun fillAccountsComboBox() {
-        accountComboBox.removeAllItems()
-        val accounts = moveProject.aptosConfigYaml?.profiles.orEmpty()
-        accounts.forEach { accountName ->
-            accountComboBox.addItem(accountName)
-        }
-        accountComboBox.isEnabled = accountComboBox.model.size > 1
     }
 
 //    private fun validateEditor() {

@@ -7,7 +7,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import org.move.utils.MvBackgroundTaskQueue
 
-@Service
+@Service(Service.Level.PROJECT)
 class MvProjectTaskQueueService(val project: Project): Disposable {
     private val queue = MvBackgroundTaskQueue()
 

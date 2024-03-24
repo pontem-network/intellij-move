@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import org.move.cli.Consts
 import org.move.cli.moveProjectsService
 
-@Service
+@Service(Service.Level.PROJECT)
 class MoveSettingsFilesService(private val project: Project) {
     fun collectSettingsFiles(): List<String> {
         val out = mutableListOf<String>()

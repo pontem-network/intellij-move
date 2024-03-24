@@ -48,7 +48,7 @@ abstract class CommandConfigurationHandler {
 
     abstract fun getFunctionCompletionVariants(moveProject: MoveProject): Collection<String>
 
-    abstract fun getFunction(moveProject: MoveProject, functionQualName: String): MvFunction?
+    abstract fun getFunctionItem(moveProject: MoveProject, functionQualName: String): MvFunction?
 
     abstract fun getFunctionByCmdName(moveProject: MoveProject, functionCmdName: String): MvFunction?
 
@@ -56,8 +56,8 @@ abstract class CommandConfigurationHandler {
 
     fun generateCommand(
         moveProject: MoveProject,
-        profileName: String,
-        functionCall: FunctionCall
+        functionCall: FunctionCall,
+        signerAccount: String?,
     ): RsResult<String, String> {
         val functionId = functionCall.functionId(moveProject) ?: return RsResult.Err("FunctionId is null")
 
@@ -68,12 +68,13 @@ abstract class CommandConfigurationHandler {
 
         val commandArguments = listOf(
             subCommand.split(' '),
-            listOf("--profile", profileName),
+            listOf("--profile", signerAccount),
             listOf("--function-id", functionId),
             typeParams,
             params
         ).flatten()
-        return RsResult.Ok(commandArguments.joinToString(" "))
+        val command = commandArguments.joinToString(" ")
+        return RsResult.Ok(command)
     }
 
     fun parseCommand(
@@ -91,14 +92,14 @@ abstract class CommandConfigurationHandler {
         val function = getFunctionByCmdName(moveProject, functionId)
             ?: return RsResult.Err("function with this functionId does not exist in the current project")
 
-        val aptosConfig = moveProject.aptosConfigYaml
-        if (aptosConfig == null) {
-            return RsResult.Err("Aptos account is not initialized / is invalid for the current project")
-        }
-
-        if (profileName !in aptosConfig.profiles) {
-            return RsResult.Err("account '$profileName' is not present in the project's accounts")
-        }
+//        val aptosConfig = moveProject.aptosConfigYaml
+//        if (aptosConfig == null) {
+//            return RsResult.Err("Aptos account is not initialized / is invalid for the current project")
+//        }
+//
+//        if (profileName !in aptosConfig.profiles) {
+//            return RsResult.Err("account '$profileName' is not present in the project's accounts")
+//        }
         val transaction = FunctionCall.template(function)
 
         val typeParameterNames = function.typeParameters.mapNotNull { it.name }

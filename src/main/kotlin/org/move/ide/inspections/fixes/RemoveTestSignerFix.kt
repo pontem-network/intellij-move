@@ -4,36 +4,36 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import org.move.ide.inspections.DiagnosticFix
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvAttrItemArgument
-import org.move.lang.core.psi.MvAttrItemArguments
+import org.move.lang.core.psi.MvAttrItem
+import org.move.lang.core.psi.MvAttrItemList
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.core.psi.ext.getNextNonCommentSibling
 import org.move.lang.core.psi.ext.getPrevNonCommentSibling
 
 class RemoveTestSignerFix(
-    itemArgument: MvAttrItemArgument,
+    attrItem: MvAttrItem,
     val signerName: String
-) : DiagnosticFix<MvAttrItemArgument>(itemArgument) {
+): DiagnosticFix<MvAttrItem>(attrItem) {
 
     override fun getText(): String = "Remove '$signerName'"
     override fun getFamilyName(): String = "Remove unused test signer"
 
-    override fun invoke(project: Project, file: PsiFile, element: MvAttrItemArgument) {
-        val argument = element
-        val container = element.parent as MvAttrItemArguments
+    override fun invoke(project: Project, file: PsiFile, element: MvAttrItem) {
+        val attrItem = element
+        val attrItemList = element.parent as MvAttrItemList
 
         // remove trailing comma
-        argument.getNextNonCommentSibling()
+        attrItem.getNextNonCommentSibling()
             ?.takeIf { it.elementType == MvElementTypes.COMMA }
             ?.delete()
 
         // remove previous comma if this is last element
-        val index = container.attrItemArgumentList.indexOf(argument)
-        if (index == container.attrItemArgumentList.size - 1) {
+        val index = attrItemList.attrItemList.indexOf(attrItem)
+        if (index == attrItemList.attrItemList.size - 1) {
             element.getPrevNonCommentSibling()
                 ?.takeIf { it.elementType == MvElementTypes.COMMA }
                 ?.delete()
         }
-        argument.delete()
+        attrItem.delete()
     }
 }

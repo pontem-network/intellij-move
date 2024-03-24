@@ -21,7 +21,7 @@ import javax.swing.JButton
 import javax.swing.JPanel
 
 typealias TypeParamsMap = MutableMap<String, String?>
-typealias ValueParamsMap = MutableMap<String, FunctionCallParam?>
+//typealias ValueParamsMap = MutableMap<String, FunctionCallParam?>
 
 class TypeParameterTextField(
     project: Project,
@@ -48,18 +48,29 @@ class TypeParameterTextField(
     }
 }
 
-class FunctionCallPanel(
-    val handler: CommandConfigurationHandler,
+interface FunctionParameterPanelListener {
+    fun functionParametersChanged(functionCall: FunctionCall)
+}
+
+/**
+ * Panel that covers UI elements of transaction run / view Run Configurations
+ * Consists of:
+ * - function name (with completion variants)
+ * - type parameters
+ * - parameters
+ */
+class FunctionParametersPanel(
+    val commandHandler: CommandConfigurationHandler,
     var moveProject: MoveProject,
 ) :
     BorderLayoutPanel(), Disposable {
 
-    private lateinit var item: MvFunction
+    private lateinit var functionItem: MvFunction
     private lateinit var typeParams: TypeParamsMap
     private lateinit var valueParams: MutableMap<String, FunctionCallParam?>
 
-    private val functionCompletionField = CompletionTextField(project, "", emptyList())
-    private val functionApplyButton = JButton("Apply")
+    private val functionItemField = CompletionTextField(project, "", emptyList())
+    private val functionApplyButton = JButton("Select and refresh UI")
 
     private val functionValidator: ComponentValidator
 
@@ -68,63 +79,68 @@ class FunctionCallPanel(
     init {
         val panel = this
 
-        functionCompletionField.addDocumentListener(object : DocumentListener {
+        // enables Apply button if function name is changed and valid
+        functionItemField.addDocumentListener(object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
-                val oldFunctionName = panel.item.qualName?.editorText()
+                val oldFunctionName = panel.functionItem.qualName?.editorText()
                 val newFunctionName = event.document.text
                 functionApplyButton.isEnabled =
                     newFunctionName != oldFunctionName
-                            && handler.getFunction(moveProject, newFunctionName) != null
+                            && commandHandler.getFunctionItem(moveProject, newFunctionName) != null
             }
         })
+
+        // update type parameters form and value parameters form on "Apply" button click
         functionApplyButton.addActionListener {
-            val itemName = functionCompletionField.text
-            val function = handler.getFunction(moveProject, itemName)
+            val itemName = functionItemField.text
+            val functionItem = commandHandler.getFunctionItem(moveProject, itemName)
                 ?: error("Button should be disabled if function name is invalid")
-            val functionCall = function.instantiateCall()
+            val functionCall = functionItem.newFunctionCall()
             this.updateFromFunctionCall(functionCall)
             fireChangeEvent()
         }
 
-        functionValidator = ComponentValidator(panel)
+        // validates
+        this.functionValidator = ComponentValidator(panel)
             .withValidator(Supplier<ValidationInfo?> {
-                val text = functionCompletionField.text
-                if (text.isBlank()) return@Supplier ValidationInfo("Required", functionCompletionField)
-                val function = handler.getFunction(moveProject, text)
-                if (function == null) {
-                    return@Supplier ValidationInfo("Invalid entry function", functionCompletionField)
+                val text = functionItemField.text
+                if (text.isBlank()) return@Supplier ValidationInfo("Required", functionItemField)
+                val functionItem = commandHandler.getFunctionItem(moveProject, text)
+                if (functionItem == null) {
+                    return@Supplier ValidationInfo("Invalid entry function", functionItemField)
                 }
                 null
             })
-            .andRegisterOnDocumentListener(functionCompletionField)
-            .installOn(functionCompletionField)
+            .andRegisterOnDocumentListener(functionItemField)
+            .installOn(functionItemField)
     }
 
     override fun dispose() {
     }
 
     fun updateFromFunctionCall(functionCall: FunctionCall) {
-        this.item = functionCall.item
+        this.functionItem = functionCall.item
         this.typeParams = functionCall.typeParams
         this.valueParams = functionCall.valueParams
 
-        this.functionCompletionField.text = functionCall.itemName() ?: ""
-        val completionVariants = handler.getFunctionCompletionVariants(moveProject)
-        this.functionCompletionField.setVariants(completionVariants)
+        this.functionItemField.text = functionCall.itemName() ?: ""
+
+        val completionVariants = commandHandler.getFunctionCompletionVariants(moveProject)
+        this.functionItemField.setVariants(completionVariants)
 
         recreateInnerPanel()
         functionValidator.revalidate()
     }
 
-    fun reset(moveProject: MoveProject) {
+    fun setMoveProjectAndCompletionVariants(moveProject: MoveProject) {
         this.moveProject = moveProject
-        val variants = handler.getFunctionCompletionVariants(moveProject)
 
-        this.item = variants.firstOrNull()
-            ?.let { handler.getFunction(this.moveProject, it) }
+        val variants = commandHandler.getFunctionCompletionVariants(moveProject)
+        this.functionItem = variants.firstOrNull()
+            ?.let { commandHandler.getFunctionItem(this.moveProject, it) }
             ?: error("Should always have one valid function")
 
-        val functionCall = this.item.instantiateCall()
+        val functionCall = this.functionItem.newFunctionCall()
         updateFromFunctionCall(functionCall)
     }
 
@@ -134,32 +150,28 @@ class FunctionCallPanel(
         validate()
     }
 
-    interface FunctionCallListener {
-        fun functionCallChanged(functionCall: FunctionCall)
-    }
+    private val eventListeners = mutableListOf<FunctionParameterPanelListener>()
 
-    private val eventListeners = mutableListOf<FunctionCallListener>()
-
-    fun addFunctionCallListener(listener: FunctionCallListener) {
+    fun addFunctionCallListener(listener: FunctionParameterPanelListener) {
         eventListeners.add(listener)
     }
 
-    private fun fireChangeEvent() {
-        val functionCall = FunctionCall(this.item, this.typeParams, this.valueParams)
+    fun fireChangeEvent() {
+        val functionCall = FunctionCall(this.functionItem, this.typeParams, this.valueParams)
         eventListeners.forEach {
-            it.functionCallChanged(functionCall)
+            it.functionParametersChanged(functionCall)
         }
     }
 
     private fun getInnerPanel(): JPanel {
-        val function = this.item
+        val function = this.functionItem
         val outerPanel = this
         return panel {
             val typeParameters = function.typeParameters
-            val parameters = handler.getFunctionParameters(function).map { it.bindingPat }
+            val parameters = commandHandler.getFunctionParameters(function).map { it.bindingPat }
 
             row("Function") {
-                cell(functionCompletionField)
+                cell(functionItemField)
                     .align(AlignX.FILL)
 //                    .horizontalAlign(HorizontalAlign.FILL)
                     .resizableColumn()
@@ -224,4 +236,4 @@ class FunctionCallPanel(
     }
 }
 
-fun MvFunction.instantiateCall(): FunctionCall = FunctionCall.template(this)
+fun MvFunction.newFunctionCall(): FunctionCall = FunctionCall.template(this)

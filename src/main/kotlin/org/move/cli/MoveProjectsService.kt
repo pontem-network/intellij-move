@@ -84,7 +84,7 @@ class MoveProjectsService(val project: Project): Disposable {
     }
 
     // requires ReadAccess
-    fun findMoveProject(psiElement: PsiElement): MoveProject? {
+    fun findMoveProjectForPsiElement(psiElement: PsiElement): MoveProject? {
         // read access required for the psiElement.containingFile
         checkReadAccessAllowed()
         val file = when (psiElement) {
@@ -115,7 +115,7 @@ class MoveProjectsService(val project: Project): Disposable {
         return findMoveProjectForFile(file)
     }
 
-    fun findMoveProject(path: Path): MoveProject? {
+    fun findMoveProjectForPath(path: Path): MoveProject? {
         val file = path.toVirtualFile() ?: return null
         return findMoveProjectForFile(file)
     }

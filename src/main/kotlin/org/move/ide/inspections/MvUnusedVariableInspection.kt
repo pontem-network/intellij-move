@@ -35,7 +35,7 @@ class MvUnusedVariableInspection : MvLocalInspectionTool() {
 
                 val references = binding.searchReferences()
                     // filter out #[test] attributes
-                    .filter { it.element !is MvAttrItemArgument }
+                    .filter { it.element !is MvAttrItem }
                 if (references.none()) {
                     val fixes = when (binding.owner) {
                         is MvFunctionParameter -> arrayOf(

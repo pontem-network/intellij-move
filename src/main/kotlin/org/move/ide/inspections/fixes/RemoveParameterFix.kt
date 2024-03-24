@@ -48,16 +48,16 @@ private fun removeArguments(function: MvFunction, parameterIndex: Int) {
     }
 }
 
-private fun removeTestSignerAssignment(function: MvFunction, parameterName: String) {
+private fun removeTestSignerAssignment(function: MvFunction, signerParameterName: String) {
     val testAttrItem = function.testAttrItem
     if (testAttrItem != null) {
-        val attrArguments = testAttrItem.attrItemArguments
-        if (attrArguments != null) {
+        val attrItemList = testAttrItem.attrItemList
+        if (attrItemList != null) {
             val signerAssigment =
-                attrArguments.attrItemArgumentList.find { it.identifier.text == parameterName }
+                attrItemList.attrItemList.find { it.identifier.text == signerParameterName }
             signerAssigment?.deleteWithSurroundingCommaAndWhitespace()
-            if (attrArguments.attrItemArgumentList.isEmpty()) {
-                attrArguments.delete()
+            if (attrItemList.attrItemList.isEmpty()) {
+                attrItemList.delete()
             }
         }
     }
