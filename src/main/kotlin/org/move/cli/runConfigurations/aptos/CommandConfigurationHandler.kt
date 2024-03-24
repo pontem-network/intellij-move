@@ -56,8 +56,8 @@ abstract class CommandConfigurationHandler {
 
     fun generateCommand(
         moveProject: MoveProject,
-        profileName: String,
-        functionCall: FunctionCall
+        functionCall: FunctionCall,
+        signerAccount: String?,
     ): RsResult<String, String> {
         val functionId = functionCall.functionId(moveProject) ?: return RsResult.Err("FunctionId is null")
 
@@ -68,13 +68,12 @@ abstract class CommandConfigurationHandler {
 
         val commandArguments = listOf(
             subCommand.split(' '),
-            listOf("--profile", profileName),
+            listOf("--profile", signerAccount),
             listOf("--function-id", functionId),
             typeParams,
             params
         ).flatten()
         val command = commandArguments.joinToString(" ")
-        println("Command is $command")
         return RsResult.Ok(command)
     }
 

@@ -9,6 +9,7 @@ import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.JBColor
 import com.intellij.ui.dsl.builder.*
+import com.intellij.xdebugger.impl.ui.TextViewer
 import org.move.cli.MoveProject
 import org.move.cli.moveProjectsService
 import org.move.stdext.RsResult
@@ -25,7 +26,7 @@ data class MoveProjectItem(val moveProject: MoveProject) {
 }
 
 class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
-    private val handler: CommandConfigurationHandler,
+    private val commandHandler: CommandConfigurationHandler,
     private var moveProject: MoveProject,
 ) :
     SettingsEditor<T>() {
@@ -37,8 +38,9 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
 
     private val projectComboBox: ComboBox<MoveProjectItem> = ComboBox()
     private val accountTextField = JTextField()
+    private val rawCommandField = TextViewer("", project, true)
 
-    private val functionParametersPanel = FunctionParametersPanel(handler, moveProject)
+    private val functionParametersPanel = FunctionParametersPanel(commandHandler, moveProject)
 
     private val errorLabel = JLabel("")
 
@@ -57,6 +59,8 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
         functionParametersPanel.addFunctionCallListener(object : FunctionParameterPanelListener {
             override fun functionParametersChanged(functionCall: FunctionCall) {
                 editor.functionCall = functionCall
+                editor.rawCommandField.text =
+                    commandHandler.generateCommand(moveProject, functionCall, signerAccount).unwrapOrNull() ?: ""
             }
         })
         functionParametersPanel.setMoveProjectAndCompletionVariants(moveProject)
@@ -72,7 +76,7 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             return
         }
 
-        val res = handler.parseCommand(moveProject, s.command)
+        val res = commandHandler.parseCommand(moveProject, s.command)
         val (profile, functionCall) = when (res) {
             is RsResult.Ok -> res.ok
             is RsResult.Err -> {
@@ -91,19 +95,8 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
 
     override fun applyEditorTo(s: T) {
         functionParametersPanel.fireChangeEvent()
-        val moveProject = moveProject
-        val profile = signerAccount
-        val functionCall = functionCall
-
+        s.command = rawCommandField.text
         s.moveProjectFromWorkingDirectory = moveProject
-        if (profile != null && functionCall != null) {
-            s.command =
-                handler.generateCommand(moveProject, profile, functionCall).unwrapOrNull() ?: ""
-        } else {
-            s.command = ""
-        }
-
-        println("Command in applyEditorTo = ${s.command}")
     }
 
     override fun disposeEditor() {
@@ -117,8 +110,6 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             row {
                 cell(editorPanel)
                     .align(AlignX.FILL + AlignY.FILL)
-//                    .verticalAlign(VerticalAlign.FILL)
-//                    .horizontalAlign(HorizontalAlign.FILL)
             }
         }
         return DumbService.getInstance(project).wrapGently(outerPanel, this)
@@ -130,7 +121,6 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             row("Project") {
                 cell(projectComboBox)
                     .align(AlignX.FILL)
-//                    .horizontalAlign(HorizontalAlign.FILL)
                     .columns(COLUMNS_LARGE)
                     .whenItemSelectedFromUi {
                         moveProject = it.moveProject
@@ -140,7 +130,6 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             row("Account") {
                 cell(accountTextField)
                     .align(AlignX.FILL)
-//                    .horizontalAlign(HorizontalAlign.FILL)
                     .whenTextChangedFromUi {
                         signerAccount = it
                     }
@@ -149,8 +138,11 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
             row {
                 cell(functionParametersPanel)
                     .align(AlignX.FILL + AlignY.FILL)
-//                    .verticalAlign(VerticalAlign.FILL)
-//                    .horizontalAlign(HorizontalAlign.FILL)
+            }
+            separator()
+            row("Raw") {
+                cell(rawCommandField)
+                    .align(AlignX.FILL)
             }
         }
         editorPanel.registerValidators(this)

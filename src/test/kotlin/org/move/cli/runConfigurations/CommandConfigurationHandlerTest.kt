@@ -79,7 +79,7 @@ profiles:
 
         check(profile == expectedProfile) { "Unexpected profile $profile" }
 
-        val generatedCommand = handler.generateCommand(moveProject, profile, functionCall).unwrap()
+        val generatedCommand = handler.generateCommand(moveProject, functionCall, profile).unwrap()
         check(command == generatedCommand) {
             "Commands are not equal. \n" +
                     "Original: $command\n" +

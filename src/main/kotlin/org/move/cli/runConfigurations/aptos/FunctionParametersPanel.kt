@@ -70,7 +70,7 @@ class FunctionParametersPanel(
     private lateinit var valueParams: MutableMap<String, FunctionCallParam?>
 
     private val functionItemField = CompletionTextField(project, "", emptyList())
-    private val functionApplyButton = JButton("Select function")
+    private val functionApplyButton = JButton("Select and refresh UI")
 
     private val functionValidator: ComponentValidator
 
