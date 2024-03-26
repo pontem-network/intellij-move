@@ -23,7 +23,7 @@ class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationP
         if (!project.isTrusted()) return null
         if (isNotificationDisabled(file)) return null
 
-        val blockchain = project.blockchain
+        val blockchain = project.moveSettings.blockchain
         when (blockchain) {
             Blockchain.APTOS -> {
                 if (project.aptosExec.isValid()) return null

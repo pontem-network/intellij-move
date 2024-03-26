@@ -14,7 +14,7 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import com.intellij.psi.util.nextLeaf
-import org.move.cli.settings.collapseSpecs
+import org.move.cli.settings.moveSettings
 import org.move.lang.MoveFile
 import org.move.lang.MoveParserDefinition.Companion.BLOCK_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
@@ -55,7 +55,7 @@ class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
     }
 
     override fun isRegionCollapsedByDefault(node: ASTNode): Boolean {
-        return node.psi.project.collapseSpecs && node.elementType == MODULE_SPEC_BLOCK
+        return node.psi.project.moveSettings.foldSpecs && node.elementType == MODULE_SPEC_BLOCK
                 || CodeFoldingSettings.getInstance().isDefaultCollapsedNode(node)
     }
 

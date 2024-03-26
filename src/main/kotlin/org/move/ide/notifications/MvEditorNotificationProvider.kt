@@ -7,8 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
-import org.move.cli.settings.MoveSettingsChangedEvent
-import org.move.cli.settings.MoveSettingsListener
+import org.move.cli.settings.MvProjectSettingsServiceBase.*
 import java.util.function.Function
 import javax.swing.JComponent
 
@@ -16,9 +15,9 @@ fun updateAllNotifications(project: Project) {
     EditorNotifications.getInstance(project).updateAllNotifications()
 }
 
-class UpdateNotificationsOnSettingsChangeListener(val project: Project) : MoveSettingsListener {
+class UpdateNotificationsOnSettingsChangeListener(val project: Project): MoveSettingsListener {
 
-    override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
+    override fun <T: MvProjectSettingsBase<T>> settingsChanged(e: SettingsChangedEventBase<T>) {
         updateAllNotifications(project)
     }
 }

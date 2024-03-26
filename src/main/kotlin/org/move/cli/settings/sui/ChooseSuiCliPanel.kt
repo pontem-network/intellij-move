@@ -5,7 +5,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.*
-import org.move.cli.settings.MoveProjectSettingsService
+import org.move.cli.settings.MvProjectSettingsService
 import org.move.cli.settings.VersionLabel
 import org.move.openapiext.*
 import org.move.stdext.toPathOrNull
@@ -38,8 +38,8 @@ class ChooseSuiCliPanel(
         val panel = this
         if (!panel::_suiCliPath.isInitialized) {
             val defaultProjectSettings =
-                ProjectManager.getInstance().defaultProject.getService(MoveProjectSettingsService::class.java)
-            panel._suiCliPath = defaultProjectSettings.state.suiPath
+                ProjectManager.getInstance().defaultProject.getService(MvProjectSettingsService::class.java)
+            panel._suiCliPath = defaultProjectSettings.suiPath
         }
         val resultRow = with(layout) {
             group("Sui CLI") {

@@ -23,7 +23,7 @@ class SuiCommandConfiguration(
     }
 
     override fun getCliPath(project: Project): Path? {
-        return project.moveSettings.state.suiPath
+        return project.moveSettings.suiPath
             .takeIf { it.isNotBlank() }
             ?.toPathOrNull()
     }

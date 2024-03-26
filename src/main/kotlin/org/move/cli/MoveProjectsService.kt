@@ -24,9 +24,8 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiInvalidElementAccessException
 import com.intellij.psi.util.parents
 import com.intellij.util.messages.Topic
-import org.move.cli.settings.MoveProjectSettingsService
-import org.move.cli.settings.MoveSettingsChangedEvent
-import org.move.cli.settings.MoveSettingsListener
+import org.move.cli.settings.MvProjectSettingsServiceBase.*
+import org.move.cli.settings.MvProjectSettingsServiceBase.Companion.MOVE_SETTINGS_TOPIC
 import org.move.cli.settings.debugErrorOrFallback
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.toNioPathOrNull
@@ -62,12 +61,14 @@ class MoveProjectsService(val project: Project): Disposable {
                     scheduleProjectsRefresh("Move.toml changed")
                 })
             }
-            subscribe(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC, object: MoveSettingsListener {
-                override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
-                    // on every Move Language plugin settings change
-                    scheduleProjectsRefresh("plugin settings changed")
-                }
-            })
+            subscribe(
+                MOVE_SETTINGS_TOPIC,
+                object: MoveSettingsListener {
+                    override fun <T: MvProjectSettingsBase<T>> settingsChanged(e: SettingsChangedEventBase<T>) {
+                        // on every Move Language plugin settings change
+                        scheduleProjectsRefresh("plugin settings changed")
+                    }
+                })
         }
     }
 

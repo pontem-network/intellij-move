@@ -18,74 +18,90 @@ class PerProjectMoveConfigurable(val project: Project):
         _id = "org.move.settings"
     ) {
 
-    private val settingsState: MoveProjectSettingsService.State = project.moveSettings.state
+    private val settingsState: MvProjectSettingsService.MoveProjectSettings = project.moveSettings.state
 
     private val chooseAptosCliPanel = ChooseAptosCliPanel(versionUpdateListener = null)
     private val chooseSuiCliPanel = ChooseSuiCliPanel()
 
-    override fun createPanel(): DialogPanel {
-        return panel {
-            group {
-                var aptosRadioButton: Cell<JBRadioButton>? = null
-                var suiRadioButton: Cell<JBRadioButton>? = null
-                buttonsGroup("Blockchain") {
-                    row {
-                        aptosRadioButton = radioButton("Aptos")
-                            .bindSelected(
-                                { settingsState.blockchain == Blockchain.APTOS },
-                                { settingsState.blockchain = Blockchain.APTOS },
-                            )
-                        suiRadioButton = radioButton("Sui")
-                            .bindSelected(
-                                { settingsState.blockchain == Blockchain.SUI },
-                                { settingsState.blockchain = Blockchain.SUI },
-                            )
-                    }
-                }
-                chooseAptosCliPanel.attachToLayout(this)
-                    .visibleIf(aptosRadioButton!!.selected)
-                chooseSuiCliPanel.attachToLayout(this)
-                    .visibleIf(suiRadioButton!!.selected)
-            }
-            group {
+    override fun createPanel(): DialogPanel = panel {
+        val settings = project.moveSettings
+        val state = settings.state.copy()
+
+        group {
+            var aptosRadioButton: Cell<JBRadioButton>? = null
+            var suiRadioButton: Cell<JBRadioButton>? = null
+            buttonsGroup("Blockchain") {
                 row {
-                    checkBox("Auto-fold specs in opened files")
-                        .bindSelected(settingsState::foldSpecs)
-                }
-                row {
-                    checkBox("Disable telemetry for new Run Configurations")
-                        .bindSelected(settingsState::disableTelemetry)
-                }
-                row {
-                    checkBox("Enable debug mode")
-                        .bindSelected(settingsState::debugMode)
-                    comment(
-                        "Enables some explicit crashes in the plugin code. Useful for the error reporting."
-                    )
-                }
-                row {
-                    checkBox("Skip fetching latest git dependencies for tests")
-                        .bindSelected(settingsState::skipFetchLatestGitDeps)
-                    comment(
-                        "Adds --skip-fetch-latest-git-deps to the test runs."
-                    )
-                }
-                row {
-                    checkBox("Dump storage to console on test failures")
-                        .bindSelected(settingsState::dumpStateOnTestFailure)
-                    comment(
-                        "Adds --dump to the test runs (aptos only)."
-                    )
+                    aptosRadioButton = radioButton("Aptos")
+                        .bindSelected(
+                            { state.blockchain == Blockchain.APTOS },
+                            { state.blockchain = Blockchain.APTOS },
+                        )
+                    suiRadioButton = radioButton("Sui")
+                        .bindSelected(
+                            { state.blockchain == Blockchain.SUI },
+                            { state.blockchain = Blockchain.SUI },
+                        )
                 }
             }
-            if (!project.isDefault) {
-                row {
-                    link("Set default project settings") {
-                        ProjectManager.getInstance().defaultProject.showSettings<PerProjectMoveConfigurable>()
-                    }
+            chooseAptosCliPanel.attachToLayout(this)
+                .visibleIf(aptosRadioButton!!.selected)
+            chooseSuiCliPanel.attachToLayout(this)
+                .visibleIf(suiRadioButton!!.selected)
+        }
+        group {
+            row {
+                checkBox("Auto-fold specs in opened files")
+                    .bindSelected(state::foldSpecs)
+            }
+            row {
+                checkBox("Disable telemetry for new Run Configurations")
+                    .bindSelected(state::disableTelemetry)
+            }
+            row {
+                checkBox("Enable debug mode")
+                    .bindSelected(state::debugMode)
+                comment(
+                    "Enables some explicit crashes in the plugin code. Useful for the error reporting."
+                )
+            }
+            row {
+                checkBox("Skip fetching latest git dependencies for tests")
+                    .bindSelected(state::skipFetchLatestGitDeps)
+                comment(
+                    "Adds --skip-fetch-latest-git-deps to the test runs."
+                )
+            }
+            row {
+                checkBox("Dump storage to console on test failures")
+                    .bindSelected(state::dumpStateOnTestFailure)
+                comment(
+                    "Adds --dump to the test runs (aptos only)."
+                )
+            }
+        }
+
+        if (!project.isDefault) {
+            row {
+                link("Set default project settings") {
+                    ProjectManager.getInstance().defaultProject.showSettings<PerProjectMoveConfigurable>()
+                }
 //                        .visible(true)
-                        .align(AlignX.RIGHT)
-                }
+                    .align(AlignX.RIGHT)
+            }
+        }
+
+        onApply {
+            settings.modify {
+                it.aptosPath = chooseAptosCliPanel.selectedAptosExec.pathToSettingsFormat()
+                it.suiPath = chooseSuiCliPanel.getSuiCliPath()
+
+                it.blockchain = state.blockchain
+                it.foldSpecs = state.foldSpecs
+                it.disableTelemetry = state.disableTelemetry
+                it.debugMode = state.debugMode
+                it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
+                it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
             }
         }
     }
@@ -116,13 +132,17 @@ class PerProjectMoveConfigurable(val project: Project):
     }
 
     /// saves values from Swing form back to configurable (OK / Apply)
-    override fun apply() {
-        // calls apply() for createPanel().value
-        super.apply()
-        project.moveSettings.state =
-            settingsState.copy(
-                aptosPath = chooseAptosCliPanel.selectedAptosExec.pathToSettingsFormat(),
-                suiPath = chooseSuiCliPanel.getSuiCliPath()
-            )
-    }
+//    override fun apply() {
+//        // calls apply() for createPanel().value
+//        super.apply()
+//        project.moveSettings.modify {
+//            it.aptosPath = chooseAptosCliPanel.selectedAptosExec.pathToSettingsFormat()
+//            it.suiPath = chooseSuiCliPanel.getSuiCliPath()
+//        }
+////        project.moveSettings.state =
+////            settingsState.copy(
+////                aptosPath = chooseAptosCliPanel.selectedAptosExec.pathToSettingsFormat(),
+////                suiPath = chooseSuiCliPanel.getSuiCliPath()
+////            )
+//    }
 }
