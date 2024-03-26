@@ -32,6 +32,8 @@
     <projectService serviceInterface="org.move.lang.core.psi.MvPsiManager"
                     serviceImplementation="org.move.lang.core.psi.MvPsiManagerImpl" />
 
+    <projectService serviceImplementation="org.move.cli.settings.MvProjectSettingsService" />
+
     <configurationType
         implementation="org.move.cli.runConfigurations.legacy.MoveConfigurationType" />
     <configurationType
@@ -356,7 +358,7 @@
 
   <projectListeners>
     <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
-              topic="org.move.cli.settings.MoveSettingsListener"
+              topic="org.move.cli.settings.MvProjectSettingsServiceBase.MoveSettingsListener"
               activeInTestMode="false" />
   </projectListeners>
 
