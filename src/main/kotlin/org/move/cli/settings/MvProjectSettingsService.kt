@@ -7,7 +7,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 import org.move.cli.settings.MvProjectSettingsService.MoveProjectSettings
-import org.move.cli.settings.aptos.AptosExec
+import org.move.cli.settings.aptos.AptosExecType
 import org.move.stdext.exists
 import org.move.stdext.isExecutableFile
 import org.move.stdext.toPathOrNull
@@ -33,33 +33,32 @@ class MvProjectSettingsService(
     MvProjectSettingsServiceBase<MoveProjectSettings>(project, MoveProjectSettings()) {
 
     val blockchain: Blockchain get() = state.blockchain
-    val aptosPath: String? get() = state.aptosPath
-    val suiPath: String get() = state.suiPath
+
+    val aptosExecType: AptosExecType get() = state.aptosExecType
+    val localAptosPath: String? get() = state.localAptosPath
+    val localSuiPath: String? get() = state.localSuiPath
 
     val disableTelemetry: Boolean get() = state.disableTelemetry
     val foldSpecs: Boolean get() = state.foldSpecs
     val skipFetchLatestGitDeps: Boolean get() = state.skipFetchLatestGitDeps
     val dumpStateOnTestFailure: Boolean get() = state.dumpStateOnTestFailure
 
+    val aptosExecPath: String get() = AptosExecType.aptosPath(aptosExecType, localAptosPath)
+
     // default values for settings
-    class MoveProjectSettings(
-        // null not Mac -> Bundled, null and Mac -> Local(""), not null -> Local(value)
-        var blockchain: Blockchain = Blockchain.APTOS,
-        var aptosPath: String? = if (AptosExec.isBundledSupportedForThePlatform()) null else "",
-        var suiPath: String = "",
-        var foldSpecs: Boolean = false,
-        var disableTelemetry: Boolean = true,
-        var debugMode: Boolean = false,
-        var skipFetchLatestGitDeps: Boolean = false,
-        var dumpStateOnTestFailure: Boolean = false,
-    ): MvProjectSettingsBase<MoveProjectSettings>() {
-        fun aptosExec(): AptosExec {
-            val path = aptosPath
-            return when (path) {
-                null -> AptosExec.Bundled
-                else -> AptosExec.LocalPath(path)
-            }
-        }
+    class MoveProjectSettings: MvProjectSettingsBase<MoveProjectSettings>() {
+        var blockchain: Blockchain by enum(Blockchain.APTOS)
+
+        var aptosExecType: AptosExecType by enum(defaultAptosExecType)
+        var localAptosPath: String? by string()
+
+        var localSuiPath: String? by string()
+
+        var foldSpecs: Boolean by property(false)
+        var disableTelemetry: Boolean by property(true)
+        var debugMode: Boolean by property(false)
+        var skipFetchLatestGitDeps: Boolean by property(false)
+        var dumpStateOnTestFailure: Boolean by property(false)
 
         override fun copy(): MoveProjectSettings {
             val state = MoveProjectSettings()
@@ -85,13 +84,17 @@ class MvProjectSettingsService(
         oldState: MoveProjectSettings,
         newState: MoveProjectSettings
     ): SettingsChangedEventBase<MoveProjectSettings>(oldState, newState)
+
+    companion object {
+        private val defaultAptosExecType
+            get() =
+                if (AptosExecType.isBundledSupportedForThePlatform) AptosExecType.BUNDLED else AptosExecType.LOCAL;
+    }
 }
 
-val Project.aptosExec: AptosExec get() = this.moveSettings.state.aptosExec()
+val Project.aptosExecPath: Path? get() = this.moveSettings.aptosExecPath.toPathOrNull()
 
-val Project.aptosPath: Path? get() = this.aptosExec.toPathOrNull()
-
-val Project.suiPath: Path? get() = this.moveSettings.suiPath.toPathOrNull()
+val Project.suiExecPath: Path? get() = this.moveSettings.localSuiPath?.toPathOrNull()
 
 fun Path?.isValidExecutable(): Boolean {
     return this != null

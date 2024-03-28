@@ -18,8 +18,6 @@ class PerProjectMoveConfigurable(val project: Project):
         _id = "org.move.settings"
     ) {
 
-    private val settingsState: MvProjectSettingsService.MoveProjectSettings = project.moveSettings.state
-
     private val chooseAptosCliPanel = ChooseAptosCliPanel(versionUpdateListener = null)
     private val chooseSuiCliPanel = ChooseSuiCliPanel()
 
@@ -91,10 +89,13 @@ class PerProjectMoveConfigurable(val project: Project):
             }
         }
 
+        // saves values from Swing form back to configurable (OK / Apply)
         onApply {
             settings.modify {
-                it.aptosPath = chooseAptosCliPanel.selectedAptosExec.pathToSettingsFormat()
-                it.suiPath = chooseSuiCliPanel.getSuiCliPath()
+                it.aptosExecType = chooseAptosCliPanel.data.aptosExecType
+                it.localAptosPath = chooseAptosCliPanel.data.localAptosPath
+
+                it.localSuiPath = chooseSuiCliPanel.data.localSuiPath
 
                 it.blockchain = state.blockchain
                 it.foldSpecs = state.foldSpecs
@@ -104,6 +105,23 @@ class PerProjectMoveConfigurable(val project: Project):
                 it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
             }
         }
+
+        // loads settings from configurable to swing form
+        onReset {
+            chooseAptosCliPanel.data =
+                ChooseAptosCliPanel.Data(state.aptosExecType, state.localAptosPath)
+            chooseSuiCliPanel.data =
+                ChooseSuiCliPanel.Data(state.localSuiPath)
+        }
+
+        /// checks whether any settings are modified (should be fast)
+        onIsModified {
+            val aptosPanelData = chooseAptosCliPanel.data
+            val suiPanelData = chooseSuiCliPanel.data
+            aptosPanelData.aptosExecType != settings.aptosExecType
+                    || aptosPanelData.localAptosPath != settings.localAptosPath
+                    || suiPanelData.localSuiPath != settings.localSuiPath
+        }
     }
 
     override fun disposeUIResources() {
@@ -111,38 +129,4 @@ class PerProjectMoveConfigurable(val project: Project):
         Disposer.dispose(chooseAptosCliPanel)
         Disposer.dispose(chooseSuiCliPanel)
     }
-
-    /// checks whether any settings are modified (should be fast)
-    override fun isModified(): Boolean {
-        // checks whether panel created in the createPanel() is modified, defined in DslConfigurableBase
-        if (super.isModified()) return true
-        val selectedAptosExec = chooseAptosCliPanel.selectedAptosExec
-        val selectedSui = chooseSuiCliPanel.getSuiCliPath()
-        return selectedAptosExec != settingsState.aptosExec()
-                || selectedSui != settingsState.suiPath
-    }
-
-    /// loads settings from configurable to swing form
-    override fun reset() {
-        chooseAptosCliPanel.selectedAptosExec = settingsState.aptosExec()
-        chooseSuiCliPanel.setSuiCliPath(settingsState.suiPath)
-        // resets panel created in createPanel(), see DslConfigurableBase
-        // should be invoked at the end
-        super.reset()
-    }
-
-    /// saves values from Swing form back to configurable (OK / Apply)
-//    override fun apply() {
-//        // calls apply() for createPanel().value
-//        super.apply()
-//        project.moveSettings.modify {
-//            it.aptosPath = chooseAptosCliPanel.selectedAptosExec.pathToSettingsFormat()
-//            it.suiPath = chooseSuiCliPanel.getSuiCliPath()
-//        }
-////        project.moveSettings.state =
-////            settingsState.copy(
-////                aptosPath = chooseAptosCliPanel.selectedAptosExec.pathToSettingsFormat(),
-////                suiPath = chooseSuiCliPanel.getSuiCliPath()
-////            )
-//    }
 }

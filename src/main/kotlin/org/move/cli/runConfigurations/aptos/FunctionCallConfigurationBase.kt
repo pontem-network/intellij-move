@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 import org.move.cli.MoveProject
 import org.move.cli.moveProjectsService
 import org.move.cli.runConfigurations.CommandConfigurationBase
-import org.move.cli.settings.aptosPath
+import org.move.cli.settings.aptosExecPath
 import java.nio.file.Path
 
 abstract class FunctionCallConfigurationBase(
@@ -20,7 +20,7 @@ abstract class FunctionCallConfigurationBase(
             workingDirectory = value?.contentRootPath
         }
 
-    override fun getCliPath(project: Project): Path? = project.aptosPath
+    override fun getCliPath(project: Project): Path? = project.aptosExecPath
 
     fun firstRunShouldOpenEditor(): Boolean {
         val moveProject = moveProjectFromWorkingDirectory ?: return true

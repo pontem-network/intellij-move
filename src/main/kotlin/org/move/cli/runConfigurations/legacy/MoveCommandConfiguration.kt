@@ -9,7 +9,7 @@ import com.intellij.openapi.util.NlsContexts
 import com.intellij.util.execution.ParametersListUtil
 import org.jdom.Element
 import org.move.cli.*
-import org.move.cli.settings.aptosPath
+import org.move.cli.settings.aptosExecPath
 import org.move.stdext.exists
 import java.nio.file.Path
 
@@ -66,7 +66,7 @@ class MoveCommandConfiguration(
             parsed.additionalArguments,
             environmentVariables
         )
-        val aptosPath = project.aptosPath
+        val aptosPath = project.aptosExecPath
             ?: return CleanConfiguration.error("No Aptos CLI specified")
 
         if (!aptosPath.exists()) {

@@ -4,11 +4,11 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.Consts
-import org.move.cli.settings.Blockchain
-import org.move.cli.settings.aptos.AptosExec
+import org.move.cli.settings.aptos.AptosExecType
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.RsResult
+import org.move.stdext.toPathOrNull
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
 
@@ -20,7 +20,7 @@ sealed class InitProjectCli {
         packageName: String,
     ): MvProcessResult<VirtualFile>
 
-    data class Aptos(val aptosExec: AptosExec): InitProjectCli() {
+    data class Aptos(val aptosExecType: AptosExecType, val localAptosPath: String?): InitProjectCli() {
         override fun init(
             project: Project,
             parentDisposable: Disposable,
@@ -39,8 +39,12 @@ sealed class InitProjectCli {
                 ),
                 workingDirectory = project.rootPath
             )
-            val aptosPath = this.aptosExec.toPathOrNull() ?: error("unreachable")
-            commandLine.toGeneralCommandLine(aptosPath)
+
+            val aptosExecPath =
+                AptosExecType.aptosPath(this.aptosExecType, this.localAptosPath).toPathOrNull()
+                    ?: error("Provided aptosPath should be validated before calling init()")
+            commandLine
+                .toGeneralCommandLine(aptosExecPath)
                 .execute(parentDisposable)
                 .unwrapOrElse { return RsResult.Err(it) }
             fullyRefreshDirectory(rootDirectory)

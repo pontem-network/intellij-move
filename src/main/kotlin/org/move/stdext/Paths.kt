@@ -33,3 +33,5 @@ fun Path.exists(): Boolean = Files.exists(this)
 
 fun executableName(toolName: String): String =
     if (SystemInfo.isWindows) "$toolName.exe" else toolName
+
+fun String.blankToNull(): String? = ifBlank { null }
