@@ -17,6 +17,7 @@ import org.move.cli.settings.Blockchain
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
 import org.move.openapiext.computeWithCancelableProgress
+import org.move.stdext.blankToNull
 import org.move.stdext.unwrapOrThrow
 
 data class MoveProjectConfig(val blockchain: Blockchain, val initCli: InitProjectCli)
@@ -56,10 +57,11 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<MoveProjectConfig>(),
             it.blockchain = blockchain
             when (projectCli) {
                 is InitProjectCli.Aptos -> {
-                    it.aptosPath = projectCli.aptosExec.pathToSettingsFormat()
+                    it.aptosExecType = projectCli.aptosExecType
+                    it.localAptosPath = projectCli.localAptosPath?.blankToNull()
                 }
                 is InitProjectCli.Sui -> {
-                    it.suiPath = projectCli.cliLocation.toString()
+                    it.localSuiPath = projectCli.cliLocation.toString()
                 }
             }
         }

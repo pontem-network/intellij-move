@@ -26,10 +26,10 @@ class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationP
         val blockchain = project.moveSettings.blockchain
         when (blockchain) {
             Blockchain.APTOS -> {
-                if (project.aptosExec.isValid()) return null
+                if (project.aptosExecPath.isValidExecutable()) return null
             }
             Blockchain.SUI -> {
-                if (project.suiPath.isValidExecutable()) return null
+                if (project.suiExecPath.isValidExecutable()) return null
             }
         }
 

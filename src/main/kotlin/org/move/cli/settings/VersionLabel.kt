@@ -18,13 +18,13 @@ class VersionLabel(
 
     private val versionUpdateDebouncer = UiDebouncer(parentDisposable)
 
-    fun updateAndNotifyListeners(execPath: Path) {
+    fun updateAndNotifyListeners(execPath: Path?) {
         versionUpdateDebouncer.update(
             onPooledThread = {
                 if (!isUnitTestMode) {
                     checkIsBackgroundThread()
                 }
-                if (!execPath.isValidExecutable()) {
+                if (execPath == null || !execPath.isValidExecutable()) {
                     return@update null
                 }
 
