@@ -12,10 +12,7 @@ import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.Disposer
 import com.intellij.platform.GeneratorPeerImpl
 import com.intellij.ui.components.JBRadioButton
-import com.intellij.ui.dsl.builder.Cell
-import com.intellij.ui.dsl.builder.bindSelected
-import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.builder.selected
+import com.intellij.ui.dsl.builder.*
 import org.move.cli.runConfigurations.InitProjectCli
 import org.move.cli.settings.Blockchain
 import org.move.cli.settings.MvProjectSettingsService
@@ -78,23 +75,34 @@ class MoveProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerI
             buttonsGroup("Blockchain") {
                 row {
                     aptosRadioButton = radioButton("Aptos")
-                        .bindSelected(
-                            { generatorPeer.blockchain == Blockchain.APTOS },
-                            {
-                                generatorPeer.blockchain = Blockchain.APTOS
-                                checkValid?.run()
-                            }
-                        )
+                        .selected(generatorPeer.blockchain == Blockchain.APTOS)
+                        .actionListener { _, _ ->
+                            generatorPeer.blockchain = Blockchain.APTOS
+                            checkValid?.run()
+                        }
+//                        .bindSelected(
+//                            { generatorPeer.blockchain == Blockchain.APTOS },
+//                            {
+//                                generatorPeer.blockchain = Blockchain.APTOS
+//                                checkValid?.run()
+//                            }
+//                        )
                     suiRadioButton = radioButton("Sui")
-                        .bindSelected(
-                            { generatorPeer.blockchain == Blockchain.SUI },
-                            {
-                                generatorPeer.blockchain = Blockchain.SUI
-                                checkValid?.run()
-                            }
-                        )
+                        .selected(generatorPeer.blockchain == Blockchain.SUI)
+                        .actionListener { _, _ ->
+                            generatorPeer.blockchain = Blockchain.SUI
+                            checkValid?.run()
+                        }
+//                        .bindSelected(
+//                            { generatorPeer.blockchain == Blockchain.SUI },
+//                            {
+//                                generatorPeer.blockchain = Blockchain.SUI
+//                                checkValid?.run()
+//                            }
+//                        )
                 }
             }
+
             chooseAptosCliPanel
                 .attachToLayout(this)
                 .visibleIf(aptosRadioButton!!.selected)

@@ -8,3 +8,4 @@ pluginManagement {
 }
 
 include("plugin")
+include("ui-tests")
