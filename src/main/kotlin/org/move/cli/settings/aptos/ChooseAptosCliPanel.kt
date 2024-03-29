@@ -21,6 +21,7 @@ enum class AptosExecType {
 
     companion object {
         val isBundledSupportedForThePlatform: Boolean get() = !SystemInfo.isMac
+//        val isBundledSupportedForThePlatform: Boolean get() = false
 
         fun bundledPath(): String? = PluginPathManager.bundledAptosCli
         fun aptosPath(execType: AptosExecType, localAptosPath: String?): String {
@@ -89,6 +90,7 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
                         comment(
                             "Bundled version is not available for this platform (refer to the official Aptos docs for more)"
                         )
+                            .visible(!AptosExecType.isBundledSupportedForThePlatform)
                     }
                     row {
                         cell(localRadioButton)
