@@ -33,6 +33,25 @@ class IdeaFrame(
             return@step remoteRobot.find(JMenuBarFixture::class.java, JMenuBarFixture.byType())
         }
 
+    fun openSettingsDialog() {
+        menuBar.select("File", "Settings...")
+        Thread.sleep(1000)
+    }
+    fun closeProject() {
+        menuBar.select("File", "Close Project")
+    }
+
+    fun settingsDialog(function: DialogFixture.() -> Unit): DialogFixture = dialog("Settings", function = function)
+
+    fun DialogFixture.openMoveSettings() {
+        val settingsTreeView = find<ComponentFixture>(byXpath("//div[@class='SettingsTreeView']"))
+        settingsTreeView.findText("Languages & Frameworks").click()
+
+        configurableEditor {
+            find<ActionLinkFixture>(byXpath("//div[@text='Move Language']")).click()
+        }
+    }
+
     @JvmOverloads
     fun dumbAware(timeout: Duration = Duration.ofMinutes(5), function: () -> Unit) {
         step("Wait for smart mode") {
