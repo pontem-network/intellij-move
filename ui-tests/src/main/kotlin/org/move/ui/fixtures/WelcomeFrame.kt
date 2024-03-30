@@ -45,22 +45,17 @@ class WelcomeFrame(
             button(byXpath("//div[@class='JBOptionButton' and @text='New Project']"))
         }
 
-    val versionLabel get() = jLabel(byXpath("//div[@class='VersionLabel']"), timeout = Duration.ofSeconds(1))
+    fun selectNewProjectType(type: String, onStartup: Boolean = false) {
+        newProjectButton(onStartup).click()
+        projectTypesList.findText(type).click()
+    }
+
     val validationLabel: JLabelFixture?
         get() =
             findOrNull(JLabelFixture::class.java, byXpath("//div[@defaulticon='lightning.svg']"))
 
     val projectTypesList
         get() = find(ComponentFixture::class.java, byXpath("//div[@class='JBList']"))
-
-    val aptosRadioButton get() = radioButton("Aptos")
-    val suiRadioButton get() = radioButton("Sui")
-
-    val bundledRadioButton get() = radioButton("Bundled")
-    val localRadioButton get() = radioButton("Local")
-
-    val localPathTextField get() =
-        textFieldWithBrowseButton(byXpath("//div[@class='DialogPanel']//div[@class='TextFieldWithBrowseButton']"))
 
     val projectLocationTextField get() = textFieldWithBrowseButton("Location:")
 //        textField(byXpath("//div[@accessiblename='Location:' and @class='TextFieldWithBrowseButton']"))
@@ -80,6 +75,14 @@ class WelcomeFrame(
                 )
             )
         }
+
+    fun removeProjectFromRecents(projectName: String) {
+        findText(projectName).rightClick()
+        jPopupMenu().menuItem("Remove from Recent Projects…").click()
+        dialog("Remove Recent Project") {
+            button("Remove").click()
+        }
+    }
 
     val createNewProjectLink
         get() = actionLink(

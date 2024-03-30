@@ -21,7 +21,6 @@ fun CommonContainerFixture.textFieldWithBrowseButton(labelText: String): TextFie
     return textFieldWithBrowseButton(locator)
 }
 
-
 class TextFieldWithBrowseButtonFixture(
     remoteRobot: RemoteRobot,
     remoteComponent: RemoteComponent

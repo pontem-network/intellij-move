@@ -31,6 +31,12 @@ class DialogFixture(
         fun byTitle(title: String) = byXpath("title $title", "//div[@title='$title' and @class='MyDialog']")
     }
 
+    fun configurableEditor(
+        timeout: Duration = Duration.ofSeconds(20),
+        function: CommonContainerFixture.() -> Unit = {}
+    ) =
+        find<CommonContainerFixture>(byXpath("//div[@class='ConfigurableEditor']"), timeout).apply(function)
+
     val title: String
         get() = callJs("component.getTitle();")
 }
