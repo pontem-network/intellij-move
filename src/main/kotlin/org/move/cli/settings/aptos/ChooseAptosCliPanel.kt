@@ -24,6 +24,7 @@ enum class AptosExecType {
 //        val isBundledSupportedForThePlatform: Boolean get() = false
 
         fun bundledPath(): String? = PluginPathManager.bundledAptosCli
+
         fun aptosPath(execType: AptosExecType, localAptosPath: String?): String {
             return when (execType) {
                 BUNDLED -> bundledPath() ?: ""
@@ -97,7 +98,7 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
                             .actionListener { _, _ ->
                                 updateVersion()
                             }
-                        cell(localPathField )
+                        cell(localPathField)
                             .enabledIf(localRadioButton.selected)
                             .align(AlignX.FILL)
                             .resizableColumn()

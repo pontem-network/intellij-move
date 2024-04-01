@@ -11,12 +11,25 @@ import org.move.cli.settings.aptos.AptosExecType
 import org.move.stdext.exists
 import org.move.stdext.isExecutableFile
 import org.move.stdext.toPathOrNull
+import org.move.utils.EnvUtils
 import java.nio.file.Path
 
 enum class Blockchain {
     APTOS, SUI;
 
     override fun toString(): String = if (this == APTOS) "Aptos" else "Sui"
+
+    companion object {
+        fun aptosFromPATH(): String? {
+            // TODO: run --version and check whether it's a real Aptos CLI executable
+            return EnvUtils.findInPATH("aptos")?.toAbsolutePath()?.toString()
+        }
+
+        fun suiFromPATH(): String? {
+            // TODO: same as in Aptos
+            return EnvUtils.findInPATH("sui")?.toAbsolutePath()?.toString()
+        }
+    }
 }
 
 val Project.moveSettings: MvProjectSettingsService get() = service()
@@ -50,8 +63,8 @@ class MvProjectSettingsService(
         var blockchain: Blockchain by enum(Blockchain.APTOS)
 
         var aptosExecType: AptosExecType by enum(defaultAptosExecType)
-        var localAptosPath: String? by string()
 
+        var localAptosPath: String? by string()
         var localSuiPath: String? by string()
 
         var foldSpecs: Boolean by property(false)

@@ -38,9 +38,12 @@ class MoveProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerI
         val defaultProjectSettings =
             ProjectManager.getInstance().defaultProject.getService(MvProjectSettingsService::class.java)
         blockchain = defaultProjectSettings.blockchain
+
+        val localAptosPath = defaultProjectSettings.localAptosPath ?: Blockchain.aptosFromPATH()
+        val localSuiPath = defaultProjectSettings.localSuiPath ?: Blockchain.suiFromPATH()
         chooseAptosCliPanel.data =
-            ChooseAptosCliPanel.Data(defaultProjectSettings.aptosExecType, defaultProjectSettings.localAptosPath)
-        chooseSuiCliPanel.data = ChooseSuiCliPanel.Data(defaultProjectSettings.localSuiPath)
+            ChooseAptosCliPanel.Data(defaultProjectSettings.aptosExecType, localAptosPath)
+        chooseSuiCliPanel.data = ChooseSuiCliPanel.Data(localSuiPath)
     }
 
     private var checkValid: Runnable? = null

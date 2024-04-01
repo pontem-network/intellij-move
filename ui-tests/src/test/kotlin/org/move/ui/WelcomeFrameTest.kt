@@ -9,7 +9,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
-import org.move.ui.fixtures.*
+import org.move.ui.fixtures.ideaFrame
+import org.move.ui.fixtures.moveSettingsPanel
+import org.move.ui.fixtures.tryWithDelay
+import org.move.ui.fixtures.welcomeFrame
 import org.move.ui.utils.RemoteRobotExtension
 import org.move.ui.utils.StepsLogger
 import java.io.File
@@ -31,7 +34,7 @@ class WelcomeFrameTest {
 
     @Test
     @Order(1)
-    fun `check new project validation`(remoteRobot: RemoteRobot) = with(remoteRobot) {
+    fun `new project validation`(remoteRobot: RemoteRobot) = with(remoteRobot) {
         welcomeFrame {
             selectNewProjectType("Move")
         }
