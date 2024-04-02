@@ -21,7 +21,7 @@ fun ContainerFixture.dialog(
 }
 
 @FixtureName("Dialog")
-class DialogFixture(
+open class DialogFixture(
     remoteRobot: RemoteRobot,
     remoteComponent: RemoteComponent
 ): CommonContainerFixture(remoteRobot, remoteComponent) {
@@ -39,4 +39,14 @@ class DialogFixture(
 
     val title: String
         get() = callJs("component.getTitle();")
+}
+
+class SettingsDialogFixture(
+    remoteRobot: RemoteRobot,
+    remoteComponent: RemoteComponent
+):
+    DialogFixture(remoteRobot, remoteComponent) {
+
+
+
 }
