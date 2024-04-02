@@ -7,8 +7,10 @@ import com.intellij.remoterobot.data.RemoteComponent
 import com.intellij.remoterobot.fixtures.*
 import com.intellij.remoterobot.search.locators.byXpath
 import com.intellij.remoterobot.stepsProcessing.step
+import com.intellij.remoterobot.utils.Locators
 import com.intellij.remoterobot.utils.waitFor
 import java.time.Duration
+import javax.swing.JMenu
 
 fun RemoteRobot.ideaFrame(function: IdeaFrame.() -> Unit) {
     find<IdeaFrame>(timeout = Duration.ofSeconds(10)).apply(function)
@@ -30,25 +32,64 @@ class IdeaFrame(
 
     val menuBar: JMenuBarFixture
         get() = step("Menu...") {
-            return@step remoteRobot.find(JMenuBarFixture::class.java, JMenuBarFixture.byType())
+            return@step remoteRobot.find(
+                JMenuBarFixture::class.java, JMenuBarFixture.byType(), Duration.ofSeconds(5))
         }
 
-    fun openSettingsDialog() {
+    private fun openSettingsDialog() {
+        if (!remoteRobot.isMac()) {
+            waitFor {
+                findAll<ComponentFixture>(
+                    Locators.byTypeAndProperties(JMenu::class.java, Locators.XpathProperty.ACCESSIBLE_NAME to "File")
+                )
+                    .isNotEmpty()
+            }
+        }
         menuBar.select("File", "Settings...")
-        Thread.sleep(1000)
+        waitFor {
+            findAll<DialogFixture>(DialogFixture.byTitle("Settings")).isNotEmpty()
+        }
     }
+
     fun closeProject() {
         menuBar.select("File", "Close Project")
     }
 
     fun settingsDialog(function: DialogFixture.() -> Unit): DialogFixture = dialog("Settings", function = function)
 
-    fun DialogFixture.openMoveSettings() {
+    fun DialogFixture.selectMoveSettings() {
         val settingsTreeView = find<ComponentFixture>(byXpath("//div[@class='SettingsTreeView']"))
         settingsTreeView.findText("Languages & Frameworks").click()
-
         configurableEditor {
             find<ActionLinkFixture>(byXpath("//div[@text='Move Language']")).click()
+        }
+    }
+
+//    fun openSettings(function: SettingsDialogFixture.() -> Unit) {
+//        if (!remoteRobot.isMac()) {
+//            waitFor {
+//                findAll<ComponentFixture>(
+//                    Locators.byTypeAndProperties(JMenu::class.java, Locators.XpathProperty.ACCESSIBLE_NAME to "File")
+//                )
+//                    .isNotEmpty()
+//            }
+//        }
+//        menuBar.select("File", "Settings...")
+//        step("Search for dialog with title 'Settings'") {
+//            find<SettingsDialogFixture>(
+//                DialogFixture.byTitle("Settings"), Duration.ofSeconds(2)).apply(function)
+//        }
+//
+//    }
+
+    fun openMoveSettings(function: MoveSettingsPanelFixture.() -> Unit) {
+        openSettingsDialog()
+        settingsDialog {
+            selectMoveSettings()
+            configurableEditor {
+                moveSettingsPanel(function = function)
+            }
+            button("OK").click()
         }
     }
 
