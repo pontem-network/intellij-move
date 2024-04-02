@@ -284,6 +284,8 @@
 
     <postStartupActivity
         implementation="org.move.ide.newProject.AlwaysRefreshProjectsAfterOpen" />
+    <postStartupActivity
+        implementation="org.move.ide.newProject.InferBlockchainTypeOnStartupActivity" />
 <!--    <postStartupActivity-->
 <!--        implementation="org.move.cli.openProject.OpenMoveTomlOnProjectCreationFile" />-->
 <!--     background = 5 seconds delayed  -->
