@@ -1,4 +1,4 @@
-package org.move.cli.projectAware
+package org.move.cli.externalSystem
 
 import org.move.utils.tests.MvProjectTestBase
 

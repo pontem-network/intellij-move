@@ -60,11 +60,15 @@ class MvProjectSettingsService(
 
     // default values for settings
     class MoveProjectSettings: MvProjectSettingsBase<MoveProjectSettings>() {
+        @AffectsMoveProjectsMetadata
         var blockchain: Blockchain by enum(Blockchain.APTOS)
 
+        @AffectsMoveProjectsMetadata
         var aptosExecType: AptosExecType by enum(defaultAptosExecType)
 
+        @AffectsMoveProjectsMetadata
         var localAptosPath: String? by string()
+        @AffectsMoveProjectsMetadata
         var localSuiPath: String? by string()
 
         var foldSpecs: Boolean by property(false)
