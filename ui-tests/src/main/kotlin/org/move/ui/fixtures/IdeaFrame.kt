@@ -38,20 +38,20 @@ class IdeaFrame(
 
     val inlineProgressPanel get() = find<CommonContainerFixture>(byXpath("//div[@class='InlineProgressPanel']"))
 
-    private fun openSettingsDialog() {
-        if (!remoteRobot.isMac()) {
-            waitFor {
-                findAll<ComponentFixture>(
-                    Locators.byTypeAndProperties(JMenu::class.java, Locators.XpathProperty.ACCESSIBLE_NAME to "File")
-                )
-                    .isNotEmpty()
-            }
-        }
-        menuBar.select("File", "Settings...")
-        waitFor {
-            findAll<DialogFixture>(DialogFixture.byTitle("Settings")).isNotEmpty()
-        }
-    }
+//    private fun openSettingsDialog() {
+//        if (!remoteRobot.isMac()) {
+//            waitFor {
+//                findAll<ComponentFixture>(
+//                    Locators.byTypeAndProperties(JMenu::class.java, Locators.XpathProperty.ACCESSIBLE_NAME to "File")
+//                )
+//                    .isNotEmpty()
+//            }
+//        }
+//        menuBar.select("File", "Settings...")
+//        waitFor {
+//            findAll<DialogFixture>(DialogFixture.byTitle("Settings")).isNotEmpty()
+//        }
+//    }
 
     fun settingsDialog(function: DialogFixture.() -> Unit): DialogFixture = dialog("Settings", function = function)
 
@@ -63,8 +63,14 @@ class IdeaFrame(
         }
     }
 
-    fun openMoveSettings(function: MoveSettingsPanelFixture.() -> Unit) {
-        openSettingsDialog()
+    fun moveSettings(function: MoveSettingsPanelFixture.() -> Unit) {
+        // show settings dialog
+        remoteRobot.commonSteps.invokeAction("ShowSettings")
+        waitFor {
+            findAll<DialogFixture>(DialogFixture.byTitle("Settings")).isNotEmpty()
+        }
+        remoteRobot.commonSteps.waitMs(300)
+
         settingsDialog {
             selectMoveSettings()
             configurableEditor {

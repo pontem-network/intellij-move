@@ -11,18 +11,13 @@ import com.intellij.remoterobot.search.locators.byXpath
 import com.intellij.remoterobot.steps.CommonSteps
 import com.intellij.remoterobot.steps.Step
 import com.intellij.remoterobot.steps.StepParameter
-import com.intellij.remoterobot.stepsProcessing.step
 import com.intellij.remoterobot.utils.Locators
 import com.intellij.remoterobot.utils.keyboard
 import com.intellij.remoterobot.utils.waitFor
-import com.intellij.remoterobot.utils.waitForIgnoringError
 import com.intellij.ui.dsl.builder.components.DslLabel
 import java.io.File
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.time.Duration
-import javax.swing.JMenu
-import kotlin.math.abs
 
 val RemoteRobot.commonSteps get() = CommonSteps(this)
 
@@ -55,14 +50,11 @@ fun RemoteRobot.openOrImportProject(@StepParameter("Project absolute path", "") 
             })
            
             ApplicationManager.getApplication().invokeLater(openProjectFunction)
-        """, runInEdt = true)
+        """, runInEdt = true
+    )
 
-    // check that idea frame is opened, and no progress bar present
-//    val ideaFrame = find<IdeaFrame>(timeout = Duration.ofSeconds(10))
-//    waitFor {
-//        val progressPanel = ideaFrame.inlineProgressPanel
-//        progressPanel.findAll<ComponentFixture>(byXpath("//div[@class='MyComponent']")).isEmpty()
-//    }
+    // waits till all indexes are built
+    waitFor { !this.commonSteps.isDumbMode() }
 }
 
 fun RemoteRobot.closeProject() {
@@ -90,7 +82,8 @@ fun RemoteRobot.removeLastRecentProject() {
             })
            
             ApplicationManager.getApplication().invokeLater(removeRecentProjectFunction)
-        """, runInEdt = true)
+        """, runInEdt = true
+    )
 }
 
 fun RemoteRobot.removeProjectFromRecents(absolutePath: Path) = removeProjectFromRecents(absolutePath.toString())
@@ -110,7 +103,8 @@ fun RemoteRobot.removeProjectFromRecents(@StepParameter("Project absolute path",
             })
            
             ApplicationManager.getApplication().invokeLater(removeRecentProjectFunction)
-        """, runInEdt = true)
+        """, runInEdt = true
+    )
 }
 
 fun <T: Fixture> SearchContext.findOrNull(type: Class<T>, locator: Locator) =

@@ -115,7 +115,7 @@ class NewProjectTest {
         ideaFrame {
             assert(textEditor().editor.text.contains("[dependencies.AptosFramework]"))
 
-            openMoveSettings {
+            moveSettings {
                 assert(aptosRadioButton.isSelected())
                 assert(!suiRadioButton.isSelected())
 
@@ -124,9 +124,6 @@ class NewProjectTest {
                 assert(!localPathTextField.isEnabled)
             }
         }
-
-//        closeProject()
-//        removeLastRecentProject()
     }
 
     @Test
@@ -153,7 +150,7 @@ class NewProjectTest {
         ideaFrame {
             assert(textEditor().editor.text.contains("[dependencies.AptosFramework]"))
 
-            openMoveSettings {
+            moveSettings {
                 assert(aptosRadioButton.isSelected())
                 assert(!suiRadioButton.isSelected())
 
@@ -163,9 +160,6 @@ class NewProjectTest {
                 assert(localPathTextField.text == APTOS_LOCAL_PATH)
             }
         }
-
-//        closeProject()
-//        removeLastRecentProject()
     }
 
     @Test
@@ -189,15 +183,12 @@ class NewProjectTest {
         ideaFrame {
             assert(textEditor().editor.text.contains("https://github.com/MystenLabs/sui.git"))
 
-            openMoveSettings {
+            moveSettings {
                 assert(!aptosRadioButton.isSelected())
                 assert(suiRadioButton.isSelected())
                 assert(localPathTextField.text == SUI_LOCAL_PATH)
             }
         }
-
-//        closeProject()
-//        removeLastRecentProject()
     }
 
     @Test
@@ -208,14 +199,11 @@ class NewProjectTest {
         openOrImportProject(tempPackagePath)
 
         ideaFrame {
-            openMoveSettings {
+            moveSettings {
                 assert(aptosRadioButton.isSelected())
                 assert(!suiRadioButton.isSelected())
             }
         }
-
-//        closeProject()
-//        removeLastRecentProject()
     }
 
     @Test
@@ -226,14 +214,11 @@ class NewProjectTest {
         openOrImportProject(projectPath)
 
         ideaFrame {
-            openMoveSettings {
+            moveSettings {
                 assert(!aptosRadioButton.isSelected())
                 assert(suiRadioButton.isSelected())
             }
         }
-
-//        closeProject()
-//        removeLastRecentProject()
     }
 
     @Test
@@ -246,7 +231,7 @@ class NewProjectTest {
 
         // mark project as Sui
         ideaFrame {
-            openMoveSettings {
+            moveSettings {
                 suiRadioButton.select()
             }
         }
@@ -256,14 +241,11 @@ class NewProjectTest {
         openOrImportProject(projectPath)
 
         ideaFrame {
-            openMoveSettings {
+            moveSettings {
                 assert(!aptosRadioButton.isSelected())
                 assert(suiRadioButton.isSelected())
             }
         }
-
-//        closeProject()
-//        removeLastRecentProject()
     }
 
     // TODO
