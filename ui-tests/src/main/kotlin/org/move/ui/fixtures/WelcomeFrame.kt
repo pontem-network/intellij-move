@@ -8,6 +8,9 @@ import com.intellij.remoterobot.data.RemoteComponent
 import com.intellij.remoterobot.fixtures.*
 import com.intellij.remoterobot.search.locators.Locator
 import com.intellij.remoterobot.search.locators.byXpath
+import com.intellij.remoterobot.steps.CommonSteps
+import com.intellij.remoterobot.steps.Step
+import com.intellij.remoterobot.steps.StepParameter
 import com.intellij.remoterobot.stepsProcessing.step
 import com.intellij.remoterobot.utils.Locators
 import com.intellij.remoterobot.utils.keyboard
@@ -20,23 +23,83 @@ import java.time.Duration
 import javax.swing.JMenu
 import kotlin.math.abs
 
+val RemoteRobot.commonSteps get() = CommonSteps(this)
+
 fun RemoteRobot.welcomeFrame(function: WelcomeFrame.() -> Unit) {
     find(WelcomeFrame::class.java, Duration.ofSeconds(10)).apply(function)
 }
 
-fun RemoteRobot.openProject(projectPath: Path) {
-    welcomeFrame {
-        openProjectAt(projectPath)
-    }
-//    ideaFrame {
-//        find<ComponentFixture>(
-//            Locators.byTypeAndProperties(
-//                JMenu::class.java,
-//                Locators.XpathProperty.ACCESSIBLE_NAME to "File"
-//            ),
-//            timeout = Duration.ofSeconds(5)
-//        )
-//    }
+fun RemoteRobot.openOrImportProject(absolutePath: Path) = openOrImportProject(absolutePath.toString())
+
+@Step("Open or import project", "Open or import project '{1}'")
+fun RemoteRobot.openOrImportProject(@StepParameter("Project absolute path", "") absolutePath: String) {
+    this.runJs(
+        """
+            importClass(com.intellij.openapi.application.ApplicationManager)
+            importClass(com.intellij.ide.impl.ProjectUtil)
+            importClass(com.intellij.ide.impl.OpenProjectTask)
+           
+            let task 
+            try { 
+                task = OpenProjectTask.build()
+            } catch(e) {
+                task = OpenProjectTask.newProject()
+            }
+            
+            const path = new java.io.File("$absolutePath").toPath()
+            const openProjectFunction = new Runnable({
+                run: function() {
+                    ProjectUtil.openOrImport(path, task)
+                }
+            })
+           
+            ApplicationManager.getApplication().invokeLater(openProjectFunction)
+        """, runInEdt = true)
+
+    // TODO: wait for status bar to stop processing things
+}
+
+fun RemoteRobot.closeProject() = CommonSteps(this).closeProject()
+
+@Step("Remove project from recents", "Remove project from recents")
+fun RemoteRobot.removeLastRecentProject() {
+    this.runJs(
+        """
+            importClass(com.intellij.openapi.application.ApplicationManager)
+            importClass(com.intellij.ide.RecentProjectsManagerBase)
+            
+            const removeRecentProjectFunction = new Runnable({
+                run: function() {
+                    const recentsProjectsManager = RecentProjectsManagerBase.getInstanceEx();
+                    const lastProjectPath = recentsProjectsManager.getLastOpenedProject();
+                    if (lastProjectPath != null) {
+                        recentsProjectsManager.removePath(lastProjectPath);
+                    }
+                }
+            })
+           
+            ApplicationManager.getApplication().invokeLater(removeRecentProjectFunction)
+        """, runInEdt = true)
+}
+
+fun RemoteRobot.removeProjectFromRecents(absolutePath: Path) = removeProjectFromRecents(absolutePath.toString())
+
+@Step("Remove from recents", "Remove '{1}' from recents")
+fun RemoteRobot.removeProjectFromRecents(@StepParameter("Project absolute path", "") absolutePath: String) {
+    this.runJs(
+        """
+            importClass(com.intellij.openapi.application.ApplicationManager)
+            importClass(com.intellij.ide.RecentProjectsManager)
+            
+            const projectPath = new java.io.File("$absolutePath").toPath()
+            const removeRecentProjectFunction = new Runnable({
+                run: function() {
+                    RecentProjectsManager.getInstance().removePath(projectPath)
+                }
+            })
+           
+            ApplicationManager.getApplication().invokeLater(removeRecentProjectFunction)
+        """, runInEdt = true)
 }
 
 fun <T: Fixture> SearchContext.findOrNull(type: Class<T>, locator: Locator) =

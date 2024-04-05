@@ -51,10 +51,6 @@ class IdeaFrame(
         }
     }
 
-    fun closeProject() {
-        menuBar.select("File", "Close Project")
-    }
-
     fun settingsDialog(function: DialogFixture.() -> Unit): DialogFixture = dialog("Settings", function = function)
 
     fun DialogFixture.selectMoveSettings() {
@@ -64,23 +60,6 @@ class IdeaFrame(
             find<ActionLinkFixture>(byXpath("//div[@text='Move Language']")).click()
         }
     }
-
-//    fun openSettings(function: SettingsDialogFixture.() -> Unit) {
-//        if (!remoteRobot.isMac()) {
-//            waitFor {
-//                findAll<ComponentFixture>(
-//                    Locators.byTypeAndProperties(JMenu::class.java, Locators.XpathProperty.ACCESSIBLE_NAME to "File")
-//                )
-//                    .isNotEmpty()
-//            }
-//        }
-//        menuBar.select("File", "Settings...")
-//        step("Search for dialog with title 'Settings'") {
-//            find<SettingsDialogFixture>(
-//                DialogFixture.byTitle("Settings"), Duration.ofSeconds(2)).apply(function)
-//        }
-//
-//    }
 
     fun openMoveSettings(function: MoveSettingsPanelFixture.() -> Unit) {
         openSettingsDialog()
