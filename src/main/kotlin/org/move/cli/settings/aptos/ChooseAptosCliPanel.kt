@@ -5,15 +5,20 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.ui.components.JBRadioButton
-import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.builder.Row
+import com.intellij.ui.dsl.builder.actionListener
 import com.intellij.ui.layout.selected
 import org.move.cli.settings.VersionLabel
 import org.move.cli.settings.aptos.AptosExecType.BUNDLED
 import org.move.cli.settings.aptos.AptosExecType.LOCAL
+import org.move.cli.settings.isValidExecutable
 import org.move.openapiext.PluginPathManager
 import org.move.openapiext.pathField
 import org.move.stdext.blankToNull
 import org.move.stdext.toPathOrNull
+import java.nio.file.Path
 
 enum class AptosExecType {
     BUNDLED,
@@ -25,11 +30,13 @@ enum class AptosExecType {
 
         fun bundledPath(): String? = PluginPathManager.bundledAptosCli
 
-        fun aptosPath(execType: AptosExecType, localAptosPath: String?): String {
-            return when (execType) {
-                BUNDLED -> bundledPath() ?: ""
-                LOCAL -> localAptosPath ?: ""
-            }
+        fun aptosExecPath(execType: AptosExecType, localAptosPath: String?): Path? {
+            val pathCandidate =
+                when (execType) {
+                    BUNDLED -> bundledPath()?.toPathOrNull()
+                    LOCAL -> localAptosPath?.blankToNull()?.toPathOrNull()
+                }
+            return pathCandidate?.takeIf { it.isValidExecutable() }
         }
     }
 }

@@ -1,18 +1,21 @@
 package org.move.cli.runConfigurations
 
+import com.intellij.execution.process.ProcessListener
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.Consts
-import org.move.cli.settings.aptos.AptosExecType
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
-import org.move.stdext.RsResult
-import org.move.stdext.toPathOrNull
+import org.move.stdext.RsResult.Err
+import org.move.stdext.RsResult.Ok
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
 
-sealed class InitProjectCli {
+sealed class BlockchainCli {
+
+    abstract val cliLocation: Path
+
     abstract fun init(
         project: Project,
         parentDisposable: Disposable,
@@ -20,7 +23,7 @@ sealed class InitProjectCli {
         packageName: String,
     ): MvProcessResult<VirtualFile>
 
-    data class Aptos(val aptosExecType: AptosExecType, val localAptosPath: String?): InitProjectCli() {
+    data class Aptos(override val cliLocation: Path): BlockchainCli() {
         override fun init(
             project: Project,
             parentDisposable: Disposable,
@@ -39,23 +42,19 @@ sealed class InitProjectCli {
                 ),
                 workingDirectory = project.rootPath
             )
-
-            val aptosExecPath =
-                AptosExecType.aptosPath(this.aptosExecType, this.localAptosPath).toPathOrNull()
-                    ?: error("Provided aptosPath should be validated before calling init()")
             commandLine
-                .toGeneralCommandLine(aptosExecPath)
+                .toGeneralCommandLine(cliLocation)
                 .execute(parentDisposable)
-                .unwrapOrElse { return RsResult.Err(it) }
+                .unwrapOrElse { return Err(it) }
             fullyRefreshDirectory(rootDirectory)
 
             val manifest =
                 checkNotNull(rootDirectory.findChild(Consts.MANIFEST_FILE)) { "Can't find the manifest file" }
-            return RsResult.Ok(manifest)
+            return Ok(manifest)
         }
     }
 
-    data class Sui(val cliLocation: Path): InitProjectCli() {
+    data class Sui(override val cliLocation: Path): BlockchainCli() {
         override fun init(
             project: Project,
             parentDisposable: Disposable,
@@ -75,12 +74,29 @@ sealed class InitProjectCli {
             )
             commandLine.toGeneralCommandLine(this.cliLocation)
                 .execute(parentDisposable)
-                .unwrapOrElse { return RsResult.Err(it) }
+                .unwrapOrElse { return Err(it) }
             fullyRefreshDirectory(rootDirectory)
 
             val manifest =
                 checkNotNull(rootDirectory.findChild(Consts.MANIFEST_FILE)) { "Can't find the manifest file" }
-            return RsResult.Ok(manifest)
+            return Ok(manifest)
+        }
+
+        fun fetchPackageDependencies(
+            projectDir: Path,
+            owner: Disposable,
+            processListener: ProcessListener
+        ): MvProcessResult<Unit> {
+            val cli =
+                CliCommandLineArgs(
+                    subCommand = "move",
+                    arguments = listOf("build", "--fetch-deps-only", "--skip-fetch-latest-git-deps"),
+                    workingDirectory = projectDir
+                )
+            cli.toGeneralCommandLine(cliLocation)
+                .execute(owner, listener = processListener)
+                .unwrapOrElse { return Err(it) }
+            return Ok(Unit)
         }
     }
 }

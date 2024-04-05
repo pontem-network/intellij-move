@@ -7,6 +7,7 @@ import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectId
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.util.PathUtil
 import org.move.cli.MoveProjectsService
 import org.move.lang.core.psi.MvPath
@@ -124,6 +125,8 @@ compiled_package_info:
             VfsUtil.saveText(moveToml, VfsUtil.loadText(moveToml).replace("#", ""))
         }
         assertNotificationAware(moveSystemId, event = "modification in Cargo.toml")
+
+        PsiDocumentManager.getInstance(project).commitAllDocuments()
 
         scheduleProjectReload()
         assertNotificationAware(event = "project reloading")

@@ -5,7 +5,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.manifest.AptosConfigYaml
 import org.move.cli.manifest.MoveToml
 import org.move.lang.toNioPathOrNull
-import org.move.openapiext.checkReadAccessAllowed
 import org.move.openapiext.pathAsPath
 import org.move.openapiext.resolveExisting
 import java.nio.file.Path
@@ -14,12 +13,28 @@ data class MovePackage(
     val project: Project,
     val contentRoot: VirtualFile,
     val moveToml: MoveToml,
-    val aptosConfigYaml: AptosConfigYaml?,
 ) {
     val packageName = this.moveToml.packageName ?: ""
 
     val sourcesFolder: VirtualFile? get() = contentRoot.takeIf { it.isValid }?.findChild("sources")
     val testsFolder: VirtualFile? get() = contentRoot.takeIf { it.isValid }?.findChild("tests")
+
+    val aptosConfigYaml: AptosConfigYaml?
+        get() {
+            var root: VirtualFile? = contentRoot
+            while (true) {
+                if (root == null) break
+                val candidatePath = root
+                    .findChild(".aptos")
+                    ?.takeIf { it.isDirectory }
+                    ?.findChild("config.yaml")
+                if (candidatePath != null) {
+                    return AptosConfigYaml.fromPath(candidatePath.pathAsPath)
+                }
+                root = root.parent
+            }
+            return null
+        }
 
     fun moveFolders(): List<VirtualFile> = listOfNotNull(sourcesFolder, testsFolder)
 
@@ -48,24 +63,9 @@ data class MovePackage(
     }
 
     companion object {
-        fun fromMoveToml(moveToml: MoveToml): MovePackage? {
-            checkReadAccessAllowed()
-            val contentRoot = moveToml.tomlFile?.parent?.virtualFile ?: return null
-
-            var aptosConfigYaml: AptosConfigYaml? = null
-            var root: VirtualFile? = contentRoot
-            while (true) {
-                if (root == null) break
-                val candidatePath = root
-                    .findChild(".aptos")
-                    ?.takeIf { it.isDirectory }
-                    ?.findChild("config.yaml")
-                if (candidatePath != null) {
-                    aptosConfigYaml = AptosConfigYaml.fromPath(candidatePath.pathAsPath) ?: break
-                }
-                root = root.parent
-            }
-            return MovePackage(moveToml.project, contentRoot, moveToml, aptosConfigYaml)
+        fun fromMoveToml(moveToml: MoveToml): MovePackage {
+            val contentRoot = moveToml.tomlFile.virtualFile.parent
+            return MovePackage(moveToml.project, contentRoot, moveToml)
         }
     }
 }

@@ -12,15 +12,23 @@ import com.intellij.platform.DirectoryProjectGenerator
 import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
 import org.move.cli.PluginApplicationDisposable
-import org.move.cli.runConfigurations.InitProjectCli
+import org.move.cli.runConfigurations.BlockchainCli
 import org.move.cli.settings.Blockchain
+import org.move.cli.settings.Blockchain.APTOS
+import org.move.cli.settings.Blockchain.SUI
+import org.move.cli.settings.aptos.AptosExecType
 import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
 import org.move.openapiext.computeWithCancelableProgress
-import org.move.stdext.blankToNull
+import org.move.stdext.toPathOrNull
 import org.move.stdext.unwrapOrThrow
 
-data class MoveProjectConfig(val blockchain: Blockchain, val initCli: InitProjectCli)
+data class MoveProjectConfig(
+    val blockchain: Blockchain,
+    val aptosExecType: AptosExecType,
+    val localAptosPath: String?,
+    val localSuiPath: String?
+)
 
 class MoveProjectGenerator: DirectoryProjectGeneratorBase<MoveProjectConfig>(),
                             CustomStepProjectGenerator<MoveProjectConfig> {
@@ -39,7 +47,19 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<MoveProjectConfig>(),
     ) {
         val packageName = project.name
         val blockchain = projectConfig.blockchain
-        val projectCli = projectConfig.initCli
+        val projectCli =
+            when (blockchain) {
+                APTOS -> {
+                    val aptosPath =
+                        AptosExecType.aptosExecPath(projectConfig.aptosExecType, projectConfig.localAptosPath)
+                            ?: error("validated before")
+                    BlockchainCli.Aptos(aptosPath)
+                }
+                SUI -> {
+                    val suiPath = projectConfig.localSuiPath?.toPathOrNull() ?: error("validated before")
+                    BlockchainCli.Sui(suiPath)
+                }
+            }
         val manifestFile =
             project.computeWithCancelableProgress("Generating $blockchain project...") {
                 val manifestFile =
@@ -56,12 +76,12 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<MoveProjectConfig>(),
         project.moveSettings.modify {
             it.blockchain = blockchain
             when (projectCli) {
-                is InitProjectCli.Aptos -> {
-                    it.aptosExecType = projectCli.aptosExecType
-                    it.localAptosPath = projectCli.localAptosPath?.blankToNull()
+                is BlockchainCli.Aptos -> {
+                    it.aptosExecType = projectConfig.aptosExecType
+                    it.localAptosPath = projectConfig.localAptosPath
                 }
-                is InitProjectCli.Sui -> {
-                    it.localSuiPath = projectCli.cliLocation.toString()
+                is BlockchainCli.Sui -> {
+                    it.localSuiPath = projectConfig.localSuiPath
                 }
             }
         }

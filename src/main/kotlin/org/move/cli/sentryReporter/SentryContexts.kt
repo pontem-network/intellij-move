@@ -20,8 +20,8 @@ data class MoveProjectContext(
     val syntheticLibraries: List<SyntheticLibraryContext>
 ) {
     companion object {
-        fun from(moveProject: MoveProject): MoveProjectContext? {
-            val tomlFile = moveProject.currentPackage.moveToml.tomlFile ?: return null
+        fun from(moveProject: MoveProject): MoveProjectContext {
+            val tomlFile = moveProject.currentPackage.moveToml.tomlFile
 
             val rawDeps = mutableListOf<String>()
             val depsTable = tomlFile.getTable("dependencies")
