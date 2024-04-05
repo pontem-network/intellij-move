@@ -2,14 +2,8 @@ package org.move.ui
 
 import com.intellij.openapi.util.io.toCanonicalPath
 import com.intellij.remoterobot.RemoteRobot
-import com.intellij.remoterobot.fixtures.ComponentFixture
-import com.intellij.remoterobot.steps.CommonSteps
-import com.intellij.remoterobot.utils.Locators
 import com.intellij.remoterobot.utils.waitFor
-import org.junit.jupiter.api.MethodOrderer
-import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
 import org.move.ui.fixtures.*
@@ -19,13 +13,11 @@ import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
-import javax.swing.JMenu
 
 const val APTOS_LOCAL_PATH = "/home/mkurnikov/bin/aptos"
 const val SUI_LOCAL_PATH = "/home/mkurnikov/bin/sui"
 
 @ExtendWith(RemoteRobotExtension::class)
-@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 class NewProjectTest {
     init {
         StepsLogger.init()
@@ -47,8 +39,7 @@ class NewProjectTest {
     }
 
     @Test
-    @Order(1)
-    fun `new project validation`(remoteRobot: RemoteRobot) = with(remoteRobot) {
+    fun `new project validation`(robot: RemoteRobot) = with(robot) {
         welcomeFrame {
             selectNewProjectType("Move")
         }
@@ -72,7 +63,6 @@ class NewProjectTest {
 
                 assert(localPathTextField.isEnabled) { "Local path should be enabled if Local is selected" }
                 localPathTextField.text = ""
-                Thread.sleep(1000)
 
                 waitFor { versionLabel.value.contains("N/A") }
                 waitFor { validationLabel?.value == "Invalid path to Aptos executable" }
@@ -84,7 +74,6 @@ class NewProjectTest {
                 suiRadioButton.select()
 
                 localPathTextField.text = ""
-                Thread.sleep(1000)
 
                 waitFor { versionLabel.value.contains("N/A") }
                 waitFor { validationLabel?.value == "Invalid path to Sui executable" }
@@ -97,8 +86,7 @@ class NewProjectTest {
     }
 
     @Test
-    @Order(2)
-    fun `create new aptos project with bundled cli`(remoteRobot: RemoteRobot) = with(remoteRobot) {
+    fun `create new aptos project with bundled cli`(robot: RemoteRobot) = with(robot) {
         welcomeFrame {
             selectNewProjectType("Move")
         }
@@ -130,15 +118,12 @@ class NewProjectTest {
             }
         }
 
-        CommonSteps(remoteRobot).closeProject()
-        welcomeFrame {
-            removeProjectFromRecents(projectName)
-        }
+        closeProject()
+        removeLastRecentProject()
     }
 
     @Test
-    @Order(2)
-    fun `create new aptos project with local cli`(remoteRobot: RemoteRobot) = with(remoteRobot) {
+    fun `create new aptos project with local cli`(robot: RemoteRobot) = with(robot) {
         welcomeFrame {
             selectNewProjectType("Move")
         }
@@ -172,15 +157,12 @@ class NewProjectTest {
             }
         }
 
-        CommonSteps(remoteRobot).closeProject()
-        welcomeFrame {
-            removeProjectFromRecents(projectName)
-        }
+        closeProject()
+        removeLastRecentProject()
     }
 
     @Test
-    @Order(3)
-    fun `create new sui project`(remoteRobot: RemoteRobot) = with(remoteRobot) {
+    fun `create new sui project`(robot: RemoteRobot) = with(robot) {
         welcomeFrame {
             selectNewProjectType("Move")
         }
@@ -207,18 +189,16 @@ class NewProjectTest {
             }
         }
 
-        CommonSteps(remoteRobot).closeProject()
-        welcomeFrame {
-            removeProjectFromRecents(projectName)
-        }
+        closeProject()
+        removeLastRecentProject()
     }
 
     @Test
-    fun `import existing aptos package`(remoteRobot: RemoteRobot) = with(remoteRobot) {
+    fun `import existing aptos package`(robot: RemoteRobot) = with(robot) {
         copyExamplePackageToTempFolder("aptos_package")
 
         val tempPackagePath = tempFolder.toPath().resolve("aptos_package")
-        openProject(tempPackagePath)
+        openOrImportProject(tempPackagePath)
 
         ideaFrame {
             openMoveSettings {
@@ -227,20 +207,16 @@ class NewProjectTest {
             }
         }
 
-        ideaFrame {
-            closeProject()
-        }
-        welcomeFrame {
-            removeProjectFromRecents("aptos_package")
-        }
+        closeProject()
+        removeLastRecentProject()
     }
 
     @Test
-    fun `import existing sui package`(remoteRobot: RemoteRobot) = with(remoteRobot) {
+    fun `import existing sui package`(robot: RemoteRobot) = with(robot) {
         copyExamplePackageToTempFolder("sui_package")
 
         val projectPath = tempFolder.toPath().resolve("sui_package")
-        openProject(projectPath)
+        openOrImportProject(projectPath)
 
         ideaFrame {
             openMoveSettings {
@@ -249,22 +225,17 @@ class NewProjectTest {
             }
         }
 
-        CommonSteps(remoteRobot).closeProject()
-        welcomeFrame {
-            removeProjectFromRecents("sui_package")
-        }
+        closeProject()
+        removeLastRecentProject()
     }
 
     @Test
-    @Order(2)
-    fun `explicit sui blockchain setting should retain even if wrong`(remoteRobot: RemoteRobot) = with(remoteRobot) {
+    fun `explicit sui blockchain setting should retain even if wrong`(robot: RemoteRobot) = with(robot) {
         copyExamplePackageToTempFolder("aptos_package")
 
         // opens as Aptos package
         val projectPath = tempFolder.toPath().resolve("aptos_package")
-        welcomeFrame {
-            openProjectAt(projectPath)
-        }
+        openOrImportProject(projectPath)
 
         // mark project as Sui
         ideaFrame {
@@ -273,10 +244,8 @@ class NewProjectTest {
             }
         }
 
+        closeProject()
         // reopen project to see that no ProjectActivity or OpenProcessor changed the setting
-        ideaFrame {
-            closeProject()
-        }
         welcomeFrame {
             openRecentProject("aptos_package")
         }
@@ -288,15 +257,13 @@ class NewProjectTest {
             }
         }
 
-        CommonSteps(remoteRobot).closeProject()
-        welcomeFrame {
-            removeProjectFromRecents("aptos_package")
-        }
+        closeProject()
+        removeLastRecentProject()
     }
 
     // TODO
 //    @Test
-//    fun `no default compile configuration should be created in pycharm`(remoteRobot: RemoteRobot) = with(remoteRobot) {
+//    fun `no default compile configuration should be created in pycharm`(robot: RemoteRobot) = with(robot) {
 //
 //
 //    }
