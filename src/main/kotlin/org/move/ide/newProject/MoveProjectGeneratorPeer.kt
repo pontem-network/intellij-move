@@ -12,8 +12,10 @@ import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.Disposer
 import com.intellij.platform.GeneratorPeerImpl
 import com.intellij.ui.components.JBRadioButton
-import com.intellij.ui.dsl.builder.*
-import org.move.cli.runConfigurations.InitProjectCli
+import com.intellij.ui.dsl.builder.Cell
+import com.intellij.ui.dsl.builder.actionListener
+import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.builder.selected
 import org.move.cli.settings.Blockchain
 import org.move.cli.settings.MvProjectSettingsService
 import org.move.cli.settings.aptos.AptosExecType
@@ -49,20 +51,12 @@ class MoveProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerI
     private var checkValid: Runnable? = null
 
     override fun getSettings(): MoveProjectConfig {
-        val initProjectCli =
-            when (blockchain) {
-                Blockchain.APTOS -> {
-                    val aptosExecType = this.chooseAptosCliPanel.data.aptosExecType
-                    val localAptosPath = this.chooseAptosCliPanel.data.localAptosPath
-                    InitProjectCli.Aptos(aptosExecType, localAptosPath)
-                }
-                Blockchain.SUI -> {
-                    val suiPath = this.chooseSuiCliPanel.data.localSuiPath?.toPathOrNull()
-                        ?: error("Should be validated separately")
-                    InitProjectCli.Sui(suiPath)
-                }
-            }
-        return MoveProjectConfig(blockchain, initProjectCli)
+        return MoveProjectConfig(
+            blockchain = blockchain,
+            aptosExecType = this.chooseAptosCliPanel.data.aptosExecType,
+            localAptosPath = this.chooseAptosCliPanel.data.localAptosPath,
+            localSuiPath = this.chooseSuiCliPanel.data.localSuiPath
+        )
     }
 
     override fun getComponent(myLocationField: TextFieldWithBrowseButton, checkValid: Runnable): JComponent {
@@ -120,10 +114,8 @@ class MoveProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerI
             Blockchain.APTOS -> {
                 val panelData = this.chooseAptosCliPanel.data
                 val aptosExecPath =
-                    AptosExecType.aptosPath(panelData.aptosExecType, panelData.localAptosPath).toPathOrNull()
-                if (aptosExecPath == null
-                    || !aptosExecPath.isValidExecutable()
-                ) {
+                    AptosExecType.aptosExecPath(panelData.aptosExecType, panelData.localAptosPath)
+                if (aptosExecPath == null) {
                     return ValidationInfo("Invalid path to $blockchain executable")
                 }
             }

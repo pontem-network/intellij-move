@@ -6,6 +6,11 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
+import org.move.cli.runConfigurations.BlockchainCli
+import org.move.cli.runConfigurations.BlockchainCli.Aptos
+import org.move.cli.runConfigurations.BlockchainCli.Sui
+import org.move.cli.settings.Blockchain.APTOS
+import org.move.cli.settings.Blockchain.SUI
 import org.move.cli.settings.MvProjectSettingsService.MoveProjectSettings
 import org.move.cli.settings.aptos.AptosExecType
 import org.move.stdext.exists
@@ -56,8 +61,6 @@ class MvProjectSettingsService(
     val skipFetchLatestGitDeps: Boolean get() = state.skipFetchLatestGitDeps
     val dumpStateOnTestFailure: Boolean get() = state.dumpStateOnTestFailure
 
-    val aptosExecPath: String get() = AptosExecType.aptosPath(aptosExecType, localAptosPath)
-
     // default values for settings
     class MoveProjectSettings: MvProjectSettingsBase<MoveProjectSettings>() {
         @AffectsMoveProjectsMetadata
@@ -68,6 +71,7 @@ class MvProjectSettingsService(
 
         @AffectsMoveProjectsMetadata
         var localAptosPath: String? by string()
+
         @AffectsMoveProjectsMetadata
         var localSuiPath: String? by string()
 
@@ -109,9 +113,29 @@ class MvProjectSettingsService(
     }
 }
 
-val Project.aptosExecPath: Path? get() = this.moveSettings.aptosExecPath.toPathOrNull()
+val Project.blockchain: Blockchain get() = this.moveSettings.blockchain
 
-val Project.suiExecPath: Path? get() = this.moveSettings.localSuiPath?.toPathOrNull()
+fun Project.getBlockchainCli(blockchain: Blockchain): BlockchainCli? {
+    return when (blockchain) {
+        APTOS -> {
+            val aptosExecPath =
+                AptosExecType.aptosExecPath(
+                    this.moveSettings.aptosExecType,
+                    this.moveSettings.localAptosPath
+                )
+            aptosExecPath?.let { Aptos(it) }
+        }
+        SUI -> this.moveSettings.localSuiPath?.toPathOrNull()?.let { Sui(it) }
+    }
+}
+
+val Project.aptosCli: Aptos? get() = getBlockchainCli(APTOS) as? Aptos
+
+val Project.suiCli: Sui? get() = getBlockchainCli(SUI) as? Sui
+
+val Project.aptosExecPath: Path? get() = this.aptosCli?.cliLocation
+
+val Project.suiExecPath: Path? get() = this.suiCli?.cliLocation
 
 fun Path?.isValidExecutable(): Boolean {
     return this != null

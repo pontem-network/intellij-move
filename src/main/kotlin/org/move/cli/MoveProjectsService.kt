@@ -1,6 +1,7 @@
 package org.move.cli
 
 import com.intellij.execution.RunManager
+import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
@@ -155,8 +156,10 @@ class MoveProjectsService(val project: Project): Disposable {
 
     private fun doRefreshProjects(project: Project, reason: String?): CompletableFuture<List<MoveProject>> {
         val moveProjectsFut = CompletableFuture<List<MoveProject>>()
+
         val syncTask = MoveProjectsSyncTask(project, moveProjectsFut, reason)
         project.taskQueue.run(syncTask)
+
         return moveProjectsFut.thenApply { updatedProjects ->
             runOnlyInNonLightProject(project) {
                 setupProjectRoots(project, updatedProjects)

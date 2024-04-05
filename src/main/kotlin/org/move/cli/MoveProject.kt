@@ -3,6 +3,7 @@ package org.move.cli
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.psi.util.CachedValueProvider
@@ -20,13 +21,15 @@ import org.move.openapiext.contentRoots
 import org.move.stdext.chain
 import org.move.stdext.iterateMoveVirtualFiles
 import org.move.stdext.wrapWithList
+import org.toml.lang.TomlLanguage
+import org.toml.lang.psi.TomlFile
 import java.nio.file.Path
 
 data class MoveProject(
     val project: Project,
     val currentPackage: MovePackage,
     val dependencies: List<Pair<MovePackage, RawAddressMap>>,
-) : UserDataHolderBase() {
+): UserDataHolderBase() {
 
     val contentRoot: VirtualFile get() = this.currentPackage.contentRoot
     val contentRootPath: Path? get() = this.currentPackage.contentRoot.toNioPathOrNull()
@@ -129,8 +132,18 @@ data class MoveProject(
         fun forTests(project: Project): MoveProject {
             checkUnitTestMode()
             val contentRoot = project.contentRoots.first()
-            val moveToml = MoveToml(project)
-            val movePackage = MovePackage(project, contentRoot, moveToml, null)
+            val tomlFile =
+                PsiFileFactory.getInstance(project)
+                    .createFileFromText(
+                        TomlLanguage,
+                        """
+                     [package]
+                     name = "MyPackage"
+                """
+                    ) as TomlFile
+
+            val moveToml = MoveToml(project, tomlFile)
+            val movePackage = MovePackage(project, contentRoot, moveToml)
             return MoveProject(
                 project,
                 movePackage,
