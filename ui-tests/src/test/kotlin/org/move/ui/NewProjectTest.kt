@@ -3,6 +3,7 @@ package org.move.ui
 import com.intellij.openapi.util.io.toCanonicalPath
 import com.intellij.remoterobot.RemoteRobot
 import com.intellij.remoterobot.utils.waitFor
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
@@ -36,6 +37,12 @@ class NewProjectTest {
         val tempPackagePath = tempFolder.toPath().resolve(packageName)
         getExamplePackagesDir().resolve(packageName).toFile().copyRecursively(tempPackagePath.toFile())
         Thread.sleep(500)
+    }
+
+    @AfterEach
+    fun tearDown(robot: RemoteRobot) = with(robot) {
+        closeProject()
+        removeLastRecentProject()
     }
 
     @Test
@@ -118,8 +125,8 @@ class NewProjectTest {
             }
         }
 
-        closeProject()
-        removeLastRecentProject()
+//        closeProject()
+//        removeLastRecentProject()
     }
 
     @Test
@@ -157,8 +164,8 @@ class NewProjectTest {
             }
         }
 
-        closeProject()
-        removeLastRecentProject()
+//        closeProject()
+//        removeLastRecentProject()
     }
 
     @Test
@@ -189,8 +196,8 @@ class NewProjectTest {
             }
         }
 
-        closeProject()
-        removeLastRecentProject()
+//        closeProject()
+//        removeLastRecentProject()
     }
 
     @Test
@@ -207,8 +214,8 @@ class NewProjectTest {
             }
         }
 
-        closeProject()
-        removeLastRecentProject()
+//        closeProject()
+//        removeLastRecentProject()
     }
 
     @Test
@@ -225,8 +232,8 @@ class NewProjectTest {
             }
         }
 
-        closeProject()
-        removeLastRecentProject()
+//        closeProject()
+//        removeLastRecentProject()
     }
 
     @Test
@@ -244,11 +251,9 @@ class NewProjectTest {
             }
         }
 
-        closeProject()
         // reopen project to see that no ProjectActivity or OpenProcessor changed the setting
-        welcomeFrame {
-            openRecentProject("aptos_package")
-        }
+        closeProject()
+        openOrImportProject(projectPath)
 
         ideaFrame {
             openMoveSettings {
@@ -257,8 +262,8 @@ class NewProjectTest {
             }
         }
 
-        closeProject()
-        removeLastRecentProject()
+//        closeProject()
+//        removeLastRecentProject()
     }
 
     // TODO
