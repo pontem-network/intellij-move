@@ -15,6 +15,7 @@ import com.intellij.remoterobot.stepsProcessing.step
 import com.intellij.remoterobot.utils.Locators
 import com.intellij.remoterobot.utils.keyboard
 import com.intellij.remoterobot.utils.waitFor
+import com.intellij.remoterobot.utils.waitForIgnoringError
 import com.intellij.ui.dsl.builder.components.DslLabel
 import java.io.File
 import java.nio.file.Path
@@ -56,10 +57,20 @@ fun RemoteRobot.openOrImportProject(@StepParameter("Project absolute path", "") 
             ApplicationManager.getApplication().invokeLater(openProjectFunction)
         """, runInEdt = true)
 
-    // TODO: wait for status bar to stop processing things
+    // check that idea frame is opened, and no progress bar present
+//    val ideaFrame = find<IdeaFrame>(timeout = Duration.ofSeconds(10))
+//    waitFor {
+//        val progressPanel = ideaFrame.inlineProgressPanel
+//        progressPanel.findAll<ComponentFixture>(byXpath("//div[@class='MyComponent']")).isEmpty()
+//    }
 }
 
-fun RemoteRobot.closeProject() = CommonSteps(this).closeProject()
+fun RemoteRobot.closeProject() {
+    CommonSteps(this).closeProject()
+    waitFor(description = "Wait for the Welcome screen to appear") {
+        findAll<WelcomeFrame>().isNotEmpty()
+    }
+}
 
 @Step("Remove project from recents", "Remove project from recents")
 fun RemoteRobot.removeLastRecentProject() {

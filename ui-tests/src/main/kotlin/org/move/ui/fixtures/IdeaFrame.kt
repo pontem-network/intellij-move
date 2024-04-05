@@ -36,6 +36,8 @@ class IdeaFrame(
                 JMenuBarFixture::class.java, JMenuBarFixture.byType(), Duration.ofSeconds(5))
         }
 
+    val inlineProgressPanel get() = find<CommonContainerFixture>(byXpath("//div[@class='InlineProgressPanel']"))
+
     private fun openSettingsDialog() {
         if (!remoteRobot.isMac()) {
             waitFor {
