@@ -263,12 +263,12 @@ project(":plugin") {
 
         runIdeForUiTests {
             systemProperty("robot-server.port", "8082")
-//            systemProperty "ide.mac.message.dialogs.as.sheets", "false"
-//            systemProperty "jb.privacy.policy.text", "<!--999.999-->"
-//            systemProperty "jb.consents.confirmation.enabled", "false"
-//            systemProperty "ide.mac.file.chooser.native", "false"
-//            systemProperty "jbScreenMenuBar.enabled", "false"
-//            systemProperty "apple.laf.useScreenMenuBar", "false"
+            systemProperty("ide.mac.message.dialogs.as.sheets", "false")
+            systemProperty("jb.privacy.policy.text", "<!--999.999-->")
+            systemProperty("jb.consents.confirmation.enabled", "false")
+            systemProperty("ide.mac.file.chooser.native", "false")
+            systemProperty("jbScreenMenuBar.enabled", "false")
+            systemProperty("apple.laf.useScreenMenuBar", "false")
             systemProperty("idea.trust.all.projects", "true")
             systemProperty("ide.show.tips.on.startup.default.value", "false")
         }

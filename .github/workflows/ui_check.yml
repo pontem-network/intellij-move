@@ -26,8 +26,8 @@ jobs:
 #            url: http://127.0.0.1:8082
 #            reportName: ui-tests-fails-report-linux
               - os: macOS-latest
-                runIde: ./gradlew :plugin:runIdeForUiTests -Pkotlin.incremental=false --no-daemon &
-                runTests: ./gradlew :ui-tests:test -Pkotlin.incremental=false --no-daemon
+                runIde: ./gradlew :plugin:runIdeForUiTests &
+                runTests: ./gradlew :ui-tests:test
                 url: http://127.0.0.1:8082
                 reportName: ui-test-fails-report-mac
     #          - os: windows-latest
@@ -75,15 +75,20 @@ jobs:
               caches/modules-2/files-2.1/com.jetbrains.intellij.idea
               caches/modules-2/files-2.1/com.jetbrains.intellij.clion      
 
-      - name: Prepare UI testing sandbox
-        uses: gradle/gradle-build-action@v2.7.0
-        with:
-          gradle-version: wrapper
-          arguments: ":plugin:prepareUiTestingSandbox -Pkotlin.incremental=false --no-daemon --stacktrace"
-          gradle-home-cache-excludes: |
-            caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-            caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-            caches/modules-2/files-2.1/com.jetbrains.intellij.clion            
+#      - name: Prepare UI testing sandbox
+#        uses: gradle/gradle-build-action@v2.7.0
+#        with:
+#          gradle-version: wrapper
+#          arguments: ":plugin:prepareUiTestingSandbox -Pkotlin.incremental=false --no-daemon --stacktrace"
+#          gradle-home-cache-excludes: |
+#            caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
+#            caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+#            caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+      - name: Clean plugin
+        run: ./gradlew :plugin:clean
+
+      - name: Clean ui-tests
+        run: ./gradlew :ui-tests:clean
 
       - name: Run Idea
         run: ${{ matrix.runIde }}
@@ -93,7 +98,7 @@ jobs:
         with:
           url: ${{ matrix.url }}
           max-attempts: 15
-          retry-delay: 10s
+          retry-delay: 30s
 
       - name: Run tests
         run: ${{ matrix.runTests }}
