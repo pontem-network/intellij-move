@@ -26,8 +26,8 @@ jobs:
 #            url: http://127.0.0.1:8082
 #            reportName: ui-tests-fails-report-linux
               - os: macOS-latest
-                runIde: ./gradlew :plugin:runIdeForUiTests &
-                runTests: ./gradlew :ui-tests:test
+                runIde: ./gradlew :plugin:runIdeForUiTests -Pkotlin.incremental=false --no-daemon &
+                runTests: ./gradlew :ui-tests:test -Pkotlin.incremental=false --no-daemon
                 url: http://127.0.0.1:8082
                 reportName: ui-test-fails-report-mac
     #          - os: windows-latest
