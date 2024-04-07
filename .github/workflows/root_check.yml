@@ -10,8 +10,8 @@ jobs:
     tests:
         strategy:
             matrix:
-                os: [ ubuntu-latest ]
                 gradle-properties-version: [ 232, 233 ]
+                os: [ ubuntu-latest ]
 
         runs-on: ${{ matrix.os }}
         env:
