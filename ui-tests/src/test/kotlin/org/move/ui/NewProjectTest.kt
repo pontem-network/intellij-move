@@ -199,6 +199,11 @@ class NewProjectTest {
         openOrImportProject(tempPackagePath)
 
         ideaFrame {
+            val textEditor = textEditor()
+            assert(textEditor.editor.filePath == tempPackagePath.resolve("Move.toml").toString())
+        }
+
+        ideaFrame {
             moveSettings {
                 assert(aptosRadioButton.isSelected())
                 assert(!suiRadioButton.isSelected())
@@ -212,6 +217,11 @@ class NewProjectTest {
 
         val projectPath = tempFolder.toPath().resolve("sui_package")
         openOrImportProject(projectPath)
+
+        ideaFrame {
+            val textEditor = textEditor()
+            assert(textEditor.editor.filePath == projectPath.resolve("Move.toml").toString())
+        }
 
         ideaFrame {
             moveSettings {
@@ -249,17 +259,41 @@ class NewProjectTest {
     }
 
     @Test
-    fun `move toml file is opened after the first project open`(robot: RemoteRobot) = with(robot) {
+    fun `no move toml opened after reopen from new project`(robot: RemoteRobot) = with(robot) {
+        welcomeFrame {
+            selectNewProjectType("Move")
+        }
+
+        val projectName = "aptos_project"
+        val projectPath = Paths.get(tempFolder.canonicalPath, projectName).toCanonicalPath()
+
+        welcomeFrame {
+            moveSettingsPanel {
+                aptosRadioButton.select()
+                bundledRadioButton.select()
+
+                assert(projectLocationTextField.isEnabled)
+                projectLocationTextField.text = projectPath
+            }
+            createButton.click()
+        }
+
+        ideaFrame { closeAllEditorTabs() }
+        closeProject()
+        openOrImportProject(projectPath)
+
+        ideaFrame {
+            assert(textEditors().isEmpty())
+        }
+    }
+
+    @Test
+    fun `no move toml opened after reopen from existing project import`(robot: RemoteRobot) = with(robot) {
         copyExamplePackageToTempFolder("aptos_package")
 
         // opens as Aptos package
         val projectPath = tempFolder.toPath().resolve("aptos_package")
         openOrImportProject(projectPath)
-
-        ideaFrame {
-            val textEditor = textEditor()
-            assert(textEditor.editor.filePath == projectPath.resolve("Move.toml").toString())
-        }
 
         ideaFrame { closeAllEditorTabs() }
         closeProject()

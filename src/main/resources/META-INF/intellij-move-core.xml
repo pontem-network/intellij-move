@@ -283,11 +283,9 @@
     <directoryProjectGenerator implementation="org.move.ide.newProject.MoveProjectGenerator" />
 
     <postStartupActivity
-        implementation="org.move.ide.newProject.AlwaysRefreshProjectsAfterOpen" />
+        implementation="org.move.ide.newProject.projectActivity.AlwaysRefreshProjectsAfterOpen" />
     <postStartupActivity
-        implementation="org.move.ide.newProject.InferBlockchainTypeOnStartupActivity" />
-<!--    <postStartupActivity-->
-<!--        implementation="org.move.cli.openProject.OpenMoveTomlOnProjectCreationFile" />-->
+        implementation="org.move.ide.newProject.projectActivity.InferBlockchainTypeOnStartupActivity" />
 <!--     background = 5 seconds delayed  -->
 <!--    <postStartupActivity-->
 <!--        implementation="org.move.cli.openProject.CreateDefaultCompileRunConfiguration" />-->

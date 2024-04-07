@@ -86,6 +86,9 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<MoveProjectConfig>(),
             }
         }
         ProjectInitializationSteps.createDefaultCompileConfigurationIfNotExists(project)
+        // NOTE:
+        // this cannot be moved to a ProjectActivity, as Move.toml files
+        // are not created by the time those activities are executed
         ProjectInitializationSteps.openMoveTomlInEditor(project, manifestFile)
     }
 
