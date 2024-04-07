@@ -88,28 +88,28 @@ jobs:
       - name: Run Idea
         run: ${{ matrix.runIde }}
 
-#      - name: Wait for Idea started
-#        uses: jtalk/url-health-check-action@v3
-#        with:
-#          url: ${{ matrix.url }}
-#          max-attempts: 15
-#          retry-delay: 30s
+      - name: Wait for Idea started
+        uses: jtalk/url-health-check-action@v3
+        with:
+          url: ${{ matrix.url }}
+          max-attempts: 15
+          retry-delay: 30s
 
-#      - name: Run tests
-#        run: ${{ matrix.runTests }}
+      - name: Run tests
+        run: ${{ matrix.runTests }}
 
 #      - name: Move video
 #        if: ${{ failure() }}
 #        run: mv ui-tests/video ui-tests/build/reports
 #
-#      - name: Copy logs
-#        if: ${{ failure() }}
-#        run: mv ui-tests/build/idea-sandbox/system/log/ ui-tests/build/reports
-#
-#      - name: Save fails report
-#        if: ${{ failure() }}
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: ${{ matrix.reportName }}
-#          path: |
-#            ui-tests/build/reports
+      - name: Copy logs
+        if: ${{ failure() }}
+        run: mv ui-tests/build/idea-sandbox/system/log/ ui-tests/build/reports
+
+      - name: Save fails report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.reportName }}
+          path: |
+            ui-tests/build/reports
