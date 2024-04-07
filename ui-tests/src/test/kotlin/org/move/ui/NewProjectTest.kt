@@ -1,6 +1,6 @@
 package org.move.ui
 
-import com.automation.remarks.video.annotations.Video
+import com.automation.remarks.junit5.Video
 import com.intellij.openapi.util.io.toCanonicalPath
 import com.intellij.remoterobot.RemoteRobot
 import com.intellij.remoterobot.utils.waitFor
