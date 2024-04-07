@@ -1,5 +1,6 @@
 package org.move.ui
 
+import com.automation.remarks.video.annotations.Video
 import com.intellij.openapi.util.io.toCanonicalPath
 import com.intellij.remoterobot.RemoteRobot
 import com.intellij.remoterobot.utils.waitFor
@@ -46,6 +47,7 @@ class NewProjectTest {
     }
 
     @Test
+    @Video
     fun `new project validation`(robot: RemoteRobot) = with(robot) {
         welcomeFrame {
             selectNewProjectType("Move")
