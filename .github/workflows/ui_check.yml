@@ -62,6 +62,16 @@ jobs:
             caches/modules-2/files-2.1/com.jetbrains.intellij.idea
             caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
+      - name: Prepare UI testing sandbox
+        uses: gradle/gradle-build-action@v2.7.0
+        with:
+          gradle-version: wrapper
+          arguments: ":plugin:prepareUiTestingSandbox -Pkotlin.incremental=false --no-daemon --stacktrace"
+          gradle-home-cache-excludes: |
+            caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
+            caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+            caches/modules-2/files-2.1/com.jetbrains.intellij.clion            
+
       - name: Run Idea
         run: ${{ matrix.runIde }}
 
