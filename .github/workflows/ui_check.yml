@@ -1,4 +1,4 @@
-name: Run UI Tests
+name: ui
 on:
   push:
     branches:
