@@ -53,15 +53,27 @@ jobs:
           distribution: zulu
           java-version: 17
 
-      - name: Build
-        uses: gradle/gradle-build-action@v2.7.0
-        with:
-          gradle-version: wrapper
-          arguments: "assemble testClasses -Pkotlin.incremental=false --no-daemon --stacktrace"
-          gradle-home-cache-excludes: |
-            caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-            caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-            caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+#      - name: Build
+#        uses: gradle/gradle-build-action@v2.7.0
+#        with:
+#          gradle-version: wrapper
+#          cache-read-only: false
+#          arguments: "assemble testClasses -Pkotlin.incremental=false --no-daemon --stacktrace"
+#          gradle-home-cache-excludes: |
+#            caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
+#            caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+#            caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+
+      -   name: Setup Gradle and dependencies
+          uses: gradle/actions/setup-gradle@v3.1.0
+          with:
+            gradle-version: wrapper
+            cache-read-only: false
+            arguments: ":resolveDependencies -Pkotlin.incremental=false --no-daemon"
+            gradle-home-cache-excludes: |
+              caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
+              caches/modules-2/files-2.1/com.jetbrains.intellij.idea
+              caches/modules-2/files-2.1/com.jetbrains.intellij.clion      
 
       - name: Prepare UI testing sandbox
         uses: gradle/gradle-build-action@v2.7.0
