@@ -13,6 +13,7 @@ import com.intellij.remoterobot.steps.Step
 import com.intellij.remoterobot.steps.StepParameter
 import com.intellij.remoterobot.utils.Locators
 import com.intellij.remoterobot.utils.keyboard
+import com.intellij.remoterobot.utils.repeatInTime
 import com.intellij.remoterobot.utils.waitFor
 import com.intellij.ui.dsl.builder.components.DslLabel
 import java.io.File
@@ -53,8 +54,13 @@ fun RemoteRobot.openOrImportProject(@StepParameter("Project absolute path", "") 
         """, runInEdt = true
     )
 
-    // waits till all indexes are built
-    waitFor { !this.commonSteps.isDumbMode() }
+    // wait for 5 seconds or till isDumbMode == false is achieved
+    repeatInTime(
+        duration = Duration.ofSeconds(5),
+        interval = Duration.ofSeconds(1),
+    ) {
+        !this.commonSteps.isDumbMode()
+    }
 }
 
 fun RemoteRobot.closeProject() {

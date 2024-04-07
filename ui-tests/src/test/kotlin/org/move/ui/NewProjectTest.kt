@@ -248,6 +248,28 @@ class NewProjectTest {
         }
     }
 
+    @Test
+    fun `move toml file is opened after the first project open`(robot: RemoteRobot) = with(robot) {
+        copyExamplePackageToTempFolder("aptos_package")
+
+        // opens as Aptos package
+        val projectPath = tempFolder.toPath().resolve("aptos_package")
+        openOrImportProject(projectPath)
+
+        ideaFrame {
+            val textEditor = textEditor()
+            assert(textEditor.editor.filePath == projectPath.resolve("Move.toml").toString())
+        }
+
+        ideaFrame { closeAllEditorTabs() }
+        closeProject()
+        openOrImportProject(projectPath)
+
+        ideaFrame {
+            assert(textEditors().isEmpty())
+        }
+    }
+
     // TODO
 //    @Test
 //    fun `no default compile configuration should be created in pycharm`(robot: RemoteRobot) = with(robot) {

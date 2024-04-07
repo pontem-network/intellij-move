@@ -5,16 +5,19 @@ package org.move.ui.fixtures
 import com.intellij.remoterobot.RemoteRobot
 import com.intellij.remoterobot.data.RemoteComponent
 import com.intellij.remoterobot.fixtures.*
+import com.intellij.remoterobot.search.locators.Locator
 import com.intellij.remoterobot.search.locators.byXpath
 import com.intellij.remoterobot.stepsProcessing.step
-import com.intellij.remoterobot.utils.Locators
 import com.intellij.remoterobot.utils.waitFor
 import java.time.Duration
-import javax.swing.JMenu
 
 fun RemoteRobot.ideaFrame(function: IdeaFrame.() -> Unit) {
     find<IdeaFrame>(timeout = Duration.ofSeconds(10)).apply(function)
 }
+
+fun CommonContainerFixture.isVisible(locator: Locator): Boolean = this.findAll<ComponentFixture>(locator).isNotEmpty()
+
+fun CommonContainerFixture.isNotVisible(locator: Locator): Boolean = !isVisible(locator)
 
 @FixtureName("Idea frame")
 @DefaultXpath("IdeFrameImpl type", "//div[@class='IdeFrameImpl']")
@@ -138,4 +141,6 @@ class IdeaFrame(
         """, true
         )
     }
+
+    fun closeAllEditorTabs() = remoteRobot.commonSteps.invokeAction("CloseAllEditors")
 }
