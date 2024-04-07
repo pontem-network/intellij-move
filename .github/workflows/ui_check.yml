@@ -26,7 +26,7 @@ jobs:
 #            url: http://127.0.0.1:8082
 #            reportName: ui-tests-fails-report-linux
               - os: macOS-latest
-                runIde: ./gradlew :ui-tests:runIdeForUiTests
+                runIde: ./gradlew :ui-tests:runIdeForUiTests &
                 runTests: ./gradlew :ui-tests:test
                 url: http://127.0.0.1:8082
                 reportName: ui-test-fails-report-mac
@@ -93,7 +93,7 @@ jobs:
         with:
           url: ${{ matrix.url }}
           max-attempts: 15
-          retry-delay: 30s
+          retry-delay: 10s
 
       - name: Run tests
         run: ${{ matrix.runTests }}
