@@ -15,16 +15,49 @@ fun RemoteRobot.ideaFrame(function: IdeaFrame.() -> Unit) {
     find<IdeaFrame>(timeout = Duration.ofSeconds(10)).apply(function)
 }
 
-fun CommonContainerFixture.isVisible(locator: Locator): Boolean = this.findAll<ComponentFixture>(locator).isNotEmpty()
+fun RemoteRobot.executeCmd(cmd: String, workDir: String): String =
+    this.callJs(
+        """
+            importClass(java.lang.StringBuilder)
+            importPackage(java.io)
+            
+            let result = null;
+            const builder = new StringBuilder();
+            const pBuilder = new ProcessBuilder(${
+                cmd.split(" ").joinToString(separator = "\", \"", prefix = "\"", postfix = "\"")
+            })
+                .directory(File("$workDir"))
+                .redirectErrorStream(true);
+            let p;
+            try {
+                let s;
+                p = pBuilder.start();
+                const br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                while ((s = br.readLine()) != null) {
+                    builder.append(s + "\n")
+                }
+                p.waitFor();
+                result =  builder.toString();
+            } catch (e) {
+                result = e.getMessage().toString()
+            } finally {
+                if (p) { p.destroy(); }
+            }
+            result;
+        """
+    )
 
-fun CommonContainerFixture.isNotVisible(locator: Locator): Boolean = !isVisible(locator)
+
+fun ContainerFixture.findIsVisible(locator: Locator): Boolean = this.findAll<ComponentFixture>(locator).isNotEmpty()
+
+fun ContainerFixture.findIsNotVisible(locator: Locator): Boolean = !findIsVisible(locator)
 
 @FixtureName("Idea frame")
 @DefaultXpath("IdeFrameImpl type", "//div[@class='IdeFrameImpl']")
 class IdeaFrame(
     remoteRobot: RemoteRobot,
     remoteComponent: RemoteComponent
-) :
+):
     CommonContainerFixture(remoteRobot, remoteComponent) {
 
     val projectViewTree
@@ -36,7 +69,8 @@ class IdeaFrame(
     val menuBar: JMenuBarFixture
         get() = step("Menu...") {
             return@step remoteRobot.find(
-                JMenuBarFixture::class.java, JMenuBarFixture.byType(), Duration.ofSeconds(5))
+                JMenuBarFixture::class.java, JMenuBarFixture.byType(), Duration.ofSeconds(5)
+            )
         }
 
     val inlineProgressPanel get() = find<CommonContainerFixture>(byXpath("//div[@class='InlineProgressPanel']"))
@@ -56,7 +90,8 @@ class IdeaFrame(
 //        }
 //    }
 
-    fun settingsDialog(function: DialogFixture.() -> Unit): DialogFixture = dialog("Settings", function = function)
+    fun settingsDialog(function: DialogFixture.() -> Unit): DialogFixture =
+        dialog("Settings", function = function)
 
     fun DialogFixture.selectMoveSettings() {
         val settingsTreeView = find<ComponentFixture>(byXpath("//div[@class='SettingsTreeView']"))

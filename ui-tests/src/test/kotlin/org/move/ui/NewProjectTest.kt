@@ -2,6 +2,8 @@ package org.move.ui
 
 import com.intellij.openapi.util.io.toCanonicalPath
 import com.intellij.remoterobot.RemoteRobot
+import com.intellij.remoterobot.fixtures.ContainerFixture
+import com.intellij.remoterobot.search.locators.byXpath
 import com.intellij.remoterobot.utils.waitFor
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -18,33 +20,7 @@ import java.time.Duration
 const val APTOS_LOCAL_PATH = "/home/mkurnikov/bin/aptos"
 const val SUI_LOCAL_PATH = "/home/mkurnikov/bin/sui"
 
-@ExtendWith(RemoteRobotExtension::class)
-class NewProjectTest {
-    init {
-        StepsLogger.init()
-    }
-
-    @TempDir
-    lateinit var tempFolder: File
-
-    private fun getResourcesDir(): Path {
-        return Paths.get("").toAbsolutePath()
-            .resolve("src").resolve("test").resolve("resources")
-    }
-
-    private fun getExamplePackagesDir() = getResourcesDir().resolve("example-packages")
-    private fun copyExamplePackageToTempFolder(packageName: String) {
-        val tempPackagePath = tempFolder.toPath().resolve(packageName)
-        getExamplePackagesDir().resolve(packageName).toFile().copyRecursively(tempPackagePath.toFile())
-        Thread.sleep(500)
-    }
-
-    @AfterEach
-    fun tearDown(robot: RemoteRobot) = with(robot) {
-        closeProject()
-        removeLastRecentProject()
-    }
-
+class NewProjectTest: UiTestBase() {
     @Test
     fun `new project validation`(robot: RemoteRobot) = with(robot) {
         welcomeFrame {

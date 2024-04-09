@@ -26,6 +26,8 @@ fun RemoteRobot.welcomeFrame(function: WelcomeFrame.() -> Unit) {
     find(WelcomeFrame::class.java, Duration.ofSeconds(10)).apply(function)
 }
 
+fun RemoteRobot.openOrImportProject(projectDir: File) = openOrImportProject(projectDir.toPath())
+
 fun RemoteRobot.openOrImportProject(absolutePath: Path) = openOrImportProject(absolutePath.toString())
 
 @Step("Open or import project", "Open or import project '{1}'")
