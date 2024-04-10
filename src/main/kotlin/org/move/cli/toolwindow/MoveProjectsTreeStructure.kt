@@ -34,10 +34,10 @@ class MoveProjectsTreeStructure(
 
     override fun getRootElement() = root
 
-    fun reloadTreeModelAsync(moveProjects: List<MoveProject>): CompletableFuture<*> {
+    fun updateMoveProjects(moveProjects: List<MoveProject>) {
         this.moveProjects = moveProjects
         this.root = MoveSimpleNode.Root(moveProjects)
-        return treeModel.invalidateAsync()
+        treeModel.invalidate()
     }
 
     sealed class MoveSimpleNode(parent: SimpleNode?) : CachingSimpleNode(parent) {

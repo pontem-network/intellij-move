@@ -31,14 +31,12 @@ open class DialogFixture(
         fun byTitle(title: String) = byXpath("title $title", "//div[@title='$title' and @class='MyDialog']")
     }
 
-    fun configurableEditor(
-        timeout: Duration = Duration.ofSeconds(20),
-        function: CommonContainerFixture.() -> Unit = {}
-    ) =
-        find<CommonContainerFixture>(byXpath("//div[@class='ConfigurableEditor']"), timeout).apply(function)
-
     val title: String
         get() = callJs("component.getTitle();")
+
+    // component is DialogWrapperPeerImpl.MyDialog
+    fun doOKAction() = runJs("""component.getDialogWrapper().performOKAction(); """, runInEdt = true)
+    fun doCancelAction() = runJs("""component.getDialogWrapper().doCancelAction(); """, runInEdt = true)
 }
 
 class SettingsDialogFixture(
@@ -47,6 +45,9 @@ class SettingsDialogFixture(
 ):
     DialogFixture(remoteRobot, remoteComponent) {
 
-
-
+    fun configurableEditor(
+        timeout: Duration = Duration.ofSeconds(20),
+        function: CommonContainerFixture.() -> Unit = {}
+    ) =
+        find<CommonContainerFixture>(byXpath("//div[@class='ConfigurableEditor']"), timeout).apply(function)
 }

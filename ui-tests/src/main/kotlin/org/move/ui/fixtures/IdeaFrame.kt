@@ -24,8 +24,8 @@ fun RemoteRobot.executeCmd(cmd: String, workDir: String): String =
             let result = null;
             const builder = new StringBuilder();
             const pBuilder = new ProcessBuilder(${
-                cmd.split(" ").joinToString(separator = "\", \"", prefix = "\"", postfix = "\"")
-            })
+            cmd.split(" ").joinToString(separator = "\", \"", prefix = "\"", postfix = "\"")
+        })
                 .directory(File("$workDir"))
                 .redirectErrorStream(true);
             let p;
@@ -48,7 +48,8 @@ fun RemoteRobot.executeCmd(cmd: String, workDir: String): String =
     )
 
 
-fun ContainerFixture.findIsVisible(locator: Locator): Boolean = this.findAll<ComponentFixture>(locator).isNotEmpty()
+fun ContainerFixture.findIsVisible(locator: Locator): Boolean =
+    this.findAll<ComponentFixture>(locator).isNotEmpty()
 
 fun ContainerFixture.findIsNotVisible(locator: Locator): Boolean = !findIsVisible(locator)
 
@@ -90,10 +91,14 @@ class IdeaFrame(
 //        }
 //    }
 
-    fun settingsDialog(function: DialogFixture.() -> Unit): DialogFixture =
-        dialog("Settings", function = function)
+    fun settingsDialog(function: SettingsDialogFixture.() -> Unit) =
+        find<SettingsDialogFixture>(
+            locator = DialogFixture.byTitle("Settings"),
+            timeout = Duration.ofSeconds(20)
+        ).apply(function)
+//        dialog("Settings", function = function)
 
-    fun DialogFixture.selectMoveSettings() {
+    fun SettingsDialogFixture.selectMoveSettings() {
         val settingsTreeView = find<ComponentFixture>(byXpath("//div[@class='SettingsTreeView']"))
         settingsTreeView.findText("Languages & Frameworks").click()
         configurableEditor {
@@ -114,7 +119,7 @@ class IdeaFrame(
             configurableEditor {
                 moveSettingsPanel(function = function)
             }
-            button("OK").click()
+            doOKAction()
         }
     }
 

@@ -4,6 +4,7 @@ import com.intellij.execution.RunManager
 import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
@@ -17,11 +18,13 @@ import com.intellij.openapi.project.ex.ProjectEx
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.ex.ProjectRootManagerEx
+import com.intellij.openapi.startup.StartupManager
 import com.intellij.openapi.util.EmptyRunnable
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.ex.temp.TempFileSystem
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -32,6 +35,8 @@ import org.move.cli.externalSystem.MoveExternalSystemProjectAware
 import org.move.cli.settings.MvProjectSettingsServiceBase.*
 import org.move.cli.settings.MvProjectSettingsServiceBase.Companion.MOVE_SETTINGS_TOPIC
 import org.move.cli.settings.debugErrorOrFallback
+import org.move.cli.toolwindow.AptosToolWindow
+import org.move.cli.toolwindow.AptosToolWindow.Companion.initializeToolWindow
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.checkReadAccessAllowed
@@ -60,6 +65,17 @@ class MoveProjectsService(val project: Project): Disposable {
     init {
         registerProjectAware(project, this)
 
+        with(project.messageBus.connect()) {
+            subscribe(MOVE_PROJECTS_TOPIC, MoveProjectsListener { _, projects ->
+                StartupManager.getInstance(project).runAfterOpened {
+                    // TODO: provide a proper solution instead of using `invokeLater`
+                    ToolWindowManager.getInstance(project).invokeLater {
+                        initializeToolWindow(project)
+                    }
+                }
+            })
+        }
+
 //        with(project.messageBus.connect()) {
 //            if (!isUnitTestMode) {
 //                subscribe(VirtualFileManager.VFS_CHANGES, refreshOnBuildDirChangeWatcher)
@@ -81,6 +97,8 @@ class MoveProjectsService(val project: Project): Disposable {
     }
 
     val allProjects: List<MoveProject> get() = this.projects.state
+
+    val hasAtLeastOneValidProject: Boolean get() = this.allProjects.isNotEmpty()
 
     fun scheduleProjectsRefresh(reason: String? = null): CompletableFuture<List<MoveProject>> {
         LOG.logProjectsRefresh("scheduled", reason)

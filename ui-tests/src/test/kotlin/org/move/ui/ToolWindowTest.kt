@@ -7,10 +7,7 @@ import com.intellij.remoterobot.fixtures.ContainerFixture
 import com.intellij.remoterobot.fixtures.JTreeFixture
 import com.intellij.remoterobot.search.locators.byXpath
 import org.junit.jupiter.api.Test
-import org.move.ui.fixtures.commonSteps
-import org.move.ui.fixtures.findIsNotVisible
-import org.move.ui.fixtures.ideaFrame
-import org.move.ui.fixtures.openOrImportProject
+import org.move.ui.fixtures.*
 
 class ProjectsTreeFixture(
     remoteRobot: RemoteRobot,
@@ -34,7 +31,7 @@ class ToolWindowTest: UiTestBase() {
     }
 
     @Test
-    fun `aptos tool window not available if move project is sui`(robot: RemoteRobot) = with(robot) {
+    fun `aptos tool window for sui project`(robot: RemoteRobot) = with(robot) {
         val projectPath =
             copyExamplePackageToTempFolder("sui_package")
         openOrImportProject(projectPath)
@@ -43,7 +40,7 @@ class ToolWindowTest: UiTestBase() {
         ideaFrame {
             val rightStripe =
                 find<ContainerFixture>(byXpath("//div[@accessiblename='Right Stripe']"))
-            assert(rightStripe.findIsNotVisible(byXpath("//div[@text='Aptos']")))
+            assert(rightStripe.findIsVisible(byXpath("//div[@text='Aptos']")))
         }
     }
 
@@ -77,5 +74,29 @@ class ToolWindowTest: UiTestBase() {
                 )
             )
         }
+
+//        ideaFrame {
+//            moveSettings {
+//                suiRadioButton.select()
+//            }
+//        }
+//
+//        ideaFrame {
+//            val rightStripe =
+//                find<ContainerFixture>(byXpath("//div[@accessiblename='Right Stripe']"))
+//            assert(rightStripe.findIsNotVisible(byXpath("//div[@text='Aptos']")))
+//        }
+//
+//        ideaFrame {
+//            moveSettings {
+//                aptosRadioButton.select()
+//            }
+//        }
+//
+//        ideaFrame {
+//            val rightStripe =
+//                find<ContainerFixture>(byXpath("//div[@accessiblename='Right Stripe']"))
+//            assert(rightStripe.findIsVisible(byXpath("//div[@text='Aptos']")))
+//        }
     }
 }
