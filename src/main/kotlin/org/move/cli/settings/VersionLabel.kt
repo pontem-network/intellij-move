@@ -2,6 +2,7 @@ package org.move.cli.settings
 
 import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBLabel
 import org.move.cli.runConfigurations.CliCommandLineArgs
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.checkIsBackgroundThread
@@ -9,12 +10,28 @@ import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.execute
 import org.move.openapiext.isSuccess
 import java.nio.file.Path
+import javax.swing.Icon
 import javax.swing.JLabel
+
+open class TextOrErrorLabel(icon: Icon?): JBLabel(icon) {
+    fun setText(text: String, errorHighlighting: Boolean) {
+        if (errorHighlighting) {
+            this.text = text
+            this.foreground = JBColor.RED
+        } else {
+            this.text = text
+                .split("\n")
+                .joinToString("<br>", "<html>", "</html>")
+            this.foreground = JBColor.foreground()
+        }
+    }
+}
 
 class VersionLabel(
     parentDisposable: Disposable,
     private val versionUpdateListener: (() -> Unit)? = null
-) : JLabel() {
+):
+    TextOrErrorLabel(null) {
 
     private val versionUpdateDebouncer = UiDebouncer(parentDisposable)
 
@@ -56,15 +73,15 @@ class VersionLabel(
 
     fun setTextInvalidExecutable() = this.setText("N/A (Invalid executable)", errorHighlighting = true)
 
-    fun setText(text: String, errorHighlighting: Boolean) {
-        if (errorHighlighting) {
-            this.text = text
-            this.foreground = JBColor.RED
-        } else {
-            this.text = text
-                .split("\n")
-                .joinToString("<br>", "<html>", "</html>")
-            this.foreground = JBColor.foreground()
-        }
-    }
+//    fun setText(text: String, errorHighlighting: Boolean) {
+//        if (errorHighlighting) {
+//            this.text = text
+//            this.foreground = JBColor.RED
+//        } else {
+//            this.text = text
+//                .split("\n")
+//                .joinToString("<br>", "<html>", "</html>")
+//            this.foreground = JBColor.foreground()
+//        }
+//    }
 }

@@ -374,9 +374,15 @@
             text="Update Move Projects"
             class="org.move.ide.actions.RefreshMoveProjectsAction"
             icon="AllIcons.Actions.Refresh" />
+    <action id="Move.DownloadAptos"
+            description="Download Aptos command line"
+            text="Download Aptos Command Line"
+            class="org.move.ide.actions.DownloadAptosAction"
+            icon="AllIcons.Actions.Download" />
 
     <group id="Move.Aptos">
       <reference id="Move.RefreshAllProjects" />
+      <reference id="Move.DownloadAptos" />
     </group>
   </actions>
 </idea-plugin>
