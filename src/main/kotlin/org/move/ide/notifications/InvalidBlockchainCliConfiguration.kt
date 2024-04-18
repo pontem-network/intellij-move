@@ -9,7 +9,7 @@ import org.move.cli.settings.*
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
 import org.move.openapiext.common.isUnitTestMode
-import org.move.openapiext.showSettings
+import org.move.openapiext.showSettingsDialog
 
 class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationProvider(project),
                                                            DumbAware {
@@ -36,7 +36,7 @@ class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationP
         return EditorNotificationPanel().apply {
             text = "$blockchain CLI path is not provided or invalid"
             createActionLabel("Configure") {
-                project.showSettings<PerProjectMoveConfigurable>()
+                project.showSettingsDialog<PerProjectMoveConfigurable>()
             }
             createActionLabel("Do not show again") {
                 disableNotification(file)

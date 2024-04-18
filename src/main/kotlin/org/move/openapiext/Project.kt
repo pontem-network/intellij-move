@@ -24,7 +24,7 @@ fun Project.aptosCommandConfigurationsSettings(): List<RunnerAndConfigurationSet
 //fun Project.aptosBuildRunConfigurations(): List<MoveCommandConfiguration> =
 //    aptosCommandConfigurations().filter { it.command.startsWith("move compile") }
 
-inline fun <reified T: Configurable> Project.showSettings() {
+inline fun <reified T: Configurable> Project.showSettingsDialog() {
     ShowSettingsUtil.getInstance().showSettingsDialog(this, T::class.java)
 }
 

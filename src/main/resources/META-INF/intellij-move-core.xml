@@ -379,10 +379,16 @@
             text="Download Aptos Command Line"
             class="org.move.ide.actions.DownloadAptosAction"
             icon="AllIcons.Actions.Download" />
+    
+    <action id="Move.ShowSettings"
+            class="org.move.ide.actions.MoveEditSettingsAction"
+            icon="AllIcons.General.Settings">
+    </action>
 
     <group id="Move.Aptos">
       <reference id="Move.RefreshAllProjects" />
-      <reference id="Move.DownloadAptos" />
+      <separator/>
+      <reference id="Move.ShowSettings" />
     </group>
   </actions>
 </idea-plugin>

@@ -9,7 +9,7 @@ import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.*
 import org.move.cli.settings.aptos.ChooseAptosCliPanel
 import org.move.cli.settings.sui.ChooseSuiCliPanel
-import org.move.openapiext.showSettings
+import org.move.openapiext.showSettingsDialog
 
 class PerProjectMoveConfigurable(val project: Project):
     BoundSearchableConfigurable(
@@ -84,7 +84,7 @@ class PerProjectMoveConfigurable(val project: Project):
                 if (!project.isDefault) {
                     row {
                         link("Set default project settings") {
-                            ProjectManager.getInstance().defaultProject.showSettings<PerProjectMoveConfigurable>()
+                            ProjectManager.getInstance().defaultProject.showSettingsDialog<PerProjectMoveConfigurable>()
                         }
                             //                        .visible(true)
                             .align(AlignX.RIGHT)
