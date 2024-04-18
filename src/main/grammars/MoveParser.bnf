@@ -972,16 +972,22 @@ Initializer ::= '=' Expr { pin = 1 }
 
 BorrowExpr ::= '&' mut? Expr
 
-DotExpr ::= Expr DotExpr_field
+DotExpr ::= Expr DotExpr_inner
 // Do not inline this rule, it breaks expression parsing
-private DotExpr_field ::= '.' (!'.') StructDotField {
+private DotExpr_inner ::= '.' !('.' | VectorStart) (StructDotField | MethodCall) {
     pin = 2
     consumeTokenMethod = "consumeTokenFast"
 }
-StructDotField ::= !(<<VECTOR_IDENTIFIER>> ('[' | '<')) IDENTIFIER !('(' | '::' | '!' | '{')
+private VectorStart ::= (<<VECTOR_IDENTIFIER>> ('[' | '<'))
+
+StructDotField ::= IDENTIFIER !('(' | '::' | '!' | '{')
 {
-    implements = ["org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"]
+    implements = ["org.move.lang.core.psi.ext.MvMethodOrField"]
     mixin = "org.move.lang.core.psi.ext.MvStructDotFieldMixin"
+}
+MethodCall ::= IDENTIFIER TypeArgumentList? ValueArgumentList
+{
+//    implements = ["org.move.lang.core.psi.ext.MvMethodOrField"]
 }
 
 IndexExpr ::= Expr IndexArg

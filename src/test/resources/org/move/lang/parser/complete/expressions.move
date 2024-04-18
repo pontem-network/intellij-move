@@ -41,6 +41,8 @@ module M {
     fun dot() {
         bin.field1.field2;
         bin.field < 1;
+        bin.receiver_func();
+        bin.field.call();
     }
     spec dot {
         bin.field[1];

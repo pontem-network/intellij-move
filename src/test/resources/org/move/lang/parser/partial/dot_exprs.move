@@ -1,9 +1,5 @@
 module 0x1::dot_exprs {
     fun m() {
-        bin.field. call();
-
-        bin. call();
-
         bin. assert!(true, 1);
 
         bin. S { field: 1 };
