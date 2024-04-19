@@ -113,3 +113,5 @@ val MvFunctionLike.signatureText: String
         val returnType = if (returnTypeText == "") "" else ": $returnTypeText"
         return "$params$returnType"
     }
+
+val MvFunction.selfParameter: MvFunctionParameter? get() = this.parameters.find { it.name == "self" }

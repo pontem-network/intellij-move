@@ -55,7 +55,7 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
                 ?: return
             val vs = when {
                 moduleRef.isSelf -> setOf(Visibility.Internal)
-                else -> Visibility.buildSetOfVisibilities(pathElement)
+                else -> Visibility.publicVisibilitiesFor(pathElement)
             }
             processModuleItems(module, namespaces, vs, pathScopeInfo) {
                 val lookup = it.element.createLookupElement(ctx)

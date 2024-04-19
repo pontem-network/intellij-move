@@ -47,7 +47,7 @@ object ImportsCompletionProvider: MvCompletionProvider() {
 
         val vs = when {
             moduleRef.isSelf -> setOf(Visibility.Internal)
-            else -> Visibility.buildSetOfVisibilities(itemImport)
+            else -> Visibility.publicVisibilitiesFor(itemImport)
         }
         val ns = setOf(Namespace.NAME, Namespace.TYPE, Namespace.FUNCTION)
         val contextScopeInfo =

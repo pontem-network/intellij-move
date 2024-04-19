@@ -987,7 +987,8 @@ StructDotField ::= IDENTIFIER !('(' | '::' | '!' | '{')
 }
 MethodCall ::= IDENTIFIER TypeArgumentList? ValueArgumentList
 {
-//    implements = ["org.move.lang.core.psi.ext.MvMethodOrField"]
+    implements = ["org.move.lang.core.psi.ext.MvMethodOrField"]
+    mixin = "org.move.lang.core.psi.ext.MvMethodCallMixin"
 }
 
 IndexExpr ::= Expr IndexArg

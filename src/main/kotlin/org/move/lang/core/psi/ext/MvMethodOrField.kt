@@ -7,4 +7,4 @@ import org.move.lang.core.resolve.ref.MvMandatoryReferenceElement
 interface MvMethodOrField : MvMandatoryReferenceElement
 
 val MvMethodOrField.parentDotExpr: MvDotExpr get() = parent as MvDotExpr
-val MvMethodOrField.receiver: MvExpr get() = parentDotExpr.expr
+val MvMethodOrField.receiverExpr: MvExpr get() = parentDotExpr.expr
