@@ -2,14 +2,19 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import com.intellij.psi.ResolveResult
 import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ScopeItem
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
+import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.types.infer.foldTyTypeParameterWith
+import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.*
+import org.move.stdext.wrapWithList
 
 typealias MatchSequence<T> = Sequence<ScopeItem<T>>
 
@@ -38,7 +43,10 @@ fun getMethodVariants(element: MvMethodOrField, receiverTy: Ty, msl: Boolean): M
                 val selfParam = it.selfParameter ?: return@filter false
                 // TODO: support vector
                 val selfTy = selfParam.type?.loweredType(msl) ?: return@filter false
-                TyReference.isCompatibleWithAutoborrow(receiverTy, selfTy)
+                // need to use TyVar here, loweredType() erases them
+                val selfTyWithTyVars =
+                    selfTy.foldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }
+                TyReference.isCompatibleWithAutoborrow(receiverTy, selfTyWithTyVars, msl)
             }
     return functions
         .filter { it.name != null }
@@ -48,16 +56,13 @@ fun getMethodVariants(element: MvMethodOrField, receiverTy: Ty, msl: Boolean): M
 class MvMethodCallReferenceImpl(
     element: MvMethodCall
 ):
-    MvPolyVariantReferenceCached<MvMethodCall>(element) {
+    MvPolyVariantReferenceBase<MvMethodCall>(element) {
 
-    override fun multiResolveInner(): List<MvNamedElement> {
+    override fun multiResolve(): List<MvNamedElement> {
         val msl = element.isMsl()
-        val refName = element.referenceName
-
-        val receiverTy = element.inferReceiverTy(msl).knownOrNull() ?: return emptyList()
-        val methods = getMethodVariants(element, receiverTy, msl)
-        return methods
-            .filterByName(refName).toList()
+        val receiverExpr = element.receiverExpr
+        val inference = receiverExpr.inference(msl) ?: return emptyList()
+        return inference.getResolvedMethod(element).wrapWithList()
     }
 
     override fun isReferenceTo(element: PsiElement): Boolean =

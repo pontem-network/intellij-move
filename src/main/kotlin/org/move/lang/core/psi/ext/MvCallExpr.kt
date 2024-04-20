@@ -2,16 +2,14 @@ package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.*
 
-val MvCallExpr.typeArguments: List<MvTypeArgument> get() = this.path.typeArguments
+interface MvCallable: MvElement {
+    val valueArgumentList: MvValueArgumentList?
+}
 
-val MvCallExpr.valueArguments: List<MvValueArgument>
+
+val MvCallable.valueArguments: List<MvValueArgument>
     get() =
         this.valueArgumentList?.valueArgumentList.orEmpty()
 
-val MvAssertBangExpr.valueArguments: List<MvValueArgument>
-    get() =
-        this.valueArgumentList?.valueArgumentList.orEmpty()
+val MvCallable.argumentExprs: List<MvExpr?> get() = this.valueArguments.map { it.expr }
 
-val MvCallExpr.callArgumentExprs: List<MvExpr?> get() = this.valueArguments.map { it.expr }
-
-val MvAssertBangExpr.callArgumentExprs: List<MvExpr?> get() = this.valueArguments.map { it.expr }

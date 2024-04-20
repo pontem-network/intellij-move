@@ -92,7 +92,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                             if (parent.descendantHasTypeError(inference.typeErrors)) {
                                 return
                             }
-                            val callTy = inference.getCallExprType(parent) as? TyFunction ?: return
+                            val callTy = inference.getCallableType(parent) as? TyFunction ?: return
                             // if no type args are passed, check whether all type params are inferrable
                             if (callTy.needsTypeAnnotation()) {
                                 Diagnostic
@@ -170,7 +170,7 @@ class MvErrorAnnotator : MvAnnotatorBase() {
                         is MvCallExpr -> {
                             val msl = parentExpr.path.isMslScope
                             val callTy =
-                                parentExpr.inference(msl)?.getCallExprType(parentExpr) as? TyCallable ?: return
+                                parentExpr.inference(msl)?.getCallableType(parentExpr) as? TyCallable ?: return
                             callTy.paramTypes.size
                         }
                         is MvAssertBangExpr -> {

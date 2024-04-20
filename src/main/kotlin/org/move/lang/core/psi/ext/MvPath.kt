@@ -34,7 +34,7 @@ val MvPath.isUpdateFieldArg2: Boolean
             ?.let { if (it.path.textMatches("update_field")) it else null }
             ?.let {
                 val expr = this.ancestorStrict<MvRefExpr>() ?: return@let -1
-                it.callArgumentExprs.indexOf(expr)
+                it.argumentExprs.indexOf(expr)
             }
         return ind == 1
     }
@@ -46,9 +46,6 @@ val MvPath.nullModuleRef: Boolean
         identifier != null && this.moduleRef == null
 
 val MvPath.isQualPath: Boolean get() = !this.nullModuleRef
-
-val MvPath.typeArguments: List<MvTypeArgument>
-    get() = typeArgumentList?.typeArgumentList.orEmpty()
 
 val MvPath.maybeStruct get() = reference?.resolveWithAliases() as? MvStruct
 

@@ -8,6 +8,8 @@ package org.move.lang.core.types.ty
 import org.move.ide.presentation.tyToString
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
+import org.move.lang.core.types.infer.foldTyTypeParameterWith
+import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.RefPermissions.READ
 import org.move.lang.core.types.ty.RefPermissions.WRITE
 
@@ -64,12 +66,11 @@ data class TyReference(
             return inferred.isMut || !expected.isMut
         }
 
-        fun isCompatibleWithAutoborrow(ty: Ty, intoTy: Ty): Boolean {
+        fun isCompatibleWithAutoborrow(ty: Ty, intoTy: Ty, msl: Boolean): Boolean {
             // if underlying types are different, no match
             val autoborrowedTy =
                 (if (intoTy is TyReference) coerceAutoborrow(ty, intoTy.isMut) else ty) ?: return false
-            return autoborrowedTy == intoTy
-//            return coerceAutoborrow(ty, intoTy.isMut) != null
+            return isCompatible(intoTy, autoborrowedTy, msl)
         }
 
         fun coerceAutoborrow(ty: Ty, mut: Boolean): Ty? {

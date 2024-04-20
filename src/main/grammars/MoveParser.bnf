@@ -930,7 +930,10 @@ AddressLit ::= '@' AddressRef { pin = 1 }
 
 CallExpr ::= (Path &'(') ValueArgumentList {
     pin = 1
-    implements = ["org.move.lang.core.psi.PathExpr"]
+    implements = [
+        "org.move.lang.core.psi.PathExpr"
+        "org.move.lang.core.psi.ext.MvCallable"
+    ]
 }
 ValueArgumentList ::= '(' ValueArgumentList_items? ')' {
     pin = 1
@@ -987,7 +990,11 @@ StructDotField ::= IDENTIFIER !('(' | '::' | '!' | '{')
 }
 MethodCall ::= IDENTIFIER TypeArgumentList? ValueArgumentList
 {
-    implements = ["org.move.lang.core.psi.ext.MvMethodOrField"]
+    implements = [
+        "org.move.lang.core.psi.ext.MvMethodOrField"
+        "org.move.lang.core.psi.ext.MvMethodOrPath"
+        "org.move.lang.core.psi.ext.MvCallable"
+    ]
     mixin = "org.move.lang.core.psi.ext.MvMethodCallMixin"
 }
 
@@ -1001,7 +1008,10 @@ RefExpr ::= Path !'{' {
 
 Path ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList?
 {
-    implements = ["org.move.lang.core.resolve.ref.MvPathReferenceElement"]
+    implements = [
+        "org.move.lang.core.resolve.ref.MvPathReferenceElement"
+        "org.move.lang.core.psi.ext.MvMethodOrPath"
+    ]
     mixin = "org.move.lang.core.psi.ext.MvPathMixin"
 }
 
@@ -1044,7 +1054,10 @@ NamedAddress ::= IDENTIFIER
 }
 
 /// Macros
-AssertBangExpr ::= <<ASSERT_IDENTIFIER>> '!' ValueArgumentList { pin = 2 }
+AssertBangExpr ::= <<ASSERT_IDENTIFIER>> '!' ValueArgumentList {
+    pin = 2
+    implements = [ "org.move.lang.core.psi.ext.MvCallable" ]
+}
 //AssertBangExpr ::= MacroIdent ValueArgumentList { pin = 1 }
 //MacroIdent ::= IDENTIFIER '!'
 

@@ -6,7 +6,7 @@ import org.move.ide.utils.FunctionSignature
 import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvRefExpr
 import org.move.lang.core.psi.MvStructLitExpr
-import org.move.lang.core.psi.ext.callArgumentExprs
+import org.move.lang.core.psi.ext.argumentExprs
 import org.move.lang.core.psi.ext.startOffset
 
 @Suppress("UnstableApiUsage")
@@ -17,7 +17,7 @@ object InlayParameterHints {
         val signature = FunctionSignature.resolve(elem) ?: return emptyList()
         return signature.parameters
             .map { it.name }
-            .zip(elem.callArgumentExprs)
+            .zip(elem.argumentExprs)
             .asSequence()
             .filter { (_, arg) -> arg != null }
             // don't show argument, if just function call / variable / struct literal
