@@ -7,7 +7,7 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.completion.createCompletionLookupElement
+import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.completion.createSelfLookup
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvUseItem
@@ -57,7 +57,7 @@ object ImportsCompletionProvider: MvCompletionProvider() {
             )
         processModuleItems(referredModule, ns, vs, contextScopeInfo) {
             result.addElement(
-                it.element.createCompletionLookupElement(BasicInsertHandler(), ns = ns)
+                it.element.createLookupElement(BasicInsertHandler(), ns = ns)
             )
             false
         }

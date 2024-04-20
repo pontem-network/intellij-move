@@ -40,6 +40,8 @@ val TypeFoldable<*>.hasTyUnknown get() = visitWith(HAS_TY_UNKNOWN_VISITOR)
 val TypeFoldable<*>.needsInfer get(): Boolean = visitWith(NEEDS_INFER)
 val TypeFoldable<*>.needsSubst get(): Boolean = visitWith(NEEDS_SUBST)
 
+fun Ty.knownOrNull(): Ty? = takeIf { it !is TyUnknown }
+
 abstract class Ty(val flags: TypeFlags = 0) : TypeFoldable<Ty> {
 
     override fun foldWith(folder: TypeFolder): Ty = folder(this)

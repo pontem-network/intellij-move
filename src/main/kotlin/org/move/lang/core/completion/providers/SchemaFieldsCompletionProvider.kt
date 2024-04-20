@@ -6,7 +6,7 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.completion.createCompletionLookupElement
+import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvSchemaLitField
 import org.move.lang.core.psi.ext.fieldBindings
 import org.move.lang.core.psi.ext.fieldNames
@@ -32,7 +32,7 @@ object SchemaFieldsCompletionProvider : MvCompletionProvider() {
         val providedFieldNames = schemaLit.fieldNames
 
         for (fieldBinding in schema.fieldBindings.filter { it.name !in providedFieldNames }) {
-            result.addElement(fieldBinding.createCompletionLookupElement())
+            result.addElement(fieldBinding.createLookupElement())
         }
     }
 }

@@ -10,7 +10,7 @@ import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
-import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.completion.createLookupElementWithContext
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
@@ -58,7 +58,7 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
                 else -> Visibility.publicVisibilitiesFor(pathElement)
             }
             processModuleItems(module, namespaces, vs, pathScopeInfo) {
-                val lookup = it.element.createLookupElement(ctx)
+                val lookup = it.element.createLookupElementWithContext(ctx)
                 result.addElement(lookup)
                 false
             }
@@ -72,7 +72,7 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
             }
             processedNames.add(name)
             result.addElement(
-                element.createLookupElement(ctx, priority = element.completionPriority)
+                element.createLookupElementWithContext(ctx, priority = element.completionPriority)
             )
             false
         }
@@ -95,7 +95,7 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
             importContext,
         )
         candidates.forEach { candidate ->
-            val lookupElement = candidate.element.createLookupElement(
+            val lookupElement = candidate.element.createLookupElementWithContext(
                 ctx,
                 priority = UNIMPORTED_ITEM_PRIORITY,
                 insertHandler = ImportInsertHandler(parameters, candidate)

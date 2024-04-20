@@ -15,7 +15,8 @@ fun LookupElement.toMvLookupElement(properties: LookupElementProperties): MvLook
 class MvLookupElement(
     delegate: LookupElement,
     val props: LookupElementProperties
-) : LookupElementDecorator<LookupElement>(delegate) {
+):
+    LookupElementDecorator<LookupElement>(delegate) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -56,9 +57,9 @@ data class LookupElementProperties(
 
 fun lookupProperties(element: MvNamedElement, context: CompletionContext): LookupElementProperties {
     var props = LookupElementProperties()
-    val msl = context.contextScopeInfo.isMslScope
     val expectedTy = context.expectedTy
     if (expectedTy != null) {
+        val msl = context.contextScopeInfo.isMslScope
         val itemTy = when (element) {
             is MvFunctionLike -> element.declaredType(msl).retType
             is MvStruct -> element.declaredType(msl)

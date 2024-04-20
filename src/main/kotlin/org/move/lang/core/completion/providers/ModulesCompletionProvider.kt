@@ -46,7 +46,7 @@ object ModulesCompletionProvider: MvCompletionProvider() {
         val ctx = CompletionContext(refElement, namespaces, contextScopeInfo)
         processItems(refElement, namespaces, contextScopeInfo) { (name, element) ->
             result.addElement(
-                element.createLookupElement(ctx, priority = IMPORTED_MODULE_PRIORITY)
+                element.createLookupElementWithContext(ctx, priority = IMPORTED_MODULE_PRIORITY)
             )
             processedNames.add(name)
             false
@@ -72,7 +72,7 @@ object ModulesCompletionProvider: MvCompletionProvider() {
                                              })
         candidates.forEach { candidate ->
             val lookupElement =
-                candidate.element.createCompletionLookupElement(
+                candidate.element.createLookupElement(
                     ImportInsertHandler(parameters, candidate),
                     importContext.namespaces,
                     priority = UNIMPORTED_ITEM_PRIORITY,

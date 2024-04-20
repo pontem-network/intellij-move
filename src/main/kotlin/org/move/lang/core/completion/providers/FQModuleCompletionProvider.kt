@@ -7,7 +7,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.CompletionContext
-import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.completion.createLookupElementWithContext
 import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.psi.refItemScopes
 import org.move.lang.core.resolve.ContextScopeInfo
@@ -50,7 +50,7 @@ object FQModuleCompletionProvider : MvCompletionProvider() {
             val module = it.element
             val moduleAddress = module.address(moveProj)
             if (Address.eq(positionAddress, moduleAddress)) {
-                val lookup = module.createLookupElement(completionContext)
+                val lookup = module.createLookupElementWithContext(completionContext)
                 result.addElement(lookup)
             }
             false

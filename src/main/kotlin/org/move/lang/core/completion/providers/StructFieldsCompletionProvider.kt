@@ -8,8 +8,11 @@ import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.MvPsiPatterns.bindingPat
-import org.move.lang.core.completion.createCompletionLookupElement
-import org.move.lang.core.psi.*
+import org.move.lang.core.completion.createLookupElement
+import org.move.lang.core.psi.MvBindingPat
+import org.move.lang.core.psi.MvStruct
+import org.move.lang.core.psi.MvStructLitField
+import org.move.lang.core.psi.MvStructPatField
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.withParent
 import org.move.lang.core.withSuperParent
@@ -25,9 +28,6 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
                 .withParent<MvStructPatField>(),
             bindingPat()
                 .withSuperParent<MvStructPatField>(2),
-            PlatformPatterns
-                .psiElement()
-                .withParent<MvStructDotField>(),
         )
 
     override fun addCompletions(
@@ -56,17 +56,9 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
                     result
                 )
             }
-            is MvStructDotField -> {
-                val receiverItem = element.receiverItem ?: return
-                receiverItem.fields
-                    .forEach {
-                        result.addElement(
-                            it.createCompletionLookupElement()
-                        )
-                    }
-            }
         }
     }
+
 
     private fun addFieldsToCompletion(
         referredStruct: MvStruct,
@@ -74,7 +66,8 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         result: CompletionResultSet,
     ) {
         for (field in referredStruct.fields.filter { it.name !in providedFieldNames }) {
-            result.addElement(field.createCompletionLookupElement())
+            result.addElement(field.createLookupElement())
         }
     }
 }
+

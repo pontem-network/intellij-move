@@ -2,28 +2,34 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
-import org.move.lang.core.resolve.MatchingProcessor
+import org.move.lang.core.resolve.ScopeItem
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceCached
 import org.move.lang.core.resolve.ref.Visibility
-import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
-import org.move.lang.core.types.ty.TyReference
-import org.move.lang.core.types.ty.TyStruct
-import org.move.lang.core.types.ty.TyUnknown
+import org.move.lang.core.types.ty.*
 
-fun processMethods(element: MvMethodCall, msl: Boolean, processor: MatchingProcessor<MvFunction>) {
-    val inference = element.inference(msl) ?: return
-    val receiverTy = inference.getExprType(element.receiverExpr).takeIf { it !is TyUnknown }
-        ?: return
+typealias MatchSequence<T> = Sequence<ScopeItem<T>>
 
+fun <T: MvNamedElement> MatchSequence<T>.filterByName(refName: String): Sequence<T> {
+    return this
+        .filter { it.name == refName }
+        .map { it.element }
+}
+
+fun getMethodVariants(element: MvMethodOrField, receiverTy: Ty, msl: Boolean): MatchSequence<MvFunction> {
     // TODO: vector
-    val structItem = (receiverTy.derefIfNeeded() as? TyStruct)?.item ?: return
+    if (receiverTy is TyVector) return emptySequence()
+
+    val structItem = (receiverTy.derefIfNeeded() as? TyStruct)?.item ?: return emptySequence()
 
     val structItemModule = structItem.module
     val visibilities = Visibility.publicVisibilitiesFor(element).toMutableSet()
-    if (element.containingModule == structItemModule) {
+    // structItemModule refers to a module from "before completion", need to return to the .containingModule of the same state
+    val elementModule = element.containingModule?.getOriginalOrSelf()
+    if (elementModule == structItemModule) {
         visibilities.add(Visibility.Internal)
     }
     val functions =
@@ -34,7 +40,9 @@ fun processMethods(element: MvMethodCall, msl: Boolean, processor: MatchingProce
                 val selfTy = selfParam.type?.loweredType(msl) ?: return@filter false
                 TyReference.isCompatibleWithAutoborrow(receiverTy, selfTy)
             }
-    processor.matchAll(functions)
+    return functions
+        .filter { it.name != null }
+        .map { ScopeItem(it.name!!, it) }.asSequence()
 }
 
 class MvMethodCallReferenceImpl(
@@ -45,30 +53,15 @@ class MvMethodCallReferenceImpl(
     override fun multiResolveInner(): List<MvNamedElement> {
         val msl = element.isMsl()
         val refName = element.referenceName
-        val resolved = mutableListOf<MvNamedElement>()
-        processMethods(element, msl) {
-            if (it.name == refName) {
-                resolved.add(it.element)
-            }
-            false
-        }
-        return resolved
-//        val inference = element.inference(msl) ?: return emptyList()
-//        val receiverTy = inference.getExprType(element.receiverExpr).takeIf { it !is TyUnknown }
-//            ?: return emptyList()
-//
-//        // TODO: vector
-//        val structItem = (receiverTy.derefIfNeeded() as? TyStruct)?.item ?: return emptyList()
-//
-//        val structItemModule = receiverTy.declaringModule ?: return emptyList()
-//        val visibilities = Visibility.buildSetOfVisibilities(element)
-//        val refName = element.referenceName
-//
-//        val functions = visibilities.flatMap { structItemModule.visibleFunctions(it) }
+
+        val receiverTy = element.inferReceiverTy(msl).knownOrNull() ?: return emptyList()
+        val methods = getMethodVariants(element, receiverTy, msl)
+        return methods
+            .filterByName(refName).toList()
     }
 
     override fun isReferenceTo(element: PsiElement): Boolean =
-        element is MvFunctionLike && super.isReferenceTo(element)
+        element is MvFunction && super.isReferenceTo(element)
 }
 
 abstract class MvMethodCallMixin(node: ASTNode): MvElementImpl(node),

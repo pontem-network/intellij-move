@@ -6,7 +6,7 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.completion.createCompletionLookupElement
+import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvBindingPat
 import org.move.lang.core.psi.MvLetStmt
 import org.move.lang.core.psi.containingModule
@@ -41,7 +41,7 @@ object StructPatCompletionProvider: MvCompletionProvider() {
                 refItemScopes = bindingPat.namedItemScopes,
             )
         processModuleItems(module, namespaces, setOf(Visibility.Internal), contextScopeInfo) {
-            val lookup = it.element.createCompletionLookupElement()
+            val lookup = it.element.createLookupElement()
             result.addElement(lookup)
             false
 
