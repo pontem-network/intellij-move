@@ -70,6 +70,7 @@ fun lookupProperties(element: MvNamedElement, context: CompletionContext): Looku
                 // so changing to infallible getPatTypeOrUnknown()
                 inference?.getPatTypeOrUnknown(element) ?: TyUnknown
             }
+            is MvStructField -> element.type?.loweredType(msl) ?: TyUnknown
             else -> TyUnknown
         }
         // it is required for the TyInfer.TyVar to always have a different underlying unification table

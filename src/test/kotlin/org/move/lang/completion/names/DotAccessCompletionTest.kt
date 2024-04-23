@@ -92,6 +92,24 @@ module 0x1::M {
         }        
     """)
 
+    fun `test receiver style function completion with assignment`() = doSingleCompletion("""
+        module 0x1::main {
+            struct S { field: u8 }
+            fun receiver(self: &S): u8 {}
+            fun main(s: S) {
+                let f: u8 = s.rece/*caret*/
+            }
+        }        
+    """, """
+        module 0x1::main {
+            struct S { field: u8 }
+            fun receiver(self: &S): u8 {}
+            fun main(s: S) {
+                let f: u8 = s.receiver()/*caret*/
+            }
+        }        
+    """)
+
     fun `test receiver style function completion from another module`() = doSingleCompletion("""
         module 0x1::m {
             struct S { field: u8 }

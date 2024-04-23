@@ -125,22 +125,57 @@ module 0x1::Main {
         """
     )
 
-    fun checkCompletionsOrder(listStart: List<String>, @Language("Move") code: String) {
+    fun `test field type`() = checkCompletionsOrder(
+        listOf("field2", "field1"),
+        """
+            module 0x1::main {
+                struct S { field1: u8, field2: u16 }
+                fun get_member1(self: &S): u8 { s.field1 }
+                fun get_member2(self: &S): u16 { s.field2 }
+                fun main(s: S) {
+                    let a: u16 = s.fi/*caret*/
+                }                
+            }            
+        """
+    )
+
+    fun `test method return type`() = checkCompletionsOrder(
+        listOf("get_member2", "get_member1"),
+        """
+            module 0x1::main {
+                struct S { field1: u8, field2: u16 }
+                fun get_member1(self: &S): u8 { s.field1 }
+                fun get_member2(self: &S): u16 { s.field2 }
+                fun main(s: S) {
+                    let a: u16 = s.get_m/*caret*/
+                }                
+            }            
+        """
+    )
+
+    private fun checkCompletionsOrder(listStart: List<String>, @Language("Move") code: String) {
         val variants = completionFixture.invokeCompletion(code)
         val lookupStrings = variants.map { it.lookupString }
-        checkValidPrefix(listStart, lookupStrings)
+        checkCompletionListStartsWith(listStart, lookupStrings)
     }
 
-    fun checkFqCompletionsOrder(listStart: List<String>, @Language("Move") code: String) {
+    private fun checkFqCompletionsOrder(listStart: List<String>, @Language("Move") code: String) {
         val variants = completionFixture.invokeCompletion(code)
         val lookupStrings =
             variants.map { (it.psiElement as? MvQualNamedElement)?.qualName?.editorText() ?: it.lookupString }
-        checkValidPrefix(listStart, lookupStrings)
+        checkCompletionListStartsWith(listStart, lookupStrings)
     }
 
-    private fun checkValidPrefix(prefix: List<String>, lookups: List<String>) {
-        check(lookups.subList(0, prefix.size) == prefix) {
-            "Expected variants \n    $prefix\n ain't a prefix of actual \n    $lookups"
+    private fun checkCompletionListStartsWith(prefix: List<String>, completions: List<String>) {
+        check(completions.size >= prefix.size) {
+            "Completions list is smaller than expected prefix. \n" +
+                    "    expected prefix: $prefix \n" +
+                    "    actual completions: $completions"
+        }
+        check(completions.subList(0, prefix.size) == prefix) {
+            "Wrong order of completions. \n" +
+                    "    expected prefix: $prefix \n" +
+                    "    actual completions: $completions"
         }
     }
 }

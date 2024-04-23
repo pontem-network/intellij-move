@@ -529,7 +529,7 @@ module 0x1::main {
                 self.field
             }
             fun main(s: S<u8>) {
-                s.receiver()
+                s.receiver();
                   //^ u8
             }
         }        
@@ -542,7 +542,7 @@ module 0x1::main {
                 p
             }
             fun main(s: S) {
-                s.receiver(1u8)
+                s.receiver(1u8);
                   //^ u8
             }
         }        

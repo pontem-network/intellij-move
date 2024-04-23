@@ -210,7 +210,7 @@ class TypeInferenceWalker(
             is MvVectorLitExpr -> inferVectorLitExpr(expr, expected)
             is MvIndexExpr -> inferIndexExprTy(expr)
 
-            is MvDotExpr -> inferDotExprTy(expr)
+            is MvDotExpr -> inferDotExprTy(expr, expected)
             is MvDerefExpr -> inferDerefExprTy(expr)
             is MvLitExpr -> inferLitExprTy(expr, expected)
             is MvTupleLitExpr -> inferTupleLitExprTy(expr, expected)
@@ -384,6 +384,22 @@ class TypeInferenceWalker(
         return funcTy.retType
     }
 
+    fun inferDotFieldTy(receiverTy: Ty, dotField: MvStructDotField, expected: Expectation): Ty {
+        val structTy = when (receiverTy) {
+            is TyReference -> receiverTy.innermostTy() as? TyStruct
+            is TyStruct -> receiverTy
+            else -> null
+        } ?: return TyUnknown
+
+        val item = structTy.item
+        val fieldName = dotField.referenceName
+        val fieldTy = item.fieldsMap[fieldName]
+            ?.type
+            ?.loweredType(msl)
+            ?.substitute(structTy.typeParameterValues)
+        return fieldTy ?: TyUnknown
+    }
+
     fun inferMethodCallTy(receiverTy: Ty, methodCall: MvMethodCall, expected: Expectation): Ty {
         val refName = methodCall.referenceName
         val methodVariants = getMethodVariants(methodCall, receiverTy, ctx.msl)
@@ -540,30 +556,14 @@ class TypeInferenceWalker(
         }
     }
 
-    private fun inferDotExprTy(dotExpr: MvDotExpr): Ty {
+    private fun inferDotExprTy(dotExpr: MvDotExpr, expected: Expectation): Ty {
         val receiverTy = ctx.resolveTypeVarsIfPossible(dotExpr.expr.inferType())
 
         val methodCall = dotExpr.methodCall
         val field = dotExpr.structDotField
         return when {
-            methodCall != null -> {
-                inferMethodCallTy(receiverTy, methodCall, expected = Expectation.NoExpectation)
-            }
-            field != null -> {
-                val structTy = when (receiverTy) {
-                    is TyReference -> receiverTy.innermostTy() as? TyStruct
-                    is TyStruct -> receiverTy
-                    else -> null
-                } ?: return TyUnknown
-
-                val item = structTy.item
-                val fieldName = dotExpr.structDotField?.referenceName ?: return TyUnknown
-                val fieldTy = item.fieldsMap[fieldName]
-                    ?.type
-                    ?.loweredType(msl)
-                    ?.substitute(structTy.typeParameterValues)
-                fieldTy ?: TyUnknown
-            }
+            methodCall != null -> inferMethodCallTy(receiverTy, methodCall, expected)
+            field != null -> inferDotFieldTy(receiverTy, field, expected)
             // incomplete
             else -> TyUnknown
         }

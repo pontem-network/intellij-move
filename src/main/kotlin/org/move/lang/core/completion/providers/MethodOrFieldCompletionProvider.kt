@@ -10,11 +10,12 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.*
-import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.parameters
-import org.move.lang.core.psi.requiresExplicitlyProvidedTypeArguments
-import org.move.lang.core.psi.selfSignatureText
+import org.move.lang.core.resolve.ContextScopeInfo
+import org.move.lang.core.resolve.LetStmtScope.EXPR_STMT
+import org.move.lang.core.resolve.LetStmtScope.NONE
+import org.move.lang.core.resolve.letStmtScope
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.knownOrNull
 import org.move.lang.core.withParent
@@ -36,21 +37,28 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
 
         val msl = element.isMsl()
         val receiverTy = element.inferReceiverTy(msl).knownOrNull() ?: return
+        val scopeInfo = ContextScopeInfo(
+            letStmtScope = element.letStmtScope,
+            refItemScopes = element.refItemScopes,
+        )
+        val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(element, msl)
+
+        val ctx = CompletionContext(element, emptySet(), scopeInfo, expectedTy)
 
         val structItem = (receiverTy.derefIfNeeded() as? TyStruct)?.item
         if (structItem != null) {
             // add fields
             structItem.fields
                 .forEach {
-                    result.addElement(it.createLookupElement())
+                    result.addElement(it.createLookupElementWithContext(ctx))
                 }
         }
-
         getMethodVariants(element, receiverTy, msl)
             .forEach { (_, function) ->
                 val lookupElement =
-                    function.createLookupElement(
-                        insertHandler = object: DefaultInsertHandler(null) {
+                    function.createLookupElementWithContext(
+                        ctx,
+                        insertHandler = object: DefaultInsertHandler(ctx) {
                             override fun handleInsert(context: InsertionContext, item: LookupElement) {
                                 val psiFunction = item.psiElement as? MvFunction ?: return
                                 val requiresExplicitTypeArguments =
@@ -78,16 +86,6 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
                         })
                 result.addElement(lookupElement)
             }
-
-
-//        is MvStructDotField -> {
-//            val receiverItem = element.receiverItem ?: return
-//            receiverItem.fields
-//                .forEach {
-//                    result.addElement(
-//                        it.createCompletionLookupElement()
-//                    )
-//                }
     }
 
 }
