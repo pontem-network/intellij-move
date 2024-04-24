@@ -68,9 +68,12 @@ data class TyReference(
 
         fun isCompatibleWithAutoborrow(ty: Ty, intoTy: Ty, msl: Boolean): Boolean {
             // if underlying types are different, no match
-            val autoborrowedTy =
-                (if (intoTy is TyReference) coerceAutoborrow(ty, intoTy.isMut) else ty) ?: return false
+            val autoborrowedTy = autoborrow(ty, intoTy) ?: return false
             return isCompatible(intoTy, autoborrowedTy, msl)
+        }
+
+        fun autoborrow(ty: Ty, intoTy: Ty): Ty? {
+            return if (intoTy is TyReference) coerceAutoborrow(ty, intoTy.isMut) else ty
         }
 
         fun coerceAutoborrow(ty: Ty, mut: Boolean): Ty? {

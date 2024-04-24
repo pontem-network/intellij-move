@@ -162,7 +162,7 @@ class InferenceContext(
         varUnificationTable.startSnapshot(),
     )
 
-    inline fun <T> probe(action: () -> T): T {
+    inline fun <T> freezeUnificationTable(action: () -> T): T {
         val snapshot = startSnapshot()
         try {
             return action()

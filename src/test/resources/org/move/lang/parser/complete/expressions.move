@@ -43,6 +43,9 @@ module M {
         bin.field < 1;
         bin.receiver_func();
         bin.field.call();
+
+        bin.call<T>();
+        bin.call<T, U>();
     }
     spec dot {
         bin.field[1];

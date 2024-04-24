@@ -9,6 +9,7 @@ import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.TyReference.Companion.autoborrow
 import org.move.stdext.RsResult
 import org.move.stdext.chain
 
@@ -109,7 +110,7 @@ class TypeInferenceWalker(
         }
     }
 
-    private fun resolveTypeVarsWithObligations(ty: Ty): Ty {
+    fun resolveTypeVarsWithObligations(ty: Ty): Ty {
         if (!ty.hasTyInfer) return ty
         val tyRes = ctx.resolveTypeVarsIfPossible(ty)
         if (!tyRes.hasTyInfer) return tyRes
@@ -367,10 +368,19 @@ class TypeInferenceWalker(
             expectedInputTys,
             callExpr.argumentExprs.map { InferArg.ArgExpr(it) })
 
-        // if value parameter has no type, use it as unknown for the sake of "need type annotation" check
-        ctx.probe {
-            val valueArguments = callExpr.valueArguments
-            for ((i, paramType) in funcTy.paramTypes.withIndex()) {
+        writeCallableType(callExpr, funcTy, method = false)
+
+        return funcTy.retType
+    }
+
+    private fun writeCallableType(callable: MvCallable, funcTy: TyCallable, method: Boolean) {
+        // callableType TyVar are meaningful mostly for "needs type annotation" error.
+        // if value parameter is missing, we don't want to show that error, so we cover
+        // unknown parameters with TyUnknown here
+        ctx.freezeUnificationTable {
+            val valueArguments = callable.valueArguments
+            val paramTypes = funcTy.paramTypes.drop(if (method) 1 else 0)
+            for ((i, paramType) in paramTypes.withIndex()) {
                 val argumentExpr = valueArguments.getOrNull(i)?.expr
                 if (argumentExpr == null) {
                     paramType.visitInferTys {
@@ -378,10 +388,8 @@ class TypeInferenceWalker(
                     }
                 }
             }
-            ctx.writeCallableType(callExpr, ctx.resolveTypeVarsIfPossible(funcTy as Ty))
+            ctx.writeCallableType(callable, ctx.resolveTypeVarsIfPossible(funcTy as Ty))
         }
-
-        return funcTy.retType
     }
 
     fun inferDotFieldTy(receiverTy: Ty, dotField: MvStructDotField, expected: Expectation): Ty {
@@ -419,38 +427,26 @@ class TypeInferenceWalker(
                     TyFunction.unknownTyFunction(methodCall.project, 1 + methodCall.valueArguments.size)
                 }
             }
-        val callableTy = ctx.resolveTypeVarsIfPossible(baseTy) as TyCallable
+        val methodTy = ctx.resolveTypeVarsIfPossible(baseTy) as TyCallable
 
         val expectedInputTys =
-            expectedInputsForExpectedOutput(expected, callableTy.retType, callableTy.paramTypes)
+            expectedInputsForExpectedOutput(expected, methodTy.retType, methodTy.paramTypes)
 
         inferArgumentTypes(
-            callableTy.paramTypes,
+            methodTy.paramTypes,
             expectedInputTys,
-            listOf(InferArg.ArgType(receiverTy))
+            listOf(InferArg.SelfType(receiverTy))
                     + methodCall.argumentExprs.map { InferArg.ArgExpr(it) }
         )
 
-        // if value parameter has no type, use it as unknown for the sake of "need type annotation" check
-        ctx.probe {
-            val valueArguments = methodCall.valueArguments
-            for ((i, paramType) in callableTy.paramTypes.withIndex()) {
-                val argumentExpr = valueArguments.getOrNull(i)?.expr
-                if (argumentExpr == null) {
-                    paramType.visitInferTys {
-                        ctx.combineTypes(it, TyUnknown); true
-                    }
-                }
-            }
-            ctx.writeCallableType(methodCall, ctx.resolveTypeVarsIfPossible(callableTy as Ty))
-        }
+        writeCallableType(methodCall, methodTy, method = true)
 
-        return callableTy.retType
+        return methodTy.retType
     }
 
     sealed class InferArg {
+        data class SelfType(val selfTy: Ty): InferArg()
         data class ArgExpr(val expr: MvExpr?): InferArg()
-        data class ArgType(val ty: Ty): InferArg()
     }
 
     private fun inferArgumentTypes(
@@ -462,31 +458,39 @@ class TypeInferenceWalker(
             val formalInputTy = formalInputTys.getOrNull(i) ?: TyUnknown
             val expectedInputTy = expectedInputTys.getOrNull(i) ?: formalInputTy
             val expectation = Expectation.maybeHasType(expectedInputTy)
-            val coercedTy =
+            val expectedTy =
                 resolveTypeVarsWithObligations(expectation.onlyHasTy(ctx) ?: formalInputTy)
             when (inferArg) {
-                    is InferArg.ArgExpr -> {
-                        val argExpr = inferArg.expr ?: continue
-                        val actualTy = inferExprTy(argExpr, expectation)
+                is InferArg.ArgExpr -> {
+                    val argExpr = inferArg.expr ?: continue
+                    val argExprTy = inferExprTy(argExpr, expectation)
 //                        val coercedTy =
 //                            resolveTypeVarsWithObligations(expectation.onlyHasTy(ctx) ?: formalInputTy)
-                        coerce(argExpr, actualTy, coercedTy)
-                        // retrieve obligations
-                        ctx.combineTypes(formalInputTy, coercedTy)
+                    coerce(argExpr, argExprTy, expectedTy)
+                    // retrieve obligations
+                    ctx.combineTypes(formalInputTy, expectedTy)
 //                        coercedTy
-                    }
-                    is InferArg.ArgType -> {
-                        val actualTy = inferArg.ty
+                }
+                is InferArg.SelfType -> {
+//                        val actualSelfTy = inferArg.selfTy
 //                        val coercedTy =
 //                            resolveTypeVarsWithObligations(expectation.onlyHasTy(ctx) ?: formalInputTy)
-                        ctx.combineTypes(actualTy, coercedTy)
+//                        ctx.combineTypes(
+//                            resolveTypeVarsWithObligations(actualTy),
+//                            resolveTypeVarsWithObligations(expectedTy)
+//                        )
+
+                    // method already resolved, so autoborrow() should always succeed
+                    val actualSelfTy = autoborrow(inferArg.selfTy, expectedTy)
+                        ?: error("unreachable, as method call cannot be resolved if autoborrow fails")
+                    ctx.combineTypes(actualSelfTy, expectedTy)
 //                        coercedTy
 
-                    }
                 }
+            }
 
             // retrieve obligations
-            ctx.combineTypes(formalInputTy, coercedTy)
+            ctx.combineTypes(formalInputTy, expectedTy)
 //            if (inferArg == null) continue
 
 //            val actualTy = inferExprTy(inferArg, expectation)
@@ -526,7 +530,7 @@ class TypeInferenceWalker(
         // Rustc does `fudge` instead of `probe` here. But `fudge` seems useless in our simplified type inference
         // because we don't produce new type variables during unification
         // https://github.com/rust-lang/rust/blob/50cf76c24bf6f266ca6d253a/compiler/rustc_infer/src/infer/fudge.rs#L98
-        return ctx.probe {
+        return ctx.freezeUnificationTable {
             if (ctx.combineTypes(retTy, resolvedFormalRet).isOk) {
                 formalArgs.map { ctx.resolveTypeVarsIfPossible(it) }
             } else {

@@ -107,12 +107,35 @@ class NeedsTypeAnnotationTest: AnnotatorTestCase(MvErrorAnnotator::class) {
         }    
     """)
 
-    fun `test needs type annotation if missing parameters but not inferrable`() = checkErrors("""
+    fun `test needs type annotation if missing params but not those do not affect inference`() = checkErrors("""
         module 0x1::m {
             fun call<R>(a: u8) {}
             fun main() {
                 <error descr="Could not infer this type. Try adding an annotation">call</error>(<error descr="This function takes 1 parameter but 0 parameters were supplied">)</error>;
             }
         }    
+    """)
+
+    fun `test method type arguments inferrable`() = checkErrors("""
+        module 0x1::main {
+            struct S<T> { field: T }
+            fun receiver<T, U>(self: &S<T>, param: U): U {
+                param
+            }
+            fun main(s: S<u8>) {
+                let a = s.receiver(1);
+            }
+        }        
+    """)
+
+    fun `test method type arguments uninferrable`() = checkErrors("""
+        module 0x1::main {
+            struct S { field: u8 }
+            fun receiver<Z>(self: &S, param: u8): Z {
+            }
+            fun main(s: S) {
+                let a = s.<error descr="Could not infer this type. Try adding an annotation">receiver</error>(1);
+            }
+        }        
     """)
 }

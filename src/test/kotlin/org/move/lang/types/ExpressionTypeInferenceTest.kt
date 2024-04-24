@@ -547,4 +547,18 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test method infer parameter type`() = testExpr("""
+        module 0x1::main {
+            struct S<T> { field: T }
+            fun receiver<T, U>(self: &S<T>, param: U): U {
+                param
+            }
+            fun main(s: S<u8>) {
+                let a = s.receiver(1);
+                a;
+              //^ integer
+            }
+        }        
+    """)
 }

@@ -596,7 +596,7 @@ private TypeParamBound_items ::= Ability ( '+' Ability )*
 }
 private TypeParamBound_items_recover ::= !('>' | ',')
 
-TypeArgumentList ::= '<' <<non_empty_comma_sep_items (TypeArgument &(','|'>'))>>? '>' {
+TypeArgumentList ::= '<' !'=' <<non_empty_comma_sep_items (TypeArgument &(','|'>'))>>? '>' {
     name = "type arguments"
 }
 TypeArgument ::= Type
@@ -977,10 +977,11 @@ BorrowExpr ::= '&' mut? Expr
 
 DotExpr ::= Expr DotExpr_inner
 // Do not inline this rule, it breaks expression parsing
-private DotExpr_inner ::= '.' !('.' | VectorStart) (StructDotField | MethodCall) {
+private DotExpr_inner ::= '.' !('.' | VectorStart) (MethodCall | StructDotField) {
     pin = 2
     consumeTokenMethod = "consumeTokenFast"
 }
+
 private VectorStart ::= (<<VECTOR_IDENTIFIER>> ('[' | '<'))
 
 StructDotField ::= IDENTIFIER !('(' | '::' | '!' | '{')
