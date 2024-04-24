@@ -1,14 +1,15 @@
 package org.move.lang.index
 
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
 import com.intellij.psi.stubs.StubIndexKey
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.stubs.impl.MvFileStub
 import org.move.openapiext.checkCommitIsNotInProgress
-import org.move.openapiext.getElements
 
 class MvNamedElementIndex : StringStubIndexExtension<MvNamedElement>() {
     override fun getVersion(): Int = MvFileStub.Type.stubVersion
@@ -32,6 +33,15 @@ class MvNamedElementIndex : StringStubIndexExtension<MvNamedElement>() {
             checkCommitIsNotInProgress(project)
             StubIndex.getInstance()
                 .processElements(KEY, target, project, scope, MvNamedElement::class.java, processor)
+        }
+
+        fun getElementsByName(
+            project: Project,
+            name: String,
+            scope: GlobalSearchScope,
+        ): Collection<MvNamedElement> {
+            checkCommitIsNotInProgress(project)
+            return StubIndex.getElements(KEY, name, project, scope, MvNamedElement::class.java)
         }
     }
 }

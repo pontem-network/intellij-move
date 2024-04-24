@@ -46,6 +46,7 @@ module M {
 
         bin.call<T>();
         bin.call<T, U>();
+        vector<u8>[1].length<u8>();
     }
     spec dot {
         bin.field[1];

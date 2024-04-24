@@ -12,8 +12,10 @@ import com.intellij.psi.util.PsiModificationTracker
 import org.move.cli.manifest.AptosConfigYaml
 import org.move.cli.manifest.MoveToml
 import org.move.lang.MoveFile
+import org.move.lang.core.psi.MvModule
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.AddressLit
+import org.move.lang.index.MvNamedElementIndex
 import org.move.lang.toMoveFile
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.checkUnitTestMode
@@ -102,6 +104,12 @@ data class MoveProject(
             searchScope = searchScope.uniteWith(dirScope)
         }
         return searchScope
+    }
+
+    fun getModulesFromIndex(name: String): Collection<MvModule> {
+        return MvNamedElementIndex
+            .getElementsByName(project, name, searchScope())
+            .filterIsInstance<MvModule>()
     }
 
     val aptosConfigYaml: AptosConfigYaml? get() = this.currentPackage.aptosConfigYaml
