@@ -164,17 +164,24 @@ class MvErrorAnnotator : MvAnnotatorBase() {
             }
 
             override fun visitValueArgumentList(arguments: MvValueArgumentList) {
-                val parentExpr = arguments.parent
+                val parentCallable = arguments.parent
                 val expectedCount =
-                    when (parentExpr) {
+                    when (parentCallable) {
                         is MvCallExpr -> {
-                            val msl = parentExpr.path.isMslScope
+                            val msl = parentCallable.path.isMslScope
                             val callTy =
-                                parentExpr.inference(msl)?.getCallableType(parentExpr) as? TyCallable ?: return
+                                parentCallable.inference(msl)?.getCallableType(parentCallable) as? TyCallable ?: return
                             callTy.paramTypes.size
                         }
+                        is MvMethodCall -> {
+                            val msl = parentCallable.isMslScope
+                            val callTy =
+                                parentCallable.inference(msl)?.getCallableType(parentCallable) as? TyCallable ?: return
+                            // 1 for self
+                            callTy.paramTypes.size - 1
+                        }
                         is MvAssertBangExpr -> {
-                            if (parentExpr.identifier.text == "assert") {
+                            if (parentCallable.identifier.text == "assert") {
                                 2
                             } else {
                                 return

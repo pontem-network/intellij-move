@@ -49,6 +49,8 @@ val MvNamedElement.isMslOnlyItem: Boolean
 
 val MvPath.isMslScope: Boolean get() = this.isMslInner()
 
+val MvMethodCall.isMslScope: Boolean get() = this.isMslInner()
+
 val MvModuleRef.isMslScope: Boolean get() = this.isMslInner()
 
 fun PsiElement.isMsl(): Boolean = isMslInner()
