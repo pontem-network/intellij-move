@@ -52,7 +52,6 @@ fun getMethodVariants(element: MvMethodOrField, receiverTy: Ty, msl: Boolean): M
         visibilities.flatMap { structItemModule.visibleFunctions(it) }
             .filter {
                 val selfParam = it.selfParameter ?: return@filter false
-                // TODO: support vector
                 val selfTy = selfParam.type?.loweredType(msl) ?: return@filter false
                 // need to use TyVar here, loweredType() erases them
                 val selfTyWithTyVars =

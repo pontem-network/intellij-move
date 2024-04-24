@@ -87,7 +87,14 @@ class HighlightingAnnotator: MvAnnotatorBase() {
     }
 
     private fun highlightBindingPat(bindingPat: MvBindingPat): MvColor {
-//        val msl = bindingPat.isMslLegacy()
+        val parent = bindingPat.parent
+        if (parent is MvFunctionParameter && bindingPat.name == "self") {
+            // check whether it's a first parameter
+            val parameterList = parent.parent as MvFunctionParameterList
+            if (parameterList.functionParameterList.indexOf(parent) == 0) {
+                return MvColor.KEYWORD
+            }
+        }
         val msl = bindingPat.isMslOnlyItem
         val itemTy = bindingPat.inference(msl)?.getPatType(bindingPat)
         return if (itemTy != null) {

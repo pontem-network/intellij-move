@@ -287,4 +287,11 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
             }
         }        
     """)
+
+    fun `test highlight first self as keyword`() = checkHighlighting("""
+        module 0x1::m {
+            struct S { field: u8 }
+            fun receiver(<KEYWORD>self</KEYWORD>: S, <VARIABLE>self</VARIABLE>: u8): u8 { self.field }
+        }        
+    """)
 }
