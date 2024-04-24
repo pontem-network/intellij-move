@@ -95,7 +95,7 @@ module 0x1::M {
     fun `test receiver style function completion with assignment`() = doSingleCompletion("""
         module 0x1::main {
             struct S { field: u8 }
-            fun receiver(self: &S): u8 {}
+            fun receiver<Z>(self: &S): Z {}
             fun main(s: S) {
                 let f: u8 = s.rece/*caret*/
             }
@@ -103,7 +103,7 @@ module 0x1::M {
     """, """
         module 0x1::main {
             struct S { field: u8 }
-            fun receiver(self: &S): u8 {}
+            fun receiver<Z>(self: &S): Z {}
             fun main(s: S) {
                 let f: u8 = s.receiver()/*caret*/
             }
@@ -130,6 +130,24 @@ module 0x1::M {
             use 0x1::m::S;
             fun main(s: S) {
                 s.receiver()/*caret*/
+            }
+        }        
+    """)
+
+    fun `test receiver style function completion type annotation required`() = doSingleCompletion("""
+        module 0x1::main {
+            struct S { field: u8 }
+            fun receiver<Z>(self: &S): Z {}
+            fun main(s: S) {
+                s.rece/*caret*/;
+            }
+        }        
+    """, """
+        module 0x1::main {
+            struct S { field: u8 }
+            fun receiver<Z>(self: &S): Z {}
+            fun main(s: S) {
+                s.receiver</*caret*/>();
             }
         }        
     """)
