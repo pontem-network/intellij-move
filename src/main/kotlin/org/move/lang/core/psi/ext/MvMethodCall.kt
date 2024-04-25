@@ -11,7 +11,6 @@ import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.address
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.ty.*
 import org.move.lang.moveProject
 import org.move.stdext.wrapWithList
@@ -51,8 +50,7 @@ fun getMethodVariants(element: MvMethodOrField, receiverTy: Ty, msl: Boolean): M
     val functions =
         visibilities.flatMap { structItemModule.visibleFunctions(it) }
             .filter {
-                val selfParam = it.selfParameter ?: return@filter false
-                val selfTy = selfParam.type?.loweredType(msl) ?: return@filter false
+                val selfTy = it.selfParamTy(msl) ?: return@filter false
                 // need to use TyVar here, loweredType() erases them
                 val selfTyWithTyVars =
                     selfTy.foldTyTypeParameterWith { tp -> TyInfer.TyVar(tp) }

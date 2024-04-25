@@ -196,16 +196,16 @@ class MoveProjectsService(val project: Project): Disposable {
      * go through this method: it makes sure that when we update various IDEA listeners.
      */
     private fun modifyProjectModel(
-        updater: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
+        modifyProjects: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
     ): CompletableFuture<List<MoveProject>> {
         val refreshStatusPublisher =
             project.messageBus.syncPublisher(MoveProjectsService.MOVE_PROJECTS_REFRESH_TOPIC)
 
-        val wrappedUpdater = { projects: List<MoveProject> ->
+        val wrappedModifyProjects = { projects: List<MoveProject> ->
             refreshStatusPublisher.onRefreshStarted()
-            updater(projects)
+            modifyProjects(projects)
         }
-        return projects.updateAsync(wrappedUpdater)
+        return projects.updateAsync(wrappedModifyProjects)
             .thenApply { projects ->
 //                refreshOnBuildDirChangeWatcher.setWatchedProjects(projects)
                 invokeAndWaitIfNeeded {

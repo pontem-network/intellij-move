@@ -92,7 +92,7 @@ class HighlightingAnnotator: MvAnnotatorBase() {
             // check whether it's a first parameter
             val parameterList = parent.parent as MvFunctionParameterList
             if (parameterList.functionParameterList.indexOf(parent) == 0) {
-                return MvColor.KEYWORD
+                return MvColor.SELF_PARAMETER
             }
         }
         val msl = bindingPat.isMslOnlyItem

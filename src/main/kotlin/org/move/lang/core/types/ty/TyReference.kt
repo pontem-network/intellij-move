@@ -8,7 +8,6 @@ package org.move.lang.core.types.ty
 import org.move.ide.presentation.tyToString
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
-import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.infer.isCompatible
 import org.move.lang.core.types.ty.RefPermissions.READ
 import org.move.lang.core.types.ty.RefPermissions.WRITE

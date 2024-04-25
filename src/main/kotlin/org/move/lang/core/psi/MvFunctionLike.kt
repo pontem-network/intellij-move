@@ -11,6 +11,7 @@ import org.move.lang.core.types.infer.InferenceContext
 import org.move.lang.core.types.infer.foldTyInferWith
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.core.types.infer.substitute
+import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyLambda
 import org.move.lang.core.types.ty.TyUnknown
@@ -118,7 +119,10 @@ val MvFunctionLike.signatureText: String
         return "$paramsText$retTypeSuffix"
     }
 
-val MvFunction.selfParameter: MvFunctionParameter? get() = this.parameters.find { it.name == "self" }
+val MvFunction.selfParam: MvFunctionParameter? get() =
+    this.parameters.firstOrNull()?.takeIf { it.name == "self" }
+
+fun MvFunction.selfParamTy(msl: Boolean): Ty? = this.selfParam?.type?.loweredType(msl)
 
 val MvFunction.selfSignatureText: String
     get() {
