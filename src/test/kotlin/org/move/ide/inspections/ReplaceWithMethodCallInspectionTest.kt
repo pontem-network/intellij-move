@@ -42,6 +42,21 @@ class ReplaceWithMethodCallInspectionTest: InspectionTestBase(ReplaceWithMethodC
     """
     )
 
+    fun `test no warning if self parameter struct is from another module`() = doTest(
+        """
+        module 0x1::m {
+            struct S { field: u8 }
+        }
+        module 0x1::main {
+            use 0x1::m::S;
+            fun get_field(self: S): u8 { s.field }
+            fun main(s: S) {
+                get_field(s);
+            }
+        }        
+    """
+    )
+
     fun `test no warning if self parameter is not provided`() = doTest(
         """
         module 0x1::main {

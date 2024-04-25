@@ -1,18 +1,17 @@
 package org.move.ide.inspections
 
 import com.intellij.codeInspection.ProblemHighlightType
-import com.intellij.codeInspection.ProblemHighlightType.WARNING
 import com.intellij.codeInspection.ProblemsHolder
 import org.move.ide.inspections.fixes.ReplaceWithMethodCallFix
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.getTyItemModule
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.valueArguments
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.ty.TyInfer
+import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.isCompatibleWithAutoborrow
-import org.move.lang.core.types.ty.TyUnknown
-import org.move.lang.core.types.ty.hasTyUnknown
+import org.move.lang.moveProject
 
 class ReplaceWithMethodCallInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
@@ -25,6 +24,11 @@ class ReplaceWithMethodCallInspection: MvLocalInspectionTool() {
                 val firstArgExpr = callExpr.valueArguments.firstOrNull()?.expr ?: return
                 val firstArgExprTy = inference.getExprType(firstArgExpr)
                 if (firstArgExprTy.hasTyUnknown) return
+
+                val moveProject = callExpr.moveProject ?: return
+                val methodModule = function.module ?: return
+                val itemModule = moveProject.getTyItemModule(firstArgExprTy) ?: return
+                if (methodModule != itemModule) return
 
                 val selfTy = function.selfParamTy(msl)
                     ?.foldTyTypeParameterWith { TyInfer.TyVar(it) } ?: return

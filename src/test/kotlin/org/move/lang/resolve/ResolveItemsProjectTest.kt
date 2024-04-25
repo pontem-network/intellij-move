@@ -560,6 +560,27 @@ module 0x1::main {
             """)
         }
     }
+
+    fun `test resolve vector reference method if stdlib vector module present`() = checkByFileTree {
+        namedMoveToml("MyPackage")
+        sources {
+            move("vector.move", """
+        module 0x1::vector {
+            public native fun length<T>(self: &vector<T>): u8;
+                               //X
+        }        
+            """)
+            main("""
+        module 0x1::main {
+            fun main() {
+                (&vector[1]).length();
+                             //^ 
+            }
+        }
+            """)
+        }
+    }
+
     fun `test vector method unresolved if no stdlib module`() = checkByFileTree {
         namedMoveToml("MyPackage")
         sources {
