@@ -68,11 +68,13 @@ class HighlightingAnnotator: MvAnnotatorBase() {
                 element.isInline -> MvColor.INLINE_FUNCTION
                 element.isView -> MvColor.VIEW_FUNCTION
                 element.isEntry -> MvColor.ENTRY_FUNCTION
+                element.selfParam != null -> MvColor.METHOD
                 else -> MvColor.FUNCTION
             }
         if (element is MvStruct) return MvColor.STRUCT
         if (element is MvStructField) return MvColor.FIELD
         if (element is MvStructDotField) return MvColor.FIELD
+        if (element is MvMethodCall) return MvColor.METHOD_CALL
         if (element is MvStructPatField) return MvColor.FIELD
         if (element is MvStructLitField) return MvColor.FIELD
         if (element is MvConst) return MvColor.CONSTANT
