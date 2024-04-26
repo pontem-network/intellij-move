@@ -556,6 +556,25 @@ class RenameTest : MvTestBase() {
     }        
     """)
 
+    fun `test rename parameter field init shorthand replaced`() = doTest("self", """
+        module 0x1::main {
+            struct Option<T> { vec: vector<T> };
+            public fun from_vec<Element>(/*caret*/vec: vector<Element>): Option<Element> {
+                assert!(vec.length() <= 1, EOPTION_VEC_TOO_LONG);
+                Option { vec }
+            }
+        }        
+    """, """
+        module 0x1::main {
+            struct Option<T> { vec: vector<T> };
+            public fun from_vec<Element>(self: vector<Element>): Option<Element> {
+                assert!(self.length() <= 1, EOPTION_VEC_TOO_LONG);
+                Option { vec: self }
+            }
+        }        
+    """
+    )
+
     private fun doTest(
         newName: String,
         @Language("Move") before: String,

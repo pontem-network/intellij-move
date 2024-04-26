@@ -1,20 +1,21 @@
 package org.move.ide.inspections
 
+import org.intellij.lang.annotations.Language
 import org.move.utils.tests.annotation.InspectionTestBase
 
-class FieldInitShorthandInspectionTest : InspectionTestBase(FieldInitShorthandInspection::class) {
+class FieldInitShorthandInspectionTest: InspectionTestBase(FieldInitShorthandInspection::class) {
 
-    fun `test not applicable`() = checkFixIsUnavailable(
+    fun `test not applicable`() = doFixIsUnavailableTest(
         "Use initialization shorthand", """
     module 0x1::M {
         fun m() {
             let _ = S { foo: bar/*caret*/, baz: &baz };
         }
     }    
-    """, checkWeakWarn = true
+    """
     )
 
-    fun `test fix for struct literal`() = checkFixByText(
+    fun `test fix for struct literal`() = doFixTest(
         "Use initialization shorthand", """
     module 0x1::M {
         fun m() {
@@ -30,7 +31,7 @@ class FieldInitShorthandInspectionTest : InspectionTestBase(FieldInitShorthandIn
     """
     )
 
-    fun `test fix for struct pattern`() = checkFixByText(
+    fun `test fix for struct pattern`() = doFixTest(
         "Use pattern shorthand", """
     module 0x1::M {
         struct S { foo: u8 }
@@ -50,8 +51,9 @@ class FieldInitShorthandInspectionTest : InspectionTestBase(FieldInitShorthandIn
     """
     )
 
-    fun `test fix for schema literal`() = checkFixByText(
-        "Use initialization shorthand", """
+    fun `test fix for schema literal`() = doFixTest(
+        "Use initialization shorthand",
+        """
     module 0x1::M {
         spec module {
             include Schema { <weak_warning descr="Expression can be simplified">foo: foo/*caret*/</weak_warning> };
@@ -65,4 +67,30 @@ class FieldInitShorthandInspectionTest : InspectionTestBase(FieldInitShorthandIn
     }    
     """
     )
+
+    private fun doTest(
+        @Language("Move") text: String,
+    ) =
+        checkByText(text, checkWarn = false, checkWeakWarn = true)
+
+    private fun doFixTest(
+        fixName: String,
+        @Language("Move") before: String,
+        @Language("Move") after: String,
+
+        ) =
+        checkFixByText(
+            fixName, before, after,
+            checkWarn = false, checkWeakWarn = true
+        )
+
+    private fun doFixIsUnavailableTest(
+        fixName: String,
+        @Language("Move") text: String,
+    ) =
+        checkFixIsUnavailable(
+            fixName,
+            text,
+            checkWarn = false, checkWeakWarn = true
+        )
 }

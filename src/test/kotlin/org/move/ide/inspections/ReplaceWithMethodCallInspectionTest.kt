@@ -218,6 +218,60 @@ class ReplaceWithMethodCallInspectionTest: InspectionTestBase(ReplaceWithMethodC
     """,
     )
 
+    fun `test replace with method call tranfer type arguments`() = doFixTest("""
+        module 0x1::main {
+            struct S<T> { field: u8 }
+            native fun get_type<U, T>(self: &S<U>): T;
+            fun main<T>(s: S<T>) {
+                <weak_warning descr="Can be replaced with method call">/*caret*/get_type<T, u8>(&s)</weak_warning>;
+            }
+        }        
+    """, """
+        module 0x1::main {
+            struct S<T> { field: u8 }
+            native fun get_type<U, T>(self: &S<U>): T;
+            fun main<T>(s: S<T>) {
+                s.get_type<T, u8>();
+            }
+        }        
+    """)
+
+    fun `test replace with deref expr`() = doFixTest("""
+        module 0x1::main {
+            struct String { bytes: vector<u8> }
+            public native fun sub_string(self: &String, i: u64, j: u64): String;
+            fun main(key: &String) {
+                <weak_warning descr="Can be replaced with method call">/*caret*/sub_string(&*key, 1, 2)</weak_warning>;
+            } 
+        }        
+    """, """
+        module 0x1::main {
+            struct String { bytes: vector<u8> }
+            public native fun sub_string(self: &String, i: u64, j: u64): String;
+            fun main(key: &String) {
+                (*key).sub_string(1, 2);
+            } 
+        }        
+    """)
+
+    fun `test replace with copy expr`() = doFixTest("""
+        module 0x1::main {
+            struct String { bytes: vector<u8> }
+            public native fun sub_string(self: &String, i: u64, j: u64): String;
+            fun main(key: &String) {
+                <weak_warning descr="Can be replaced with method call">/*caret*/sub_string(copy key, 1, 2)</weak_warning>;
+            } 
+        }        
+    """, """
+        module 0x1::main {
+            struct String { bytes: vector<u8> }
+            public native fun sub_string(self: &String, i: u64, j: u64): String;
+            fun main(key: &String) {
+                (copy key).sub_string(1, 2);
+            } 
+        }        
+    """)
+
     private fun doTest(@Language("Move") text: String) =
         checkByText(text, checkWarn = false, checkWeakWarn = true)
 

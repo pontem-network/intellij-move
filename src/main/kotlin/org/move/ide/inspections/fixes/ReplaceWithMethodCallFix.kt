@@ -24,9 +24,30 @@ class ReplaceWithMethodCallFix(callExpr: MvCallExpr): DiagnosticFix<MvCallExpr>(
         if (selfArgExpr is MvBorrowExpr) {
             selfArgExpr = selfArgExpr.expr ?: return
         }
+        when (selfArgExpr) {
+            // all AtomExpr list, same priority as MvDotExpr
+            is MvVectorLitExpr, is MvStructLitExpr, is MvTupleLitExpr, is MvParensExpr, is MvAnnotatedExpr,
+            is MvDotExpr, is MvIndexExpr, is MvCallExpr, is MvAssertBangExpr, is MvRefExpr, is MvLambdaExpr,
+            is MvLitExpr, is MvCodeBlockExpr -> {
+                // do nothing, those operations priorities are correct without parens
+            }
+            else -> {
+                val parensExpr = psiFactory.expr<MvParensExpr>("(a)")
+                parensExpr.expr?.replace(selfArgExpr)
+                selfArgExpr = parensExpr
+            }
+        }
 
-        val dotExpr = psiFactory.expr<MvDotExpr>("1.${element.path.referenceName}()")
+        val dotExpr = psiFactory.expr<MvDotExpr>("1.${element.path.referenceName}<T>()")
         dotExpr.expr.replace(selfArgExpr)
+
+        val typeArgumentList = element.path.typeArgumentList
+        if (typeArgumentList != null) {
+            dotExpr.methodCall?.typeArgumentList?.replace(typeArgumentList)
+        } else {
+            dotExpr.methodCall?.typeArgumentList?.delete()
+        }
+
         dotExpr.methodCall?.valueArgumentList?.replace(methodArgumentList)
 
         element.replace(dotExpr)
