@@ -45,9 +45,7 @@ fun getMethodVariants(element: MvMethodOrField, receiverTy: Ty, msl: Boolean): M
     val receiverTyItemModule = moveProject.getTyItemModule(receiverTy) ?: return emptySequence()
 
     val visibilities = Visibility.publicVisibilitiesFor(element).toMutableSet()
-    // structItemModule refers to a module from "before completion", need to return to the .containingModule of the same state
-    val elementModule = element.containingModule?.getOriginalOrSelf()
-    if (elementModule == receiverTyItemModule) {
+    if (element.containingModule == receiverTyItemModule) {
         visibilities.add(Visibility.Internal)
     }
     val functions =

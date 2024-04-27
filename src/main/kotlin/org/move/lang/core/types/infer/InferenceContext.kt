@@ -74,6 +74,7 @@ data class InferenceResult(
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
     private val methodOrPathTypes: Map<MvMethodOrPath, Ty>,
+    private val resolvedFields: Map<MvStructDotField, MvNamedElement?>,
     private val resolvedMethodCalls: Map<MvMethodCall, MvNamedElement?>,
     val callableTypes: Map<MvCallable, Ty>,
     val typeErrors: List<TypeError>
@@ -91,6 +92,7 @@ data class InferenceResult(
     fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
     fun getMethodOrPathType(methodOrPath: MvMethodOrPath): Ty? = methodOrPathTypes[methodOrPath]
 
+    fun getResolvedField(field: MvStructDotField): MvNamedElement? = resolvedFields[field]
     fun getResolvedMethod(methodCall: MvMethodCall): MvNamedElement? = resolvedMethodCalls[methodCall]
 }
 
@@ -150,6 +152,7 @@ class InferenceContext(
     //    private val pathTypes = mutableMapOf<MvPath, Ty>()
     private val methodOrPathTypes = mutableMapOf<MvMethodOrPath, Ty>()
 
+    val resolvedFields = mutableMapOf<MvStructDotField, MvNamedElement?>()
     val resolvedMethodCalls = mutableMapOf<MvMethodCall, MvNamedElement?>()
 
     private val typeErrors = mutableListOf<TypeError>()
@@ -208,6 +211,7 @@ class InferenceContext(
             exprTypes,
             exprExpectedTypes,
             methodOrPathTypes,
+            resolvedFields,
             resolvedMethodCalls,
             callableTypes,
             typeErrors

@@ -230,4 +230,22 @@ class ExpectedTypeTest : TypificationTestCase() {
     }        
     """
     )
+    
+    fun `test if block`() = testExpectedTyExpr("""
+        module 0x1::main {
+            fun main(): u8 {
+                if (true) { my_ref } else { my_ref }
+                           //^ u8
+            }
+        }                
+    """)
+
+    fun `test else block`() = testExpectedTyExpr("""
+        module 0x1::main {
+            fun main(): u8 {
+                if (true) { my_ref } else { my_ref }
+                                           //^ u8
+            }
+        }                
+    """)
 }

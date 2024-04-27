@@ -1,6 +1,5 @@
 package org.move.lang.core.psi.ext
 
-import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.MvDotExpr
 import org.move.lang.core.psi.MvExpr
 import org.move.lang.core.resolve.ref.MvMandatoryReferenceElement
@@ -12,8 +11,8 @@ import org.move.lang.core.types.ty.TyUnknown
 
 interface MvMethodOrField: MvMandatoryReferenceElement
 
-val MvMethodOrField.parentDotExpr: MvDotExpr get() = (parent as MvDotExpr).getOriginalOrSelf()
-val MvMethodOrField.receiverExpr: MvExpr get() = parentDotExpr.expr
+val MvMethodOrField.dotExpr: MvDotExpr get() = parent as MvDotExpr
+val MvMethodOrField.receiverExpr: MvExpr get() = dotExpr.expr
 
 fun MvMethodOrField.inferReceiverTy(msl: Boolean): Ty {
     val receiverExpr = this.receiverExpr

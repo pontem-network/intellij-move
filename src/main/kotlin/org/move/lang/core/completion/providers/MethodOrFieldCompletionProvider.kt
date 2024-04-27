@@ -45,12 +45,11 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
 
         val ctx = CompletionContext(element, emptySet(), scopeInfo, expectedTy)
 
-        val structItem = (receiverTy.derefIfNeeded() as? TyStruct)?.item
-        if (structItem != null) {
-            // add fields
-            structItem.fields
-                .forEach {
-                    result.addElement(it.createLookupElementWithContext(ctx))
+        val structTy = receiverTy.derefIfNeeded() as? TyStruct
+        if (structTy != null) {
+            getFieldVariants(element, structTy, msl)
+                .forEach { (_, field) ->
+                    result.addElement(field.createLookupElementWithContext(ctx))
                 }
         }
         getMethodVariants(element, receiverTy, msl)

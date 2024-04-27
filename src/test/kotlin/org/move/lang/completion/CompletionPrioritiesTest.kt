@@ -153,6 +153,37 @@ module 0x1::Main {
         """
     )
 
+    fun `test method return type with ref`() = checkCompletionsOrder(
+        listOf("borrow", "borrow_with_default", "borrow_buckets"),
+        """
+            module 0x1::main {
+                struct S<T> { field: T }
+                fun borrow<T>(self: &S<T>): &T {}
+                fun borrow_buckets<T>(self: &S<T>): &vector<T> {}
+                fun borrow_with_default<T>(self: &S<T>): &T {}
+                fun main<T>(s: S<T>): &T {
+                    s.b/*caret*/
+                }                
+            }            
+        """
+    )
+
+    fun `test field type with ref`() = checkCompletionsOrder(
+        listOf("borrow", "borrow_with_default", "borrow_buckets"),
+        """
+            module 0x1::main {
+                struct S<T> { 
+                    borrow: T,
+                    borrow_buckets: vector<T>,
+                    borrow_with_default: T,
+                }
+                fun main<T>(s: S<T>): T {
+                    s.b/*caret*/
+                }                
+            }            
+        """
+    )
+
     private fun checkCompletionsOrder(listStart: List<String>, @Language("Move") code: String) {
         val variants = completionFixture.invokeCompletion(code)
         val lookupStrings = variants.map { it.lookupString }

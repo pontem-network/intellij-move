@@ -124,6 +124,8 @@ val MvFunction.selfParam: MvFunctionParameter? get() =
 
 fun MvFunction.selfParamTy(msl: Boolean): Ty? = this.selfParam?.type?.loweredType(msl)
 
+val MvFunction.isMethod get() = selfParam != null
+
 val MvFunction.selfSignatureText: String
     get() {
         val paramsText = this.parameters.drop(1).joinToSignature()

@@ -151,4 +151,16 @@ module 0x1::M {
             }
         }        
     """)
+
+    fun `test fields are not available from another module`() = checkNoCompletion("""
+        module 0x1::m {
+            struct S { field: u8 }
+        }
+        module 0x1::main {
+            use 0x1::m::S;
+            fun main(s: S) {
+                s.fi/*caret*/
+            }
+        }
+    """)
 }

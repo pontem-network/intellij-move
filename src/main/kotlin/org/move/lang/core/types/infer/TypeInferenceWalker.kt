@@ -393,18 +393,14 @@ class TypeInferenceWalker(
     }
 
     fun inferDotFieldTy(receiverTy: Ty, dotField: MvStructDotField, expected: Expectation): Ty {
-        val structTy = when (receiverTy) {
-            is TyReference -> receiverTy.innermostTy() as? TyStruct
-            is TyStruct -> receiverTy
-            else -> null
-        } ?: return TyUnknown
+        val structTy =
+            receiverTy.derefIfNeeded() as? TyStruct ?: return TyUnknown
 
-        val item = structTy.item
-        val fieldName = dotField.referenceName
-        val fieldTy = item.fieldsMap[fieldName]
-            ?.type
-            ?.loweredType(msl)
-            ?.substitute(structTy.typeParameterValues)
+        val field =
+            getFieldVariants(dotField, structTy, msl).filterByName(dotField.referenceName).singleOrNull()
+        ctx.resolvedFields[dotField] = field
+
+        val fieldTy = field?.type?.loweredType(msl)?.substitute(structTy.typeParameterValues)
         return fieldTy ?: TyUnknown
     }
 

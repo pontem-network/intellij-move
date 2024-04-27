@@ -22,5 +22,8 @@ data class TyTypeParameter(val origin: MvTypeParameter) : Ty(HAS_TY_TYPE_PARAMET
         return parentStruct?.requiredAbilitiesForTypeParam.orEmpty()
     }
 
+    override fun equals(other: Any?): Boolean = other is TyTypeParameter && other.origin == origin
+    override fun hashCode(): Int = origin.hashCode()
+
     override fun toString(): String = tyToString(this)
 }
