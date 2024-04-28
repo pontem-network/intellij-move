@@ -487,7 +487,7 @@ class RenameTest : MvTestBase() {
         val fileText = """
     module 0x1::Main { use 0x1::Main; }                
         """
-        inlineFile(fileText, "Main.move")
+        InlineFile(fileText, "Main.move")
 
         myFixture.renameElement(myFixture.file, "MyMain.move")
 
@@ -580,7 +580,7 @@ class RenameTest : MvTestBase() {
         @Language("Move") before: String,
         @Language("Move") after: String,
     ) {
-        inlineFile(before).withCaret()
+        InlineFile(before).withCaret()
         val element = myFixture.elementAtCaret
         myFixture.renameElement(element, newName, false, false)
         myFixture.checkResult(after)
@@ -593,7 +593,7 @@ class RenameTest : MvTestBase() {
         @Language("Move") before: String,
         @Language("Move") after: String,
     ) {
-        inlineFile(before, name = beforeFileName).withCaret()
+        InlineFile(before, name = beforeFileName).withCaret()
         val element = myFixture.elementAtCaret
         myFixture.renameElement(element, newName, false, false)
         myFixture.checkResult(after)

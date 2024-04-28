@@ -48,12 +48,9 @@ class ImportInsertHandler(
     private val candidate: ImportCandidate
 ) : DefaultInsertHandler() {
 
-    override fun handleInsert(context: InsertionContext, item: LookupElement) {
-        super.handleInsert(context, item)
-//        context.commitDocument()
-//        val path = parameters.originalPosition?.parent as? MvPath ?: return
+    override fun handleInsert(element: MvElement, context: InsertionContext, item: LookupElement) {
+        super.handleInsert(element, context, item)
         context.import(candidate)
-//        candidate.import(path)
     }
 }
 

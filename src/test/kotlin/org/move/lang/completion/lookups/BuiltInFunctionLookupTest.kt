@@ -2,13 +2,15 @@ package org.move.lang.completion.lookups
 
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementPresentation
+import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.ext.builtinFunctions
+import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
 
-class BuiltInFunctionLookupTest : MvTestBase() {
+class BuiltInFunctionLookupTest: MvTestBase() {
     fun `test move_from`() = checkBuiltinPresentation(
         "move_from",
         tailText = "(addr: address): T",
@@ -38,10 +40,12 @@ class BuiltInFunctionLookupTest : MvTestBase() {
            module 0x1::M {}
                      //^
         """
-        inlineFile(moduleText)
+        InlineFile(moduleText)
         val moduleElement = myFixture.findElementInEditor<MvModule>()
         val lookup =
-            moduleElement.builtinFunctions().single { it.name == name }.createLookupElement()
+            moduleElement.builtinFunctions().single { it.name == name }.let {
+                it.createLookupElement(CompletionContext(it, ContextScopeInfo.msl()))
+            }
         checkLookupPresentation(
             lookup,
             tailText = tailText,

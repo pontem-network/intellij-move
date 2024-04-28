@@ -8,12 +8,11 @@ import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.MvPsiPatterns.bindingPat
+import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
-import org.move.lang.core.psi.MvBindingPat
-import org.move.lang.core.psi.MvStruct
-import org.move.lang.core.psi.MvStructLitField
-import org.move.lang.core.psi.MvStructPatField
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.withParent
 import org.move.lang.core.withSuperParent
 
@@ -36,16 +35,19 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         result: CompletionResultSet,
     ) {
         val pos = parameters.position
-        var element = pos.parent
-        if (element is MvBindingPat) element = element.parent
+        var element = pos.parent as? MvElement ?: return
 
+        if (element is MvBindingPat) element = element.parent as MvElement
+
+        val completionCtx = CompletionContext(element, ContextScopeInfo.msl())
         when (element) {
             is MvStructPatField -> {
                 val structPat = element.structPat
                 addFieldsToCompletion(
                     structPat.path.maybeStruct ?: return,
                     structPat.patFieldNames,
-                    result
+                    result,
+                    completionCtx
                 )
             }
             is MvStructLitField -> {
@@ -53,7 +55,8 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
                 addFieldsToCompletion(
                     structLit.path.maybeStruct ?: return,
                     structLit.fieldNames,
-                    result
+                    result,
+                    completionCtx
                 )
             }
         }
@@ -64,9 +67,12 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         referredStruct: MvStruct,
         providedFieldNames: List<String>,
         result: CompletionResultSet,
+        completionContext: CompletionContext,
     ) {
         for (field in referredStruct.fields.filter { it.name !in providedFieldNames }) {
-            result.addElement(field.createLookupElement())
+            result.addElement(
+                field.createLookupElement(completionContext)
+            )
         }
     }
 }

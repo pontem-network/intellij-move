@@ -22,7 +22,7 @@ class MvBreadcrumbsProviderTest : MvTestBase() {
     )
 
     private fun doTextTest(@Language("Move") content: String, info: String) {
-        inlineFile(content.trimIndent())
+        InlineFile(content.trimIndent())
         val crumbs = myFixture.breadcrumbsAtCaret.joinToString(separator = "\n") { it.text }
         UsefulTestCase.assertSameLines(info.trimIndent(), crumbs)
     }

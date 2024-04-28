@@ -57,7 +57,7 @@ data class LookupElementProperties(
     val typeHasAllRequiredAbilities: Boolean = false,
 )
 
-fun lookupProperties(element: MvNamedElement, context: CompletionContext): LookupElementProperties {
+fun getLookupElementProperties(element: MvNamedElement, context: CompletionContext): LookupElementProperties {
     var props = LookupElementProperties()
     val expectedTy = context.expectedTy
     if (expectedTy != null) {

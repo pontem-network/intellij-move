@@ -6,6 +6,7 @@
 package org.move.utils.tests
 
 import com.intellij.codeInspection.InspectionProfileEntry
+import com.intellij.psi.PsiElement
 import com.intellij.testFramework.enableInspectionTool
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
@@ -13,6 +14,7 @@ import org.move.cli.settings.Blockchain
 import org.move.cli.settings.moveSettings
 import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
+import org.move.utils.tests.base.findElementsWithDataAndOffsetInEditor
 import java.lang.annotation.Inherited
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
@@ -64,8 +66,43 @@ abstract class MvTestBase: BasePlatformTestCase(),
         return TestCase.camelOrWordsToSnake(camelCase)
     }
 
-    protected fun inlineFile(@Language("Move") code: String, name: String = "main.move"): InlineFile {
+    protected fun InlineFile(@Language("Move") code: String, name: String = "main.move"): InlineFile {
         return InlineFile(myFixture, code, name)
+    }
+
+    protected inline fun <reified T : PsiElement> findElementInEditor(marker: String = "^"): T =
+        findElementInEditor(T::class.java, marker)
+
+    protected fun <T : PsiElement> findElementInEditor(psiClass: Class<T>, marker: String): T {
+        val (element, data) = findElementWithDataAndOffsetInEditor(psiClass, marker)
+        check(data.isEmpty()) { "Did not expect marker data" }
+        return element
+    }
+
+    protected inline fun <reified T : PsiElement> findElementAndDataInEditor(marker: String = "^"): Pair<T, String> {
+        val (element, data) = findElementWithDataAndOffsetInEditor<T>(marker)
+        return element to data
+    }
+
+    protected inline fun <reified T : PsiElement> findElementAndOffsetInEditor(marker: String = "^"): Pair<T, Int> {
+        val (element, _, offset) = findElementWithDataAndOffsetInEditor<T>(marker)
+        return element to offset
+    }
+
+    protected inline fun <reified T : PsiElement> findElementWithDataAndOffsetInEditor(
+        marker: String = "^"
+    ): Triple<T, String, Int> {
+        return findElementWithDataAndOffsetInEditor(T::class.java, marker)
+    }
+
+    protected fun <T : PsiElement> findElementWithDataAndOffsetInEditor(
+        psiClass: Class<T>,
+        marker: String
+    ): Triple<T, String, Int> {
+        val elementsWithDataAndOffset = myFixture.findElementsWithDataAndOffsetInEditor(psiClass, marker)
+        check(elementsWithDataAndOffset.isNotEmpty()) { "No `$marker` marker:\n${myFixture.file.text}" }
+        check(elementsWithDataAndOffset.size <= 1) { "More than one `$marker` marker:\n${myFixture.file.text}" }
+        return elementsWithDataAndOffset.first()
     }
 
     protected fun checkByText(
@@ -73,7 +110,7 @@ abstract class MvTestBase: BasePlatformTestCase(),
         @Language("Move") after: String,
         action: () -> Unit,
     ) {
-        inlineFile(before)
+        InlineFile(before)
         action()
         myFixture.checkResult(replaceCaretMarker(after))
     }

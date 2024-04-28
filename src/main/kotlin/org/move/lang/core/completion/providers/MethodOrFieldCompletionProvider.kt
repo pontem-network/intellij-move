@@ -2,19 +2,15 @@ package org.move.lang.core.completion.providers
 
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
-import com.intellij.codeInsight.completion.InsertionContext
-import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
+import org.jetbrains.annotations.VisibleForTesting
 import org.move.lang.core.completion.*
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ContextScopeInfo
-import org.move.lang.core.resolve.LetStmtScope.EXPR_STMT
-import org.move.lang.core.resolve.LetStmtScope.NONE
 import org.move.lang.core.resolve.letStmtScope
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.knownOrNull
@@ -35,6 +31,11 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
         val pos = parameters.position
         val element = pos.parent as MvMethodOrField
 
+        addMethodOrFieldVariants(element, result)
+    }
+
+    @VisibleForTesting
+    fun addMethodOrFieldVariants(element: MvMethodOrField, result: CompletionResultSet) {
         val msl = element.isMsl()
         val receiverTy = element.inferReceiverTy(msl).knownOrNull() ?: return
         val scopeInfo = ContextScopeInfo(
@@ -43,46 +44,24 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
         )
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(element, msl)
 
-        val ctx = CompletionContext(element, emptySet(), scopeInfo, expectedTy)
+        val ctx = CompletionContext(element, scopeInfo, expectedTy)
 
         val structTy = receiverTy.derefIfNeeded() as? TyStruct
         if (structTy != null) {
             getFieldVariants(element, structTy, msl)
                 .forEach { (_, field) ->
-                    result.addElement(field.createLookupElementWithContext(ctx))
+                    result.addElement(field.createLookupElement(ctx))
                 }
         }
         getMethodVariants(element, receiverTy, msl)
             .forEach { (_, function) ->
-                val lookupElement =
-                    function.createLookupElementWithContext(
-                        ctx,
-                        insertHandler = object: DefaultInsertHandler(ctx) {
-                            override fun handleInsert(context: InsertionContext, item: LookupElement) {
-                                val psiFunction = item.psiElement as? MvFunction ?: return
-                                val requiresExplicitTypeArguments =
-                                    psiFunction.requiresExplicitlyProvidedTypeArguments(completionContext)
-                                var suffix = ""
-                                if (!context.hasAngleBrackets && requiresExplicitTypeArguments) {
-                                    suffix += "<>"
-                                }
-                                if (!context.hasAngleBrackets && !context.hasCallParens) {
-                                    suffix += "()"
-                                }
-                                val offset = when {
-                                    requiresExplicitTypeArguments -> 1
-                                    // dropping self parameter
-                                    psiFunction.parameters.drop(1).isNotEmpty() -> 1
-                                    else -> 2
-                                }
-                                context.document.insertString(context.selectionEndOffset, suffix)
-                                EditorModificationUtil.moveCaretRelatively(context.editor, offset)
-                            }
-                        },
-                        customModify = {
-                            // overriding default for methods
-                            withTailText(function.selfSignatureText)
-                        })
+                val lookupElement = function.createLookupElement(ctx)
+//                val lookupProperties = lookupProperties(function, context = ctx)
+//                val builder = lookupElement
+//                    .withTailText("")
+//                    .withTypeText("")
+//                    .withInsertHandler(DefaultInsertHandler())
+//                val mvLookupElement = builder.withPriority(DEFAULT_PRIORITY).toMvLookupElement(lookupProperties)
                 result.addElement(lookupElement)
             }
     }

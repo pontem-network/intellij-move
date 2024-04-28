@@ -43,10 +43,10 @@ object ModulesCompletionProvider: MvCompletionProvider() {
                 letStmtScope = refElement.letStmtScope,
                 refItemScopes = refElement.refItemScopes,
             )
-        val ctx = CompletionContext(refElement, namespaces, contextScopeInfo)
+        val completionCtx = CompletionContext(refElement, contextScopeInfo)
         processItems(refElement, namespaces, contextScopeInfo) { (name, element) ->
             result.addElement(
-                element.createLookupElementWithContext(ctx, priority = IMPORTED_MODULE_PRIORITY)
+                element.createLookupElement(completionCtx, priority = IMPORTED_MODULE_PRIORITY)
             )
             processedNames.add(name)
             false
@@ -73,10 +73,15 @@ object ModulesCompletionProvider: MvCompletionProvider() {
         candidates.forEach { candidate ->
             val lookupElement =
                 candidate.element.createLookupElement(
-                    ImportInsertHandler(parameters, candidate),
-                    importContext.namespaces,
-                    priority = UNIMPORTED_ITEM_PRIORITY,
+                    completionCtx,
+                    structAsType = Namespace.TYPE in importContext.namespaces,
+                    priority = UNIMPORTED_ITEM_PRIORITY
                 )
+//            candidate.element.createLookupElement(
+//                ImportInsertHandler(parameters, candidate),
+//                structAsType = Namespace.TYPE in importContext.namespaces,
+//                priority = UNIMPORTED_ITEM_PRIORITY,
+//            )
             result.addElement(lookupElement)
         }
     }

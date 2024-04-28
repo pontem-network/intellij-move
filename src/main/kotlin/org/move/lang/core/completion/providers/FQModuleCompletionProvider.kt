@@ -7,19 +7,18 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.completion.CompletionContext
-import org.move.lang.core.completion.createLookupElementWithContext
+import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvFQModuleRef
 import org.move.lang.core.psi.refItemScopes
 import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.letStmtScope
 import org.move.lang.core.resolve.processFQModuleRef
-import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.address
 import org.move.lang.core.withParent
 import org.move.lang.moveProject
 
-object FQModuleCompletionProvider : MvCompletionProvider() {
+object FQModuleCompletionProvider: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() =
             PlatformPatterns.psiElement()
@@ -36,12 +35,11 @@ object FQModuleCompletionProvider : MvCompletionProvider() {
                 ?: directParent.parent as MvFQModuleRef
         if (parameters.position !== fqModuleRef.referenceNameElement) return
 
-        val namespaces = setOf(Namespace.MODULE)
         val contextScopeInfo = ContextScopeInfo(
             letStmtScope = fqModuleRef.letStmtScope,
             refItemScopes = fqModuleRef.refItemScopes,
         )
-        val completionContext = CompletionContext(fqModuleRef, namespaces, contextScopeInfo)
+        val completionContext = CompletionContext(fqModuleRef, contextScopeInfo)
 
         val moveProj = fqModuleRef.moveProject
         val positionAddress = fqModuleRef.addressRef.address(moveProj)
@@ -50,7 +48,7 @@ object FQModuleCompletionProvider : MvCompletionProvider() {
             val module = it.element
             val moduleAddress = module.address(moveProj)
             if (Address.eq(positionAddress, moduleAddress)) {
-                val lookup = module.createLookupElementWithContext(completionContext)
+                val lookup = module.createLookupElement(completionContext)
                 result.addElement(lookup)
             }
             false

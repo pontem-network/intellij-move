@@ -42,7 +42,7 @@ class FindUsagesTest : MvTestBase() {
     """)
 
     private fun doTestByText(@Language("Move") code: String) {
-        inlineFile(code)
+        InlineFile(code)
 
         val (_, _, offset) = myFixture.findElementWithDataAndOffsetInEditor<PsiElement>()
         val source = TargetElementUtil.getInstance().findTargetElement(

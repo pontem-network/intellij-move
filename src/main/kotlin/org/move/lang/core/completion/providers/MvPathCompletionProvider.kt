@@ -10,9 +10,12 @@ import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
-import org.move.lang.core.completion.createLookupElementWithContext
+import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.ext.ancestors
+import org.move.lang.core.psi.ext.endOffset
+import org.move.lang.core.psi.ext.isMslScope
+import org.move.lang.core.psi.ext.isSelf
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
@@ -48,7 +51,12 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
         val msl = pathElement.isMslScope
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(pathElement, msl)
 
-        val ctx = CompletionContext(pathElement, namespaces, pathScopeInfo, expectedTy)
+        val structAsType = this.namespace == Namespace.TYPE
+        val ctx = CompletionContext(
+            pathElement,
+            pathScopeInfo,
+            expectedTy
+        )
 
         if (moduleRef != null) {
             val module = moduleRef.reference?.resolveWithAliases() as? MvModule
@@ -58,7 +66,8 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
                 else -> Visibility.publicVisibilitiesFor(pathElement)
             }
             processModuleItems(module, namespaces, vs, pathScopeInfo) {
-                val lookup = it.element.createLookupElementWithContext(ctx)
+                val lookup =
+                    it.element.createLookupElement(ctx, structAsType = structAsType)
                 result.addElement(lookup)
                 false
             }
@@ -72,7 +81,11 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
             }
             processedNames.add(name)
             result.addElement(
-                element.createLookupElementWithContext(ctx, priority = element.completionPriority)
+                element.createLookupElement(
+                    ctx,
+                    structAsType = structAsType,
+                    priority = element.completionPriority
+                )
             )
             false
         }
@@ -95,8 +108,9 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
             importContext,
         )
         candidates.forEach { candidate ->
-            val lookupElement = candidate.element.createLookupElementWithContext(
+            val lookupElement = candidate.element.createLookupElement(
                 ctx,
+                structAsType = structAsType,
                 priority = UNIMPORTED_ITEM_PRIORITY,
                 insertHandler = ImportInsertHandler(parameters, candidate)
             )
