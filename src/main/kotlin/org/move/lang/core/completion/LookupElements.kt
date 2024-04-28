@@ -77,7 +77,7 @@ fun MvNamedElement.getLookupElementBuilder(
                     .withTypeText(signature.retTypeText())
             } else {
                 lookupElementBuilder
-                    .withTailText("${signature.paramsText()}${signature.retTypeSuffix()}")
+                    .withTailText(this.signatureText)
                     .withTypeText(this.outerFileName)
             }
         }

@@ -107,7 +107,35 @@ class LookupElementTest: MvTestBase() {
                   //^ 
             }
         }        
-    """, tailText = "(self: S<u8>)", typeText = "u8"
+    """, tailText = "(self)", typeText = "u8"
+    )
+
+    fun `test generic method ref`() = checkMethodOrFieldProvider(
+        """
+        module 0x1::main {
+            struct S<T> { field: T }
+            fun receiver<T>(self: &S<T>): T {}
+            fun main() {
+                let s = S { field: 1u8 };
+                s.receiver();
+                  //^ 
+            }
+        }        
+    """, tailText = "(&self)", typeText = "u8"
+    )
+
+    fun `test generic method ref mut`() = checkMethodOrFieldProvider(
+        """
+        module 0x1::main {
+            struct S<T> { field: T }
+            fun receiver<T>(self: &mut S<T>): T {}
+            fun main() {
+                let s = S { field: 1u8 };
+                s.receiver();
+                  //^ 
+            }
+        }        
+    """, tailText = "(&mut self)", typeText = "u8"
     )
 
     private fun check(

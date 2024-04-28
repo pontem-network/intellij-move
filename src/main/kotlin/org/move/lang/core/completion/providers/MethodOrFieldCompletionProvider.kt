@@ -66,7 +66,6 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
         }
         getMethodVariants(element, receiverTy, msl)
             .forEach { (_, function) ->
-                // TODO: can instantiation of TyFunction every time be avoided here? is it slow?
                 val subst = function.tyInfers
                 val declaredFuncTy = function.declaredType(msl).substitute(subst) as TyFunction
                 val declaredSelfTy = declaredFuncTy.paramTypes.first()

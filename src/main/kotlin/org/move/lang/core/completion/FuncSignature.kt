@@ -8,6 +8,7 @@ import org.move.lang.core.types.infer.TypeFoldable
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
 import org.move.lang.core.types.ty.Ty
+import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyUnit
 
 data class FuncSignature(
@@ -27,8 +28,17 @@ data class FuncSignature(
 
     fun paramsText(): String {
         return params.entries
-            .joinToString(", ", prefix = "(", postfix = ")") { (paramName, paramTy) ->
-                "$paramName: ${paramTy.text(false)}"
+            .withIndex()
+            .joinToString(", ", prefix = "(", postfix = ")") { (i, value) ->
+                val (paramName, paramTy) = value
+                if (i == 0 && paramName == "self") {
+                    when (paramTy) {
+                        is TyReference -> "&${if (paramTy.isMut) "mut " else ""}self"
+                        else -> "self"
+                    }
+                } else {
+                    "$paramName: ${paramTy.text(false)}"
+                }
             }
     }
 
