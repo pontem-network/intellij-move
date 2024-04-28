@@ -75,13 +75,9 @@ object ModulesCompletionProvider: MvCompletionProvider() {
                 candidate.element.createLookupElement(
                     completionCtx,
                     structAsType = Namespace.TYPE in importContext.namespaces,
-                    priority = UNIMPORTED_ITEM_PRIORITY
+                    priority = UNIMPORTED_ITEM_PRIORITY,
+                    insertHandler = ImportInsertHandler(parameters, candidate)
                 )
-//            candidate.element.createLookupElement(
-//                ImportInsertHandler(parameters, candidate),
-//                structAsType = Namespace.TYPE in importContext.namespaces,
-//                priority = UNIMPORTED_ITEM_PRIORITY,
-//            )
             result.addElement(lookupElement)
         }
     }

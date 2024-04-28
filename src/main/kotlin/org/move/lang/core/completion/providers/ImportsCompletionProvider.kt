@@ -1,5 +1,6 @@
 package org.move.lang.core.completion.providers
 
+import com.intellij.codeInsight.completion.BasicInsertHandler
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.patterns.ElementPattern
@@ -59,8 +60,11 @@ object ImportsCompletionProvider: MvCompletionProvider() {
         val completionContext = CompletionContext(itemImport, contextScopeInfo)
         processModuleItems(referredModule, ns, vs, contextScopeInfo) {
             result.addElement(
-                it.element.createLookupElement(completionContext, structAsType = true)
-//                it.element.createLookupElement(BasicInsertHandler(), structAsType = true)
+                it.element.createLookupElement(
+                    completionContext,
+                    insertHandler = BasicInsertHandler(),
+                    structAsType = true
+                )
             )
             false
         }

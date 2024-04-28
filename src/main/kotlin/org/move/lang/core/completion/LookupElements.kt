@@ -12,8 +12,7 @@ import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ContextScopeInfo
-import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -62,13 +61,26 @@ fun MvModule.createSelfLookup(): LookupElement {
         .withBoldness(true)
 }
 
-fun MvNamedElement.getLookupElementBuilder(structAsType: Boolean = false): LookupElementBuilder {
+fun MvNamedElement.getLookupElementBuilder(
+    completionCtx: CompletionContext,
+    subst: Substitution = emptySubstitution,
+    structAsType: Boolean = false
+): LookupElementBuilder {
     val lookupElementBuilder = this.createLookupElementWithIcon()
+    val msl = completionCtx.isMsl()
     return when (this) {
-        is MvFunction -> lookupElementBuilder
-            .withTailText(this.signatureText)
-            .withTypeText(this.outerFileName)
-
+        is MvFunction -> {
+            val signature = FuncSignature.fromFunction(this, msl).substitute(subst)
+            if (completionCtx.contextElement is MvMethodOrField) {
+                lookupElementBuilder
+                    .withTailText(signature.paramsText())
+                    .withTypeText(signature.retTypeText())
+            } else {
+                lookupElementBuilder
+                    .withTailText("${signature.paramsText()}${signature.retTypeSuffix()}")
+                    .withTypeText(this.outerFileName)
+            }
+        }
         is MvSpecFunction -> lookupElementBuilder
             .withTailText(this.parameters.joinToSignature())
             .withTypeText(this.returnType?.type?.text ?: "()")
@@ -84,21 +96,23 @@ fun MvNamedElement.getLookupElementBuilder(structAsType: Boolean = false): Looku
                 .withTypeText(this.containingFile?.name)
         }
 
-        is MvStructField -> lookupElementBuilder
-            .withTypeText(this.typeAnnotation?.type?.text)
-
+        is MvStructField -> {
+            val fieldTy = this.type?.loweredType(msl)?.substitute(subst) ?: TyUnknown
+            lookupElementBuilder
+                .withTypeText(fieldTy.text(false))
+        }
         is MvConst -> {
-            val msl = this.isMslOnlyItem
+//            val msl = this.isMslOnlyItem
             val constTy = this.type?.loweredType(msl) ?: TyUnknown
             lookupElementBuilder
                 .withTypeText(constTy.text(true))
         }
 
         is MvBindingPat -> {
-            val msl = this.isMslOnlyItem
-            val inference = this.inference(msl)
+//            val msl = this.isMslOnlyItem
+            val bindingInference = this.inference(msl)
             // race condition sometimes happens, when file is too big, inference is not finished yet
-            val ty = inference?.getPatTypeOrUnknown(this) ?: TyUnknown
+            val ty = bindingInference?.getPatTypeOrUnknown(this) ?: TyUnknown
             lookupElementBuilder
                 .withTypeText(ty.text(true))
         }
@@ -114,19 +128,27 @@ data class CompletionContext(
     val contextElement: MvElement,
     val contextScopeInfo: ContextScopeInfo,
     val expectedTy: Ty? = null,
-)
+) {
+    fun isMsl(): Boolean = contextScopeInfo.isMslScope
+}
 
 
 fun MvNamedElement.createLookupElement(
     completionContext: CompletionContext,
+    subst: Substitution = emptySubstitution,
     structAsType: Boolean = false,
     priority: Double = DEFAULT_PRIORITY,
     insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionContext),
 ): LookupElement {
-    val builder = this.getLookupElementBuilder(structAsType)
-        .withInsertHandler(insertHandler)
-        .withPriority(priority)
-    val props = getLookupElementProperties(this, completionContext)
+    val builder =
+        this.getLookupElementBuilder(
+            completionContext,
+            subst = subst,
+            structAsType = structAsType
+        )
+            .withInsertHandler(insertHandler)
+            .withPriority(priority)
+    val props = getLookupElementProperties(this, subst, completionContext)
     return builder.toMvLookupElement(properties = props)
 }
 

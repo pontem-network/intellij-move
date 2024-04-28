@@ -57,63 +57,30 @@ data class LookupElementProperties(
     val typeHasAllRequiredAbilities: Boolean = false,
 )
 
-fun getLookupElementProperties(element: MvNamedElement, context: CompletionContext): LookupElementProperties {
+fun getLookupElementProperties(
+    element: MvNamedElement,
+    subst: Substitution,
+    context: CompletionContext
+): LookupElementProperties {
     var props = LookupElementProperties()
     val expectedTy = context.expectedTy
     if (expectedTy != null) {
-        val msl = context.contextScopeInfo.isMslScope
-        val contextElement = context.contextElement
-        val itemTy =
-            when {
-                contextElement is MvStructDotField -> {
-                    val receiverTy = contextElement.inferReceiverTy(msl)
-                    when (element) {
-                        is MvFunction -> {
-                            // infer method return type using known self type
-                            val declaredFuncTy =
-                                element.declaredType(msl).substitute(element.tyInfers) as TyFunction
-                            val declaredSelfTy = declaredFuncTy.paramTypes.first()
-                            val actualSelfTy =
-                                autoborrow(receiverTy, declaredSelfTy)
-                                    ?: error("unreachable, references always compatible")
-
-                            val inferenceCtx = InferenceContext(msl)
-                            inferenceCtx.combineTypes(actualSelfTy, expectedTy)
-                            inferenceCtx.resolveTypeVarsIfPossible(declaredFuncTy.retType)
-                        }
-                        is MvStructField -> {
-                            // infer field type using struct type
-                            val struct = element.structItem
-                            val tyVars = struct.tyInfers
-                            val declaredStructTy = struct.declaredType(msl).substitute(tyVars) as TyStruct
-
-                            val inferenceCtx = InferenceContext(msl)
-                            inferenceCtx.combineTypes(receiverTy, declaredStructTy)
-
-                            val fieldTy = element.type?.loweredType(msl)?.substitute(tyVars) ?: TyUnknown
-                            inferenceCtx.resolveTypeVarsIfPossible(fieldTy)
-                        }
-                        is MvFunctionLike -> {
-                            // TODO: spec functions inference
-                            element.declaredType(msl).retType
-                        }
-                        else -> TyUnknown
-                    }
+        val msl = context.isMsl()
+        val declaredTy =
+            when (element) {
+                is MvFunctionLike -> element.declaredType(msl).retType
+                is MvStruct -> element.declaredType(msl)
+                is MvConst -> element.type?.loweredType(msl) ?: TyUnknown
+                is MvBindingPat -> {
+                    val inference = element.inference(msl)
+                    // sometimes type inference won't be able to catch up with the completion, and this line crashes,
+                    // so changing to infallible getPatTypeOrUnknown()
+                    inference?.getPatTypeOrUnknown(element) ?: TyUnknown
                 }
-                else -> when (element) {
-                    is MvFunctionLike -> element.declaredType(msl).retType
-                    is MvStruct -> element.declaredType(msl)
-                    is MvConst -> element.type?.loweredType(msl) ?: TyUnknown
-                    is MvBindingPat -> {
-                        val inference = element.inference(msl)
-                        // sometimes type inference won't be able to catch up with the completion, and this line crashes,
-                        // so changing to infallible getPatTypeOrUnknown()
-                        inference?.getPatTypeOrUnknown(element) ?: TyUnknown
-                    }
-                    is MvStructField -> element.type?.loweredType(msl) ?: TyUnknown
-                    else -> TyUnknown
-                }
+                is MvStructField -> element.type?.loweredType(msl) ?: TyUnknown
+                else -> TyUnknown
             }
+        val itemTy = declaredTy.substitute(subst)
 
         // NOTE: it is required for the TyInfer.TyVar to always have a different underlying unification table
         val isCompat = isCompatible(expectedTy, itemTy, msl) && compatAbilities(expectedTy, itemTy, msl)

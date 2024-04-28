@@ -8,10 +8,17 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.jetbrains.annotations.VisibleForTesting
 import org.move.lang.core.completion.*
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.psi.refItemScopes
+import org.move.lang.core.psi.tyInfers
 import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.letStmtScope
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.Substitution
+import org.move.lang.core.types.infer.substitute
+import org.move.lang.core.types.ty.TyFunction
+import org.move.lang.core.types.ty.TyReference
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.knownOrNull
 import org.move.lang.core.withParent
@@ -50,20 +57,31 @@ object MethodOrFieldCompletionProvider: MvCompletionProvider() {
         if (structTy != null) {
             getFieldVariants(element, structTy, msl)
                 .forEach { (_, field) ->
-                    result.addElement(field.createLookupElement(ctx))
+                    val lookupElement = field.createLookupElement(
+                        ctx,
+                        subst = structTy.substitution
+                    )
+                    result.addElement(lookupElement)
                 }
         }
         getMethodVariants(element, receiverTy, msl)
             .forEach { (_, function) ->
-                val lookupElement = function.createLookupElement(ctx)
-//                val lookupProperties = lookupProperties(function, context = ctx)
-//                val builder = lookupElement
-//                    .withTailText("")
-//                    .withTypeText("")
-//                    .withInsertHandler(DefaultInsertHandler())
-//                val mvLookupElement = builder.withPriority(DEFAULT_PRIORITY).toMvLookupElement(lookupProperties)
+                // TODO: can instantiation of TyFunction every time be avoided here? is it slow?
+                val subst = function.tyInfers
+                val declaredFuncTy = function.declaredType(msl).substitute(subst) as TyFunction
+                val declaredSelfTy = declaredFuncTy.paramTypes.first()
+                val autoborrowedReceiverTy =
+                    TyReference.autoborrow(receiverTy, declaredSelfTy)
+                        ?: error("unreachable, references always compatible")
+
+                val inferenceCtx = InferenceContext(msl)
+                inferenceCtx.combineTypes(declaredSelfTy, autoborrowedReceiverTy)
+
+                val lookupElement = function.createLookupElement(
+                    ctx,
+                    subst = inferenceCtx.resolveTypeVarsIfPossible(subst)
+                )
                 result.addElement(lookupElement)
             }
     }
-
 }

@@ -3,9 +3,11 @@ package org.move.lang.core.resolve
 import com.intellij.psi.search.GlobalSearchScope
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.NamedItemScope.MAIN
 import org.move.lang.core.psi.NamedItemScope.VERIFY
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.LetStmtScope.EXPR_STMT
+import org.move.lang.core.resolve.LetStmtScope.NONE
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
@@ -31,6 +33,7 @@ data class ContextScopeInfo(
 
     companion object {
         /// really does not affect anything, created just to allow creating CompletionContext everywhere
+        fun default(): ContextScopeInfo = ContextScopeInfo(setOf(MAIN), NONE)
         fun msl(): ContextScopeInfo = ContextScopeInfo(setOf(VERIFY), EXPR_STMT)
     }
 }
