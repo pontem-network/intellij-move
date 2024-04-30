@@ -1,5 +1,6 @@
 name: Publish EAP
 
+
 on:
     # only works on 'master' branch as it is a default branch
     workflow_run:
