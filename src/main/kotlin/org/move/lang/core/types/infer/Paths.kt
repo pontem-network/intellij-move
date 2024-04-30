@@ -1,14 +1,15 @@
 package org.move.lang.core.types.infer
 
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.MvMethodOrPath
 import org.move.lang.core.types.infer.RsPsiSubstitution.Value
 
 fun pathPsiSubst(
-    path: MvPath,
+    methodOrPath: MvMethodOrPath,
     resolved: MvTypeParametersOwner,
 ): RsPsiSubstitution {
     val typeParameters = resolved.typeParameters
-    val parent = path.parent
+    val parent = methodOrPath.parent
     // Generic arguments are optional in expression context, e.g.
     // `let a = Foo::<u8>::bar::<u16>();` can be written as `let a = Foo::bar();`
     // if it is possible to infer `u8` and `u16` during type inference
@@ -16,7 +17,7 @@ fun pathPsiSubst(
     val isPatPath = parent is MvPat || parent is MvPath && parent.parent is MvPat
     val areOptionalArgs = isExprPath || isPatPath
 
-    val typeArguments = path.typeArgumentList?.typeArgumentList?.map { it.type }
+    val typeArguments = methodOrPath.typeArgumentList?.typeArgumentList?.map { it.type }
     val typeSubst = associateSubst(typeParameters, typeArguments, areOptionalArgs)
     return RsPsiSubstitution(typeSubst)
 }

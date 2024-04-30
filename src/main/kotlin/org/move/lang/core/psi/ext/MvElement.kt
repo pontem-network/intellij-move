@@ -47,7 +47,7 @@ val MvNamedElement.isMslOnlyItem: Boolean
         return false
     }
 
-val MvPath.isMslScope: Boolean get() = this.isMslInner()
+val MvMethodOrPath.isMslScope get() = this.isMslInner()
 
 val MvModuleRef.isMslScope: Boolean get() = this.isMslInner()
 

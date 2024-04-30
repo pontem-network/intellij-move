@@ -14,7 +14,7 @@ abstract class CommandConfigurationProducerBase(val blockchain: Blockchain):
 
     fun configFromLocation(location: PsiElement, climbUp: Boolean = true): CommandLineArgsFromContext? {
         val project = location.project
-        if (project.moveSettings.state.blockchain != blockchain) {
+        if (project.moveSettings.blockchain != blockchain) {
             return null
         }
         return fromLocation(location, climbUp)
@@ -36,7 +36,7 @@ abstract class CommandConfigurationProducerBase(val blockchain: Blockchain):
 
         var envVars = commandLine.environmentVariables
         if (blockchain == Blockchain.APTOS
-            && context.project.moveSettings.state.disableTelemetry
+            && context.project.moveSettings.disableTelemetry
         ) {
             envVars = envVars.with(mapOf("APTOS_DISABLE_TELEMETRY" to "true"))
         }
@@ -49,7 +49,7 @@ abstract class CommandConfigurationProducerBase(val blockchain: Blockchain):
         context: ConfigurationContext
     ): Boolean {
         val project = context.project
-        if (project.moveSettings.state.blockchain != blockchain) {
+        if (project.moveSettings.blockchain != blockchain) {
             return false
         }
         val location = context.psiLocation ?: return false

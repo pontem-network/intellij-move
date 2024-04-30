@@ -32,6 +32,8 @@
     <projectService serviceInterface="org.move.lang.core.psi.MvPsiManager"
                     serviceImplementation="org.move.lang.core.psi.MvPsiManagerImpl" />
 
+    <projectService serviceImplementation="org.move.cli.settings.MvProjectSettingsService" />
+
     <configurationType
         implementation="org.move.cli.runConfigurations.legacy.MoveConfigurationType" />
     <configurationType
@@ -263,6 +265,10 @@
                      displayName="Redundant type cast"
                      enabledByDefault="true" level="WARNING"
                      implementationClass="org.move.ide.inspections.RedundantTypeCastInspection" />
+    <localInspection language="Move" groupName="Move"
+                     displayName="Convert to method call"
+                     enabledByDefault="true" level="WEAK WARNING"
+                     implementationClass="org.move.ide.inspections.ReplaceWithMethodCallInspection" />
 
     <!-- Color Settings -->
     <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage" />
@@ -281,9 +287,9 @@
     <directoryProjectGenerator implementation="org.move.ide.newProject.MoveProjectGenerator" />
 
     <postStartupActivity
-        implementation="org.move.ide.newProject.AlwaysRefreshProjectsAfterOpen" />
-<!--    <postStartupActivity-->
-<!--        implementation="org.move.cli.openProject.OpenMoveTomlOnProjectCreationFile" />-->
+        implementation="org.move.ide.newProject.projectActivity.AlwaysRefreshProjectsAfterOpen" />
+    <postStartupActivity
+        implementation="org.move.ide.newProject.projectActivity.InferBlockchainTypeOnStartupActivity" />
 <!--     background = 5 seconds delayed  -->
 <!--    <postStartupActivity-->
 <!--        implementation="org.move.cli.openProject.CreateDefaultCompileRunConfiguration" />-->
@@ -301,7 +307,7 @@
     <!--        <projectService serviceImplementation="org.move.cli.packages.MovePackageService"/>-->
 
     <!--        <projectService serviceInterface="com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker"-->
-    <!--                        serviceImplementation="org.move.cli.projectAware.MoveExternalSystemProjectAware"-->
+    <!--                        serviceImplementation="org.move.cli.externalSystem.MoveExternalSystemProjectAware"-->
     <!--                        overrides="true" />-->
     <!--        <applicationService serviceImplementation="org.move.openapiext.OpenSSLInfoService" />-->
 
@@ -356,7 +362,7 @@
 
   <projectListeners>
     <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
-              topic="org.move.cli.settings.MoveSettingsListener"
+              topic="org.move.cli.settings.MvProjectSettingsServiceBase.MoveSettingsListener"
               activeInTestMode="false" />
   </projectListeners>
 
@@ -372,9 +378,21 @@
             text="Update Move Projects"
             class="org.move.ide.actions.RefreshMoveProjectsAction"
             icon="AllIcons.Actions.Refresh" />
+    <action id="Move.DownloadAptos"
+            description="Download Aptos command line"
+            text="Download Aptos Command Line"
+            class="org.move.ide.actions.DownloadAptosAction"
+            icon="AllIcons.Actions.Download" />
+    
+    <action id="Move.ShowSettings"
+            class="org.move.ide.actions.MoveEditSettingsAction"
+            icon="AllIcons.General.Settings">
+    </action>
 
     <group id="Move.Aptos">
       <reference id="Move.RefreshAllProjects" />
+      <separator/>
+      <reference id="Move.ShowSettings" />
     </group>
   </actions>
 </idea-plugin>

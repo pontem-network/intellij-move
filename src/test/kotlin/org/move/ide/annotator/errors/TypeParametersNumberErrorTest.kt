@@ -174,4 +174,16 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
             }
         }        
     """)
+
+    fun `test receiver style method missing type parameter`() = checkErrors("""
+        module 0x1::main {
+            struct S<T> { field: T }
+            fun receiver<T, U>(self: &S<T>, param: U): U {
+                param
+            }
+            fun main(s: S<u8>) {
+                let b = s.receiver<error descr="Invalid instantiation of '0x1::main::receiver'. Expected 2 type argument(s) but got 1"><u8></error>(1);
+            }
+        }        
+    """)
 }

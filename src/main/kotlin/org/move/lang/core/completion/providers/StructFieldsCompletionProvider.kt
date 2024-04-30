@@ -8,9 +8,11 @@ import com.intellij.patterns.StandardPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.lang.core.MvPsiPatterns.bindingPat
-import org.move.lang.core.completion.createCompletionLookupElement
+import org.move.lang.core.completion.CompletionContext
+import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.withParent
 import org.move.lang.core.withSuperParent
 
@@ -25,9 +27,6 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
                 .withParent<MvStructPatField>(),
             bindingPat()
                 .withSuperParent<MvStructPatField>(2),
-            PlatformPatterns
-                .psiElement()
-                .withParent<MvStructDotField>(),
         )
 
     override fun addCompletions(
@@ -36,16 +35,19 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
         result: CompletionResultSet,
     ) {
         val pos = parameters.position
-        var element = pos.parent
-        if (element is MvBindingPat) element = element.parent
+        var element = pos.parent as? MvElement ?: return
 
+        if (element is MvBindingPat) element = element.parent as MvElement
+
+        val completionCtx = CompletionContext(element, ContextScopeInfo.default())
         when (element) {
             is MvStructPatField -> {
                 val structPat = element.structPat
                 addFieldsToCompletion(
                     structPat.path.maybeStruct ?: return,
                     structPat.patFieldNames,
-                    result
+                    result,
+                    completionCtx
                 )
             }
             is MvStructLitField -> {
@@ -53,28 +55,25 @@ object StructFieldsCompletionProvider: MvCompletionProvider() {
                 addFieldsToCompletion(
                     structLit.path.maybeStruct ?: return,
                     structLit.fieldNames,
-                    result
+                    result,
+                    completionCtx
                 )
-            }
-            is MvStructDotField -> {
-                val receiverItem = element.receiverItem ?: return
-                receiverItem.fields
-                    .forEach {
-                        result.addElement(
-                            it.createCompletionLookupElement()
-                        )
-                    }
             }
         }
     }
+
 
     private fun addFieldsToCompletion(
         referredStruct: MvStruct,
         providedFieldNames: List<String>,
         result: CompletionResultSet,
+        completionContext: CompletionContext,
     ) {
         for (field in referredStruct.fields.filter { it.name !in providedFieldNames }) {
-            result.addElement(field.createCompletionLookupElement())
+            result.addElement(
+                field.createLookupElement(completionContext)
+            )
         }
     }
 }
+

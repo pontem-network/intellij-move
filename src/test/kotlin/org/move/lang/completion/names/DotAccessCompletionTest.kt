@@ -73,4 +73,94 @@ module 0x1::M {
             }
         }        
     """)
+
+    fun `test receiver style function completion`() = doSingleCompletion("""
+        module 0x1::main {
+            struct S { field: u8 }
+            fun receiver(self: &S): u8 {}
+            fun main(s: S) {
+                s.rece/*caret*/
+            }
+        }        
+    """, """
+        module 0x1::main {
+            struct S { field: u8 }
+            fun receiver(self: &S): u8 {}
+            fun main(s: S) {
+                s.receiver()/*caret*/
+            }
+        }        
+    """)
+
+    fun `test receiver style function completion with assignment`() = doSingleCompletion("""
+        module 0x1::main {
+            struct S { field: u8 }
+            fun receiver<Z>(self: &S): Z {}
+            fun main(s: S) {
+                let f: u8 = s.rece/*caret*/
+            }
+        }        
+    """, """
+        module 0x1::main {
+            struct S { field: u8 }
+            fun receiver<Z>(self: &S): Z {}
+            fun main(s: S) {
+                let f: u8 = s.receiver()/*caret*/
+            }
+        }        
+    """)
+
+    fun `test receiver style function completion from another module`() = doSingleCompletion("""
+        module 0x1::m {
+            struct S { field: u8 }
+            public fun receiver(self: &S): u8 {}
+        }
+        module 0x1::main {
+            use 0x1::m::S;
+            fun main(s: S) {
+                s.rece/*caret*/
+            }
+        }        
+    """, """
+        module 0x1::m {
+            struct S { field: u8 }
+            public fun receiver(self: &S): u8 {}
+        }
+        module 0x1::main {
+            use 0x1::m::S;
+            fun main(s: S) {
+                s.receiver()/*caret*/
+            }
+        }        
+    """)
+
+    fun `test receiver style function completion type annotation required`() = doSingleCompletion("""
+        module 0x1::main {
+            struct S { field: u8 }
+            fun receiver<Z>(self: &S): Z {}
+            fun main(s: S) {
+                s.rece/*caret*/;
+            }
+        }        
+    """, """
+        module 0x1::main {
+            struct S { field: u8 }
+            fun receiver<Z>(self: &S): Z {}
+            fun main(s: S) {
+                s.receiver</*caret*/>();
+            }
+        }        
+    """)
+
+    fun `test fields are not available from another module`() = checkNoCompletion("""
+        module 0x1::m {
+            struct S { field: u8 }
+        }
+        module 0x1::main {
+            use 0x1::m::S;
+            fun main(s: S) {
+                s.fi/*caret*/
+            }
+        }
+    """)
 }

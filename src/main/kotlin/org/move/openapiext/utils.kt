@@ -5,6 +5,7 @@
 
 package org.move.openapiext
 
+import com.intellij.execution.Platform
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
@@ -121,12 +122,13 @@ val Project.contentRoots: Sequence<VirtualFile>
     get() = this.modules.asSequence()
         .flatMap { ModuleRootManager.getInstance(it).contentRoots.asSequence() }
 
-val Project.syntheticLibraries: Collection<SyntheticLibrary> get() {
-    val libraries = AdditionalLibraryRootsProvider.EP_NAME
-        .extensionList
-        .flatMap { it.getAdditionalProjectLibraries(this) }
-    return libraries
-}
+val Project.syntheticLibraries: Collection<SyntheticLibrary>
+    get() {
+        val libraries = AdditionalLibraryRootsProvider.EP_NAME
+            .extensionList
+            .flatMap { it.getAdditionalProjectLibraries(this) }
+        return libraries
+    }
 
 val Project.rootDir: VirtualFile? get() = contentRoots.firstOrNull()
 
@@ -188,7 +190,7 @@ inline fun <R> Project.nonBlocking(crossinline block: () -> R, crossinline uiCon
 }
 
 @Service
-class MvPluginDisposable : Disposable {
+class MvPluginDisposable: Disposable {
     companion object {
         @JvmStatic
         fun getInstance(project: Project): Disposable = project.service<MvPluginDisposable>()
@@ -206,10 +208,13 @@ fun checkCommitIsNotInProgress(project: Project) {
     }
 }
 
-inline fun <Key: Any, reified Psi : PsiElement> getElements(
+inline fun <Key: Any, reified Psi: PsiElement> getElements(
     indexKey: StubIndexKey<Key, Psi>,
     key: Key,
     project: Project,
     scope: GlobalSearchScope?
 ): Collection<Psi> =
     StubIndex.getElements(indexKey, key, project, scope, Psi::class.java)
+
+fun joinPath(segments: Array<String>) =
+    segments.joinTo(StringBuilder(), Platform.current().fileSeparator.toString()).toString()

@@ -15,7 +15,7 @@ class MvPathReferenceImpl(
 
     override fun multiResolveInner(): List<MvNamedElement> {
         val pathNamespaces = element.namespaces()
-        val vs = Visibility.buildSetOfVisibilities(element)
+        val vs = Visibility.publicVisibilitiesFor(element)
         val contextScopeInfo =
             ContextScopeInfo(
                 refItemScopes = element.refItemScopes,

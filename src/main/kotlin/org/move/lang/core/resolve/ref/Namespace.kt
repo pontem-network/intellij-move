@@ -19,7 +19,7 @@ sealed class Visibility {
         fun local(): Set<Visibility> = setOf(Public, Internal)
         fun none(): Set<Visibility> = setOf()
 
-        fun buildSetOfVisibilities(element: MvElement): Set<Visibility> {
+        fun publicVisibilitiesFor(element: MvElement): Set<Visibility> {
             val vs = mutableSetOf<Visibility>(Public)
             val containingModule = element.containingModule
             if (containingModule != null) {

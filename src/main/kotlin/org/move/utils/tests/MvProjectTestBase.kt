@@ -10,6 +10,7 @@ import com.intellij.psi.impl.PsiManagerEx
 import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
+import com.intellij.util.ui.UIUtil
 import org.intellij.lang.annotations.Language
 import org.move.cli.moveProjectsService
 import org.move.cli.settings.Blockchain
@@ -25,15 +26,13 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
     override fun setUp() {
         super.setUp()
 
-        val settingsState = project.moveSettings.state
-        
         val debugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
         val blockchain = this.findAnnotationInstance<WithBlockchain>()?.blockchain ?: Blockchain.APTOS
         // triggers projects refresh
-        project.moveSettings.state = settingsState.copy(
-            debugMode = debugMode,
-            blockchain = blockchain
-        )
+        project.moveSettings.modify {
+            it.debugMode = debugMode
+            it.blockchain = blockchain
+        }
     }
 
     override fun tearDown() {
@@ -101,5 +100,25 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
             res = res.findChild(part) ?: error("cannot find $path")
         }
         return res
+    }
+
+    /**
+     * Tries to launches [action]. If it returns `false`, invokes [UIUtil.dispatchAllInvocationEvents] and tries again
+     *
+     * Can be used to wait file system refresh, for example
+     */
+    protected fun runWithInvocationEventsDispatching(
+        errorMessage: String = "Failed to invoke `action` successfully",
+        retries: Int = 1000,
+        action: () -> Boolean
+    ) {
+        repeat(retries) {
+            UIUtil.dispatchAllInvocationEvents()
+            if (action()) {
+                return
+            }
+            Thread.sleep(10)
+        }
+        error(errorMessage)
     }
 }

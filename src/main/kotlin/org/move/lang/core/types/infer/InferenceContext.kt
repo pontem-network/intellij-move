@@ -41,6 +41,7 @@ fun compatAbilities(expectedTy: Ty, actualTy: Ty, msl: Boolean): Boolean {
 }
 
 fun isCompatible(expectedTy: Ty, actualTy: Ty, msl: Boolean): Boolean {
+    // TODO: do we need to skip unification then, if we recreate the InferenceContext anyway?
     val inferenceCtx = InferenceContext(msl, skipUnification = true)
     return inferenceCtx.combineTypes(expectedTy, actualTy).isOk
 }
@@ -72,8 +73,10 @@ data class InferenceResult(
     override val patTypes: Map<MvPat, Ty>,
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
-    val callExprTypes: Map<MvCallExpr, Ty>,
-    private val pathTypes: Map<MvPath, Ty>,
+    private val methodOrPathTypes: Map<MvMethodOrPath, Ty>,
+    private val resolvedFields: Map<MvStructDotField, MvNamedElement?>,
+    private val resolvedMethodCalls: Map<MvMethodCall, MvNamedElement?>,
+    val callableTypes: Map<MvCallable, Ty>,
     val typeErrors: List<TypeError>
 ): InferenceData {
     fun getExprType(expr: MvExpr): Ty = exprTypes[expr] ?: expr.project.inferenceErrorOrTyUnknown(expr)
@@ -86,8 +89,11 @@ data class InferenceResult(
     fun getExprTypeOrNull(expr: MvExpr): Ty? = exprTypes[expr]
 
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
-    fun getCallExprType(expr: MvCallExpr): Ty? = callExprTypes[expr]
-    fun getPathType(path: MvPath): Ty? = pathTypes[path]
+    fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
+    fun getMethodOrPathType(methodOrPath: MvMethodOrPath): Ty? = methodOrPathTypes[methodOrPath]
+
+    fun getResolvedField(field: MvStructDotField): MvNamedElement? = resolvedFields[field]
+    fun getResolvedMethod(methodCall: MvMethodCall): MvNamedElement? = resolvedMethodCalls[methodCall]
 }
 
 fun inferTypesIn(element: MvInferenceContextOwner, msl: Boolean): InferenceResult {
@@ -141,8 +147,13 @@ class InferenceContext(
 
     private val exprTypes = mutableMapOf<MvExpr, Ty>()
     private val exprExpectedTypes = mutableMapOf<MvExpr, Ty>()
-    private val callExprTypes = mutableMapOf<MvCallExpr, Ty>()
-    private val pathTypes = mutableMapOf<MvPath, Ty>()
+    private val callableTypes = mutableMapOf<MvCallable, Ty>()
+
+    //    private val pathTypes = mutableMapOf<MvPath, Ty>()
+    private val methodOrPathTypes = mutableMapOf<MvMethodOrPath, Ty>()
+
+    val resolvedFields = mutableMapOf<MvStructDotField, MvNamedElement?>()
+    val resolvedMethodCalls = mutableMapOf<MvMethodCall, MvNamedElement?>()
 
     private val typeErrors = mutableListOf<TypeError>()
 
@@ -154,7 +165,7 @@ class InferenceContext(
         varUnificationTable.startSnapshot(),
     )
 
-    inline fun <T> probe(action: () -> T): T {
+    inline fun <T> freezeUnificationTable(action: () -> T): T {
         val snapshot = startSnapshot()
         try {
             return action()
@@ -188,18 +199,21 @@ class InferenceContext(
 
         // for call expressions, we need to leave unresolved ty vars intact
         // to determine whether an explicit type annotation required
-        callExprTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
+        callableTypes.replaceAll { _, ty -> resolveTypeVarsIfPossible(ty) }
 
         exprExpectedTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
         typeErrors.replaceAll { err -> fullyResolveWithOrigins(err) }
-        pathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
+//        pathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
+        methodOrPathTypes.replaceAll { _, ty -> fullyResolveWithOrigins(ty) }
 
         return InferenceResult(
             patTypes,
             exprTypes,
             exprExpectedTypes,
-            callExprTypes,
-            pathTypes,
+            methodOrPathTypes,
+            resolvedFields,
+            resolvedMethodCalls,
+            callableTypes,
             typeErrors
         )
     }
@@ -240,18 +254,20 @@ class InferenceContext(
         this.exprExpectedTypes[expr] = ty
     }
 
-    fun writeCallExprType(callExpr: MvCallExpr, ty: Ty) {
-        this.callExprTypes[callExpr] = ty
+    fun writeCallableType(callable: MvCallable, ty: Ty) {
+        this.callableTypes[callable] = ty
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <T: GenericTy> instantiatePath(
-        path: MvPath,
+    fun <T: GenericTy> instantiateMethodOrPath(
+        methodOrPath: MvMethodOrPath,
         genericItem: MvTypeParametersOwner
     ): Pair<T, Substitution>? {
         var itemTy =
-            this.pathTypes.getOrPut(path) {
-                TyLowering.lowerPath(path, msl) as? T ?: return null
+            this.methodOrPathTypes.getOrPut(methodOrPath) {
+                // can only be method or path, both are resolved to MvNamedElement
+                val genericNamedItem = genericItem as MvNamedElement
+                TyLowering.lowerPath(methodOrPath, genericNamedItem, msl) as? T ?: return null
             }
 
         val typeParameters = genericItem.tyInfers

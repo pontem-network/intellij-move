@@ -6,8 +6,7 @@ import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.CliCommandLineArgs
 import org.move.cli.settings.Blockchain
-import org.move.cli.settings.dumpStateOnTestFailure
-import org.move.cli.settings.skipFetchLatestGitDeps
+import org.move.cli.settings.moveSettings
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
@@ -59,10 +58,10 @@ abstract class TestCommandConfigurationProducerBase(blockchain: Blockchain):
             Blockchain.APTOS -> subCommand += " --filter $modName::$functionName"
             Blockchain.SUI -> subCommand += " $modName::$functionName"
         }
-        if (psi.project.skipFetchLatestGitDeps) {
+        if (psi.project.moveSettings.skipFetchLatestGitDeps) {
             subCommand += " --skip-fetch-latest-git-deps"
         }
-        if (blockchain == Blockchain.APTOS && psi.project.dumpStateOnTestFailure) {
+        if (blockchain == Blockchain.APTOS && psi.project.moveSettings.dumpStateOnTestFailure) {
             subCommand += " --dump"
         }
 
@@ -87,10 +86,10 @@ abstract class TestCommandConfigurationProducerBase(blockchain: Blockchain):
             Blockchain.APTOS -> subCommand += " --filter $modName"
             Blockchain.SUI -> subCommand += " $modName"
         }
-        if (psi.project.skipFetchLatestGitDeps) {
+        if (psi.project.moveSettings.skipFetchLatestGitDeps) {
             subCommand += " --skip-fetch-latest-git-deps"
         }
-        if (blockchain == Blockchain.APTOS && psi.project.dumpStateOnTestFailure) {
+        if (blockchain == Blockchain.APTOS && psi.project.moveSettings.dumpStateOnTestFailure) {
             subCommand += " --dump"
         }
 
@@ -112,10 +111,10 @@ abstract class TestCommandConfigurationProducerBase(blockchain: Blockchain):
 
         val confName = "Test $packageName"
         var subCommand = "move test"
-        if (location.project.skipFetchLatestGitDeps) {
+        if (location.project.moveSettings.skipFetchLatestGitDeps) {
             subCommand += " --skip-fetch-latest-git-deps"
         }
-        if (location.project.dumpStateOnTestFailure) {
+        if (location.project.moveSettings.dumpStateOnTestFailure) {
             subCommand += " --dump"
         }
 

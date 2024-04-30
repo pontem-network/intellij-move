@@ -4,8 +4,6 @@ import com.intellij.ide.DefaultTreeExpander
 import com.intellij.ide.TreeExpander
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.invokeLater
-import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
@@ -20,36 +18,22 @@ import org.move.cli.hasMoveProject
 import org.move.cli.moveProjectsService
 import javax.swing.JComponent
 
-class AptosToolWindowFactory : ToolWindowFactory, DumbAware {
-    private val lock: Any = Any()
-
+class AptosToolWindowFactory: ToolWindowFactory, DumbAware {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        project.moveProjectsService.scheduleProjectsRefresh("Aptos Tool Window opened")
+        project.moveProjectsService
+            .scheduleProjectsRefresh("Aptos Tool Window opened")
+
         val toolwindowPanel = AptosToolWindowPanel(project)
         val tab = ContentFactory.getInstance()
             .createContent(toolwindowPanel, "", false)
         toolWindow.contentManager.addContent(tab)
     }
 
-//    override fun isApplicable(project: Project): Boolean {
-//        if (MoveToolWindow.isRegistered(project)) return false
-//
-////        val cargoProjects = project.moveProjects
-////        if (!cargoProjects.hasAtLeastOneValidProject
-////            && cargoProjects.suggestManifests().none()
-////        ) return false
-//
-////        synchronized(lock) {
-////            val res = project.getUserData(CARGO_TOOL_WINDOW_APPLICABLE) ?: true
-////            if (res) {
-////                project.putUserData(CARGO_TOOL_WINDOW_APPLICABLE, false)
-////            }
-////            return res
-////        }
-//    }
+    // TODO: isApplicable() and initializeToolWindow() cannot be copied from intellij-rust in 241,
+    //       implement it instead with ExternalToolWindowManager later
 }
 
-private class AptosToolWindowPanel(project: Project) : SimpleToolWindowPanel(true, false) {
+private class AptosToolWindowPanel(project: Project): SimpleToolWindowPanel(true, false) {
     private val aptosTab = AptosToolWindow(project)
 
     init {
@@ -80,7 +64,7 @@ class AptosToolWindow(private val project: Project) {
     private val projectTree = MoveProjectsTree()
     private val projectStructure = MoveProjectsTreeStructure(projectTree, project)
 
-    val treeExpander: TreeExpander = object : DefaultTreeExpander(projectTree) {
+    val treeExpander: TreeExpander = object: DefaultTreeExpander(projectTree) {
         override fun isCollapseAllVisible(): Boolean = project.hasMoveProject
         override fun isExpandAllVisible(): Boolean = project.hasMoveProject
     }
@@ -93,42 +77,19 @@ class AptosToolWindow(private val project: Project) {
         with(project.messageBus.connect()) {
             subscribe(MoveProjectsService.MOVE_PROJECTS_TOPIC, MoveProjectsListener { _, projects ->
                 invokeLater {
-                    projectStructure.reloadTreeModelAsync(projects.toList())
+                    projectStructure.updateMoveProjects(projects.toList())
                 }
             })
         }
         invokeLater {
-            val moveProjects = project.moveProjectsService.allProjects.toList()
-            projectStructure.reloadTreeModelAsync(moveProjects)
+            projectStructure.updateMoveProjects(project.moveProjectsService.allProjects.toList())
         }
     }
 
     companion object {
-        private val LOG: Logger = logger<AptosToolWindow>()
-
         @JvmStatic
         val SELECTED_MOVE_PROJECT: DataKey<MoveProject> = DataKey.create("SELECTED_MOVE_PROJECT")
 
         const val APTOS_TOOLBAR_PLACE: String = "Aptos Toolbar"
-
-//        private const val ID: String = "Aptos"
-
-//        fun initializeToolWindow(project: Project) {
-//            try {
-//                val manager = ToolWindowManager.getInstance(project) as? ToolWindowManagerEx ?: return
-//                val bean = ToolWindowEP.EP_NAME.extensionList.find { it.id == ID }
-//                if (bean != null) {
-//                    @Suppress("DEPRECATION")
-//                    manager.initToolWindow(bean)
-//                }
-//            } catch (e: Exception) {
-//                LOG.error("Unable to initialize $ID tool window", e)
-//            }
-//        }
-
-//        fun isRegistered(project: Project): Boolean {
-//            val manager = ToolWindowManager.getInstance(project)
-//            return manager.getToolWindow(ID) != null
-//        }
     }
 }

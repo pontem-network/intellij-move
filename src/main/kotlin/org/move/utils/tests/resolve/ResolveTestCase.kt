@@ -11,7 +11,7 @@ abstract class ResolveTestCase : MvTestBase() {
     protected fun checkByCode(
         @Language("Move") code: String,
     ) {
-        inlineFile(code, "main.move")
+        InlineFile(code, "main.move")
 
         val (refElement, data, offset) = myFixture.findElementWithDataAndOffsetInEditor<MvReferenceElement>("^")
 

@@ -183,7 +183,7 @@ module 0x1::main {
     """
     )
 
-    fun `test outer function requires acquires through inline function`() = checkWarnings("""
+    fun `test outer function requires acquires through inline function`() = checkErrors("""
 module 0x1::main {
     struct S has key {}
     fun call() {
@@ -193,5 +193,18 @@ module 0x1::main {
         borrow_global<T>(object::object_address(source_object))
     }
 }
+    """)
+
+    fun `test missing acquires with receiver style`() = checkErrors(
+        """
+        module 0x1::M {
+            struct S has key {}
+            fun acquire(self: &S) acquires S {
+                borrow_global<S>(@0x1);
+            }
+            fun main(s: S) {
+                s.<error descr="Function 'main' is not marked as 'acquires S'">acquire()</error>;
+            }
+        }
     """)
 }

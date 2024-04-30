@@ -4,9 +4,14 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes
+import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.stubs.MvModuleStub
+import org.move.lang.core.types.infer.InferenceContext
+import org.move.lang.core.types.infer.foldTyInferWith
 import org.move.lang.core.types.infer.loweredType
+import org.move.lang.core.types.infer.substitute
+import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyLambda
 import org.move.lang.core.types.ty.TyUnknown
@@ -108,8 +113,40 @@ val MvFunctionLike.script: MvScript?
 
 val MvFunctionLike.signatureText: String
     get() {
-        val params = this.functionParameterList?.parametersText ?: "()"
-        val returnTypeText = this.returnType?.type?.text ?: ""
-        val returnType = if (returnTypeText == "") "" else ": $returnTypeText"
-        return "$params$returnType"
+        val paramsText = this.parameters.joinToSignature()
+        val retType = this.returnType?.type?.text ?: ""
+        val retTypeSuffix = if (retType == "") "" else ": $retType"
+        return "$paramsText$retTypeSuffix"
+    }
+
+val MvFunction.selfParam: MvFunctionParameter? get() =
+    this.parameters.firstOrNull()?.takeIf { it.name == "self" }
+
+fun MvFunction.selfParamTy(msl: Boolean): Ty? = this.selfParam?.type?.loweredType(msl)
+
+val MvFunction.isMethod get() = selfParam != null
+
+val MvFunction.selfSignatureText: String
+    get() {
+        val paramsText = this.parameters.drop(1).joinToSignature()
+        val retType = this.returnType?.type?.text ?: ""
+        val retTypeSuffix = if (retType == "") "" else ": $retType"
+        return "$paramsText$retTypeSuffix"
+    }
+
+fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: CompletionContext?): Boolean
+    {
+        val msl = this.isMslOnlyItem
+        val callTy = this.declaredType(msl).substitute(this.tyInfers) as TyFunction
+
+        val inferenceCtx = InferenceContext(msl)
+        callTy.paramTypes.forEach {
+            inferenceCtx.combineTypes(it, it.foldTyInferWith { TyUnknown })
+        }
+        val expectedTy = completionContext?.expectedTy
+        if (expectedTy != null && expectedTy !is TyUnknown) {
+            inferenceCtx.combineTypes(callTy.retType, expectedTy)
+        }
+        val resolvedCallTy = inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyFunction
+        return resolvedCallTy.needsTypeAnnotation()
     }

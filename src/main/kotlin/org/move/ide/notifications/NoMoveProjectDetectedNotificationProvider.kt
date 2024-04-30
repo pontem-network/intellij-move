@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import org.move.cli.moveProjectsService
-import org.move.cli.settings.blockchain
+import org.move.cli.settings.moveSettings
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
 import org.move.openapiext.common.isDispatchThread
@@ -25,7 +25,7 @@ class NoMoveProjectDetectedNotificationProvider(project: Project): MvEditorNotif
         @Suppress("UnstableApiUsage")
         if (!project.isTrusted()) return null
 
-        val blockchain = project.blockchain
+        val blockchain = project.moveSettings.blockchain
         val moveProjectsService = project.moveProjectsService
         // HACK: Reloads projects once on an opening of any Move file, if not yet reloaded.
         //       It should be invoked somewhere else where it's more appropriate,

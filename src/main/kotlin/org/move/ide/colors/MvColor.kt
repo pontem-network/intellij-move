@@ -40,9 +40,13 @@ enum class MvColor(humanName: String, default: TextAttributesKey? = null) {
 
     BUILTIN_FUNCTION_CALL("Functions//Builtins", Default.FUNCTION_CALL),
 
+    METHOD("Functions//Method", Default.INSTANCE_METHOD),
+    METHOD_CALL("Functions//Method call", Default.FUNCTION_CALL),
+
     MACRO("Functions//Macro", Default.IDENTIFIER),
 
     KEYWORD("Keywords//Keyword", Default.KEYWORD),
+    SELF_PARAMETER("Keywords//Self Parameter", Default.KEYWORD),
 
     ABILITY("Types//Ability", Default.IDENTIFIER),
     PRIMITIVE_TYPE("Types//Primitive", Default.KEYWORD),

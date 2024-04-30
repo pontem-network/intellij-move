@@ -24,7 +24,7 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val inference = function.inference(false)
 
                 val callAcquiresTypes = mutableSetOf<String>()
-                for (callExpr in inference.callExprTypes.keys) {
+                for (callExpr in inference.callableTypes.keys) {
                     val types = acquiresContext.getCallTypes(callExpr, inference)
                     callAcquiresTypes.addAll(
                         types.map { it.fullnameNoArgs() })

@@ -57,7 +57,14 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
                 val owner = element.owner
                 usages.forEach {
                     when (owner) {
-                        is MvLetStmt -> {
+                        is MvSchemaFieldStmt -> {
+                            // NEW_SCHEMA_FIELD_NAME: OLD_VARIABLE_NAME
+                            val schemaLitField = it.element as? MvSchemaLitField ?: return@forEach
+                            val newSchemaLitField =
+                                psiFactory.schemaLitField(newName, schemaLitField.referenceName)
+                            schemaLitField.replace(newSchemaLitField)
+                        }
+                        else -> {
                             val field = it.element?.maybeLitFieldParent
                             // OLD_FIELD_NAME: NEW_VARIABLE_NAME
                             when {
@@ -72,13 +79,6 @@ class MvRenameProcessor : RenamePsiElementProcessor() {
                                     field.replace(newField)
                                 }
                             }
-                        }
-                        is MvSchemaFieldStmt -> {
-                            // NEW_SCHEMA_FIELD_NAME: OLD_VARIABLE_NAME
-                            val schemaLitField = it.element as? MvSchemaLitField ?: return@forEach
-                            val newSchemaLitField =
-                                psiFactory.schemaLitField(newName, schemaLitField.referenceName)
-                            schemaLitField.replace(newSchemaLitField)
                         }
                     }
                 }

@@ -12,10 +12,8 @@ import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ContextScopeInfo
-import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyUnknown
 
 const val KEYWORD_PRIORITY = 80.0
@@ -63,104 +61,95 @@ fun MvModule.createSelfLookup(): LookupElement {
         .withBoldness(true)
 }
 
-fun MvNamedElement.createBaseLookupElement(ns: Set<Namespace>): LookupElementBuilder {
+fun MvNamedElement.getLookupElementBuilder(
+    completionCtx: CompletionContext,
+    subst: Substitution = emptySubstitution,
+    structAsType: Boolean = false
+): LookupElementBuilder {
+    val lookupElementBuilder = this.createLookupElementWithIcon()
+    val msl = completionCtx.isMsl()
     return when (this) {
-        is MvModuleUseSpeck -> {
-            val module = this.fqModuleRef?.reference?.resolve()
-            if (module != null) {
-                module.createBaseLookupElement(ns)
+        is MvFunction -> {
+            val signature = FuncSignature.fromFunction(this, msl).substitute(subst)
+            if (completionCtx.contextElement is MvMethodOrField) {
+                lookupElementBuilder
+                    .withTailText(signature.paramsText())
+                    .withTypeText(signature.retTypeText())
             } else {
-                this.createLookupElementWithIcon()
+                lookupElementBuilder
+                    .withTailText(this.signatureText)
+                    .withTypeText(this.outerFileName)
             }
         }
-
-        is MvUseItem -> {
-            val namedItem = this.reference.resolve()
-            if (namedItem != null) {
-                namedItem.createBaseLookupElement(ns)
-            } else {
-                this.createLookupElementWithIcon()
-            }
-        }
-
-        is MvFunction -> this.createLookupElementWithIcon()
-            .withTailText(this.signatureText)
-            .withTypeText(this.outerFileName)
-
-        is MvSpecFunction -> this.createLookupElementWithIcon()
-            .withTailText(this.functionParameterList?.parametersText ?: "()")
+        is MvSpecFunction -> lookupElementBuilder
+            .withTailText(this.parameters.joinToSignature())
             .withTypeText(this.returnType?.type?.text ?: "()")
 
-        is MvModule -> this.createLookupElementWithIcon()
+        is MvModule -> lookupElementBuilder
             .withTailText(this.addressRef()?.let { " ${it.text}" } ?: "")
             .withTypeText(this.containingFile?.name)
 
         is MvStruct -> {
-            val tailText = if (Namespace.TYPE !in ns) " { ... }" else ""
-            this.createLookupElementWithIcon()
+            val tailText = if (structAsType) "" else " { ... }"
+            lookupElementBuilder
                 .withTailText(tailText)
                 .withTypeText(this.containingFile?.name)
         }
 
-        is MvStructField -> this.createLookupElementWithIcon()
-            .withTypeText(this.typeAnnotation?.type?.text)
-
+        is MvStructField -> {
+            val fieldTy = this.type?.loweredType(msl)?.substitute(subst) ?: TyUnknown
+            lookupElementBuilder
+                .withTypeText(fieldTy.text(false))
+        }
         is MvConst -> {
-            val msl = this.isMslOnlyItem
+//            val msl = this.isMslOnlyItem
             val constTy = this.type?.loweredType(msl) ?: TyUnknown
-            this.createLookupElementWithIcon()
+            lookupElementBuilder
                 .withTypeText(constTy.text(true))
         }
 
         is MvBindingPat -> {
-            val msl = this.isMslOnlyItem
-            val inference = this.inference(msl)
+//            val msl = this.isMslOnlyItem
+            val bindingInference = this.inference(msl)
             // race condition sometimes happens, when file is too big, inference is not finished yet
-            val ty = inference?.getPatTypeOrUnknown(this) ?: TyUnknown
-            this.createLookupElementWithIcon()
+            val ty = bindingInference?.getPatTypeOrUnknown(this) ?: TyUnknown
+            lookupElementBuilder
                 .withTypeText(ty.text(true))
         }
 
-        is MvSchema -> this.createLookupElementWithIcon()
+        is MvSchema -> lookupElementBuilder
             .withTypeText(this.containingFile?.name)
 
-        else -> LookupElementBuilder.create(this)
-            .withLookupString(this.name ?: "")
+        else -> lookupElementBuilder
     }
 }
 
 data class CompletionContext(
     val contextElement: MvElement,
-    val namespaces: Set<Namespace>,
     val contextScopeInfo: ContextScopeInfo,
     val expectedTy: Ty? = null,
-)
+) {
+    fun isMsl(): Boolean = contextScopeInfo.isMslScope
+}
 
 
 fun MvNamedElement.createLookupElement(
     completionContext: CompletionContext,
+    subst: Substitution = emptySubstitution,
+    structAsType: Boolean = false,
     priority: Double = DEFAULT_PRIORITY,
     insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(completionContext),
 ): LookupElement {
-    val lookupElement = this.createBaseLookupElement(completionContext.namespaces)
-    val props = lookupProperties(this, completionContext)
-    return lookupElement
-        .withInsertHandler(insertHandler)
-        .withPriority(priority)
-        .toMvLookupElement(props)
-}
-
-fun MvNamedElement.createCompletionLookupElement(
-    insertHandler: InsertHandler<LookupElement> = DefaultInsertHandler(),
-    ns: Set<Namespace> = emptySet(),
-    priority: Double = DEFAULT_PRIORITY,
-    props: LookupElementProperties = LookupElementProperties()
-): LookupElement {
-    val lookupElement = this.createBaseLookupElement(ns)
-    return lookupElement
-        .withInsertHandler(insertHandler)
-        .withPriority(priority)
-        .toMvLookupElement(props)
+    val builder =
+        this.getLookupElementBuilder(
+            completionContext,
+            subst = subst,
+            structAsType = structAsType
+        )
+            .withInsertHandler(insertHandler)
+            .withPriority(priority)
+    val props = getLookupElementProperties(this, subst, completionContext)
+    return builder.toMvLookupElement(properties = props)
 }
 
 fun InsertionContext.addSuffix(suffix: String) {
@@ -177,7 +166,7 @@ val InsertionContext.alreadyHasColonColon: Boolean
 val InsertionContext.alreadyHasSpace: Boolean
     get() = nextCharIs(' ')
 
-private val InsertionContext.hasAngleBrackets: Boolean
+val InsertionContext.hasAngleBrackets: Boolean
     get() = nextCharIs('<')
 
 fun InsertionContext.nextCharIs(c: Char): Boolean =
@@ -199,7 +188,7 @@ private fun CharSequence.indexOfSkippingSpace(c: Char, startIndex: Int): Int? {
 fun LookupElementBuilder.withPriority(priority: Double): LookupElement =
     if (priority == DEFAULT_PRIORITY) this else PrioritizedLookupElement.withPriority(this, priority)
 
-class AngleBracketsInsertHandler : InsertHandler<LookupElement> {
+class AngleBracketsInsertHandler: InsertHandler<LookupElement> {
 
     override fun handleInsert(context: InsertionContext, item: LookupElement) {
         val document = context.document
@@ -210,13 +199,40 @@ class AngleBracketsInsertHandler : InsertHandler<LookupElement> {
     }
 }
 
-open class DefaultInsertHandler(val completionContext: CompletionContext? = null) : InsertHandler<LookupElement> {
-    override fun handleInsert(context: InsertionContext, item: LookupElement) {
-        val document = context.document
-        val element = item.psiElement as? MvElement ?: return
+open class DefaultInsertHandler(val completionCtx: CompletionContext? = null): InsertHandler<LookupElement> {
 
+    final override fun handleInsert(context: InsertionContext, item: LookupElement) {
+        val element = item.psiElement as? MvElement ?: return
+        handleInsert(element, context, item)
+    }
+
+    protected open fun handleInsert(
+        element: MvElement,
+        context: InsertionContext,
+        item: LookupElement
+    ) {
+        val document = context.document
         when (element) {
-            is MvFunctionLike -> handleFunctionInsert(context, element)
+            is MvFunctionLike -> {
+                val requiresExplicitTypeArguments =
+                    element.requiresExplicitlyProvidedTypeArguments(completionCtx)
+                var suffix = ""
+                if (!context.hasAngleBrackets && requiresExplicitTypeArguments) {
+                    suffix += "<>"
+                }
+                if (!context.hasAngleBrackets && !context.hasCallParens) {
+                    suffix += "()"
+                }
+                val isMethodCall = context.getElementOfType<MvMethodOrField>() != null
+                val fnParameters = if (isMethodCall) element.parameters.drop(1) else element.parameters
+                val caretShift = when {
+                    requiresExplicitTypeArguments -> 1
+                    fnParameters.isNotEmpty() -> 1
+                    else -> 2
+                }
+                context.document.insertString(context.selectionEndOffset, suffix)
+                EditorModificationUtil.moveCaretRelatively(context.editor, caretShift)
+            }
             is MvSchema -> {
                 if (element.hasTypeParameters) {
                     if (!context.hasAngleBrackets) {
@@ -239,40 +255,6 @@ open class DefaultInsertHandler(val completionContext: CompletionContext? = null
             }
         }
     }
-
-    private fun handleFunctionInsert(context: InsertionContext, element: MvFunctionLike) {
-        val requiresExplicitTypes = run {
-            val msl = element.isMslOnlyItem
-            val callTy = element.declaredType(msl).substitute(element.tyInfers) as TyFunction
-
-            val inferenceCtx = InferenceContext(msl)
-            callTy.paramTypes.forEach {
-                val resolvedParamType = it.foldTyInferWith { TyUnknown }
-                inferenceCtx.combineTypes(it, resolvedParamType)
-            }
-            val expectedTy = completionContext?.expectedTy
-            if (expectedTy != null && expectedTy !is TyUnknown) {
-                inferenceCtx.combineTypes(callTy.retType, expectedTy)
-            }
-            (inferenceCtx.resolveTypeVarsIfPossible(callTy) as TyFunction).needsTypeAnnotation()
-        }
-
-        var suffix = ""
-        if (!context.hasAngleBrackets && requiresExplicitTypes) {
-            suffix += "<>"
-        }
-        if (!context.hasAngleBrackets && !context.hasCallParens) {
-            suffix += "()"
-        }
-
-        val offset = when {
-            element.parameters.isNotEmpty() || requiresExplicitTypes -> 1
-            else -> 2
-        }
-
-        context.document.insertString(context.selectionEndOffset, suffix)
-        EditorModificationUtil.moveCaretRelatively(context.editor, offset)
-    }
 }
 
 // When a user types `(` while completion,
@@ -285,5 +267,5 @@ private fun InsertionContext.doNotAddOpenParenCompletionChar() {
     }
 }
 
-inline fun <reified T : PsiElement> InsertionContext.getElementOfType(strict: Boolean = false): T? =
+inline fun <reified T: PsiElement> InsertionContext.getElementOfType(strict: Boolean = false): T? =
     PsiTreeUtil.findElementOfClassAtOffset(file, tailOffset - 1, T::class.java, strict)

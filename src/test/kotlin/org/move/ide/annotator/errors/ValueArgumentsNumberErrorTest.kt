@@ -33,6 +33,22 @@ class ValueArgumentsNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
         }    
     """)
 
+    fun `test invalid number of parameters receiver style`() = checkErrors("""
+        module 0x1::M {
+            struct S { field: u8 }
+            fun get_field_0(self: &S): u8 {}
+            fun get_field_1(self: &S, a: u8): u8 {}
+            fun get_field_3(self: &S, a: u8, b: u8, c: u8): u8 {}
+
+            fun main(s: S) {
+                s.get_field_0(<error descr="This function takes 0 parameters but 1 parameter was supplied">4</error>);
+                s.get_field_1(<error descr="This function takes 1 parameter but 0 parameters were supplied">)</error>;
+                s.get_field_1(1, <error descr="This function takes 1 parameter but 2 parameters were supplied">4</error>);
+                s.get_field_3(5, 1<error descr="This function takes 3 parameters but 2 parameters were supplied">)</error>;
+            }
+        }    
+    """)
+
     fun `test invalid number of parameters with import`() = checkErrors("""
         module 0x1::p {
             public fun params_3(val: u8, val2: u64, s: &signer) {}

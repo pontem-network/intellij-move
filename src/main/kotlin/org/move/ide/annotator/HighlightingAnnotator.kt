@@ -68,11 +68,13 @@ class HighlightingAnnotator: MvAnnotatorBase() {
                 element.isInline -> MvColor.INLINE_FUNCTION
                 element.isView -> MvColor.VIEW_FUNCTION
                 element.isEntry -> MvColor.ENTRY_FUNCTION
+                element.selfParam != null -> MvColor.METHOD
                 else -> MvColor.FUNCTION
             }
         if (element is MvStruct) return MvColor.STRUCT
         if (element is MvStructField) return MvColor.FIELD
         if (element is MvStructDotField) return MvColor.FIELD
+        if (element is MvMethodCall) return MvColor.METHOD_CALL
         if (element is MvStructPatField) return MvColor.FIELD
         if (element is MvStructLitField) return MvColor.FIELD
         if (element is MvConst) return MvColor.CONSTANT
@@ -87,7 +89,14 @@ class HighlightingAnnotator: MvAnnotatorBase() {
     }
 
     private fun highlightBindingPat(bindingPat: MvBindingPat): MvColor {
-//        val msl = bindingPat.isMslLegacy()
+        val parent = bindingPat.parent
+        if (parent is MvFunctionParameter && bindingPat.name == "self") {
+            // check whether it's a first parameter
+            val parameterList = parent.parent as MvFunctionParameterList
+            if (parameterList.functionParameterList.indexOf(parent) == 0) {
+                return MvColor.SELF_PARAMETER
+            }
+        }
         val msl = bindingPat.isMslOnlyItem
         val itemTy = bindingPat.inference(msl)?.getPatType(bindingPat)
         return if (itemTy != null) {

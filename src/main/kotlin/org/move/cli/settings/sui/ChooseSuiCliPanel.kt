@@ -2,63 +2,57 @@ package org.move.cli.settings.sui
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
-import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.dsl.builder.*
-import org.move.cli.settings.MoveProjectSettingsService
+import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.builder.Row
 import org.move.cli.settings.VersionLabel
-import org.move.openapiext.*
+import org.move.openapiext.pathField
 import org.move.stdext.toPathOrNull
 
-class ChooseSuiCliPanel(
-    private val versionUpdateListener: (() -> Unit)? = null
-): Disposable {
+class ChooseSuiCliPanel(versionUpdateListener: (() -> Unit)? = null): Disposable {
+
+    data class Data(
+        val localSuiPath: String?,
+    )
+
+    var data: Data
+        get() {
+            return Data(localSuiPath = localPathField.text)
+        }
+        set(value) {
+            localPathField.text = value.localSuiPath ?: ""
+            updateVersion()
+        }
 
     private val localPathField =
         pathField(
             FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
             this,
             "Choose Sui CLI",
-            onTextChanged = { text ->
-                _suiCliPath = text
-                _suiCliPath.toPathOrNull()?.let { versionLabel.updateAndNotifyListeners(it) }
+            onTextChanged = { _ ->
+                updateVersion()
             })
     private val versionLabel = VersionLabel(this, versionUpdateListener)
 
-    private lateinit var _suiCliPath: String
-
-    fun getSuiCliPath(): String { return _suiCliPath }
-    fun setSuiCliPath(path: String) {
-        this._suiCliPath = path
-        localPathField.text = path
-        path.toPathOrNull()?.let { versionLabel.updateAndNotifyListeners(it) }
-    }
-
     fun attachToLayout(layout: Panel): Row {
-        val panel = this
-        if (!panel::_suiCliPath.isInitialized) {
-            val defaultProjectSettings =
-                ProjectManager.getInstance().defaultProject.getService(MoveProjectSettingsService::class.java)
-            panel._suiCliPath = defaultProjectSettings.state.suiPath
-        }
         val resultRow = with(layout) {
             group("Sui CLI") {
                 row {
                     cell(localPathField)
-                        .bindText(
-                            { _suiCliPath },
-                            { _suiCliPath = it }
-                        )
-                        .onChanged {
-                            localPathField.text.toPathOrNull()?.let { versionLabel.updateAndNotifyListeners(it) }
-                        }
-                        .align(AlignX.FILL).resizableColumn()
+                        .align(AlignX.FILL)
+                        .resizableColumn()
                 }
                 row("--version :") { cell(versionLabel) }
             }
         }
-        _suiCliPath.toPathOrNull()?.let { versionLabel.updateAndNotifyListeners(it) }
+        updateVersion()
         return resultRow
+    }
+
+    private fun updateVersion() {
+        val localSuiPath = localPathField.text.toPathOrNull()
+        versionLabel.updateAndNotifyListeners(localSuiPath)
     }
 
     override fun dispose() {

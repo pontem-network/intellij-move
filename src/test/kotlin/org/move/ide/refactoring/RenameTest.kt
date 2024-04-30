@@ -487,7 +487,7 @@ class RenameTest : MvTestBase() {
         val fileText = """
     module 0x1::Main { use 0x1::Main; }                
         """
-        inlineFile(fileText, "Main.move")
+        InlineFile(fileText, "Main.move")
 
         myFixture.renameElement(myFixture.file, "MyMain.move")
 
@@ -556,12 +556,31 @@ class RenameTest : MvTestBase() {
     }        
     """)
 
+    fun `test rename parameter field init shorthand replaced`() = doTest("self", """
+        module 0x1::main {
+            struct Option<T> { vec: vector<T> };
+            public fun from_vec<Element>(/*caret*/vec: vector<Element>): Option<Element> {
+                assert!(vec.length() <= 1, EOPTION_VEC_TOO_LONG);
+                Option { vec }
+            }
+        }        
+    """, """
+        module 0x1::main {
+            struct Option<T> { vec: vector<T> };
+            public fun from_vec<Element>(self: vector<Element>): Option<Element> {
+                assert!(self.length() <= 1, EOPTION_VEC_TOO_LONG);
+                Option { vec: self }
+            }
+        }        
+    """
+    )
+
     private fun doTest(
         newName: String,
         @Language("Move") before: String,
         @Language("Move") after: String,
     ) {
-        inlineFile(before).withCaret()
+        InlineFile(before).withCaret()
         val element = myFixture.elementAtCaret
         myFixture.renameElement(element, newName, false, false)
         myFixture.checkResult(after)
@@ -574,7 +593,7 @@ class RenameTest : MvTestBase() {
         @Language("Move") before: String,
         @Language("Move") after: String,
     ) {
-        inlineFile(before, name = beforeFileName).withCaret()
+        InlineFile(before, name = beforeFileName).withCaret()
         val element = myFixture.elementAtCaret
         myFixture.renameElement(element, newName, false, false)
         myFixture.checkResult(after)

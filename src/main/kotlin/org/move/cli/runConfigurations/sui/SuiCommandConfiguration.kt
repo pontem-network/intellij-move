@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import org.move.cli.moveProjectsService
 import org.move.cli.runConfigurations.CommandConfigurationBase
 import org.move.cli.settings.moveSettings
+import org.move.cli.settings.suiExecPath
 import org.move.stdext.toPathOrNull
 import java.nio.file.Path
 
@@ -22,11 +23,7 @@ class SuiCommandConfiguration(
         }
     }
 
-    override fun getCliPath(project: Project): Path? {
-        return project.moveSettings.state.suiPath
-            .takeIf { it.isNotBlank() }
-            ?.toPathOrNull()
-    }
+    override fun getCliPath(project: Project): Path? = project.suiExecPath
 
     override fun getConfigurationEditor() = SuiCommandConfigurationEditor()
 }

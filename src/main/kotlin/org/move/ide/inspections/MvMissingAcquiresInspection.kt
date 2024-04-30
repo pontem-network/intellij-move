@@ -5,6 +5,7 @@ import com.intellij.codeInspection.ProblemsHolder
 import org.move.ide.inspections.fixes.AddAcquiresFix
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.isInline
 import org.move.lang.core.types.infer.acquiresContext
 import org.move.lang.core.types.infer.inference
@@ -18,18 +19,21 @@ class MvMissingAcquiresInspection : MvLocalInspectionTool() {
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object : MvVisitor() {
-            override fun visitCallExpr(callExpr: MvCallExpr) {
-                val outerFunction = callExpr.containingFunction ?: return
+            override fun visitCallExpr(o: MvCallExpr) = visitCallable(o)
+            override fun visitMethodCall(o: MvMethodCall) = visitCallable(o)
+
+            private fun visitCallable(callable: MvCallable) {
+                val outerFunction = callable.containingFunction ?: return
                 if (outerFunction.isInline) return
 
-                val acquiresContext = callExpr.moveProject?.acquiresContext ?: return
+                val acquiresContext = callable.moveProject?.acquiresContext ?: return
                 val inference = outerFunction.inference(false)
 
                 val existingTypes = acquiresContext.getFunctionTypes(outerFunction)
                 val existingTypeNames =
                     existingTypes.map { it.fullnameNoArgs() }.toSet()
 
-                val callExprTypes = acquiresContext.getCallTypes(callExpr, inference)
+                val callExprTypes = acquiresContext.getCallTypes(callable, inference)
 
                 val currentModule = outerFunction.module ?: return
                 val missingTypes =
@@ -52,25 +56,11 @@ class MvMissingAcquiresInspection : MvLocalInspectionTool() {
                         }
                     }
 
-//                val itemTyVars = outerFunction.tyInfers
-//                val missingItems = inference.getAcquiredTypes(callExpr, outerSubst = itemTyVars)
-////                    .map { it.substituteOrUnknown(typeParameters) }
-//                    .mapNotNull { ty ->
-//                        when (ty) {
-//                            is TyTypeParameter -> if (!declaredItems.any { it == ty.origin }) ty.origin else null
-//                            is TyStruct -> {
-//                                val notAcquired = ty.item.containingModule == currentModule
-//                                        && !declaredItems.any { it == ty.item }
-//                                if (notAcquired) ty.item else null
-//                            }
-//                            else -> null
-//                        }
-//                    }
                 if (missingTypes.isNotEmpty()) {
                     val name = outerFunction.name ?: return
                     val missingNames = missingTypes.mapNotNull { it.name }
                     holder.registerProblem(
-                        callExpr,
+                        callable,
                         "Function '$name' is not marked as 'acquires ${missingNames.joinToString()}'",
                         ProblemHighlightType.GENERIC_ERROR,
                         AddAcquiresFix(outerFunction, missingNames)

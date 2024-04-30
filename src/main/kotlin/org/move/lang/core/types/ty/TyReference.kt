@@ -6,9 +6,11 @@
 package org.move.lang.core.types.ty
 
 import org.move.ide.presentation.tyToString
-
 import org.move.lang.core.types.infer.TypeFolder
 import org.move.lang.core.types.infer.TypeVisitor
+import org.move.lang.core.types.infer.isCompatible
+import org.move.lang.core.types.ty.RefPermissions.READ
+import org.move.lang.core.types.ty.RefPermissions.WRITE
 
 enum class RefPermissions {
     READ,
@@ -24,10 +26,10 @@ data class TyReference(
     val referenced: Ty,
     val permissions: Set<RefPermissions>,
     val msl: Boolean
-) : Ty(referenced.flags) {
+): Ty(referenced.flags) {
     override fun abilities() = setOf(Ability.COPY, Ability.DROP)
 
-    val isMut: Boolean get() = this.permissions.contains(RefPermissions.WRITE)
+    val isMut: Boolean get() = this.permissions.contains(WRITE)
 
     fun innerTy(): Ty {
         return if (referenced is TyReference) {
@@ -56,10 +58,32 @@ data class TyReference(
     override fun toString(): String = tyToString(this)
 
     companion object {
-        fun ref(ty: Ty, msl: Boolean): TyReference = TyReference(ty, setOf(RefPermissions.READ), msl)
+        fun ref(ty: Ty, mut: Boolean, msl: Boolean = false): TyReference =
+            TyReference(ty, if (mut) setOf(READ, WRITE) else setOf(READ), msl)
 
         fun coerceMutability(inferred: TyReference, expected: TyReference): Boolean {
             return inferred.isMut || !expected.isMut
+        }
+
+        fun isCompatibleWithAutoborrow(ty: Ty, intoTy: Ty, msl: Boolean): Boolean {
+            // if underlying types are different, no match
+            val autoborrowedTy = autoborrow(ty, intoTy) ?: return false
+            return isCompatible(intoTy, autoborrowedTy, msl)
+        }
+
+        fun autoborrow(ty: Ty, intoTy: Ty): Ty? {
+            return if (intoTy is TyReference) coerceAutoborrow(ty, intoTy.isMut) else ty
+        }
+
+        fun coerceAutoborrow(ty: Ty, mut: Boolean): Ty? {
+            return when {
+                ty !is TyReference -> ref(ty, mut)
+                mut && ty.isMut -> ty
+                mut && !ty.isMut -> null
+                !mut && ty.isMut -> ref(ty.innerTy(), false)
+                !mut && !ty.isMut -> ty
+                else -> null
+            }
         }
     }
 }

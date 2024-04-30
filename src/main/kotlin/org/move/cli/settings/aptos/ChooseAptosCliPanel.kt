@@ -3,108 +3,128 @@ package org.move.cli.settings.aptos
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.dsl.builder.*
+import com.intellij.openapi.util.SystemInfo
+import com.intellij.ui.components.JBRadioButton
+import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.builder.Row
+import com.intellij.ui.dsl.builder.actionListener
+import com.intellij.ui.layout.selected
 import org.move.cli.settings.VersionLabel
+import org.move.cli.settings.aptos.AptosExecType.BUNDLED
+import org.move.cli.settings.aptos.AptosExecType.LOCAL
+import org.move.cli.settings.isValidExecutable
+import org.move.openapiext.PluginPathManager
 import org.move.openapiext.pathField
+import org.move.stdext.blankToNull
 import org.move.stdext.toPathOrNull
+import java.nio.file.Path
+
+enum class AptosExecType {
+    BUNDLED,
+    LOCAL;
+
+    companion object {
+        val isBundledSupportedForThePlatform: Boolean get() = !SystemInfo.isMac
+//        val isBundledSupportedForThePlatform: Boolean get() = false
+
+        fun bundledPath(): String? = PluginPathManager.bundledAptosCli
+
+        fun aptosExecPath(execType: AptosExecType, localAptosPath: String?): Path? {
+            val pathCandidate =
+                when (execType) {
+                    BUNDLED -> bundledPath()?.toPathOrNull()
+                    LOCAL -> localAptosPath?.blankToNull()?.toPathOrNull()
+                }
+            return pathCandidate?.takeIf { it.isValidExecutable() }
+        }
+    }
+}
 
 class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
+
+    data class Data(
+        val aptosExecType: AptosExecType,
+        val localAptosPath: String?
+    )
+
+    var data: Data
+        get() {
+            val execType = if (bundledRadioButton.isSelected) BUNDLED else LOCAL
+            val path = localPathField.text.blankToNull()
+            return Data(
+                aptosExecType = execType,
+                localAptosPath = path
+            )
+        }
+        set(value) {
+            when (value.aptosExecType) {
+                BUNDLED -> {
+                    bundledRadioButton.isSelected = true
+                    localRadioButton.isSelected = false
+                }
+                LOCAL -> {
+                    bundledRadioButton.isSelected = false
+                    localRadioButton.isSelected = true
+                }
+            }
+            localPathField.text = value.localAptosPath ?: ""
+            updateVersion()
+        }
 
     private val localPathField =
         pathField(
             FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
             this,
             "Choose Aptos CLI",
-            onTextChanged = { text ->
-                val exec = AptosExec.LocalPath(text)
-                _aptosExec = exec
-                exec.toPathOrNull()?.let { versionLabel.updateAndNotifyListeners(it) }
+            onTextChanged = { _ ->
+                updateVersion()
             })
-
     private val versionLabel = VersionLabel(this, versionUpdateListener)
 
-    private lateinit var _aptosExec: AptosExec
-
-    var selectedAptosExec: AptosExec
-        get() = _aptosExec
-        set(aptosExec) {
-            this._aptosExec = aptosExec
-            when (_aptosExec) {
-                is AptosExec.Bundled -> localPathField.text = ""
-                else ->
-                    localPathField.text = aptosExec.execPath
-            }
-            aptosExec.toPathOrNull()?.let { versionLabel.updateAndNotifyListeners(it) }
-        }
+    private val bundledRadioButton = JBRadioButton("Bundled")
+    private val localRadioButton = JBRadioButton("Local")
 
     fun attachToLayout(layout: Panel): Row {
-        val panel = this
-        if (!panel::_aptosExec.isInitialized) {
-            panel._aptosExec = AptosExec.default()
-        }
         val resultRow = with(layout) {
             group("Aptos CLI") {
                 buttonsGroup {
                     row {
-                        radioButton("Bundled", AptosExec.Bundled)
-                            .bindSelected(
-                                { _aptosExec is AptosExec.Bundled },
-                                {
-                                    _aptosExec = AptosExec.Bundled
-                                    val bundledPath = AptosExec.Bundled.toPathOrNull()
-                                    if (bundledPath != null) {
-                                        versionLabel.updateAndNotifyListeners(bundledPath)
-                                    }
-                                }
-                            )
-//                            .actionListener { _, _ ->
-//                                _aptosExec = AptosExec.Bundled
-//                                AptosExec.Bundled.toPathOrNull()
-//                                    ?.let { versionLabel.updateValueWithListener(it) }
-//                            }
-                            .enabled(AptosExec.isBundledSupportedForThePlatform())
+                        cell(bundledRadioButton)
+                            .enabled(AptosExecType.isBundledSupportedForThePlatform)
+                            .actionListener { _, _ ->
+                                updateVersion()
+                            }
                         comment(
                             "Bundled version is not available for this platform (refer to the official Aptos docs for more)"
                         )
-                            .visible(!AptosExec.isBundledSupportedForThePlatform())
+                            .visible(!AptosExecType.isBundledSupportedForThePlatform)
                     }
                     row {
-                        val button = radioButton("Local", AptosExec.LocalPath(""))
-                            .bindSelected(
-                                { _aptosExec is AptosExec.LocalPath },
-                                {
-                                    _aptosExec = AptosExec.LocalPath(localPathField.text)
-                                    val localPath = localPathField.text.toPathOrNull()
-                                    if (localPath != null) {
-                                        versionLabel.updateAndNotifyListeners(localPath)
-                                    }
-                                }
-                            )
-//                            .actionListener { _, _ ->
-//                                _aptosExec = AptosExec.LocalPath(localPathField.text)
-//                                localPathField.text.toPathOrNull()
-//                                    ?.let { versionLabel.updateAndNotifyListeners(it) }
-//                            }
+                        cell(localRadioButton)
+                            .actionListener { _, _ ->
+                                updateVersion()
+                            }
                         cell(localPathField)
-                            .enabledIf(button.selected)
-                            .align(AlignX.FILL).resizableColumn()
+                            .enabledIf(localRadioButton.selected)
+                            .align(AlignX.FILL)
+                            .resizableColumn()
                     }
                     row("--version :") { cell(versionLabel) }
                 }
-                    .bind(
-                        { _aptosExec },
-                        {
-                            _aptosExec =
-                                when (it) {
-                                    is AptosExec.Bundled -> it
-                                    is AptosExec.LocalPath -> AptosExec.LocalPath(localPathField.text)
-                                }
-                        }
-                    )
             }
         }
-        _aptosExec.toPathOrNull()?.let { versionLabel.updateAndNotifyListeners(it) }
+        updateVersion()
         return resultRow
+    }
+
+    private fun updateVersion() {
+        val aptosPath =
+            when {
+                bundledRadioButton.isSelected -> AptosExecType.bundledPath()
+                else -> localPathField.text
+            }?.toPathOrNull()
+        versionLabel.updateAndNotifyListeners(aptosPath)
     }
 
     override fun dispose() {

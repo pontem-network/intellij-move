@@ -47,7 +47,7 @@ class MvAbilityCheckInspection : MvLocalInspectionTool() {
                 if (o.isMsl()) return
 
                 val path = o.parent as? MvPath ?: return
-                val pathType = o.inference(false)?.getPathType(path) as? GenericTy ?: return
+                val pathType = o.inference(false)?.getMethodOrPathType(path) as? GenericTy ?: return
                 val generics = pathType.item.generics
 
                 for ((i, typeArgument) in o.typeArgumentList.withIndex()) {

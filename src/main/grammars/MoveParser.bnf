@@ -596,7 +596,7 @@ private TypeParamBound_items ::= Ability ( '+' Ability )*
 }
 private TypeParamBound_items_recover ::= !('>' | ',')
 
-TypeArgumentList ::= '<' <<non_empty_comma_sep_items (TypeArgument &(','|'>'))>>? '>' {
+TypeArgumentList ::= '<' !'=' <<non_empty_comma_sep_items (TypeArgument &(','|'>'))>>? '>' {
     name = "type arguments"
 }
 TypeArgument ::= Type
@@ -930,7 +930,10 @@ AddressLit ::= '@' AddressRef { pin = 1 }
 
 CallExpr ::= (Path &'(') ValueArgumentList {
     pin = 1
-    implements = ["org.move.lang.core.psi.PathExpr"]
+    implements = [
+        "org.move.lang.core.psi.PathExpr"
+        "org.move.lang.core.psi.ext.MvCallable"
+    ]
 }
 ValueArgumentList ::= '(' ValueArgumentList_items? ')' {
     pin = 1
@@ -972,16 +975,28 @@ Initializer ::= '=' Expr { pin = 1 }
 
 BorrowExpr ::= '&' mut? Expr
 
-DotExpr ::= Expr DotExpr_field
+DotExpr ::= Expr DotExpr_inner
 // Do not inline this rule, it breaks expression parsing
-private DotExpr_field ::= '.' (!'.') StructDotField {
+private DotExpr_inner ::= '.' !('.' | VectorStart) (MethodCall | StructDotField) {
     pin = 2
     consumeTokenMethod = "consumeTokenFast"
 }
-StructDotField ::= !(<<VECTOR_IDENTIFIER>> ('[' | '<')) IDENTIFIER !('(' | '::' | '!' | '{')
+
+private VectorStart ::= (<<VECTOR_IDENTIFIER>> ('[' | '<'))
+
+StructDotField ::= IDENTIFIER !('(' | '::' | '!' | '{')
 {
-    implements = ["org.move.lang.core.resolve.ref.MvMandatoryReferenceElement"]
+    implements = ["org.move.lang.core.psi.ext.MvMethodOrField"]
     mixin = "org.move.lang.core.psi.ext.MvStructDotFieldMixin"
+}
+MethodCall ::= IDENTIFIER TypeArgumentList? ValueArgumentList
+{
+    implements = [
+        "org.move.lang.core.psi.ext.MvMethodOrField"
+        "org.move.lang.core.psi.ext.MvMethodOrPath"
+        "org.move.lang.core.psi.ext.MvCallable"
+    ]
+    mixin = "org.move.lang.core.psi.ext.MvMethodCallMixin"
 }
 
 IndexExpr ::= Expr IndexArg
@@ -994,7 +1009,10 @@ RefExpr ::= Path !'{' {
 
 Path ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList?
 {
-    implements = ["org.move.lang.core.resolve.ref.MvPathReferenceElement"]
+    implements = [
+        "org.move.lang.core.resolve.ref.MvPathReferenceElement"
+        "org.move.lang.core.psi.ext.MvMethodOrPath"
+    ]
     mixin = "org.move.lang.core.psi.ext.MvPathMixin"
 }
 
@@ -1037,7 +1055,10 @@ NamedAddress ::= IDENTIFIER
 }
 
 /// Macros
-AssertBangExpr ::= <<ASSERT_IDENTIFIER>> '!' ValueArgumentList { pin = 2 }
+AssertBangExpr ::= <<ASSERT_IDENTIFIER>> '!' ValueArgumentList {
+    pin = 2
+    implements = [ "org.move.lang.core.psi.ext.MvCallable" ]
+}
 //AssertBangExpr ::= MacroIdent ValueArgumentList { pin = 1 }
 //MacroIdent ::= IDENTIFIER '!'
 

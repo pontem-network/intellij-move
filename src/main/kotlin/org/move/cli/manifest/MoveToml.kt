@@ -3,13 +3,14 @@ package org.move.cli.manifest
 import com.intellij.openapi.project.Project
 import org.move.cli.*
 import org.move.openapiext.*
+import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.chain
 import org.toml.lang.psi.TomlFile
 import java.nio.file.Path
 
 class MoveToml(
     val project: Project,
-    val tomlFile: TomlFile? = null,
+    val tomlFile: TomlFile,
     val packageTable: MoveTomlPackageTable? = null,
 
     val addresses: RawAddressMap = mutableRawAddressMap(),
@@ -46,6 +47,9 @@ class MoveToml(
 
     companion object {
         fun fromTomlFile(tomlFile: TomlFile, projectRoot: Path): MoveToml {
+            // needs read access for Toml
+            checkReadAccessAllowed()
+
             val packageTomlTable = tomlFile.getTable("package")
             var packageTable: MoveTomlPackageTable? = null
             if (packageTomlTable != null) {

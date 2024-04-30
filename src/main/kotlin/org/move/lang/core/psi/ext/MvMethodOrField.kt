@@ -1,14 +1,21 @@
-package org.move.lang.core.types.infer
+package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.MvDotExpr
-import org.move.lang.core.psi.ext.ancestorOrSelf
+import org.move.lang.core.psi.MvExpr
+import org.move.lang.core.resolve.ref.MvMandatoryReferenceElement
+import org.move.lang.core.types.infer.MvInferenceContextOwner
+import org.move.lang.core.types.infer.inferTypesIn
+import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
-import org.move.lang.core.types.ty.TyReference
-import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
 
-fun MvDotExpr.inferReceiverTy(msl: Boolean): Ty {
-    val receiverExpr = this.expr
+interface MvMethodOrField: MvMandatoryReferenceElement
+
+val MvMethodOrField.dotExpr: MvDotExpr get() = parent as MvDotExpr
+val MvMethodOrField.receiverExpr: MvExpr get() = dotExpr.expr
+
+fun MvMethodOrField.inferReceiverTy(msl: Boolean): Ty {
+    val receiverExpr = this.receiverExpr
     val inference = receiverExpr.inference(msl) ?: return TyUnknown
     val receiverTy =
         inference.getExprTypeOrNull(receiverExpr) ?: run {
@@ -22,11 +29,6 @@ fun MvDotExpr.inferReceiverTy(msl: Boolean): Ty {
             val noCacheInference = inferTypesIn(inferenceOwner, msl)
             noCacheInference.getExprType(receiverExpr)
         }
-
-    val innerTy = when (receiverTy) {
-        is TyReference -> receiverTy.innerTy() as? TyStruct ?: TyUnknown
-        is TyStruct -> receiverTy
-        else -> TyUnknown
-    }
-    return innerTy
+    return receiverTy
 }
+

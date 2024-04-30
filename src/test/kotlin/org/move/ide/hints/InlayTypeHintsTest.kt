@@ -65,7 +65,7 @@ class InlayTypeHintsTest : MvTestBase() {
     """)
 
     private fun checkByText(@Language("Move") code: String) {
-        inlineFile(
+        InlineFile(
             code.trimIndent()
                 .replace(HINT_COMMENT_PATTERN, "<$1/>")
         )

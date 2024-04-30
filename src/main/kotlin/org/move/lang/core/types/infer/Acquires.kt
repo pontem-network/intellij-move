@@ -10,6 +10,7 @@ import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.acquiresPathTypes
+import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.isInline
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
@@ -31,7 +32,7 @@ val MoveProject.acquiresContext: AcquiresTypeContext
 
 class AcquiresTypeContext {
     private val functionTypes: MutableMap<MvFunction, List<Ty>> = concurrentMapOf()
-    private val callExprTypes: MutableMap<MvCallExpr, List<Ty>> = concurrentMapOf()
+    private val callableTypes: MutableMap<MvCallable, List<Ty>> = concurrentMapOf()
 
     fun getFunctionTypes(function: MvFunction): List<Ty> {
         val inference = function.inference(false)
@@ -39,7 +40,7 @@ class AcquiresTypeContext {
             if (function.isInline) {
                 // collect inner callExpr types
                 val allTypes = mutableListOf<Ty>()
-                for (innerCallExpr in inference.callExprTypes.keys) {
+                for (innerCallExpr in inference.callableTypes.keys) {
                     val types = getCallTypes(innerCallExpr, inference)
                     allTypes.addAll(types)
                 }
@@ -51,9 +52,9 @@ class AcquiresTypeContext {
         }
     }
 
-    fun getCallTypes(callExpr: MvCallExpr, inference: InferenceResult): List<Ty> {
-        return callExprTypes.getOrPut(callExpr) {
-            val callTy = inference.getCallExprType(callExpr) as? TyFunction ?: return emptyList()
+    fun getCallTypes(callable: MvCallable, inference: InferenceResult): List<Ty> {
+        return callableTypes.getOrPut(callable) {
+            val callTy = inference.getCallableType(callable) as? TyFunction ?: return emptyList()
             val callItem = callTy.item as? MvFunction ?: return emptyList()
             if (callItem.isInline) {
                 val functionTypes = this.getFunctionTypes(callItem)

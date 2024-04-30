@@ -7,7 +7,10 @@ import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.externalSystem.autoimport.AutoImportProjectTracker
+import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker
 import com.intellij.openapi.module.ModuleUtilCore
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectEx
 import com.intellij.openapi.roots.ModuleRootModificationUtil
@@ -16,7 +19,6 @@ import com.intellij.openapi.roots.ex.ProjectRootManagerEx
 import com.intellij.openapi.util.EmptyRunnable
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.ex.temp.TempFileSystem
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
@@ -24,9 +26,9 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiInvalidElementAccessException
 import com.intellij.psi.util.parents
 import com.intellij.util.messages.Topic
-import org.move.cli.settings.MoveProjectSettingsService
-import org.move.cli.settings.MoveSettingsChangedEvent
-import org.move.cli.settings.MoveSettingsListener
+import org.move.cli.externalSystem.MoveExternalSystemProjectAware
+import org.move.cli.settings.MvProjectSettingsServiceBase.*
+import org.move.cli.settings.MvProjectSettingsServiceBase.Companion.MOVE_SETTINGS_TOPIC
 import org.move.cli.settings.debugErrorOrFallback
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.toNioPathOrNull
@@ -40,6 +42,7 @@ import org.move.stdext.FileToMoveProjectCache
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 
 val Project.moveProjectsService get() = service<MoveProjectsService>()
 
@@ -47,32 +50,18 @@ val Project.hasMoveProject get() = this.moveProjectsService.allProjects.isNotEmp
 
 class MoveProjectsService(val project: Project): Disposable {
 
-    private val refreshOnBuildDirChangeWatcher =
-        BuildDirectoryWatcher(emptyList()) { scheduleProjectsRefresh("build/ directory changed") }
+//    private val refreshOnBuildDirChangeWatcher =
+//        BuildDirectoryWatcher(emptyList()) { scheduleProjectsRefresh("build/ directory changed") }
 
     var initialized = false
 
     init {
-        with(project.messageBus.connect()) {
-            if (!isUnitTestMode) {
-                subscribe(VirtualFileManager.VFS_CHANGES, refreshOnBuildDirChangeWatcher)
-                subscribe(VirtualFileManager.VFS_CHANGES, MoveTomlWatcher {
-                    // on every Move.toml change
-                    // TODO: move to External system integration
-                    scheduleProjectsRefresh("Move.toml changed")
-                })
-            }
-            subscribe(MoveProjectSettingsService.MOVE_SETTINGS_TOPIC, object: MoveSettingsListener {
-                override fun moveSettingsChanged(e: MoveSettingsChangedEvent) {
-                    // on every Move Language plugin settings change
-                    scheduleProjectsRefresh("plugin settings changed")
-                }
-            })
-        }
+        registerProjectAware(project, this)
     }
 
-    val allProjects: List<MoveProject>
-        get() = this.projects.state
+    val allProjects: List<MoveProject> get() = this.projects.state
+
+    val hasAtLeastOneValidProject: Boolean get() = this.allProjects.isNotEmpty()
 
     fun scheduleProjectsRefresh(reason: String? = null): CompletableFuture<List<MoveProject>> {
         LOG.logProjectsRefresh("scheduled", reason)
@@ -81,6 +70,32 @@ class MoveProjectsService(val project: Project): Disposable {
                 doRefreshProjects(project, reason)
             }
         return moveProjectsFut
+    }
+
+    private fun registerProjectAware(project: Project, disposable: Disposable) {
+        // There is no sense to register `CargoExternalSystemProjectAware` for default project.
+        // Moreover, it may break searchable options building.
+        // Also, we don't need to register `CargoExternalSystemProjectAware` in light tests because:
+        // - we check it only in heavy tests
+        // - it heavily depends on service disposing which doesn't work in light tests
+        if (project.isDefault || isUnitTestMode && (project as? ProjectEx)?.isLight == true) return
+
+        val moveProjectAware = MoveExternalSystemProjectAware(project)
+        val projectTracker = ExternalSystemProjectTracker.getInstance(project)
+        projectTracker.register(moveProjectAware, disposable)
+        projectTracker.activate(moveProjectAware.projectId)
+
+        @Suppress("UnstableApiUsage")
+        project.messageBus.connect(disposable)
+            .subscribe(MOVE_SETTINGS_TOPIC, object: MoveSettingsListener {
+                override fun <T: MvProjectSettingsBase<T>> settingsChanged(e: SettingsChangedEventBase<T>) {
+                    if (e.affectsMoveProjectsMetadata) {
+                        val tracker = AutoImportProjectTracker.getInstance(project)
+                        tracker.markDirty(moveProjectAware.projectId)
+                        tracker.scheduleProjectRefresh()
+                    }
+                }
+            })
     }
 
     // requires ReadAccess
@@ -122,8 +137,10 @@ class MoveProjectsService(val project: Project): Disposable {
 
     private fun doRefreshProjects(project: Project, reason: String?): CompletableFuture<List<MoveProject>> {
         val moveProjectsFut = CompletableFuture<List<MoveProject>>()
+
         val syncTask = MoveProjectsSyncTask(project, moveProjectsFut, reason)
         project.taskQueue.run(syncTask)
+
         return moveProjectsFut.thenApply { updatedProjects ->
             runOnlyInNonLightProject(project) {
                 setupProjectRoots(project, updatedProjects)
@@ -179,14 +196,18 @@ class MoveProjectsService(val project: Project): Disposable {
      * go through this method: it makes sure that when we update various IDEA listeners.
      */
     private fun modifyProjectModel(
-        updater: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
+        modifyProjects: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
     ): CompletableFuture<List<MoveProject>> {
-        val wrappedUpdater = { projects: List<MoveProject> ->
-            updater(projects)
+        val refreshStatusPublisher =
+            project.messageBus.syncPublisher(MoveProjectsService.MOVE_PROJECTS_REFRESH_TOPIC)
+
+        val wrappedModifyProjects = { projects: List<MoveProject> ->
+            refreshStatusPublisher.onRefreshStarted()
+            modifyProjects(projects)
         }
-        return projects.updateAsync(wrappedUpdater)
+        return projects.updateAsync(wrappedModifyProjects)
             .thenApply { projects ->
-                refreshOnBuildDirChangeWatcher.setWatchedProjects(projects)
+//                refreshOnBuildDirChangeWatcher.setWatchedProjects(projects)
                 invokeAndWaitIfNeeded {
                     runWriteAction {
                         // remove file -> moveproject associations from cache
@@ -209,6 +230,19 @@ class MoveProjectsService(val project: Project): Disposable {
                 }
                 projects
             }
+            .handle { projects, err ->
+                val status = err?.toRefreshStatus() ?: MoveRefreshStatus.SUCCESS
+                refreshStatusPublisher.onRefreshFinished(status)
+                projects
+            }
+    }
+
+    private fun Throwable.toRefreshStatus(): MoveRefreshStatus {
+        return when {
+            this is ProcessCanceledException -> MoveRefreshStatus.CANCEL
+            this is CompletionException && cause is ProcessCanceledException -> MoveRefreshStatus.CANCEL
+            else -> MoveRefreshStatus.FAILURE
+        }
     }
 
     override fun dispose() {}
@@ -220,10 +254,27 @@ class MoveProjectsService(val project: Project): Disposable {
             "move projects changes",
             MoveProjectsListener::class.java
         )
+
+        val MOVE_PROJECTS_REFRESH_TOPIC: Topic<MoveProjectsRefreshListener> = Topic(
+            "Move Projects refresh",
+            MoveProjectsRefreshListener::class.java
+        )
+
     }
 
     fun interface MoveProjectsListener {
         fun moveProjectsUpdated(service: MoveProjectsService, projects: Collection<MoveProject>)
+    }
+
+    interface MoveProjectsRefreshListener {
+        fun onRefreshStarted()
+        fun onRefreshFinished(status: MoveRefreshStatus)
+    }
+
+    enum class MoveRefreshStatus {
+        SUCCESS,
+        FAILURE,
+        CANCEL
     }
 }
 

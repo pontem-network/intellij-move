@@ -2,7 +2,9 @@ package org.move.lang.core.resolve.ref
 
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiPolyVariantReferenceBase
+import com.intellij.psi.ResolveResult
 import org.move.lang.core.psi.MvNamedElement
 import org.move.utils.doRenameIdentifier
 
@@ -38,6 +40,9 @@ abstract class MvPolyVariantReferenceBase<T: MvReferenceElement>(element: T):
     }
 
     final override fun resolve(): MvNamedElement? = super.resolve() as? MvNamedElement
+
+    override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> =
+        multiResolve().map { PsiElementResolveResult(it) }.toTypedArray()
 
     override fun equals(other: Any?): Boolean =
         other is MvPolyVariantReferenceBase<*> && element === other.element

@@ -7,7 +7,8 @@ import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
-import org.move.lang.core.completion.createCompletionLookupElement
+import org.move.lang.core.completion.CompletionContext
+import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.completion.createSelfLookup
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvUseItem
@@ -34,9 +35,9 @@ object ImportsCompletionProvider: MvCompletionProvider() {
         result: CompletionResultSet
     ) {
         val itemImport = parameters.position.parent as MvUseItem
-        val moduleRef = itemImport.itemUseSpeck.fqModuleRef
-
         if (parameters.position !== itemImport.referenceNameElement) return
+
+        val moduleRef = itemImport.itemUseSpeck.fqModuleRef
         val referredModule = moduleRef.reference?.resolve() as? MvModule
             ?: return
 
@@ -47,7 +48,7 @@ object ImportsCompletionProvider: MvCompletionProvider() {
 
         val vs = when {
             moduleRef.isSelf -> setOf(Visibility.Internal)
-            else -> Visibility.buildSetOfVisibilities(itemImport)
+            else -> Visibility.publicVisibilitiesFor(itemImport)
         }
         val ns = setOf(Namespace.NAME, Namespace.TYPE, Namespace.FUNCTION)
         val contextScopeInfo =
@@ -55,9 +56,15 @@ object ImportsCompletionProvider: MvCompletionProvider() {
                 letStmtScope = itemImport.letStmtScope,
                 refItemScopes = itemImport.refItemScopes,
             )
+
+        val completionContext = CompletionContext(itemImport, contextScopeInfo)
         processModuleItems(referredModule, ns, vs, contextScopeInfo) {
             result.addElement(
-                it.element.createCompletionLookupElement(BasicInsertHandler(), ns = ns)
+                it.element.createLookupElement(
+                    completionContext,
+                    insertHandler = BasicInsertHandler(),
+                    structAsType = true
+                )
             )
             false
         }

@@ -1,4 +1,4 @@
-package org.move.ide.newProject
+package org.move.ide.newProject.projectActivity
 
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project

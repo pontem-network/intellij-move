@@ -9,7 +9,7 @@ import org.move.cli.settings.*
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
 import org.move.openapiext.common.isUnitTestMode
-import org.move.openapiext.showSettings
+import org.move.openapiext.showSettingsDialog
 
 class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationProvider(project),
                                                            DumbAware {
@@ -23,20 +23,20 @@ class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationP
         if (!project.isTrusted()) return null
         if (isNotificationDisabled(file)) return null
 
-        val blockchain = project.blockchain
+        val blockchain = project.moveSettings.blockchain
         when (blockchain) {
             Blockchain.APTOS -> {
-                if (project.aptosExec.isValid()) return null
+                if (project.aptosExecPath.isValidExecutable()) return null
             }
             Blockchain.SUI -> {
-                if (project.suiPath.isValidExecutable()) return null
+                if (project.suiExecPath.isValidExecutable()) return null
             }
         }
 
         return EditorNotificationPanel().apply {
             text = "$blockchain CLI path is not provided or invalid"
             createActionLabel("Configure") {
-                project.showSettings<PerProjectMoveConfigurable>()
+                project.showSettingsDialog<PerProjectMoveConfigurable>()
             }
             createActionLabel("Do not show again") {
                 disableNotification(file)

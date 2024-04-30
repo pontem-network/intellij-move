@@ -1,4 +1,7 @@
-<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+<idea-plugin
+    require-restart="true"
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+
   <id>org.move.lang</id>
   <name>Move Language</name>
 

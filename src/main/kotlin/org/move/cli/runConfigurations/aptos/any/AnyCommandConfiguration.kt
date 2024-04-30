@@ -4,7 +4,7 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.openapi.project.Project
 import org.move.cli.moveProjectsService
 import org.move.cli.runConfigurations.CommandConfigurationBase
-import org.move.cli.settings.aptosPath
+import org.move.cli.settings.aptosExecPath
 import java.nio.file.Path
 
 class AnyCommandConfiguration(
@@ -21,7 +21,7 @@ class AnyCommandConfiguration(
         }
     }
 
-    override fun getCliPath(project: Project): Path? = project.aptosPath
+    override fun getCliPath(project: Project): Path? = project.aptosExecPath
 
     override fun getConfigurationEditor() = AnyCommandConfigurationEditor()
 }

@@ -165,6 +165,12 @@ class MvPsiFactory(val project: Project) {
             ?: error("Failed to create a type parameter from text: `$text`")
     }
 
+    fun valueArgumentList(parameters: List<String>): MvValueArgumentList {
+        return createFromText<MvValueArgumentList>(
+            "module 0x1::main { fun main() { call(${parameters.joinToString(", ")}); } }"
+        ) ?: error("unreachable")
+    }
+
     fun path(text: String): MvPath {
         return createFromText("module 0x1::_DummyModule { fun main() { $text(); } } ")
             ?: error("`$text`")

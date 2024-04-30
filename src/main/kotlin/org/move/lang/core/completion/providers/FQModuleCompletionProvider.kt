@@ -13,13 +13,12 @@ import org.move.lang.core.psi.refItemScopes
 import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.letStmtScope
 import org.move.lang.core.resolve.processFQModuleRef
-import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.types.Address
 import org.move.lang.core.types.address
 import org.move.lang.core.withParent
 import org.move.lang.moveProject
 
-object FQModuleCompletionProvider : MvCompletionProvider() {
+object FQModuleCompletionProvider: MvCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() =
             PlatformPatterns.psiElement()
@@ -36,12 +35,11 @@ object FQModuleCompletionProvider : MvCompletionProvider() {
                 ?: directParent.parent as MvFQModuleRef
         if (parameters.position !== fqModuleRef.referenceNameElement) return
 
-        val namespaces = setOf(Namespace.MODULE)
         val contextScopeInfo = ContextScopeInfo(
             letStmtScope = fqModuleRef.letStmtScope,
             refItemScopes = fqModuleRef.refItemScopes,
         )
-        val completionContext = CompletionContext(fqModuleRef, namespaces, contextScopeInfo)
+        val completionContext = CompletionContext(fqModuleRef, contextScopeInfo)
 
         val moveProj = fqModuleRef.moveProject
         val positionAddress = fqModuleRef.addressRef.address(moveProj)
