@@ -1,9 +1,11 @@
 import org.jetbrains.intellij.tasks.PrepareSandboxTask
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.ByteArrayOutputStream
 import java.util.*
 
 val publishingToken = System.getenv("JB_PUB_TOKEN") ?: null
+val publishingChannel = System.getenv("JB_PUB_CHANNEL") ?: "default"
 // set by default in Github Actions
 val isCI = System.getenv("CI") != null
 
@@ -11,9 +13,44 @@ fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties for environment `$shortPlatformVersion`")
 
+fun gitHash(): String {
+    val byteOut = ByteArrayOutputStream()
+    project.exec {
+        commandLine = "git rev-parse --short HEAD".split(" ")
+//            commandLine = "git rev-parse --abbrev-ref HEAD".split(" ")
+        standardOutput = byteOut
+    }
+    return String(byteOut.toByteArray()).trim().also {
+        if (it == "HEAD")
+            logger.warn("Unable to determine current branch: Project is checked out with detached head!")
+    }
+}
+
+fun gitTimestamp(): String {
+    val byteOut = ByteArrayOutputStream()
+    project.exec {
+        commandLine = "git show --no-patch --format=%at HEAD".split(" ")
+//            commandLine = "git rev-parse --abbrev-ref HEAD".split(" ")
+        standardOutput = byteOut
+    }
+    return String(byteOut.toByteArray()).trim().also {
+        if (it == "HEAD")
+            logger.warn("Unable to determine current branch: Project is checked out with detached head!")
+    }
+}
+
 val shortPlatformVersion = prop("shortPlatformVersion")
 val codeVersion = "1.36.0"
-val pluginVersion = "$codeVersion.$shortPlatformVersion"
+
+var pluginVersion = "$codeVersion.$shortPlatformVersion"
+if (publishingChannel != "default") {
+    // timestamp of the commit with this eaps addition
+    val start = 1714498465
+    val commitTimestamp = gitTimestamp().toInt() - start
+    val commitHash = gitHash()
+    pluginVersion = "$pluginVersion-$publishingChannel.$commitTimestamp-$commitHash"
+}
+
 val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
 val pluginJarName = "intellij-move-$pluginVersion"
@@ -225,6 +262,7 @@ project(":plugin") {
 
         publishPlugin {
             token.set(publishingToken)
+            channels.set(listOf(publishingChannel))
         }
 
         runIde { enabled = true }

@@ -1,13 +1,32 @@
-name: Check
+name: Publish EAP
 
 on:
-    push:
+    # only works on 'master' branch as it is a default branch
+    workflow_run:
+        workflows: [ Check ]
+        types:
+            - completed
         branches:
             - master
-    pull_request:
 
 jobs:
-    tests:
+    check-for-tests-success:
+        runs-on: ubuntu-latest
+        permissions:
+            actions: write
+
+        steps:
+            -   name: Early exit if tests wasn't successful
+                if: ${{ github.event.workflow_run.conclusion != 'success' }}
+                run: |
+                    gh run cancel ${{ github.run_id }}
+                    gh run watch ${{ github.run_id }}
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+    publish-eap-channel:
+        needs: [ check-for-tests-success ]
         strategy:
             matrix:
                 gradle-properties-version: [ 232, 233, 241 ]
@@ -15,6 +34,8 @@ jobs:
         runs-on: ubuntu-latest
         env:
             ORG_GRADLE_PROJECT_shortPlatformVersion: ${{ matrix.gradle-properties-version }}
+            JB_PUB_TOKEN: ${{ secrets.JB_PUB_TOKEN }}
+            JB_PUB_CHANNEL: eap
 
         steps:
             -   uses: actions/checkout@v3
@@ -46,32 +67,16 @@ jobs:
                         caches/modules-2/files-2.1/com.jetbrains.intellij.idea
                         caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
-            -   name: Tests
+            -   name: Publish to EAP channel
                 uses: gradle/gradle-build-action@v2.7.0
                 with:
                     gradle-version: wrapper
-                    arguments: ":test -Pkotlin.incremental=false --no-daemon --stacktrace"
+                    arguments: ":plugin:publishPlugin -Pkotlin.incremental=false --no-daemon --stacktrace"
                     gradle-home-cache-excludes: |
                         caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
                         caches/modules-2/files-2.1/com.jetbrains.intellij.idea
                         caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
-            -   name: Verify plugin.xml
-                uses: gradle/gradle-build-action@v2.7.0
-                with:
-                    gradle-version: wrapper
-                    arguments: ":plugin:verifyPluginConfiguration -Pkotlin.incremental=false --no-daemon"
-                    gradle-home-cache-excludes: |
-                        caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
 
-            -   name: Verify plugin
-                uses: gradle/gradle-build-action@v2.7.0
-                with:
-                    gradle-version: wrapper
-                    arguments: ":plugin:runPluginVerifier -Pkotlin.incremental=false --no-daemon"
-                    gradle-home-cache-excludes: |
-                        caches/modules-2/files-2.1/com.jetbrains.intellij.pycharm
-                        caches/modules-2/files-2.1/com.jetbrains.intellij.idea
-                        caches/modules-2/files-2.1/com.jetbrains.intellij.clion
+
+
