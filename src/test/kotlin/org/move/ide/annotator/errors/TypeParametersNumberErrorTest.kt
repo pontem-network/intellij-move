@@ -182,7 +182,7 @@ class TypeParametersNumberErrorTest: AnnotatorTestCase(MvErrorAnnotator::class) 
                 param
             }
             fun main(s: S<u8>) {
-                let b = s.receiver<error descr="Invalid instantiation of '0x1::main::receiver'. Expected 2 type argument(s) but got 1"><u8></error>(1);
+                let b = s.receiver<error descr="Invalid instantiation of '0x1::main::receiver'. Expected 2 type argument(s) but got 1">::<u8></error>(1);
             }
         }        
     """)
