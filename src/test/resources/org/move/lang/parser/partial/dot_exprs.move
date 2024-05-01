@@ -14,4 +14,8 @@ module 0x1::dot_exprs {
         bin. x"
         bin. return
     }
+
+    fun receiver() {
+        bin.no_type_args_without_colon_colon<u8>();
+    }
 }

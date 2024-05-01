@@ -157,7 +157,7 @@ fun InsertionContext.addSuffix(suffix: String) {
     EditorModificationUtil.moveCaretRelatively(editor, suffix.length)
 }
 
-val InsertionContext.hasCallParens: Boolean
+val InsertionContext.alreadyHasCallParens: Boolean
     get() = nextCharIs('(')
 
 val InsertionContext.alreadyHasColonColon: Boolean
@@ -166,7 +166,7 @@ val InsertionContext.alreadyHasColonColon: Boolean
 val InsertionContext.alreadyHasSpace: Boolean
     get() = nextCharIs(' ')
 
-val InsertionContext.hasAngleBrackets: Boolean
+val InsertionContext.alreadyHasAngleBrackets: Boolean
     get() = nextCharIs('<')
 
 fun InsertionContext.nextCharIs(c: Char): Boolean =
@@ -192,7 +192,7 @@ class AngleBracketsInsertHandler: InsertHandler<LookupElement> {
 
     override fun handleInsert(context: InsertionContext, item: LookupElement) {
         val document = context.document
-        if (!context.hasAngleBrackets) {
+        if (!context.alreadyHasAngleBrackets) {
             document.insertString(context.selectionEndOffset, "<>")
         }
         EditorModificationUtil.moveCaretRelatively(context.editor, 1)
@@ -212,30 +212,48 @@ open class DefaultInsertHandler(val completionCtx: CompletionContext? = null): I
         item: LookupElement
     ) {
         val document = context.document
+
         when (element) {
             is MvFunctionLike -> {
-                val requiresExplicitTypeArguments =
-                    element.requiresExplicitlyProvidedTypeArguments(completionCtx)
-                var suffix = ""
-                if (!context.hasAngleBrackets && requiresExplicitTypeArguments) {
-                    suffix += "<>"
-                }
-                if (!context.hasAngleBrackets && !context.hasCallParens) {
-                    suffix += "()"
-                }
                 val isMethodCall = context.getElementOfType<MvMethodOrField>() != null
-                val fnParameters = if (isMethodCall) element.parameters.drop(1) else element.parameters
-                val caretShift = when {
-                    requiresExplicitTypeArguments -> 1
-                    fnParameters.isNotEmpty() -> 1
-                    else -> 2
+                val requiresExplicitTypes =
+                    element.requiresExplicitlyProvidedTypeArguments(completionCtx)
+                if (isMethodCall) {
+                    var suffix = ""
+                    if (requiresExplicitTypes && !context.alreadyHasColonColon) {
+                        suffix += "::<>"
+                    }
+                    if (!context.alreadyHasColonColon && !context.alreadyHasCallParens) {
+                        suffix += "()"
+                    }
+                    val caretShift = when {
+                        context.alreadyHasColonColon || requiresExplicitTypes -> 3
+                        // drop first for self
+                        element.parameters.drop(1).isNotEmpty() -> 1
+                        else -> 2
+                    }
+                    context.document.insertString(context.selectionEndOffset, suffix)
+                    EditorModificationUtil.moveCaretRelatively(context.editor, caretShift)
+                } else {
+                    var suffix = ""
+                    if (requiresExplicitTypes && !context.alreadyHasAngleBrackets) {
+                        suffix += "<>"
+                    }
+                    if (!context.alreadyHasAngleBrackets && !context.alreadyHasCallParens) {
+                        suffix += "()"
+                    }
+                    val caretShift = when {
+                        requiresExplicitTypes -> 1
+                        element.parameters.isNotEmpty() -> 1
+                        else -> 2
+                    }
+                    context.document.insertString(context.selectionEndOffset, suffix)
+                    EditorModificationUtil.moveCaretRelatively(context.editor, caretShift)
                 }
-                context.document.insertString(context.selectionEndOffset, suffix)
-                EditorModificationUtil.moveCaretRelatively(context.editor, caretShift)
             }
             is MvSchema -> {
                 if (element.hasTypeParameters) {
-                    if (!context.hasAngleBrackets) {
+                    if (!context.alreadyHasAngleBrackets) {
                         document.insertString(context.selectionEndOffset, "<>")
                     }
                     EditorModificationUtil.moveCaretRelatively(context.editor, 1)
@@ -247,7 +265,7 @@ open class DefaultInsertHandler(val completionCtx: CompletionContext? = null): I
                         .findElementAt(context.startOffset)
                         ?.ancestorOrSelf<MvAcquiresType>() != null
                 if (element.hasTypeParameters && !insideAcquiresType) {
-                    if (!context.hasAngleBrackets) {
+                    if (!context.alreadyHasAngleBrackets) {
                         document.insertString(context.selectionEndOffset, "<>")
                     }
                     EditorModificationUtil.moveCaretRelatively(context.editor, 1)

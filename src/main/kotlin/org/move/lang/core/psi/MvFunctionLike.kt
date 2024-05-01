@@ -140,6 +140,7 @@ fun MvFunctionLike.requiresExplicitlyProvidedTypeArguments(completionContext: Co
         val callTy = this.declaredType(msl).substitute(this.tyInfers) as TyFunction
 
         val inferenceCtx = InferenceContext(msl)
+
         callTy.paramTypes.forEach {
             inferenceCtx.combineTypes(it, it.foldTyInferWith { TyUnknown })
         }

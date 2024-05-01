@@ -231,7 +231,7 @@ class ReplaceWithMethodCallInspectionTest: InspectionTestBase(ReplaceWithMethodC
             struct S<T> { field: u8 }
             native fun get_type<U, T>(self: &S<U>): T;
             fun main<T>(s: S<T>) {
-                s.get_type<T, u8>();
+                s.get_type::<T, u8>();
             }
         }        
     """)

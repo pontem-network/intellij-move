@@ -147,7 +147,25 @@ module 0x1::M {
             struct S { field: u8 }
             fun receiver<Z>(self: &S): Z {}
             fun main(s: S) {
-                s.receiver</*caret*/>();
+                s.receiver::</*caret*/>();
+            }
+        }        
+    """)
+
+    fun `test receiver style function completion type annotation required with angle brackets present`() = doSingleCompletion("""
+        module 0x1::main {
+            struct S { field: u8 }
+            fun receiver<Z>(self: &S): Z {}
+            fun main(s: S) {
+                s.rece/*caret*/::<>()
+            }
+        }        
+    """, """
+        module 0x1::main {
+            struct S { field: u8 }
+            fun receiver<Z>(self: &S): Z {}
+            fun main(s: S) {
+                s.receiver::</*caret*/>()
             }
         }        
     """)
