@@ -596,9 +596,15 @@ private TypeParamBound_items ::= Ability ( '+' Ability )*
 }
 private TypeParamBound_items_recover ::= !('>' | ',')
 
-TypeArgumentList ::= '<' !'=' <<non_empty_comma_sep_items (TypeArgument &(','|'>'))>>? '>' {
+TypeArgumentList ::= TypeArgumentListImpl {
     name = "type arguments"
 }
+ColonTypeArgumentList ::= &'::' TypeArgumentListImpl { elementType = TypeArgumentList }
+
+//private TypeArgumentListImpl ::= '::'? '<' !'=' TypeArgumentImpl* '>' { pin = 3 }
+//private TypeArgumentImpl ::= !'>' TypeArgument (',' | &'>') { pin = 2 }
+private TypeArgumentListImpl ::= '::'? '<' !'=' <<non_empty_comma_sep_items ( TypeArgument &(',' | '>') )>>? '>'
+
 TypeArgument ::= Type
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -989,7 +995,7 @@ StructDotField ::= IDENTIFIER !('(' | '::' | '!' | '{')
     implements = ["org.move.lang.core.psi.ext.MvMethodOrField"]
     mixin = "org.move.lang.core.psi.ext.MvStructDotFieldMixin"
 }
-MethodCall ::= IDENTIFIER TypeArgumentList? ValueArgumentList
+MethodCall ::= IDENTIFIER ColonTypeArgumentList? ValueArgumentList
 {
     implements = [
         "org.move.lang.core.psi.ext.MvMethodOrField"
@@ -1530,3 +1536,4 @@ private lt_eqeq_gt ::= <<lteqeqgtImpl>>
 private dotdot ::= <<dotdotImpl>>
 
 private meta non_empty_comma_sep_items ::= <<param>> ( ',' <<param>> )* ','?
+private meta list_element ::= !'>' <<param>> (',' | &'>') { pin = 2 }
