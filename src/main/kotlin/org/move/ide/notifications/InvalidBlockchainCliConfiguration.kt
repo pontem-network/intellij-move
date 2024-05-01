@@ -6,10 +6,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import org.move.cli.settings.*
+import org.move.cli.settings.Blockchain.SUI
+import org.move.cli.settings.Blockchain.APTOS
+import org.move.cli.settings.aptos.AptosExecType.LOCAL
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.showSettingsDialog
+import org.move.utils.EnvUtils
 
 class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationProvider(project),
                                                            DumbAware {
@@ -25,16 +29,32 @@ class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationP
 
         val blockchain = project.moveSettings.blockchain
         when (blockchain) {
-            Blockchain.APTOS -> {
+            APTOS -> {
                 if (project.aptosExecPath.isValidExecutable()) return null
             }
-            Blockchain.SUI -> {
+            SUI -> {
                 if (project.suiExecPath.isValidExecutable()) return null
             }
         }
 
+        val cliFromPATH = EnvUtils.findInPATH(blockchain.cliName())?.toString()
         return EditorNotificationPanel().apply {
             text = "$blockchain CLI path is not provided or invalid"
+            if (cliFromPATH != null) {
+                createActionLabel("Set to \"$cliFromPATH\"") {
+                    project.moveSettings.modify {
+                        when (blockchain) {
+                            APTOS -> {
+                                it.aptosExecType = LOCAL
+                                it.localAptosPath = cliFromPATH
+                            }
+                            SUI -> {
+                                it.localSuiPath = cliFromPATH
+                            }
+                        }
+                    }
+                }
+            }
             createActionLabel("Configure") {
                 project.showSettingsDialog<PerProjectMoveConfigurable>()
             }

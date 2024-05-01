@@ -22,11 +22,13 @@ import java.nio.file.Path
 enum class Blockchain {
     APTOS, SUI;
 
+    fun cliName() = when (this) { SUI -> "sui"; APTOS -> "aptos" }
+
     override fun toString(): String = if (this == APTOS) "Aptos" else "Sui"
 
     companion object {
         fun aptosFromPATH(): String? {
-            // TODO: run --version and check whether it's a real Aptos CLI executable
+            // TODO: check whether it's an executable
             return EnvUtils.findInPATH("aptos")?.toAbsolutePath()?.toString()
         }
 
