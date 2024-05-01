@@ -13,7 +13,7 @@ fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties for environment `$shortPlatformVersion`")
 
-fun gitHash(): String {
+fun gitCommitHash(): String {
     val byteOut = ByteArrayOutputStream()
     project.exec {
         commandLine = "git rev-parse --short HEAD".split(" ")
@@ -47,8 +47,7 @@ if (publishingChannel != "default") {
     // timestamp of the commit with this eaps addition
     val start = 1714498465
     val commitTimestamp = gitTimestamp().toInt() - start
-    val commitHash = gitHash()
-    pluginVersion = "$pluginVersion-$publishingChannel.$commitTimestamp-$commitHash"
+    pluginVersion = "$pluginVersion-$publishingChannel.$commitTimestamp"
 }
 
 val pluginGroup = "org.move"
