@@ -13,6 +13,8 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
 import org.move.lang.toNioPathOrNull
+import org.move.openapiext.document
+import org.move.openapiext.getOffsetPosition
 import org.move.stdext.RsResult
 import org.move.stdext.RsResult.Err
 import org.move.stdext.RsResult.Ok
@@ -480,7 +482,18 @@ private val MvElement.inferenceErrorMessage: String
         val file = this.containingFile
         if (file != null) {
             this.location?.let { (line, col) ->
-                text += "\nFile: ${file.toNioPathOrNull()} at ($line, $col)"
+                val virtualFile = file.originalFile.virtualFile
+                if (virtualFile == null) {
+                    // in-memory, print actual text
+                    val textOffset = this.textOffset
+                    val fileText = file.text
+                    text += "\nFile: in-memory\n"
+                    text += fileText.substring(0, textOffset)
+                    text += "/*caret*/"
+                    text += fileText.substring(textOffset + 1)
+                } else {
+                    text += "\nFile: ${virtualFile.toNioPathOrNull()} at ($line, $col)"
+                }
             }
         }
         when (this) {
