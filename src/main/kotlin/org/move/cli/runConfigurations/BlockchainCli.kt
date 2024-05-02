@@ -23,6 +23,13 @@ sealed class BlockchainCli {
         packageName: String,
     ): MvProcessResult<VirtualFile>
 
+    abstract fun fetchPackageDependencies(
+        projectDir: Path,
+        skipLatest: Boolean,
+        owner: Disposable,
+        processListener: ProcessListener
+    ): MvProcessResult<Unit>
+
     data class Aptos(override val cliLocation: Path): BlockchainCli() {
         override fun init(
             project: Project,
@@ -51,6 +58,29 @@ sealed class BlockchainCli {
             val manifest =
                 checkNotNull(rootDirectory.findChild(Consts.MANIFEST_FILE)) { "Can't find the manifest file" }
             return Ok(manifest)
+        }
+
+        override fun fetchPackageDependencies(
+            projectDir: Path,
+            skipLatest: Boolean,
+            owner: Disposable,
+            processListener: ProcessListener
+        ): MvProcessResult<Unit> {
+            val cli =
+                CliCommandLineArgs(
+                    subCommand = "move",
+                    arguments = listOfNotNull(
+                        "compile",
+                        "--skip-fetch-latest-git-deps".takeIf { skipLatest }
+                    ),
+                    workingDirectory = projectDir
+                )
+            // TODO: as Aptos does not yet support fetching dependencies without compiling, ignore errors here,
+            // TODO: still better than no call at all
+            cli.toGeneralCommandLine(cliLocation)
+                .execute(owner, listener = processListener)
+//                .unwrapOrElse { return Err(it) }
+            return Ok(Unit)
         }
     }
 
@@ -82,15 +112,19 @@ sealed class BlockchainCli {
             return Ok(manifest)
         }
 
-        fun fetchPackageDependencies(
+        override fun fetchPackageDependencies(
             projectDir: Path,
+            skipLatest: Boolean,
             owner: Disposable,
             processListener: ProcessListener
         ): MvProcessResult<Unit> {
             val cli =
                 CliCommandLineArgs(
                     subCommand = "move",
-                    arguments = listOf("build", "--fetch-deps-only", "--skip-fetch-latest-git-deps"),
+                    arguments = listOfNotNull(
+                        "build",
+                        "--fetch-deps-only",
+                        "--skip-fetch-latest-git-deps".takeIf { skipLatest }),
                     workingDirectory = projectDir
                 )
             cli.toGeneralCommandLine(cliLocation)

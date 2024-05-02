@@ -80,7 +80,8 @@ class MvProjectSettingsService(
         var foldSpecs: Boolean by property(false)
         var disableTelemetry: Boolean by property(true)
         var debugMode: Boolean by property(false)
-        var skipFetchLatestGitDeps: Boolean by property(false)
+        // change to true here to not annoy the users with constant updates
+        var skipFetchLatestGitDeps: Boolean by property(true)
         var dumpStateOnTestFailure: Boolean by property(false)
 
         override fun copy(): MoveProjectSettings {
@@ -130,6 +131,8 @@ fun Project.getBlockchainCli(blockchain: Blockchain): BlockchainCli? {
         SUI -> this.moveSettings.localSuiPath?.toPathOrNull()?.let { Sui(it) }
     }
 }
+
+val Project.blockchainCli: BlockchainCli? get() = getBlockchainCli(this.blockchain)
 
 val Project.aptosCli: Aptos? get() = getBlockchainCli(APTOS) as? Aptos
 
