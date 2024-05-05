@@ -42,4 +42,7 @@ abstract class MvEditorNotificationProvider(protected val project: Project): Edi
     protected fun isNotificationDisabled(file: VirtualFile): Boolean =
         PropertiesComponent.getInstance(project).getBoolean(file.disablingKey)
 
+    protected fun updateAllNotifications() {
+        EditorNotifications.getInstance(project).updateAllNotifications()
+    }
 }

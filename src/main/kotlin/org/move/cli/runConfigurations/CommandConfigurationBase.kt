@@ -17,7 +17,7 @@ import org.move.cli.runConfigurations.CommandConfigurationBase.CleanConfiguratio
 import org.move.cli.runConfigurations.legacy.MoveCommandConfiguration
 import org.move.cli.writePath
 import org.move.cli.writeString
-import org.move.ide.notifications.Notifications
+import org.move.ide.notifications.MvNotifications
 import org.move.stdext.exists
 import java.nio.file.Path
 
@@ -56,7 +56,7 @@ abstract class CommandConfigurationBase(
             }
             is CleanConfiguration.Err -> {
                 config.error.message?.let {
-                    Notifications.pluginNotifications()
+                    MvNotifications.pluginNotifications()
                         .createNotification("Run Configuration error", it, NotificationType.ERROR)
                         .notify(project)
                 }

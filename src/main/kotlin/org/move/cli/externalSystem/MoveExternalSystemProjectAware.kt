@@ -25,7 +25,7 @@ class MoveExternalSystemProjectAware(
 
     override fun reloadProject(context: ExternalSystemProjectReloadContext) {
         FileDocumentManager.getInstance().saveAllDocuments()
-        project.moveProjectsService.scheduleProjectsRefresh()
+        project.moveProjectsService.scheduleProjectsRefresh("from project aware")
     }
 
     override fun subscribe(listener: ExternalSystemProjectListener, parentDisposable: Disposable) {

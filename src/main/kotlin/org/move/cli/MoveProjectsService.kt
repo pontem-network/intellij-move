@@ -1,6 +1,8 @@
 package org.move.cli
 
 import com.intellij.execution.RunManager
+import com.intellij.notification.NotificationType.INFORMATION
+import com.intellij.notification.impl.ui.NotificationsUtil
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
@@ -30,6 +32,8 @@ import org.move.cli.externalSystem.MoveExternalSystemProjectAware
 import org.move.cli.settings.MvProjectSettingsServiceBase.*
 import org.move.cli.settings.MvProjectSettingsServiceBase.Companion.MOVE_SETTINGS_TOPIC
 import org.move.cli.settings.debugErrorOrFallback
+import org.move.cli.settings.isDebugModeEnabled
+import org.move.ide.notifications.showBalloon
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.checkReadAccessAllowed
@@ -65,6 +69,9 @@ class MoveProjectsService(val project: Project): Disposable {
 
     fun scheduleProjectsRefresh(reason: String? = null): CompletableFuture<List<MoveProject>> {
         LOG.logProjectsRefresh("scheduled", reason)
+        if (project.isDebugModeEnabled) {
+            project.showBalloon("Refresh Projects ($reason)", INFORMATION)
+        }
         val moveProjectsFut =
             modifyProjectModel {
                 doRefreshProjects(project, reason)
@@ -222,10 +229,10 @@ class MoveProjectsService(val project: Project): Disposable {
 //                                    RootsChangeRescanningInfo.TOTAL_RESCAN
 //                                )
                         }
+                        initialized = true
                         // increments structure modification counter in the subscriber
                         project.messageBus
                             .syncPublisher(MOVE_PROJECTS_TOPIC).moveProjectsUpdated(this, projects)
-                        initialized = true
                     }
                 }
                 projects
