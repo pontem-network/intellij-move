@@ -264,7 +264,11 @@ project(":plugin") {
             channels.set(listOf(publishingChannel))
         }
 
-        runIde { enabled = true }
+        runIde {
+            enabled = true
+            systemProperty("org.move.debug.enabled", true)
+//            systemProperty("idea.log.debug.categories", "org.move.cli")
+        }
         prepareSandbox { enabled = true }
         buildSearchableOptions {
             enabled = true
