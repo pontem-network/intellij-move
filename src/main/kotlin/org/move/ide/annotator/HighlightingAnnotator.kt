@@ -89,13 +89,9 @@ class HighlightingAnnotator: MvAnnotatorBase() {
     }
 
     private fun highlightBindingPat(bindingPat: MvBindingPat): MvColor {
-        val parent = bindingPat.parent
-        if (parent is MvFunctionParameter && bindingPat.name == "self") {
-            // check whether it's a first parameter
-            val parameterList = parent.parent as MvFunctionParameterList
-            if (parameterList.functionParameterList.indexOf(parent) == 0) {
-                return MvColor.SELF_PARAMETER
-            }
+        val bindingOwner = bindingPat.parent
+        if (bindingOwner is MvFunctionParameter && bindingOwner.isSelf) {
+            return MvColor.SELF_PARAMETER
         }
         val msl = bindingPat.isMslOnlyItem
         val itemTy = bindingPat.inference(msl)?.getPatType(bindingPat)
@@ -147,15 +143,21 @@ class HighlightingAnnotator: MvAnnotatorBase() {
             is MvStructPat -> MvColor.STRUCT
             is MvRefExpr -> {
                 val item = path.reference?.resolve() ?: return null
-                if (item is MvConst) {
-                    MvColor.CONSTANT
-                } else {
-                    val msl = path.isMslScope
-                    val itemTy = pathOwner.inference(msl)?.getExprType(pathOwner)
-                    if (itemTy != null) {
-                        highlightVariableByType(itemTy)
-                    } else {
-                        MvColor.VARIABLE
+                when {
+                    item is MvConst -> MvColor.CONSTANT
+                    else -> {
+                        val itemParent = item.parent
+                        if (itemParent is MvFunctionParameter && itemParent.isSelf) {
+                            MvColor.SELF_PARAMETER
+                        } else {
+                            val msl = path.isMslScope
+                            val itemTy = pathOwner.inference(msl)?.getExprType(pathOwner)
+                            if (itemTy != null) {
+                                highlightVariableByType(itemTy)
+                            } else {
+                                MvColor.VARIABLE
+                            }
+                        }
                     }
                 }
             }

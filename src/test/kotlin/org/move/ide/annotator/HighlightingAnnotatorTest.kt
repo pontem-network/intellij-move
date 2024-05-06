@@ -291,7 +291,9 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
     fun `test highlight methods`() = checkHighlighting("""
         module 0x1::m {
             struct S { field: u8 }
-            fun <METHOD>receiver</METHOD>(<SELF_PARAMETER>self</SELF_PARAMETER>: S, <VARIABLE>self</VARIABLE>: u8): u8 { self.field }
+            fun <METHOD>receiver</METHOD>(<SELF_PARAMETER>self</SELF_PARAMETER>: S, <VARIABLE>self</VARIABLE>: u8): u8 { 
+                <SELF_PARAMETER>self</SELF_PARAMETER>.field 
+            }
             fun main(s: S) {
                 s.<METHOD_CALL>receiver</METHOD_CALL>();
             }
