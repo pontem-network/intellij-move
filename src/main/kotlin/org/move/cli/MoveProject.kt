@@ -1,6 +1,7 @@
 package org.move.cli
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsContexts.Tooltip
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFileFactory
@@ -31,6 +32,8 @@ data class MoveProject(
     val project: Project,
     val currentPackage: MovePackage,
     val dependencies: List<Pair<MovePackage, RawAddressMap>>,
+    // updates
+    val fetchDepsStatus: UpdateStatus = UpdateStatus.NeedsUpdate,
 ): UserDataHolderBase() {
 
     val contentRoot: VirtualFile get() = this.currentPackage.contentRoot
@@ -129,6 +132,18 @@ data class MoveProject(
             }
         }
     }
+
+    sealed class UpdateStatus(private val priority: Int) {
+//        object UpToDate : UpdateStatus(0)
+        object NeedsUpdate : UpdateStatus(1)
+        class UpdateFailed(@Tooltip val reason: String) : UpdateStatus(2) {
+            override fun toString(): String = reason
+        }
+        fun merge(status: UpdateStatus): UpdateStatus = if (priority >= status.priority) this else status
+    }
+
+    val mergedStatus: UpdateStatus get() = fetchDepsStatus
+//    val mergedStatus: UpdateStatus get() = fetchDepsStatus.merge(stdlibStatus)
 
     override fun toString(): String {
         return "MoveProject(" +

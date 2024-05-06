@@ -77,7 +77,6 @@ compiled_package_info:
         assertNotificationAware(event = "after project creation")
 
         testProject.checkFileModification("Move.toml", triggered = true)
-        testProject.checkFileModification("build/RootPackage/BuildInfo.yaml", triggered = true)
         testProject.checkFileModification("child1/Move.toml", triggered = true)
         testProject.checkFileModification("child2/Move.toml", triggered = true)
 

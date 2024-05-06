@@ -11,6 +11,7 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.build.progress.BuildProgress
 import com.intellij.build.progress.BuildProgressDescriptor
 import com.intellij.execution.process.ProcessAdapter
+import com.intellij.execution.process.ProcessEvent
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -21,19 +22,17 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.vfs.VirtualFile
+import org.move.cli.MoveProject.UpdateStatus
 import org.move.cli.manifest.MoveToml
-import org.move.cli.settings.Blockchain.APTOS
-import org.move.cli.settings.Blockchain.SUI
 import org.move.cli.settings.blockchain
-import org.move.cli.settings.suiCli
+import org.move.cli.settings.blockchainCli
+import org.move.cli.settings.moveSettings
 import org.move.lang.toNioPathOrNull
 import org.move.lang.toTomlFile
-import org.move.openapiext.TaskResult
-import org.move.openapiext.contentRoots
-import org.move.openapiext.resolveExisting
-import org.move.openapiext.toVirtualFile
+import org.move.openapiext.*
 import org.move.stdext.iterateFiles
 import org.move.stdext.unwrapOrElse
 import org.move.stdext.withExtended
@@ -60,14 +59,13 @@ class MoveProjectsSyncTask(
 
             val refreshedProjects = doRun(indicator, syncProgress)
 
-            // TODO:
-//            val isUpdateFailed = refreshedProjects.any { it.mergedStatus is CargoProject.UpdateStatus.UpdateFailed }
-//            if (isUpdateFailed) {
-//                syncProgress.fail()
-//            } else {
-//                syncProgress.finish()
-//            }
-            syncProgress.finish()
+            val isUpdateFailed =
+                refreshedProjects.any { it.mergedStatus is UpdateStatus.UpdateFailed }
+            if (isUpdateFailed) {
+                syncProgress.fail()
+            } else {
+                syncProgress.finish()
+            }
 
             refreshedProjects
         } catch (e: Throwable) {
@@ -120,55 +118,68 @@ class MoveProjectsSyncTask(
         context: SyncContext
     ) {
         val projectRoot = moveTomlFile.parent?.toNioPathOrNull() ?: error("cannot be invalid path")
+        var moveProject =
+            runReadAction {
+                val tomlFile = moveTomlFile.toTomlFile(project)!!
+                val moveToml = MoveToml.fromTomlFile(tomlFile, projectRoot)
+                val rootPackage = MovePackage.fromMoveToml(moveToml)
+                MoveProject(project, rootPackage, emptyList())
+            }
 
-        context.runWithChildProgress("Fetching dependency packages") { childContext ->
-            fetchProjectDependencies(
-                projectRoot, listener = SyncProcessAdapter(childContext)
-            )
-            TaskResult.Ok(Unit)
+        val result = fetchDependencyPackages(context, projectRoot)
+        if (result is TaskResult.Err) {
+            moveProject =
+                moveProject.copy(fetchDepsStatus = UpdateStatus.UpdateFailed("Failed to fetch dependency packages"))
         }
 
-        val (rootPackage, deps) =
+        val deps =
             (context.runWithChildProgress("Loading dependencies") { childContext ->
                 // Blocks till completed or cancelled by the toml / file change
                 runReadAction {
-                    val tomlFile = moveTomlFile.toTomlFile(project)!!
-                    val moveToml = MoveToml.fromTomlFile(tomlFile, projectRoot)
-                    val rootPackage = MovePackage.fromMoveToml(moveToml)
-
+                    val rootPackage = moveProject.currentPackage
                     val deps = mutableListOf<Pair<MovePackage, RawAddressMap>>()
                     val visitedDepIds = mutableSetOf(DepId(rootPackage.contentRoot.path))
-                    loadDependencies(project, moveToml, deps, visitedDepIds, true, childContext.progress)
-
-                    TaskResult.Ok(Pair(rootPackage, deps))
+                    loadDependencies(
+                        project,
+                        rootPackage.moveToml,
+                        deps,
+                        visitedDepIds,
+                        true,
+                        childContext.progress
+                    )
+                    TaskResult.Ok(deps)
                 }
             } as TaskResult.Ok).value
 
-        val moveProject = MoveProject(project, rootPackage, deps)
-        projects.add(moveProject)
+        projects.add(moveProject.copy(dependencies = deps))
     }
 
-    private fun fetchProjectDependencies(projectDir: Path, listener: ProcessProgressListener) {
-        when (project.blockchain) {
-            SUI -> {
-                val suiCli = project.suiCli
-                if (suiCli == null) {
-                    listener.error("Invalid Sui CLI configuration", "")
-                    return
+    private fun fetchDependencyPackages(context: SyncContext, projectRoot: Path): TaskResult<Unit> =
+        context.runWithChildProgress("Synchronize dependencies") { childContext ->
+            val listener = SyncProcessAdapter(childContext)
+
+            val blockchain = project.blockchain
+            val skipLatest = project.moveSettings.skipFetchLatestGitDeps
+            val blockchainCli = project.blockchainCli
+            when {
+                blockchainCli == null -> TaskResult.Err("Invalid $blockchain CLI configuration")
+                else -> {
+                    blockchainCli
+                        .fetchPackageDependencies(
+                            projectRoot,
+                            skipLatest,
+                            owner = project.rootDisposable,
+                            processListener = listener
+                        ).unwrapOrElse {
+                            return@runWithChildProgress TaskResult.Err(
+                                "Failed to fetch / update dependencies",
+                                it.message
+                            )
+                        }
+                    TaskResult.Ok(Unit)
                 }
-                suiCli.fetchPackageDependencies(
-                    projectDir,
-                    owner = project,
-                    processListener = listener
-                ).unwrapOrElse {
-                    listener.error("Failed to fetch dependencies", it.message.orEmpty())
-                }
-            }
-            APTOS -> {
-                // TODO: not supported by CLI yet
             }
         }
-    }
 
     private fun createSyncProgressDescriptor(progress: ProgressIndicator): BuildProgressDescriptor {
         val buildContentDescriptor = BuildContentDescriptor(
@@ -295,20 +306,17 @@ private class SyncProcessAdapter(
     private val context: MoveProjectsSyncTask.SyncContext
 ): ProcessAdapter(),
    ProcessProgressListener {
-//    override fun onTextAvailable(event: ProcessEvent, outputType: Key<Any>) {
-//        val text = event.text.trim { it <= ' ' }
-//        if (text.startsWith("Updating") || text.startsWith("Downloading")) {
-//            context.withProgressText(text)
-//        }
-//        if (text.startsWith("Vendoring")) {
-//            // This code expect that vendoring message has the following format:
-//            // "Vendoring %package_name% v%package_version% (%src_dir%) to %dst_dir%".
-//            // So let's extract "Vendoring %package_name% v%package_version%" part and show it for users
-//            val index = text.indexOf(" (")
-//            val progressText = if (index != -1) text.substring(0, index) else text
-//            context.withProgressText(progressText)
-//        }
-//    }
+    override fun onTextAvailable(event: ProcessEvent, outputType: Key<Any>) {
+        val text = event.text.trim { it <= ' ' }
+        if (text.startsWith("FETCHING GIT DEPENDENCY")) {
+            val git = text.substring("FETCHING GIT DEPENDENCY ".length)
+            context.withProgressText("Fetching $git")
+        }
+        if (text.startsWith("UPDATING GIT DEPENDENCY")) {
+            val gitRepo = text.substring("UPDATING GIT DEPENDENCY ".length)
+            context.withProgressText("Updating $gitRepo")
+        }
+    }
 
     override fun error(title: String, message: String) = context.error(title, message)
     override fun warning(title: String, message: String) = context.warning(title, message)

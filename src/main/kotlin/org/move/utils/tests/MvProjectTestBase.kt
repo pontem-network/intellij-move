@@ -2,6 +2,7 @@ package org.move.utils.tests
 
 import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.util.io.FileUtil
+import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileFilter
 import com.intellij.psi.PsiDirectory
@@ -12,6 +13,7 @@ import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.util.ui.UIUtil
 import org.intellij.lang.annotations.Language
+import org.jetbrains.annotations.TestOnly
 import org.move.cli.moveProjectsService
 import org.move.cli.settings.Blockchain
 import org.move.cli.settings.moveSettings
@@ -20,17 +22,21 @@ import org.move.openapiext.toPsiFile
 import org.move.openapiext.toVirtualFile
 import org.move.utils.tests.base.TestCase
 
-abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuilder<*>>() {
+@TestOnly
+fun setRegistryKey(key: String, value: Boolean) = Registry.get(key).setValue(value)
+
+abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilder<*>>() {
     var _testProject: TestProject? = null
 
     override fun setUp() {
         super.setUp()
 
-        val debugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
+        val isDebugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
+        setRegistryKey("org.move.debug.enabled", isDebugMode)
+
         val blockchain = this.findAnnotationInstance<WithBlockchain>()?.blockchain ?: Blockchain.APTOS
         // triggers projects refresh
         project.moveSettings.modify {
-            it.debugMode = debugMode
             it.blockchain = blockchain
         }
     }
@@ -62,7 +68,7 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
         myFixture.configureFromFileWithCaret(testProject)
 
         System.setProperty("user.home", testProject.rootDirectory.path)
-        project.moveProjectsService.scheduleProjectsRefresh()
+        project.moveProjectsService.scheduleProjectsRefresh("from test project")
         return testProject
     }
 
@@ -79,7 +85,8 @@ abstract class MvProjectTestBase : CodeInsightFixtureTestCase<ModuleFixtureBuild
     }
 
     protected fun checkAstNotLoaded() {
-        PsiManagerEx.getInstanceEx(project).setAssertOnFileLoadingFilter(VirtualFileFilter.ALL, testRootDisposable)
+        PsiManagerEx.getInstanceEx(project)
+            .setAssertOnFileLoadingFilter(VirtualFileFilter.ALL, testRootDisposable)
     }
 
     protected fun findPsiFile(path: String): PsiFile {

@@ -15,6 +15,8 @@ import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.Service.Level.APP
+import com.intellij.openapi.components.Service.Level.PROJECT
 import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -182,22 +184,19 @@ inline fun <R> Project.nonBlocking(crossinline block: () -> R, crossinline uiCon
             block()
         })
             .inSmartMode(this)
-            .expireWith(MvPluginDisposable.getInstance(this))
+            .expireWith(this.rootDisposable)
             .finishOnUiThread(ModalityState.current()) { result ->
                 uiContinuation(result)
             }.submit(AppExecutorUtil.getAppExecutorService())
     }
 }
 
-@Service
-class MvPluginDisposable: Disposable {
-    companion object {
-        @JvmStatic
-        fun getInstance(project: Project): Disposable = project.service<MvPluginDisposable>()
-    }
-
+@Service(PROJECT)
+class RootPluginDisposable: Disposable {
     override fun dispose() {}
 }
+
+val Project.rootDisposable get() = this.service<RootPluginDisposable>()
 
 fun checkCommitIsNotInProgress(project: Project) {
     val app = ApplicationManager.getApplication()

@@ -65,7 +65,7 @@ version = pluginVersion
 plugins {
     id("java")
     kotlin("jvm") version "1.9.22"
-    id("org.jetbrains.intellij") version "1.17.2"
+    id("org.jetbrains.intellij") version "1.17.3"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
     id("net.saliman.properties") version "1.5.2"
     id("org.gradle.idea")
@@ -264,7 +264,11 @@ project(":plugin") {
             channels.set(listOf(publishingChannel))
         }
 
-        runIde { enabled = true }
+        runIde {
+            enabled = true
+            systemProperty("org.move.debug.enabled", true)
+//            systemProperty("idea.log.debug.categories", "org.move.cli")
+        }
         prepareSandbox { enabled = true }
         buildSearchableOptions {
             enabled = true

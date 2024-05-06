@@ -20,8 +20,10 @@ import javax.swing.JComponent
 
 class AptosToolWindowFactory: ToolWindowFactory, DumbAware {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        project.moveProjectsService
-            .scheduleProjectsRefresh("Aptos Tool Window opened")
+        if (!project.moveProjectsService.hasAtLeastOneValidProject) {
+            project.moveProjectsService
+                .scheduleProjectsRefresh("Aptos Tool Window opened")
+        }
 
         val toolwindowPanel = AptosToolWindowPanel(project)
         val tab = ContentFactory.getInstance()

@@ -1,6 +1,7 @@
 package org.move.cli
 
 import com.intellij.execution.RunManager
+import com.intellij.notification.NotificationType.INFORMATION
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
@@ -30,6 +31,8 @@ import org.move.cli.externalSystem.MoveExternalSystemProjectAware
 import org.move.cli.settings.MvProjectSettingsServiceBase.*
 import org.move.cli.settings.MvProjectSettingsServiceBase.Companion.MOVE_SETTINGS_TOPIC
 import org.move.cli.settings.debugErrorOrFallback
+import org.move.cli.settings.isDebugModeEnabled
+import org.move.ide.notifications.showBalloon
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.checkReadAccessAllowed
@@ -65,6 +68,9 @@ class MoveProjectsService(val project: Project): Disposable {
 
     fun scheduleProjectsRefresh(reason: String? = null): CompletableFuture<List<MoveProject>> {
         LOG.logProjectsRefresh("scheduled", reason)
+        if (isDebugModeEnabled()) {
+            project.showBalloon("Refresh Projects ($reason)", INFORMATION)
+        }
         val moveProjectsFut =
             modifyProjectModel {
                 doRefreshProjects(project, reason)
@@ -82,7 +88,9 @@ class MoveProjectsService(val project: Project): Disposable {
 
         val moveProjectAware = MoveExternalSystemProjectAware(project)
         val projectTracker = ExternalSystemProjectTracker.getInstance(project)
+        // starts tracking of project settings files
         projectTracker.register(moveProjectAware, disposable)
+        // activate auto-reload
         projectTracker.activate(moveProjectAware.projectId)
 
         @Suppress("UnstableApiUsage")
@@ -112,7 +120,7 @@ class MoveProjectsService(val project: Project): Disposable {
                     } catch (e: PsiInvalidElementAccessException) {
                         val parentsChain =
                             psiElement.parents(true).map { it.elementType }.joinToString(" -> ")
-                        project.debugErrorOrFallback(
+                        debugErrorOrFallback(
                             "Cannot get the containing file for the ${psiElement.javaClass.name}, " +
                                     "elementType is ${psiElement.elementType}, parents chain is $parentsChain",
                             cause = e
@@ -199,7 +207,7 @@ class MoveProjectsService(val project: Project): Disposable {
         modifyProjects: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
     ): CompletableFuture<List<MoveProject>> {
         val refreshStatusPublisher =
-            project.messageBus.syncPublisher(MoveProjectsService.MOVE_PROJECTS_REFRESH_TOPIC)
+            project.messageBus.syncPublisher(MOVE_PROJECTS_REFRESH_TOPIC)
 
         val wrappedModifyProjects = { projects: List<MoveProject> ->
             refreshStatusPublisher.onRefreshStarted()

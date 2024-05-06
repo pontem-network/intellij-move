@@ -59,17 +59,11 @@ class PerProjectMoveConfigurable(val project: Project):
                             .bindSelected(state::disableTelemetry)
                     }
                     row {
-                        checkBox("Enable debug mode")
-                            .bindSelected(state::debugMode)
-                        comment(
-                            "Enables some explicit crashes in the plugin code. Useful for the error reporting."
-                        )
-                    }
-                    row {
-                        checkBox("Skip fetching latest git dependencies for tests")
+                        checkBox("Skip updating to the latest git dependencies")
                             .bindSelected(state::skipFetchLatestGitDeps)
                         comment(
-                            "Adds --skip-fetch-latest-git-deps to the test runs."
+                            "Adds --skip-fetch-latest-git-deps to the sync and test runs. " +
+                                    "Speeds up projects refresh considerably."
                         )
                     }
                     row {
@@ -102,7 +96,6 @@ class PerProjectMoveConfigurable(val project: Project):
                         it.blockchain = state.blockchain
                         it.foldSpecs = state.foldSpecs
                         it.disableTelemetry = state.disableTelemetry
-                        it.debugMode = state.debugMode
                         it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
                         it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
                     }

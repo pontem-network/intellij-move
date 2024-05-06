@@ -13,6 +13,8 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
 import org.move.lang.toNioPathOrNull
+import org.move.openapiext.document
+import org.move.openapiext.getOffsetPosition
 import org.move.stdext.RsResult
 import org.move.stdext.RsResult.Err
 import org.move.stdext.RsResult.Ok
@@ -65,8 +67,7 @@ interface InferenceData {
 
     fun getPatTypeOrUnknown(pat: MvPat): Ty = patTypes[pat] ?: TyUnknown
 
-    fun getPatType(pat: MvPat): Ty =
-        patTypes[pat] ?: pat.project.inferenceErrorOrTyUnknown(pat)
+    fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: inferenceErrorOrTyUnknown(pat)
 }
 
 data class InferenceResult(
@@ -79,7 +80,7 @@ data class InferenceResult(
     val callableTypes: Map<MvCallable, Ty>,
     val typeErrors: List<TypeError>
 ): InferenceData {
-    fun getExprType(expr: MvExpr): Ty = exprTypes[expr] ?: expr.project.inferenceErrorOrTyUnknown(expr)
+    fun getExprType(expr: MvExpr): Ty = exprTypes[expr] ?: inferenceErrorOrTyUnknown(expr)
 
     @TestOnly
     fun hasExprType(expr: MvExpr): Boolean = expr in exprTypes
@@ -465,12 +466,12 @@ fun PsiElement.descendantHasTypeError(existingTypeErrors: List<TypeError>): Bool
     return existingTypeErrors.any { typeError -> this.isAncestorOf(typeError.element) }
 }
 
-fun Project.inferenceErrorOrTyUnknown(inferredElement: MvElement): TyUnknown =
+fun inferenceErrorOrTyUnknown(inferredElement: MvElement): TyUnknown =
     when {
         // pragma statements are not supported for now
 //        inferredElement.hasAncestorOrSelf<MvPragmaSpecStmt>() -> TyUnknown
         // error out if debug mode is enabled
-        this.isDebugModeEnabled -> error(inferredElement.inferenceErrorMessage)
+        isDebugModeEnabled() -> error(inferredElement.inferenceErrorMessage)
         else -> TyUnknown
     }
 
@@ -480,7 +481,18 @@ private val MvElement.inferenceErrorMessage: String
         val file = this.containingFile
         if (file != null) {
             this.location?.let { (line, col) ->
-                text += "\nFile: ${file.toNioPathOrNull()} at ($line, $col)"
+                val virtualFile = file.originalFile.virtualFile
+                if (virtualFile == null) {
+                    // in-memory, print actual text
+                    val textOffset = this.textOffset
+                    val fileText = file.text
+                    text += "\nFile: in-memory\n"
+                    text += fileText.substring(0, textOffset)
+                    text += "/*caret*/"
+                    text += fileText.substring(textOffset + 1)
+                } else {
+                    text += "\nFile: ${virtualFile.toNioPathOrNull()} at ($line, $col)"
+                }
             }
         }
         when (this) {

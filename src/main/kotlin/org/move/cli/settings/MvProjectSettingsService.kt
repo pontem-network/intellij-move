@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.registry.Registry
 import com.intellij.psi.PsiManager
 import org.move.cli.runConfigurations.BlockchainCli
 import org.move.cli.runConfigurations.BlockchainCli.Aptos
@@ -22,11 +23,13 @@ import java.nio.file.Path
 enum class Blockchain {
     APTOS, SUI;
 
+    fun cliName() = when (this) { SUI -> "sui"; APTOS -> "aptos" }
+
     override fun toString(): String = if (this == APTOS) "Aptos" else "Sui"
 
     companion object {
         fun aptosFromPATH(): String? {
-            // TODO: run --version and check whether it's a real Aptos CLI executable
+            // TODO: check whether it's an executable
             return EnvUtils.findInPATH("aptos")?.toAbsolutePath()?.toString()
         }
 
@@ -77,8 +80,8 @@ class MvProjectSettingsService(
 
         var foldSpecs: Boolean by property(false)
         var disableTelemetry: Boolean by property(true)
-        var debugMode: Boolean by property(false)
-        var skipFetchLatestGitDeps: Boolean by property(false)
+        // change to true here to not annoy the users with constant updates
+        var skipFetchLatestGitDeps: Boolean by property(true)
         var dumpStateOnTestFailure: Boolean by property(false)
 
         override fun copy(): MoveProjectSettings {
@@ -129,6 +132,8 @@ fun Project.getBlockchainCli(blockchain: Blockchain): BlockchainCli? {
     }
 }
 
+val Project.blockchainCli: BlockchainCli? get() = getBlockchainCli(this.blockchain)
+
 val Project.aptosCli: Aptos? get() = getBlockchainCli(APTOS) as? Aptos
 
 val Project.suiCli: Sui? get() = getBlockchainCli(SUI) as? Sui
@@ -144,17 +149,17 @@ fun Path?.isValidExecutable(): Boolean {
             && this.isExecutableFile()
 }
 
-val Project.isDebugModeEnabled: Boolean get() = this.moveSettings.state.debugMode
+fun isDebugModeEnabled(): Boolean = Registry.`is`("org.move.debug.enabled")
 
-fun <T> Project.debugErrorOrFallback(message: String, fallback: T): T {
-    if (this.isDebugModeEnabled) {
+fun <T> debugErrorOrFallback(message: String, fallback: T): T {
+    if (isDebugModeEnabled()) {
         error(message)
     }
     return fallback
 }
 
-fun <T> Project.debugErrorOrFallback(message: String, cause: Throwable?, fallback: () -> T): T {
-    if (this.isDebugModeEnabled) {
+fun <T> debugErrorOrFallback(message: String, cause: Throwable?, fallback: () -> T): T {
+    if (isDebugModeEnabled()) {
         throw IllegalStateException(message, cause)
     }
     return fallback()
