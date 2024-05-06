@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project
 import org.move.cli.MoveProjectsService
 import org.move.cli.MoveProjectsService.MoveRefreshStatus
 import org.move.cli.moveProjectsService
+import org.move.openapiext.saveAllDocuments
 
 class MoveExternalSystemProjectAware(
     private val project: Project
@@ -25,7 +26,8 @@ class MoveExternalSystemProjectAware(
 
     override fun reloadProject(context: ExternalSystemProjectReloadContext) {
         FileDocumentManager.getInstance().saveAllDocuments()
-        project.moveProjectsService.scheduleProjectsRefresh("from project aware")
+        project.moveProjectsService.scheduleProjectsRefresh(
+            "from project aware, explicit=${context.isExplicitReload}")
     }
 
     override fun subscribe(listener: ExternalSystemProjectListener, parentDisposable: Disposable) {

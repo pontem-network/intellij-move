@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project
 import org.move.cli.Consts
 import org.move.cli.MoveProject
 import org.move.cli.moveProjectsService
-import org.move.stdext.blankToNull
 
 @Service(Service.Level.PROJECT)
 class MoveSettingsFilesService(private val project: Project) {
@@ -23,11 +22,6 @@ class MoveSettingsFilesService(private val project: Project) {
         for (movePackage in this.movePackages()) {
             val root = movePackage.contentRoot.path
             out.add("$root/${Consts.MANIFEST_FILE}")
-
-            val packageName = movePackage.packageName.blankToNull()
-            if (packageName != null) {
-                out.add("$root/build/$packageName/BuildInfo.yaml")
-            }
         }
     }
 

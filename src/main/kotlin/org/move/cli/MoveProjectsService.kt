@@ -2,7 +2,6 @@ package org.move.cli
 
 import com.intellij.execution.RunManager
 import com.intellij.notification.NotificationType.INFORMATION
-import com.intellij.notification.impl.ui.NotificationsUtil
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
@@ -89,7 +88,9 @@ class MoveProjectsService(val project: Project): Disposable {
 
         val moveProjectAware = MoveExternalSystemProjectAware(project)
         val projectTracker = ExternalSystemProjectTracker.getInstance(project)
+        // starts tracking of project settings files
         projectTracker.register(moveProjectAware, disposable)
+        // activate auto-reload
         projectTracker.activate(moveProjectAware.projectId)
 
         @Suppress("UnstableApiUsage")
@@ -229,10 +230,10 @@ class MoveProjectsService(val project: Project): Disposable {
 //                                    RootsChangeRescanningInfo.TOTAL_RESCAN
 //                                )
                         }
-                        initialized = true
                         // increments structure modification counter in the subscriber
                         project.messageBus
                             .syncPublisher(MOVE_PROJECTS_TOPIC).moveProjectsUpdated(this, projects)
+                        initialized = true
                     }
                 }
                 projects
