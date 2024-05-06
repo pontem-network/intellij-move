@@ -67,8 +67,7 @@ interface InferenceData {
 
     fun getPatTypeOrUnknown(pat: MvPat): Ty = patTypes[pat] ?: TyUnknown
 
-    fun getPatType(pat: MvPat): Ty =
-        patTypes[pat] ?: pat.project.inferenceErrorOrTyUnknown(pat)
+    fun getPatType(pat: MvPat): Ty = patTypes[pat] ?: inferenceErrorOrTyUnknown(pat)
 }
 
 data class InferenceResult(
@@ -81,7 +80,7 @@ data class InferenceResult(
     val callableTypes: Map<MvCallable, Ty>,
     val typeErrors: List<TypeError>
 ): InferenceData {
-    fun getExprType(expr: MvExpr): Ty = exprTypes[expr] ?: expr.project.inferenceErrorOrTyUnknown(expr)
+    fun getExprType(expr: MvExpr): Ty = exprTypes[expr] ?: inferenceErrorOrTyUnknown(expr)
 
     @TestOnly
     fun hasExprType(expr: MvExpr): Boolean = expr in exprTypes
@@ -467,12 +466,12 @@ fun PsiElement.descendantHasTypeError(existingTypeErrors: List<TypeError>): Bool
     return existingTypeErrors.any { typeError -> this.isAncestorOf(typeError.element) }
 }
 
-fun Project.inferenceErrorOrTyUnknown(inferredElement: MvElement): TyUnknown =
+fun inferenceErrorOrTyUnknown(inferredElement: MvElement): TyUnknown =
     when {
         // pragma statements are not supported for now
 //        inferredElement.hasAncestorOrSelf<MvPragmaSpecStmt>() -> TyUnknown
         // error out if debug mode is enabled
-        this.isDebugModeEnabled -> error(inferredElement.inferenceErrorMessage)
+        isDebugModeEnabled() -> error(inferredElement.inferenceErrorMessage)
         else -> TyUnknown
     }
 

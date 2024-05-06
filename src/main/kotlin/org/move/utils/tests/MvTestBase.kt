@@ -45,11 +45,12 @@ abstract class MvTestBase: BasePlatformTestCase(),
 
         setupInspections()
 
-        val debugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
+        val isDebugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
+        setRegistryKey("org.move.debug.enabled", isDebugMode)
+
         val blockchain = this.findAnnotationInstance<WithBlockchain>()?.blockchain ?: Blockchain.APTOS
         // triggers projects refresh
         project.moveSettings.modify {
-            it.debugMode = debugMode
             it.blockchain = blockchain
         }
     }

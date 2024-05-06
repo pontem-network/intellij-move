@@ -68,7 +68,7 @@ class MoveProjectsService(val project: Project): Disposable {
 
     fun scheduleProjectsRefresh(reason: String? = null): CompletableFuture<List<MoveProject>> {
         LOG.logProjectsRefresh("scheduled", reason)
-        if (project.isDebugModeEnabled) {
+        if (isDebugModeEnabled()) {
             project.showBalloon("Refresh Projects ($reason)", INFORMATION)
         }
         val moveProjectsFut =
@@ -120,7 +120,7 @@ class MoveProjectsService(val project: Project): Disposable {
                     } catch (e: PsiInvalidElementAccessException) {
                         val parentsChain =
                             psiElement.parents(true).map { it.elementType }.joinToString(" -> ")
-                        project.debugErrorOrFallback(
+                        debugErrorOrFallback(
                             "Cannot get the containing file for the ${psiElement.javaClass.name}, " +
                                     "elementType is ${psiElement.elementType}, parents chain is $parentsChain",
                             cause = e
@@ -207,7 +207,7 @@ class MoveProjectsService(val project: Project): Disposable {
         modifyProjects: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
     ): CompletableFuture<List<MoveProject>> {
         val refreshStatusPublisher =
-            project.messageBus.syncPublisher(MoveProjectsService.MOVE_PROJECTS_REFRESH_TOPIC)
+            project.messageBus.syncPublisher(MOVE_PROJECTS_REFRESH_TOPIC)
 
         val wrappedModifyProjects = { projects: List<MoveProject> ->
             refreshStatusPublisher.onRefreshStarted()

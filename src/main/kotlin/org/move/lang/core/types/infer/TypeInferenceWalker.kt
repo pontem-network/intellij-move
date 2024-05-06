@@ -56,7 +56,7 @@ class TypeInferenceWalker(
                 is MvFunctionParameter -> bindingContext.type?.loweredType(msl) ?: TyUnknown
                 is MvSchemaFieldStmt -> bindingContext.type?.loweredType(msl) ?: TyUnknown
                 else -> {
-                    project.debugErrorOrFallback(
+                    debugErrorOrFallback(
                         "${bindingContext.elementType} binding is not inferred",
                         TyUnknown
                     )
@@ -265,7 +265,7 @@ class TypeInferenceWalker(
                 expr.exprList.forEach { it.inferTypeCoercableTo(TyInteger.DEFAULT) }
                 TyUnit
             }
-            else -> project.inferenceErrorOrTyUnknown(expr)
+            else -> inferenceErrorOrTyUnknown(expr)
         }
 
         val refinedExprTy = exprTy.mslScopeRefined(msl)
@@ -297,7 +297,7 @@ class TypeInferenceWalker(
             is MvStructField -> item.type?.loweredType(msl) ?: TyUnknown
             // only occurs in the invalid code statements
             is MvStruct -> TyUnknown
-            else -> project.debugErrorOrFallback(
+            else -> debugErrorOrFallback(
                 "Referenced item ${item.elementType} " +
                         "of ref expr `${refExpr.text}` at ${refExpr.location} cannot be inferred into type",
                 TyUnknown
@@ -759,7 +759,7 @@ class TypeInferenceWalker(
 
             // if any of the types has TyUnknown and TyInfer, combineTyVar will fail
             // it only happens in buggy situation, but it's annoying for the users, so return if not in devMode
-            if (!project.isDebugModeEnabled) {
+            if (!isDebugModeEnabled()) {
                 if ((leftTy.hasTyUnknown || rightTy.hasTyUnknown)
                     && (leftTy.hasTyInfer || rightTy.hasTyInfer)
                 ) {

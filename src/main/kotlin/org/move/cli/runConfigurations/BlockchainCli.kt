@@ -3,6 +3,7 @@ package org.move.cli.runConfigurations
 import com.intellij.execution.process.ProcessListener
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.Consts
 import org.move.openapiext.*
@@ -66,20 +67,22 @@ sealed class BlockchainCli {
             owner: Disposable,
             processListener: ProcessListener
         ): MvProcessResult<Unit> {
-            val cli =
-                CliCommandLineArgs(
-                    subCommand = "move",
-                    arguments = listOfNotNull(
-                        "compile",
-                        "--skip-fetch-latest-git-deps".takeIf { skipLatest }
-                    ),
-                    workingDirectory = projectDir
-                )
-            // TODO: as Aptos does not yet support fetching dependencies without compiling, ignore errors here,
-            // TODO: still better than no call at all
-            cli.toGeneralCommandLine(cliLocation)
-                .execute(owner, listener = processListener)
+            if (Registry.`is`("org.move.aptos.fetch.deps")) {
+                val cli =
+                    CliCommandLineArgs(
+                        subCommand = "move",
+                        arguments = listOfNotNull(
+                            "compile",
+                            "--skip-fetch-latest-git-deps".takeIf { skipLatest }
+                        ),
+                        workingDirectory = projectDir
+                    )
+                // TODO: as Aptos does not yet support fetching dependencies without compiling, ignore errors here,
+                // TODO: still better than no call at all
+                cli.toGeneralCommandLine(cliLocation)
+                    .execute(owner, listener = processListener)
 //                .unwrapOrElse { return Err(it) }
+            }
             return Ok(Unit)
         }
     }

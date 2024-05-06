@@ -39,7 +39,7 @@ class TyLowering {
                 }
                 TyLambda(paramTys, retTy)
             }
-            else -> moveType.project.debugErrorOrFallback(
+            else -> debugErrorOrFallback(
                 "${moveType.elementType} type is not inferred",
                 TyUnknown
             )
@@ -61,7 +61,7 @@ class TyLowering {
 //                val (_, explicits) = instantiatePathGenerics(path, namedItem, msl)
                 baseTy.substitute(explicitSubst)
             }
-            else -> namedItem.project.debugErrorOrFallback(
+            else -> debugErrorOrFallback(
                 "${namedItem.elementType} path cannot be inferred into type",
                 TyUnknown
             )

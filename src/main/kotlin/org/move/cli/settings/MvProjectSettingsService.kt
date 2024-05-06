@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.registry.Registry
 import com.intellij.psi.PsiManager
 import org.move.cli.runConfigurations.BlockchainCli
 import org.move.cli.runConfigurations.BlockchainCli.Aptos
@@ -79,7 +80,6 @@ class MvProjectSettingsService(
 
         var foldSpecs: Boolean by property(false)
         var disableTelemetry: Boolean by property(true)
-        var debugMode: Boolean by property(false)
         // change to true here to not annoy the users with constant updates
         var skipFetchLatestGitDeps: Boolean by property(true)
         var dumpStateOnTestFailure: Boolean by property(false)
@@ -149,17 +149,17 @@ fun Path?.isValidExecutable(): Boolean {
             && this.isExecutableFile()
 }
 
-val Project.isDebugModeEnabled: Boolean get() = this.moveSettings.state.debugMode
+fun isDebugModeEnabled(): Boolean = Registry.`is`("org.move.debug.enabled")
 
-fun <T> Project.debugErrorOrFallback(message: String, fallback: T): T {
-    if (this.isDebugModeEnabled) {
+fun <T> debugErrorOrFallback(message: String, fallback: T): T {
+    if (isDebugModeEnabled()) {
         error(message)
     }
     return fallback
 }
 
-fun <T> Project.debugErrorOrFallback(message: String, cause: Throwable?, fallback: () -> T): T {
-    if (this.isDebugModeEnabled) {
+fun <T> debugErrorOrFallback(message: String, cause: Throwable?, fallback: () -> T): T {
+    if (isDebugModeEnabled()) {
         throw IllegalStateException(message, cause)
     }
     return fallback()
