@@ -1,14 +1,13 @@
 package org.move.utils
 
+import com.intellij.util.EnvironmentUtil
 import org.move.stdext.exists
-import java.io.File
-import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
 object EnvUtils {
     fun findInPATH(binaryName: String): Path? {
-        val dirPaths = getEnv("PATH")?.split(":").orEmpty()
+        val dirPaths = EnvironmentUtil.getValue("PATH")?.split(":").orEmpty()
         for (dirPath in dirPaths) {
             val path = Paths.get(dirPath, binaryName)
             if (path.exists()) {
@@ -17,7 +16,5 @@ object EnvUtils {
         }
         return null
     }
-
-    fun getEnv(name: String): String? = System.getenv(name)
 }
 
