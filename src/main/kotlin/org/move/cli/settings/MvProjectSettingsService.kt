@@ -80,8 +80,7 @@ class MvProjectSettingsService(
         @AffectsMoveProjectsMetadata
         var localSuiPath: String? by string()
 
-        // todo: drop stubs when this is changed
-        @AffectsHighlighting
+        @AffectsParseTree
         var isCompilerV2: Boolean by property(false)
 
         var foldSpecs: Boolean by property(false)
