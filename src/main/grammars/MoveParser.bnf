@@ -457,7 +457,7 @@ private ReturnTypeItem_with_recover ::= Type
     pin = 1
     recoverWhile = ReturnTypeItem_recover
 }
-private ReturnTypeItem_recover ::= !( '{' | ';' | acquires )
+private ReturnTypeItem_recover ::= !( '{' | ';' | acquires | reads | writes | pure | '!' )
 
 ResourceAccessItemList ::= <<isCompilerV2>> ResourceAccessItem*
 ResourceAccessItem ::= pure | (('!')? (acquires | reads | writes) AccessSpecifierList)

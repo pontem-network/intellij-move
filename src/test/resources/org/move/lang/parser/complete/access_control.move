@@ -1,9 +1,9 @@
 module 0x1::access_control {
-    fun f1() acquires S {}
+    fun f1(): u8 acquires S {}
 
-    fun f2() reads S {}
+    fun f2(): u8 reads S {}
 
-    fun f3() writes S {}
+    fun f3(): u8 writes S {}
 
     fun f4() acquires S(*) {}
 

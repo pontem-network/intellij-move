@@ -101,6 +101,7 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                         it.disableTelemetry = state.disableTelemetry
                         it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
                         it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
+                        it.isCompilerV2 = state.isCompilerV2
                     }
                 }
 
