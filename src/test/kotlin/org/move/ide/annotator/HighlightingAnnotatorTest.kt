@@ -1,6 +1,7 @@
 package org.move.ide.annotator
 
 import org.move.ide.colors.MvColor
+import org.move.utils.tests.CompilerV2
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
 class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class) {
@@ -297,6 +298,14 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
             fun main(s: S) {
                 s.<METHOD_CALL>receiver</METHOD_CALL>();
             }
+        }        
+    """)
+
+    @CompilerV2
+    fun `test resource access control keywords highlighting`() = checkHighlighting("""
+        module 0x1::m {
+            fun f_multiple() <KEYWORD>reads</KEYWORD> R <KEYWORD>writes</KEYWORD> T, S <KEYWORD>reads</KEYWORD> G<u64> {}
+            fun f_multiple2() <KEYWORD>pure</KEYWORD> {}
         }        
     """)
 }
