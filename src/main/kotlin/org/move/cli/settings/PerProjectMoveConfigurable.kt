@@ -69,6 +69,13 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                             "Adds --dump to the test runs (aptos only)."
                         )
                     }
+                    row {
+                        checkBox("Enable Aptos V2 compiler")
+                            .bindSelected(state::isCompilerV2)
+                        comment(
+                            "Enables features of the Aptos V2 compiler (receiver style functions, access control, etc.)"
+                        )
+                    }
                 }
 
                 if (!project.isDefault) {

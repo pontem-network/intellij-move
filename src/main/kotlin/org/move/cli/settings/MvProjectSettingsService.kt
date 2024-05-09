@@ -59,6 +59,8 @@ class MvProjectSettingsService(
     val localAptosPath: String? get() = state.localAptosPath
     val localSuiPath: String? get() = state.localSuiPath
 
+    val isCompilerV2: Boolean get() = state.isCompilerV2
+
     val disableTelemetry: Boolean get() = state.disableTelemetry
     val foldSpecs: Boolean get() = state.foldSpecs
     val skipFetchLatestGitDeps: Boolean get() = state.skipFetchLatestGitDeps
@@ -77,6 +79,9 @@ class MvProjectSettingsService(
 
         @AffectsMoveProjectsMetadata
         var localSuiPath: String? by string()
+
+        @AffectsHighlighting
+        var isCompilerV2: Boolean by property(false)
 
         var foldSpecs: Boolean by property(false)
         var disableTelemetry: Boolean by property(true)
