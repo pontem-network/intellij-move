@@ -141,7 +141,7 @@ error[E04007]: incompatible types
 }        
     """, listOf(
             AptosCompilerMessage.forTest(
-                message = "[E04007] incompatible types",
+                message = "incompatible types",
                 severityLevel = "error",
                 filename = "/home/mkurnikov/main/sources/main2.move",
                 location = "[(4, 13), (4, 15)]"
@@ -165,7 +165,7 @@ error[E04007]: incompatible types
 }
     """, listOf(
             AptosCompilerMessage.forTest(
-                message = "[E04007] incompatible types",
+                message = "incompatible types",
                 severityLevel = "error",
                 filename = "/tmp/main/sources/main.move",
                 location = "[(2, 22), (2, 23)]"

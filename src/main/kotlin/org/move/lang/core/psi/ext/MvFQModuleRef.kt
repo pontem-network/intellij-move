@@ -16,4 +16,6 @@ abstract class MvFQModuleRefMixin(node: ASTNode) : MvElementImpl(node),
     override fun getReference(): MvFQModuleReference {
         return MvFQModuleReferenceImpl(this)
     }
+
+    override fun getMul(): PsiElement? = null
 }

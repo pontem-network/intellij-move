@@ -1,5 +1,6 @@
 package org.move.lang.parser
 
+import org.move.utils.tests.CompilerV2
 import org.move.utils.tests.parser.MvParsingTestCase
 
 class CompleteParsingTest : MvParsingTestCase("complete") {
@@ -41,6 +42,9 @@ class CompleteParsingTest : MvParsingTestCase("complete") {
 
     fun `test macros`() = doTest()
     fun `test loops`() = doTest()
+
+    @CompilerV2
+    fun `test access control`() = doTest()
 
     fun doTest() {
         super.doTest(true, true)

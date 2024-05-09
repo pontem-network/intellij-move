@@ -34,6 +34,10 @@
 
     generateTokenAccessors=true
 
+    parserImports=[
+      'static org.move.lang.core.MoveParserUtil.PathParsingMode.*'
+    ]
+
     tokens = [
         WHITESPACE='regexp:[ \n\t\r\f]'
 
@@ -99,6 +103,10 @@
         INLINE     = 'inline_kw'
         FRIEND     = 'friend_kw'
         FOR     = 'for_kw'
+
+        READS     = 'reads_kw'
+        WRITES     = 'writes_kw'
+        PURE     = 'pure_kw'
 
         SCRIPT_KW     = 'script_kw'
         MODULE_KW     = 'module'
@@ -197,6 +205,10 @@ private has ::= <<hasKeyword>>
 private entry ::= <<entryKeyword>>
 private inline ::= <<inlineKeyword>>
 private schema ::= <<schemaKeyword>>
+
+private reads ::= <<readsKeyword>>
+private writes ::= <<writesKeyword>>
+private pure ::= <<pureKeyword>>
 
 AddressDef ::= address AddressRef AddressBlock {
     pin = 1
@@ -370,7 +382,7 @@ private StructItem ::= StructInner | NativeStructInner
 
 fake Function ::= Attr* native? FunctionVisibilityModifier? entry? inline?
                     fun? IDENTIFIER? TypeParameterList? FunctionParameterList?
-                        ReturnType? AcquiresType?
+                        ReturnType? (ResourceAccessItemList | AcquiresType)?
                         (';' | CodeBlock)?
 {
     implements = [
@@ -406,7 +418,8 @@ NativeFunctionInner ::= Attr* NativeFunctionModifierSetInner fun FunctionSignatu
 private FunctionItem ::= NativeFunctionInner | FunctionInner
 
 private FunctionSignatureInner ::= IDENTIFIER TypeParameterList?
-                                    FunctionParameterList ReturnType? AcquiresType?
+                                    FunctionParameterList ReturnType?
+                                    (ResourceAccessItemList | AcquiresType)?
 {
     recoverWhile = "FunctionSignatureInner_recover"
 }
@@ -445,6 +458,19 @@ private ReturnTypeItem_with_recover ::= Type
     recoverWhile = ReturnTypeItem_recover
 }
 private ReturnTypeItem_recover ::= !( '{' | ';' | acquires )
+
+ResourceAccessItemList ::= <<isCompilerV2>> ResourceAccessItem*
+ResourceAccessItem ::= pure | (('!')? (acquires | reads | writes) AccessSpecifierList)
+
+AccessSpecifierList ::= <<non_empty_comma_sep_items AccessSpecifier>>
+AccessSpecifier ::= <<pathMode 'WILDCARD' Path>> AddressSpecifier?
+
+AddressSpecifier ::= '(' AddressSpecifierArg ')'
+AddressSpecifierArg ::= '*'
+                        | (IDENTIFIER !'(')
+                        | AddressSpecifierLit
+                        | <<pathMode 'VALUE' (Path '(' IDENTIFIER ')')>>
+AddressSpecifierLit ::= DIEM_ADDRESS | INTEGER_LITERAL
 
 // acquires T, Record
 AcquiresType ::= acquires AcquiresType_items { pin = 1 }
@@ -1022,23 +1048,25 @@ Path ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList
     mixin = "org.move.lang.core.psi.ext.MvPathMixin"
 }
 
-private LocalPathIdent ::= IDENTIFIER
-private ModulePathIdent ::= ModuleRef ('::' !(IDENTIFIER '::')) IDENTIFIER
+private LocalPathIdent ::= PATH_MODE_IDENTIFIER
+private ModulePathIdent ::= ModuleRef ('::' !(PATH_MODE_IDENTIFIER '::')) PATH_MODE_IDENTIFIER
 {
     pin = 2
 }
-private FQModulePathIdent ::= FQModuleRef '::' IDENTIFIER
+private FQModulePathIdent ::= FQModuleRef '::' PATH_MODE_IDENTIFIER
 {
     pin = 1
 }
+private PATH_MODE_IDENTIFIER ::= (<<isPathMode 'VALUE' >> IDENTIFIER)
+                                | (<<isPathMode 'WILDCARD' >> ('*' | IDENTIFIER))
 
-ModuleRef ::= IDENTIFIER | FQModuleRef
+ModuleRef ::= PATH_MODE_IDENTIFIER | FQModuleRef
 {
     implements = ["org.move.lang.core.resolve.ref.MvReferenceElement"]
     mixin = "org.move.lang.core.psi.ext.MvModuleRefMixin"
 }
 
-FQModuleRef ::= AddressRef '::' IDENTIFIER
+FQModuleRef ::= AddressRef '::' PATH_MODE_IDENTIFIER
 {
     pin = 2
     extends = ModuleRef
