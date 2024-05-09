@@ -1,5 +1,6 @@
 package org.move.cli.settings
 
+import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.options.BoundSearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
@@ -11,12 +12,7 @@ import org.move.cli.settings.aptos.ChooseAptosCliPanel
 import org.move.cli.settings.sui.ChooseSuiCliPanel
 import org.move.openapiext.showSettingsDialog
 
-class PerProjectMoveConfigurable(val project: Project):
-    BoundSearchableConfigurable(
-        displayName = "Move Language",
-        helpTopic = "Move_language_settings",
-        _id = "org.move.settings"
-    ) {
+class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move Language") {
 
     private val chooseAptosCliPanel = ChooseAptosCliPanel(versionUpdateListener = null)
     private val chooseSuiCliPanel = ChooseSuiCliPanel()

@@ -148,7 +148,7 @@ ${profilesYaml.joinToString("\n")}
 }
 
 class FileTree(val rootDirInfo: FilesystemEntry.Directory) {
-    fun toTestProject(project: Project, directory: VirtualFile): TestProject {
+    fun create(project: Project, directory: VirtualFile): TestProject {
         val filesWithCaret: MutableList<String> = mutableListOf()
         val filesWithNamedElement: MutableList<String> = mutableListOf()
 

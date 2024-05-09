@@ -12,7 +12,7 @@ class MoveProjectsTree : SimpleTree() {
             val path = selectionPath ?: return null
             if (path.pathCount < 2) return null
             val treeNode = path.getPathComponent(1) as? DefaultMutableTreeNode ?: return null
-            return (treeNode.userObject as? MoveProjectsTreeStructure.MoveSimpleNode.Project)?.moveProject
+            return (treeNode.userObject as? MoveProjectsTreeStructure.MoveSimpleNode.TreeProject)?.moveProject
         }
 
     init {

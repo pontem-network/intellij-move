@@ -54,7 +54,7 @@ fun GeneralCommandLine.execute(): ProcessOutput? {
     }
     val output = handler.runProcessWithGlobalProgress()
     if (!output.isSuccess) {
-        LOG.warn(MvProcessExecutionException.errorMessage(commandLineString, output))
+        LOG.warn(RsProcessExecutionException.errorMessage(commandLineString, output))
     }
     return output
 }
@@ -64,13 +64,13 @@ fun GeneralCommandLine.execute(
     stdIn: ByteArray? = null,
     runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress(timeoutInMilliseconds = null) },
     listener: ProcessListener? = null
-): MvProcessResult<ProcessOutput> {
+): RsProcessResult<ProcessOutput> {
     LOG.info("Executing `$commandLineString`")
 
     val handler = MvCapturingProcessHandler.startProcess(this) // The OS process is started here
         .unwrapOrElse {
             LOG.warn("Failed to run executable", it)
-            return RsResult.Err(MvProcessExecutionException.Start(commandLineString, it))
+            return RsResult.Err(RsProcessExecutionException.Start(commandLineString, it))
         }
 
     val processKiller = Disposable {
@@ -100,7 +100,7 @@ fun GeneralCommandLine.execute(
         // to the scenario where cargoKiller triggers.
         val output = ProcessOutput().apply { setCancelled() }
         return RsResult.Err(
-            MvProcessExecutionException.Canceled(
+            RsProcessExecutionException.Canceled(
                 commandLineString,
                 output,
                 "Command failed to start"
@@ -121,10 +121,10 @@ fun GeneralCommandLine.execute(
     }
 
     return when {
-        output.isCancelled -> RsResult.Err(MvProcessExecutionException.Canceled(commandLineString, output))
-        output.isTimeout -> RsResult.Err(MvProcessExecutionException.Timeout(commandLineString, output))
+        output.isCancelled -> RsResult.Err(RsProcessExecutionException.Canceled(commandLineString, output))
+        output.isTimeout -> RsResult.Err(RsProcessExecutionException.Timeout(commandLineString, output))
         output.exitCode != 0 -> RsResult.Err(
-            MvProcessExecutionException.ProcessAborted(
+            RsProcessExecutionException.ProcessAborted(
                 commandLineString,
                 output
             )

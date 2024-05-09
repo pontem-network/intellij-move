@@ -5,7 +5,7 @@ import org.move.ide.inspections.MvUnresolvedReferenceInspection
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.annotation.InspectionProjectTestBase
 
-class AutoImportFixProjectTest : InspectionProjectTestBase(MvUnresolvedReferenceInspection::class) {
+class AutoImportFixTreeProjectTest : InspectionProjectTestBase(MvUnresolvedReferenceInspection::class) {
     fun `test import method from another file`() = checkAutoImportFixByText(
         {
             namedMoveToml("MyModule")

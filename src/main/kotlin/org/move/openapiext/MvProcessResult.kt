@@ -10,17 +10,17 @@ import com.intellij.execution.ExecutionException
 import com.intellij.execution.process.ProcessOutput
 import org.move.stdext.RsResult
 
-typealias MvProcessResult<T> = RsResult<T, MvProcessExecutionException>
+typealias RsProcessResult<T> = RsResult<T, RsProcessExecutionException>
 
-sealed class MvProcessExecutionOrDeserializationException : RuntimeException {
+sealed class RsProcessExecutionOrDeserializationException : RuntimeException {
     constructor(cause: Throwable) : super(cause)
     constructor(message: String) : super(message)
 }
 
-class MvDeserializationException(cause: JacksonException) :
-    MvProcessExecutionOrDeserializationException(cause)
+class RsDeserializationException(cause: JacksonException) :
+    RsProcessExecutionOrDeserializationException(cause)
 
-sealed class MvProcessExecutionException : MvProcessExecutionOrDeserializationException {
+sealed class RsProcessExecutionException : RsProcessExecutionOrDeserializationException {
     constructor(message: String) : super(message)
     constructor(cause: Throwable) : super(cause)
 
@@ -29,24 +29,24 @@ sealed class MvProcessExecutionException : MvProcessExecutionOrDeserializationEx
     class Start(
         override val commandLineString: String,
         cause: ExecutionException,
-    ) : MvProcessExecutionException(cause)
+    ) : RsProcessExecutionException(cause)
 
     class Canceled(
         override val commandLineString: String,
         val output: ProcessOutput,
         message: String = errorMessage(commandLineString, output),
-    ) : MvProcessExecutionException(message)
+    ) : RsProcessExecutionException(message)
 
     class Timeout(
         override val commandLineString: String,
         val output: ProcessOutput,
-    ) : MvProcessExecutionException(errorMessage(commandLineString, output))
+    ) : RsProcessExecutionException(errorMessage(commandLineString, output))
 
     /** The process exited with non-zero exit code */
     class ProcessAborted(
         override val commandLineString: String,
         val output: ProcessOutput,
-    ) : MvProcessExecutionException(errorMessage(commandLineString, output))
+    ) : RsProcessExecutionException(errorMessage(commandLineString, output))
 
     companion object {
         fun errorMessage(commandLineString: String, output: ProcessOutput): String = """
@@ -58,13 +58,13 @@ sealed class MvProcessExecutionException : MvProcessExecutionOrDeserializationEx
     }
 }
 
-fun MvProcessResult<ProcessOutput>.ignoreExitCode(): RsResult<ProcessOutput, MvProcessExecutionException.Start> =
+fun RsProcessResult<ProcessOutput>.ignoreExitCode(): RsResult<ProcessOutput, RsProcessExecutionException.Start> =
     when (this) {
         is RsResult.Ok -> RsResult.Ok(ok)
         is RsResult.Err -> when (err) {
-            is MvProcessExecutionException.Start -> RsResult.Err(err)
-            is MvProcessExecutionException.Canceled -> RsResult.Ok(err.output)
-            is MvProcessExecutionException.Timeout -> RsResult.Ok(err.output)
-            is MvProcessExecutionException.ProcessAborted -> RsResult.Ok(err.output)
+            is RsProcessExecutionException.Start -> RsResult.Err(err)
+            is RsProcessExecutionException.Canceled -> RsResult.Ok(err.output)
+            is RsProcessExecutionException.Timeout -> RsResult.Ok(err.output)
+            is RsProcessExecutionException.ProcessAborted -> RsResult.Ok(err.output)
         }
     }

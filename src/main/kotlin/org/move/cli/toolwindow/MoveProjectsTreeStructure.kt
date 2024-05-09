@@ -17,7 +17,6 @@ import org.move.lang.core.psi.ext.hasTestAttr
 import org.move.lang.core.psi.ext.hasTestOnlyAttr
 import org.move.lang.core.psi.ext.viewFunctions
 import org.move.stdext.iterateMoveFiles
-import java.util.concurrent.CompletableFuture
 
 class MoveProjectsTreeStructure(
     tree: MoveProjectsTree,
@@ -45,7 +44,7 @@ class MoveProjectsTreeStructure(
 
         class Root(private val moveProjects: List<MoveProject>) : MoveSimpleNode(null) {
             override fun buildChildren(): Array<SimpleNode> =
-                moveProjects.map { Project(it, this) }.sortedBy { it.name }.toTypedArray()
+                moveProjects.map { TreeProject(it, this) }.sortedBy { it.name }.toTypedArray()
 
             override fun getName() = ""
             override fun toTestString() = "Root"
@@ -85,7 +84,7 @@ class MoveProjectsTreeStructure(
             override fun toTestString(): String = "Package($name)"
         }
 
-        class Project(val moveProject: MoveProject, parent: SimpleNode) :
+        class TreeProject(val moveProject: MoveProject, parent: SimpleNode) :
             Package(moveProject.currentPackage, parent) {
 
             override fun buildChildren(): Array<SimpleNode> {

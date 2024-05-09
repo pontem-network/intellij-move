@@ -144,6 +144,8 @@
     <annotator language="Move"
                implementationClass="org.move.ide.annotator.HighlightingAnnotator" />
 
+    <highlightingPassFactory implementation="org.move.ide.annotator.RsHighlightingPassFactoryRegistrar"/>
+
     <annotator language="TOML"
                implementationClass="org.move.toml.MoveTomlErrorAnnotator" />
 
@@ -186,6 +188,10 @@
                 anchor="right"
                 factoryClass="org.move.cli.toolwindow.AptosToolWindowFactory"
                 icon="/icons/aptos.svg" />
+
+    <statusBarWidgetFactory id="moveExternalLinterWidget"
+                            implementation="org.move.cli.externalLinter.RsExternalLinterWidgetFactory"
+                            order="first"/>
 
 
     <!--        <localInspection language="Move" groupPath="Move" groupName="Naming"-->
@@ -299,6 +305,12 @@
                          displayName="Move Language"
                          groupId="language"
                          id="language.move" />
+
+    <projectConfigurable instance="org.move.cli.externalLinter.MvExternalLinterConfigurable"
+                         parentId="language.move"
+                         id="language.move.compiler.check"
+                         displayName="External Linters" />
+
     <projectService serviceInterface="org.move.utils.ProjectRootService"
                     serviceImplementation="org.move.utils.ProjectRootServiceImpl"
                     testServiceImplementation="org.move.utils.TestProjectRootServiceImpl" />
@@ -366,6 +378,10 @@
                  defaultValue="false"
                  restartRequired="false"
                  description="Enable fetching dependencies via aptos-move-compile for Aptos Move"/>
+    <registryKey key="org.move.external.linter.max.duration"
+                 defaultValue="3000"
+                 restartRequired="false"
+                 description="Show notification warning if the external linter is running longer than the set value (ms)"/>
 
   </extensions>
 
@@ -373,6 +389,8 @@
     <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"
               topic="org.move.cli.settings.MvProjectSettingsServiceBase$MoveSettingsListener"
               activeInTestMode="false" />
+    <listener class="org.move.cli.externalLinter.RsExternalLinterWidgetUpdater"
+              topic="org.move.cli.MoveProjectsService$MoveProjectsListener"/>
   </projectListeners>
 
   <actions>

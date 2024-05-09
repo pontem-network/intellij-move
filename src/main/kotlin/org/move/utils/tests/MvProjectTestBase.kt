@@ -63,7 +63,7 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
 
     private fun testProject(fileTree: FileTree): TestProject {
         val rootDirectory = myModule.rootManager.contentRoots.first()
-        val testProject = fileTree.toTestProject(myFixture.project, rootDirectory)
+        val testProject = fileTree.create(myFixture.project, rootDirectory)
         this._testProject = testProject
         myFixture.configureFromFileWithCaret(testProject)
 
