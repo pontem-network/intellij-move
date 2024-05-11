@@ -13,7 +13,6 @@ import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.showSettingsDialog
-import org.move.utils.EnvUtils
 
 class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationProvider(project),
                                                            DumbAware {
@@ -37,19 +36,19 @@ class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationP
             }
         }
 
-        val cliFromPATH = EnvUtils.findInPATH(blockchain.cliName())?.toString()
+        val blockchainCliFromPATH = Blockchain.blockchainCliFromPATH(blockchain.cliName())?.toString()
         return EditorNotificationPanel().apply {
             text = "$blockchain CLI path is not provided or invalid"
-            if (cliFromPATH != null) {
-                createActionLabel("Set to \"$cliFromPATH\"") {
+            if (blockchainCliFromPATH != null) {
+                createActionLabel("Set to \"$blockchainCliFromPATH\"") {
                     project.moveSettings.modify {
                         when (blockchain) {
                             APTOS -> {
                                 it.aptosExecType = LOCAL
-                                it.localAptosPath = cliFromPATH
+                                it.localAptosPath = blockchainCliFromPATH
                             }
                             SUI -> {
-                                it.localSuiPath = cliFromPATH
+                                it.localSuiPath = blockchainCliFromPATH
                             }
                         }
                     }

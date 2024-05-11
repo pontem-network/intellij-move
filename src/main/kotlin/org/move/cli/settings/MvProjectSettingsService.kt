@@ -1,5 +1,6 @@
 package org.move.cli.settings
 
+import com.intellij.execution.configurations.PathEnvironmentVariableUtil
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
@@ -17,26 +18,27 @@ import org.move.cli.settings.aptos.AptosExecType
 import org.move.stdext.exists
 import org.move.stdext.isExecutableFile
 import org.move.stdext.toPathOrNull
-import org.move.utils.EnvUtils
 import java.nio.file.Path
 
 enum class Blockchain {
     APTOS, SUI;
 
-    fun cliName() = when (this) { SUI -> "sui"; APTOS -> "aptos" }
+    fun cliName() = when (this) {
+        SUI -> "sui"; APTOS -> "aptos"
+    }
 
     override fun toString(): String = if (this == APTOS) "Aptos" else "Sui"
 
     companion object {
-        fun aptosFromPATH(): String? {
-            // TODO: check whether it's an executable
-            return EnvUtils.findInPATH("aptos")?.toAbsolutePath()?.toString()
+        fun aptosCliFromPATH(): Path? = blockchainCliFromPATH("aptos")
+        fun suiCliFromPATH(): Path? = blockchainCliFromPATH("sui")
+
+        fun blockchainCliFromPATH(cliName: String): Path? {
+            return PathEnvironmentVariableUtil
+                .findExecutableInPathOnAnyOS(cliName)
+                ?.toPath()?.toAbsolutePath()
         }
 
-        fun suiFromPATH(): String? {
-            // TODO: same as in Aptos
-            return EnvUtils.findInPATH("sui")?.toAbsolutePath()?.toString()
-        }
     }
 }
 
@@ -85,6 +87,7 @@ class MvProjectSettingsService(
 
         var foldSpecs: Boolean by property(false)
         var disableTelemetry: Boolean by property(true)
+
         // change to true here to not annoy the users with constant updates
         var skipFetchLatestGitDeps: Boolean by property(true)
         var dumpStateOnTestFailure: Boolean by property(false)

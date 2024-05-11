@@ -3,11 +3,10 @@ package org.move.utils.tests
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.testFramework.fixtures.impl.BaseFixture
-import com.intellij.util.EnvironmentUtil
+import org.move.cli.settings.Blockchain
 import org.move.cli.settings.Blockchain.APTOS
 import org.move.cli.settings.aptos.AptosExecType.LOCAL
 import org.move.cli.settings.moveSettings
-import org.move.utils.EnvUtils
 
 class AptosCliTestFixture(
     // This property is mutable to allow `com.intellij.testFramework.UsefulTestCase.clearDeclaredFields`
@@ -15,7 +14,7 @@ class AptosCliTestFixture(
     private var project: Project
 ): BaseFixture() {
 
-    val aptosPath = EnvUtils.findInPATH("aptos") ?: error("aptos is not available")
+    val aptosPath = Blockchain.aptosCliFromPATH() ?: error("aptos is not available")
 
     override fun setUp() {
         super.setUp()
