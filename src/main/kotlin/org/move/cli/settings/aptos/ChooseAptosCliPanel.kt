@@ -1,9 +1,15 @@
 package org.move.cli.settings.aptos
 
+import com.intellij.ide.DataManager
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.ui.popup.JBPopupFactory.ActionSelectionAid.SPEEDSEARCH
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.ui.components.DropDownLink
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.Panel
@@ -14,6 +20,7 @@ import org.move.cli.settings.VersionLabel
 import org.move.cli.settings.aptos.AptosExecType.BUNDLED
 import org.move.cli.settings.aptos.AptosExecType.LOCAL
 import org.move.cli.settings.isValidExecutable
+import org.move.ide.actions.DownloadAptosSDKAction
 import org.move.openapiext.PluginPathManager
 import org.move.openapiext.pathField
 import org.move.stdext.blankToNull
@@ -85,6 +92,29 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
     private val bundledRadioButton = JBRadioButton("Bundled")
     private val localRadioButton = JBRadioButton("Local")
 
+    val downloadAction = DownloadAptosSDKAction().also {
+        it.onFinish = { sdk ->
+            localPathField.text = sdk.targetFile.toString()
+            updateVersion()
+        }
+    }
+    private val getAptosActionLink =
+        DropDownLink("Get Aptos") { dropDownLink ->
+            val dataContext = DataManager.getInstance().getDataContext(dropDownLink)
+            JBPopupFactory.getInstance().createActionGroupPopup(
+                null,
+                DefaultActionGroup(listOf(downloadAction)),
+                dataContext,
+                SPEEDSEARCH,
+                false,
+                null,
+                -1,
+                { _ -> false },
+                null
+            )
+        }
+
+
     fun attachToLayout(layout: Panel): Row {
         val resultRow = with(layout) {
             group("Aptos CLI") {
@@ -109,6 +139,8 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
                             .enabledIf(localRadioButton.selected)
                             .align(AlignX.FILL)
                             .resizableColumn()
+                        cell(getAptosActionLink)
+                            .enabledIf(localRadioButton.selected)
                     }
                     row("--version :") { cell(versionLabel) }
                 }

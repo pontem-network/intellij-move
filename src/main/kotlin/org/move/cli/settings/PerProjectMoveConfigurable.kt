@@ -58,8 +58,7 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                         checkBox("Skip updating to the latest git dependencies")
                             .bindSelected(state::skipFetchLatestGitDeps)
                         comment(
-                            "Adds --skip-fetch-latest-git-deps to the sync and test runs. " +
-                                    "Speeds up projects refresh considerably."
+                            "Adds --skip-fetch-latest-git-deps to the sync and test runs. "
                         )
                     }
                     row {

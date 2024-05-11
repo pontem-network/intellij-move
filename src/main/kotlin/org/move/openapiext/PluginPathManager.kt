@@ -45,17 +45,28 @@ class OpenSSLInfoService {
 object PluginPathManager {
     private fun pluginDir(): Path = plugin().pluginPath
 
+    fun getCurrentOS(): String {
+        val openssl3 = service<OpenSSLInfoService>().openssl3
+        return when {
+            SystemInfo.isMac -> "MacOSX"
+            SystemInfo.isWindows -> "Windows"
+            else -> {
+                if (openssl3) "Ubuntu-22.04" else "Ubuntu"
+            }
+        }
+    }
+
     val bundledAptosCli: String?
         get() {
-            val openssl3 = service<OpenSSLInfoService>().openssl3
-            val (os, binaryName) = when {
-                SystemInfo.isMac -> "macos" to "aptos"
-                SystemInfo.isWindows -> "windows" to "aptos.exe"
-                else -> {
-                    val platform = if (openssl3) "ubuntu22" else "ubuntu"
-                    platform to "aptos"
+            val platform = getCurrentOS()
+            val (os, binaryName) =
+                when (platform) {
+                    "Ubuntu-22.04" -> "ubuntu22" to "aptos"
+                    "Ubuntu" -> "ubuntu" to "aptos"
+                    "MacOSX" -> "macos" to "aptos"
+                    "Windows" -> "windows" to "aptos.exe"
+                    else -> error("unreachable")
                 }
-            }
             val aptosCli = pluginDir().resolve("bin/$os/$binaryName").takeIf { Files.exists(it) } ?: return null
             return if (Files.isExecutable(aptosCli) || aptosCli.toFile().setExecutable(true)) {
                 aptosCli.toString()

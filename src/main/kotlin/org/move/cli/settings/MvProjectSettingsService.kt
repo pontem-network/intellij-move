@@ -71,7 +71,7 @@ class MvProjectSettingsService(
     // default values for settings
     class MoveProjectSettings: MvProjectSettingsBase<MoveProjectSettings>() {
         @AffectsMoveProjectsMetadata
-        var blockchain: Blockchain by enum(Blockchain.APTOS)
+        var blockchain: Blockchain by enum(APTOS)
 
         @AffectsMoveProjectsMetadata
         var aptosExecType: AptosExecType by enum(defaultAptosExecType)

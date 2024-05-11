@@ -406,9 +406,9 @@
             class="org.move.ide.actions.RefreshMoveProjectsAction"
             icon="AllIcons.Actions.Refresh" />
     <action id="Move.DownloadAptos"
-            description="Download Aptos command line"
-            text="Download Aptos Command Line"
-            class="org.move.ide.actions.DownloadAptosAction"
+            text="Download Aptos CLI"
+            description="Download aptos-cli executable from Github"
+            class="org.move.ide.actions.DownloadAptosSDKAction"
             icon="AllIcons.Actions.Download" />
     
     <action id="Move.ShowSettings"

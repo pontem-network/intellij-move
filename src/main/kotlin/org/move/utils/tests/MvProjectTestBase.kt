@@ -11,6 +11,7 @@ import com.intellij.psi.impl.PsiManagerEx
 import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
+import com.intellij.util.SystemProperties
 import com.intellij.util.ui.UIUtil
 import org.intellij.lang.annotations.Language
 import org.jetbrains.annotations.TestOnly
@@ -51,11 +52,13 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
         return TestCase.camelOrWordsToSnake(camelCase)
     }
 
+    @Suppress("JUnitMalformedDeclaration")
     fun testProject(@Language("Move") code: String): TestProject {
         val fileTree = fileTreeFromText(code)
         return testProject(fileTree)
     }
 
+    @Suppress("JUnitMalformedDeclaration")
     fun testProject(builder: FileTreeBuilder.() -> Unit): TestProject {
         val fileTree = fileTree(builder)
         return testProject(fileTree)
@@ -67,7 +70,7 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
         this._testProject = testProject
         myFixture.configureFromFileWithCaret(testProject)
 
-        System.setProperty("user.home", testProject.rootDirectory.path)
+        SystemProperties.setProperty("user.home", testProject.rootDirectory.path)
         project.moveProjectsService.scheduleProjectsRefresh("from test project")
         return testProject
     }
