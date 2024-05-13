@@ -1,6 +1,6 @@
 package org.move.cli.settings
 
-import com.intellij.openapi.options.BoundSearchableConfigurable
+import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.DialogPanel
@@ -11,12 +11,7 @@ import org.move.cli.settings.aptos.ChooseAptosCliPanel
 import org.move.cli.settings.sui.ChooseSuiCliPanel
 import org.move.openapiext.showSettingsDialog
 
-class PerProjectMoveConfigurable(val project: Project):
-    BoundSearchableConfigurable(
-        displayName = "Move Language",
-        helpTopic = "Move_language_settings",
-        _id = "org.move.settings"
-    ) {
+class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move Language") {
 
     private val chooseAptosCliPanel = ChooseAptosCliPanel(versionUpdateListener = null)
     private val chooseSuiCliPanel = ChooseSuiCliPanel()
@@ -62,8 +57,7 @@ class PerProjectMoveConfigurable(val project: Project):
                         checkBox("Skip updating to the latest git dependencies")
                             .bindSelected(state::skipFetchLatestGitDeps)
                         comment(
-                            "Adds --skip-fetch-latest-git-deps to the sync and test runs. " +
-                                    "Speeds up projects refresh considerably."
+                            "Adds --skip-fetch-latest-git-deps to the sync and test runs. "
                         )
                     }
                     row {
@@ -71,6 +65,20 @@ class PerProjectMoveConfigurable(val project: Project):
                             .bindSelected(state::dumpStateOnTestFailure)
                         comment(
                             "Adds --dump to the test runs (aptos only)."
+                        )
+                    }
+                    row {
+                        checkBox("Fetch Aptos dependencies")
+                            .bindSelected(state::fetchAptosDeps)
+                        comment(
+                            "Enables fetching dependencies for the Aptos projects on every change to the Move.toml file"
+                        )
+                    }
+                    row {
+                        checkBox("Enable Aptos V2 compiler")
+                            .bindSelected(state::isCompilerV2)
+                        comment(
+                            "Enables features of the Aptos V2 compiler (receiver style functions, access control, etc.)"
                         )
                     }
                 }
@@ -89,7 +97,12 @@ class PerProjectMoveConfigurable(val project: Project):
                 onApply {
                     settings.modify {
                         it.aptosExecType = chooseAptosCliPanel.data.aptosExecType
-                        it.localAptosPath = chooseAptosCliPanel.data.localAptosPath
+
+                        val localAptosSdkPath = chooseAptosCliPanel.data.localAptosPath
+                        if (localAptosSdkPath != null) {
+                            chooseAptosCliPanel.updateAptosSdks(localAptosSdkPath)
+                        }
+                        it.localAptosPath = localAptosSdkPath
 
                         it.localSuiPath = chooseSuiCliPanel.data.localSuiPath
 
@@ -98,6 +111,8 @@ class PerProjectMoveConfigurable(val project: Project):
                         it.disableTelemetry = state.disableTelemetry
                         it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
                         it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
+                        it.isCompilerV2 = state.isCompilerV2
+                        it.fetchAptosDeps = state.fetchAptosDeps
                     }
                 }
 

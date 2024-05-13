@@ -4,8 +4,8 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
-import org.move.lang.core.resolve.ref.MvStructRefFieldReferenceImpl
 import org.move.lang.core.resolve.ref.MvStructPatShorthandFieldReferenceImpl
+import org.move.lang.core.resolve.ref.MvStructRefFieldReferenceImpl
 
 val MvStructPatField.structPat: MvStructPat
     get() = ancestorStrict()!!

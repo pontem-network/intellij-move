@@ -1,14 +1,11 @@
 package org.move.ide.annotator
 
-import com.intellij.codeInsight.daemon.impl.HighlightRangeExtension
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import org.move.ide.presentation.fullname
 import org.move.ide.presentation.itemDeclaredInModule
 import org.move.ide.utils.functionSignature
 import org.move.ide.utils.signature
-import org.move.lang.MoveFile
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*

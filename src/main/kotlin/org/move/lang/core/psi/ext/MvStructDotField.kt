@@ -6,7 +6,6 @@ import org.move.lang.core.resolve.ScopeItem
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 import org.move.lang.core.resolve.ref.MvPolyVariantReferenceBase
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyStruct
 import org.move.stdext.wrapWithList
 

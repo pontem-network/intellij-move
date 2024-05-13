@@ -15,11 +15,11 @@ import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.Service.Level.APP
 import com.intellij.openapi.components.Service.Level.PROJECT
 import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.impl.TrailingSpacesStripper
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
@@ -43,6 +43,7 @@ import org.jdom.Element
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isHeadlessEnvironment
 import org.move.openapiext.common.isUnitTestMode
+import org.rust.ide.annotator.RsExternalLinterPass
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.Callable
@@ -78,6 +79,28 @@ fun Document.getOffsetPosition(offset: Int): Pair<Int, Int> {
 }
 
 fun saveAllDocuments() = FileDocumentManager.getInstance().saveAllDocuments()
+
+/**
+ * Calling of [saveAllDocuments] uses [TrailingSpacesStripper] to format all unsaved documents.
+ *
+ * In case of [RsExternalLinterPass] it backfires:
+ * 1. Calling [TrailingSpacesStripper.strip] on *every* file change.
+ * 2. Double run of external linter, because [TrailingSpacesStripper.strip] generates new "PSI change" events.
+ *
+ * This function saves all documents "as they are" (see [FileDocumentManager.saveDocumentAsIs]), but also fires that
+ * these documents should be stripped later (when [saveAllDocuments] is called).
+ */
+fun saveAllDocumentsAsTheyAre(reformatLater: Boolean = true) {
+    val documentManager = FileDocumentManager.getInstance()
+//    val rustfmtWatcher = RustfmtWatcher.getInstance()
+//    rustfmtWatcher.withoutReformatting {
+    for (document in documentManager.unsavedDocuments) {
+        documentManager.saveDocumentAsIs(document)
+//            documentManager.stripDocumentLater(document)
+//        if (reformatLater) rustfmtWatcher.reformatDocumentLater(document)
+    }
+//    }
+}
 
 inline fun testAssert(action: () -> Boolean, lazyMessage: () -> Any) {
     if (isUnitTestMode && !action()) {

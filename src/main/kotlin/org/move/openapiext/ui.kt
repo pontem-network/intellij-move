@@ -3,13 +3,21 @@ package org.move.openapiext
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.ui.TextComponentAccessor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.NlsContexts.DialogTitle
 import com.intellij.ui.DocumentAdapter
+import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.Cell
+import com.intellij.ui.dsl.builder.Row
 import com.intellij.util.Alarm
+import org.move.lang.core.psi.MvElement
+import javax.swing.JComponent
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
 
@@ -66,3 +74,24 @@ fun JTextField.addTextChangeListener(listener: (DocumentEvent) -> Unit) {
         }
     )
 }
+
+fun selectElement(element: MvElement, editor: Editor) {
+    val start = element.textRange.startOffset
+    val unwrappedEditor = editor
+//    val unwrappedEditor = if (editor is RsIntentionInsideMacroExpansionEditor && element.containingFile != editor.psiFileCopy) {
+//        if (element.containingFile != editor.originalFile) return
+//        editor.originalEditor
+//    } else {
+//        editor
+//    }
+    unwrappedEditor.caretModel.moveToOffset(start)
+    unwrappedEditor.scrollingModel.scrollToCaret(ScrollType.RELATIVE)
+    unwrappedEditor.selectionModel.setSelection(start, element.textRange.endOffset)
+}
+
+fun <T : JComponent> Row.fullWidthCell(component: T): Cell<T> {
+    return cell(component).align(AlignX.FILL)
+}
+
+val JBTextField.trimmedText: String
+    get() = text.trim()

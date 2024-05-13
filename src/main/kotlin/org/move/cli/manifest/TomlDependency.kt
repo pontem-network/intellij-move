@@ -1,5 +1,6 @@
 package org.move.cli.manifest
 
+import com.intellij.util.SystemProperties
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -24,7 +25,7 @@ sealed class TomlDependency {
     ) : TomlDependency() {
 
         override fun localPath(): Path {
-            val home = System.getProperty("user.home")
+            val home = SystemProperties.getUserHome()
             // TODO: add choice based on selected blockchain
             val dirNameAptos = dirNameAptos(repo, rev)
             val aptosPath = Paths.get(home, ".move", dirNameAptos, subdir)

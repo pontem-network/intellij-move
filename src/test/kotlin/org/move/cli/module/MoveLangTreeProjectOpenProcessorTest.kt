@@ -5,7 +5,7 @@ import com.intellij.projectImport.ProjectOpenProcessor
 import org.move.ide.newProject.MoveLangProjectOpenProcessor
 import org.move.utils.tests.MvProjectTestBase
 
-class MoveLangProjectOpenProcessorTest : MvProjectTestBase() {
+class MoveLangTreeProjectOpenProcessorTest : MvProjectTestBase() {
     fun `test open project via directory with Move toml file`() {
         val testProject = testProject {
             dir("package") {

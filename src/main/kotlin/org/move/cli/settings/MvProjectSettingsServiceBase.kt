@@ -1,17 +1,25 @@
 package org.move.cli.settings
 
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
+import com.intellij.codeInsight.daemon.impl.FileStatusMap
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.components.SimplePersistentStateComponent
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiManager
+import com.intellij.psi.stubs.StubTreeLoader
+import com.intellij.util.FileContentUtil
+import com.intellij.util.FileContentUtilCore
 import com.intellij.util.messages.Topic
 import org.jetbrains.annotations.TestOnly
+import org.move.cli.settings.MvProjectSettingsServiceBase.MvProjectSettingsBase
+import org.move.openapiext.saveAllDocuments
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
-import org.move.cli.settings.MvProjectSettingsServiceBase.MvProjectSettingsBase
 
 abstract class MvProjectSettingsServiceBase<T: MvProjectSettingsBase<T>>(
     val project: Project,
@@ -29,6 +37,10 @@ abstract class MvProjectSettingsServiceBase<T: MvProjectSettingsBase<T>>(
     @Retention(AnnotationRetention.RUNTIME)
     @Target(AnnotationTarget.PROPERTY)
     protected annotation class AffectsHighlighting
+
+    @Retention(AnnotationRetention.RUNTIME)
+    @Target(AnnotationTarget.PROPERTY)
+    protected annotation class AffectsParseTree
 
     fun modify(modifySettings: (T) -> Unit) {
         val oldState = this.state.copy()
@@ -68,6 +80,17 @@ abstract class MvProjectSettingsServiceBase<T: MvProjectSettingsBase<T>>(
         if (event.affectsHighlighting) {
             DaemonCodeAnalyzer.getInstance(project).restart()
         }
+
+        if (event.affectsParseTree) {
+            // REFRESH EVERYTHING (didn't find any proper way to do it)
+            saveAllDocuments()
+            val files = mutableListOf<VirtualFile>()
+            ProjectFileIndex.getInstance(project).iterateContent { files.add(it) }
+
+            PsiManager.getInstance(project).dropPsiCaches()
+            FileContentUtilCore.reparseFiles(files)
+            files.forEach { StubTreeLoader.getInstance().rebuildStubTree(it) }
+        }
     }
 
     abstract class SettingsChangedEventBase<T: MvProjectSettingsBase<T>>(val oldState: T, val newState: T) {
@@ -77,11 +100,17 @@ abstract class MvProjectSettingsServiceBase<T: MvProjectSettingsBase<T>>(
         private val highlightingAffectingProps: List<KProperty1<T, *>> =
             oldState.javaClass.kotlin.memberProperties.filter { it.findAnnotation<AffectsHighlighting>() != null }
 
+        private val parseTreeAffectingProps: List<KProperty1<T, *>> =
+            oldState.javaClass.kotlin.memberProperties.filter { it.findAnnotation<AffectsParseTree>() != null }
+
         val affectsMoveProjectsMetadata: Boolean
             get() = moveProjectsMetadataAffectingProps.any(::isChanged)
 
         val affectsHighlighting: Boolean
             get() = highlightingAffectingProps.any(::isChanged)
+
+        val affectsParseTree: Boolean
+            get() = parseTreeAffectingProps.any(::isChanged)
 
         /** Use it like `event.isChanged(State::foo)` to check whether `foo` property is changed or not */
         fun isChanged(prop: KProperty1<T, *>): Boolean = prop.get(oldState) != prop.get(newState)

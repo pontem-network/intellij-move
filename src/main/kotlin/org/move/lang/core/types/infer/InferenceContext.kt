@@ -1,6 +1,5 @@
 package org.move.lang.core.types.infer
 
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.DebugUtil
@@ -13,8 +12,6 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
 import org.move.lang.toNioPathOrNull
-import org.move.openapiext.document
-import org.move.openapiext.getOffsetPosition
 import org.move.stdext.RsResult
 import org.move.stdext.RsResult.Err
 import org.move.stdext.RsResult.Ok

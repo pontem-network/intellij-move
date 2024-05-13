@@ -1,13 +1,20 @@
 package org.move.cli.runConfigurations
 
+import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.process.ProcessListener
+import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.execution.ParametersListUtil
 import org.move.cli.Consts
+import org.move.cli.MoveProject
+import org.move.cli.externalLinter.ExternalLinter
+import org.move.cli.externalLinter.externalLinterSettings
+import org.move.cli.settings.moveSettings
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
+import org.move.stdext.RsResult
 import org.move.stdext.RsResult.Err
 import org.move.stdext.RsResult.Ok
 import org.move.stdext.unwrapOrElse
@@ -22,14 +29,15 @@ sealed class BlockchainCli {
         parentDisposable: Disposable,
         rootDirectory: VirtualFile,
         packageName: String,
-    ): MvProcessResult<VirtualFile>
+    ): RsProcessResult<VirtualFile>
 
     abstract fun fetchPackageDependencies(
+        project: Project,
         projectDir: Path,
         skipLatest: Boolean,
         owner: Disposable,
         processListener: ProcessListener
-    ): MvProcessResult<Unit>
+    ): RsProcessResult<Unit>
 
     data class Aptos(override val cliLocation: Path): BlockchainCli() {
         override fun init(
@@ -37,7 +45,7 @@ sealed class BlockchainCli {
             parentDisposable: Disposable,
             rootDirectory: VirtualFile,
             packageName: String
-        ): MvProcessResult<VirtualFile> {
+        ): RsProcessResult<VirtualFile> {
             if (!isUnitTestMode) {
                 checkIsBackgroundThread()
             }
@@ -62,12 +70,13 @@ sealed class BlockchainCli {
         }
 
         override fun fetchPackageDependencies(
+            project: Project,
             projectDir: Path,
             skipLatest: Boolean,
             owner: Disposable,
             processListener: ProcessListener
-        ): MvProcessResult<Unit> {
-            if (Registry.`is`("org.move.aptos.fetch.deps")) {
+        ): RsProcessResult<Unit> {
+            if (project.moveSettings.fetchAptosDeps) {
                 val cli =
                     CliCommandLineArgs(
                         subCommand = "move",
@@ -85,6 +94,43 @@ sealed class BlockchainCli {
             }
             return Ok(Unit)
         }
+
+        fun compileProject(
+            project: Project,
+            owner: Disposable,
+            args: AptosCompileArgs
+        ): RsResult<ProcessOutput, RsProcessExecutionException.Start> {
+//            val useClippy = args.linter == ExternalLinter.CLIPPY
+//                    && !checkNeedInstallClippy(project, args.cargoProjectDirectory)
+//            val checkCommand = if (useClippy) "clippy" else "check"
+            val arguments = buildList<String> {
+//                add("--message-format=json")
+//                add("--all")
+//                if (args.allTargets && checkSupportForBuildCheckAllTargets()) {
+//                    add("--all-targets")
+//                }
+                add("compile")
+                addAll(ParametersListUtil.parse(args.extraArguments))
+            }
+            val cliArgs =
+                CliCommandLineArgs(
+                    "move",
+                    arguments,
+                    args.moveProjectDirectory,
+                    environmentVariables = EnvironmentVariablesData.create(args.envs, true)
+                )
+            return cliArgs.execute(this.cliLocation, project, owner).ignoreExitCode()
+        }
+
+        private fun CliCommandLineArgs.execute(
+            cliPath: Path,
+            project: Project,
+            owner: Disposable = project,
+            stdIn: ByteArray? = null,
+            listener: ProcessListener? = null
+        ): RsProcessResult<ProcessOutput> {
+            return toGeneralCommandLine(cliPath).execute(owner, stdIn, listener = listener)
+        }
     }
 
     data class Sui(override val cliLocation: Path): BlockchainCli() {
@@ -93,7 +139,7 @@ sealed class BlockchainCli {
             parentDisposable: Disposable,
             rootDirectory: VirtualFile,
             packageName: String
-        ): MvProcessResult<VirtualFile> {
+        ): RsProcessResult<VirtualFile> {
             if (!isUnitTestMode) {
                 checkIsBackgroundThread()
             }
@@ -116,11 +162,12 @@ sealed class BlockchainCli {
         }
 
         override fun fetchPackageDependencies(
+            project: Project,
             projectDir: Path,
             skipLatest: Boolean,
             owner: Disposable,
             processListener: ProcessListener
-        ): MvProcessResult<Unit> {
+        ): RsProcessResult<Unit> {
             val cli =
                 CliCommandLineArgs(
                     subCommand = "move",
@@ -137,3 +184,26 @@ sealed class BlockchainCli {
         }
     }
 }
+
+data class AptosCompileArgs(
+    val linter: ExternalLinter,
+    val moveProjectDirectory: Path,
+    val extraArguments: String,
+    val envs: Map<String, String>,
+) {
+    companion object {
+        fun forMoveProject(moveProject: MoveProject): AptosCompileArgs {
+            val settings = moveProject.project.externalLinterSettings
+            return AptosCompileArgs(
+                settings.tool,
+                moveProject.workingDirectory,
+//                moveProject.project.rustSettings.compileAllTargets,
+                settings.additionalArguments,
+//                settings.channel,
+                settings.envs
+            )
+        }
+    }
+}
+
+val MoveProject.workingDirectory: Path get() = this.currentPackage.contentRoot.pathAsPath

@@ -9,10 +9,12 @@ import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.util.BitUtil
+import org.move.cli.settings.moveSettings
 import org.move.lang.MoveParserDefinition.Companion.EOL_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
 import org.move.lang.MvElementTypes.*
 import org.move.stdext.makeBitMask
+import kotlin.math.max
 
 enum class FunModifier {
     VIS, NATIVE, ENTRY, INLINE;
@@ -95,6 +97,53 @@ object MoveParserUtil : GeneratedParserUtilBase() {
         return true
     }
 
+    enum class PathParsingMode {
+        VALUE, WILDCARD;
+    }
+
+    @JvmStatic
+    fun isPathMode(b: PsiBuilder, level: Int, mode: PathParsingMode): Boolean =
+        mode == getPathMod(b.flags)
+
+    private val PATH_MODE_VALUE: Int = makeBitMask(2)
+    private val PATH_MODE_WILDCARD: Int = makeBitMask(3)
+
+    private fun setPathMod(flags: Int, mode: PathParsingMode): Int {
+        val flag = when (mode) {
+            PathParsingMode.VALUE -> PATH_MODE_VALUE
+            PathParsingMode.WILDCARD -> PATH_MODE_WILDCARD
+        }
+        return flags and (PATH_MODE_VALUE or PATH_MODE_WILDCARD).inv() or flag
+    }
+
+    private fun getPathMod(flags: Int): PathParsingMode = when {
+        BitUtil.isSet(flags, PATH_MODE_VALUE) -> PathParsingMode.VALUE
+        BitUtil.isSet(flags, PATH_MODE_WILDCARD) -> PathParsingMode.WILDCARD
+        // default instead of error()
+        else -> PathParsingMode.VALUE
+//        else -> error("Path parsing mode not set")
+    }
+
+    @JvmStatic
+    fun pathMode(b: PsiBuilder, level: Int, mode: PathParsingMode, parser: Parser): Boolean {
+        val oldFlags = b.flags
+        val newFlags = setPathMod(oldFlags, mode)
+        b.flags = newFlags
+        check(getPathMod(b.flags) == mode)
+
+        // A hack that reduces the growth rate of `level`. This actually allows a deeper path nesting.
+        val prevPathFrame = ErrorState.get(b).currentFrame?.parentFrame?.ancestorOfTypeOrSelf(PATH)
+        val nextLevel = if (prevPathFrame != null) {
+            max(prevPathFrame.level + 2, level - 9)
+        } else {
+            level
+        }
+
+        val result = parser.parse(b, nextLevel)
+        b.flags = oldFlags
+        return result
+    }
+
     @JvmStatic
     fun patternIdent(b: PsiBuilder, level: Int): Boolean {
         if (b.tokenType == FUNCTION_PATTERN_IDENT) {
@@ -148,6 +197,9 @@ object MoveParserUtil : GeneratedParserUtilBase() {
         if (b.mslLevel == 0) return false
         return parser.parse(b, level)
     }
+
+    @JvmStatic
+    fun isCompilerV2(b: PsiBuilder, level: Int): Boolean = b.project.moveSettings.isCompilerV2
 
     @JvmStatic
     fun includeStmtMode(b: PsiBuilder, level: Int, parser: Parser): Boolean {
@@ -303,6 +355,15 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     fun forKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "for", FOR)
 
     @JvmStatic
+    fun readsKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "reads", READS)
+
+    @JvmStatic
+    fun writesKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "writes", WRITES)
+
+    @JvmStatic
+    fun pureKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "pure", PURE)
+
+    @JvmStatic
     fun pragmaKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "pragma", PRAGMA)
 
     @JvmStatic
@@ -419,4 +480,11 @@ object MoveParserUtil : GeneratedParserUtilBase() {
         return false
     }
 
+    private tailrec fun Frame.ancestorOfTypeOrSelf(elementType: IElementType): Frame? {
+        return if (this.elementType == elementType) {
+            this
+        } else {
+            parentFrame?.ancestorOfTypeOrSelf(elementType)
+        }
+    }
 }

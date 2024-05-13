@@ -34,6 +34,11 @@ annotation class WithEnabledInspections(vararg val inspections: KClass<out Inspe
 @Retention(AnnotationRetention.RUNTIME)
 annotation class WithBlockchain(val blockchain: Blockchain)
 
+@Inherited
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class CompilerV2
+
 abstract class MvTestBase: BasePlatformTestCase(),
                            MvTestCase {
     protected val fileName: String
@@ -47,6 +52,11 @@ abstract class MvTestBase: BasePlatformTestCase(),
 
         val isDebugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
         setRegistryKey("org.move.debug.enabled", isDebugMode)
+
+        val isCompilerV2 = this.findAnnotationInstance<CompilerV2>() != null
+        project.moveSettings.modifyTemporary(testRootDisposable) {
+            it.isCompilerV2 = isCompilerV2
+        }
 
         val blockchain = this.findAnnotationInstance<WithBlockchain>()?.blockchain ?: Blockchain.APTOS
         // triggers projects refresh

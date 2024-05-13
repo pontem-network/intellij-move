@@ -2,7 +2,7 @@ package org.move.lang.resolve
 
 import org.move.utils.tests.resolve.ResolveProjectTestCase
 
-class ResolveItemsProjectTest : ResolveProjectTestCase() {
+class ResolveItemsTreeProjectTest : ResolveProjectTestCase() {
 
     fun `test resolve module from other file in sources folder`() = checkByFileTree {
         namedMoveToml("MyPackage")

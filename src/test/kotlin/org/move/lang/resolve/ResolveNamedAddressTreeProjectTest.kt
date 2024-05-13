@@ -5,7 +5,7 @@ import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.resolve.ResolveProjectTestCase
 import org.toml.lang.psi.TomlKeySegment
 
-class ResolveNamedAddressProjectTest : ResolveProjectTestCase() {
+class ResolveNamedAddressTreeProjectTest : ResolveProjectTestCase() {
     fun `test resolve named address to address`() = checkByFileTree {
         moveToml("""
         [addresses]

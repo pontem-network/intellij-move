@@ -1,5 +1,6 @@
 package org.move.cli.settings
 
+import com.intellij.execution.configurations.PathEnvironmentVariableUtil
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
@@ -17,26 +18,27 @@ import org.move.cli.settings.aptos.AptosExecType
 import org.move.stdext.exists
 import org.move.stdext.isExecutableFile
 import org.move.stdext.toPathOrNull
-import org.move.utils.EnvUtils
 import java.nio.file.Path
 
 enum class Blockchain {
     APTOS, SUI;
 
-    fun cliName() = when (this) { SUI -> "sui"; APTOS -> "aptos" }
+    fun cliName() = when (this) {
+        SUI -> "sui"; APTOS -> "aptos"
+    }
 
     override fun toString(): String = if (this == APTOS) "Aptos" else "Sui"
 
     companion object {
-        fun aptosFromPATH(): String? {
-            // TODO: check whether it's an executable
-            return EnvUtils.findInPATH("aptos")?.toAbsolutePath()?.toString()
+        fun aptosCliFromPATH(): Path? = blockchainCliFromPATH("aptos")
+        fun suiCliFromPATH(): Path? = blockchainCliFromPATH("sui")
+
+        fun blockchainCliFromPATH(cliName: String): Path? {
+            return PathEnvironmentVariableUtil
+                .findExecutableInPathOnAnyOS(cliName)
+                ?.toPath()?.toAbsolutePath()
         }
 
-        fun suiFromPATH(): String? {
-            // TODO: same as in Aptos
-            return EnvUtils.findInPATH("sui")?.toAbsolutePath()?.toString()
-        }
     }
 }
 
@@ -59,6 +61,9 @@ class MvProjectSettingsService(
     val localAptosPath: String? get() = state.localAptosPath
     val localSuiPath: String? get() = state.localSuiPath
 
+    val isCompilerV2: Boolean get() = state.isCompilerV2
+    val fetchAptosDeps: Boolean get() = state.fetchAptosDeps
+
     val disableTelemetry: Boolean get() = state.disableTelemetry
     val foldSpecs: Boolean get() = state.foldSpecs
     val skipFetchLatestGitDeps: Boolean get() = state.skipFetchLatestGitDeps
@@ -67,7 +72,7 @@ class MvProjectSettingsService(
     // default values for settings
     class MoveProjectSettings: MvProjectSettingsBase<MoveProjectSettings>() {
         @AffectsMoveProjectsMetadata
-        var blockchain: Blockchain by enum(Blockchain.APTOS)
+        var blockchain: Blockchain by enum(APTOS)
 
         @AffectsMoveProjectsMetadata
         var aptosExecType: AptosExecType by enum(defaultAptosExecType)
@@ -78,8 +83,15 @@ class MvProjectSettingsService(
         @AffectsMoveProjectsMetadata
         var localSuiPath: String? by string()
 
+        @AffectsParseTree
+        var isCompilerV2: Boolean by property(false)
+
+        @AffectsMoveProjectsMetadata
+        var fetchAptosDeps: Boolean by property(false)
+
         var foldSpecs: Boolean by property(false)
         var disableTelemetry: Boolean by property(true)
+
         // change to true here to not annoy the users with constant updates
         var skipFetchLatestGitDeps: Boolean by property(true)
         var dumpStateOnTestFailure: Boolean by property(false)
@@ -112,7 +124,7 @@ class MvProjectSettingsService(
     companion object {
         private val defaultAptosExecType
             get() =
-                if (AptosExecType.isBundledSupportedForThePlatform) AptosExecType.BUNDLED else AptosExecType.LOCAL;
+                if (AptosExecType.isPreCompiledSupportedForThePlatform) AptosExecType.BUNDLED else AptosExecType.LOCAL;
     }
 }
 

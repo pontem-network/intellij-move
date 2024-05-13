@@ -1,8 +1,10 @@
 package org.move.lang.core.resolve.ref
 
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.psi.MvStruct
+import org.move.lang.core.psi.MvStructLitField
+import org.move.lang.core.psi.MvStructPatField
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.psi.ext.fields
 import org.move.lang.core.resolve.resolveLocalItem
 
 interface MvStructRefField: MvReferenceElement

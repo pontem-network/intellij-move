@@ -7,7 +7,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.core.MvPsiPatterns
-import org.move.lang.core.completion.*
+import org.move.lang.core.completion.CompletionContext
+import org.move.lang.core.completion.IMPORTED_MODULE_PRIORITY
+import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
+import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.containingModuleSpec

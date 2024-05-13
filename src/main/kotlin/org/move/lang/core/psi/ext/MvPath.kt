@@ -63,8 +63,11 @@ fun MvPath.namespaces(): Set<Namespace> {
 //            parent is MvRefExpr && !this.nullModuleRef -> setOf(Namespace.NAME, Namespace.MODULE)
         // TODO: it's own namespace?
         parent is MvStructLitExpr || parent is MvStructPat -> setOf(Namespace.NAME)
+        parent is MvAccessSpecifier -> setOf(Namespace.TYPE)
+        parent is MvAddressSpecifierArg -> setOf(Namespace.FUNCTION)
+        parent is MvAddressSpecifierCallParam -> setOf(Namespace.NAME)
         else -> debugErrorOrFallback(
-            "Unhandled path parent ${parent.elementType}",
+            "Cannot build path namespaces: unhandled parent type ${parent.elementType}",
             setOf(Namespace.NAME)
         )
     }
