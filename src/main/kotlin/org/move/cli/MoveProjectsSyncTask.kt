@@ -166,6 +166,7 @@ class MoveProjectsSyncTask(
                 else -> {
                     blockchainCli
                         .fetchPackageDependencies(
+                            project,
                             projectRoot,
                             skipLatest,
                             owner = project.rootDisposable,

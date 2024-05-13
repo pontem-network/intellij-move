@@ -68,6 +68,13 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                         )
                     }
                     row {
+                        checkBox("Fetch Aptos dependencies")
+                            .bindSelected(state::fetchAptosDeps)
+                        comment(
+                            "Enables fetching dependencies for the Aptos projects on every change to the Move.toml file"
+                        )
+                    }
+                    row {
                         checkBox("Enable Aptos V2 compiler")
                             .bindSelected(state::isCompilerV2)
                         comment(
@@ -105,6 +112,7 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                         it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
                         it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
                         it.isCompilerV2 = state.isCompilerV2
+                        it.fetchAptosDeps = state.fetchAptosDeps
                     }
                 }
 

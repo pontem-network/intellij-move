@@ -5,13 +5,13 @@ import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.execution.ParametersListUtil
 import org.move.cli.Consts
 import org.move.cli.MoveProject
 import org.move.cli.externalLinter.ExternalLinter
 import org.move.cli.externalLinter.externalLinterSettings
+import org.move.cli.settings.moveSettings
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.RsResult
@@ -32,6 +32,7 @@ sealed class BlockchainCli {
     ): RsProcessResult<VirtualFile>
 
     abstract fun fetchPackageDependencies(
+        project: Project,
         projectDir: Path,
         skipLatest: Boolean,
         owner: Disposable,
@@ -69,12 +70,13 @@ sealed class BlockchainCli {
         }
 
         override fun fetchPackageDependencies(
+            project: Project,
             projectDir: Path,
             skipLatest: Boolean,
             owner: Disposable,
             processListener: ProcessListener
         ): RsProcessResult<Unit> {
-            if (Registry.`is`("org.move.aptos.fetch.deps")) {
+            if (project.moveSettings.fetchAptosDeps) {
                 val cli =
                     CliCommandLineArgs(
                         subCommand = "move",
@@ -160,6 +162,7 @@ sealed class BlockchainCli {
         }
 
         override fun fetchPackageDependencies(
+            project: Project,
             projectDir: Path,
             skipLatest: Boolean,
             owner: Disposable,

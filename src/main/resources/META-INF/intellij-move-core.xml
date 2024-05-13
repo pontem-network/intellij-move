@@ -374,10 +374,6 @@
                  defaultValue="false"
                  restartRequired="false"
                  description="Enable debug mode for Move"/>
-    <registryKey key="org.move.aptos.fetch.deps"
-                 defaultValue="false"
-                 restartRequired="false"
-                 description="Enable fetching dependencies via aptos-move-compile for Aptos Move"/>
     <registryKey key="org.move.external.linter.max.duration"
                  defaultValue="3000"
                  restartRequired="false"
