@@ -1,6 +1,5 @@
 package org.move.cli.sdks
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
@@ -24,13 +23,13 @@ class DownloadAptosSdkDialog(val project: Project?): DialogWrapper(project, true
     init {
         title = "Select Aptos SDK"
 
-        targetSdksDirField.text = service<AptosSdksSettingsService>().sdksDir ?: ""
+        targetSdksDirField.text = sdksService().sdksDir ?: ""
 
         init()
     }
 
     override fun createCenterPanel(): JComponent {
-        val settings = service<AptosSdksSettingsService>()
+        val settings = sdksService()
         return panel {
             row("Aptos CLI version:") {
                 cell(versionField)

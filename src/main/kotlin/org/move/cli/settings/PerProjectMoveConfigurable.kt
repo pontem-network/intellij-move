@@ -1,7 +1,6 @@
 package org.move.cli.settings
 
 import com.intellij.openapi.options.BoundConfigurable
-import com.intellij.openapi.options.BoundSearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.DialogPanel
@@ -91,7 +90,12 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                 onApply {
                     settings.modify {
                         it.aptosExecType = chooseAptosCliPanel.data.aptosExecType
-                        it.localAptosPath = chooseAptosCliPanel.data.localAptosPath
+
+                        val localAptosSdkPath = chooseAptosCliPanel.data.localAptosPath
+                        if (localAptosSdkPath != null) {
+                            chooseAptosCliPanel.updateAptosSdks(localAptosSdkPath)
+                        }
+                        it.localAptosPath = localAptosSdkPath
 
                         it.localSuiPath = chooseSuiCliPanel.data.localSuiPath
 

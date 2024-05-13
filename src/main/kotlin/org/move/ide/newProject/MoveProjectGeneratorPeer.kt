@@ -51,10 +51,14 @@ class MoveProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerI
     private var checkValid: Runnable? = null
 
     override fun getSettings(): MoveProjectConfig {
+        val localAptosPath = this.chooseAptosCliPanel.data.localAptosPath
+        if (localAptosPath != null) {
+            this.chooseAptosCliPanel.updateAptosSdks(localAptosPath)
+        }
         return MoveProjectConfig(
             blockchain = blockchain,
             aptosExecType = this.chooseAptosCliPanel.data.aptosExecType,
-            localAptosPath = this.chooseAptosCliPanel.data.localAptosPath,
+            localAptosPath = localAptosPath,
             localSuiPath = this.chooseSuiCliPanel.data.localSuiPath
         )
     }

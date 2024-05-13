@@ -1,7 +1,6 @@
 package org.move.cli
 
 import com.intellij.execution.RunManager
-import com.intellij.notification.NotificationType.INFORMATION
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runWriteAction
@@ -31,8 +30,7 @@ import org.move.cli.externalSystem.MoveExternalSystemProjectAware
 import org.move.cli.settings.MvProjectSettingsServiceBase.*
 import org.move.cli.settings.MvProjectSettingsServiceBase.Companion.MOVE_SETTINGS_TOPIC
 import org.move.cli.settings.debugErrorOrFallback
-import org.move.cli.settings.isDebugModeEnabled
-import org.move.ide.notifications.showBalloon
+import org.move.ide.notifications.logOrShowBalloon
 import org.move.lang.core.psi.ext.elementType
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.checkReadAccessAllowed
@@ -67,10 +65,7 @@ class MoveProjectsService(val project: Project): Disposable {
     val hasAtLeastOneValidProject: Boolean get() = this.allProjects.isNotEmpty()
 
     fun scheduleProjectsRefresh(reason: String? = null): CompletableFuture<List<MoveProject>> {
-        LOG.logProjectsRefresh("scheduled", reason)
-        if (isDebugModeEnabled()) {
-            project.showBalloon("Refresh Projects ($reason)", INFORMATION)
-        }
+        LOG.logOrShowBalloon("Refresh Projects ($reason)")
         val moveProjectsFut =
             modifyProjectModel {
                 doRefreshProjects(project, reason)

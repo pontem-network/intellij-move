@@ -14,6 +14,9 @@ import javax.swing.Icon
 import javax.swing.JLabel
 
 open class TextOrErrorLabel(icon: Icon?): JBLabel(icon) {
+
+    fun isError(): Boolean = this.foreground == JBColor.RED
+
     fun setText(text: String, errorHighlighting: Boolean) {
         if (errorHighlighting) {
             this.text = text

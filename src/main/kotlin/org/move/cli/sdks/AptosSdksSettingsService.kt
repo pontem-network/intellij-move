@@ -15,10 +15,13 @@ private const val SERVICE_NAME: String = "AptosSdksSettingsService"
 class AptosSdksSettingsService: SimplePersistentStateComponent<AptosSdksSettings>(AptosSdksSettings()) {
 
     val sdksDir: String? get() = this.state.sdksDir
+    val aptosSdkPaths: List<String> get() = this.state.aptosSdkPaths
 
     class AptosSdksSettings: BaseState() {
         // null is empty string
         var sdksDir: String? by string(defaultValue = DEFAULT_SDKS_DIR)
+
+        var aptosSdkPaths: MutableList<String> by list()
 
         fun copy(): AptosSdksSettings {
             val state = AptosSdksSettings()
@@ -32,3 +35,5 @@ class AptosSdksSettingsService: SimplePersistentStateComponent<AptosSdksSettings
             Paths.get(SystemProperties.getUserHome(), "aptos-clis").toAbsolutePath().toString()
     }
 }
+
+fun sdksService(): AptosSdksSettingsService = service()

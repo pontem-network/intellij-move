@@ -2,8 +2,8 @@ package org.move.cli.settings.aptos
 
 import com.intellij.ide.DataManager
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupFactory.ActionSelectionAid.SPEEDSEARCH
@@ -16,11 +16,13 @@ import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.dsl.builder.actionListener
 import com.intellij.ui.layout.selected
+import org.move.cli.sdks.sdksService
 import org.move.cli.settings.VersionLabel
 import org.move.cli.settings.aptos.AptosExecType.BUNDLED
 import org.move.cli.settings.aptos.AptosExecType.LOCAL
 import org.move.cli.settings.isValidExecutable
 import org.move.ide.actions.DownloadAptosSDKAction
+import org.move.ide.notifications.logOrShowBalloon
 import org.move.openapiext.PluginPathManager
 import org.move.openapiext.pathField
 import org.move.stdext.blankToNull
@@ -159,7 +161,28 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
         versionLabel.updateAndNotifyListeners(aptosPath)
     }
 
+    fun updateAptosSdks(sdkPath: String) {
+        if (sdkPath == "") return
+
+        // do not save if the executable has no `--version`
+        if (versionLabel.isError()) return
+
+        // do not save if it's not an aptos
+        if ("aptos" !in versionLabel.text) return
+
+        val settingsService = sdksService()
+        if (sdkPath in settingsService.state.aptosSdkPaths) return
+
+        settingsService.state.aptosSdkPaths.add(sdkPath)
+
+        LOG.logOrShowBalloon("Aptos SDK saved: $sdkPath")
+    }
+
     override fun dispose() {
         Disposer.dispose(localPathField)
+    }
+
+    companion object {
+        private val LOG = logger<ChooseAptosCliPanel>()
     }
 }

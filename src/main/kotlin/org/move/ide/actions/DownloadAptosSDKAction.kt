@@ -2,13 +2,12 @@ package org.move.ide.actions
 
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbAwareAction
 import org.move.cli.sdks.AptosSdk
-import org.move.cli.sdks.AptosSdksSettingsService
 import org.move.cli.sdks.DownloadAptosSdkDialog
 import org.move.cli.sdks.DownloadAptosSdkTask
+import org.move.cli.sdks.sdksService
 
 class DownloadAptosSDKAction: DumbAwareAction("Download from GitHub") {
 
@@ -24,7 +23,7 @@ class DownloadAptosSDKAction: DumbAwareAction("Download from GitHub") {
             val sdkVersion = sdkParametersDialog.versionField.text
 
             // todo: show balloon error if no sdks dir set
-            val sdksDir = service<AptosSdksSettingsService>().sdksDir ?: return
+            val sdksDir = sdksService().sdksDir ?: return
 
             val archive = AptosSdk(sdksDir, sdkVersion)
             ProgressManager.getInstance()

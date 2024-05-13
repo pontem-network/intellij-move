@@ -5,10 +5,12 @@ import com.intellij.ide.impl.confirmLoadingUntrustedProject
 import com.intellij.ide.impl.isTrusted
 import com.intellij.notification.NotificationListener
 import com.intellij.notification.NotificationType
+import com.intellij.notification.NotificationType.INFORMATION
 import com.intellij.notification.Notifications
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.ui.popup.Balloon
@@ -16,9 +18,19 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.util.NlsContexts.*
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.awt.RelativePoint
+import org.move.cli.settings.isDebugModeEnabled
+import org.move.openapiext.common.isUnitTestMode
 import java.awt.Component
 import java.awt.Point
 import javax.swing.event.HyperlinkListener
+
+fun Logger.logOrShowBalloon(@NotificationContent content: String) {
+    when {
+        isUnitTestMode -> this.warn(content)
+        isDebugModeEnabled() -> showBalloonWithoutProject(content, INFORMATION)
+        else -> this.debug(content)
+    }
+}
 
 fun Project.showBalloon(
     @Suppress("UnstableApiUsage") @NotificationContent content: String,
