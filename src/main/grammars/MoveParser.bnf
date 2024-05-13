@@ -469,8 +469,11 @@ AddressSpecifier ::= '(' AddressSpecifierArg ')'
 AddressSpecifierArg ::= '*'
                         | (IDENTIFIER !'(')
                         | AddressSpecifierLit
-                        | <<pathMode 'VALUE' (Path '(' IDENTIFIER ')')>>
+                        | <<pathMode 'VALUE' (Path '(' AddressSpecifierCallParam ')')>>
 AddressSpecifierLit ::= DIEM_ADDRESS | INTEGER_LITERAL
+
+AddressSpecifierCallParam ::= AddressSpecifierParamPath
+AddressSpecifierParamPath ::= LocalPathIdent { elementType = Path }
 
 // acquires T, Record
 AcquiresType ::= acquires AcquiresType_items { pin = 1 }

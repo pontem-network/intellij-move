@@ -19,7 +19,7 @@ module 0x1::access_control {
 
     fun f9(a: address) acquires *(a) {}
 
-    fun f10(x: u64) acquires *(make_up_address(x)) {}
+    fun f10(param: u64) acquires *(make_up_address(param)) {}
 
     fun make_up_address(x: u64): address {
     @0x42
