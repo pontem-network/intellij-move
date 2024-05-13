@@ -382,6 +382,14 @@
                  defaultValue="3000"
                  restartRequired="false"
                  description="Show notification warning if the external linter is running longer than the set value (ms)"/>
+    <registryKey key="org.move.aptos.bundled.force.supported"
+                 defaultValue="false"
+                 restartRequired="false"
+                 description="Force-enable support for pre-compiled bundled Aptos CLI (imitate non-MacOS)"/>
+    <registryKey key="org.move.aptos.bundled.force.unsupported"
+                 defaultValue="false"
+                 restartRequired="false"
+                 description="Force-disable support for pre-compiled bundled Aptos CLI (imitate MacOS)"/>
 
   </extensions>
 

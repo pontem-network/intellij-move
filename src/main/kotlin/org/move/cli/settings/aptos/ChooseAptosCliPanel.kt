@@ -9,6 +9,7 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupFactory.ActionSelectionAid.SPEEDSEARCH
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.util.registry.Registry
 import com.intellij.ui.components.DropDownLink
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.AlignX
@@ -23,6 +24,7 @@ import org.move.cli.settings.aptos.AptosExecType.LOCAL
 import org.move.cli.settings.isValidExecutable
 import org.move.ide.actions.DownloadAptosSDKAction
 import org.move.ide.notifications.logOrShowBalloon
+import org.move.ide.notifications.showBalloon
 import org.move.openapiext.PluginPathManager
 import org.move.openapiext.pathField
 import org.move.stdext.blankToNull
@@ -34,8 +36,16 @@ enum class AptosExecType {
     LOCAL;
 
     companion object {
-        val isBundledSupportedForThePlatform: Boolean get() = !SystemInfo.isMac
-//        val isBundledSupportedForThePlatform: Boolean get() = false
+        val isPreCompiledSupportedForThePlatform: Boolean
+            get() {
+                if (Registry.`is`("org.move.aptos.bundled.force.supported")) {
+                    return true
+                }
+                if (Registry.`is`("org.move.aptos.bundled.force.unsupported")) {
+                    return false
+                }
+                return !SystemInfo.isMac
+            }
 
         fun bundledPath(): String? = PluginPathManager.bundledAptosCli
 
@@ -94,18 +104,23 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
     private val bundledRadioButton = JBRadioButton("Bundled")
     private val localRadioButton = JBRadioButton("Local")
 
-    val downloadAction = DownloadAptosSDKAction().also {
+    private val downloadPrecompiledBinaryAction = DownloadAptosSDKAction().also {
         it.onFinish = { sdk ->
             localPathField.text = sdk.targetFile.toString()
             updateVersion()
         }
     }
+    private val popupActionGroup = DefaultActionGroup(
+        listOfNotNull(
+            if (AptosExecType.isPreCompiledSupportedForThePlatform) downloadPrecompiledBinaryAction else null
+        )
+    )
     private val getAptosActionLink =
         DropDownLink("Get Aptos") { dropDownLink ->
             val dataContext = DataManager.getInstance().getDataContext(dropDownLink)
             JBPopupFactory.getInstance().createActionGroupPopup(
                 null,
-                DefaultActionGroup(listOf(downloadAction)),
+                popupActionGroup,
                 dataContext,
                 SPEEDSEARCH,
                 false,
@@ -123,14 +138,18 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
                 buttonsGroup {
                     row {
                         cell(bundledRadioButton)
-                            .enabled(AptosExecType.isBundledSupportedForThePlatform)
+                            .enabled(AptosExecType.isPreCompiledSupportedForThePlatform)
                             .actionListener { _, _ ->
                                 updateVersion()
                             }
+                    }
+                    row {
                         comment(
-                            "Bundled version is not available for this platform (refer to the official Aptos docs for more)"
+                            "Bundled version is not available for MacOS. Refer to the " +
+                                    "<a href=\"https://aptos.dev/tools/aptos-cli/install-cli/install-cli-mac\">Official Aptos CLI docs</a> " +
+                                    "on how to install it on your platform."
                         )
-                            .visible(!AptosExecType.isBundledSupportedForThePlatform)
+                            .visible(!AptosExecType.isPreCompiledSupportedForThePlatform)
                     }
                     row {
                         cell(localRadioButton)
@@ -141,10 +160,20 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
                             .enabledIf(localRadioButton.selected)
                             .align(AlignX.FILL)
                             .resizableColumn()
-                        cell(getAptosActionLink)
-                            .enabledIf(localRadioButton.selected)
+                        if (popupActionGroup.childrenCount != 0) {
+                            cell(getAptosActionLink)
+                                .enabledIf(localRadioButton.selected)
+                        }
                     }
                     row("--version :") { cell(versionLabel) }
+//                    row {
+//                        comment(
+//                            "Bundled version of the Aptos CLI can be outdated. Refer to the " +
+//                                    "<a href=\"https://aptos.dev/tools/aptos-cli/install-cli\">Official Aptos CLI docs</a> " +
+//                                    "on how to install and update new version for your platform."
+//                        )
+//                            .visible(AptosExecType.isPreCompiledSupportedForThePlatform)
+//                    }
                 }
             }
         }

@@ -9,7 +9,8 @@ import org.move.cli.sdks.DownloadAptosSdkDialog
 import org.move.cli.sdks.DownloadAptosSdkTask
 import org.move.cli.sdks.sdksService
 
-class DownloadAptosSDKAction: DumbAwareAction("Download from GitHub") {
+@Suppress("DialogTitleCapitalization")
+class DownloadAptosSDKAction: DumbAwareAction("Download pre-compiled binary from GitHub") {
 
     var onFinish: (AptosSdk) -> Unit = { _ -> }
 

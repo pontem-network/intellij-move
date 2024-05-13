@@ -120,7 +120,7 @@ class MvProjectSettingsService(
     companion object {
         private val defaultAptosExecType
             get() =
-                if (AptosExecType.isBundledSupportedForThePlatform) AptosExecType.BUNDLED else AptosExecType.LOCAL;
+                if (AptosExecType.isPreCompiledSupportedForThePlatform) AptosExecType.BUNDLED else AptosExecType.LOCAL;
     }
 }
 
