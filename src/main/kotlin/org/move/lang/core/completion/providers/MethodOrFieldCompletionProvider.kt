@@ -7,15 +7,14 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.psi.PsiElement
 import com.intellij.util.ProcessingContext
 import org.jetbrains.annotations.VisibleForTesting
-import org.move.lang.core.completion.*
-import org.move.lang.core.psi.MvNamedElement
+import org.move.lang.core.completion.CompletionContext
+import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.refItemScopes
 import org.move.lang.core.psi.tyInfers
 import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.letStmtScope
 import org.move.lang.core.types.infer.InferenceContext
-import org.move.lang.core.types.infer.Substitution
 import org.move.lang.core.types.infer.substitute
 import org.move.lang.core.types.ty.TyFunction
 import org.move.lang.core.types.ty.TyReference

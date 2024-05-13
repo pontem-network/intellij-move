@@ -3,7 +3,6 @@ package org.move.lang.core.psi.ext
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.move.cli.MoveProject
-import org.move.lang.core.completion.getOriginalOrSelf
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ScopeItem
 import org.move.lang.core.resolve.ref.MvPolyVariantReference

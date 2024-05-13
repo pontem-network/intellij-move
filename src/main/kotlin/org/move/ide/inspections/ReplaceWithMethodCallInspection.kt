@@ -9,8 +9,9 @@ import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.psi.ext.valueArguments
 import org.move.lang.core.types.infer.foldTyTypeParameterWith
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.TyInfer
 import org.move.lang.core.types.ty.TyReference.Companion.isCompatibleWithAutoborrow
+import org.move.lang.core.types.ty.hasTyUnknown
 import org.move.lang.moveProject
 
 class ReplaceWithMethodCallInspection: MvLocalInspectionTool() {

@@ -6,8 +6,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import org.move.cli.settings.*
-import org.move.cli.settings.Blockchain.SUI
 import org.move.cli.settings.Blockchain.APTOS
+import org.move.cli.settings.Blockchain.SUI
 import org.move.cli.settings.aptos.AptosExecType.LOCAL
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile

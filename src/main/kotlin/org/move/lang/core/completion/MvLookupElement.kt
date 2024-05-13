@@ -3,12 +3,7 @@ package org.move.lang.core.completion
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementDecorator
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.inferReceiverTy
-import org.move.lang.core.psi.ext.structItem
 import org.move.lang.core.types.infer.*
-import org.move.lang.core.types.ty.TyFunction
-import org.move.lang.core.types.ty.TyReference.Companion.autoborrow
-import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyUnknown
 
 fun LookupElement.toMvLookupElement(properties: LookupElementProperties): MvLookupElement =

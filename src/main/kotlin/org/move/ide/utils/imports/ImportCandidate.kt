@@ -4,7 +4,10 @@ import org.move.ide.inspections.imports.ImportContext
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.MvQualNamedElement
-import org.move.lang.core.resolve.*
+import org.move.lang.core.resolve.ContextScopeInfo
+import org.move.lang.core.resolve.MatchingProcessor
+import org.move.lang.core.resolve.processModuleInnerItems
+import org.move.lang.core.resolve.processQualItem
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 import org.move.lang.core.types.ItemQualName

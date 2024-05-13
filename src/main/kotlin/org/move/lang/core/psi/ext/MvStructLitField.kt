@@ -4,8 +4,8 @@ import com.intellij.lang.ASTNode
 import org.move.lang.MvElementTypes
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
-import org.move.lang.core.resolve.ref.MvStructRefFieldReferenceImpl
 import org.move.lang.core.resolve.ref.MvStructLitShorthandFieldReferenceImpl
+import org.move.lang.core.resolve.ref.MvStructRefFieldReferenceImpl
 
 val MvStructLitField.structLitExpr: MvStructLitExpr
     get() = ancestorStrict()!!

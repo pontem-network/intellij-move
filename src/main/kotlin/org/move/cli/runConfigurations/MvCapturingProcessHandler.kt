@@ -8,7 +8,6 @@ package org.move.cli.runConfigurations
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler
-import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.util.io.BaseOutputReader
 import org.move.stdext.RsResult
 

@@ -19,8 +19,6 @@ import org.move.lang.core.types.ItemQualName
 import org.move.lang.core.types.address
 import org.move.lang.index.MvModuleSpecIndex
 import org.move.lang.moveProject
-import org.move.openapiext.checkReadAccessAllowed
-import org.move.openapiext.isReadAccessAllowed
 import javax.swing.Icon
 
 fun MvModule.hasTestFunctions(): Boolean = this.testFunctions().isNotEmpty()

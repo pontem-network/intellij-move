@@ -197,15 +197,15 @@ class MvResolveCache(project: Project) : Disposable {
 
 enum class ResolveCacheDependency {
     /**
-     * Depends on the nearest [RsModificationTrackerOwner] and falls back to
-     * [RsPsiManager.rustStructureModificationTracker] if the tracker owner is not found.
+     * Depends on the nearest [MvModificationTrackerOwner] and falls back to
+     * [MvPsiManager.moveStructureModificationTracker] if the tracker owner is not found.
      *
      * See [findModificationTrackerOwner]
      */
     LOCAL,
 
     /**
-     * Depends on [RsPsiManager.rustStructureModificationTracker]
+     * Depends on [MvPsiManager.moveStructureModificationTracker]
      */
     RUST_STRUCTURE,
 
@@ -252,7 +252,6 @@ private fun <K : Any, V : Any> createWeakMap(): ConcurrentMap<K, V> {
             }
         }
 
-        @Suppress("UNCHECKED_CAST")
         override fun get(key: K): V? {
             val v = super.get(key)
             return if (v === NULL_RESULT) null else v

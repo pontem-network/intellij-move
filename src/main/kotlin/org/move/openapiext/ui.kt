@@ -15,7 +15,6 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.Cell
 import com.intellij.ui.dsl.builder.Row
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.Alarm
 import org.move.lang.core.psi.MvElement
 import javax.swing.JComponent

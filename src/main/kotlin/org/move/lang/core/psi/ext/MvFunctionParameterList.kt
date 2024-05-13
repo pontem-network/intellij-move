@@ -1,7 +1,6 @@
 package org.move.lang.core.psi.ext
 
 import org.move.lang.core.psi.MvFunctionParameter
-import org.move.lang.core.psi.MvFunctionParameterList
 import org.move.utils.SignatureUtils
 
 fun List<MvFunctionParameter>.joinToSignature(): String {

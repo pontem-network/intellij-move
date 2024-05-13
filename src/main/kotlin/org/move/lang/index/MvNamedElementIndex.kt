@@ -1,12 +1,10 @@
 package org.move.lang.index
 
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
 import com.intellij.psi.stubs.StubIndexKey
-import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.stubs.impl.MvFileStub
 import org.move.openapiext.checkCommitIsNotInProgress
