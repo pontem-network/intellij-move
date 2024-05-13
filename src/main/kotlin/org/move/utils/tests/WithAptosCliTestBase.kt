@@ -34,11 +34,11 @@ abstract class WithAptosCliTestBase: MvProjectTestBase() {
 //    }
 
     override fun runTestRunnable(testRunnable: ThrowableRunnable<Throwable>) {
-//        val skipReason = rustupFixture.skipTestReason
-//        if (skipReason != null) {
-//            System.err.println("SKIP \"$name\": $skipReason")
-//            return
-//        }
+        val aptosPath = rustupFixture.aptosPath
+        if (aptosPath == null) {
+            System.err.println("SKIP \"$name\": Aptos SDK not available")
+            return
+        }
 
 //        val reason = checkRustcVersionRequirements {
 //            val rustcVersion = rustupFixture.toolchain!!.rustc().queryVersion()?.semver

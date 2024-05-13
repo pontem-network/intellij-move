@@ -6,7 +6,9 @@ import com.intellij.testFramework.fixtures.impl.BaseFixture
 import org.move.cli.settings.Blockchain
 import org.move.cli.settings.Blockchain.APTOS
 import org.move.cli.settings.aptos.AptosExecType.LOCAL
+import org.move.cli.settings.aptosExecPath
 import org.move.cli.settings.moveSettings
+import java.nio.file.Path
 
 class AptosCliTestFixture(
     // This property is mutable to allow `com.intellij.testFramework.UsefulTestCase.clearDeclaredFields`
@@ -14,20 +16,30 @@ class AptosCliTestFixture(
     private var project: Project
 ): BaseFixture() {
 
-    val aptosPath = Blockchain.aptosCliFromPATH() ?: error("aptos is not available")
+    var aptosPath: Path? = null
 
     override fun setUp() {
         super.setUp()
 
-        setUpAllowedRoots()
         project.moveSettings.modifyTemporary(testRootDisposable) {
             it.blockchain = APTOS
-            it.aptosExecType = LOCAL
-            it.localAptosPath = aptosPath.toString()
         }
+
+        var aptosSdkPath = project.aptosExecPath
+        if (aptosSdkPath == null) {
+            aptosSdkPath = Blockchain.aptosCliFromPATH()
+            project.moveSettings.modifyTemporary(testRootDisposable) {
+                it.aptosExecType = LOCAL
+                it.localAptosPath = aptosSdkPath.toString()
+            }
+        }
+        this.aptosPath = aptosSdkPath
+
+        setUpAllowedRoots()
     }
 
     private fun setUpAllowedRoots() {
+        val aptosPath = aptosPath ?: return
 //        stdlib?.let { VfsRootAccess.allowRootAccess(testRootDisposable, it.path) }
 
 //        val toolchain = toolchain!!
