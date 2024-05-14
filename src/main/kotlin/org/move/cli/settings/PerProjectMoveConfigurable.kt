@@ -46,10 +46,6 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                 }
                 group {
                     row {
-                        checkBox("Auto-fold specs in opened files")
-                            .bindSelected(state::foldSpecs)
-                    }
-                    row {
                         checkBox("Disable telemetry for new Run Configurations")
                             .bindSelected(state::disableTelemetry)
                     }
@@ -107,7 +103,6 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                         it.localSuiPath = chooseSuiCliPanel.data.localSuiPath
 
                         it.blockchain = state.blockchain
-                        it.foldSpecs = state.foldSpecs
                         it.disableTelemetry = state.disableTelemetry
                         it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
                         it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
