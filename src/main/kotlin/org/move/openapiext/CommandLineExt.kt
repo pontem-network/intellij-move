@@ -9,6 +9,7 @@ import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutput
+import com.intellij.notification.NotificationType.INFORMATION
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.Logger
@@ -17,6 +18,8 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.util.io.systemIndependentPath
 import org.move.cli.runConfigurations.MvCapturingProcessHandler
+import org.move.cli.settings.isDebugModeEnabled
+import org.move.ide.notifications.showBalloonWithoutProject
 import org.move.stdext.RsResult
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
@@ -53,6 +56,8 @@ fun GeneralCommandLine.execute(): ProcessOutput? {
         return null
     }
     val output = handler.runProcessWithGlobalProgress()
+    showCommandLineBalloon(commandLineString, output)
+
     if (!output.isSuccess) {
         LOG.warn(RsProcessExecutionException.errorMessage(commandLineString, output))
     }
@@ -119,6 +124,7 @@ fun GeneralCommandLine.execute(
     } finally {
         Disposer.dispose(processKiller)
     }
+    showCommandLineBalloon(commandLineString, output)
 
     return when {
         output.isCancelled -> RsResult.Err(RsProcessExecutionException.Canceled(commandLineString, output))
@@ -133,6 +139,19 @@ fun GeneralCommandLine.execute(
     }
 }
 
+private fun showCommandLineBalloon(commandLineString: String, output: ProcessOutput) {
+    if (isDebugModeEnabled()) {
+        val content =
+            if (!output.isSuccess) {
+                """`$commandLineString` |Execution failed (exit code ${output.exitCode}).
+    """
+            } else {
+                """`$commandLineString` |Execution successful.
+    """
+            }
+        showBalloonWithoutProject(content.trimStart(), INFORMATION)
+    }
+}
 
 private fun errorMessage(commandLine: GeneralCommandLine, output: ProcessOutput): String = """
         |Execution failed (exit code ${output.exitCode}).

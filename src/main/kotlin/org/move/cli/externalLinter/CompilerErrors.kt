@@ -41,7 +41,7 @@ private fun errorLinesToCompilerMessage(errorLines: List<String>): AptosCompiler
 private val FILE_POSITION_RE =
     Regex("""┌─ (?<file>(?:\p{Alpha}:)?[0-9a-z_A-Z\-\\./]+):(?<line>[0-9]+):(?<column>[0-9]+)""")
 private val ERROR_UNDERLINE_RE =
-    Regex("""^\s*│\s+-*\s*(?<xors>\^+)""")
+    Regex("""^\s*│[^\^]*(\^{2,})""")
 
 private fun splitSpans(errorLines: List<String>): List<AptosCompilerSpan> {
     val filePositionMatch =
@@ -50,7 +50,7 @@ private fun splitSpans(errorLines: List<String>): List<AptosCompilerSpan> {
     val columnSpan = errorLines
         .firstNotNullOfOrNull { ERROR_UNDERLINE_RE.find(it) }
         ?.groupValues?.get(1)
-        ?.length ?: 0
+        ?.length ?: 1
     return listOf(
         AptosCompilerSpan(
             fileName,

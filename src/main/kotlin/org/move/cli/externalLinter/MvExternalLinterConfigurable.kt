@@ -72,14 +72,20 @@ class MvExternalLinterConfigurable(val project: Project): BoundConfigurable("Ext
                 .comment("Adds code highlighting based on the external linter results. May affect the IDE performance")
                 .bindSelected(state::runOnTheFly)
         }
+        separator()
+        row {
+            checkBox("Prevent duplicate errors")
+                .comment("Skips errors which are implemented by the IDE own analysis engine")
+                .bindSelected(state::skipErrorsKnownToIde)
+        }
 
         onApply {
             settings.modify {
                 it.tool = state.tool
                 it.additionalArguments = state.additionalArguments
-//                it.channel = state.channel
                 it.envs = state.envs
                 it.runOnTheFly = state.runOnTheFly
+                it.skipErrorsKnownToIde = state.skipErrorsKnownToIde
             }
         }
     }
