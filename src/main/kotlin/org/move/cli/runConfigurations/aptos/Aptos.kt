@@ -21,6 +21,7 @@ import org.move.stdext.RsResult.Err
 import org.move.stdext.RsResult.Ok
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
+import java.nio.file.Paths
 
 data class Aptos(
     override val cliLocation: Path,
@@ -84,10 +85,9 @@ data class Aptos(
         val extraArguments = ParametersListUtil.parse(args.extraArguments)
         val commandLine =
             CliCommandLineArgs(
-                "move",
+                "move compile",
                 buildList {
 //                        add("--message-format=json")
-                    add("compile")
                     if ("--skip-fetch-latest-git-deps" !in extraArguments) {
                         add("--skip-fetch-latest-git-deps")
                     }
@@ -107,7 +107,7 @@ data class Aptos(
         return executeCommandLine(commandLine).ignoreExitCode()
     }
 
-    fun downloadBytecode(
+    fun downloadPackage(
         moveProject: MoveProject,
         accountAddress: String,
         packageName: String
@@ -119,6 +119,27 @@ data class Aptos(
             environmentVariables = EnvironmentVariablesData.DEFAULT
         )
         return executeCommandLine(commandLine).ignoreExitCode()
+    }
+
+    fun decompileDownloadedPackage(downloadedPackagePath: Path): RsProcessResult<ProcessOutput> {
+        val bytecodeModulesPath =
+            downloadedPackagePath.resolve("bytecode_modules").toAbsolutePath().toString()
+        val commandLine = CliCommandLineArgs(
+            subCommand = "move decompile",
+            arguments = listOf("--package-path", bytecodeModulesPath),
+            workingDirectory = downloadedPackagePath
+        )
+        return executeCommandLine(commandLine)
+    }
+
+    fun decompileFile(bytecodeFilePath: String): RsProcessResult<ProcessOutput> {
+        val fileRoot = Paths.get(bytecodeFilePath).parent
+        val commandLine = CliCommandLineArgs(
+            subCommand = "move decompile",
+            arguments = listOf("--bytecode-path", bytecodeFilePath),
+            workingDirectory = fileRoot
+        )
+        return executeCommandLine(commandLine)
     }
 }
 

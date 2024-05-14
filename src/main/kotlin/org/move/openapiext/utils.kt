@@ -240,3 +240,6 @@ inline fun <Key: Any, reified Psi: PsiElement> getElements(
 
 fun joinPath(segments: Array<String>) =
     segments.joinTo(StringBuilder(), Platform.current().fileSeparator.toString()).toString()
+
+fun joinPath(vararg segments: String) =
+    segments.joinTo(StringBuilder(), Platform.current().fileSeparator.toString()).toString()
