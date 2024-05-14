@@ -106,6 +106,8 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
 
     private val downloadPrecompiledBinaryAction = DownloadAptosSDKAction().also {
         it.onFinish = { sdk ->
+            bundledRadioButton.isSelected = false
+            localRadioButton.isSelected = true
             localPathField.text = sdk.targetFile.toString()
             updateVersion()
         }
@@ -162,7 +164,6 @@ class ChooseAptosCliPanel(versionUpdateListener: (() -> Unit)?): Disposable {
                             .resizableColumn()
                         if (popupActionGroup.childrenCount != 0) {
                             cell(getAptosActionLink)
-                                .enabledIf(localRadioButton.selected)
                         }
                     }
                     row("--version :") { cell(versionLabel) }

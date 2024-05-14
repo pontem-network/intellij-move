@@ -173,6 +173,91 @@ error[E04007]: incompatible types
         )
     )
 
+    fun `test ability not satisfied`() = doTest("""
+Compiling, may take a little while to download git dependencies...
+UPDATING GIT DEPENDENCY https://github.com/aptos-labs/aptos-core.git
+INCLUDING DEPENDENCY AptosFramework
+INCLUDING DEPENDENCY AptosStdlib
+INCLUDING DEPENDENCY MoveStdlib
+BUILDING move-test-location-example
+error[E05001]: ability constraint not satisfied
+  ┌─ /tmp/main/sources/main.move:5:9
+  │
+2 │     struct S has key { field: u8 }
+  │            - To satisfy the constraint, the 'drop' ability would need to be added here
+3 │ 
+4 │     fun test_assert_false(s: S) {
+  │                              - The type '0x1::main2::S' does not have the ability 'drop'
+5 │         s;
+  │         ^ Cannot ignore values without the 'drop' ability. The value must be used
+
+{
+  "Error": "Move compilation failed: Compilation error"
+}
+    """, listOf(
+        AptosCompilerMessage.forTest(
+            message = "ability constraint not satisfied",
+            severityLevel = "error",
+            filename = "/tmp/main/sources/main.move",
+            location = "[(5, 9), (5, 10)]"
+        )
+    )
+    )
+
+    fun `test ability not satisfied compiler v2`() = doTest("""
+Warning: compiler version `2.0-unstable` is experimental and should not be used in production
+Compiling, may take a little while to download git dependencies...
+UPDATING GIT DEPENDENCY https://github.com/aptos-labs/aptos-core.git
+INCLUDING DEPENDENCY AptosFramework
+INCLUDING DEPENDENCY AptosStdlib
+INCLUDING DEPENDENCY MoveStdlib
+BUILDING move-test-location-example
+error: value of type `main2::S` does not have the `drop` ability
+  ┌─ /tmp/main/sources/main2.move:5:9
+  │
+5 │         s;
+  │         ^ implicitly dropped here since it is no longer used
+
+{
+  "Error": "Move compilation failed: exiting with stackless-bytecode analysis errors"
+}
+    """, listOf(
+        AptosCompilerMessage.forTest(
+            message = "value of type `main2::S` does not have the `drop` ability",
+            severityLevel = "error",
+            filename = "/tmp/main/sources/main2.move",
+            location = "[(5, 9), (5, 10)]"
+        )
+    )
+    )
+
+    fun `test too many params`() = doTest("""
+Warning: compiler version `2.0-unstable` is experimental and should not be used in production
+Warning: language version `2.0-unstable` is experimental and should not be used in production
+Compiling, may take a little while to download git dependencies...
+INCLUDING DEPENDENCY AptosFramework
+INCLUDING DEPENDENCY AptosStdlib
+INCLUDING DEPENDENCY MoveStdlib
+BUILDING move-test-location-example
+error: the function takes 0 arguments but 2 were provided
+  ┌─ /home/mkurnikov/code/move-test-location-example/sources/main2.move:7:9
+  │
+7 │         test_assert_false(1, 2);
+  │         ^^^^^^^^^^^^^^^^^^^^^^^
+
+{
+  "Error": "Move compilation failed: exiting with checking errors"
+}
+    """, listOf(
+        AptosCompilerMessage.forTest(
+            message = "the function takes 0 arguments but 2 were provided",
+            severityLevel = "error",
+            filename = "/home/mkurnikov/code/move-test-location-example/sources/main2.move",
+            location = "[(7, 9), (7, 32)]"
+        )
+    )
+    )
+
     private fun doTest(compilerOutput: String, expectedMessages: List<AptosCompilerMessage>) {
         val messages = parseCompilerErrors(compilerOutput.trimIndent().lines())
 

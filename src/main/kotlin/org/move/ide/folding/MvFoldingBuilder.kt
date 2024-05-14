@@ -14,7 +14,6 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import com.intellij.psi.util.nextLeaf
-import org.move.cli.settings.moveSettings
 import org.move.lang.MoveFile
 import org.move.lang.MoveParserDefinition.Companion.BLOCK_COMMENT
 import org.move.lang.MoveParserDefinition.Companion.EOL_DOC_COMMENT
@@ -22,7 +21,7 @@ import org.move.lang.MvElementTypes.*
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 
-class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
+class MvFoldingBuilder: CustomFoldingBuilder(), DumbAware {
     override fun getLanguagePlaceholderText(node: ASTNode, range: TextRange): String {
         when (node.elementType) {
             L_BRACE -> return " { "
@@ -54,17 +53,15 @@ class MvFoldingBuilder : CustomFoldingBuilder(), DumbAware {
         PsiTreeUtil.processElements(root) { it.accept(visitor); true }
     }
 
-    override fun isRegionCollapsedByDefault(node: ASTNode): Boolean {
-        return node.psi.project.moveSettings.foldSpecs && node.elementType == MODULE_SPEC_BLOCK
-                || CodeFoldingSettings.getInstance().isDefaultCollapsedNode(node)
-    }
+    override fun isRegionCollapsedByDefault(node: ASTNode): Boolean =
+        CodeFoldingSettings.getInstance().isDefaultCollapsedNode(node)
 
     private class FoldingVisitor(
         private val descriptors: MutableList<FoldingDescriptor>,
         private val usesRanges: MutableList<TextRange>,
         private val constRanges: MutableList<TextRange>,
         private val docCommentRanges: MutableList<TextRange>,
-    ) : MvVisitor() {
+    ): MvVisitor() {
 
         override fun visitCodeBlock(o: MvCodeBlock) = fold(o)
         override fun visitScriptBlock(o: MvScriptBlock) = fold(o)

@@ -34,6 +34,7 @@ class MvExternalLinterProjectSettingsService(
     //    val channel: RustChannel get() = state.channel
     val envs: Map<String, String> get() = state.envs
     val runOnTheFly: Boolean get() = state.runOnTheFly
+    val skipErrorsKnownToIde: Boolean get() = state.skipErrorsKnownToIde
 
     class MvExternalLinterProjectSettings: MvProjectSettingsBase<MvExternalLinterProjectSettings>() {
         @AffectsHighlighting
@@ -49,6 +50,8 @@ class MvExternalLinterProjectSettingsService(
 
         @AffectsHighlighting
         var runOnTheFly by property(false)
+        @AffectsHighlighting
+        var skipErrorsKnownToIde by property(false)
 
         override fun copy(): MvExternalLinterProjectSettings {
             val state = MvExternalLinterProjectSettings()

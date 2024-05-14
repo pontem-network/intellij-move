@@ -26,11 +26,13 @@ import com.intellij.util.messages.MessageBus
 import org.apache.commons.lang3.StringEscapeUtils
 import org.jetbrains.annotations.Nls
 import org.move.cli.externalLinter.RsExternalLinterWidget
+import org.move.cli.externalLinter.externalLinterSettings
 import org.move.cli.externalLinter.parseCompilerErrors
 import org.move.cli.runConfigurations.AptosCompileArgs
 import org.move.cli.runConfigurations.BlockchainCli.Aptos
 import org.move.ide.annotator.RsExternalLinterFilteredMessage.Companion.filterMessage
 import org.move.ide.annotator.RsExternalLinterUtils.TEST_MESSAGE
+import org.move.ide.notifications.logOrShowBalloon
 import org.move.lang.MoveFile
 import org.move.openapiext.ProjectCache
 import org.move.openapiext.checkReadAccessAllowed
@@ -108,7 +110,7 @@ object RsExternalLinterUtils {
 
                 override fun run(indicator: ProgressIndicator) {
                     widget?.inProgress = true
-                    future.complete(check(aptosCli, project, owner, workingDirectory, args))
+                    future.complete(check(aptosCli, project, owner, args))
                 }
 
                 override fun onFinished() {
@@ -123,13 +125,12 @@ object RsExternalLinterUtils {
         aptosCli: Aptos,
         project: Project,
         owner: Disposable,
-        workingDirectory: Path,
         args: AptosCompileArgs
     ): RsExternalLinterResult? {
         ProgressManager.checkCanceled()
         val started = Instant.now()
         val output = aptosCli
-            .compileProject(project, owner, args)
+            .checkProject(project, owner, args)
             .unwrapOrElse { e ->
                 LOG.error(e)
                 return null
@@ -137,7 +138,10 @@ object RsExternalLinterUtils {
         val finish = Instant.now()
         ProgressManager.checkCanceled()
         if (output.isCancelled) return null
-        return RsExternalLinterResult(output.stdoutLines, Duration.between(started, finish).toMillis())
+        return RsExternalLinterResult(
+            output.stderrLines + output.stdoutLines,
+            Duration.between(started, finish).toMillis()
+        )
     }
 
     private data class Key(
@@ -178,8 +182,9 @@ fun MutableList<HighlightInfo>.addHighlightsForFile(
     val doc = file.viewProvider.document
         ?: error("Can't find document for $file in external linter")
 
+    val skipIdeErrors = file.project.externalLinterSettings.skipErrorsKnownToIde
     val filteredMessages = annotationResult.messages
-        .mapNotNull { message -> filterMessage(file, doc, message) }
+        .mapNotNull { message -> filterMessage(file, doc, message, skipIdeErrors) }
         // Cargo can duplicate some error messages when `--all-targets` attribute is used
         .distinct()
     for (message in filteredMessages) {
@@ -232,15 +237,18 @@ private data class RsExternalLinterFilteredMessage(
 //    val quickFixes: List<ApplySuggestionFix>
 ) {
     companion object {
+        private val LOG = logger<RsExternalLinterFilteredMessage>()
+
         fun filterMessage(
             file: PsiFile,
             document: Document,
-            message: AptosCompilerMessage
+            message: AptosCompilerMessage,
+            skipErrorsKnownToIde: Boolean,
         ): RsExternalLinterFilteredMessage? {
+            println(message)
 //            if (message.message.startsWith("aborting due to") || message.message.startsWith("cannot continue")) {
 //                return null
 //            }
-
             val severity = when (message.severityLevel) {
                 "error" -> HighlightSeverity.ERROR
                 "warning" -> HighlightSeverity.WEAK_WARNING
@@ -251,9 +259,26 @@ private data class RsExternalLinterFilteredMessage(
             // but they look rather ugly, so just skip them.
             val span = message.mainSpan ?: return null
 
-            val syntaxErrors = listOf("expected pattern", "unexpected token")
+            // drop syntax errors
+            val syntaxErrors = listOf("unexpected token")
+//            val syntaxErrors = listOf("expected pattern", "unexpected token")
             if (syntaxErrors.any { it in span.label.orEmpty() || it in message.message }) {
                 return null
+            }
+
+            if (skipErrorsKnownToIde) {
+                val errorsToIgnore = listOf(
+                    // name resolution errors
+                    "unbound variable", "undeclared",
+                    // type errors
+                    "incompatible types", "which expects a value of type",
+                    // too many arguments
+                    "too many arguments", "the function takes",
+                )
+                if (errorsToIgnore.any { it in message.message }) {
+                    LOG.logOrShowBalloon("ignore compiler error: ${message.toTestString()}")
+                    return null
+                }
             }
 
             val spanFilePath = PathUtil.toSystemIndependentName(span.filename)

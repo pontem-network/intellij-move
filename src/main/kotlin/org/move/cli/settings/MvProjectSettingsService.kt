@@ -7,7 +7,6 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
-import com.intellij.psi.PsiManager
 import org.move.cli.runConfigurations.BlockchainCli
 import org.move.cli.runConfigurations.BlockchainCli.Aptos
 import org.move.cli.runConfigurations.BlockchainCli.Sui
@@ -65,7 +64,6 @@ class MvProjectSettingsService(
     val fetchAptosDeps: Boolean get() = state.fetchAptosDeps
 
     val disableTelemetry: Boolean get() = state.disableTelemetry
-    val foldSpecs: Boolean get() = state.foldSpecs
     val skipFetchLatestGitDeps: Boolean get() = state.skipFetchLatestGitDeps
     val dumpStateOnTestFailure: Boolean get() = state.dumpStateOnTestFailure
 
@@ -89,7 +87,6 @@ class MvProjectSettingsService(
         @AffectsMoveProjectsMetadata
         var fetchAptosDeps: Boolean by property(false)
 
-        var foldSpecs: Boolean by property(false)
         var disableTelemetry: Boolean by property(true)
 
         // change to true here to not annoy the users with constant updates
@@ -100,14 +97,6 @@ class MvProjectSettingsService(
             val state = MoveProjectSettings()
             state.copyFrom(this)
             return state
-        }
-    }
-
-    override fun notifySettingsChanged(event: SettingsChangedEventBase<MoveProjectSettings>) {
-        super.notifySettingsChanged(event)
-
-        if (event.isChanged(MoveProjectSettings::foldSpecs)) {
-            PsiManager.getInstance(project).dropPsiCaches()
         }
     }
 
@@ -124,7 +113,7 @@ class MvProjectSettingsService(
     companion object {
         private val defaultAptosExecType
             get() =
-                if (AptosExecType.isPreCompiledSupportedForThePlatform) AptosExecType.BUNDLED else AptosExecType.LOCAL;
+                if (AptosExecType.isPreCompiledSupportedForThePlatform) AptosExecType.BUNDLED else AptosExecType.LOCAL
     }
 }
 

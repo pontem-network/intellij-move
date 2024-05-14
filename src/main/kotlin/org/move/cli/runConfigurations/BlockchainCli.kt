@@ -95,7 +95,7 @@ sealed class BlockchainCli {
             return Ok(Unit)
         }
 
-        fun compileProject(
+        fun checkProject(
             project: Project,
             owner: Disposable,
             args: AptosCompileArgs
@@ -103,19 +103,26 @@ sealed class BlockchainCli {
 //            val useClippy = args.linter == ExternalLinter.CLIPPY
 //                    && !checkNeedInstallClippy(project, args.cargoProjectDirectory)
 //            val checkCommand = if (useClippy) "clippy" else "check"
-            val arguments = buildList<String> {
-//                add("--message-format=json")
-//                add("--all")
-//                if (args.allTargets && checkSupportForBuildCheckAllTargets()) {
-//                    add("--all-targets")
-//                }
-                add("compile")
-                addAll(ParametersListUtil.parse(args.extraArguments))
-            }
+            val extraArguments = ParametersListUtil.parse(args.extraArguments)
             val cliArgs =
                 CliCommandLineArgs(
                     "move",
-                    arguments,
+                    buildList {
+//                        add("--message-format=json")
+                        add("compile")
+                        if ("--skip-fetch-latest-git-deps" !in extraArguments) {
+                            add("--skip-fetch-latest-git-deps")
+                        }
+                        if (args.isCompilerV2 && "--compiler-version" !in extraArguments) {
+                            add("--compiler-version")
+                            add("v2")
+                        }
+                        if (args.isCompilerV2 && "--language-version" !in extraArguments) {
+                            add("--language-version")
+                            add("2.0")
+                        }
+                        addAll(ParametersListUtil.parse(args.extraArguments))
+                    },
                     args.moveProjectDirectory,
                     environmentVariables = EnvironmentVariablesData.create(args.envs, true)
                 )
@@ -190,17 +197,22 @@ data class AptosCompileArgs(
     val moveProjectDirectory: Path,
     val extraArguments: String,
     val envs: Map<String, String>,
+    val isCompilerV2: Boolean,
+    val skipLatestGitDeps: Boolean,
 ) {
     companion object {
         fun forMoveProject(moveProject: MoveProject): AptosCompileArgs {
-            val settings = moveProject.project.externalLinterSettings
+            val linterSettings = moveProject.project.externalLinterSettings
+            val moveSettings = moveProject.project.moveSettings
             return AptosCompileArgs(
-                settings.tool,
+                linterSettings.tool,
                 moveProject.workingDirectory,
 //                moveProject.project.rustSettings.compileAllTargets,
-                settings.additionalArguments,
+                linterSettings.additionalArguments,
 //                settings.channel,
-                settings.envs
+                linterSettings.envs,
+                isCompilerV2 = moveSettings.isCompilerV2,
+                skipLatestGitDeps = moveSettings.skipFetchLatestGitDeps
             )
         }
     }

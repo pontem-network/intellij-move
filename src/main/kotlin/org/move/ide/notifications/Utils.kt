@@ -6,6 +6,7 @@ import com.intellij.notification.Notifications
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
@@ -16,15 +17,19 @@ import com.intellij.openapi.util.NlsContexts.NotificationTitle
 import com.intellij.ui.awt.RelativePoint
 import org.move.cli.settings.isDebugModeEnabled
 import org.move.openapiext.common.isUnitTestMode
+import org.move.openapiext.log
 import java.awt.Component
 import java.awt.Point
 import javax.swing.event.HyperlinkListener
 
-fun Logger.logOrShowBalloon(@NotificationContent content: String) {
+fun Logger.logOrShowBalloon(@NotificationContent content: String, productionLevel: LogLevel = LogLevel.DEBUG) {
     when {
-        isUnitTestMode -> this.warn(content)
-        isDebugModeEnabled() -> showBalloonWithoutProject(content, INFORMATION)
-        else -> this.debug(content)
+        isUnitTestMode -> this.warn("BALLOON: $content")
+        isDebugModeEnabled() -> {
+            this.warn(content)
+            showBalloonWithoutProject(content, INFORMATION)
+        }
+        else -> this.log(content, productionLevel)
     }
 }
 
@@ -83,5 +88,14 @@ fun showBalloonWithoutProject(
     type: NotificationType
 ) {
     val notification = MvNotifications.pluginNotifications().createNotification(content, type)
+    Notifications.Bus.notify(notification)
+}
+
+fun showBalloonWithoutProject(
+    title: String,
+    @NotificationContent content: String,
+    type: NotificationType
+) {
+    val notification = MvNotifications.pluginNotifications().createNotification(title, content, type)
     Notifications.Bus.notify(notification)
 }
