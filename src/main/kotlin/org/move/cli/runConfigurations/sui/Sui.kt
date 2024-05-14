@@ -14,27 +14,25 @@ import org.move.stdext.RsResult.Ok
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
 
-data class Sui(override val cliLocation: Path): BlockchainCli() {
+data class Sui(override val cliLocation: Path, val parentDisposable: Disposable?):
+    BlockchainCli(parentDisposable) {
     override fun init(
         project: Project,
-        parentDisposable: Disposable,
         rootDirectory: VirtualFile,
         packageName: String
     ): RsProcessResult<VirtualFile> {
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        val commandLine = CliCommandLineArgs(
-            "move",
-            listOf(
-                "new", packageName,
-                "--path", "."
-            ),
-            workingDirectory = project.rootPath
-        )
-        commandLine.toGeneralCommandLine(this.cliLocation)
-            .execute(parentDisposable)
+        val commandLine =
+            CliCommandLineArgs(
+                "move new",
+                arguments = listOf("--path", "."),
+                workingDirectory = project.rootPath
+            )
+        executeCommandLine(commandLine)
             .unwrapOrElse { return Err(it) }
+
         fullyRefreshDirectory(rootDirectory)
 
         val manifest =
@@ -46,20 +44,17 @@ data class Sui(override val cliLocation: Path): BlockchainCli() {
         project: Project,
         projectDir: Path,
         skipLatest: Boolean,
-        owner: Disposable,
         processListener: ProcessListener
     ): RsProcessResult<Unit> {
-        val cli =
+        val commandLine =
             CliCommandLineArgs(
-                subCommand = "move",
+                subCommand = "move build",
                 arguments = listOfNotNull(
-                    "build",
                     "--fetch-deps-only",
                     "--skip-fetch-latest-git-deps".takeIf { skipLatest }),
                 workingDirectory = projectDir
             )
-        cli.toGeneralCommandLine(cliLocation)
-            .execute(owner, listener = processListener)
+        executeCommandLine(commandLine, listener = processListener)
             .unwrapOrElse { return Err(it) }
         return Ok(Unit)
     }

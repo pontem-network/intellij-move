@@ -60,9 +60,7 @@ object RsExternalLinterUtils {
      */
     fun checkLazily(
         aptosCli: Aptos,
-//        toolchain: RsToolchainBase,
         project: Project,
-        owner: Disposable,
         workingDirectory: Path,
         args: AptosCompileArgs
     ): Lazy<RsExternalLinterResult?> {
@@ -86,7 +84,7 @@ object RsExternalLinterUtils {
             lazy {
                 // This code will be executed out of read action in background thread
                 if (!isUnitTestMode) checkReadAccessNotAllowed()
-                checkWrapped(aptosCli, project, owner, workingDirectory, args)
+                checkWrapped(aptosCli, project, args)
             }
         }
     }
@@ -94,8 +92,6 @@ object RsExternalLinterUtils {
     private fun checkWrapped(
         aptosCli: Aptos,
         project: Project,
-        owner: Disposable,
-        workingDirectory: Path,
         args: AptosCompileArgs
     ): RsExternalLinterResult? {
         val widget = WriteAction.computeAndWait<RsExternalLinterWidget?, Throwable> {
@@ -110,7 +106,7 @@ object RsExternalLinterUtils {
 
                 override fun run(indicator: ProgressIndicator) {
                     widget?.inProgress = true
-                    future.complete(check(aptosCli, project, owner, args))
+                    future.complete(check(aptosCli, args))
                 }
 
                 override fun onFinished() {
@@ -123,14 +119,12 @@ object RsExternalLinterUtils {
 
     private fun check(
         aptosCli: Aptos,
-        project: Project,
-        owner: Disposable,
-        args: AptosCompileArgs
+        aptosCompileArgs: AptosCompileArgs
     ): RsExternalLinterResult? {
         ProgressManager.checkCanceled()
         val started = Instant.now()
         val output = aptosCli
-            .checkProject(project, owner, args)
+            .checkProject(aptosCompileArgs)
             .unwrapOrElse { e ->
                 LOG.error(e)
                 return null

@@ -54,11 +54,11 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<MoveProjectConfig>(),
                     val aptosPath =
                         AptosExecType.aptosExecPath(projectConfig.aptosExecType, projectConfig.localAptosPath)
                             ?: error("validated before")
-                    Aptos(aptosPath)
+                    Aptos(aptosPath, disposable)
                 }
                 SUI -> {
                     val suiPath = projectConfig.localSuiPath?.toPathOrNull() ?: error("validated before")
-                    Sui(suiPath)
+                    Sui(suiPath, disposable)
                 }
             }
         val manifestFile =
@@ -66,7 +66,6 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<MoveProjectConfig>(),
                 val manifestFile =
                     projectCli.init(
                         project,
-                        disposable,
                         rootDirectory = baseDir,
                         packageName = packageName
                     )

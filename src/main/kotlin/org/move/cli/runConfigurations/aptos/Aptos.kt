@@ -22,12 +22,13 @@ import org.move.stdext.RsResult.Ok
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
 
-data class Aptos(override val cliLocation: Path): BlockchainCli(), Disposable {
-    override fun dispose() {}
+data class Aptos(
+    override val cliLocation: Path,
+    val parentDisposable: Disposable?
+): BlockchainCli(parentDisposable) {
 
     override fun init(
         project: Project,
-        parentDisposable: Disposable,
         rootDirectory: VirtualFile,
         packageName: String
     ): RsProcessResult<VirtualFile> {
@@ -43,10 +44,8 @@ data class Aptos(override val cliLocation: Path): BlockchainCli(), Disposable {
             ),
             workingDirectory = project.rootPath
         )
-        commandLine
-            .toGeneralCommandLine(cliLocation)
-            .execute(parentDisposable)
-            .unwrapOrElse { return Err(it) }
+        executeCommandLine(commandLine).unwrapOrElse { return Err(it) }
+
         fullyRefreshDirectory(rootDirectory)
 
         val manifest =
@@ -58,11 +57,10 @@ data class Aptos(override val cliLocation: Path): BlockchainCli(), Disposable {
         project: Project,
         projectDir: Path,
         skipLatest: Boolean,
-        owner: Disposable,
         processListener: ProcessListener
     ): RsProcessResult<Unit> {
         if (project.moveSettings.fetchAptosDeps) {
-            val cli =
+            val commandLine =
                 CliCommandLineArgs(
                     subCommand = "move",
                     arguments = listOfNotNull(
@@ -73,18 +71,13 @@ data class Aptos(override val cliLocation: Path): BlockchainCli(), Disposable {
                 )
             // TODO: as Aptos does not yet support fetching dependencies without compiling, ignore errors here,
             // TODO: still better than no call at all
-            cli.toGeneralCommandLine(cliLocation)
-                .execute(owner, listener = processListener)
+            executeCommandLine(commandLine, listener = processListener)
 //                .unwrapOrElse { return Err(it) }
         }
         return Ok(Unit)
     }
 
-    fun checkProject(
-        project: Project,
-        owner: Disposable,
-        args: AptosCompileArgs
-    ): RsResult<ProcessOutput, RsProcessExecutionException.Start> {
+    fun checkProject(args: AptosCompileArgs): RsResult<ProcessOutput, RsProcessExecutionException.Start> {
 //            val useClippy = args.linter == ExternalLinter.CLIPPY
 //                    && !checkNeedInstallClippy(project, args.cargoProjectDirectory)
 //            val checkCommand = if (useClippy) "clippy" else "check"
@@ -126,12 +119,6 @@ data class Aptos(override val cliLocation: Path): BlockchainCli(), Disposable {
             environmentVariables = EnvironmentVariablesData.DEFAULT
         )
         return executeCommandLine(commandLine).ignoreExitCode()
-    }
-
-    private fun executeCommandLine(commandLine: CliCommandLineArgs): RsProcessResult<ProcessOutput> {
-        return commandLine
-            .toGeneralCommandLine(this.cliLocation)
-            .execute(this, stdIn = null, listener = null)
     }
 }
 

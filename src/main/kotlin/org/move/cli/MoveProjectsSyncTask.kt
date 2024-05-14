@@ -13,6 +13,7 @@ import com.intellij.build.progress.BuildProgressDescriptor
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.runReadAction
@@ -22,13 +23,14 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.MoveProject.UpdateStatus
 import org.move.cli.manifest.MoveToml
 import org.move.cli.settings.blockchain
-import org.move.cli.settings.blockchainCli
+import org.move.cli.settings.getBlockchainCli
 import org.move.cli.settings.moveSettings
 import org.move.lang.toNioPathOrNull
 import org.move.lang.toTomlFile
@@ -42,9 +44,20 @@ import javax.swing.JComponent
 
 class MoveProjectsSyncTask(
     project: Project,
+    parentDisposable: Disposable,
     private val future: CompletableFuture<List<MoveProject>>,
     private val reason: String?
-): Task.Backgroundable(project, "Reloading Move packages", true) {
+): Task.Backgroundable(project, "Reloading Move packages", true), Disposable {
+
+    init {
+        Disposer.register(parentDisposable, this)
+    }
+
+    override fun dispose() {}
+
+    override fun onCancel() {
+        Disposer.dispose(this)
+    }
 
     override fun run(indicator: ProgressIndicator) {
         indicator.isIndeterminate = true
@@ -66,7 +79,6 @@ class MoveProjectsSyncTask(
             } else {
                 syncProgress.finish()
             }
-
             refreshedProjects
         } catch (e: Throwable) {
             if (e is ProcessCanceledException) {
@@ -81,6 +93,8 @@ class MoveProjectsSyncTask(
 
         val elapsed = System.currentTimeMillis() - before
         LOG.logProjectsRefresh("finished Move projects Sync Task in $elapsed ms", reason)
+
+        Disposer.dispose(this)
     }
 
     private fun doRun(
@@ -160,7 +174,7 @@ class MoveProjectsSyncTask(
 
             val blockchain = project.blockchain
             val skipLatest = project.moveSettings.skipFetchLatestGitDeps
-            val blockchainCli = project.blockchainCli
+            val blockchainCli = project.getBlockchainCli(parentDisposable = this)
             when {
                 blockchainCli == null -> TaskResult.Err("Invalid $blockchain CLI configuration")
                 else -> {
@@ -169,7 +183,6 @@ class MoveProjectsSyncTask(
                             project,
                             projectRoot,
                             skipLatest,
-                            owner = project.rootDisposable,
                             processListener = listener
                         ).unwrapOrElse {
                             return@runWithChildProgress TaskResult.Err(

@@ -141,7 +141,7 @@ class MoveProjectsService(val project: Project): Disposable {
     private fun doRefreshProjects(project: Project, reason: String?): CompletableFuture<List<MoveProject>> {
         val moveProjectsFut = CompletableFuture<List<MoveProject>>()
 
-        val syncTask = MoveProjectsSyncTask(project, moveProjectsFut, reason)
+        val syncTask = MoveProjectsSyncTask(project, this, moveProjectsFut, reason)
         project.taskQueue.run(syncTask)
 
         return moveProjectsFut.thenApply { updatedProjects ->
