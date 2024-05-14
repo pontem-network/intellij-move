@@ -28,8 +28,8 @@ import org.jetbrains.annotations.Nls
 import org.move.cli.externalLinter.RsExternalLinterWidget
 import org.move.cli.externalLinter.externalLinterSettings
 import org.move.cli.externalLinter.parseCompilerErrors
-import org.move.cli.runConfigurations.AptosCompileArgs
-import org.move.cli.runConfigurations.BlockchainCli.Aptos
+import org.move.cli.runConfigurations.aptos.Aptos
+import org.move.cli.runConfigurations.aptos.AptosCompileArgs
 import org.move.ide.annotator.RsExternalLinterFilteredMessage.Companion.filterMessage
 import org.move.ide.annotator.RsExternalLinterUtils.TEST_MESSAGE
 import org.move.ide.notifications.logOrShowBalloon

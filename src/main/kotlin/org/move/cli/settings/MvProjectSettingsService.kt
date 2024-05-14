@@ -8,8 +8,8 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import org.move.cli.runConfigurations.BlockchainCli
-import org.move.cli.runConfigurations.BlockchainCli.Aptos
-import org.move.cli.runConfigurations.BlockchainCli.Sui
+import org.move.cli.runConfigurations.aptos.Aptos
+import org.move.cli.runConfigurations.sui.Sui
 import org.move.cli.settings.Blockchain.APTOS
 import org.move.cli.settings.Blockchain.SUI
 import org.move.cli.settings.MvProjectSettingsService.MoveProjectSettings

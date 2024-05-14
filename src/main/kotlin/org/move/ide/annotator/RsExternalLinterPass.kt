@@ -32,8 +32,8 @@ import com.intellij.psi.PsiFile
 import com.intellij.util.ui.update.MergingUpdateQueue
 import com.intellij.util.ui.update.Update
 import org.move.cli.externalLinter.externalLinterSettings
-import org.move.cli.runConfigurations.AptosCompileArgs
-import org.move.cli.runConfigurations.workingDirectory
+import org.move.cli.runConfigurations.aptos.AptosCompileArgs
+import org.move.cli.runConfigurations.aptos.workingDirectory
 import org.move.cli.settings.aptosCli
 import org.move.ide.annotator.RsExternalLinterResult
 import org.move.ide.annotator.RsExternalLinterUtils
