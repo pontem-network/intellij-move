@@ -141,7 +141,7 @@ class MvBackgroundTaskQueue {
                     onFinish(this)
                     continuation.run()
                 },
-                ModalityState.NON_MODAL
+                ModalityState.nonModal()
             )
         }
 

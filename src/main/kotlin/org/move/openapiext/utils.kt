@@ -238,7 +238,7 @@ inline fun <Key: Any, reified Psi: PsiElement> getElements(
 ): Collection<Psi> =
     StubIndex.getElements(indexKey, key, project, scope, Psi::class.java)
 
-fun joinPath(segments: Array<String>) =
+fun joinPathArray(segments: Array<String>) =
     segments.joinTo(StringBuilder(), Platform.current().fileSeparator.toString()).toString()
 
 fun joinPath(vararg segments: String) =
