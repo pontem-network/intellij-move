@@ -7,8 +7,10 @@ import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.externalSystem.autoimport.AutoImportProjectNotificationAware
 import com.intellij.openapi.externalSystem.autoimport.AutoImportProjectTracker
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker
+import com.intellij.openapi.externalSystem.autoimport.changes.FilesChangesListener
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
@@ -20,6 +22,7 @@ import com.intellij.openapi.roots.ex.ProjectRootManagerEx
 import com.intellij.openapi.util.EmptyRunnable
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.ex.temp.TempFileSystem
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
@@ -51,9 +54,6 @@ val Project.moveProjectsService get() = service<MoveProjectsService>()
 val Project.hasMoveProject get() = this.moveProjectsService.allProjects.isNotEmpty()
 
 class MoveProjectsService(val project: Project): Disposable {
-
-//    private val refreshOnBuildDirChangeWatcher =
-//        BuildDirectoryWatcher(emptyList()) { scheduleProjectsRefresh("build/ directory changed") }
 
     var initialized = false
 
@@ -99,6 +99,16 @@ class MoveProjectsService(val project: Project): Disposable {
                         tracker.scheduleProjectRefresh()
                     }
                 }
+            })
+
+        // default projectTracker cannot detect Move.toml file creation,
+        // as it's not present in the `settingsFiles`
+        @Suppress("UnstableApiUsage")
+        project.messageBus.connect(disposable)
+            .subscribe(VirtualFileManager.VFS_CHANGES, OnMoveTomlCreatedFileListener {
+                val tracker = AutoImportProjectTracker.getInstance(project)
+                tracker.markDirty(moveProjectAware.projectId)
+                tracker.scheduleProjectRefresh()
             })
     }
 

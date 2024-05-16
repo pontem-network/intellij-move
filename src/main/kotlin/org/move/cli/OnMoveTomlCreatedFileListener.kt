@@ -1,19 +1,21 @@
 package org.move.cli
 
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
+import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
 
-class MoveTomlWatcher(
-    private val onMoveTomlChange: () -> Unit
+class OnMoveTomlCreatedFileListener(
+    private val onMoveTomlAdded: () -> Unit
 ) : BulkFileListener {
 
     override fun after(events: List<VFileEvent>) {
-        if (events.any { isInterestingEvent(it) }) onMoveTomlChange()
+        if (events.any { isInterestingEvent(it) }) onMoveTomlAdded()
     }
 
     private fun isInterestingEvent(event: VFileEvent): Boolean {
-        return event.pathEndsWith(Consts.MANIFEST_FILE)
+        return event is VFileCreateEvent && event.path.endsWith(Consts.MANIFEST_FILE)
+                || event is VFilePropertyChangeEvent && event.newPath.endsWith(Consts.MANIFEST_FILE)
     }
 }
 
