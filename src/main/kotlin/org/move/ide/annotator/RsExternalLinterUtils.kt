@@ -239,7 +239,6 @@ private data class RsExternalLinterFilteredMessage(
             message: AptosCompilerMessage,
             skipErrorsKnownToIde: Boolean,
         ): RsExternalLinterFilteredMessage? {
-            println(message)
 //            if (message.message.startsWith("aborting due to") || message.message.startsWith("cannot continue")) {
 //                return null
 //            }

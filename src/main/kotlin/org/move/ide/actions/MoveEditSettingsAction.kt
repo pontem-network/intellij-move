@@ -4,10 +4,11 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.DumbAwareAction
 import org.move.cli.settings.PerProjectMoveConfigurable
 import org.move.openapiext.showSettingsDialog
 
-class MoveEditSettingsAction : AnAction(), DumbAware {
+class MoveEditSettingsAction : DumbAwareAction("Aptos Settings") {
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
