@@ -137,8 +137,8 @@ fun Project.getBlockchainCli(blockchain: Blockchain, parentDisposable: Disposabl
 fun Project.getBlockchainCli(parentDisposable: Disposable?): BlockchainCli? =
     getBlockchainCli(this.blockchain, parentDisposable)
 
-fun Project.getAptosCli(parentDisposable: Disposable? = null): Aptos? =
-    getBlockchainCli(APTOS, parentDisposable) as? Aptos
+val Project.isAptosConfigured: Boolean get() = getBlockchainCli(APTOS) != null
+fun Project.getAptosCli(parentDisposable: Disposable? = null): Aptos? = getBlockchainCli(APTOS, parentDisposable) as? Aptos
 
 fun Project.getSuiCli(parentDisposable: Disposable? = null): Sui? =
     getBlockchainCli(SUI, parentDisposable) as? Sui

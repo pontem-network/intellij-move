@@ -4,6 +4,8 @@ import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.execution.ParametersListUtil
@@ -19,6 +21,7 @@ import org.move.openapiext.common.isUnitTestMode
 import org.move.stdext.RsResult
 import org.move.stdext.RsResult.Err
 import org.move.stdext.RsResult.Ok
+import org.move.stdext.buildList
 import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -132,13 +135,23 @@ data class Aptos(
         return executeCommandLine(commandLine)
     }
 
-    fun decompileFile(bytecodeFilePath: String): RsProcessResult<ProcessOutput> {
+    fun decompileFile(
+        bytecodeFilePath: String,
+        outputDir: String?,
+    ): RsProcessResult<ProcessOutput> {
         val fileRoot = Paths.get(bytecodeFilePath).parent
         val commandLine = CliCommandLineArgs(
             subCommand = "move decompile",
-            arguments = listOf("--bytecode-path", bytecodeFilePath),
+            arguments = buildList {
+                add("--bytecode-path"); add(bytecodeFilePath)
+                if (outputDir != null) {
+                    add("--output-dir"); add(outputDir)
+                }
+                add("--assume-yes")
+            },
             workingDirectory = fileRoot
         )
+        // only one second is allowed to run decompiler, otherwise fails with timeout
         return executeCommandLine(commandLine)
     }
 }

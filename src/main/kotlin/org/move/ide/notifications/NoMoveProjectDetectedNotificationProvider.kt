@@ -6,6 +6,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
+import org.move.bytecode.AptosBytecodeDecompiler
 import org.move.cli.MoveProjectsService
 import org.move.cli.MoveProjectsService.Companion.MOVE_PROJECTS_TOPIC
 import org.move.cli.moveProjectsService
@@ -14,6 +15,7 @@ import org.move.cli.settings.MvProjectSettingsServiceBase.Companion.MOVE_SETTING
 import org.move.cli.settings.moveSettings
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
+import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isDispatchThread
 import org.move.openapiext.common.isUnitTestMode
 
@@ -42,6 +44,11 @@ class NoMoveProjectDetectedNotificationProvider(project: Project): MvEditorNotif
         if (ScratchUtil.isScratch(file)) return null
         @Suppress("UnstableApiUsage")
         if (!project.isTrusted()) return null
+
+        // check whether file is a decompiler artifact
+        val decompiledArtifactsDir = AptosBytecodeDecompiler().getArtifactsDir()
+        val asNioFile = file.toNioPathOrNull()?.toFile()
+        if (asNioFile == null || asNioFile.relativeToOrNull(decompiledArtifactsDir) != null) return null
 
         val blockchain = project.moveSettings.blockchain
         val moveProjectsService = project.moveProjectsService

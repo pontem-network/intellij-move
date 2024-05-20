@@ -18,6 +18,15 @@
   <depends>org.toml.lang</depends>
 
   <extensions defaultExtensionNs="com.intellij">
+
+    <fileType name="APTOS_BYTECODE"
+              extensions="mv"
+              implementationClass="org.move.bytecode.AptosBytecodeFileType"
+              fieldName="INSTANCE" />
+    <filetype.decompiler filetype="APTOS_BYTECODE"
+                         implementationClass="org.move.bytecode.AptosBytecodeDecompiler" />
+    <editorNotificationProvider implementation="org.move.bytecode.AptosBytecodeNotificationProvider" />
+
     <fileType name="Move"
               language="Move"
               extensions="move"

@@ -144,15 +144,34 @@ fun GeneralCommandLine.execute(
 
 private fun showCommandLineBalloon(commandLineString: String, output: ProcessOutput) {
     if (isDebugModeEnabled()) {
-        val content =
-            if (!output.isSuccess) {
-                """`$commandLineString` |Execution failed (exit code ${output.exitCode}).
-    """
-            } else {
-                """`$commandLineString` |Execution successful.
-    """
+        when {
+            output.isTimeout -> {
+                showBalloonWithoutProject(
+                    "Execution failed",
+                    "`$commandLineString`(timeout)",
+                    INFORMATION
+                )
             }
-        showBalloonWithoutProject(content.trimStart(), INFORMATION)
+            output.isCancelled -> {
+                showBalloonWithoutProject(
+                    "Execution failed",
+                    "`$commandLineString`(cancelled)",
+                    INFORMATION
+                )
+            }
+            output.exitCode != 0 -> {
+                showBalloonWithoutProject(
+                    "Execution failed",
+                    "`$commandLineString`(exit code ${output.exitCode}). " +
+                            "<p>stdout=${output.stdout}</p>" +
+                            "<p>stderr=${output.stderr}</p>",
+                    INFORMATION
+                )
+            }
+            else -> {
+                showBalloonWithoutProject("Execution successful", commandLineString, INFORMATION)
+            }
+        }
     }
 }
 
@@ -163,7 +182,7 @@ private fun errorMessage(commandLine: GeneralCommandLine, output: ProcessOutput)
         |stderr : ${output.stderr}
     """.trimMargin()
 
-private fun CapturingProcessHandler.runProcessWithGlobalProgress(timeoutInMilliseconds: Int? = null): ProcessOutput {
+fun CapturingProcessHandler.runProcessWithGlobalProgress(timeoutInMilliseconds: Int? = null): ProcessOutput {
     return runProcess(ProgressManager.getGlobalProgressIndicator(), timeoutInMilliseconds)
 }
 
