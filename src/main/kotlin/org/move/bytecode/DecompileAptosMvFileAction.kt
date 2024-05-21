@@ -3,7 +3,6 @@ package org.move.bytecode
 import com.intellij.notification.NotificationType.ERROR
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbAwareAction
 import org.move.bytecode.AptosBytecodeNotificationProvider.DecompilationModalTask
 import org.move.cli.settings.getAptosCli
@@ -17,8 +16,7 @@ class DecompileAptosMvFileAction: DumbAwareAction("Decompile .mv File", null, Mo
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val file = e.getData(CommonDataKeys.PSI_FILE)?.virtualFile ?: return
-        val decompilationTask = DecompilationModalTask(project, file)
-        val decompiledFile = ProgressManager.getInstance().run(decompilationTask)
+        val decompiledFile = DecompilationModalTask(project, file).runWithProgress()
             .unwrapOrElse {
                 project.showBalloon("Error with decompilation process", it, ERROR)
                 return

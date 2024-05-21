@@ -41,7 +41,6 @@ class AptosBytecodeNotificationProvider(project: Project): EditorNotificationPro
             return null
         }
         val properties = PropertiesComponent.getInstance(project)
-        val progressManager = ProgressManager.getInstance()
         val decompilationFailedKey = DECOMPILATION_FAILED + "." + file.path
 
         val aptosDecompiler = AptosBytecodeDecompiler()
@@ -66,7 +65,7 @@ class AptosBytecodeNotificationProvider(project: Project): EditorNotificationPro
                 if (decompilationFailed) {
                     text = "Decompilation command failed"
                     createActionLabel("Try again") {
-                        val virtualFile = progressManager.run(decompilationTask)
+                        val virtualFile = decompilationTask.runWithProgress()
                             .unwrapOrElse {
                                 // something went wrong with the decompilation command again
                                 project.showDebugBalloon("Error with decompilation process", it, ERROR)
@@ -79,7 +78,7 @@ class AptosBytecodeNotificationProvider(project: Project): EditorNotificationPro
                     }
                 } else {
                     createActionLabel("Decompile into source code") {
-                        val decompiledFile = progressManager.run(decompilationTask)
+                        val decompiledFile = decompilationTask.runWithProgress()
                             .unwrapOrElse {
                                 project.showDebugBalloon("Error with decompilation process", it, ERROR)
                                 return@unwrapOrElse null
@@ -107,6 +106,8 @@ class AptosBytecodeNotificationProvider(project: Project): EditorNotificationPro
             val aptosDecompiler = AptosBytecodeDecompiler()
             return aptosDecompiler.decompileFileToTheSameDir(project, file)
         }
+
+        fun runWithProgress(): RsResult<VirtualFile, String> = ProgressManager.getInstance().run(this)
     }
 
     companion object {
