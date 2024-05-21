@@ -6,7 +6,9 @@ import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.ColorUtil
 import com.intellij.ui.JBColor
 import com.intellij.ui.LayeredIcon
+import com.intellij.ui.LayeredIcon.Companion.layeredIcon
 import com.intellij.ui.icons.RgbImageFilterSupplier
+import com.jetbrains.rd.generator.nova.array
 import java.awt.Color
 import java.awt.Component
 import java.awt.Graphics
@@ -70,11 +72,11 @@ object MoveIcons {
 }
 
 
-fun Icon.addFinalMark(): Icon = LayeredIcon(this, MoveIcons.FINAL_MARK)
+fun Icon.addFinalMark(): Icon = layeredIcon(arrayOf(this, MoveIcons.FINAL_MARK))
 
-fun Icon.addStaticMark(): Icon = LayeredIcon(this, MoveIcons.STATIC_MARK)
+fun Icon.addStaticMark(): Icon = layeredIcon(arrayOf(this, MoveIcons.STATIC_MARK))
 
-fun Icon.addTestMark(): Icon = LayeredIcon(this, MoveIcons.TEST_MARK)
+fun Icon.addTestMark(): Icon = layeredIcon(arrayOf(this, MoveIcons.TEST_MARK))
 
 fun Icon.multiple(): Icon {
     val compoundIcon = LayeredIcon(2)

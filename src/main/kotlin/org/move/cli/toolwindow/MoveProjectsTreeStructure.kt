@@ -36,7 +36,7 @@ class MoveProjectsTreeStructure(
     fun updateMoveProjects(moveProjects: List<MoveProject>) {
         this.moveProjects = moveProjects
         this.root = MoveSimpleNode.Root(moveProjects)
-        treeModel.invalidate()
+        treeModel.invalidateAsync()
     }
 
     sealed class MoveSimpleNode(parent: SimpleNode?) : CachingSimpleNode(parent) {
