@@ -1,11 +1,10 @@
 package org.move.cli.runConfigurations.aptos
 
 import com.intellij.execution.configuration.EnvironmentVariablesData
+import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.execution.ParametersListUtil
@@ -111,17 +110,24 @@ data class Aptos(
     }
 
     fun downloadPackage(
-        moveProject: MoveProject,
+        project: Project,
         accountAddress: String,
-        packageName: String
-    ): RsResult<ProcessOutput, RsProcessExecutionException.Start> {
+        packageName: String,
+        outputDir: String,
+        runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress(timeoutInMilliseconds = null) }
+    ): RsProcessResult<ProcessOutput> {
         val commandLine = CliCommandLineArgs(
             subCommand = "move download",
-            arguments = listOf("--account", accountAddress, "--package", packageName, "--bytecode"),
-            workingDirectory = moveProject.workingDirectory,
+            arguments = buildList {
+                add("--account"); add(accountAddress)
+                add("--package"); add(packageName)
+                add("--bytecode")
+                add("--output-dir"); add(outputDir)
+            },
+            workingDirectory = project.basePath?.let { Path.of(it) },
             environmentVariables = EnvironmentVariablesData.DEFAULT
         )
-        return executeCommandLine(commandLine).ignoreExitCode()
+        return executeCommandLine(commandLine, runner = runner)
     }
 
     fun decompileDownloadedPackage(downloadedPackagePath: Path): RsProcessResult<ProcessOutput> {
@@ -129,7 +135,10 @@ data class Aptos(
             downloadedPackagePath.resolve("bytecode_modules").toAbsolutePath().toString()
         val commandLine = CliCommandLineArgs(
             subCommand = "move decompile",
-            arguments = listOf("--package-path", bytecodeModulesPath),
+            arguments = buildList {
+                add("--package-path"); add(bytecodeModulesPath)
+                add("--assume-yes")
+            },
             workingDirectory = downloadedPackagePath
         )
         return executeCommandLine(commandLine)

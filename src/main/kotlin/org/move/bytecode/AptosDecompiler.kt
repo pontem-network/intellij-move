@@ -1,16 +1,15 @@
 package org.move.bytecode
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.fileEditor.impl.LoadTextUtil
 import com.intellij.openapi.fileTypes.BinaryFileDecompiler
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.util.text.StringUtil
+import com.intellij.openapi.vfs.*
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
-import com.intellij.openapi.vfs.readText
-import com.intellij.openapi.vfs.toNioPathOrNull
 import org.move.cli.settings.getAptosCli
 import org.move.openapiext.pathAsPath
 import org.move.openapiext.rootDisposable
@@ -25,7 +24,14 @@ import kotlin.io.path.relativeTo
 // todo: this is disabled for now, it's a process under ReadAction, and needs to be run in the indexing phase
 class AptosBytecodeDecompiler: BinaryFileDecompiler {
     override fun decompile(file: VirtualFile): CharSequence {
-        return file.readText()
+        val fileText = file.readText()
+        try {
+            StringUtil.assertValidSeparators(fileText)
+            return fileText
+        } catch (e: AssertionError) {
+            val bytes = file.readBytes()
+            return LoadTextUtil.getTextByBinaryPresentation(bytes, file)
+        }
 //        val project =
 //            ProjectLocator.getInstance().getProjectsForFile(file).firstOrNull { it?.isAptosConfigured == true }
 //                ?: ProjectManager.getInstance().defaultProject.takeIf { it.isAptosConfigured }
@@ -33,6 +39,23 @@ class AptosBytecodeDecompiler: BinaryFileDecompiler {
 //        val targetFileDir = getDecompilerTargetFileDirOnTemp(project, file) ?: return file.readText()
 //        val targetFile = decompileFile(project, file, targetFileDir) ?: return file.readText()
 //        return LoadTextUtil.loadText(targetFile)
+    }
+
+    fun decompileFileToTheSameDir(project: Project, file: VirtualFile): RsResult<VirtualFile, String> {
+        val disposable = project.createDisposableOnFileChange(file)
+        val aptos = project.getAptosCli(disposable) ?: return RsResult.Err("No Aptos CLI configured")
+
+        aptos.decompileFile(file.path, outputDir = null)
+            .unwrapOrElse {
+                return RsResult.Err("`aptos move decompile` failed")
+            }
+        val decompiledFilePath = file.parent.pathAsPath.resolve(sourceFileName(file))
+        val decompiledFile = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(decompiledFilePath)
+            ?: run {
+                // something went wrong, no output file
+                return RsResult.Err("Expected decompiled file $decompiledFilePath does not exist")
+            }
+        return RsResult.Ok(decompiledFile)
     }
 
     fun decompileFile(project: Project, file: VirtualFile, targetFileDir: Path): RsResult<VirtualFile, String> {

@@ -438,6 +438,15 @@
             class="org.move.ide.actions.MoveEditSettingsAction"
             icon="AllIcons.General.Settings">
     </action>
+    <action id="Move.FetchAptosPackage"
+            class="org.move.bytecode.FetchAptosPackageAction"
+            icon="AllIcons.Actions.Download">
+    </action>
+
+    <action id="Move.DecompileAptosMvFile"
+            class="org.move.bytecode.DecompileAptosMvFileAction">
+      <add-to-group group-id="ProjectViewPopupMenu" />
+    </action>
 
     <group id="Move.Aptos">
       <reference id="Move.RefreshAllProjects" />
@@ -446,6 +455,8 @@
       <separator/>
       <reference id="ExpandAll"/>
       <reference id="CollapseAll"/>
+      <separator/>
+      <reference id="Move.FetchAptosPackage" />
       <separator/>
       <reference id="Move.ShowSettings" />
     </group>
