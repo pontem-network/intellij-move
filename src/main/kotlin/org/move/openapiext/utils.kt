@@ -43,7 +43,7 @@ import org.jdom.Element
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isHeadlessEnvironment
 import org.move.openapiext.common.isUnitTestMode
-import org.rust.ide.annotator.RsExternalLinterPass
+import org.move.ide.annotator.RsExternalLinterPass
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.Callable

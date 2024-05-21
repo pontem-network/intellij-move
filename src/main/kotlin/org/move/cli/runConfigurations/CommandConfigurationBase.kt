@@ -55,11 +55,10 @@ abstract class CommandConfigurationBase(
                 return MoveCommandLineState(environment, config.cliPath, config.commandLine)
             }
             is CleanConfiguration.Err -> {
-                config.error.message?.let {
-                    MvNotifications.pluginNotifications()
-                        .createNotification("Run Configuration error", it, NotificationType.ERROR)
-                        .notify(project)
-                }
+                val errorMessage = config.error.messageHtml.toString()
+                MvNotifications.pluginNotifications()
+                    .createNotification("Run Configuration error", errorMessage, NotificationType.ERROR)
+                    .notify(project)
                 return null
             }
         }

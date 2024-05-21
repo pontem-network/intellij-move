@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-package org.rust.ide.annotator
+package org.move.ide.annotator
 
 import com.intellij.codeHighlighting.DirtyScopeTrackingHighlightingPassFactory
 import com.intellij.codeHighlighting.TextEditorHighlightingPass
@@ -35,10 +35,6 @@ import org.move.cli.externalLinter.externalLinterSettings
 import org.move.cli.runConfigurations.aptos.AptosCompileArgs
 import org.move.cli.runConfigurations.aptos.workingDirectory
 import org.move.cli.settings.getAptosCli
-import org.move.ide.annotator.RsExternalLinterResult
-import org.move.ide.annotator.RsExternalLinterUtils
-import org.move.ide.annotator.addHighlightsForFile
-import org.move.ide.annotator.createDisposableOnAnyPsiChange
 import org.move.ide.notifications.RsExternalLinterSlowRunNotifier
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.ext.findMoveProject

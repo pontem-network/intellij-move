@@ -106,8 +106,4 @@ class FetchAptosPackageDialog(val project: Project): DialogWrapper(project, true
     }
 
     override fun getPreferredFocusedComponent(): JComponent = addressTextField
-
-    override fun doValidate(): ValidationInfo? {
-        return super.doValidate()
-    }
 }
