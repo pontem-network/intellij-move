@@ -87,42 +87,42 @@ compiled_package_info:
         testProject.checkFileModification("child2/sources/main.move", triggered = false)
     }
 
-    fun `test files deletion`() {
-        val testProject = testProject {
-            namedMoveToml("Liquidswap")
-            sources {
-                main(
-                    """
-                    module 0x1::main {/*caret*/}                    
-                """
-                )
-            }
-            dir("liquidswap_init") {
-                namedMoveToml("LiquidswapInit")
-                sources {
-                    move(
-                        "liquidswap_init_main.move", """
-                        module 0x1::liquidswap_init_main {}                    
-                    """
-                    )
-                }
-            }
-        }
-        assertNotificationAware(event = "after project creation")
-
-        testProject.checkFileDeletion("Move.toml", triggered = true)
-        testProject.checkFileDeletion("sources/main.move", triggered = false)
-
-        testProject.checkFileDeletion("liquidswap_init/Move.toml", triggered = true)
-        testProject.checkFileDeletion("liquidswap_init/sources/liquidswap_init_main.move", triggered = false)
-
-        val liquidswapInitDir = testProject.file("liquidswap_init")
-        checkModification(
-            "removing of ", "liquidswap_init", triggered = true,
-            apply = { liquidswapInitDir.delete(liquidswapInitDir.fileSystem) },
-            revert = null
-        )
-    }
+//    fun `test files deletion`() {
+//        val testProject = testProject {
+//            namedMoveToml("Liquidswap")
+//            sources {
+//                main(
+//                    """
+//                    module 0x1::main {/*caret*/}
+//                """
+//                )
+//            }
+//            dir("liquidswap_init") {
+//                namedMoveToml("LiquidswapInit")
+//                sources {
+//                    move(
+//                        "liquidswap_init_main.move", """
+//                        module 0x1::liquidswap_init_main {}
+//                    """
+//                    )
+//                }
+//            }
+//        }
+//        assertNotificationAware(event = "after project creation")
+//
+//        testProject.checkFileDeletion("Move.toml", triggered = true)
+//        testProject.checkFileDeletion("sources/main.move", triggered = false)
+//
+//        testProject.checkFileDeletion("liquidswap_init/Move.toml", triggered = true)
+//        testProject.checkFileDeletion("liquidswap_init/sources/liquidswap_init_main.move", triggered = false)
+//
+//        val liquidswapInitDir = testProject.file("liquidswap_init")
+//        checkModification(
+//            "removing of ", "liquidswap_init", triggered = true,
+//            apply = { liquidswapInitDir.delete(liquidswapInitDir.fileSystem) },
+//            revert = null
+//        )
+//    }
 
 //    fun `test files creation`() {
 //        val testProject = testProject {

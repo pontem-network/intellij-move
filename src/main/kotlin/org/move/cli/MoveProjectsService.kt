@@ -7,10 +7,8 @@ import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.externalSystem.autoimport.AutoImportProjectNotificationAware
 import com.intellij.openapi.externalSystem.autoimport.AutoImportProjectTracker
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker
-import com.intellij.openapi.externalSystem.autoimport.changes.FilesChangesListener
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
@@ -30,6 +28,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiInvalidElementAccessException
 import com.intellij.psi.util.parents
 import com.intellij.util.messages.Topic
+import org.jetbrains.annotations.TestOnly
 import org.move.cli.externalSystem.MoveExternalSystemProjectAware
 import org.move.cli.settings.MvProjectSettingsServiceBase.*
 import org.move.cli.settings.MvProjectSettingsServiceBase.Companion.MOVE_SETTINGS_TOPIC
@@ -48,6 +47,7 @@ import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
+import java.util.concurrent.TimeUnit
 
 val Project.moveProjectsService get() = service<MoveProjectsService>()
 
@@ -67,12 +67,14 @@ class MoveProjectsService(val project: Project): Disposable {
 
     fun scheduleProjectsRefresh(reason: String? = null): CompletableFuture<List<MoveProject>> {
         LOG.logOrShowBalloon("Refresh Projects ($reason)")
-        val moveProjectsFut =
-            modifyProjectModel {
-                doRefreshProjects(project, reason)
-            }
-        return moveProjectsFut
+        return modifyProjectModel {
+            doRefreshProjects(project, reason)
+        }
     }
+
+    @TestOnly
+    fun scheduleProjectsRefreshSync(reason: String? = null): List<MoveProject> =
+        scheduleProjectsRefresh(reason).get(1, TimeUnit.MINUTES)
 
     private fun registerProjectAware(project: Project, disposable: Disposable) {
         // There is no sense to register `CargoExternalSystemProjectAware` for default project.
