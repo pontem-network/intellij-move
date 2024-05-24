@@ -123,9 +123,11 @@ allprojects {
     }
 
     kotlin {
-        sourceSets {
-            main {
-                kotlin.srcDirs("src/$shortPlatformVersion/main/kotlin")
+        if (file("src/$shortPlatformVersion/main/kotlin").exists()) {
+            sourceSets {
+                main {
+                    kotlin.srcDirs("src/$shortPlatformVersion/main/kotlin")
+                }
             }
         }
     }
@@ -231,6 +233,13 @@ project(":") {
                 .forEach { it.resolve() }
         }
     }
+
+    idea {
+        pathVariables(mapOf("USER_HOME" to file("/home/mkurnikov")))
+        module {
+            name = "intellij-move.main"
+        }
+    }
 }
 
 project(":plugin") {
@@ -239,6 +248,9 @@ project(":plugin") {
     }
 
     tasks {
+        ideaModule {
+            enabled = false
+        }
         runPluginVerifier {
             if ("SNAPSHOT" !in shortPlatformVersion) {
                 ideVersions.set(
@@ -333,6 +345,12 @@ project(":ui-tests") {
 
     tasks.named<Test>("test") {
         useJUnitPlatform()
+    }
+
+    tasks {
+        ideaModule {
+            enabled = false
+        }
     }
 }
 
