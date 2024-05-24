@@ -43,7 +43,6 @@ class DownloadAptosSdkTask(
                 )
                 val (file, _) = downloader.download(tmpDownloadDir).first()
                 tmpDownloadFile = file
-                println("tmpDownloadFile = $tmpDownloadFile")
             } catch (e: IOException) {
                 throw RuntimeException(
                     "Failed to download $archiveFileName from $url. ${e.message}",
@@ -55,7 +54,6 @@ class DownloadAptosSdkTask(
             indicator.text = "Installing Aptos SDK..."
 
             indicator.text2 = "Unpacking $archiveFileName"
-            println("Unpacking $archiveFileName into $tmpExtractionDir")
             try {
                 tmpExtractionDir.mkdir()
                 Decompressor.Zip(tmpDownloadFile).withZipExtensions()

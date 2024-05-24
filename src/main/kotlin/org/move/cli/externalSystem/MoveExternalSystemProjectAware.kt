@@ -21,7 +21,8 @@ class MoveExternalSystemProjectAware(
         get() {
             val settingsFilesService = MoveSettingsFilesService.getInstance(project)
             // Always collect fresh settings files
-            return settingsFilesService.collectSettingsFiles()
+            val settingsFiles = settingsFilesService.collectSettingsFiles()
+            return settingsFiles
         }
 
     override fun reloadProject(context: ExternalSystemProjectReloadContext) {

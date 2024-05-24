@@ -12,6 +12,7 @@ import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTrack
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.RootsChangeRescanningInfo
 import com.intellij.openapi.project.ex.ProjectEx
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -19,6 +20,7 @@ import com.intellij.openapi.roots.ex.ProjectRootManagerEx
 import com.intellij.openapi.util.EmptyRunnable
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.ex.temp.TempFileSystem
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
@@ -26,6 +28,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiInvalidElementAccessException
 import com.intellij.psi.util.parents
 import com.intellij.util.messages.Topic
+import org.jetbrains.annotations.TestOnly
 import org.move.cli.externalSystem.MoveExternalSystemProjectAware
 import org.move.cli.settings.MvProjectSettingsServiceBase.*
 import org.move.cli.settings.MvProjectSettingsServiceBase.Companion.MOVE_SETTINGS_TOPIC
@@ -44,15 +47,13 @@ import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
+import java.util.concurrent.TimeUnit
 
 val Project.moveProjectsService get() = service<MoveProjectsService>()
 
 val Project.hasMoveProject get() = this.moveProjectsService.allProjects.isNotEmpty()
 
 class MoveProjectsService(val project: Project): Disposable {
-
-//    private val refreshOnBuildDirChangeWatcher =
-//        BuildDirectoryWatcher(emptyList()) { scheduleProjectsRefresh("build/ directory changed") }
 
     var initialized = false
 
@@ -66,12 +67,14 @@ class MoveProjectsService(val project: Project): Disposable {
 
     fun scheduleProjectsRefresh(reason: String? = null): CompletableFuture<List<MoveProject>> {
         LOG.logOrShowBalloon("Refresh Projects ($reason)")
-        val moveProjectsFut =
-            modifyProjectModel {
-                doRefreshProjects(project, reason)
-            }
-        return moveProjectsFut
+        return modifyProjectModel {
+            doRefreshProjects(project, reason)
+        }
     }
+
+    @TestOnly
+    fun scheduleProjectsRefreshSync(reason: String? = null): List<MoveProject> =
+        scheduleProjectsRefresh(reason).get(1, TimeUnit.MINUTES)
 
     private fun registerProjectAware(project: Project, disposable: Disposable) {
         // There is no sense to register `CargoExternalSystemProjectAware` for default project.
@@ -98,6 +101,16 @@ class MoveProjectsService(val project: Project): Disposable {
                         tracker.scheduleProjectRefresh()
                     }
                 }
+            })
+
+        // default projectTracker cannot detect Move.toml file creation,
+        // as it's not present in the `settingsFiles`
+        @Suppress("UnstableApiUsage")
+        project.messageBus.connect(disposable)
+            .subscribe(VirtualFileManager.VFS_CHANGES, OnMoveTomlCreatedFileListener {
+                val tracker = AutoImportProjectTracker.getInstance(project)
+                tracker.markDirty(moveProjectAware.projectId)
+                tracker.scheduleProjectRefresh()
             })
     }
 
@@ -141,7 +154,7 @@ class MoveProjectsService(val project: Project): Disposable {
     private fun doRefreshProjects(project: Project, reason: String?): CompletableFuture<List<MoveProject>> {
         val moveProjectsFut = CompletableFuture<List<MoveProject>>()
 
-        val syncTask = MoveProjectsSyncTask(project, moveProjectsFut, reason)
+        val syncTask = MoveProjectsSyncTask(project, this, moveProjectsFut, reason)
         project.taskQueue.run(syncTask)
 
         return moveProjectsFut.thenApply { updatedProjects ->
@@ -219,11 +232,10 @@ class MoveProjectsService(val project: Project): Disposable {
                         // disable for unit-tests: in those cases roots change is done by the test framework
                         runOnlyInNonLightProject(project) {
                             ProjectRootManagerEx.getInstanceEx(project)
-                                .makeRootsChange(EmptyRunnable.getInstance(), false, true)
-//                                .makeRootsChange(
-//                                    EmptyRunnable.getInstance(),
-//                                    RootsChangeRescanningInfo.TOTAL_RESCAN
-//                                )
+                                .makeRootsChange(
+                                    EmptyRunnable.getInstance(),
+                                    RootsChangeRescanningInfo.TOTAL_RESCAN
+                                )
                         }
                         // increments structure modification counter in the subscriber
                         project.messageBus

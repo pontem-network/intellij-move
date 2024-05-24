@@ -38,11 +38,13 @@ class MoveExternalSystemProjectAwareTest: MvProjectTestBase() {
             namedMoveToml("RootPackage")
             build {
                 dir("RootPackage") {
-                    buildInfoYaml("""
+                    buildInfoYaml(
+                        """
 ---
 compiled_package_info:
   package_name: RootPackage
-""")
+"""
+                    )
                 }
             }
             sources {
@@ -85,33 +87,98 @@ compiled_package_info:
         testProject.checkFileModification("child2/sources/main.move", triggered = false)
     }
 
-    fun `test reload`() {
+//    fun `test files deletion`() {
+//        val testProject = testProject {
+//            namedMoveToml("Liquidswap")
+//            sources {
+//                main(
+//                    """
+//                    module 0x1::main {/*caret*/}
+//                """
+//                )
+//            }
+//            dir("liquidswap_init") {
+//                namedMoveToml("LiquidswapInit")
+//                sources {
+//                    move(
+//                        "liquidswap_init_main.move", """
+//                        module 0x1::liquidswap_init_main {}
+//                    """
+//                    )
+//                }
+//            }
+//        }
+//        assertNotificationAware(event = "after project creation")
+//
+//        testProject.checkFileDeletion("Move.toml", triggered = true)
+//        testProject.checkFileDeletion("sources/main.move", triggered = false)
+//
+//        testProject.checkFileDeletion("liquidswap_init/Move.toml", triggered = true)
+//        testProject.checkFileDeletion("liquidswap_init/sources/liquidswap_init_main.move", triggered = false)
+//
+//        val liquidswapInitDir = testProject.file("liquidswap_init")
+//        checkModification(
+//            "removing of ", "liquidswap_init", triggered = true,
+//            apply = { liquidswapInitDir.delete(liquidswapInitDir.fileSystem) },
+//            revert = null
+//        )
+//    }
+
+//    fun `test files creation`() {
+//        val testProject = testProject {
+//            namedMoveToml("Liquidswap")
+//            sources {
+//                main("/*caret*/")
+//            }
+//            dir("liquidswap_init") {
+//                sources { }
+//            }
+//        }
+//        assertNotificationAware(event = "initial project creation")
+//
+//        testProject.checkFileCreation("sources/module.move", revert = false, triggered = false)
+//
+//        testProject.checkFileCreation("liquidswap_init/Move.toml", triggered = true)
+//        testProject.checkFileCreation("liquidswap_init/sources/main.move", triggered = false)
+//
+//        // no trigger if malformed file name
+//        testProject.checkFileCreation("liquidswap_init/MyMove.toml", triggered = false, revert = false)
+//        testProject.checkFileRename("liquidswap_init/MyMove.toml", "Move.toml", triggered = true)
+//    }
+
+    fun `test reloading`() {
         val testProject = testProject {
-            moveToml("""
+            moveToml(
+                """
                 [package]
                 name = "MainPackage"
                 
                 [dependencies]
                 #Dep = { local = "./dep" }
-            """)
+            """
+            )
             sources {
-                main("""
+                main(
+                    """
                     module 0x1::main {
                         fun main() {
                             0x1::dep::call();
                                     //^
                         }
                     }                    
-                """)
+                """
+                )
             }
             dir("dep") {
                 namedMoveToml("Dep")
                 sources {
-                    move("dep.move", """
+                    move(
+                        "dep.move", """
                         module 0x1::dep {
                             public fun call() {}
                         }                        
-                    """)
+                    """
+                    )
                 }
             }
         }
@@ -153,14 +220,24 @@ compiled_package_info:
         )
     }
 
-    private fun TestProject.checkFileCreation(path: String, triggered: Boolean) {
-        checkModification("creation of", path, triggered,
-                          apply = { createFile(rootDirectory, path) },
-                          revert = {
-                              val file = file(path)
-                              file.delete(file.fileSystem)
-                          }
+    private fun TestProject.checkFileCreation(path: String, triggered: Boolean, revert: Boolean = true) {
+        val callRevert = if (revert) ({ val file = file(path); file.delete(file.fileSystem) }) else null
+        checkModification(
+            "creation of", path, triggered,
+            apply = { createFile(rootDirectory, path) },
+            revert = callRevert
         )
+    }
+
+    @Throws(IOException::class)
+    private fun TestProject.checkFileRename(path: String, newName: String, triggered: Boolean): VirtualFile {
+        val file = file(path)
+        checkModification(
+            "rename of", path, triggered = triggered,
+            apply = { file.rename(null, newName) },
+            revert = null
+        )
+        return file
     }
 
     private fun checkModification(
@@ -168,7 +245,7 @@ compiled_package_info:
         path: String,
         triggered: Boolean,
         apply: () -> Unit,
-        revert: () -> Unit
+        revert: (() -> Unit)?
     ) {
         runWriteAction {
             apply()
@@ -176,10 +253,12 @@ compiled_package_info:
         val externalSystems = if (triggered) arrayOf(moveSystemId) else arrayOf()
         assertNotificationAware(*externalSystems, event = "$eventName $path")
 
-        runWriteAction {
-            revert()
+        if (revert != null) {
+            runWriteAction {
+                revert()
+            }
+            assertNotificationAware(event = "revert $eventName $path")
         }
-        assertNotificationAware(event = "revert $eventName $path")
     }
 
     private fun scheduleProjectReload() {
@@ -221,7 +300,8 @@ compiled_package_info:
         val parentPath = PathUtil.getParentPath(path)
         var parent = root
         if (parentPath.isNotEmpty()) {
-            parent = VfsUtil.createDirectoryIfMissing(root, parentPath) ?: error("Failed to create $parentPath directory")
+            parent = VfsUtil.createDirectoryIfMissing(root, parentPath)
+                ?: error("Failed to create $parentPath directory")
         }
         val file = parent.createChildData(parent.fileSystem, name)
         VfsUtil.saveText(file, text)

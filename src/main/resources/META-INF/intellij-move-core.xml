@@ -18,6 +18,15 @@
   <depends>org.toml.lang</depends>
 
   <extensions defaultExtensionNs="com.intellij">
+
+    <fileType name="APTOS_BYTECODE"
+              extensions="mv"
+              implementationClass="org.move.bytecode.AptosBytecodeFileType"
+              fieldName="INSTANCE" />
+    <filetype.decompiler filetype="APTOS_BYTECODE"
+                         implementationClass="org.move.bytecode.AptosBytecodeDecompiler" />
+    <editorNotificationProvider implementation="org.move.bytecode.AptosBytecodeNotificationProvider" />
+
     <fileType name="Move"
               language="Move"
               extensions="move"
@@ -276,6 +285,12 @@
                      enabledByDefault="true" level="WEAK WARNING"
                      implementationClass="org.move.ide.inspections.ReplaceWithMethodCallInspection" />
 
+    <!--  cannot be run on-the-fly, therefore enabled  -->
+    <globalInspection language="Move" groupName="Move"
+                      enabledByDefault="true" level="ERROR"
+                      implementationClass="org.move.ide.inspections.MvExternalLinterInspection"
+                      displayName="External linter"/>
+
     <!-- Color Settings -->
     <colorSettingsPage implementation="org.move.ide.colors.MvColorSettingsPage" />
 
@@ -414,14 +429,34 @@
             description="Download aptos-cli executable from Github"
             class="org.move.ide.actions.DownloadAptosSDKAction"
             icon="AllIcons.Actions.Download" />
-    
+
+    <action id="Move.RunExternalLinter"
+            class="org.move.ide.actions.MvRunExternalLinterAction"
+            icon="/icons/externalLinter.svg">
+    </action>
     <action id="Move.ShowSettings"
             class="org.move.ide.actions.MoveEditSettingsAction"
             icon="AllIcons.General.Settings">
     </action>
+    <action id="Move.FetchAptosPackage"
+            class="org.move.bytecode.FetchAptosPackageAction"
+            icon="AllIcons.Actions.Download">
+    </action>
+
+    <action id="Move.DecompileAptosMvFile"
+            class="org.move.bytecode.DecompileAptosMvFileAction">
+      <add-to-group group-id="ProjectViewPopupMenu" />
+    </action>
 
     <group id="Move.Aptos">
       <reference id="Move.RefreshAllProjects" />
+      <separator/>
+      <reference id="Move.RunExternalLinter"/>
+      <separator/>
+      <reference id="ExpandAll"/>
+      <reference id="CollapseAll"/>
+      <separator/>
+      <reference id="Move.FetchAptosPackage" />
       <separator/>
       <reference id="Move.ShowSettings" />
     </group>

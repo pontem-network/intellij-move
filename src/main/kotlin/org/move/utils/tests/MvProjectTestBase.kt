@@ -22,6 +22,7 @@ import org.move.openapiext.toPsiDirectory
 import org.move.openapiext.toPsiFile
 import org.move.openapiext.toVirtualFile
 import org.move.utils.tests.base.TestCase
+import java.util.concurrent.TimeUnit
 
 @TestOnly
 fun setRegistryKey(key: String, value: Boolean) = Registry.get(key).setValue(value)
@@ -71,7 +72,8 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
         myFixture.configureFromFileWithCaret(testProject)
 
         SystemProperties.setProperty("user.home", testProject.rootDirectory.path)
-        project.moveProjectsService.scheduleProjectsRefresh("from test project")
+        project.moveProjectsService.scheduleProjectsRefreshSync("from test project")
+
         return testProject
     }
 

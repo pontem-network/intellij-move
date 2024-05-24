@@ -43,7 +43,7 @@ import org.jdom.Element
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.common.isHeadlessEnvironment
 import org.move.openapiext.common.isUnitTestMode
-import org.rust.ide.annotator.RsExternalLinterPass
+import org.move.ide.annotator.RsExternalLinterPass
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.Callable
@@ -238,5 +238,8 @@ inline fun <Key: Any, reified Psi: PsiElement> getElements(
 ): Collection<Psi> =
     StubIndex.getElements(indexKey, key, project, scope, Psi::class.java)
 
-fun joinPath(segments: Array<String>) =
+fun joinPathArray(segments: Array<String>) =
+    segments.joinTo(StringBuilder(), Platform.current().fileSeparator.toString()).toString()
+
+fun joinPath(vararg segments: String) =
     segments.joinTo(StringBuilder(), Platform.current().fileSeparator.toString()).toString()

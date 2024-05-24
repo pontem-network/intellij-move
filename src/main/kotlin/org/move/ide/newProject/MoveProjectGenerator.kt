@@ -12,7 +12,8 @@ import com.intellij.platform.DirectoryProjectGenerator
 import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
 import org.move.cli.PluginApplicationDisposable
-import org.move.cli.runConfigurations.BlockchainCli
+import org.move.cli.runConfigurations.aptos.Aptos
+import org.move.cli.runConfigurations.sui.Sui
 import org.move.cli.settings.Blockchain
 import org.move.cli.settings.Blockchain.APTOS
 import org.move.cli.settings.Blockchain.SUI
@@ -53,11 +54,11 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<MoveProjectConfig>(),
                     val aptosPath =
                         AptosExecType.aptosExecPath(projectConfig.aptosExecType, projectConfig.localAptosPath)
                             ?: error("validated before")
-                    BlockchainCli.Aptos(aptosPath)
+                    Aptos(aptosPath, disposable)
                 }
                 SUI -> {
                     val suiPath = projectConfig.localSuiPath?.toPathOrNull() ?: error("validated before")
-                    BlockchainCli.Sui(suiPath)
+                    Sui(suiPath, disposable)
                 }
             }
         val manifestFile =
@@ -65,7 +66,6 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<MoveProjectConfig>(),
                 val manifestFile =
                     projectCli.init(
                         project,
-                        disposable,
                         rootDirectory = baseDir,
                         packageName = packageName
                     )
@@ -76,11 +76,11 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<MoveProjectConfig>(),
         project.moveSettings.modify {
             it.blockchain = blockchain
             when (projectCli) {
-                is BlockchainCli.Aptos -> {
+                is Aptos -> {
                     it.aptosExecType = projectConfig.aptosExecType
                     it.localAptosPath = projectConfig.localAptosPath
                 }
-                is BlockchainCli.Sui -> {
+                is Sui -> {
                     it.localSuiPath = projectConfig.localSuiPath
                 }
             }

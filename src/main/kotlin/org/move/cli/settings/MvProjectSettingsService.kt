@@ -1,6 +1,7 @@
 package org.move.cli.settings
 
 import com.intellij.execution.configurations.PathEnvironmentVariableUtil
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
@@ -8,8 +9,8 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import org.move.cli.runConfigurations.BlockchainCli
-import org.move.cli.runConfigurations.BlockchainCli.Aptos
-import org.move.cli.runConfigurations.BlockchainCli.Sui
+import org.move.cli.runConfigurations.aptos.Aptos
+import org.move.cli.runConfigurations.sui.Sui
 import org.move.cli.settings.Blockchain.APTOS
 import org.move.cli.settings.Blockchain.SUI
 import org.move.cli.settings.MvProjectSettingsService.MoveProjectSettings
@@ -119,7 +120,7 @@ class MvProjectSettingsService(
 
 val Project.blockchain: Blockchain get() = this.moveSettings.blockchain
 
-fun Project.getBlockchainCli(blockchain: Blockchain): BlockchainCli? {
+fun Project.getBlockchainCli(blockchain: Blockchain, parentDisposable: Disposable? = null): BlockchainCli? {
     return when (blockchain) {
         APTOS -> {
             val aptosExecPath =
@@ -127,21 +128,24 @@ fun Project.getBlockchainCli(blockchain: Blockchain): BlockchainCli? {
                     this.moveSettings.aptosExecType,
                     this.moveSettings.localAptosPath
                 )
-            aptosExecPath?.let { Aptos(it) }
+            aptosExecPath?.let { Aptos(it, parentDisposable) }
         }
-        SUI -> this.moveSettings.localSuiPath?.toPathOrNull()?.let { Sui(it) }
+        SUI -> this.moveSettings.localSuiPath?.toPathOrNull()?.let { Sui(it, parentDisposable) }
     }
 }
 
-val Project.blockchainCli: BlockchainCli? get() = getBlockchainCli(this.blockchain)
+fun Project.getBlockchainCli(parentDisposable: Disposable?): BlockchainCli? =
+    getBlockchainCli(this.blockchain, parentDisposable)
 
-val Project.aptosCli: Aptos? get() = getBlockchainCli(APTOS) as? Aptos
+val Project.isAptosConfigured: Boolean get() = getBlockchainCli(APTOS) != null
+fun Project.getAptosCli(parentDisposable: Disposable? = null): Aptos? = getBlockchainCli(APTOS, parentDisposable) as? Aptos
 
-val Project.suiCli: Sui? get() = getBlockchainCli(SUI) as? Sui
+fun Project.getSuiCli(parentDisposable: Disposable? = null): Sui? =
+    getBlockchainCli(SUI, parentDisposable) as? Sui
 
-val Project.aptosExecPath: Path? get() = this.aptosCli?.cliLocation
+val Project.aptosExecPath: Path? get() = this.getAptosCli()?.cliLocation
 
-val Project.suiExecPath: Path? get() = this.suiCli?.cliLocation
+val Project.suiExecPath: Path? get() = this.getSuiCli()?.cliLocation
 
 fun Path?.isValidExecutable(): Boolean {
     return this != null

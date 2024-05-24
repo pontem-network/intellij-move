@@ -12,14 +12,14 @@ data class CliCommandLineArgs(
     val environmentVariables: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
 ) {
     fun joinArgs(): String {
-        return StringUtil.join(listOfNotNull(subCommand, *arguments.toTypedArray()), " ")
+        return StringUtil.join(subCommand?.split(" ").orEmpty() + arguments, " ")
     }
 
     fun toGeneralCommandLine(cliExePath: Path): GeneralCommandLine {
         val generalCommandLine = GeneralCommandLine()
             .withExePath(cliExePath.toString())
             // subcommand can be null
-            .withParameters(listOfNotNull(subCommand))
+            .withParameters(subCommand?.split(" ").orEmpty())
             .withParameters(this.arguments)
             .withWorkDirectory(this.workingDirectory?.toString())
             .withCharset(Charsets.UTF_8)

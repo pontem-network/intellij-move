@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-package org.rust.ide.annotator
+package org.move.ide.annotator
 
 import com.intellij.codeHighlighting.DirtyScopeTrackingHighlightingPassFactory
 import com.intellij.codeHighlighting.TextEditorHighlightingPass
@@ -32,13 +32,9 @@ import com.intellij.psi.PsiFile
 import com.intellij.util.ui.update.MergingUpdateQueue
 import com.intellij.util.ui.update.Update
 import org.move.cli.externalLinter.externalLinterSettings
-import org.move.cli.runConfigurations.AptosCompileArgs
-import org.move.cli.runConfigurations.workingDirectory
-import org.move.cli.settings.aptosCli
-import org.move.ide.annotator.RsExternalLinterResult
-import org.move.ide.annotator.RsExternalLinterUtils
-import org.move.ide.annotator.addHighlightsForFile
-import org.move.ide.annotator.createDisposableOnAnyPsiChange
+import org.move.cli.runConfigurations.aptos.AptosCompileArgs
+import org.move.cli.runConfigurations.aptos.workingDirectory
+import org.move.cli.settings.getAptosCli
 import org.move.ide.notifications.RsExternalLinterSlowRunNotifier
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.ext.findMoveProject
@@ -69,11 +65,11 @@ class RsExternalLinterPass(
         disposable = myProject.messageBus.createDisposableOnAnyPsiChange()
             .also { Disposer.register(moduleOrProject, it) }
 
+        val aptos = myProject.getAptosCli(parentDisposable = disposable) ?: return
         val args = AptosCompileArgs.forMoveProject(moveProject)
         annotationInfo = RsExternalLinterUtils.checkLazily(
-            myProject.aptosCli ?: return,
+            aptos,
             myProject,
-            disposable,
             moveProject.workingDirectory,
             args
         )

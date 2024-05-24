@@ -4,8 +4,11 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.ColorUtil
+import com.intellij.ui.JBColor
 import com.intellij.ui.LayeredIcon
-import com.intellij.util.IconUtil
+import com.intellij.ui.LayeredIcon.Companion.layeredIcon
+import com.intellij.ui.icons.RgbImageFilterSupplier
+import com.jetbrains.rd.generator.nova.array
 import java.awt.Color
 import java.awt.Component
 import java.awt.Graphics
@@ -17,6 +20,8 @@ object MoveIcons {
     val MOVE_LOGO = load("/icons/move_logo.svg")
     val APTOS_LOGO = load("/icons/aptos.svg")
     val SUI_LOGO = load("/icons/sui.svg")
+
+    val MV_LOGO = load("/icons/move_logo.svg")
 
     val ADDRESS = load("/icons/annotationtype.png")
     val MODULE = load("/icons/module.svg")
@@ -55,17 +60,23 @@ object MoveIcons {
 
     val GEAR = load("/icons/gear.svg")
     val GEAR_OFF = load("/icons/gearOff.svg")
-    val GEAR_ANIMATED = AnimatedIcon(AnimatedIcon.Default.DELAY, GEAR, GEAR.rotated(15.0), GEAR.rotated(30.0), GEAR.rotated(45.0))
+    val GEAR_ANIMATED = AnimatedIcon(
+        AnimatedIcon.Default.DELAY,
+        GEAR,
+        GEAR.rotated(15.0),
+        GEAR.rotated(30.0),
+        GEAR.rotated(45.0)
+    )
 
     private fun load(path: String): Icon = IconLoader.getIcon(path, MoveIcons::class.java)
 }
 
 
-fun Icon.addFinalMark(): Icon = LayeredIcon(this, MoveIcons.FINAL_MARK)
+fun Icon.addFinalMark(): Icon = layeredIcon(arrayOf(this, MoveIcons.FINAL_MARK))
 
-fun Icon.addStaticMark(): Icon = LayeredIcon(this, MoveIcons.STATIC_MARK)
+fun Icon.addStaticMark(): Icon = layeredIcon(arrayOf(this, MoveIcons.STATIC_MARK))
 
-fun Icon.addTestMark(): Icon = LayeredIcon(this, MoveIcons.TEST_MARK)
+fun Icon.addTestMark(): Icon = layeredIcon(arrayOf(this, MoveIcons.TEST_MARK))
 
 fun Icon.multiple(): Icon {
     val compoundIcon = LayeredIcon(2)
@@ -74,15 +85,16 @@ fun Icon.multiple(): Icon {
     return compoundIcon
 }
 
+@Suppress("UnstableApiUsage")
 fun Icon.grayed(): Icon =
-    IconUtil.filterIcon(this, {
-        object : RGBImageFilter() {
+    IconLoader.filterIcon(this, object: RgbImageFilterSupplier {
+        override fun getFilter(): RGBImageFilter = object: RGBImageFilter() {
             override fun filterRGB(x: Int, y: Int, rgb: Int): Int {
                 val color = Color(rgb, true)
                 return ColorUtil.toAlpha(color, (color.alpha / 2.2).toInt()).rgb
             }
         }
-    }, null)
+    })
 
 /**
  * Rotates the icon by the given angle, in degrees.
@@ -94,7 +106,7 @@ fun Icon.grayed(): Icon =
  */
 fun Icon.rotated(angle: Double): Icon {
     val q = this
-    return object : Icon by this {
+    return object: Icon by this {
         override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
             val g2d = g.create() as Graphics2D
             try {

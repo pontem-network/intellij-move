@@ -64,6 +64,7 @@ fun GeneralCommandLine.execute(): ProcessOutput? {
     return output
 }
 
+/// `owner` parameter represents the object whose lifetime it's using for the process lifetime
 fun GeneralCommandLine.execute(
     owner: Disposable,
     stdIn: ByteArray? = null,
@@ -72,34 +73,36 @@ fun GeneralCommandLine.execute(
 ): RsProcessResult<ProcessOutput> {
     LOG.info("Executing `$commandLineString`")
 
-    val handler = MvCapturingProcessHandler.startProcess(this) // The OS process is started here
+    val processHandler = MvCapturingProcessHandler
+        .startProcess(this) // The OS process is started here
         .unwrapOrElse {
             LOG.warn("Failed to run executable", it)
             return RsResult.Err(RsProcessExecutionException.Start(commandLineString, it))
         }
 
+    // kill process on dispose()
     val processKiller = Disposable {
         // Don't attempt a graceful termination, Cargo can be SIGKILLed safely.
         // https://github.com/rust-lang/cargo/issues/3566
-        if (!handler.isProcessTerminated) {
-            handler.process.destroyForcibly() // Send SIGKILL
-            handler.destroyProcess()
+        if (!processHandler.isProcessTerminated) {
+            processHandler.process.destroyForcibly() // Send SIGKILL
+            processHandler.destroyProcess()
         }
     }
 
     @Suppress("DEPRECATION")
-    val alreadyDisposed = runReadAction {
-        if (Disposer.isDisposed(owner)) {
-            true
-        } else {
-            Disposer.register(owner, processKiller)
-            false
+    val ownerIsAlreadyDisposed =
+        runReadAction {
+            // check that owner is disposed, kill process then
+            if (Disposer.isDisposed(owner)) {
+                true
+            } else {
+                Disposer.register(owner, processKiller)
+                false
+            }
         }
-    }
-
-    if (alreadyDisposed) {
+    if (ownerIsAlreadyDisposed) {
         Disposer.dispose(processKiller) // Kill the process
-
         // On the one hand, this seems fishy,
         // on the other hand, this is isomorphic
         // to the scenario where cargoKiller triggers.
@@ -113,14 +116,14 @@ fun GeneralCommandLine.execute(
         )
     }
 
-    listener?.let { handler.addProcessListener(it) }
+    listener?.let { processHandler.addProcessListener(it) }
 
     val output = try {
         if (stdIn != null) {
-            handler.processInput.use { it.write(stdIn) }
+            processHandler.processInput.use { it.write(stdIn) }
         }
 
-        handler.runner()
+        processHandler.runner()
     } finally {
         Disposer.dispose(processKiller)
     }
@@ -141,15 +144,34 @@ fun GeneralCommandLine.execute(
 
 private fun showCommandLineBalloon(commandLineString: String, output: ProcessOutput) {
     if (isDebugModeEnabled()) {
-        val content =
-            if (!output.isSuccess) {
-                """`$commandLineString` |Execution failed (exit code ${output.exitCode}).
-    """
-            } else {
-                """`$commandLineString` |Execution successful.
-    """
+        when {
+            output.isTimeout -> {
+                showBalloonWithoutProject(
+                    "Execution failed",
+                    "`$commandLineString`(timeout)",
+                    INFORMATION
+                )
             }
-        showBalloonWithoutProject(content.trimStart(), INFORMATION)
+            output.isCancelled -> {
+                showBalloonWithoutProject(
+                    "Execution failed",
+                    "`$commandLineString`(cancelled)",
+                    INFORMATION
+                )
+            }
+            output.exitCode != 0 -> {
+                showBalloonWithoutProject(
+                    "Execution failed",
+                    "`$commandLineString`(exit code ${output.exitCode}). " +
+                            "<p>stdout=${output.stdout}</p>" +
+                            "<p>stderr=${output.stderr}</p>",
+                    INFORMATION
+                )
+            }
+            else -> {
+                showBalloonWithoutProject("Execution successful", commandLineString, INFORMATION)
+            }
+        }
     }
 }
 
@@ -160,7 +182,7 @@ private fun errorMessage(commandLine: GeneralCommandLine, output: ProcessOutput)
         |stderr : ${output.stderr}
     """.trimMargin()
 
-private fun CapturingProcessHandler.runProcessWithGlobalProgress(timeoutInMilliseconds: Int? = null): ProcessOutput {
+fun CapturingProcessHandler.runProcessWithGlobalProgress(timeoutInMilliseconds: Int? = null): ProcessOutput {
     return runProcess(ProgressManager.getGlobalProgressIndicator(), timeoutInMilliseconds)
 }
 
