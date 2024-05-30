@@ -123,9 +123,11 @@ allprojects {
     }
 
     kotlin {
-        sourceSets {
-            main {
-                kotlin.srcDirs("src/$shortPlatformVersion/main/kotlin")
+        if (file("src/$shortPlatformVersion/main/kotlin").exists()) {
+            sourceSets {
+                main {
+                    kotlin.srcDirs("src/$shortPlatformVersion/main/kotlin")
+                }
             }
         }
     }
@@ -133,15 +135,17 @@ allprojects {
     tasks {
         patchPluginXml {
             version.set(pluginVersion)
-            changeNotes.set(
-                """
+            if (publishingChannel == "default") {
+                changeNotes.set(
+                    """
     <body>
         <p><a href="https://github.com/pontem-network/intellij-move/blob/master/changelog/$pluginVersion.md">
             Changelog for Intellij-Move $pluginVersion on Github
             </a></p>
     </body>
             """
-            )
+                )
+            }
             sinceBuild.set(prop("pluginSinceBuild"))
             untilBuild.set(prop("pluginUntilBuild"))
         }
@@ -172,7 +176,7 @@ allprojects {
                 for (releasePlatform in listOf(/*"MacOSX",*/ "Ubuntu-22.04", "Ubuntu", "Windows")) {
                     val zipFileName = "aptos-cli-$aptosVersion-$releasePlatform-x86_64.zip"
                     val zipFileUrl = "$baseUrl/$zipFileName"
-                    val zipRoot = "${rootProject.buildDir}/zip"
+                    val zipRoot = "${rootProject.layout.buildDirectory}/zip"
                     val zipFile = file("$zipRoot/$zipFileName")
                     if (!zipFile.exists()) {
                         download.run {
@@ -231,6 +235,13 @@ project(":") {
                 .forEach { it.resolve() }
         }
     }
+
+    idea {
+        pathVariables(mapOf("USER_HOME" to file("/home/mkurnikov")))
+        module {
+            name = "intellij-move.main"
+        }
+    }
 }
 
 project(":plugin") {
@@ -239,6 +250,9 @@ project(":plugin") {
     }
 
     tasks {
+        ideaModule {
+            enabled = false
+        }
         runPluginVerifier {
             if ("SNAPSHOT" !in shortPlatformVersion) {
                 ideVersions.set(
@@ -333,6 +347,12 @@ project(":ui-tests") {
 
     tasks.named<Test>("test") {
         useJUnitPlatform()
+    }
+
+    tasks {
+        ideaModule {
+            enabled = false
+        }
     }
 }
 
