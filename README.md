@@ -1,25 +1,23 @@
-# Move Language plugin for the Intellij platform
+# Move on Aptos language plugin for the IntelliJ-based IDEs
+
+[Plugin documentation](https://mkurnikov.github.io/intellij-move-docs/) is work-in-progress 
 
 ## Installation
 
 Open `Settings > Plugins > Marketplace` in your IDE, search for _Move Language_ and install the plugin.
-To open an existing project, use **File | Open** and point to the directory containing `Move.toml`. 
+To open an existing project, use **File | Open** and point to the directory containing `Move.toml`.
+
+## Compatible IDEs
+
+The plugin is compatible with all IntelliJ-based IDEs starting from 2023.3. 
+Other versions have older versions of the plugin.
 
 New features are announced in [changelog](https://github.com/pontem-network/intellij-move/tree/master/changelog). 
 
 ## Features
 
-* Syntax highlighting
-* Code formatting
-* Go-to-definition
+* Aptos Move Language support
 * Rename refactoring
-* Type inference
-* `Move.toml` and `move` binary integration
-
-## Dependencies
-
-For git dependencies specified in `Move.toml` file you need to manually run `move package build` to populate `build/` directory. 
-
-## Compatible IDEs
-
-All Intellij-based IDEs starting from version 2021.1. For 2020.3 and below you can use old versions of the plugin. 
+* Code formatting
+* Integration with `aptos-cli`.
+* Running Aptos compiler on-the-fly.
