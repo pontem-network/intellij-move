@@ -7,6 +7,7 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.layout.ComponentPredicate
 import org.move.cli.settings.aptos.ChooseAptosCliPanel
 import org.move.cli.settings.sui.ChooseSuiCliPanel
 import org.move.openapiext.showSettingsDialog
@@ -22,9 +23,9 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                 val settings = project.moveSettings
                 val state = settings.state.copy()
 
+                var aptosRadioButton: Cell<JBRadioButton>? = null
+                var suiRadioButton: Cell<JBRadioButton>? = null
                 group {
-                    var aptosRadioButton: Cell<JBRadioButton>? = null
-                    var suiRadioButton: Cell<JBRadioButton>? = null
                     buttonsGroup("Blockchain") {
                         row {
                             aptosRadioButton = radioButton("Aptos")
@@ -44,40 +45,47 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                     chooseSuiCliPanel.attachToLayout(this)
                         .visibleIf(suiRadioButton!!.selected)
                 }
+
                 group {
                     row {
-                        checkBox("Disable telemetry for new Run Configurations")
-                            .bindSelected(state::disableTelemetry)
-                    }
-                    row {
-                        checkBox("Skip updating to the latest git dependencies")
-                            .bindSelected(state::skipFetchLatestGitDeps)
-                        comment(
-                            "Adds --skip-fetch-latest-git-deps to the sync and test runs. "
-                        )
-                    }
-                    row {
-                        checkBox("Dump storage to console on test failures")
-                            .bindSelected(state::dumpStateOnTestFailure)
-                        comment(
-                            "Adds --dump to the test runs (aptos only)."
-                        )
-                    }
-                    row {
                         checkBox("Fetch Aptos dependencies")
+                            .comment(
+                                "Enables fetching dependencies for the Aptos projects on every change " +
+                                        "to the Move.toml file"
+                            )
                             .bindSelected(state::fetchAptosDeps)
-                        comment(
-                            "Enables fetching dependencies for the Aptos projects on every change to the Move.toml file"
-                        )
                     }
                     row {
                         checkBox("Enable Aptos V2 compiler")
+                            .comment(
+                                "Enables features of the Aptos V2 compiler " +
+                                        "(receiver style functions, access control, etc.)"
+                            )
                             .bindSelected(state::isCompilerV2)
-                        comment(
-                            "Enables features of the Aptos V2 compiler (receiver style functions, access control, etc.)"
-                        )
+
                     }
-                }
+                    group("Command Line Options") {
+                        row {
+                            checkBox("Disable telemetry for new Run Configurations")
+                                .bindSelected(state::disableTelemetry)
+                        }
+                        row {
+                            checkBox("Skip updating to the latest git dependencies")
+                                .comment(
+                                    "Adds --skip-fetch-latest-git-deps to the sync and test runs. "
+                                )
+                                .bindSelected(state::skipFetchLatestGitDeps)
+
+                        }
+                        row {
+                            checkBox("Dump storage to console on test failures")
+                                .comment(
+                                    "Adds --dump to the test runs (aptos only)."
+                                )
+                                .bindSelected(state::dumpStateOnTestFailure)
+                        }
+                    }
+                }.visibleIf(aptosRadioButton!!.selected)
 
                 if (!project.isDefault) {
                     row {

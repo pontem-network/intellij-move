@@ -16,6 +16,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.Disposer
+import com.intellij.util.SystemProperties
 import com.intellij.util.io.systemIndependentPath
 import org.move.cli.runConfigurations.MvCapturingProcessHandler
 import org.move.cli.settings.isDebugModeEnabled
@@ -56,7 +57,7 @@ fun GeneralCommandLine.execute(): ProcessOutput? {
         return null
     }
     val output = handler.runProcessWithGlobalProgress()
-    showCommandLineBalloon(commandLineString, output)
+    showCommandLineBalloon(commandLineString, output, this.workDirectory?.path)
 
     if (!output.isSuccess) {
         LOG.warn(RsProcessExecutionException.errorMessage(commandLineString, output))
@@ -122,12 +123,12 @@ fun GeneralCommandLine.execute(
         if (stdIn != null) {
             processHandler.processInput.use { it.write(stdIn) }
         }
-
+        // execution happens here
         processHandler.runner()
     } finally {
         Disposer.dispose(processKiller)
     }
-    showCommandLineBalloon(commandLineString, output)
+    showCommandLineBalloon(commandLineString, output, this.workDirectory.path)
 
     return when {
         output.isCancelled -> RsResult.Err(RsProcessExecutionException.Canceled(commandLineString, output))
@@ -142,34 +143,46 @@ fun GeneralCommandLine.execute(
     }
 }
 
-private fun showCommandLineBalloon(commandLineString: String, output: ProcessOutput) {
+private fun showCommandLineBalloon(
+    commandText: String,
+    output: ProcessOutput,
+    workingDirectory: String? = null
+) {
     if (isDebugModeEnabled()) {
+        val userHome = SystemProperties.getUserHome()
+        val command = commandText.replace(userHome, "~")
+        val workDir = workingDirectory?.replace(userHome, "~")
+        val atWorkDir = if (workDir != null) "&nbsp;<p>at $workDir</p>" else ""
         when {
             output.isTimeout -> {
                 showBalloonWithoutProject(
                     "Execution failed",
-                    "`$commandLineString`(timeout)",
+                    "<code>$command</code> (timeout) $atWorkDir",
                     INFORMATION
                 )
             }
             output.isCancelled -> {
                 showBalloonWithoutProject(
                     "Execution failed",
-                    "`$commandLineString`(cancelled)",
+                    "<code>$command</code> (cancelled) $atWorkDir",
                     INFORMATION
                 )
             }
             output.exitCode != 0 -> {
                 showBalloonWithoutProject(
                     "Execution failed",
-                    "`$commandLineString`(exit code ${output.exitCode}). " +
+                    "<code>$command</code> (exit code ${output.exitCode}) $atWorkDir " +
                             "<p>stdout=${output.stdout}</p>" +
                             "<p>stderr=${output.stderr}</p>",
                     INFORMATION
                 )
             }
             else -> {
-                showBalloonWithoutProject("Execution successful", commandLineString, INFORMATION)
+                showBalloonWithoutProject(
+                    "Execution successful",
+                    "<code>$command</code> $atWorkDir",
+                    INFORMATION
+                )
             }
         }
     }

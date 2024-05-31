@@ -342,6 +342,7 @@
 
     <!-- Notifications -->
     <notificationGroup id="Move Language" displayType="BALLOON" />
+    <notificationGroup id="Move Compile Log" displayType="NONE"/>
     <editorNotificationProvider
         implementation="org.move.ide.notifications.InvalidBlockchainCliConfiguration" />
     <editorNotificationProvider
