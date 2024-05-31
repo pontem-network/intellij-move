@@ -7,17 +7,17 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.*
-import com.intellij.ui.layout.ComponentPredicate
 import org.move.cli.settings.aptos.ChooseAptosCliPanel
 import org.move.cli.settings.sui.ChooseSuiCliPanel
 import org.move.openapiext.showSettingsDialog
 
+// panels needs not to be bound to the Configurable itself, as it's sometimes created without calling the `createPanel()`
 class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move Language") {
 
-    private val chooseAptosCliPanel = ChooseAptosCliPanel(versionUpdateListener = null)
-    private val chooseSuiCliPanel = ChooseSuiCliPanel()
-
     override fun createPanel(): DialogPanel {
+        val chooseAptosCliPanel = ChooseAptosCliPanel(versionUpdateListener = null)
+        val chooseSuiCliPanel = ChooseSuiCliPanel()
+
         val configurablePanel =
             panel {
                 val settings = project.moveSettings
@@ -136,8 +136,10 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                             || suiPanelData.localSuiPath != settings.localSuiPath
                 }
             }
-        Disposer.register(this.disposable!!, chooseAptosCliPanel)
-        Disposer.register(this.disposable!!, chooseSuiCliPanel)
+        this.disposable?.let {
+            Disposer.register(it, chooseAptosCliPanel)
+            Disposer.register(it, chooseSuiCliPanel)
+        }
         return configurablePanel
     }
 
