@@ -46,7 +46,7 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                         .visibleIf(suiRadioButton!!.selected)
                 }
 
-                group("Aptos Settings") {
+                group {
                     row {
                         checkBox("Fetch Aptos dependencies")
                             .comment(
