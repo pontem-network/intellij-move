@@ -216,9 +216,13 @@ class MoveProjectsService(val project: Project): Disposable {
     ): CompletableFuture<List<MoveProject>> {
         val refreshStatusPublisher =
             project.messageBus.syncPublisher(MOVE_PROJECTS_REFRESH_TOPIC)
+        val syncOnRefreshTopic = {
+            project.messageBus.takeIf { !it.isDisposed }
+                ?.syncPublisher(MOVE_PROJECTS_REFRESH_TOPIC)
+        }
 
         val wrappedModifyProjects = { projects: List<MoveProject> ->
-            refreshStatusPublisher.onRefreshStarted()
+            syncOnRefreshTopic()?.onRefreshStarted()
             modifyProjects(projects)
         }
         return projects.updateAsync(wrappedModifyProjects)
@@ -247,7 +251,7 @@ class MoveProjectsService(val project: Project): Disposable {
             }
             .handle { projects, err ->
                 val status = err?.toRefreshStatus() ?: MoveRefreshStatus.SUCCESS
-                refreshStatusPublisher.onRefreshFinished(status)
+                syncOnRefreshTopic()?.onRefreshFinished(status)
                 projects
             }
     }

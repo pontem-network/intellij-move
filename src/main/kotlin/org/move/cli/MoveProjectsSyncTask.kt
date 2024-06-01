@@ -323,11 +323,11 @@ private class SyncProcessAdapter(
     override fun onTextAvailable(event: ProcessEvent, outputType: Key<Any>) {
         val text = event.text.trim { it <= ' ' }
         if (text.startsWith("FETCHING GIT DEPENDENCY")) {
-            val git = text.substring("FETCHING GIT DEPENDENCY ".length)
-            context.withProgressText("Fetching $git")
+            val gitRepo = text.substring("FETCHING GIT DEPENDENCY".length)
+            context.withProgressText("Fetching $gitRepo")
         }
         if (text.startsWith("UPDATING GIT DEPENDENCY")) {
-            val gitRepo = text.substring("UPDATING GIT DEPENDENCY ".length)
+            val gitRepo = text.substring("UPDATING GIT DEPENDENCY".length)
             context.withProgressText("Updating $gitRepo")
         }
     }

@@ -19,13 +19,6 @@ class MvExternalLinterConfigurable(val project: Project): BoundConfigurable("Ext
         RsCommandLineEditor(project, RsCommandLineEditor.EmptyTextFieldCompletionProvider())
 //        RsCommandLineEditor(project, CargoCommandCompletionProvider(project.cargoProjects, "check ") { null })
 
-//    private val channelLabel: JLabel = Label(RsBundle.message("settings.rust.external.linters.channel.label"))
-//    private val channel: ComboBox<RustChannel> = ComboBox<RustChannel>().apply {
-//        RustChannel.values()
-//            .sortedBy { it.index }
-//            .forEach { addItem(it) }
-//    }
-
     private val environmentVariables: EnvironmentVariablesComponent = EnvironmentVariablesComponent()
 
     override fun createPanel(): DialogPanel = panel {
@@ -47,15 +40,6 @@ class MvExternalLinterConfigurable(val project: Project): BoundConfigurable("Ext
                     componentSet = { component, value -> component.text = value },
                     prop = state::additionalArguments.toMutableProperty()
                 )
-
-//            channelLabel.labelFor = channel
-//            cell(channelLabel)
-//            cell(channel)
-//                .bind(
-//                    componentGet = { it.item },
-//                    componentSet = { component, value -> component.item = value },
-//                    prop = state::channel.toMutableProperty()
-//                )
         }
 
         row(environmentVariables.label) {
@@ -75,7 +59,7 @@ class MvExternalLinterConfigurable(val project: Project): BoundConfigurable("Ext
         separator()
         row {
             checkBox("Prevent duplicate errors")
-                .comment("Skips errors which are implemented by the IDE own analysis engine")
+                .comment("Skips errors which are implemented by the IDE's own analysis engine")
                 .bindSelected(state::skipErrorsKnownToIde)
         }
 
