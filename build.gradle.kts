@@ -55,7 +55,7 @@ val javaVersion = JavaVersion.VERSION_17
 val pluginJarName = "intellij-move-$pluginVersion"
 
 val kotlinReflectVersion = "1.8.10"
-val aptosVersion = "3.3.0"
+val aptosVersion = "3.4.1"
 
 val remoteRobotVersion = "0.11.22"
 
@@ -135,17 +135,17 @@ allprojects {
     tasks {
         patchPluginXml {
             version.set(pluginVersion)
-            if (publishingChannel == "default") {
-                changeNotes.set(
-                    """
-    <body>
-        <p><a href="https://github.com/pontem-network/intellij-move/blob/master/changelog/$pluginVersion.md">
-            Changelog for Intellij-Move $pluginVersion on Github
-            </a></p>
-    </body>
-            """
-                )
-            }
+//            if (publishingChannel == "default") {
+//                changeNotes.set(
+//                    """
+//    <body>
+//        <p><a href="https://github.com/pontem-network/intellij-move/blob/master/changelog/$pluginVersion.md">
+//            Changelog for Intellij-Move $pluginVersion on Github
+//            </a></p>
+//    </body>
+//            """
+//                )
+//            }
             sinceBuild.set(prop("pluginSinceBuild"))
             untilBuild.set(prop("pluginUntilBuild"))
         }
@@ -176,7 +176,8 @@ allprojects {
                 for (releasePlatform in listOf(/*"MacOSX",*/ "Ubuntu-22.04", "Ubuntu", "Windows")) {
                     val zipFileName = "aptos-cli-$aptosVersion-$releasePlatform-x86_64.zip"
                     val zipFileUrl = "$baseUrl/$zipFileName"
-                    val zipRoot = "${rootProject.layout.buildDirectory}/zip"
+                    val buildRoot = rootProject.layout.buildDirectory.get()
+                    val zipRoot = "$buildRoot/zip"
                     val zipFile = file("$zipRoot/$zipFileName")
                     if (!zipFile.exists()) {
                         download.run {
