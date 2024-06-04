@@ -135,17 +135,17 @@ allprojects {
     tasks {
         patchPluginXml {
             version.set(pluginVersion)
-            if (publishingChannel == "default") {
-                changeNotes.set(
-                    """
-    <body>
-        <p><a href="https://github.com/pontem-network/intellij-move/blob/master/changelog/$pluginVersion.md">
-            Changelog for Intellij-Move $pluginVersion on Github
-            </a></p>
-    </body>
-            """
-                )
-            }
+//            if (publishingChannel == "default") {
+//                changeNotes.set(
+//                    """
+//    <body>
+//        <p><a href="https://github.com/pontem-network/intellij-move/blob/master/changelog/$pluginVersion.md">
+//            Changelog for Intellij-Move $pluginVersion on Github
+//            </a></p>
+//    </body>
+//            """
+//                )
+//            }
             sinceBuild.set(prop("pluginSinceBuild"))
             untilBuild.set(prop("pluginUntilBuild"))
         }
