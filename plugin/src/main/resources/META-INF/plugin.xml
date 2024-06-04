@@ -9,7 +9,7 @@
 
   <description>
     <![CDATA[
-            <p>Support for Move, smart-contract language for Aptos, Sui and other blockchains.</p>
+            <p>Support for Move on Aptos, smart-contract language for Aptos and other blockchains.</p>
 
             <p><a href="https://github.com/pontem-network/intellij-move">https://github.com/pontem-network/intellij-move</a></p>
         ]]>
