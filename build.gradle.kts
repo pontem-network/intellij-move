@@ -54,7 +54,7 @@ val pluginGroup = "org.move"
 val javaVersion = JavaVersion.VERSION_17
 val pluginJarName = "intellij-move-$pluginVersion"
 
-val kotlinReflectVersion = "1.8.10"
+val kotlinReflectVersion = "1.9.10"
 val aptosVersion = "3.4.1"
 
 val remoteRobotVersion = "0.11.22"
@@ -154,7 +154,7 @@ allprojects {
             kotlinOptions {
                 jvmTarget = "17"
                 languageVersion = "1.9"
-                apiVersion = "1.8"
+                apiVersion = "1.9"
                 freeCompilerArgs = listOf("-Xjvm-default=all")
             }
         }
