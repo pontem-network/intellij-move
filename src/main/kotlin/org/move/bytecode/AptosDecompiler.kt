@@ -12,7 +12,7 @@ import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import org.move.cli.settings.getAptosCli
 import org.move.openapiext.pathAsPath
-import org.move.openapiext.rootDisposable
+import org.move.openapiext.rootPluginDisposable
 import org.move.openapiext.rootPath
 import org.move.stdext.RsResult
 import org.move.stdext.unwrapOrElse
@@ -121,6 +121,6 @@ fun Project.createDisposableOnFileChange(file: VirtualFile): Disposable {
             }
         }
     )
-    Disposer.register(this.rootDisposable, disposable)
+    Disposer.register(this.rootPluginDisposable, disposable)
     return disposable
 }

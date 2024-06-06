@@ -267,7 +267,6 @@ project(":plugin") {
                         // these are the only issues we tolerate
                         RunPluginVerifierTask.FailureLevel.DEPRECATED_API_USAGES,
                         RunPluginVerifierTask.FailureLevel.EXPERIMENTAL_API_USAGES,
-                        RunPluginVerifierTask.FailureLevel.INTERNAL_API_USAGES,
                         RunPluginVerifierTask.FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
                     )
                 )

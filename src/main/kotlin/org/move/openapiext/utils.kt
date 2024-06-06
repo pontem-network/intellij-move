@@ -207,7 +207,7 @@ inline fun <R> Project.nonBlocking(crossinline block: () -> R, crossinline uiCon
             block()
         })
             .inSmartMode(this)
-            .expireWith(this.rootDisposable)
+            .expireWith(this.rootPluginDisposable)
             .finishOnUiThread(ModalityState.current()) { result ->
                 uiContinuation(result)
             }.submit(AppExecutorUtil.getAppExecutorService())
@@ -219,7 +219,7 @@ class RootPluginDisposable: Disposable {
     override fun dispose() {}
 }
 
-val Project.rootDisposable get() = this.service<RootPluginDisposable>()
+val Project.rootPluginDisposable get() = this.service<RootPluginDisposable>()
 
 fun checkCommitIsNotInProgress(project: Project) {
     val app = ApplicationManager.getApplication()

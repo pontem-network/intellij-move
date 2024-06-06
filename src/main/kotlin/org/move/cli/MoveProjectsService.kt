@@ -91,12 +91,11 @@ class MoveProjectsService(val project: Project): Disposable {
         // activate auto-reload
         projectTracker.activate(moveProjectAware.projectId)
 
-        @Suppress("UnstableApiUsage")
         project.messageBus.connect(disposable)
             .subscribe(MOVE_SETTINGS_TOPIC, object: MoveSettingsListener {
                 override fun <T: MvProjectSettingsBase<T>> settingsChanged(e: SettingsChangedEventBase<T>) {
                     if (e.affectsMoveProjectsMetadata) {
-                        val tracker = AutoImportProjectTracker.getInstance(project)
+                        val tracker = ExternalSystemProjectTracker.getInstance(project)
                         tracker.markDirty(moveProjectAware.projectId)
                         tracker.scheduleProjectRefresh()
                     }
@@ -105,10 +104,9 @@ class MoveProjectsService(val project: Project): Disposable {
 
         // default projectTracker cannot detect Move.toml file creation,
         // as it's not present in the `settingsFiles`
-        @Suppress("UnstableApiUsage")
         project.messageBus.connect(disposable)
             .subscribe(VirtualFileManager.VFS_CHANGES, OnMoveTomlCreatedFileListener {
-                val tracker = AutoImportProjectTracker.getInstance(project)
+                val tracker = ExternalSystemProjectTracker.getInstance(project)
                 tracker.markDirty(moveProjectAware.projectId)
                 tracker.scheduleProjectRefresh()
             })
@@ -214,8 +212,6 @@ class MoveProjectsService(val project: Project): Disposable {
     private fun modifyProjectModel(
         modifyProjects: (List<MoveProject>) -> CompletableFuture<List<MoveProject>>
     ): CompletableFuture<List<MoveProject>> {
-        val refreshStatusPublisher =
-            project.messageBus.syncPublisher(MOVE_PROJECTS_REFRESH_TOPIC)
         val syncOnRefreshTopic = {
             project.messageBus.takeIf { !it.isDisposed }
                 ?.syncPublisher(MOVE_PROJECTS_REFRESH_TOPIC)

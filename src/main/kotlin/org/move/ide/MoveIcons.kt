@@ -3,17 +3,11 @@ package org.move.ide
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.AnimatedIcon
-import com.intellij.ui.ColorUtil
-import com.intellij.ui.JBColor
 import com.intellij.ui.LayeredIcon
 import com.intellij.ui.LayeredIcon.Companion.layeredIcon
-import com.intellij.ui.icons.RgbImageFilterSupplier
-import com.jetbrains.rd.generator.nova.array
-import java.awt.Color
 import java.awt.Component
 import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.image.RGBImageFilter
 import javax.swing.Icon
 
 object MoveIcons {
@@ -84,17 +78,6 @@ fun Icon.multiple(): Icon {
     compoundIcon.setIcon(this, 1, 0, 0)
     return compoundIcon
 }
-
-@Suppress("UnstableApiUsage")
-fun Icon.grayed(): Icon =
-    IconLoader.filterIcon(this, object: RgbImageFilterSupplier {
-        override fun getFilter(): RGBImageFilter = object: RGBImageFilter() {
-            override fun filterRGB(x: Int, y: Int, rgb: Int): Int {
-                val color = Color(rgb, true)
-                return ColorUtil.toAlpha(color, (color.alpha / 2.2).toInt()).rgb
-            }
-        }
-    })
 
 /**
  * Rotates the icon by the given angle, in degrees.
