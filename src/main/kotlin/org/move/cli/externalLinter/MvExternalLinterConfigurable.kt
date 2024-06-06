@@ -17,7 +17,6 @@ import org.move.openapiext.fullWidthCell
 class MvExternalLinterConfigurable(val project: Project): BoundConfigurable("External Linters") {
     private val additionalArguments: RsCommandLineEditor =
         RsCommandLineEditor(project, RsCommandLineEditor.EmptyTextFieldCompletionProvider())
-//        RsCommandLineEditor(project, CargoCommandCompletionProvider(project.cargoProjects, "check ") { null })
 
     private val environmentVariables: EnvironmentVariablesComponent = EnvironmentVariablesComponent()
 

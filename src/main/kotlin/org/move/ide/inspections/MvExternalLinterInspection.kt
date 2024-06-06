@@ -7,10 +7,9 @@ package org.move.ide.inspections
 
 import com.intellij.codeInsight.daemon.impl.HighlightInfo
 import com.intellij.codeInspection.*
-import com.intellij.codeInspection.ex.GlobalInspectionContextImpl
+import com.intellij.codeInspection.ex.GlobalInspectionContextEx
 import com.intellij.codeInspection.ex.GlobalInspectionContextUtil
 import com.intellij.codeInspection.reference.RefElement
-import com.intellij.codeInspection.ui.InspectionToolPresentation
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
@@ -33,6 +32,7 @@ import org.move.ide.annotator.createDisposableOnAnyPsiChange
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.moveProject
+import org.move.openapiext.rootPluginDisposable
 
 class MvExternalLinterInspection: GlobalSimpleInspectionTool() {
 
@@ -62,7 +62,7 @@ class MvExternalLinterInspection: GlobalSimpleInspectionTool() {
         globalContext: GlobalInspectionContext,
         problemDescriptionsProcessor: ProblemDescriptionsProcessor
     ) {
-        if (globalContext !is GlobalInspectionContextImpl) return
+        if (globalContext !is GlobalInspectionContextEx) return
         val analyzedFiles = globalContext.getUserData(ANALYZED_FILES) ?: return
 
         val project = manager.project
@@ -70,8 +70,8 @@ class MvExternalLinterInspection: GlobalSimpleInspectionTool() {
         val toolWrapper = currentProfile.getInspectionTool(SHORT_NAME, project) ?: return
 
         while (true) {
-            val disposable = project.messageBus.createDisposableOnAnyPsiChange()
-                .also { Disposer.register(project, it) }
+            val anyPsiChangeDisposable = project.messageBus.createDisposableOnAnyPsiChange()
+                .also { Disposer.register(project.rootPluginDisposable, it) }
             val moveProjects = run {
                 val allProjects = project.moveProjectsService.allProjects
                 if (allProjects.size == 1) {
@@ -84,14 +84,14 @@ class MvExternalLinterInspection: GlobalSimpleInspectionTool() {
             }
             val futures = moveProjects.map {
                 ApplicationManager.getApplication().executeOnPooledThread<RsExternalLinterResult?> {
-                    checkProjectLazily(it, disposable)?.value
+                    checkProjectLazily(it, anyPsiChangeDisposable)?.value
                 }
             }
             val annotationResults = futures.mapNotNull { it.get() }
 
             val exit = runReadAction {
                 ProgressManager.checkCanceled()
-                if (Disposer.isDisposed(disposable)) return@runReadAction false
+                if (Disposer.isDisposed(anyPsiChangeDisposable)) return@runReadAction false
                 if (annotationResults.size < moveProjects.size) return@runReadAction true
                 for (annotationResult in annotationResults) {
                     val problemDescriptors = getProblemDescriptors(analyzedFiles, annotationResult)
@@ -140,7 +140,7 @@ class MvExternalLinterInspection: GlobalSimpleInspectionTool() {
             }
         }
 
-        private fun InspectionToolPresentation.addProblemDescriptors(
+        private fun InspectionToolResultExporter.addProblemDescriptors(
             descriptors: List<ProblemDescriptor>,
             context: GlobalInspectionContext
         ) {
