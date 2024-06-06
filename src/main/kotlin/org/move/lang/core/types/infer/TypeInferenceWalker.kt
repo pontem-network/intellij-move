@@ -392,7 +392,7 @@ class TypeInferenceWalker(
         }
     }
 
-    fun inferDotFieldTy(receiverTy: Ty, dotField: MvStructDotField, expected: Expectation): Ty {
+    fun inferDotFieldTy(receiverTy: Ty, dotField: MvStructDotField): Ty {
         val structTy =
             receiverTy.derefIfNeeded() as? TyStruct ?: return TyUnknown
 
@@ -563,7 +563,7 @@ class TypeInferenceWalker(
         val field = dotExpr.structDotField
         return when {
             methodCall != null -> inferMethodCallTy(receiverTy, methodCall, expected)
-            field != null -> inferDotFieldTy(receiverTy, field, expected)
+            field != null -> inferDotFieldTy(receiverTy, field)
             // incomplete
             else -> TyUnknown
         }

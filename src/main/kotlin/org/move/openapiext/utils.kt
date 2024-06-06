@@ -90,7 +90,7 @@ fun saveAllDocuments() = FileDocumentManager.getInstance().saveAllDocuments()
  * This function saves all documents "as they are" (see [FileDocumentManager.saveDocumentAsIs]), but also fires that
  * these documents should be stripped later (when [saveAllDocuments] is called).
  */
-fun saveAllDocumentsAsTheyAre(reformatLater: Boolean = true) {
+fun saveAllDocumentsAsTheyAre() {
     val documentManager = FileDocumentManager.getInstance()
 //    val rustfmtWatcher = RustfmtWatcher.getInstance()
 //    rustfmtWatcher.withoutReformatting {
