@@ -96,7 +96,7 @@ class RsExternalLinterPass(
                 BackgroundTaskUtil.runUnderDisposeAwareIndicator(disposable, Runnable {
                     val annotationResult = annotationResult ?: return@Runnable
                     myProject.service<RsExternalLinterSlowRunNotifier>()
-                        .reportDuration(annotationResult.executionTime)
+                        .reportExecutionTime(annotationResult.executionTime)
                     runReadAction {
                         ProgressManager.checkCanceled()
                         doApply(annotationResult)

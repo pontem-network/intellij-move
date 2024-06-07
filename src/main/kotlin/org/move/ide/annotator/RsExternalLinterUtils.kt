@@ -264,9 +264,11 @@ private data class RsExternalLinterFilteredMessage(
                     // name resolution errors
                     "unbound variable", "undeclared",
                     // type errors
-                    "incompatible types", "which expects a value of type",
+                    "incompatible types", "which expects a value of type", "which expects argument of type",
                     // too many arguments
                     "too many arguments", "the function takes",
+                    // missing fields
+                    "too few arguments", "missing fields",
                 )
                 if (errorsToIgnore.any { it in message.message }) {
                     LOG.logOrShowBalloon("ignore compiler error: ${message.toTestString()}")

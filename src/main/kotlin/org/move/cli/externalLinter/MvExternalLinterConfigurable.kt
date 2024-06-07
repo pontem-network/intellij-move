@@ -58,7 +58,7 @@ class MvExternalLinterConfigurable(val project: Project): BoundConfigurable("Ext
         separator()
         row {
             checkBox("Prevent duplicate errors")
-                .comment("Skips errors which are implemented by the IDE's own analysis engine")
+                .comment("Skips some errors which are implemented by the IDE's own analysis engine.")
                 .bindSelected(state::skipErrorsKnownToIde)
         }
 
