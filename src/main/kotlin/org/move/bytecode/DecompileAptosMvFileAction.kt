@@ -16,7 +16,12 @@ class DecompileAptosMvFileAction: DumbAwareAction("Decompile .mv File", null, Mo
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val file = e.getData(CommonDataKeys.PSI_FILE)?.virtualFile ?: return
-        val decompiledFile = DecompilationModalTask(project, file).runWithProgress()
+        val decompilationTask = DecompilationModalTask.forVirtualFile(project, file)
+            ?: run {
+                project.showBalloon("Error with decompilation process", "Aptos CLI is not configured", ERROR)
+                return
+            }
+        val decompiledFile = decompilationTask.runWithProgress()
             .unwrapOrElse {
                 project.showBalloon("Error with decompilation process", it, ERROR)
                 return

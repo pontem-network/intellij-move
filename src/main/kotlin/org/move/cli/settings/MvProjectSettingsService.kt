@@ -8,6 +8,8 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
+import com.intellij.openapi.vfs.VirtualFile
+import org.move.bytecode.createDisposableOnFileChange
 import org.move.cli.runConfigurations.BlockchainCli
 import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.cli.runConfigurations.sui.Sui
@@ -138,7 +140,13 @@ fun Project.getBlockchainCli(parentDisposable: Disposable?): BlockchainCli? =
     getBlockchainCli(this.blockchain, parentDisposable)
 
 val Project.isAptosConfigured: Boolean get() = getBlockchainCli(APTOS) != null
+
 fun Project.getAptosCli(parentDisposable: Disposable? = null): Aptos? = getBlockchainCli(APTOS, parentDisposable) as? Aptos
+
+fun Project.getAptosCliDisposedOnFileChange(file: VirtualFile): Aptos? {
+    val anyChangeDisposable = this.createDisposableOnFileChange(file)
+    return this.getAptosCli(anyChangeDisposable)
+}
 
 fun Project.getSuiCli(parentDisposable: Disposable? = null): Sui? =
     getBlockchainCli(SUI, parentDisposable) as? Sui
