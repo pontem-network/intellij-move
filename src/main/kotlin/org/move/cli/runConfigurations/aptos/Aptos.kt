@@ -114,6 +114,9 @@ data class Aptos(
         accountAddress: String,
         packageName: String,
         outputDir: String,
+        profile: String = "default",
+        connectionTimeoutSecs: Int = 30,
+        nodeApiKey: String? = null,
         runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress(timeoutInMilliseconds = null) }
     ): RsProcessResult<ProcessOutput> {
         val commandLine = CliCommandLineArgs(
@@ -123,6 +126,11 @@ data class Aptos(
                 add("--package"); add(packageName)
                 add("--bytecode")
                 add("--output-dir"); add(outputDir)
+                add("--profile"); add(profile)
+                add("--connection-timeout-secs"); add(connectionTimeoutSecs.toString())
+                if (nodeApiKey != null) {
+                    add("--node-api-key"); add(nodeApiKey)
+                }
             },
             workingDirectory = project.basePath?.let { Path.of(it) },
             environmentVariables = EnvironmentVariablesData.DEFAULT
