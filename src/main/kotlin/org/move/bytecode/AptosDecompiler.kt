@@ -10,6 +10,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.*
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.cli.settings.getAptosCli
 import org.move.openapiext.pathAsPath
 import org.move.openapiext.rootPluginDisposable
@@ -21,7 +22,8 @@ import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.relativeTo
 
-// todo: this is disabled for now, it's a process under ReadAction, and needs to be run in the indexing phase
+// todo: this is disabled for now, it's a process which requires ReadAction, and that's why
+//  it needs to be run in the indexing phase
 class AptosBytecodeDecompiler: BinaryFileDecompiler {
     override fun decompile(file: VirtualFile): CharSequence {
         val fileText = file.readText()
@@ -41,10 +43,7 @@ class AptosBytecodeDecompiler: BinaryFileDecompiler {
 //        return LoadTextUtil.loadText(targetFile)
     }
 
-    fun decompileFileToTheSameDir(project: Project, file: VirtualFile): RsResult<VirtualFile, String> {
-        val disposable = project.createDisposableOnFileChange(file)
-        val aptos = project.getAptosCli(disposable) ?: return RsResult.Err("No Aptos CLI configured")
-
+    fun decompileFileToTheSameDir(aptos: Aptos, file: VirtualFile): RsResult<VirtualFile, String> {
         aptos.decompileFile(file.path, outputDir = null)
             .unwrapOrElse {
                 return RsResult.Err("`aptos move decompile` failed")
@@ -58,10 +57,7 @@ class AptosBytecodeDecompiler: BinaryFileDecompiler {
         return RsResult.Ok(decompiledFile)
     }
 
-    fun decompileFile(project: Project, file: VirtualFile, targetFileDir: Path): RsResult<VirtualFile, String> {
-        val disposable = project.createDisposableOnFileChange(file)
-        val aptos = project.getAptosCli(disposable) ?: return RsResult.Err("No Aptos CLI configured")
-
+    fun decompileFile(aptos: Aptos, file: VirtualFile, targetFileDir: Path): RsResult<VirtualFile, String> {
         if (!targetFileDir.exists()) {
             targetFileDir.toFile().mkdirs()
         }

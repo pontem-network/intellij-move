@@ -14,6 +14,8 @@ import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
+import org.move.cli.runConfigurations.aptos.Aptos
+import org.move.cli.settings.getAptosCliDisposedOnFileChange
 import org.move.ide.notifications.showDebugBalloon
 import org.move.ide.notifications.updateAllNotifications
 import org.move.openapiext.openFile
@@ -45,7 +47,10 @@ class AptosBytecodeNotificationProvider(project: Project): EditorNotificationPro
 
         val aptosDecompiler = AptosBytecodeDecompiler()
         val decompiledFilePath = file.parent.pathAsPath.resolve(aptosDecompiler.sourceFileName(file))
-        val decompilationTask = DecompilationModalTask(project, file)
+
+        // null if no Aptos configured
+        val decompilationTask = DecompilationModalTask.forVirtualFile(project, file)
+            ?: return null
 
         return Function {
             EditorNotificationPanel(it).apply {
@@ -96,18 +101,32 @@ class AptosBytecodeNotificationProvider(project: Project): EditorNotificationPro
         }
     }
 
-    class DecompilationModalTask(project: Project, val file: VirtualFile):
+    class DecompilationModalTask private constructor(
+        project: Project,
+        val aptos: Aptos,
+        val file: VirtualFile
+    ):
         Task.WithResult<RsResult<VirtualFile, String>, Exception>(
             project,
             "Decompiling ${file.name}...",
             true
         ) {
+
         override fun compute(indicator: ProgressIndicator): RsResult<VirtualFile, String> {
-            val aptosDecompiler = AptosBytecodeDecompiler()
-            return aptosDecompiler.decompileFileToTheSameDir(project, file)
+            return AptosBytecodeDecompiler().decompileFileToTheSameDir(aptos, file)
         }
 
         fun runWithProgress(): RsResult<VirtualFile, String> = ProgressManager.getInstance().run(this)
+
+        companion object {
+            /// fails if Aptos CLI is not configured
+            fun forVirtualFile(project: Project, file: VirtualFile): DecompilationModalTask? {
+                // bound to file state at the point of task creation, not at the point of computation
+                val aptos =
+                    project.getAptosCliDisposedOnFileChange(file) ?: return null
+                return DecompilationModalTask(project, aptos, file)
+            }
+        }
     }
 
     companion object {
