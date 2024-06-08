@@ -241,7 +241,7 @@ project(":plugin") {
                 """
     <body>
         <p><a href="https://intellij-move.github.io/$codeVersionForUrl.html">
-            Changelog for the Intellij-Move $pluginVersion
+            Changelog for the Intellij-Move $codeVersion
             </a></p>
     </body>
             """
