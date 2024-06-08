@@ -1,23 +1,26 @@
 # Move on Aptos language plugin for the IntelliJ-based IDEs
 
-[Plugin documentation](https://mkurnikov.github.io/intellij-move-docs/) is work-in-progress 
+Plugin documentation is available at https://intellij-move.github.io/. 
 
 ## Installation
 
-Open `Settings > Plugins > Marketplace` in your IDE, search for _Move Language_ and install the plugin.
-To open an existing project, use **File | Open** and point to the directory containing `Move.toml`.
+Open `Settings > Plugins > Marketplace` in your IDE, search for _Move on Aptos_ and install the plugin.
+
+EAP builds are also available, which contain the build from the current `master` branch. See the [docs on EAPs](https://intellij-move.github.io/quick-start.html#install-eap-version-of-the-plugin) for the how-to instructions.
 
 ## Compatible IDEs
 
 The plugin is compatible with all IntelliJ-based IDEs starting from 2023.3. 
-Other versions have older versions of the plugin.
+Versions older than 2023.3 have older version of the Intellij-Move plugin available.
 
-New features are announced in [changelog](https://github.com/pontem-network/intellij-move/tree/master/changelog). 
+New features are announced in [What's New section of the documentation](https://intellij-move.github.io/what-s-new.html). 
 
 ## Features
 
-* Aptos Move Language support
-* Rename refactoring
-* Code formatting
-* Integration with `aptos-cli`.
-* Running Aptos compiler on-the-fly.
+* [Move on Aptos](https://aptos.dev/move/move-on-aptos/) language support, including Compiler-V2 features.
+* Rename refactoring.
+* Code formatter.
+* Extensive integration with `aptos-cli`.
+* Running Aptos Move compiler on-the-fly as you typing.
+
+Sui Move Language support is also present, but is maintained on a best-effort basis. 
