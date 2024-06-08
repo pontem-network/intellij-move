@@ -133,23 +133,6 @@ allprojects {
     }
 
     tasks {
-        patchPluginXml {
-            version.set(pluginVersion)
-//            if (publishingChannel == "default") {
-//                changeNotes.set(
-//                    """
-//    <body>
-//        <p><a href="https://github.com/pontem-network/intellij-move/blob/master/changelog/$pluginVersion.md">
-//            Changelog for Intellij-Move $pluginVersion on Github
-//            </a></p>
-//    </body>
-//            """
-//                )
-//            }
-            sinceBuild.set(prop("pluginSinceBuild"))
-            untilBuild.set(prop("pluginUntilBuild"))
-        }
-
         withType<KotlinCompile> {
             kotlinOptions {
                 jvmTarget = "17"
@@ -251,6 +234,24 @@ project(":plugin") {
     }
 
     tasks {
+        patchPluginXml {
+            version.set(pluginVersion)
+            if (publishingChannel == "default") {
+                val codeVersionForUrl = codeVersion.replace('.', '-')
+                changeNotes.set(
+                    """
+    <body>
+        <p><a href="https://intellij-move.github.io/$codeVersionForUrl.html">
+            Changelog for the Intellij-Move $pluginVersion
+            </a></p>
+    </body>
+            """
+                )
+            }
+            sinceBuild.set(prop("pluginSinceBuild"))
+            untilBuild.set(prop("pluginUntilBuild"))
+        }
+
         ideaModule {
             enabled = false
         }
