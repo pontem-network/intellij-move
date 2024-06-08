@@ -236,18 +236,16 @@ project(":plugin") {
     tasks {
         patchPluginXml {
             version.set(pluginVersion)
-            if (publishingChannel == "default") {
-                val codeVersionForUrl = codeVersion.replace('.', '-')
-                changeNotes.set(
-                    """
+            val codeVersionForUrl = codeVersion.replace('.', '-')
+            changeNotes.set(
+                """
     <body>
         <p><a href="https://intellij-move.github.io/$codeVersionForUrl.html">
             Changelog for the Intellij-Move $pluginVersion
             </a></p>
     </body>
             """
-                )
-            }
+            )
             sinceBuild.set(prop("pluginSinceBuild"))
             untilBuild.set(prop("pluginUntilBuild"))
         }
