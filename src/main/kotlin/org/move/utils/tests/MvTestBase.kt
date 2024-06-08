@@ -39,7 +39,7 @@ annotation class WithBlockchain(val blockchain: Blockchain)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class CompilerV2
 
-abstract class MvTestBase: BasePlatformTestCase(),
+abstract class MvTestBase: MvLightTestBase(),
                            MvTestCase {
     protected val fileName: String
         get() = "${getTestName(true)}.$testFileExtension"
@@ -50,19 +50,19 @@ abstract class MvTestBase: BasePlatformTestCase(),
 
         setupInspections()
 
-        val isDebugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
-        setRegistryKey("org.move.debug.enabled", isDebugMode)
-
-        val isCompilerV2 = this.findAnnotationInstance<CompilerV2>() != null
-        project.moveSettings.modifyTemporary(testRootDisposable) {
-            it.isCompilerV2 = isCompilerV2
-        }
-
-        val blockchain = this.findAnnotationInstance<WithBlockchain>()?.blockchain ?: Blockchain.APTOS
-        // triggers projects refresh
-        project.moveSettings.modify {
-            it.blockchain = blockchain
-        }
+//        val isDebugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
+//        setRegistryKey("org.move.debug.enabled", isDebugMode)
+//
+//        val isCompilerV2 = this.findAnnotationInstance<CompilerV2>() != null
+//        project.moveSettings.modifyTemporary(testRootDisposable) {
+//            it.isCompilerV2 = isCompilerV2
+//        }
+//
+//        val blockchain = this.findAnnotationInstance<WithBlockchain>()?.blockchain ?: Blockchain.APTOS
+//        // triggers projects refresh
+//        project.moveSettings.modify {
+//            it.blockchain = blockchain
+//        }
     }
 
     private fun setupInspections() {

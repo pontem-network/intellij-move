@@ -1,5 +1,6 @@
 package org.move.lang.completion
 
+import org.move.utils.tests.CompilerV2
 import org.move.utils.tests.completion.CompletionTestCase
 
 class KeywordCompletionTest : CompletionTestCase() {
@@ -606,4 +607,23 @@ class KeywordCompletionTest : CompletionTestCase() {
 //    }
 //}
 //    """)
+
+    fun `test no completion for reads in v1`() = checkNotContainsCompletion(
+        "reads",
+        """
+            module 0x1::m {
+                fun main() rea/*caret*/ {}
+            }            
+        """
+    )
+
+    @CompilerV2
+    fun `test completion for resource access modifiers`() = checkContainsCompletion(
+        listOf("reads", "writes", "pure", "acquires"),
+        """
+            module 0x1::m {
+                fun main() /*caret*/ {}
+            }            
+        """
+    )
 }

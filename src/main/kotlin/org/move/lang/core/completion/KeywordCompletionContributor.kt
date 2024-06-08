@@ -8,6 +8,7 @@ import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.patterns.PsiElementPattern
 import com.intellij.psi.PsiElement
+import org.move.cli.settings.moveSettings
 import org.move.lang.MvElementTypes.*
 import org.move.lang.core.MvPsiPatterns
 import org.move.lang.core.MvPsiPatterns.addressBlock
@@ -23,7 +24,7 @@ import org.move.lang.core.MvPsiPatterns.typeParameter
 import org.move.lang.core.TYPES
 import org.move.lang.core.completion.providers.KeywordCompletionProvider
 
-class KeywordCompletionContributor : CompletionContributor() {
+class KeywordCompletionContributor: CompletionContributor() {
     init {
         extend(
             CompletionType.BASIC,
@@ -126,7 +127,14 @@ class KeywordCompletionContributor : CompletionContributor() {
                 psiElement()
                     .with(MvPsiPatterns.AfterAnySibling(TYPES))
             ),
-            KeywordCompletionProvider("acquires")
+            KeywordCompletionProvider {
+                buildList {
+                    add("acquires")
+                    if (it.moveSettings.isCompilerV2) {
+                        addAll(listOf("reads", "writes", "pure"))
+                    }
+                }
+            }
         )
         extend(
             CompletionType.BASIC,

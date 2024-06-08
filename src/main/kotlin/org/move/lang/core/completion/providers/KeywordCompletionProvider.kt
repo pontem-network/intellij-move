@@ -5,6 +5,7 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorModificationUtil
+import com.intellij.openapi.project.Project
 import com.intellij.psi.util.elementType
 import com.intellij.util.ProcessingContext
 import org.move.lang.MvElementTypes.L_BRACE
@@ -14,14 +15,19 @@ import org.move.lang.core.psi.ext.isWhitespace
 import org.move.lang.core.psi.ext.rightSiblings
 
 class KeywordCompletionProvider(
-    private vararg val keywords: String,
-) : CompletionProvider<CompletionParameters>() {
+    private val fillCompletions: (Project) -> List<String>
+):
+    CompletionProvider<CompletionParameters>() {
+
+    constructor(vararg keywords: String): this({ keywords.toList() })
 
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
         result: CompletionResultSet,
     ) {
+        val project = parameters.position.project
+        val keywords = fillCompletions(project)
         for (keyword in keywords) {
             var builder = LookupElementBuilder.create(keyword).bold()
             builder = addInsertionHandler(keyword, builder, parameters)
