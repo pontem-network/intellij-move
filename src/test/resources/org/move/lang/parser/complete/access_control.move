@@ -28,4 +28,8 @@ module 0x1::access_control {
     fun f11() !reads *(0x42), *(0x43) {}
 
     fun f12() pure {}
-    }
+
+    fun ok2(s: &signer): bool reads R(signer::address_of(s)) {}
+
+    fun ok2(s: &signer): bool reads R(address_of<u8>(s)) {}
+}

@@ -62,4 +62,17 @@ class ResolveResourceAccessSpecifiersTest: ResolveTestCase() {
             fun make_up_address(x: u8): address { @0x1 }
         }        
     """)
+
+    fun `test address function can be from another module`() = checkByCode("""
+        module 0x1::signer {
+            public native fun address_of(s: &signer);
+                              //X
+        }
+        module 0x1::main {
+            use 0x1::signer;
+            struct S { field: u8 }
+            fun main(s: &signer) reads *(signer::address_of(s)) {}
+                                                 //^
+        }        
+    """)
 }

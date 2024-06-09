@@ -38,10 +38,10 @@ enum class AptosExecType {
     companion object {
         val isPreCompiledSupportedForThePlatform: Boolean
             get() {
-                if (Registry.`is`("org.move.aptos.bundled.force.supported")) {
+                if (Registry.`is`("org.move.aptos.bundled.force.supported", false)) {
                     return true
                 }
-                if (Registry.`is`("org.move.aptos.bundled.force.unsupported")) {
+                if (Registry.`is`("org.move.aptos.bundled.force.unsupported", false)) {
                     return false
                 }
                 return !SystemInfo.isMac
