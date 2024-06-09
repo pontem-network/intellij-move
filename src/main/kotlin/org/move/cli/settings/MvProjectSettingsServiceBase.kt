@@ -1,21 +1,20 @@
 package org.move.cli.settings
 
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
-import com.intellij.codeInsight.daemon.impl.FileStatusMap
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.components.SimplePersistentStateComponent
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import com.intellij.psi.search.FileTypeIndex
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StubTreeLoader
-import com.intellij.util.FileContentUtil
 import com.intellij.util.FileContentUtilCore
 import com.intellij.util.messages.Topic
 import org.jetbrains.annotations.TestOnly
 import org.move.cli.settings.MvProjectSettingsServiceBase.MvProjectSettingsBase
+import org.move.lang.MoveFileType
 import org.move.openapiext.saveAllDocuments
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
@@ -82,14 +81,14 @@ abstract class MvProjectSettingsServiceBase<T: MvProjectSettingsBase<T>>(
         }
 
         if (event.affectsParseTree) {
-            // REFRESH EVERYTHING (didn't find any proper way to do it)
+            // refresh all .move files (didn't find any proper way to do it)
             saveAllDocuments()
-            val files = mutableListOf<VirtualFile>()
-            ProjectFileIndex.getInstance(project).iterateContent { files.add(it) }
+
+            val moveFiles = FileTypeIndex.getFiles(MoveFileType, GlobalSearchScope.allScope(project))
 
             PsiManager.getInstance(project).dropPsiCaches()
-            FileContentUtilCore.reparseFiles(files)
-            files.forEach { StubTreeLoader.getInstance().rebuildStubTree(it) }
+            FileContentUtilCore.reparseFiles(moveFiles)
+            moveFiles.forEach { StubTreeLoader.getInstance().rebuildStubTree(it) }
         }
     }
 

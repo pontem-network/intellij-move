@@ -465,11 +465,11 @@ ResourceAccessItem ::= pure | (('!')? (acquires | reads | writes) AccessSpecifie
 AccessSpecifierList ::= <<non_empty_comma_sep_items AccessSpecifier>>
 AccessSpecifier ::= <<pathMode 'WILDCARD' Path>> AddressSpecifier?
 
-AddressSpecifier ::= '(' AddressSpecifierArg ')'
+AddressSpecifier ::= '(' AddressSpecifierArg ')' { pin = 1 }
 AddressSpecifierArg ::= '*'
-                        | (IDENTIFIER !'(')
                         | AddressSpecifierLit
                         | <<pathMode 'VALUE' (Path '(' AddressSpecifierCallParam ')')>>
+                        | IDENTIFIER
 AddressSpecifierLit ::= DIEM_ADDRESS | INTEGER_LITERAL
 
 AddressSpecifierCallParam ::= AddressSpecifierParamPath
