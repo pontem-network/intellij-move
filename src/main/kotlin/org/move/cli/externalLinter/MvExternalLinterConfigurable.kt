@@ -10,13 +10,15 @@ import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.EnumComboBoxModel
+import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.ui.dsl.builder.*
-import org.move.cli.util.RsCommandLineEditor
 import org.move.openapiext.fullWidthCell
 
 class MvExternalLinterConfigurable(val project: Project): BoundConfigurable("External Linters") {
-    private val additionalArguments: RsCommandLineEditor =
-        RsCommandLineEditor(project, RsCommandLineEditor.EmptyTextFieldCompletionProvider())
+
+    private val additionalArguments = ExpandableTextField()
+//    private val additionalArguments: RsCommandLineEditor =
+//        RsCommandLineEditor(project, RsCommandLineEditor.EmptyTextFieldCompletionProvider())
 
     private val environmentVariables: EnvironmentVariablesComponent = EnvironmentVariablesComponent()
 
