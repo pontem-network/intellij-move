@@ -2,6 +2,7 @@ package org.move.cli.runConfigurations.producers
 
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
+import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
@@ -34,14 +35,14 @@ abstract class CommandConfigurationProducerBase(val blockchain: Blockchain):
         templateConfiguration.command = commandLine.joinArgs()
         templateConfiguration.workingDirectory = commandLine.workingDirectory
 
-        var envVars = commandLine.environmentVariables
-        if (blockchain == Blockchain.APTOS
-            && context.project.moveSettings.disableTelemetry
+        var environment = commandLine.environmentVariables.envs
+        if (blockchain == Blockchain.APTOS && context.project.moveSettings.disableTelemetry
         ) {
-            envVars = envVars.with(mapOf("APTOS_DISABLE_TELEMETRY" to "true"))
+            environment = environment + mapOf("APTOS_DISABLE_TELEMETRY" to "true")
         }
-        templateConfiguration.environmentVariables = envVars
+        templateConfiguration.environmentVariables = EnvironmentVariablesData.create(environment, true)
         return true
+
     }
 
     override fun isConfigurationFromContext(

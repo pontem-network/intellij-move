@@ -1,5 +1,7 @@
 package org.move.cli.runConfigurations.producers
 
+import com.intellij.execution.configuration.EnvironmentVariablesData
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
@@ -53,24 +55,24 @@ abstract class TestCommandConfigurationProducerBase(blockchain: Blockchain):
         val functionName = fn.name ?: return null
 
         val confName = "Test $modName::$functionName"
-        var subCommand = "move test"
+        val subCommand = StringBuilder("move test")
+
         when (blockchain) {
-            Blockchain.APTOS -> subCommand += " --filter $modName::$functionName"
-            Blockchain.SUI -> subCommand += " $modName::$functionName"
+            Blockchain.APTOS -> subCommand.append(" --filter $modName::$functionName")
+            Blockchain.SUI -> subCommand.append(" $modName::$functionName")
         }
-        if (psi.project.moveSettings.skipFetchLatestGitDeps) {
-            subCommand += " --skip-fetch-latest-git-deps"
-        }
-        if (blockchain == Blockchain.APTOS && psi.project.moveSettings.dumpStateOnTestFailure) {
-            subCommand += " --dump"
-        }
+        subCommand.appendCustomCLIFlags(psi.project)
 
         val moveProject = fn.moveProject ?: return null
         val rootPath = moveProject.contentRootPath ?: return null
         return CommandLineArgsFromContext(
             fn,
             confName,
-            CliCommandLineArgs(subCommand, workingDirectory = rootPath)
+            CliCommandLineArgs(
+                subCommand.toString(),
+                workingDirectory = rootPath,
+                environmentVariables = initEnvironmentVariables(psi.project)
+            )
         )
     }
 
@@ -80,25 +82,24 @@ abstract class TestCommandConfigurationProducerBase(blockchain: Blockchain):
 
         val modName = mod.name ?: return null
         val confName = "Test $modName"
+        val subCommand = StringBuilder("move test")
 
-        var subCommand = "move test"
         when (blockchain) {
-            Blockchain.APTOS -> subCommand += " --filter $modName"
-            Blockchain.SUI -> subCommand += " $modName"
+            Blockchain.APTOS -> subCommand.append(" --filter $modName")
+            Blockchain.SUI -> subCommand.append(" $modName")
         }
-        if (psi.project.moveSettings.skipFetchLatestGitDeps) {
-            subCommand += " --skip-fetch-latest-git-deps"
-        }
-        if (blockchain == Blockchain.APTOS && psi.project.moveSettings.dumpStateOnTestFailure) {
-            subCommand += " --dump"
-        }
+        subCommand.appendCustomCLIFlags(psi.project)
 
         val moveProject = mod.moveProject ?: return null
         val rootPath = moveProject.contentRootPath ?: return null
         return CommandLineArgsFromContext(
             mod,
             confName,
-            CliCommandLineArgs(subCommand, workingDirectory = rootPath)
+            CliCommandLineArgs(
+                subCommand.toString(),
+                workingDirectory = rootPath,
+                environmentVariables = initEnvironmentVariables(psi.project)
+            )
         )
     }
 
@@ -110,18 +111,38 @@ abstract class TestCommandConfigurationProducerBase(blockchain: Blockchain):
         val rootPath = moveProject.contentRootPath ?: return null
 
         val confName = "Test $packageName"
-        var subCommand = "move test"
-        if (location.project.moveSettings.skipFetchLatestGitDeps) {
-            subCommand += " --skip-fetch-latest-git-deps"
-        }
-        if (location.project.moveSettings.dumpStateOnTestFailure) {
-            subCommand += " --dump"
-        }
+        val subCommand = StringBuilder("move test")
+
+        subCommand.appendCustomCLIFlags(location.project)
 
         return CommandLineArgsFromContext(
             location,
             confName,
-            CliCommandLineArgs(subCommand, workingDirectory = rootPath)
+            CliCommandLineArgs(
+                subCommand.toString(),
+                workingDirectory = rootPath,
+                environmentVariables = initEnvironmentVariables(location.project)
+            )
         )
+    }
+
+    private fun initEnvironmentVariables(project: Project): EnvironmentVariablesData {
+        val environmentMap = linkedMapOf<String, String>()
+        if (blockchain == Blockchain.APTOS && project.moveSettings.addCompilerV2FlagsToCLI) {
+            environmentMap["MOVE_LANGUAGE_V2"] = "true"
+        }
+        return EnvironmentVariablesData.create(environmentMap, true)
+    }
+
+    private fun StringBuilder.appendCustomCLIFlags(project: Project) {
+        if (project.moveSettings.skipFetchLatestGitDeps) {
+            append(" --skip-fetch-latest-git-deps")
+        }
+        if (blockchain == Blockchain.APTOS && project.moveSettings.dumpStateOnTestFailure) {
+            append(" --dump")
+        }
+        if (blockchain == Blockchain.APTOS && project.moveSettings.addCompilerV2FlagsToCLI) {
+            append(" --compiler-version v2 --language-version 2.0")
+        }
     }
 }

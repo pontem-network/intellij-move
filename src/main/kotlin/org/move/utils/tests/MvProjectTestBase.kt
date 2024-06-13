@@ -36,9 +36,11 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
         val isDebugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
         setRegistryKey("org.move.debug.enabled", isDebugMode)
 
+        val isCompilerV2 = this.findAnnotationInstance<CompilerV2>() != null
         val blockchain = this.findAnnotationInstance<WithBlockchain>()?.blockchain ?: Blockchain.APTOS
         // triggers projects refresh
         project.moveSettings.modify {
+            it.isCompilerV2 = isCompilerV2
             it.blockchain = blockchain
         }
     }
