@@ -59,7 +59,6 @@ class RsExternalLinterPass(
         if (file !is MoveFile || !isAnnotationPassEnabled) return
 
         val moveProject = file.findMoveProject() ?: return
-//        if (cargoTarget.pkg.origin != PackageOrigin.WORKSPACE) return
 
         val moduleOrProject: Disposable = ModuleUtil.findModuleForFile(file) ?: myProject
         disposable = myProject.messageBus.createDisposableOnAnyPsiChange()

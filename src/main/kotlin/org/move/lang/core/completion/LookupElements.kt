@@ -120,6 +120,20 @@ fun MvNamedElement.getLookupElementBuilder(
         is MvSchema -> lookupElementBuilder
             .withTypeText(this.containingFile?.name)
 
+        // we need to do the resolve here and in the next one to get the underlying item,
+        // but it should be cached in the most cases
+        is MvModuleUseSpeck -> {
+            this.fqModuleRef?.reference?.resolve()
+                ?.getLookupElementBuilder(completionCtx, subst, structAsType)
+                ?: lookupElementBuilder
+        }
+
+        is MvUseItem -> {
+            this.reference.resolve()
+                ?.getLookupElementBuilder(completionCtx, subst, structAsType)
+                ?: lookupElementBuilder
+        }
+
         else -> lookupElementBuilder
     }
 }

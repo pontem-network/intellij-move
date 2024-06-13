@@ -5,8 +5,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.layout.selected
 import org.move.cli.settings.aptos.ChooseAptosCliPanel
 import org.move.cli.settings.sui.ChooseSuiCliPanel
 import org.move.openapiext.showSettingsDialog
@@ -55,14 +57,22 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                             )
                             .bindSelected(state::fetchAptosDeps)
                     }
+                    val compilerV2Box = JBCheckBox("Enable Aptos V2 compiler")
                     row {
-                        checkBox("Enable Aptos V2 compiler")
+                        cell(compilerV2Box)
                             .comment(
                                 "Enables features of the Aptos V2 compiler " +
                                         "(receiver style functions, access control, etc.)"
                             )
                             .bindSelected(state::isCompilerV2)
-
+                    }
+                    indent {
+                        row {
+                            checkBox("Set Compiler V2 in CLI commands")
+                                .comment("Adds `--compiler-version v2 --language-version 2.0` to all generated Aptos CLI commands")
+                                .enabledIf(compilerV2Box.selected)
+                                .bindSelected(state::addCompilerV2Flags)
+                        }
                     }
                     group("Command Line Options") {
                         row {
@@ -115,6 +125,7 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                         it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
                         it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
                         it.isCompilerV2 = state.isCompilerV2
+                        it.addCompilerV2Flags = state.addCompilerV2Flags
                         it.fetchAptosDeps = state.fetchAptosDeps
                     }
                 }

@@ -1,0 +1,11 @@
+<configurations>
+  <configuration name="Test MoveTests::test_add" type="AptosCommandConfiguration" factoryName="AnyCommand">
+    <option name="command" value="move test --filter MoveTests::test_add --compiler-version v2 --language-version 2.0" />
+    <option name="workingDirectory" value="file://" />
+    <envs>
+      <env name="MOVE_LANGUAGE_V2" value="true" />
+      <env name="APTOS_DISABLE_TELEMETRY" value="true" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</configurations>

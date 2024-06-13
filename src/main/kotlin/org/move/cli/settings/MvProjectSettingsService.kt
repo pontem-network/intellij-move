@@ -70,6 +70,8 @@ class MvProjectSettingsService(
     val skipFetchLatestGitDeps: Boolean get() = state.skipFetchLatestGitDeps
     val dumpStateOnTestFailure: Boolean get() = state.dumpStateOnTestFailure
 
+    val addCompilerV2FlagsToCLI: Boolean get() = state.isCompilerV2 && state.addCompilerV2Flags
+
     // default values for settings
     class MoveProjectSettings: MvProjectSettingsBase<MoveProjectSettings>() {
         @AffectsMoveProjectsMetadata
@@ -95,6 +97,8 @@ class MvProjectSettingsService(
         // change to true here to not annoy the users with constant updates
         var skipFetchLatestGitDeps: Boolean by property(true)
         var dumpStateOnTestFailure: Boolean by property(false)
+
+        var addCompilerV2Flags: Boolean by property(false)
 
         override fun copy(): MoveProjectSettings {
             val state = MoveProjectSettings()

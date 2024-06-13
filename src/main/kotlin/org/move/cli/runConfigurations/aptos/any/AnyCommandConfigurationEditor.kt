@@ -3,16 +3,18 @@ package org.move.cli.runConfigurations.aptos.any
 import com.intellij.execution.configuration.EnvironmentVariablesComponent
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
+import org.move.openapiext.fullWidthCell
 import org.move.utils.ui.WorkingDirectoryField
 import java.nio.file.Path
 import javax.swing.JComponent
 
 class AnyCommandConfigurationEditor : SettingsEditor<AnyCommandConfiguration>() {
-    private val commandTextField = JBTextField()
+    private val commandTextField = ExpandableTextField()
     private val envVarsField = EnvironmentVariablesComponent()
     val workingDirectoryField = WorkingDirectoryField()
 
@@ -32,21 +34,17 @@ class AnyCommandConfigurationEditor : SettingsEditor<AnyCommandConfiguration>() 
 
     override fun createEditor(): JComponent {
         return panel {
-            row("Command:") {
-                cell(commandTextField)
-                    .align(AlignX.FILL)
-//                    .horizontalAlign(HorizontalAlign.FILL)
-                    .columns(COLUMNS_LARGE)
+            row("&Command:") {
+                fullWidthCell(commandTextField)
+//                    .columns(COLUMNS_LARGE)
+                    .resizableColumn()
             }
             row(envVarsField.label) {
-                cell(envVarsField)
-                    .align(AlignX.FILL)
-//                    .horizontalAlign(HorizontalAlign.FILL)
+                fullWidthCell(envVarsField)
             }
             row(workingDirectoryField.label) {
-                cell(workingDirectoryField)
-                    .align(AlignX.FILL)
-//                    .horizontalAlign(HorizontalAlign.FILL)
+                fullWidthCell(workingDirectoryField)
+                    .resizableColumn()
             }
         }
     }

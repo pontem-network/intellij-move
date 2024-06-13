@@ -93,18 +93,26 @@ data class Aptos(
                     if ("--skip-fetch-latest-git-deps" !in extraArguments) {
                         add("--skip-fetch-latest-git-deps")
                     }
-                    if (args.isCompilerV2 && "--compiler-version" !in extraArguments) {
-                        add("--compiler-version")
-                        add("v2")
-                    }
-                    if (args.isCompilerV2 && "--language-version" !in extraArguments) {
-                        add("--language-version")
-                        add("2.0")
+                    if (args.addCompilerV2Flags) {
+                        if ("--compiler-version" !in extraArguments) {
+                            add("--compiler-version")
+                            add("v2")
+                        }
+                        if ("--language-version" !in extraArguments) {
+                            add("--language-version")
+                            add("2.0")
+                        }
                     }
                     addAll(ParametersListUtil.parse(args.extraArguments))
                 },
                 args.moveProjectDirectory,
-                environmentVariables = EnvironmentVariablesData.create(args.envs, true)
+                environmentVariables = args.envs.let {
+                    val environmentMap = it.toMutableMap()
+                    if (args.addCompilerV2Flags && Consts.MOVE_COMPILER_V2_ENV !in environmentMap) {
+                        environmentMap[Consts.MOVE_COMPILER_V2_ENV] = "true"
+                    }
+                    EnvironmentVariablesData.create(environmentMap, true)
+                }
             )
         return executeCommandLine(commandLine).ignoreExitCode()
     }
@@ -117,7 +125,11 @@ data class Aptos(
         profile: String = "default",
         connectionTimeoutSecs: Int = 30,
         nodeApiKey: String? = null,
-        runner: CapturingProcessHandler.() -> ProcessOutput = { runProcessWithGlobalProgress(timeoutInMilliseconds = null) }
+        runner: CapturingProcessHandler.() -> ProcessOutput = {
+            runProcessWithGlobalProgress(
+                timeoutInMilliseconds = null
+            )
+        }
     ): RsProcessResult<ProcessOutput> {
         val commandLine = CliCommandLineArgs(
             subCommand = "move download",
@@ -178,21 +190,24 @@ data class AptosCompileArgs(
     val moveProjectDirectory: Path,
     val extraArguments: String,
     val envs: Map<String, String>,
-    val isCompilerV2: Boolean,
+    val addCompilerV2Flags: Boolean,
     val skipLatestGitDeps: Boolean,
 ) {
     companion object {
         fun forMoveProject(moveProject: MoveProject): AptosCompileArgs {
             val linterSettings = moveProject.project.externalLinterSettings
             val moveSettings = moveProject.project.moveSettings
+
+            val additionalArguments = linterSettings.additionalArguments
+            val enviroment = linterSettings.envs
+            val workingDirectory = moveProject.workingDirectory
+
             return AptosCompileArgs(
                 linterSettings.tool,
-                moveProject.workingDirectory,
-//                moveProject.project.rustSettings.compileAllTargets,
-                linterSettings.additionalArguments,
-//                settings.channel,
-                linterSettings.envs,
-                isCompilerV2 = moveSettings.isCompilerV2,
+                workingDirectory,
+                additionalArguments,
+                enviroment,
+                addCompilerV2Flags = moveSettings.addCompilerV2FlagsToCLI,
                 skipLatestGitDeps = moveSettings.skipFetchLatestGitDeps
             )
         }

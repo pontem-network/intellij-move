@@ -5,6 +5,7 @@ import org.move.cli.settings.moveSettings
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.openapiext.toPsiDirectory
+import org.move.utils.tests.CompilerV2
 import org.move.utils.tests.RunConfigurationProducerTestBase
 import org.move.utils.tests.WithBlockchain
 
@@ -318,6 +319,63 @@ class TestCommandConfigurationProducerTest : RunConfigurationProducerTestBase("t
             """
                 )
             }
+        }
+        checkOnElement<MvFunction>()
+    }
+
+    @CompilerV2
+    fun `test test run for compiler v2 without cli flag`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            tests {
+                move(
+                    "MoveTests.move", """
+            #[test_only]
+            module 0x1::MoveTests {
+                #[test]
+                fun /*caret*/test_add() {
+                    1 + 1;
+                }
+                #[test]
+                fun test_mul() {
+                    1 * 1;
+                }
+            }
+            """
+                )
+            }
+        }
+        project.moveSettings.modifyTemporary(this.testRootDisposable) {
+            it.skipFetchLatestGitDeps = false
+        }
+        checkOnElement<MvFunction>()
+    }
+
+    @CompilerV2
+    fun `test test run for compiler v2`() {
+        testProject {
+            namedMoveToml("MyPackage")
+            tests {
+                move(
+                    "MoveTests.move", """
+            #[test_only]
+            module 0x1::MoveTests {
+                #[test]
+                fun /*caret*/test_add() {
+                    1 + 1;
+                }
+                #[test]
+                fun test_mul() {
+                    1 * 1;
+                }
+            }
+            """
+                )
+            }
+        }
+        project.moveSettings.modifyTemporary(this.testRootDisposable) {
+            it.skipFetchLatestGitDeps = false
+            it.addCompilerV2Flags = true
         }
         checkOnElement<MvFunction>()
     }

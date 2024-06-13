@@ -31,7 +31,6 @@ class MvExternalLinterProjectSettingsService(
     val tool: ExternalLinter get() = state.tool
     val additionalArguments: String get() = state.additionalArguments
 
-    //    val channel: RustChannel get() = state.channel
     val envs: Map<String, String> get() = state.envs
     val runOnTheFly: Boolean get() = state.runOnTheFly
     val skipErrorsKnownToIde: Boolean get() = state.skipErrorsKnownToIde
@@ -43,8 +42,6 @@ class MvExternalLinterProjectSettingsService(
         @AffectsHighlighting
         var additionalArguments by property("") { it.isEmpty() }
 
-        //        @AffectsHighlighting
-//        var channel by enum(RustChannel.DEFAULT)
         @AffectsHighlighting
         var envs by map<String, String>()
 
