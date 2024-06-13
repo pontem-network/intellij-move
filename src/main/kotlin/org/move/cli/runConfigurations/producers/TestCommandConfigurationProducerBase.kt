@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
+import org.move.cli.Consts
 import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.CliCommandLineArgs
 import org.move.cli.settings.Blockchain
@@ -129,7 +130,7 @@ abstract class TestCommandConfigurationProducerBase(blockchain: Blockchain):
     private fun initEnvironmentVariables(project: Project): EnvironmentVariablesData {
         val environmentMap = linkedMapOf<String, String>()
         if (blockchain == Blockchain.APTOS && project.moveSettings.addCompilerV2FlagsToCLI) {
-            environmentMap["MOVE_LANGUAGE_V2"] = "true"
+            environmentMap[Consts.MOVE_COMPILER_V2_ENV] = "true"
         }
         return EnvironmentVariablesData.create(environmentMap, true)
     }

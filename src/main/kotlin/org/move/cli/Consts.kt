@@ -18,6 +18,7 @@ object MvProjectLayout {
 object Consts {
     const val MANIFEST_FILE = "Move.toml"
     const val ADDR_PLACEHOLDER = "_"
+    const val MOVE_COMPILER_V2_ENV = "MOVE_LANGUAGE_V2"
 
     val PROJECT_SYSTEM_ID = ProjectSystemId("Move")
 }
