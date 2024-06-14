@@ -29,12 +29,14 @@ import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.MoveProject.UpdateStatus
 import org.move.cli.manifest.MoveToml
-import org.move.cli.settings.blockchain
-import org.move.cli.settings.getBlockchainCli
+import org.move.cli.settings.getAptosCli
 import org.move.cli.settings.moveSettings
 import org.move.lang.toNioPathOrNull
 import org.move.lang.toTomlFile
-import org.move.openapiext.*
+import org.move.openapiext.TaskResult
+import org.move.openapiext.contentRoots
+import org.move.openapiext.resolveExisting
+import org.move.openapiext.toVirtualFile
 import org.move.stdext.iterateFiles
 import org.move.stdext.unwrapOrElse
 import org.move.stdext.withExtended
@@ -172,24 +174,22 @@ class MoveProjectsSyncTask(
         context.runWithChildProgress("Synchronize dependencies") { childContext ->
             val listener = SyncProcessAdapter(childContext)
 
-            val blockchain = project.blockchain
             val skipLatest = project.moveSettings.skipFetchLatestGitDeps
-            val blockchainCli = project.getBlockchainCli(parentDisposable = this)
+            val aptos = project.getAptosCli(parentDisposable = this)
             when {
-                blockchainCli == null -> TaskResult.Err("Invalid $blockchain CLI configuration")
+                aptos == null -> TaskResult.Err("Invalid Aptos CLI configuration")
                 else -> {
-                    blockchainCli
-                        .fetchPackageDependencies(
-                            project,
-                            projectRoot,
-                            skipLatest,
-                            processListener = listener
-                        ).unwrapOrElse {
-                            return@runWithChildProgress TaskResult.Err(
-                                "Failed to fetch / update dependencies",
-                                it.message
-                            )
-                        }
+                    aptos.fetchPackageDependencies(
+                        project,
+                        projectRoot,
+                        skipLatest,
+                        processListener = listener
+                    ).unwrapOrElse {
+                        return@runWithChildProgress TaskResult.Err(
+                            "Failed to fetch / update dependencies",
+                            it.message
+                        )
+                    }
                     TaskResult.Ok(Unit)
                 }
             }

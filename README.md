@@ -22,5 +22,4 @@ New features are announced in [What's New section of the documentation](https://
 * Code formatter.
 * Extensive integration with `aptos-cli`.
 * Running Aptos Move compiler on-the-fly as you typing.
-
-Sui Move Language support is also present, but is maintained on a best-effort basis. 
+* Integration with the Aptos Decompiler.

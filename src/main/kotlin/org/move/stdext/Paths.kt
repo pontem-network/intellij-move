@@ -1,5 +1,6 @@
 package org.move.stdext
 
+import com.intellij.execution.configurations.PathEnvironmentVariableUtil
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Files
@@ -35,3 +36,9 @@ fun executableName(toolName: String): String =
     if (SystemInfo.isWindows) "$toolName.exe" else toolName
 
 fun String.blankToNull(): String? = ifBlank { null }
+
+fun getCliFromPATH(cliName: String): Path? {
+    return PathEnvironmentVariableUtil
+        .findExecutableInPathOnAnyOS(cliName)
+        ?.toPath()?.toAbsolutePath()
+}

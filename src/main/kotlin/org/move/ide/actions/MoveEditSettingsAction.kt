@@ -1,11 +1,9 @@
 package org.move.ide.actions
 
 import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
-import org.move.cli.settings.PerProjectMoveConfigurable
+import org.move.cli.settings.PerProjectAptosConfigurable
 import org.move.openapiext.showSettingsDialog
 
 class MoveEditSettingsAction : DumbAwareAction("Aptos Settings") {
@@ -18,6 +16,6 @@ class MoveEditSettingsAction : DumbAwareAction("Aptos Settings") {
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        e.project?.showSettingsDialog<PerProjectMoveConfigurable>()
+        e.project?.showSettingsDialog<PerProjectAptosConfigurable>()
     }
 }

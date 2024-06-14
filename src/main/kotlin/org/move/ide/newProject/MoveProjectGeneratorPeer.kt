@@ -11,55 +11,40 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.Disposer
 import com.intellij.platform.GeneratorPeerImpl
-import com.intellij.ui.components.JBRadioButton
-import com.intellij.ui.dsl.builder.Cell
-import com.intellij.ui.dsl.builder.actionListener
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.builder.selected
-import org.move.cli.settings.Blockchain
 import org.move.cli.settings.MvProjectSettingsService
 import org.move.cli.settings.aptos.AptosExecType
 import org.move.cli.settings.aptos.ChooseAptosCliPanel
-import org.move.cli.settings.isValidExecutable
-import org.move.cli.settings.sui.ChooseSuiCliPanel
-import org.move.stdext.toPathOrNull
+import org.move.stdext.getCliFromPATH
 import javax.swing.JComponent
 
-class MoveProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerImpl<MoveProjectConfig>() {
+class MoveProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerImpl<AptosProjectConfig>() {
 
     private val chooseAptosCliPanel = ChooseAptosCliPanel { checkValid?.run() }
-    private val chooseSuiCliPanel = ChooseSuiCliPanel { checkValid?.run() }
-
-    private var blockchain: Blockchain
 
     init {
         Disposer.register(parentDisposable, chooseAptosCliPanel)
-        Disposer.register(parentDisposable, chooseSuiCliPanel)
 
         // set values from the default project settings
         val defaultProjectSettings =
             ProjectManager.getInstance().defaultProject.getService(MvProjectSettingsService::class.java)
-        blockchain = defaultProjectSettings.blockchain
 
-        val localAptosPath = defaultProjectSettings.localAptosPath ?: Blockchain.aptosCliFromPATH()?.toString()
-        val localSuiPath = defaultProjectSettings.localSuiPath ?: Blockchain.suiCliFromPATH()?.toString()
+        val localAptosPath =
+            defaultProjectSettings.localAptosPath ?: getCliFromPATH("aptos")?.toString()
         chooseAptosCliPanel.data =
             ChooseAptosCliPanel.Data(defaultProjectSettings.aptosExecType, localAptosPath)
-        chooseSuiCliPanel.data = ChooseSuiCliPanel.Data(localSuiPath)
     }
 
     private var checkValid: Runnable? = null
 
-    override fun getSettings(): MoveProjectConfig {
+    override fun getSettings(): AptosProjectConfig {
         val localAptosPath = this.chooseAptosCliPanel.data.localAptosPath
         if (localAptosPath != null) {
             this.chooseAptosCliPanel.updateAptosSdks(localAptosPath)
         }
-        return MoveProjectConfig(
-            blockchain = blockchain,
+        return AptosProjectConfig(
             aptosExecType = this.chooseAptosCliPanel.data.aptosExecType,
             localAptosPath = localAptosPath,
-            localSuiPath = this.chooseSuiCliPanel.data.localSuiPath
         )
     }
 
@@ -69,68 +54,18 @@ class MoveProjectGeneratorPeer(val parentDisposable: Disposable): GeneratorPeerI
     }
 
     override fun getComponent(): JComponent {
-        val generatorPeer = this
         return panel {
-            var aptosRadioButton: Cell<JBRadioButton>? = null
-            var suiRadioButton: Cell<JBRadioButton>? = null
-            buttonsGroup("Blockchain") {
-                row {
-                    aptosRadioButton = radioButton("Aptos")
-                        .selected(generatorPeer.blockchain == Blockchain.APTOS)
-                        .actionListener { _, _ ->
-                            generatorPeer.blockchain = Blockchain.APTOS
-                            checkValid?.run()
-                        }
-//                        .bindSelected(
-//                            { generatorPeer.blockchain == Blockchain.APTOS },
-//                            {
-//                                generatorPeer.blockchain = Blockchain.APTOS
-//                                checkValid?.run()
-//                            }
-//                        )
-                    suiRadioButton = radioButton("Sui")
-                        .selected(generatorPeer.blockchain == Blockchain.SUI)
-                        .actionListener { _, _ ->
-                            generatorPeer.blockchain = Blockchain.SUI
-                            checkValid?.run()
-                        }
-//                        .bindSelected(
-//                            { generatorPeer.blockchain == Blockchain.SUI },
-//                            {
-//                                generatorPeer.blockchain = Blockchain.SUI
-//                                checkValid?.run()
-//                            }
-//                        )
-                }
-            }
-
             chooseAptosCliPanel
                 .attachToLayout(this)
-                .visibleIf(aptosRadioButton!!.selected)
-            chooseSuiCliPanel
-                .attachToLayout(this)
-                .visibleIf(suiRadioButton!!.selected)
         }
     }
 
     override fun validate(): ValidationInfo? {
-        when (blockchain) {
-            Blockchain.APTOS -> {
-                val panelData = this.chooseAptosCliPanel.data
-                val aptosExecPath =
-                    AptosExecType.aptosExecPath(panelData.aptosExecType, panelData.localAptosPath)
-                if (aptosExecPath == null) {
-                    return ValidationInfo("Invalid path to $blockchain executable")
-                }
-            }
-            Blockchain.SUI -> {
-                val suiExecPath = this.chooseSuiCliPanel.data.localSuiPath?.toPathOrNull()
-                if (suiExecPath == null
-                    || !suiExecPath.isValidExecutable()
-                ) {
-                    return ValidationInfo("Invalid path to $blockchain executable")
-                }
-            }
+        val panelData = this.chooseAptosCliPanel.data
+        val aptosExecPath =
+            AptosExecType.aptosExecPath(panelData.aptosExecType, panelData.localAptosPath)
+        if (aptosExecPath == null) {
+            return ValidationInfo("Invalid path to Aptos executable")
         }
         return null
     }

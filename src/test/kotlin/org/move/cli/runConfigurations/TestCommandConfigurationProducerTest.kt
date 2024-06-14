@@ -1,15 +1,13 @@
 package org.move.cli.runConfigurations
 
-import org.move.cli.settings.Blockchain
 import org.move.cli.settings.moveSettings
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.openapiext.toPsiDirectory
 import org.move.utils.tests.CompilerV2
 import org.move.utils.tests.RunConfigurationProducerTestBase
-import org.move.utils.tests.WithBlockchain
 
-class TestCommandConfigurationProducerTest : RunConfigurationProducerTestBase("test") {
+class TestCommandConfigurationProducerTest: RunConfigurationProducerTestBase("test") {
     fun `test test run for function`() {
         testProject {
             namedMoveToml("MyPackage")
@@ -296,31 +294,6 @@ class TestCommandConfigurationProducerTest : RunConfigurationProducerTestBase("t
         }
         val mainFile = findPsiFile("mypackage/sources/main.move")
         checkOnFsItem(mainFile)
-    }
-
-    @WithBlockchain(Blockchain.SUI)
-    fun `test test run for function sui`() {
-        testProject {
-            namedMoveToml("MyPackage")
-            tests {
-                move(
-                    "MoveTests.move", """
-            #[test_only]
-            module 0x1::MoveTests {
-                #[test]
-                fun /*caret*/test_add() {
-                    1 + 1;
-                }
-                #[test]
-                fun test_mul() {
-                    1 * 1;
-                }
-            }
-            """
-                )
-            }
-        }
-        checkOnElement<MvFunction>()
     }
 
     @CompilerV2

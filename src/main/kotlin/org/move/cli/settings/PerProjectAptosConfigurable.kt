@@ -1,63 +1,41 @@
 package org.move.cli.settings
 
+import com.intellij.openapi.externalSystem.service.settings.ExternalSystemGroupConfigurable
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.components.JBRadioButton
-import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.bindSelected
+import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.layout.selected
 import org.move.cli.settings.aptos.ChooseAptosCliPanel
-import org.move.cli.settings.sui.ChooseSuiCliPanel
 import org.move.openapiext.showSettingsDialog
 
 // panels needs not to be bound to the Configurable itself, as it's sometimes created without calling the `createPanel()`
-class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move Language") {
+class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Aptos") {
 
     override fun createPanel(): DialogPanel {
         val chooseAptosCliPanel = ChooseAptosCliPanel(versionUpdateListener = null)
-        val chooseSuiCliPanel = ChooseSuiCliPanel()
-
         val configurablePanel =
             panel {
                 val settings = project.moveSettings
                 val state = settings.state.copy()
 
-                var aptosRadioButton: Cell<JBRadioButton>? = null
-                var suiRadioButton: Cell<JBRadioButton>? = null
-                group {
-                    buttonsGroup("Blockchain") {
-                        row {
-                            aptosRadioButton = radioButton("Aptos")
-                                .bindSelected(
-                                    { state.blockchain == Blockchain.APTOS },
-                                    { state.blockchain = Blockchain.APTOS },
-                                )
-                            suiRadioButton = radioButton("Sui")
-                                .bindSelected(
-                                    { state.blockchain == Blockchain.SUI },
-                                    { state.blockchain = Blockchain.SUI },
-                                )
-                        }
-                    }
-                    chooseAptosCliPanel.attachToLayout(this)
-                        .visibleIf(aptosRadioButton!!.selected)
-                    chooseSuiCliPanel.attachToLayout(this)
-                        .visibleIf(suiRadioButton!!.selected)
-                }
+                chooseAptosCliPanel.attachToLayout(this)
 
                 group {
                     row {
-                        checkBox("Fetch Aptos dependencies")
-                            .comment(
-                                "Enables fetching dependencies for the Aptos projects on every change " +
-                                        "to the Move.toml file"
-                            )
+                        checkBox("Fetch external dependencies on project reload")
                             .bindSelected(state::fetchAptosDeps)
+                        link("Configure project reload schedule") {
+                            ProjectManager.getInstance().defaultProject.showSettingsDialog<ExternalSystemGroupConfigurable>()
+                        }
+                            .align(AlignX.RIGHT)
                     }
-                    val compilerV2Box = JBCheckBox("Enable Aptos V2 compiler")
+                    val compilerV2Box = JBCheckBox("Enable V2 compiler")
                     row {
                         cell(compilerV2Box)
                             .comment(
@@ -77,12 +55,15 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                     group("Command Line Options") {
                         row {
                             checkBox("Disable telemetry for new Run Configurations")
+                                .comment(
+                                    "Adds APTOS_DISABLE_TELEMETRY=true to every generated Aptos command."
+                                )
                                 .bindSelected(state::disableTelemetry)
                         }
                         row {
                             checkBox("Skip updating to the latest git dependencies")
                                 .comment(
-                                    "Adds --skip-fetch-latest-git-deps to the sync and test runs. "
+                                    "Adds --skip-fetch-latest-git-deps to the sync and test runs."
                                 )
                                 .bindSelected(state::skipFetchLatestGitDeps)
 
@@ -90,19 +71,18 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                         row {
                             checkBox("Dump storage to console on test failures")
                                 .comment(
-                                    "Adds --dump to the test runs (aptos only)."
+                                    "Adds --dump to generated test runs."
                                 )
                                 .bindSelected(state::dumpStateOnTestFailure)
                         }
                     }
-                }.visibleIf(aptosRadioButton!!.selected)
+                }
 
                 if (!project.isDefault) {
                     row {
                         link("Set default project settings") {
-                            ProjectManager.getInstance().defaultProject.showSettingsDialog<PerProjectMoveConfigurable>()
+                            ProjectManager.getInstance().defaultProject.showSettingsDialog<PerProjectAptosConfigurable>()
                         }
-                            //                        .visible(true)
                             .align(AlignX.RIGHT)
                     }
                 }
@@ -118,9 +98,6 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                         }
                         it.localAptosPath = localAptosSdkPath
 
-                        it.localSuiPath = chooseSuiCliPanel.data.localSuiPath
-
-                        it.blockchain = state.blockchain
                         it.disableTelemetry = state.disableTelemetry
                         it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
                         it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
@@ -134,22 +111,17 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
                 onReset {
                     chooseAptosCliPanel.data =
                         ChooseAptosCliPanel.Data(state.aptosExecType, state.localAptosPath)
-                    chooseSuiCliPanel.data =
-                        ChooseSuiCliPanel.Data(state.localSuiPath)
                 }
 
                 /// checks whether any settings are modified (should be fast)
                 onIsModified {
                     val aptosPanelData = chooseAptosCliPanel.data
-                    val suiPanelData = chooseSuiCliPanel.data
                     aptosPanelData.aptosExecType != settings.aptosExecType
                             || aptosPanelData.localAptosPath != settings.localAptosPath
-                            || suiPanelData.localSuiPath != settings.localSuiPath
                 }
             }
         this.disposable?.let {
             Disposer.register(it, chooseAptosCliPanel)
-            Disposer.register(it, chooseSuiCliPanel)
         }
         return configurablePanel
     }
@@ -157,6 +129,5 @@ class PerProjectMoveConfigurable(val project: Project): BoundConfigurable("Move 
 //    override fun disposeUIResources() {
 //        super.disposeUIResources()
 //        Disposer.dispose(chooseAptosCliPanel)
-//        Disposer.dispose(chooseSuiCliPanel)
 //    }
 }
