@@ -27,6 +27,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.util.BackgroundTaskUtil
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.CheckedDisposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiFile
 import com.intellij.util.ui.update.MergingUpdateQueue
@@ -52,7 +53,7 @@ class RsExternalLinterPass(
     private val annotationResult: RsExternalLinterResult? get() = annotationInfo?.value
 
     @Volatile
-    private var disposable: Disposable = myProject
+    private var disposable: CheckedDisposable = createProjectDisposable()
 
     override fun doCollectInformation(progress: ProgressIndicator) {
         highlights.clear()
@@ -78,7 +79,7 @@ class RsExternalLinterPass(
         if (file !is MoveFile) return
 
         if (annotationInfo == null || !isAnnotationPassEnabled) {
-            disposable = myProject
+            disposable = createProjectDisposable()
             doFinish(emptyList())
             return
         }
@@ -128,7 +129,7 @@ class RsExternalLinterPass(
 
     private fun doFinish(highlights: List<HighlightInfo>) {
         invokeLater(ModalityState.stateForComponent(editor.component)) {
-            if (Disposer.isDisposed(disposable)) return@invokeLater
+            if (disposable.isDisposed) return@invokeLater
             UpdateHighlightersUtil.setHighlightersToEditor(
                 myProject,
                 document,
@@ -141,6 +142,9 @@ class RsExternalLinterPass(
             DaemonCodeAnalyzerEx.getInstanceEx(myProject).fileStatusMap.markFileUpToDate(document, id)
         }
     }
+
+    @Suppress("IncorrectParentDisposable")
+    private fun createProjectDisposable(): CheckedDisposable = Disposer.newCheckedDisposable(myProject)
 
     private val isAnnotationPassEnabled: Boolean
         get() = myProject.externalLinterSettings.runOnTheFly

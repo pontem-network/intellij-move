@@ -91,7 +91,7 @@ class MvExternalLinterInspection: GlobalSimpleInspectionTool() {
 
             val exit = runReadAction {
                 ProgressManager.checkCanceled()
-                if (Disposer.isDisposed(anyPsiChangeDisposable)) return@runReadAction false
+                if (anyPsiChangeDisposable.isDisposed) return@runReadAction false
                 if (annotationResults.size < moveProjects.size) return@runReadAction true
                 for (annotationResult in annotationResults) {
                     val problemDescriptors = getProblemDescriptors(analyzedFiles, annotationResult)

@@ -13,6 +13,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.CheckedDisposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.wm.WindowManager
@@ -150,8 +151,8 @@ object RsExternalLinterUtils {
         }
 }
 
-fun MessageBus.createDisposableOnAnyPsiChange(): Disposable {
-    val disposable = Disposer.newDisposable("Dispose on PSI change")
+fun MessageBus.createDisposableOnAnyPsiChange(): CheckedDisposable {
+    val disposable = Disposer.newCheckedDisposable("Dispose on PSI change")
     connect(disposable).subscribe(
         PsiManagerImpl.ANY_PSI_CHANGE_TOPIC,
         object: AnyPsiChangeListener {
