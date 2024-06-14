@@ -4,6 +4,7 @@ import com.intellij.ide.util.projectWizard.AbstractNewProjectStep
 import com.intellij.ide.util.projectWizard.CustomStepProjectGenerator
 import com.intellij.ide.util.projectWizard.ProjectSettingsStepBase
 import com.intellij.openapi.components.service
+import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -12,6 +13,7 @@ import com.intellij.platform.DirectoryProjectGenerator
 import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
 import org.move.cli.PluginApplicationDisposable
+import org.move.cli.moveProjectsService
 import org.move.cli.runConfigurations.aptos.Aptos
 import org.move.cli.settings.aptos.AptosExecType
 import org.move.cli.settings.moveSettings
@@ -66,6 +68,8 @@ class MoveProjectGenerator: DirectoryProjectGeneratorBase<AptosProjectConfig>(),
         // this cannot be moved to a ProjectActivity, as Move.toml files
         // are not created by the time those activities are executed
         ProjectInitializationSteps.openMoveTomlInEditor(project, manifestFile)
+
+        project.moveProjectsService.scheduleProjectsRefresh("After `aptos move init`")
     }
 
     override fun createStep(
