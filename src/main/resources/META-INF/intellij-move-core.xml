@@ -47,16 +47,12 @@
         implementation="org.move.cli.runConfigurations.legacy.MoveConfigurationType" />
     <configurationType
         implementation="org.move.cli.runConfigurations.aptos.AptosConfigurationType" />
-    <configurationType
-        implementation="org.move.cli.runConfigurations.sui.SuiConfigurationType" />
     <runConfigurationProducer
         implementation="org.move.cli.runConfigurations.producers.aptos.AptosTestCommandConfigurationProducer" />
     <runConfigurationProducer
         implementation="org.move.cli.runConfigurations.producers.aptos.RunCommandConfigurationProducer" />
     <runConfigurationProducer
         implementation="org.move.cli.runConfigurations.producers.aptos.ViewCommandConfigurationProducer" />
-    <runConfigurationProducer
-        implementation="org.move.cli.runConfigurations.producers.sui.SuiTestCommandConfigurationProducer" />
     <runLineMarkerContributor language="Move"
                               implementationClass="org.move.ide.lineMarkers.CommandLineMarkerContributor" />
 
@@ -309,15 +305,13 @@
 
     <postStartupActivity
         implementation="org.move.ide.newProject.projectActivity.AlwaysRefreshProjectsAfterOpen" />
-    <postStartupActivity
-        implementation="org.move.ide.newProject.projectActivity.InferBlockchainTypeOnStartupActivity" />
 <!--     background = 5 seconds delayed  -->
 <!--    <postStartupActivity-->
 <!--        implementation="org.move.cli.openProject.CreateDefaultCompileRunConfiguration" />-->
 
 
-    <projectConfigurable instance="org.move.cli.settings.PerProjectMoveConfigurable"
-                         displayName="Move Language"
+    <projectConfigurable instance="org.move.cli.settings.PerProjectAptosConfigurable"
+                         displayName="Aptos"
                          groupId="language"
                          id="language.move" />
 

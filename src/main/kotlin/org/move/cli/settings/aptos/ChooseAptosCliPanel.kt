@@ -24,7 +24,6 @@ import org.move.cli.settings.aptos.AptosExecType.LOCAL
 import org.move.cli.settings.isValidExecutable
 import org.move.ide.actions.DownloadAptosSDKAction
 import org.move.ide.notifications.logOrShowBalloon
-import org.move.ide.notifications.showBalloon
 import org.move.openapiext.PluginPathManager
 import org.move.openapiext.pathField
 import org.move.stdext.blankToNull

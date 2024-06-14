@@ -8,7 +8,6 @@ import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.Consts
 import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.CliCommandLineArgs
-import org.move.cli.settings.Blockchain
 import org.move.cli.settings.moveSettings
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvFunction
@@ -20,8 +19,8 @@ import org.move.lang.core.psi.ext.hasTestFunctions
 import org.move.lang.moveProject
 import org.toml.lang.psi.TomlFile
 
-abstract class TestCommandConfigurationProducerBase(blockchain: Blockchain):
-    CommandConfigurationProducerBase(blockchain) {
+abstract class TestCommandConfigurationProducerBase:
+    CommandConfigurationProducerBase() {
 
     override fun fromLocation(location: PsiElement, climbUp: Boolean): CommandLineArgsFromContext? {
         return when {
@@ -56,12 +55,10 @@ abstract class TestCommandConfigurationProducerBase(blockchain: Blockchain):
         val functionName = fn.name ?: return null
 
         val confName = "Test $modName::$functionName"
-        val subCommand = StringBuilder("move test")
 
-        when (blockchain) {
-            Blockchain.APTOS -> subCommand.append(" --filter $modName::$functionName")
-            Blockchain.SUI -> subCommand.append(" $modName::$functionName")
-        }
+        val subCommand = StringBuilder("move test")
+        subCommand.append(" --filter $modName::$functionName")
+
         subCommand.appendCustomCLIFlags(psi.project)
 
         val moveProject = fn.moveProject ?: return null
@@ -84,11 +81,8 @@ abstract class TestCommandConfigurationProducerBase(blockchain: Blockchain):
         val modName = mod.name ?: return null
         val confName = "Test $modName"
         val subCommand = StringBuilder("move test")
+        subCommand.append(" --filter $modName")
 
-        when (blockchain) {
-            Blockchain.APTOS -> subCommand.append(" --filter $modName")
-            Blockchain.SUI -> subCommand.append(" $modName")
-        }
         subCommand.appendCustomCLIFlags(psi.project)
 
         val moveProject = mod.moveProject ?: return null
@@ -129,7 +123,7 @@ abstract class TestCommandConfigurationProducerBase(blockchain: Blockchain):
 
     private fun initEnvironmentVariables(project: Project): EnvironmentVariablesData {
         val environmentMap = linkedMapOf<String, String>()
-        if (blockchain == Blockchain.APTOS && project.moveSettings.addCompilerV2FlagsToCLI) {
+        if (project.moveSettings.addCompilerV2FlagsToCLI) {
             environmentMap[Consts.MOVE_COMPILER_V2_ENV] = "true"
         }
         return EnvironmentVariablesData.create(environmentMap, true)
@@ -139,10 +133,10 @@ abstract class TestCommandConfigurationProducerBase(blockchain: Blockchain):
         if (project.moveSettings.skipFetchLatestGitDeps) {
             append(" --skip-fetch-latest-git-deps")
         }
-        if (blockchain == Blockchain.APTOS && project.moveSettings.dumpStateOnTestFailure) {
+        if (project.moveSettings.dumpStateOnTestFailure) {
             append(" --dump")
         }
-        if (blockchain == Blockchain.APTOS && project.moveSettings.addCompilerV2FlagsToCLI) {
+        if (project.moveSettings.addCompilerV2FlagsToCLI) {
             append(" --compiler-version v2 --language-version 2.0")
         }
     }

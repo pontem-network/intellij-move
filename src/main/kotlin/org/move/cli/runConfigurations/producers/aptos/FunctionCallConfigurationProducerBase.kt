@@ -5,10 +5,9 @@ import com.intellij.execution.actions.ConfigurationFromContext
 import com.intellij.execution.impl.RunDialog
 import org.move.cli.runConfigurations.aptos.FunctionCallConfigurationBase
 import org.move.cli.runConfigurations.producers.CommandConfigurationProducerBase
-import org.move.cli.settings.Blockchain
 
-abstract class FunctionCallConfigurationProducerBase<T : FunctionCallConfigurationBase> :
-    CommandConfigurationProducerBase(Blockchain.APTOS) {
+abstract class FunctionCallConfigurationProducerBase<T: FunctionCallConfigurationBase>:
+    CommandConfigurationProducerBase() {
 
     override fun onFirstRun(
         configuration: ConfigurationFromContext,

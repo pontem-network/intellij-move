@@ -16,13 +16,11 @@ import com.intellij.util.ui.UIUtil
 import org.intellij.lang.annotations.Language
 import org.jetbrains.annotations.TestOnly
 import org.move.cli.moveProjectsService
-import org.move.cli.settings.Blockchain
 import org.move.cli.settings.moveSettings
 import org.move.openapiext.toPsiDirectory
 import org.move.openapiext.toPsiFile
 import org.move.openapiext.toVirtualFile
 import org.move.utils.tests.base.TestCase
-import java.util.concurrent.TimeUnit
 
 @TestOnly
 fun setRegistryKey(key: String, value: Boolean) = Registry.get(key).setValue(value)
@@ -37,11 +35,9 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
         setRegistryKey("org.move.debug.enabled", isDebugMode)
 
         val isCompilerV2 = this.findAnnotationInstance<CompilerV2>() != null
-        val blockchain = this.findAnnotationInstance<WithBlockchain>()?.blockchain ?: Blockchain.APTOS
         // triggers projects refresh
         project.moveSettings.modify {
             it.isCompilerV2 = isCompilerV2
-            it.blockchain = blockchain
         }
     }
 

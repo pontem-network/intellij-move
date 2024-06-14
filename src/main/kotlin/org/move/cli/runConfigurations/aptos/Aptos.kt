@@ -6,13 +6,13 @@ import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.execution.ParametersListUtil
 import org.move.cli.Consts
 import org.move.cli.MoveProject
 import org.move.cli.externalLinter.ExternalLinter
 import org.move.cli.externalLinter.externalLinterSettings
-import org.move.cli.runConfigurations.BlockchainCli
 import org.move.cli.runConfigurations.CliCommandLineArgs
 import org.move.cli.settings.moveSettings
 import org.move.openapiext.*
@@ -25,12 +25,15 @@ import org.move.stdext.unwrapOrElse
 import java.nio.file.Path
 import java.nio.file.Paths
 
-data class Aptos(
-    override val cliLocation: Path,
-    val parentDisposable: Disposable?
-): BlockchainCli(parentDisposable) {
+data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disposable {
 
-    override fun init(
+    init {
+        if (parentDisposable != null) {
+            Disposer.register(parentDisposable, this)
+        }
+    }
+
+    fun init(
         project: Project,
         rootDirectory: VirtualFile,
         packageName: String
@@ -56,7 +59,7 @@ data class Aptos(
         return Ok(manifest)
     }
 
-    override fun fetchPackageDependencies(
+    fun fetchPackageDependencies(
         project: Project,
         projectDir: Path,
         skipLatest: Boolean,
@@ -183,6 +186,22 @@ data class Aptos(
         // only one second is allowed to run decompiler, otherwise fails with timeout
         return executeCommandLine(commandLine)
     }
+
+    private fun executeCommandLine(
+        commandLine: CliCommandLineArgs,
+        listener: ProcessListener? = null,
+        runner: CapturingProcessHandler.() -> ProcessOutput = {
+            runProcessWithGlobalProgress(
+                timeoutInMilliseconds = null
+            )
+        }
+    ): RsProcessResult<ProcessOutput> {
+        return commandLine
+            .toGeneralCommandLine(this.cliLocation)
+            .execute(this, stdIn = null, listener = listener, runner = runner)
+    }
+
+    override fun dispose() {}
 }
 
 data class AptosCompileArgs(

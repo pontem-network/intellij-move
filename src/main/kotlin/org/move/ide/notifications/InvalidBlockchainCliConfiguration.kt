@@ -6,13 +6,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import org.move.cli.settings.*
-import org.move.cli.settings.Blockchain.APTOS
-import org.move.cli.settings.Blockchain.SUI
 import org.move.cli.settings.aptos.AptosExecType.LOCAL
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
 import org.move.openapiext.common.isUnitTestMode
 import org.move.openapiext.showSettingsDialog
+import org.move.stdext.getCliFromPATH
 
 class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationProvider(project),
                                                            DumbAware {
@@ -26,36 +25,21 @@ class InvalidBlockchainCliConfiguration(project: Project): MvEditorNotificationP
         if (!project.isTrusted()) return null
         if (isNotificationDisabled(file)) return null
 
-        val blockchain = project.moveSettings.blockchain
-        when (blockchain) {
-            APTOS -> {
-                if (project.aptosExecPath.isValidExecutable()) return null
-            }
-            SUI -> {
-                if (project.suiExecPath.isValidExecutable()) return null
-            }
-        }
+        if (project.aptosExecPath.isValidExecutable()) return null
 
-        val blockchainCliFromPATH = Blockchain.blockchainCliFromPATH(blockchain.cliName())?.toString()
+        val aptosCliFromPATH = getCliFromPATH("aptos")?.toString()
         return EditorNotificationPanel().apply {
-            text = "$blockchain CLI path is not provided or invalid"
-            if (blockchainCliFromPATH != null) {
-                createActionLabel("Set to \"$blockchainCliFromPATH\"") {
+            text = "Aptos CLI path is not provided or invalid"
+            if (aptosCliFromPATH != null) {
+                createActionLabel("Set to \"$aptosCliFromPATH\"") {
                     project.moveSettings.modify {
-                        when (blockchain) {
-                            APTOS -> {
-                                it.aptosExecType = LOCAL
-                                it.localAptosPath = blockchainCliFromPATH
-                            }
-                            SUI -> {
-                                it.localSuiPath = blockchainCliFromPATH
-                            }
-                        }
+                        it.aptosExecType = LOCAL
+                        it.localAptosPath = aptosCliFromPATH
                     }
                 }
             }
             createActionLabel("Configure") {
-                project.showSettingsDialog<PerProjectMoveConfigurable>()
+                project.showSettingsDialog<PerProjectAptosConfigurable>()
             }
             createActionLabel("Do not show again") {
                 disableNotification(file)

@@ -3,11 +3,10 @@ package org.move.utils.tests
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.testFramework.fixtures.impl.BaseFixture
-import org.move.cli.settings.Blockchain
-import org.move.cli.settings.Blockchain.APTOS
 import org.move.cli.settings.aptos.AptosExecType.LOCAL
 import org.move.cli.settings.aptosExecPath
 import org.move.cli.settings.moveSettings
+import org.move.stdext.getCliFromPATH
 import java.nio.file.Path
 
 class AptosCliTestFixture(
@@ -21,13 +20,9 @@ class AptosCliTestFixture(
     override fun setUp() {
         super.setUp()
 
-        project.moveSettings.modifyTemporary(testRootDisposable) {
-            it.blockchain = APTOS
-        }
-
         var aptosSdkPath = project.aptosExecPath
         if (aptosSdkPath == null) {
-            aptosSdkPath = Blockchain.aptosCliFromPATH()
+            aptosSdkPath = getCliFromPATH("aptos")
             project.moveSettings.modifyTemporary(testRootDisposable) {
                 it.aptosExecType = LOCAL
                 it.localAptosPath = aptosSdkPath.toString()

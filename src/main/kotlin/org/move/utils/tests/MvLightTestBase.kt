@@ -1,7 +1,6 @@
 package org.move.utils.tests
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import org.move.cli.settings.Blockchain
 import org.move.cli.settings.moveSettings
 
 abstract class MvLightTestBase: BasePlatformTestCase() {
@@ -14,12 +13,6 @@ abstract class MvLightTestBase: BasePlatformTestCase() {
         val isCompilerV2 = this.findAnnotationInstance<CompilerV2>() != null
         project.moveSettings.modifyTemporary(testRootDisposable) {
             it.isCompilerV2 = isCompilerV2
-        }
-
-        val blockchain = this.findAnnotationInstance<WithBlockchain>()?.blockchain ?: Blockchain.APTOS
-        // triggers projects refresh
-        project.moveSettings.modify {
-            it.blockchain = blockchain
         }
     }
 }

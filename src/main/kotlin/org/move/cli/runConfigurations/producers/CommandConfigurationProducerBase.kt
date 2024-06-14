@@ -7,19 +7,13 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
 import org.move.cli.runConfigurations.CommandConfigurationBase
-import org.move.cli.settings.Blockchain
 import org.move.cli.settings.moveSettings
 
-abstract class CommandConfigurationProducerBase(val blockchain: Blockchain):
+abstract class CommandConfigurationProducerBase:
     LazyRunConfigurationProducer<CommandConfigurationBase>() {
 
-    fun configFromLocation(location: PsiElement, climbUp: Boolean = true): CommandLineArgsFromContext? {
-        val project = location.project
-        if (project.moveSettings.blockchain != blockchain) {
-            return null
-        }
-        return fromLocation(location, climbUp)
-    }
+    fun configFromLocation(location: PsiElement, climbUp: Boolean = true): CommandLineArgsFromContext? =
+        fromLocation(location, climbUp)
 
     abstract fun fromLocation(location: PsiElement, climbUp: Boolean = true): CommandLineArgsFromContext?
 
@@ -36,8 +30,7 @@ abstract class CommandConfigurationProducerBase(val blockchain: Blockchain):
         templateConfiguration.workingDirectory = commandLine.workingDirectory
 
         var environment = commandLine.environmentVariables.envs
-        if (blockchain == Blockchain.APTOS && context.project.moveSettings.disableTelemetry
-        ) {
+        if (context.project.moveSettings.disableTelemetry) {
             environment = environment + mapOf("APTOS_DISABLE_TELEMETRY" to "true")
         }
         templateConfiguration.environmentVariables = EnvironmentVariablesData.create(environment, true)
@@ -49,10 +42,6 @@ abstract class CommandConfigurationProducerBase(val blockchain: Blockchain):
         configuration: CommandConfigurationBase,
         context: ConfigurationContext
     ): Boolean {
-        val project = context.project
-        if (project.moveSettings.blockchain != blockchain) {
-            return false
-        }
         val location = context.psiLocation ?: return false
         val cmdConf = configFromLocation(location) ?: return false
         return configuration.name == cmdConf.configurationName

@@ -8,10 +8,7 @@ package org.move.utils.tests
 import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.psi.PsiElement
 import com.intellij.testFramework.enableInspectionTool
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.intellij.lang.annotations.Language
-import org.move.cli.settings.Blockchain
-import org.move.cli.settings.moveSettings
 import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
 import org.move.utils.tests.base.findElementsWithDataAndOffsetInEditor
@@ -28,11 +25,6 @@ annotation class DebugMode(val enabled: Boolean)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class WithEnabledInspections(vararg val inspections: KClass<out InspectionProfileEntry>)
-
-@Inherited
-@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
-annotation class WithBlockchain(val blockchain: Blockchain)
 
 @Inherited
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
@@ -81,32 +73,32 @@ abstract class MvTestBase: MvLightTestBase(),
         return InlineFile(myFixture, code, name)
     }
 
-    protected inline fun <reified T : PsiElement> findElementInEditor(marker: String = "^"): T =
+    protected inline fun <reified T: PsiElement> findElementInEditor(marker: String = "^"): T =
         findElementInEditor(T::class.java, marker)
 
-    protected fun <T : PsiElement> findElementInEditor(psiClass: Class<T>, marker: String): T {
+    protected fun <T: PsiElement> findElementInEditor(psiClass: Class<T>, marker: String): T {
         val (element, data) = findElementWithDataAndOffsetInEditor(psiClass, marker)
         check(data.isEmpty()) { "Did not expect marker data" }
         return element
     }
 
-    protected inline fun <reified T : PsiElement> findElementAndDataInEditor(marker: String = "^"): Pair<T, String> {
+    protected inline fun <reified T: PsiElement> findElementAndDataInEditor(marker: String = "^"): Pair<T, String> {
         val (element, data) = findElementWithDataAndOffsetInEditor<T>(marker)
         return element to data
     }
 
-    protected inline fun <reified T : PsiElement> findElementAndOffsetInEditor(marker: String = "^"): Pair<T, Int> {
+    protected inline fun <reified T: PsiElement> findElementAndOffsetInEditor(marker: String = "^"): Pair<T, Int> {
         val (element, _, offset) = findElementWithDataAndOffsetInEditor<T>(marker)
         return element to offset
     }
 
-    protected inline fun <reified T : PsiElement> findElementWithDataAndOffsetInEditor(
+    protected inline fun <reified T: PsiElement> findElementWithDataAndOffsetInEditor(
         marker: String = "^"
     ): Triple<T, String, Int> {
         return findElementWithDataAndOffsetInEditor(T::class.java, marker)
     }
 
-    protected fun <T : PsiElement> findElementWithDataAndOffsetInEditor(
+    protected fun <T: PsiElement> findElementWithDataAndOffsetInEditor(
         psiClass: Class<T>,
         marker: String
     ): Triple<T, String, Int> {
