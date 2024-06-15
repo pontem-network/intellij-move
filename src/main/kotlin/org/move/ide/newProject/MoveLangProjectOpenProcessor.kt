@@ -1,5 +1,6 @@
 package org.move.ide.newProject
 
+import com.intellij.openapi.project.DumbAwareRunnable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupManager
 import com.intellij.openapi.util.io.FileUtil
@@ -30,11 +31,17 @@ class MoveLangProjectOpenProcessor: ProjectOpenProcessor() {
         val basedir = if (virtualFile.isDirectory) virtualFile else virtualFile.parent
         return platformOpenProcessor.doOpenProject(basedir, projectToClose, forceOpenInNewFrame)
             ?.also { project ->
+                @Suppress("DEPRECATION")
                 StartupManager.getInstance(project)
-                    .runWhenProjectIsInitialized {
-                        ProjectInitializationSteps.openMoveTomlInEditor(project)
-                        ProjectInitializationSteps.createDefaultCompileConfigurationIfNotExists(project)
-                    }
+                    .runWhenProjectIsInitialized(object: DumbAwareRunnable {
+                        override fun run() {
+                            ProjectInitializationSteps.createDefaultCompileConfigurationIfNotExists(project)
+                            // NOTE:
+                            // this cannot be moved to a ProjectActivity, as Move.toml files
+                            // are not created by the time those activities are executed
+                            ProjectInitializationSteps.openMoveTomlInEditor(project)
+                        }
+                    })
             }
     }
 }

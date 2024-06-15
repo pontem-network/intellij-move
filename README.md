@@ -21,5 +21,5 @@ New features are announced in [What's New section of the documentation](https://
 * Rename refactoring.
 * Code formatter.
 * Extensive integration with `aptos-cli`.
-* Running Aptos Move compiler on-the-fly as you typing.
+* Running Move on Aptos compiler on-the-fly as you type.
 * Integration with the Aptos Decompiler.

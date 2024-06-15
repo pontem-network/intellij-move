@@ -13,7 +13,6 @@ import javax.swing.Icon
 object MoveIcons {
     val MOVE_LOGO = load("/icons/move_logo.svg")
     val APTOS_LOGO = load("/icons/aptos.svg")
-    val SUI_LOGO = load("/icons/sui.svg")
 
     val MV_LOGO = load("/icons/move_logo.svg")
 
