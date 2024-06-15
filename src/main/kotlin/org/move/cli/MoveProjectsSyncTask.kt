@@ -49,7 +49,7 @@ class MoveProjectsSyncTask(
     parentDisposable: Disposable,
     private val future: CompletableFuture<List<MoveProject>>,
     private val reason: String?
-): Task.Backgroundable(project, "Reloading Move packages", true), Disposable {
+): Task.Backgroundable(project, "Reloading Aptos packages", true), Disposable {
 
     init {
         Disposer.register(parentDisposable, this)
@@ -94,7 +94,7 @@ class MoveProjectsSyncTask(
         future.complete(refreshedProjects)
 
         val elapsed = System.currentTimeMillis() - before
-        LOG.logProjectsRefresh("finished Move projects Sync Task in $elapsed ms", reason)
+        LOG.logProjectsRefresh("finished Aptos projects Sync Task in $elapsed ms", reason)
 
         Disposer.dispose(this)
     }
@@ -200,13 +200,13 @@ class MoveProjectsSyncTask(
             null,
             null,
             object: JComponent() {},
-            "Move"
+            "Aptos"
         )
         buildContentDescriptor.isActivateToolWindowWhenFailed = true
         buildContentDescriptor.isActivateToolWindowWhenAdded = false
 //        buildContentDescriptor.isNavigateToError = project.rustSettings.autoShowErrorsInEditor
         val refreshAction = ActionManager.getInstance().getAction("Move.RefreshAllProjects")
-        val descriptor = DefaultBuildDescriptor(Any(), "Move", project.basePath!!, System.currentTimeMillis())
+        val descriptor = DefaultBuildDescriptor(Any(), "Aptos", project.basePath!!, System.currentTimeMillis())
             .withContentDescriptor { buildContentDescriptor }
             .withRestartAction(refreshAction)
             .withRestartAction(StopAction(progress))
