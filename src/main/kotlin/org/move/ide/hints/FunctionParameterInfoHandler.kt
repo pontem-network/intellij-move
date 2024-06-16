@@ -7,14 +7,15 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import org.move.ide.utils.FunctionSignature
 import org.move.lang.MvElementTypes
-import org.move.lang.core.psi.MvCallExpr
+import org.move.lang.core.psi.MvMethodCall
 import org.move.lang.core.psi.MvStructLitFieldsBlock
 import org.move.lang.core.psi.MvValueArgumentList
+import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.lang.core.psi.ext.startOffset
 import org.move.utils.AsyncParameterInfoHandlerBase
 
-class FunctionParameterInfoHandler : AsyncParameterInfoHandlerBase<MvValueArgumentList, ParamsDescription>() {
+class FunctionParameterInfoHandler: AsyncParameterInfoHandlerBase<MvValueArgumentList, ParamsDescription>() {
 
     override fun findTargetElement(file: PsiFile, offset: Int): MvValueArgumentList? {
         val element = file.findElementAt(offset) ?: return null
@@ -80,9 +81,14 @@ class ParamsDescription(val parameters: Array<String>) {
          * Finds declaration of the func/method and creates description of its arguments
          */
         fun findDescription(args: MvValueArgumentList): ParamsDescription? {
-            val signature =
-                (args.parent as? MvCallExpr)?.let { FunctionSignature.resolve(it) } ?: return null
-            val params = signature.parameters.map { "${it.name}: ${it.type}" }
+            val callable = args.parent as? MvCallable ?: return null
+            val signature = FunctionSignature.resolve(callable) ?: return null
+            val params =
+                when (callable) {
+                    is MvMethodCall -> signature.parameters.drop(1)
+                    else -> signature.parameters
+                }
+                    .map { "${it.name}: ${it.type}" }
             return ParamsDescription(params.toTypedArray())
         }
     }

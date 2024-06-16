@@ -1,6 +1,7 @@
 package org.move.ide.hints
 
 import org.move.lang.core.psi.MvValueArgumentList
+import org.move.utils.tests.CompilerV2
 import org.move.utils.tests.ParameterInfoHandlerTestCase
 
 class ParameterInfoHandlerTest
@@ -124,4 +125,16 @@ class ParameterInfoHandlerTest
             fun main() { call(42, 10, /*caret*/); }    
         }
     """, "val1: u8, val2: u8, val3: u8", 2)
+
+    @CompilerV2
+    fun `test receiver style fun`() = checkByText(
+        """
+        module 0x1::m {
+            struct S { val: u8 }
+            fun get_val(self: &S, modifier: bool): u8 { self.val }
+            fun main(s: S) {
+                s.get_val(/*caret*/);
+            }
+        }        
+    """, "modifier: bool", 0)
 }

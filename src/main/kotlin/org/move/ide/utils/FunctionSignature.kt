@@ -9,10 +9,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.ability
-import org.move.lang.core.psi.ext.abilityBounds
-import org.move.lang.core.psi.ext.bounds
-import org.move.lang.core.psi.ext.name
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.Ability
 import org.move.utils.cache
 import org.move.utils.cacheManager
@@ -44,10 +41,18 @@ data class FunctionSignature(
     }
 
     companion object {
-        fun resolve(callExpr: MvCallExpr): FunctionSignature? {
-            val function = callExpr.path.reference?.resolveWithAliases() as? MvFunction
-            return function?.signature
-        }
+        fun resolve(callable: MvCallable): FunctionSignature? =
+            when (callable) {
+                is MvCallExpr -> {
+                    val function = callable.path.reference?.resolveWithAliases() as? MvFunction
+                    function?.getSignature()
+                }
+                is MvMethodCall -> {
+                    val function = callable.reference.resolveWithAliases() as? MvFunction
+                    function?.getSignature()
+                }
+                else -> null
+            }
 
         fun fromFunction(function: MvFunction): FunctionSignature? {
             val typeParameters = function.typeParameters
@@ -87,10 +92,10 @@ data class FunctionSignature(
     }
 }
 
-private val SIGNATURE_KEY: Key<CachedValue<FunctionSignature?>> = Key.create("SIGNATURE_KEY")
+private val FUNCTION_SIGNATURE_KEY: Key<CachedValue<FunctionSignature?>> = Key.create("SIGNATURE_KEY")
 
-val MvFunction.signature: FunctionSignature?
-    get() = project.cacheManager.cache(this, SIGNATURE_KEY) {
+fun MvFunction.getSignature(): FunctionSignature? =
+    project.cacheManager.cache(this, FUNCTION_SIGNATURE_KEY) {
         val signature = FunctionSignature.fromFunction(this)
         CachedValueProvider.Result.create(
             signature,

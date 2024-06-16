@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import org.move.ide.presentation.fullname
 import org.move.ide.presentation.itemDeclaredInModule
 import org.move.ide.utils.functionSignature
-import org.move.ide.utils.signature
+import org.move.ide.utils.getSignature
 import org.move.lang.MvElementTypes.R_PAREN
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -65,7 +65,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
             override fun visitItemSpec(itemSpec: MvItemSpec) {
                 val funcItem = itemSpec.funcItem ?: return
-                val funcSignature = funcItem.signature ?: return
+                val funcSignature = funcItem.getSignature() ?: return
                 val itemSpecSignature = itemSpec.itemSpecSignature ?: return
 
                 val specSignature = itemSpecSignature.functionSignature
