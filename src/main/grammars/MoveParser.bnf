@@ -459,7 +459,7 @@ private ReturnTypeItem_with_recover ::= Type
 }
 private ReturnTypeItem_recover ::= !( '{' | ';' | acquires | reads | writes | pure | '!' )
 
-ResourceAccessItemList ::= <<isCompilerV2>> ResourceAccessItem*
+ResourceAccessItemList ::= <<isResourceAccessEnabled>> ResourceAccessItem*
 ResourceAccessItem ::= pure | (('!')? (acquires | reads | writes) AccessSpecifierList)
 
 AccessSpecifierList ::= <<non_empty_comma_sep_items AccessSpecifier>>

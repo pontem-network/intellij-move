@@ -123,7 +123,7 @@ abstract class TestCommandConfigurationProducerBase:
 
     private fun initEnvironmentVariables(project: Project): EnvironmentVariablesData {
         val environmentMap = linkedMapOf<String, String>()
-        if (project.moveSettings.addCompilerV2FlagsToCLI) {
+        if (project.moveSettings.addCompilerV2CLIFlags) {
             environmentMap[Consts.MOVE_COMPILER_V2_ENV] = "true"
         }
         return EnvironmentVariablesData.create(environmentMap, true)
@@ -136,7 +136,7 @@ abstract class TestCommandConfigurationProducerBase:
         if (project.moveSettings.dumpStateOnTestFailure) {
             append(" --dump")
         }
-        if (project.moveSettings.addCompilerV2FlagsToCLI) {
+        if (project.moveSettings.addCompilerV2CLIFlags) {
             append(" --compiler-version v2 --language-version 2.0")
         }
     }

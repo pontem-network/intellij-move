@@ -1,9 +1,9 @@
 package org.move.lang.resolve
 
-import org.move.utils.tests.CompilerV2
+import org.move.utils.tests.EnableResourceAccessControl
 import org.move.utils.tests.resolve.ResolveTestCase
 
-@CompilerV2
+@EnableResourceAccessControl
 class ResolveResourceAccessSpecifiersTest: ResolveTestCase() {
     fun `test resolve type for reads`() = checkByCode("""
         module 0x1::main {

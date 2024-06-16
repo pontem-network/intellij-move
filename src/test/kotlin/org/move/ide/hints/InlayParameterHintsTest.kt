@@ -2,10 +2,9 @@ package org.move.ide.hints
 
 import com.intellij.codeInsight.daemon.impl.HintRenderer
 import org.intellij.lang.annotations.Language
-import org.move.utils.tests.CompilerV2
 import org.move.utils.tests.MvTestBase
 
-class InlayParameterHintsTest : MvTestBase() {
+class InlayParameterHintsTest: MvTestBase() {
     fun `test fun`() = checkByText(
         """
         module 0x1::M {
@@ -62,7 +61,6 @@ class InlayParameterHintsTest : MvTestBase() {
     """
         )
 
-    @CompilerV2
     fun `test receiver style fun`() = checkByText(
         """
         module 0x1::m {

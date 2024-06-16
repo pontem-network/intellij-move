@@ -4,7 +4,6 @@ import org.move.cli.settings.moveSettings
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvModule
 import org.move.openapiext.toPsiDirectory
-import org.move.utils.tests.CompilerV2
 import org.move.utils.tests.RunConfigurationProducerTestBase
 
 class TestCommandConfigurationProducerTest: RunConfigurationProducerTestBase("test") {
@@ -296,7 +295,6 @@ class TestCommandConfigurationProducerTest: RunConfigurationProducerTestBase("te
         checkOnFsItem(mainFile)
     }
 
-    @CompilerV2
     fun `test test run for compiler v2 without cli flag`() {
         testProject {
             namedMoveToml("MyPackage")
@@ -324,7 +322,6 @@ class TestCommandConfigurationProducerTest: RunConfigurationProducerTestBase("te
         checkOnElement<MvFunction>()
     }
 
-    @CompilerV2
     fun `test test run for compiler v2`() {
         testProject {
             namedMoveToml("MyPackage")
@@ -348,7 +345,7 @@ class TestCommandConfigurationProducerTest: RunConfigurationProducerTestBase("te
         }
         project.moveSettings.modifyTemporary(this.testRootDisposable) {
             it.skipFetchLatestGitDeps = false
-            it.addCompilerV2Flags = true
+            it.addCompilerV2CLIFlags = true
         }
         checkOnElement<MvFunction>()
     }
