@@ -1,6 +1,6 @@
 package org.move.lang.completion
 
-import org.move.utils.tests.CompilerV2
+import org.move.utils.tests.EnableResourceAccessControl
 import org.move.utils.tests.completion.CompletionTestCase
 
 class KeywordCompletionTest : CompletionTestCase() {
@@ -617,7 +617,7 @@ class KeywordCompletionTest : CompletionTestCase() {
         """
     )
 
-    @CompilerV2
+    @EnableResourceAccessControl
     fun `test completion for resource access modifiers`() = checkContainsCompletion(
         listOf("reads", "writes", "pure", "acquires"),
         """

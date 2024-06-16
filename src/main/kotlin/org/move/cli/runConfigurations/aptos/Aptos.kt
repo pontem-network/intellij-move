@@ -226,7 +226,7 @@ data class AptosCompileArgs(
                 workingDirectory,
                 additionalArguments,
                 enviroment,
-                addCompilerV2Flags = moveSettings.addCompilerV2FlagsToCLI,
+                addCompilerV2Flags = moveSettings.addCompilerV2CLIFlags,
                 skipLatestGitDeps = moveSettings.skipFetchLatestGitDeps
             )
         }

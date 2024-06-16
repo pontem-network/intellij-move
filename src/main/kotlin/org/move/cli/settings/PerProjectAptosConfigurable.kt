@@ -6,11 +6,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.layout.selected
 import org.move.cli.settings.aptos.ChooseAptosCliPanel
 import org.move.openapiext.showSettingsDialog
 
@@ -28,28 +26,30 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
 
                 group {
                     row {
-                        checkBox("Fetch external dependencies on project reload")
+                        checkBox("Fetch external packages on project reload")
                             .bindSelected(state::fetchAptosDeps)
                         link("Configure project reload schedule") {
                             ProjectManager.getInstance().defaultProject.showSettingsDialog<ExternalSystemGroupConfigurable>()
                         }
                             .align(AlignX.RIGHT)
                     }
-                    val compilerV2Box = JBCheckBox("Enable V2 compiler")
-                    row {
-                        cell(compilerV2Box)
-                            .comment(
-                                "Enables features of the Aptos V2 compiler " +
-                                        "(receiver style functions, access control, etc.)"
-                            )
-                            .bindSelected(state::isCompilerV2)
-                    }
-                    indent {
+                    group("Compiler V2") {
                         row {
-                            checkBox("Set Compiler V2 in CLI commands")
-                                .comment("Adds `--compiler-version v2 --language-version 2.0` to all generated Aptos CLI commands")
-                                .enabledIf(compilerV2Box.selected)
-                                .bindSelected(state::addCompilerV2Flags)
+                            checkBox("Set Compiler V2 for CLI")
+                                .comment(
+                                    "Adds `--compiler-version v2 --language-version 2.0` " +
+                                            "to all generated Aptos CLI commands"
+                                )
+                                .bindSelected(state::addCompilerV2CLIFlags)
+                        }
+                        row {
+                            checkBox("Enable resource-access control")
+                                .comment(
+                                    "Enables resource access control specifies " +
+                                            "(<code>reads, writes, pure</code> for functions) in the parser. " +
+                                            "Requires re-parsing of all Move files in the project, can be slow."
+                                )
+                                .bindSelected(state::enableResourceAccessControl)
                         }
                     }
                     group("Command Line Options") {
@@ -101,8 +101,8 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                         it.disableTelemetry = state.disableTelemetry
                         it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
                         it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
-                        it.isCompilerV2 = state.isCompilerV2
-                        it.addCompilerV2Flags = state.addCompilerV2Flags
+                        it.enableResourceAccessControl = state.enableResourceAccessControl
+                        it.addCompilerV2CLIFlags = state.addCompilerV2CLIFlags
                         it.fetchAptosDeps = state.fetchAptosDeps
                     }
                 }

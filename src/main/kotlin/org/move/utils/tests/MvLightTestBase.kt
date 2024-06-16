@@ -10,9 +10,9 @@ abstract class MvLightTestBase: BasePlatformTestCase() {
         val isDebugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
         setRegistryKey("org.move.debug.enabled", isDebugMode)
 
-        val isCompilerV2 = this.findAnnotationInstance<CompilerV2>() != null
+        val isResourceAccess = this.findAnnotationInstance<EnableResourceAccessControl>() != null
         project.moveSettings.modifyTemporary(testRootDisposable) {
-            it.isCompilerV2 = isCompilerV2
+            it.enableResourceAccessControl = isResourceAccess
         }
     }
 }

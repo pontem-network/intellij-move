@@ -130,7 +130,7 @@ class KeywordCompletionContributor: CompletionContributor() {
             KeywordCompletionProvider {
                 buildList {
                     add("acquires")
-                    if (it.moveSettings.isCompilerV2) {
+                    if (it.moveSettings.enableResourceAccessControl) {
                         addAll(listOf("reads", "writes", "pure"))
                     }
                 }

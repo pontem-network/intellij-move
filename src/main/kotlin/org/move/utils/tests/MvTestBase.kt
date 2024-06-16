@@ -29,7 +29,7 @@ annotation class WithEnabledInspections(vararg val inspections: KClass<out Inspe
 @Inherited
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class CompilerV2
+annotation class EnableResourceAccessControl
 
 abstract class MvTestBase: MvLightTestBase(),
                            MvTestCase {

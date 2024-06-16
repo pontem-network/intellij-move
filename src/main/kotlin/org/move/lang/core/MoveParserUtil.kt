@@ -21,7 +21,7 @@ enum class FunModifier {
 }
 
 @Suppress("UNUSED_PARAMETER")
-object MoveParserUtil : GeneratedParserUtilBase() {
+object MoveParserUtil: GeneratedParserUtilBase() {
     @JvmField
     val ADJACENT_LINE_COMMENTS = WhitespacesAndCommentsBinder { tokens, _, getter ->
         var candidate = tokens.size
@@ -199,7 +199,8 @@ object MoveParserUtil : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun isCompilerV2(b: PsiBuilder, level: Int): Boolean = b.project.moveSettings.isCompilerV2
+    fun isResourceAccessEnabled(b: PsiBuilder, level: Int): Boolean =
+        b.project.moveSettings.enableResourceAccessControl
 
     @JvmStatic
     fun includeStmtMode(b: PsiBuilder, level: Int, parser: Parser): Boolean {

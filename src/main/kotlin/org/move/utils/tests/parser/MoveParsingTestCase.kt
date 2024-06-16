@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NonNls
 import org.move.cli.settings.MvProjectSettingsService
 import org.move.cli.settings.moveSettings
 import org.move.lang.MoveParserDefinition
-import org.move.utils.tests.CompilerV2
+import org.move.utils.tests.EnableResourceAccessControl
 import org.move.utils.tests.base.TestCase
 import org.move.utils.tests.findAnnotationInstance
 
@@ -21,9 +21,9 @@ abstract class MvParsingTestCase(@NonNls dataPath: String) : ParsingTestCase(
 
         project.registerService(MvProjectSettingsService::class.java)
 
-        val isCompilerV2 = this.findAnnotationInstance<CompilerV2>() != null
+        val isResourceAccess = this.findAnnotationInstance<EnableResourceAccessControl>() != null
         project.moveSettings.modifyTemporary(testRootDisposable) {
-            it.isCompilerV2 = isCompilerV2
+            it.enableResourceAccessControl = isResourceAccess
         }
     }
 

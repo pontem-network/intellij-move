@@ -30,14 +30,14 @@ class MvProjectSettingsService(
     val aptosExecType: AptosExecType get() = state.aptosExecType
     val localAptosPath: String? get() = state.localAptosPath
 
-    val isCompilerV2: Boolean get() = state.isCompilerV2
     val fetchAptosDeps: Boolean get() = state.fetchAptosDeps
 
     val disableTelemetry: Boolean get() = state.disableTelemetry
     val skipFetchLatestGitDeps: Boolean get() = state.skipFetchLatestGitDeps
     val dumpStateOnTestFailure: Boolean get() = state.dumpStateOnTestFailure
 
-    val addCompilerV2FlagsToCLI: Boolean get() = state.isCompilerV2 && state.addCompilerV2Flags
+    val enableResourceAccessControl: Boolean get() = state.enableResourceAccessControl
+    val addCompilerV2CLIFlags: Boolean get() = state.addCompilerV2CLIFlags
 
     // default values for settings
     class MoveProjectSettings: MvProjectSettingsBase<MoveProjectSettings>() {
@@ -48,7 +48,7 @@ class MvProjectSettingsService(
         var localAptosPath: String? by string()
 
         @AffectsParseTree
-        var isCompilerV2: Boolean by property(false)
+        var enableResourceAccessControl: Boolean by property(false)
 
         @AffectsMoveProjectsMetadata
         var fetchAptosDeps: Boolean by property(false)
@@ -59,7 +59,7 @@ class MvProjectSettingsService(
         var skipFetchLatestGitDeps: Boolean by property(true)
         var dumpStateOnTestFailure: Boolean by property(false)
 
-        var addCompilerV2Flags: Boolean by property(false)
+        var addCompilerV2CLIFlags: Boolean by property(false)
 
         override fun copy(): MoveProjectSettings {
             val state = MoveProjectSettings()
