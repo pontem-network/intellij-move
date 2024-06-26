@@ -6,22 +6,22 @@ import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.builder.whenTextChangedFromUi
 import com.intellij.util.ui.components.BorderLayoutPanel
-import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyInteger
 import org.move.utils.ui.*
 import java.util.function.Supplier
-import javax.swing.JButton
 import javax.swing.JPanel
 
 typealias TypeParamsMap = MutableMap<String, String?>
-//typealias ValueParamsMap = MutableMap<String, FunctionCallParam?>
+typealias ValueParamsMap = MutableMap<String, FunctionCallParam?>
 
 class TypeParameterTextField(
     project: Project,
@@ -60,93 +60,35 @@ interface FunctionParameterPanelListener {
  * - parameters
  */
 class FunctionParametersPanel(
+    val project: Project,
     val commandHandler: CommandConfigurationHandler,
-    var moveProject: MoveProject,
 ) :
     BorderLayoutPanel(), Disposable {
 
-    private lateinit var functionItem: MvFunction
-    private lateinit var typeParams: TypeParamsMap
-    private lateinit var valueParams: MutableMap<String, FunctionCallParam?>
+    var functionItem: SmartPsiElementPointer<MvFunction>? = null
 
-    private val functionItemField = CompletionTextField(project, "", emptyList())
-    private val functionApplyButton = JButton("Select and refresh UI")
-
-    private val functionValidator: ComponentValidator
-
-    val project get() = moveProject.project
-
-    init {
-        val panel = this
-
-        // enables Apply button if function name is changed and valid
-        functionItemField.addDocumentListener(object : DocumentListener {
-            override fun documentChanged(event: DocumentEvent) {
-                val oldFunctionName = panel.functionItem.qualName?.editorText()
-                val newFunctionName = event.document.text
-                functionApplyButton.isEnabled =
-                    newFunctionName != oldFunctionName
-                            && commandHandler.getFunctionItem(moveProject, newFunctionName) != null
-            }
-        })
-
-        // update type parameters form and value parameters form on "Apply" button click
-        functionApplyButton.addActionListener {
-            val itemName = functionItemField.text
-            val functionItem = commandHandler.getFunctionItem(moveProject, itemName)
-                ?: error("Button should be disabled if function name is invalid")
-            val functionCall = functionItem.newFunctionCall()
-            this.updateFromFunctionCall(functionCall)
-            fireChangeEvent()
-        }
-
-        // validates
-        this.functionValidator = ComponentValidator(panel)
-            .withValidator(Supplier<ValidationInfo?> {
-                val text = functionItemField.text
-                if (text.isBlank()) return@Supplier ValidationInfo("Required", functionItemField)
-                val functionItem = commandHandler.getFunctionItem(moveProject, text)
-                if (functionItem == null) {
-                    return@Supplier ValidationInfo("Invalid entry function", functionItemField)
-                }
-                null
-            })
-            .andRegisterOnDocumentListener(functionItemField)
-            .installOn(functionItemField)
-    }
-
-    override fun dispose() {
-    }
+    private var typeParams: TypeParamsMap = mutableMapOf()
+    private var valueParams: ValueParamsMap = mutableMapOf()
 
     fun updateFromFunctionCall(functionCall: FunctionCall) {
         this.functionItem = functionCall.item
         this.typeParams = functionCall.typeParams
         this.valueParams = functionCall.valueParams
 
-        this.functionItemField.text = functionCall.itemName() ?: ""
-
-        val completionVariants = commandHandler.getFunctionCompletionVariants(moveProject)
-        this.functionItemField.setVariants(completionVariants)
-
         recreateInnerPanel()
-        functionValidator.revalidate()
     }
 
-    fun setMoveProjectAndCompletionVariants(moveProject: MoveProject) {
-        this.moveProject = moveProject
-
-        val variants = commandHandler.getFunctionCompletionVariants(moveProject)
-        this.functionItem = variants.firstOrNull()
-            ?.let { commandHandler.getFunctionItem(this.moveProject, it) }
-            ?: error("Should always have one valid function")
-
-        val functionCall = this.functionItem.newFunctionCall()
-        updateFromFunctionCall(functionCall)
+    fun clear() {
+        this.functionItem = null
+        this.typeParams = mutableMapOf()
+        this.valueParams = mutableMapOf()
     }
+
+    override fun dispose() {}
 
     private fun recreateInnerPanel() {
         removeAll()
-        addToCenter(getInnerPanel())
+        addToCenter(createInnerPanel())
         validate()
     }
 
@@ -163,32 +105,24 @@ class FunctionParametersPanel(
         }
     }
 
-    private fun getInnerPanel(): JPanel {
-        val function = this.functionItem
+    private fun createInnerPanel(): JPanel {
+        val function = this.functionItem?.element
         val outerPanel = this
         return panel {
-            val typeParameters = function.typeParameters
-            val parameters = commandHandler.getFunctionParameters(function).map { it.bindingPat }
+            val typeParameters = function?.typeParameters.orEmpty()
+            val parameters = function
+                ?.let { commandHandler.getFunctionParameters(function).map { it.bindingPat } }
+                .orEmpty()
 
-            row("Function") {
-                cell(functionItemField)
-                    .align(AlignX.FILL)
-//                    .horizontalAlign(HorizontalAlign.FILL)
-                    .resizableColumn()
-                cell(functionApplyButton)
-            }
-            if (typeParameters.isNotEmpty() || parameters.isNotEmpty()) {
-                separator()
-            }
             if (typeParameters.isNotEmpty()) {
-                for (typeParameter in function.typeParameters) {
+                for (typeParameter in typeParameters) {
                     val paramName = typeParameter.name ?: continue
                     row(paramName) {
                         val initialValue = outerPanel.typeParams[paramName] ?: ""
 
                         val typeParameterTextField = TypeParameterTextField(
                             project,
-                            function,
+                            function!!,
                             initialValue,
                             emptyList()
                         )
@@ -201,15 +135,13 @@ class FunctionParametersPanel(
                                 fireChangeEvent()
                             }
                         })
-                        cell(typeParameterTextField)
-                            .align(AlignX.FILL)
-//                            .horizontalAlign(HorizontalAlign.FILL)
+                        cell(typeParameterTextField).align(AlignX.FILL)
                     }
                 }
             }
             if (parameters.isNotEmpty()) {
                 val msl = false
-                val inference = function.inference(msl)
+                val inference = function!!.inference(msl)
                 for (parameter in parameters) {
                     val paramName = parameter.name
                     val paramTy = inference.getPatType(parameter)
@@ -221,9 +153,9 @@ class FunctionParametersPanel(
                             else -> textField()
                         }
                         paramField.component.text = outerPanel.valueParams[paramName]?.value
+                        @Suppress("UnstableApiUsage")
                         paramField
                             .align(AlignX.FILL)
-//                            .horizontalAlign(HorizontalAlign.FILL)
                             .whenTextChangedFromUi {
                                 outerPanel.valueParams[paramName] = FunctionCallParam(it, paramTyName)
                                 fireChangeEvent()
@@ -235,5 +167,3 @@ class FunctionParametersPanel(
         }
     }
 }
-
-fun MvFunction.newFunctionCall(): FunctionCall = FunctionCall.template(this)

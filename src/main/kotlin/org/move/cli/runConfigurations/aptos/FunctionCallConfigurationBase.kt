@@ -14,16 +14,11 @@ abstract class FunctionCallConfigurationBase(
     val configurationHandler: CommandConfigurationHandler,
 ): CommandConfigurationBase(project, factory) {
 
-    var moveProjectFromWorkingDirectory: MoveProject?
-        get() = workingDirectory?.let { wdir -> project.moveProjectsService.findMoveProjectForPath(wdir) }
-        set(value) {
-            workingDirectory = value?.contentRootPath
-        }
-
     override fun getCliPath(project: Project): Path? = project.aptosExecPath
 
     fun firstRunShouldOpenEditor(): Boolean {
-        val moveProject = moveProjectFromWorkingDirectory ?: return true
+        val moveProject = workingDirectory
+            ?.let { wdir -> project.moveProjectsService.findMoveProjectForPath(wdir) } ?: return true
         val (_, functionCall) = configurationHandler
             .parseCommand(moveProject, command).unwrapOrNull() ?: return true
         return functionCall.parametersRequired()
