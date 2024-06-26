@@ -3,6 +3,7 @@ package org.move.cli.runConfigurations.test
 import com.intellij.execution.testframework.TestConsoleProperties
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.execution.testframework.sm.runner.OutputToGeneralTestEventsConverter
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessageVisitor
 
@@ -40,43 +41,16 @@ import jetbrains.buildServer.messages.serviceMessages.ServiceMessageVisitor
 //}
 
 sealed class TestLine {
-    object StartTests : TestLine()
-    object EndTests : TestLine()
+    object StartTests: TestLine()
+    object EndTests: TestLine()
 
-    data class StartModuleFailDetail(val moduleName: String) : TestLine()
+    data class StartModuleFailDetail(val moduleName: String): TestLine()
 
-    data class Pass(val moduleName: String, val testName: String) : TestLine()
-    data class Fail(val moduleName: String, val testName: String) : TestLine()
+    data class Pass(val moduleName: String, val testName: String): TestLine()
+    data class Fail(val moduleName: String, val testName: String): TestLine()
 
-    data class StartTestFailDetail(val moduleName: String, val testName: String) : TestLine()
-    data class EndTestFailDetail(val moduleName: String, val testName: String) : TestLine()
-
-    companion object {
-        fun parse(textLine: String): TestLine? {
-            val trimmedLine = textLine.trim()
-            return when {
-                trimmedLine == "Running Move unit tests" -> StartTests
-                trimmedLine == "Test result:" -> EndTests
-
-//                trimmedLine.startsWith("┌──") -> {
-//                    val testName = textLine.split(" ")[1]
-//                    StartTestFailDetail(testName)
-//                }
-//                trimmedLine == "└──────────────────" -> EndTestFailDetail
-
-//                textLine.startsWith("[ PASS    ]") -> {
-//                    val testFqName = textLine.split(" ").lastOrNull() ?: return null
-//                    Pass(testFqName)
-//                }
-//                textLine.startsWith("[ FAIL    ]") -> {
-//                    val testFqName = textLine.split(" ").lastOrNull() ?: return null
-//                    Fail(testFqName)
-//                }
-
-                else -> null
-            }
-        }
-    }
+    data class StartTestFailDetail(val moduleName: String, val testName: String): TestLine()
+    data class EndTestFailDetail(val moduleName: String, val testName: String): TestLine()
 }
 
 class TestLineParser {
@@ -136,18 +110,18 @@ class TestLineParser {
 }
 
 class AptosTestEventsConverter(
-    consoleProperties: TestConsoleProperties,
-    testFrameworkName: String
-) : OutputToGeneralTestEventsConverter(testFrameworkName, consoleProperties) {
+    testFrameworkName: String,
+    consoleProperties: TestConsoleProperties
+): OutputToGeneralTestEventsConverter(testFrameworkName, consoleProperties) {
 
-    private val parser = TestLineParser()
+    private val linesParser = TestLineParser()
 
     override fun processServiceMessages(
         textLine: String,
         outputType: Key<*>,
         visitor: ServiceMessageVisitor
     ): Boolean {
-        val testLine = parser.parse(textLine) ?: return false
+        val testLine = linesParser.parse(textLine) ?: return false
         val messages = createServiceMessagesFor(testLine) ?: return false
         if (testLine is TestLine.StartTests) {
             super.processServiceMessages(

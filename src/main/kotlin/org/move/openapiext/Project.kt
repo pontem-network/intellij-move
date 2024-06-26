@@ -8,18 +8,18 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.cli.runConfigurations.aptos.any.AnyCommandConfiguration
+import org.move.cli.runConfigurations.aptos.any.AptosCommandConfiguration
 import org.move.openapiext.common.isHeadlessEnvironment
 
 val Project.runManager: RunManager get() = RunManager.getInstance(this)
 
-fun Project.aptosCommandConfigurations(): List<AnyCommandConfiguration> =
+fun Project.aptosCommandConfigurations(): List<AptosCommandConfiguration> =
     runManager.allConfigurationsList
-        .filterIsInstance<AnyCommandConfiguration>()
+        .filterIsInstance<AptosCommandConfiguration>()
 
 fun Project.aptosCommandConfigurationsSettings(): List<RunnerAndConfigurationSettings> =
     runManager.allSettings
-        .filter { it.configuration is AnyCommandConfiguration }
+        .filter { it.configuration is AptosCommandConfiguration }
 
 //fun Project.aptosBuildRunConfigurations(): List<MoveCommandConfiguration> =
 //    aptosCommandConfigurations().filter { it.command.startsWith("move compile") }

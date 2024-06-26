@@ -7,7 +7,7 @@ import org.move.cli.runConfigurations.CommandConfigurationBase
 import org.move.cli.settings.aptosExecPath
 import java.nio.file.Path
 
-class AnyCommandConfiguration(
+class AptosCommandConfiguration(
     project: Project,
     factory: ConfigurationFactory
 ):
@@ -23,5 +23,5 @@ class AnyCommandConfiguration(
 
     override fun getCliPath(project: Project): Path? = project.aptosExecPath
 
-    override fun getConfigurationEditor() = AnyCommandConfigurationEditor()
+    override fun getConfigurationEditor() = AptosCommandConfigurationEditor()
 }

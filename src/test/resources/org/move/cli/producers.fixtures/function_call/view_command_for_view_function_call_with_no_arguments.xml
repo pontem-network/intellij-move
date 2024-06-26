@@ -1,5 +1,5 @@
 <configurations>
-  <configuration name="View 0x1::m::main" type="AptosCommandConfiguration" factoryName="ViewCommand">
+  <configuration name="View 0x1::m::main" type="AptosTransactionConfiguration" factoryName="ViewCommand">
     <option name="command" value="move view --profile default --function-id 0x1::m::main" />
     <option name="workingDirectory" value="file://" />
     <envs>
