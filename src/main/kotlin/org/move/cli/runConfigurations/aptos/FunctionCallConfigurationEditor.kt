@@ -1,11 +1,12 @@
 package org.move.cli.runConfigurations.aptos
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.DumbService
-import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.ui.DialogPanel
-import com.intellij.openapi.ui.MessageType
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.*
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.JBColor
 import com.intellij.ui.dsl.builder.*
@@ -13,8 +14,9 @@ import com.intellij.xdebugger.impl.ui.TextViewer
 import org.move.cli.MoveProject
 import org.move.cli.moveProjectsService
 import org.move.stdext.RsResult
-import org.move.utils.ui.whenItemSelectedFromUi
-import org.move.utils.ui.whenTextChangedFromUi
+import org.move.utils.ui.CompletionTextField
+import java.util.function.Supplier
+import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JTextField
@@ -25,23 +27,25 @@ data class MoveProjectItem(val moveProject: MoveProject) {
     }
 }
 
-class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
+class FunctionCallConfigurationEditor<T: FunctionCallConfigurationBase>(
+    private val project: Project,
     private val commandHandler: CommandConfigurationHandler,
-    private var moveProject: MoveProject,
-) :
+):
     SettingsEditor<T>() {
 
-    private val project = moveProject.project
+    private var moveProject: MoveProject? = null
 
-    private var signerAccount: String? = null
-    private var functionCall: FunctionCall? = null
-
+    // null to clear selection
     private val projectComboBox: ComboBox<MoveProjectItem> = ComboBox()
     private val accountTextField = JTextField()
+
+    private val functionItemField = CompletionTextField(project, "", emptyList())
+    private val functionApplyButton = JButton("Select and refresh UI")
+    private val functionParametersPanel = FunctionParametersPanel(project, commandHandler)
+
+    private val functionValidator: ComponentValidator
+
     private val rawCommandField = TextViewer("", project, true)
-
-    private val functionParametersPanel = FunctionParametersPanel(commandHandler, moveProject)
-
     private val errorLabel = JLabel("")
 
     private lateinit var editorPanel: DialogPanel
@@ -49,58 +53,120 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
     init {
         errorLabel.foreground = JBColor.RED
 
-        moveProject.project.moveProjectsService.allProjects.forEach {
-            projectComboBox.addItem(MoveProjectItem(it))
-        }
+        project.moveProjectsService.allProjects
+            .forEach {
+                projectComboBox.addItem(MoveProjectItem(it))
+            }
         projectComboBox.isEnabled = projectComboBox.model.size > 1
-        projectComboBox.selectedItem = MoveProjectItem(moveProject)
+
+        // validates
+        this.functionValidator = ComponentValidator(this)
+            .withValidator(Supplier<ValidationInfo?> {
+                val text = functionItemField.text
+                if (text.isBlank()) return@Supplier ValidationInfo("Required", functionItemField)
+
+                val moveProject = moveProject ?: return@Supplier null
+
+                val functionItem = commandHandler.getFunctionItem(moveProject, text)
+                if (functionItem == null) {
+                    return@Supplier ValidationInfo("Invalid entry function", functionItemField)
+                }
+                null
+            })
+            .andRegisterOnDocumentListener(functionItemField)
+            .installOn(functionItemField)
 
         val editor = this
-        functionParametersPanel.addFunctionCallListener(object : FunctionParameterPanelListener {
+        functionParametersPanel.addFunctionCallListener(object: FunctionParameterPanelListener {
             override fun functionParametersChanged(functionCall: FunctionCall) {
-                editor.functionCall = functionCall
+                // if current project is null, this shouldn't really be doing anything, just quit
+                val mp = editor.moveProject ?: return
+
+//                editor.functionCall = functionCall
                 editor.rawCommandField.text =
-                    commandHandler.generateCommand(moveProject, functionCall, signerAccount).unwrapOrNull() ?: ""
+                    commandHandler.generateCommand(mp, functionCall, accountTextField.text).unwrapOrNull() ?: ""
             }
         })
-        functionParametersPanel.setMoveProjectAndCompletionVariants(moveProject)
+
+        // enables Apply button if function name is changed and valid
+        functionItemField.addDocumentListener(object: DocumentListener {
+            override fun documentChanged(event: DocumentEvent) {
+                // do nothing if project is null
+                val mp = moveProject ?: return
+
+                val oldFunctionName = functionParametersPanel.functionItem?.element?.qualName?.editorText()
+                val newFunctionName = event.document.text
+                functionApplyButton.isEnabled =
+                    newFunctionName != oldFunctionName
+                            && commandHandler.getFunctionItem(mp, newFunctionName) != null
+            }
+        })
+
+
+        // update type parameters form and value parameters form on "Apply" button click
+        functionApplyButton.addActionListener {
+            // do nothing if project is null
+            val mp = moveProject ?: return@addActionListener
+
+            val functionItemName = functionItemField.text
+            val functionItem = commandHandler.getFunctionItem(mp, functionItemName)
+                ?: error("Button should be disabled if function name is invalid")
+
+            val functionCall = FunctionCall.template(functionItem)
+            functionParametersPanel.updateFromFunctionCall(functionCall)
+            functionValidator.revalidate()
+            functionParametersPanel.fireChangeEvent()
+
+            functionApplyButton.isEnabled = false
+        }
     }
 
-    override fun resetEditorFrom(s: T) {
-        val moveProject = s.workingDirectory?.let { project.moveProjectsService.findMoveProjectForPath(it) }
-        if (moveProject == null) {
-            setErrorText("Deserialization error: no Aptos project found in the specified working directory")
-            editorPanel.isVisible = false
-            this.signerAccount = null
-            this.functionCall = null
+    // called in every producer run
+    override fun resetEditorFrom(commandSettings: T) {
+        val workingDirectory = commandSettings.workingDirectory
+        if (workingDirectory == null) {
+            // if set to null, then no project was present at the time of creation, this is invalid command
+            replacePanelWithErrorText("Deserialization error: no workingDirectory is present")
             return
         }
 
-        val res = commandHandler.parseCommand(moveProject, s.command)
-        val (profile, functionCall) = when (res) {
-            is RsResult.Ok -> res.ok
-            is RsResult.Err -> {
-                setErrorText("Deserialization error: ${res.err}")
-                editorPanel.isVisible = false
-                signerAccount = null
-                functionCall = null
-                return
-            }
+        val moveProject = project.moveProjectsService.findMoveProjectForPath(workingDirectory)
+        if (moveProject == null) {
+            replacePanelWithErrorText("Deserialization error: no Aptos project at the $workingDirectory")
+            return
         }
-        this.signerAccount = profile
+
+        projectComboBox.selectedItem = MoveProjectItem(moveProject)
+
+        setMoveProject(moveProject)
+
+        val (profile, functionCall) =
+            when (commandSettings.command) {
+                "" -> Pair("", FunctionCall.empty())
+                else -> {
+                    val res = commandHandler.parseTransactionCommand(moveProject, commandSettings.command)
+                    when (res) {
+                        is RsResult.Ok -> res.ok
+                        is RsResult.Err -> {
+                            replacePanelWithErrorText("Deserialization error: ${res.err}")
+                            return
+                        }
+                    }
+                }
+            }
+//        this.signerAccount = profile
         this.accountTextField.text = profile
+        this.functionItemField.text = functionCall.itemName() ?: ""
+        functionApplyButton.isEnabled = false
 
         functionParametersPanel.updateFromFunctionCall(functionCall)
+        functionValidator.revalidate()
     }
 
     override fun applyEditorTo(s: T) {
         functionParametersPanel.fireChangeEvent()
         s.command = rawCommandField.text
-        s.moveProjectFromWorkingDirectory = moveProject
-    }
-
-    override fun disposeEditor() {
-        Disposer.dispose(functionParametersPanel)
+        s.workingDirectory = moveProject?.contentRootPath
     }
 
     override fun createEditor(): JComponent {
@@ -115,24 +181,47 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
         return DumbService.getInstance(project).wrapGently(outerPanel, this)
     }
 
+    override fun disposeEditor() {
+        super.disposeEditor()
+        Disposer.dispose(functionParametersPanel)
+
+    }
+
+    fun setMoveProject(moveProject: MoveProject) {
+        this.moveProject = moveProject
+
+        functionItemField.text = ""
+        accountTextField.text = ""
+        functionApplyButton.isEnabled = false
+        functionParametersPanel.updateFromFunctionCall(FunctionCall.empty())
+
+        // refill completion variants
+        val completionVariants = commandHandler.getFunctionCompletionVariants(moveProject)
+        this.functionItemField.setVariants(completionVariants)
+
+    }
+
     private fun createEditorPanel(): DialogPanel {
         val editorPanel = panel {
             row { cell(errorLabel) }
             row("Project") {
+                @Suppress("UnstableApiUsage")
                 cell(projectComboBox)
                     .align(AlignX.FILL)
                     .columns(COLUMNS_LARGE)
                     .whenItemSelectedFromUi {
-                        moveProject = it.moveProject
-                        functionParametersPanel.setMoveProjectAndCompletionVariants(moveProject)
+                        setMoveProject(it.moveProject)
                     }
             }
             row("Account") {
                 cell(accountTextField)
                     .align(AlignX.FILL)
-                    .whenTextChangedFromUi {
-                        signerAccount = it
-                    }
+            }
+            row("Entry function") {
+                cell(functionItemField)
+                    .align(AlignX.FILL)
+                    .resizableColumn()
+                cell(functionApplyButton)
             }
             separator()
             row {
@@ -147,6 +236,13 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
         }
         editorPanel.registerValidators(this)
         return editorPanel
+    }
+
+    private fun replacePanelWithErrorText(text: String) {
+        errorLabel.text = text
+        errorLabel.foreground = MessageType.ERROR.titleForeground
+        errorLabel.icon = if (text.isBlank()) null else AllIcons.Actions.Lightning
+        editorPanel.isVisible = false
     }
 
 //    private fun validateEditor() {
@@ -177,10 +273,4 @@ class FunctionCallConfigurationEditor<T : FunctionCallConfigurationBase>(
 //        }
 //        setErrorText("")
 //    }
-
-    private fun setErrorText(text: String) {
-        errorLabel.text = text
-        errorLabel.foreground = MessageType.ERROR.titleForeground
-        errorLabel.icon = if (text.isBlank()) null else AllIcons.Actions.Lightning
-    }
 }

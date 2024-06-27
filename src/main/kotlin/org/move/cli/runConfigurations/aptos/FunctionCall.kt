@@ -1,12 +1,10 @@
 package org.move.cli.runConfigurations.aptos
 
+import com.intellij.psi.SmartPsiElementPointer
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.allParamsAsBindings
-import org.move.lang.core.psi.ext.functionId
-import org.move.lang.core.psi.ext.isEntry
-import org.move.lang.core.psi.ext.isView
-import org.move.lang.core.psi.ext.transactionParameters
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.psi.parameters
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.ty.*
@@ -28,15 +26,15 @@ data class FunctionCallParam(val value: String, val type: String) {
 }
 
 data class FunctionCall(
-    val item: MvFunction,
+    val item: SmartPsiElementPointer<MvFunction>?,
     val typeParams: MutableMap<String, String?>,
     val valueParams: MutableMap<String, FunctionCallParam?>
 ) {
-    fun itemName(): String? = item.qualName?.editorText()
-    fun functionId(moveProject: MoveProject): String? = item.functionId(moveProject)
+    fun itemName(): String? = item?.element?.qualName?.editorText()
+    fun functionId(moveProject: MoveProject): String? = item?.element?.functionId(moveProject)
 
     fun parametersRequired(): Boolean {
-        val fn = item
+        val fn = item?.element ?: return false
         return when {
             fn.isView -> fn.typeParameters.isNotEmpty() || fn.parameters.isNotEmpty()
             fn.isEntry -> fn.typeParameters.isNotEmpty() || fn.transactionParameters.isNotEmpty()
@@ -45,6 +43,8 @@ data class FunctionCall(
     }
 
     companion object {
+        fun empty(): FunctionCall = FunctionCall(null, mutableMapOf(), mutableMapOf())
+
         fun template(function: MvFunction): FunctionCall {
             val typeParameterNames = function.typeParameters.mapNotNull { it.name }
 
@@ -60,7 +60,7 @@ data class FunctionCall(
             for (parameterName in parameterNames) {
                 nullParams[parameterName] = null
             }
-            return FunctionCall(function, nullTypeParams, nullParams)
+            return FunctionCall(function.asSmartPointer(), nullTypeParams, nullParams)
         }
     }
 }

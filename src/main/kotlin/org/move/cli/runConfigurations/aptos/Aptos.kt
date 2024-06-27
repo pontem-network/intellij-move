@@ -13,7 +13,7 @@ import org.move.cli.Consts
 import org.move.cli.MoveProject
 import org.move.cli.externalLinter.ExternalLinter
 import org.move.cli.externalLinter.externalLinterSettings
-import org.move.cli.runConfigurations.CliCommandLineArgs
+import org.move.cli.runConfigurations.AptosCommandLine
 import org.move.cli.settings.moveSettings
 import org.move.openapiext.*
 import org.move.openapiext.common.isUnitTestMode
@@ -41,10 +41,9 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         if (!isUnitTestMode) {
             checkIsBackgroundThread()
         }
-        val commandLine = CliCommandLineArgs(
-            "move",
+        val commandLine = AptosCommandLine(
+            "move init",
             listOf(
-                "init",
                 "--name", packageName,
                 "--assume-yes"
             ),
@@ -67,10 +66,9 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
     ): RsProcessResult<Unit> {
         if (project.moveSettings.fetchAptosDeps) {
             val commandLine =
-                CliCommandLineArgs(
-                    subCommand = "move",
+                AptosCommandLine(
+                    subCommand = "move compile",
                     arguments = listOfNotNull(
-                        "compile",
                         "--skip-fetch-latest-git-deps".takeIf { skipLatest }
                     ),
                     workingDirectory = projectDir
@@ -89,7 +87,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
 //            val checkCommand = if (useClippy) "clippy" else "check"
         val extraArguments = ParametersListUtil.parse(args.extraArguments)
         val commandLine =
-            CliCommandLineArgs(
+            AptosCommandLine(
                 "move compile",
                 buildList {
 //                        add("--message-format=json")
@@ -134,7 +132,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
             )
         }
     ): RsProcessResult<ProcessOutput> {
-        val commandLine = CliCommandLineArgs(
+        val commandLine = AptosCommandLine(
             subCommand = "move download",
             arguments = buildList {
                 add("--account"); add(accountAddress)
@@ -156,7 +154,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
     fun decompileDownloadedPackage(downloadedPackagePath: Path): RsProcessResult<ProcessOutput> {
         val bytecodeModulesPath =
             downloadedPackagePath.resolve("bytecode_modules").toAbsolutePath().toString()
-        val commandLine = CliCommandLineArgs(
+        val commandLine = AptosCommandLine(
             subCommand = "move decompile",
             arguments = buildList {
                 add("--package-path"); add(bytecodeModulesPath)
@@ -172,7 +170,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         outputDir: String?,
     ): RsProcessResult<ProcessOutput> {
         val fileRoot = Paths.get(bytecodeFilePath).parent
-        val commandLine = CliCommandLineArgs(
+        val commandLine = AptosCommandLine(
             subCommand = "move decompile",
             arguments = buildList {
                 add("--bytecode-path"); add(bytecodeFilePath)
@@ -188,7 +186,7 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
     }
 
     private fun executeCommandLine(
-        commandLine: CliCommandLineArgs,
+        commandLine: AptosCommandLine,
         listener: ProcessListener? = null,
         runner: CapturingProcessHandler.() -> ProcessOutput = {
             runProcessWithGlobalProgress(

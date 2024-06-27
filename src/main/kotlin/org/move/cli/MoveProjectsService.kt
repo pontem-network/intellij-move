@@ -7,7 +7,6 @@ import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.externalSystem.autoimport.AutoImportProjectTracker
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.progress.ProcessCanceledException

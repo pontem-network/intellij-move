@@ -6,7 +6,7 @@ import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingFunction
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.FunctionVisibility
-import org.move.lang.core.psi.ext.smartPointer
+import org.move.lang.core.psi.ext.asSmartPointer
 import org.move.lang.core.psi.ext.visibility
 
 sealed class Visibility {
@@ -23,7 +23,7 @@ sealed class Visibility {
             val vs = mutableSetOf<Visibility>(Public)
             val containingModule = element.containingModule
             if (containingModule != null) {
-                vs.add(PublicFriend(containingModule.smartPointer()))
+                vs.add(PublicFriend(containingModule.asSmartPointer()))
             }
             val containingFun = element.containingFunction
             if (containingModule == null

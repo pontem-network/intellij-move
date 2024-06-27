@@ -8,7 +8,6 @@ import com.intellij.openapi.project.Project
 import org.move.cli.MoveProjectsService
 import org.move.cli.MoveProjectsService.MoveRefreshStatus
 import org.move.cli.moveProjectsService
-import org.move.openapiext.saveAllDocuments
 
 class MoveExternalSystemProjectAware(
     private val project: Project

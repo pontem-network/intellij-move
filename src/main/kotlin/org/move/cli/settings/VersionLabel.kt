@@ -3,7 +3,7 @@ package org.move.cli.settings
 import com.intellij.openapi.Disposable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
-import org.move.cli.runConfigurations.CliCommandLineArgs
+import org.move.cli.runConfigurations.AptosCommandLine
 import org.move.openapiext.UiDebouncer
 import org.move.openapiext.checkIsBackgroundThread
 import org.move.openapiext.common.isUnitTestMode
@@ -11,7 +11,6 @@ import org.move.openapiext.execute
 import org.move.openapiext.isSuccess
 import java.nio.file.Path
 import javax.swing.Icon
-import javax.swing.JLabel
 
 open class TextOrErrorLabel(icon: Icon?): JBLabel(icon) {
 
@@ -49,7 +48,7 @@ class VersionLabel(
                 }
 
                 val commandLineArgs =
-                    CliCommandLineArgs(null, listOf("--version"), workingDirectory = null)
+                    AptosCommandLine(null, listOf("--version"), workingDirectory = null)
                 commandLineArgs
                     .toGeneralCommandLine(execPath)
                     .execute()

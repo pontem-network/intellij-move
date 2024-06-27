@@ -8,7 +8,7 @@ import com.intellij.task.*
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.resolvedPromise
 import org.move.cli.moveProjectRoot
-import org.move.cli.runConfigurations.aptos.any.AnyCommandConfiguration
+import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
 import org.move.ide.newProject.ProjectInitializationSteps
 import org.move.openapiext.aptosCommandConfigurationsSettings
 import org.move.openapiext.runManager
@@ -26,7 +26,7 @@ class AptosBuildTaskRunner: ProjectTaskRunner() {
     ): Promise<Result> {
         val compileConfigurationWithSettings =
             project.aptosCommandConfigurationsSettings()
-                .find { (it.configuration as AnyCommandConfiguration).command == "move compile" }
+                .find { (it.configuration as AptosCommandConfiguration).command == "move compile" }
                 ?: ProjectInitializationSteps.createDefaultCompileConfiguration(project, false)
 //        val compileConfiguration =
 //            project.aptosCommandConfigurations().find { it.command.startsWith("move compile") }

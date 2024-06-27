@@ -12,10 +12,10 @@ import org.move.cli.settings.moveSettings
 abstract class CommandConfigurationProducerBase:
     LazyRunConfigurationProducer<CommandConfigurationBase>() {
 
-    fun configFromLocation(location: PsiElement, climbUp: Boolean = true): CommandLineArgsFromContext? =
+    fun configFromLocation(location: PsiElement, climbUp: Boolean = true): AptosCommandLineFromContext? =
         fromLocation(location, climbUp)
 
-    abstract fun fromLocation(location: PsiElement, climbUp: Boolean = true): CommandLineArgsFromContext?
+    abstract fun fromLocation(location: PsiElement, climbUp: Boolean = true): AptosCommandLineFromContext?
 
     override fun setupConfigurationFromContext(
         templateConfiguration: CommandConfigurationBase,
@@ -25,7 +25,7 @@ abstract class CommandConfigurationProducerBase:
         val cmdConf = configFromLocation(sourceElement.get()) ?: return false
         templateConfiguration.name = cmdConf.configurationName
 
-        val commandLine = cmdConf.commandLineArgs
+        val commandLine = cmdConf.commandLine
         templateConfiguration.command = commandLine.joinArgs()
         templateConfiguration.workingDirectory = commandLine.workingDirectory
 
@@ -45,9 +45,9 @@ abstract class CommandConfigurationProducerBase:
         val location = context.psiLocation ?: return false
         val cmdConf = configFromLocation(location) ?: return false
         return configuration.name == cmdConf.configurationName
-                && configuration.command == cmdConf.commandLineArgs.joinArgs()
-                && configuration.workingDirectory == cmdConf.commandLineArgs.workingDirectory
-                && configuration.environmentVariables == cmdConf.commandLineArgs.environmentVariables
+                && configuration.command == cmdConf.commandLine.joinArgs()
+                && configuration.workingDirectory == cmdConf.commandLine.workingDirectory
+                && configuration.environmentVariables == cmdConf.commandLine.environmentVariables
     }
 
     companion object {

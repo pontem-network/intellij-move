@@ -6,12 +6,12 @@ import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.jdom.Element
-import org.move.cli.runConfigurations.legacy.MoveCommandConfiguration
+import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.openapiext.toXmlString
 import org.move.utils.tests.base.TestCase
 
-abstract class RunConfigurationProducerTestBase(val testDir: String) : MvProjectTestBase() {
+abstract class RunConfigurationProducerTestBase(val testDir: String): MvProjectTestBase() {
     protected fun checkOnFsItem(fsItem: PsiFileSystemItem) {
         val configurationContext = ConfigurationContext(fsItem)
         check(configurationContext)
@@ -23,7 +23,7 @@ abstract class RunConfigurationProducerTestBase(val testDir: String) : MvProject
         check(configurations.isEmpty()) { "Found unexpected run configurations" }
     }
 
-    protected inline fun <reified T : PsiElement> checkOnElement() {
+    protected inline fun <reified T: PsiElement> checkOnElement() {
         val element = myFixture.file.findElementAt(myFixture.caretOffset)
             ?.ancestorOrSelf<T>()
             ?: error("Failed to find element of `${T::class.simpleName}` class at caret")
@@ -31,7 +31,7 @@ abstract class RunConfigurationProducerTestBase(val testDir: String) : MvProject
         check(configurationContext)
     }
 
-    protected inline fun <reified T : PsiElement> checkNoConfigurationOnElement() {
+    protected inline fun <reified T: PsiElement> checkNoConfigurationOnElement() {
         val element = myFixture.file.findElementAt(myFixture.caretOffset)
             ?.ancestorOrSelf<T>()
             ?: error("Failed to find element of `${T::class.simpleName}` class at caret")
@@ -74,14 +74,14 @@ abstract class RunConfigurationProducerTestBase(val testDir: String) : MvProject
     }
 
     protected fun doTestRemembersContext(
-        producer: RunConfigurationProducer<MoveCommandConfiguration>,
+        producer: RunConfigurationProducer<AptosCommandConfiguration>,
         ctx1: PsiElement,
         ctx2: PsiElement
     ) {
         val contexts = listOf(ConfigurationContext(ctx1), ConfigurationContext(ctx2))
         val configsFromContext = contexts.map { it.configurationsFromContext!!.single() }
         configsFromContext.forEach { check(it.isProducedBy(producer.javaClass)) }
-        val configs = configsFromContext.map { it.configuration as MoveCommandConfiguration }
+        val configs = configsFromContext.map { it.configuration as AptosCommandConfiguration }
         for (i in 0..1) {
             check(producer.isConfigurationFromContext(configs[i], contexts[i])) {
                 "Configuration created from context does not believe it"

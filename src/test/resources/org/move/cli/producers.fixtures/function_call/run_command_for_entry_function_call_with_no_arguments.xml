@@ -1,5 +1,5 @@
 <configurations>
-  <configuration name="Run 0x1::m::main" type="AptosCommandConfiguration" factoryName="RunCommand">
+  <configuration name="Run 0x1::m::main" type="AptosTransactionConfiguration" factoryName="RunCommand">
     <option name="command" value="move run --profile default --function-id 0x1::m::main" />
     <option name="workingDirectory" value="file://" />
     <envs>

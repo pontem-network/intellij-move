@@ -14,6 +14,8 @@
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
    on how to target different products -->
+  <resource-bundle>messages.MvBundle</resource-bundle>
+
   <depends>com.intellij.modules.platform</depends>
   <depends>org.toml.lang</depends>
 
@@ -44,9 +46,10 @@
     <projectService serviceImplementation="org.move.cli.settings.MvProjectSettingsService" />
 
     <configurationType
-        implementation="org.move.cli.runConfigurations.legacy.MoveConfigurationType" />
+        implementation="org.move.cli.runConfigurations.aptos.AptosCommandConfigurationType" />
     <configurationType
-        implementation="org.move.cli.runConfigurations.aptos.AptosConfigurationType" />
+        implementation="org.move.cli.runConfigurations.aptos.AptosTransactionConfigurationType" />
+
     <runConfigurationProducer
         implementation="org.move.cli.runConfigurations.producers.aptos.AptosTestCommandConfigurationProducer" />
     <runConfigurationProducer
@@ -397,7 +400,15 @@
                  restartRequired="false"
                  description="Force-disable support for pre-compiled bundled Aptos CLI (imitate MacOS)"/>
 
+    <advancedSetting
+        id="org.move.aptos.test.tool.window"
+        default="false"
+        groupKey="advanced.setting.aptos.group"
+        descriptionKey="advanced.setting.org.move.aptos.test.tool.window.description"
+    />
+
   </extensions>
+
 
   <projectListeners>
     <listener class="org.move.ide.notifications.UpdateNotificationsOnSettingsChangeListener"

@@ -4,9 +4,9 @@ import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.Consts
-import org.move.cli.runConfigurations.aptos.AptosConfigurationType
-import org.move.cli.runConfigurations.aptos.any.AnyCommandConfiguration
-import org.move.cli.runConfigurations.aptos.any.AnyCommandConfigurationFactory
+import org.move.cli.runConfigurations.aptos.AptosTransactionConfigurationType
+import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
+import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfigurationFactory
 import org.move.ide.notifications.updateAllNotifications
 import org.move.openapiext.addRunConfiguration
 import org.move.openapiext.contentRoots
@@ -40,12 +40,12 @@ object ProjectInitializationSteps {
     fun createDefaultCompileConfiguration(project: Project, selected: Boolean): RunnerAndConfigurationSettings {
         val runConfigurationAndWithSettings =
             project.addRunConfiguration(selected) { runManager, _ ->
-                val configurationFactory = AptosConfigurationType.getInstance()
-                    .configurationFactories.find { it is AnyCommandConfigurationFactory }
+                val configurationFactory = AptosTransactionConfigurationType.getInstance()
+                    .configurationFactories.find { it is AptosCommandConfigurationFactory }
                     ?: error("AnyCommandConfigurationFactory should be present in the factories list")
                 runManager.createConfiguration("Compile Project", configurationFactory)
                     .apply {
-                        (configuration as? AnyCommandConfiguration)?.apply {
+                        (configuration as? AptosCommandConfiguration)?.apply {
                             command = "move compile"
                             workingDirectory = project.basePath?.toPath()
                         }

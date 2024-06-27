@@ -11,9 +11,9 @@ import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.ide.utils.imports.import
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestorStrict
+import org.move.lang.core.psi.ext.asSmartPointer
 import org.move.lang.core.psi.ext.hasAncestor
 import org.move.lang.core.psi.ext.importCandidateNamespaces
-import org.move.lang.core.psi.ext.smartPointer
 import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.letStmtScope
 import org.move.lang.core.resolve.ref.MvReferenceElement
@@ -116,7 +116,7 @@ data class ImportContext private constructor(
             } else {
                 val module = refElement.containingModule
                 if (module != null) {
-                    setOf(Visibility.Public, Visibility.PublicFriend(module.smartPointer()))
+                    setOf(Visibility.Public, Visibility.PublicFriend(module.asSmartPointer()))
                 } else {
                     setOf(Visibility.Public)
                 }

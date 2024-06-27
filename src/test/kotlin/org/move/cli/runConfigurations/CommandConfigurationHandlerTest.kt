@@ -75,7 +75,7 @@ profiles:
         testProject(builder)
 
         val moveProject = project.moveProjectsService.allProjects.first()
-        val (profile, functionCall) = handler.parseCommand(moveProject, command).unwrap()
+        val (profile, functionCall) = handler.parseTransactionCommand(moveProject, command).unwrap()
 
         check(profile == expectedProfile) { "Unexpected profile $profile" }
 
