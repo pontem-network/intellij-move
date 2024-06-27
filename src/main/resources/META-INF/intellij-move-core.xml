@@ -404,6 +404,7 @@
         id="org.move.aptos.test.tool.window"
         default="false"
         groupKey="advanced.setting.aptos.group"
+        descriptionKey="advanced.setting.org.move.aptos.test.tool.window.description"
     />
 
   </extensions>
