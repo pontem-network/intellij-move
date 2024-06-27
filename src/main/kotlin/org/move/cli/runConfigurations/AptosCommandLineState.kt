@@ -9,7 +9,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import org.move.cli.MoveFileHyperlinkFilter
 import java.nio.file.Path
 
-open class MoveCommandLineState(
+open class AptosCommandLineState(
     execEnv: ExecutionEnvironment,
     private val aptosPath: Path,
     private val commandLine: AptosCommandLine

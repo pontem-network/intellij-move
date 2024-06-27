@@ -10,11 +10,11 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
+import com.intellij.util.execution.ParametersListUtil
 import org.jdom.Element
 import org.move.cli.readPath
 import org.move.cli.readString
 import org.move.cli.runConfigurations.CommandConfigurationBase.CleanConfiguration.Companion.configurationError
-import org.move.cli.runConfigurations.legacy.MoveCommandConfiguration
 import org.move.cli.writePath
 import org.move.cli.writeString
 import org.move.ide.notifications.MvNotifications
@@ -25,7 +25,7 @@ abstract class CommandConfigurationBase(
     project: Project,
     factory: ConfigurationFactory
 ):
-    LocatableConfigurationBase<MoveCommandLineState>(project, factory),
+    LocatableConfigurationBase<AptosCommandLineState>(project, factory),
     RunConfigurationWithSuppressedDefaultDebugAction {
 
     var command: String = ""
@@ -48,11 +48,11 @@ abstract class CommandConfigurationBase(
         this.environmentVariables = EnvironmentVariablesData.readExternal(element)
     }
 
-    override fun getState(executor: Executor, environment: ExecutionEnvironment): MoveCommandLineState? {
+    override fun getState(executor: Executor, environment: ExecutionEnvironment): AptosCommandLineState? {
         val config = clean()
         when (config) {
             is CleanConfiguration.Ok -> {
-                return MoveCommandLineState(environment, config.cliPath, config.commandLine)
+                return AptosCommandLineState(environment, config.aptosPath, config.cmd)
             }
             is CleanConfiguration.Err -> {
                 val errorMessage = config.error.messageHtml.toString()
@@ -71,7 +71,7 @@ abstract class CommandConfigurationBase(
     fun clean(): CleanConfiguration {
         val workingDirectory = workingDirectory
             ?: return configurationError("No working directory specified")
-        val parsedCommand = MoveCommandConfiguration.ParsedCommand.parse(command)
+        val parsedCommand = ParsedCommand.parse(command)
             ?: return configurationError("No subcommand specified")
 
         val cliLocation =
@@ -90,7 +90,7 @@ abstract class CommandConfigurationBase(
     }
 
     sealed class CleanConfiguration {
-        class Ok(val cliPath: Path, val commandLine: AptosCommandLine): CleanConfiguration()
+        class Ok(val aptosPath: Path, val cmd: AptosCommandLine): CleanConfiguration()
         class Err(val error: RuntimeConfigurationError): CleanConfiguration()
 
         val ok: Ok? get() = this as? Ok
@@ -99,6 +99,17 @@ abstract class CommandConfigurationBase(
             fun configurationError(@NlsContexts.DialogMessage message: String) = Err(
                 RuntimeConfigurationError(message)
             )
+        }
+    }
+
+    data class ParsedCommand(val command: String, val additionalArguments: List<String>) {
+        companion object {
+            fun parse(rawCommand: String): ParsedCommand? {
+                val args = ParametersListUtil.parse(rawCommand)
+                val command = args.firstOrNull() ?: return null
+                val additionalArguments = args.drop(1)
+                return ParsedCommand(command, additionalArguments)
+            }
         }
     }
 }

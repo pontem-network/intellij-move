@@ -45,8 +45,6 @@
 
     <projectService serviceImplementation="org.move.cli.settings.MvProjectSettingsService" />
 
-<!--    <configurationType-->
-<!--        implementation="org.move.cli.runConfigurations.legacy.MoveConfigurationType" />-->
     <configurationType
         implementation="org.move.cli.runConfigurations.aptos.AptosCommandConfigurationType" />
     <configurationType
