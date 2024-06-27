@@ -5,6 +5,7 @@ import com.intellij.lang.ASTNode
 import org.move.ide.formatter.MoveFmtBlock
 import org.move.lang.MvElementTypes.*
 import org.move.lang.core.psi.MvExpr
+import org.move.lang.core.psi.MvPragmaSpecStmt
 
 fun MoveFmtBlock.computeChildIndent(childNode: ASTNode): Indent? {
     val parentNode = node
@@ -51,6 +52,9 @@ fun MoveFmtBlock.computeChildIndent(childNode: ASTNode): Indent? {
         //     .myfield
         //     .myotherfield
         parentPsi is MvExpr -> Indent.getContinuationWithoutFirstIndent()
+
+        // same thing as previous one, but for spec statements
+        parentPsi.isSpecStmt -> Indent.getContinuationWithoutFirstIndent()
 
         else -> Indent.getNoneIndent()
     }

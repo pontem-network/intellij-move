@@ -43,6 +43,14 @@ val DELIMITED_BLOCKS = orSet(
 
 fun ASTNode?.isWhitespaceOrEmpty() = this == null || textLength == 0 || elementType == TokenType.WHITE_SPACE
 
+val PsiElement.isSpecStmt: Boolean
+    get() = this is MvSchemaFieldStmt
+            || this is MvGlobalVariableStmt
+            || this is MvPragmaSpecStmt
+            || this is MvUpdateSpecStmt
+            || this is MvIncludeStmt
+            || this is MvApplySchemaStmt
+
 val PsiElement.isTopLevelItem: Boolean
     get() = (this is MvModule || this is MvAddressDef || this is MvScript || this is MvModuleSpec)
             && parent is MoveFile

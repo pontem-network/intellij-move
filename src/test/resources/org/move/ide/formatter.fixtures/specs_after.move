@@ -2,6 +2,11 @@ module M {
     spec initialize {
         assert true;
 
+        pragma hello = world,
+            hello2 = world2;
+        include
+            MySchema;
+
         /// After genesis, time progresses monotonically.
         invariant update
             old(is_operating()) ==> old(spec_now_microseconds()) <= spec_now_microseconds();
