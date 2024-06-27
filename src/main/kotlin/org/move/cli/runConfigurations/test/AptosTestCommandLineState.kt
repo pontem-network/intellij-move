@@ -1,14 +1,14 @@
 package org.move.cli.runConfigurations.test
 
 import com.intellij.execution.runners.ExecutionEnvironment
-import org.move.cli.runConfigurations.CliCommandLineArgs
+import org.move.cli.runConfigurations.AptosCommandLine
 import org.move.cli.runConfigurations.MoveCommandLineState
 import java.nio.file.Path
 
 class AptosTestCommandLineState(
     execEnv: ExecutionEnvironment,
     aptosPath: Path,
-    commandLine: CliCommandLineArgs
+    commandLine: AptosCommandLine
 ) : MoveCommandLineState(execEnv, aptosPath, commandLine) {
 
 //    override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {

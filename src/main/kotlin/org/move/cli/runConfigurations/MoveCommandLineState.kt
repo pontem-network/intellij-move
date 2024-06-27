@@ -12,7 +12,7 @@ import java.nio.file.Path
 open class MoveCommandLineState(
     execEnv: ExecutionEnvironment,
     private val aptosPath: Path,
-    private val commandLine: CliCommandLineArgs
+    private val commandLine: AptosCommandLine
 ) :
     CommandLineState(execEnv) {
 

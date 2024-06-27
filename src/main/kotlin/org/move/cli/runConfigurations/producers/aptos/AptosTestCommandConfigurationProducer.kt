@@ -7,11 +7,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.move.cli.Consts
 import org.move.cli.MoveProject
-import org.move.cli.runConfigurations.CliCommandLineArgs
+import org.move.cli.runConfigurations.AptosCommandLine
 import org.move.cli.runConfigurations.aptos.AptosCommandConfigurationType
 import org.move.cli.runConfigurations.aptos.any.AptosCommandConfigurationFactory
 import org.move.cli.runConfigurations.producers.CommandConfigurationProducerBase
-import org.move.cli.runConfigurations.producers.CommandLineArgsFromContext
+import org.move.cli.runConfigurations.producers.AptosCommandLineFromContext
 import org.move.cli.settings.moveSettings
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.MvFunction
@@ -28,7 +28,7 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
     override fun getConfigurationFactory() =
         AptosCommandConfigurationFactory(AptosCommandConfigurationType.getInstance())
 
-    override fun fromLocation(location: PsiElement, climbUp: Boolean): CommandLineArgsFromContext? {
+    override fun fromLocation(location: PsiElement, climbUp: Boolean): AptosCommandLineFromContext? {
         return when {
             location is MoveFile -> {
                 val module = location.modules().firstOrNull { it.hasTestFunctions() } ?: return null
@@ -53,7 +53,7 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
         }
     }
 
-    private fun findTestFunction(psi: PsiElement, climbUp: Boolean): CommandLineArgsFromContext? {
+    private fun findTestFunction(psi: PsiElement, climbUp: Boolean): AptosCommandLineFromContext? {
         val fn = findElement<MvFunction>(psi, climbUp) ?: return null
         if (!fn.hasTestAttr) return null
 
@@ -62,42 +62,45 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
 
         val confName = "Test $modName::$functionName"
 
-        val subCommand = StringBuilder("move test")
-        subCommand.append(" --filter $modName::$functionName")
-
-        subCommand.appendCustomCLIFlags(psi.project)
+        val arguments = buildList {
+            addAll(arrayOf("--filter", "$modName::$functionName"))
+            addAll(cliFlagsFromProjectSettings(psi.project))
+        }
 
         val moveProject = fn.moveProject ?: return null
         val rootPath = moveProject.contentRootPath ?: return null
-        return CommandLineArgsFromContext(
+        return AptosCommandLineFromContext(
             fn,
             confName,
-            CliCommandLineArgs(
-                subCommand.toString(),
+            AptosCommandLine(
+                "move test",
+                arguments,
                 workingDirectory = rootPath,
                 environmentVariables = initEnvironmentVariables(psi.project)
             )
         )
     }
 
-    private fun findTestModule(psi: PsiElement, climbUp: Boolean): CommandLineArgsFromContext? {
+    private fun findTestModule(psi: PsiElement, climbUp: Boolean): AptosCommandLineFromContext? {
         val mod = findElement<MvModule>(psi, climbUp) ?: return null
         if (!mod.hasTestFunctions()) return null
 
         val modName = mod.name ?: return null
         val confName = "Test $modName"
-        val subCommand = StringBuilder("move test")
-        subCommand.append(" --filter $modName")
 
-        subCommand.appendCustomCLIFlags(psi.project)
+        val arguments = buildList {
+            addAll(arrayOf("--filter", modName))
+            addAll(cliFlagsFromProjectSettings(psi.project))
+        }
 
         val moveProject = mod.moveProject ?: return null
         val rootPath = moveProject.contentRootPath ?: return null
-        return CommandLineArgsFromContext(
+        return AptosCommandLineFromContext(
             mod,
             confName,
-            CliCommandLineArgs(
-                subCommand.toString(),
+            AptosCommandLine(
+                "move test",
+                arguments,
                 workingDirectory = rootPath,
                 environmentVariables = initEnvironmentVariables(psi.project)
             )
@@ -107,20 +110,19 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
     private fun findTestProject(
         location: PsiFileSystemItem,
         moveProject: MoveProject
-    ): CommandLineArgsFromContext? {
+    ): AptosCommandLineFromContext? {
         val packageName = moveProject.currentPackage.packageName
         val rootPath = moveProject.contentRootPath ?: return null
 
         val confName = "Test $packageName"
-        val subCommand = StringBuilder("move test")
+        val arguments = cliFlagsFromProjectSettings(location.project)
 
-        subCommand.appendCustomCLIFlags(location.project)
-
-        return CommandLineArgsFromContext(
+        return AptosCommandLineFromContext(
             location,
             confName,
-            CliCommandLineArgs(
-                subCommand.toString(),
+            AptosCommandLine(
+                "move test",
+                arguments,
                 workingDirectory = rootPath,
                 environmentVariables = initEnvironmentVariables(location.project)
             )
@@ -135,15 +137,17 @@ class AptosTestCommandConfigurationProducer: CommandConfigurationProducerBase() 
         return EnvironmentVariablesData.create(environmentMap, true)
     }
 
-    private fun StringBuilder.appendCustomCLIFlags(project: Project) {
-        if (project.moveSettings.skipFetchLatestGitDeps) {
-            append(" --skip-fetch-latest-git-deps")
+    private fun cliFlagsFromProjectSettings(project: Project): List<String> =
+        buildList {
+            if (project.moveSettings.skipFetchLatestGitDeps) {
+                add("--skip-fetch-latest-git-deps")
+            }
+            if (project.moveSettings.dumpStateOnTestFailure) {
+                add("--dump")
+            }
+            if (project.moveSettings.addCompilerV2CLIFlags) {
+                addAll(arrayOf("--compiler-version", "v2"))
+                addAll(arrayOf("--language-version", "2.0"))
+            }
         }
-        if (project.moveSettings.dumpStateOnTestFailure) {
-            append(" --dump")
-        }
-        if (project.moveSettings.addCompilerV2CLIFlags) {
-            append(" --compiler-version v2 --language-version 2.0")
-        }
-    }
 }

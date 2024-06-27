@@ -6,12 +6,12 @@ import org.move.cli.runConfigurations.aptos.AptosTransactionConfigurationType
 import org.move.cli.runConfigurations.aptos.run.RunCommandConfiguration
 import org.move.cli.runConfigurations.aptos.run.RunCommandConfigurationFactory
 import org.move.cli.runConfigurations.aptos.run.RunCommandConfigurationHandler
-import org.move.cli.runConfigurations.producers.CommandLineArgsFromContext
+import org.move.cli.runConfigurations.producers.AptosCommandLineFromContext
 
 class RunCommandConfigurationProducer : FunctionCallConfigurationProducerBase<RunCommandConfiguration>() {
     override fun getConfigurationFactory(): ConfigurationFactory =
         RunCommandConfigurationFactory(AptosTransactionConfigurationType.getInstance())
 
-    override fun fromLocation(location: PsiElement, climbUp: Boolean): CommandLineArgsFromContext? =
+    override fun fromLocation(location: PsiElement, climbUp: Boolean): AptosCommandLineFromContext? =
         RunCommandConfigurationHandler().configurationFromLocation(location)
 }

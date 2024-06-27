@@ -5,7 +5,7 @@ import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.util.text.StringUtil
 import java.nio.file.Path
 
-data class CliCommandLineArgs(
+data class AptosCommandLine(
     val subCommand: String?,
     val arguments: List<String> = emptyList(),
     val workingDirectory: Path? = null,
