@@ -4,7 +4,6 @@ import com.intellij.ide.util.projectWizard.AbstractNewProjectStep
 import com.intellij.ide.util.projectWizard.CustomStepProjectGenerator
 import com.intellij.ide.util.projectWizard.ProjectSettingsStepBase
 import com.intellij.openapi.components.service
-import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile

@@ -11,10 +11,9 @@ import com.intellij.openapi.vfs.*
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import org.move.cli.runConfigurations.aptos.Aptos
-import org.move.cli.settings.getAptosCli
 import org.move.openapiext.pathAsPath
-import org.move.openapiext.rootPluginDisposable
 import org.move.openapiext.rootPath
+import org.move.openapiext.rootPluginDisposable
 import org.move.stdext.RsResult
 import org.move.stdext.unwrapOrElse
 import java.io.File

@@ -1,9 +1,9 @@
 package org.move.cli.manifest
 
-import kotlin.io.path.readText
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.error.YAMLException
 import java.nio.file.Path
+import kotlin.io.path.readText
 
 data class AptosConfigYaml(
     val configYamlPath: Path,

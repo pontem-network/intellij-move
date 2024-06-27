@@ -12,7 +12,6 @@ import org.move.cli.MoveProjectsService.Companion.MOVE_PROJECTS_TOPIC
 import org.move.cli.moveProjectsService
 import org.move.cli.settings.MvProjectSettingsServiceBase.*
 import org.move.cli.settings.MvProjectSettingsServiceBase.Companion.MOVE_SETTINGS_TOPIC
-import org.move.cli.settings.moveSettings
 import org.move.lang.isMoveFile
 import org.move.lang.isMoveTomlManifestFile
 import org.move.lang.toNioPathOrNull

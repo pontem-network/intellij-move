@@ -3,8 +3,8 @@ package org.move.cli.runConfigurations.aptos
 import com.intellij.psi.PsiElement
 import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.AptosCommandLine
-import org.move.cli.runConfigurations.producers.CommandConfigurationProducerBase
 import org.move.cli.runConfigurations.producers.AptosCommandLineFromContext
+import org.move.cli.runConfigurations.producers.CommandConfigurationProducerBase
 import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.MvFunctionParameter
 import org.move.lang.core.psi.ext.functionId

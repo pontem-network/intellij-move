@@ -16,7 +16,9 @@ import org.move.lang.core.psi.MvFunction
 import org.move.lang.core.psi.typeParameters
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyInteger
-import org.move.utils.ui.*
+import org.move.utils.ui.MoveTextFieldWithCompletion
+import org.move.utils.ui.hasParseErrors
+import org.move.utils.ui.ulongTextField
 import java.util.function.Supplier
 import javax.swing.JPanel
 

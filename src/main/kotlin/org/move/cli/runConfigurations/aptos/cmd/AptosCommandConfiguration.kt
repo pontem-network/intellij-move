@@ -8,8 +8,6 @@ import com.intellij.openapi.project.Project
 import org.move.cli.moveProjectsService
 import org.move.cli.runConfigurations.CommandConfigurationBase
 import org.move.cli.runConfigurations.test.AptosTestConsoleProperties
-import org.move.cli.settings.aptosExecPath
-import java.nio.file.Path
 
 class AptosCommandConfiguration(
     project: Project,

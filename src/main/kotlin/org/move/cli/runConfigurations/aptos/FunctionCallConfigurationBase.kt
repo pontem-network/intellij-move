@@ -4,8 +4,6 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.openapi.project.Project
 import org.move.cli.moveProjectsService
 import org.move.cli.runConfigurations.CommandConfigurationBase
-import org.move.cli.settings.aptosExecPath
-import java.nio.file.Path
 
 abstract class FunctionCallConfigurationBase(
     project: Project,

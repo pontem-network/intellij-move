@@ -3,7 +3,6 @@ package org.move.cli.runConfigurations.test
 import com.intellij.execution.Location
 import com.intellij.execution.PsiLocation
 import com.intellij.execution.testframework.sm.runner.SMTestLocator
-import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope

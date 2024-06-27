@@ -3,7 +3,9 @@ package org.move.ide.hints
 import com.intellij.codeInsight.hints.InlayInfo
 import com.intellij.psi.PsiElement
 import org.move.ide.utils.FunctionSignature
-import org.move.lang.core.psi.*
+import org.move.lang.core.psi.MvMethodCall
+import org.move.lang.core.psi.MvRefExpr
+import org.move.lang.core.psi.MvStructLitExpr
 import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.argumentExprs
 import org.move.lang.core.psi.ext.startOffset
