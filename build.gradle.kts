@@ -40,7 +40,7 @@ fun gitTimestamp(): String {
 }
 
 val shortPlatformVersion = prop("shortPlatformVersion")
-val codeVersion = "1.36.0"
+val codeVersion = "1.36.1"
 
 var pluginVersion = "$codeVersion.$shortPlatformVersion"
 if (publishingChannel != "default") {
