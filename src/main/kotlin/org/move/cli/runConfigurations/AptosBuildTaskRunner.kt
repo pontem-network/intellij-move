@@ -8,7 +8,7 @@ import com.intellij.task.*
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.resolvedPromise
 import org.move.cli.moveProjectRoot
-import org.move.cli.runConfigurations.aptos.any.AptosCommandConfiguration
+import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
 import org.move.ide.newProject.ProjectInitializationSteps
 import org.move.openapiext.aptosCommandConfigurationsSettings
 import org.move.openapiext.runManager

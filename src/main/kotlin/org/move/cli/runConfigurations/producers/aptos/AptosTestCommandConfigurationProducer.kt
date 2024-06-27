@@ -9,7 +9,7 @@ import org.move.cli.Consts
 import org.move.cli.MoveProject
 import org.move.cli.runConfigurations.AptosCommandLine
 import org.move.cli.runConfigurations.aptos.AptosCommandConfigurationType
-import org.move.cli.runConfigurations.aptos.any.AptosCommandConfigurationFactory
+import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfigurationFactory
 import org.move.cli.runConfigurations.producers.CommandConfigurationProducerBase
 import org.move.cli.runConfigurations.producers.AptosCommandLineFromContext
 import org.move.cli.settings.moveSettings

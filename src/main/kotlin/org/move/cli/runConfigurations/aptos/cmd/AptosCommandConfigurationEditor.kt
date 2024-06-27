@@ -1,4 +1,4 @@
-package org.move.cli.runConfigurations.aptos.any
+package org.move.cli.runConfigurations.aptos.cmd
 
 import com.intellij.execution.configuration.EnvironmentVariablesComponent
 import com.intellij.openapi.options.SettingsEditor

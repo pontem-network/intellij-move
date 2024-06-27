@@ -5,8 +5,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.Consts
 import org.move.cli.runConfigurations.aptos.AptosTransactionConfigurationType
-import org.move.cli.runConfigurations.aptos.any.AptosCommandConfiguration
-import org.move.cli.runConfigurations.aptos.any.AptosCommandConfigurationFactory
+import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
+import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfigurationFactory
 import org.move.ide.notifications.updateAllNotifications
 import org.move.openapiext.addRunConfiguration
 import org.move.openapiext.contentRoots

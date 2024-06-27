@@ -6,7 +6,7 @@ import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import org.jdom.Element
-import org.move.cli.runConfigurations.aptos.any.AptosCommandConfiguration
+import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
 import org.move.lang.core.psi.ext.ancestorOrSelf
 import org.move.openapiext.toXmlString
 import org.move.utils.tests.base.TestCase

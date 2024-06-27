@@ -8,7 +8,7 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.move.cli.runConfigurations.aptos.any.AptosCommandConfiguration
+import org.move.cli.runConfigurations.aptos.cmd.AptosCommandConfiguration
 import org.move.openapiext.common.isHeadlessEnvironment
 
 val Project.runManager: RunManager get() = RunManager.getInstance(this)
