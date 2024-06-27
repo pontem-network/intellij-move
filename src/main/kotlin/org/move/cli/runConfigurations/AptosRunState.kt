@@ -7,24 +7,18 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
 import org.move.cli.MoveFileHyperlinkFilter
-import java.nio.file.Path
 
-open class AptosCommandLineState(
-    execEnv: ExecutionEnvironment,
-    private val aptosPath: Path,
-    private val commandLine: AptosCommandLine
-) :
-    CommandLineState(execEnv) {
+abstract class AptosRunStateBase(
+    environment: ExecutionEnvironment,
+    val runConfiguration: CommandConfigurationBase,
+    val config: CommandConfigurationBase.CleanConfiguration.Ok
+): CommandLineState(environment) {
 
     val project = environment.project
-
-    init {
-        createFilters().forEach { addConsoleFilters(it) }
-    }
+    val commandLine: AptosCommandLine = config.cmd
 
     override fun startProcess(): ProcessHandler {
-        val generalCommandLine =
-            commandLine.toGeneralCommandLine(aptosPath)
+        val generalCommandLine = commandLine.toGeneralCommandLine(config.aptosPath)
         val handler = KillableColoredProcessHandler(generalCommandLine)
         consoleBuilder.console.attachToProcess(handler)
         ProcessTerminatedListener.attach(handler)  // shows exit code upon termination
@@ -38,6 +32,18 @@ open class AptosCommandLineState(
             filters.add(MoveFileHyperlinkFilter(project, wd))
         }
         return filters
+    }
+}
+
+class AptosRunState(
+    environment: ExecutionEnvironment,
+    runConfiguration: CommandConfigurationBase,
+    config: CommandConfigurationBase.CleanConfiguration.Ok
+):
+    AptosRunStateBase(environment, runConfiguration, config) {
+
+    init {
+        createFilters().forEach { consoleBuilder.addFilter(it) }
     }
 
 }

@@ -3,42 +3,10 @@ package org.move.cli.runConfigurations.test
 import com.intellij.execution.testframework.TestConsoleProperties
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.execution.testframework.sm.runner.OutputToGeneralTestEventsConverter
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessageVisitor
 
-//data class LibtestSuiteMessage(
-//    val type: String,
-//    val event: String,
-//    val test_count: String
-//) {
-//    companion object {
-//        fun fromJson(json: JsonObject): LibtestSuiteMessage? {
-//            if (json.getAsJsonPrimitive("type")?.asString != "suite") {
-//                return null
-//            }
-//
-//            return Gson().fromJson(json, LibtestSuiteMessage::class.java)
-//        }
-//    }
-//}
-
-//data class LibtestTestMessage(
-//    val type: String,
-//    val event: String,
-//    val name: String,
-//    val stdout: String
-//) {
-//    companion object {
-//        fun fromJson(json: JsonObject): LibtestTestMessage? {
-//            if (json.getAsJsonPrimitive("type")?.asString != "test") {
-//                return null
-//            }
-//
-//            return Gson().fromJson(json, LibtestTestMessage::class.java)
-//        }
-//    }
-//}
+private typealias NodeId = String
 
 sealed class TestLine {
     object StartTests: TestLine()
@@ -131,28 +99,27 @@ class AptosTestEventsConverter(
             )
             return true
         }
-        messages
-            .map { it.toString() }
-            .forEach { super.processServiceMessages(it, outputType, visitor) }
+        for (message in messages) {
+            super.processServiceMessages(message.toString(), outputType, visitor)
+        }
         return false
     }
 
     private fun createServiceMessagesFor(testLine: TestLine): List<ServiceMessageBuilder>? {
         return when (testLine) {
             is TestLine.Pass -> {
-                val testId = "${testLine.moduleName}::${testLine.testName}"
+                val test = "${testLine.moduleName}::${testLine.testName}"
                 listOf(
-                    ServiceMessageBuilder.testStarted(testId),
-                    ServiceMessageBuilder.testFinished(testId)
+                    createTestStartedMessage(test),
+                    createTestFinishedMessage(test)
                 )
             }
             is TestLine.Fail -> {
-                val testId = "${testLine.moduleName}::${testLine.testName}"
+                val test = "${testLine.moduleName}::${testLine.testName}"
                 listOf(
-                    ServiceMessageBuilder.testStarted(testId),
-                    ServiceMessageBuilder.testFailed(testId)
-                        .addAttribute("message", ""),
-                    ServiceMessageBuilder.testFinished(testId)
+                    createTestStartedMessage(test),
+                    createTestFailedMessage(test),
+                    createTestFinishedMessage(test)
                 )
             }
 //            is TestLine.StartTestFailDetail -> {
@@ -169,6 +136,59 @@ class AptosTestEventsConverter(
 //                )
 //            }
             else -> null
+        }
+    }
+
+    companion object {
+        private const val ROOT_SUITE: String = "0"
+        private const val NAME_SEPARATOR: String = "::"
+
+//        private val NodeId.name: String
+//            get() = if (contains(NAME_SEPARATOR)) {
+//                // target_name-xxxxxxxxxxxxxxxx::name1::name2 -> name2
+//                substringAfterLast(NAME_SEPARATOR)
+//            } else {
+//                // target_name-xxxxxxxxxxxxxxxx -> target_name
+//                val targetName = substringBeforeLast("-")
+//                // Add a tag to distinguish a doc-test suite from a lib suite
+//                if (endsWith(DOCTESTS_SUFFIX)) "$targetName (doc-tests)" else targetName
+//            }
+
+        private val NodeId.parent: NodeId
+            get() {
+                val parent = substringBeforeLast(NAME_SEPARATOR)
+                return if (this == parent) ROOT_SUITE else parent
+            }
+
+        private fun createTestSuiteStartedMessage(suite: NodeId): ServiceMessageBuilder =
+            ServiceMessageBuilder.testSuiteStarted(suite)
+                .addAttribute("nodeId", suite)
+                .addAttribute("parentNodeId", suite.parent)
+//                .addAttribute("locationHint", CargoTestLocator.getTestUrl(suite))
+
+        private fun createTestSuiteFinishedMessage(suite: NodeId): ServiceMessageBuilder =
+            ServiceMessageBuilder.testSuiteFinished(suite)
+                .addAttribute("nodeId", suite)
+
+        private fun createTestStartedMessage(test: NodeId): ServiceMessageBuilder {
+            val builder = ServiceMessageBuilder.testStarted(test)
+                .addAttribute("nodeId", test)
+                .addAttribute("parentNodeId", test.parent)
+                .addAttribute("locationHint", AptosTestLocator.getTestUrl(test))
+            return builder
+        }
+
+        private fun createTestFinishedMessage(testId: NodeId): ServiceMessageBuilder {
+            val builder = ServiceMessageBuilder.testFinished(testId)
+                .addAttribute("nodeId", testId)
+            return builder
+        }
+
+        private fun createTestFailedMessage(testId: NodeId): ServiceMessageBuilder {
+            val builder = ServiceMessageBuilder.testFailed(testId)
+                .addAttribute("nodeId", testId)
+                .addAttribute("message", "")
+            return builder
         }
     }
 }

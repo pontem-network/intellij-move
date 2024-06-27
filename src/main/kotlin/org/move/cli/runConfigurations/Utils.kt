@@ -1,10 +1,13 @@
 package org.move.cli.runConfigurations
 
+import com.intellij.execution.filters.Filter
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.project.Project
+import org.move.cli.MoveFileHyperlinkFilter
 import org.move.cli.MoveProject
 import org.move.cli.moveProjectsService
+import java.nio.file.Path
 
 val Project.hasMoveProject: Boolean get() = moveProjectsService.allProjects.isNotEmpty()
 

@@ -42,9 +42,8 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
             checkIsBackgroundThread()
         }
         val commandLine = AptosCommandLine(
-            "move",
+            "move init",
             listOf(
-                "init",
                 "--name", packageName,
                 "--assume-yes"
             ),
@@ -68,9 +67,8 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         if (project.moveSettings.fetchAptosDeps) {
             val commandLine =
                 AptosCommandLine(
-                    subCommand = "move",
+                    subCommand = "move compile",
                     arguments = listOfNotNull(
-                        "compile",
                         "--skip-fetch-latest-git-deps".takeIf { skipLatest }
                     ),
                     workingDirectory = projectDir

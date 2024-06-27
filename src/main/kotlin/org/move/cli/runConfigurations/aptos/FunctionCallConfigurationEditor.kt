@@ -144,7 +144,7 @@ class FunctionCallConfigurationEditor<T: FunctionCallConfigurationBase>(
             when (commandSettings.command) {
                 "" -> Pair("", FunctionCall.empty())
                 else -> {
-                    val res = commandHandler.parseCommand(moveProject, commandSettings.command)
+                    val res = commandHandler.parseTransactionCommand(moveProject, commandSettings.command)
                     when (res) {
                         is RsResult.Ok -> res.ok
                         is RsResult.Err -> {

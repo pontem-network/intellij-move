@@ -77,7 +77,7 @@ abstract class CommandConfigurationHandler {
         return RsResult.Ok(command)
     }
 
-    fun parseCommand(
+    fun parseTransactionCommand(
         moveProject: MoveProject,
         command: String
     ): RsResult<Pair<String, FunctionCall>, String> {

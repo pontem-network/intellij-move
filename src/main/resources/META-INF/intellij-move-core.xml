@@ -402,10 +402,9 @@
 
     <advancedSetting
         id="org.move.aptos.test.tool.window"
-        default="true"
+        default="false"
         groupKey="advanced.setting.aptos.group"
     />
-<!--    />-->
 
   </extensions>
 

@@ -15,6 +15,10 @@ class AptosTestConsoleProperties(
     SMTRunnerConsoleProperties(runconfig, TEST_FRAMEWORK_NAME, executor),
     SMCustomMessagesParsing {
 
+    init {
+        isIdBasedTestTree = false
+    }
+
     override fun getTestLocator(): SMTestLocator = AptosTestLocator
 
     override fun createTestEventsConverter(
