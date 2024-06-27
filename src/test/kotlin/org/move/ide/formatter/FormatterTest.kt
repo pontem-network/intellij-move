@@ -8,6 +8,7 @@ class FormatterTest : MvFormatterTestBase() {
     fun `test address block`() = doTest()
     fun `test operators`() = doTest()
     fun `test functions`() = doTest()
+    fun `test function parameters`() = doTest()
     fun `test specs`() = doTest()
     fun `test structs`() = doTest()
     fun `test inner block`() = doTest()
