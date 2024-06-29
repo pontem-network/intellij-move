@@ -97,6 +97,8 @@ fun Project.getAptosCli(parentDisposable: Disposable? = null): Aptos? {
     return aptos
 }
 
+val Project.isAptosConfigured: Boolean get() = this.getAptosCli() != null
+
 fun Project.getAptosCliDisposedOnFileChange(file: VirtualFile): Aptos? {
     val anyChangeDisposable = this.createDisposableOnFileChange(file)
     return this.getAptosCli(anyChangeDisposable)

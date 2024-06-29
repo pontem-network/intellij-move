@@ -123,8 +123,9 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
         accountAddress: String,
         packageName: String,
         outputDir: String,
-        profile: String = "default",
-        connectionTimeoutSecs: Int = 30,
+        profile: String? = null,
+        networkUrl: String? = null,
+        connectionTimeoutSecs: Int = -1,
         nodeApiKey: String? = null,
         runner: CapturingProcessHandler.() -> ProcessOutput = {
             runProcessWithGlobalProgress(
@@ -139,10 +140,17 @@ data class Aptos(val cliLocation: Path, val parentDisposable: Disposable?): Disp
                 add("--package"); add(packageName)
                 add("--bytecode")
                 add("--output-dir"); add(outputDir)
-                add("--profile"); add(profile)
-                add("--connection-timeout-secs"); add(connectionTimeoutSecs.toString())
-                if (nodeApiKey != null) {
+                if (!profile.isNullOrBlank()) {
+                    add("--profile"); add(profile)
+                }
+                if (!networkUrl.isNullOrBlank()) {
+                    add("--url"); add(networkUrl)
+                }
+                if (!nodeApiKey.isNullOrBlank()) {
                     add("--node-api-key"); add(nodeApiKey)
+                }
+                if (connectionTimeoutSecs != -1) {
+                    add("--connection-timeout-secs"); add(connectionTimeoutSecs.toString())
                 }
             },
             workingDirectory = project.basePath?.let { Path.of(it) },
