@@ -14,8 +14,10 @@ import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import org.move.cli.settings.getAptosCli
+import org.move.cli.settings.isAptosConfigured
 import org.move.openapiext.RsProcessResult
 import org.move.openapiext.pathField
+import org.move.stdext.blankToNull
 import org.move.stdext.unwrapOrElse
 import javax.swing.JComponent
 import kotlin.io.path.Path
@@ -33,6 +35,7 @@ class FetchAptosPackageDialog(val project: Project): DialogWrapper(project, true
 
     val profileField = JBTextField("default")
     val nodeApiKey = JBTextField()
+    val networkUrl = JBTextField()
     val connectionTimeout = IntegerField("Connection timeout", 0, Int.MAX_VALUE)
 
     init {
@@ -42,19 +45,37 @@ class FetchAptosPackageDialog(val project: Project): DialogWrapper(project, true
         outputDirField.text = project.basePath.orEmpty()
         decompileCheckbox.isSelected = true
 
+        connectionTimeout.defaultValue = -1
         connectionTimeout.setDefaultValueText("30")
 
         init()
+
+        if (!project.isAptosConfigured) {
+            setErrorText("Aptos CLI is not provided in the plugin settings")
+            okAction.isEnabled = false
+        }
     }
 
     override fun createCenterPanel(): JComponent {
         return panel {
             row("Address:") {
                 cell(addressTextField).align(AlignX.FILL)
+                    .validationOnApply {
+                        if (it.text.isBlank()) {
+                            return@validationOnApply error("Cannot be empty")
+                        }
+                        null
+                    }
                     .comment("Address of the account containing the package.")
             }
             row("Package name:") {
                 cell(packageTextField).align(AlignX.FILL)
+                    .validationOnApply {
+                        if (it.text.isBlank()) {
+                            return@validationOnApply error("Cannot be empty")
+                        }
+                        null
+                    }
             }
             row("Output directory:") { cell(outputDirField).align(AlignX.FILL) }
             row { cell(decompileCheckbox) }
@@ -67,6 +88,12 @@ class FetchAptosPackageDialog(val project: Project): DialogWrapper(project, true
                                 "Profile to use from the CLI config. " +
                                         "This will be used to override associated settings " +
                                         "such as the REST URL, the Faucet URL, and the private key arguments."
+                            )
+                    }
+                    row("Network URL:") {
+                        cell(networkUrl).align(AlignX.FILL)
+                            .comment(
+                                "URL to a fullnode on the network. Leaving it blank defaults to the URL in the `default` profile."
                             )
                     }
                     row("Node API Key:") {
@@ -93,11 +120,17 @@ class FetchAptosPackageDialog(val project: Project): DialogWrapper(project, true
         val outputDir = this.outputDirField.text
         val decompile = this.decompileCheckbox.isSelected
 
+        // cannot be null, it's checked at time of window creation
         val aptos = project.getAptosCli(this.disposable) ?: return
 
-        val aptosProfile = this.profileField.text
-        val nodeApiKey = this.nodeApiKey.text
+        val aptosProfile = this.profileField.text.blankToNull()
+        val nodeApiKey = this.nodeApiKey.text.blankToNull()
+        val networkUrl = this.networkUrl.text.blankToNull()
         val connectionTimeout = this.connectionTimeout.value
+
+        if (okAction.isEnabled) {
+            applyFields()
+        }
 
         val downloadTask = object: Task.WithResult<RsProcessResult<ProcessOutput>, Exception>(
             project,
@@ -107,6 +140,7 @@ class FetchAptosPackageDialog(val project: Project): DialogWrapper(project, true
             override fun compute(indicator: ProgressIndicator): RsProcessResult<ProcessOutput> {
                 return aptos.downloadPackage(project, accountAddress, packageName, outputDir,
                                              profile = aptosProfile,
+                                             networkUrl = networkUrl,
                                              connectionTimeoutSecs = connectionTimeout,
                                              nodeApiKey = nodeApiKey,
                                              runner = { runProcessWithProgressIndicator(indicator) })
@@ -136,7 +170,7 @@ class FetchAptosPackageDialog(val project: Project): DialogWrapper(project, true
                 }
         }
 
-        super.doOKAction()
+        close(OK_EXIT_CODE)
     }
 
     override fun getPreferredFocusedComponent(): JComponent = addressTextField
