@@ -1567,4 +1567,35 @@ module 0x1::pool {
             }
         }        
     """)
+
+    @CompilerV2Features(INDEXING)
+    fun `test vector index expr argument is not an integer`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let v = vector[1, 2];
+                v[<error descr="Incompatible type 'bool', expected 'integer'">false</error>];
+            }
+        }        
+    """)
+
+    @CompilerV2Features(INDEXING)
+    fun `test vector index expr argument is not an integer in spec`() = checkByText("""
+        module 0x1::m {
+            spec fun main(): u8 {
+                let v = vector[1, 2];
+                v[<error descr="Incompatible type 'bool', expected 'num'">false</error>];
+                1
+            }
+        }        
+    """)
+
+    @CompilerV2Features(INDEXING)
+    fun `test resource index expr argument is not an address`() = checkByText("""
+        module 0x1::m {
+            struct S has key {}
+            fun main() {
+                S[<error descr="Incompatible type 'bool', expected 'address'">false</error>];
+            }
+        }        
+    """)
 }

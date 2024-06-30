@@ -9,11 +9,14 @@ import com.jetbrains.rd.util.concurrentMapOf
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.MvCallExpr
 import org.move.lang.core.psi.MvFunction
+import org.move.lang.core.psi.MvIndexExpr
 import org.move.lang.core.psi.acquiresPathTypes
 import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.isInline
+import org.move.lang.core.psi.ext.receiverExpr
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyFunction
+import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.moveProject
 
 val ACQUIRES_TYPE_CONTEXT: Key<CachedValue<AcquiresTypeContext>> = Key.create("ACQUIRES_TYPE_CONTEXT")
@@ -64,6 +67,15 @@ class AcquiresTypeContext {
             } else {
                 callTy.acquiresTypes
             }
+        }
+    }
+
+    fun getIndexExprTypes(indexExpr: MvIndexExpr, inference: InferenceResult): List<Ty> {
+        val receiverTy = inference.getExprType(indexExpr.receiverExpr)
+        return if (receiverTy is TyStruct) {
+            listOf(receiverTy)
+        } else {
+            emptyList()
         }
     }
 }

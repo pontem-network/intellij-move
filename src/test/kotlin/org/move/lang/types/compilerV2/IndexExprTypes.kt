@@ -249,4 +249,119 @@ class IndexExprTypes: TypificationTestCase() {
             }
         }        
     """)
+
+    fun `test resource index expr 0`() = testExpr("""
+        module 0x1::m {
+            struct X<M> has copy, drop, store {
+                value: M
+            }
+            struct Y<T> has key, drop {
+                field: T
+            }
+        
+            fun test_resource_3() acquires R {
+                (Y<X<bool>>[@0x1]);
+              //^ 0x1::m::Y<0x1::m::X<bool>>  
+            }
+        }        
+    """)
+
+    fun `test resource index expr ref expr`() = testExpr("""
+        module 0x1::m {
+            struct X<M> has copy, drop, store {
+                value: M
+            }
+            struct Y<T> has key, drop {
+                field: T
+            }
+        
+            fun test_resource_3() acquires R {
+                Y<X<bool>>[@0x1];
+              //^ 0x1::m::Y<0x1::m::X<bool>>  
+            }
+        }        
+    """)
+
+    fun `test resource index expr 1`() = testExpr("""
+        module 0x1::m {
+            struct X<M> has copy, drop, store {
+                value: M
+            }
+            struct Y<T> has key, drop {
+                field: T
+            }
+        
+            fun test_resource_3() acquires R {
+                ((Y<X<bool>>[@0x1]).field.value);
+              //^ bool  
+            }
+        }        
+    """)
+
+    fun `test resource index expr inference`() = testExpr("""
+        module 0x1::m {
+            struct X<M> has copy, drop, store {
+                value: M
+            }
+            struct Y<T> has key, drop {
+                field: T
+            }
+        
+            fun test_resource_3() acquires R {
+                let a = 1; 
+                a == Y<X<u8>>[@0x1].field.value;
+                a;
+              //^ u8  
+            }
+        }        
+    """)
+
+    fun `test resource index expr 2`() = testExpr("""
+        module 0x1::m {
+            struct X<M> has copy, drop, store {
+                value: M
+            }
+            struct Y<T> has key, drop {
+                field: T
+            }
+        
+            fun test_resource_4() acquires R {
+                let addr = @0x1;
+                let y = &mut Y<X<bool>>[addr];
+                y;
+              //^ &mut 0x1::m::Y<0x1::m::X<bool>> 
+            }
+        }        
+    """)
+
+    fun `test resource index expr 3`() = testExpr("""
+        module 0x1::m {
+            struct X<M> has copy, drop, store {
+                value: M
+            }
+            struct Y<T> has key, drop {
+                field: T
+            }
+        
+            fun test_resource_4() acquires R {
+                let addr = @0x1;
+                let y = &Y<X<bool>>[addr];
+                y;
+              //^ &0x1::m::Y<0x1::m::X<bool>>   
+            }
+        }        
+    """)
+
+    fun `test vector index expr do not disable inference`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let v = vector[1, 2];
+                let a = 1;
+                v[a];
+                a + 2u8;
+                a;
+              //^ u8  
+            }
+        }        
+    """)
 }

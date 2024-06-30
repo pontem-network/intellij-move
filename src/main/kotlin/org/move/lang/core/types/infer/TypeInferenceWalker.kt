@@ -10,6 +10,7 @@ import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.TyInfer.TyVar
 import org.move.lang.core.types.ty.TyReference.Companion.autoborrow
 import org.move.stdext.RsResult
 import org.move.stdext.chain
@@ -296,8 +297,14 @@ class TypeInferenceWalker(
             is MvConst -> item.type?.loweredType(msl) ?: TyUnknown
             is MvGlobalVariableStmt -> item.type?.loweredType(true) ?: TyUnknown
             is MvStructField -> item.type?.loweredType(msl) ?: TyUnknown
-            // only occurs in the invalid code statements
-            is MvStruct -> TyUnknown
+            is MvStruct -> {
+                if (project.moveSettings.enableIndexExpr && refExpr.parent is MvIndexExpr) {
+                    TyLowering.lowerPath(refExpr.path, item, ctx.msl)
+                } else {
+                    // invalid statements
+                    TyUnknown
+                }
+            }
             else -> debugErrorOrFallback(
                 "Referenced item ${item.elementType} " +
                         "of ref expr `${refExpr.text}` at ${refExpr.location} cannot be inferred into type",
@@ -671,8 +678,15 @@ class TypeInferenceWalker(
                 when (argTy) {
                     is TyRange -> receiverTy
                     is TyInteger, is TyInfer.IntVar, is TyNum -> receiverTy.item
-                    else -> TyUnknown
+                    else -> {
+                        coerce(indexExpr.argExpr, argTy, if (ctx.msl) TyNum else TyInteger.DEFAULT)
+                        TyUnknown
+                    }
                 }
+            }
+            is TyStruct -> {
+                coerce(indexExpr.argExpr, argTy, TyAddress)
+                receiverTy
             }
             else -> {
                 ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, receiverTy))
