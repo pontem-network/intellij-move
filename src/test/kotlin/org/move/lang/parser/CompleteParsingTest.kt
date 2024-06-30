@@ -45,6 +45,7 @@ class CompleteParsingTest : MvParsingTestCase("complete") {
 
     @EnableResourceAccessControl
     fun `test access control`() = doTest()
+    fun `test index expr`() = doTest()
 
     fun doTest() {
         super.doTest(true, true)
