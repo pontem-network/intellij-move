@@ -2,7 +2,7 @@ package org.move.ide.inspections
 
 import org.move.utils.tests.annotation.InspectionTestBase
 
-class MvTypeCheckInspectionTest : InspectionTestBase(MvTypeCheckInspection::class) {
+class MvTypeCheckInspectionTest: InspectionTestBase(MvTypeCheckInspection::class) {
     fun `test incorrect type address passed where &signer is expected`() = checkErrors(
         """
 module 0x1::M {
@@ -1322,32 +1322,39 @@ module 0x1::pool {
     """
     )
 
-    fun `test incompatible integers to gte`() = checkByText("""
+    fun `test incompatible integers to gte`() = checkByText(
+        """
         module 0x1::m {
             fun main() {
                 1u8 >= <error descr="Incompatible type 'u64', expected 'u8'">1u64</error>;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test bit shift requires u8`() = checkByText("""
+    fun `test bit shift requires u8`() = checkByText(
+        """
         module 0x1::m {
             fun main() {
                 1 << <error descr="Incompatible type 'u64', expected 'u8'">1000u64</error>;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test type check incomplete call expr get correct param`() = checkByText("""
+    fun `test type check incomplete call expr get correct param`() = checkByText(
+        """
         module 0x1::m {
             fun call(a: u64, b: u8) {}
             fun main() {
                 call(<error descr="<expression> expected, got ','">,</error> <error descr="Incompatible type 'u64', expected 'u8'">2u64</error>);
             }
         }        
-    """)
+    """
+    )
 
-    fun `test if else last expr returns incorrect type`() = checkByText("""
+    fun `test if else last expr returns incorrect type`() = checkByText(
+        """
         module 0x1::m {
             fun main() {
                 let my_vol_ref = 1u64;
@@ -1361,9 +1368,11 @@ module 0x1::pool {
                     };
             }
         }                
-    """)
+    """
+    )
 
-    fun `test if else last expr only if returns incorrect type`() = checkByText("""
+    fun `test if else last expr only if returns incorrect type`() = checkByText(
+        """
         module 0x1::m {
             fun main() {
                 let my_vol_ref = 1u64;
@@ -1377,9 +1386,11 @@ module 0x1::pool {
                     };
             }
         }                
-    """)
+    """
+    )
 
-    fun `test if else inline returns incorrect type`() = checkByText("""
+    fun `test if else inline returns incorrect type`() = checkByText(
+        """
         module 0x1::m {
             fun main() {
                 let my_vol_ref = 1u64;
@@ -1391,9 +1402,11 @@ module 0x1::pool {
                     ;
             }
         }                
-    """)
+    """
+    )
 
-    fun `test if else inline if returns incorrect type`() = checkByText("""
+    fun `test if else inline if returns incorrect type`() = checkByText(
+        """
         module 0x1::m {
             fun main() {
                 let my_vol_ref = 1u64;
@@ -1405,9 +1418,11 @@ module 0x1::pool {
                     ;
             }
         }                
-    """)
+    """
+    )
 
-    fun `test block returns incorrect type of integer error on last expression`() = checkByText("""
+    fun `test block returns incorrect type of integer error on last expression`() = checkByText(
+        """
         module 0x1::m {
             fun main() {
                 let my_vol_ref = 1u64;
@@ -1417,9 +1432,11 @@ module 0x1::pool {
                     };
             }
         }                
-    """)
+    """
+    )
 
-    fun `test unpack mut ref with tuple pattern`() = checkByText("""
+    fun `test unpack mut ref with tuple pattern`() = checkByText(
+        """
         module 0x1::m {
             struct Bin has store {
                 reserves_x: u64,
@@ -1430,75 +1447,110 @@ module 0x1::pool {
                 let <error descr="Assigned expr of type '&mut Bin' cannot be unpacked with tuple pattern">(a, b)</error> = bin;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test cannot reference another reference`() = checkByText("""
+    fun `test cannot reference another reference`() = checkByText(
+        """
         module 0x1::m {
             struct Pool<X, Y> {}
             fun main<X, Y>(pool: &mut Pool<X, Y>) {
                 &<error descr="Expected a single non-reference type, but found: '&mut Pool<X, Y>'">pool</error>;
             }
         }
-    """)
+    """
+    )
 
-    fun `test cannot reference tuple`() = checkByText("""
+    fun `test cannot reference tuple`() = checkByText(
+        """
         module 0x1::m {
             fun call(): (u8, u8) { (1, 1) }
             fun main() {
                 &<error descr="Expected a single non-reference type, but found: '(u8, u8)'">call()</error>;
             }
         }
-    """)
+    """
+    )
 
-    fun `test cannot dereference non reference type`() = checkByText("""
+    fun `test cannot dereference non reference type`() = checkByText(
+        """
         module 0x1::m {
             fun main<X, Y>(pool: &mut Pool<X, Y>) {
                 *<error descr="Invalid dereference. Expected '&_' but found 'integer'">1</error>;
             }
         }
-    """)
+    """
+    )
 
-    fun `test range expr second has different type`() = checkByText("""
+    fun `test range expr second has different type`() = checkByText(
+        """
         module 0x1::m {
             fun main() {
                 let a = 1..<error descr="Incompatible type 'bool', expected 'integer'">true</error>;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test return type inference for generic expr left`() = checkByText("""
+    fun `test return type inference for generic expr left`() = checkByText(
+        """
         module 0x1::m {
             native fun borrow<Value>(): Value;
             fun main() {
                 borrow() + 3;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test return type inference for deref borrow expr left`() = checkByText("""
+    fun `test return type inference for deref borrow expr left`() = checkByText(
+        """
         module 0x1::m {
             native fun borrow<Value>(): &Value;
             fun main() {
                 *borrow() + 3;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test return type inference for deref borrow expr right`() = checkByText("""
+    fun `test return type inference for deref borrow expr right`() = checkByText(
+        """
         module 0x1::m {
             native fun borrow<Value>(): &Value;
             fun main() {
                 3 + *borrow();
             }
         }        
-    """)
+    """
+    )
 
-        fun `test unpacking of struct reference allowed`() = checkByText("""
+    fun `test unpacking of struct reference allowed`() = checkByText(
+        """
             module 0x1::m {
                 struct Field { id: u8 }
                 fun main() {
                     let Field { id } = &Field { id: 1 };
                 }
             }                
-        """)
+        """
+    )
+
+    fun `test error receiver of vector index expr`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let b = false;
+                <error descr="Indexing receiver type should be vector or resource, got 'bool'">b</error>[0];
+            }
+        }        
+    """)
+
+    fun `test error receiver of resource index expr`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let b = false;
+                <error descr="Indexing receiver type should be vector or resource, got 'bool'">b</error>[@0x1];
+            }
+        }        
+    """)
 }

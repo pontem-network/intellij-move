@@ -165,4 +165,17 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
             return InvalidDereference(element, folder.fold(actualTy))
         }
     }
+
+    data class IndexingIsNotAllowed(
+        override val element: PsiElement,
+        val actualTy: Ty,
+    ): TypeError(element) {
+        override fun message(): String {
+            return "Indexing receiver type should be vector or resource, got '${actualTy.text(fq = false)}'"
+        }
+
+        override fun innerFoldWith(folder: TypeFolder): TypeError {
+            return IndexingIsNotAllowed(element, folder.fold(actualTy))
+        }
+    }
 }

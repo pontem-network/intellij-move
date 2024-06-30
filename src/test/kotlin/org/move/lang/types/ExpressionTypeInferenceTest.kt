@@ -561,4 +561,28 @@ module 0x1::main {
             }
         }        
     """)
+
+    fun `test integer type inference with vector index expr 1`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let a = 1;
+                let v = vector[2u8];
+                a == v[0];
+                a;
+              //^ u8  
+            }
+        }        
+    """)
+
+    fun `test integer type inference with vector index expr 2`() = testExpr("""
+        module 0x1::m {
+            fun main() {
+                let a = 1u8;
+                let v = vector[2];
+                a == v[0];
+                v;
+              //^ vector<u8>  
+            }
+        }        
+    """)
 }

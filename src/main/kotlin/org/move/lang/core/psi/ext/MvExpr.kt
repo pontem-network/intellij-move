@@ -17,6 +17,8 @@ val MvExpr.isAtomExpr: Boolean get() =
 
 val MvIndexExpr.receiverExpr: MvExpr get() = exprList.first()
 
+val MvIndexExpr.argExpr: MvExpr get() = exprList.drop(1).first()
+
 val MvExpr.declaration: MvElement?
     get() = when (this) {
         is PathExpr -> path.reference?.resolve()

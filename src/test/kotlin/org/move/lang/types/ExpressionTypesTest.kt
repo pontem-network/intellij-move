@@ -1199,8 +1199,8 @@ module 0x1::main {
         """
         module 0x1::m {
             spec module {
-                let v = vector<bool>[false];
-                let a = v[1];
+                let v = vector[false];
+                let a = v[0];
                 a;
               //^ bool  
             }
@@ -1833,5 +1833,181 @@ module 0x1::main {
                //^ &mut u8 
             }
         }                
+    """)
+
+    fun `test vector index expr`() = testExpr("""
+        module 0x1::m {
+            fun test_vector() {
+                let v = vector[true, true];
+                (v[0]);
+              //^ bool   
+            }
+        }        
+    """)
+
+    fun `test vector index expr u8`() = testExpr("""
+        module 0x1::m {
+            fun test_vector() {
+                let v = vector[true, true];
+                (v[0u8]);
+              //^ bool   
+            }
+        }        
+    """)
+
+    fun `test vector struct index expr`() = testExpr("""
+        module 0x1::m {
+            struct X<M> has copy, drop, store {
+                value: M
+            }
+            fun test_vector() {
+                let x = X {
+                    value: 2u8
+                };
+                let v = vector[x, x];
+                v[0].value;
+                    //^ u8
+            }
+        }        
+    """)
+
+    fun `test vector borrow mut 0`() = testExpr("""
+        module 0x1::m {
+            struct X<M> has copy, drop, store {
+                value: M
+            }
+            struct Y<T> has copy, key, drop {
+                field: T
+            }
+            fun test_vector_borrow_mut() {
+                let x1 = X {
+                    value: true
+                };
+                let x2 = X {
+                    value: false
+                };
+                let y1 = Y {
+                    field: x1
+                };
+                let y2 = Y {
+                    field: x2
+                };
+                let v = vector[y1, y2];
+                (v[0]);
+              //^ 0x1::m::Y<0x1::m::X<bool>>  
+            }
+        }        
+    """)
+
+    fun `test vector borrow mut 1`() = testExpr("""
+        module 0x1::m {
+            struct X<M> has copy, drop, store {
+                value: M
+            }
+            struct Y<T> has key, drop {
+                field: T
+            }
+            fun test_vector_borrow_mut() {
+                let x1 = X {
+                    value: true
+                };
+                let x2 = X {
+                    value: false
+                };
+                let y1 = Y {
+                    field: x1
+                };
+                let y2 = Y {
+                    field: x2
+                };
+                let v = vector[y1, y2];
+                (&mut v[0]);
+              //^ &mut 0x1::m::Y<0x1::m::X<bool>> 
+            }
+        }        
+    """)
+
+    fun `test vector borrow mut 2`() = testExpr("""
+        module 0x1::m {
+            struct X<M> has copy, drop, store {
+                value: M
+            }
+            struct Y<T> has key, drop {
+                field: T
+            }
+            fun test_vector_borrow_mut() {
+                let x1 = X {
+                    value: true
+                };
+                let x2 = X {
+                    value: false
+                };
+                let y1 = Y {
+                    field: x1
+                };
+                let y2 = Y {
+                    field: x2
+                };
+                let v = vector[y1, y2];
+                ((&mut v[0]).field.value);
+              //^ bool  
+            }
+        }        
+    """)
+
+    fun `test vector borrow mut 3`() = testExpr("""
+        module 0x1::m {
+            struct X<M> has copy, drop, store {
+                value: M
+            }
+            struct Y<T> has key, drop {
+                field: T
+            }
+            fun test_vector_borrow_mut() {
+                let x1 = X {
+                    value: true
+                };
+                let x2 = X {
+                    value: false
+                };
+                let y1 = Y {
+                    field: x1
+                };
+                let y2 = Y {
+                    field: x2
+                };
+                let v = vector[y1, y2];
+                (&v[0]);
+              //^ &0x1::m::Y<0x1::m::X<bool>>  
+            }
+        }        
+    """)
+
+    fun `test vector borrow mut 4`() = testExpr("""
+        module 0x1::m {
+            struct X<M> has copy, drop, store {
+                value: M
+            }
+            struct Y<T> has key, drop {
+                field: T
+            }
+            fun test_vector_borrow_mut() {
+                let x1 = X {
+                    value: true
+                };
+                let x2 = X {
+                    value: false
+                };
+                let y1 = Y {
+                    field: x1
+                };
+                let y2 = Y {
+                    field: x2
+                };
+                let v = vector[y1, y2];
+                ((&v[1]).field.value);
+              //^ bool
+            }
+        }        
     """)
 }

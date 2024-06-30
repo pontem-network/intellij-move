@@ -656,15 +656,21 @@ class TypeInferenceWalker(
     }
 
     private fun inferIndexExprTy(indexExpr: MvIndexExpr): Ty {
-        val receiverExpr = indexExpr.exprList.first()
-        val receiverTy = receiverExpr.inferTypeCoercableTo(TyVector(TyUnknown))
-
-        val posExpr = indexExpr.exprList.drop(1).first()
-        val posTy = posExpr.inferType()
-        return when (posTy) {
-            is TyRange -> (receiverTy as? TyVector) ?: TyUnknown
-            is TyNum -> (receiverTy as? TyVector)?.item ?: TyUnknown
-            else -> TyUnknown
+        val receiverTy = indexExpr.receiverExpr.inferType()
+        val argTy = indexExpr.argExpr.inferType()
+        return when (receiverTy) {
+            is TyVector -> {
+                // argExpr can be either TyInteger or TyRange
+                when (argTy) {
+                    is TyRange -> receiverTy
+                    is TyInteger, is TyInfer.IntVar, is TyNum -> receiverTy.item
+                    else -> TyUnknown
+                }
+            }
+            else -> {
+                ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, receiverTy))
+                TyUnknown
+            }
         }
     }
 
