@@ -34,11 +34,7 @@ abstract class MvProjectTestBase: CodeInsightFixtureTestCase<ModuleFixtureBuilde
         val isDebugMode = this.findAnnotationInstance<DebugMode>()?.enabled ?: true
         setRegistryKey("org.move.debug.enabled", isDebugMode)
 
-        val isResourceAccess = this.findAnnotationInstance<EnableResourceAccessControl>() != null
-        // triggers projects refresh
-        project.moveSettings.modify {
-            it.enableResourceAccessControl = isResourceAccess
-        }
+        this.handleCompilerV2Annotations(project)
     }
 
     override fun tearDown() {

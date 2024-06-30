@@ -37,6 +37,7 @@ class MvProjectSettingsService(
     val dumpStateOnTestFailure: Boolean get() = state.dumpStateOnTestFailure
 
     val enableResourceAccessControl: Boolean get() = state.enableResourceAccessControl
+    val enableIndexExpr: Boolean get() = state.enableIndexExpr
     val addCompilerV2CLIFlags: Boolean get() = state.addCompilerV2CLIFlags
 
     // default values for settings
@@ -49,6 +50,9 @@ class MvProjectSettingsService(
 
         @AffectsParseTree
         var enableResourceAccessControl: Boolean by property(false)
+
+        @AffectsHighlighting
+        var enableIndexExpr: Boolean by property(false)
 
         @AffectsMoveProjectsMetadata
         var fetchAptosDeps: Boolean by property(false)

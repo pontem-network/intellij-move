@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.move.cli.settings.debugErrorOrFallback
 import org.move.cli.settings.isDebugModeEnabled
+import org.move.cli.settings.moveSettings
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -658,6 +659,12 @@ class TypeInferenceWalker(
     private fun inferIndexExprTy(indexExpr: MvIndexExpr): Ty {
         val receiverTy = indexExpr.receiverExpr.inferType()
         val argTy = indexExpr.argExpr.inferType()
+
+        // compiler v2 only in non-msl
+        if (!ctx.msl && !project.moveSettings.enableIndexExpr) {
+            return TyUnknown
+        }
+
         return when (receiverTy) {
             is TyVector -> {
                 // argExpr can be either TyInteger or TyRange

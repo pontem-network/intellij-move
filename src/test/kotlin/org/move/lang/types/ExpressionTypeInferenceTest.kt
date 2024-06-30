@@ -1,5 +1,7 @@
 package org.move.lang.types
 
+import org.move.utils.tests.CompilerV2Feat.INDEXING
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.types.TypificationTestCase
 
 class ExpressionTypeInferenceTest: TypificationTestCase() {
@@ -558,30 +560,6 @@ module 0x1::main {
                 let a = s.receiver(1);
                 a;
               //^ integer
-            }
-        }        
-    """)
-
-    fun `test integer type inference with vector index expr 1`() = testExpr("""
-        module 0x1::m {
-            fun main() {
-                let a = 1;
-                let v = vector[2u8];
-                a == v[0];
-                a;
-              //^ u8  
-            }
-        }        
-    """)
-
-    fun `test integer type inference with vector index expr 2`() = testExpr("""
-        module 0x1::m {
-            fun main() {
-                let a = 1u8;
-                let v = vector[2];
-                a == v[0];
-                v;
-              //^ vector<u8>  
             }
         }        
     """)

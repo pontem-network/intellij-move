@@ -1,5 +1,7 @@
 package org.move.ide.inspections
 
+import org.move.utils.tests.CompilerV2Feat.INDEXING
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class MvTypeCheckInspectionTest: InspectionTestBase(MvTypeCheckInspection::class) {
@@ -1536,6 +1538,17 @@ module 0x1::pool {
         """
     )
 
+    @CompilerV2Features()
+    fun `test no error receiver of vector index expr without compiler v2 feature`() = checkByText("""
+        module 0x1::m {
+            fun main() {
+                let b = false;
+                b[0];
+            }
+        }        
+    """)
+
+    @CompilerV2Features(INDEXING)
     fun `test error receiver of vector index expr`() = checkByText("""
         module 0x1::m {
             fun main() {
@@ -1545,6 +1558,7 @@ module 0x1::pool {
         }        
     """)
 
+    @CompilerV2Features(INDEXING)
     fun `test error receiver of resource index expr`() = checkByText("""
         module 0x1::m {
             fun main() {

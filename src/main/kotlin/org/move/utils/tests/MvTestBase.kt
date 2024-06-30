@@ -6,9 +6,16 @@
 package org.move.utils.tests
 
 import com.intellij.codeInspection.InspectionProfileEntry
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiElement
+import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.enableInspectionTool
 import org.intellij.lang.annotations.Language
+import org.move.cli.settings.MvProjectSettingsService
+import org.move.cli.settings.moveSettings
+import org.move.utils.tests.CompilerV2Feat.INDEXING
+import org.move.utils.tests.CompilerV2Feat.RESOURCE_CONTROL
 import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
 import org.move.utils.tests.base.findElementsWithDataAndOffsetInEditor
@@ -26,10 +33,29 @@ annotation class DebugMode(val enabled: Boolean)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class WithEnabledInspections(vararg val inspections: KClass<out InspectionProfileEntry>)
 
+enum class CompilerV2Feat {
+    INDEXING, RESOURCE_CONTROL;
+}
+
 @Inherited
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class EnableResourceAccessControl
+annotation class CompilerV2Features(vararg val features: CompilerV2Feat)
+
+fun UsefulTestCase.handleCompilerV2Annotations(project: Project) {
+    val enabledCompilerV2 = this.findAnnotationInstance<CompilerV2Features>()
+    if (enabledCompilerV2 != null) {
+        // triggers projects refresh
+        project.moveSettings.modifyTemporary(this.testRootDisposable) {
+            for (feature in enabledCompilerV2.features) {
+                when (feature) {
+                    RESOURCE_CONTROL -> it.enableResourceAccessControl = true
+                    INDEXING -> it.enableIndexExpr = true
+                }
+            }
+        }
+    }
+}
 
 abstract class MvTestBase: MvLightTestBase(),
                            MvTestCase {

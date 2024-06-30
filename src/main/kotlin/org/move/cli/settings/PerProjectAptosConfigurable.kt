@@ -51,6 +51,14 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                                 )
                                 .bindSelected(state::enableResourceAccessControl)
                         }
+                        row {
+                            checkBox("Enable indexing")
+                                .comment(
+                                    "Enables resource and vector indexing (i.e. v[0], R[@0x1]) " +
+                                            "for the Move files."
+                                )
+                                .bindSelected(state::enableIndexExpr)
+                        }
                     }
                     group("Command Line Options") {
                         row {
