@@ -10,7 +10,6 @@ import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.isInline
 import org.move.lang.core.types.infer.acquiresContext
 import org.move.lang.core.types.infer.inference
-import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyStruct
 import org.move.lang.core.types.ty.TyTypeParameter
 import org.move.lang.moveProject
@@ -21,16 +20,14 @@ class MvMissingAcquiresInspection: MvLocalInspectionTool() {
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) =
         object: MvVisitor() {
+            override fun visitCallExpr(o: MvCallExpr) = visitAcquiredTypesOwner(o)
+            override fun visitMethodCall(o: MvMethodCall) = visitAcquiredTypesOwner(o)
             override fun visitIndexExpr(o: MvIndexExpr) {
-                if (o.project.moveSettings.enableIndexExpr) {
-                    visitStorageAccessElement(o)
-                }
+                if (!o.project.moveSettings.enableIndexExpr) return
+                visitAcquiredTypesOwner(o)
             }
 
-            override fun visitCallExpr(o: MvCallExpr) = visitStorageAccessElement(o)
-            override fun visitMethodCall(o: MvMethodCall) = visitStorageAccessElement(o)
-
-            private fun visitStorageAccessElement(element: MvElement) {
+            private fun visitAcquiredTypesOwner(element: MvAcquireTypesOwner) {
                 val outerFunction = element.containingFunction ?: return
                 if (outerFunction.isInline) return
 

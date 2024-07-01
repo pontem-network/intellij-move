@@ -1,16 +1,15 @@
 package org.move.lang.core.types.infer
 
 import com.intellij.openapi.util.Key
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiRecursiveElementVisitor
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
 import com.jetbrains.rd.util.concurrentMapOf
 import org.move.cli.MoveProject
-import org.move.lang.core.psi.MvCallExpr
-import org.move.lang.core.psi.MvFunction
-import org.move.lang.core.psi.MvIndexExpr
-import org.move.lang.core.psi.acquiresPathTypes
+import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.isInline
 import org.move.lang.core.psi.ext.receiverExpr
@@ -33,6 +32,19 @@ val MoveProject.acquiresContext: AcquiresTypeContext
         }, false)
     }
 
+
+abstract class AcquireTypesOwnerVisitor: PsiRecursiveElementVisitor() {
+
+    abstract fun visitAcquireTypesOwner(acqTypesOwner: MvAcquireTypesOwner)
+
+    override fun visitElement(element: PsiElement) {
+        when (element) {
+            is MvAcquireTypesOwner -> visitAcquireTypesOwner(element)
+            else -> super.visitElement(element)
+        }
+    }
+}
+
 class AcquiresTypeContext {
     private val functionTypes: MutableMap<MvFunction, List<Ty>> = concurrentMapOf()
     private val callableTypes: MutableMap<MvCallable, List<Ty>> = concurrentMapOf()
@@ -43,10 +55,20 @@ class AcquiresTypeContext {
             if (function.isInline) {
                 // collect inner callExpr types
                 val allTypes = mutableListOf<Ty>()
-                for (innerCallExpr in inference.callableTypes.keys) {
-                    val types = getCallTypes(innerCallExpr, inference)
-                    allTypes.addAll(types)
+
+                val visitor = object: AcquireTypesOwnerVisitor() {
+                    override fun visitAcquireTypesOwner(acqTypesOwner: MvAcquireTypesOwner) {
+                        val tys =
+                            when (acqTypesOwner) {
+                                is MvCallable -> getCallTypes(acqTypesOwner, inference)
+                                is MvIndexExpr -> getIndexExprTypes(acqTypesOwner, inference)
+                                else -> error("when is exhaustive")
+                            }
+                        allTypes.addAll(tys)
+                    }
                 }
+                visitor.visitElement(function)
+
                 allTypes
             } else {
                 // parse from MvAcquiresType
