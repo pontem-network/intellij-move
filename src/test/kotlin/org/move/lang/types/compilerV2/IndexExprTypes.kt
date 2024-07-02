@@ -364,4 +364,31 @@ class IndexExprTypes: TypificationTestCase() {
             }
         }        
     """)
+
+    fun `test index expr with reference in specs`() = testExpr("""
+        module 0x1::m {
+            struct S { field: u8 }
+            fun main() {}
+            spec main {
+                let v = vector[S { field: 10 }];
+                let vv = &v;
+                vv[0].field;
+                      //^ num
+            }
+        }        
+    """)
+
+    @CompilerV2Features()
+    fun `test index expr with reference in specs without compiler v2`() = testExpr("""
+        module 0x1::m {
+            struct S { field: u8 }
+            fun main() {}
+            spec main {
+                let v = vector[S { field: 10 }];
+                let vv = &v;
+                vv[0].field;
+                      //^ num
+            }
+        }        
+    """)
 }

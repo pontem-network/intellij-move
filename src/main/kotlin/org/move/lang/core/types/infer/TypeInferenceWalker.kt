@@ -689,7 +689,9 @@ class TypeInferenceWalker(
                 receiverTy
             }
             else -> {
-                ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, receiverTy))
+                if (!ctx.msl) {
+                    ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, receiverTy))
+                }
                 TyUnknown
             }
         }
