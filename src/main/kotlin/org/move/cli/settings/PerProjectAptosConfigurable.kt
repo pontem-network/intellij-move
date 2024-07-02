@@ -110,6 +110,7 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                         it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
                         it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
                         it.enableResourceAccessControl = state.enableResourceAccessControl
+                        it.enableIndexExpr = state.enableIndexExpr
                         it.addCompilerV2CLIFlags = state.addCompilerV2CLIFlags
                         it.fetchAptosDeps = state.fetchAptosDeps
                     }

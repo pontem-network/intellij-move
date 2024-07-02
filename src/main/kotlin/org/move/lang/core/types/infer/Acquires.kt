@@ -38,10 +38,10 @@ abstract class AcquireTypesOwnerVisitor: PsiRecursiveElementVisitor() {
     abstract fun visitAcquireTypesOwner(acqTypesOwner: MvAcquireTypesOwner)
 
     override fun visitElement(element: PsiElement) {
-        when (element) {
-            is MvAcquireTypesOwner -> visitAcquireTypesOwner(element)
-            else -> super.visitElement(element)
+        if (element is MvAcquireTypesOwner) {
+            visitAcquireTypesOwner(element)
         }
+        super.visitElement(element)
     }
 }
 

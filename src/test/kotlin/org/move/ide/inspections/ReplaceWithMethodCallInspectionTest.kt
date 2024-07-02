@@ -1,6 +1,8 @@
 package org.move.ide.inspections
 
 import org.intellij.lang.annotations.Language
+import org.move.utils.tests.CompilerV2Feat.INDEXING
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class ReplaceWithMethodCallInspectionTest: InspectionTestBase(ReplaceWithMethodCallInspection::class) {

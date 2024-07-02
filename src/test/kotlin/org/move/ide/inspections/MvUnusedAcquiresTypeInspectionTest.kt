@@ -193,4 +193,40 @@ module 0x1::main {
 }        
     """
     )
+
+    fun `test no unused acquires for deep borrow global dot`() = checkWarnings(
+        """
+module 0x1::main {
+    /// The enabled features, represented by a bitset stored on chain.
+    struct Features has key {
+        features: vector<u8>,
+    }
+    
+    #[view]
+    /// Check whether the feature is enabled.
+    public fun is_enabled(feature: u64): bool acquires Features {
+        exists<Features>(@0x1) &&
+            contains(&borrow_global<Features>(@0x1).features, feature)
+    }
+}        
+    """
+    )
+
+    @CompilerV2Features(INDEXING)
+    fun `test no unused acquires for deep borrow global dot with index expr`() = checkWarnings(
+        """
+module 0x1::main {
+    /// The enabled features, represented by a bitset stored on chain.
+    struct Features has key {
+        features: vector<u8>,
+    }
+    #[view]
+    /// Check whether the feature is enabled.
+    public fun is_enabled(feature: u64): bool acquires Features {
+        exists<Features>(@0x1) && 
+            contains(Features[@0x1].features, feature)
+    }
+}        
+    """
+    )
 }

@@ -1,6 +1,8 @@
 package org.move.ide.inspections
 
 import org.intellij.lang.annotations.Language
+import org.move.utils.tests.CompilerV2Feat.INDEXING
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.annotation.InspectionProjectTestBase
 
@@ -106,6 +108,44 @@ class ReplaceWithMethodCallInspectionProjectTest:
                         vector[1, 2, 3].length();
                     }
                 }                
+        """)
+
+    @CompilerV2Features(INDEXING)
+    fun `test replace with method call with index expr`() = doFixTest(
+        {
+            namedMoveToml("MyPackage")
+            sources {
+                move(
+                    "vector.move", """
+        module 0x1::vector {
+            #[bytecode_instruction]
+            /// Add element `e` to the end of the vector `v`.
+            native public fun push_back<Element>(self: &mut vector<Element>, e: Element);
+        }               
+            """
+                )
+                main(
+                    """
+        module 0x1::m {
+            use 0x1::vector::push_back;
+            fun main() {
+                let v = vector[1, 2];
+                let vec = vector[];
+                <weak_warning descr="Can be replaced with method call">/*caret*/push_back(&mut vec, v[0])</weak_warning>;
+            }
+        }
+            """
+                )
+            }
+        }, """
+        module 0x1::m {
+            use 0x1::vector::push_back;
+            fun main() {
+                let v = vector[1, 2];
+                let vec = vector[];
+                vec.push_back(v[0]);
+            }
+        }
         """)
 
     private fun doTest(code: FileTreeBuilder.() -> Unit) =

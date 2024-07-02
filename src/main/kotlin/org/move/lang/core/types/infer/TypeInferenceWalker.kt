@@ -672,26 +672,25 @@ class TypeInferenceWalker(
             return TyUnknown
         }
 
-        return when (receiverTy) {
-            is TyVector -> {
+        val derefTy = receiverTy.derefIfNeeded()
+        return when {
+            derefTy is TyVector -> {
                 // argExpr can be either TyInteger or TyRange
                 when (argTy) {
-                    is TyRange -> receiverTy
-                    is TyInteger, is TyInfer.IntVar, is TyNum -> receiverTy.item
+                    is TyRange -> derefTy
+                    is TyInteger, is TyInfer.IntVar, is TyNum -> derefTy.item
                     else -> {
                         coerce(indexExpr.argExpr, argTy, if (ctx.msl) TyNum else TyInteger.DEFAULT)
                         TyUnknown
                     }
                 }
             }
-            is TyStruct -> {
+            receiverTy is TyStruct -> {
                 coerce(indexExpr.argExpr, argTy, TyAddress)
                 receiverTy
             }
             else -> {
-                if (!ctx.msl) {
-                    ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, receiverTy))
-                }
+                ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, receiverTy))
                 TyUnknown
             }
         }
