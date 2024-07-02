@@ -1598,4 +1598,26 @@ module 0x1::pool {
             }
         }        
     """)
+
+    fun `test incorrect types for vector borrow methods`() = checkByText("""
+        module 0x1::vector {
+            native public fun borrow<Element>(v: &vector<Element>, i: u64): &Element;
+            native public fun borrow_mut<Element>(v: &mut vector<Element>, i: u64): &mut Element;
+        }                
+        module 0x1::m {
+            use 0x1::vector;
+            
+            fun main() {
+                let v = vector[1, 2];
+                
+                vector::borrow(<error descr="Incompatible type 'integer', expected '&vector<Element>'">0</error>, <error descr="Incompatible type '&vector<integer>', expected 'u64'">&v</error>);                
+                vector::borrow(<error descr="Incompatible type 'vector<integer>', expected '&vector<Element>'">v</error>, 0);                
+                               
+                vector::borrow_mut(<error descr="Incompatible type 'integer', expected '&mut vector<Element>'">0</error>, <error descr="Incompatible type '&mut vector<integer>', expected 'u64'">&mut v</error>);                
+                vector::borrow_mut(<error descr="Incompatible type 'vector<integer>', expected '&mut vector<Element>'">v</error>, 0);                
+                vector::borrow_mut(<error descr="Incompatible type '&vector<integer>', expected '&mut vector<Element>'">&v</error>, 0);                
+                     
+            }            
+        }
+    """)
 }

@@ -1,6 +1,7 @@
 package org.move.lang.core.types.infer
 
 import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import org.move.ide.inspections.fixes.IntegerCastFix
 import org.move.ide.presentation.name
@@ -16,6 +17,8 @@ sealed class TypeError(open val element: PsiElement) : TypeFoldable<TypeError> {
     abstract fun message(): String
 
     override fun innerVisitWith(visitor: TypeVisitor): Boolean = true
+
+    open fun range(): TextRange = element.textRange
 
     open fun fix(): LocalQuickFix? = null
 

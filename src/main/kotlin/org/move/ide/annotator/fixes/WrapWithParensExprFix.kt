@@ -23,7 +23,6 @@ class WrapWithParensExprFix(castExpr: MvCastExpr) : DiagnosticIntentionFix<MvCas
 }
 
 private fun wrapWithParensExpr(psiFactory: MvPsiFactory, expr: MvExpr): MvParensExpr {
-    val parensExpr = psiFactory.expr<MvParensExpr>("(dummy_ident)")
-    parensExpr.expr?.replace(expr)
+    val parensExpr = psiFactory.wrapWithParens(expr)
     return expr.replace(parensExpr) as MvParensExpr
 }
