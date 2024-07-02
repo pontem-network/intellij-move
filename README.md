@@ -11,7 +11,7 @@ EAP builds are also available, which contain the build from the current `master`
 ## Compatible IDEs
 
 The plugin is compatible with all IntelliJ-based IDEs starting from 2023.3. 
-Versions older than 2023.3 have older version of the Intellij-Move plugin available.
+Versions older than 2023.3 have an older version of the Intellij-Move plugin available.
 
 New features are announced in [What's New section of the documentation](https://intellij-move.github.io/what-s-new.html). 
 
