@@ -23,16 +23,8 @@ enum class FunctionVisibility {
     PRIVATE,
     PUBLIC,
     PUBLIC_FRIEND,
+    PUBLIC_PACKAGE,
     PUBLIC_SCRIPT;
-
-    companion object {
-        fun fromInt(ordinal: Int): FunctionVisibility {
-            for (value in FunctionVisibility.values()) {
-                if (value.ordinal == ordinal) return value
-            }
-            error("Invalid value")
-        }
-    }
 }
 
 val MvFunction.visibility: FunctionVisibility
@@ -45,6 +37,7 @@ fun MvFunction.visibilityFromPsi(): FunctionVisibility {
     val visibility = this.functionVisibilityModifier ?: return FunctionVisibility.PRIVATE
     return when {
         visibility.hasChild(MvElementTypes.FRIEND) -> FunctionVisibility.PUBLIC_FRIEND
+        visibility.hasChild(MvElementTypes.PACKAGE) -> FunctionVisibility.PUBLIC_PACKAGE
         visibility.hasChild(MvElementTypes.SCRIPT_KW) -> FunctionVisibility.PUBLIC_SCRIPT
         visibility.hasChild(MvElementTypes.PUBLIC) -> FunctionVisibility.PUBLIC
         else -> FunctionVisibility.PRIVATE

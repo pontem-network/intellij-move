@@ -159,6 +159,11 @@ class KeywordCompletionContributor: CompletionContributor() {
     }
 
     companion object {
-        private val VISIBILITY_MODIFIERS = arrayOf("public", "public(script)", "public(friend)")
+        private val VISIBILITY_MODIFIERS = arrayOf(
+            "public",
+            "public(script)",
+            "public(friend)",
+            "public(package)"
+        )
     }
 }

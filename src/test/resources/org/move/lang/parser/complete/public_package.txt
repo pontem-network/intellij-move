@@ -13,16 +13,10 @@ FILE
       MvFunctionImpl(FUNCTION)
         MvFunctionVisibilityModifierImpl(FUNCTION_VISIBILITY_MODIFIER)
           PsiElement(public)('public')
-          PsiErrorElement:'(' or fun expected, got '('
-            <empty list>
-        PsiErrorElement:'(', IDENTIFIER or fun expected, got '('
           PsiElement(()('(')
-        PsiElement(IDENTIFIER)('package')
-        PsiElement())(')')
-        PsiErrorElement:'fun' unexpected
-          <empty list>
-      PsiWhiteSpace(' ')
-      MvFunctionImpl(FUNCTION)
+          PsiElement(package_kw)('package')
+          PsiElement())(')')
+        PsiWhiteSpace(' ')
         PsiElement(fun)('fun')
         PsiWhiteSpace(' ')
         PsiElement(IDENTIFIER)('package')

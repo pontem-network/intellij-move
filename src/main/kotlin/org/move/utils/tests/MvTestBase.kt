@@ -13,8 +13,7 @@ import com.intellij.testFramework.enableInspectionTool
 import org.intellij.lang.annotations.Language
 import org.move.cli.settings.moveSettings
 import org.move.ide.inspections.fixes.CompilerV2Feat
-import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
-import org.move.ide.inspections.fixes.CompilerV2Feat.RESOURCE_CONTROL
+import org.move.ide.inspections.fixes.CompilerV2Feat.*
 import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
 import org.move.utils.tests.base.findElementsWithDataAndOffsetInEditor
@@ -46,6 +45,7 @@ fun UsefulTestCase.handleCompilerV2Annotations(project: Project) {
                 when (feature) {
                     RESOURCE_CONTROL -> it.enableResourceAccessControl = true
                     INDEXING -> it.enableIndexExpr = true
+                    PUBLIC_PACKAGE -> it.enablePublicPackage = true
                 }
             }
         }

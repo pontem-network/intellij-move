@@ -38,6 +38,7 @@ class MvProjectSettingsService(
 
     val enableResourceAccessControl: Boolean get() = state.enableResourceAccessControl
     val enableIndexExpr: Boolean get() = state.enableIndexExpr
+    val enablePublicPackage: Boolean get() = state.enablePublicPackage
     val addCompilerV2CLIFlags: Boolean get() = state.addCompilerV2CLIFlags
 
     // default values for settings
@@ -53,6 +54,9 @@ class MvProjectSettingsService(
 
         @AffectsHighlighting
         var enableIndexExpr: Boolean by property(false)
+
+        @AffectsHighlighting
+        var enablePublicPackage: Boolean by property(false)
 
         @AffectsMoveProjectsMetadata
         var fetchAptosDeps: Boolean by property(false)

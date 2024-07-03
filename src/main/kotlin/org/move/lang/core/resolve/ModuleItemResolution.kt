@@ -31,7 +31,7 @@ fun processModuleInnerItems(
                 )
             }
             Namespace.FUNCTION -> {
-                val functions = visibilities.flatMap { module.visibleFunctions(it) }
+                val functions = visibilities.flatMap { module.functionsVisibleInScope(it) }
                 val specFunctions =
                     if (contextScopeInfo.isMslScope) module.specFunctions() else emptyList()
                 val specInlineFunctions =

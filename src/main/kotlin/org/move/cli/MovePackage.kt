@@ -4,10 +4,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.move.cli.manifest.AptosConfigYaml
 import org.move.cli.manifest.MoveToml
+import org.move.lang.core.psi.MvElement
+import org.move.lang.moveProject
 import org.move.lang.toNioPathOrNull
 import org.move.openapiext.pathAsPath
 import org.move.openapiext.resolveExisting
 import java.nio.file.Path
+import kotlin.io.path.relativeToOrNull
 
 data class MovePackage(
     val project: Project,
@@ -18,6 +21,7 @@ data class MovePackage(
 
     val sourcesFolder: VirtualFile? get() = contentRoot.takeIf { it.isValid }?.findChild("sources")
     val testsFolder: VirtualFile? get() = contentRoot.takeIf { it.isValid }?.findChild("tests")
+    val scriptsFolder: VirtualFile? get() = contentRoot.takeIf { it.isValid }?.findChild("scripts")
 
     val aptosConfigYaml: AptosConfigYaml?
         get() {
@@ -36,7 +40,7 @@ data class MovePackage(
             return null
         }
 
-    fun moveFolders(): List<VirtualFile> = listOfNotNull(sourcesFolder, testsFolder)
+    fun moveFolders(): List<VirtualFile> = listOfNotNull(sourcesFolder, testsFolder, scriptsFolder)
 
     fun layoutPaths(): List<Path> {
         val rootPath = contentRoot.takeIf { it.isValid }?.toNioPathOrNull() ?: return emptyList()
@@ -62,6 +66,17 @@ data class MovePackage(
         return PackageAddresses(addresses, tomlMainAddresses.placeholders)
     }
 
+    override fun hashCode(): Int {
+        return this.moveToml.tomlFile.toNioPathOrNull()?.hashCode() ?: this.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is MovePackage) return false
+        val leftPath = this.moveToml.tomlFile.toNioPathOrNull() ?: return false
+        val rightPath = other.moveToml.tomlFile.toNioPathOrNull() ?: return false
+        return leftPath == rightPath
+    }
+
     companion object {
         fun fromMoveToml(moveToml: MoveToml): MovePackage {
             val contentRoot = moveToml.tomlFile.virtualFile.parent
@@ -69,3 +84,18 @@ data class MovePackage(
         }
     }
 }
+
+val MvElement.containingMovePackage: MovePackage?
+    get() {
+        val elementPath = this.containingFile?.toNioPathOrNull() ?: return null
+        val allPackages = this.moveProject?.movePackages().orEmpty()
+        return allPackages.find {
+            val folderPaths = it.moveFolders().mapNotNull { it.toNioPathOrNull() }
+            for (folderPath in folderPaths) {
+                if (elementPath.relativeToOrNull(folderPath) != null) {
+                    return it
+                }
+            }
+            false
+        }
+    }

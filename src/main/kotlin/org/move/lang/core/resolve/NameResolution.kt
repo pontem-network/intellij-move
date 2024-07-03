@@ -1,6 +1,8 @@
 package org.move.lang.core.resolve
 
 import com.intellij.psi.search.GlobalSearchScope
+import org.move.cli.containingMovePackage
+import org.move.cli.settings.moveSettings
 import org.move.lang.MoveFile
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.NamedItemScope.MAIN
@@ -123,6 +125,16 @@ fun processQualItem(
                         val itemModule = item.module ?: return false
                         val currentModule = vis.currentModule.element ?: return false
                         if (currentModule.fqModule() in itemModule.declaredFriendModules) {
+                            processor.match(contextScopeInfo, item)
+                        }
+                    }
+
+                    vis is Visibility.PublicPackage && item.visibility == FunctionVisibility.PUBLIC_PACKAGE -> {
+                        if (!item.project.moveSettings.enablePublicPackage) {
+                            return false
+                        }
+                        val itemPackage = item.containingMovePackage ?: return false
+                        if (vis.originPackage == itemPackage) {
                             processor.match(contextScopeInfo, item)
                         }
                     }
