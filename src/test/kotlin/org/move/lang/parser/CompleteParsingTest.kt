@@ -1,6 +1,6 @@
 package org.move.lang.parser
 
-import org.move.utils.tests.CompilerV2Feat.RESOURCE_CONTROL
+import org.move.ide.inspections.fixes.CompilerV2Feat.RESOURCE_CONTROL
 import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.parser.MvParsingTestCase
 

@@ -1,7 +1,5 @@
 package org.move.ide.inspections
 
-import org.move.utils.tests.CompilerV2Feat.INDEXING
-import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class MvTypeCheckInspectionTest: InspectionTestBase(MvTypeCheckInspection::class) {

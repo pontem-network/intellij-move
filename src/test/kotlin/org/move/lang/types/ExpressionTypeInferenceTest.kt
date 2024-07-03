@@ -1,7 +1,5 @@
 package org.move.lang.types
 
-import org.move.utils.tests.CompilerV2Feat.INDEXING
-import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.types.TypificationTestCase
 
 class ExpressionTypeInferenceTest: TypificationTestCase() {

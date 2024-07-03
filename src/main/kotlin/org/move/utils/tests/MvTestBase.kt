@@ -7,15 +7,14 @@ package org.move.utils.tests
 
 import com.intellij.codeInspection.InspectionProfileEntry
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiElement
 import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.enableInspectionTool
 import org.intellij.lang.annotations.Language
-import org.move.cli.settings.MvProjectSettingsService
 import org.move.cli.settings.moveSettings
-import org.move.utils.tests.CompilerV2Feat.INDEXING
-import org.move.utils.tests.CompilerV2Feat.RESOURCE_CONTROL
+import org.move.ide.inspections.fixes.CompilerV2Feat
+import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
+import org.move.ide.inspections.fixes.CompilerV2Feat.RESOURCE_CONTROL
 import org.move.utils.tests.base.MvTestCase
 import org.move.utils.tests.base.TestCase
 import org.move.utils.tests.base.findElementsWithDataAndOffsetInEditor
@@ -32,10 +31,6 @@ annotation class DebugMode(val enabled: Boolean)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class WithEnabledInspections(vararg val inspections: KClass<out InspectionProfileEntry>)
-
-enum class CompilerV2Feat {
-    INDEXING, RESOURCE_CONTROL;
-}
 
 @Inherited
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)

@@ -2,6 +2,9 @@ package org.move.ide.inspections
 
 import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo
 import com.intellij.codeInspection.*
+import com.intellij.model.SideEffectGuard
+import com.intellij.model.SideEffectGuard.EffectType.EXEC
+import com.intellij.model.SideEffectGuard.EffectType.SETTINGS
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -105,6 +108,9 @@ abstract class DiagnosticIntentionFix<T : PsiElement>(element: T) :
     }
 
     override fun generatePreview(project: Project, previewDescriptor: ProblemDescriptor): IntentionPreviewInfo =
+        IntentionPreviewInfo.EMPTY
+
+    override fun generatePreview(project: Project, editor: Editor, file: PsiFile): IntentionPreviewInfo =
         IntentionPreviewInfo.EMPTY
 
     override fun getFamilyName(): String = text

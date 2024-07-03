@@ -10,6 +10,7 @@ import org.move.lang.core.psi.*
 class WrapWithParensExprFix(castExpr: MvCastExpr) : DiagnosticIntentionFix<MvCastExpr>(castExpr) {
     override fun generatePreview(project: Project, previewDescriptor: ProblemDescriptor): IntentionPreviewInfo =
         IntentionPreviewInfo.EMPTY
+
     override fun getFamilyName(): String = "Wrap cast with ()"
     override fun getText(): String = "Wrap cast with ()"
 
