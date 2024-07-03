@@ -102,6 +102,7 @@
         ENTRY     = 'entry_kw'
         INLINE     = 'inline_kw'
         FRIEND     = 'friend_kw'
+        PACKAGE     = 'package_kw'
         FOR     = 'for_kw'
 
         READS     = 'reads_kw'
@@ -426,12 +427,13 @@ private FunctionSignatureInner ::= IDENTIFIER TypeParameterList?
 private FunctionSignatureInner_recover ::= !('{' | '}' | ';' | <<eof>> | Item_first)
 
 private friend ::= <<friendKeyword>>
+private package ::= <<packageKeyword>>
 private for ::= <<forKeyword>>
 
 private FunctionModifierSetInner ::= <<functionModifierSet FunctionVisibilityModifier>>
 private NativeFunctionModifierSetInner ::= <<nativeFunctionModifierSet FunctionVisibilityModifier>>
 
-FunctionVisibilityModifier ::= public ('(' (SCRIPT_KW | friend) ')')?
+FunctionVisibilityModifier ::= public ('(' (SCRIPT_KW | package | friend) ')')?
 
 FunctionParameterList ::= '(' FunctionParameter_with_recover* ')' { pin = 1 }
 private FunctionParameter_with_recover ::= !(')' | '{' | ';') FunctionParameter (',' | &')')
