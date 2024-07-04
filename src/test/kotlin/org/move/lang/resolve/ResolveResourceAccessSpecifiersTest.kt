@@ -1,38 +1,46 @@
 package org.move.lang.resolve
 
-import org.move.utils.tests.EnableResourceAccessControl
+import org.move.ide.inspections.fixes.CompilerV2Feat.RESOURCE_CONTROL
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.resolve.ResolveTestCase
 
-@EnableResourceAccessControl
+@CompilerV2Features(RESOURCE_CONTROL)
 class ResolveResourceAccessSpecifiersTest: ResolveTestCase() {
-    fun `test resolve type for reads`() = checkByCode("""
+    fun `test resolve type for reads`() = checkByCode(
+        """
         module 0x1::main {
             struct S { field: u8 }
                  //X
             fun main() reads S {}
                            //^
         }        
-    """)
+    """
+    )
 
-    fun `test resolve type for write`() = checkByCode("""
+    fun `test resolve type for write`() = checkByCode(
+        """
         module 0x1::main {
             struct S { field: u8 }
                  //X
             fun main() writes S {}
                             //^
         }        
-    """)
+    """
+    )
 
-    fun `test resolve type for acquires`() = checkByCode("""
+    fun `test resolve type for acquires`() = checkByCode(
+        """
         module 0x1::main {
             struct S { field: u8 }
                  //X
             fun main() acquires S {}
                               //^
         }        
-    """)
+    """
+    )
 
-    fun `test resolve address function in address specifier`() = checkByCode("""
+    fun `test resolve address function in address specifier`() = checkByCode(
+        """
         module 0x1::main {
             struct S { field: u8 }
             fun main(value: u8) reads *(make_up_address(value)) {}
@@ -40,18 +48,22 @@ class ResolveResourceAccessSpecifiersTest: ResolveTestCase() {
             fun make_up_address(x: u8): address { @0x1 }
                   //X
         }        
-    """)
+    """
+    )
 
-    fun `test resolve module with wildcard`() = checkByCode("""
+    fun `test resolve module with wildcard`() = checkByCode(
+        """
         module 0x1::main {
                    //X
             struct S { field: u8 }
             fun main(value: u8) reads 0x1::main::* {}
                                           //^
         }        
-    """)
+    """
+    )
 
-    fun `test resolve parameter for address function`() = checkByCode("""
+    fun `test resolve parameter for address function`() = checkByCode(
+        """
         module 0x1::main {
             struct S { field: u8 }
             fun main(
@@ -61,9 +73,11 @@ class ResolveResourceAccessSpecifiersTest: ResolveTestCase() {
                                     //^
             fun make_up_address(x: u8): address { @0x1 }
         }        
-    """)
+    """
+    )
 
-    fun `test address function can be from another module`() = checkByCode("""
+    fun `test address function can be from another module`() = checkByCode(
+        """
         module 0x1::signer {
             public native fun address_of(s: &signer);
                               //X
@@ -74,5 +88,6 @@ class ResolveResourceAccessSpecifiersTest: ResolveTestCase() {
             fun main(s: &signer) reads *(signer::address_of(s)) {}
                                                  //^
         }        
-    """)
+    """
+    )
 }

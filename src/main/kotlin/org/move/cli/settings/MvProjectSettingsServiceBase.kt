@@ -51,10 +51,10 @@ abstract class MvProjectSettingsServiceBase<T: MvProjectSettingsBase<T>>(
     }
 
     @TestOnly
-    fun modifyTemporary(parentDisposable: Disposable, modifySettings: (T) -> Unit) {
+    fun modifyTemporary(testRootDisposable: Disposable, modifySettings: (T) -> Unit) {
         val oldState = state
         loadState(oldState.copy().also(modifySettings))
-        Disposer.register(parentDisposable) {
+        Disposer.register(testRootDisposable) {
             loadState(oldState)
         }
     }

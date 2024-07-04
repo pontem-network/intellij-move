@@ -968,6 +968,7 @@ CallExpr ::= (Path &'(') ValueArgumentList {
     implements = [
         "org.move.lang.core.psi.PathExpr"
         "org.move.lang.core.psi.ext.MvCallable"
+        "org.move.lang.core.psi.MvAcquireTypesOwner"
     ]
 }
 ValueArgumentList ::= '(' ValueArgumentList_items? ')' {
@@ -1030,11 +1031,15 @@ MethodCall ::= IDENTIFIER ColonTypeArgumentList? ValueArgumentList
         "org.move.lang.core.psi.ext.MvMethodOrField"
         "org.move.lang.core.psi.ext.MvMethodOrPath"
         "org.move.lang.core.psi.ext.MvCallable"
+        "org.move.lang.core.psi.MvAcquireTypesOwner"
     ]
     mixin = "org.move.lang.core.psi.ext.MvMethodCallMixin"
 }
 
 IndexExpr ::= Expr IndexArg
+{
+    implements = [ "org.move.lang.core.psi.MvAcquireTypesOwner" ]
+}
 // Do not inline this rule, it breaks expression parsing
 private IndexArg ::= '[' Expr ']'
 

@@ -1,9 +1,10 @@
 package org.move.lang.completion
 
-import org.move.utils.tests.EnableResourceAccessControl
+import org.move.ide.inspections.fixes.CompilerV2Feat.RESOURCE_CONTROL
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.completion.CompletionTestCase
 
-class KeywordCompletionTest : CompletionTestCase() {
+class KeywordCompletionTest: CompletionTestCase() {
     fun `test address`() = doSingleCompletion(
         """
         addr/*caret*/    
@@ -139,7 +140,8 @@ class KeywordCompletionTest : CompletionTestCase() {
     """
     )
 
-    fun `test spec fun`() = doSingleCompletion("""
+    fun `test spec fun`() = doSingleCompletion(
+        """
         module 0x1::M {
             spec f/*caret*/
         }
@@ -147,9 +149,11 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             spec fun /*caret*/
         }
-    """)
+    """
+    )
 
-    fun `test spec module`() = doSingleCompletion("""
+    fun `test spec module`() = doSingleCompletion(
+        """
         module 0x1::M {
             spec mod/*caret*/
         }
@@ -157,9 +161,11 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             spec module /*caret*/
         }
-    """)
+    """
+    )
 
-    fun `test spec schema`() = doSingleCompletion("""
+    fun `test spec schema`() = doSingleCompletion(
+        """
         module 0x1::M {
             spec sch/*caret*/
         }
@@ -167,7 +173,8 @@ class KeywordCompletionTest : CompletionTestCase() {
         module 0x1::M {
             spec schema /*caret*/
         }
-    """)
+    """
+    )
 
     fun `test public`() = completionFixture.checkContainsCompletion(
         """
@@ -546,7 +553,8 @@ class KeywordCompletionTest : CompletionTestCase() {
     """
     )
 
-    fun `test spec module space exists`() = doSingleCompletion("""
+    fun `test spec module space exists`() = doSingleCompletion(
+        """
     module 0x1::M {
         spec mo/*caret*/ {}
     }    
@@ -554,9 +562,11 @@ class KeywordCompletionTest : CompletionTestCase() {
     module 0x1::M {
         spec module/*caret*/ {}
     }    
-    """)
+    """
+    )
 
-    fun `test else after if block`() = doSingleCompletion("""
+    fun `test else after if block`() = doSingleCompletion(
+        """
     module 0x1::M {
         fun call() {
             if (true) {
@@ -572,9 +582,11 @@ class KeywordCompletionTest : CompletionTestCase() {
             } else /*caret*/
         }
     }    
-    """)
+    """
+    )
 
-    fun `test continue inside while`() = doSingleCompletion("""
+    fun `test continue inside while`() = doSingleCompletion(
+        """
     module 0x1::Main {
         fun call() {
             while (true) {
@@ -590,7 +602,8 @@ class KeywordCompletionTest : CompletionTestCase() {
             }
         }
     }    
-    """)
+    """
+    )
 
 //    fun `test bool completion in field initializer`() = doSingleCompletion("""
 //module 0x1::main {
@@ -617,7 +630,7 @@ class KeywordCompletionTest : CompletionTestCase() {
         """
     )
 
-    @EnableResourceAccessControl
+    @CompilerV2Features(RESOURCE_CONTROL)
     fun `test completion for resource access modifiers`() = checkContainsCompletion(
         listOf("reads", "writes", "pure", "acquires"),
         """

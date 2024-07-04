@@ -1,23 +1,27 @@
 package org.move.ide.annotator
 
 import org.move.ide.colors.MvColor
-import org.move.utils.tests.EnableResourceAccessControl
+import org.move.ide.inspections.fixes.CompilerV2Feat.RESOURCE_CONTROL
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.annotation.AnnotatorTestCase
 
-class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class) {
+class HighlightingAnnotatorTest: AnnotatorTestCase(HighlightingAnnotator::class) {
     override fun setUp() {
         super.setUp()
         annotationFixture.registerSeverities(MvColor.values().map(MvColor::testSeverity))
     }
 
-    fun `test block comment do not break the highlighting`() = checkHighlighting("""
+    fun `test block comment do not break the highlighting`() = checkHighlighting(
+        """
     /* module M */
     module <MODULE>M</MODULE> {
         fun <FUNCTION>call</FUNCTION>() {}
     }
-    """)
+    """
+    )
 
-    fun `test function calls annotated`() = checkHighlighting("""
+    fun `test function calls annotated`() = checkHighlighting(
+        """
     module 0x1::string {
         public fun mycall() {}
     }    
@@ -30,9 +34,11 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
             <FUNCTION_CALL>mycall_alias</FUNCTION_CALL>()
         }
     }    
-    """)
+    """
+    )
 
-    fun `test variable names annotated`() = checkHighlighting("""
+    fun `test variable names annotated`() = checkHighlighting(
+        """
     module <MODULE>M</MODULE> {
         const <CONSTANT>MAX_INT</CONSTANT>: <PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE> = 255;
 
@@ -42,7 +48,8 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
             <CONSTANT>MAX_INT</CONSTANT>;
         }
     }    
-    """)
+    """
+    )
 
     fun `test types highlighed`() = checkHighlighting(
         """
@@ -88,7 +95,8 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
     """
     )
 
-    fun `test highlight view functions`() = checkHighlighting("""
+    fun `test highlight view functions`() = checkHighlighting(
+        """
         module 0x1::m {
             #[view]
             public fun <VIEW_FUNCTION>get_pool</VIEW_FUNCTION>() {}
@@ -96,25 +104,30 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
                 <VIEW_FUNCTION_CALL>get_pool</VIEW_FUNCTION_CALL>();
             }
         }        
-    """)
+    """
+    )
 
-    fun `test highlight entry functions`() = checkHighlighting("""
+    fun `test highlight entry functions`() = checkHighlighting(
+        """
         module 0x1::m {
             public entry fun <ENTRY_FUNCTION>get_pool</ENTRY_FUNCTION>() {}
             fun main() {
                 <ENTRY_FUNCTION_CALL>get_pool</ENTRY_FUNCTION_CALL>();
             }
         }        
-    """)
+    """
+    )
 
-    fun `test highlight inline functions`() = checkHighlighting("""
+    fun `test highlight inline functions`() = checkHighlighting(
+        """
         module 0x1::m {
             public inline fun <INLINE_FUNCTION>get_pool</INLINE_FUNCTION>() {}
             fun main() {
                 <INLINE_FUNCTION_CALL>get_pool</INLINE_FUNCTION_CALL>();
             }
         }        
-    """)
+    """
+    )
 
     fun `test function param named as builtin type`() = checkHighlighting(
         """
@@ -138,7 +151,7 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
 
     fun `test generic type parameters highlighted`() = checkHighlighting(
         """
-        module M {
+        module 0x1::M {
             struct MyStruct<<TYPE_PARAMETER>T</TYPE_PARAMETER>> {
                 field: <TYPE_PARAMETER>T</TYPE_PARAMETER>
             }
@@ -179,16 +192,19 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
         """
     )
 
-    fun `test spec keywords are highlighted`() = checkHighlighting("""
+    fun `test spec keywords are highlighted`() = checkHighlighting(
+        """
     module M {
         spec module {
             <KEYWORD>assume</KEYWORD> 1 == 1;
             <KEYWORD>assert</KEYWORD> 1 == 1;
         }
     }    
-    """)
+    """
+    )
 
-    fun `test address highlighting`() = checkHighlighting("""
+    fun `test address highlighting`() = checkHighlighting(
+        """
     module 0x1::M {
         #[test(acc = <ADDRESS>@0x42</ADDRESS>, acc2 = <ADDRESS>@0x43</ADDRESS>)]
         fun m() {
@@ -196,26 +212,32 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
             borrow_global_mut<address>(<ADDRESS>@0x1</ADDRESS>)
         }
     }
-    """)
+    """
+    )
 
-    fun `test macros are highlighted`() = checkHighlighting("""
+    fun `test macros are highlighted`() = checkHighlighting(
+        """
     module 0x1::M {
         fun m() {
             <MACRO>assert</MACRO><MACRO>!</MACRO>(true, 1);
         }
     }
-    """)
+    """
+    )
 
-    fun `test integer highlighting`() = checkHighlighting("""
+    fun `test integer highlighting`() = checkHighlighting(
+        """
     module 0x1::main {
         fun main() {
             let a = <NUMBER>0x123456</NUMBER>;
             
         }
     }
-    """)
+    """
+    )
 
-    fun `test structs and struct fields are highlighted`() = checkHighlighting("""
+    fun `test structs and struct fields are highlighted`() = checkHighlighting(
+        """
         module 0x1::m {
             struct <STRUCT>MyS</STRUCT> {
                 <FIELD>field1</FIELD>: u8,
@@ -228,9 +250,11 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
                 <STRUCT>MyS</STRUCT> { <FIELD>field1</FIELD>: 1, <FIELD>field2</FIELD>: 2 }
             }
         }
-    """)
+    """
+    )
 
-    fun `test highlight objects`() = checkHighlighting("""
+    fun `test highlight objects`() = checkHighlighting(
+        """
         module 0x1::m {
             struct Res {}
             struct ResKey has key {}
@@ -247,9 +271,11 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
                 <STORE_NO_DROP_OBJECT>res_store</STORE_NO_DROP_OBJECT>;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test highlight references`() = checkHighlighting("""
+    fun `test highlight references`() = checkHighlighting(
+        """
         module 0x1::m {
             struct Res {}
             struct ResKey has key {}
@@ -278,18 +304,22 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
                 <MUT_REF_TO_STORE_NO_DROP_OBJECT>ref_res_store_no_drop</MUT_REF_TO_STORE_NO_DROP_OBJECT>;
             }
         }        
-    """)
+    """
+    )
 
-    fun `test for loop keywords`() = checkHighlighting("""
+    fun `test for loop keywords`() = checkHighlighting(
+        """
         module 0x1::m {
             fun main() {
                 let <VARIABLE>for</VARIABLE> = 1;
                 <KEYWORD>for</KEYWORD> (i <KEYWORD>in</KEYWORD> 1..10) {};
             }
         }        
-    """)
+    """
+    )
 
-    fun `test highlight methods`() = checkHighlighting("""
+    fun `test highlight methods`() = checkHighlighting(
+        """
         module 0x1::m {
             struct S { field: u8 }
             fun <METHOD>receiver</METHOD>(<SELF_PARAMETER>self</SELF_PARAMETER>: S, <VARIABLE>self</VARIABLE>: u8): u8 { 
@@ -299,13 +329,16 @@ class HighlightingAnnotatorTest : AnnotatorTestCase(HighlightingAnnotator::class
                 s.<METHOD_CALL>receiver</METHOD_CALL>();
             }
         }        
-    """)
+    """
+    )
 
-    @EnableResourceAccessControl
-    fun `test resource access control keywords highlighting`() = checkHighlighting("""
+    @CompilerV2Features(RESOURCE_CONTROL)
+    fun `test resource access control keywords highlighting`() = checkHighlighting(
+        """
         module 0x1::m {
             fun f_multiple() <KEYWORD>reads</KEYWORD> R <KEYWORD>writes</KEYWORD> T, S <KEYWORD>reads</KEYWORD> G<u64> {}
             fun f_multiple2() <KEYWORD>pure</KEYWORD> {}
         }        
-    """)
+    """
+    )
 }

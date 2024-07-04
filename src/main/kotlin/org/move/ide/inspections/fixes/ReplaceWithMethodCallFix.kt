@@ -34,9 +34,7 @@ class ReplaceWithMethodCallFix(callExpr: MvCallExpr): DiagnosticFix<MvCallExpr>(
                 // do nothing, those operations priorities are correct without parens
             }
             else -> {
-                val parensExpr = psiFactory.expr<MvParensExpr>("(a)")
-                parensExpr.expr?.replace(selfArgExpr)
-                selfArgExpr = parensExpr
+                selfArgExpr = psiFactory.wrapWithParens(selfArgExpr)
             }
         }
 

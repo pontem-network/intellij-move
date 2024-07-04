@@ -3,6 +3,7 @@ package org.move.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import org.move.cli.settings.moveSettings
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.utils.Diagnostic
@@ -20,6 +21,7 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
             override fun visitStruct(s: MvStruct) = checkStruct(moveHolder, s)
             override fun visitFunction(o: MvFunction) = checkFunction(moveHolder, o)
             override fun visitSpecFunction(o: MvSpecFunction) = checkSpecFunction(moveHolder, o)
+            override fun visitIndexExpr(o: MvIndexExpr) = checkIndexExpr(moveHolder, o)
         }
         element.accept(visitor)
     }
@@ -52,6 +54,14 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
         if (parent !is MvParensExpr) {
             Diagnostic
                 .ParensAreRequiredForCastExpr(castExpr)
+                .addToHolder(holder)
+        }
+    }
+
+    private fun checkIndexExpr(holder: MvAnnotationHolder, indexExpr: MvIndexExpr) {
+        if (!indexExpr.project.moveSettings.enableIndexExpr) {
+            Diagnostic
+                .IndexExprIsNotAllowed(indexExpr)
                 .addToHolder(holder)
         }
     }
@@ -154,6 +164,7 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
         }
     }
 
+    @Suppress("CompanionObjectInExtension")
     companion object {
         private val INTEGER_WITH_SUFFIX_REGEX =
             Regex("([0-9a-zA-Z_]+)(u[0-9]{1,4})")

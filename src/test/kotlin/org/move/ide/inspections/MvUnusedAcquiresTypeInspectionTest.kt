@@ -1,5 +1,7 @@
 package org.move.ide.inspections
 
+import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class MvUnusedAcquiresTypeInspectionTest: InspectionTestBase(MvUnusedAcquiresTypeInspection::class) {
@@ -143,6 +145,86 @@ module 0x1::main {
         f();
     }
     inline fun f() {
+    }
+}        
+    """
+    )
+
+    fun `test unused acquires with index expr on compiler v1`() = checkWarnings(
+        """
+module 0x1::main {
+    struct StakePool has key {
+        locked_until_secs: u64,
+    }
+    fun get_lockup_secs(pool_address: address) <warning descr="Unused acquires clause">acquires StakePool</warning> {
+        StakePool[pool_address];
+    }
+}        
+    """
+    )
+
+    @CompilerV2Features(INDEXING)
+    fun `test no unused acquires with index expr`() = checkWarnings(
+        """
+module 0x1::main {
+    struct StakePool has key {
+        locked_until_secs: u64,
+    }
+    fun get_lockup_secs(pool_address: address) acquires StakePool {
+        StakePool[pool_address];
+    }
+}        
+    """
+    )
+
+    @CompilerV2Features(INDEXING)
+    fun `test no unused acquires with index expr inside inline function`() = checkWarnings(
+        """
+module 0x1::main {
+    struct StakePool has key {
+        locked_until_secs: u64,
+    }
+    fun get_lockup_secs(pool_address: address) acquires StakePool {
+        f();
+    }
+    inline fun f() {
+        StakePool[pool_address];
+    }
+}        
+    """
+    )
+
+    fun `test no unused acquires for deep borrow global dot`() = checkWarnings(
+        """
+module 0x1::main {
+    /// The enabled features, represented by a bitset stored on chain.
+    struct Features has key {
+        features: vector<u8>,
+    }
+    
+    #[view]
+    /// Check whether the feature is enabled.
+    public fun is_enabled(feature: u64): bool acquires Features {
+        exists<Features>(@0x1) &&
+            contains(&borrow_global<Features>(@0x1).features, feature)
+    }
+}        
+    """
+    )
+
+    @CompilerV2Features(INDEXING)
+    fun `test no unused acquires for deep borrow global dot with index expr`() = checkWarnings(
+        """
+module 0x1::main {
+    /// The enabled features, represented by a bitset stored on chain.
+    struct Features has key {
+        features: vector<u8>,
+    }
+    #[view]
+    /// Check whether the feature is enabled.
+    public fun is_enabled(feature: u64): bool acquires Features {
+        exists<Features>(@0x1) && 
+            contains(Features[@0x1].features, feature)
     }
 }        
     """

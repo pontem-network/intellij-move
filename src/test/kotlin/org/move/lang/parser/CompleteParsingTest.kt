@@ -1,9 +1,10 @@
 package org.move.lang.parser
 
-import org.move.utils.tests.EnableResourceAccessControl
+import org.move.ide.inspections.fixes.CompilerV2Feat.RESOURCE_CONTROL
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.parser.MvParsingTestCase
 
-class CompleteParsingTest : MvParsingTestCase("complete") {
+class CompleteParsingTest: MvParsingTestCase("complete") {
     fun `test comments`() = doTest()
     fun `test addresses`() = doTest()
     fun `test attributes`() = doTest()
@@ -43,7 +44,9 @@ class CompleteParsingTest : MvParsingTestCase("complete") {
     fun `test macros`() = doTest()
     fun `test loops`() = doTest()
 
-    @EnableResourceAccessControl
+    // compiler v2
+    fun `test index expr`() = doTest()
+    @CompilerV2Features(RESOURCE_CONTROL)
     fun `test access control`() = doTest()
 
     fun doTest() {

@@ -1,5 +1,7 @@
 package org.move.ide.inspections
 
+import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.annotation.InspectionTestBase
 
 class MvMissingAcquiresInspectionTest : InspectionTestBase(MvMissingAcquiresInspection::class) {
@@ -207,4 +209,46 @@ module 0x1::main {
             }
         }
     """)
+
+    fun `test no error with index if unsupported`() = checkErrors(
+        """
+    module 0x1::M {
+        struct Loan has key {}
+        fun main() {
+            Loan[@0x1];
+        }
+    }    
+    """
+    )
+
+    @CompilerV2Features(INDEXING)
+    fun `test missing acquires with index expr`() = checkErrors(
+        """
+    module 0x1::M {
+        struct Loan has key {}
+        fun main() {
+            <error descr="Function 'main' is not marked as 'acquires Loan'">Loan[@0x1]</error>;
+        }
+    }    
+    """
+    )
+
+    fun `test no missing acquires for item from another module`() = checkErrors(
+        """
+    module 0x1::s {
+        struct S has key {
+        }
+        public fun call() acquires S {
+            borrow_global<S>(@0x1);
+        }
+
+    }
+    module 0x1::M {
+        use 0x1::s::call;
+        fun main() {
+            call();
+        }
+    }    
+    """
+    )
 }

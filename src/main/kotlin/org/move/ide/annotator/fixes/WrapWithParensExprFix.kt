@@ -10,6 +10,7 @@ import org.move.lang.core.psi.*
 class WrapWithParensExprFix(castExpr: MvCastExpr) : DiagnosticIntentionFix<MvCastExpr>(castExpr) {
     override fun generatePreview(project: Project, previewDescriptor: ProblemDescriptor): IntentionPreviewInfo =
         IntentionPreviewInfo.EMPTY
+
     override fun getFamilyName(): String = "Wrap cast with ()"
     override fun getText(): String = "Wrap cast with ()"
 
@@ -23,7 +24,6 @@ class WrapWithParensExprFix(castExpr: MvCastExpr) : DiagnosticIntentionFix<MvCas
 }
 
 private fun wrapWithParensExpr(psiFactory: MvPsiFactory, expr: MvExpr): MvParensExpr {
-    val parensExpr = psiFactory.expr<MvParensExpr>("(dummy_ident)")
-    parensExpr.expr?.replace(expr)
+    val parensExpr = psiFactory.wrapWithParens(expr)
     return expr.replace(parensExpr) as MvParensExpr
 }

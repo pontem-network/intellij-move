@@ -51,6 +51,14 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                                 )
                                 .bindSelected(state::enableResourceAccessControl)
                         }
+                        row {
+                            checkBox("Enable indexing")
+                                .comment(
+                                    "Enables resource and vector indexing (i.e. v[0], R[@0x1]) " +
+                                            "for the Move files."
+                                )
+                                .bindSelected(state::enableIndexExpr)
+                        }
                     }
                     group("Command Line Options") {
                         row {
@@ -102,6 +110,7 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                         it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
                         it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
                         it.enableResourceAccessControl = state.enableResourceAccessControl
+                        it.enableIndexExpr = state.enableIndexExpr
                         it.addCompilerV2CLIFlags = state.addCompilerV2CLIFlags
                         it.fetchAptosDeps = state.fetchAptosDeps
                     }

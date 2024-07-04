@@ -23,25 +23,27 @@ fun <T: MvNamedElement> MatchSequence<T>.filterByName(refName: String): Sequence
         .map { it.element }
 }
 
-fun MoveProject.getTyItemModule(ty: Ty): MvModule? {
-    val norefTy = ty.derefIfNeeded()
+fun Ty.itemModule(moveProject: MoveProject): MvModule? {
+    val norefTy = this.derefIfNeeded()
     return when (norefTy) {
         is TyVector -> {
-            this
+            moveProject
                 .getModulesFromIndex("vector")
-                .firstOrNull {
-                    val moduleAddress = it.address(this)?.canonicalValue(this)
-                    moduleAddress == "0x00000000000000000000000000000001"
-                }
+                .firstOrNull { it.is0x1Address(moveProject) }
         }
         is TyStruct -> norefTy.item.module
         else -> null
     }
 }
 
+fun MvModule.is0x1Address(moveProject: MoveProject): Boolean {
+    val moduleAddress = this.address(moveProject)?.canonicalValue(moveProject)
+    return moduleAddress == "0x00000000000000000000000000000001"
+}
+
 fun getMethodVariants(element: MvMethodOrField, receiverTy: Ty, msl: Boolean): MatchSequence<MvFunction> {
     val moveProject = element.moveProject ?: return emptySequence()
-    val receiverTyItemModule = moveProject.getTyItemModule(receiverTy) ?: return emptySequence()
+    val receiverTyItemModule = receiverTy.itemModule(moveProject) ?: return emptySequence()
 
     val visibilities = Visibility.publicVisibilitiesFor(element).toMutableSet()
     if (element.containingModule == receiverTyItemModule) {

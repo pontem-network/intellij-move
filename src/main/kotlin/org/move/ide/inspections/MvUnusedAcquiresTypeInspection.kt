@@ -7,16 +7,17 @@ import org.move.ide.inspections.fixes.RemoveAcquiresFix
 import org.move.ide.presentation.fullnameNoArgs
 import org.move.ide.presentation.itemDeclaredInModule
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.MvCallable
+import org.move.lang.core.types.infer.AcquireTypesOwnerVisitor
 import org.move.lang.core.types.infer.acquiresContext
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.infer.loweredType
 import org.move.lang.moveProject
 
 
-class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
-    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
-        val annotationHolder = Holder(holder)
-        return object : MvVisitor() {
+class MvUnusedAcquiresTypeInspection: MvLocalInspectionTool() {
+    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor =
+        object: MvVisitor() {
             override fun visitAcquiresType(o: MvAcquiresType) {
                 val function = o.parent as? MvFunction ?: return
                 val currentModule = function.module ?: return
@@ -24,11 +25,18 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 val inference = function.inference(false)
 
                 val callAcquiresTypes = mutableSetOf<String>()
-                for (callExpr in inference.callableTypes.keys) {
-                    val types = acquiresContext.getCallTypes(callExpr, inference)
-                    callAcquiresTypes.addAll(
-                        types.map { it.fullnameNoArgs() })
+                val visitor = object: AcquireTypesOwnerVisitor() {
+                    override fun visitAcquireTypesOwner(acqTypesOwner: MvAcquireTypesOwner) {
+                        val types =
+                            when (acqTypesOwner) {
+                                is MvCallable -> acquiresContext.getCallTypes(acqTypesOwner, inference)
+                                is MvIndexExpr -> acquiresContext.getIndexExprTypes(acqTypesOwner, inference)
+                                else -> error("when is exhaustive")
+                            }
+                        callAcquiresTypes.addAll(types.map { it.fullnameNoArgs() })
+                    }
                 }
+                visitor.visitElement(function)
 
                 val unusedTypeIndices = mutableListOf<Int>()
                 val visitedTypes = mutableSetOf<String>()
@@ -54,24 +62,21 @@ class MvUnusedAcquiresTypeInspection : MvLocalInspectionTool() {
                 }
                 if (unusedTypeIndices.size == function.acquiresPathTypes.size) {
                     // register whole acquiresType
-                    annotationHolder.registerUnusedAcquires(o)
+                    holder.registerUnusedAcquires(o)
                     return
                 }
                 for (idx in unusedTypeIndices) {
-                    annotationHolder.registerUnusedAcquires(function.acquiresPathTypes[idx])
+                    holder.registerUnusedAcquires(function.acquiresPathTypes[idx])
                 }
             }
         }
-    }
 
-    class Holder(val problemsHolder: ProblemsHolder) {
-        fun registerUnusedAcquires(ref: PsiElement) {
-            problemsHolder.registerProblem(
-                ref,
-                "Unused acquires clause",
-                ProblemHighlightType.LIKE_UNUSED_SYMBOL,
-                RemoveAcquiresFix(ref)
-            )
-        }
+    private fun ProblemsHolder.registerUnusedAcquires(ref: PsiElement) {
+        this.registerProblem(
+            ref,
+            "Unused acquires clause",
+            ProblemHighlightType.LIKE_UNUSED_SYMBOL,
+            RemoveAcquiresFix(ref)
+        )
     }
 }

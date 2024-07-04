@@ -5,10 +5,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.move.cli.settings.debugErrorOrFallback
 import org.move.cli.settings.isDebugModeEnabled
+import org.move.cli.settings.moveSettings
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ty.*
+import org.move.lang.core.types.ty.TyInfer.TyVar
 import org.move.lang.core.types.ty.TyReference.Companion.autoborrow
 import org.move.stdext.RsResult
 import org.move.stdext.chain
@@ -295,8 +297,14 @@ class TypeInferenceWalker(
             is MvConst -> item.type?.loweredType(msl) ?: TyUnknown
             is MvGlobalVariableStmt -> item.type?.loweredType(true) ?: TyUnknown
             is MvStructField -> item.type?.loweredType(msl) ?: TyUnknown
-            // only occurs in the invalid code statements
-            is MvStruct -> TyUnknown
+            is MvStruct -> {
+                if (project.moveSettings.enableIndexExpr && refExpr.parent is MvIndexExpr) {
+                    TyLowering.lowerPath(refExpr.path, item, ctx.msl)
+                } else {
+                    // invalid statements
+                    TyUnknown
+                }
+            }
             else -> debugErrorOrFallback(
                 "Referenced item ${item.elementType} " +
                         "of ref expr `${refExpr.text}` at ${refExpr.location} cannot be inferred into type",
@@ -656,15 +664,35 @@ class TypeInferenceWalker(
     }
 
     private fun inferIndexExprTy(indexExpr: MvIndexExpr): Ty {
-        val receiverExpr = indexExpr.exprList.first()
-        val receiverTy = receiverExpr.inferTypeCoercableTo(TyVector(TyUnknown))
+        val receiverTy = indexExpr.receiverExpr.inferType()
+        val argTy = indexExpr.argExpr.inferType()
 
-        val posExpr = indexExpr.exprList.drop(1).first()
-        val posTy = posExpr.inferType()
-        return when (posTy) {
-            is TyRange -> (receiverTy as? TyVector) ?: TyUnknown
-            is TyNum -> (receiverTy as? TyVector)?.item ?: TyUnknown
-            else -> TyUnknown
+        // compiler v2 only in non-msl
+        if (!ctx.msl && !project.moveSettings.enableIndexExpr) {
+            return TyUnknown
+        }
+
+        val derefTy = receiverTy.derefIfNeeded()
+        return when {
+            derefTy is TyVector -> {
+                // argExpr can be either TyInteger or TyRange
+                when (argTy) {
+                    is TyRange -> derefTy
+                    is TyInteger, is TyInfer.IntVar, is TyNum -> derefTy.item
+                    else -> {
+                        coerce(indexExpr.argExpr, argTy, if (ctx.msl) TyNum else TyInteger.DEFAULT)
+                        TyUnknown
+                    }
+                }
+            }
+            receiverTy is TyStruct -> {
+                coerce(indexExpr.argExpr, argTy, TyAddress)
+                receiverTy
+            }
+            else -> {
+                ctx.reportTypeError(TypeError.IndexingIsNotAllowed(indexExpr.receiverExpr, receiverTy))
+                TyUnknown
+            }
         }
     }
 

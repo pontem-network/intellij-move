@@ -8,6 +8,7 @@ import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_TYPE_P
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.HAS_TY_UNKNOWN_VISITOR
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.NEEDS_INFER
 import org.move.lang.core.types.infer.HasTypeFlagVisitor.Companion.NEEDS_SUBST
+import org.move.lang.core.types.ty.Ability.COPY
 
 enum class Ability {
     DROP, COPY, STORE, KEY;
@@ -31,6 +32,8 @@ enum class Ability {
         fun all(): Set<Ability> = setOf(DROP, COPY, STORE, KEY)
     }
 }
+
+val Ty.isCopy: Boolean get() = this.abilities().contains(COPY)
 
 val TypeFoldable<*>.hasTyInfer get() = visitWith(HAS_TY_INFER_VISITOR)
 val TypeFoldable<*>.hasTyTypeParameters get() = visitWith(HAS_TY_TYPE_PARAMETER_VISITOR)

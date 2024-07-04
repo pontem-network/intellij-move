@@ -26,7 +26,23 @@ class BraceMatcherTest : MvTypingTestCase() {
         "script { fun main(/*caret*/) {}}"
     )
 
+    fun `test pair square brackets for vector lit`() = doTest(
+        "module 0x1::m { fun main() { vector/*caret*/ }}",
+        '[',
+        "module 0x1::m { fun main() { vector[/*caret*/] }}"
+    )
+
+    fun `test pair square brackets for index expr`() = doTest(
+        "module 0x1::m { fun main() { v/*caret*/ }}",
+        '[',
+        "module 0x1::m { fun main() { v[/*caret*/] }}"
+    )
+
     fun `test match parens`() = doMatch("script { fun main/*caret*/(x: u8) {}}", ")")
+
+    fun `test match square brackets vector lit`() = doMatch("module 0x1::m { fun main() { vector/*caret*/[] }}", "]")
+
+    fun `test match square brackets index expr`() = doMatch("module 0x1::m { fun main() { v/*caret*/[] }}", "]")
 
     fun `test match angle brackets`() = doMatch("script { fun main/*caret*/<T>(x: u8) {}}", ">")
 
