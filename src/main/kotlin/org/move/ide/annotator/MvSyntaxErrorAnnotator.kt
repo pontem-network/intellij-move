@@ -22,6 +22,10 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
             override fun visitFunction(o: MvFunction) = checkFunction(moveHolder, o)
             override fun visitSpecFunction(o: MvSpecFunction) = checkSpecFunction(moveHolder, o)
             override fun visitIndexExpr(o: MvIndexExpr) = checkIndexExpr(moveHolder, o)
+
+            override fun visitModule(o: MvModule) {
+                checkVisibilityModifiers(moveHolder, o)
+            }
         }
         element.accept(visitor)
     }
@@ -61,7 +65,7 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
     private fun checkIndexExpr(holder: MvAnnotationHolder, indexExpr: MvIndexExpr) {
         if (!indexExpr.project.moveSettings.enableIndexExpr) {
             Diagnostic
-                .IndexExprIsNotAllowed(indexExpr)
+                .IndexExprIsNotSupportedInCompilerV1(indexExpr)
                 .addToHolder(holder)
         }
     }
@@ -71,6 +75,36 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
         val errorRange = TextRange.create(native.startOffset, struct.structKw.endOffset)
         Diagnostic.NativeStructNotSupported(struct, errorRange)
             .addToHolder(holder)
+    }
+
+    private fun checkVisibilityModifiers(
+        holder: MvAnnotationHolder,
+        module: MvModule
+    ) {
+        if (!module.project.moveSettings.enablePublicPackage) {
+            for (function in module.allFunctions()) {
+                val modifier = function.visibilityModifier ?: continue
+                if (modifier.isPublicPackage) {
+                    Diagnostic.PublicPackageIsNotSupportedInCompilerV1(modifier)
+                        .addToHolder(holder)
+                }
+            }
+            return
+        }
+
+        val allModifiers = module.allFunctions().map { it.visibilityFromPsi() }.toSet()
+        val friendAndPackageTogether =
+            FunctionVisibility.PUBLIC_PACKAGE in allModifiers
+                    && FunctionVisibility.PUBLIC_FRIEND in allModifiers
+        if (friendAndPackageTogether) {
+            for (function in module.allFunctions()) {
+                val modifier = function.visibilityModifier ?: continue
+                if (modifier.isPublicPackage || modifier.isPublicFriend) {
+                    Diagnostic.PackageAndFriendModifiersCannotBeUsedTogether(modifier)
+                        .addToHolder(holder)
+                }
+            }
+        }
     }
 
     private fun checkLitExpr(holder: MvAnnotationHolder, litExpr: MvLitExpr) {

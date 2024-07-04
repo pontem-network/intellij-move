@@ -381,7 +381,7 @@ NativeStructInner ::= Attr* NativeStructInnerFirst IDENTIFIER TypeParameterList?
 }
 private StructItem ::= StructInner | NativeStructInner
 
-fake Function ::= Attr* native? FunctionVisibilityModifier? entry? inline?
+fake Function ::= Attr* native? VisibilityModifier? entry? inline?
                     fun? IDENTIFIER? TypeParameterList? FunctionParameterList?
                         ReturnType? (ResourceAccessItemList | AcquiresType)?
                         (';' | CodeBlock)?
@@ -430,10 +430,10 @@ private friend ::= <<friendKeyword>>
 private package ::= <<packageKeyword>>
 private for ::= <<forKeyword>>
 
-private FunctionModifierSetInner ::= <<functionModifierSet FunctionVisibilityModifier>>
-private NativeFunctionModifierSetInner ::= <<nativeFunctionModifierSet FunctionVisibilityModifier>>
+private FunctionModifierSetInner ::= <<functionModifierSet VisibilityModifier>>
+private NativeFunctionModifierSetInner ::= <<nativeFunctionModifierSet VisibilityModifier>>
 
-FunctionVisibilityModifier ::= public ('(' (SCRIPT_KW | package | friend) ')')?
+VisibilityModifier ::= public ('(' (SCRIPT_KW | package | friend) ')')?
 
 FunctionParameterList ::= '(' FunctionParameter_with_recover* ')' { pin = 1 }
 private FunctionParameter_with_recover ::= !(')' | '{' | ';') FunctionParameter (',' | &')')

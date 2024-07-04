@@ -11,7 +11,7 @@ FILE
       PsiElement({)('{')
       PsiWhiteSpace('\n\n    ')
       MvFunctionImpl(FUNCTION)
-        MvFunctionVisibilityModifierImpl(FUNCTION_VISIBILITY_MODIFIER)
+        MvVisibilityModifierImpl(VISIBILITY_MODIFIER)
           PsiElement(public)('public')
           PsiElement(()('(')
           PsiElement(package_kw)('package')

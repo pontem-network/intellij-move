@@ -73,18 +73,18 @@ fun createSpacingBuilder(commonSettings: CommonCodeStyleSettings): SpacingBuilde
         .between(TYPE_PARAMETER_LIST, FUNCTION_PARAMETER_LIST).spaceIf(false)
         .before(VALUE_ARGUMENT_LIST).spaceIf(false)
 
-        .betweenInside(PUBLIC, L_PAREN, FUNCTION_VISIBILITY_MODIFIER).spaces(0)
+        .betweenInside(PUBLIC, L_PAREN, VISIBILITY_MODIFIER).spaces(0)
         .betweenInside(
             tokenSetOf(L_PAREN),
             tokenSetOf(SCRIPT_KW, FRIEND),
-            FUNCTION_VISIBILITY_MODIFIER
+            VISIBILITY_MODIFIER
         ).spaces(0)
         .betweenInside(
             tokenSetOf(SCRIPT_KW, FRIEND),
             tokenSetOf(R_PAREN),
-            FUNCTION_VISIBILITY_MODIFIER
+            VISIBILITY_MODIFIER
         ).spaces(0)
-        .after(FUNCTION_VISIBILITY_MODIFIER).spaces(1)
+        .after(VISIBILITY_MODIFIER).spaces(1)
 
         .around(BINARY_OP).spaces(1)
         .around(EQ).spaces(1)

@@ -11,7 +11,7 @@ FILE
       PsiElement({)('{')
       PsiWhiteSpace('\n    ')
       MvFunctionImpl(FUNCTION)
-        MvFunctionVisibilityModifierImpl(FUNCTION_VISIBILITY_MODIFIER)
+        MvVisibilityModifierImpl(VISIBILITY_MODIFIER)
           PsiElement(public)('public')
         PsiWhiteSpace(' ')
         PsiElement(inline_kw)('inline')

@@ -34,12 +34,12 @@ val MvFunction.visibility: FunctionVisibility
     }
 
 fun MvFunction.visibilityFromPsi(): FunctionVisibility {
-    val visibility = this.functionVisibilityModifier ?: return FunctionVisibility.PRIVATE
+    val visibility = this.visibilityModifier ?: return FunctionVisibility.PRIVATE
     return when {
-        visibility.hasChild(MvElementTypes.FRIEND) -> FunctionVisibility.PUBLIC_FRIEND
-        visibility.hasChild(MvElementTypes.PACKAGE) -> FunctionVisibility.PUBLIC_PACKAGE
-        visibility.hasChild(MvElementTypes.SCRIPT_KW) -> FunctionVisibility.PUBLIC_SCRIPT
-        visibility.hasChild(MvElementTypes.PUBLIC) -> FunctionVisibility.PUBLIC
+        visibility.isPublicFriend -> FunctionVisibility.PUBLIC_FRIEND
+        visibility.isPublicPackage -> FunctionVisibility.PUBLIC_PACKAGE
+        visibility.isPublicScript -> FunctionVisibility.PUBLIC_SCRIPT
+        visibility.isPublic -> FunctionVisibility.PUBLIC
         else -> FunctionVisibility.PRIVATE
     }
 }

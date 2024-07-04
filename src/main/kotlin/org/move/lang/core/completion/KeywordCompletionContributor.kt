@@ -72,7 +72,7 @@ class KeywordCompletionContributor: CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            function().with(MvPsiPatterns.AfterSibling(FUNCTION_VISIBILITY_MODIFIER)),
+            function().with(MvPsiPatterns.AfterSibling(VISIBILITY_MODIFIER)),
             KeywordCompletionProvider("fun", "entry", "inline")
         )
         extend(
