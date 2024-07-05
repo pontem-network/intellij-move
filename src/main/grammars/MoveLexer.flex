@@ -12,7 +12,7 @@ import static org.move.lang.MoveParserDefinition.*;
 
 %{
     /**
-        * Dedicated storage for starting position of some previously successful
+        * Dedicated storage for the starting position of some previously successful
         * match
     */
     private int zzPostponedMarkedPos = -1;

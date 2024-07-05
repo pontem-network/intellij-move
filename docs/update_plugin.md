@@ -5,4 +5,4 @@ Then select the `Plugins` section from the left sections list.
 
 ![plugin_update](./static/pycharm_plugin_update.png)
 
-Click on the `Update` button to download and install new version of the plugin.
+Click on the `Update` button to download and install the new version of the plugin.
