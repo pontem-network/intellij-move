@@ -45,12 +45,13 @@ fun getMethodVariants(element: MvMethodOrField, receiverTy: Ty, msl: Boolean): M
     val moveProject = element.moveProject ?: return emptySequence()
     val receiverTyItemModule = receiverTy.itemModule(moveProject) ?: return emptySequence()
 
-    val visibilities = Visibility.publicVisibilitiesFor(element).toMutableSet()
+    val elementScopes = Visibility.visibilityScopesForElement(element).toMutableSet()
     if (element.containingModule == receiverTyItemModule) {
-        visibilities.add(Visibility.Internal)
+        elementScopes.add(Visibility.Internal)
     }
     val functions =
-        visibilities.flatMap { receiverTyItemModule.visibleFunctions(it) }
+        elementScopes
+            .flatMap { elementScope -> receiverTyItemModule.functionsVisibleInScope(elementScope) }
             .filter {
                 val selfTy = it.selfParamTy(msl) ?: return@filter false
                 // need to use TyVar here, loweredType() erases them

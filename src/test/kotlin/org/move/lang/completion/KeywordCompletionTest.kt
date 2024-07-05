@@ -1,6 +1,6 @@
 package org.move.lang.completion
 
-import org.move.ide.inspections.fixes.CompilerV2Feat.RESOURCE_CONTROL
+import org.move.ide.inspections.fixes.CompilerV2Feat.*
 import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.completion.CompletionTestCase
 
@@ -176,12 +176,13 @@ class KeywordCompletionTest: CompletionTestCase() {
     """
     )
 
+    @CompilerV2Features(PUBLIC_PACKAGE)
     fun `test public`() = completionFixture.checkContainsCompletion(
         """
         module 0x1::M {
             pub/*caret*/
         }
-    """, listOf("public", "public(script)", "public(friend)")
+    """, listOf("public", "public(script)", "public(friend)", "public(package)")
     )
 
     fun `test public with other function`() = checkContainsCompletion(
@@ -448,12 +449,21 @@ class KeywordCompletionTest: CompletionTestCase() {
     """
     )
 
-    fun `test visibility modifiers`() = completionFixture.checkContainsCompletion(
+    fun `test visibility modifiers compiler v1`() = completionFixture.checkContainsCompletion(
         """
        module 0x1::M {
         pub/*caret*/ fun main() {}
        }    
     """, listOf("public", "public(script)", "public(friend)")
+    )
+
+    @CompilerV2Features(PUBLIC_PACKAGE)
+    fun `test visibility modifiers with public package`() = completionFixture.checkContainsCompletion(
+        """
+       module 0x1::M {
+        pub/*caret*/ fun main() {}
+       }    
+    """, listOf("public", "public(script)", "public(friend)", "public(package)")
     )
 
 //    fun `test public(script) without leading fun adds fun`() = doSingleCompletion("""

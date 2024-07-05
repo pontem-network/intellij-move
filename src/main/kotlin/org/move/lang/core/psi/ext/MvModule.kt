@@ -6,6 +6,8 @@ import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.Project
 import com.intellij.psi.stubs.IStubElementType
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
+import org.move.cli.containingMovePackage
+import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.Visibility
@@ -93,7 +95,7 @@ fun MvModule.builtinFunctions(): List<MvFunction> {
     }
 }
 
-fun MvModule.visibleFunctions(visibility: Visibility): List<MvFunction> {
+fun MvModule.functionsVisibleInScope(visibility: Visibility): List<MvFunction> {
     return when (visibility) {
         is Visibility.Public ->
             allNonTestFunctions()
@@ -111,6 +113,17 @@ fun MvModule.visibleFunctions(visibility: Visibility): List<MvFunction> {
                 && currentModule.fqModule() in this.declaredFriendModules
             ) {
                 friendFunctions
+            } else {
+                emptyList()
+            }
+        }
+        is Visibility.PublicPackage -> {
+            if (!project.moveSettings.enablePublicPackage) {
+                return emptyList()
+            }
+            val modulePackage = this.containingMovePackage
+            if (visibility.originPackage == modulePackage) {
+                this.allNonTestFunctions()
             } else {
                 emptyList()
             }

@@ -63,7 +63,7 @@ class MvUseItemReferenceElement(
             Namespace.SCHEMA,
             Namespace.CONST
         )
-        val vs = Visibility.publicVisibilitiesFor(fqModuleRef)
+        val vs = Visibility.visibilityScopesForElement(fqModuleRef)
 
         // import has MAIN+VERIFY, and TEST if it or any of the parents has test
         val useItemScopes = mutableSetOf(NamedItemScope.MAIN, NamedItemScope.VERIFY)

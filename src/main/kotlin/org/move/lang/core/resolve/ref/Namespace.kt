@@ -1,6 +1,8 @@
 package org.move.lang.core.resolve.ref
 
 import com.intellij.psi.SmartPsiElementPointer
+import org.move.cli.MovePackage
+import org.move.cli.containingMovePackage
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.containingFunction
@@ -13,13 +15,14 @@ sealed class Visibility {
     object Public : Visibility()
     object PublicScript : Visibility()
     class PublicFriend(val currentModule: SmartPsiElementPointer<MvModule>) : Visibility()
+    data class PublicPackage(val originPackage: MovePackage) : Visibility()
     object Internal : Visibility()
 
     companion object {
         fun local(): Set<Visibility> = setOf(Public, Internal)
         fun none(): Set<Visibility> = setOf()
 
-        fun publicVisibilitiesFor(element: MvElement): Set<Visibility> {
+        fun visibilityScopesForElement(element: MvElement): Set<Visibility> {
             val vs = mutableSetOf<Visibility>(Public)
             val containingModule = element.containingModule
             if (containingModule != null) {
@@ -30,6 +33,10 @@ sealed class Visibility {
                 || (containingFun?.visibility == FunctionVisibility.PUBLIC_SCRIPT)
             ) {
                 vs.add(PublicScript)
+            }
+            val containingMovePackage = element.containingMovePackage
+            if (containingMovePackage != null) {
+                vs.add(PublicPackage(containingMovePackage))
             }
             return vs
         }

@@ -72,7 +72,7 @@ class KeywordCompletionContributor: CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            function().with(MvPsiPatterns.AfterSibling(FUNCTION_VISIBILITY_MODIFIER)),
+            function().with(MvPsiPatterns.AfterSibling(VISIBILITY_MODIFIER)),
             KeywordCompletionProvider("fun", "entry", "inline")
         )
         extend(
@@ -159,6 +159,11 @@ class KeywordCompletionContributor: CompletionContributor() {
     }
 
     companion object {
-        private val VISIBILITY_MODIFIERS = arrayOf("public", "public(script)", "public(friend)")
+        private val VISIBILITY_MODIFIERS = arrayOf(
+            "public",
+            "public(script)",
+            "public(friend)",
+            "public(package)"
+        )
     }
 }

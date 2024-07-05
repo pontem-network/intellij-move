@@ -46,6 +46,9 @@ class CompleteParsingTest: MvParsingTestCase("complete") {
 
     // compiler v2
     fun `test index expr`() = doTest()
+    fun `test public package`() = doTest()
+
+    // feature declaration is required here, as it's a parser-level feature
     @CompilerV2Features(RESOURCE_CONTROL)
     fun `test access control`() = doTest()
 

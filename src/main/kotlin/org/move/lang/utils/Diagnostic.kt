@@ -14,6 +14,7 @@ import org.move.ide.annotator.fixes.ItemSpecSignatureFix
 import org.move.ide.annotator.fixes.WrapWithParensExprFix
 import org.move.ide.annotator.pluralise
 import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
+import org.move.ide.inspections.fixes.CompilerV2Feat.PUBLIC_PACKAGE
 import org.move.ide.inspections.fixes.EnableCompilerV2FeatureFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.endOffset
@@ -173,13 +174,33 @@ sealed class Diagnostic(
         }
     }
 
-    class IndexExprIsNotAllowed(indexExpr: MvIndexExpr): Diagnostic(indexExpr) {
+    class IndexExprIsNotSupportedInCompilerV1(indexExpr: MvIndexExpr): Diagnostic(indexExpr) {
 
         override fun prepare(): PreparedAnnotation {
             return PreparedAnnotation(
                 ERROR,
                 "Index operator is not supported in Aptos Move V1 outside specs",
                 fixes = listOf(EnableCompilerV2FeatureFix(element, INDEXING))
+            )
+        }
+    }
+
+    class PublicPackageIsNotSupportedInCompilerV1(modifier: MvVisibilityModifier): Diagnostic(modifier) {
+
+        override fun prepare(): PreparedAnnotation {
+            return PreparedAnnotation(
+                ERROR,
+                "public(package) is not supported in Aptos Move V1",
+                fixes = listOf(EnableCompilerV2FeatureFix(element, PUBLIC_PACKAGE))
+            )
+        }
+    }
+
+    class PackageAndFriendModifiersCannotBeUsedTogether(modifier: MvVisibilityModifier): Diagnostic(modifier) {
+        override fun prepare(): PreparedAnnotation {
+            return PreparedAnnotation(
+                ERROR,
+                "public(package) and public(friend) cannot be used together in the same module"
             )
         }
     }

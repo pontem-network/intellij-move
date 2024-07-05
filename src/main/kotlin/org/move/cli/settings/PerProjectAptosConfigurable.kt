@@ -54,10 +54,18 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                         row {
                             checkBox("Enable indexing")
                                 .comment(
-                                    "Enables resource and vector indexing (i.e. v[0], R[@0x1]) " +
-                                            "for the Move files."
+                                    "Enables resource and vector indexing " +
+                                            "(i.e. <code>v[0]</code>, <code>R[@0x1]</code>) for the Move files."
                                 )
                                 .bindSelected(state::enableIndexExpr)
+                        }
+                        row {
+                            checkBox("Enable public(package) visibility modifier")
+                                .comment(
+                                    "Enables using <code>public(package)</code> visibility modifier " +
+                                            "to specify functions accessible to any module of the same package."
+                                )
+                                .bindSelected(state::enablePublicPackage)
                         }
                     }
                     group("Command Line Options") {
@@ -111,6 +119,7 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                         it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
                         it.enableResourceAccessControl = state.enableResourceAccessControl
                         it.enableIndexExpr = state.enableIndexExpr
+                        it.enablePublicPackage = state.enablePublicPackage
                         it.addCompilerV2CLIFlags = state.addCompilerV2CLIFlags
                         it.fetchAptosDeps = state.fetchAptosDeps
                     }

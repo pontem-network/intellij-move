@@ -353,6 +353,9 @@ object MoveParserUtil: GeneratedParserUtilBase() {
     fun friendKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "friend", FRIEND)
 
     @JvmStatic
+    fun packageKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "package", PACKAGE)
+
+    @JvmStatic
     fun forKeyword(b: PsiBuilder, level: Int): Boolean = contextualKeyword(b, "for", FOR)
 
     @JvmStatic
