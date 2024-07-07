@@ -43,6 +43,14 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                                 .bindSelected(state::addCompilerV2CLIFlags)
                         }
                         row {
+                            checkBox("Enable Receiver-Style functions")
+                                .comment(
+                                    "Enables Receiver-Style functions, allowing to call functions with special " +
+                                            "first <b>self</b> parameter as a methods through dot expression."
+                                )
+                                .bindSelected(state::enableReceiverStyleFunctions)
+                        }
+                        row {
                             checkBox("Enable resource-access control")
                                 .comment(
                                     "Enables resource access control specifies " +
@@ -117,6 +125,7 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
                         it.disableTelemetry = state.disableTelemetry
                         it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
                         it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
+                        it.enableReceiverStyleFunctions = state.enableReceiverStyleFunctions
                         it.enableResourceAccessControl = state.enableResourceAccessControl
                         it.enableIndexExpr = state.enableIndexExpr
                         it.enablePublicPackage = state.enablePublicPackage
