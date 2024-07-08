@@ -2,6 +2,8 @@ package org.move.ide.hints
 
 import com.intellij.codeInsight.daemon.impl.HintRenderer
 import org.intellij.lang.annotations.Language
+import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.MvTestBase
 
 class InlayParameterHintsTest: MvTestBase() {
@@ -61,6 +63,7 @@ class InlayParameterHintsTest: MvTestBase() {
     """
         )
 
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
     fun `test receiver style fun`() = checkByText(
         """
         module 0x1::m {

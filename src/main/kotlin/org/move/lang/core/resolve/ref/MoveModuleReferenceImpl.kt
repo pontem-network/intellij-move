@@ -1,7 +1,7 @@
 package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.isSelf
+import org.move.lang.core.psi.ext.isSelfModuleRef
 import org.move.lang.core.psi.ext.itemUseSpeck
 import org.move.lang.core.resolve.resolveLocalItem
 import org.move.stdext.wrapWithList
@@ -11,7 +11,7 @@ class MvModuleReferenceImpl(
 ): MvPolyVariantReferenceCached<MvModuleRef>(element) {
 
     override fun multiResolveInner(): List<MvNamedElement> {
-        if (element.isSelf) return element.containingModule.wrapWithList()
+        if (element.isSelfModuleRef) return element.containingModule.wrapWithList()
 
         check(element !is MvFQModuleRef) {
             "That element has different reference item"

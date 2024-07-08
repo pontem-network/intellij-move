@@ -44,6 +44,7 @@ fun UsefulTestCase.handleCompilerV2Annotations(project: Project) {
             for (feature in enabledCompilerV2.features) {
                 when (feature) {
                     RESOURCE_CONTROL -> it.enableResourceAccessControl = true
+                    RECEIVER_STYLE_FUNCTIONS -> it.enableReceiverStyleFunctions = true
                     INDEXING -> it.enableIndexExpr = true
                     PUBLIC_PACKAGE -> it.enablePublicPackage = true
                 }

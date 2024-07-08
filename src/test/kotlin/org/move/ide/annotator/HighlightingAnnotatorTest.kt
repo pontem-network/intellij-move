@@ -1,6 +1,7 @@
 package org.move.ide.annotator
 
 import org.move.ide.colors.MvColor
+import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
 import org.move.ide.inspections.fixes.CompilerV2Feat.RESOURCE_CONTROL
 import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.annotation.AnnotatorTestCase
@@ -318,12 +319,27 @@ class HighlightingAnnotatorTest: AnnotatorTestCase(HighlightingAnnotator::class)
     """
     )
 
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
     fun `test highlight methods`() = checkHighlighting(
         """
         module 0x1::m {
             struct S { field: u8 }
             fun <METHOD>receiver</METHOD>(<SELF_PARAMETER>self</SELF_PARAMETER>: S, <VARIABLE>self</VARIABLE>: u8): u8 { 
                 <SELF_PARAMETER>self</SELF_PARAMETER>.field 
+            }
+            fun main(s: S) {
+                s.<METHOD_CALL>receiver</METHOD_CALL>();
+            }
+        }        
+    """
+    )
+
+    fun `test do not highlight methods if compiler v1`() = checkHighlighting(
+        """
+        module 0x1::m {
+            struct S { field: u8 }
+            fun <FUNCTION>receiver</FUNCTION>(<VARIABLE>self</VARIABLE>: S, <VARIABLE>self</VARIABLE>: u8): u8 { 
+                <VARIABLE>self</VARIABLE>.field 
             }
             fun main(s: S) {
                 s.<METHOD_CALL>receiver</METHOD_CALL>();

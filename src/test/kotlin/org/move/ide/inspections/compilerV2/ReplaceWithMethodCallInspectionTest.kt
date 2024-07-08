@@ -1,8 +1,12 @@
-package org.move.ide.inspections
+package org.move.ide.inspections.compilerV2
 
 import org.intellij.lang.annotations.Language
+import org.move.ide.inspections.ReplaceWithMethodCallInspection
+import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.annotation.InspectionTestBase
 
+@CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
 class ReplaceWithMethodCallInspectionTest: InspectionTestBase(ReplaceWithMethodCallInspection::class) {
 
     fun `test no warning if first parameter is not self`() = doTest(
@@ -10,6 +14,19 @@ class ReplaceWithMethodCallInspectionTest: InspectionTestBase(ReplaceWithMethodC
         module 0x1::main {
             struct S { field: u8 }
             fun get_field(s: &S): u8 { s.field }
+            fun main(s: S) {
+                get_field(&s);
+            }
+        }        
+    """
+    )
+
+    @CompilerV2Features()
+    fun `test no warning if compiler v1`() = doTest(
+        """
+        module 0x1::main {
+            struct S { field: u8 }
+            fun get_field(self: &S): u8 { self.field }
             fun main(s: S) {
                 get_field(&s);
             }

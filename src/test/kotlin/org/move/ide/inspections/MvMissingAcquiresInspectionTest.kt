@@ -1,6 +1,7 @@
 package org.move.ide.inspections
 
 import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
+import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
 import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.annotation.InspectionTestBase
 
@@ -197,6 +198,7 @@ module 0x1::main {
 }
     """)
 
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
     fun `test missing acquires with receiver style`() = checkErrors(
         """
         module 0x1::M {

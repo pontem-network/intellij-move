@@ -1,7 +1,7 @@
 package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.isSelf
+import org.move.lang.core.psi.ext.isSelfModuleRef
 import org.move.lang.core.psi.ext.isUpdateFieldArg2
 import org.move.lang.core.psi.ext.itemUseSpeck
 import org.move.lang.core.psi.ext.namespaces
@@ -33,7 +33,7 @@ class MvPathReferenceImpl(
         // second,
         // if it's MODULE::NAME -> resolve MODULE into corresponding FQModuleRef using imports
         if (moduleRef != null) {
-            if (moduleRef.isSelf) {
+            if (moduleRef.isSelfModuleRef) {
                 val containingModule = moduleRef.containingModule ?: return emptyList()
                 return resolveModuleItem(
                     containingModule,

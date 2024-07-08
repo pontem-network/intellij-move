@@ -36,6 +36,7 @@ class MvProjectSettingsService(
     val skipFetchLatestGitDeps: Boolean get() = state.skipFetchLatestGitDeps
     val dumpStateOnTestFailure: Boolean get() = state.dumpStateOnTestFailure
 
+    val enableReceiverStyleFunctions: Boolean get() = state.enableReceiverStyleFunctions
     val enableResourceAccessControl: Boolean get() = state.enableResourceAccessControl
     val enableIndexExpr: Boolean get() = state.enableIndexExpr
     val enablePublicPackage: Boolean get() = state.enablePublicPackage
@@ -48,6 +49,9 @@ class MvProjectSettingsService(
 
         @AffectsMoveProjectsMetadata
         var localAptosPath: String? by string()
+
+        @AffectsHighlighting
+        var enableReceiverStyleFunctions: Boolean by property(false)
 
         @AffectsParseTree
         var enableResourceAccessControl: Boolean by property(false)

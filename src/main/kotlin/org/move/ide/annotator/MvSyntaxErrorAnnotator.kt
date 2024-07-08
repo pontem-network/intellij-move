@@ -22,6 +22,7 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
             override fun visitFunction(o: MvFunction) = checkFunction(moveHolder, o)
             override fun visitSpecFunction(o: MvSpecFunction) = checkSpecFunction(moveHolder, o)
             override fun visitIndexExpr(o: MvIndexExpr) = checkIndexExpr(moveHolder, o)
+            override fun visitMethodCall(o: MvMethodCall) = checkMethodCall(moveHolder, o)
 
             override fun visitModule(o: MvModule) {
                 checkVisibilityModifiers(moveHolder, o)
@@ -104,6 +105,13 @@ class MvSyntaxErrorAnnotator: MvAnnotatorBase() {
                         .addToHolder(holder)
                 }
             }
+        }
+    }
+
+    private fun checkMethodCall(holder: MvAnnotationHolder, methodCall: MvMethodCall) {
+        if (!methodCall.project.moveSettings.enableReceiverStyleFunctions) {
+            Diagnostic.ReceiverStyleFunctionsIsNotSupportedInCompilerV1(methodCall)
+                .addToHolder(holder)
         }
     }
 

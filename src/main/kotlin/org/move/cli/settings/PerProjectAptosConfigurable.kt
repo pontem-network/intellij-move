@@ -17,131 +17,139 @@ class PerProjectAptosConfigurable(val project: Project): BoundConfigurable("Apto
 
     override fun createPanel(): DialogPanel {
         val chooseAptosCliPanel = ChooseAptosCliPanel(versionUpdateListener = null)
-        val configurablePanel =
-            panel {
-                val settings = project.moveSettings
-                val state = settings.state.copy()
+        this.disposable?.let {
+            Disposer.register(it, chooseAptosCliPanel)
+        }
+        return panel {
+            val settings = project.moveSettings
+            val state = settings.state.copy()
 
-                chooseAptosCliPanel.attachToLayout(this)
+            chooseAptosCliPanel.attachToLayout(this)
 
-                group {
-                    row {
-                        checkBox("Fetch external packages on project reload")
-                            .bindSelected(state::fetchAptosDeps)
-                        link("Configure project reload schedule") {
-                            ProjectManager.getInstance().defaultProject.showSettingsDialog<ExternalSystemGroupConfigurable>()
-                        }
-                            .align(AlignX.RIGHT)
+            group {
+                row {
+                    checkBox("Fetch external packages on project reload")
+                        .bindSelected(state::fetchAptosDeps)
+                    link("Configure project reload schedule") {
+                        ProjectManager.getInstance().defaultProject.showSettingsDialog<ExternalSystemGroupConfigurable>()
                     }
-                    group("Compiler V2") {
+                        .align(AlignX.RIGHT)
+                }
+                group("Compiler V2") {
+                    row {
+                        checkBox("Set Compiler V2 flags for CLI")
+                            .comment(
+                                "Adds `--compiler-version v2 --language-version 2.0` " +
+                                        "to all generated Aptos CLI commands"
+                            )
+                            .bindSelected(state::addCompilerV2CLIFlags)
+                    }
+                    group("Language features") {
                         row {
-                            checkBox("Set Compiler V2 for CLI")
+                            checkBox("Receiver-Style functions")
                                 .comment(
-                                    "Adds `--compiler-version v2 --language-version 2.0` " +
-                                            "to all generated Aptos CLI commands"
+                                    "Allows calling functions with special " +
+                                            "first <b><code>self</code></b> parameter as a methods through dot expression."
                                 )
-                                .bindSelected(state::addCompilerV2CLIFlags)
+                                .bindSelected(state::enableReceiverStyleFunctions)
                         }
                         row {
-                            checkBox("Enable resource-access control")
+                            checkBox("Resource-Access control")
                                 .comment(
-                                    "Enables resource access control specifies " +
-                                            "(<code>reads, writes, pure</code> for functions) in the parser. " +
+                                    "Allows specifying resource access attributes " +
+                                            "(<code>reads, writes, pure</code> for functions). " +
                                             "Requires re-parsing of all Move files in the project, can be slow."
                                 )
                                 .bindSelected(state::enableResourceAccessControl)
                         }
                         row {
-                            checkBox("Enable indexing")
+                            checkBox("Index notation")
                                 .comment(
-                                    "Enables resource and vector indexing " +
-                                            "(i.e. <code>v[0]</code>, <code>R[@0x1]</code>) for the Move files."
+                                    "Allows resource (<code>R[@0x1]</code>) and vector (<code>v[0]</code>) index operators."
                                 )
                                 .bindSelected(state::enableIndexExpr)
                         }
                         row {
-                            checkBox("Enable public(package) visibility modifier")
+                            checkBox("public(package) visibility modifier")
                                 .comment(
-                                    "Enables using <code>public(package)</code> visibility modifier " +
+                                    "Allows <code>public(package)</code> visibility modifier " +
                                             "to specify functions accessible to any module of the same package."
                                 )
                                 .bindSelected(state::enablePublicPackage)
                         }
                     }
-                    group("Command Line Options") {
-                        row {
-                            checkBox("Disable telemetry for new Run Configurations")
-                                .comment(
-                                    "Adds APTOS_DISABLE_TELEMETRY=true to every generated Aptos command."
-                                )
-                                .bindSelected(state::disableTelemetry)
-                        }
-                        row {
-                            checkBox("Skip updating to the latest git dependencies")
-                                .comment(
-                                    "Adds --skip-fetch-latest-git-deps to the sync and test runs."
-                                )
-                                .bindSelected(state::skipFetchLatestGitDeps)
-
-                        }
-                        row {
-                            checkBox("Dump storage to console on test failures")
-                                .comment(
-                                    "Adds --dump to generated test runs."
-                                )
-                                .bindSelected(state::dumpStateOnTestFailure)
-                        }
-                    }
                 }
-
-                if (!project.isDefault) {
+                group("Command Line Options") {
                     row {
-                        link("Set default project settings") {
-                            ProjectManager.getInstance().defaultProject.showSettingsDialog<PerProjectAptosConfigurable>()
-                        }
-                            .align(AlignX.RIGHT)
+                        checkBox("Disable telemetry for new Run Configurations")
+                            .comment(
+                                "Adds APTOS_DISABLE_TELEMETRY=true to every generated Aptos command."
+                            )
+                            .bindSelected(state::disableTelemetry)
                     }
-                }
+                    row {
+                        checkBox("Skip updating to the latest git dependencies")
+                            .comment(
+                                "Adds --skip-fetch-latest-git-deps to the sync and test runs."
+                            )
+                            .bindSelected(state::skipFetchLatestGitDeps)
 
-                // saves values from Swing form back to configurable (OK / Apply)
-                onApply {
-                    settings.modify {
-                        it.aptosExecType = chooseAptosCliPanel.data.aptosExecType
-
-                        val localAptosSdkPath = chooseAptosCliPanel.data.localAptosPath
-                        if (localAptosSdkPath != null) {
-                            chooseAptosCliPanel.updateAptosSdks(localAptosSdkPath)
-                        }
-                        it.localAptosPath = localAptosSdkPath
-
-                        it.disableTelemetry = state.disableTelemetry
-                        it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
-                        it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
-                        it.enableResourceAccessControl = state.enableResourceAccessControl
-                        it.enableIndexExpr = state.enableIndexExpr
-                        it.enablePublicPackage = state.enablePublicPackage
-                        it.addCompilerV2CLIFlags = state.addCompilerV2CLIFlags
-                        it.fetchAptosDeps = state.fetchAptosDeps
                     }
-                }
-
-                // loads settings from configurable to swing form
-                onReset {
-                    chooseAptosCliPanel.data =
-                        ChooseAptosCliPanel.Data(state.aptosExecType, state.localAptosPath)
-                }
-
-                /// checks whether any settings are modified (should be fast)
-                onIsModified {
-                    val aptosPanelData = chooseAptosCliPanel.data
-                    aptosPanelData.aptosExecType != settings.aptosExecType
-                            || aptosPanelData.localAptosPath != settings.localAptosPath
+                    row {
+                        checkBox("Dump storage to console on test failures")
+                            .comment(
+                                "Adds --dump to generated test runs."
+                            )
+                            .bindSelected(state::dumpStateOnTestFailure)
+                    }
                 }
             }
-        this.disposable?.let {
-            Disposer.register(it, chooseAptosCliPanel)
+
+            if (!project.isDefault) {
+                row {
+                    link("Set default project settings") {
+                        ProjectManager.getInstance().defaultProject.showSettingsDialog<PerProjectAptosConfigurable>()
+                    }
+                        .align(AlignX.RIGHT)
+                }
+            }
+
+            // saves values from Swing form back to configurable (OK / Apply)
+            onApply {
+                settings.modify {
+                    it.aptosExecType = chooseAptosCliPanel.data.aptosExecType
+
+                    val localAptosSdkPath = chooseAptosCliPanel.data.localAptosPath
+                    if (localAptosSdkPath != null) {
+                        chooseAptosCliPanel.updateAptosSdks(localAptosSdkPath)
+                    }
+                    it.localAptosPath = localAptosSdkPath
+
+                    it.disableTelemetry = state.disableTelemetry
+                    it.skipFetchLatestGitDeps = state.skipFetchLatestGitDeps
+                    it.dumpStateOnTestFailure = state.dumpStateOnTestFailure
+                    it.enableReceiverStyleFunctions = state.enableReceiverStyleFunctions
+                    it.enableResourceAccessControl = state.enableResourceAccessControl
+                    it.enableIndexExpr = state.enableIndexExpr
+                    it.enablePublicPackage = state.enablePublicPackage
+                    it.addCompilerV2CLIFlags = state.addCompilerV2CLIFlags
+                    it.fetchAptosDeps = state.fetchAptosDeps
+                }
+            }
+
+            // loads settings from configurable to swing form
+            onReset {
+                chooseAptosCliPanel.data =
+                    ChooseAptosCliPanel.Data(state.aptosExecType, state.localAptosPath)
+            }
+
+            /// checks whether any settings are modified (should be fast)
+            onIsModified {
+                val aptosPanelData = chooseAptosCliPanel.data
+                aptosPanelData.aptosExecType != settings.aptosExecType
+                        || aptosPanelData.localAptosPath != settings.localAptosPath
+            }
         }
-        return configurablePanel
     }
 
 //    override fun disposeUIResources() {

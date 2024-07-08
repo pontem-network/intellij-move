@@ -12,6 +12,7 @@ import org.move.ide.inspections.fixes.CompilerV2Feat.*
 
 enum class CompilerV2Feat(val title: String) {
     INDEXING("Index notation"),
+    RECEIVER_STYLE_FUNCTIONS("Receiver-Style functions"),
     RESOURCE_CONTROL("Resource access control"),
     PUBLIC_PACKAGE("`public(package)` function visibility");
 }
@@ -31,6 +32,7 @@ class EnableCompilerV2FeatureFix(
         project.moveSettings.modify {
             when (feature) {
                 INDEXING -> it.enableIndexExpr = true
+                RECEIVER_STYLE_FUNCTIONS -> it.enableReceiverStyleFunctions = true
                 RESOURCE_CONTROL -> it.enableResourceAccessControl = true
                 PUBLIC_PACKAGE -> it.enablePublicPackage = true
             }

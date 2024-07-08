@@ -8,7 +8,7 @@ import org.move.lang.core.psi.containingModule
 import org.move.lang.core.resolve.ref.MvModuleReferenceImpl
 import org.move.lang.core.resolve.ref.MvPolyVariantReference
 
-val MvModuleRef.isSelf: Boolean
+val MvModuleRef.isSelfModuleRef: Boolean
     get() =
         this !is MvFQModuleRef
                 && this.referenceName == "Self"

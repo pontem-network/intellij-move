@@ -13,10 +13,10 @@ import org.move.ide.annotator.MvAnnotationHolder
 import org.move.ide.annotator.fixes.ItemSpecSignatureFix
 import org.move.ide.annotator.fixes.WrapWithParensExprFix
 import org.move.ide.annotator.pluralise
-import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
-import org.move.ide.inspections.fixes.CompilerV2Feat.PUBLIC_PACKAGE
+import org.move.ide.inspections.fixes.CompilerV2Feat.*
 import org.move.ide.inspections.fixes.EnableCompilerV2FeatureFix
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.dotExpr
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.itemSpecBlock
 import org.move.lang.core.psi.ext.startOffset
@@ -192,6 +192,17 @@ sealed class Diagnostic(
                 ERROR,
                 "public(package) is not supported in Aptos Move V1",
                 fixes = listOf(EnableCompilerV2FeatureFix(element, PUBLIC_PACKAGE))
+            )
+        }
+    }
+
+    class ReceiverStyleFunctionsIsNotSupportedInCompilerV1(methodCall: MvMethodCall): Diagnostic(methodCall) {
+
+        override fun prepare(): PreparedAnnotation {
+            return PreparedAnnotation(
+                ERROR,
+                "receiver-style functions are not supported in Aptos Move V1",
+                fixes = listOf(EnableCompilerV2FeatureFix(element, RECEIVER_STYLE_FUNCTIONS))
             )
         }
     }

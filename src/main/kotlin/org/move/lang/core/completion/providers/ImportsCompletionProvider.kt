@@ -13,7 +13,7 @@ import org.move.lang.core.completion.createSelfLookup
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvUseItem
 import org.move.lang.core.psi.MvUseItemGroup
-import org.move.lang.core.psi.ext.isSelf
+import org.move.lang.core.psi.ext.isSelfModuleRef
 import org.move.lang.core.psi.ext.itemUseSpeck
 import org.move.lang.core.psi.ext.names
 import org.move.lang.core.psi.refItemScopes
@@ -47,7 +47,7 @@ object ImportsCompletionProvider: MvCompletionProvider() {
         }
 
         val vs = when {
-            moduleRef.isSelf -> setOf(Visibility.Internal)
+            moduleRef.isSelfModuleRef -> setOf(Visibility.Internal)
             else -> Visibility.visibilityScopesForElement(itemImport)
         }
         val ns = setOf(Namespace.NAME, Namespace.TYPE, Namespace.FUNCTION)

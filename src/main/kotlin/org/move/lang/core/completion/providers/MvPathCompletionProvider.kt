@@ -15,7 +15,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.ancestors
 import org.move.lang.core.psi.ext.endOffset
 import org.move.lang.core.psi.ext.isMslScope
-import org.move.lang.core.psi.ext.isSelf
+import org.move.lang.core.psi.ext.isSelfModuleRef
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
@@ -62,7 +62,7 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
             val module = moduleRef.reference?.resolveWithAliases() as? MvModule
                 ?: return
             val vs = when {
-                moduleRef.isSelf -> setOf(Visibility.Internal)
+                moduleRef.isSelfModuleRef -> setOf(Visibility.Internal)
                 else -> Visibility.visibilityScopesForElement(pathElement)
             }
             processModuleItems(module, namespaces, vs, pathScopeInfo) {
