@@ -2,6 +2,7 @@ package org.move.lang.core.psi
 
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.openapi.editor.colors.TextAttributesKey
+import org.move.cli.settings.moveSettings
 import org.move.ide.MoveIcons
 import org.move.lang.MvElementTypes
 import org.move.lang.core.completion.CompletionContext
@@ -119,8 +120,10 @@ val MvFunctionLike.signatureText: String
         return "$paramsText$retTypeSuffix"
     }
 
-val MvFunction.selfParam: MvFunctionParameter? get() =
-    this.parameters.firstOrNull()?.takeIf { it.name == "self" }
+val MvFunction.selfParam: MvFunctionParameter? get() {
+    if (!project.moveSettings.enableReceiverStyleFunctions) return null
+    return this.parameters.firstOrNull()?.takeIf { it.name == "self" }
+}
 
 fun MvFunction.selfParamTy(msl: Boolean): Ty? = this.selfParam?.type?.loweredType(msl)
 

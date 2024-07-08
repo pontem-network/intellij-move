@@ -3,6 +3,7 @@ package org.move.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
+import org.move.cli.settings.moveSettings
 import org.move.ide.colors.MvColor
 import org.move.lang.MvElementTypes.HEX_INTEGER_LITERAL
 import org.move.lang.MvElementTypes.IDENTIFIER
@@ -61,7 +62,7 @@ class HighlightingAnnotator: MvAnnotatorBase() {
         if (element is MvAbility) return MvColor.ABILITY
         if (element is MvTypeParameter) return MvColor.TYPE_PARAMETER
         if (element is MvItemSpecTypeParameter) return MvColor.TYPE_PARAMETER
-        if (element is MvModuleRef && element.isSelf) return MvColor.KEYWORD
+        if (element is MvModuleRef && element.isSelfModuleRef) return MvColor.KEYWORD
         if (element is MvUseItem && element.text == "Self") return MvColor.KEYWORD
         if (element is MvFunction)
             return when {
@@ -90,7 +91,9 @@ class HighlightingAnnotator: MvAnnotatorBase() {
 
     private fun highlightBindingPat(bindingPat: MvBindingPat): MvColor {
         val bindingOwner = bindingPat.parent
-        if (bindingOwner is MvFunctionParameter && bindingOwner.isSelf) {
+        if (bindingPat.isReceiverStyleFunctionsEnabled &&
+            bindingOwner is MvFunctionParameter && bindingOwner.isSelfParam
+        ) {
             return MvColor.SELF_PARAMETER
         }
         val msl = bindingPat.isMslOnlyItem
@@ -147,7 +150,9 @@ class HighlightingAnnotator: MvAnnotatorBase() {
                     item is MvConst -> MvColor.CONSTANT
                     else -> {
                         val itemParent = item.parent
-                        if (itemParent is MvFunctionParameter && itemParent.isSelf) {
+                        if (itemParent.isReceiverStyleFunctionsEnabled
+                            && itemParent is MvFunctionParameter && itemParent.isSelfParam
+                        ) {
                             MvColor.SELF_PARAMETER
                         } else {
                             val msl = path.isMslScope
@@ -185,4 +190,8 @@ class HighlightingAnnotator: MvAnnotatorBase() {
             itemTy is TyStruct && itemTy.item.hasKey -> MvColor.KEY_OBJECT
             else -> MvColor.VARIABLE
         }
+
+    private val PsiElement.isReceiverStyleFunctionsEnabled
+        get() =
+            project.moveSettings.enableReceiverStyleFunctions
 }

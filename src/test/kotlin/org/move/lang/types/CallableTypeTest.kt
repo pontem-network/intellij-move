@@ -1,16 +1,19 @@
 package org.move.lang.types
 
 import org.intellij.lang.annotations.Language
+import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
 import org.move.ide.presentation.text
 import org.move.lang.core.psi.MvMethodCall
 import org.move.lang.core.psi.ext.MvCallable
 import org.move.lang.core.psi.ext.isMsl
 import org.move.lang.core.types.infer.inference
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.InlineFile
 import org.move.utils.tests.base.findElementAndDataInEditor
 import org.move.utils.tests.types.TypificationTestCase
 
 class CallableTypeTest: TypificationTestCase() {
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
     fun `test infer method type`() = testMethodType("""
         module 0x1::main {
             struct S<T> { field: T }
@@ -24,6 +27,7 @@ class CallableTypeTest: TypificationTestCase() {
         }        
     """)
 
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
     fun `test infer method type not enough parameters`() = testMethodType("""
         module 0x1::main {
             struct S<T> { field: T }
@@ -37,6 +41,7 @@ class CallableTypeTest: TypificationTestCase() {
         }        
     """)
 
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
     fun `test infer method type cannot autoborrow unknown function`() = testMethodType("""
         module 0x1::main {
             struct S<T> { field: T }

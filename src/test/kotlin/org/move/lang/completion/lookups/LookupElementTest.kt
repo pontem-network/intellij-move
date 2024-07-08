@@ -8,6 +8,7 @@ import com.intellij.codeInsight.lookup.LookupElementPresentation
 import com.intellij.patterns.ElementPattern
 import com.intellij.psi.NavigatablePsiElement
 import org.intellij.lang.annotations.Language
+import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
 import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.completion.providers.MethodOrFieldCompletionProvider
@@ -16,11 +17,12 @@ import org.move.lang.core.psi.MvNamedElement
 import org.move.lang.core.psi.ext.MvMethodOrField
 import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.ref.MvReferenceElement
+import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.MvTestBase
 import org.move.utils.tests.base.findElementInEditor
 
 class LookupElementTest: MvTestBase() {
-    fun `test function param`() = check(
+    fun `test function param`() = checkNamedItem(
         """
         module 0x1::M {
             fun call(a: u8) {
@@ -30,7 +32,7 @@ class LookupElementTest: MvTestBase() {
     """, typeText = "u8"
     )
 
-    fun `test function`() = check(
+    fun `test function`() = checkNamedItem(
         """
         module 0x1::M {
             fun call(x: u64, account: &signer): u8 {}
@@ -39,7 +41,7 @@ class LookupElementTest: MvTestBase() {
     """, tailText = "(x: u64, account: &signer): u8", typeText = "main.move"
     )
 
-    fun `test multiline params function`() = check(
+    fun `test multiline params function`() = checkNamedItem(
         """
         module 0x1::M {
             fun call(x: u64, 
@@ -49,7 +51,7 @@ class LookupElementTest: MvTestBase() {
     """, tailText = "(x: u64, account: &signer): u8", typeText = "main.move"
     )
 
-    fun `test const item`() = check(
+    fun `test const item`() = checkNamedItem(
         """
         module 0x1::M {
             const MY_CONST: u8 = 1;
@@ -58,7 +60,7 @@ class LookupElementTest: MvTestBase() {
     """, typeText = "u8"
     )
 
-    fun `test struct`() = check(
+    fun `test struct`() = checkNamedItem(
         """
         module 0x1::M {
             struct MyStruct { val: u8 }
@@ -67,7 +69,7 @@ class LookupElementTest: MvTestBase() {
     """, tailText = " { ... }", typeText = "main.move"
     )
 
-    fun `test module`() = check(
+    fun `test module`() = checkNamedItem(
         """
         address 0x1 {
             module M {}
@@ -76,7 +78,7 @@ class LookupElementTest: MvTestBase() {
     """, tailText = " 0x1", typeText = "main.move"
     )
 
-    fun `test module with named address`() = check(
+    fun `test module with named address`() = checkNamedItem(
         """
         module Std::M {}
                   //^
@@ -96,6 +98,22 @@ class LookupElementTest: MvTestBase() {
     """, typeText = "u8"
     )
 
+    @CompilerV2Features()
+    fun `test self method without receiver style enabled`() = checkNamedItem(
+        """
+        module 0x1::main {
+            struct S<T> { field: T }
+            fun receiver<T>(self: S<T>): T {}
+                    //^ 
+            fun main() {
+                let s = S { field: 1u8 };
+                receiver(s);
+            }
+        }        
+    """, tailText = "(self: S<T>): T", typeText = "main.move"
+    )
+
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
     fun `test generic method`() = checkMethodOrFieldProvider(
         """
         module 0x1::main {
@@ -110,6 +128,7 @@ class LookupElementTest: MvTestBase() {
     """, tailText = "(self)", typeText = "u8"
     )
 
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
     fun `test generic method ref`() = checkMethodOrFieldProvider(
         """
         module 0x1::main {
@@ -124,6 +143,7 @@ class LookupElementTest: MvTestBase() {
     """, tailText = "(&self)", typeText = "u8"
     )
 
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
     fun `test generic method ref mut`() = checkMethodOrFieldProvider(
         """
         module 0x1::main {
@@ -138,7 +158,7 @@ class LookupElementTest: MvTestBase() {
     """, tailText = "(&mut self)", typeText = "u8"
     )
 
-    fun `test import module lookup`() = check("""
+    fun `test import module lookup`() = checkNamedItem("""
         module 0x1::m {
             public fun identity(a: u8): u8 { a }
         }        
@@ -148,7 +168,7 @@ class LookupElementTest: MvTestBase() {
         }
     """, tailText = " 0x1", typeText = "main.move")
 
-    fun `test import function lookup`() = check("""
+    fun `test import function lookup`() = checkNamedItem("""
         module 0x1::m {
             public fun identity(a: u8): u8 { a }
         }        
@@ -158,7 +178,7 @@ class LookupElementTest: MvTestBase() {
         }
     """, tailText = "(a: u8): u8", typeText = "main.move")
 
-    private fun check(
+    private fun checkNamedItem(
         @Language("Move") code: String,
         tailText: String? = null,
         typeText: String? = null,

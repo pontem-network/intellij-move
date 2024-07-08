@@ -1,11 +1,14 @@
-package org.move.ide.inspections
+package org.move.ide.inspections.compilerV2
 
 import org.intellij.lang.annotations.Language
+import org.move.ide.inspections.ReplaceWithMethodCallInspection
 import org.move.ide.inspections.fixes.CompilerV2Feat.INDEXING
+import org.move.ide.inspections.fixes.CompilerV2Feat.RECEIVER_STYLE_FUNCTIONS
 import org.move.utils.tests.CompilerV2Features
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.annotation.InspectionProjectTestBase
 
+@CompilerV2Features(RECEIVER_STYLE_FUNCTIONS)
 class ReplaceWithMethodCallInspectionProjectTest:
     InspectionProjectTestBase(ReplaceWithMethodCallInspection::class) {
 
@@ -110,7 +113,7 @@ class ReplaceWithMethodCallInspectionProjectTest:
                 }                
         """)
 
-    @CompilerV2Features(INDEXING)
+    @CompilerV2Features(RECEIVER_STYLE_FUNCTIONS, INDEXING)
     fun `test replace with method call with index expr`() = doFixTest(
         {
             namedMoveToml("MyPackage")

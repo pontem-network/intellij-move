@@ -13,7 +13,7 @@ val MvFunctionParameter.name: String get() = this.bindingPat.name
 val MvFunctionParameter.paramIndex: Int get() =
     (this.parent as MvFunctionParameterList).functionParameterList.indexOf(this)
 
-val MvFunctionParameter.isSelf: Boolean get() =
+val MvFunctionParameter.isSelfParam: Boolean get() =
     this.bindingPat.name == "self" && this.paramIndex == 0
 
 var MvFunctionParameter.resolveContext: MvFunction?
