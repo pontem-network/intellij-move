@@ -4,6 +4,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.MvDocAndAttributeOwner
 import org.move.lang.core.psi.ext.hasTestAttr
 import org.move.lang.core.psi.ext.hasTestOnlyAttr
+import org.move.lang.core.psi.ext.moduleRef
 
 // only Main/Test for now
 val MvPath.pathUsageScope: NamedItemScope

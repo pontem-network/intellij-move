@@ -1,10 +1,7 @@
 package org.move.lang.core.resolve.ref
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.isSelfModuleRef
-import org.move.lang.core.psi.ext.isUpdateFieldArg2
-import org.move.lang.core.psi.ext.itemUseSpeck
-import org.move.lang.core.psi.ext.namespaces
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 
 class MvPathReferenceImpl(

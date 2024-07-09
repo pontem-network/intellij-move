@@ -12,10 +12,7 @@ import org.move.lang.core.completion.CompletionContext
 import org.move.lang.core.completion.UNIMPORTED_ITEM_PRIORITY
 import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.ancestors
-import org.move.lang.core.psi.ext.endOffset
-import org.move.lang.core.psi.ext.isMslScope
-import org.move.lang.core.psi.ext.isSelfModuleRef
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace

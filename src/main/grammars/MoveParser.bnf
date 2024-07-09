@@ -465,17 +465,17 @@ ResourceAccessItemList ::= <<isResourceAccessEnabled>> ResourceAccessItem*
 ResourceAccessItem ::= pure | (('!')? (acquires | reads | writes) AccessSpecifierList)
 
 AccessSpecifierList ::= <<non_empty_comma_sep_items AccessSpecifier>>
-AccessSpecifier ::= <<pathMode 'WILDCARD' Path>> AddressSpecifier?
+AccessSpecifier ::= <<pathMode 'WILDCARD' PathImpl>> AddressSpecifier?
 
 AddressSpecifier ::= '(' AddressSpecifierArg ')' { pin = 1 }
 AddressSpecifierArg ::= '*'
                         | AddressSpecifierLit
-                        | <<pathMode 'VALUE' (Path '(' AddressSpecifierCallParam ')')>>
+                        | <<pathMode 'VALUE' (PathImpl '(' AddressSpecifierCallParam ')')>>
                         | IDENTIFIER
 AddressSpecifierLit ::= DIEM_ADDRESS | INTEGER_LITERAL
 
-AddressSpecifierCallParam ::= AddressSpecifierParamPath
-AddressSpecifierParamPath ::= LocalPathIdent { elementType = Path }
+AddressSpecifierCallParam ::= AddressSpecifierCallParamImpl
+AddressSpecifierCallParamImpl ::= PathIdent { elementType = Path }
 
 // acquires T, Record
 AcquiresType ::= acquires AcquiresType_items { pin = 1 }
@@ -583,7 +583,7 @@ RefType ::= RefTypeStart Type
 }
 RefTypeStart ::= '&' mut?
 
-PathType ::= Path
+PathType ::= PathImpl
 {
     name = "type"
 }
@@ -657,7 +657,7 @@ BindingPat ::= IDENTIFIER {
 
 TuplePat ::= '(' <<non_empty_comma_sep_items Pat>>? ')'
 
-StructPat ::= Path StructPatFieldsBlock
+StructPat ::= PathImpl StructPatFieldsBlock
 StructPatFieldsBlock ::= '{' StructPatField_with_recover* '}' { pin = 1 }
 
 private StructPatField_with_recover ::= !'}' StructPatField (',' | &'}')
@@ -903,7 +903,7 @@ VectorLitItems ::= '[' <<non_empty_comma_sep_items Expr>>? ']'
     pin = 1
 }
 
-StructLitExpr ::= <<includeStmtModeFalse>> Path StructLitFieldsBlock
+StructLitExpr ::= <<includeStmtModeFalse>> PathImpl StructLitFieldsBlock
 {
     implements = ["org.move.lang.core.psi.PathExpr"]
 }
@@ -965,7 +965,7 @@ private AnyLitToken_first ::= HEX_INTEGER_LITERAL
 
 AddressLit ::= '@' AddressRef { pin = 1 }
 
-CallExpr ::= (Path &'(') ValueArgumentList {
+CallExpr ::= (PathImpl &'(') ValueArgumentList {
     pin = 1
     implements = [
         "org.move.lang.core.psi.PathExpr"
@@ -1045,11 +1045,21 @@ IndexExpr ::= Expr IndexArg
 // Do not inline this rule, it breaks expression parsing
 private IndexArg ::= '[' Expr ']'
 
-RefExpr ::= Path !'{' {
+RefExpr ::= PathImpl !'{' {
+//RefExpr ::= Path !'{' {
     implements = ["org.move.lang.core.psi.PathExpr"]
 }
 
-Path ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList?
+//Path3Impl ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList?
+//{
+//    implements = [
+//        "org.move.lang.core.resolve.ref.MvPathReferenceElement"
+//        "org.move.lang.core.psi.ext.MvMethodOrPath"
+//    ]
+//    mixin = "org.move.lang.core.psi.ext.MvPathMixin"
+//}
+
+fake Path ::= (Path '::')? (PathIdent | PathAddress) TypeArgumentList?
 {
     implements = [
         "org.move.lang.core.resolve.ref.MvPathReferenceElement"
@@ -1057,6 +1067,25 @@ Path ::= (ModulePathIdent | FQModulePathIdent | LocalPathIdent) TypeArgumentList
     ]
     mixin = "org.move.lang.core.psi.ext.MvPathMixin"
 }
+
+private PathImpl ::= PathStart PathSegment*
+
+PathStart ::= ((PathAddress &'::') | PathIdent) TypeArgumentList?
+{
+    name = "path"
+    elementType = Path
+}
+left PathSegment ::= '::' PathIdent TypeArgumentList? {
+    pin = 1
+    elementType = Path
+}
+
+private PathIdent ::= PATH_MODE_IDENTIFIER
+PathAddress ::= DIEM_ADDRESS
+                | INTEGER_LITERAL
+                | PLACEHOLDER_ADDRESS
+                | BECH32_ADDRESS
+                | POLKADOT_ADDRESS
 
 private LocalPathIdent ::= PATH_MODE_IDENTIFIER
 private ModulePathIdent ::= ModuleRef ('::' !(PATH_MODE_IDENTIFIER '::')) PATH_MODE_IDENTIFIER
@@ -1411,7 +1440,7 @@ IfElseIncludeItem ::= if Condition SchemaLit else SchemaLit
     extends = IncludeItem
 }
 
-SchemaLit ::= Path SchemaFieldsBlock?
+SchemaLit ::= PathImpl SchemaFieldsBlock?
 {
     implements = [
         "org.move.lang.core.psi.MslOnlyElement"
@@ -1499,7 +1528,7 @@ ApplyExcept ::= except <<non_empty_comma_sep_items FunctionPattern>> {
     implements = [ "org.move.lang.core.psi.MslOnlyElement" ]
 }
 
-SchemaRef ::= Path ('{' <<non_empty_comma_sep_items ApplySchemaNameAttribute>> '}')?
+SchemaRef ::= PathImpl ('{' <<non_empty_comma_sep_items ApplySchemaNameAttribute>> '}')?
 {
     implements = [ "org.move.lang.core.psi.MslOnlyElement" ]
 }

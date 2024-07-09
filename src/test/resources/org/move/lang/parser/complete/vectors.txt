@@ -117,7 +117,7 @@ FILE
           MvExprStmtImpl(EXPR_STMT)
             MvCallExprImpl(CALL_EXPR)
               MvPathImpl(PATH)
-                MvModuleRefImpl(MODULE_REF)
+                MvPathImpl(PATH)
                   PsiElement(IDENTIFIER)('vector')
                 PsiElement(::)('::')
                 PsiElement(IDENTIFIER)('add')

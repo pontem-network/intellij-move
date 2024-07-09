@@ -32,7 +32,7 @@ module 0x1::M {
     #[show(book_orders_sdk, book_price_levels_sdk)]
     fun test() {}
 
-    #[expected_failure(abort_code = liquidswap::liquidity_pool::ERR_ADMIN)]
+    #[expected_failure(abort_code = liquidswap::liquidity_pool::ERR_ADMIN, location=0x1::liquidity_pool)]
     fun abort_test() {}
 
     #[allow(lint(self_transfer))]

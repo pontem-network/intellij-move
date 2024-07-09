@@ -15,6 +15,7 @@ import org.move.lang.core.psi.MvPath
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.containingModuleSpec
 import org.move.lang.core.psi.ext.equalsTo
+import org.move.lang.core.psi.ext.moduleRef
 import org.move.lang.core.psi.refItemScopes
 import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.letStmtScope

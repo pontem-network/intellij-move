@@ -91,3 +91,5 @@ fun MvReferenceElement.importCandidateNamespaces(): Set<Namespace> {
             }
     }
 }
+
+val MvPath.moduleRef: MvModuleRef? get() = error("stub")

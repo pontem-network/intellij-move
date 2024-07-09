@@ -10,10 +10,7 @@ import org.move.ide.utils.imports.ImportCandidate
 import org.move.ide.utils.imports.ImportCandidateCollector
 import org.move.ide.utils.imports.import
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.ancestorStrict
-import org.move.lang.core.psi.ext.asSmartPointer
-import org.move.lang.core.psi.ext.hasAncestor
-import org.move.lang.core.psi.ext.importCandidateNamespaces
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ContextScopeInfo
 import org.move.lang.core.resolve.letStmtScope
 import org.move.lang.core.resolve.ref.MvReferenceElement
