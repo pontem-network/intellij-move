@@ -348,4 +348,26 @@ module 0x1::string_tests {
             }
         }        
     """)
+
+    fun `test cannot resolve path address`() = checkByCode("""
+        module 0x1::m {
+            fun main() {
+                0x1::;
+                //^ unresolved
+            }
+        }        
+    """)
+
+    fun `test resolve attribute location`() = checkByCode("""
+        module 0x1::m {
+                  //X  
+            fun main() {
+            }
+            #[test(location=0x1::m)]
+                               //^
+            fun test_main() {
+                
+            }
+        }        
+    """)
 }
