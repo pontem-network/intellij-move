@@ -1,8 +1,12 @@
 package org.move.lang.core.psi.ext
 
+import com.intellij.lang.ASTNode
 import org.move.ide.inspections.imports.declaredItemScope
 import org.move.lang.core.psi.*
 import org.move.stdext.wrapWithList
+
+val MvUseStmt.moduleUseSpeck: MvModuleUseSpeck? get() = null
+val MvUseStmt.itemUseSpeck: MvItemUseSpeck? get() = null
 
 val MvUseStmt.addressRef: MvAddressRef?
     get() {

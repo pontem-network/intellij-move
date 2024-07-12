@@ -7,6 +7,7 @@ import org.move.lang.core.psi.MvUseItemGroup
 import org.move.lang.core.psi.MvUseStmt
 import org.move.lang.core.psi.ext.ancestorStrict
 import org.move.lang.core.psi.ext.endOffset
+import org.move.lang.core.psi.ext.itemUseSpeck
 import org.move.lang.core.psi.ext.startOffset
 import org.move.lang.core.psi.psiFactory
 

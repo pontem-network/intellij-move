@@ -3,6 +3,7 @@ package org.move.ide.utils.imports
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.childrenOfType
 import org.move.lang.core.psi.ext.hasTestOnlyAttr
+import org.move.lang.core.psi.ext.itemUseSpeck
 import org.move.lang.core.psi.ext.names
 import org.move.lang.core.types.ItemQualName
 import org.move.openapiext.checkWriteAccessAllowed

@@ -3,9 +3,11 @@ package org.move.lang.core.psi
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.lang.core.psi.ext.addressRef
 import org.move.lang.core.psi.ext.isSelf
+import org.move.lang.core.psi.ext.itemUseSpeck
+import org.move.lang.core.psi.ext.moduleUseSpeck
 
 interface MvImportsOwner: MvElement {
-    val useStmtList: List<MvUseStmt>
+    val useStmtList: List<MvUseStmt> get() = emptyList()
 }
 
 fun MvImportsOwner.items(): Sequence<MvElement> {

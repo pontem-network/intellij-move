@@ -255,6 +255,7 @@ private Item_first ::= use | public | native | fun | CONST_KW | STRUCT_KW | spec
 private Item_recover ::= !('}' | <<eof>> | Item_first)
 
 private ModuleItem_item ::= UseStmt
+//                            | UseStmt
                             | FriendDecl
                             | StructItem
                             | FunctionItem
@@ -517,10 +518,33 @@ FriendDecl ::= Attr* friend FQModuleRef ';'
     implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
 }
 
-UseStmt ::= Attr* use (ItemUseSpeck | ModuleUseSpeck) ';' {
+UseStmt2 ::= Attr* use (ItemUseSpeck | ModuleUseSpeck) ';' {
     pin = "use"
     implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
 }
+
+UseStmt ::= Attr* use UseSpeck ';' {
+    pin = "use"
+    extends = Stmt
+    implements = [ "org.move.lang.core.psi.ext.MvDocAndAttributeOwner" ]
+}
+UseSpeck ::= PathWithoutTypeArgs ( UseAlias | ('::' UseSpeckProjection) )?
+
+private UseSpeckProjection ::= UseGroup
+
+UseGroup ::= '{' UseSpeck_with_recover* '}'
+{
+    pin = 1
+}
+// todo:
+private PathWithoutTypeArgs ::= PathImpl
+
+private UseSpeck_with_recover ::= !'}' UseSpeck (','|&'}') {
+  pin = 1
+  recoverWhile = UseSpeck_recover
+}
+private UseSpeck_recover ::= !('}' | '{' | IDENTIFIER | '::' )
+
 ModuleUseSpeck ::= (AddressRef !'::') | FQModuleRef UseAlias?
 {
     name = "qual path to module"
@@ -1075,8 +1099,9 @@ PathStart ::= ((PathAddress &'::') | PathIdent) TypeArgumentList?
     name = "path"
     elementType = Path
 }
-left PathSegment ::= '::' PathIdent TypeArgumentList? {
-    pin = 1
+// negation for UseSpeck
+left PathSegment ::= '::' !'{' PathIdent TypeArgumentList? {
+    pin = 2
     elementType = Path
 }
 
