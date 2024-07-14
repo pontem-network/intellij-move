@@ -10,13 +10,14 @@ import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.FunctionVisibility
 import org.move.lang.core.psi.ext.asSmartPointer
 import org.move.lang.core.psi.ext.visibility
+import java.util.*
 
 sealed class Visibility {
-    object Public : Visibility()
-    object PublicScript : Visibility()
-    class PublicFriend(val currentModule: SmartPsiElementPointer<MvModule>) : Visibility()
-    data class PublicPackage(val originPackage: MovePackage) : Visibility()
-    object Internal : Visibility()
+    object Public: Visibility()
+    object PublicScript: Visibility()
+    class PublicFriend(val currentModule: SmartPsiElementPointer<MvModule>): Visibility()
+    data class PublicPackage(val originPackage: MovePackage): Visibility()
+    object Internal: Visibility()
 
     companion object {
         fun local(): Set<Visibility> = setOf(Public, Internal)
@@ -53,7 +54,7 @@ enum class Namespace {
 
     companion object {
         fun all(): Set<Namespace> {
-            return setOf(NAME, FUNCTION, TYPE, SCHEMA, MODULE, CONST)
+            return EnumSet.of(NAME, FUNCTION, TYPE, SCHEMA, MODULE, CONST)
         }
 
         fun none(): Set<Namespace> = setOf()

@@ -11,7 +11,7 @@ class MvPathReferenceImpl(
     override val cacheDependency: ResolveCacheDependency get() = ResolveCacheDependency.LOCAL_AND_RUST_STRUCTURE
 
     override fun multiResolveInner(): List<MvNamedElement> {
-        val pathNamespaces = element.namespaces()
+        val ns = element.allowedNamespaces()
         val vs = Visibility.visibilityScopesForElement(element)
         val contextScopeInfo =
             ContextScopeInfo(
@@ -25,7 +25,7 @@ class MvPathReferenceImpl(
         if (moduleRef is MvFQModuleRef) {
             // TODO: can be replaced with index call
             val module = moduleRef.reference?.resolve() as? MvModule ?: return emptyList()
-            return resolveModuleItem(module, refName, pathNamespaces, vs, contextScopeInfo)
+            return resolveModuleItem(module, refName, ns, vs, contextScopeInfo)
         }
         // second,
         // if it's MODULE::NAME -> resolve MODULE into corresponding FQModuleRef using imports
@@ -35,7 +35,7 @@ class MvPathReferenceImpl(
                 return resolveModuleItem(
                     containingModule,
                     refName,
-                    pathNamespaces,
+                    ns,
                     setOf(Visibility.Internal),
                     contextScopeInfo
                 )
@@ -43,14 +43,14 @@ class MvPathReferenceImpl(
             val useSpeckFQModuleRef = resolveIntoFQModuleRefInUseSpeck(moduleRef) ?: return emptyList()
             val useSpeckModule =
                 useSpeckFQModuleRef.reference?.resolve() as? MvModule ?: return emptyList()
-            return resolveModuleItem(useSpeckModule, refName, pathNamespaces, vs, contextScopeInfo)
+            return resolveModuleItem(useSpeckModule, refName, ns, vs, contextScopeInfo)
         } else {
             // if it's NAME
             // special case second argument of update_field function in specs
             if (element.isUpdateFieldArg2) return emptyList()
 
             // try local names
-            val item = resolveLocalItem(element, pathNamespaces).firstOrNull() ?: return emptyList()
+            val item = resolveLocalItem(element, ns).firstOrNull() ?: return emptyList()
             // local name -> return
             return when (item) {
                 // item import
@@ -60,7 +60,7 @@ class MvPathReferenceImpl(
                     val useSpeckModule =
                         item.itemUseSpeck.fqModuleRef.reference?.resolve() as? MvModule
                             ?: return emptyList()
-                    return resolveModuleItem(useSpeckModule, refName, pathNamespaces, vs, contextScopeInfo)
+                    return resolveModuleItem(useSpeckModule, refName, ns, vs, contextScopeInfo)
                 }
                 // module import
                 is MvModuleUseSpeck -> {

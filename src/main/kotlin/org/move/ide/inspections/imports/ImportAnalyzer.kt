@@ -7,7 +7,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.stdext.chain
 
-private val MvImportsOwner.useSpecks: List<UseSpeck>
+private val MvItemsOwner.useSpecks: List<UseSpeck>
     get() {
         val specks = mutableListOf<UseSpeck>()
         for (stmt in this.useStmtList) {
@@ -16,7 +16,7 @@ private val MvImportsOwner.useSpecks: List<UseSpeck>
         return specks
     }
 
-private val MvImportsOwner.importOwnerWithSiblings: List<MvImportsOwner>
+private val MvItemsOwner.importOwnerWithSiblings: List<MvItemsOwner>
     get() {
         return when (this) {
             is MvModuleBlock -> {
@@ -44,12 +44,12 @@ class ImportAnalyzer(val holder: ProblemsHolder): MvVisitor() {
 
     override fun visitModuleSpecBlock(o: MvModuleSpecBlock) = analyzeImportsOwner(o)
 
-    fun analyzeImportsOwner(importsOwner: MvImportsOwner) {
+    fun analyzeImportsOwner(importsOwner: MvItemsOwner) {
         analyzeUseStmtsForScope(importsOwner, NamedItemScope.TEST)
         analyzeUseStmtsForScope(importsOwner, NamedItemScope.MAIN)
     }
 
-    private fun analyzeUseStmtsForScope(rootImportOwner: MvImportsOwner, itemScope: NamedItemScope) {
+    private fun analyzeUseStmtsForScope(rootImportOwner: MvItemsOwner, itemScope: NamedItemScope) {
         val allSpecksHit = mutableSetOf<UseSpeck>()
         val rootImportOwnerWithSiblings = rootImportOwner.importOwnerWithSiblings
         val reachablePaths =
@@ -58,7 +58,7 @@ class ImportAnalyzer(val holder: ProblemsHolder): MvVisitor() {
                 .mapNotNull { path -> path.pathStart?.let { Pair(path, it) } }
                 .filter { it.second.usageScope == itemScope }
         for ((path, start) in reachablePaths) {
-            for (importOwner in path.ancestorsOfType<MvImportsOwner>()) {
+            for (importOwner in path.ancestorsOfType<MvItemsOwner>()) {
                 val useSpecks =
                     importOwner.importOwnerWithSiblings
                         .flatMap { it.useSpecks }
@@ -85,7 +85,7 @@ class ImportAnalyzer(val holder: ProblemsHolder): MvVisitor() {
         }
 
         // includes self
-        val reachableImportOwners = rootImportOwner.descendantsOfTypeOrSelf<MvImportsOwner>()
+        val reachableImportOwners = rootImportOwner.descendantsOfTypeOrSelf<MvItemsOwner>()
         for (importsOwner in reachableImportOwners) {
             val scopeUseStmts = importsOwner.useStmtList.filter { it.declaredItemScope == itemScope }
             for (useStmt in scopeUseStmts) {

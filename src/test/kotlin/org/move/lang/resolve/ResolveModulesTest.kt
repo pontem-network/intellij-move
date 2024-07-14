@@ -3,6 +3,30 @@ package org.move.lang.resolve
 import org.move.utils.tests.resolve.ResolveTestCase
 
 class ResolveModulesTest : ResolveTestCase() {
+    fun `test use module Self`() = checkByCode(
+        """
+    module 0x1::transaction {
+                  //X
+    }
+    module 0x1::main {
+        use 0x1::transaction::Self;
+                             //^
+    }
+    """
+    )
+
+    fun `test use module Self in use group`() = checkByCode(
+        """
+    module 0x1::transaction {
+                  //X
+    }
+    module 0x1::main {
+        use 0x1::transaction::{Self};
+                              //^
+    }
+    """
+    )
+
     fun `test import module itself with Self import`() = checkByCode(
         """
     address 0x1 {
@@ -22,10 +46,29 @@ class ResolveModulesTest : ResolveTestCase() {
     """
     )
 
-    fun `test resolve Self to current module`() = checkByCode(
+    fun `test import module itself with Self group import`() = checkByCode(
         """
+    address 0x1 {
         module Transaction {
              //X
+            fun create() {}
+        }
+        
+        module M {
+            use 0x1::Transaction::{Self};
+            fun main() {
+                let a = Transaction::create();
+                      //^
+            }
+        }
+    }        
+    """
+    )
+
+    fun `test resolve Self to current module`() = checkByCode(
+        """
+        module 0x1::transaction {
+                    //X
             fun create() {}
             fun main() {
                 let a = Self::create();
@@ -37,7 +80,7 @@ class ResolveModulesTest : ResolveTestCase() {
 
     fun `test resolve module to imported module with alias`() = checkByCode(
         """
-        module M {
+        module 0x1::m {
             use 0x1::Transaction as MyTransaction;
                                   //X
             fun main() {
@@ -50,16 +93,11 @@ class ResolveModulesTest : ResolveTestCase() {
 
     fun `test cannot resolve module if imported one has different address`() = checkByCode(
         """
-    address 0x1 {
-        module Transaction {}
-    }
-    
-    address 0x2 {
-        module M {
-            fun main() {
-                let a = 0x3::Transaction::create();
-                           //^ unresolved
-            }
+    module 0x1::transaction {}
+    module 0x1::m {
+        fun main() {
+            let a = 0x3::transaction::create();
+                         //^ unresolved
         }
     }
     """

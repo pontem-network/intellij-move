@@ -9,6 +9,8 @@ import org.move.cli.settings.isDebugModeEnabled
 import org.move.ide.formatter.impl.location
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
+import org.move.lang.core.resolve.ScopeEntry
+import org.move.lang.core.resolve.isVisibleFrom
 import org.move.lang.core.types.ty.*
 import org.move.lang.core.types.ty.TyReference.Companion.coerceMutability
 import org.move.lang.toNioPathOrNull
@@ -72,6 +74,7 @@ data class InferenceResult(
     private val exprTypes: Map<MvExpr, Ty>,
     private val exprExpectedTypes: Map<MvExpr, Ty>,
     private val methodOrPathTypes: Map<MvMethodOrPath, Ty>,
+    private val resolvedPaths: Map<MvPath, List<ResolvedPath>>,
     private val resolvedFields: Map<MvStructDotField, MvNamedElement?>,
     private val resolvedMethodCalls: Map<MvMethodCall, MvNamedElement?>,
     val callableTypes: Map<MvCallable, Ty>,
@@ -89,6 +92,9 @@ data class InferenceResult(
     fun getExpectedType(expr: MvExpr): Ty = exprExpectedTypes[expr] ?: TyUnknown
     fun getCallableType(callable: MvCallable): Ty? = callableTypes[callable]
     fun getMethodOrPathType(methodOrPath: MvMethodOrPath): Ty? = methodOrPathTypes[methodOrPath]
+
+    fun getResolvedPath(path: MvPath): List<ResolvedPath> =
+        resolvedPaths[path] ?: emptyList()
 
     fun getResolvedField(field: MvStructDotField): MvNamedElement? = resolvedFields[field]
     fun getResolvedMethod(methodCall: MvMethodCall): MvNamedElement? = resolvedMethodCalls[methodCall]
@@ -136,6 +142,19 @@ fun MvElement.inference(msl: Boolean): InferenceResult? {
     return contextOwner.inference(msl)
 }
 
+data class ResolvedPath(val element: MvElement, val isVisible: Boolean) {
+    companion object {
+        fun from(entry: ScopeEntry, context: MvElement): ResolvedPath {
+//            return if (entry is AssocItemScopeEntry) {
+//                AssocItem(entry.element, entry.source)
+//            } else {
+//            val isVisible = entry.isVisibleFrom(context.containingModule)
+            return ResolvedPath(entry.element, true)
+//            }
+        }
+    }
+}
+
 class InferenceContext(
     var msl: Boolean,
     private val skipUnification: Boolean = false
@@ -150,6 +169,7 @@ class InferenceContext(
     //    private val pathTypes = mutableMapOf<MvPath, Ty>()
     private val methodOrPathTypes = mutableMapOf<MvMethodOrPath, Ty>()
 
+    val resolvedPaths = mutableMapOf<MvPath, List<ResolvedPath>>()
     val resolvedFields = mutableMapOf<MvStructDotField, MvNamedElement?>()
     val resolvedMethodCalls = mutableMapOf<MvMethodCall, MvNamedElement?>()
 
@@ -209,6 +229,7 @@ class InferenceContext(
             exprTypes,
             exprExpectedTypes,
             methodOrPathTypes,
+            resolvedPaths,
             resolvedFields,
             resolvedMethodCalls,
             callableTypes,
@@ -254,6 +275,10 @@ class InferenceContext(
 
     fun writeCallableType(callable: MvCallable, ty: Ty) {
         this.callableTypes[callable] = ty
+    }
+
+    fun writePath(path: MvPath, resolved: List<ResolvedPath>) {
+        resolvedPaths[path] = resolved
     }
 
     @Suppress("UNCHECKED_CAST")

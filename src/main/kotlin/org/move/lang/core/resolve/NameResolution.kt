@@ -23,13 +23,15 @@ data class ContextScopeInfo(
     val refItemScopes: Set<NamedItemScope>,
     val letStmtScope: LetStmtScope,
 ) {
-    val isMslScope get() = letStmtScope != LetStmtScope.NONE
+    val isMslScope get() = letStmtScope != NONE
 
     fun matches(itemElement: MvNamedElement): Boolean {
         if (
             !this.isMslScope && itemElement.isMslOnlyItem
         ) return false
-        if (!itemElement.isVisibleInContext(this.refItemScopes)) return false
+        if (
+            !itemElement.isVisibleInContext(this.refItemScopes)
+        ) return false
         return true
     }
 
@@ -37,6 +39,13 @@ data class ContextScopeInfo(
         /// really does not affect anything, created just to allow creating CompletionContext everywhere
         fun default(): ContextScopeInfo = ContextScopeInfo(setOf(MAIN), NONE)
         fun msl(): ContextScopeInfo = ContextScopeInfo(setOf(VERIFY), EXPR_STMT)
+
+        fun from(element: MvElement): ContextScopeInfo {
+            return ContextScopeInfo(
+                refItemScopes = element.itemScopes,
+                letStmtScope = element.letStmtScope,
+            )
+        }
     }
 }
 
@@ -217,7 +226,6 @@ fun processFQModuleRef(
         if (modAddress != refAddress) return@MatchingProcessor false
         processor.match(entry)
     }
-
 
     // search modules in the current file first
     val currentFile = moduleRef.containingMoveFile ?: return

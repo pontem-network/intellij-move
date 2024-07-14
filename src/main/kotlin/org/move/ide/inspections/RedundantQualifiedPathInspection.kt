@@ -7,6 +7,7 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import org.move.lang.core.psi.*
+import org.move.lang.core.psi.ext.shortestPathText
 
 class RedundantQualifiedPathInspection : MvLocalInspectionTool() {
 

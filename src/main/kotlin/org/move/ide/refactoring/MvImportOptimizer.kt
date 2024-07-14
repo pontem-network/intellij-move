@@ -30,7 +30,7 @@ class MvImportOptimizer : ImportOptimizer {
         val importVisitor = ImportAnalyzer(holder)
         object : PsiRecursiveElementVisitor() {
             override fun visitElement(element: PsiElement) {
-                if (element is MvImportsOwner) {
+                if (element is MvItemsOwner) {
                     importVisitor.analyzeImportsOwner(element)
                 } else {
                     super.visitElement(element)
@@ -77,7 +77,7 @@ class MvImportOptimizer : ImportOptimizer {
         }
     }
 
-    private fun mergeItemGroups(useStmtOwner: MvImportsOwner) {
+    private fun mergeItemGroups(useStmtOwner: MvItemsOwner) {
         val psiFactory = useStmtOwner.project.psiFactory
         val leftBrace = useStmtOwner.findFirstChildByType(L_BRACE) ?: return
 
@@ -130,7 +130,7 @@ class MvImportOptimizer : ImportOptimizer {
             useSpeck.replace(newUseSpeck)
         }
 
-        private fun reorderUseStmtsIntoGroups(useScope: MvImportsOwner) {
+        private fun reorderUseStmtsIntoGroups(useScope: MvItemsOwner) {
             val useStmts = useScope.useStmtList
             val first = useScope.childrenOfType<MvElement>()
                 .firstOrNull { it !is MvAttr && it !is PsiComment } ?: return

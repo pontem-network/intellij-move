@@ -102,13 +102,6 @@ fun saveAllDocumentsAsTheyAre() {
 //    }
 }
 
-inline fun testAssert(action: () -> Boolean, lazyMessage: () -> Any) {
-    if (isUnitTestMode && !action()) {
-        val message = lazyMessage()
-        throw AssertionError(message)
-    }
-}
-
 val DataContext.psiFile: PsiFile?
     get() = getData(CommonDataKeys.PSI_FILE)
 
@@ -243,3 +236,14 @@ fun joinPathArray(segments: Array<String>) =
 
 fun joinPath(vararg segments: String) =
     segments.joinTo(StringBuilder(), Platform.current().fileSeparator.toString()).toString()
+
+inline fun testAssert(action: () -> Boolean) {
+    testAssert(action) { "Assertion failed" }
+}
+
+inline fun testAssert(action: () -> Boolean, lazyMessage: () -> Any) {
+    if (isUnitTestMode && !action()) {
+        val message = lazyMessage()
+        throw AssertionError(message)
+    }
+}

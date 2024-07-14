@@ -1,10 +1,7 @@
 package org.move.ide.utils.imports
 
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.childrenOfType
-import org.move.lang.core.psi.ext.hasTestOnlyAttr
-import org.move.lang.core.psi.ext.itemUseSpeck
-import org.move.lang.core.psi.ext.names
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.types.ItemQualName
 import org.move.openapiext.checkWriteAccessAllowed
 
@@ -23,7 +20,7 @@ fun ImportCandidate.import(context: MvElement) {
     insertionScope.insertUseItem(qualName, insertTestOnly)
 }
 
-private fun MvImportsOwner.insertUseItem(usePath: ItemQualName, testOnly: Boolean) {
+private fun MvItemsOwner.insertUseItem(usePath: ItemQualName, testOnly: Boolean) {
 
     if (tryInsertingIntoExistingUseStmt(this, usePath, testOnly)) return
 
@@ -42,7 +39,7 @@ private fun MvImportsOwner.insertUseItem(usePath: ItemQualName, testOnly: Boolea
 }
 
 private fun tryInsertingIntoExistingUseStmt(
-    mod: MvImportsOwner,
+    mod: MvItemsOwner,
     usePath: ItemQualName,
     testOnly: Boolean
 ): Boolean {
@@ -97,7 +94,7 @@ private fun tryGroupWithItemSpeck(
 
 private val <T : MvElement> List<T>.lastElement: T? get() = maxByOrNull { it.textOffset }
 
-private fun insertUseStmtAtTheCorrectLocation(mod: MvImportsOwner, useStmt: MvUseStmt): Boolean {
+private fun insertUseStmtAtTheCorrectLocation(mod: MvItemsOwner, useStmt: MvUseStmt): Boolean {
     val psiFactory = MvPsiFactory(mod.project)
     val newline = psiFactory.createNewline()
     val useStmts = mod.childrenOfType<MvUseStmt>().map(::UseStmtWrapper)
