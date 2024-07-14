@@ -289,6 +289,7 @@ fake SpecFunction ::= Attr* spec native? fun IDENTIFIER? TypeParameterList?
     implements = [
         "org.move.lang.core.psi.MvQualNamedElement"
         "org.move.lang.core.psi.MvFunctionLike"
+        "org.move.lang.core.psi.ext.MvItemElement"
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
         "org.move.lang.core.psi.ScopeMslOnlyElement"
     ]
@@ -320,6 +321,7 @@ fake SpecInlineFunction ::= Attr* native? fun IDENTIFIER? TypeParameterList?
     implements = [
         "org.move.lang.core.psi.MvFunctionLike"
         "org.move.lang.core.types.infer.MvInferenceContextOwner"
+        "org.move.lang.core.psi.ext.MvItemElement"
         "org.move.lang.core.psi.ScopeMslOnlyElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvSpecInlineFunctionMixin"
@@ -1348,13 +1350,14 @@ SchemaFieldStmt_local ::= local BindingPat TypeAnnotation ';' {
     elementType = SchemaFieldStmt
 }
 
-GlobalVariableStmt ::= global IDENTIFIER TypeParameterList? TypeAnnotation ('=' Expr)? ';'
+GlobalVariableStmt ::= Attr* global IDENTIFIER TypeParameterList? TypeAnnotation ('=' Expr)? ';'
 {
-    pin = 1
+    pin = 2
     implements = [
         "org.move.lang.core.psi.MvNameIdentifierOwner"
         "org.move.lang.core.psi.MvTypeAnnotationOwner"
         "org.move.lang.core.psi.MslOnlyElement"
+        "org.move.lang.core.psi.ext.MvItemElement"
     ]
     mixin = "org.move.lang.core.psi.ext.MvGlobalVariableMixin"
 }

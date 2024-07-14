@@ -4,6 +4,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.containingMovePackage
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvVisibilityModifier
+import org.move.lang.core.psi.ScopeMslOnlyElement
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.VisKind.*
 import org.move.lang.core.resolve.ref.Visibility
@@ -49,6 +50,7 @@ val MvVisibilityModifier.visibility: Visibility
 val MvVisibilityOwner.visibility2: Visibility2
     get() {
         val kind = this.visibilityModifier?.stubKind ?: return Visibility2.Private
+
         return when (kind) {
             PACKAGE -> containingMovePackage?.let { Visibility2.Restricted.Package(it) } ?: Visibility2.Public
             FRIEND -> {

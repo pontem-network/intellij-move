@@ -5,6 +5,7 @@ import org.move.cli.MoveProject
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.allowedNamespaces
 import org.move.lang.core.psi.ext.qualifier
+import org.move.lang.core.psi.ext.rootPath
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve2.processAddressPathResolveVariants
@@ -75,12 +76,12 @@ fun processPathResolveVariants(
             // local
             processNestedScopesUpwards(ctx.path, pathKind.ns, ctx, contextScopeAwareProcessor)
         }
-        is AddressPath -> {
+        is ModulePath -> {
             // 0x1::bar
             processAddressPathResolveVariants(
                 ctx.path,
                 ctx.moveProject,
-                pathKind.canonicalAddress,
+                pathKind.address,
                 contextScopeAwareProcessor
             )
         }
@@ -88,14 +89,18 @@ fun processPathResolveVariants(
             // foo::bar
             processQualifiedPathResolveVariants(ctx, pathKind.ns, pathKind.path, pathKind.qualifier, processor)
         }
+        is NamedAddressPath -> {
+            return false
+        }
     }
 }
 
 fun processPathResolveVariants(
     path: MvPath,
+    contextScopeInfo: ContextScopeInfo = ContextScopeInfo.from(path),
     processor: RsResolveProcessor,
 ): Boolean {
-    val ctx = PathResolutionContext(path, contextScopeInfo = ContextScopeInfo.from(path))
+    val ctx = PathResolutionContext(path, contextScopeInfo = contextScopeInfo)
     val pathKind = ctx.classifyPath(path)
     return processPathResolveVariants(ctx, pathKind, processor)
 }
@@ -153,10 +158,13 @@ sealed class RsPathResolveKind {
     ): RsPathResolveKind()
 
     /** bar in `0x1::bar` */
-    class AddressPath(
+    class ModulePath(
         val path: MvPath,
-        val canonicalAddress: String,
+        val address: Address,
     ): RsPathResolveKind()
+
+    /** aptos_framework in `use aptos_framework::bar`*/
+    object NamedAddressPath: RsPathResolveKind()
 }
 
 class PathResolutionContext(
@@ -181,17 +189,31 @@ class PathResolutionContext(
     fun classifyPath(path: MvPath): RsPathResolveKind {
         val qualifier = path.qualifier
         val ns = path.allowedNamespaces()
+//        if (qualifier == null) {
+//            return UnqualifiedPath(ns)
+//        }
+        val isUseSpeck = path.rootPath().parent is MvUseSpeck
         if (qualifier == null) {
-            return UnqualifiedPath(ns)
+            // left-most path
+            if (isUseSpeck) {
+                // use aptos_framework::
+                //     //^
+                return NamedAddressPath
+            } else {
+                return UnqualifiedPath(ns)
+            }
         }
 
+        val qualifierPath = qualifier.path
         val pathAddress = qualifier.pathAddress
+        val qualifierName = qualifier.referenceName
+
         return when {
-            pathAddress != null -> {
-                val address = Address.Value(pathAddress.text)
-                val canonical = address.addressLit().canonical()
-                AddressPath(path, canonical)
-            }
+            qualifierPath == null && pathAddress != null -> ModulePath(path, Address.Value(pathAddress.text))
+            qualifierPath == null && isUseSpeck && qualifierName != null ->
+                ModulePath(path, Address.Named(qualifierName, null, qualifier.moveProject))
+//            qualifier.parent is MvUseSpeck && qualifierName != null ->
+//                AddressPath(path, Address.Named(qualifierName, null, qualifier.moveProject))
             else -> QualifiedPath(path, qualifier, ns)
         }
     }

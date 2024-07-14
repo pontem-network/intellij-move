@@ -18,7 +18,7 @@ class CommonCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, AddressInModuleDeclCompletionProvider)
         extend(CompletionType.BASIC, TypesCompletionProvider)
         extend(CompletionType.BASIC, ImportsCompletionProvider)
-        extend(CompletionType.BASIC, ModulesCompletionProvider)
+//        extend(CompletionType.BASIC, ModulesCompletionProvider)
         extend(CompletionType.BASIC, FQModuleCompletionProvider)
         extend(CompletionType.BASIC, StructFieldsCompletionProvider)
         extend(CompletionType.BASIC, StructPatCompletionProvider)

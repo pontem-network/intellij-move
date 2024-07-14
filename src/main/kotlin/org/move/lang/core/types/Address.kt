@@ -100,9 +100,7 @@ sealed class Address {
             return when {
                 left is Value && right is Value -> left.addressLit().canonical() == right.addressLit().canonical()
                 left is Named && right is Named ->
-                    Pair(left.name, normalizeValue(left.value())) == Pair(
-                        right.name,
-                        normalizeValue(right.value())
+                    Pair(left.name, normalizeValue(left.value())) == Pair(right.name, normalizeValue(right.value())
                     )
                 else -> false
             }
@@ -129,7 +127,7 @@ sealed class StubAddress {
                 if (moveProject == null) {
                     Address.Named(this.name, null, null)
                 } else {
-                    moveProject.getNamedAddress(this.name)
+                    moveProject.getNamedAddress(this.name) ?: Address.Named(this.name, null, moveProject)
                 }
             }
             is Value -> Address.Value(this.value)

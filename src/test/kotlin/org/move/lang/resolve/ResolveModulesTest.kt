@@ -365,4 +365,27 @@ module 0x1::string_tests {
     }
 }        
     """)
+
+    fun `test unresolved named address`() = checkByCode("""
+        module 0x1::m {
+            use aptos_framework::account;
+                //^ unresolved
+        }        
+    """)
+
+    fun `test unresolved value address`() = checkByCode("""
+        module 0x1::m {
+            use 0x1::account;
+                //^ unresolved
+        }        
+    """)
+
+    fun `test resolve module from import with unknown named address`() = checkByCode("""
+        module aptos_framework::m1 {}
+                              //X
+        module 0x1::m {
+            use aptos_framework::m1;
+                               //^
+        }        
+    """)
 }

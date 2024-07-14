@@ -257,7 +257,8 @@ fun processItemsInScope(
 
             Namespace.MODULE -> when (scope) {
                 is MvItemsOwner ->
-                    processor.processAll(scope.moduleUseItems())
+                    processor.processAll(emptyList())
+//                    processor.processAll(scope.moduleUseItems())
                 else -> false
             }
         }

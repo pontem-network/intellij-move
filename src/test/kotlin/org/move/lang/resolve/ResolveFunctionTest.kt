@@ -722,6 +722,42 @@ module 0x1::mod {
     """
     )
 
+    fun `test resolve spec fun from import`() = checkByCode(
+        """
+        module 0x1::m {
+        }        
+        spec 0x1::m {
+            spec module {
+                fun spec_sip_hash();
+                    //X
+            }
+        }
+        module 0x1::main {
+            use 0x1::m::spec_sip_hash;
+                       //^
+        }
+    """
+    )
+
+    fun `test cannot resolve spec fun main scope`() = checkByCode(
+        """
+        module 0x1::m {
+        }        
+        spec 0x1::m {
+            spec module {
+                fun spec_sip_hash();
+            }
+        }
+        module 0x1::main {
+            use 0x1::m::spec_sip_hash;
+            fun main() {
+                spec_sip_hash();
+                //^ unresolved
+            }
+        }
+    """
+    )
+
     fun `test resolve spec fun defined in module spec`() = checkByCode(
         """
         module 0x1::m {

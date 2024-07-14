@@ -1,6 +1,9 @@
 package org.move.lang.core.resolve
 
+import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.util.SmartList
+import org.move.lang.core.completion.CompletionContext
+import org.move.lang.core.completion.createLookupElement
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvModule
 import org.move.lang.core.psi.MvNamedElement
@@ -371,6 +374,78 @@ private class PickFirstScopeEntryCollector(
         }
         return false
     }
+}
+
+
+fun collectCompletionVariants(
+    result: CompletionResultSet,
+    context: CompletionContext,
+    f: (RsResolveProcessor) -> Unit
+) {
+    val processor = CompletionVariantsCollector(result, context)
+    f(processor)
+}
+
+private class CompletionVariantsCollector(
+    private val result: CompletionResultSet,
+    private val context: CompletionContext,
+) : RsResolveProcessorBase<ScopeEntry> {
+    override val names: Set<String>? get() = null
+
+    override fun process(entry: ScopeEntry): Boolean {
+//        addEnumVariantsIfNeeded(entry)
+//        addAssociatedItemsIfNeeded(entry)
+
+//        (entry.element as? MvNamedElement)?.let {
+//            it.createLookupElement(context)
+//        }
+//        result.addElement(createLookupElement(
+//            context = context
+//        ))
+        return false
+    }
+
+//    private fun addEnumVariantsIfNeeded(entry: ScopeEntry) {
+//        val element = entry.element as? RsEnumItem ?: return
+//
+//        val expectedType = (context.expectedTy?.ty?.stripReferences() as? TyAdt)?.item
+//        val actualType = (element.declaredType as? TyAdt)?.item
+//
+//        val parent = context.context
+//        val contextPat = if (parent is RsPath) parent.context else parent
+//        val contextIsPat = contextPat is RsPatBinding || contextPat is RsPatStruct || contextPat is RsPatTupleStruct
+//
+//        if (expectedType == actualType || contextIsPat) {
+//            val variants = collectVariantsForEnumCompletion(element, context, entry.subst)
+//            val filtered = when (contextPat) {
+//                is RsPatStruct -> variants.filter { (it.psiElement as? RsEnumVariant)?.blockFields != null }
+//                is RsPatTupleStruct -> variants.filter { (it.psiElement as? RsEnumVariant)?.tupleFields != null }
+//                else -> variants
+//            }
+//            result.addAllElements(filtered)
+//        }
+//    }
+
+//    private fun addAssociatedItemsIfNeeded(entry: ScopeEntry) {
+//        if (entry.name != "Self") return
+//        val entryTrait = when (val traitOrImpl = entry.element as? RsTraitOrImpl) {
+//            is RsTraitItem -> traitOrImpl as? RsTraitItem ?: return
+//            is RsImplItem -> traitOrImpl.traitRef?.path?.reference?.resolve() as? RsTraitItem ?: return
+//            else -> return
+//        }
+//
+//        val associatedTypes = entryTrait
+//            .associatedTypesTransitively
+//            .mapNotNull { type ->
+//                val name = type.name ?: return@mapNotNull null
+//                val typeAlias = type.superItem ?: type
+//                createLookupElement(
+//                    SimpleScopeEntry("Self::$name", typeAlias, TYPES),
+//                    context,
+//                )
+//            }
+//        result.addAllElements(associatedTypes)
+//    }
 }
 
 //fun collectNames(f: (RsResolveProcessor) -> Unit): Set<String> {

@@ -8,7 +8,7 @@ import org.move.utils.tests.MvProjectTestBase
 import org.move.utils.tests.base.findElementWithDataAndOffsetInEditor
 import org.toml.lang.psi.TomlKeySegment
 
-class FindUsagesNamedAddressTest : MvProjectTestBase() {
+class FindUsagesNamedModulePathTest : MvProjectTestBase() {
     fun `test resolve toml to move usage`() = doTestByText(
         """
         //- Move.toml

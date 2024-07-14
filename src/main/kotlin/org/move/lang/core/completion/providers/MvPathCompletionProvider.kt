@@ -17,6 +17,9 @@ import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.resolve2.processItemDeclarations
+import org.move.lang.core.resolve2.processNestedScopesUpwards
+import org.move.lang.core.resolve2.ref.PathResolutionContext
 import org.move.lang.core.types.infer.inferExpectedTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
@@ -42,50 +45,83 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
 
         if (parameters.position !== pathElement.referenceNameElement) return
 
-        val moduleRef = pathElement.moduleRef
+        val qualifier = pathElement.qualifier
+
         val namespaces = setOf(this.namespace)
-        val pathScopeInfo = pathScopeInfo(pathElement)
+        val contextScopeInfo = pathScopeInfo(pathElement)
         val msl = pathElement.isMslScope
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(pathElement, msl)
-
         val structAsType = this.namespace == Namespace.TYPE
-        val ctx = CompletionContext(
+
+        val completionContext = CompletionContext(
             pathElement,
-            pathScopeInfo,
+            contextScopeInfo,
             expectedTy
         )
 
-        if (moduleRef != null) {
-            val module = moduleRef.reference?.resolveWithAliases() as? MvModule
-                ?: return
-            val vs = when {
-                moduleRef.isSelfModuleRef -> setOf(Visibility.Internal)
-                else -> Visibility.visibilityScopesForElement(pathElement)
-            }
-            processModuleItems(module, namespaces, vs, pathScopeInfo) {
-                val lookup =
-                    it.element.createLookupElement(ctx, structAsType = structAsType)
-                result.addElement(lookup)
-                false
+        var completionCollector = createProcessor { e ->
+            val element = e.element as? MvNamedElement ?: return@createProcessor
+            val lookup =
+                element.createLookupElement(
+                    completionContext,
+                    structAsType = structAsType,
+                    priority = element.completionPriority
+                )
+            result.addElement(lookup)
+        }
+
+        if (qualifier != null) {
+            val resolvedQualifier = qualifier.reference?.resolveFollowingAliases()
+            if (resolvedQualifier is MvItemsOwner) {
+                processItemDeclarations(resolvedQualifier, namespaces, completionCollector)
             }
             return
         }
 
+//        if (moduleRef != null) {
+//            val module = moduleRef.reference?.resolveWithAliases() as? MvModule
+//                ?: return
+//            val vs = when {
+//                moduleRef.isSelfModuleRef -> setOf(Visibility.Internal)
+//                else -> Visibility.visibilityScopesForElement(pathElement)
+//            }
+//            processModuleItems(module, namespaces, vs, contextScopeInfo) {
+//                val lookup =
+//                    it.element.createLookupElement(ctx, structAsType = structAsType)
+//                result.addElement(lookup)
+//                false
+//            }
+//            return
+//        }
+
         val processedNames = mutableSetOf<String>()
-        processItems(pathElement, namespaces, pathScopeInfo) { (name, element) ->
-            if (processedNames.contains(name)) {
-                return@processItems false
+//        completionCollector =
+//            completionCollector.wrapWithBeforeProcessingHandler { processedNames.add(it.name) }
+        completionCollector = completionCollector.wrapWithFilter { e ->
+            if (processedNames.contains(e.name)) {
+                return@wrapWithFilter false
             }
-            processedNames.add(name)
-            result.addElement(
-                element.createLookupElement(
-                    ctx,
-                    structAsType = structAsType,
-                    priority = element.completionPriority
-                )
-            )
-            false
+            processedNames.add(e.name)
+            true
         }
+
+        val ctx = PathResolutionContext(pathElement, contextScopeInfo)
+        processNestedScopesUpwards(pathElement, namespaces, ctx, completionCollector)
+
+//        processItems(pathElement, namespaces, contextScopeInfo) { (name, element) ->
+//            if (processedNames.contains(name)) {
+//                return@processItems false
+//            }
+//            processedNames.add(name)
+//            result.addElement(
+//                element.createLookupElement(
+//                    completionContext,
+//                    structAsType = structAsType,
+//                    priority = element.completionPriority
+//                )
+//            )
+//            false
+//        }
 
         // disable auto-import in module specs for now
         if (pathElement.containingModuleSpec != null) return
@@ -96,7 +132,7 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
                 originalPathElement,
                 namespaces,
                 setOf(Visibility.Public),
-                pathScopeInfo
+                contextScopeInfo
             )
         val candidates = getImportCandidates(
             parameters,
@@ -106,7 +142,7 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
         )
         candidates.forEach { candidate ->
             val lookupElement = candidate.element.createLookupElement(
-                ctx,
+                completionContext,
                 structAsType = structAsType,
                 priority = UNIMPORTED_ITEM_PRIORITY,
                 insertHandler = ImportInsertHandler(parameters, candidate)

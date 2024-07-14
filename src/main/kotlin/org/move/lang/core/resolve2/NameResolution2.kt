@@ -8,6 +8,7 @@ import org.move.lang.core.psi.containingMoveFile
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve2.ref.PathResolutionContext
+import org.move.lang.core.types.Address
 import org.move.lang.core.types.address
 import org.move.lang.index.MvNamedElementIndex
 
@@ -27,19 +28,13 @@ fun processNestedScopesUpwards(
                 scope, cameFrom, ns, ctx.contextScopeInfo, shadowingProcessor
             )
         }
-//        if (scope !is MvCodeBlock && scope is MvItemsOwner) {
-//            if (processItemDeclarations(scope, ns, addImports = true, processor)) return@walkUpThroughScopes true
-//            false
-//        } else {
-//
-//        }
     }
 }
 
 fun processAddressPathResolveVariants(
     element: MvElement,
     moveProject: MoveProject?,
-    address: String,
+    address: Address,
     processor: RsResolveProcessor,
 ): Boolean {
     // if no project, cannot use the index
@@ -47,7 +42,7 @@ fun processAddressPathResolveVariants(
 
     val equalAddressProcessor = processor.wrapWithFilter { e ->
         val candidate = e.element as? MvModule ?: return@wrapWithFilter false
-        val candidateAddress = candidate.address(moveProject)?.canonicalValue(moveProject)
+        val candidateAddress = candidate.address(moveProject)
         address == candidateAddress
     }
 

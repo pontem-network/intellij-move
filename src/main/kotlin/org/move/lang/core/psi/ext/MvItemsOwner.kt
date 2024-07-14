@@ -2,6 +2,7 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.psi.util.CachedValuesManager.getProjectPsiDependentCache
 import org.move.lang.core.psi.*
+import org.move.stdext.buildList
 
 interface MvItemsOwner: MvElement {
     val useStmtList: List<MvUseStmt> get() = emptyList()
@@ -13,11 +14,26 @@ fun MvItemsOwner.items(): Sequence<MvElement> {
         .filter { it !is MvAttr }
 }
 
-val MvItemsOwner.visibleItems: Sequence<MvItemElement>
+val MvItemsOwner.visibleItems: List<MvItemElement>
     get() {
         return this.items()
             .filterIsInstance<MvItemElement>()
             .filterNot { (it as? MvFunction)?.hasTestAttr ?: false }
+            .toList()
+    }
+
+val MvModule.innerSpecItems: List<MvItemElement>
+    get() {
+        val module = this
+        return buildList {
+            addAll(module.allModuleSpecs()
+                .map {
+                    it.moduleItemSpecs()
+                        .flatMap { spec -> spec.itemSpecBlock?.globalVariables().orEmpty() }
+                }
+                .flatten())
+            addAll(module.specInlineFunctions())
+        }
     }
 
 fun MvItemsOwner.moduleUseItems(): List<MvNamedElement> =

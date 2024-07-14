@@ -20,13 +20,13 @@ data class ItemVisibility(
 
 /** Creates filter which determines whether item with [this] visibility is visible from specific [ModInfo] */
 fun ItemVisibility.createFilter(): VisibilityFilter {
-    val (item, isTestOnly, vis) = this
+    val (item, isTestOnly, visibility) = this
     return VisibilityFilter { path, namespaces ->
 
-        // inside msl
+        // inside msl everything is visible
         if (path.isMsl()) return@VisibilityFilter Visible
 
-        // types are always visible
+        // types are always visible, their correct usage is checked in a separate inspection
         if (namespaces.contains(TYPE)) return@VisibilityFilter Visible
 
         // if inside MvAttrItem like abort_code=
@@ -37,7 +37,10 @@ fun ItemVisibility.createFilter(): VisibilityFilter {
         val useSpeck = path.ancestorStrict<MvUseSpeck>()
         if (useSpeck != null) {
             // inside import, all visibilities except for private work
-            if (vis is Restricted) return@VisibilityFilter Visible
+            if (visibility is Restricted) return@VisibilityFilter Visible
+
+            // msl-only items are available from imports
+            if (item.isMslOnlyItem) return@VisibilityFilter Visible
 
             // consts are importable in tests
             if (pathUsageScope.isTest && namespaces.contains(CONST)) return@VisibilityFilter Visible
@@ -51,11 +54,11 @@ fun ItemVisibility.createFilter(): VisibilityFilter {
         val pathModule = path.containingModule
         if (itemModule == pathModule) return@VisibilityFilter Visible
 
-        when (vis) {
+        when (visibility) {
             is Restricted -> {
-                when (vis) {
+                when (visibility) {
                     is Restricted.Friend -> {
-                        val friends = vis.friendModules
+                        val friends = visibility.friendModules
                         val modInfo = pathModule?.fqModule()
                         if (modInfo in friends) Visible else Invisible
                     }

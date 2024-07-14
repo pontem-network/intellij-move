@@ -2,12 +2,9 @@ package org.move.lang.core.resolve2
 
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.RsResolveProcessor
-import org.move.lang.core.resolve.process
+import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Namespace.NAME
-import org.move.lang.core.resolve.ref.Namespace.TYPE
-import org.move.stdext.intersects
 import java.util.*
 
 val MvNamedElement.namespaces: Set<Namespace>
@@ -22,12 +19,13 @@ val MvNamedElement.namespaces: Set<Namespace>
 
 val MvNamedElement.namespace
     get() = when (this) {
-        is MvFunction -> Namespace.FUNCTION
+        is MvFunctionLike -> Namespace.FUNCTION
         is MvStruct -> Namespace.TYPE
         is MvConst -> Namespace.CONST
         is MvSchema -> Namespace.SCHEMA
         is MvModule -> Namespace.MODULE
-        else -> error("when should be exhaustive")
+        is MvGlobalVariableStmt -> Namespace.NAME
+        else -> error("when should be exhaustive, $this is not covered")
     }
 
 fun processItemDeclarations(
@@ -36,24 +34,49 @@ fun processItemDeclarations(
     processor: RsResolveProcessor
 ): Boolean {
 
-    // todo:
     // 1. loop over all items in module (item is anything accessible with MODULE:: )
     // 2. for every item, use it's .visibility to create VisibilityFilter, even it's just a { false }
-
-    for (item in itemsOwner.visibleItems) {
+    val items = itemsOwner.visibleItems +
+            (itemsOwner as? MvModuleBlock)?.module?.innerSpecItems.orEmpty() +
+            (itemsOwner as? MvModuleBlock)?.let { getItemsFromModuleSpecs(it.module, ns) }.orEmpty()
+    for (item in items) {
         val name = item.name ?: continue
 
-        val namespaces = mutableSetOf(item.namespace)
-//        if (namespaces.contains(TYPE) && ns.contains(NAME)) {
-//            // struct lit / pat
-//            namespaces.add(NAME)
-//        }
-        if (!namespaces.intersects(ns)) continue
+        val namespace = item.namespace
+        if (namespace !in ns) continue
 
         val itemVisibility = ItemVisibility(item, isTestOnly = item.hasTestOnlyAttr, vis = item.visibility2)
         val visibilityFilter = itemVisibility.createFilter()
-        if (processor.process(name, item, namespaces, visibilityFilter)) return true
+        if (processor.process(name, item, EnumSet.of(namespace), visibilityFilter)) return true
     }
 
+    return false
+}
+
+fun getItemsFromModuleSpecs(module: MvModule, ns: Set<Namespace>): List<MvItemElement> {
+    val c = mutableListOf<MvItemElement>()
+    processItemsFromModuleSpecs(module, ns, createProcessor { c.add(it.element as MvItemElement) })
+    return c
+}
+
+fun processItemsFromModuleSpecs(
+    module: MvModule,
+    namespaces: Set<Namespace>,
+    processor: RsResolveProcessor,
+): Boolean {
+    for (namespace in namespaces) {
+        for (moduleSpec in module.allModuleSpecs()) {
+            val matched = when (namespace) {
+                Namespace.FUNCTION ->
+                    processor.processAll(
+                        moduleSpec.specFunctions(),
+                        moduleSpec.specInlineFunctions(),
+                    )
+                Namespace.SCHEMA -> processor.processAll(moduleSpec.schemas())
+                else -> false
+            }
+            if (matched) return true
+        }
+    }
     return false
 }
