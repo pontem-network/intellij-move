@@ -17,13 +17,16 @@ fun processNestedScopesUpwards(
     ctx: PathResolutionContext,
     processor: RsResolveProcessor
 ): Boolean {
+    val prevScope = hashMapOf<String, Set<Namespace>>()
     return walkUpThroughScopes(
         scopeStart,
         stopAfter = { it is MvModule }
     ) { cameFrom, scope ->
-        processItemsInScope(
-            scope, cameFrom, ns, ctx.contextScopeInfo, processor
-        )
+        processWithShadowingAndUpdateScope(prevScope, ns, processor) { shadowingProcessor ->
+            processItemsInScope(
+                scope, cameFrom, ns, ctx.contextScopeInfo, shadowingProcessor
+            )
+        }
 //        if (scope !is MvCodeBlock && scope is MvItemsOwner) {
 //            if (processItemDeclarations(scope, ns, addImports = true, processor)) return@walkUpThroughScopes true
 //            false
@@ -71,4 +74,29 @@ fun processAddressPathResolveVariants(
     }
 
     return false
+}
+
+inline fun processWithShadowingAndUpdateScope(
+    prevScope: MutableMap<String, Set<Namespace>>,
+    ns: Set<Namespace>,
+    processor: RsResolveProcessor,
+    f: (RsResolveProcessor) -> Boolean
+): Boolean {
+    val currScope = mutableMapOf<String, Set<Namespace>>()
+    val shadowingProcessor = processor.wrapWithShadowingProcessorAndUpdateScope(prevScope, currScope, ns)
+    return try {
+        f(shadowingProcessor)
+    } finally {
+        prevScope.putAll(currScope)
+    }
+}
+
+inline fun processWithShadowing(
+    prevScope: Map<String, Set<Namespace>>,
+    ns: Set<Namespace>,
+    processor: RsResolveProcessor,
+    f: (RsResolveProcessor) -> Boolean
+): Boolean {
+    val shadowingProcessor = processor.wrapWithShadowingProcessor(prevScope, ns)
+    return f(shadowingProcessor)
 }
