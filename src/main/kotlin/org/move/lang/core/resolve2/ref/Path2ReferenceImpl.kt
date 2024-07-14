@@ -7,7 +7,9 @@ import org.move.lang.core.psi.ext.allowedNamespaces
 import org.move.lang.core.psi.ext.qualifier
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.*
-import org.move.lang.core.resolve2.*
+import org.move.lang.core.resolve2.processAddressPathResolveVariants
+import org.move.lang.core.resolve2.processItemDeclarations
+import org.move.lang.core.resolve2.processNestedScopesUpwards
 import org.move.lang.core.resolve2.ref.RsPathResolveKind.*
 import org.move.lang.core.types.Address
 import org.move.lang.moveProject
@@ -16,36 +18,25 @@ import kotlin.LazyThreadSafetyMode.NONE
 class Path2ReferenceImpl(element: MvPath):
     MvPolyVariantReferenceBase<MvPath>(element), MvPath2Reference {
 
-//    private fun rawMultiResolveUsingInferenceCache(): List<RsPathResolveResult<MvElement>>? {
-//        val msl = element.isMsl()
-//        return element.inference(msl)?.getResolvedPath(element)?.map { result ->
-//            RsPathResolveResult(result.element, result.isVisible)
-//        }
-//    }
+    override fun resolve(): MvNamedElement? =
+        rawMultiResolveIfVisible().singleOrNull()?.element as? MvNamedElement
 
-//    override fun multiResolveInner(): List<MvNamedElement> {
-//        val referenceName = element.referenceName ?: return emptyList()
-//        val resolveVariants = collectResolveVariantsAsScopeEntries(referenceName) {
-//            processPathResolveVariants(element, it)
-//        }
-//        return resolveVariants.mapNotNull { it.element as? MvNamedElement }
-//    }
-
-    override fun resolve(): MvNamedElement? = rawMultiResolve().singleOrNull()?.element as? MvNamedElement
+    override fun multiResolve(): List<MvNamedElement> =
+        rawMultiResolveIfVisible().mapNotNull { it.element as? MvNamedElement }
 
     override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> =
         rawMultiResolve().toTypedArray()
 
-    override fun multiResolve(): List<MvNamedElement> =
-        rawMultiResolve().mapNotNull { it.element as? MvNamedElement }
+//    fun multiResolveIfVisible(): List<MvElement> =
+//        rawMultiResolve().mapNotNull {
+//            if (!it.isVisible) return@mapNotNull null
+//            it.element
+//        }
 
-    override fun multiResolveIfVisible(): List<MvElement> =
-        rawMultiResolve().mapNotNull {
-            if (!it.isVisible) return@mapNotNull null
-            it.element
-        }
+    fun rawMultiResolveIfVisible(): List<RsPathResolveResult<MvElement>> =
+        rawMultiResolve().filter { it.isVisible }
 
-    override fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> = Resolver.invoke(this.element)
+    fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> = Resolver.invoke(this.element)
 //    override fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> = rawCachedMultiResolve()
 
     private fun rawCachedMultiResolve(): List<RsPathResolveResult<MvElement>> {
@@ -60,11 +51,10 @@ class Path2ReferenceImpl(element: MvPath):
             if (path !is MvPath) return emptyList()
 
             val ctx = PathResolutionContext(
-                context = path,
+                path = path,
                 contextScopeInfo = ContextScopeInfo.from(path)
             )
-            val result = resolvePath(ctx, path, ctx.classifyPath(path))
-            return result
+            return resolvePath(ctx, path, ctx.classifyPath(path))
         }
     }
 }
@@ -83,12 +73,12 @@ fun processPathResolveVariants(
             // Self::
             if (processor.lazy("Self") { ctx.containingModule }) return true
             // local
-            processNestedScopesUpwards(ctx.context, pathKind.ns, ctx, contextScopeAwareProcessor)
+            processNestedScopesUpwards(ctx.path, pathKind.ns, ctx, contextScopeAwareProcessor)
         }
         is AddressPath -> {
             // 0x1::bar
             processAddressPathResolveVariants(
-                ctx.context,
+                ctx.path,
                 ctx.moveProject,
                 pathKind.canonicalAddress,
                 contextScopeAwareProcessor
@@ -170,21 +160,23 @@ sealed class RsPathResolveKind {
 }
 
 class PathResolutionContext(
-    val context: MvElement,
+    val path: MvPath,
     val contextScopeInfo: ContextScopeInfo,
 ) {
     private var lazyContainingMoveProject: Lazy<MoveProject?> = lazy(NONE) {
-        context.moveProject
+        path.moveProject
     }
     val moveProject: MoveProject? get() = lazyContainingMoveProject.value
 
     private var lazyContainingModule: Lazy<MvModule?> = lazy(NONE) {
-        context.containingModule
+        path.containingModule
     }
     val containingModule: MvModule? get() = lazyContainingModule.value
-    var lazyContainingModInfo: Lazy<ModInfo?> = lazy(NONE) {
-        containingModule?.let { getModInfo(it) }
-    }
+
+//    var lazyContainingModInfo: Lazy<ModInfo?> = lazy(NONE) {
+//        val module = containingModule
+//        getModInfo(module)
+//    }
 
     fun classifyPath(path: MvPath): RsPathResolveKind {
         val qualifier = path.qualifier

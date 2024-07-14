@@ -13,10 +13,10 @@ fun MvItemsOwner.items(): Sequence<MvElement> {
         .filter { it !is MvAttr }
 }
 
-val MvItemsOwner.visibleItems: Sequence<MvNamedElement>
+val MvItemsOwner.visibleItems: Sequence<MvItemElement>
     get() {
         return this.items()
-            .filterIsInstance<MvNamedElement>()
+            .filterIsInstance<MvItemElement>()
             .filterNot { (it as? MvFunction)?.hasTestAttr ?: false }
     }
 

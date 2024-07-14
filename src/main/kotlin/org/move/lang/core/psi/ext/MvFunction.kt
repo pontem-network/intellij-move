@@ -50,6 +50,9 @@ val MvFunction.isEntry: Boolean
         return stub?.isEntry ?: this.isChildExists(MvElementTypes.ENTRY)
     }
 
+val MvFunction.isPublicScript: Boolean
+    get() = this.visibilityModifier?.isPublicScript ?: false
+
 val MvFunction.isInline: Boolean get() = this.isChildExists(MvElementTypes.INLINE)
 
 val MvFunction.isView: Boolean

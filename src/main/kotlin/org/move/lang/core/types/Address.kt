@@ -58,6 +58,8 @@ sealed class Address {
         }
 
         override fun hashCode(): Int = normalizeValue(value).hashCode()
+
+        override fun toString(): String = "Address.Value($value)"
     }
 
     class Named(

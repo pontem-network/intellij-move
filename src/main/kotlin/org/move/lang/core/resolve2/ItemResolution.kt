@@ -5,7 +5,9 @@ import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.RsResolveProcessor
 import org.move.lang.core.resolve.process
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.resolve.ref.Namespace.NAME
+import org.move.lang.core.resolve.ref.Namespace.TYPE
+import org.move.stdext.intersects
 import java.util.*
 
 val MvNamedElement.namespaces: Set<Namespace>
@@ -41,12 +43,16 @@ fun processItemDeclarations(
     for (item in itemsOwner.visibleItems) {
         val name = item.name ?: continue
 
-        val namespace = item.namespace
-        if (namespace !in ns) continue
+        val namespaces = mutableSetOf(item.namespace)
+//        if (namespaces.contains(TYPE) && ns.contains(NAME)) {
+//            // struct lit / pat
+//            namespaces.add(NAME)
+//        }
+        if (!namespaces.intersects(ns)) continue
 
-        val visibility = (item as? MvVisibilityOwner)?.visibility2 ?: Visibility.Internal
-        val visibilityFilter = visibility.createFilter()
-        if (processor.process(name, item, EnumSet.of(namespace), visibilityFilter)) return true
+        val itemVisibility = ItemVisibility(item, isTestOnly = item.hasTestOnlyAttr, vis = item.visibility2)
+        val visibilityFilter = itemVisibility.createFilter()
+        if (processor.process(name, item, namespaces, visibilityFilter)) return true
     }
 
     return false

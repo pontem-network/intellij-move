@@ -11,6 +11,8 @@ enum class NamedItemScope {
     TEST,
     VERIFY;
 
+    val isTest get() = this == TEST
+
     companion object {
         fun all(): Set<NamedItemScope> = setOf(MAIN, TEST, VERIFY)
     }

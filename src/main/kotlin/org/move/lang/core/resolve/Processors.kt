@@ -339,17 +339,8 @@ private fun collectPathScopeEntry(
     e: ScopeEntry
 ) {
     val element = e.element
-    val visibilityStatus = e.getVisibilityStatusFrom(ctx.context, ctx.lazyContainingModInfo)
-//    if (visibilityStatus != VisibilityStatus.CfgDisabled) {
+    val visibilityStatus = e.getVisibilityStatusFrom(ctx.path)
     val isVisible = visibilityStatus == VisibilityStatus.Visible
-    // Canonicalize namespaces to consume less memory by the resolve cache
-//            val namespaces = when (e.namespaces) {
-//                TYPES -> TYPES
-//                VALUES -> VALUES
-//                TYPES_N_VALUES -> TYPES_N_VALUES
-//                else -> e.namespaces
-//            }
-//    result += element
     result += RsPathResolveResult(element, isVisible)
 //    }
 }
@@ -412,9 +403,10 @@ data class SimpleScopeEntry(
 
 data class ModInfo(
 //    val movePackage: MovePackage?,
-    val module: MvModule,
+    val module: MvModule?,
 //    val isScript: Boolean,
-)
+) {
+}
 
 fun <T> Map<String, T>.entriesWithNames(names: Set<String>?): Map<String, T> {
     return if (names.isNullOrEmpty()) {
@@ -428,18 +420,23 @@ fun <T> Map<String, T>.entriesWithNames(names: Set<String>?): Map<String, T> {
     }
 }
 
-typealias VisibilityFilter = (MvElement, Lazy<ModInfo?>?) -> VisibilityStatus
+fun interface VisibilityFilter {
+    fun filter(path: MvPath, ns: Set<Namespace>): VisibilityStatus
+}
 
-fun ScopeEntry.getVisibilityStatusFrom(context: MvElement, lazyModInfo: Lazy<ModInfo?>?): VisibilityStatus =
+//typealias VisibilityFilter = (MvPath, Set<Namespace>) -> VisibilityStatus
+//typealias VisibilityFilter = (MvElement, Lazy<ModInfo?>?) -> VisibilityStatus
+
+fun ScopeEntry.getVisibilityStatusFrom(path: MvPath): VisibilityStatus =
     if (this is ScopeEntryWithVisibility) {
-        visibilityFilter(context, lazyModInfo)
+        visibilityFilter.filter(path, this.namespaces)
     } else {
         VisibilityStatus.Visible
     }
 
 
-fun ScopeEntry.isVisibleFrom(context: MvElement): Boolean =
-    getVisibilityStatusFrom(context, null) == VisibilityStatus.Visible
+fun ScopeEntry.isVisibleFrom(context: MvPath): Boolean =
+    getVisibilityStatusFrom(context) == VisibilityStatus.Visible
 
 enum class VisibilityStatus {
     Visible,

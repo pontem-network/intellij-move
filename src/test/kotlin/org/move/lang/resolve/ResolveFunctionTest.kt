@@ -319,22 +319,18 @@ class ResolveFunctionTest: ResolveTestCase() {
 
     fun `test friend function is unresolved in scripts`() = checkByCode(
         """
-        address 0x1 {
-        module Original {
-            friend 0x1::M;
+        module 0x1::original {
+            friend 0x1::m;
             public(friend) fun call() {}
         }
-        
-        module M {}    
-        }
-        
-        script {
-            use 0x1::Original;
+        module 0x1::m {}
+        script { 
+            use 0x1::original;
             fun main() {
-                Original::call();
+                original::call();
                         //^ unresolved
             }
-        } 
+        }
     """
     )
 
@@ -367,6 +363,20 @@ class ResolveFunctionTest: ResolveTestCase() {
             0x1::M::call();
                     //^  
         }
+    }
+    """
+    )
+
+    fun `test public script function can be resolved from import`() = checkByCode(
+        """
+    module 0x1::M {
+        public(script) fun call() {}
+                           //X
+    }    
+    #[test_only]
+    module 0x1::Tests {
+        use 0x1::M::call;
+                   //^
     }
     """
     )

@@ -8,7 +8,7 @@ import org.move.lang.core.psi.MvRefExpr
 fun MvRefExpr.isAbortCodeConst(): Boolean {
     val abortCodeItem =
         (this.parent.parent as? MvAttrItem)
-            ?.takeIf { it.identifier.text == "abort_code" }
+            ?.takeIf { it.isAbortCode }
             ?: return false
     val attr = abortCodeItem.ancestorStrict<MvAttr>() ?: return false
     return (attr.owner as? MvFunction)?.hasTestAttr ?: false

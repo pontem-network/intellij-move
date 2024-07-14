@@ -104,10 +104,8 @@ private fun rootNamespace(rootPath: MvPath): Set<Namespace> {
         parent is MvCallExpr -> EnumSet.of(Namespace.FUNCTION)
         parent is MvRefExpr && parent.isAbortCodeConst() -> EnumSet.of(Namespace.CONST)
         parent is MvRefExpr -> EnumSet.of(Namespace.NAME)
-//            parent is MvRefExpr && this.nullModuleRef -> setOf(Namespace.NAME)
-//            parent is MvRefExpr && !this.nullModuleRef -> setOf(Namespace.NAME, Namespace.MODULE)
-        // TODO: it's own namespace?
-        parent is MvStructLitExpr || parent is MvStructPat -> EnumSet.of(Namespace.NAME)
+        parent is MvStructLitExpr || parent is MvStructPat -> EnumSet.of(Namespace.TYPE)
+//        parent is MvStructLitExpr || parent is MvStructPat -> EnumSet.of(Namespace.NAME)
         parent is MvAccessSpecifier -> EnumSet.of(Namespace.TYPE)
         parent is MvAddressSpecifierArg -> EnumSet.of(Namespace.FUNCTION)
         parent is MvAddressSpecifierCallParam -> EnumSet.of(Namespace.NAME)

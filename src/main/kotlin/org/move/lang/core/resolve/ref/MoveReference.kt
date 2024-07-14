@@ -39,10 +39,10 @@ interface MvPathReference : MvPolyVariantReference {
 }
 
 interface MvPath2Reference: MvPolyVariantReference {
-    fun multiResolveIfVisible(): List<MvElement> = multiResolve()
+//    fun multiResolveIfVisible(): List<MvElement> = multiResolve()
 
-    fun rawMultiResolve(): List<RsPathResolveResult<MvElement>> =
-        multiResolve().map { RsPathResolveResult(it, isVisible = true) }
+//    fun rawMultiResolve(): List<RsPathResolveResult<MvElement>>
+//        multiResolve().map { RsPathResolveResult(it, isVisible = true) }
 
     fun resolveFollowingAliases(): MvNamedElement? {
         val resolved = this.resolve()

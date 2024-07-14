@@ -2,19 +2,18 @@ package org.move.lang.core.psi.ext
 
 import com.intellij.psi.util.PsiTreeUtil
 import org.move.cli.containingMovePackage
-import org.move.lang.core.psi.MvConst
 import org.move.lang.core.psi.MvElement
 import org.move.lang.core.psi.MvVisibilityModifier
 import org.move.lang.core.psi.containingModule
 import org.move.lang.core.psi.ext.VisKind.*
 import org.move.lang.core.resolve.ref.Visibility
+import org.move.lang.core.resolve.ref.Visibility2
 
 interface MvVisibilityOwner: MvElement {
     val visibilityModifier: MvVisibilityModifier?
         get() = PsiTreeUtil.getStubChildOfType(this, MvVisibilityModifier::class.java)
 
-    val visibility2: Visibility
-        get() = visibilityModifier?.visibility ?: Visibility.Internal
+//    val visibility2: Visibility2 get() = this.visibility22
 
     // restricted visibility considered as public
     val isPublic: Boolean get() = visibilityModifier != null
@@ -47,6 +46,21 @@ val MvVisibilityModifier.visibility: Visibility
         PUBLIC -> Visibility.Public
     }
 
+val MvVisibilityOwner.visibility2: Visibility2
+    get() {
+        val kind = this.visibilityModifier?.stubKind ?: return Visibility2.Private
+        return when (kind) {
+            PACKAGE -> containingMovePackage?.let { Visibility2.Restricted.Package(it) } ?: Visibility2.Public
+            FRIEND -> {
+                val module = this.containingModule ?: return Visibility2.Private
+                // todo: make lazy
+                val friendModules = module.declaredFriendModules
+                Visibility2.Restricted.Friend(friendModules)
+            }
+            SCRIPT -> Visibility2.Restricted.Script
+            PUBLIC -> Visibility2.Public
+        }
+    }
 
 
 
