@@ -11,7 +11,7 @@ import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyUnknown
 
-class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
+class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
 
     var ignoreWithoutQuickFix: Boolean = false
 
@@ -42,7 +42,7 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
         )
     }
 
-    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object : MvVisitor() {
+    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object: MvVisitor() {
         override fun visitModuleRef(moduleRef: MvModuleRef) {
             if (moduleRef.isMslScope && !isDebugModeEnabled()) {
                 return
@@ -73,17 +73,30 @@ class MvUnresolvedReferenceInspection : MvLocalInspectionTool() {
             if (path.textMatches("_") && path.isInsideAssignmentLhs()) return
             // assert macro
             if (path.text == "assert") return
+
             // attribute values are special case
             if (path.hasAncestor<MvAttrItem>()) return
 
-            val moduleRef = path.moduleRef
-            if (moduleRef != null) {
-                if (moduleRef is MvFQModuleRef) return
-                if (moduleRef.unresolved) {
-                    holder.registerUnresolvedReferenceError(moduleRef)
+            val qualifier = path.qualifier
+            if (qualifier != null
+                // AddressPath, should be checked here
+                && qualifier.pathAddress == null
+            ) {
+                if (qualifier.reference?.resolve() == null) {
                     return
                 }
             }
+//            val qualifier = path.qualifier
+//            if (qualifier)
+
+//            val moduleRef = path.moduleRef
+//            if (moduleRef != null) {
+//                if (moduleRef is MvFQModuleRef) return
+//                if (moduleRef.unresolved) {
+//                    holder.registerUnresolvedReferenceError(moduleRef)
+//                    return
+//                }
+//            }
             if (path.unresolved) {
                 holder.registerUnresolvedReferenceError(path)
             }

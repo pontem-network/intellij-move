@@ -22,9 +22,18 @@ fun MvUseStmt.forEachLeafSpeck(consumer: LeafUseSpeckConsumer) {
     } else {
         for (childSpeck in useGroup.childrenOfType<MvUseSpeck>()) {
             val alias = childSpeck.useAlias
-            if (!consumer.consume(childSpeck.path, alias)) return
+            if (!consumer.consume(childSpeck.path, alias)) continue
         }
     }
+}
+
+fun MvUseStmt.leafSpecks(): List<MvUseSpeck> {
+    val specks = mutableListOf<MvUseSpeck>()
+    forEachLeafSpeck { path, useAlias ->
+        val useSpeck = path.parent as MvUseSpeck
+        specks.add(useSpeck)
+    }
+    return specks
 }
 
 

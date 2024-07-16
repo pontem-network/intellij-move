@@ -1,6 +1,5 @@
 package org.move.lang.core.psi.ext
 
-import com.intellij.lang.ASTNode
 import org.move.ide.inspections.imports.declaredItemScope
 import org.move.lang.core.psi.*
 import org.move.stdext.wrapWithList
@@ -74,6 +73,7 @@ val MvItemUseSpeck.useItems: List<MvUseItem>
         return this.useItem.wrapWithList()
     }
 
+
 sealed class UseSpeck(open val nameOrAlias: String, open val scope: NamedItemScope) {
     data class Module(
         override val nameOrAlias: String,
@@ -93,6 +93,7 @@ sealed class UseSpeck(open val nameOrAlias: String, open val scope: NamedItemSco
         val useItem: MvUseItem,
     ): UseSpeck(nameOrAlias, scope)
 }
+
 
 val MvUseStmt.useSpecks: List<UseSpeck>
     get() {
@@ -120,6 +121,7 @@ val MvUseStmt.useSpecks: List<UseSpeck>
                 }
             }
     }
+
 
 val MvUseStmt.useSpeckText: String
     get() {

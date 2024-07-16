@@ -11,7 +11,8 @@ val MvNamedElement.namespaces: Set<Namespace>
     get() = when (this) {
         is MvFunction -> EnumSet.of(Namespace.FUNCTION)
         is MvStruct -> EnumSet.of(Namespace.TYPE)
-        is MvConst -> EnumSet.of(Namespace.CONST)
+        is MvConst -> EnumSet.of(Namespace.NAME)
+//        is MvConst -> EnumSet.of(Namespace.CONST)
         is MvSchema -> EnumSet.of(Namespace.SCHEMA)
         is MvModule -> EnumSet.of(Namespace.MODULE)
         else -> EnumSet.of(Namespace.NAME)
@@ -21,7 +22,7 @@ val MvNamedElement.namespace
     get() = when (this) {
         is MvFunctionLike -> Namespace.FUNCTION
         is MvStruct -> Namespace.TYPE
-        is MvConst -> Namespace.CONST
+        is MvConst -> Namespace.NAME
         is MvSchema -> Namespace.SCHEMA
         is MvModule -> Namespace.MODULE
         is MvGlobalVariableStmt -> Namespace.NAME

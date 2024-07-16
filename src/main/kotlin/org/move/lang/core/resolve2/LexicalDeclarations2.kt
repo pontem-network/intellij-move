@@ -19,22 +19,23 @@ fun processItemsInScope(
         val stop = when (namespace) {
 
             Namespace.CONST -> {
-                val found = when (scope) {
-                    is MvModuleBlock -> {
-                        val module = scope.parent as MvModule
-                        processor.processAll(
-//                            contextScopeInfo,
-                            module.consts(),
-                        )
-                    }
-                    else -> false
-                }
-//                if (!found) {
-//                    if (scope is MvItemsOwner) {
-//                        if (processor.processAll(scope.allUseItems())) return true
+                false
+//                val found = when (scope) {
+//                    is MvModuleBlock -> {
+//                        val module = scope.parent as MvModule
+//                        processor.processAll(
+////                            contextScopeInfo,
+//                            module.consts(),
+//                        )
 //                    }
+//                    else -> false
 //                }
-                found
+////                if (!found) {
+////                    if (scope is MvItemsOwner) {
+////                        if (processor.processAll(scope.allUseItems())) return true
+////                    }
+////                }
+//                found
             }
 
             Namespace.NAME -> {

@@ -57,11 +57,9 @@ val MvPath.isUpdateFieldArg2: Boolean
 
 val MvPath.identifierName: String? get() = identifier?.text
 
-val MvPath.nullModuleRef: Boolean
-    get() =
-        identifier != null && this.moduleRef == null
-
-val MvPath.isQualPath: Boolean get() = !this.nullModuleRef
+//val MvPath.nullModuleRef: Boolean
+//    get() =
+//        identifier != null && this.moduleRef == null
 
 val MvPath.maybeStruct get() = reference?.resolveWithAliases() as? MvStruct
 
@@ -103,7 +101,8 @@ private fun rootNamespace(rootPath: MvPath): Set<Namespace> {
         parent is MvPathType -> EnumSet.of(Namespace.TYPE)
         parent is MvCallExpr -> EnumSet.of(Namespace.FUNCTION)
 //        parent is MvRefExpr && parent.isAbortCodeConst() -> EnumSet.of(Namespace.CONST)
-        parent is MvRefExpr -> EnumSet.of(Namespace.NAME, Namespace.CONST)
+        parent is MvRefExpr -> EnumSet.of(Namespace.NAME)
+//        parent is MvRefExpr -> EnumSet.of(Namespace.NAME, Namespace.CONST)
         parent is MvStructLitExpr || parent is MvStructPat -> EnumSet.of(Namespace.TYPE)
 //        parent is MvStructLitExpr || parent is MvStructPat -> EnumSet.of(Namespace.NAME)
         parent is MvAccessSpecifier -> EnumSet.of(Namespace.TYPE)

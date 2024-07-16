@@ -2,21 +2,104 @@ package org.move.ide.inspections.imports
 
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
-import org.move.ide.inspections.imports.PathStart.Companion.pathStart
+import org.move.ide.inspections.imports.UseItemType.*
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.stdext.chain
 
-private val MvItemsOwner.useSpecks: List<UseSpeck>
-    get() {
-        val specks = mutableListOf<UseSpeck>()
-        for (stmt in this.useStmtList) {
-            specks.addAll(stmt.useSpecks)
-        }
-        return specks
+class ImportAnalyzer2(val holder: ProblemsHolder): MvVisitor() {
+
+    override fun visitModuleBlock(o: MvModuleBlock) = analyzeImportsOwner(o)
+    override fun visitScriptBlock(o: MvScriptBlock) = analyzeImportsOwner(o)
+    override fun visitModuleSpecBlock(o: MvModuleSpecBlock) = analyzeImportsOwner(o)
+
+    fun analyzeImportsOwner(importsOwner: MvItemsOwner) {
+        analyzeUseStmtsForScope(importsOwner, NamedItemScope.TEST)
+        analyzeUseStmtsForScope(importsOwner, NamedItemScope.MAIN)
     }
 
-private val MvItemsOwner.importOwnerWithSiblings: List<MvItemsOwner>
+    private fun analyzeUseStmtsForScope(rootItemsOwner: MvItemsOwner, itemScope: NamedItemScope) {
+        val allUseItemsHit = mutableSetOf<UseItem>()
+        val rootItemOwnerWithSiblings = rootItemsOwner.itemsOwnerWithSiblings
+
+        val paths = rootItemOwnerWithSiblings
+            .flatMap { it.descendantsOfType<MvPath>() }
+            .filter { it.basePath() == it }
+            .filter { it.pathUsageScope == itemScope }
+            .filter { !it.hasAncestor<MvUseSpeck>() }
+
+        for (path in paths) {
+            val basePathType = path.basePathType()
+            for (itemsOwner in path.ancestorsOfType<MvItemsOwner>()) {
+                val useItems =
+                    itemsOwner.itemsOwnerWithSiblings
+                        .flatMap { it.useItems }.filter { it.scope == itemScope }
+
+                val useItemHit =
+                    when (basePathType) {
+                        is BasePathType.Item -> {
+                            useItems.filter { it.type == ITEM }
+                                // only hit first encountered to remove duplicates
+                                .firstOrNull { it.nameOrAlias == basePathType.itemName }
+                        }
+                        is BasePathType.Module -> {
+                            useItems.filter { it.type == MODULE || it.type == SELF_MODULE }
+                                // only hit first encountered to remove duplicates
+                                .firstOrNull { it.nameOrAlias == basePathType.moduleName }
+                        }
+                        // BasePathType.Address is fq path, and doesn't participate in imports
+                        else -> null
+                    }
+
+                if (useItemHit != null) {
+                    allUseItemsHit.add(useItemHit)
+                    break
+                }
+            }
+        }
+
+        // includes self
+        val reachableItemsOwners = rootItemsOwner.descendantsOfTypeOrSelf<MvItemsOwner>()
+        for (itemsOwner in reachableItemsOwners) {
+            val scopeUseStmts = itemsOwner.useStmtList.filter { it.declaredItemScope == itemScope }
+            for (useStmt in scopeUseStmts) {
+                val unusedUseItems = useStmt.useItems.toSet() - allUseItemsHit
+                holder.registerStmtSpeckError2(useStmt, unusedUseItems)
+            }
+        }
+    }
+}
+
+fun ProblemsHolder.registerStmtSpeckError2(useStmt: MvUseStmt, useItems: Set<UseItem>) {
+    val moduleUseItems = useItems.filter { it.type == MODULE }
+    if (moduleUseItems.isNotEmpty()) {
+        this.registerProblem(
+            useStmt,
+            "Unused use item",
+            ProblemHighlightType.LIKE_UNUSED_SYMBOL
+        )
+        return
+    }
+
+    if (useStmt.useItems.size == useItems.size) {
+        // all inner speck types are covered, highlight complete useStmt
+        this.registerProblem(
+            useStmt,
+            "Unused use item",
+            ProblemHighlightType.LIKE_UNUSED_SYMBOL
+        )
+    } else {
+        for (useItem in useItems) {
+            this.registerProblem(
+                useItem.useSpeck,
+                "Unused use item",
+                ProblemHighlightType.LIKE_UNUSED_SYMBOL
+            )
+        }
+    }
+}
+
+val MvItemsOwner.itemsOwnerWithSiblings: List<MvItemsOwner>
     get() {
         return when (this) {
             is MvModuleBlock -> {
@@ -35,99 +118,4 @@ private val MvItemsOwner.importOwnerWithSiblings: List<MvItemsOwner>
             else -> listOf(this)
         }
     }
-
-class ImportAnalyzer(val holder: ProblemsHolder): MvVisitor() {
-
-    override fun visitModuleBlock(o: MvModuleBlock) = analyzeImportsOwner(o)
-
-    override fun visitScriptBlock(o: MvScriptBlock) = analyzeImportsOwner(o)
-
-    override fun visitModuleSpecBlock(o: MvModuleSpecBlock) = analyzeImportsOwner(o)
-
-    fun analyzeImportsOwner(importsOwner: MvItemsOwner) {
-        analyzeUseStmtsForScope(importsOwner, NamedItemScope.TEST)
-        analyzeUseStmtsForScope(importsOwner, NamedItemScope.MAIN)
-    }
-
-    private fun analyzeUseStmtsForScope(rootImportOwner: MvItemsOwner, itemScope: NamedItemScope) {
-        val allSpecksHit = mutableSetOf<UseSpeck>()
-        val rootImportOwnerWithSiblings = rootImportOwner.importOwnerWithSiblings
-        val reachablePaths =
-            rootImportOwnerWithSiblings
-                .flatMap { it.descendantsOfType<MvPath>() }
-                .mapNotNull { path -> path.pathStart?.let { Pair(path, it) } }
-                .filter { it.second.usageScope == itemScope }
-        for ((path, start) in reachablePaths) {
-            for (importOwner in path.ancestorsOfType<MvItemsOwner>()) {
-                val useSpecks =
-                    importOwner.importOwnerWithSiblings
-                        .flatMap { it.useSpecks }
-                        .filter { it.scope == itemScope }
-                val speckHit =
-                    when (start) {
-                        is PathStart.Module ->
-                            useSpecks
-                                .filter { it is UseSpeck.Module || it is UseSpeck.SelfModule }
-                                // only hit first encountered to remove duplicates
-                                .firstOrNull { it.nameOrAlias == start.modName }
-                        is PathStart.Item ->
-                            useSpecks.filterIsInstance<UseSpeck.Item>()
-                                // only hit first encountered to remove duplicates
-                                .firstOrNull { it.nameOrAlias == start.itemName }
-                        // PathStart.Address is fq path, and doesn't participate in imports
-                        else -> null
-                    }
-                if (speckHit != null) {
-                    allSpecksHit.add(speckHit)
-                    break
-                }
-            }
-        }
-
-        // includes self
-        val reachableImportOwners = rootImportOwner.descendantsOfTypeOrSelf<MvItemsOwner>()
-        for (importsOwner in reachableImportOwners) {
-            val scopeUseStmts = importsOwner.useStmtList.filter { it.declaredItemScope == itemScope }
-            for (useStmt in scopeUseStmts) {
-                val unusedSpecks = useStmt.useSpecks.toSet() - allSpecksHit
-                holder.registerStmtSpeckError(useStmt, unusedSpecks)
-            }
-        }
-    }
-}
-
-private fun ProblemsHolder.registerStmtSpeckError(useStmt: MvUseStmt, specks: Set<UseSpeck>) {
-    val moduleSpecks = specks.filterIsInstance<UseSpeck.Module>()
-    if (moduleSpecks.isNotEmpty()) {
-        this.registerProblem(
-            useStmt,
-            "Unused use item",
-            ProblemHighlightType.LIKE_UNUSED_SYMBOL
-        )
-        return
-    }
-
-    val itemSpecks = specks
-    if (useStmt.useSpecks.size == itemSpecks.size) {
-        // all inner speck types are covered, highlight complete useStmt
-        this.registerProblem(
-            useStmt,
-            "Unused use item",
-            ProblemHighlightType.LIKE_UNUSED_SYMBOL
-        )
-    } else {
-        for (itemUseSpeck in itemSpecks) {
-            val useItem = when (itemUseSpeck) {
-                is UseSpeck.SelfModule -> itemUseSpeck.useItem
-                is UseSpeck.Item -> itemUseSpeck.useItem
-                else -> continue
-            }
-            this.registerProblem(
-                useItem,
-                "Unused use item",
-                ProblemHighlightType.LIKE_UNUSED_SYMBOL
-            )
-        }
-    }
-}
 

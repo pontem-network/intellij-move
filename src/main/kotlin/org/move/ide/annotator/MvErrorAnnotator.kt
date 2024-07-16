@@ -199,7 +199,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
 
         val parent = methodOrPath.parent
         if (item == null && methodOrPath is MvPath
-            && methodOrPath.nullModuleRef && methodOrPath.identifierName == "vector"
+            && methodOrPath.qualifier == null && methodOrPath.identifierName == "vector"
         ) {
             val expectedCount = 1
             if (realCount != expectedCount) {

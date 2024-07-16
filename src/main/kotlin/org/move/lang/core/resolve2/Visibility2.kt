@@ -7,8 +7,7 @@ import org.move.lang.core.resolve.ModInfo
 import org.move.lang.core.resolve.VisibilityFilter
 import org.move.lang.core.resolve.VisibilityStatus.Invisible
 import org.move.lang.core.resolve.VisibilityStatus.Visible
-import org.move.lang.core.resolve.ref.Namespace.CONST
-import org.move.lang.core.resolve.ref.Namespace.TYPE
+import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve.ref.Visibility2
 import org.move.lang.core.resolve.ref.Visibility2.*
 
@@ -43,7 +42,7 @@ fun ItemVisibility.createFilter(): VisibilityFilter {
             if (item.isMslOnlyItem) return@VisibilityFilter Visible
 
             // consts are importable in tests
-            if (pathUsageScope.isTest && namespaces.contains(CONST)) return@VisibilityFilter Visible
+            if (pathUsageScope.isTest && namespaces.contains(NAME)) return@VisibilityFilter Visible
         }
 
         // #[test_only] items in non-test-only scope

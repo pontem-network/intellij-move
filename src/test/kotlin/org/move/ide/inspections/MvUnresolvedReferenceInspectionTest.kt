@@ -133,11 +133,11 @@ class MvUnresolvedReferenceInspectionTest : InspectionTestBase(MvUnresolvedRefer
     """
     )
 
-    fun `test no unresolved reference for fully qualified module`() = checkByText(
+    fun `test unresolved reference for fully qualified module`() = checkByText(
         """
         module 0x1::M {
             fun main() {
-                0x1::Debug::print(1);
+                0x1::<error descr="Unresolved reference: `Debug`">Debug</error>::print(1);
             }
         }
     """

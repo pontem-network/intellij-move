@@ -76,7 +76,7 @@ class AutoImportFix(element: MvReferenceElement): DiagnosticFix<MvReferenceEleme
             if (refElement.reference == null) return null
             if (refElement.resolvable) return null
             if (refElement.ancestorStrict<MvUseStmt>() != null) return null
-            if (refElement is MvPath && refElement.moduleRef != null) return null
+            if (refElement is MvPath && refElement.qualifier != null) return null
 
             // TODO: no auto-import if name in scope, but cannot be resolved
 

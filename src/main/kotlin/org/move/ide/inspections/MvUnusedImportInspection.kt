@@ -4,11 +4,12 @@ import com.intellij.codeInsight.daemon.HighlightDisplayKey
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import com.intellij.profile.codeInspection.InspectionProjectProfileManager
-import org.move.ide.inspections.imports.ImportAnalyzer
+import org.move.ide.inspections.imports.ImportAnalyzer2
 
-class MvUnusedImportInspection : MvLocalInspectionTool() {
+class MvUnusedImportInspection: MvLocalInspectionTool() {
 
-    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = ImportAnalyzer(holder)
+    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = ImportAnalyzer2(holder)
+//    override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = ImportAnalyzer(holder)
 
     @Suppress("CompanionObjectInExtension")
     companion object {

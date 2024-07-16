@@ -184,13 +184,13 @@ module 0x1::M2 {
     }
     """)
 
-    fun `test skip analyzing for incomplete self item alias`() = checkWarnings("""
+    fun `test incomplete alias considered absent for module`() = checkWarnings("""
     module 0x1::coin {
         struct Coin {}
         public fun get_coin(): Coin {}
     }    
     module 0x1::Main {
-        use 0x1::coin::{Self as<error descr="IDENTIFIER expected, got ','">,</error> Self, Coin};
+        use 0x1::coin::{Self as<error descr="IDENTIFIER expected, got ','">,</error> <warning descr="Unused use item">Self</warning>, Coin};
         
         fun call(): Coin {
             coin::get_coin();
@@ -198,13 +198,13 @@ module 0x1::M2 {
     }
     """)
 
-    fun `test skip analyzing for incomplete item alias`() = checkWarnings("""
+    fun `test incomplete alias considered absent for item`() = checkWarnings("""
     module 0x1::coin {
         struct Coin {}
         public fun get_coin(): Coin {}
     }    
     module 0x1::Main {
-        use 0x1::coin::{Coin as<error descr="IDENTIFIER expected, got ','">,</error> Coin};
+        use 0x1::coin::{Coin as<error descr="IDENTIFIER expected, got ','">,</error> <warning descr="Unused use item">Coin</warning>};
         
         fun call(): Coin {
         }
