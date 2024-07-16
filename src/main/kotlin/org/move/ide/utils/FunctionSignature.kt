@@ -48,7 +48,7 @@ data class FunctionSignature(
                     function?.getSignature()
                 }
                 is MvMethodCall -> {
-                    val function = callable.reference.resolveWithAliases() as? MvFunction
+                    val function = callable.reference.resolveFollowingAliases() as? MvFunction
                     function?.getSignature()
                 }
                 else -> null

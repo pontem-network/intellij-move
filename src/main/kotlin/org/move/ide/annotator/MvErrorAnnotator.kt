@@ -193,7 +193,7 @@ class MvErrorAnnotator: MvAnnotatorBase() {
     }
 
     private fun checkMethodOrPath(methodOrPath: MvMethodOrPath, holder: MvAnnotationHolder) {
-        val item = methodOrPath.reference?.resolveWithAliases()
+        val item = methodOrPath.reference?.resolveFollowingAliases()
         val msl = methodOrPath.isMslScope
         val realCount = methodOrPath.typeArguments.size
 
