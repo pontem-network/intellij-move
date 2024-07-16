@@ -62,8 +62,6 @@ class HighlightingAnnotator: MvAnnotatorBase() {
         if (element is MvAbility) return MvColor.ABILITY
         if (element is MvTypeParameter) return MvColor.TYPE_PARAMETER
         if (element is MvItemSpecTypeParameter) return MvColor.TYPE_PARAMETER
-        if (element is MvModuleRef && element.isSelfModuleRef) return MvColor.KEYWORD
-        if (element is MvUseItem && element.text == "Self") return MvColor.KEYWORD
         if (element is MvFunction)
             return when {
                 element.isInline -> MvColor.INLINE_FUNCTION
@@ -106,10 +104,12 @@ class HighlightingAnnotator: MvAnnotatorBase() {
     }
 
     private fun highlightPathElement(path: MvPath): MvColor? {
+        val identifierName = path.identifierName
+        if (identifierName == "Self") return MvColor.KEYWORD
+
         // any qual :: access is not highlighted
         if (path.qualifier != null) return null
 
-        val identifierName = path.identifierName
         val pathOwner = path.parent
         return when (pathOwner) {
             is MvPathType -> {

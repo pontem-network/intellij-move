@@ -121,17 +121,3 @@ val MvUseStmt.useSpecks: List<UseSpeck>
                 }
             }
     }
-
-
-val MvUseStmt.useSpeckText: String
-    get() {
-        val moduleUseSpeck = this.moduleUseSpeck
-        if (moduleUseSpeck != null) {
-            return moduleUseSpeck.text
-        }
-        val itemUseSpeck = this.itemUseSpeck
-        if (itemUseSpeck != null) {
-            return itemUseSpeck.text
-        }
-        return ""
-    }

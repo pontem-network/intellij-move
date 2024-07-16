@@ -41,6 +41,7 @@ val MvUseItem.moduleName: String
     }
 
 val MvUseItem.isSelf: Boolean get() = this.identifier.textMatches("Self")
+val MvUseSpeck.isSelf: Boolean get() = this.path.identifier?.textMatches("Self") ?: false
 
 class MvUseItemReferenceElement(
     element: MvUseItem

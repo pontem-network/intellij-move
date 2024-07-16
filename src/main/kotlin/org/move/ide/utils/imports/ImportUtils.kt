@@ -120,6 +120,7 @@ private fun tryGroupWithItemSpeck(
 
 private val <T : MvElement> List<T>.lastElement: T? get() = maxByOrNull { it.textOffset }
 
+@Suppress("SameReturnValue")
 private fun insertUseStmtAtTheCorrectLocation(mod: MvItemsOwner, useStmt: MvUseStmt): Boolean {
     val psiFactory = MvPsiFactory(mod.project)
     val newline = psiFactory.createNewline()

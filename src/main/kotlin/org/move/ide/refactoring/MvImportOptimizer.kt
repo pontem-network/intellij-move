@@ -46,11 +46,11 @@ class MvImportOptimizer : ImportOptimizer {
                     (useElement.nextSibling as? PsiWhiteSpace)?.delete()
                     useElement.delete()
                 }
-                is MvUseItem -> {
+                is MvUseSpeck -> {
                     // remove whitespace following comma, if first position in a group
-                    val useItemGroup = useElement.parent as? MvUseItemGroup
-                    if (useItemGroup != null
-                        && useItemGroup.useItemList.firstOrNull() == useElement
+                    val useGroup = useElement.parent as? MvUseGroup
+                    if (useGroup != null
+                        && useGroup.useSpeckList.firstOrNull() == useElement
                     ) {
                         val followingComma = useElement.getNextNonCommentSibling()
                         followingComma?.rightSiblings
@@ -67,9 +67,9 @@ class MvImportOptimizer : ImportOptimizer {
         val useStmtsWithOwner = file.descendantsOfType<MvUseStmt>().groupBy { it.parent }
         for ((stmtOwner, useStmts) in useStmtsWithOwner.entries) {
             useStmts.forEach { useStmt ->
-                useStmt.itemUseSpeck?.let {
+                useStmt.useSpeck?.let {
                     removeCurlyBracesIfPossible(it, psiFactory)
-                    it.useItemGroup?.sortUseItems()
+                    it.useGroup?.sortUseSpecks()
                 }
             }
             if (stmtOwner is MvModuleBlock) {
@@ -116,19 +116,28 @@ class MvImportOptimizer : ImportOptimizer {
     }
 
     companion object {
-        fun MvUseItemGroup.sortUseItems() {
-            val sortedList = useItemList
+        private fun MvUseGroup.sortUseSpecks() {
+            val sortedList = useSpeckList
                 .sortedWith(COMPARATOR_FOR_ITEMS_IN_USE_GROUP)
                 .map { it.copy() }
-            useItemList.zip(sortedList).forEach { it.first.replace(it.second) }
+            useSpeckList.zip(sortedList).forEach { it.first.replace(it.second) }
         }
 
         /** Returns true if successfully removed, e.g. `use aaa::{bbb};` -> `use aaa::bbb;` */
-        private fun removeCurlyBracesIfPossible(useSpeck: MvItemUseSpeck, psiFactory: MvPsiFactory) {
-            val useItemText = useSpeck.useItemGroup?.asTrivial?.text ?: return
-            val fqModuleText = useSpeck.fqModuleRef.text
-            val newUseSpeck = psiFactory.itemUseSpeck(fqModuleText, useItemText)
-            useSpeck.replace(newUseSpeck)
+        private fun removeCurlyBracesIfPossible(rootUseSpeck: MvUseSpeck, psiFactory: MvPsiFactory) {
+            val itemUseSpeck = rootUseSpeck.useGroup?.asTrivial ?: return
+
+            val newUseSpeck = psiFactory.useSpeck("0x1::dummy::call")
+            val newUseSpeckPath = newUseSpeck.path
+            newUseSpeckPath.path?.replace(rootUseSpeck.path)
+            itemUseSpeck.path.identifier?.let { newUseSpeckPath.identifier?.replace(it) }
+
+            val useAlias = itemUseSpeck.useAlias
+            if (useAlias != null) {
+                newUseSpeck.add(useAlias)
+            }
+
+            rootUseSpeck.replace(newUseSpeck)
         }
 
         private fun reorderUseStmtsIntoGroups(useScope: MvItemsOwner) {

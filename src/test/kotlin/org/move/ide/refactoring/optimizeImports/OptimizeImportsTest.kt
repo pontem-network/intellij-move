@@ -180,13 +180,13 @@ class OptimizeImportsTest : OptimizeImportsTestBase() {
             use BBB::M2::S2;
             use AAA::M1::S1;
             use AAA::M1::SS1;
-            use Std::Signer;
-            use std::signature;
             use aptos_std::table;
             use aptos_std::iter_table;
             use aptos_framework::coin;
             #[test_only]
             use Std::Errors;
+            use Std::Signer;
+            use std::signature;
         
             fun call(a: S1, b: S2, c: SS1) {
                 Signer::address_of();

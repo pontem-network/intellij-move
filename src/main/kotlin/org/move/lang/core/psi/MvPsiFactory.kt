@@ -53,11 +53,6 @@ class MvPsiFactory(val project: Project) {
         createFromText<MvModule>("module $text {}")?.nameIdentifier
             ?: error("Failed to create identifier: `$text`")
 
-//    fun createColon(): PsiElement =
-//        const("const C: u8 = 1;")
-//            .descendantOfTypeStrict<MvTypeAnnotation>()!!
-//            .getChild(MvElementTypes.COLON)!!
-
     fun createComma(): PsiElement =
         createFromText<MvValueArgument>(
             """
