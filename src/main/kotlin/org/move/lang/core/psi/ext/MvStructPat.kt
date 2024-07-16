@@ -12,4 +12,4 @@ val MvStructPat.patFieldNames: List<String>
     get() =
         patFields.map { it.referenceName }
 
-val MvStructPat.structItem: MvStruct? get() = this.path.reference?.resolveWithAliases() as? MvStruct
+val MvStructPat.structItem: MvStruct? get() = this.path.reference?.resolveFollowingAliases() as? MvStruct

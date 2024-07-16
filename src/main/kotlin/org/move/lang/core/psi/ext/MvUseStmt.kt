@@ -25,11 +25,11 @@ val MvUseStmt.addressRef: MvAddressRef?
         return null
     }
 
-val MvUseStmt.useGroupLevel: Int
-    get() {
-        if (this.hasTestOnlyAttr) return 5
-        return this.addressRef?.useGroupLevel ?: -1
-    }
+//val MvUseStmt.useGroupLevel: Int
+//    get() {
+//        if (this.hasTestOnlyAttr) return 5
+//        return this.addressRef?.useGroupLevel ?: -1
+//    }
 
 val MvUseStmt.fqModuleText: String?
     get() {

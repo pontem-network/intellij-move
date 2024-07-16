@@ -19,7 +19,7 @@ class RedundantQualifiedPathInspection : MvLocalInspectionTool() {
                 val pathText = path.text
                     .replace(path.typeArgumentList?.text.orEmpty(), "")
                     .replace(Regex("\\s"), "")
-                val item = path.reference?.resolveWithAliases() ?: return
+                val item = path.reference?.resolveFollowingAliases() ?: return
 
                 val importsOwner = path.containingScript?.scriptBlock
                     ?: path.containingModule?.moduleBlock

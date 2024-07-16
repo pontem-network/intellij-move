@@ -16,7 +16,7 @@ class ReplaceWithIndexExprInspection: MvLocalInspectionTool() {
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): MvVisitor {
         return object: MvVisitor() {
             override fun visitCallExpr(callExpr: MvCallExpr) {
-                val function = callExpr.path.reference?.resolveWithAliases() as? MvFunction ?: return
+                val function = callExpr.path.reference?.resolveFollowingAliases() as? MvFunction ?: return
                 val module = function.module ?: return
                 val moveProject = function.moveProject ?: return
                 val msl = callExpr.isMsl()

@@ -128,7 +128,7 @@ class HighlightingAnnotator: MvAnnotatorBase() {
                 }
             }
             is MvCallExpr -> {
-                val item = path.reference?.resolveWithAliases()
+                val item = path.reference?.resolveFollowingAliases()
                 when {
                     item is MvSpecFunction
                             && item.isNative

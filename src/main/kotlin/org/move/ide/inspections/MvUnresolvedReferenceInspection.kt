@@ -7,7 +7,6 @@ import org.move.cli.settings.isDebugModeEnabled
 import org.move.ide.inspections.imports.AutoImportFix
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
-import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.TyUnknown
 
@@ -17,23 +16,23 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
 
     override val isSyntaxOnly get() = false
 
-    private fun ProblemsHolder.registerUnresolvedReferenceError(element: MvReferenceElement) {
+    private fun ProblemsHolder.registerUnresolvedReferenceError(path: MvPath) {
         // no errors in pragmas
-        if (element.hasAncestor<MvPragmaSpecStmt>()) return
+        if (path.hasAncestor<MvPragmaSpecStmt>()) return
 
-        val candidates = AutoImportFix.findApplicableContext(element)?.candidates.orEmpty()
+        val candidates = AutoImportFix.findApplicableContext(path)?.candidates.orEmpty()
         if (candidates.isEmpty() && ignoreWithoutQuickFix) return
 
-        val referenceName = element.referenceName ?: return
-        val parent = element.parent
+        val referenceName = path.referenceName ?: return
+        val parent = path.parent
         val description = when (parent) {
             is MvPathType -> "Unresolved type: `$referenceName`"
             is MvCallExpr -> "Unresolved function: `$referenceName`"
             else -> "Unresolved reference: `$referenceName`"
         }
 
-        val highlightedElement = element.referenceNameElement ?: element
-        val fix = if (candidates.isNotEmpty()) AutoImportFix(element) else null
+        val highlightedElement = path.referenceNameElement ?: path
+        val fix = if (candidates.isNotEmpty()) AutoImportFix(path) else null
         registerProblem(
             highlightedElement,
             description,
@@ -43,21 +42,21 @@ class MvUnresolvedReferenceInspection: MvLocalInspectionTool() {
     }
 
     override fun buildMvVisitor(holder: ProblemsHolder, isOnTheFly: Boolean) = object: MvVisitor() {
-        override fun visitModuleRef(moduleRef: MvModuleRef) {
-            if (moduleRef.isMslScope && !isDebugModeEnabled()) {
-                return
-            }
-            // skip this check, as it will be checked in MvPath visitor
-            if (moduleRef.ancestorStrict<MvPath>() != null) return
-
-            // skip those two, checked in UseSpeck checks later
-            if (moduleRef.ancestorStrict<MvUseStmt>() != null) return
-            if (moduleRef is MvFQModuleRef) return
-
-            if (moduleRef.unresolved) {
-                holder.registerUnresolvedReferenceError(moduleRef)
-            }
-        }
+//        override fun visitModuleRef(moduleRef: MvModuleRef) {
+//            if (moduleRef.isMslScope && !isDebugModeEnabled()) {
+//                return
+//            }
+//            // skip this check, as it will be checked in MvPath visitor
+//            if (moduleRef.ancestorStrict<MvPath>() != null) return
+//
+//            // skip those two, checked in UseSpeck checks later
+//            if (moduleRef.ancestorStrict<MvUseStmt>() != null) return
+//            if (moduleRef is MvFQModuleRef) return
+//
+//            if (moduleRef.unresolved) {
+//                holder.registerUnresolvedReferenceError(moduleRef)
+//            }
+//        }
 
         override fun visitPath(path: MvPath) {
             // skip specs in non-dev mode, too many false-positives

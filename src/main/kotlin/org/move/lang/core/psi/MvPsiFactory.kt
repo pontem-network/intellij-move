@@ -129,15 +129,26 @@ class MvPsiFactory(val project: Project) {
         }
     }
 
-    fun useItemGroup(items: List<String>): MvUseItemGroup {
+    fun useGroup(items: List<String>): MvUseItemGroup {
         val allItemsText = items.joinToString(", ")
         return createFromText("module 0x1::_DummyModule { use 0x1::Module::{$allItemsText}; }")
             ?: error("Failed to create an item import from text: `$allItemsText`")
     }
 
-    fun useItem(text: String): MvUseItem {
-        return createFromText("module 0x1::_DummyModule { use 0x1::Module::$text; }")
+    fun useSpeckWithEmptyUseGroup(): MvUseSpeck {
+        return createFromText("module 0x1::_DummyModule { use 0x1::dummy::{}; }")
+            ?: error("Failed to create a use speck")
+    }
+
+    fun useSpeck(text: String): MvUseSpeck {
+        return createFromText("module 0x1::_DummyModule { use $text; }")
             ?: error("Failed to create an item import from text: `$text`")
+    }
+
+    fun useSpeckForGroup(text: String): MvUseSpeck {
+        val useGroup = createFromText<MvUseGroup>("module 0x1::_DummyModule { use 0x1::Module::{$text}; }")
+            ?: error("Failed to create an item import from text: `$text`")
+        return useGroup.useSpeckList.first()
     }
 
     fun acquires(text: String): MvAcquiresType {

@@ -49,6 +49,6 @@ private fun MvUseItemGroup.removeCurlyBraces() {
     if (aliasName != null) {
         newText += " as $aliasName"
     }
-    val newItemUse = psiFactory.useItem(newText)
+    val newItemUse = psiFactory.useSpeckForGroup(newText)
     this.replace(newItemUse)
 }

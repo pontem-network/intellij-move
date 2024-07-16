@@ -5,6 +5,8 @@ import org.move.cli.settings.debugErrorOrFallback
 import org.move.ide.annotator.BUILTIN_TYPE_IDENTIFIERS
 import org.move.ide.annotator.PRIMITIVE_TYPE_IDENTIFIERS
 import org.move.ide.annotator.SPEC_ONLY_PRIMITIVE_TYPES
+import org.move.ide.inspections.imports.BasePathType
+import org.move.ide.inspections.imports.basePathType
 import org.move.lang.core.psi.*
 import org.move.lang.core.resolve.ref.MvPath2Reference
 import org.move.lang.core.resolve.ref.MvReferenceElement
@@ -61,9 +63,9 @@ val MvPath.identifierName: String? get() = identifier?.text
 //    get() =
 //        identifier != null && this.moduleRef == null
 
-val MvPath.maybeStruct get() = reference?.resolveWithAliases() as? MvStruct
+val MvPath.maybeStruct get() = reference?.resolveFollowingAliases() as? MvStruct
 
-val MvPath.maybeSchema get() = reference?.resolveWithAliases() as? MvSchema
+val MvPath.maybeSchema get() = reference?.resolveFollowingAliases() as? MvSchema
 
 fun MvPath.allowedNamespaces(): Set<Namespace> {
     val parent = this.parent
@@ -132,17 +134,18 @@ abstract class MvPathMixin(node: ASTNode): MvElementImpl(node), MvPath {
     override fun getReference(): MvPath2Reference? = Path2ReferenceImpl(this)
 }
 
-fun MvReferenceElement.importCandidateNamespaces(): Set<Namespace> {
+fun MvPath.importCandidateNamespaces(): Set<Namespace> {
     val parent = this.parent
     return when (parent) {
         is MvPathType -> setOf(Namespace.TYPE)
         is MvSchemaLit, is MvSchemaRef -> setOf(Namespace.SCHEMA)
-        else ->
-            when (this) {
-                is MvModuleRef -> setOf(Namespace.MODULE)
-                is MvPath -> setOf(Namespace.NAME, Namespace.FUNCTION)
-                else -> Namespace.all()
+        else -> {
+            val baseBaseType = this.basePathType()
+            when (baseBaseType) {
+                is BasePathType.Module -> EnumSet.of(Namespace.MODULE)
+                else -> EnumSet.of(Namespace.NAME, Namespace.FUNCTION)
             }
+        }
     }
 }
 

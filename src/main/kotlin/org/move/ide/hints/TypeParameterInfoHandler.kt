@@ -19,7 +19,7 @@ class TypeParameterInfoHandler :
 
     override fun calculateParameterInfo(element: MvTypeArgumentList): Array<TypeParamsDescription>? {
         val parentPath = element.parent as? MvPath ?: return null
-        val owner = parentPath.reference?.resolveWithAliases() ?: return null
+        val owner = parentPath.reference?.resolveFollowingAliases() ?: return null
         // if zero type parameters
         if (owner !is MvTypeParametersOwner) return null
 

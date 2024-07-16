@@ -1,6 +1,7 @@
 package org.move.ide.inspections.imports
 
 import org.move.ide.utils.imports.ImportCandidateCollector
+import org.move.lang.core.psi.MvPath
 import org.move.lang.core.resolve.ref.MvReferenceElement
 import org.move.utils.tests.FileTreeBuilder
 import org.move.utils.tests.MvProjectTestBase
@@ -221,11 +222,12 @@ module 0x1::main {
         val refClass = MvReferenceElement::class.java
         val (refElement, data, _) =
             myFixture.findElementWithDataAndOffsetInEditor(refClass, "^")
-        val targetName = refElement.referenceName ?: error("No name for reference element")
+        val path = refElement as? MvPath ?: error("no path at caret")
+        val targetName = path.referenceName ?: error("No name for reference element")
 
         val candidates =
             ImportCandidateCollector
-                .getImportCandidates(ImportContext.Companion.from(refElement), targetName)
+                .getImportCandidates(ImportContext.Companion.from(path), targetName)
                 .map { it.qualName.editorText() }
         if (data == "[]") {
             check(candidates.isEmpty()) { "Non-empty candidates: $candidates" }

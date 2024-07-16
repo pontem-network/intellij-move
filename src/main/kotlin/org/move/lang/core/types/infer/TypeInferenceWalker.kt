@@ -291,7 +291,7 @@ class TypeInferenceWalker(
                 return funcItem.rawReturnType(true)
             }
         }
-        val item = refExpr.path.reference?.resolveWithAliases() ?: return TyUnknown
+        val item = refExpr.path.reference?.resolveFollowingAliases() ?: return TyUnknown
         val ty = when (item) {
             is MvBindingPat -> ctx.getPatType(item)
             is MvConst -> item.type?.loweredType(msl) ?: TyUnknown
@@ -353,7 +353,7 @@ class TypeInferenceWalker(
 
     private fun inferCallExprTy(callExpr: MvCallExpr, expected: Expectation): Ty {
         val path = callExpr.path
-        val item = path.reference?.resolveWithAliases()
+        val item = path.reference?.resolveFollowingAliases()
         val baseTy =
             when (item) {
                 is MvFunctionLike -> {
