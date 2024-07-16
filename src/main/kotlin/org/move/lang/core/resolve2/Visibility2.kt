@@ -1,5 +1,7 @@
 package org.move.lang.core.resolve2
 
+import org.move.cli.containingMovePackage
+import org.move.cli.settings.moveSettings
 import org.move.ide.inspections.imports.pathUsageScope
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
@@ -11,14 +13,17 @@ import org.move.lang.core.resolve.ref.Namespace.*
 import org.move.lang.core.resolve.ref.Visibility2
 import org.move.lang.core.resolve.ref.Visibility2.*
 
-data class ItemVisibility(
+data class ItemVisibilityInfo(
     val item: MvItemElement,
     val isTestOnly: Boolean,
     val vis: Visibility2,
 )
 
+val MvItemElement.visInfo: ItemVisibilityInfo get() =
+    ItemVisibilityInfo(this, isTestOnly = this.hasTestOnlyAttr, vis = this.visibility2)
+
 /** Creates filter which determines whether item with [this] visibility is visible from specific [ModInfo] */
-fun ItemVisibility.createFilter(): VisibilityFilter {
+fun ItemVisibilityInfo.createFilter(): VisibilityFilter {
     val (item, isTestOnly, visibility) = this
     return VisibilityFilter { path, namespaces ->
 
@@ -33,7 +38,7 @@ fun ItemVisibility.createFilter(): VisibilityFilter {
         if (attrItem != null) return@VisibilityFilter Visible
 
         val pathUsageScope = path.pathUsageScope
-        val useSpeck = path.ancestorStrict<MvUseSpeck>()
+        val useSpeck = path.useSpeck
         if (useSpeck != null) {
             // inside import, all visibilities except for private work
             if (visibility is Restricted) return@VisibilityFilter Visible
@@ -64,16 +69,18 @@ fun ItemVisibility.createFilter(): VisibilityFilter {
                     is Restricted.Script -> {
                         val containingFunction = path.containingFunction
                         if (containingFunction != null) {
-                            if (containingFunction.isEntry
-                                || containingFunction.isPublicScript
+                            if (containingFunction.isEntry || containingFunction.isPublicScript
                             ) return@VisibilityFilter Visible
                         }
                         if (path.containingScript != null) return@VisibilityFilter Visible
                         Invisible
                     }
                     is Restricted.Package -> {
-                        // todo
-                        Visible
+                        if (!item.project.moveSettings.enablePublicPackage) {
+                            return@VisibilityFilter Invisible
+                        }
+                        val pathPackage = path.containingMovePackage ?: return@VisibilityFilter Invisible
+                        if (visibility.originPackage == pathPackage) Visible else Invisible
                     }
                 }
             }

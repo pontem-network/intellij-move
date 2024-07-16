@@ -400,6 +400,40 @@ class ResolveFunctionTest: ResolveTestCase() {
     """
     )
 
+    fun `test public script function available in entry function`() = checkByCode(
+        """
+    module 0x1::M {
+        public(script) fun call() {}
+                           //X
+    }    
+    module 0x1::main {
+        use 0x1::M::call;
+        
+        entry fun test_1() {
+            call();
+            //^
+        }
+    }
+    """
+    )
+
+    fun `test public script function available in public script function`() = checkByCode(
+        """
+    module 0x1::M {
+        public(script) fun call() {}
+                           //X
+    }    
+    module 0x1::main {
+        use 0x1::M::call;
+        
+        public(script) fun test_1() {
+            call();
+            //^
+        }
+    }
+    """
+    )
+
     fun `test resolve fun in test_only module from another test_only`() = checkByCode(
         """
     #[test_only] 
@@ -955,6 +989,19 @@ module 0x1::mod {
             public fun main() {
                 call();
                 //^
+            }
+        }
+    """)
+
+    fun `test cannot resolve function that friend without friend statement`() = checkByCode("""
+        module 0x1::m {
+            public(friend) fun call() {}
+        }        
+        module 0x1::main {
+            use 0x1::m::call;
+            fun main() {
+                call()
+                //^ unresolved
             }
         }
     """)

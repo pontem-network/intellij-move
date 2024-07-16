@@ -4,7 +4,6 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.Namespace
-import org.move.lang.core.resolve.ref.Namespace.NAME
 import java.util.*
 
 val MvNamedElement.namespaces: Set<Namespace>
@@ -46,8 +45,7 @@ fun processItemDeclarations(
         val namespace = item.namespace
         if (namespace !in ns) continue
 
-        val itemVisibility = ItemVisibility(item, isTestOnly = item.hasTestOnlyAttr, vis = item.visibility2)
-        val visibilityFilter = itemVisibility.createFilter()
+        val visibilityFilter = item.visInfo.createFilter()
         if (processor.process(name, item, EnumSet.of(namespace), visibilityFilter)) return true
     }
 

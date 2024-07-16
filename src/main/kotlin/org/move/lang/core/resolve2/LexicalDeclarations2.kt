@@ -5,6 +5,7 @@ import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.LetStmtScope.*
+import org.move.lang.core.resolve.VisibilityStatus.Visible
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve2.util.forEachLeafSpeck
 
@@ -298,8 +299,10 @@ private fun MvItemsOwner.processUseSpeckElements(ns: Set<Namespace>, processor: 
 
             val element = alias ?: namedElement
             val namespace = namedElement.namespace
+            val visibilityFilter =
+                (namedElement as? MvItemElement)?.visInfo?.createFilter() ?: VisibilityFilter { _, _ -> Visible }
 
-            if (namespace in ns && processor.process(name, element)) {
+            if (namespace in ns && processor.process(name, element, ns, visibilityFilter)) {
                 stop = true
                 return@forEachLeafSpeck true
             }
