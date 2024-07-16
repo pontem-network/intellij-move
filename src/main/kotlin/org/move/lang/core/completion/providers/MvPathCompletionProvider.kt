@@ -24,10 +24,17 @@ import org.move.lang.core.types.infer.inferExpectedTy
 import org.move.lang.core.types.infer.inference
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
+import java.util.*
+
+fun interface CompletionFilter {
+    fun removeEntry(entry: ScopeEntry, ctx: PathResolutionContext): Boolean
+}
 
 abstract class MvPathCompletionProvider: MvCompletionProvider() {
 
-    abstract val namespace: Namespace
+    abstract val namespaces: Set<Namespace>
+
+    open val completionFilters: List<CompletionFilter> = emptyList()
 
     open fun pathScopeInfo(pathElement: MvPath): ContextScopeInfo =
         ContextScopeInfo(
@@ -47,16 +54,15 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
 
         val qualifier = pathElement.qualifier
 
-        val namespaces = setOf(this.namespace)
         val contextScopeInfo = pathScopeInfo(pathElement)
         val msl = pathElement.isMslScope
         val expectedTy = getExpectedTypeForEnclosingPathOrDotExpr(pathElement, msl)
-        val structAsType = this.namespace == Namespace.TYPE
+        val structAsType = Namespace.TYPE in this.namespaces
 
         val completionContext = CompletionContext(
             pathElement,
             contextScopeInfo,
-            expectedTy
+            expectedTy,
         )
 
         var completionCollector = createProcessor { e ->
@@ -72,8 +78,13 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
 
         if (qualifier != null) {
             val resolvedQualifier = qualifier.reference?.resolveFollowingAliases()
-            if (resolvedQualifier is MvItemsOwner) {
-                processItemDeclarations(resolvedQualifier, namespaces, completionCollector)
+            when (resolvedQualifier) {
+                is MvModule -> {
+                    val moduleBlock = resolvedQualifier.moduleBlock
+                    if (moduleBlock != null) {
+                        processItemDeclarations(moduleBlock, this.namespaces, completionCollector)
+                    }
+                }
             }
             return
         }
@@ -95,8 +106,6 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
 //        }
 
         val processedNames = mutableSetOf<String>()
-//        completionCollector =
-//            completionCollector.wrapWithBeforeProcessingHandler { processedNames.add(it.name) }
         completionCollector = completionCollector.wrapWithFilter { e ->
             if (processedNames.contains(e.name)) {
                 return@wrapWithFilter false
@@ -105,8 +114,18 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
             true
         }
 
+        val resolutionCtx = PathResolutionContext(pathElement, contextScopeInfo)
+
+        // custom filters
+        completionCollector = completionCollector.wrapWithFilter {
+            for (completionFilter in this.completionFilters) {
+                if (!completionFilter.removeEntry(it, resolutionCtx)) return@wrapWithFilter false
+            }
+            true
+        }
+
         val ctx = PathResolutionContext(pathElement, contextScopeInfo)
-        processNestedScopesUpwards(pathElement, namespaces, ctx, completionCollector)
+        processNestedScopesUpwards(pathElement, this.namespaces, ctx, completionCollector)
 
 //        processItems(pathElement, namespaces, contextScopeInfo) { (name, element) ->
 //            if (processedNames.contains(name)) {
@@ -130,7 +149,7 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
         val importContext =
             ImportContext.from(
                 originalPathElement,
-                namespaces,
+                this.namespaces,
                 setOf(Visibility.Public),
                 contextScopeInfo
             )
@@ -141,6 +160,10 @@ abstract class MvPathCompletionProvider: MvCompletionProvider() {
             importContext,
         )
         candidates.forEach { candidate ->
+            val entry = SimpleScopeEntry(candidate.qualName.itemName, candidate.element, namespaces)
+            for (completionFilter in completionFilters) {
+                if (!completionFilter.removeEntry(entry, resolutionCtx)) return@forEach
+            }
             val lookupElement = candidate.element.createLookupElement(
                 completionContext,
                 structAsType = structAsType,
@@ -159,16 +182,7 @@ object NamesCompletionProvider: MvPathCompletionProvider() {
                 .andNot(MvPsiPatterns.pathType())
                 .andNot(MvPsiPatterns.schemaLit())
 
-    override val namespace: Namespace get() = Namespace.NAME
-
-//    override fun itemVis(pathElement: MvPath): ItemVis {
-//        return ItemVis(
-//            setOf(Namespace.NAME),
-//            Visibility.none(),
-//            mslLetScope = pathElement.mslLetScope,
-//            itemScopes = pathElement.itemScopes,
-//        )
-//    }
+    override val namespaces: Set<Namespace> get() = EnumSet.of(Namespace.NAME)
 }
 
 object FunctionsCompletionProvider: MvPathCompletionProvider() {
@@ -178,32 +192,14 @@ object FunctionsCompletionProvider: MvPathCompletionProvider() {
                 .andNot(MvPsiPatterns.pathType())
                 .andNot(MvPsiPatterns.schemaLit())
 
-    override val namespace: Namespace get() = Namespace.FUNCTION
-
-//    override fun itemVis(pathElement: MvPath): ItemVis {
-//        return ItemVis(
-//            setOf(Namespace.FUNCTION),
-//            Visibility.none(),
-//            mslLetScope = pathElement.mslLetScope,
-//            itemScopes = pathElement.itemScopes,
-//        )
-//    }
+    override val namespaces: Set<Namespace> get() = EnumSet.of(Namespace.FUNCTION)
 }
 
 object TypesCompletionProvider: MvPathCompletionProvider() {
     override val elementPattern: ElementPattern<out PsiElement>
         get() = MvPsiPatterns.pathType()
 
-    override val namespace: Namespace get() = Namespace.TYPE
-
-//    override fun itemVis(pathElement: MvPath): ItemVis {
-//        return ItemVis(
-//            setOf(Namespace.TYPE),
-//            Visibility.none(),
-//            mslLetScope = pathElement.mslLetScope,
-//            itemScopes = pathElement.itemScopes,
-//        )
-//    }
+    override val namespaces: Set<Namespace> get() = EnumSet.of(Namespace.TYPE)
 }
 
 object SchemasCompletionProvider: MvPathCompletionProvider() {
@@ -213,7 +209,7 @@ object SchemasCompletionProvider: MvPathCompletionProvider() {
                 MvPsiPatterns.schemaLit(), MvPsiPatterns.pathInsideIncludeStmt()
             )
 
-    override val namespace: Namespace get() = Namespace.SCHEMA
+    override val namespaces: Set<Namespace> get() = EnumSet.of(Namespace.SCHEMA)
 
     override fun pathScopeInfo(pathElement: MvPath): ContextScopeInfo {
         return ContextScopeInfo(
@@ -221,6 +217,25 @@ object SchemasCompletionProvider: MvPathCompletionProvider() {
             refItemScopes = pathElement.refItemScopes,
         )
     }
+}
+
+object ModulesCompletionProvider: MvPathCompletionProvider() {
+    override val elementPattern: ElementPattern<PsiElement>
+        get() =
+            MvPsiPatterns.path()
+                .andNot(MvPsiPatterns.pathType())
+                .andNot(MvPsiPatterns.schemaLit())
+
+    override val namespaces: Set<Namespace> get() = EnumSet.of(Namespace.MODULE)
+
+    override val completionFilters: List<CompletionFilter>
+        get() = listOf(
+            // filter out the current module
+            CompletionFilter { e, ctx ->
+                if (e.element is MvModule)
+                    return@CompletionFilter ctx.containingModule?.let { e.element.equalsTo(it) } ?: true
+                true
+            })
 }
 
 fun getExpectedTypeForEnclosingPathOrDotExpr(element: MvReferenceElement, msl: Boolean): Ty? {

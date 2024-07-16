@@ -1,10 +1,9 @@
 package org.move.lang.core.resolve2.ref
 
 import org.move.lang.core.psi.MvPath
-import org.move.lang.core.psi.MvUseSpeck
 import org.move.lang.core.psi.ext.allowedNamespaces
+import org.move.lang.core.psi.ext.isUseSpeck
 import org.move.lang.core.psi.ext.qualifier
-import org.move.lang.core.psi.ext.rootPath
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve2.ref.RsPathResolveKind.*
 import org.move.lang.core.types.Address
@@ -31,13 +30,14 @@ sealed class RsPathResolveKind {
     data object NamedAddressPath: RsPathResolveKind()
 }
 
-fun classifyPath(path: MvPath): RsPathResolveKind {
+fun classifyPath(path: MvPath, overwriteNs: Set<Namespace>? = null): RsPathResolveKind {
     val qualifier = path.qualifier
-    val ns = path.allowedNamespaces()
+
+    val ns = overwriteNs ?: path.allowedNamespaces()
 //        if (qualifier == null) {
 //            return UnqualifiedPath(ns)
 //        }
-    val isUseSpeck = path.rootPath().parent is MvUseSpeck
+    val isUseSpeck = path.isUseSpeck
     if (qualifier == null) {
         // left-most path
         if (isUseSpeck) {

@@ -5,6 +5,7 @@ import org.move.utils.tests.completion.CompletionTestCase
 class ModulesCompletionTest : CompletionTestCase() {
     fun `test autocomplete imported modules in name position`() = doSingleCompletion(
         """
+        module 0x1::Transaction {}
         script {
             use 0x1::Transaction;
             
@@ -13,6 +14,7 @@ class ModulesCompletionTest : CompletionTestCase() {
             }
         }    
     """, """
+        module 0x1::Transaction {}
         script {
             use 0x1::Transaction;
             
@@ -25,12 +27,14 @@ class ModulesCompletionTest : CompletionTestCase() {
 
     fun `test autocomplete imported modules in type position`() = doSingleCompletion(
         """
+        module 0x1::Transaction {}
         script {
             use 0x1::Transaction;
             
             fun main(a: Tra/*caret*/) {}
         }    
     """, """
+        module 0x1::Transaction {}
         script {
             use 0x1::Transaction;
             
@@ -46,7 +50,7 @@ class ModulesCompletionTest : CompletionTestCase() {
         }
         
         script {
-            use 0x01::/*caret*/
+            use 0x1::/*caret*/
         }
         """
     )

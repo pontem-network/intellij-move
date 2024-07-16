@@ -23,7 +23,7 @@ import org.move.lang.core.resolve.processItems
 import org.move.lang.core.resolve.ref.Namespace
 import org.move.lang.core.resolve.ref.Visibility
 
-object ModulesCompletionProvider: MvCompletionProvider() {
+object ModulesCompletionProvider2: MvCompletionProvider() {
     override val elementPattern: ElementPattern<PsiElement>
         get() =
             MvPsiPatterns.path()

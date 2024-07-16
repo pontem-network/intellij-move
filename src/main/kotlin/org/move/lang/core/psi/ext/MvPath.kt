@@ -152,3 +152,7 @@ fun MvPath.importCandidateNamespaces(): Set<Namespace> {
 val MvPath.moduleRef: MvModuleRef? get() = error("unimplemented")
 
 val MvPath.hasColonColon: Boolean get() = colonColon != null
+
+val MvPath.useSpeck: MvUseSpeck? get() = this.rootPath().parent as? MvUseSpeck
+
+val MvPath.isUseSpeck get() = useSpeck != null

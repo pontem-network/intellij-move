@@ -12,6 +12,7 @@ import org.move.ide.presentation.text
 import org.move.lang.core.psi.*
 import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.ContextScopeInfo
+import org.move.lang.core.resolve2.ref.PathResolutionContext
 import org.move.lang.core.types.infer.*
 import org.move.lang.core.types.ty.Ty
 import org.move.lang.core.types.ty.TyUnknown
@@ -142,6 +143,7 @@ data class CompletionContext(
     val contextElement: MvElement,
     val contextScopeInfo: ContextScopeInfo,
     val expectedTy: Ty? = null,
+    val resolutionCtx: PathResolutionContext? = null
 ) {
     fun isMsl(): Boolean = contextScopeInfo.isMslScope
 }
@@ -226,9 +228,11 @@ open class DefaultInsertHandler(val completionCtx: CompletionContext? = null): I
         item: LookupElement
     ) {
         val document = context.document
-
         when (element) {
             is MvFunctionLike -> {
+                // no suffix for imports
+                if (completionCtx?.resolutionCtx?.isUseSpeck ?: false) return
+
                 val isMethodCall = context.getElementOfType<MvMethodOrField>() != null
                 val requiresExplicitTypes =
                     element.requiresExplicitlyProvidedTypeArguments(completionCtx)

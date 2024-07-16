@@ -3,9 +3,7 @@ package org.move.lang.core.resolve2.ref
 import com.intellij.psi.ResolveResult
 import org.move.cli.MoveProject
 import org.move.lang.core.psi.*
-import org.move.lang.core.psi.ext.allowedNamespaces
-import org.move.lang.core.psi.ext.qualifier
-import org.move.lang.core.psi.ext.rootPath
+import org.move.lang.core.psi.ext.*
 import org.move.lang.core.resolve.*
 import org.move.lang.core.resolve.ref.*
 import org.move.lang.core.resolve2.processAddressPathResolveVariants
@@ -159,6 +157,12 @@ class PathResolutionContext(
         path.containingModule
     }
     val containingModule: MvModule? get() = lazyContainingModule.value
+
+    private var lazyUseSpeck: Lazy<MvUseSpeck?> = lazy(NONE) {
+        path.useSpeck
+    }
+    val useSpeck: MvUseSpeck? get() = lazyUseSpeck.value
+    val isUseSpeck: Boolean get() = useSpeck != null
 
 //    var lazyContainingModInfo: Lazy<ModInfo?> = lazy(NONE) {
 //        val module = containingModule

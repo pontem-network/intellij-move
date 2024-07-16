@@ -16,6 +16,7 @@ class MvCompletionTestFixture(
     fun invokeCompletion(@Language("Move") code: String): List<LookupElement> {
         prepare(code)
         val completions = myFixture.completeBasic()
+        check(completions != null) { "Only a single completion item" }
         return completions.toList()
     }
 

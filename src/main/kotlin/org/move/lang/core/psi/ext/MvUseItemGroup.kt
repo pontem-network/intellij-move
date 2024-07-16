@@ -10,6 +10,8 @@ import org.move.lang.core.psi.MvUseSpeck
 
 val MvUseItemGroup.names get() = this.useItemList.mapNotNull { it.identifier.text }
 
+val MvUseGroup.names get() = this.useSpeckList.mapNotNull { it.path.identifier?.text }
+
 //val MvUseItemGroup.parentUseSpeck: MvItemUseSpeck get() = parent as MvItemUseSpeck
 
 val MvUseGroup.asTrivial: MvUseSpeck?
