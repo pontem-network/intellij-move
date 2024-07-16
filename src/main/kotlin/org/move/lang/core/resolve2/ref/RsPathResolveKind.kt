@@ -27,7 +27,8 @@ sealed class RsPathResolveKind {
     ): RsPathResolveKind()
 
     /** aptos_framework in `use aptos_framework::bar`*/
-    data object NamedAddressPath: RsPathResolveKind()
+    data class NamedAddressPath(val address: Address.Named): RsPathResolveKind()
+    data class ValueAddressPath(val address: Address.Value): RsPathResolveKind()
 }
 
 fun classifyPath(path: MvPath, overwriteNs: Set<Namespace>? = null): RsPathResolveKind {
@@ -43,7 +44,16 @@ fun classifyPath(path: MvPath, overwriteNs: Set<Namespace>? = null): RsPathResol
         if (isUseSpeck) {
             // use aptos_framework::
             //     //^
-            return NamedAddressPath
+            val moveProject = path.moveProject
+            val pathName = path.referenceName
+            if (pathName == null) {
+                val value = path.pathAddress!!.text
+                return ValueAddressPath(Address.Value(value))
+            } else {
+                val namedAddress =
+                    moveProject?.getNamedAddress(pathName) ?: Address.Named(pathName, null, moveProject)
+                return NamedAddressPath(namedAddress)
+            }
         }
         return UnqualifiedPath(ns)
     }
@@ -54,10 +64,13 @@ fun classifyPath(path: MvPath, overwriteNs: Set<Namespace>? = null): RsPathResol
 
     return when {
         qualifierPath == null && pathAddress != null -> ModulePath(path, Address.Value(pathAddress.text))
-        qualifierPath == null && isUseSpeck && qualifierName != null ->
-            ModulePath(path, Address.Named(qualifierName, null, qualifier.moveProject))
-//            qualifier.parent is MvUseSpeck && qualifierName != null ->
-//                AddressPath(path, Address.Named(qualifierName, null, qualifier.moveProject))
+        qualifierPath == null && isUseSpeck && qualifierName != null -> {
+            val moveProject = qualifier.moveProject
+            val namedAddress =
+                moveProject?.getNamedAddress(qualifierName)
+                    ?: Address.Named(qualifierName, null, moveProject)
+            ModulePath(path, namedAddress)
+        }
         else -> QualifiedPath(path, qualifier, ns)
     }
 }

@@ -128,9 +128,8 @@ class ResolveNamedModulePathTreeProjectTest : ResolveProjectTestCase() {
         )
         sources {
             move("main.move", """
-            module 0x1::M {
-                use Std::Reflect;
-                    //^
+            module Std::M {
+                  //^
             }     
             """)
         }

@@ -64,7 +64,7 @@ sealed class Address {
 
     class Named(
         val name: String,
-        private val value: String?,
+        val value: String?,
         private val declMoveProject: MoveProject?
     ) : Address() {
         fun value(moveProject: MoveProject? = null): String {
@@ -84,7 +84,7 @@ sealed class Address {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other !is Named) return false
-            if (this.hashCode() != other.hashCode()) return false
+//            if (this.hashCode() != other.hashCode()) return false
             return eq(this, other)
         }
 
@@ -99,9 +99,14 @@ sealed class Address {
             if (left == null && right == null) return true
             return when {
                 left is Value && right is Value -> left.addressLit().canonical() == right.addressLit().canonical()
-                left is Named && right is Named ->
-                    Pair(left.name, normalizeValue(left.value())) == Pair(right.name, normalizeValue(right.value())
-                    )
+                left is Named && right is Named -> {
+                    val leftValue = left.value?.let { normalizeValue(it) }
+                    val rightValue = right.value?.let { normalizeValue(it) }
+                    if (leftValue == null && rightValue == null) {
+                        return left.name == right.name
+                    }
+                    return leftValue == rightValue
+                }
                 else -> false
             }
         }

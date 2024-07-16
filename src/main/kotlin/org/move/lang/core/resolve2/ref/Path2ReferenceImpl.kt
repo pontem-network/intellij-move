@@ -87,21 +87,20 @@ fun processPathResolveVariants(
             // foo::bar
             processQualifiedPathResolveVariants(ctx, pathKind.ns, pathKind.path, pathKind.qualifier, processor)
         }
-        is NamedAddressPath -> {
-            return false
-        }
+        is NamedAddressPath -> return false
+        is ValueAddressPath -> return false
     }
 }
 
-fun processPathResolveVariants(
-    path: MvPath,
-    contextScopeInfo: ContextScopeInfo = ContextScopeInfo.from(path),
-    processor: RsResolveProcessor,
-): Boolean {
-    val ctx = PathResolutionContext(path, contextScopeInfo = contextScopeInfo)
-    val pathKind = classifyPath(path)
-    return processPathResolveVariants(ctx, pathKind, processor)
-}
+//fun processPathResolveVariants(
+//    path: MvPath,
+//    contextScopeInfo: ContextScopeInfo = ContextScopeInfo.from(path),
+//    processor: RsResolveProcessor,
+//): Boolean {
+//    val ctx = PathResolutionContext(path, contextScopeInfo = contextScopeInfo)
+//    val pathKind = classifyPath(path)
+//    return processPathResolveVariants(ctx, pathKind, processor)
+//}
 
 /**
  * foo::bar
